@@ -25,7 +25,6 @@ import {
 } from './types';
 
 export class RxSchema<T = any> {
-    public compoundIndexes: string[] | string[][];
     public indexes: string[][];
     public primaryPath: keyof T;
     public finalFields: string[];
@@ -33,7 +32,6 @@ export class RxSchema<T = any> {
     constructor(
         public readonly jsonID: RxJsonSchema<T>
     ) {
-        this.compoundIndexes = this.jsonID.compoundIndexes as any;
         this.indexes = getIndexes(this.jsonID);
 
         // primary is always required
@@ -239,7 +237,7 @@ export function hasCrypt(jsonSchema: RxJsonSchema): boolean {
 export function getIndexes<T = any>(
     jsonID: RxJsonSchema<T>
 ): string[][] {
-    return (jsonID.indexes || []).map(indexPath => [indexPath]).concat(jsonID.compoundIndexes || []);
+    return (jsonID.indexes || []).map(index => Array.isArray(index) ? index : [index]);
 }
 
 /**
@@ -280,7 +278,6 @@ export function getFinalFields<T = any>(
     return ret;
 }
 
-
 /**
  * orders the schemas attributes by alphabetical order
  * @return jsonSchema - ordered
@@ -307,8 +304,8 @@ const fillWithDefaultSettings = function (
     if (!schemaObj.hasOwnProperty('keyCompression'))
         schemaObj.keyCompression = false;
 
-    // compoundIndexes must be array
-    schemaObj.compoundIndexes = schemaObj.compoundIndexes || [];
+    // indexes must be array
+    schemaObj.indexes = schemaObj.indexes || [];
 
     // required must be array
     schemaObj.required = schemaObj.required || [];

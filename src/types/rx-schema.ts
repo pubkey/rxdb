@@ -68,8 +68,7 @@ export declare class RxJsonSchema<T = any> {
     type: 'object' | string;
     properties: { [key in keyof T]: TopLevelProperty | PrimaryProperty };
     required?: (keyof T)[];
-    indexes?: string[];
-    compoundIndexes?: string[][];
+    indexes?: Array<string|string[]>;
     keyCompression?: boolean;
     /**
      * if not set, rxdb will set 'false' as default

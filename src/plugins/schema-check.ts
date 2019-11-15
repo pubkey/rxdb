@@ -254,50 +254,37 @@ export function checkSchema(jsonID: RxJsonSchema) {
         }
     });
 
-    // check format of jsonID.compoundIndexes
-    if (jsonID.compoundIndexes) {
-        if (!Array.isArray(jsonID.compoundIndexes)) {
-            throw newRxError('SC18', {
-                compoundIndexes: jsonID.compoundIndexes
-            });
-        }
-        jsonID.compoundIndexes.forEach((ar: any) => {
-            if (!Array.isArray(ar)) {
-                throw newRxError('SC19', {
-                    compoundIndexes: jsonID.compoundIndexes
-                });
-            }
-
-            ar.forEach(str => {
-                if (typeof str !== 'string') {
-                    throw newRxError('SC20', {
-                        compoundIndexes: jsonID.compoundIndexes
-                    });
-                }
-            });
-        });
-    }
-
     // check format of jsonID.indexes
     if (jsonID.indexes) {
         // should be an array
         if (!Array.isArray(jsonID.indexes)) {
-            throw newRxError('SC25', {
+            throw newRxError('SC18', {
                 indexes: jsonID.indexes
             });
         }
-        // should contain strings
-        jsonID.indexes.forEach(indexPath => {
-            if (typeof indexPath !== 'string') {
-                throw newRxError('SC26', {
-                    indexPath
-                });
+
+        jsonID.indexes.forEach(index => {
+            // should contain strings or array of strings
+            if (!(typeof index === 'string' || Array.isArray(index))) {
+                throw newRxError('SC19', { index });
+            }
+            // if is a compound index it must contain strings
+            if (Array.isArray(index)) {
+                for (let i = 0; i < index.length; i += 1) {
+                    if (typeof index[i] !== 'string') {
+                        throw newRxError('SC20', { index });
+                    }
+                }
             }
         });
     }
 
     /** TODO this check has to exist only in beta-version, to help developers migrate their schemas */
-    // remove backward-compatibility
+    // remove backward-compatibility for compoundIndexes
+    if (Object.keys(jsonID).includes('compoundIndexes')) {
+        throw newRxError('SC25');
+    }
+    // remove backward-compatibility for index: true
     Object.keys(flattenObject(jsonID))
         .map(key => {
             // flattenObject returns only ending paths, we need all paths pointing to an object
@@ -314,21 +301,26 @@ export function checkSchema(jsonID: RxJsonSchema) {
         .forEach(key => { // replace inner properties
             key = key.replace('properties.', ''); // first
             key = key.replace(/\.properties\./g, '.'); // middle
-            throw newRxError('SC27', {
-                indexPath: trimDots(key)
+            throw newRxError('SC26', {
+                index: trimDots(key)
             });
         });
 
-    // check that indexes are string or number
-    (jsonID.compoundIndexes || [])
-        .reduce((a, b) => a.concat(b), []) // break compound indexes into index parts
-        .concat(jsonID.indexes || [])
+    (jsonID.indexes || [])
+        .reduce((indexPaths: string[], currentIndex) => {
+            if (Array.isArray(currentIndex)) {
+                indexPaths.concat(currentIndex);
+            } else {
+                indexPaths.push(currentIndex);
+            }
+            return indexPaths;
+        }, [])
         .filter((elem, pos, arr) => arr.indexOf(elem) === pos) // from now on working only with unique indexes
         .map(indexPath => {
             const realPath = getIndexRealPath(indexPath); // real path in the collection schema
             const schemaObj = objectPath.get(jsonID, realPath); // get the schema of the indexed property
             if (!schemaObj || typeof schemaObj !== 'object') {
-                throw newRxError('SC21', { indexPath });
+                throw newRxError('SC21', { index: indexPath });
             }
             return { indexPath, schemaObj };
         })

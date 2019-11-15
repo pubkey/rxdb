@@ -491,6 +491,22 @@ export const encryptedDeepHuman: RxJsonSchema = {
     required: ['firstName', 'secret']
 };
 
+export const notExistingIndex: RxJsonSchema = {
+    title: 'index',
+    version: 0,
+    description: 'this schema has a specified index which does not exists',
+    type: 'object',
+    keyCompression: true,
+    properties: {
+        address: {
+            type: 'object',
+            properties: {
+                street: { type: 'string' }
+            }
+        }
+    },
+    indexes: ['address.apartment']
+};
 
 export const compoundIndex: RxJsonSchema = {
     title: 'compund index',
@@ -509,12 +525,12 @@ export const compoundIndex: RxJsonSchema = {
             type: 'integer'
         }
     },
-    compoundIndexes: [
+    indexes: [
         ['passportId', 'passportCountry']
     ]
 };
 
-export const compoundIndexNoString: RxJsonSchema = {
+export const compoundIndexNoString: any = {
     title: 'compund index',
     version: 0,
     description: 'this schema has a compoundIndex',
@@ -531,11 +547,10 @@ export const compoundIndexNoString: RxJsonSchema = {
             type: 'integer'
         }
     },
-    compoundIndexes: [
-        ['passportId', 'passportCountry']
+    indexes: [
+        [10, 'passportCountry']
     ]
 };
-
 
 export const wrongCompoundFormat: any = {
     title: 'compund index',
@@ -554,9 +569,7 @@ export const wrongCompoundFormat: any = {
             type: 'integer'
         }
     },
-    compoundIndexes: [{
-        foo: 'bar'
-    }]
+    indexes: [ { foo: 'bar' } ]
 };
 
 

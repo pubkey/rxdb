@@ -567,29 +567,29 @@ config.parallel('query-change-detector.test.js', () => {
                     type: 'number'
                 },
                 read: {
-                    description: 'true if was read by the reciever',
+                    description: 'true if was read by the receiver',
                     type: 'boolean'
                 },
                 sender: {
                     type: 'string',
                     ref: 'users'
                 },
-                reciever: {
+                receiver: {
                     type: 'string',
                     ref: 'users'
                 }
             },
-            indexes: ['time'],
-            compoundIndexes: [
+            indexes: [
+                'time',
                 ['sender', 'time'],
-                ['reciever', 'time']
+                ['receiver', 'time']
             ],
             required: [
                 'text',
                 'time',
                 'read',
                 'sender',
-                'reciever'
+                'receiver'
             ]
         };
         const col = await humansCollection.createBySchema(schema);
@@ -601,7 +601,7 @@ config.parallel('query-change-detector.test.js', () => {
                     sender: {
                         $eq: user1
                     },
-                    reciever: {
+                    receiver: {
                         $eq: user2
                     }
                 },
@@ -609,7 +609,7 @@ config.parallel('query-change-detector.test.js', () => {
                     sender: {
                         $eq: user2
                     },
-                    reciever: {
+                    receiver: {
                         $eq: user1
                     }
                 }
@@ -626,7 +626,7 @@ config.parallel('query-change-detector.test.js', () => {
             time: AsyncTestUtil.randomNumber(1, 1000),
             read: false,
             sender: '3',
-            reciever: '4'
+            receiver: '4'
         });
 
         await getQuery().exec();

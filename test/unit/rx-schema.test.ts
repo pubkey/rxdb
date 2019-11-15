@@ -137,6 +137,9 @@ config.parallel('rx-schema.test.js', () => {
                 it('break when index is no string', () => {
                     assert.throws(() => SchemaCheck.checkSchema(schemas.nostringIndex), Error);
                 });
+                it('break when index does not exist in schema properties', () => {
+                    assert.throws(() => SchemaCheck.checkSchema(schemas.notExistingIndex), Error);
+                })
                 it('break compoundIndex key is no string', () => {
                     assert.throws(() => SchemaCheck.checkSchema(schemas.compoundIndexNoString), Error);
                 });

@@ -109,9 +109,7 @@ const mySchema = {
 
 
 ## Indexes
-RxDB supports secondary indexes which are defined at the schema-level of the collection.<br>
-To add a simple indexes, add them in an array to a `indexes`-field at the top-level of the schema-definition.<br>
-To add compound-indexes, add them in an array to a `compoundIndexes`-field at the top-level of the schema-definition.
+RxDB supports secondary indexes which are defined at the schema-level of the collection.
 
 Index is only allowed on field types `string`, `integer` and `number`
 
@@ -145,9 +143,10 @@ const schemaWithIndexes = {
           }       
       }
   },
-  indexes: ['firstName', 'creditCards.[].cvc'], // <- this will create two indexes for these fields
-  compoundIndexes: [
-      ['lastName', 'familyName']   // <- this will create a compound-index for these two fields
+  indexes: [
+    'firstName', // <- this will create a simple index for the `firstName` field
+    'creditCards.[].cvc',
+    ['lastName', 'familyName'] // <- this will create a compound-index for these two fields
   ]
 };
 ```

@@ -83,9 +83,8 @@ export interface RxErrorParameters {
     readonly parallel?: boolean;
     readonly collection?: any;
     readonly database?: any;
-    readonly compoundIndexes?: string[] | string[][] | undefined;
-    readonly indexes?: string[] | undefined;
-    readonly indexPath?: string;
+    readonly indexes?: Array<string|string[]>;
+    readonly index?: string|string[];
 }
 
 /**
