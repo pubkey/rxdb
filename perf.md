@@ -364,3 +364,33 @@ AFTER CUSTOM BUILD:
     "total": 4957.095949
   }
 }
+
+## Add while subscribe test
+
+{
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 10052.490876,
+    "perInstance": 10.052490876
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 5526.700043,
+    "perBlock": 2.7633500215
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 1794.911805,
+    "perDocument": 0.17949118049999999
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 5134.875101
+  },
+  "writeWhileSubscribe": {
+    "amount": 1000,
+    "total": 12426.62809
+  }
+}
