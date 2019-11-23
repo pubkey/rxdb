@@ -1,5 +1,10 @@
 # Changelog
 
+### X.X.X (comming soon)
+
+Other:
+  - Improved performance of `QueryChangeDetection` by using [array-push-at-sort-position](https://github.com/pubkey/array-push-at-sort-position) instead of re-sorting the whole results of a query
+
 ### 8.7.3 (10 November 2019)
 
 Features:

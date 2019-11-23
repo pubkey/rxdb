@@ -12,7 +12,6 @@ import {
     create as createQueryChangeDetector,
     _isDocInResultData,
     _isSortedBefore,
-    _resortDocData,
     enableDebugging,
     _sortFieldChanged
 } from '../../dist/lib/query-change-detector';
@@ -98,34 +97,6 @@ config.parallel('query-change-detector.test.js', () => {
                 docData1, docData2
             );
             assert.strictEqual(res, true);
-            col.database.destroy();
-        });
-    });
-    describe('._resortDocData()', () => {
-        it('should return resorted doc-data', async () => {
-            const col = await humansCollection.createAgeIndex(3);
-            const q = col.find().sort('age');
-            const docData1 = schemaObjects.human() as any;
-            docData1.age = 5;
-            docData1._id = 'aaaaaaaa';
-            const docData2 = schemaObjects.human() as any;
-            docData2.age = 10;
-            docData2._id = 'bbbbbbb';
-
-            const res = _resortDocData(
-                q._queryChangeDetector,
-                [docData2, docData1]
-            );
-            assert.strictEqual(res[0].age, 5);
-            assert.strictEqual(res[1].age, 10);
-
-            const res2 = _resortDocData(
-                q._queryChangeDetector,
-                [docData1, docData2]
-            );
-            assert.strictEqual(res2[0].age, 5);
-            assert.strictEqual(res2[1].age, 10);
-
             col.database.destroy();
         });
     });
@@ -375,6 +346,7 @@ config.parallel('query-change-detector.test.js', () => {
                     assert.strictEqual(referenceResults.length, 7);
 
                     results = await q.exec();
+
                     assert.strictEqual(results.length, 7);
                     assert.strictEqual(q._execOverDatabaseCount, 1);
                     assert.strictEqual(results[0].passportId, '000aaa');
@@ -431,10 +403,10 @@ config.parallel('query-change-detector.test.js', () => {
 
                 assert.deepStrictEqual(
                     docs.map((d: any) => d['id']), [
-                        'aaa',
-                        'bbb',
-                        'ccc'
-                    ]
+                    'aaa',
+                    'bbb',
+                    'ccc'
+                ]
                 );
 
                 // it should find the same order with pouchdb
@@ -477,11 +449,11 @@ config.parallel('query-change-detector.test.js', () => {
 
                 assert.deepStrictEqual(
                     lastResult, [
-                        'aaa',
-                        'aab',
-                        'bbb',
-                        'ccc'
-                    ]
+                    'aaa',
+                    'aab',
+                    'bbb',
+                    'ccc'
+                ]
                 );
 
                 // it should find the same order with pouchdb
