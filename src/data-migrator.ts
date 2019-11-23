@@ -14,7 +14,8 @@ import {
 } from './pouch-db';
 import {
     clone,
-    toPromise
+    toPromise,
+    flatClone
 } from './util';
 
 import {
@@ -112,7 +113,7 @@ export class DataMigrator {
                     const totalCount: number = countAll
                         .reduce((cur, prev) => prev = cur + prev, 0);
                     state.total = totalCount;
-                    observer.next(clone(state));
+                    observer.next(flatClone(state));
                     let currentCol = oldCols.shift();
 
                     let currentPromise = Promise.resolve();
@@ -128,7 +129,7 @@ export class DataMigrator {
                                         state.handled++;
                                         (state as any)[subState.type] = (state as any)[subState.type] + 1;
                                         state.percent = Math.round(state.handled / state.total * 100);
-                                        observer.next(clone(state));
+                                        observer.next(flatClone(state));
                                     },
                                     (e: any) => {
                                         sub.unsubscribe();
@@ -146,7 +147,7 @@ export class DataMigrator {
                 .then(() => {
                     state.done = true;
                     state.percent = 100;
-                    observer.next(clone(state));
+                    observer.next(flatClone(state));
                     observer.complete();
                 });
         })();

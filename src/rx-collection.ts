@@ -3,10 +3,9 @@ import {
 } from 'rxjs/operators';
 
 import {
-    clone,
     ucfirst,
     nextTick,
-    generateId,
+    flatClone,
     promiseSeries,
     pluginMissing
 } from './util';
@@ -448,7 +447,7 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
      * same as insert but overwrites existing document with same primary
      */
     upsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
-        const useJson: any = clone(json);
+        const useJson: any = flatClone(json);
         const primary = useJson[this.schema.primaryPath];
         if (!primary) {
             throw newRxError('COL3', {
@@ -474,7 +473,6 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
      * upserts to a RxDocument, uses atomicUpdate if document already exists
      */
     atomicUpsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
-        json = clone(json);
         const primary = json[this.schema.primaryPath];
         if (!primary) {
             throw newRxError('COL4', {

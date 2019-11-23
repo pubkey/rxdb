@@ -4,6 +4,7 @@
 
 Other:
   - Improved performance of `QueryChangeDetection` by using [array-push-at-sort-position](https://github.com/pubkey/array-push-at-sort-position) instead of re-sorting the whole results of a query
+  - Improved performance by removing unnecessary calls to deep-clone
 
 ### 8.7.3 (10 November 2019)
 

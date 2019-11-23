@@ -394,3 +394,67 @@ AFTER CUSTOM BUILD:
     "total": 12426.62809
   }
 }
+
+## use: array-push-at-sort-position
+
+Combined best of many runs
+
+{
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 9604.652948,
+    "perInstance": 9.604652948
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 5836.421114,
+    "perBlock": 2.918210557
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 1432.457661,
+    "perDocument": 0.1432457661
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 4115.045391
+  },
+  "writeWhileSubscribe": {
+    "amount": 1000,
+    "total": 9996.26826
+  }
+}
+
+## using less deep-clones
+
+Combined best of many runs
+
+{
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 9600.227252,
+    "perInstance": 9.600227252
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 5319.980171,
+    "perBlock": 2.6599900855
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 1224.783592,
+    "perDocument": 0.1224783592
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 4652.264144
+  },
+  "writeWhileSubscribe": {
+    "amount": 1000,
+    "total": 10082.873372
+  }
+}

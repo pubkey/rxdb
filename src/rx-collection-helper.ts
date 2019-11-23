@@ -14,9 +14,8 @@ import {
  */
 export function _handleToPouch(
     col: RxCollection | any,
-    docData: any
+    data: any
 ) {
-    let data = clone(docData);
     data = (col._crypter as any).encrypt(data);
     data = col.schema.swapPrimaryToId(data);
     if (col.schema.doKeyCompression())
@@ -25,10 +24,9 @@ export function _handleToPouch(
 }
 export function _handleFromPouch(
     col: RxCollection | any,
-    docData: any,
+    data: any,
     noDecrypt = false
 ) {
-    let data = clone(docData);
     data = col.schema.swapIdToPrimary(data);
     if (col.schema.doKeyCompression())
         data = col._keyCompressor.decompress(data);

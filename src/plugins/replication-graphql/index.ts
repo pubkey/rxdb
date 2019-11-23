@@ -17,7 +17,8 @@ import GraphQLClient from 'graphql-client';
 
 
 import {
-    promiseWait
+    promiseWait,
+    flatClone
 } from '../../util';
 
 import Core from '../../core';
@@ -364,7 +365,7 @@ export class RxGraphQLReplicationState {
          * we create the event and emit it,
          * so other instances get informed about it
          */
-        const originalDoc = clone(toPouch);
+        const originalDoc = flatClone(toPouch);
         originalDoc._deleted = deletedValue;
         delete originalDoc[this.deletedFlag];
         originalDoc._rev = newRevision;

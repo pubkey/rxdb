@@ -279,6 +279,14 @@ function recursiveDeepCopy<T>(o: T): T {
 }
 export const clone = recursiveDeepCopy;
 
+/**
+ * does a flat copy on the objects,
+ * is about 3 times faster then using deepClone
+ * @link https://jsperf.com/object-rest-spread-vs-clone/2
+ */
+export function flatClone<T>(obj: T): T {
+    return Object.assign({}, obj);
+}
 
 
 import isElectron from 'is-electron';
