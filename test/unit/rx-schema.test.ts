@@ -376,6 +376,10 @@ config.parallel('rx-schema.test.js', () => {
                 const schema2 = normalize(schemas.humanNormalizeSchema2);
                 assert.deepStrictEqual(schema1, schema2);
             });
+            it('should not sort indexes array in the schema (related with https://github.com/pubkey/rxdb/pull/1695#issuecomment-554636433)', () => {
+                const schema = normalize(schemas.humanWithSimpleAndCompoundIndexes);
+                assert.deepStrictEqual(schema.indexes, schemas.humanWithSimpleAndCompoundIndexes.indexes);
+            });
         });
         describe('.create()', () => {
             describe('positive', () => {

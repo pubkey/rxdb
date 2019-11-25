@@ -890,3 +890,28 @@ export const humanWithTimestampAllIndex: RxJsonSchema = {
     indexes: ['name', 'age', 'updatedAt'],
     required: ['id', 'name', 'age', 'updatedAt']
 };
+
+export const humanWithSimpleAndCompoundIndexes: RxJsonSchema = {
+    version: 0,
+    type: 'object',
+    properties: {
+        id: {
+            type: 'string',
+            primary: true
+        },
+        name: {
+            type: 'string'
+        },
+        age: {
+            type: 'number'
+        },
+        createdAt: {
+            type: 'number'
+        },
+        updatedAt: {
+            type: 'number'
+        }
+    },
+    indexes: ['name', 'age', ['createdAt', 'updatedAt']],
+    required: ['id', 'name', 'age', 'updatedAt']
+};

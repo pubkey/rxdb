@@ -283,9 +283,11 @@ export function getFinalFields<T = any>(
  * @return jsonSchema - ordered
  */
 export function normalize(jsonSchema: RxJsonSchema): RxJsonSchema {
-    return sortObject(
-        clone(jsonSchema)
-    );
+    const normalizedSchema: RxJsonSchema = sortObject(clone(jsonSchema));
+    if (jsonSchema.indexes) {
+        normalizedSchema.indexes = Array.from(jsonSchema.indexes); // indexes should remain unsorted
+    }
+    return normalizedSchema;
 }
 
 /**
