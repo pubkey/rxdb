@@ -458,3 +458,33 @@ Combined best of many runs
     "total": 10082.873372
   }
 }
+
+## better method to remove doc from array
+
+{
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 9483.45607,
+    "perInstance": 9.48345607
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 5400.620172,
+    "perBlock": 2.700310086
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 1386.384774,
+    "perDocument": 0.13863847740000002
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 3769.25471
+  },
+  "writeWhileSubscribe": {
+    "amount": 1000,
+    "total": 12508.054624
+  }
+}

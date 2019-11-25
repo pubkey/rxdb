@@ -256,6 +256,22 @@ export function shuffleArray<T>(arr: T[]): T[] {
     return arr.sort(() => (Math.random() - 0.5));
 }
 
+/**
+ * @link https://stackoverflow.com/a/15996017
+ */
+export function removeOneFromArrayIfMatches<T>(ar: T[], condition: (x: T) => boolean): T[] {
+    ar = ar.slice();
+    let i = ar.length;
+    let done = false;
+    while (i-- && !done) {
+        if (condition(ar[i])) {
+            done = true;
+            ar.splice(i, 1);
+        }
+    }
+    return ar;
+}
+
 
 /**
  * transforms the given adapter into a pouch-compatible object

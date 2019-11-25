@@ -21,6 +21,9 @@ import {
 import {
     RxChangeEvent
 } from './rx-change-event';
+import {
+    removeOneFromArrayIfMatches
+} from './util';
 
 let DEBUG = false;
 
@@ -103,11 +106,13 @@ export class QueryChangeDetector {
         let __sortFieldChanged: any = null;
         const sortFieldChanged = () => {
             if (__sortFieldChanged === null) {
-                const docBefore = resultsData.find(doc => doc[this.primaryKey] === docData[this.primaryKey]);
+                const docBefore = removeOneFromArrayIfMatches(resultsData, doc => doc[this.primaryKey] === docData[this.primaryKey]);
                 __sortFieldChanged = _sortFieldChanged(this, docBefore, docData);
             }
             return _sortFieldChanged;
         };
+
+        // console.log('## ' + results.length);
 
         if (changeEvent.data.op === 'REMOVE') {
             // R1 (never matched)
@@ -126,7 +131,7 @@ export class QueryChangeDetector {
             // R3 (was in results and got removed)
             if (doesMatchNow && wasDocInResults && !isFilled) {
                 _debugMessage(this, 'R3', docData);
-                results = results.filter(doc => doc[this.primaryKey] !== docData[this.primaryKey]);
+                results = removeOneFromArrayIfMatches(results, doc => doc[this.primaryKey] === docData[this.primaryKey]);
                 return results;
             }
 
@@ -139,7 +144,7 @@ export class QueryChangeDetector {
             // R3.1 was in results and got removed, no limit, no skip
             if (doesMatchNow && wasDocInResults && !options.limit && !options.skip) {
                 _debugMessage(this, 'R3.1', docData);
-                results = results.filter(doc => doc[this.primaryKey] !== docData[this.primaryKey]);
+                results = removeOneFromArrayIfMatches(results, doc => doc[this.primaryKey] === docData[this.primaryKey]);
                 return results;
             }
 
@@ -164,7 +169,7 @@ export class QueryChangeDetector {
                     _debugMessage(this, 'U2 - resort', docData);
 
                     // remove and insert at new sort position
-                    results = results.filter(doc => doc[this.primaryKey] !== docData[this.primaryKey]);
+                    results = removeOneFromArrayIfMatches(results, doc => doc[this.primaryKey] === docData[this.primaryKey]);
                     results = pushAtSortPosition(
                         results,
                         docData,

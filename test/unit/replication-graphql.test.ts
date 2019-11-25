@@ -1712,7 +1712,6 @@ describe('replication-graphql.test.js', () => {
 
                 await AsyncTestUtil.waitUntil(async () => {
                     const docs = await server.getDocuments();
-                    console.log(docs.length);
                     return docs.length === (amount + 1);
                 });
 
@@ -1834,13 +1833,7 @@ describe('replication-graphql.test.js', () => {
                     live: true,
                     deletedFlag: 'deleted'
                 });
-                /*
-                replicationState2.error$.subscribe(err => {
-                    console.log('got replication error');
-                    console.log(JSON.stringify(err));
-                });*/
                 await replicationState2.awaitInitialReplication();
-
                 const addDoc = schemaObjects.humanWithTimestamp();
                 await collection2.insert(addDoc);
 
