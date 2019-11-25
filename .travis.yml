@@ -23,8 +23,8 @@ before_install:
 
 stages:
   - install
-  - code format
   - build
+  - code format
   - unit tests
   - other
   - examples
@@ -33,6 +33,9 @@ jobs:
   include:
     - stage: install
       script: travis_retry npm install --depth 0 --silent
+
+    - stage: build
+      script: npm run build
 
     - stage: code format
       script: travis_retry npm run test:typings
@@ -50,8 +53,6 @@ jobs:
       script: npm run lint
       env: LABEL=lint
 
-    - stage: build
-      script: npm run build
     - stage: unit tests
       script: travis_retry npm run test:node
       env: LABEL=test:node
