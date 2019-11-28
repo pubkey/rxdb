@@ -194,7 +194,7 @@
     "shelljs": "0.8.3",
     "source-map-support": "0.5.16",
     "subscriptions-transport-ws": "0.9.16",
-    "ts-node": "8.5.2",
+    "ts-node": "8.5.3",
     "tslint": "5.20.1",
     "typescript": "3.6.4",
     "uglify-js": "3.7.0",
