@@ -915,3 +915,45 @@ export const humanWithSimpleAndCompoundIndexes: RxJsonSchema = {
     indexes: ['name', 'age', ['createdAt', 'updatedAt']],
     required: ['id', 'name', 'age', 'updatedAt']
 };
+
+export const humanWithDeepNestedIndexes: RxJsonSchema = {
+    version: 0,
+    type: 'object',
+    properties: {
+        id: {
+            type: 'string',
+            primary: true
+        },
+        name: {
+            type: 'string'
+        },
+        job: {
+            type: 'object',
+            properties: {
+                name: {
+                    type: 'string'
+                },
+                manager: {
+                    type: 'object',
+                    properties: {
+                        fullName: {
+                            type: 'string'
+                        },
+                        previousJobs: {
+                            type: 'array',
+                            items: {
+                                type: 'object',
+                                properties: {
+                                    name: {
+                                        type: 'string'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    indexes: ['name', 'job.name', 'job.manager.fullName', 'job.manager.previousJobs.[].name']
+};

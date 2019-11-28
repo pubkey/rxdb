@@ -81,7 +81,7 @@ config.parallel('rx-schema.test.js', () => {
                 it('validate point', () => {
                     SchemaCheck.checkSchema(schemas.point);
                 });
-                it('validate _id when primary', async () => {
+                it('validate _id when primary', () => {
                     SchemaCheck.checkSchema({
                         title: 'schema',
                         version: 0,
@@ -96,6 +96,9 @@ config.parallel('rx-schema.test.js', () => {
                         },
                         required: ['firstName']
                     });
+                });
+                it('validates deep nested indexes', () => {
+                   SchemaCheck.checkSchema(schemas.humanWithDeepNestedIndexes);
                 });
             });
             describe('negative', () => {
@@ -132,6 +135,23 @@ config.parallel('rx-schema.test.js', () => {
                             }
                         },
                         required: ['job']
+                    }), Error);
+                });
+                it('break when compoundIndex is specified in a separate field', () => {
+                    assert.throws(() => SchemaCheck.checkSchema({
+                        version: 0,
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                primary: true
+                            },
+                            name: {
+                                type: 'string',
+                                index: true
+                            }
+                        },
+                        compoundIndexes: ['id', 'name']
                     }), Error);
                 });
                 it('break when index is no string', () => {

@@ -279,7 +279,7 @@ export function checkSchema(jsonID: RxJsonSchema) {
         });
     }
 
-    /** TODO this check has to exist only in beta-version, to help developers migrate their schemas */
+    /** FIXME this check has to exist only in beta-version, to help developers migrate their schemas */
     // remove backward-compatibility for compoundIndexes
     if (Object.keys(jsonID).includes('compoundIndexes')) {
         throw newRxError('SC25');
@@ -306,6 +306,7 @@ export function checkSchema(jsonID: RxJsonSchema) {
             });
         });
 
+    /* check types of the indexes */
     (jsonID.indexes || [])
         .reduce((indexPaths: string[], currentIndex) => {
             if (Array.isArray(currentIndex)) {
