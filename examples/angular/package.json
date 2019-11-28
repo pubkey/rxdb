@@ -57,7 +57,7 @@
     "local-web-server": "3.0.7",
     "pouchdb-server": "4.2.0",
     "testcafe": "1.7.0",
-    "ts-node": "8.5.2",
+    "ts-node": "8.5.3",
     "tslint": "5.20.1",
     "typescript": "3.5.3",
     "webpack-bundle-analyzer": "3.6.0"
