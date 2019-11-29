@@ -1163,10 +1163,9 @@ config.parallel('rx-query.test.js', () => {
                         $eq: '6'
                     }
                 },
-                    {
-                        created_at: {
-                            $gt: null
-                        }
+                {
+                    created_at: {
+                        $gt: null
                     }
                 }, {
                     user_id: {
