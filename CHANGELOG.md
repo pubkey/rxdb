@@ -4,6 +4,10 @@
 Features:
    - Indexes can now be specified at the top-level of the schema-definition. [#1655](https://github.com/pubkey/rxdb/issues/1655)
 
+Other:
+  - Improved performance of `QueryChangeDetection` by using [array-push-at-sort-position](https://github.com/pubkey/array-push-at-sort-position) instead of re-sorting the whole results of a query
+  - Improved performance by removing unnecessary calls to deep-clone
+
 ### 8.7.3 (10 November 2019)
 
 Features:

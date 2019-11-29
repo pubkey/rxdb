@@ -21,7 +21,7 @@ Cons:
 
 ### Data Design
 
-To use the GraphQL-replication you first have to ensure that you data is sortable by update time and your documents never get deleted, only have a deleted-flag set.
+To use the GraphQL-replication you first have to ensure that your data is sortable by update time and your documents never get deleted, only have a deleted-flag set.
 
 For example if your documents look like this,
 
@@ -36,9 +36,9 @@ For example if your documents look like this,
 }
 ```
 
-then your data is always sortable by `updatedAt`. This ensures that when RxDB fetches 'new' changes, it can send the latest `updatedAt` to the GraphQL-endpoint and then recieve all newer rows.
+Then your data is always sortable by `updatedAt`. This ensures that when RxDB fetches 'new' changes, it can send the latest `updatedAt` to the GraphQL-endpoint and then recieve all newer documents.
 
-Deleted rows still exist but have `deleted: true` set. This ensures that when RxDB fetches new rows, even the deleted rows are send back and can be known at the client-side.
+Deleted documents still exist but have `deleted: true` set. This ensures that when RxDB fetches new documents, even the deleted documents are send back and can be known at the client-side.
 
 
 ### GraphQL Server

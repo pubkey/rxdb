@@ -13,7 +13,7 @@ import {
 } from '../types';
 
 export function update(this: RxDocument, updateObj: any) {
-    const oldDocData = clone(this._data);
+    const oldDocData = this._data;
     const newDocData = modifyjs(oldDocData, updateObj);
 
     return this._saveData(newDocData, oldDocData);

@@ -76,7 +76,7 @@ export class KeyCompressor {
      * compress the keys of an object via the compression-table
      */
     compress(obj: any): any {
-        if (!this.schema.doKeyCompression()) return clone(obj);
+        if (!this.schema.doKeyCompression()) return obj;
         return _compressObj(this, obj);
     }
 
@@ -111,7 +111,7 @@ export class KeyCompressor {
     }
 
     decompress(obj: any): any {
-        if (!this.schema.doKeyCompression()) return clone(obj);
+        if (!this.schema.doKeyCompression()) return obj;
         const returnObj = this._decompressObj(obj);
         return returnObj;
     }
@@ -146,8 +146,8 @@ export class KeyCompressor {
      * @return compressed queryJSON
      */
     compressQuery(queryJSON: any): any {
-        queryJSON = clone(queryJSON);
         if (!this.schema.doKeyCompression()) return queryJSON;
+        queryJSON = clone(queryJSON);
 
         // selector
         const selector: any = {};

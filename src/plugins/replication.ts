@@ -15,7 +15,7 @@ import { skipUntil } from 'rxjs/operators';
 
 import {
     promiseWait,
-    clone
+    flatClone
 } from '../util';
 import Core from '../core';
 import {
@@ -223,7 +223,7 @@ export function sync(
         },
         query
     }: SyncOptions) {
-    const useOptions: PouchReplicationOptions & { selector: any } = clone(options) as any;
+    const useOptions: PouchReplicationOptions & { selector: any } = flatClone(options) as any;
 
     // prevent #641 by not allowing internal pouchdbs as remote
     if (

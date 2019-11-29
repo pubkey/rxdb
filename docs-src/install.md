@@ -8,7 +8,7 @@ To install the latest release of `rxdb` and its dependencies and save it to your
 
 ## peer-dependency
 
-You also need to install the peer-dependency `rxjs` if you not have installed it before.
+You also need to install the peer-dependency `rxjs` if you have not installed it before.
 
 `npm i rxjs --save`
 

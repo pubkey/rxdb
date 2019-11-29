@@ -16,6 +16,7 @@ RxDB.plugin(require('pouchdb-adapter-memory'));
 import NoValidate from '../plugins/no-validate';
 RxDB.plugin(NoValidate);
 import KeyCompression from '../plugins/key-compression';
+import { mergeMap } from 'rxjs/operators';
 RxDB.plugin(KeyCompression);
 
 const elapsedTime = (before: any) => {
@@ -53,6 +54,10 @@ const benchmark: any = {
         perDocument: null
     },
     migrateDocuments: {
+        amount: 1000,
+        total: null
+    },
+    writeWhileSubscribe: {
         amount: 1000,
         total: null
     }
@@ -246,6 +251,52 @@ describe('performance.test.js', function () {
         await db.destroy();
         await db2.destroy();
         await AsyncTestUtil.wait(1000);
+    });
+    it('writeWhileSubscribe', async () => {
+        const name = util.randomCouchString(10);
+        const db = await RxDB.create({
+            name,
+            queryChangeDetection: true,
+            adapter: 'memory'
+        });
+        const col = await db.collection({
+            name: 'human',
+            schema: schemas.averageSchema()
+        });
+
+        const query = col.find({
+            var2: {
+                $gt: 1
+            }
+        }).sort('var1');
+
+
+        let t = 0;
+        let lastResult;
+        const startTime = nowTime();
+
+        await new Promise(res => {
+            const obs$ = query.$.pipe(
+                mergeMap(async (result) => {
+                    if (t <= benchmark.writeWhileSubscribe.amount) {
+                        t++;
+                        await col.insert(schemaObjects.averageSchema());
+                    } else {
+                        sub.unsubscribe();
+                        res();
+                    }
+                    return result;
+                })
+            );
+            const sub = obs$.subscribe(result => {
+                lastResult = result;
+            });
+        });
+
+        const elapsed = elapsedTime(startTime);
+        benchmark.writeWhileSubscribe.total = elapsed;
+        assert.strictEqual(lastResult.length, benchmark.writeWhileSubscribe.amount);
+        db.destroy();
     });
 
     it('show results:', () => {
