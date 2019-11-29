@@ -458,4 +458,4 @@ A big **Thank you** to every [contributor](https://github.com/pubkey/rxdb/graphs
 
 ## License
 
-[Apache-2.0](https://github.com/pubkey/rxdb/blob/master/LICENSE.txt)
+[Apache-2.0](https://github.com/pubkey/rxdb/blob/master/LICENSE.txt) 
