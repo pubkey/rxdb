@@ -197,7 +197,7 @@
     "ts-node": "8.5.4",
     "tslint": "5.20.1",
     "typescript": "3.6.4",
-    "uglify-js": "3.7.0",
+    "uglify-js": "3.7.1",
     "uglifyjs-webpack-plugin": "2.2.0",
     "walk-sync": "2.0.2",
     "watch": "1.0.2",
