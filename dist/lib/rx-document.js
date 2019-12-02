@@ -80,9 +80,9 @@ var basePrototype = {
         break;
 
       case 'UPDATE':
-        var newData = (0, _util.clone)(changeEvent.data.v);
+        var newData = changeEvent.data.v;
 
-        this._dataSync$.next((0, _util.clone)(newData));
+        this._dataSync$.next(newData);
 
         break;
 
@@ -268,7 +268,8 @@ var basePrototype = {
     var _this2 = this;
 
     this._atomicQueue = this._atomicQueue.then(function () {
-      var oldData = (0, _util.clone)(_this2._dataSync$.getValue());
+      var oldData = _this2._dataSync$.getValue();
+
       var ret = fun((0, _util.clone)(_this2._dataSync$.getValue()), _this2);
       var retPromise = (0, _util.toPromise)(ret);
       return retPromise.then(function (newData) {
@@ -294,7 +295,7 @@ var basePrototype = {
   _saveData: function _saveData(newData, oldData) {
     var _this3 = this;
 
-    newData = (0, _util.clone)(newData); // deleted documents cannot be changed
+    newData = newData; // deleted documents cannot be changed
 
     if (this._deleted$.getValue()) {
       throw (0, _rxError.newRxError)('DOC11', {
@@ -308,7 +309,7 @@ var basePrototype = {
     return this.collection._runHooks('pre', 'save', newData, this).then(function () {
       _this3.collection.schema.validate(newData);
 
-      return _this3.collection._pouchPut((0, _util.clone)(newData));
+      return _this3.collection._pouchPut(newData);
     }).then(function (ret) {
       if (!ret.ok) {
         throw (0, _rxError.newRxError)('DOC12', {
@@ -348,7 +349,7 @@ var basePrototype = {
       _this4.collection._docCache.set(_this4.primary, _this4); // internal events
 
 
-      _this4._dataSync$.next((0, _util.clone)(_this4._data));
+      _this4._dataSync$.next(_this4._data);
 
       return true;
     });
@@ -400,7 +401,7 @@ function createRxDocumentConstructor() {
 
     this._isTemporary = false; // assume that this is always equal to the doc-data in the database
 
-    this._dataSync$ = new _rxjs.BehaviorSubject((0, _util.clone)(jsonData));
+    this._dataSync$ = new _rxjs.BehaviorSubject(jsonData);
     this._deleted$ = new _rxjs.BehaviorSubject(false);
     this._atomicQueue = Promise.resolve();
     /**

@@ -570,7 +570,7 @@ function () {
                * we create the event and emit it,
                * so other instances get informed about it
                */
-              originalDoc = (0, _util.clone)(toPouch);
+              originalDoc = (0, _util.flatClone)(toPouch);
               originalDoc._deleted = deletedValue;
               delete originalDoc[this.deletedFlag];
               originalDoc._rev = newRevision;

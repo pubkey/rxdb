@@ -1,7 +1,7 @@
 /**
  * this plugin adds the leader-election-capabilities to rxdb
  */
-import { LeaderElector as BroadcastChannelLeaderElector } from 'broadcast-channel/leader-election';
+import { LeaderElector as BroadcastChannelLeaderElector } from 'broadcast-channel';
 import { RxDatabase, RxPlugin } from '../types';
 export declare class LeaderElector {
     database: RxDatabase;

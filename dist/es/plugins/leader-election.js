@@ -1,7 +1,7 @@
 /**
  * this plugin adds the leader-election-capabilities to rxdb
  */
-import { create as createLeaderElection } from 'broadcast-channel/leader-election';
+import { createLeaderElection } from 'broadcast-channel';
 export var LeaderElector =
 /*#__PURE__*/
 function () {

@@ -22,7 +22,9 @@ exports.sortObject = sortObject;
 exports.stringifyFilter = stringifyFilter;
 exports.randomCouchString = randomCouchString;
 exports.shuffleArray = shuffleArray;
+exports.removeOneFromArrayIfMatches = removeOneFromArrayIfMatches;
 exports.adapterObject = adapterObject;
+exports.flatClone = flatClone;
 exports.flattenObject = flattenObject;
 exports.getHeightOfRevision = getHeightOfRevision;
 exports.LOCAL_PREFIX = exports.isElectronRenderer = exports.clone = void 0;
@@ -283,6 +285,25 @@ function shuffleArray(arr) {
   });
 }
 /**
+ * @link https://stackoverflow.com/a/15996017
+ */
+
+
+function removeOneFromArrayIfMatches(ar, condition) {
+  ar = ar.slice();
+  var i = ar.length;
+  var done = false;
+
+  while (i-- && !done) {
+    if (condition(ar[i])) {
+      done = true;
+      ar.splice(i, 1);
+    }
+  }
+
+  return ar;
+}
+/**
  * transforms the given adapter into a pouch-compatible object
  */
 
@@ -307,7 +328,18 @@ function recursiveDeepCopy(o) {
 }
 
 var clone = recursiveDeepCopy;
+/**
+ * does a flat copy on the objects,
+ * is about 3 times faster then using deepClone
+ * @link https://jsperf.com/object-rest-spread-vs-clone/2
+ */
+
 exports.clone = clone;
+
+function flatClone(obj) {
+  return Object.assign({}, obj);
+}
+
 var isElectronRenderer = (0, _isElectron["default"])();
 /**
  * returns a flattened object
@@ -325,9 +357,9 @@ function flattenObject(ob) {
     if (typeof ob[i] === 'object') {
       var flatObject = flattenObject(ob[i]);
 
-      for (var x in flatObject) {
-        if (!flatObject.hasOwnProperty(x)) continue;
-        toReturn[i + '.' + x] = flatObject[x];
+      for (var _x in flatObject) {
+        if (!flatObject.hasOwnProperty(_x)) continue;
+        toReturn[i + '.' + _x] = flatObject[_x];
       }
     } else {
       toReturn[i] = ob[i];

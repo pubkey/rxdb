@@ -1,6 +1,6 @@
 import _createClass from "@babel/runtime/helpers/createClass";
 import { filter } from 'rxjs/operators';
-import { clone, ucfirst, nextTick, promiseSeries, pluginMissing } from './util';
+import { ucfirst, nextTick, flatClone, promiseSeries, pluginMissing } from './util';
 import { validateCouchDBString } from './pouch-db';
 import { _handleToPouch as _handleToPouch2, _handleFromPouch as _handleFromPouch2, fillObjectDataBeforeInsert } from './rx-collection-helper';
 import { createRxQuery } from './rx-query';
@@ -302,7 +302,7 @@ function () {
   _proto.upsert = function upsert(json) {
     var _this7 = this;
 
-    var useJson = clone(json);
+    var useJson = flatClone(json);
     var primary = useJson[this.schema.primaryPath];
 
     if (!primary) {
@@ -333,7 +333,6 @@ function () {
   _proto.atomicUpsert = function atomicUpsert(json) {
     var _this8 = this;
 
-    json = clone(json);
     var primary = json[this.schema.primaryPath];
 
     if (!primary) {

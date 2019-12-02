@@ -1,7 +1,7 @@
 {
   "name": "rxdb",
-  "description": "A realtime Database for the Web",
-  "version": "8.7.3",
+  "description": "A realtime Database for JavaScript Applications",
+  "version": "8.7.4",
   "author": "pubkey",
   "repository": {
     "type": "git",
@@ -13,6 +13,7 @@
     "database",
     "offline-first",
     "nosql",
+    "no-sql",
     "jsonschema",
     "rxjs",
     "pwa",

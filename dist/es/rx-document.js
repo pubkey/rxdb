@@ -59,9 +59,9 @@ export var basePrototype = {
         break;
 
       case 'UPDATE':
-        var newData = clone(changeEvent.data.v);
+        var newData = changeEvent.data.v;
 
-        this._dataSync$.next(clone(newData));
+        this._dataSync$.next(newData);
 
         break;
 
@@ -244,7 +244,8 @@ export var basePrototype = {
     var _this2 = this;
 
     this._atomicQueue = this._atomicQueue.then(function () {
-      var oldData = clone(_this2._dataSync$.getValue());
+      var oldData = _this2._dataSync$.getValue();
+
       var ret = fun(clone(_this2._dataSync$.getValue()), _this2);
       var retPromise = toPromise(ret);
       return retPromise.then(function (newData) {
@@ -269,7 +270,7 @@ export var basePrototype = {
   _saveData: function _saveData(newData, oldData) {
     var _this3 = this;
 
-    newData = clone(newData); // deleted documents cannot be changed
+    newData = newData; // deleted documents cannot be changed
 
     if (this._deleted$.getValue()) {
       throw newRxError('DOC11', {
@@ -283,7 +284,7 @@ export var basePrototype = {
     return this.collection._runHooks('pre', 'save', newData, this).then(function () {
       _this3.collection.schema.validate(newData);
 
-      return _this3.collection._pouchPut(clone(newData));
+      return _this3.collection._pouchPut(newData);
     }).then(function (ret) {
       if (!ret.ok) {
         throw newRxError('DOC12', {
@@ -323,7 +324,7 @@ export var basePrototype = {
       _this4.collection._docCache.set(_this4.primary, _this4); // internal events
 
 
-      _this4._dataSync$.next(clone(_this4._data));
+      _this4._dataSync$.next(_this4._data);
 
       return true;
     });
@@ -373,7 +374,7 @@ export function createRxDocumentConstructor() {
 
     this._isTemporary = false; // assume that this is always equal to the doc-data in the database
 
-    this._dataSync$ = new BehaviorSubject(clone(jsonData));
+    this._dataSync$ = new BehaviorSubject(jsonData);
     this._deleted$ = new BehaviorSubject(false);
     this._atomicQueue = Promise.resolve();
     /**

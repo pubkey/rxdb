@@ -18,7 +18,7 @@ function () {
    * compress the keys of an object via the compression-table
    */
   _proto.compress = function compress(obj) {
-    if (!this.schema.doKeyCompression()) return clone(obj);
+    if (!this.schema.doKeyCompression()) return obj;
     return _compressObj(this, obj);
   };
 
@@ -44,7 +44,7 @@ function () {
   };
 
   _proto.decompress = function decompress(obj) {
-    if (!this.schema.doKeyCompression()) return clone(obj);
+    if (!this.schema.doKeyCompression()) return obj;
 
     var returnObj = this._decompressObj(obj);
 
@@ -73,8 +73,8 @@ function () {
   _proto.compressQuery = function compressQuery(queryJSON) {
     var _this2 = this;
 
-    queryJSON = clone(queryJSON);
-    if (!this.schema.doKeyCompression()) return queryJSON; // selector
+    if (!this.schema.doKeyCompression()) return queryJSON;
+    queryJSON = clone(queryJSON); // selector
 
     var selector = {};
     Object.keys(queryJSON.selector).forEach(function (key) {

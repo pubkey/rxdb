@@ -10,7 +10,7 @@
  *
  */
 import { countAllUndeleted, getBatch } from './pouch-db';
-import { clone, toPromise } from './util';
+import { clone, toPromise, flatClone } from './util';
 import { createRxSchema } from './rx-schema';
 import { newRxError } from './rx-error';
 import overwritable from './overwritable';
@@ -73,7 +73,7 @@ function () {
           return prev = cur + prev;
         }, 0);
         state.total = totalCount;
-        observer.next(clone(state));
+        observer.next(flatClone(state));
         var currentCol = oldCols.shift();
         var currentPromise = Promise.resolve();
 
@@ -85,7 +85,7 @@ function () {
                 state.handled++;
                 state[subState.type] = state[subState.type] + 1;
                 state.percent = Math.round(state.handled / state.total * 100);
-                observer.next(clone(state));
+                observer.next(flatClone(state));
               }, function (e) {
                 sub.unsubscribe();
                 observer.error(e);
@@ -106,7 +106,7 @@ function () {
       }).then(function () {
         state.done = true;
         state.percent = 100;
-        observer.next(clone(state));
+        observer.next(flatClone(state));
         observer.complete();
       });
     })();

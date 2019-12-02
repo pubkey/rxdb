@@ -11,15 +11,13 @@ exports["default"] = exports.prototypes = exports.rxdb = void 0;
 
 var _modifyjs = _interopRequireDefault(require("modifyjs"));
 
-var _util = require("../util.js");
-
 /**
  * this plugin allows delta-updates with mongo-like-syntax
  * It's using modifyjs internally
  * @link https://github.com/lgandecki/modifyjs
  */
 function update(updateObj) {
-  var oldDocData = (0, _util.clone)(this._data);
+  var oldDocData = this._data;
   var newDocData = (0, _modifyjs["default"])(oldDocData, updateObj);
   return this._saveData(newDocData, oldDocData);
 }
