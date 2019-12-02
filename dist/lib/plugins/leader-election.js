@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.create = create;
 exports["default"] = exports.overwritable = exports.prototypes = exports.rxdb = exports.LeaderElector = void 0;
 
-var _leaderElection = require("broadcast-channel/leader-election");
+var _broadcastChannel = require("broadcast-channel");
 
 /**
  * this plugin adds the leader-election-capabilities to rxdb
@@ -19,7 +19,7 @@ function () {
     this.isLeader = false;
     this.isDead = false;
     this.database = database;
-    this.elector = (0, _leaderElection.create)(database.broadcastChannel);
+    this.elector = (0, _broadcastChannel.createLeaderElection)(database.broadcastChannel);
   }
 
   var _proto = LeaderElector.prototype;

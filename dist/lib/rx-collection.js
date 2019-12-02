@@ -333,7 +333,7 @@ function () {
   _proto.upsert = function upsert(json) {
     var _this7 = this;
 
-    var useJson = (0, _util.clone)(json);
+    var useJson = (0, _util.flatClone)(json);
     var primary = useJson[this.schema.primaryPath];
 
     if (!primary) {
@@ -364,7 +364,6 @@ function () {
   _proto.atomicUpsert = function atomicUpsert(json) {
     var _this8 = this;
 
-    json = (0, _util.clone)(json);
     var primary = json[this.schema.primaryPath];
 
     if (!primary) {

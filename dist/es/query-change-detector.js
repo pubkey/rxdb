@@ -8,6 +8,8 @@
  */
 import { filterInMemoryFields } from 'pouchdb-selector-core';
 import objectPath from 'object-path';
+import { pushAtSortPosition } from 'array-push-at-sort-position';
+import { removeOneFromArrayIfMatches } from './util';
 var DEBUG = false;
 export var QueryChangeDetector =
 /*#__PURE__*/
@@ -97,14 +99,15 @@ function () {
 
     var sortFieldChanged = function sortFieldChanged() {
       if (__sortFieldChanged === null) {
-        var docBefore = resultsData.find(function (doc) {
+        var docBefore = removeOneFromArrayIfMatches(resultsData, function (doc) {
           return doc[_this2.primaryKey] === docData[_this2.primaryKey];
         });
         __sortFieldChanged = _sortFieldChanged(_this2, docBefore, docData);
       }
 
       return _sortFieldChanged;
-    };
+    }; // console.log('## ' + results.length);
+
 
     if (changeEvent.data.op === 'REMOVE') {
       // R1 (never matched)
@@ -126,8 +129,8 @@ function () {
       if (doesMatchNow && wasDocInResults && !isFilled) {
         _debugMessage(this, 'R3', docData);
 
-        results = results.filter(function (doc) {
-          return doc[_this2.primaryKey] !== docData[_this2.primaryKey];
+        results = removeOneFromArrayIfMatches(results, function (doc) {
+          return doc[_this2.primaryKey] === docData[_this2.primaryKey];
         });
         return results;
       } // R3.05 was in findOne-result and got removed
@@ -143,8 +146,8 @@ function () {
       if (doesMatchNow && wasDocInResults && !options.limit && !options.skip) {
         _debugMessage(this, 'R3.1', docData);
 
-        results = results.filter(function (doc) {
-          return doc[_this2.primaryKey] !== docData[_this2.primaryKey];
+        results = removeOneFromArrayIfMatches(results, function (doc) {
+          return doc[_this2.primaryKey] === docData[_this2.primaryKey];
         });
         return results;
       } // R4 matching but after results got removed
@@ -166,20 +169,24 @@ function () {
 
       if (!options.skip && !options.limit && wasDocInResults && doesMatchNow) {
         // DEBUG && this._debugMessage('U2', docData);
-        // replace but make sure its the same position
-        var wasDoc = results.find(function (doc) {
-          return doc[_this2.primaryKey] === docData[_this2.primaryKey];
-        });
-        var i = results.indexOf(wasDoc);
-        results[i] = docData;
-
         if (sortFieldChanged()) {
-          _debugMessage(this, 'U2 - resort', docData);
+          _debugMessage(this, 'U2 - resort', docData); // remove and insert at new sort position
 
-          return _resortDocData(this, results);
+
+          results = removeOneFromArrayIfMatches(results, function (doc) {
+            return doc[_this2.primaryKey] === docData[_this2.primaryKey];
+          });
+          results = pushAtSortPosition(results, docData, sortCompareFunction(this));
+          return results;
         } else {
-          _debugMessage(this, 'U2 - no-resort', docData);
+          _debugMessage(this, 'U2 - no-resort', docData); // replace but make sure its the same position
 
+
+          var wasDoc = results.find(function (doc) {
+            return doc[_this2.primaryKey] === docData[_this2.primaryKey];
+          });
+          var i = results.indexOf(wasDoc);
+          results[i] = docData;
           return results;
         }
       } // U3 not matched, but matches now, no.skip, limit < length
@@ -188,14 +195,8 @@ function () {
       if (!options.skip && !limitAndFilled && !wasDocInResults && doesMatchNow) {
         _debugMessage(this, 'U3', docData);
 
-        results.push(docData); //    console.log('U3: preSort:');
-        //    console.dir(results);
-
-        var sorted = _resortDocData(this, results); //        console.log('U3: postSort:');
-        //            console.dir(sorted);
-
-
-        return sorted;
+        results = pushAtSortPosition(results, docData, sortCompareFunction(this));
+        return results;
       }
     } // if no optimisation-algo matches, return mustReExec:true
 
@@ -224,31 +225,43 @@ function _debugMessage(queryChangeDetector, key) {
     changeEventData: changeEventData
   });
 }
+
+var sortCompareFunctionCache = new WeakMap();
 /**
- * reruns the sort on the given resultsData
+ * returns the sort-comparator
+ * which results in the equal sorting that a new query over the db would do
  */
 
+export function sortCompareFunction(queryChangeDetector) {
+  if (!sortCompareFunctionCache.has(queryChangeDetector)) {
+    var sortOptions = _getSortOptions(queryChangeDetector);
 
-export function _resortDocData(queryChangeDetector, resultsData) {
-  var sortOptions = _getSortOptions(queryChangeDetector);
+    var inMemoryFields = Object.keys(queryChangeDetector.query.toJSON().selector);
 
-  var rows = resultsData.map(function (doc) {
-    return {
-      doc: queryChangeDetector.query.collection.schema.swapPrimaryToId(doc)
+    var fun = function fun(a, b) {
+      // TODO use createFieldSorter
+      var rows = [a, b].map(function (doc) {
+        return {
+          doc: queryChangeDetector.query.collection.schema.swapPrimaryToId(doc)
+        };
+      });
+      var sortedRows = filterInMemoryFields(rows, {
+        selector: queryChangeDetector.query.massageSelector,
+        sort: sortOptions
+      }, inMemoryFields);
+
+      if (sortedRows[0].doc._id === rows[0].doc._id) {
+        return -1;
+      } else {
+        return 1;
+      }
     };
-  });
-  var inMemoryFields = Object.keys(queryChangeDetector.query.toJSON().selector); // TODO use createFieldSorter
 
-  var sortedRows = filterInMemoryFields(rows, {
-    selector: queryChangeDetector.query.massageSelector,
-    sort: sortOptions
-  }, inMemoryFields);
-  var sortedDocs = sortedRows.map(function (row) {
-    return row.doc;
-  }).map(function (doc) {
-    return queryChangeDetector.query.collection.schema.swapIdToPrimary(doc);
-  });
-  return sortedDocs;
+    sortCompareFunctionCache.set(queryChangeDetector, fun);
+    return fun;
+  } else {
+    return sortCompareFunctionCache.get(queryChangeDetector);
+  }
 }
 /**
  * checks if the newDocLeft would be placed before docDataRight
@@ -257,23 +270,9 @@ export function _resortDocData(queryChangeDetector, resultsData) {
  */
 
 export function _isSortedBefore(queryChangeDetector, docDataLeft, docDataRight) {
-  var sortOptions = _getSortOptions(queryChangeDetector);
-
-  var inMemoryFields = Object.keys(queryChangeDetector.query.toJSON().selector);
-  var swappedLeft = queryChangeDetector.query.collection.schema.swapPrimaryToId(docDataLeft);
-  var swappedRight = queryChangeDetector.query.collection.schema.swapPrimaryToId(docDataRight);
-  var rows = [swappedLeft, swappedRight].map(function (doc) {
-    return {
-      id: doc._id,
-      doc: doc
-    };
-  }); // TODO use createFieldSorter
-
-  var sortedRows = filterInMemoryFields(rows, {
-    selector: queryChangeDetector.query.massageSelector,
-    sort: sortOptions
-  }, inMemoryFields);
-  return sortedRows[0].id === swappedLeft._id;
+  var comparator = sortCompareFunction(queryChangeDetector);
+  var result = comparator(docDataLeft, docDataRight);
+  return result !== 1;
 }
 /**
  * checks if the sort-relevant fields have changed

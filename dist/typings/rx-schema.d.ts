@@ -1,7 +1,6 @@
 import { RxJsonSchema, JsonSchema } from './types';
 export declare class RxSchema<T = any> {
     readonly jsonID: RxJsonSchema<T>;
-    compoundIndexes: string[] | string[][];
     indexes: string[][];
     primaryPath: keyof T;
     finalFields: string[];

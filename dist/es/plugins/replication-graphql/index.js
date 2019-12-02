@@ -8,9 +8,9 @@ import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import { BehaviorSubject, Subject } from 'rxjs';
 import { first, filter } from 'rxjs/operators';
 import GraphQLClient from 'graphql-client';
-import { promiseWait } from '../../util';
+import { promiseWait, flatClone } from '../../util';
 import Core from '../../core';
-import { hash, clone } from '../../util';
+import { hash } from '../../util';
 import { DEFAULT_MODIFIER, wasRevisionfromPullReplication, createRevisionForPulledDocument, getDocsWithRevisionsFromPouch } from './helper';
 import { setLastPushSequence, getLastPullDocument, setLastPullDocument, getChangesSinceLastPushSequence } from './crawling-checkpoint';
 import RxDBWatchForChangesPlugin from '../watch-for-changes';
@@ -548,7 +548,7 @@ function () {
                * we create the event and emit it,
                * so other instances get informed about it
                */
-              originalDoc = clone(toPouch);
+              originalDoc = flatClone(toPouch);
               originalDoc._deleted = deletedValue;
               delete originalDoc[this.deletedFlag];
               originalDoc._rev = newRevision;

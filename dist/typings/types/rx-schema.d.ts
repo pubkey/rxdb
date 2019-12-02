@@ -41,7 +41,6 @@ export interface JsonSchema {
     };
     format?: 'date-time' | 'email' | 'hostname' | 'ipv4' | 'ipv6' | 'uri' | string;
     ref?: string;
-    index?: boolean;
     encrypted?: boolean;
     final?: boolean;
 }
@@ -51,7 +50,6 @@ export interface TopLevelProperty extends JsonSchema {
 export interface PrimaryProperty extends TopLevelProperty {
     type: 'string';
     primary: true;
-    index: undefined;
 }
 export declare class RxJsonSchema<T = any> {
     title?: string;
@@ -67,7 +65,7 @@ export declare class RxJsonSchema<T = any> {
         [key in keyof T]: TopLevelProperty | PrimaryProperty;
     };
     required?: (keyof T)[];
-    compoundIndexes?: string[] | string[][];
+    indexes?: Array<string | string[]>;
     keyCompression?: boolean;
     /**
      * if not set, rxdb will set 'false' as default

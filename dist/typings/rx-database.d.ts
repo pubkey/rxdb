@@ -1,5 +1,5 @@
 import IdleQueue from 'custom-idle-queue';
-import BroadcastChannel from 'broadcast-channel';
+import { BroadcastChannel } from 'broadcast-channel';
 import { Subject, Subscription, Observable } from 'rxjs';
 import { RxChangeEvent } from './rx-change-event';
 import { CollectionsOfDatabase, RxChangeEventInsert, RxChangeEventUpdate, RxChangeEventRemove, PouchDBInstance, RxChangeEventCollection, RxDatabase, RxCollectionCreator, RxJsonSchema, RxCollection, PouchSettings, ServerOptions, RxDatabaseCreator } from './types';

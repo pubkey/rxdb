@@ -69,11 +69,21 @@ export declare function randomCouchString(length?: number): string;
  */
 export declare function shuffleArray<T>(arr: T[]): T[];
 /**
+ * @link https://stackoverflow.com/a/15996017
+ */
+export declare function removeOneFromArrayIfMatches<T>(ar: T[], condition: (x: T) => boolean): T[];
+/**
  * transforms the given adapter into a pouch-compatible object
  */
 export declare function adapterObject(adapter: any): any;
 declare function recursiveDeepCopy<T>(o: T): T;
 export declare const clone: typeof recursiveDeepCopy;
+/**
+ * does a flat copy on the objects,
+ * is about 3 times faster then using deepClone
+ * @link https://jsperf.com/object-rest-spread-vs-clone/2
+ */
+export declare function flatClone<T>(obj: T): T;
 export declare const isElectronRenderer: boolean;
 /**
  * returns a flattened object

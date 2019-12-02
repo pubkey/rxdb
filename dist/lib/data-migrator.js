@@ -101,7 +101,7 @@ function () {
           return prev = cur + prev;
         }, 0);
         state.total = totalCount;
-        observer.next((0, _util.clone)(state));
+        observer.next((0, _util.flatClone)(state));
         var currentCol = oldCols.shift();
         var currentPromise = Promise.resolve();
 
@@ -113,7 +113,7 @@ function () {
                 state.handled++;
                 state[subState.type] = state[subState.type] + 1;
                 state.percent = Math.round(state.handled / state.total * 100);
-                observer.next((0, _util.clone)(state));
+                observer.next((0, _util.flatClone)(state));
               }, function (e) {
                 sub.unsubscribe();
                 observer.error(e);
@@ -134,7 +134,7 @@ function () {
       }).then(function () {
         state.done = true;
         state.percent = 100;
-        observer.next((0, _util.clone)(state));
+        observer.next((0, _util.flatClone)(state));
         observer.complete();
       });
     })();

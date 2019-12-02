@@ -35,7 +35,6 @@ var RxSchema =
 function () {
   function RxSchema(jsonID) {
     this.jsonID = jsonID;
-    this.compoundIndexes = this.jsonID.compoundIndexes;
     this.indexes = getIndexes(this.jsonID); // primary is always required
 
     this.primaryPath = getPrimary(this.jsonID);
@@ -253,40 +252,13 @@ function getEncryptedPaths(jsonSchema) {
 
 function hasCrypt(jsonSchema) {
   var paths = getEncryptedPaths(jsonSchema);
-  if (Object.keys(paths).length > 0) return true;else return false;
+  return Object.keys(paths).length > 0;
 }
 
 function getIndexes(jsonID) {
-  var flattened = (0, _util.flattenObject)(jsonID);
-  var keys = Object.keys(flattened);
-  var indexes = keys // flattenObject returns only ending paths, we need all paths pointing to an object
-  .map(function (key) {
-    var splitted = key.split('.');
-    splitted.pop(); // all but last
-
-    return splitted.join('.');
-  }).filter(function (key) {
-    return key !== '';
-  }).filter(function (elem, pos, arr) {
-    return arr.indexOf(elem) === pos;
-  }) // unique
-  .filter(function (key) {
-    // check if this path defines an index
-    var value = _objectPath["default"].get(jsonID, key);
-
-    if (value.index) return true;else return false;
-  }).map(function (key) {
-    // replace inner properties
-    key = key.replace('properties.', ''); // first
-
-    key = key.replace(/\.properties\./g, '.'); // middle
-
-    return [(0, _util.trimDots)(key)];
-  }); // add compound-indexes
-
-  var addCompound = jsonID.compoundIndexes || [];
-  indexes = indexes.concat(addCompound);
-  return indexes;
+  return (jsonID.indexes || []).map(function (index) {
+    return Array.isArray(index) ? index : [index];
+  });
 }
 /**
  * returns the primary path of a jsonschema
@@ -333,7 +305,13 @@ function getFinalFields(jsonID) {
 
 
 function normalize(jsonSchema) {
-  return (0, _util.sortObject)((0, _util.clone)(jsonSchema));
+  var normalizedSchema = (0, _util.sortObject)((0, _util.clone)(jsonSchema));
+
+  if (jsonSchema.indexes) {
+    normalizedSchema.indexes = Array.from(jsonSchema.indexes); // indexes should remain unsorted
+  }
+
+  return normalizedSchema;
 }
 /**
  * fills the schema-json with default-settings
@@ -346,9 +324,9 @@ var fillWithDefaultSettings = function fillWithDefaultSettings(schemaObj) {
 
   schemaObj.additionalProperties = false; // fill with key-compression-state ()
 
-  if (!schemaObj.hasOwnProperty('keyCompression')) schemaObj.keyCompression = false; // compoundIndexes must be array
+  if (!schemaObj.hasOwnProperty('keyCompression')) schemaObj.keyCompression = false; // indexes must be array
 
-  schemaObj.compoundIndexes = schemaObj.compoundIndexes || []; // required must be array
+  schemaObj.indexes = schemaObj.indexes || []; // required must be array
 
   schemaObj.required = schemaObj.required || []; // add _rev
 

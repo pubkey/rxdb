@@ -25,7 +25,7 @@ var _randomToken = _interopRequireDefault(require("random-token"));
 
 var _customIdleQueue = _interopRequireDefault(require("custom-idle-queue"));
 
-var _broadcastChannel = _interopRequireDefault(require("broadcast-channel"));
+var _broadcastChannel = require("broadcast-channel");
 
 var _util = require("./util");
 
@@ -579,7 +579,7 @@ function _removeAllOfCollection(rxDatabase, collectionName) {
 
 function _prepareBroadcastChannel(rxDatabase) {
   // broadcastChannel
-  rxDatabase.broadcastChannel = new _broadcastChannel["default"]('RxDB:' + rxDatabase.name + ':' + 'socket');
+  rxDatabase.broadcastChannel = new _broadcastChannel.BroadcastChannel('RxDB:' + rxDatabase.name + ':' + 'socket');
   rxDatabase.broadcastChannel$ = new _rxjs.Subject();
 
   rxDatabase.broadcastChannel.onmessage = function (msg) {

@@ -18,9 +18,11 @@ var _rxDocument = _interopRequireWildcard(require("../rx-document"));
 
 var _rxError = require("../rx-error");
 
+var _rxCollection = require("../rx-collection");
+
 var _rxSchema = require("../rx-schema");
 
-var _rxCollection = require("../rx-collection");
+var _util = require("../util");
 
 /**
  * does additional checks over the schema-json
@@ -157,6 +159,25 @@ function validateFieldsDeep(jsonSchema) {
   return true;
 }
 /**
+ * computes real path of the index in the collection schema
+ */
+
+
+function getIndexRealPath(shortPath) {
+  var pathParts = shortPath.split('.');
+  var realPath = '';
+
+  for (var i = 0; i < pathParts.length; i += 1) {
+    if (pathParts[i] !== '[]') {
+      realPath = realPath.concat('.properties.'.concat(pathParts[i]));
+    } else {
+      realPath = realPath.concat('.items');
+    }
+  }
+
+  return (0, _util.trimDots)(realPath);
+}
+/**
  * does the checking
  * @throws {Error} if something is not ok
  */
@@ -222,58 +243,105 @@ function checkSchema(jsonID) {
         key: key
       });
     }
-  }); // check format of jsonID.compoundIndexes
+  }); // check format of jsonID.indexes
 
-  if (jsonID.compoundIndexes) {
-    if (!Array.isArray(jsonID.compoundIndexes)) {
+  if (jsonID.indexes) {
+    // should be an array
+    if (!Array.isArray(jsonID.indexes)) {
       throw (0, _rxError.newRxError)('SC18', {
-        compoundIndexes: jsonID.compoundIndexes
+        indexes: jsonID.indexes
       });
     }
 
-    jsonID.compoundIndexes.forEach(function (ar) {
-      if (!Array.isArray(ar)) {
+    jsonID.indexes.forEach(function (index) {
+      // should contain strings or array of strings
+      if (!(typeof index === 'string' || Array.isArray(index))) {
         throw (0, _rxError.newRxError)('SC19', {
-          compoundIndexes: jsonID.compoundIndexes
+          index: index
         });
-      }
+      } // if is a compound index it must contain strings
 
-      ar.forEach(function (str) {
-        if (typeof str !== 'string') {
-          throw (0, _rxError.newRxError)('SC20', {
-            compoundIndexes: jsonID.compoundIndexes
-          });
+
+      if (Array.isArray(index)) {
+        for (var i = 0; i < index.length; i += 1) {
+          if (typeof index[i] !== 'string') {
+            throw (0, _rxError.newRxError)('SC20', {
+              index: index
+            });
+          }
         }
-      });
+      }
     });
-  } // check that indexes are string or number
+  }
+  /** FIXME this check has to exist only in beta-version, to help developers migrate their schemas */
+  // remove backward-compatibility for compoundIndexes
 
 
-  (0, _rxSchema.getIndexes)(jsonID).reduce(function (a, b) {
-    return a.concat(b);
-  }, []).filter(function (elem, pos, arr) {
+  if (Object.keys(jsonID).includes('compoundIndexes')) {
+    throw (0, _rxError.newRxError)('SC25');
+  } // remove backward-compatibility for index: true
+
+
+  Object.keys((0, _util.flattenObject)(jsonID)).map(function (key) {
+    // flattenObject returns only ending paths, we need all paths pointing to an object
+    var splitted = key.split('.');
+    splitted.pop(); // all but last
+
+    return splitted.join('.');
+  }).filter(function (key) {
+    return key !== '';
+  }).filter(function (elem, pos, arr) {
     return arr.indexOf(elem) === pos;
   }) // unique
-  .map(function (key) {
-    var path = 'properties.' + key.replace(/\./g, '.properties.');
+  .filter(function (key) {
+    // check if this path defines an index
+    var value = _objectPath["default"].get(jsonID, key);
 
-    var schemaObj = _objectPath["default"].get(jsonID, path);
+    return !!value.index;
+  }).forEach(function (key) {
+    // replace inner properties
+    key = key.replace('properties.', ''); // first
+
+    key = key.replace(/\.properties\./g, '.'); // middle
+
+    throw (0, _rxError.newRxError)('SC26', {
+      index: (0, _util.trimDots)(key)
+    });
+  });
+  /* check types of the indexes */
+
+  (jsonID.indexes || []).reduce(function (indexPaths, currentIndex) {
+    if (Array.isArray(currentIndex)) {
+      indexPaths.concat(currentIndex);
+    } else {
+      indexPaths.push(currentIndex);
+    }
+
+    return indexPaths;
+  }, []).filter(function (elem, pos, arr) {
+    return arr.indexOf(elem) === pos;
+  }) // from now on working only with unique indexes
+  .map(function (indexPath) {
+    var realPath = getIndexRealPath(indexPath); // real path in the collection schema
+
+    var schemaObj = _objectPath["default"].get(jsonID, realPath); // get the schema of the indexed property
+
 
     if (!schemaObj || typeof schemaObj !== 'object') {
       throw (0, _rxError.newRxError)('SC21', {
-        key: key
+        index: indexPath
       });
     }
 
     return {
-      key: key,
+      indexPath: indexPath,
       schemaObj: schemaObj
     };
   }).filter(function (index) {
     return index.schemaObj.type !== 'string' && index.schemaObj.type !== 'integer' && index.schemaObj.type !== 'number';
   }).forEach(function (index) {
     throw (0, _rxError.newRxError)('SC22', {
-      key: index.key,
+      key: index.indexPath,
       type: index.schemaObj.type
     });
   });

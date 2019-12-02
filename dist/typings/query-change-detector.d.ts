@@ -6,6 +6,7 @@
  * This works equal to meteors oplog-observe-driver
  * @link https://github.com/meteor/docs/blob/version-NEXT/long-form/oplog-observe-driver.md
  */
+import { CompareFunction } from 'array-push-at-sort-position';
 import { RxQuery } from './types';
 import { RxChangeEvent } from './rx-change-event';
 export declare class QueryChangeDetector {
@@ -24,9 +25,10 @@ export declare class QueryChangeDetector {
     handleSingleChange(resultsData: any[], changeEvent: RxChangeEvent): boolean | any[];
 }
 /**
- * reruns the sort on the given resultsData
+ * returns the sort-comparator
+ * which results in the equal sorting that a new query over the db would do
  */
-export declare function _resortDocData(queryChangeDetector: QueryChangeDetector, resultsData: any[]): any[];
+export declare function sortCompareFunction(queryChangeDetector: QueryChangeDetector): CompareFunction<any>;
 /**
  * checks if the newDocLeft would be placed before docDataRight
  * when the query would be reExecuted

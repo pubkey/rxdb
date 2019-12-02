@@ -46,8 +46,8 @@ function () {
   _proto.encrypt = function encrypt(obj) {
     var _this = this;
 
-    obj = (0, _util.clone)(obj);
     if (!this.password) return obj;
+    obj = (0, _util.clone)(obj);
     Object.keys(this.schema.encryptedPaths).forEach(function (path) {
       var value = _objectPath["default"].get(obj, path);
 
@@ -63,8 +63,8 @@ function () {
   _proto.decrypt = function decrypt(obj) {
     var _this2 = this;
 
-    obj = (0, _util.clone)(obj);
     if (!this.password) return obj;
+    obj = (0, _util.clone)(obj);
     Object.keys(this.schema.encryptedPaths).forEach(function (path) {
       var value = _objectPath["default"].get(obj, path);
 

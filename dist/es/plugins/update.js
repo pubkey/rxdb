@@ -4,9 +4,8 @@
  * @link https://github.com/lgandecki/modifyjs
  */
 import modifyjs from 'modifyjs';
-import { clone } from '../util.js';
 export function update(updateObj) {
-  var oldDocData = clone(this._data);
+  var oldDocData = this._data;
   var newDocData = modifyjs(oldDocData, updateObj);
   return this._saveData(newDocData, oldDocData);
 }
