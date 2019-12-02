@@ -32,6 +32,7 @@ import {
     RxSchema,
     createRxSchema
 } from '../rx-schema';
+import {flattenObject, trimDots} from '../util';
 
 /**
  * checks if the fieldname is allowed
@@ -170,6 +171,21 @@ export function validateFieldsDeep(jsonSchema: any): true {
     return true;
 }
 
+/**
+ * computes real path of the index in the collection schema
+ */
+function getIndexRealPath(shortPath: string) {
+    const pathParts = shortPath.split('.');
+    let realPath = '';
+    for (let i = 0; i < pathParts.length; i += 1) {
+        if (pathParts[i] !== '[]') {
+            realPath = realPath.concat('.properties.'.concat(pathParts[i]));
+        } else {
+            realPath = realPath.concat('.items');
+        }
+    }
+    return trimDots(realPath);
+}
 
 /**
  * does the checking
@@ -238,46 +254,76 @@ export function checkSchema(jsonID: RxJsonSchema) {
         }
     });
 
-    // check format of jsonID.compoundIndexes
-    if (jsonID.compoundIndexes) {
-        if (!Array.isArray(jsonID.compoundIndexes)) {
+    // check format of jsonID.indexes
+    if (jsonID.indexes) {
+        // should be an array
+        if (!Array.isArray(jsonID.indexes)) {
             throw newRxError('SC18', {
-                compoundIndexes: jsonID.compoundIndexes
+                indexes: jsonID.indexes
             });
         }
-        jsonID.compoundIndexes.forEach((ar: any) => {
-            if (!Array.isArray(ar)) {
-                throw newRxError('SC19', {
-                    compoundIndexes: jsonID.compoundIndexes
-                });
-            }
 
-            ar.forEach(str => {
-                if (typeof str !== 'string') {
-                    throw newRxError('SC20', {
-                        compoundIndexes: jsonID.compoundIndexes
-                    });
+        jsonID.indexes.forEach(index => {
+            // should contain strings or array of strings
+            if (!(typeof index === 'string' || Array.isArray(index))) {
+                throw newRxError('SC19', { index });
+            }
+            // if is a compound index it must contain strings
+            if (Array.isArray(index)) {
+                for (let i = 0; i < index.length; i += 1) {
+                    if (typeof index[i] !== 'string') {
+                        throw newRxError('SC20', { index });
+                    }
                 }
-            });
+            }
         });
     }
 
-    // check that indexes are string or number
-    getIndexes(jsonID)
-        .reduce((a, b) => a.concat(b), [])
-        .filter((elem, pos, arr) => arr.indexOf(elem) === pos) // unique
+    /** FIXME this check has to exist only in beta-version, to help developers migrate their schemas */
+    // remove backward-compatibility for compoundIndexes
+    if (Object.keys(jsonID).includes('compoundIndexes')) {
+        throw newRxError('SC25');
+    }
+    // remove backward-compatibility for index: true
+    Object.keys(flattenObject(jsonID))
         .map(key => {
-            const path = 'properties.' + key.replace(/\./g, '.properties.');
-            const schemaObj = objectPath.get(jsonID, path);
-            if (!schemaObj || typeof schemaObj !== 'object') {
-                throw newRxError('SC21', {
-                    key
-                });
+            // flattenObject returns only ending paths, we need all paths pointing to an object
+            const splitted = key.split('.');
+            splitted.pop(); // all but last
+            return splitted.join('.');
+        })
+        .filter(key => key !== '')
+        .filter((elem, pos, arr) => arr.indexOf(elem) === pos) // unique
+        .filter(key => { // check if this path defines an index
+            const value = objectPath.get(jsonID, key);
+            return !!value.index;
+        })
+        .forEach(key => { // replace inner properties
+            key = key.replace('properties.', ''); // first
+            key = key.replace(/\.properties\./g, '.'); // middle
+            throw newRxError('SC26', {
+                index: trimDots(key)
+            });
+        });
+
+    /* check types of the indexes */
+    (jsonID.indexes || [])
+        .reduce((indexPaths: string[], currentIndex) => {
+            if (Array.isArray(currentIndex)) {
+                indexPaths.concat(currentIndex);
+            } else {
+                indexPaths.push(currentIndex);
             }
-            return {
-                key,
-                schemaObj
-            };
+            return indexPaths;
+        }, [])
+        .filter((elem, pos, arr) => arr.indexOf(elem) === pos) // from now on working only with unique indexes
+        .map(indexPath => {
+            const realPath = getIndexRealPath(indexPath); // real path in the collection schema
+            const schemaObj = objectPath.get(jsonID, realPath); // get the schema of the indexed property
+            if (!schemaObj || typeof schemaObj !== 'object') {
+                throw newRxError('SC21', { index: indexPath });
+            }
+            return { indexPath, schemaObj };
         })
         .filter(index =>
             index.schemaObj.type !== 'string' &&
@@ -286,7 +332,7 @@ export function checkSchema(jsonID: RxJsonSchema) {
         )
         .forEach(index => {
             throw newRxError('SC22', {
-                key: index.key,
+                key: index.indexPath,
                 type: index.schemaObj.type
             });
         });

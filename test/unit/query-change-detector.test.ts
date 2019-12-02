@@ -21,6 +21,7 @@ import {
     filter,
     map
 } from 'rxjs/operators';
+import {RxJsonSchema} from '../../src/types';
 
 let SpawnServer: any;
 if (config.platform.isNode()) {
@@ -369,10 +370,10 @@ config.parallel('query-change-detector.test.js', () => {
                             primary: true
                         },
                         passportId: {
-                            type: 'string',
-                            index: true
+                            type: 'string'
                         }
-                    }
+                    },
+                    indexes: ['passportId']
                 };
                 const col = await humansCollection.createBySchema(schema);
 
@@ -520,7 +521,7 @@ config.parallel('query-change-detector.test.js', () => {
         });
     });
     it('BUG: no optimisation for irrelevant insert', async () => {
-        const schema = {
+        const schema: RxJsonSchema = {
             title: 'messages schema',
             description: 'describes a message',
             version: 0,
@@ -535,32 +536,32 @@ config.parallel('query-change-detector.test.js', () => {
                     type: 'string'
                 },
                 time: {
-                    type: 'number',
-                    index: true
+                    type: 'number'
                 },
                 read: {
-                    description: 'true if was read by the reciever',
+                    description: 'true if was read by the receiver',
                     type: 'boolean'
                 },
                 sender: {
                     type: 'string',
                     ref: 'users'
                 },
-                reciever: {
+                receiver: {
                     type: 'string',
                     ref: 'users'
                 }
             },
-            compoundIndexes: [
+            indexes: [
+                'time',
                 ['sender', 'time'],
-                ['reciever', 'time']
+                ['receiver', 'time']
             ],
             required: [
                 'text',
                 'time',
                 'read',
                 'sender',
-                'reciever'
+                'receiver'
             ]
         };
         const col = await humansCollection.createBySchema(schema);
@@ -572,7 +573,7 @@ config.parallel('query-change-detector.test.js', () => {
                     sender: {
                         $eq: user1
                     },
-                    reciever: {
+                    receiver: {
                         $eq: user2
                     }
                 },
@@ -580,7 +581,7 @@ config.parallel('query-change-detector.test.js', () => {
                     sender: {
                         $eq: user2
                     },
-                    reciever: {
+                    receiver: {
                         $eq: user1
                     }
                 }
@@ -597,7 +598,7 @@ config.parallel('query-change-detector.test.js', () => {
             time: AsyncTestUtil.randomNumber(1, 1000),
             read: false,
             sender: '3',
-            reciever: '4'
+            receiver: '4'
         });
 
         await getQuery().exec();

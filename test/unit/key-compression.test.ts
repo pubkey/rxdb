@@ -76,8 +76,7 @@ config.parallel('key-compression.test.js', () => {
                 type: 'object',
                 properties: {
                     z0: {
-                        type: 'string',
-                        index: true
+                        type: 'string'
                     },
                     zz: {
                         type: 'string'
@@ -93,7 +92,8 @@ config.parallel('key-compression.test.js', () => {
                             }
                         }
                     }
-                }
+                },
+                indexes: ['z0']
             }));
             const table = k.table;
             assert.strictEqual(Object.keys(table).length, 1);

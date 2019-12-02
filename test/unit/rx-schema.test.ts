@@ -14,13 +14,13 @@ import {
     createRxSchema
 } from '../../';
 import {
-    RxSchema,
     getIndexes,
     normalize,
     hasCrypt,
     getFinalFields,
     getPreviousVersions
 } from '../../dist/lib/rx-schema';
+import { RxJsonSchema } from '../../src/types';
 
 config.parallel('rx-schema.test.js', () => {
     describe('static', () => {
@@ -34,6 +34,7 @@ config.parallel('rx-schema.test.js', () => {
                 const indexes = getIndexes(schemas.bigHuman);
                 assert.ok(indexes.length > 1);
                 assert.deepStrictEqual(indexes[0], ['passportId']);
+                assert.deepStrictEqual(indexes[1], ['dnaHash']);
             });
             it('get sub-index', () => {
                 const indexes = getIndexes(schemas.humanSubIndex);
@@ -49,6 +50,12 @@ config.parallel('rx-schema.test.js', () => {
                 assert.ok(Array.isArray(indexes));
                 assert.ok(Array.isArray(indexes[0]));
                 assert.deepStrictEqual(indexes[0], ['passportId', 'passportCountry']);
+            });
+            it('get index from array', () => {
+                const indexes = getIndexes(schemas.humanArrayIndex);
+                assert.ok(Array.isArray(indexes));
+                assert.ok(Array.isArray(indexes[0]));
+                assert.deepStrictEqual(indexes[0], ['jobs.[].name']);
             });
         });
         describe('.checkSchema()', () => {
@@ -74,7 +81,7 @@ config.parallel('rx-schema.test.js', () => {
                 it('validate point', () => {
                     SchemaCheck.checkSchema(schemas.point);
                 });
-                it('validate _id when primary', async () => {
+                it('validate _id when primary', () => {
                     SchemaCheck.checkSchema({
                         title: 'schema',
                         version: 0,
@@ -90,11 +97,69 @@ config.parallel('rx-schema.test.js', () => {
                         required: ['firstName']
                     });
                 });
+                it('validates deep nested indexes', () => {
+                   SchemaCheck.checkSchema(schemas.humanWithDeepNestedIndexes);
+                });
             });
             describe('negative', () => {
+                it('break when index defined at object property level', () => {
+                    assert.throws(() => SchemaCheck.checkSchema({
+                        version: 0,
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                primary: true
+                            },
+                            name: {
+                                type: 'string',
+                                index: true
+                            },
+                            job: {
+                                type: 'object',
+                                properties: {
+                                    name: {
+                                        type: 'string',
+                                        index: true
+                                    },
+                                    manager: {
+                                        type: 'object',
+                                        properties: {
+                                            fullName: {
+                                                type: 'string',
+                                                index: true
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        required: ['job']
+                    }), Error);
+                });
+                it('break when compoundIndex is specified in a separate field', () => {
+                    assert.throws(() => SchemaCheck.checkSchema({
+                        version: 0,
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                primary: true
+                            },
+                            name: {
+                                type: 'string',
+                                index: true
+                            }
+                        },
+                        compoundIndexes: ['id', 'name']
+                    }), Error);
+                });
                 it('break when index is no string', () => {
                     assert.throws(() => SchemaCheck.checkSchema(schemas.nostringIndex), Error);
                 });
+                it('break when index does not exist in schema properties', () => {
+                    assert.throws(() => SchemaCheck.checkSchema(schemas.notExistingIndex), Error);
+                })
                 it('break compoundIndex key is no string', () => {
                     assert.throws(() => SchemaCheck.checkSchema(schemas.compoundIndexNoString), Error);
                 });
@@ -330,6 +395,10 @@ config.parallel('rx-schema.test.js', () => {
                 const schema1 = normalize(schemas.humanNormalizeSchema1);
                 const schema2 = normalize(schemas.humanNormalizeSchema2);
                 assert.deepStrictEqual(schema1, schema2);
+            });
+            it('should not sort indexes array in the schema (related with https://github.com/pubkey/rxdb/pull/1695#issuecomment-554636433)', () => {
+                const schema = normalize(schemas.humanWithSimpleAndCompoundIndexes);
+                assert.deepStrictEqual(schema.indexes, schemas.humanWithSimpleAndCompoundIndexes.indexes);
             });
         });
         describe('.create()', () => {
@@ -683,7 +752,6 @@ config.parallel('rx-schema.test.js', () => {
                 it('get firstLevel', async () => {
                     const schema = createRxSchema(schemas.human);
                     const schemaObj = schema.getSchemaByObjectPath('passportId');
-                    assert.strictEqual(schemaObj.index, true);
                     assert.strictEqual(schemaObj.type, 'string');
                 });
                 it('get deeper', async () => {
@@ -731,7 +799,7 @@ config.parallel('rx-schema.test.js', () => {
     });
     describe('issues', () => {
         it('#590 Strange schema behavior with sub-sub-index', async () => {
-            const schema = {
+            const schema: RxJsonSchema = {
                 version: 0,
                 type: 'object',
                 properties: {
@@ -746,14 +814,14 @@ config.parallel('rx-schema.test.js', () => {
                                 type: 'object',
                                 properties: {
                                     time: {
-                                        type: 'number',
-                                        index: true
+                                        type: 'number'
                                     }
                                 }
                             }
                         },
                     },
-                }
+                },
+                indexes: ['fileInfo.watch.time']
             };
             const db = await RxDB.create({
                 name: util.randomCouchString(10),
@@ -780,7 +848,7 @@ config.parallel('rx-schema.test.js', () => {
             db.destroy();
         });
         it('#620 indexes should not be required', async () => {
-            const mySchema = {
+            const mySchema: RxJsonSchema = {
                 version: 0,
                 type: 'object',
                 properties: {
@@ -792,15 +860,15 @@ config.parallel('rx-schema.test.js', () => {
                         type: 'string'
                     },
                     lastName: {
-                        type: 'string',
-                        index: true
+                        type: 'string'
                     },
                     age: {
                         type: 'integer',
                         minimum: 0,
                         maximum: 150
                     }
-                }
+                },
+                indexes: ['lastName']
             };
             // create a database
             const db = await RxDB.create({
@@ -819,25 +887,23 @@ config.parallel('rx-schema.test.js', () => {
             db.destroy();
         });
         it('#697 Indexes do not work in objects named "properties"', async () => {
-            const mySchema = {
+            const mySchema: RxJsonSchema = {
                 version: 0,
-                id: 'post',
                 type: 'object',
                 properties: {
                     properties: {
                         type: 'object',
                         properties: {
                             name: {
-                                type: 'string',
-                                index: true,
+                                type: 'string'
                             },
                             content: {
-                                type: 'string',
-                                index: true,
+                                type: 'string'
                             }
                         }
                     },
                 },
+                indexes: ['properties.name', 'properties.content']
             };
 
             // create a database
@@ -860,25 +926,23 @@ config.parallel('rx-schema.test.js', () => {
             db.destroy();
         });
         it('#697(2) should also work deep nested', async () => {
-            const mySchema = {
+            const mySchema: RxJsonSchema = {
                 version: 0,
-                id: 'post',
                 type: 'object',
                 properties: {
                     properties: {
                         type: 'object',
                         properties: {
                             name: {
-                                type: 'string',
-                                index: true,
+                                type: 'string'
                             },
                             properties: {
-                                type: 'string',
-                                index: true,
+                                type: 'string'
                             }
                         }
                     },
                 },
+                indexes: ['properties.name', 'properties.properties']
             };
 
             // create a database

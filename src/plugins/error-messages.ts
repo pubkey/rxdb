@@ -139,13 +139,15 @@ const CODES: { [k: string]: string } = {
     SC15: 'SchemaCheck: primary cannot be encrypted',
     SC16: 'SchemaCheck: primary must have type: string',
     SC17: 'SchemaCheck: top-level fieldname is not allowed',
-    SC18: 'SchemaCheck: compoundIndexes must be an array',
-    SC19: 'SchemaCheck: compoundIndexes must contain arrays',
-    SC20: 'SchemaCheck: compoundIndexes.array must contains strings',
+    SC18: 'SchemaCheck: indexes must be an array',
+    SC19: 'SchemaCheck: indexes must contain strings or arrays of strings',
+    SC20: 'SchemaCheck: indexes.array must contain strings',
     SC21: 'SchemaCheck: given index is not defined in schema',
     SC22: 'SchemaCheck: given indexKey is not type:string',
     SC23: 'SchemaCheck: fieldname is not allowed',
     SC24: 'SchemaCheck: required fields must be set via array. See https://spacetelescope.github.io/understanding-json-schema/reference/object.html#required',
+    SC25: 'SchemaCheck: compoundIndexes needs to be specified in the indexes field',
+    SC26: 'SchemaCheck: indexes needs to be specified at collection schema level',
 
     // plugins/validate.js
     VD1: 'Sub-schema not found, does the schemaPath exists in your schema?',

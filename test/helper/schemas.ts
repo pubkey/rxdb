@@ -12,8 +12,7 @@ export const human: RxJsonSchema = {
     type: 'object',
     properties: {
         passportId: {
-            type: 'string',
-            index: true
+            type: 'string'
         },
         firstName: {
             type: 'string'
@@ -28,7 +27,8 @@ export const human: RxJsonSchema = {
             maximum: 150
         }
     },
-    required: ['firstName', 'lastName']
+    required: ['firstName', 'lastName'],
+    indexes: ['passportId']
 };
 
 export const humanDefault: RxJsonSchema = {
@@ -39,8 +39,7 @@ export const humanDefault: RxJsonSchema = {
     type: 'object',
     properties: {
         passportId: {
-            type: 'string',
-            index: true
+            type: 'string'
         },
         firstName: {
             type: 'string'
@@ -56,6 +55,7 @@ export const humanDefault: RxJsonSchema = {
             default: 20
         }
     },
+    indexes: ['passportId'],
     required: ['passportId']
 };
 
@@ -92,13 +92,13 @@ export const simpleHuman: RxJsonSchema = {
     type: 'object',
     properties: {
         passportId: {
-            type: 'string',
-            index: true
+            type: 'string'
         },
         age: {
             type: 'string'
         },
     },
+    indexes: ['passportId'],
     required: ['passportId', 'age']
 };
 
@@ -110,13 +110,13 @@ export const simpleHumanV3: RxJsonSchema = {
     type: 'object',
     properties: {
         passportId: {
-            type: 'string',
-            index: true
+            type: 'string'
         },
         age: {
             type: 'number'
-        },
+        }
     },
+    indexes: ['passportId'],
     required: ['passportId', 'age']
 };
 
@@ -128,8 +128,7 @@ export const humanAgeIndex: RxJsonSchema = {
     type: 'object',
     properties: {
         passportId: {
-            type: 'string',
-            index: true
+            type: 'string'
         },
         firstName: {
             type: 'string'
@@ -141,11 +140,37 @@ export const humanAgeIndex: RxJsonSchema = {
             description: 'Age in years',
             type: 'integer',
             minimum: 0,
-            maximum: 150,
-            index: true
+            maximum: 150
         }
     },
-    required: ['firstName', 'lastName', 'age']
+    required: ['firstName', 'lastName', 'age'],
+    indexes: ['passportId', 'age']
+};
+
+export const humanArrayIndex: RxJsonSchema = {
+    title: 'human schema',
+    version: 0,
+    keyCompression: true,
+    description: 'describes a human being',
+    type: 'object',
+    properties: {
+        passportId: {
+            type: 'string'
+        },
+        jobs: {
+            type: 'array',
+            items: {
+                type: 'object',
+                properties: {
+                    name: {
+                        type: 'string'
+                    }
+                }
+            }
+        }
+    },
+    required: ['firstName', 'lastName', 'age'],
+    indexes: ['jobs.[].name']
 };
 
 export const humanSubIndex: RxJsonSchema = {
@@ -166,12 +191,12 @@ export const humanSubIndex: RxJsonSchema = {
                     description: 'Age in years',
                     type: 'integer',
                     minimum: 0,
-                    maximum: 150,
-                    index: true
+                    maximum: 150
                 }
             }
         }
-    }
+    },
+    indexes: ['other.age']
 };
 
 /**
@@ -186,25 +211,22 @@ export const humanWithAllIndex: RxJsonSchema = {
     type: 'object',
     properties: {
         passportId: {
-            type: 'string',
-            index: true
+            type: 'string'
         },
         firstName: {
-            type: 'string',
-            index: true
+            type: 'string'
         },
         lastName: {
-            type: 'string',
-            index: true
+            type: 'string'
         },
         age: {
             description: 'age in years',
             type: 'integer',
             minimum: 0,
-            maximum: 150,
-            index: true
+            maximum: 150
         }
     },
+    indexes: ['passportId', 'firstName', 'lastName', 'age'],
     required: ['firstName', 'lastName']
 };
 
@@ -216,8 +238,7 @@ export const nestedHuman: RxJsonSchema = {
     type: 'object',
     properties: {
         passportId: {
-            type: 'string',
-            index: true
+            type: 'string'
         },
         firstName: {
             type: 'string'
@@ -237,7 +258,8 @@ export const nestedHuman: RxJsonSchema = {
             required: ['name', 'level']
         }
     },
-    required: ['firstName']
+    required: ['firstName'],
+    indexes: ['passportId']
 };
 
 export const deepNestedHuman: RxJsonSchema = {
@@ -248,8 +270,7 @@ export const deepNestedHuman: RxJsonSchema = {
     type: 'object',
     properties: {
         passportId: {
-            type: 'string',
-            index: true
+            type: 'string'
         },
         mainSkill: {
             type: 'object',
@@ -272,6 +293,7 @@ export const deepNestedHuman: RxJsonSchema = {
             required: ['name', 'attack']
         }
     },
+    indexes: ['passportId'],
     required: ['mainSkill']
 };
 
@@ -300,14 +322,14 @@ export const nostringIndex: RxJsonSchema = {
     type: 'object',
     properties: {
         passportId: {
-            type: 'object',
-            index: true
+            type: 'object'
         },
         firstName: {
             type: 'string'
         }
     },
-    required: ['firstName', 'lastName']
+    required: ['firstName', 'lastName'],
+    indexes: ['passportId']
 };
 
 
@@ -335,12 +357,10 @@ export const bigHuman: RxJsonSchema = {
     type: 'object',
     properties: {
         passportId: {
-            type: 'string',
-            index: true
+            type: 'string'
         },
         dnaHash: {
-            type: 'string',
-            index: true
+            type: 'string'
         },
         firstName: {
             type: 'string'
@@ -354,7 +374,8 @@ export const bigHuman: RxJsonSchema = {
             minimum: 0
         }
     },
-    required: ['firstName', 'lastName']
+    required: ['firstName', 'lastName'],
+    indexes: ['passportId', 'dnaHash']
 };
 
 export const encryptedHuman: RxJsonSchema = {
@@ -365,8 +386,7 @@ export const encryptedHuman: RxJsonSchema = {
     keyCompression: true,
     properties: {
         passportId: {
-            type: 'string',
-            index: true
+            type: 'string'
         },
         firstName: {
             type: 'string'
@@ -376,6 +396,7 @@ export const encryptedHuman: RxJsonSchema = {
             encrypted: true
         }
     },
+    indexes: ['passportId'],
     required: ['firstName', 'secret']
 };
 
@@ -387,8 +408,7 @@ export const encryptedObjectHuman: RxJsonSchema = {
     type: 'object',
     properties: {
         passportId: {
-            type: 'string',
-            index: true
+            type: 'string'
         },
         firstName: {
             type: 'string'
@@ -406,6 +426,7 @@ export const encryptedObjectHuman: RxJsonSchema = {
             }
         }
     },
+    indexes: ['passportId'],
     required: ['firstName', 'secret']
 };
 
@@ -417,8 +438,7 @@ export const encryptedDeepHuman: RxJsonSchema = {
     type: 'object',
     properties: {
         passportId: {
-            type: 'string',
-            index: true
+            type: 'string'
         },
         firstName: {
             type: 'string'
@@ -467,9 +487,26 @@ export const encryptedDeepHuman: RxJsonSchema = {
         }
 
     },
+    indexes: ['passportId'],
     required: ['firstName', 'secret']
 };
 
+export const notExistingIndex: RxJsonSchema = {
+    title: 'index',
+    version: 0,
+    description: 'this schema has a specified index which does not exists',
+    type: 'object',
+    keyCompression: true,
+    properties: {
+        address: {
+            type: 'object',
+            properties: {
+                street: { type: 'string' }
+            }
+        }
+    },
+    indexes: ['address.apartment']
+};
 
 export const compoundIndex: RxJsonSchema = {
     title: 'compund index',
@@ -488,12 +525,12 @@ export const compoundIndex: RxJsonSchema = {
             type: 'integer'
         }
     },
-    compoundIndexes: [
+    indexes: [
         ['passportId', 'passportCountry']
     ]
 };
 
-export const compoundIndexNoString: RxJsonSchema = {
+export const compoundIndexNoString: any = {
     title: 'compund index',
     version: 0,
     description: 'this schema has a compoundIndex',
@@ -510,11 +547,10 @@ export const compoundIndexNoString: RxJsonSchema = {
             type: 'integer'
         }
     },
-    compoundIndexes: [
-        ['passportId', 'passportCountry']
+    indexes: [
+        [10, 'passportCountry']
     ]
 };
-
 
 export const wrongCompoundFormat: any = {
     title: 'compund index',
@@ -533,9 +569,7 @@ export const wrongCompoundFormat: any = {
             type: 'integer'
         }
     },
-    compoundIndexes: [{
-        foo: 'bar'
-    }]
+    indexes: [ { foo: 'bar' } ]
 };
 
 
@@ -717,8 +751,7 @@ export function averageSchema(): RxJsonSchema {
                 primary: true
             },
             var1: {
-                type: 'string',
-                index: true
+                type: 'string'
             },
             var2: {
                 type: 'number',
@@ -748,7 +781,8 @@ export function averageSchema(): RxJsonSchema {
                     }
                 }
             }
-        }
+        },
+        indexes: ['var1']
     };
     return ret;
 }
@@ -777,13 +811,13 @@ export const humanMinimal: RxJsonSchema = {
     type: 'object',
     properties: {
         passportId: {
-            type: 'string',
-            index: true
+            type: 'string'
         },
         age: {
             type: 'integer'
         }
     },
+    indexes: ['passportId'],
     required: ['passportId', 'age']
 };
 
@@ -795,13 +829,13 @@ export const humanMinimalBroken: RxJsonSchema = {
     type: 'object',
     properties: {
         passportId: {
-            type: 'string',
-            index: true
+            type: 'string'
         },
         broken: {
             type: 'integer'
         }
     },
+    indexes: ['passportId'],
     required: ['passportId', 'broken']
 };
 
@@ -844,17 +878,82 @@ export const humanWithTimestampAllIndex: RxJsonSchema = {
             primary: true
         },
         name: {
-            type: 'string',
-            index: true
+            type: 'string'
         },
         age: {
-            type: 'number',
-            index: true
+            type: 'number'
         },
         updatedAt: {
-            type: 'number',
-            index: true
+            type: 'number'
         }
     },
+    indexes: ['name', 'age', 'updatedAt'],
     required: ['id', 'name', 'age', 'updatedAt']
+};
+
+export const humanWithSimpleAndCompoundIndexes: RxJsonSchema = {
+    version: 0,
+    type: 'object',
+    properties: {
+        id: {
+            type: 'string',
+            primary: true
+        },
+        name: {
+            type: 'string'
+        },
+        age: {
+            type: 'number'
+        },
+        createdAt: {
+            type: 'number'
+        },
+        updatedAt: {
+            type: 'number'
+        }
+    },
+    indexes: ['name', 'age', ['createdAt', 'updatedAt']],
+    required: ['id', 'name', 'age', 'updatedAt']
+};
+
+export const humanWithDeepNestedIndexes: RxJsonSchema = {
+    version: 0,
+    type: 'object',
+    properties: {
+        id: {
+            type: 'string',
+            primary: true
+        },
+        name: {
+            type: 'string'
+        },
+        job: {
+            type: 'object',
+            properties: {
+                name: {
+                    type: 'string'
+                },
+                manager: {
+                    type: 'object',
+                    properties: {
+                        fullName: {
+                            type: 'string'
+                        },
+                        previousJobs: {
+                            type: 'array',
+                            items: {
+                                type: 'object',
+                                properties: {
+                                    name: {
+                                        type: 'string'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    indexes: ['name', 'job.name', 'job.manager.fullName', 'job.manager.previousJobs.[].name']
 };

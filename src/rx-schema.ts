@@ -25,7 +25,6 @@ import {
 } from './types';
 
 export class RxSchema<T = any> {
-    public compoundIndexes: string[] | string[][];
     public indexes: string[][];
     public primaryPath: keyof T;
     public finalFields: string[];
@@ -33,7 +32,6 @@ export class RxSchema<T = any> {
     constructor(
         public readonly jsonID: RxJsonSchema<T>
     ) {
-        this.compoundIndexes = this.jsonID.compoundIndexes as any;
         this.indexes = getIndexes(this.jsonID);
 
         // primary is always required
@@ -232,41 +230,14 @@ export function getEncryptedPaths(jsonSchema: RxJsonSchema): { [k: string]: Json
  */
 export function hasCrypt(jsonSchema: RxJsonSchema): boolean {
     const paths = getEncryptedPaths(jsonSchema);
-    if (Object.keys(paths).length > 0) return true;
-    else return false;
+    return Object.keys(paths).length > 0;
 }
 
 
 export function getIndexes<T = any>(
     jsonID: RxJsonSchema<T>
 ): string[][] {
-    const flattened = flattenObject(jsonID);
-    const keys = Object.keys(flattened);
-    let indexes = keys
-        // flattenObject returns only ending paths, we need all paths pointing to an object
-        .map(key => {
-            const splitted = key.split('.');
-            splitted.pop(); // all but last
-            return splitted.join('.');
-        })
-        .filter(key => key !== '')
-        .filter((elem, pos, arr) => arr.indexOf(elem) === pos) // unique
-        .filter(key => { // check if this path defines an index
-            const value = objectPath.get(jsonID, key);
-            if (value.index) return true;
-            else return false;
-        })
-        .map(key => { // replace inner properties
-            key = key.replace('properties.', ''); // first
-            key = key.replace(/\.properties\./g, '.'); // middle
-            return [trimDots(key)];
-        });
-
-    // add compound-indexes
-    const addCompound = jsonID.compoundIndexes || [];
-    indexes = indexes.concat(addCompound);
-
-    return indexes as any;
+    return (jsonID.indexes || []).map(index => Array.isArray(index) ? index : [index]);
 }
 
 /**
@@ -307,15 +278,16 @@ export function getFinalFields<T = any>(
     return ret;
 }
 
-
 /**
  * orders the schemas attributes by alphabetical order
  * @return jsonSchema - ordered
  */
 export function normalize(jsonSchema: RxJsonSchema): RxJsonSchema {
-    return sortObject(
-        clone(jsonSchema)
-    );
+    const normalizedSchema: RxJsonSchema = sortObject(clone(jsonSchema));
+    if (jsonSchema.indexes) {
+        normalizedSchema.indexes = Array.from(jsonSchema.indexes); // indexes should remain unsorted
+    }
+    return normalizedSchema;
 }
 
 /**
@@ -334,8 +306,8 @@ const fillWithDefaultSettings = function (
     if (!schemaObj.hasOwnProperty('keyCompression'))
         schemaObj.keyCompression = false;
 
-    // compoundIndexes must be array
-    schemaObj.compoundIndexes = schemaObj.compoundIndexes || [];
+    // indexes must be array
+    schemaObj.indexes = schemaObj.indexes || [];
 
     // required must be array
     schemaObj.required = schemaObj.required || [];

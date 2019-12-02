@@ -39,18 +39,16 @@ const heroSchema = {
             primary: true
         },
         name: {
-            type: 'string',
-            index: true
+            type: 'string'
         },
         color: {
-            type: 'string',
-            index: true
+            type: 'string'
         },
         updatedAt: {
-            type: 'number',
-            index: true
+            type: 'number'
         }
     },
+    indexes: ['name', 'color', 'updatedAt'],
     required: ['color']
 };
 
