@@ -19,6 +19,6 @@ electron             | [done](./electron)
 Framework        | Status
 ---------------- | ------------------
 plain javascript | [done](./vanilla)
-angular2         | [done](./angular2)
+angular         | [done](./angular)
 react            | [done](./react)
 vuejs            | [done](./vue)

@@ -26,6 +26,28 @@ export const refHuman = {
 };
 ```
 
+You can also have a one-to-may reference by using a string-array.
+
+```js
+export const schemaWithOneToManyReference = {
+  version: 0,
+  type: 'object',
+  properties: {
+    name: {
+      type: 'string',
+      primary: true
+    },
+    friends: {
+      type: 'array',
+      ref: 'human',
+      items: {
+        type: 'string'
+      }
+    }
+  }
+};
+```
+
 ## populate()
 
 ### via method

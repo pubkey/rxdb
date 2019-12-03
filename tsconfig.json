@@ -1,0 +1,45 @@
+{
+    // @link https://iamturns.com/typescript-babel/
+    "compilerOptions": {
+        // Target latest version of ECMAScript.
+        "target": "esnext",
+        // Search under node_modules for non-relative imports.
+        "moduleResolution": "node",
+        // Process & infer types from .js files.
+        "allowJs": false,
+        // Enable strictest settings like strictNullChecks & noImplicitAny.
+        "strict": true,
+        // Disallow features that require 
+        // cross-file information for emit.
+        "isolatedModules": false,
+        // Import non-ES modules as default imports.
+        "esModuleInterop": true,
+
+        "outDir": "./dist/typings",
+        "noEmit": false,
+        "emitDeclarationOnly": true,
+        "declaration": true,
+
+        "typeRoots": [
+            "./src/typings/modules"
+        ]
+    },
+    "formatCodeOptions": {
+        "indentSize": 2,
+        "tabSize": 2
+    },
+    "include": [
+        "src"
+    ],
+    "exclude": [
+        "node_modules",
+        "**/node_modules/*",
+        "dist",
+        "test/tutorials/src/*",
+        "examples",
+        "docs",
+        "docs-src",
+        "test_tmp"
+    ],
+    "compileOnSave": false
+}

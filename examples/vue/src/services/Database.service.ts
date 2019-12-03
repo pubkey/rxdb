@@ -107,7 +107,7 @@ async function _create(): Promise<RxHeroesDatabase> {
                 }
                 return db;
             });
-    });
+    }, true);
 
     // sync with server
     console.log('DatabaseService: sync');

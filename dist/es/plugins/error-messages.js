@@ -59,6 +59,7 @@ var CODES = {
   COL16: 'given static method is not a function',
   COL17: 'RxCollection.ORM: statics-name not allowed',
   COL18: 'collection-method not allowed because fieldname is in the schema',
+  COL19: 'Pouchdb document update conflict',
   // rx-document.js
   DOC1: 'RxDocument.get$ cannot get observable of in-array fields because order cannot be guessed',
   DOC2: 'cannot observe primary path',
@@ -113,7 +114,7 @@ var CODES = {
   SC7: 'SchemaCheck: default-values can only be defined at top-level',
   SC8: 'SchemaCheck: first level-fields cannot start with underscore _',
   SC10: 'SchemaCheck: schema defines ._rev, this will be done automatically',
-  SC11: 'SchemaCheck: schema need an number>=0 as version',
+  SC11: 'SchemaCheck: schema needs a number >=0 as version',
   SC12: 'SchemaCheck: primary can only be defined once',
   SC13: 'SchemaCheck: primary is always index, do not declare it as index',
   SC14: 'SchemaCheck: primary is always unique, do not declare it as index',
@@ -134,7 +135,9 @@ var CODES = {
   IM1: 'InMemory: Memory-Adapter must be added. Use RxDB.plugin(require(\'pouchdb-adapter-memory\'));',
   IM2: 'inMemoryCollection.sync(): Do not replicate with the in-memory instance. Replicate with the parent instead',
   // plugins/server.js
-  S1: 'You cannot create collections after calling RxDatabase.server()'
+  S1: 'You cannot create collections after calling RxDatabase.server()',
+  // plugins/replication-graphql.js
+  QL1: 'TODO'
 };
 export var rxdb = true;
 export var prototypes = {};
@@ -153,3 +156,4 @@ export default {
   prototypes: prototypes,
   overwritable: overwritable
 };
+//# sourceMappingURL=error-messages.js.map

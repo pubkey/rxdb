@@ -1,25 +1,31 @@
-language:        node_js
-sudo:            required
+language: node_js
+sudo: required
 cache: false
 dist: trusty
 os:
   - linux
 node_js:
-  - "11.9.0"
+  - "12.7.0"
+
 services:
+  - xvfb
   - docker
 
+addons:
+  chrome: stable
+  firefox: latest
+
 before_install:
-  - export CHROME_BIN=chromium-browser
-  - export DISPLAY=:99.0
+  - export CHROME_BIN=chromium-browser	
+  - export DISPLAY=:99.0	
   - sh -e /etc/init.d/xvfb start
   - docker run -d -p 5984:5984 --rm --name rxdb-couchdb couchdb:2.1.1
 
 stages:
   - install
   - build
-  - unit tests
   - code format
+  - unit tests
   - other
   - examples
 
@@ -30,6 +36,23 @@ jobs:
 
     - stage: build
       script: npm run build
+
+    - stage: code format
+      script: travis_retry npm run test:typings
+      env: LABEL=test:typings:ci
+    - stage: code format
+      script: travis_retry npm run check-types
+      env: LABEL=check-types
+    - stage: code format
+      script: npm run test:deps
+      env: LABEL=test:deps
+    - stage: code format
+      script: npm run test:circular
+      env: LABEL=test:circular
+    - stage: code format
+      script: npm run lint
+      env: LABEL=lint
+
     - stage: unit tests
       script: travis_retry npm run test:node
       env: LABEL=test:node
@@ -46,16 +69,6 @@ jobs:
       script: travis_retry npm run test:performance
       env: LABEL=test:performance
 
-    - stage: code format
-      script: travis_retry npm run test:typings
-      env: LABEL=test:typings
-    - stage: code format
-      script: npm run test:deps
-      env: LABEL=test:deps
-    - stage: code format
-      script: npm run lint
-      env: LABEL=lint
-
     - stage: other
       script: npm run build:size
       env: LABEL=build:size
@@ -63,21 +76,24 @@ jobs:
       script: npm run build:rollup
       env: LABEL=build:rollup
     - stage: other
-      script: (cd ./test/tutorials/ && npm install && travis_retry npm test)
+      script: npm run build && (cd ./test/tutorials/ && npm install && travis_retry npm test)
       env: LABEL=docs
 
     - stage: examples
-      script: (cd ./examples/angular2 && npm install > "/dev/null" 2>&1 && npm run build && travis_retry npm run test:build)
+      script: npm run build && (cd ./examples/angular && npm install > "/dev/null" 2>&1 && npm run lint && npm run build && travis_retry npm run test:build)
       env: LABEL=angular
     - stage: examples
-      script: (cd ./examples/vue && npm install > "/dev/null" 2>&1 && npm run lint && npm run build && travis_retry npm run test)
+      script: npm run build && (cd ./examples/vue && npm install > "/dev/null" 2>&1 && npm run lint && npm run build && travis_retry npm run test)
       env: LABEL=vue
     - stage: examples
-      script: (cd ./examples/electron && npm install > "/dev/null" 2>&1 && travis_retry npm run test)
+      script: npm run build && (cd ./examples/electron && npm install > "/dev/null" 2>&1 && travis_retry npm run test)
       env: LABEL=electron
     - stage: examples
-      script: (cd ./examples/react-native && npx yarn@1.13.0 install > "/dev/null" 2>&1 && travis_retry npm run test && echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p && npm run test:bundle)
+      script: npm run build && (cd ./examples/react-native && npx yarn@1.13.0 install > "/dev/null" 2>&1 && travis_retry npm run test && echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p && npm run test:bundle)
       env: LABEL=react-native
     - stage: examples
-      script: (cd ./examples/node && npm install > "/dev/null" 2>&1 && travis_retry npm run test)
+      script: npm run build && (cd ./examples/node && npm install > "/dev/null" 2>&1 && travis_retry npm run test)
       env: LABEL=node
+    - stage: examples
+      script: npm run build && (cd ./examples/graphql && npm install > "/dev/null" 2>&1 && npm run build && travis_retry npm run test:ci)
+      env: LABEL=graphql

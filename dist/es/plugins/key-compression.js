@@ -5,29 +5,20 @@ import _createClass from "@babel/runtime/helpers/createClass";
  * if you dont use this, ensure that you set disableKeyComression to false in your schema
  */
 import { numberToLetter, trimDots, clone } from '../util';
-
-var KeyCompressor =
+export var KeyCompressor =
 /*#__PURE__*/
 function () {
-  /**
-   * @param {RxSchema} schema
-   */
   function KeyCompressor(schema) {
     this.schema = schema;
-    this._table;
-    this._reverseTable;
-    this._fullTable;
   }
 
   var _proto = KeyCompressor.prototype;
 
   /**
    * compress the keys of an object via the compression-table
-   * @param {Object} obj
-   * @param {Object} compressed obj
    */
   _proto.compress = function compress(obj) {
-    if (!this.schema.doKeyCompression()) return clone(obj);
+    if (!this.schema.doKeyCompression()) return obj;
     return _compressObj(this, obj);
   };
 
@@ -53,7 +44,7 @@ function () {
   };
 
   _proto.decompress = function decompress(obj) {
-    if (!this.schema.doKeyCompression()) return clone(obj);
+    if (!this.schema.doKeyCompression()) return obj;
 
     var returnObj = this._decompressObj(obj);
 
@@ -61,10 +52,6 @@ function () {
   }
   /**
    * get the full compressed-key-path of a object-path
-   * @param {string} prePath | 'mainSkill'
-   * @param {string} prePathCompressed | '|a'
-   * @param {string[]} remainPathAr | ['attack', 'count']
-   * @return {string} compressedPath | '|a.|b.|c'
    */
   ;
 
@@ -79,16 +66,15 @@ function () {
   }
   /**
    * replace the keys of a query-obj with the compressed keys
-   * @param {{selector: {}}} queryJSON
-   * @return {{selector: {}}} compressed queryJSON
+   * @return compressed queryJSON
    */
   ;
 
   _proto.compressQuery = function compressQuery(queryJSON) {
     var _this2 = this;
 
-    queryJSON = clone(queryJSON);
-    if (!this.schema.doKeyCompression()) return queryJSON; // selector
+    if (!this.schema.doKeyCompression()) return queryJSON;
+    queryJSON = clone(queryJSON); // selector
 
     var selector = {};
     Object.keys(queryJSON.selector).forEach(function (key) {
@@ -221,3 +207,4 @@ export default {
   prototypes: prototypes,
   overwritable: overwritable
 };
+//# sourceMappingURL=key-compression.js.map

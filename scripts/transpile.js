@@ -43,7 +43,12 @@ async function transpileFile(srcLocation, goalLocation) {
     if (!fs.existsSync(folder)) shell.mkdir('-p', folder);
 
     await del.promise([goalLocation]);
-    const cmd = 'node node_modules/@babel/cli/bin/babel.js ' + srcLocation + ' --out-file ' + goalLocation;
+    const cmd = 'babel ' +
+        srcLocation +
+        ' --source-maps' +
+        ' --extensions ".ts,.js"' +
+        ' --out-file ' +
+        goalLocation;
     DEBUG && console.dir(cmd);
 
     const execRes = shell.exec(cmd, {
@@ -62,7 +67,6 @@ async function transpileFile(srcLocation, goalLocation) {
     return;
 }
 
-
 const files = Object.entries(transpileFolders)
     .map(entry => entry.map(folder => path.join(basePath, folder)))
     .map(entry => {
@@ -70,13 +74,19 @@ const files = Object.entries(transpileFolders)
         const toFolder = entry[1];
         return walkSync.entries(srcFolder)
             .map(fileEntry => {
-                fileEntry.goalPath = path.join(toFolder, fileEntry.relativePath);
+
+                // ensure goal-file-ending is .js
+                const relativePathSplit = fileEntry.relativePath.split('.');
+                relativePathSplit.pop();
+                relativePathSplit.push('js');
+
+                fileEntry.goalPath = path.join(toFolder, relativePathSplit.join('.'));
                 return fileEntry;
             });
     })
     .reduce((pre, cur) => pre.concat(cur), [])
     .filter(entry => !entry.isDirectory())
-    .filter(entry => entry.relativePath.endsWith('.js'))
+    .filter(entry => entry.relativePath.endsWith('.js') || entry.relativePath.endsWith('.ts'))
     .map(entry => {
         entry.fullPath = path.join(entry.basePath, entry.relativePath);
         entry.lastTime = nconf.get(entry.fullPath);
@@ -87,16 +97,16 @@ const files = Object.entries(transpileFolders)
 DEBUG && console.dir(files);
 
 Promise.all(files
-        .map(fileEntry => {
-            return transpileFile(
-                path.join(fileEntry.basePath, fileEntry.relativePath),
-                fileEntry.goalPath
-            ).then(() => {
-                nconf.set(fileEntry.fullPath, fileEntry.mtime);
-            });
-        }))
+    .map(fileEntry => {
+        return transpileFile(
+            path.join(fileEntry.basePath, fileEntry.relativePath),
+            fileEntry.goalPath
+        ).then(() => {
+            nconf.set(fileEntry.fullPath, fileEntry.mtime);
+        });
+    }))
     .then(() => {
-        nconf.save(function() {
+        nconf.save(function () {
             DEBUG && console.log('conf saved');
             console.log('# transpiling DONE');
         });

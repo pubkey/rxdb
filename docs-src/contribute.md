@@ -20,7 +20,7 @@ While developing you should run `npm run dev` and leave it open in the console. 
 ## Adding tests
 
 Before you start creating a bugfix or a feature, you should create a test to reproduce it. Tests are in the `test/unit`-folder.
-If you want to reproduce a bug, you can modify the test in [this file](https://github.com/pubkey/rxdb/blob/master/test/unit/bug-report.test.js).
+If you want to reproduce a bug, you can modify the test in [this file](https://github.com/pubkey/rxdb/blob/master/test/unit/bug-report.test.ts).
 
 ## Making a PR
 

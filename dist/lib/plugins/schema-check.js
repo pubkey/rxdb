@@ -1,5 +1,7 @@
 "use strict";
 
+var _interopRequireWildcard = require("@babel/runtime/helpers/interopRequireWildcard");
+
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
 Object.defineProperty(exports, "__esModule", {
@@ -10,15 +12,15 @@ exports.validateFieldsDeep = validateFieldsDeep;
 exports.checkSchema = checkSchema;
 exports["default"] = exports.hooks = exports.rxdb = void 0;
 
-var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
-
 var _objectPath = _interopRequireDefault(require("object-path"));
 
-var _rxDocument = _interopRequireDefault(require("../rx-document"));
+var _rxDocument = _interopRequireWildcard(require("../rx-document"));
 
 var _rxError = require("../rx-error");
 
 var _rxSchema = require("../rx-schema");
+
+var _rxCollection = require("../rx-collection");
 
 /**
  * does additional checks over the schema-json
@@ -29,7 +31,6 @@ var _rxSchema = require("../rx-schema");
  * checks if the fieldname is allowed
  * this makes sure that the fieldnames can be transformed into javascript-vars
  * and does not conquer the observe$ and populate_ fields
- * @param  {string} fieldName
  * @throws {Error}
  */
 function checkFieldNameRegex(fieldName) {
@@ -54,14 +55,12 @@ function checkFieldNameRegex(fieldName) {
 }
 /**
  * validate that all schema-related things are ok
- * @param  {object} jsonSchema
- * @return {boolean} true always
  */
 
 
 function validateFieldsDeep(jsonSchema) {
   function checkField(fieldName, schemaObj, path) {
-    if (typeof fieldName === 'string' && (0, _typeof2["default"])(schemaObj) === 'object' && !Array.isArray(schemaObj)) checkFieldNameRegex(fieldName); // 'item' only allowed it type=='array'
+    if (typeof fieldName === 'string' && typeof schemaObj === 'object' && !Array.isArray(schemaObj)) checkFieldNameRegex(fieldName); // 'item' only allowed it type=='array'
 
     if (schemaObj.hasOwnProperty('item') && schemaObj.type !== 'array') {
       throw (0, _rxError.newRxError)('SC2', {
@@ -142,9 +141,8 @@ function validateFieldsDeep(jsonSchema) {
   }
 
   function traverse(currentObj, currentPath) {
-    if ((0, _typeof2["default"])(currentObj) !== 'object') return;
-
-    for (var attributeName in currentObj) {
+    if (typeof currentObj !== 'object') return;
+    Object.keys(currentObj).forEach(function (attributeName) {
       if (!currentObj.properties) {
         checkField(attributeName, currentObj[attributeName], currentPath);
       }
@@ -152,7 +150,7 @@ function validateFieldsDeep(jsonSchema) {
       var nextPath = currentPath;
       if (attributeName !== 'properties') nextPath = nextPath + '.' + attributeName;
       traverse(currentObj[attributeName], nextPath);
-    }
+    });
   }
 
   traverse(jsonSchema, '');
@@ -160,7 +158,6 @@ function validateFieldsDeep(jsonSchema) {
 }
 /**
  * does the checking
- * @param  {object} jsonId json-object like in json-schema-standard
  * @throws {Error} if something is not ok
  */
 
@@ -262,7 +259,7 @@ function checkSchema(jsonID) {
 
     var schemaObj = _objectPath["default"].get(jsonID, path);
 
-    if (!schemaObj || (0, _typeof2["default"])(schemaObj) !== 'object') {
+    if (!schemaObj || typeof schemaObj !== 'object') {
       throw (0, _rxError.newRxError)('SC21', {
         key: key
       });
@@ -281,11 +278,102 @@ function checkSchema(jsonID) {
     });
   });
 }
+/**
+ * checks if the given static methods are allowed
+ * @throws if not allowed
+ */
+
+
+var checkOrmMethods = function checkOrmMethods(statics) {
+  if (!statics) {
+    return;
+  }
+
+  Object.entries(statics).forEach(function (_ref) {
+    var k = _ref[0],
+        v = _ref[1];
+
+    if (typeof k !== 'string') {
+      throw (0, _rxError.newRxTypeError)('COL14', {
+        name: k
+      });
+    }
+
+    if (k.startsWith('_')) {
+      throw (0, _rxError.newRxTypeError)('COL15', {
+        name: k
+      });
+    }
+
+    if (typeof v !== 'function') {
+      throw (0, _rxError.newRxTypeError)('COL16', {
+        name: k,
+        type: typeof k
+      });
+    }
+
+    if ((0, _rxCollection.properties)().includes(k) || (0, _rxDocument.properties)().includes(k)) {
+      throw (0, _rxError.newRxError)('COL17', {
+        name: k
+      });
+    }
+  });
+};
+/**
+ * checks if the migrationStrategies are ok, throws if not
+ * @throws {Error|TypeError} if not ok
+ */
+
+
+function checkMigrationStrategies(schema, migrationStrategies) {
+  // migrationStrategies must be object not array
+  if (typeof migrationStrategies !== 'object' || Array.isArray(migrationStrategies)) {
+    throw (0, _rxError.newRxTypeError)('COL11', {
+      schema: schema
+    });
+  }
+
+  var previousVersions = (0, _rxSchema.getPreviousVersions)(schema); // for every previousVersion there must be strategy
+
+  if (previousVersions.length !== Object.keys(migrationStrategies).length) {
+    throw (0, _rxError.newRxError)('COL12', {
+      have: Object.keys(migrationStrategies),
+      should: previousVersions
+    });
+  } // every strategy must have number as property and be a function
+
+
+  previousVersions.map(function (vNr) {
+    return {
+      v: vNr,
+      s: migrationStrategies[vNr + 1]
+    };
+  }).filter(function (strat) {
+    return typeof strat.s !== 'function';
+  }).forEach(function (strat) {
+    throw (0, _rxError.newRxTypeError)('COL13', {
+      version: strat.v,
+      type: typeof strat,
+      schema: schema
+    });
+  });
+  return true;
+}
 
 var rxdb = true;
 exports.rxdb = rxdb;
 var hooks = {
-  preCreateRxSchema: checkSchema
+  preCreateRxSchema: checkSchema,
+  createRxCollection: function createRxCollection(args) {
+    // check ORM-methods
+    checkOrmMethods(args.statics);
+    checkOrmMethods(args.methods);
+    checkOrmMethods(args.attachments); // check migration strategies
+
+    if (args.schema && args.migrationStrategies) {
+      checkMigrationStrategies(args.schema, args.migrationStrategies);
+    }
+  }
 };
 exports.hooks = hooks;
 var _default = {
@@ -293,3 +381,5 @@ var _default = {
   hooks: hooks
 };
 exports["default"] = _default;
+
+//# sourceMappingURL=schema-check.js.map

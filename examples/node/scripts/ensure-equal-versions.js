@@ -13,6 +13,10 @@ console.log('pouchdb version: ' + pouchVersion);
 Object.keys(ownPackage.dependencies)
     .filter(dep => dep.startsWith('pouchdb-adapter-'))
     .forEach(dep => {
+        if (dep === 'pouchdb-adapter-node-websql') {
+            // there is no newest release of this package
+            return;
+        }
         ownPackage.dependencies[dep] = pouchVersion;
     });
 const newJson = JSON.stringify(ownPackage, null, 2);

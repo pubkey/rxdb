@@ -1,0 +1,47 @@
+{
+  "name": "rxdb-example-graphql",
+  "scripts": {
+    "dev": "webpack-dev-server",
+    "start": "concurrently \"npm run server\" \"npm run dev\"",
+    "server": "node -r esm ./server/index.js",
+    "refresh": "rimraf -r node_modules/rxdb/ && npm i ",
+    "build": "webpack --env.ENV production",
+    "build:serve": "ws -p 8888 -d dist/",
+    "test:e2e": " testcafe -b && testcafe chrome test/",
+    "test:e2e:travis": " testcafe -b && testcafe chrome:headless test/",
+    "test": "concurrently \"npm run server\" \"npm run build:serve\" \"sleep 10 && npm run test:e2e\" --kill-others --success first",
+    "test:ci": "concurrently \"npm run server\" \"npm run build:serve\" \"sleep 10 && npm run test:e2e\" --kill-others --success first"
+  },
+  "author": "pubkey",
+  "dependencies": {
+    "apollo-server-express": "2.9.12",
+    "concurrently": "5.0.0",
+    "cors": "2.8.5",
+    "express-graphql": "0.9.0",
+    "graphql": "14.5.8",
+    "graphql-client": "2.0.1",
+    "graphql-subscriptions": "1.1.0",
+    "local-web-server": "3.0.7",
+    "normalize.css": "8.0.1",
+    "pouchdb-adapter-idb": "7.0.0",
+    "rxdb": "../../",
+    "subscriptions-transport-ws": "0.9.16"
+  },
+  "devDependencies": {
+    "async-test-util": "1.7.3",
+    "css-loader": "3.2.1",
+    "eslint": "6.7.2",
+    "esm": "3.2.25",
+    "file-loader": "5.0.2",
+    "html-webpack-plugin": "3.2.0",
+    "mini-css-extract-plugin": "0.8.0",
+    "ncp": "2.0.0",
+    "rimraf": "3.0.0",
+    "style-loader": "1.0.1",
+    "testcafe": "1.7.0",
+    "testcafe-hammerhead": "14.11.1",
+    "webpack": "4.39.1",
+    "webpack-cli": "3.3.10",
+    "webpack-dev-server": "3.9.0"
+  }
+}

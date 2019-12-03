@@ -90,4 +90,4 @@ await replicationState.cancel(); // cancel() is async
 
 --------------------------------------------------------------------------------
 
-If you are new to RxDB, you should continue [here](./query-change-detection.md)
+If you are new to RxDB, you should continue [here](./replication-graphql.md)

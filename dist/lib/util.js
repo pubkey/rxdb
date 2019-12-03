@@ -5,7 +5,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.isLevelDown = isLevelDown;
+exports.pluginMissing = pluginMissing;
 exports.fastUnsecureHash = fastUnsecureHash;
 exports.hash = hash;
 exports.generateId = generateId;
@@ -18,22 +18,18 @@ exports.requestIdleCallbackIfAvailable = requestIdleCallbackIfAvailable;
 exports.ucfirst = ucfirst;
 exports.numberToLetter = numberToLetter;
 exports.trimDots = trimDots;
-exports.validateCouchDBString = validateCouchDBString;
 exports.sortObject = sortObject;
 exports.stringifyFilter = stringifyFilter;
-exports.pouchReplicationFunction = pouchReplicationFunction;
 exports.randomCouchString = randomCouchString;
 exports.shuffleArray = shuffleArray;
+exports.removeOneFromArrayIfMatches = removeOneFromArrayIfMatches;
 exports.adapterObject = adapterObject;
+exports.flatClone = flatClone;
 exports.flattenObject = flattenObject;
 exports.getHeightOfRevision = getHeightOfRevision;
-exports.isElectronRenderer = exports.clone = void 0;
-
-var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
+exports.LOCAL_PREFIX = exports.isElectronRenderer = exports.clone = void 0;
 
 var _randomToken = _interopRequireDefault(require("random-token"));
-
-var _rxError = require("./rx-error");
 
 var _clone = _interopRequireDefault(require("clone"));
 
@@ -47,40 +43,38 @@ var _isElectron = _interopRequireDefault(require("is-electron"));
  */
 
 /**
- * check if the given module is a leveldown-adapter
- * throws if not
+ * Returns an error that indicates that a plugin is missing
+ * We do not throw a RxError because this should not be handled
+ * programmatically but by using the correct import
  */
-function isLevelDown(adapter) {
-  if (!adapter || typeof adapter.super_ !== 'function') {
-    throw (0, _rxError.newRxError)('UT4', {
-      adapter: adapter
-    });
-  }
+function pluginMissing(pluginKey) {
+  return new Error("You are using a function which must be overwritten by a plugin.\n        You should either prevent the usage of this function or add the plugin via:\n          - es5-require:\n            RxDB.plugin(require('rxdb/plugins/" + pluginKey + "'))\n          - es6-import:\n            import " + ucfirst(pluginKey) + "Plugin from 'rxdb/plugins/" + pluginKey + "';\n            RxDB.plugin(" + ucfirst(pluginKey) + "Plugin);\n        ");
 }
 /**
  * this is a very fast hashing but its unsecure
  * @link http://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript-jquery
- * @param  {object} obj
- * @return {number} a number as hash-result
+ * @return a number as hash-result
  */
 
 
 function fastUnsecureHash(obj) {
   if (typeof obj !== 'string') obj = JSON.stringify(obj);
-  var hash = 0,
+  var hashValue = 0,
       i,
       chr,
       len;
-  if (obj.length === 0) return hash;
+  if (obj.length === 0) return hashValue;
 
   for (i = 0, len = obj.length; i < len; i++) {
-    chr = obj.charCodeAt(i);
-    hash = (hash << 5) - hash + chr;
-    hash |= 0; // Convert to 32bit integer
+    chr = obj.charCodeAt(i); // tslint:disable-next-line
+
+    hashValue = (hashValue << 5) - hashValue + chr; // tslint:disable-next-line
+
+    hashValue |= 0; // Convert to 32bit integer
   }
 
-  if (hash < 0) hash = hash * -1;
-  return hash;
+  if (hashValue < 0) hashValue = hashValue * -1;
+  return hashValue;
 }
 /**
  *  spark-md5 is used here
@@ -96,7 +90,6 @@ function hash(obj) {
 }
 /**
  * generate a new _id as db-primary-key
- * @return {string}
  */
 
 
@@ -105,7 +98,6 @@ function generateId() {
 }
 /**
  * returns a promise that resolves on the next tick
- * @return {Promise}
  */
 
 
@@ -114,12 +106,6 @@ function nextTick() {
     return setTimeout(res, 0);
   });
 }
-/**
- * [promiseWait description]
- * @param  {Number}  [ms=0]
- * @return {Promise}
- */
-
 
 function promiseWait() {
   var ms = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
@@ -127,11 +113,6 @@ function promiseWait() {
     return setTimeout(res, ms);
   });
 }
-/**
- * @param {any | Promise} maybePromise
- * @return {Promise}
- */
-
 
 function toPromise(maybePromise) {
   if (maybePromise && typeof maybePromise.then === 'function') {
@@ -145,9 +126,9 @@ function toPromise(maybePromise) {
 function requestIdlePromise() {
   var timeout = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 
-  if ((typeof window === "undefined" ? "undefined" : (0, _typeof2["default"])(window)) === 'object' && window.requestIdleCallback) {
+  if (typeof window === 'object' && window['requestIdleCallback']) {
     return new Promise(function (res) {
-      return window.requestIdleCallback(res, {
+      return window['requestIdleCallback'](res, {
         timeout: timeout
       });
     });
@@ -156,8 +137,7 @@ function requestIdlePromise() {
 /**
  * like Promise.all() but runs in series instead of parallel
  * @link https://github.com/egoist/promise.series/blob/master/index.js
- * @param {Function[]} tasks array with functions that return a promise
- * @return {Promise<Array>}
+ * @param tasks array with functions that return a promise
  */
 
 
@@ -170,18 +150,14 @@ function promiseSeries(tasks, initial) {
  * run the callback if requestIdleCallback available
  * do nothing if not
  * @link https://developer.mozilla.org/de/docs/Web/API/Window/requestIdleCallback
- * @param  {function} fun
- * @return {void}
  */
 
 
 function requestIdleCallbackIfAvailable(fun) {
-  if ((typeof window === "undefined" ? "undefined" : (0, _typeof2["default"])(window)) === 'object' && window.requestIdleCallback) window.requestIdleCallback(fun);
+  if (typeof window === 'object' && window['requestIdleCallback']) window['requestIdleCallback'](fun);
 }
 /**
  * uppercase first char
- * @param  {string} str
- * @return {string} Str
  */
 
 
@@ -201,8 +177,8 @@ var base58Length = base58Chars.length;
 /**
  * transform a number to a string by using only base58 chars
  * @link https://github.com/matthewmueller/number-to-letter/blob/master/index.js
- * @param {number} nr                                       | 10000000
- * @return {string} the string-representation of the number | '2oMX'
+ * @param nr                                       | 10000000
+ * @return the string-representation of the number | '2oMX'
  */
 
 function numberToLetter(nr) {
@@ -220,8 +196,6 @@ function numberToLetter(nr) {
 }
 /**
  * removes trailing and ending dots from the string
- * @param  {string} str
- * @return {string} str without wrapping dots
  */
 
 
@@ -239,43 +213,8 @@ function trimDots(str) {
   return str;
 }
 /**
- * validates that a given string is ok to be used with couchdb-collection-names
- * @link https://wiki.apache.org/couchdb/HTTP_database_API
- * @param  {string} name
- * @throws  {Error}
- * @return {boolean} true
- */
-
-
-function validateCouchDBString(name) {
-  if (typeof name !== 'string' || name.length === 0) {
-    throw (0, _rxError.newRxTypeError)('UT1', {
-      name: name
-    });
-  } // do not check, if foldername is given
-
-
-  if (name.includes('/') || // unix
-  name.includes('\\') // windows
-  ) return true;
-  var regStr = '^[a-z][_$a-z0-9]*$';
-  var reg = new RegExp(regStr);
-
-  if (!name.match(reg)) {
-    throw (0, _rxError.newRxError)('UT2', {
-      regex: regStr,
-      givenName: name
-    });
-  }
-
-  return true;
-}
-/**
  * deep-sort an object so its attributes are in lexical order.
  * Also sorts the arrays inside of the object if no-array-sort not set
- * @param  {Object} obj unsorted
- * @param  {?boolean} noArraysort
- * @return {Object} sorted
  */
 
 
@@ -287,14 +226,14 @@ function sortObject(obj) {
   if (!noArraySort && Array.isArray(obj)) {
     return obj.sort(function (a, b) {
       if (typeof a === 'string' && typeof b === 'string') return a.localeCompare(b);
-      if ((0, _typeof2["default"])(a) === 'object') return 1;else return -1;
+      if (typeof a === 'object') return 1;else return -1;
     }).map(function (i) {
       return sortObject(i);
     });
   } // object
 
 
-  if ((0, _typeof2["default"])(obj) === 'object') {
+  if (typeof obj === 'object') {
     if (obj instanceof RegExp) return obj;
     var out = {};
     Object.keys(obj).sort(function (a, b) {
@@ -319,33 +258,8 @@ function stringifyFilter(key, value) {
   return value;
 }
 /**
- * get the correct function-name for pouchdb-replication
- * @param {object} pouch - instance of pouchdb
- * @return {function}
- */
-
-
-function pouchReplicationFunction(pouch, _ref) {
-  var _ref$pull = _ref.pull,
-      pull = _ref$pull === void 0 ? true : _ref$pull,
-      _ref$push = _ref.push,
-      push = _ref$push === void 0 ? true : _ref$push;
-  if (pull && push) return pouch.sync.bind(pouch);
-  if (!pull && push) return pouch.replicate.to.bind(pouch);
-  if (pull && !push) return pouch.replicate.from.bind(pouch);
-
-  if (!pull && !push) {
-    throw (0, _rxError.newRxError)('UT3', {
-      pull: pull,
-      push: push
-    });
-  }
-}
-/**
  * get a random string which can be used with couchdb
  * @link http://stackoverflow.com/a/1349426/3443137
- * @param {number} [length=10] length
- * @return {string}
  */
 
 
@@ -362,8 +276,6 @@ function randomCouchString() {
 }
 /**
  * shuffle the given array
- * @param  {Array<any>} arr
- * @return {Array<any>}
  */
 
 
@@ -373,8 +285,26 @@ function shuffleArray(arr) {
   });
 }
 /**
+ * @link https://stackoverflow.com/a/15996017
+ */
+
+
+function removeOneFromArrayIfMatches(ar, condition) {
+  ar = ar.slice();
+  var i = ar.length;
+  var done = false;
+
+  while (i-- && !done) {
+    if (condition(ar[i])) {
+      done = true;
+      ar.splice(i, 1);
+    }
+  }
+
+  return ar;
+}
+/**
  * transforms the given adapter into a pouch-compatible object
- * @return {Object} adapterObject
  */
 
 
@@ -398,7 +328,18 @@ function recursiveDeepCopy(o) {
 }
 
 var clone = recursiveDeepCopy;
+/**
+ * does a flat copy on the objects,
+ * is about 3 times faster then using deepClone
+ * @link https://jsperf.com/object-rest-spread-vs-clone/2
+ */
+
 exports.clone = clone;
+
+function flatClone(obj) {
+  return Object.assign({}, obj);
+}
+
 var isElectronRenderer = (0, _isElectron["default"])();
 /**
  * returns a flattened object
@@ -413,12 +354,12 @@ function flattenObject(ob) {
   for (var i in ob) {
     if (!ob.hasOwnProperty(i)) continue;
 
-    if ((0, _typeof2["default"])(ob[i]) == 'object') {
+    if (typeof ob[i] === 'object') {
       var flatObject = flattenObject(ob[i]);
 
-      for (var x in flatObject) {
-        if (!flatObject.hasOwnProperty(x)) continue;
-        toReturn[i + '.' + x] = flatObject[x];
+      for (var _x in flatObject) {
+        if (!flatObject.hasOwnProperty(_x)) continue;
+        toReturn[i + '.' + _x] = flatObject[_x];
       }
     } else {
       toReturn[i] = ob[i];
@@ -427,14 +368,18 @@ function flattenObject(ob) {
 
   return toReturn;
 }
-/**
- *
- * @param {string} revString
- * @return {number}
- */
-
 
 function getHeightOfRevision(revString) {
   var first = revString.split('-')[0];
-  return parseInt(first);
+  return parseInt(first, 10);
 }
+/**
+ * prefix of local documents
+ * TODO check if this variable exists somewhere else
+ */
+
+
+var LOCAL_PREFIX = '_local/';
+exports.LOCAL_PREFIX = LOCAL_PREFIX;
+
+//# sourceMappingURL=util.js.map

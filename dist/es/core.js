@@ -2,24 +2,24 @@
  * this is the main entry-point for custom builds
  * it can be used as standalone but is also used in the batteries-included main-export
  */
-import RxDatabase from './rx-database';
-import { isInstanceOf as isInstanceOfRxSchema } from './rx-schema';
-import RxDocument from './rx-document';
-import { isInstanceOf as isInstanceOfRxQuery } from './rx-query';
-import RxCollection from './rx-collection';
-import QueryChangeDetector from './query-change-detector';
+import { QueryChangeDetector } from './query-change-detector';
+export { QueryChangeDetector } from './query-change-detector';
 import addPlugin from './plugin';
-import PouchDB from './pouch-db';
-export var create = RxDatabase.create;
-export var removeDatabase = RxDatabase.removeDatabase;
-export var checkAdapter = RxDatabase.checkAdapter;
+import { PouchDB } from './pouch-db';
+export { PouchDB } from './pouch-db';
 export var plugin = addPlugin;
-export var isRxDatabase = RxDatabase.isInstanceOf;
-export var dbCount = RxDatabase.dbCount;
-export var isRxCollection = RxCollection.isInstanceOf;
-export var isRxDocument = RxDocument.isInstanceOf;
-export var isRxQuery = isInstanceOfRxQuery;
-export var isRxSchema = isInstanceOfRxSchema;
+import { create, removeDatabase, checkAdapter, isInstanceOf as isRxDatabase, dbCount } from './rx-database';
+export { create, removeDatabase, checkAdapter, isInstanceOf as isRxDatabase, dbCount } from './rx-database';
+export { create as createRxDatabase } from './rx-database';
+import { isInstanceOf as isRxCollection } from './rx-collection';
+export { isInstanceOf as isRxCollection } from './rx-collection';
+import { isInstanceOf as isRxDocument } from './rx-document';
+export { isInstanceOf as isRxDocument } from './rx-document';
+import { isInstanceOf as isRxQuery } from './rx-query';
+export { isInstanceOf as isRxQuery } from './rx-query';
+import { isInstanceOf as isRxSchema } from './rx-schema';
+export { isInstanceOf as isRxSchema, createRxSchema, RxSchema } from './rx-schema';
+export { RxChangeEvent } from './rx-change-event';
 export default {
   create: create,
   removeDatabase: removeDatabase,
@@ -32,6 +32,6 @@ export default {
   isRxQuery: isRxQuery,
   isRxSchema: isRxSchema,
   PouchDB: PouchDB,
-  QueryChangeDetector: QueryChangeDetector,
-  RxDatabase: RxDatabase
+  QueryChangeDetector: QueryChangeDetector
 };
+//# sourceMappingURL=core.js.map

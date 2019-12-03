@@ -2,46 +2,41 @@
  * handle the en/decryption of documents-data
  */
 import objectPath from 'object-path';
-import { clone } from './util';
-import { pluginMissing } from './rx-error';
+import { clone, pluginMissing } from './util';
 export var Crypter =
 /*#__PURE__*/
 function () {
   function Crypter(password, schema) {
-    this._password = password;
-    this._schema = schema;
+    this.password = password;
+    this.schema = schema;
   }
   /**
    * encrypt and stringify data
    * @overwritten by plugin (optional)
-   * @param  {any} value
-   * @return {string}
    */
 
 
   var _proto = Crypter.prototype;
 
-  _proto._encryptValue = function _encryptValue() {
+  _proto._encryptValue = function _encryptValue(_value) {
     throw pluginMissing('encryption');
   }
   /**
    * decrypt and json-parse an encrypted value
    * @overwritten by plugin (optional)
-   * @param  {string} encValue
-   * @return {any}
    */
   ;
 
-  _proto._decryptValue = function _decryptValue() {
+  _proto._decryptValue = function _decryptValue(_value) {
     throw pluginMissing('encryption');
   };
 
   _proto.encrypt = function encrypt(obj) {
     var _this = this;
 
+    if (!this.password) return obj;
     obj = clone(obj);
-    if (!this._password) return obj;
-    Object.keys(this._schema.encryptedPaths).forEach(function (path) {
+    Object.keys(this.schema.encryptedPaths).forEach(function (path) {
       var value = objectPath.get(obj, path);
       if (typeof value === 'undefined') return;
 
@@ -55,9 +50,9 @@ function () {
   _proto.decrypt = function decrypt(obj) {
     var _this2 = this;
 
+    if (!this.password) return obj;
     obj = clone(obj);
-    if (!this._password) return obj;
-    Object.keys(this._schema.encryptedPaths).forEach(function (path) {
+    Object.keys(this.schema.encryptedPaths).forEach(function (path) {
       var value = objectPath.get(obj, path);
       if (typeof value === 'undefined') return;
 
@@ -77,3 +72,4 @@ export default {
   create: create,
   Crypter: Crypter
 };
+//# sourceMappingURL=crypter.js.map

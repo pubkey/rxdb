@@ -1,49 +1,40 @@
 /**
  * functions that can or should be overwritten by plugins
  */
-import { pluginMissing } from './rx-error';
+import { pluginMissing } from './util';
 var funs = {
   /**
    * validates if a password can be used
    * @overwritten by plugin (optional)
-   * @param  {any} password
    * @throws if password not valid
-   * @return {void}
    */
-  validatePassword: function validatePassword() {
+  validatePassword: function validatePassword(_password) {
     throw pluginMissing('encryption');
   },
 
   /**
    * creates a key-compressor for the given schema
-   * @param  {RxSchema} schema
-   * @return {KeyCompressor}
    */
-  createKeyCompressor: function createKeyCompressor() {
+  createKeyCompressor: function createKeyCompressor(_rxSchema) {
     throw pluginMissing('key-compression');
   },
 
   /**
    * creates a leader-elector for the given database
-   * @param  {RxDatabase} database
-   * @return {LeaderElector}
    */
-  createLeaderElector: function createLeaderElector() {
-    throw pluginMissing('leaderelection');
+  createLeaderElector: function createLeaderElector(_database) {
+    throw pluginMissing('leader-election');
   },
 
   /**
    * checks if the given adapter can be used
-   * @return {any} adapter
    */
-  checkAdapter: function checkAdapter() {
+  checkAdapter: function checkAdapter(_adapter) {
     throw pluginMissing('adapter-check');
   },
 
   /**
    * overwritte to map error-codes to text-messages
-   * @param  {string} message
-   * @return {string}
    */
   tunnelErrorMessage: function tunnelErrorMessage(message) {
     // TODO better text with link
@@ -51,3 +42,4 @@ var funs = {
   }
 };
 export default funs;
+//# sourceMappingURL=overwritable.js.map

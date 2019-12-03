@@ -1,6 +1,7 @@
 node_modules/
 npm-debug.log
 test_tmp/
+*.js.map
 psrqlbn-db/
 coverage/
 log.txt

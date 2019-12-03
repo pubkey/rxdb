@@ -1,13 +1,11 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = void 0;
-
-var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
+exports.createMQuery = createMQuery;
+exports.canMerge = canMerge;
+exports.MQueryBase = void 0;
 
 var _mquery_utils = require("./mquery_utils");
 
@@ -19,7 +17,7 @@ var _util = require("../util");
  * this is based on
  * @link https://github.com/aheckmann/mquery/blob/master/lib/mquery.js
  */
-var MQuery =
+var MQueryBase =
 /*#__PURE__*/
 function () {
   /**
@@ -29,26 +27,21 @@ function () {
    *     var query = new MQuery({ name: 'mquery' });
    *     query.where('age').gte(21).exec(callback);
    *
-   * @param {Object} [criteria]
    */
-  function MQuery(criteria) {
-    var proto = this.constructor.prototype;
+  function MQueryBase(criteria) {
     this.options = {};
-    this._conditions = proto._conditions ? (0, _util.clone)(proto._conditions) : {};
-    this._fields = proto._fields ? (0, _util.clone)(proto._fields) : undefined;
-    this._path = proto._path || undefined;
+    this._conditions = {};
     if (criteria) this.find(criteria);
   }
   /**
    * returns a cloned version of the query
-   * @return {MQuery}
    */
 
 
-  var _proto = MQuery.prototype;
+  var _proto = MQueryBase.prototype;
 
   _proto.clone = function clone() {
-    var same = new MQuery();
+    var same = new MQueryBase();
     Object.entries(this).forEach(function (_ref) {
       var k = _ref[0],
           v = _ref[1];
@@ -58,15 +51,12 @@ function () {
   }
   /**
    * Specifies a `path` for use with chaining.
-   * @param {String} [path]
-   * @param {Object} [val]
-   * @return {MQuery} this
    */
   ;
 
-  _proto.where = function where() {
+  _proto.where = function where(_path, _val) {
     if (!arguments.length) return this;
-    var type = (0, _typeof2["default"])(arguments[0]);
+    var type = typeof arguments[0];
 
     if ('string' === type) {
       this._path = arguments[0];
@@ -83,8 +73,6 @@ function () {
    * Specifies the complementary comparison value for paths specified with `where()`
    * ####Example
    *     User.where('age').equals(49);
-   * @param {Object} val
-   * @return {MQuery} this
    */
   ;
 
@@ -98,8 +86,6 @@ function () {
   /**
    * Specifies the complementary comparison value for paths specified with `where()`
    * This is alias of `equals`
-   * @param {Object} val
-   * @return {MQuery} this
    */
   ;
 
@@ -114,8 +100,6 @@ function () {
    * Specifies arguments for an `$or` condition.
    * ####Example
    *     query.or([{ color: 'red' }, { status: 'emergency' }])
-   * @param {Array} array array of conditions
-   * @return {MQuery} this
    */
   ;
 
@@ -129,8 +113,6 @@ function () {
    * Specifies arguments for a `$nor` condition.
    * ####Example
    *     query.nor([{ color: 'green' }, { status: 'ok' }])
-   * @param {Array} array array of conditions
-   * @return {MQuery} this
    */
   ;
 
@@ -145,8 +127,6 @@ function () {
    * ####Example
    *     query.and([{ color: 'green' }, { status: 'ok' }])
    * @see $and http://docs.mongodb.org/manual/reference/operator/and/
-   * @param {Array} array array of conditions
-   * @return {MQuery} this
    */
   ;
 
@@ -158,15 +138,10 @@ function () {
   }
   /**
    * Specifies a `$mod` condition
-   *
-   * @param {String} [path]
-   * @param {Number} val
-   * @return {MQuery} this
-   * @api public
    */
   ;
 
-  _proto.mod = function mod() {
+  _proto.mod = function mod(_path, _val) {
     var val;
     var path;
 
@@ -199,14 +174,10 @@ function () {
    *     Thing.where('name').exists()
    *     Thing.where('name').exists(true)
    *     Thing.find().exists('name')
-   * @param {String} [path]
-   * @param {Number} val
-   * @return {MQuery} this
-   * @api public
    */
   ;
 
-  _proto.exists = function exists() {
+  _proto.exists = function exists(_path, _val) {
     var path;
     var val;
 
@@ -247,13 +218,10 @@ function () {
    *       elem.where({ author: 'autobot' });
    *       elem.where('votes').gte(5);
    *     })
-   * @param {String|Object|Function} path
-   * @param {Object|Function} criteria
-   * @return {MQuery} this
    */
   ;
 
-  _proto.elemMatch = function elemMatch() {
+  _proto.elemMatch = function elemMatch(_path, _criteria) {
     if (null === arguments[0]) throw (0, _rxError.newRxTypeError)('MQ2');
     var fn;
     var path;
@@ -278,7 +246,7 @@ function () {
     } else throw (0, _rxError.newRxTypeError)('MQ2');
 
     if (fn) {
-      criteria = new MQuery();
+      criteria = new MQueryBase();
       fn(criteria);
       criteria = criteria._conditions;
     }
@@ -290,13 +258,12 @@ function () {
   /**
    * Sets the sort order
    * If an object is passed, values allowed are 'asc', 'desc', 'ascending', 'descending', 1, and -1.
-   * If a string is passed, it must be a space delimited list of path names. The sort order of each path is ascending unless the path name is prefixed with `-` which will be treated as descending.
+   * If a string is passed, it must be a space delimited list of path names.
+   * The sort order of each path is ascending unless the path name is prefixed with `-` which will be treated as descending.
    * ####Example
    *     query.sort({ field: 'asc', test: -1 });
    *     query.sort('field -test');
    *     query.sort([['field', 1], ['test', -1]]);
-   * @param {Object|String|Array} arg
-   * @return {MQuery} this
    */
   ;
 
@@ -305,7 +272,7 @@ function () {
 
     if (!arg) return this;
     var len;
-    var type = (0, _typeof2["default"])(arg); // .sort([['field', 1], ['test', -1]])
+    var type = typeof arg; // .sort([['field', 1], ['test', -1]])
 
     if (Array.isArray(arg)) {
       len = arg.length;
@@ -351,36 +318,34 @@ function () {
    *
    * When a MQuery is passed, conditions, field selection and options are merged.
    *
-   * @param {MQuery|Object} source
-   * @return {MQuery} this
    */
   ;
 
   _proto.merge = function merge(source) {
     if (!source) return this;
 
-    if (!MQuery.canMerge(source)) {
+    if (!canMerge(source)) {
       throw (0, _rxError.newRxTypeError)('MQ4', {
         source: source
       });
     }
 
-    if (source instanceof MQuery) {
+    if (source instanceof MQueryBase) {
       // if source has a feature, apply it to ourselves
       if (source._conditions) (0, _mquery_utils.merge)(this._conditions, source._conditions);
 
       if (source._fields) {
-        this._fields || (this._fields = {});
+        if (!this._fields) this._fields = {};
         (0, _mquery_utils.merge)(this._fields, source._fields);
       }
 
       if (source.options) {
-        this.options || (this.options = {});
+        if (!this.options) this.options = {};
         (0, _mquery_utils.merge)(this.options, source.options);
       }
 
       if (source._update) {
-        this._update || (this._update = {});
+        if (!this._update) this._update = {};
         (0, _mquery_utils.mergeClone)(this._update, source._update);
       }
 
@@ -397,13 +362,11 @@ function () {
    * ####Example
    *     query.find()
    *     query.find({ name: 'Burning Lights' })
-   * @param {Object} [criteria] mongodb selector
-   * @return {MQuery} this
    */
   ;
 
   _proto.find = function find(criteria) {
-    if (MQuery.canMerge(criteria)) this.merge(criteria);
+    if (canMerge(criteria)) this.merge(criteria);
     return this;
   }
   /**
@@ -421,17 +384,36 @@ function () {
     }
   };
 
-  return MQuery;
+  return MQueryBase;
 }();
+
+exports.MQueryBase = MQueryBase;
+
+function createMQuery(criteria) {
+  return new MQueryBase(criteria);
+}
+
+/**
+ * limit, skip, maxScan, batchSize, comment
+ *
+ * Sets these associated options.
+ *
+ *     query.comment('feed query');
+ */
+['limit', 'skip', 'maxScan', 'batchSize', 'comment'].forEach(function (method) {
+  MQueryBase.prototype[method] = function (v) {
+    this.options[method] = v;
+    return this;
+  };
+});
 /**
  * gt, gte, lt, lte, ne, in, nin, all, regex, size, maxDistance
  *
  *     Thing.where('type').nin(array)
  */
 
-
 ['gt', 'gte', 'lt', 'lte', 'ne', 'in', 'nin', 'all', 'regex', 'size'].forEach(function ($conditional) {
-  MQuery.prototype[$conditional] = function () {
+  MQueryBase.prototype[$conditional] = function () {
     var path;
     var val;
 
@@ -445,7 +427,7 @@ function () {
       path = arguments[0];
     }
 
-    var conds = this._conditions[path] === null || (0, _typeof2["default"])(this._conditions[path]) === 'object' ? this._conditions[path] : this._conditions[path] = {};
+    var conds = this._conditions[path] === null || typeof this._conditions[path] === 'object' ? this._conditions[path] : this._conditions[path] = {};
     conds['$' + $conditional] = val;
     return this;
   };
@@ -464,9 +446,8 @@ function push(opts, field, value) {
   }
 
   if (value && value.$meta) {
-    var _s = opts.sort || (opts.sort = {});
-
-    _s[field] = {
+    var sort = opts.sort || (opts.sort = {});
+    sort[field] = {
       $meta: value.$meta
     };
     return;
@@ -509,29 +490,11 @@ function _pushArr(opts, field, value) {
 }
 /**
  * Determines if `conds` can be merged using `mquery().merge()`
- *
- * @param {Object} conds
- * @return {Boolean}
  */
 
 
-MQuery.canMerge = function (conds) {
-  return conds instanceof MQuery || (0, _mquery_utils.isObject)(conds);
-};
-/**
- * limit, skip, maxScan, batchSize, comment
- *
- * Sets these associated options.
- *
- *     query.comment('feed query');
- */
+function canMerge(conds) {
+  return conds instanceof MQueryBase || (0, _mquery_utils.isObject)(conds);
+}
 
-
-['limit', 'skip', 'maxScan', 'batchSize', 'comment'].forEach(function (method) {
-  MQuery.prototype[method] = function (v) {
-    this.options[method] = v;
-    return this;
-  };
-});
-var _default = MQuery;
-exports["default"] = _default;
+//# sourceMappingURL=mquery.js.map

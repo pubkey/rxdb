@@ -7,8 +7,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports["default"] = addPlugin;
 
-var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
-
 var _rxSchema = require("./rx-schema");
 
 var _crypter = _interopRequireDefault(require("./crypter"));
@@ -17,11 +15,11 @@ var _rxDocument = require("./rx-document");
 
 var _rxQuery = require("./rx-query");
 
-var _rxCollection = _interopRequireDefault(require("./rx-collection"));
+var _rxCollection = require("./rx-collection");
 
-var _rxDatabase = _interopRequireDefault(require("./rx-database"));
+var _rxDatabase = require("./rx-database");
 
-var _pouchDb = _interopRequireDefault(require("./pouch-db"));
+var _pouchDb = require("./pouch-db");
 
 var _overwritable = _interopRequireDefault(require("./overwritable"));
 
@@ -35,15 +33,14 @@ var _hooks = require("./hooks");
 
 /**
  * prototypes that can be manipulated with a plugin
- * @type {Object}
  */
 var PROTOTYPES = {
   RxSchema: _rxSchema.RxSchema.prototype,
   Crypter: _crypter["default"].Crypter.prototype,
   RxDocument: _rxDocument.basePrototype,
-  RxQuery: _rxQuery.RxQuery.prototype,
-  RxCollection: _rxCollection["default"].RxCollection.prototype,
-  RxDatabase: _rxDatabase["default"].RxDatabase.prototype
+  RxQuery: _rxQuery.RxQueryBase.prototype,
+  RxCollection: _rxCollection.RxCollectionBase.prototype,
+  RxDatabase: _rxDatabase.RxDatabaseBase.prototype
 };
 var ADDED_PLUGINS = new Set();
 
@@ -53,13 +50,16 @@ function addPlugin(plugin) {
 
   if (!plugin.rxdb) {
     // pouchdb-plugin
-    if ((0, _typeof2["default"])(plugin) === 'object' && plugin["default"]) plugin = plugin["default"];
+    if (typeof plugin === 'object' && plugin["default"]) plugin = plugin["default"];
 
-    _pouchDb["default"].plugin(plugin);
-  } // prototype-overwrites
+    _pouchDb.PouchDB.plugin(plugin);
 
+    return;
+  }
 
-  if (plugin.prototypes) {
+  var rxPlugin = plugin; // prototype-overwrites
+
+  if (rxPlugin.prototypes) {
     Object.entries(plugin.prototypes).forEach(function (_ref) {
       var name = _ref[0],
           fun = _ref[1];
@@ -68,7 +68,7 @@ function addPlugin(plugin) {
   } // overwritable-overwrites
 
 
-  if (plugin.overwritable) {
+  if (rxPlugin.overwritable) {
     Object.entries(plugin.overwritable).forEach(function (_ref2) {
       var name = _ref2[0],
           fun = _ref2[1];
@@ -77,7 +77,7 @@ function addPlugin(plugin) {
   } // extend-hooks
 
 
-  if (plugin.hooks) {
+  if (rxPlugin.hooks) {
     Object.entries(plugin.hooks).forEach(function (_ref3) {
       var name = _ref3[0],
           fun = _ref3[1];
@@ -85,3 +85,5 @@ function addPlugin(plugin) {
     });
   }
 }
+
+//# sourceMappingURL=plugin.js.map

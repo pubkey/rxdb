@@ -6,3 +6,21 @@
 .markdown-section a {
     color: #e6008d;
 }
+
+
+.summary li:nth-child(4) .custom-link {
+    font-weight  : bold;
+    border-style : solid;
+    border-width : 2px;
+    border-radius: 8px;
+    margin       : 22px;
+    margin-top   : 10px;
+    border-color : #e6008d;
+}
+
+/* the gitter button overlayed the next-button on mobile */
+@media (max-width: 1150px) {
+    .gitter-open-chat-button {
+        display: none;
+    }
+}

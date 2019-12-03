@@ -4,9 +4,9 @@ examples/
 docs/
 docs-src/
 orga/
-scripts/
 test/
 test_tmp/
+*.js.map
 babel.config.js
 .editorconfig
 .eslintrc.json

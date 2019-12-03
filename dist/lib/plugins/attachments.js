@@ -42,9 +42,6 @@ var blobBufferUtil = {
   /**
    * depending if we are on node or browser,
    * we have to use Buffer(node) or Blob(browser)
-   * @param  {string} data
-   * @param  {string} type
-   * @return {Blob|Buffer}
    */
   createBlobBuffer: function createBlobBuffer(data, type) {
     var blobBuffer;
@@ -85,6 +82,17 @@ var blobBufferUtil = {
         var text = e.target.result;
         res(text);
       });
+      var blobBufferType = Object.prototype.toString.call(blobBuffer);
+      /**
+       * in the electron-renderer we have a typed array insteaf of a blob
+       * so we have to transform it.
+       * @link https://github.com/pubkey/rxdb/issues/1371
+       */
+
+      if (blobBufferType === '[object Uint8Array]') {
+        blobBuffer = new Blob([blobBuffer]);
+      }
+
       reader.readAsText(blobBuffer);
     });
   }
@@ -92,11 +100,13 @@ var blobBufferUtil = {
 exports.blobBufferUtil = blobBufferUtil;
 
 var _assignMethodsToAttachment = function _assignMethodsToAttachment(attachment) {
-  Object.entries(attachment.doc.collection._attachments).forEach(function (_ref) {
+  Object.entries(attachment.doc.collection.attachments).forEach(function (_ref) {
     var funName = _ref[0],
         fun = _ref[1];
-    return attachment.__defineGetter__(funName, function () {
-      return fun.bind(attachment);
+    Object.defineProperty(attachment, funName, {
+      get: function get() {
+        return fun.bind(attachment);
+      }
     });
   });
 };
@@ -125,10 +135,6 @@ function () {
 
     _assignMethodsToAttachment(this);
   }
-  /**
-   * @return {Promise}
-   */
-
 
   var _proto = RxAttachment.prototype;
 
@@ -141,7 +147,6 @@ function () {
   }
   /**
    * returns the data for the attachment
-   * @return {Promise<Buffer|Blob>}
    */
   ;
 
@@ -182,10 +187,6 @@ function fromPouchDocument(id, pouchDocAttachment, rxDocument) {
 function shouldEncrypt(doc) {
   return !!doc.collection.schema.jsonID.attachments.encrypted;
 }
-/**
- * @return {Promise}
- */
-
 
 function putAttachment(_ref3) {
   var _this3 = this;
@@ -214,8 +215,6 @@ function putAttachment(_ref3) {
 }
 /**
  * get an attachment of the document by its id
- * @param  {string} id
- * @return {RxAttachment}
  */
 
 
@@ -231,7 +230,6 @@ function getAttachment(id) {
 }
 /**
  * returns all attachments of the document
- * @return {RxAttachment[]}
  */
 
 
@@ -253,18 +251,13 @@ function preMigrateDocument(action) {
   delete action.migrated._attachments;
   return action;
 }
-/**
- * @return {Promise}
- */
-
 
 function postMigrateDocument(action) {
   var primaryPath = action.oldCollection.schema.primaryPath;
   var attachments = action.doc._attachments;
   if (!attachments) return Promise.resolve(action);
   var currentPromise = Promise.resolve();
-
-  var _loop = function _loop(id) {
+  Object.keys(attachments).forEach(function (id) {
     var stubData = attachments[id];
     var primary = action.doc[primaryPath];
     currentPromise = currentPromise.then(function () {
@@ -276,12 +269,7 @@ function postMigrateDocument(action) {
     }).then(function (res) {
       return action.res = res;
     });
-  };
-
-  for (var id in attachments) {
-    _loop(id);
-  }
-
+  });
   return currentPromise;
 }
 
@@ -297,8 +285,8 @@ var prototypes = {
         var _this5 = this;
 
         return this._dataSync$.pipe((0, _operators.map)(function (data) {
-          if (!data._attachments) return {};
-          return data._attachments;
+          if (!data['_attachments']) return {};
+          return data['_attachments'];
         }), (0, _operators.map)(function (attachmentsData) {
           return Object.entries(attachmentsData);
         }), (0, _operators.map)(function (entries) {
@@ -328,3 +316,5 @@ var _default = {
   blobBufferUtil: blobBufferUtil
 };
 exports["default"] = _default;
+
+//# sourceMappingURL=attachments.js.map

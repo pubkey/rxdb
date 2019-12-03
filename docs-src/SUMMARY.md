@@ -1,3 +1,4 @@
+
 # Summary
 
 * [Introduction](README.md)
@@ -85,6 +86,7 @@
     * [$](./rx-query.md#observe-)
     * [update()](./rx-query.md#update)
     * [remove()](./rx-query.md#remove)
+    * [doesDocumentDataMatch()](./rx-query.md#doesDocumentDataMatch)
     * [Examples](./rx-query.md#examples)
     * [isRxQuery()](./rx-query.md#isrxquery)
 
@@ -100,7 +102,9 @@
 
 * [LeaderElection](./leader-election.md)
 
-* [Replication](./replication.md)
+* [Replication CouchDB](./replication.md)
+
+* [Replication GraphQL](./replication-graphql.md)
 
 * [QueryChangeDetection](./query-change-detection.md)
 

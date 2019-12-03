@@ -27,7 +27,6 @@ export var HOOKS = {
   /**
    * runs after a RxDocument is created,
    * cannot be async
-   * @type {Array}
    */
   postCreateRxDocument: [],
 
@@ -39,7 +38,6 @@ export var HOOKS = {
    *   adapter: any,
    *   settings: object
    * }
-   * @type {Array}
    */
   preCreatePouchDb: [],
 
@@ -49,19 +47,16 @@ export var HOOKS = {
    *   doc: Object, // originam doc-data
    *   migrated: // migrated doc-data after run throught migration-strategies
    * }
-   * @type {Array}
    */
   preMigrateDocument: [],
 
   /**
    * runs after the migration of a document has been done
-   * @type {Array}
    */
   postMigrateDocument: [],
 
   /**
    * runs at the beginning of the destroy-process of a database
-   * @type {Array}
    */
   preDestroyRxDatabase: []
 };
@@ -70,10 +65,6 @@ export function runPluginHooks(hookKey, obj) {
     return fun(obj);
   });
 }
-/**
- * @return {Promise}
- */
-
 export function runAsyncPluginHooks(hookKey, obj) {
   return Promise.all(HOOKS[hookKey].map(function (fun) {
     return fun(obj);
@@ -88,3 +79,4 @@ export function clearHook(type, fun) {
     return h !== fun;
   });
 }
+//# sourceMappingURL=hooks.js.map

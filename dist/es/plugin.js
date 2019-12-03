@@ -6,24 +6,23 @@
 import { RxSchema } from './rx-schema';
 import Crypter from './crypter';
 import { basePrototype as RxDocumentPrototype } from './rx-document';
-import { RxQuery } from './rx-query';
-import RxCollection from './rx-collection';
-import RxDatabase from './rx-database';
-import PouchDB from './pouch-db';
+import { RxQueryBase } from './rx-query';
+import { RxCollectionBase } from './rx-collection';
+import { RxDatabaseBase } from './rx-database';
+import { PouchDB } from './pouch-db';
 import overwritable from './overwritable';
 import { HOOKS } from './hooks';
 /**
  * prototypes that can be manipulated with a plugin
- * @type {Object}
  */
 
 var PROTOTYPES = {
   RxSchema: RxSchema.prototype,
   Crypter: Crypter.Crypter.prototype,
   RxDocument: RxDocumentPrototype,
-  RxQuery: RxQuery.prototype,
-  RxCollection: RxCollection.RxCollection.prototype,
-  RxDatabase: RxDatabase.RxDatabase.prototype
+  RxQuery: RxQueryBase.prototype,
+  RxCollection: RxCollectionBase.prototype,
+  RxDatabase: RxDatabaseBase.prototype
 };
 var ADDED_PLUGINS = new Set();
 export default function addPlugin(plugin) {
@@ -34,10 +33,12 @@ export default function addPlugin(plugin) {
     // pouchdb-plugin
     if (typeof plugin === 'object' && plugin["default"]) plugin = plugin["default"];
     PouchDB.plugin(plugin);
-  } // prototype-overwrites
+    return;
+  }
 
+  var rxPlugin = plugin; // prototype-overwrites
 
-  if (plugin.prototypes) {
+  if (rxPlugin.prototypes) {
     Object.entries(plugin.prototypes).forEach(function (_ref) {
       var name = _ref[0],
           fun = _ref[1];
@@ -46,7 +47,7 @@ export default function addPlugin(plugin) {
   } // overwritable-overwrites
 
 
-  if (plugin.overwritable) {
+  if (rxPlugin.overwritable) {
     Object.entries(plugin.overwritable).forEach(function (_ref2) {
       var name = _ref2[0],
           fun = _ref2[1];
@@ -55,7 +56,7 @@ export default function addPlugin(plugin) {
   } // extend-hooks
 
 
-  if (plugin.hooks) {
+  if (rxPlugin.hooks) {
     Object.entries(plugin.hooks).forEach(function (_ref3) {
       var name = _ref3[0],
           fun = _ref3[1];
@@ -63,3 +64,4 @@ export default function addPlugin(plugin) {
     });
   }
 }
+//# sourceMappingURL=plugin.js.map

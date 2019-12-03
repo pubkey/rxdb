@@ -1,3 +1,14 @@
+
+
+// while the karma tests run, we need some things which we start here
+const GraphQLServer = require('../test_tmp/helper/graphql-server');
+async function thingsWeNeed() {
+    // we need one graphql server so the browser can sync to it
+    GraphQLServer.spawn([], 18000);
+}
+thingsWeNeed();
+
+// karma config
 const configuration = {
     basePath: '',
     frameworks: [
@@ -20,7 +31,8 @@ const configuration = {
         enabled: true,
         usePhantomJS: false,
         postDetection: function (availableBrowser) {
-            // return ['Firefox']; // comment in to test specific browser
+            // return [];
+            // return ['Chrome']; // comment in to test specific browser
             const browsers = availableBrowser
                 .filter(b => !['PhantomJS', 'FirefoxAurora', 'FirefoxNightly', 'ChromeCanary'].includes(b))
                 .map(b => {
@@ -83,3 +95,4 @@ if (process.env.TRAVIS) {
 module.exports = function (config) {
     config.set(configuration);
 };
+

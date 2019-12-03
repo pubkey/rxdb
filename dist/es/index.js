@@ -33,40 +33,11 @@ import AttachmentsPlugin from './plugins/attachments';
 Core.plugin(AttachmentsPlugin);
 import LocalDocumentsPlugin from './plugins/local-documents';
 Core.plugin(LocalDocumentsPlugin);
-/**
- * create a database
- * @param  {string} prefix as databaseName for the storage (this can be the foldername)
- * @param  {Object} storageEngine any leveldown instance
- * @param  {String} password if the database contains encrypted fields
- * @param  {boolean} multiInstance if true, multiInstance-handling will be done
- * @return {Promise<Database>}
- */
+export * from './types'; // re-export things from core
 
-export var create = Core.create;
-/**
- * removes the database and all its known data
- * @param  {string} databaseName
- * @param  {Object} adapter
- * @return {Promise}
- */
+export * from './core';
+import { create, removeDatabase, plugin, dbCount, isRxCollection, isRxDatabase, isRxDocument, isRxQuery, isRxSchema, PouchDB, QueryChangeDetector, checkAdapter } from './core'; // TODO no more default exports
 
-export var removeDatabase = Core.removeDatabase;
-/**
- * add a plugin for rxdb or pouchdb
- */
-
-export var plugin = Core.plugin;
-export var dbCount = Core.dbCount;
-export var isRxDatabase = Core.isRxDatabase;
-export var isRxCollection = Core.isRxCollection;
-export var isRxDocument = Core.isRxDocument;
-export var isRxQuery = Core.isRxQuery;
-export var isRxSchema = Core.isRxSchema;
-export var RxSchema = Core.RxSchema;
-export var PouchDB = Core.PouchDB;
-export var QueryChangeDetector = Core.QueryChangeDetector;
-export var RxDatabase = Core.RxDatabase;
-export var checkAdapter = Core.checkAdapter;
 export default {
   create: create,
   checkAdapter: checkAdapter,
@@ -79,6 +50,6 @@ export default {
   isRxQuery: isRxQuery,
   isRxSchema: isRxSchema,
   PouchDB: PouchDB,
-  QueryChangeDetector: QueryChangeDetector,
-  RxDatabase: RxDatabase
+  QueryChangeDetector: QueryChangeDetector
 };
+//# sourceMappingURL=index.js.map

@@ -2,6 +2,8 @@
 
 var _interopRequireWildcard = require("@babel/runtime/helpers/interopRequireWildcard");
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -9,35 +11,37 @@ exports.encrypt = encrypt;
 exports.decrypt = decrypt;
 exports["default"] = exports.overwritable = exports.prototypes = exports.rxdb = void 0;
 
-var _aes = require("crypto-js/aes");
+var _aes = _interopRequireDefault(require("crypto-js/aes"));
 
 var cryptoEnc = _interopRequireWildcard(require("crypto-js/enc-utf8"));
 
 var _rxError = require("../rx-error");
 
 /**
- * this plugin adds the encrpytion-capabilities to rxdb
+ * this plugin adds the encryption-capabilities to rxdb
  * It's using crypto-js/aes for password-encryption
  * @link https://github.com/brix/crypto-js
  */
 var minPassLength = 8;
 
 function encrypt(value, password) {
-  var encrypted = (0, _aes.encrypt)(value, password);
+  var encrypted = _aes["default"].encrypt(value, password);
+
   return encrypted.toString();
 }
 
 function decrypt(cipherText, password) {
-  var decrypted = (0, _aes.decrypt)(cipherText, password);
+  var decrypted = _aes["default"].decrypt(cipherText, password);
+
   return decrypted.toString(cryptoEnc);
 }
 
 var _encryptValue = function _encryptValue(value) {
-  return encrypt(JSON.stringify(value), this._password);
+  return encrypt(JSON.stringify(value), this.password);
 };
 
 var _decryptValue = function _decryptValue(encryptedValue) {
-  var decrypted = decrypt(encryptedValue, this._password);
+  var decrypted = decrypt(encryptedValue, this.password);
   return JSON.parse(decrypted);
 };
 
@@ -46,7 +50,6 @@ exports.rxdb = rxdb;
 var prototypes = {
   /**
    * set crypto-functions for the Crypter.prototype
-   * @param {[type]} prototype of Crypter
    */
   Crypter: function Crypter(proto) {
     proto._encryptValue = _encryptValue;
@@ -77,3 +80,5 @@ var _default = {
   overwritable: overwritable
 };
 exports["default"] = _default;
+
+//# sourceMappingURL=encryption.js.map

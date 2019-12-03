@@ -16,5 +16,7 @@
     "docs/files/files/logo/package.json",
     "docs/files/logo/package.json",
     "examples/ionic2/package.json"
-  ]
+  ],
+  "rebaseStalePrs": true,
+  "prHourlyLimit": 4
 }

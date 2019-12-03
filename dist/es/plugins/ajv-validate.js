@@ -6,59 +6,39 @@
 import Ajv from 'ajv';
 import { newRxError } from '../rx-error';
 import { requestIdleCallbackIfAvailable } from '../util';
+
 /**
  * cache the validators by the schema-hash
  * so we can reuse them when multiple collections have the same schema
- * @type {Object<string, any>}
  */
-
-var validatorsCache = {};
+var VALIDATOR_CACHE = new Map();
 /**
  * returns the parsed validator from ajv
- * @param {string} [schemaPath=''] if given, the schema for the sub-path is used
- * @
  */
 
 export function _getValidator(rxSchema) {
-  var schemaPath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
   var hash = rxSchema.hash;
-  if (!validatorsCache[hash]) validatorsCache[hash] = {};
-  var validatorsOfHash = validatorsCache[hash];
 
-  if (!validatorsOfHash[schemaPath]) {
-    var schemaPart = schemaPath === '' ? rxSchema.jsonID : rxSchema.getSchemaByObjectPath(schemaPath);
+  if (!VALIDATOR_CACHE.has(hash)) {
+    var ajv = new Ajv(); // TODO should we reuse this instance?
 
-    if (!schemaPart) {
-      throw newRxError('VD1', {
-        schemaPath: schemaPath
-      });
-    } // const ajv = new Ajv({errorDataPath: 'property'});
-
-
-    var ajv = new Ajv();
-    validatorsOfHash[schemaPath] = ajv.compile(schemaPart);
+    var validator = ajv.compile(rxSchema.jsonID);
+    VALIDATOR_CACHE.set(hash, validator);
   }
 
-  return validatorsOfHash[schemaPath];
+  return VALIDATOR_CACHE.get(hash);
 }
 /**
  * validates the given object against the schema
- * @param  {any} obj
- * @param  {String} [schemaPath=''] if given, the sub-schema will be validated
- * @throws {RxError} if not valid
- * @return {any} obj if validation successful
  */
 
 function validate(obj) {
-  var schemaPath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
-
-  var useValidator = _getValidator(this, schemaPath);
+  var useValidator = _getValidator(this);
 
   var isValid = useValidator(obj);
   if (isValid) return obj;else {
     throw newRxError('VD2', {
       errors: useValidator.errors,
-      schemaPath: schemaPath,
       obj: obj,
       schema: this.jsonID
     });
@@ -76,7 +56,6 @@ export var rxdb = true;
 export var prototypes = {
   /**
    * set validate-function for the RxSchema.prototype
-   * @param {[type]} prototype of RxSchema
    */
   RxSchema: function RxSchema(proto) {
     proto.validate = validate;
@@ -90,3 +69,4 @@ export default {
   prototypes: prototypes,
   hooks: hooks
 };
+//# sourceMappingURL=ajv-validate.js.map

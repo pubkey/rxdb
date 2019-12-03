@@ -1,0 +1,1903 @@
+
+<!DOCTYPE HTML>
+<html lang="" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>Replication GraphQL · RxDB - Documentation</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.3">
+        
+        
+        
+    
+    <link rel="stylesheet" href="gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-expandable-chapters/expandable-chapters.css">
+                
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-highlight/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-search/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+        
+
+    
+
+    
+        
+        <link rel="stylesheet" href="styles/website.css">
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="query-change-detection.html" />
+    
+    
+    <link rel="prev" href="replication.html" />
+    
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+    
+        
+        <li>
+            <a href="https://twitter.com/rxdbjs" target="_blank" class="custom-link">Follow @twitter </a>
+        </li>
+    
+        
+        <li>
+            <a href="https://gitter.im/pubkey/rxdb" target="_blank" class="custom-link">Chat @gitter </a>
+        </li>
+    
+        
+        <li>
+            <a href="https://github.com/pubkey/rxdb" target="_blank" class="custom-link">Star @github </a>
+        </li>
+    
+        
+        <li>
+            <a href="https://www.patreon.com/rxdb/" target="_blank" class="custom-link">Donate @patreon </a>
+        </li>
+    
+    
+
+    
+    <li class="divider"></li>
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="./">
+            
+                <a href="./">
+            
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="install.html">
+            
+                <a href="install.html">
+            
+                    
+                    Install
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.2.1" data-path="install.html">
+            
+                <a href="install.html#npm">
+            
+                    
+                    npm
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.2" data-path="install.html">
+            
+                <a href="install.html#import">
+            
+                    
+                    import
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3" data-path="rx-database.html">
+            
+                <a href="rx-database.html">
+            
+                    
+                    RxDatabase
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.3.1" data-path="rx-database.html">
+            
+                <a href="rx-database.html#creation">
+            
+                    
+                    Creation
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.3.1.1" data-path="rx-database.html">
+            
+                <a href="rx-database.html#name">
+            
+                    
+                    name
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.1.2" data-path="rx-database.html">
+            
+                <a href="rx-database.html#adapter">
+            
+                    
+                    adapter
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.1.3" data-path="rx-database.html">
+            
+                <a href="rx-database.html#password">
+            
+                    
+                    password
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.1.4" data-path="rx-database.html">
+            
+                <a href="rx-database.html#multiinstance">
+            
+                    
+                    multiInstance
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.1.5" data-path="rx-database.html">
+            
+                <a href="rx-database.html#queryChangeDetection">
+            
+                    
+                    queryChangeDetection
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.1.6" data-path="rx-database.html">
+            
+                <a href="rx-database.html#ignoreduplicate">
+            
+                    
+                    ignoreDuplicate
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.1.7" data-path="rx-database.html">
+            
+                <a href="rx-database.html#pouchSettings">
+            
+                    
+                    pouchSettings
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.2" data-path="rx-database.html">
+            
+                <a href="rx-database.html#functions">
+            
+                    
+                    Functions
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.3.2.1" data-path="rx-database.html">
+            
+                <a href="rx-database.html#observe-with-">
+            
+                    
+                    $
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.2.2" data-path="rx-database.html">
+            
+                <a href="rx-database.html#dump">
+            
+                    
+                    dump()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.2.3" data-path="rx-database.html">
+            
+                <a href="rx-database.html#importdump">
+            
+                    
+                    importDump()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.2.4" data-path="rx-database.html">
+            
+                <a href="rx-database.html#server">
+            
+                    
+                    server()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.2.5" data-path="rx-database.html">
+            
+                <a href="rx-database.html#waitforleadership">
+            
+                    
+                    waitForLeadership()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.2.6" data-path="rx-database.html">
+            
+                <a href="rx-database.html#requestidlepromise">
+            
+                    
+                    requestIdlePromise()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.2.7" data-path="rx-database.html">
+            
+                <a href="rx-database.html#destroy">
+            
+                    
+                    destroy()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.2.8" data-path="rx-database.html">
+            
+                <a href="rx-database.html#remove">
+            
+                    
+                    remove()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.2.9" data-path="rx-database.html">
+            
+                <a href="rx-database.html#checkadapter">
+            
+                    
+                    checkAdapter()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.2.10" data-path="rx-database.html">
+            
+                <a href="rx-database.html#isrxdatabase">
+            
+                    
+                    isRxDatabase()
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4" data-path="rx-schema.html">
+            
+                <a href="rx-schema.html">
+            
+                    
+                    RxSchema
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.4.1" data-path="rx-schema.html">
+            
+                <a href="rx-schema.html#example">
+            
+                    
+                    Example
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.2" data-path="rx-schema.html">
+            
+                <a href="rx-schema.html#create-a-collection-with-the-schema">
+            
+                    
+                    Create a collection with the schema
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.3" data-path="rx-schema.html">
+            
+                <a href="rx-schema.html#version">
+            
+                    
+                    version
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.4" data-path="rx-schema.html">
+            
+                <a href="rx-schema.html#keycompression">
+            
+                    
+                    keyCompression
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.5" data-path="rx-schema.html">
+            
+                <a href="rx-schema.html#indexes">
+            
+                    
+                    indexes
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.6" data-path="rx-schema.html">
+            
+                <a href="rx-schema.html#attachments">
+            
+                    
+                    attachments
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.7" data-path="rx-schema.html">
+            
+                <a href="rx-schema.html#default">
+            
+                    
+                    default
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.8" data-path="rx-schema.html">
+            
+                <a href="rx-schema.html#final">
+            
+                    
+                    final
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.9" data-path="rx-schema.html">
+            
+                <a href="rx-schema.html#encryption">
+            
+                    
+                    encryption
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5" data-path="rx-collection.html">
+            
+                <a href="rx-collection.html">
+            
+                    
+                    RxCollection
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.5.1" data-path="rx-collection.html">
+            
+                <a href="rx-collection.html#creating-a-collection">
+            
+                    
+                    Creation
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.5.1.1" data-path="rx-collection.html">
+            
+                <a href="rx-collection.html#name">
+            
+                    
+                    name
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.1.2" data-path="rx-collection.html">
+            
+                <a href="rx-collection.html#schema">
+            
+                    
+                    schema
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.1.3" data-path="rx-collection.html">
+            
+                <a href="rx-collection.html#pouchSettings">
+            
+                    
+                    pouchSettings
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.1.4" data-path="rx-collection.html">
+            
+                <a href="rx-collection.html#orm-functions">
+            
+                    
+                    ORM-functions
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.1.5" data-path="rx-collection.html">
+            
+                <a href="rx-collection.html#Migration">
+            
+                    
+                    Migration
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2" data-path="rx-collection.html">
+            
+                <a href="rx-collection.html#functions">
+            
+                    
+                    Functions
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.5.2.1" data-path="rx-collection.html">
+            
+                <a href="rx-collection.html#observe-">
+            
+                    
+                    $
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2.2" data-path="rx-collection.html">
+            
+                <a href="rx-collection.html#insert">
+            
+                    
+                    insert()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2.3" data-path="rx-collection.html">
+            
+                <a href="rx-collection.html#newdocument">
+            
+                    
+                    newDocument()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2.4" data-path="rx-collection.html">
+            
+                <a href="rx-collection.html#upsert">
+            
+                    
+                    upsert()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2.5" data-path="rx-collection.html">
+            
+                <a href="rx-collection.html#atomicupsert">
+            
+                    
+                    atomicUpsert()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2.6" data-path="rx-collection.html">
+            
+                <a href="rx-collection.html#find">
+            
+                    
+                    find()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2.7" data-path="rx-collection.html">
+            
+                <a href="rx-collection.html#findone">
+            
+                    
+                    findOne()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2.8" data-path="rx-collection.html">
+            
+                <a href="rx-collection.html#dump">
+            
+                    
+                    dump()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2.9" data-path="rx-collection.html">
+            
+                <a href="rx-collection.html#importdump">
+            
+                    
+                    importDump()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2.10" data-path="rx-collection.html">
+            
+                <a href="rx-collection.html#sync">
+            
+                    
+                    sync()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2.11" data-path="rx-collection.html">
+            
+                <a href="rx-collection.html#remove">
+            
+                    
+                    remove()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2.12" data-path="rx-collection.html">
+            
+                <a href="rx-collection.html#destroy">
+            
+                    
+                    destroy()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2.13" data-path="rx-collection.html">
+            
+                <a href="rx-collection.html#isrxcollection">
+            
+                    
+                    isRxCollection()
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.6" data-path="rx-document.html">
+            
+                <a href="rx-document.html">
+            
+                    
+                    RxDocument
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.6.1" data-path="rx-document.html">
+            
+                <a href="rx-document.html#insert">
+            
+                    
+                    Insert
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.6.2" data-path="rx-document.html">
+            
+                <a href="rx-document.html#find">
+            
+                    
+                    Find
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.6.3" data-path="rx-document.html">
+            
+                <a href="rx-document.html#functions">
+            
+                    
+                    Functions
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.6.3.1" data-path="rx-document.html">
+            
+                <a href="rx-document.html#get">
+            
+                    
+                    get()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.6.3.2" data-path="rx-document.html">
+            
+                <a href="rx-document.html#get$">
+            
+                    
+                    get$()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.6.3.3" data-path="rx-document.html">
+            
+                <a href="rx-document.html#proxy-get">
+            
+                    
+                    proxy-get
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.6.3.4" data-path="rx-document.html">
+            
+                <a href="rx-document.html#update">
+            
+                    
+                    update()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.6.3.5" data-path="rx-document.html">
+            
+                <a href="rx-document.html#atomicupdate">
+            
+                    
+                    atomicUpdate()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.6.3.6" data-path="rx-document.html">
+            
+                <a href="rx-document.html#atomicset">
+            
+                    
+                    atomicSet()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.6.3.7" data-path="rx-document.html">
+            
+                <a href="rx-document.html#observe-">
+            
+                    
+                    $
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.6.3.8" data-path="rx-document.html">
+            
+                <a href="rx-document.html#remove">
+            
+                    
+                    remove()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.6.3.9" data-path="rx-document.html">
+            
+                <a href="rx-document.html#deleted$">
+            
+                    
+                    deleted$
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.6.3.10" data-path="rx-document.html">
+            
+                <a href="rx-document.html#tojson">
+            
+                    
+                    toJSON()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.6.3.11" data-path="rx-document.html">
+            
+                <a href="rx-document.html#set">
+            
+                    
+                    set()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.6.3.12" data-path="rx-document.html">
+            
+                <a href="rx-document.html#save">
+            
+                    
+                    save()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.6.3.13" data-path="rx-document.html">
+            
+                <a href="rx-document.html#isrxdocument">
+            
+                    
+                    isRxDocument()
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.7" data-path="rx-query.html">
+            
+                <a href="rx-query.html">
+            
+                    
+                    RxQuery
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.7.1" data-path="rx-query.html">
+            
+                <a href="rx-query.html#find">
+            
+                    
+                    find()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.7.2" data-path="rx-query.html">
+            
+                <a href="rx-query.html#findOne">
+            
+                    
+                    findOne()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.7.3" data-path="rx-query.html">
+            
+                <a href="rx-query.html#exec">
+            
+                    
+                    exec()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.7.4" data-path="rx-query.html">
+            
+                <a href="rx-query.html#observe-">
+            
+                    
+                    $
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.7.5" data-path="rx-query.html">
+            
+                <a href="rx-query.html#update">
+            
+                    
+                    update()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.7.6" data-path="rx-query.html">
+            
+                <a href="rx-query.html#remove">
+            
+                    
+                    remove()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.7.7" data-path="rx-query.html">
+            
+                <a href="rx-query.html#doesDocumentDataMatch">
+            
+                    
+                    doesDocumentDataMatch()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.7.8" data-path="rx-query.html">
+            
+                <a href="rx-query.html#examples">
+            
+                    
+                    Examples
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.7.9" data-path="rx-query.html">
+            
+                <a href="rx-query.html#isrxquery">
+            
+                    
+                    isRxQuery()
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.8" data-path="rx-attachment.html">
+            
+                <a href="rx-attachment.html">
+            
+                    
+                    RxAttachment
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.9" data-path="middleware.html">
+            
+                <a href="middleware.html">
+            
+                    
+                    Middleware-hooks
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.10" data-path="orm.html">
+            
+                <a href="orm.html">
+            
+                    
+                    ORM/DRM
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.11" data-path="population.html">
+            
+                <a href="population.html">
+            
+                    
+                    Population
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.12" data-path="data-migration.html">
+            
+                <a href="data-migration.html">
+            
+                    
+                    DataMigration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.13" data-path="leader-election.html">
+            
+                <a href="leader-election.html">
+            
+                    
+                    LeaderElection
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.14" data-path="replication.html">
+            
+                <a href="replication.html">
+            
+                    
+                    Replication CouchDB
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="1.15" data-path="replication-graphql.html">
+            
+                <a href="replication-graphql.html">
+            
+                    
+                    Replication GraphQL
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.16" data-path="query-change-detection.html">
+            
+                <a href="query-change-detection.html">
+            
+                    
+                    QueryChangeDetection
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.17" data-path="in-memory.html">
+            
+                <a href="in-memory.html">
+            
+                    
+                    InMemory
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.18" data-path="rx-local-document.html">
+            
+                <a href="rx-local-document.html">
+            
+                    
+                    LocalDocuments
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.19" data-path="custom-build.html">
+            
+                <a href="custom-build.html">
+            
+                    
+                    Custom Build
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.20" data-path="plugins.html">
+            
+                <a href="plugins.html">
+            
+                    
+                    Plugins
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.21" data-path="adapters.html">
+            
+                <a href="adapters.html">
+            
+                    
+                    Adapters
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.22" >
+            
+                <span>
+            
+                    
+                    Tutorials
+            
+                </span>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.22.1" data-path="tutorials/typescript.html">
+            
+                <a href="tutorials/typescript.html">
+            
+                    
+                    Use RxDB with Typescript
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.22.2" data-path="tutorials/server.html">
+            
+                <a href="tutorials/server.html">
+            
+                    
+                    Using the Server Plugin
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.23" data-path="questions-answers.html">
+            
+                <a href="questions-answers.html">
+            
+                    
+                    Questions & Answers
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.24" data-path="contribute.html">
+            
+                <a href="contribute.html">
+            
+                    
+                    Contribute
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            Published with GitBook
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href="." >Replication GraphQL</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <h1 id="replication-with-graphql-beta">Replication with GraphQL (beta)</h1>
+<p>With RxDB you can do a two-way replication with a GraphQL endpoint. This allows you to replicate data from the server into the client-side database and then query and modify it in <strong>realtime</strong>.</p>
+<p>When the user is offline, you still can use the data and later sync it with the server when the client is online again like in other <a href="http://offlinefirst.org/" target="_blank">Offline-First</a> systems.</p>
+<h2 id="comparison-to-couchdb-sync">Comparison to Couchdb-Sync</h2>
+<p>Pros:</p>
+<ul>
+<li>The GraphQL-replication is faster and needs less resources</li>
+<li>You do not need a couchdb-compliant endpoint, only a GraphQL-endpoint</li>
+</ul>
+<p>Cons:</p>
+<ul>
+<li>You can not replicate multiple databases with each other</li>
+<li>It is assumed that the GraphQL-server is the single source of truth</li>
+<li>You have to setup things at the server side while with couchdb-sync you only have to start a server</li>
+</ul>
+<p><strong>NOTICE:</strong> To play around, check out the full example of the RxDB <a href="https://github.com/pubkey/rxdb/tree/master/examples/graphql" target="_blank">GraphQL replication with server and client</a></p>
+<h2 id="usage">Usage</h2>
+<h3 id="data-design">Data Design</h3>
+<p>To use the GraphQL-replication you first have to ensure that your data is sortable by update time and your documents never get deleted, only have a deleted-flag set.</p>
+<p>For example if your documents look like this,</p>
+<pre><code class="lang-json">{
+    <span class="hljs-string">&quot;id&quot;</span>: <span class="hljs-string">&quot;foobar&quot;</span>,
+    <span class="hljs-string">&quot;name&quot;</span>: <span class="hljs-string">&quot;Alice&quot;</span>,
+    <span class="hljs-string">&quot;lastName&quot;</span>: <span class="hljs-string">&quot;Wilson&quot;</span>,
+    <span class="hljs-string">&quot;updatedAt&quot;</span>: <span class="hljs-number">1564783474</span>,
+    <span class="hljs-string">&quot;deleted&quot;</span>: <span class="hljs-literal">false</span>
+}
+</code></pre>
+<p>Then your data is always sortable by <code>updatedAt</code>. This ensures that when RxDB fetches &apos;new&apos; changes, it can send the latest <code>updatedAt</code> to the GraphQL-endpoint and then recieve all newer documents.</p>
+<p>Deleted documents still exist but have <code>deleted: true</code> set. This ensures that when RxDB fetches new documents, even the deleted documents are send back and can be known at the client-side.</p>
+<h3 id="graphql-server">GraphQL Server</h3>
+<p>At the server-side, there must exist an endpoint which returns newer rows when the last replicated document is used as input. For example lets say you create a Query <code>feedForRxDBReplication</code> which returns a list of newer documents, related to the given one, sorted by <code>updatedAt</code>.</p>
+<p>For the push-replication, you also need a modifier which lets RxDB update data with a changed document as input.</p>
+<pre><code>input HumanInput {
+    id: ID!,
+    name: String!,
+    lastName: String!,
+    updatedAt: Int!,
+    deleted: Boolean!
+}
+type Human {
+    id: ID!,
+    name: String!,
+    lastName: String!,
+    updatedAt: Int!,
+    deleted: Boolean!
+}
+type Query {
+    feedForRxDBReplication(lastId: String!, minUpdatedAt: Int!, limit: Int!): [Human!]!
+}
+type Mutation {
+    setHuman(human: HumanInput): Human
+}
+</code></pre><p>The resolver would then look like:</p>
+<pre><code class="lang-js"><span class="hljs-keyword">const</span> rootValue = {
+    feedForRxDBReplication: args =&gt; {
+        <span class="hljs-comment">// sorted by updatedAt first and the id as second</span>
+        <span class="hljs-keyword">const</span> sortedDocuments = documents.sort((a, b) =&gt; {
+            <span class="hljs-keyword">if</span> (a.updatedAt &gt; b.updatedAt) <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;
+            <span class="hljs-keyword">if</span> (a.updatedAt &lt; b.updatedAt) <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;
+            <span class="hljs-keyword">if</span> (a.updatedAt === b.updatedAt) {
+                <span class="hljs-keyword">if</span> (a.id &gt; b.id) <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;
+                <span class="hljs-keyword">if</span> (a.id &lt; b.id) <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;
+            <span class="hljs-keyword">else</span> <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+            }
+        });
+
+        <span class="hljs-comment">// only return documents newer then the input document</span>
+        <span class="hljs-keyword">const</span> filterForMinUpdatedAtAndId = sortedDocuments.filter(doc =&gt; {
+            <span class="hljs-keyword">if</span> (doc.updatedAt &lt; args.minUpdatedAt) <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+            <span class="hljs-keyword">if</span> (doc.updatedAt &gt; args.minUpdatedAt) <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+            <span class="hljs-keyword">if</span> (doc.updatedAt === args.minUpdatedAt) {
+                <span class="hljs-comment">// if updatedAt is equal, compare by id</span>
+                <span class="hljs-keyword">if</span> (doc.id &gt; args.lastId) <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+                <span class="hljs-keyword">else</span> <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+            }
+        });
+
+        <span class="hljs-comment">// only return some documents in one batch</span>
+        <span class="hljs-keyword">const</span> limited = filterForMinUpdatedAtAndId.slice(<span class="hljs-number">0</span>, args.limit);
+
+        <span class="hljs-keyword">return</span> limited;
+    },
+    <span class="hljs-comment">// a modifier that updates the state on the server</span>
+    setHuman: args =&gt; {
+        <span class="hljs-keyword">const</span> doc = args.human;
+        documents = documents.filter(d =&gt; d.id !== doc.id);
+        doc.updatedAt = <span class="hljs-built_in">Math</span>.round(<span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>().getTime() / <span class="hljs-number">1000</span>);
+        documents.push(doc);
+        <span class="hljs-keyword">return</span> doc;
+    },
+}
+</code></pre>
+<h3 id="rxdb-client">RxDB Client</h3>
+<h4 id="import-the-plugin">Import the plugin</h4>
+<p>The graphql-replication is not part of the default-build of RxDB. You have to import the plugin before you can use it.</p>
+<pre><code class="lang-js"><span class="hljs-comment">// es6-import</span>
+<span class="hljs-keyword">import</span> RxDBReplicationGraphQL <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/replication-graphql&apos;</span>;
+RxDB.plugin(RxDBReplicationGraphQL);
+
+<span class="hljs-comment">// es5-require</span>
+RxDB.plugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;rxdb/plugins/replication-graphql&apos;</span>));
+</code></pre>
+<h4 id="pull-replication">Pull replication</h4>
+<p>For the pull-replication, you first need a <code>pullQueryBuilder</code>. This is a function that gets the last replicated document as input and returns an object with a GraphQL-query and its variables. RxDB will use the query builder to construct what is later send to the GraphQL endpoint.</p>
+<pre><code class="lang-js"><span class="hljs-keyword">const</span> pullQueryBuilder = doc =&gt; {
+    <span class="hljs-keyword">if</span> (!doc) {
+        <span class="hljs-comment">// the first pull does not have a start-document</span>
+        doc = {
+            id: <span class="hljs-string">&apos;&apos;</span>,
+            updatedAt: <span class="hljs-number">0</span>
+        };
+    }
+    <span class="hljs-keyword">const</span> query = <span class="hljs-string">`{
+        feedForRxDBReplication(lastId: &quot;<span class="hljs-subst">${doc.name}</span>&quot;, minUpdatedAt: <span class="hljs-subst">${doc.updatedAt}</span>, limit: 5) {
+            id,
+            name,
+            lastName,
+            updatedAt
+            deleted
+        }
+    }`</span>;
+    <span class="hljs-keyword">return</span> {
+        query,
+        variables: {}
+    };
+};
+</code></pre>
+<p>With the queryBuilder, you can then setup the pull-replication.</p>
+<pre><code class="lang-js"><span class="hljs-keyword">const</span> replicationState = myCollection.syncGraphQL({
+    url: <span class="hljs-string">&apos;http://example.com/graphql&apos;</span>, <span class="hljs-comment">// url to the GraphQL endpoint</span>
+    pull: {
+        pullQueryBuilder, <span class="hljs-comment">// the queryBuilder from above</span>
+        modifier: doc =&gt; doc <span class="hljs-comment">// (optional) modifies all pulled documents before they are handeled by RxDB</span>
+    },
+    deletedFlag: <span class="hljs-string">&apos;deleted&apos;</span>, <span class="hljs-comment">// the flag which indicates if a pulled document is deleted</span>
+    live: <span class="hljs-literal">true</span> <span class="hljs-comment">// if this is true, rxdb will watch for ongoing changes and sync them, when false, a one-time-replication will be done</span>
+});
+</code></pre>
+<h4 id="push-replication">Push replication</h4>
+<p>For the push-replication, you also need a <code>queryBuilder</code>. Here, the builder recieves a changed document as input which has to be send to the server. It also returns a GraphQL-Query and its data.</p>
+<pre><code class="lang-js"><span class="hljs-keyword">const</span> pushQueryBuilder = doc =&gt; {
+    <span class="hljs-keyword">const</span> query = <span class="hljs-string">`
+        mutation CreateHuman($human: HumanInput) {
+            setHuman(human: $human) {
+                id,
+                updatedAt
+            }
+        }
+    `</span>;
+    <span class="hljs-keyword">const</span> variables = {
+        human: doc
+    };
+    <span class="hljs-keyword">return</span> {
+        query,
+        variables
+    };
+};
+</code></pre>
+<p>With the queryBuilder, you can then setup the push-replication.</p>
+<pre><code class="lang-js"><span class="hljs-keyword">const</span> replicationState = myCollection.syncGraphQL({
+    url: <span class="hljs-string">&apos;http://example.com/graphql&apos;</span>, <span class="hljs-comment">// url to the GraphQL endpoint</span>
+    push: {
+        pullQueryBuilder, <span class="hljs-comment">// the queryBuilder from above</span>
+        batchSize: <span class="hljs-number">5</span>, <span class="hljs-comment">// (optional) amount of documents that will be send in one batch</span>
+        modifier: d =&gt; d <span class="hljs-comment">// (optional) modifies all pushed documents before they are send to the GraphQL endpoint</span>
+    },
+    deletedFlag: <span class="hljs-string">&apos;deleted&apos;</span>, <span class="hljs-comment">// the flag which indicates if a pulled document is deleted</span>
+    live: <span class="hljs-literal">true</span> <span class="hljs-comment">// if this is true, rxdb will watch for ongoing changes and sync them</span>
+});
+</code></pre>
+<p>Of course you can start the push- and the pull-replication in a single call to <code>myCollection.syncGraphQL()</code>.</p>
+<h4 id="using-subscriptions">Using subscriptions</h4>
+<p>For the pull-replication, RxDB will run the pull-function every 10 seconds to fetch new documents from the server.
+This means that when a change happens on the server, RxDB will, in the worst case, take 10 seconds until the changes is replicated to the client.</p>
+<p>To improve this, it is recommended to setup <a href="https://blog.apollographql.com/tutorial-graphql-subscriptions-server-side-e51c32dc2951" target="_blank">GraphQL Subscriptions</a> which will trigger the replication cycle when a change happens on the server.</p>
+<pre><code class="lang-js"><span class="hljs-keyword">import</span> {
+    SubscriptionClient
+} <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;subscriptions-transport-ws&apos;</span>;
+
+<span class="hljs-comment">// start the replication</span>
+<span class="hljs-keyword">const</span> replicationState = myCollection.syncGraphQL({
+    url: <span class="hljs-string">&apos;http://example.com/graphql&apos;</span>,
+    pull: {
+        pullQueryBuilder,
+    },
+    deletedFlag: <span class="hljs-string">&apos;deleted&apos;</span>, <span class="hljs-comment">// the flag which indicates if a pulled document is deleted</span>
+    live: <span class="hljs-literal">true</span>,
+    <span class="hljs-comment">/**
+     * Because we use the subscriptions as notifiers,
+     * we can set the liveInterval to a very height value.
+     */</span>
+    liveInterval: <span class="hljs-number">60</span> * <span class="hljs-number">1000</span>
+});
+
+
+<span class="hljs-comment">// setup the subscription client</span>
+<span class="hljs-keyword">const</span> wsClient = <span class="hljs-keyword">new</span> SubscriptionClient(
+    <span class="hljs-string">&apos;ws://example.com/subscriptions&apos;</span>, {
+        reconnect: <span class="hljs-literal">true</span>,
+    }
+);
+
+<span class="hljs-keyword">const</span> query = <span class="hljs-string">`subscription onHumanChanged {
+    humanChanged {
+        id
+    }
+}`</span>;
+<span class="hljs-keyword">const</span> changeObservable = wsClient.request({ query });
+<span class="hljs-comment">// subscribe to all events</span>
+changeObservable.subscribe({
+    next(data) {
+        <span class="hljs-comment">/**
+         * When a change happens, call .run() on the replicationState.
+         * This will trigger the pull-handler and download changes from the server.
+         */</span>
+        replicationState.run();
+    }
+});
+</code></pre>
+<h3 id="conflict-resolution">Conflict Resolution</h3>
+<p>RxDB assumes that the Conflict Resolution will happen on the server side.
+When the clients sends a document to the server which causes a conflict, this has to be resolved there and then the resulting document can be synced down to RxDB. While CouchDB uses revision-flags for conflicts, you can use any logic like relying on the <code>updatedAt</code> date or other flags.</p>
+<h3 id="rxgraphqlreplicationstate">RxGraphQLReplicationState</h3>
+<p>When you call <code>myCollection.syncGraphQL()</code> it returns a <code>RxGraphQLReplicationState</code> which can be used to subscribe to events, for debugging or other functions.</p>
+<h4 id="isstopped">.isStopped()</h4>
+<p>Returns true if the replication is stopped. This can be if a non-live replication is finished or a replication got canceled.</p>
+<pre><code class="lang-js">replicationState.isStopped(); <span class="hljs-comment">// true/false</span>
+</code></pre>
+<h4 id="awaitinitialreplication">.awaitInitialReplication()</h4>
+<p>Returns a <code>Promise</code> that is resolved as soon as the initial replication is done.</p>
+<pre><code class="lang-js"><span class="hljs-keyword">await</span> replicationState.awaitInitialReplication();
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">&apos;initial sync done, client data is equal to server data&apos;</span>);
+</code></pre>
+<h4 id="run">.run()</h4>
+<p>Triggers a replication cycle with the server. This is done automatically if the data changes on the client side or the pull-interval is called. This returns a <code>Promise</code> which is resolved when the run-cycle is done. Calling <code>run()</code> many times is no problem because it is queued internally.</p>
+<pre><code class="lang-js"><span class="hljs-keyword">await</span> replicationState.run();
+</code></pre>
+<h4 id="cancel">.cancel()</h4>
+<p>Cancels the replication. This is done autmatically if the <code>RxCollection</code> or it&apos;s <code>RxDatabase</code> is destroyed.</p>
+<pre><code class="lang-js"><span class="hljs-keyword">await</span> replicationState.cancel();
+</code></pre>
+<h4 id="recieved">.recieved$</h4>
+<p>An <code>Observable</code> that emits each document that is recieved from the endpoint.</p>
+<h4 id="send">.send$</h4>
+<p>An <code>Observable</code> that emits each document that is send to the endpoint.</p>
+<h4 id="error">.error$</h4>
+<p>An <code>Observable</code> that emits each error that happens during the replication. Use this if something does not work for debugging. RxDB will handle network errors automatically, other errors must be solved by the developer.</p>
+<pre><code class="lang-js">replicationState.error$.subscribe(error =&gt; {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&apos;something was wrong&apos;</span>);
+    <span class="hljs-built_in">console</span>.dir(error);
+});
+</code></pre>
+<h4 id="canceled">.canceled$</h4>
+<p>An <code>Observable</code> that emits <code>true</code> when the replication is canceled, <code>false</code> if not.</p>
+<h4 id="active">.active$</h4>
+<p>An <code>Observable</code> that emits <code>true</code> when the replication is doing something, <code>false</code> when not.</p>
+<p><strong>NOTICE:</strong> To play around, check out the full example of the RxDB <a href="https://github.com/pubkey/rxdb/tree/master/examples/graphql" target="_blank">GraphQL replication with server and client</a></p>
+<hr>
+<p>If you are new to RxDB, you should continue <a href="query-change-detection.html">here</a></p>
+
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="replication.html" class="navigation navigation-prev " aria-label="Previous page: Replication CouchDB">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="query-change-detection.html" class="navigation navigation-next " aria-label="Next page: QueryChangeDetection">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"Replication GraphQL","level":"1.15","depth":1,"next":{"title":"QueryChangeDetection","level":"1.16","depth":1,"path":"query-change-detection.md","ref":"./query-change-detection.md","articles":[]},"previous":{"title":"Replication CouchDB","level":"1.14","depth":1,"path":"replication.md","ref":"./replication.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @patreon ":"https://www.patreon.com/rxdb/"}},"gitbook":"3.2.3"},"file":{"path":"replication-graphql.md","mtime":"2019-12-02T16:25:27.634Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-12-02T20:01:47.549Z"},"basePath":".","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    <script src="gitbook/gitbook.js"></script>
+    <script src="gitbook/theme.js"></script>
+    
+        
+        <script src="gitbook/gitbook-plugin-edit-link/plugin.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-github/plugin.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-expandable-chapters/expandable-chapters.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-scripts/c6361af027a93a41d58227852f7ae965-gitter.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-search/search-engine.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-search/search.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+
+    </body>
+</html>
+

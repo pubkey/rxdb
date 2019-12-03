@@ -6,9 +6,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.create = create;
-exports["default"] = exports.overwritable = exports.prototypes = exports.rxdb = void 0;
-
-var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
+exports["default"] = exports.overwritable = exports.prototypes = exports.rxdb = exports.KeyCompressor = void 0;
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 
@@ -21,25 +19,17 @@ var _util = require("../util");
 var KeyCompressor =
 /*#__PURE__*/
 function () {
-  /**
-   * @param {RxSchema} schema
-   */
   function KeyCompressor(schema) {
     this.schema = schema;
-    this._table;
-    this._reverseTable;
-    this._fullTable;
   }
 
   var _proto = KeyCompressor.prototype;
 
   /**
    * compress the keys of an object via the compression-table
-   * @param {Object} obj
-   * @param {Object} compressed obj
    */
   _proto.compress = function compress(obj) {
-    if (!this.schema.doKeyCompression()) return (0, _util.clone)(obj);
+    if (!this.schema.doKeyCompression()) return obj;
     return _compressObj(this, obj);
   };
 
@@ -48,7 +38,7 @@ function () {
 
     var reverseTable = this.reverseTable; // non-object
 
-    if ((0, _typeof2["default"])(obj) !== 'object' || obj === null) return obj; // array
+    if (typeof obj !== 'object' || obj === null) return obj; // array
 
     if (Array.isArray(obj)) return obj.map(function (item) {
       return _this._decompressObj(item);
@@ -65,7 +55,7 @@ function () {
   };
 
   _proto.decompress = function decompress(obj) {
-    if (!this.schema.doKeyCompression()) return (0, _util.clone)(obj);
+    if (!this.schema.doKeyCompression()) return obj;
 
     var returnObj = this._decompressObj(obj);
 
@@ -73,10 +63,6 @@ function () {
   }
   /**
    * get the full compressed-key-path of a object-path
-   * @param {string} prePath | 'mainSkill'
-   * @param {string} prePathCompressed | '|a'
-   * @param {string[]} remainPathAr | ['attack', 'count']
-   * @return {string} compressedPath | '|a.|b.|c'
    */
   ;
 
@@ -91,16 +77,15 @@ function () {
   }
   /**
    * replace the keys of a query-obj with the compressed keys
-   * @param {{selector: {}}} queryJSON
-   * @return {{selector: {}}} compressed queryJSON
+   * @return compressed queryJSON
    */
   ;
 
   _proto.compressQuery = function compressQuery(queryJSON) {
     var _this2 = this;
 
-    queryJSON = (0, _util.clone)(queryJSON);
-    if (!this.schema.doKeyCompression()) return queryJSON; // selector
+    if (!this.schema.doKeyCompression()) return queryJSON;
+    queryJSON = (0, _util.clone)(queryJSON); // selector
 
     var selector = {};
     Object.keys(queryJSON.selector).forEach(function (key) {
@@ -160,14 +145,14 @@ function () {
           Object.keys(obj).map(function (key) {
             var propertyObj = obj[key];
             var fullPath = key === 'properties' ? path : (0, _util.trimDots)(path + '.' + key);
-            if ((0, _typeof2["default"])(propertyObj) === 'object' && // do not add schema-attributes
+            if (typeof propertyObj === 'object' && // do not add schema-attributes
             !Array.isArray(propertyObj) && // do not use arrays
             !_this3._table[fullPath] && fullPath !== '' && key.length > 3 && // do not compress short keys
             !fullPath.startsWith('_') // _id/_rev etc should never be compressed
             ) _this3._table[fullPath] = '|' + nextKey(); // primary-key is always compressed to _id
 
             if (propertyObj.primary === true) _this3._table[fullPath] = '_id';
-            if ((0, _typeof2["default"])(propertyObj) === 'object' && !Array.isArray(propertyObj)) propertiesToTable(fullPath, propertyObj);
+            if (typeof propertyObj === 'object' && !Array.isArray(propertyObj)) propertiesToTable(fullPath, propertyObj);
           });
         };
 
@@ -197,10 +182,12 @@ function () {
   return KeyCompressor;
 }();
 
+exports.KeyCompressor = KeyCompressor;
+
 function _compressObj(keyCompressor, obj) {
   var path = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
   var ret = {};
-  if ((0, _typeof2["default"])(obj) !== 'object' || obj === null) return obj;
+  if (typeof obj !== 'object' || obj === null) return obj;
 
   if (Array.isArray(obj)) {
     return obj.map(function (o) {
@@ -237,3 +224,5 @@ var _default = {
   overwritable: overwritable
 };
 exports["default"] = _default;
+
+//# sourceMappingURL=key-compression.js.map

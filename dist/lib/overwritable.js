@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports["default"] = void 0;
 
-var _rxError = require("./rx-error");
+var _util = require("./util");
 
 /**
  * functions that can or should be overwritten by plugins
@@ -14,44 +14,35 @@ var funs = {
   /**
    * validates if a password can be used
    * @overwritten by plugin (optional)
-   * @param  {any} password
    * @throws if password not valid
-   * @return {void}
    */
-  validatePassword: function validatePassword() {
-    throw (0, _rxError.pluginMissing)('encryption');
+  validatePassword: function validatePassword(_password) {
+    throw (0, _util.pluginMissing)('encryption');
   },
 
   /**
    * creates a key-compressor for the given schema
-   * @param  {RxSchema} schema
-   * @return {KeyCompressor}
    */
-  createKeyCompressor: function createKeyCompressor() {
-    throw (0, _rxError.pluginMissing)('key-compression');
+  createKeyCompressor: function createKeyCompressor(_rxSchema) {
+    throw (0, _util.pluginMissing)('key-compression');
   },
 
   /**
    * creates a leader-elector for the given database
-   * @param  {RxDatabase} database
-   * @return {LeaderElector}
    */
-  createLeaderElector: function createLeaderElector() {
-    throw (0, _rxError.pluginMissing)('leaderelection');
+  createLeaderElector: function createLeaderElector(_database) {
+    throw (0, _util.pluginMissing)('leader-election');
   },
 
   /**
    * checks if the given adapter can be used
-   * @return {any} adapter
    */
-  checkAdapter: function checkAdapter() {
-    throw (0, _rxError.pluginMissing)('adapter-check');
+  checkAdapter: function checkAdapter(_adapter) {
+    throw (0, _util.pluginMissing)('adapter-check');
   },
 
   /**
    * overwritte to map error-codes to text-messages
-   * @param  {string} message
-   * @return {string}
    */
   tunnelErrorMessage: function tunnelErrorMessage(message) {
     // TODO better text with link
@@ -60,3 +51,5 @@ var funs = {
 };
 var _default = funs;
 exports["default"] = _default;
+
+//# sourceMappingURL=overwritable.js.map

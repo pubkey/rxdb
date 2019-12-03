@@ -9,13 +9,12 @@ exports.getEncryptedPaths = getEncryptedPaths;
 exports.hasCrypt = hasCrypt;
 exports.getIndexes = getIndexes;
 exports.getPrimary = getPrimary;
+exports.getPreviousVersions = getPreviousVersions;
 exports.getFinalFields = getFinalFields;
 exports.normalize = normalize;
 exports.createRxSchema = createRxSchema;
 exports.isInstanceOf = isInstanceOf;
 exports.RxSchema = void 0;
-
-var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 
@@ -40,7 +39,11 @@ function () {
     this.indexes = getIndexes(this.jsonID); // primary is always required
 
     this.primaryPath = getPrimary(this.jsonID);
-    if (this.primaryPath) this.jsonID.required.push(this.primaryPath); // final fields are always required
+
+    if (this.primaryPath) {
+      this.jsonID.required.push(this.primaryPath);
+    } // final fields are always required
+
 
     this.finalFields = getFinalFields(this.jsonID);
     this.jsonID.required = this.jsonID.required.concat(this.finalFields).filter(function (elem, pos, arr) {
@@ -55,23 +58,19 @@ function () {
       };
     }
   }
-  /**
-   * @return {number}
-   */
-
 
   var _proto = RxSchema.prototype;
 
   _proto.getSchemaByObjectPath = function getSchemaByObjectPath(path) {
-    path = path.replace(/\./g, '.properties.');
-    path = 'properties.' + path;
-    path = (0, _util.trimDots)(path);
+    var usePath = path;
+    usePath = usePath.replace(/\./g, '.properties.');
+    usePath = 'properties.' + usePath;
+    usePath = (0, _util.trimDots)(usePath);
 
-    var ret = _objectPath["default"].get(this.jsonID, path);
+    var ret = _objectPath["default"].get(this.jsonID, usePath);
 
     return ret;
-  };
-
+  }
   /**
    * checks if a given change on a document is allowed
    * Ensures that:
@@ -79,6 +78,8 @@ function () {
    * - final fields are not modified
    * @throws {Error} if not valid
    */
+  ;
+
   _proto.validateChange = function validateChange(dataBefore, dataAfter) {
     this.finalFields.forEach(function (fieldName) {
       if (!(0, _deepEqual["default"])(dataBefore[fieldName], dataAfter[fieldName])) {
@@ -93,22 +94,20 @@ function () {
   /**
    * validate if the obj matches the schema
    * @overwritten by plugin (required)
-   * @param {Object} obj
-   * @param {string} schemaPath if given, validates agains deep-path of schema
+   * @param schemaPath if given, validates agains deep-path of schema
    * @throws {Error} if not valid
-   * @param {Object} obj equal to input-obj
+   * @param obj equal to input-obj
    */
   ;
 
-  _proto.validate = function validate() {
-    throw (0, _rxError.pluginMissing)('validate');
-  };
-
+  _proto.validate = function validate(_obj, _schemaPath) {
+    throw (0, _util.pluginMissing)('validate');
+  }
   /**
    * fills all unset fields with default-values if set
-   * @param  {object} obj
-   * @return {object}
    */
+  ;
+
   _proto.fillObjectWithDefaults = function fillObjectWithDefaults(obj) {
     obj = (0, _util.clone)(obj);
     Object.entries(this.defaultValues).filter(function (_ref) {
@@ -146,21 +145,8 @@ function () {
   ;
 
   _proto.doKeyCompression = function doKeyCompression() {
-    /**
-     * in rxdb 8.0.0 we renambed the keycompression-option
-     * But when a data-migration is done with and old schema,
-     * it might have the old option which then should be used
-     * TODO: Remove this check in Sep 2019
-     */
-    if (this.jsonID.hasOwnProperty('disableKeyCompression')) {
-      return !this.jsonID.disableKeyCompression;
-    } else return this.jsonID.keyCompression;
-  }
-  /**
-   * creates the schema-based document-prototype,
-   * see RxCollection.getDocumentPrototype()
-   */
-  ;
+    return this.jsonID.keyCompression;
+  };
 
   _proto.getDocumentPrototype = function getDocumentPrototype() {
     if (!this._getDocumentPrototype) {
@@ -177,23 +163,6 @@ function () {
     get: function get() {
       return this.jsonID.version;
     }
-    /**
-     * @return {number[]} array with previous version-numbers
-     */
-
-  }, {
-    key: "previousVersions",
-    get: function get() {
-      var c = 0;
-      return new Array(this.version).fill(0).map(function () {
-        return c++;
-      });
-    }
-    /**
-     * true if schema contains at least one encrypted path
-     * @type {boolean}
-     */
-
   }, {
     key: "crypt",
     get: function get() {
@@ -230,10 +199,6 @@ function () {
 
       return this._defaultValues;
     }
-    /**
-     * get all encrypted paths
-     */
-
   }, {
     key: "encryptedPaths",
     get: function get() {
@@ -246,13 +211,15 @@ function () {
       if (!this._hash) this._hash = (0, _util.hash)(this.normalized);
       return this._hash;
     }
+    /**
+     * true if schema contains at least one encrypted path
+     */
+
   }]);
   return RxSchema;
 }();
 /**
  * returns all encrypted paths of the schema
- * @param  {Object} jsonSchema [description]
- * @return {Object} with paths as attr and schema as value
  */
 
 
@@ -262,18 +229,18 @@ function getEncryptedPaths(jsonSchema) {
   var ret = {};
 
   function traverse(currentObj, currentPath) {
-    if ((0, _typeof2["default"])(currentObj) !== 'object') return;
+    if (typeof currentObj !== 'object') return;
 
     if (currentObj.encrypted) {
       ret[currentPath.substring(1)] = currentObj;
       return;
     }
 
-    for (var attributeName in currentObj) {
+    Object.keys(currentObj).forEach(function (attributeName) {
       var nextPath = currentPath;
       if (attributeName !== 'properties') nextPath = nextPath + '.' + attributeName;
       traverse(currentObj[attributeName], nextPath);
-    }
+    });
   }
 
   traverse(jsonSchema.properties, '');
@@ -281,8 +248,6 @@ function getEncryptedPaths(jsonSchema) {
 }
 /**
  * returns true if schema contains an encrypted field
- * @param  {object} jsonSchema with schema
- * @return {boolean} isEncrypted
  */
 
 
@@ -325,8 +290,7 @@ function getIndexes(jsonID) {
 }
 /**
  * returns the primary path of a jsonschema
- * @param {Object} jsonID
- * @return {string} primaryPath which is _id if none defined
+ * @return primaryPath which is _id if none defined
  */
 
 
@@ -337,9 +301,20 @@ function getPrimary(jsonID) {
   if (!ret) return '_id';else return ret;
 }
 /**
+ * array with previous version-numbers
+ */
+
+
+function getPreviousVersions(schema) {
+  var version = schema.version ? schema.version : 0;
+  var c = 0;
+  return new Array(version).fill(0).map(function () {
+    return c++;
+  });
+}
+/**
  * returns the final-fields of the schema
- * @param  {Object} jsonID
- * @return {string[]} field-names of the final-fields
+ * @return field-names of the final-fields
  */
 
 
@@ -353,8 +328,7 @@ function getFinalFields(jsonID) {
 }
 /**
  * orders the schemas attributes by alphabetical order
- * @param {Object} jsonSchema
- * @return {Object} jsonSchema - ordered
+ * @return jsonSchema - ordered
  */
 
 
@@ -363,8 +337,7 @@ function normalize(jsonSchema) {
 }
 /**
  * fills the schema-json with default-settings
- * @param  {Object} schemaObj
- * @return {Object} cloned schemaObj
+ * @return cloned schemaObj
  */
 
 
@@ -403,3 +376,5 @@ function createRxSchema(jsonID) {
 function isInstanceOf(obj) {
   return obj instanceof RxSchema;
 }
+
+//# sourceMappingURL=rx-schema.js.map

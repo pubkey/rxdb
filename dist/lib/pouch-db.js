@@ -5,7 +5,13 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = void 0;
+exports.countAllUndeleted = countAllUndeleted;
+exports.getBatch = getBatch;
+exports.isLevelDown = isLevelDown;
+exports.validateCouchDBString = validateCouchDBString;
+exports.pouchReplicationFunction = pouchReplicationFunction;
+exports.isInstanceOf = isInstanceOf;
+exports.PouchDB = void 0;
 
 var _pouchdbCore = _interopRequireDefault(require("pouchdb-core"));
 
@@ -19,22 +25,20 @@ var _rxError = require("./rx-error");
  * Adapters can be found here:
  * @link https://github.com/pouchdb/pouchdb/tree/master/packages/node_modules
  */
-
+// pouchdb-find
+_pouchdbCore["default"].plugin(_pouchdbFind["default"]);
 /*
 // comment in to debug
 const pouchdbDebug = require('pouchdb-debug');
 PouchDB.plugin(pouchdbDebug);
 PouchDB.debug.enable('*');
 */
-// pouchdb-find
-_pouchdbCore["default"].plugin(_pouchdbFind["default"]);
+
 
 /**
  * get the number of all undeleted documents
- * @param  {PouchDB}  pouchdb instance
- * @return {Promise<number>} number of documents
  */
-_pouchdbCore["default"].countAllUndeleted = function (pouchdb) {
+function countAllUndeleted(pouchdb) {
   return pouchdb.allDocs({
     include_docs: false,
     attachments: false
@@ -43,16 +47,13 @@ _pouchdbCore["default"].countAllUndeleted = function (pouchdb) {
       return !row.id.startsWith('_design/');
     }).length;
   });
-};
+}
 /**
  * get a batch of documents from the pouch-instance
- * @param  {PouchDB}  pouchdb instance
- * @param  {number}  limit
- * @return {Promise<{}[]>} array with documents
  */
 
 
-_pouchdbCore["default"].getBatch = function (pouchdb, limit) {
+function getBatch(pouchdb, limit) {
   if (limit <= 1) {
     throw (0, _rxError.newRxError)('P1', {
       limit: limit
@@ -70,11 +71,77 @@ _pouchdbCore["default"].getBatch = function (pouchdb, limit) {
       return !doc._id.startsWith('_design');
     });
   });
-};
+}
+/**
+ * check if the given module is a leveldown-adapter
+ * throws if not
+ */
 
-_pouchdbCore["default"].isInstanceOf = function (obj) {
+
+function isLevelDown(adapter) {
+  if (!adapter || typeof adapter.super_ !== 'function') {
+    throw (0, _rxError.newRxError)('UT4', {
+      adapter: adapter
+    });
+  }
+}
+/**
+ * validates that a given string is ok to be used with couchdb-collection-names
+ * @link https://wiki.apache.org/couchdb/HTTP_database_API
+ * @throws  {Error}
+ */
+
+
+function validateCouchDBString(name) {
+  if (typeof name !== 'string' || name.length === 0) {
+    throw (0, _rxError.newRxTypeError)('UT1', {
+      name: name
+    });
+  } // do not check, if foldername is given
+
+
+  if (name.includes('/') || // unix
+  name.includes('\\') // windows
+  ) return true;
+  var regStr = '^[a-z][_$a-z0-9]*$';
+  var reg = new RegExp(regStr);
+
+  if (!name.match(reg)) {
+    throw (0, _rxError.newRxError)('UT2', {
+      regex: regStr,
+      givenName: name
+    });
+  }
+
+  return true;
+}
+/**
+ * get the correct function-name for pouchdb-replication
+ */
+
+
+function pouchReplicationFunction(pouch, _ref) {
+  var _ref$pull = _ref.pull,
+      pull = _ref$pull === void 0 ? true : _ref$pull,
+      _ref$push = _ref.push,
+      push = _ref$push === void 0 ? true : _ref$push;
+  if (pull && push) return pouch.sync.bind(pouch);
+  if (!pull && push) return pouch.replicate.to.bind(pouch);
+  if (pull && !push) return pouch.replicate.from.bind(pouch);
+
+  if (!pull && !push) {
+    throw (0, _rxError.newRxError)('UT3', {
+      pull: pull,
+      push: push
+    });
+  }
+}
+
+function isInstanceOf(obj) {
   return obj instanceof _pouchdbCore["default"];
-};
+}
 
-var _default = _pouchdbCore["default"];
-exports["default"] = _default;
+var PouchDB = _pouchdbCore["default"];
+exports.PouchDB = PouchDB;
+
+//# sourceMappingURL=pouch-db.js.map

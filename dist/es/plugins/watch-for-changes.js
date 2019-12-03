@@ -2,11 +2,11 @@ import { fromEvent } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { promiseWait, nextTick } from '../util';
 import { changeEventfromPouchChange } from '../rx-change-event';
+
 /**
  * listens to changes of the internal pouchdb
  * and ensures they are emitted to the internal RxChangeEvent-Stream
  */
-
 export function watchForChanges() {
   var _this = this;
 
@@ -42,9 +42,6 @@ export function watchForChanges() {
 /**
  * handles a single change-event
  * and ensures that it is not already handled
- * @param {RxCollection} collection
- * @param {*} change
- * @return {Promise<boolean>}
  */
 
 function _handleSingleChange(collection, change) {
@@ -58,7 +55,10 @@ function _handleSingleChange(collection, change) {
   }).then(function () {
     var docData = change.doc; // already handled by internal event-stream
 
-    if (collection._changeEventBuffer.hasChangeWithRevision(docData._rev)) return Promise.resolve(false);
+    if (collection._changeEventBuffer.hasChangeWithRevision(docData._rev)) {
+      return false;
+    }
+
     var cE = changeEventfromPouchChange(docData, collection);
     collection.$emit(cE);
     return true;
@@ -71,7 +71,9 @@ export var prototypes = {
     proto.watchForChanges = watchForChanges;
   }
 };
-export default {
+var plugin = {
   rxdb: rxdb,
   prototypes: prototypes
 };
+export default plugin;
+//# sourceMappingURL=watch-for-changes.js.map

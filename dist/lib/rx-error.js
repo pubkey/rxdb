@@ -5,16 +5,15 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.pluginMissing = pluginMissing;
-exports.newRxTypeError = exports.newRxError = exports.RxTypeError = exports.RxError = void 0;
+exports.newRxError = newRxError;
+exports.newRxTypeError = newRxTypeError;
+exports.RxTypeError = exports.RxError = void 0;
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 
 var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/inheritsLoose"));
 
 var _wrapNativeSuper2 = _interopRequireDefault(require("@babel/runtime/helpers/wrapNativeSuper"));
-
-var _util = require("./util");
 
 var _overwritable = _interopRequireDefault(require("./overwritable"));
 
@@ -24,8 +23,6 @@ var _overwritable = _interopRequireDefault(require("./overwritable"));
 
 /**
  * transform an object of parameters to a presentable string
- * @param  {any} parameters
- * @return {string}
  */
 function parametersToString(parameters) {
   var ret = '';
@@ -35,7 +32,7 @@ function parametersToString(parameters) {
     var paramStr = '[object Object]';
 
     try {
-      paramStr = JSON.stringify(parameters[k], function (k, v) {
+      paramStr = JSON.stringify(parameters[k], function (_k, v) {
         return v === undefined ? null : v;
       }, 2);
     } catch (e) {}
@@ -128,26 +125,18 @@ function (_TypeError) {
     }
   }]);
   return RxTypeError;
-}((0, _wrapNativeSuper2["default"])(TypeError));
-
-exports.RxTypeError = RxTypeError;
-
-function pluginMissing(pluginKey) {
-  return new RxError('PU', "You are using a function which must be overwritten by a plugin.\n        You should either prevent the usage of this function or add the plugin via:\n          - es5-require:\n            RxDB.plugin(require('rxdb/plugins/" + pluginKey + "'))\n          - es6-import:\n            import " + (0, _util.ucfirst)(pluginKey) + "Plugin from 'rxdb/plugins/" + pluginKey + "';\n            RxDB.plugin(" + (0, _util.ucfirst)(pluginKey) + "Plugin);\n        ", {
-    pluginKey: pluginKey
-  });
-} // const errorKeySearchLink = key => 'https://github.com/pubkey/rxdb/search?q=' + key + '+path%3Asrc%2Fmodules';
+}((0, _wrapNativeSuper2["default"])(TypeError)); // const errorKeySearchLink = key => 'https://github.com/pubkey/rxdb/search?q=' + key + '+path%3Asrc%2Fmodules';
 // const verboseErrorModuleLink = 'https://pubkey.github.io/rxdb/custom-builds.html#verbose-error';
 
 
-var newRxError = function newRxError(code, parameters) {
+exports.RxTypeError = RxTypeError;
+
+function newRxError(code, parameters) {
   return new RxError(code, _overwritable["default"].tunnelErrorMessage(code), parameters);
-};
+}
 
-exports.newRxError = newRxError;
-
-var newRxTypeError = function newRxTypeError(code, parameters) {
+function newRxTypeError(code, parameters) {
   return new RxTypeError(code, _overwritable["default"].tunnelErrorMessage(code), parameters);
-};
+}
 
-exports.newRxTypeError = newRxTypeError;
+//# sourceMappingURL=rx-error.js.map

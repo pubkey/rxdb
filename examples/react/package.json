@@ -3,17 +3,17 @@
   "version": "3.0.0",
   "dependencies": {
     "babel-polyfill": "6.26.0",
-    "concurrently": "4.1.1",
+    "concurrently": "5.0.0",
     "pouchdb-adapter-http": "7.0.0",
     "pouchdb-adapter-idb": "7.0.0",
     "pouchdb-replication": "7.0.0",
     "pouchdb-server": "4.1.0",
-    "react": "16.8.6",
-    "react-dom": "16.8.6"
+    "react": "16.12.0",
+    "react-dom": "16.12.0"
   },
   "devDependencies": {
-    "react-scripts": "3.0.1",
-    "rimraf": "2.6.3"
+    "react-scripts": "3.2.0",
+    "rimraf": "3.0.0"
   },
   "scripts": {
     "preinstall": "echo \"PREINSTALL\" && npm install --production --prefix ../../",

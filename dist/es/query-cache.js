@@ -2,7 +2,7 @@
  * the query-cache makes sure that on every query-state, exactly one instance can exist
  * if you use the same mango-query more then once, it will only search the database once.
  */
-var QueryCache =
+export var QueryCache =
 /*#__PURE__*/
 function () {
   function QueryCache() {
@@ -13,8 +13,6 @@ function () {
    * check if an equal query is in the cache,
    * if true, return the cached one,
    * if false, save the given one and return it
-   * @param  {RxQuery} query
-   * @return {RxQuery}
    */
 
 
@@ -35,7 +33,7 @@ function () {
 
   return QueryCache;
 }();
-
-export default function createQueryCache() {
+export function createQueryCache() {
   return new QueryCache();
 }
+//# sourceMappingURL=query-cache.js.map

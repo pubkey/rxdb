@@ -1,0 +1,7 @@
+{
+  "name": "rxdb-plugin-replication-graphql",
+  "main": "../../dist/lib/plugins/replication-graphql/index.js",
+  "jsnext:main": "../../dist/es/plugins/replication-graphql/index.js",
+  "module": "../../dist/es/plugins/replication-graphql/index.js",
+  "types": "../../dist/typings/plugins/replication-graphql/index.d.ts"
+}

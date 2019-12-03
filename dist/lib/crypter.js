@@ -12,8 +12,6 @@ var _objectPath = _interopRequireDefault(require("object-path"));
 
 var _util = require("./util");
 
-var _rxError = require("./rx-error");
-
 /**
  * handle the en/decryption of documents-data
  */
@@ -21,40 +19,36 @@ var Crypter =
 /*#__PURE__*/
 function () {
   function Crypter(password, schema) {
-    this._password = password;
-    this._schema = schema;
+    this.password = password;
+    this.schema = schema;
   }
   /**
    * encrypt and stringify data
    * @overwritten by plugin (optional)
-   * @param  {any} value
-   * @return {string}
    */
 
 
   var _proto = Crypter.prototype;
 
-  _proto._encryptValue = function _encryptValue() {
-    throw (0, _rxError.pluginMissing)('encryption');
+  _proto._encryptValue = function _encryptValue(_value) {
+    throw (0, _util.pluginMissing)('encryption');
   }
   /**
    * decrypt and json-parse an encrypted value
    * @overwritten by plugin (optional)
-   * @param  {string} encValue
-   * @return {any}
    */
   ;
 
-  _proto._decryptValue = function _decryptValue() {
-    throw (0, _rxError.pluginMissing)('encryption');
+  _proto._decryptValue = function _decryptValue(_value) {
+    throw (0, _util.pluginMissing)('encryption');
   };
 
   _proto.encrypt = function encrypt(obj) {
     var _this = this;
 
+    if (!this.password) return obj;
     obj = (0, _util.clone)(obj);
-    if (!this._password) return obj;
-    Object.keys(this._schema.encryptedPaths).forEach(function (path) {
+    Object.keys(this.schema.encryptedPaths).forEach(function (path) {
       var value = _objectPath["default"].get(obj, path);
 
       if (typeof value === 'undefined') return;
@@ -69,9 +63,9 @@ function () {
   _proto.decrypt = function decrypt(obj) {
     var _this2 = this;
 
+    if (!this.password) return obj;
     obj = (0, _util.clone)(obj);
-    if (!this._password) return obj;
-    Object.keys(this._schema.encryptedPaths).forEach(function (path) {
+    Object.keys(this.schema.encryptedPaths).forEach(function (path) {
       var value = _objectPath["default"].get(obj, path);
 
       if (typeof value === 'undefined') return;
@@ -97,3 +91,5 @@ var _default = {
   Crypter: Crypter
 };
 exports["default"] = _default;
+
+//# sourceMappingURL=crypter.js.map

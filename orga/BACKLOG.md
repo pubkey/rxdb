@@ -76,3 +76,8 @@ See [#259](https://github.com/pubkey/rxdb/issues/259)
 ## Upsert atomic with attachments
 
 See [#494](https://github.com/pubkey/rxdb/issues/494)
+
+
+## import/export with attachments
+
+See [#1396](https://github.com/pubkey/rxdb/pull/1396#issuecomment-523014106)
