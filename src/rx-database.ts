@@ -362,7 +362,7 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
     /**
      * export to json
      */
-    dump(_decrypted: boolean = false, _collections?: string[]): string[] | null {
+    dump(_decrypted: boolean = false, _collections?: string[]): Promise<string[] | null> {
         throw pluginMissing('json-dump');
     }
 
