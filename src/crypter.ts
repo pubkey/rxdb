@@ -14,7 +14,7 @@ import {
 
 export class Crypter {
     constructor(
-        public password: any,
+        public password: string,
         public schema: RxSchema
     ) { }
 
@@ -30,7 +30,7 @@ export class Crypter {
      * decrypt and json-parse an encrypted value
      * @overwritten by plugin (optional)
      */
-    _decryptValue(_value: any): string {
+    _decryptValue(_value: any): any {
         throw pluginMissing('encryption');
     }
 

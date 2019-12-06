@@ -1,102 +1,23 @@
-import {
-    filter
-} from 'rxjs/operators';
-
-import {
-    ucfirst,
-    nextTick,
-    flatClone,
-    promiseSeries,
-    pluginMissing
-} from './util';
-import {
-    validateCouchDBString
-} from './pouch-db';
-import {
-    _handleToPouch,
-    _handleFromPouch,
-    fillObjectDataBeforeInsert
-} from './rx-collection-helper';
-import {
-    createRxQuery,
-    RxQueryBase
-} from './rx-query';
-import {
-    isInstanceOf as isInstanceOfRxSchema,
-    createRxSchema
-} from './rx-schema';
-import {
-    createChangeEvent,
-    RxChangeEvent
-} from './rx-change-event';
-import {
-    newRxError,
-    newRxTypeError
-} from './rx-error';
-import {
-    mustMigrate,
-    createDataMigrator,
-    DataMigrator
-} from './data-migrator';
-import Crypter, {
-    Crypter as CrypterClass
-} from './crypter';
-import {
-    DocCache,
-    createDocCache
-} from './doc-cache';
-import {
-    QueryCache,
-    createQueryCache
-} from './query-cache';
-import {
-    ChangeEventBuffer,
-    createChangeEventBuffer
-} from './change-event-buffer';
+import { Observable, Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
+import { ChangeEventBuffer, createChangeEventBuffer } from './change-event-buffer';
+import Crypter, { Crypter as CrypterClass } from './crypter';
+import { createDataMigrator, DataMigrator, mustMigrate } from './data-migrator';
+import { createDocCache, DocCache } from './doc-cache';
+import { runPluginHooks } from './hooks';
 import overwritable from './overwritable';
-import {
-    runPluginHooks
-} from './hooks';
-
-import {
-    Subscription,
-    Observable
-} from 'rxjs';
-
-import {
-    PouchSettings,
-    KeyFunctionMap,
-    RxReplicationState,
-    PouchDBInstance,
-    MigrationState,
-    SyncOptions,
-    RxCollection,
-    RxDatabase,
-    RxQuery,
-    RxDocument,
-    SyncOptionsGraphQL,
-    RxChangeEventUpdate,
-    RxChangeEventInsert,
-    RxChangeEventRemove
-} from './types';
-import {
-    RxGraphQLReplicationState
-} from './plugins/replication-graphql';
-
-import {
-    RxSchema
-} from './rx-schema';
-import {
-    createWithConstructor as createRxDocumentWithConstructor,
-    isInstanceOf as isRxDocument,
-    properties as rxDocumentProperties
-} from './rx-document';
-
-import {
-    createRxDocument,
-    getRxDocumentConstructor
-} from './rx-document-prototype-merge';
-
+import { RxGraphQLReplicationState } from './plugins/replication-graphql';
+import { validateCouchDBString } from './pouch-db';
+import { createQueryCache, QueryCache } from './query-cache';
+import { createChangeEvent, RxChangeEvent } from './rx-change-event';
+import { fillObjectDataBeforeInsert, _handleFromPouch, _handleToPouch } from './rx-collection-helper';
+import { createWithConstructor as createRxDocumentWithConstructor, isInstanceOf as isRxDocument } from './rx-document';
+import { createRxDocument, getRxDocumentConstructor } from './rx-document-prototype-merge';
+import { newRxError, newRxTypeError } from './rx-error';
+import { createRxQuery, RxQueryBase } from './rx-query';
+import { createRxSchema, isInstanceOf as isInstanceOfRxSchema, RxSchema } from './rx-schema';
+import { KeyFunctionMap, MigrationState, PouchDBInstance, PouchSettings, RxChangeEventInsert, RxChangeEventRemove, RxChangeEventUpdate, RxCollection, RxDatabase, RxDocument, RxDumpCollection, RxDumpCollectionEncrypted, RxDumpCollectionImport, RxQuery, RxReplicationState, SyncOptions, SyncOptionsGraphQL } from './types';
+import { flatClone, nextTick, pluginMissing, promiseSeries, ucfirst } from './util';
 
 const HOOKS_WHEN = ['pre', 'post'];
 const HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
@@ -104,7 +25,7 @@ let hooksApplied = false;
 
 
 
-export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
+export class RxCollectionBase<RxDocumentType = { [prop: string]: any }, OrmMethods = {}> {
 
     constructor(
         public database: RxDatabase,
@@ -537,18 +458,23 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
     }
 
     /**
-     * export to json
-     * if true, all encrypted values will be decrypted
+     * Export collection to a JSON friendly format.
+     * @param _decrypted
+     * When true, all encrypted values will be decrypted.
+     * When false or omitted and an interface or type is loaded in this collection,
+     * all base properties of the type are typed as `any` since data could be encrypted.
      */
-    dump(_decrytped: boolean = false): Promise<any> {
+    dump<DT = RxDocumentType>(_decrypted: boolean): Promise<RxDumpCollection<DT>>;
+    dump<DT = RxDocumentType>(_decrypted?: false): Promise<RxDumpCollectionEncrypted<DT>>;
+    dump(_decrypted: boolean = false): Promise<any> {
         throw pluginMissing('json-dump');
     }
 
     /**
-     * imports the json-data into the collection
-     * @param should be an array of raw-data
+     * Import the parsed JSON export into the collection.
+     * @param _exportedJSON The previously exported data from the `<collection>.dump()` method.
      */
-    importDump(_exportedJSON: any): Promise<boolean> {
+    importDump<DT = RxDocumentType>(_exportedJSON: RxDumpCollectionImport<DT>): Promise<void> {
         throw pluginMissing('json-dump');
     }
 

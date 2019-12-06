@@ -1,19 +1,11 @@
 import clone from 'clone';
-import * as schemas from './schemas';
-import * as schemaObjects from './schema-objects';
-
-import * as util from '../../dist/lib/util';
-import {
-    create as createRxDatabase,
-    RxJsonSchema,
-    RxCollection
-} from '../../';
-
 import * as RxDB from '../../';
+import { create as createRxDatabase, RxCollection, RxJsonSchema } from '../../';
+import * as util from '../../dist/lib/util';
+import * as schemaObjects from './schema-objects';
+import { HumanDocumentType, NestedHumanDocumentType } from './schema-objects';
+import * as schemas from './schemas';
 
-import {
-    HumanDocumentType
-} from './schema-objects';
 
 export async function create(
     size: number = 20,
@@ -224,7 +216,7 @@ export async function multipleOnSameDB(size = 10) {
 }
 
 
-export async function createNested(amount = 5, adapter = 'memory') {
+export async function createNested(amount = 5, adapter = 'memory'): Promise<RxCollection<NestedHumanDocumentType>> {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
     const db = await createRxDatabase({
         name: util.randomCouchString(10),
@@ -305,7 +297,8 @@ export async function createMultiInstance(
     name: string,
     amount = 0,
     password = null
-) {
+): Promise<RxCollection<HumanDocumentType>> {
+    RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
     const db = await createRxDatabase({
         name,
         adapter: 'memory',

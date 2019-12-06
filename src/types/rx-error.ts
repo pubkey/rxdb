@@ -65,7 +65,7 @@ export interface RxErrorParameters {
     readonly op?: string;
     readonly skip?: any;
     readonly limit?: any;
-    readonly passwordHash?: string;
+    readonly passwordHash?: string | null;
     readonly existingPasswordHash?: string;
     readonly password?: string;
     readonly minPassLength?: number;

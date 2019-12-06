@@ -1,67 +1,45 @@
 /**
  * this plugin adds the json export/import capabilities to RxDB
  */
-import {
-    hash
-} from '../util';
-import {
-    createRxQuery
-} from '../rx-query';
-import {
-    newRxError
-} from '../rx-error';
-import {
-    createChangeEvent
-} from '../rx-change-event';
-import {
-    RxDatabase,
-    RxCollection
-} from '../types';
+import { createChangeEvent } from '../rx-change-event';
+import { newRxError } from '../rx-error';
+import { createRxQuery } from '../rx-query';
+import { RxCollection, RxDatabase, RxDumpCollection, RxDumpCollectionAsAny, RxDumpDatabase } from '../types';
+import { hash } from '../util';
 
-function dumpRxDatabase(
+async function dumpRxDatabase(
     this: RxDatabase,
     decrypted = false,
     collections?: string[]
-): Promise<any> {
-    const json: any = {
+) {
+
+    const useCollections = await Promise.all(
+        Object.entries(this.collections)
+            .filter(([colName]) => !collections || collections.includes(colName))
+            .filter(([colName]) => colName.charAt(0) !== '_')
+            .map(async ([_, collection]) => await collection.dump(decrypted))
+    );
+
+    return {
         name: this.name,
         instanceToken: this.token,
-        encrypted: false,
-        passwordHash: null,
-        collections: []
+        encrypted: this.password ? !decrypted : false,
+        passwordHash: this.password ? hash(this.password) : null,
+        collections: useCollections,
     };
-
-    if (this.password) {
-        json.passwordHash = hash(this.password);
-        if (decrypted) json.encrypted = false;
-        else json.encrypted = true;
-    }
-
-    const useCollections = Object.keys(this.collections)
-        .filter(colName => !collections || collections.includes(colName))
-        .filter(colName => colName.charAt(0) !== '_')
-        .map(colName => this.collections[colName]);
-
-    return Promise.all(
-        useCollections
-            .map(col => col.dump(decrypted))
-    ).then(cols => {
-        json.collections = cols;
-        return json;
-    });
 }
 
-const importDumpRxDatabase = function (
+const importDumpRxDatabase = function <Collections>(
     this: RxDatabase,
-    dump: any
-) {
+    dump: RxDumpDatabase<Collections>
+): Promise<void> {
     /**
      * collections must be created before the import
      * because we do not know about the other collection-settings here
      */
     const missingCollections = dump.collections
-        .filter((col: any) => !this.collections[col.name])
-        .map((col: any) => col.name);
+        .filter(col => !this.collections[col.name])
+        .map(col => col.name);
     if (missingCollections.length > 0) {
         throw newRxError('JD1', {
             missingCollections
@@ -71,44 +49,42 @@ const importDumpRxDatabase = function (
     return Promise.all(
         dump.collections
             .map((colDump: any) => this.collections[colDump.name].importDump(colDump))
-    );
+    ).then(() => void 0);
 };
 
-const dumpRxCollection = function (
+export const dumpRxCollection = async function <DT>(
     this: RxCollection,
     decrypted = false
 ) {
+
     const encrypted = !decrypted;
-
-    const json: any = {
-        name: this.name,
-        schemaHash: this.schema.hash,
-        encrypted: false,
-        passwordHash: null,
-        docs: []
-    };
-
-    if (this.database.password && encrypted) {
-        json.passwordHash = hash(this.database.password);
-        json.encrypted = true;
-    }
-
     const query = createRxQuery('find', {}, this);
-    return this._pouchFind(query, undefined, encrypted)
-        .then((docs: any) => {
-            json.docs = docs.map((docData: any) => {
+
+    const pouchDocs: RxDumpCollection<DT>['docs'] = await this._pouchFind(query, undefined, encrypted)
+        .then(docs =>
+            docs.map(docData => {
                 delete docData._rev;
                 delete docData._attachments;
                 return docData;
-            });
-            return json;
-        });
+            })
+        );
+
+    const dump: RxDumpCollection<DT> = {
+        name: this.name,
+        schemaHash: this.schema.hash,
+        encrypted: !!(this.database.password && encrypted),
+        passwordHash: this.database.password && encrypted ? hash(this.database.password) : null,
+        docs: pouchDocs
+    };
+
+    if (dump.encrypted) { return dump as RxDumpCollection<RxDumpCollectionAsAny<DT>>; }
+    return dump as RxDumpCollection<DT>;
 };
 
-function importDumpRxCollection(
+function importDumpRxCollection<DT>(
     this: RxCollection,
-    exportedJSON: any
-): Promise<any> {
+    exportedJSON: RxDumpCollection<DT>
+): Promise<void> {
     // check schemaHash
     if (exportedJSON.schemaHash !== this.schema.hash) {
         throw newRxError('JD2', {

@@ -18,12 +18,12 @@ import {
 
 const minPassLength = 8;
 
-export function encrypt(value: any, password: any) {
+export function encrypt(value: string, password: string) {
     const encrypted = AES.encrypt(value, password);
     return encrypted.toString();
 }
 
-export function decrypt(cipherText: string, password: any) {
+export function decrypt(cipherText: string, password: string) {
     const decrypted = AES.decrypt(cipherText, password);
     return decrypted.toString(cryptoEnc);
 }
@@ -32,7 +32,7 @@ const _encryptValue = function (this: Crypter, value: any) {
     return encrypt(JSON.stringify(value), this.password);
 };
 
-const _decryptValue = function (this: Crypter, encryptedValue: any) {
+const _decryptValue = function (this: Crypter, encryptedValue: string) {
     const decrypted = decrypt(encryptedValue, this.password);
     return JSON.parse(decrypted);
 };

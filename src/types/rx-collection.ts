@@ -1,12 +1,5 @@
-import {
-    RxJsonSchema,
-    PouchSettings,
-    RxDocument,
-    RxLocalDocument
-} from './';
-import {
-    RxCollectionBase
-} from '../rx-collection';
+import { RxCollectionBase } from '../rx-collection';
+import { PouchSettings, RxDocument, RxJsonSchema, RxLocalDocument } from './';
 
 export interface KeyFunctionMap {
     [key: string]: Function;
@@ -81,4 +74,25 @@ export interface RxCollectionGenerated<RxDocumentType = any, OrmMethods = {}> {
 
     // only inMemory-collections
     awaitPersistence(): Promise<void>;
+}
+
+/**
+ * Properties are possibly encrypted so we type them as any.
+ */
+export type RxDumpCollectionAsAny<T> = { [P in keyof T]: any };
+
+interface RxDumpCollectionBase {
+    encrypted: boolean;
+    name: string;
+    passwordHash: string | null;
+    schemaHash: string;
+}
+export interface RxDumpCollection<RxDocumentType> extends RxDumpCollectionBase {
+    docs: RxDocumentType[];
+}
+export interface RxDumpCollectionEncrypted<RxDocumentType> extends RxDumpCollectionBase {
+    docs: RxDumpCollectionAsAny<RxDocumentType>[];
+}
+export interface RxDumpCollectionImport<RxDocumentType> extends RxDumpCollectionBase {
+    docs: RxDumpCollectionAsAny<RxDocumentType>[];
 }

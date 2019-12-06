@@ -1,65 +1,19 @@
-import randomToken from 'random-token';
-import IdleQueue from 'custom-idle-queue';
 import { BroadcastChannel } from 'broadcast-channel';
-
-import {
-    adapterObject,
-    hash,
-    promiseWait,
-    pluginMissing
-} from './util';
-import {
-    newRxError
-} from './rx-error';
-import {
-    createRxSchema
-} from './rx-schema';
-import {
-    isInstanceOf as isInstanceOfRxChangeEvent,
-    createChangeEvent,
-    changeEventfromJSON
-} from './rx-change-event';
+import IdleQueue from 'custom-idle-queue';
+import randomToken from 'random-token';
+import { Observable, Subject, Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
+import { runPluginHooks } from './hooks';
 import overwritable from './overwritable';
-import {
-    runPluginHooks
-} from './hooks';
-import {
-    Subject,
-    Subscription,
-    Observable
-} from 'rxjs';
-import {
-    filter
-} from 'rxjs/operators';
+import { isLevelDown, PouchDB, validateCouchDBString } from './pouch-db';
+import { changeEventfromJSON, createChangeEvent, isInstanceOf as isInstanceOfRxChangeEvent, RxChangeEvent } from './rx-change-event';
+import { create as createRxCollection } from './rx-collection';
+import { newRxError } from './rx-error';
+import { createRxSchema } from './rx-schema';
+import { CollectionsOfDatabase, PouchDBInstance, PouchSettings, RxChangeEventCollection, RxChangeEventInsert, RxChangeEventRemove, RxChangeEventUpdate, RxCollection, RxCollectionCreator, RxDatabase, RxDatabaseCreator, RxDumpDatabase, RxDumpDatabaseEncrypted, RxDumpDatabaseImport, RxJsonSchema, ServerOptions } from './types';
+import { adapterObject, hash, pluginMissing, promiseWait } from './util';
 
-import {
-    PouchDB,
-    validateCouchDBString,
-    isLevelDown
-} from './pouch-db';
 
-import {
-    create as createRxCollection
-} from './rx-collection';
-import {
-    RxChangeEvent
-} from './rx-change-event';
-import {
-    CollectionsOfDatabase,
-    RxChangeEventInsert,
-    RxChangeEventUpdate,
-    RxChangeEventRemove,
-    PouchDBInstance,
-    RxChangeEventCollection,
-    RxDatabase,
-    RxCollectionCreator,
-    RxJsonSchema,
-    RxCollection,
-    PouchSettings,
-    ServerOptions,
-    RxDatabaseCreator,
-    RxDatabaseGenerated
-} from './types';
 
 /**
  * stores the combinations
@@ -81,7 +35,7 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
         public options: any = {},
         public pouchSettings: PouchSettings
     ) {
-        this.collections = {} as any;
+        this.collections = {} as Collections;
         if (typeof name !== 'undefined') DB_COUNT++;
     }
     get leaderElector() {
@@ -360,16 +314,23 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
     }
 
     /**
-     * export to json
+     * Export database to a JSON friendly format.
+     * @param _decrypted
+     * When true, all encrypted values will be decrypted.
      */
-    dump(_decrypted: boolean = false, _collections?: string[]): Promise<string[] | null> {
+    dump(_decrypted: boolean, _collections?: string[]): Promise<RxDumpDatabase<Collections>>;
+    dump(_decrypted?: false, _collections?: string[]): Promise<RxDumpDatabaseEncrypted<Collections>>;
+    dump(_decrypted: boolean = false, _collections?: string[]): Promise<any> {
         throw pluginMissing('json-dump');
     }
 
     /**
-     * import json
+     * Import the parsed JSON export into the collection.
+     * @param _exportedJSON The previously exported data from the `<db>.dump()` method.
+     * @note When an interface is loaded in this collection all base properties of the type are typed as `any`
+     * since data could be encrypted.
      */
-    importDump(_json: any): Promise<any> {
+    importDump<CT = Collections>(_exportedJSON: RxDumpDatabaseImport<CT>): Promise<void> {
         throw pluginMissing('json-dump');
     }
 

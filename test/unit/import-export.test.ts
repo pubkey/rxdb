@@ -20,6 +20,7 @@ config.parallel('import-export.test.js', () => {
             it('export the collection', async () => {
                 const col = await humansCollection.create(5);
                 const json = await col.dump();
+
                 assert.strictEqual(json.name, 'human');
                 assert.strictEqual(typeof json.schemaHash, 'string');
                 assert.strictEqual(json.encrypted, false); // false because db has no encrypted field
@@ -34,7 +35,7 @@ config.parallel('import-export.test.js', () => {
                     adapter: 'memory',
                     password: util.randomCouchString(10)
                 });
-                const col = await db.collection({
+                const col = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
                     name: 'enchuman',
                     schema: schemas.encryptedObjectHuman
                 });
@@ -60,7 +61,7 @@ config.parallel('import-export.test.js', () => {
                     adapter: 'memory',
                     password: util.randomCouchString(10)
                 });
-                const col = await db.collection({
+                const col = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
                     name: 'enchuman',
                     schema: schemas.encryptedObjectHuman
                 });
@@ -87,7 +88,7 @@ config.parallel('import-export.test.js', () => {
                     adapter: 'memory',
                     password: util.randomCouchString(10)
                 });
-                const col = await db.collection({
+                const col = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
                     name: 'enchuman',
                     schema: schemas.encryptedObjectHuman
                 });
@@ -99,7 +100,7 @@ config.parallel('import-export.test.js', () => {
                 const json = await col.dump(false);
 
                 const firstDoc = json.docs.pop();
-                const decrypted: any = col._crypter._decryptValue(firstDoc.secret);
+                const decrypted = col._crypter._decryptValue(firstDoc.secret);
                 assert.strictEqual(typeof decrypted, 'object');
                 assert.strictEqual(typeof decrypted['name'], 'string');
                 assert.strictEqual(typeof decrypted['subname'], 'string');
@@ -136,7 +137,7 @@ config.parallel('import-export.test.js', () => {
                         adapter: 'memory',
                         password
                     });
-                    const col = await db.collection({
+                    const col = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
                         name: 'enchuman',
                         schema: schemas.encryptedObjectHuman
                     });
@@ -153,14 +154,14 @@ config.parallel('import-export.test.js', () => {
                         adapter: 'memory',
                         password
                     });
-                    const emptyCol = await db2.collection({
+                    const emptyCol = await db2.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
                         name: 'enchuman',
                         schema: schemas.encryptedObjectHuman
                     });
 
                     // try to decrypt first
                     const firstDoc = json.docs[0];
-                    const decrypted: any = emptyCol._crypter._decryptValue(firstDoc.secret);
+                    const decrypted = emptyCol._crypter._decryptValue(firstDoc.secret);
                     assert.strictEqual(typeof decrypted, 'object');
                     assert.strictEqual(typeof decrypted['name'], 'string');
                     assert.strictEqual(typeof decrypted['subname'], 'string');
@@ -195,7 +196,7 @@ config.parallel('import-export.test.js', () => {
                         adapter: 'memory',
                         password: util.randomCouchString(10)
                     });
-                    const col = await db.collection({
+                    const col = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
                         name: 'enchuman',
                         schema: schemas.encryptedObjectHuman
                     });
@@ -205,7 +206,7 @@ config.parallel('import-export.test.js', () => {
                         adapter: 'memory',
                         password: util.randomCouchString(10)
                     });
-                    const col2 = await db2.collection({
+                    const col2 = await db2.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
                         name: 'enchuman',
                         schema: schemas.encryptedObjectHuman
                     });
@@ -229,7 +230,7 @@ config.parallel('import-export.test.js', () => {
                         adapter: 'memory',
                         password: util.randomCouchString(10)
                     });
-                    const col = await db.collection({
+                    const col = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
                         name: 'enchuman',
                         schema: schemas.encryptedObjectHuman
                     });
@@ -239,7 +240,7 @@ config.parallel('import-export.test.js', () => {
                     await Promise.all(fns);
 
                     // empty collection with same schema
-                    const col2 = await db.collection({
+                    const col2 = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
                         name: 'enchuman2',
                         schema: schemas.encryptedObjectHuman
                     });
@@ -249,7 +250,7 @@ config.parallel('import-export.test.js', () => {
                     json.docs.push({
                         foo: 'bar',
                         _id: '0fg89sm5ui:1478730736884'
-                    });
+                    } as any); // Explicitly set to 'any' because TS will catch this error
                     await AsyncTestUtil.assertThrows(
                         () => col2.importDump(json),
                         'RxError',
@@ -267,7 +268,7 @@ config.parallel('import-export.test.js', () => {
         describe('.dump()', () => {
             it('should export a valid dump', async () => {
                 const col = await humansCollection.createMultiInstance(util.randomCouchString(10), 5);
-                const json: any = await col.database.dump();
+                const json = await col.database.dump();
 
                 assert.strictEqual(typeof json.name, 'string');
                 assert.strictEqual(typeof json.instanceToken, 'string');

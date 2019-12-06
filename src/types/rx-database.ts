@@ -1,25 +1,7 @@
-import {
-    Observable
-} from 'rxjs';
-import {
-    PouchSettings
-} from './pouch';
-import {
-    RxCollection,
-    RxCollectionCreator
-} from './rx-collection';
-import {
-    RxLocalDocument
-} from './rx-document';
-import {
-    RxChangeEventInsert,
-    RxChangeEventUpdate,
-    RxChangeEventRemove,
-    RxChangeEventCollection
-} from './rx-change-event';
-import {
-    RxDatabaseBase
-} from '../rx-database';
+import { RxDatabaseBase } from '../rx-database';
+import { PouchSettings } from './pouch';
+import { RxCollection, RxDumpCollection, RxDumpCollectionAsAny } from './rx-collection';
+import { RxLocalDocument } from './rx-document';
 
 export interface RxDatabaseCreator {
     name: string;
@@ -55,4 +37,25 @@ export interface RxDatabaseGenerated<Collections> {
     getLocal(id: string): Promise<
         RxLocalDocument<RxDatabase<Collections>>
     >;
+}
+
+/**
+ * Extract the **DocumentType** of a collection.
+ */
+type ExtractDT<P> = P extends RxCollection<infer T> ? T : never;
+
+interface RxDumpDatabaseBase {
+    encrypted: boolean;
+    instanceToken: string;
+    name: string;
+    passwordHash: string | null;
+}
+export interface RxDumpDatabase<Col> extends RxDumpDatabaseBase {
+    collections: RxDumpCollection<ExtractDT<Col[keyof Col]>>[];
+}
+export interface RxDumpDatabaseEncrypted<Col> extends RxDumpDatabaseBase {
+    collections: RxDumpCollection<RxDumpCollectionAsAny<ExtractDT<Col[keyof Col]>>>[];
+}
+export interface RxDumpDatabaseImport<Col> extends RxDumpDatabaseBase {
+    collections: RxDumpCollection<RxDumpCollectionAsAny<ExtractDT<Col[keyof Col]>>>[];
 }
