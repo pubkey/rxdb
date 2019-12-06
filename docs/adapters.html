@@ -1604,23 +1604,26 @@ RxDB.plugin(<span class="hljs-built_in">require</span>(<span class="hljs-string"
 <h1 id="nodejs">NodeJS</h1>
 <h2 id="leveldown">leveldown</h2>
 <p>This adapter uses a <a href="https://github.com/Level/leveldown" target="_blank">LevelDB C++ binding</a> to store that data on the filesystem. It has the best performance compared to other filesystem adapters. This adapter can <strong>not</strong> be used when multiple nodejs-processes access the same filesystem folders for storage.</p>
+<p>Default directories are derived from the <b>name</b> property in the form <i>./mydatabase-rxdb-0-_admin and ./mydatabase-rxdb-0-_collections</i> (plus any additional database based on schemas). To set a different location for the database folders the name property must be set with a full path such as: name: '/root/user/project/mydatabase'</p>
 <pre><code class="lang-js"><span class="hljs-comment">// npm install leveldown --save</span>
 <span class="hljs-comment">// npm install pouchdb-adapter-leveldb --save</span>
 RxDB.plugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;pouchdb-adapter-leveldb&apos;</span>)); <span class="hljs-comment">// leveldown adapters need the leveldb plugin to work</span>
 <span class="hljs-keyword">const</span> leveldown = <span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;leveldown&apos;</span>);
 
 <span class="hljs-keyword">const</span> database = <span class="hljs-keyword">await</span> RxDB.create({
-    name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
+    name: <span class="hljs-string">&apos;mydatabase&apos;</span>, <span class="hljs-comment">// a default sets of data directories will be created at : ./mydatabase</span>
     adapter: leveldown <span class="hljs-comment">// the full leveldown-module</span>
 });
 </code></pre>
+
 <h2 id="node-websql">Node-Websql</h2>
 <p>This adapter uses the <a href="https://github.com/nolanlawson/node-websql" target="_blank">node-websql</a>-shim to store data on the filesystem. It&apos;s advantages are that it does not need a leveldb build and it can be used when multiple nodejs-processes use the same database-files.</p>
+<p>Default filesystems data directories are derived from the <b>name</b> property. To set a different location for the database folders the name property must be set with a full path such as: name: '/root/user/project/mydatabase'</p>
 <pre><code class="lang-js"><span class="hljs-comment">// npm install pouchdb-adapter-node-websql --save</span>
 RxDB.plugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;pouchdb-adapter-node-websql&apos;</span>));
 
 <span class="hljs-keyword">const</span> database = <span class="hljs-keyword">await</span> RxDB.create({
-    name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
+    name: <span class="hljs-string">&apos;mydatabase&apos;</span>, <span class="hljs-comment">// a default sets of data directories will be created at : ./mydatabase</span>
     adapter: <span class="hljs-string">&apos;websql&apos;</span> <span class="hljs-comment">// the name of your adapter</span>
 });
 </code></pre>
