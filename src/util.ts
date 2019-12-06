@@ -2,13 +2,15 @@
  * this contains a mapping to basic dependencies
  * which should be easy to change
  */
+import { default as deepClone } from 'clone';
+import isElectron from 'is-electron';
 import randomToken from 'random-token';
-import {
-    default as deepClone
-} from 'clone';
-import {
-    PouchDBInstance
-} from './types';
+/**
+ *  spark-md5 is used here
+ *  because pouchdb uses the same
+ *  and build-size could be reduced by 9kb
+ */
+import Md5 from 'spark-md5';
 
 /**
  * Returns an error that indicates that a plugin is missing
@@ -51,12 +53,6 @@ export function fastUnsecureHash(obj: any): number {
     return hashValue;
 }
 
-/**
- *  spark-md5 is used here
- *  because pouchdb uses the same
- *  and build-size could be reduced by 9kb
- */
-import Md5 from 'spark-md5';
 export function hash(obj: any): string {
     let msg = obj;
     if (typeof obj !== 'string') msg = JSON.stringify(obj);
@@ -229,7 +225,7 @@ export function sortObject(obj: any, noArraySort = false): any {
  * used to JSON.stringify() objects that contain a regex
  * @link https://stackoverflow.com/a/33416684 thank you Fabian Jakobs!
  */
-export function stringifyFilter(key: string, value: any) {
+export function stringifyFilter(_key: string, value: any) {
     if (value instanceof RegExp)
         return value.toString();
     return value;
@@ -305,7 +301,6 @@ export function flatClone<T>(obj: T): T {
 }
 
 
-import isElectron from 'is-electron';
 export const isElectronRenderer = isElectron();
 
 

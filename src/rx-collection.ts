@@ -497,7 +497,7 @@ export class RxCollectionBase<RxDocumentType = { [prop: string]: any }, OrmMetho
     /**
      * sync with a GraphQL endpoint
      */
-    syncGraphQL(options: SyncOptionsGraphQL): RxGraphQLReplicationState {
+    syncGraphQL(_options: SyncOptionsGraphQL): RxGraphQLReplicationState {
         throw pluginMissing('replication-graphql');
     }
 

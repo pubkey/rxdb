@@ -1,13 +1,4 @@
-import { Observable } from 'rxjs';
-import {
-    RxCollection
-} from './rx-collection';
-import {
-    PouchdbQuery
-} from './pouch';
-import {
-    RxQueryBase
-} from '../rx-query';
+import { RxQueryBase } from '../rx-query';
 
 export interface RxQueryOptions<T> {
     $eq?: T;

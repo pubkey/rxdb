@@ -36,14 +36,13 @@ export type RxCollectionHookCallback<
         data: RxDocumentType,
         instance: RxDocument<RxDocumentType, OrmMethods>
     ) => void | Promise<void> | any;
-export type RxCollectionHookNoInstance<RxDocumentType, OrmMethods> = (data: RxDocumentType) => void | Promise<void> | any;
+export type RxCollectionHookNoInstance<RxDocumentType> = (data: RxDocumentType) => void | Promise<void> | any;
 export type RxCollectionHookCallbackNonAsync<RxDocumentType, OrmMethods> = (
     data: RxDocumentType,
     instance: RxDocument<RxDocumentType, OrmMethods>
 ) => void | any;
 export type RxCollectionHookNoInstanceCallback<
-    RxDocumentType,
-    OrmMethods
+    RxDocumentType
     > = (
         data: RxDocumentType,
         instance: RxCollection
@@ -60,7 +59,7 @@ export type RxCollection<
 export interface RxCollectionGenerated<RxDocumentType = any, OrmMethods = {}> {
 
     // HOOKS
-    preInsert(fun: RxCollectionHookNoInstanceCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
+    preInsert(fun: RxCollectionHookNoInstanceCallback<RxDocumentType>, parallel: boolean): void;
     preSave(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
     preRemove(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
     postInsert(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;

@@ -1,21 +1,14 @@
-import express from 'express';
 import corsFn from 'cors';
-
-import {
-    PouchDB
-} from '../pouch-db';
-import {
-    newRxError
-} from '../rx-error';
-import {
-    RxDatabase
-} from '../types';
-
+import express from 'express';
 import Core from '../core';
+import { PouchDB } from '../pouch-db';
+import { newRxError } from '../rx-error';
+import { RxDatabase } from '../types';
 import ReplicationPlugin from './replication';
+import RxDBWatchForChangesPlugin from './watch-for-changes';
+
 Core.plugin(ReplicationPlugin);
 
-import RxDBWatchForChangesPlugin from './watch-for-changes';
 Core.plugin(RxDBWatchForChangesPlugin);
 
 let ExpressPouchDB: any;
@@ -64,7 +57,7 @@ function tunnelCollectionPath(
     db[colName].watchForChanges();
     const pathWithSlash = path.endsWith('/') ? path : path + '/';
     const collectionPath = pathWithSlash + colName;
-    app.use(collectionPath, async function (req: any, res: any, next: any) {
+    app.use(collectionPath, async function (req: any, _res: any, next: any) {
         if (req.baseUrl.endsWith(collectionPath)) {
 
             while (!db[colName]) {

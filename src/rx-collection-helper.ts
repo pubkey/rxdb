@@ -1,13 +1,6 @@
-import {
-    RxCollection
-} from './types';
-import {
-    clone,
-    generateId
-} from './util';
-import {
-    newRxError
-} from './rx-error';
+import { newRxError } from './rx-error';
+import { RxCollection } from './types';
+import { generateId } from './util';
 
 /**
  * wrappers for Pouch.put/get to handle keycompression etc

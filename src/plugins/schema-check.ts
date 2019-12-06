@@ -4,34 +4,12 @@
  */
 
 import objectPath from 'object-path';
+import { properties as rxCollectionProperties } from '../rx-collection';
+import RxDocument, { properties as rxDocumentProperties } from '../rx-document';
+import { newRxError, newRxTypeError } from '../rx-error';
+import { getIndexes, getPreviousVersions } from '../rx-schema';
+import { KeyFunctionMap, NumberFunctionMap, RxCollectionCreator, RxJsonSchema } from '../types';
 
-import RxDocument from '../rx-document';
-import {
-    newRxError,
-    newRxTypeError
-} from '../rx-error';
-import {
-    getIndexes
-} from '../rx-schema';
-import {
-    RxJsonSchema,
-    KeyFunctionMap,
-    NumberFunctionMap,
-    RxCollectionCreator
-} from '../types';
-import {
-    createWithConstructor as createRxDocumentWithConstructor,
-    isInstanceOf as isRxDocument,
-    properties as rxDocumentProperties
-} from '../rx-document';
-import {
-    properties as rxCollectionProperties
-} from '../rx-collection';
-import {
-    getPreviousVersions,
-    RxSchema,
-    createRxSchema
-} from '../rx-schema';
 
 /**
  * checks if the fieldname is allowed

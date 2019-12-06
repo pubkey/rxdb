@@ -4,13 +4,7 @@
  * @link https://github.com/lgandecki/modifyjs
  */
 import modifyjs from 'modifyjs';
-import {
-    clone
-} from '../util.js';
-import {
-    RxDocument,
-    RxQuery
-} from '../types';
+import { RxDocument, RxQuery } from '../types';
 
 export function update(this: RxDocument, updateObj: any) {
     const oldDocData = this._data;
@@ -22,7 +16,7 @@ export function update(this: RxDocument, updateObj: any) {
 export function RxQueryUpdate(
     this: RxQuery,
     updateObj: any
-    ): Promise<any> {
+): Promise<any> {
     return this.exec()
         .then(docs => {
             if (!docs) return null;

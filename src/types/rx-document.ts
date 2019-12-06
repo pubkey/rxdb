@@ -1,19 +1,8 @@
-import {
-    Observable,
-    Subject,
-    BehaviorSubject
-} from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { RxChangeEvent } from '../rx-change-event';
+import { RxAttachment, RxAttachmentCreator } from './rx-attachment';
+import { RxCollection } from './rx-collection';
 
-import {
-    RxCollection,
-} from './rx-collection';
-import {
-    RxChangeEvent
-} from '../rx-change-event';
-import {
-    RxAttachment,
-    RxAttachmentCreator
-} from './rx-attachment';
 
 export type RxDocument<RxDocumentType = {}, OrmMethods = {}> = RxDocumentBase<RxDocumentType, OrmMethods> & RxDocumentType & OrmMethods;
 

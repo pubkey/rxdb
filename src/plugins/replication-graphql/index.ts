@@ -3,54 +3,17 @@
  * you can use it to sync collections with remote graphql endpoint
  */
 
-import {
-    BehaviorSubject,
-    Subject,
-    Subscription,
-    Observable
-} from 'rxjs';
-import {
-    first,
-    filter
-} from 'rxjs/operators';
 import GraphQLClient from 'graphql-client';
-
-
-import {
-    promiseWait,
-    flatClone
-} from '../../util';
-
+import { BehaviorSubject, Observable, Subject, Subscription } from 'rxjs';
+import { filter, first } from 'rxjs/operators';
 import Core from '../../core';
-import {
-    hash,
-    clone
-} from '../../util';
-
-
-import {
-    DEFAULT_MODIFIER,
-    wasRevisionfromPullReplication,
-    createRevisionForPulledDocument,
-    getDocsWithRevisionsFromPouch
-} from './helper';
-import {
-    setLastPushSequence,
-    getLastPullDocument,
-    setLastPullDocument,
-    getChangesSinceLastPushSequence
-} from './crawling-checkpoint';
-
-import RxDBWatchForChangesPlugin from '../watch-for-changes';
+import { changeEventfromPouchChange } from '../../rx-change-event';
+import { GraphQLSyncPullOptions, GraphQLSyncPushOptions, RxCollection } from '../../types';
+import { flatClone, hash, promiseWait } from '../../util';
 import RxDBLeaderElectionPlugin from '../leader-election';
-import {
-    changeEventfromPouchChange
-} from '../../rx-change-event';
-import {
-    RxCollection,
-    GraphQLSyncPullOptions,
-    GraphQLSyncPushOptions
-} from '../../types';
+import RxDBWatchForChangesPlugin from '../watch-for-changes';
+import { getChangesSinceLastPushSequence, getLastPullDocument, setLastPullDocument, setLastPushSequence } from './crawling-checkpoint';
+import { createRevisionForPulledDocument, DEFAULT_MODIFIER, getDocsWithRevisionsFromPouch, wasRevisionfromPullReplication } from './helper';
 
 Core.plugin(RxDBLeaderElectionPlugin);
 

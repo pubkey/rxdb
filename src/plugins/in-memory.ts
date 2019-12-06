@@ -5,53 +5,21 @@
  * Writes will still run on the original collection
  */
 
-import {
-    Subject,
-    fromEvent as ObservableFromEvent,
-    Observable
-} from 'rxjs';
-
-import {
-    filter,
-    map,
-    mergeMap,
-    first
-} from 'rxjs/operators';
-
-import {
-    RxCollection,
-    RxReplicationState,
-    PouchDBInstance
-} from '../types';
-import {
-    RxCollectionBase
-} from '../rx-collection';
-import {
-    clone,
-    randomCouchString,
-    adapterObject
-} from '../util';
+import { fromEvent as ObservableFromEvent, Observable, Subject } from 'rxjs';
+import { filter, first, map, mergeMap } from 'rxjs/operators';
+import { createChangeEventBuffer } from '../change-event-buffer';
 import Core from '../core';
 import Crypter from '../crypter';
-import {
-    createChangeEventBuffer
-} from '../change-event-buffer';
-import {
-    createRxSchema,
-    RxSchema
-} from '../rx-schema';
-import {
-    PouchDB
-} from '../pouch-db';
-import {
-    RxChangeEvent
-} from '../rx-change-event';
-import {
-    newRxError
-} from '../rx-error';
-
 // add the watch-for-changes-plugin
 import RxDBWatchForChangesPlugin from '../plugins/watch-for-changes';
+import { PouchDB } from '../pouch-db';
+import { RxChangeEvent } from '../rx-change-event';
+import { RxCollectionBase } from '../rx-collection';
+import { newRxError } from '../rx-error';
+import { createRxSchema, RxSchema } from '../rx-schema';
+import { PouchDBInstance, RxCollection, RxReplicationState } from '../types';
+import { adapterObject, clone, randomCouchString } from '../util';
+
 Core.plugin(RxDBWatchForChangesPlugin);
 
 const collectionCacheMap = new WeakMap();
@@ -299,7 +267,7 @@ export function setIndexes(
  */
 export function streamChangedDocuments(
     rxCollection: RxCollection,
-    prevFilter = (i: any) => true
+    prevFilter = (_i: any) => true
 ): Observable<any> {
     if (!rxCollection._doNotEmitSet) rxCollection._doNotEmitSet = new Set();
 
