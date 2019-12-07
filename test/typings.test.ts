@@ -43,7 +43,8 @@ describe('typings.test.js', function () {
             target: 'es6',
             strict: true,
             isolatedModules: false,
-            noUnusedLocals: false
+            noUnusedLocals: false,
+            noUnusedParameters: false
         };
         const promise = spawn('ts-node', [
             '--compiler-options', JSON.stringify(tsConfig),
