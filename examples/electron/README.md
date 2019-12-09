@@ -1,6 +1,8 @@
 # RxDB Electron example
 
-This is an example usage of RxDB with Electron. It implements a simple heroes-list which can be filled by the user.
+This is an example usage of RxDB with Electron trough the `RxDB server plugin`. It implements a simple heroes-list which can be filled by the user.
+
+For an example with Electron [`remote`](https://electronjs.org/docs/api/remote) API check [examples/electron-remote](../electron-remote)
 
 # Try it out
 1. clone the whole [RxDB-repo](https://github.com/pubkey/rxdb)
