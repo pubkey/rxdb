@@ -58,7 +58,9 @@ import {
     PouchSettings,
     ServerOptions,
     RxDatabaseCreator,
-    RxDatabaseGenerated
+    RxDatabaseGenerated,
+    RxDumpDatabase,
+    RxDumpDatabaseAny
 } from './types';
 
 /**
@@ -360,16 +362,23 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
     }
 
     /**
-     * export to json
+     * Export database to a JSON friendly format.
+     * @param _decrypted
+     * When true, all encrypted values will be decrypted.
      */
-    dump(_decrypted: boolean = false, _collections?: string[]): string[] | null {
+    dump(_decrypted: boolean, _collections?: string[]): Promise<RxDumpDatabase<Collections>>;
+    dump(_decrypted?: false, _collections?: string[]): Promise<RxDumpDatabaseAny<Collections>>;
+    dump(_decrypted: boolean = false, _collections?: string[]): Promise<any> {
         throw pluginMissing('json-dump');
     }
 
     /**
-     * import json
+     * Import the parsed JSON export into the collection.
+     * @param _exportedJSON The previously exported data from the `<db>.dump()` method.
+     * @note When an interface is loaded in this collection all base properties of the type are typed as `any`
+     * since data could be encrypted.
      */
-    importDump(_json: any): Promise<any> {
+    importDump(_exportedJSON: RxDumpDatabaseAny<Collections>): Promise<void> {
         throw pluginMissing('json-dump');
     }
 
