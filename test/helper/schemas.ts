@@ -3,8 +3,34 @@ import AsyncTestUtil from 'async-test-util';
 import {
     RxJsonSchema
 } from '../../src/types';
+import {
+    HumanDocumentType,
+    SimpleHumanDocumentType,
+    SimpleHumanV3DocumentType,
+    SimpleHumanAgeDocumentType,
+    HumanWithSubOtherDocumentType,
+    NestedHumanDocumentType,
+    DeepNestedHumanDocumentType,
+    IdPrimaryDocumentType,
+    EncryptedHumanDocumentType,
+    EncryptedObjectHumanDocumentType,
+    EncryptedDeepHumanDocumentType,
+    CompoundIndexDocumentType,
+    CompoundIndexNoStringDocumentType,
+    HeroArrayDocumentType,
+    SimpleHeroArrayDocumentType,
+    AgeHumanDocumentType,
+    RefHumanDocumentType,
+    RefHumanNestedDocumentType,
+    AverageSchemaDocumentType,
+    PointDocumentType,
+    HumanWithTimestampDocumentType,
+    BigHumanDocumentType,
+    NostringIndexDocumentType,
+    NoIndexHumanDocumentType
+} from './schema-objects';
 
-export const human: RxJsonSchema = {
+export const human: RxJsonSchema<HumanDocumentType> = {
     title: 'human schema',
     description: 'describes a human being',
     version: 0,
@@ -31,7 +57,7 @@ export const human: RxJsonSchema = {
     required: ['firstName', 'lastName']
 };
 
-export const humanDefault: RxJsonSchema = {
+export const humanDefault: RxJsonSchema<HumanDocumentType> = {
     title: 'human schema',
     version: 0,
     description: 'describes a human being',
@@ -59,7 +85,7 @@ export const humanDefault: RxJsonSchema = {
     required: ['passportId']
 };
 
-export const humanFinal: RxJsonSchema = {
+export const humanFinal: RxJsonSchema<HumanDocumentType> = {
     title: 'human schema with age set final',
     version: 0,
     keyCompression: true,
@@ -84,7 +110,7 @@ export const humanFinal: RxJsonSchema = {
     }
 };
 
-export const simpleHuman: RxJsonSchema = {
+export const simpleHuman: RxJsonSchema<SimpleHumanV3DocumentType> = {
     title: 'human schema',
     version: 0,
     keyCompression: true,
@@ -102,7 +128,7 @@ export const simpleHuman: RxJsonSchema = {
     required: ['passportId', 'age']
 };
 
-export const simpleHumanV3: RxJsonSchema = {
+export const simpleHumanV3: RxJsonSchema<SimpleHumanV3DocumentType> = {
     title: 'human schema',
     version: 3,
     keyCompression: true,
@@ -120,7 +146,7 @@ export const simpleHumanV3: RxJsonSchema = {
     required: ['passportId', 'age']
 };
 
-export const humanAgeIndex: RxJsonSchema = {
+export const humanAgeIndex: RxJsonSchema<HumanDocumentType> = {
     title: 'human schema',
     version: 0,
     keyCompression: true,
@@ -148,7 +174,7 @@ export const humanAgeIndex: RxJsonSchema = {
     required: ['firstName', 'lastName', 'age']
 };
 
-export const humanSubIndex: RxJsonSchema = {
+export const humanSubIndex: RxJsonSchema<HumanWithSubOtherDocumentType> = {
     title: 'human schema',
     version: 0,
     description: 'describes a human being where other.age is index',
@@ -178,7 +204,7 @@ export const humanSubIndex: RxJsonSchema = {
  * each field is an index,
  * use this to slow down inserts in tests
  */
-export const humanWithAllIndex: RxJsonSchema = {
+export const humanWithAllIndex: RxJsonSchema<HumanDocumentType> = {
     title: 'human schema',
     description: 'describes a human being',
     version: 0,
@@ -208,7 +234,7 @@ export const humanWithAllIndex: RxJsonSchema = {
     required: ['firstName', 'lastName']
 };
 
-export const nestedHuman: RxJsonSchema = {
+export const nestedHuman: RxJsonSchema<NestedHumanDocumentType> = {
     title: 'human nested',
     version: 0,
     description: 'describes a human being with a nested field',
@@ -240,7 +266,7 @@ export const nestedHuman: RxJsonSchema = {
     required: ['firstName']
 };
 
-export const deepNestedHuman: RxJsonSchema = {
+export const deepNestedHuman: RxJsonSchema<DeepNestedHumanDocumentType> = {
     title: 'deep human nested',
     version: 0,
     keyCompression: true,
@@ -275,7 +301,7 @@ export const deepNestedHuman: RxJsonSchema = {
     required: ['mainSkill']
 };
 
-export const noindexHuman: RxJsonSchema = {
+export const noIndexHuman: RxJsonSchema<NoIndexHumanDocumentType> = {
     title: 'human schema',
     version: 0,
     description: 'this schema has no index',
@@ -292,8 +318,7 @@ export const noindexHuman: RxJsonSchema = {
     required: ['firstName', 'lastName']
 };
 
-
-export const nostringIndex: RxJsonSchema = {
+export const noStringIndex: RxJsonSchema<NostringIndexDocumentType> = {
     description: 'the index has no type:string',
     version: 0,
     keyCompression: true,
@@ -307,11 +332,10 @@ export const nostringIndex: RxJsonSchema = {
             type: 'string'
         }
     },
-    required: ['firstName', 'lastName']
+    required: ['firstName', 'passportId']
 };
 
-
-export const _idPrimary: RxJsonSchema = {
+export const _idPrimary: RxJsonSchema<IdPrimaryDocumentType> = {
     description: 'the primary is \'_id\'',
     version: 0,
     type: 'object',
@@ -327,7 +351,7 @@ export const _idPrimary: RxJsonSchema = {
     required: ['firstName']
 };
 
-export const bigHuman: RxJsonSchema = {
+export const bigHuman: RxJsonSchema<BigHumanDocumentType> = {
     title: 'human schema',
     version: 0,
     description: 'describes a human being with 2 indexes',
@@ -357,7 +381,7 @@ export const bigHuman: RxJsonSchema = {
     required: ['firstName', 'lastName']
 };
 
-export const encryptedHuman: RxJsonSchema = {
+export const encryptedHuman: RxJsonSchema<EncryptedHumanDocumentType> = {
     title: 'human encrypted',
     version: 0,
     description: 'uses an encrypted field',
@@ -379,7 +403,7 @@ export const encryptedHuman: RxJsonSchema = {
     required: ['firstName', 'secret']
 };
 
-export const encryptedObjectHuman: RxJsonSchema = {
+export const encryptedObjectHuman: RxJsonSchema<EncryptedObjectHumanDocumentType> = {
     title: 'human encrypted',
     version: 0,
     keyCompression: true,
@@ -409,7 +433,7 @@ export const encryptedObjectHuman: RxJsonSchema = {
     required: ['firstName', 'secret']
 };
 
-export const encryptedDeepHuman: RxJsonSchema = {
+export const encryptedDeepHuman: RxJsonSchema<EncryptedDeepHumanDocumentType> = {
     title: 'human encrypted',
     version: 0,
     keyCompression: true,
@@ -467,12 +491,11 @@ export const encryptedDeepHuman: RxJsonSchema = {
         }
 
     },
-    required: ['firstName', 'secret']
+    required: ['firstName', 'secretData']
 };
 
-
-export const compoundIndex: RxJsonSchema = {
-    title: 'compund index',
+export const compoundIndex: RxJsonSchema<CompoundIndexDocumentType> = {
+    title: 'compound index',
     version: 0,
     description: 'this schema has a compoundIndex',
     type: 'object',
@@ -493,8 +516,8 @@ export const compoundIndex: RxJsonSchema = {
     ]
 };
 
-export const compoundIndexNoString: RxJsonSchema = {
-    title: 'compund index',
+export const compoundIndexNoString: RxJsonSchema<CompoundIndexNoStringDocumentType> = {
+    title: 'compound index',
     version: 0,
     description: 'this schema has a compoundIndex',
     keyCompression: true,
@@ -515,8 +538,7 @@ export const compoundIndexNoString: RxJsonSchema = {
     ]
 };
 
-
-export const wrongCompoundFormat: any = {
+export const wrongCompoundFormat: RxJsonSchema = {
     title: 'compund index',
     version: 0,
     description: 'this schema has a compoundIndex',
@@ -536,8 +558,7 @@ export const wrongCompoundFormat: any = {
     compoundIndexes: [{
         foo: 'bar'
     }]
-};
-
+} as unknown as RxJsonSchema;
 
 export const empty: RxJsonSchema = {
     title: 'empty schema',
@@ -547,29 +568,29 @@ export const empty: RxJsonSchema = {
     required: []
 };
 
-export const heroArray: RxJsonSchema = {
-    'title': 'hero schema',
+export const heroArray: RxJsonSchema<HeroArrayDocumentType> = {
+    title: 'hero schema',
     version: 0,
     keyCompression: true,
-    'description': 'describes a hero with an array-field',
-    'type': 'object',
-    'properties': {
-        'name': {
-            'type': 'string',
-            'primary': true
+    description: 'describes a hero with an array-field',
+    type: 'object',
+    properties: {
+        name: {
+            type: 'string',
+            primary: true
         },
-        'skills': {
-            'type': 'array',
-            'maxItems': 5,
-            'uniqueItems': true,
-            'items': {
-                'type': 'object',
-                'properties': {
-                    'name': {
-                        'type': 'string'
+        skills: {
+            type: 'array',
+            maxItems: 5,
+            uniqueItems: true,
+            items: {
+                type: 'object',
+                properties: {
+                    name: {
+                        type: 'string'
                     },
-                    'damage': {
-                        'type': 'number'
+                    damage: {
+                        type: 'number'
                     }
                 }
             }
@@ -577,7 +598,7 @@ export const heroArray: RxJsonSchema = {
     }
 };
 
-export const simpleArrayHero: RxJsonSchema = {
+export const simpleArrayHero: RxJsonSchema<SimpleHeroArrayDocumentType> = {
     title: 'hero schema',
     version: 0,
     description: 'describes a hero with a string-array-field',
@@ -599,8 +620,7 @@ export const simpleArrayHero: RxJsonSchema = {
     }
 };
 
-
-export const primaryHuman: RxJsonSchema = {
+export const primaryHuman: RxJsonSchema<HumanDocumentType> = {
     title: 'human schema with primary',
     version: 0,
     description: 'describes a human being with passsportID as primary',
@@ -627,7 +647,7 @@ export const primaryHuman: RxJsonSchema = {
     required: ['firstName', 'lastName']
 };
 
-export const humanNormalizeSchema1: RxJsonSchema = {
+export const humanNormalizeSchema1: RxJsonSchema<AgeHumanDocumentType> = {
     title: 'human schema',
     version: 0,
     keyCompression: true,
@@ -641,10 +661,10 @@ export const humanNormalizeSchema1: RxJsonSchema = {
             maximum: 150
         }
     },
-    required: ['firstName', 'lastName']
+    required: ['age']
 };
 
-export const humanNormalizeSchema2: RxJsonSchema = {
+export const humanNormalizeSchema2: RxJsonSchema<AgeHumanDocumentType> = {
     title: 'human schema',
     version: 0,
     keyCompression: true,
@@ -658,11 +678,10 @@ export const humanNormalizeSchema2: RxJsonSchema = {
         }
     },
     description: 'describes a human being',
-    required: ['lastName', 'firstName']
+    required: ['age']
 };
 
-
-export const refHuman: RxJsonSchema = {
+export const refHuman: RxJsonSchema<RefHumanDocumentType> = {
     title: 'human related to other human',
     version: 0,
     keyCompression: true,
@@ -679,7 +698,7 @@ export const refHuman: RxJsonSchema = {
     }
 };
 
-export const refHumanNested: RxJsonSchema = {
+export const refHumanNested: RxJsonSchema<RefHumanNestedDocumentType> = {
     title: 'human related to other human',
     version: 0,
     keyCompression: true,
@@ -701,11 +720,10 @@ export const refHumanNested: RxJsonSchema = {
     }
 };
 
-
 /**
  * an average schema used in performance-tests
  */
-export function averageSchema(): RxJsonSchema {
+export function averageSchema(): RxJsonSchema<AverageSchemaDocumentType> {
     const ret: RxJsonSchema = {
         title: 'averageSchema_' + AsyncTestUtil.randomString(5), // randomisation used so hash differs
         version: 0,
@@ -753,7 +771,7 @@ export function averageSchema(): RxJsonSchema {
     return ret;
 }
 
-export const point: RxJsonSchema = {
+export const point: RxJsonSchema<PointDocumentType> = {
     title: 'point schema',
     version: 0,
     description: 'describes coordinates in 2d space',
@@ -769,7 +787,7 @@ export const point: RxJsonSchema = {
     required: ['x', 'y']
 };
 
-export const humanMinimal: RxJsonSchema = {
+export const humanMinimal: RxJsonSchema<SimpleHumanV3DocumentType> = {
     title: 'human schema',
     description: 'describes a human being',
     version: 0,
@@ -803,14 +821,14 @@ export const humanMinimalBroken: RxJsonSchema = {
         }
     },
     required: ['passportId', 'broken']
-};
+} as unknown as RxJsonSchema<SimpleHumanV3DocumentType>;
 
 
 /**
  * used in the graphql-test
  * contains timestamp
  */
-export const humanWithTimestamp: RxJsonSchema = {
+export const humanWithTimestamp: RxJsonSchema<HumanWithTimestampDocumentType> = {
     version: 0,
     type: 'object',
     properties: {
@@ -835,7 +853,7 @@ export const humanWithTimestamp: RxJsonSchema = {
  * each field is an index,
  * use this to slow down inserts in tests
  */
-export const humanWithTimestampAllIndex: RxJsonSchema = {
+export const humanWithTimestampAllIndex: RxJsonSchema<HumanWithTimestampDocumentType> = {
     version: 0,
     type: 'object',
     properties: {
