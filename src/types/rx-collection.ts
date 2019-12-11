@@ -19,7 +19,7 @@ export interface RxCollectionCreator {
     name: string;
     schema: RxJsonSchema;
     pouchSettings?: PouchSettings;
-    migrationStrategies?: NumberFunctionMap;
+    migrationStrategies?: KeyFunctionMap;
     autoMigrate?: boolean;
     statics?: KeyFunctionMap;
     methods?: KeyFunctionMap;

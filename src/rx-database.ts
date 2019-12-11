@@ -124,6 +124,7 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
     public _collectionsPouch: PouchDBInstance = {} as PouchDBInstance;
 
     private _leaderElector?: any;
+
     /**
      * removes all internal collection-info
      * only use this if you have to upgrade from a major rxdb-version
@@ -332,7 +333,7 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
     /**
      * delete all data of the collection and its previous versions
      */
-    removeCollection(collectionName: string): Promise<string[]> {
+    removeCollection(collectionName: string): Promise<void> {
         if ((this.collections as any)[collectionName])
             (this.collections as any)[collectionName].destroy();
 
@@ -342,19 +343,19 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
             .then(knownVersions => knownVersions
                 .map(v => this._spawnPouchDB(collectionName, v)))
             // remove documents
-            .then(pouches => Promise.all(
+            .then(async pouches => {
+                await Promise.all(
                 pouches.map(pouch => this.lockedRun(
                     () => pouch.destroy()
-                ))
-            ));
+                    )));
+            });
     }
-
 
     /**
      * runs the given function between idleQueue-locking
      */
-    lockedRun(fun: any): any {
-        return this.idleQueue.wrapCall(fun);
+    lockedRun<T>(fn: (...args: any[]) => T): T extends Promise<any> ? T : Promise<T> {
+        return this.idleQueue.wrapCall(fn) as any;
     }
 
     requestIdlePromise() {
