@@ -341,6 +341,7 @@ export async function createMultiInstance(
     amount = 0,
     password = null
 ): Promise<RxCollection<schemaObjects.HumanDocumentType>> {
+    RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
 
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.HumanDocumentType> }>({
         name,
