@@ -14,7 +14,7 @@
   },
   "author": "pubkey",
   "dependencies": {
-    "apollo-server-express": "2.9.13",
+    "apollo-server-express": "2.9.14",
     "concurrently": "5.0.1",
     "cors": "2.8.5",
     "express-graphql": "0.9.0",
