@@ -9,7 +9,7 @@
   "dependencies": {
     "babel-polyfill": "6.26.0",
     "babel-runtime": "6.26.0",
-    "concurrently": "5.0.0",
+    "concurrently": "5.0.2",
     "electron": "6.1.7",
     "electron-tabs": "0.11.0",
     "electron-window-manager": "1.0.6",
