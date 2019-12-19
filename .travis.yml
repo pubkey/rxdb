@@ -35,7 +35,7 @@ jobs:
       script: travis_retry npm install --depth 0 --silent
 
     - stage: build
-      script: npm run build
+      script: npm run build && git diff dist/es/
 
     - stage: code format
       script: travis_retry npm run test:typings
@@ -70,7 +70,7 @@ jobs:
       env: LABEL=test:performance
 
     - stage: other
-      script: git diff dist/es/ && npm run build:size
+      script: npm run build:size
       env: LABEL=build:size
     - stage: other
       script: npm run build:rollup
