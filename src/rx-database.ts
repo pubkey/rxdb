@@ -343,12 +343,16 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
             .then(knownVersions => knownVersions
                 .map(v => this._spawnPouchDB(collectionName, v)))
             // remove documents
-            .then(async pouches => {
-                await Promise.all(
-                pouches.map(pouch => this.lockedRun(
-                    () => pouch.destroy()
-                    )));
-            });
+            .then(pouches => {
+                return Promise.all(
+                    pouches.map(
+                        pouch => this.lockedRun(
+                            () => pouch.destroy()
+                        )
+                    )
+                );
+            })
+            .then(() => { });
     }
 
     /**
