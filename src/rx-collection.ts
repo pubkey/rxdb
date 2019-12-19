@@ -77,7 +77,9 @@ import {
     SyncOptionsGraphQL,
     RxChangeEventUpdate,
     RxChangeEventInsert,
-    RxChangeEventRemove
+    RxChangeEventRemove,
+    RxDumpCollection,
+    RxDumpCollectionAny
 } from './types';
 import {
     RxGraphQLReplicationState
@@ -104,7 +106,9 @@ let hooksApplied = false;
 
 
 
-export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
+export class RxCollectionBase<
+RxDocumentType = { [prop: string]: any }, OrmMethods = {}
+> {
 
     constructor(
         public database: RxDatabase,
@@ -537,18 +541,23 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
     }
 
     /**
-     * export to json
-     * if true, all encrypted values will be decrypted
+     * Export collection to a JSON friendly format.
+     * @param _decrypted
+     * When true, all encrypted values will be decrypted.
+     * When false or omitted and an interface or type is loaded in this collection,
+     * all base properties of the type are typed as `any` since data could be encrypted.
      */
-    dump(_decrytped: boolean = false): Promise<any> {
+    dump(_decrypted: boolean): Promise<RxDumpCollection<RxDocumentType>>;
+    dump(_decrypted?: false): Promise<RxDumpCollectionAny<RxDocumentType>>;
+    dump(_decrypted: boolean = false): Promise<any> {
         throw pluginMissing('json-dump');
     }
 
     /**
-     * imports the json-data into the collection
-     * @param should be an array of raw-data
+     * Import the parsed JSON export into the collection.
+     * @param _exportedJSON The previously exported data from the `<collection>.dump()` method.
      */
-    importDump(_exportedJSON: any): Promise<boolean> {
+    importDump(_exportedJSON: RxDumpCollectionAny<RxDocumentType>): Promise<void> {
         throw pluginMissing('json-dump');
     }
 

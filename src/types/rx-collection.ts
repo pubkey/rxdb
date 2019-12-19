@@ -19,7 +19,7 @@ export interface RxCollectionCreator {
     name: string;
     schema: RxJsonSchema;
     pouchSettings?: PouchSettings;
-    migrationStrategies?: NumberFunctionMap;
+    migrationStrategies?: KeyFunctionMap;
     autoMigrate?: boolean;
     statics?: KeyFunctionMap;
     methods?: KeyFunctionMap;
@@ -81,4 +81,25 @@ export interface RxCollectionGenerated<RxDocumentType = any, OrmMethods = {}> {
 
     // only inMemory-collections
     awaitPersistence(): Promise<void>;
+}
+
+/**
+ * Properties are possibly encrypted so type them as any.
+ */
+export type RxDumpCollectionAsAny<T> = { [P in keyof T]: any };
+
+interface RxDumpCollectionBase {
+    encrypted: boolean;
+    name: string;
+    passwordHash: string | null;
+    schemaHash: string;
+}
+export interface RxDumpCollection<RxDocumentType> extends RxDumpCollectionBase {
+    docs: RxDocumentType[];
+}
+/**
+ * All base properties are typed as any because they can be encrypted.
+ */
+export interface RxDumpCollectionAny<RxDocumentType> extends RxDumpCollectionBase {
+    docs: RxDumpCollectionAsAny<RxDocumentType>[];
 }

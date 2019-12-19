@@ -58,7 +58,9 @@ import {
     PouchSettings,
     ServerOptions,
     RxDatabaseCreator,
-    RxDatabaseGenerated
+    RxDatabaseGenerated,
+    RxDumpDatabase,
+    RxDumpDatabaseAny
 } from './types';
 
 /**
@@ -122,6 +124,7 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
     public _collectionsPouch: PouchDBInstance = {} as PouchDBInstance;
 
     private _leaderElector?: any;
+
     /**
      * removes all internal collection-info
      * only use this if you have to upgrade from a major rxdb-version
@@ -330,7 +333,7 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
     /**
      * delete all data of the collection and its previous versions
      */
-    removeCollection(collectionName: string): Promise<string[]> {
+    removeCollection(collectionName: string): Promise<void> {
         if ((this.collections as any)[collectionName])
             (this.collections as any)[collectionName].destroy();
 
@@ -340,19 +343,23 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
             .then(knownVersions => knownVersions
                 .map(v => this._spawnPouchDB(collectionName, v)))
             // remove documents
-            .then(pouches => Promise.all(
-                pouches.map(pouch => this.lockedRun(
-                    () => pouch.destroy()
-                ))
-            ));
+            .then(pouches => {
+                return Promise.all(
+                    pouches.map(
+                        pouch => this.lockedRun(
+                            () => pouch.destroy()
+                        )
+                    )
+                );
+            })
+            .then(() => { });
     }
-
 
     /**
      * runs the given function between idleQueue-locking
      */
-    lockedRun(fun: any): any {
-        return this.idleQueue.wrapCall(fun);
+    lockedRun<T>(fn: (...args: any[]) => T): T extends Promise<any> ? T : Promise<T> {
+        return this.idleQueue.wrapCall(fn) as any;
     }
 
     requestIdlePromise() {
@@ -360,16 +367,23 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
     }
 
     /**
-     * export to json
+     * Export database to a JSON friendly format.
+     * @param _decrypted
+     * When true, all encrypted values will be decrypted.
      */
-    dump(_decrypted: boolean = false, _collections?: string[]): string[] | null {
+    dump(_decrypted: boolean, _collections?: string[]): Promise<RxDumpDatabase<Collections>>;
+    dump(_decrypted?: false, _collections?: string[]): Promise<RxDumpDatabaseAny<Collections>>;
+    dump(_decrypted: boolean = false, _collections?: string[]): Promise<any> {
         throw pluginMissing('json-dump');
     }
 
     /**
-     * import json
+     * Import the parsed JSON export into the collection.
+     * @param _exportedJSON The previously exported data from the `<db>.dump()` method.
+     * @note When an interface is loaded in this collection all base properties of the type are typed as `any`
+     * since data could be encrypted.
      */
-    importDump(_json: any): Promise<any> {
+    importDump(_exportedJSON: RxDumpDatabaseAny<Collections>): Promise<void> {
         throw pluginMissing('json-dump');
     }
 
