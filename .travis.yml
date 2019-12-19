@@ -70,7 +70,7 @@ jobs:
       env: LABEL=test:performance
 
     - stage: other
-      script: npm run build:size
+      script: git diff dist/es/ && npm run build:size
       env: LABEL=build:size
     - stage: other
       script: npm run build:rollup
