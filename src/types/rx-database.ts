@@ -6,7 +6,9 @@ import {
 } from './pouch';
 import {
     RxCollection,
-    RxCollectionCreator
+    RxCollectionCreator,
+    RxDumpCollection,
+    RxDumpCollectionAsAny
 } from './rx-collection';
 import {
     RxLocalDocument
@@ -55,4 +57,25 @@ export interface RxDatabaseGenerated<Collections> {
     getLocal(id: string): Promise<
         RxLocalDocument<RxDatabase<Collections>>
     >;
+}
+
+/**
+ * Extract the **DocumentType** of a collection.
+ */
+type ExtractDTcol<P> = P extends RxCollection<infer T> ? T : { [prop: string]: any };
+
+interface RxDumpDatabaseBase {
+    encrypted: boolean;
+    instanceToken: string;
+    name: string;
+    passwordHash: string | null;
+}
+export interface RxDumpDatabase<Col> extends RxDumpDatabaseBase {
+    collections: RxDumpCollection<ExtractDTcol<Col[keyof Col]>>[];
+}
+/**
+ * All base properties are typed as any because they can be encrypted.
+ */
+export interface RxDumpDatabaseAny<Col> extends RxDumpDatabaseBase {
+    collections: RxDumpCollection<RxDumpCollectionAsAny<ExtractDTcol<Col[keyof Col]>>>[];
 }
