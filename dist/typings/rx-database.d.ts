@@ -2,7 +2,7 @@ import IdleQueue from 'custom-idle-queue';
 import { BroadcastChannel } from 'broadcast-channel';
 import { Subject, Subscription, Observable } from 'rxjs';
 import { RxChangeEvent } from './rx-change-event';
-import { CollectionsOfDatabase, RxChangeEventInsert, RxChangeEventUpdate, RxChangeEventRemove, PouchDBInstance, RxChangeEventCollection, RxDatabase, RxCollectionCreator, RxJsonSchema, RxCollection, PouchSettings, ServerOptions, RxDatabaseCreator } from './types';
+import { CollectionsOfDatabase, RxChangeEventInsert, RxChangeEventUpdate, RxChangeEventRemove, PouchDBInstance, RxChangeEventCollection, RxDatabase, RxCollectionCreator, RxJsonSchema, RxCollection, PouchSettings, ServerOptions, RxDatabaseCreator, RxDumpDatabase, RxDumpDatabaseAny } from './types';
 export declare class RxDatabaseBase<Collections = CollectionsOfDatabase> {
     name: string;
     adapter: any;
@@ -63,20 +63,26 @@ export declare class RxDatabaseBase<Collections = CollectionsOfDatabase> {
     /**
      * delete all data of the collection and its previous versions
      */
-    removeCollection(collectionName: string): Promise<string[]>;
+    removeCollection(collectionName: string): Promise<void>;
     /**
      * runs the given function between idleQueue-locking
      */
-    lockedRun(fun: any): any;
+    lockedRun<T>(fn: (...args: any[]) => T): T extends Promise<any> ? T : Promise<T>;
     requestIdlePromise(): Promise<void>;
     /**
-     * export to json
+     * Export database to a JSON friendly format.
+     * @param _decrypted
+     * When true, all encrypted values will be decrypted.
      */
-    dump(_decrypted?: boolean, _collections?: string[]): string[] | null;
+    dump(_decrypted: boolean, _collections?: string[]): Promise<RxDumpDatabase<Collections>>;
+    dump(_decrypted?: false, _collections?: string[]): Promise<RxDumpDatabaseAny<Collections>>;
     /**
-     * import json
+     * Import the parsed JSON export into the collection.
+     * @param _exportedJSON The previously exported data from the `<db>.dump()` method.
+     * @note When an interface is loaded in this collection all base properties of the type are typed as `any`
+     * since data could be encrypted.
      */
-    importDump(_json: any): Promise<any>;
+    importDump(_exportedJSON: RxDumpDatabaseAny<Collections>): Promise<void>;
     /**
      * spawn server
      */

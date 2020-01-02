@@ -401,19 +401,22 @@ function () {
     return query;
   }
   /**
-   * export to json
-   * if true, all encrypted values will be decrypted
+   * Export collection to a JSON friendly format.
+   * @param _decrypted
+   * When true, all encrypted values will be decrypted.
+   * When false or omitted and an interface or type is loaded in this collection,
+   * all base properties of the type are typed as `any` since data could be encrypted.
    */
   ;
 
   _proto.dump = function dump() {
-    var _decrytped = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+    var _decrypted = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
 
     throw pluginMissing('json-dump');
   }
   /**
-   * imports the json-data into the collection
-   * @param should be an array of raw-data
+   * Import the parsed JSON export into the collection.
+   * @param _exportedJSON The previously exported data from the `<collection>.dump()` method.
    */
   ;
 

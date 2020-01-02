@@ -6,10 +6,12 @@ import { DocCache } from './doc-cache';
 import { QueryCache } from './query-cache';
 import { ChangeEventBuffer } from './change-event-buffer';
 import { Subscription, Observable } from 'rxjs';
-import { PouchSettings, KeyFunctionMap, RxReplicationState, PouchDBInstance, MigrationState, SyncOptions, RxCollection, RxDatabase, RxQuery, RxDocument, SyncOptionsGraphQL, RxChangeEventUpdate, RxChangeEventInsert, RxChangeEventRemove } from './types';
+import { PouchSettings, KeyFunctionMap, RxReplicationState, PouchDBInstance, MigrationState, SyncOptions, RxCollection, RxDatabase, RxQuery, RxDocument, SyncOptionsGraphQL, RxChangeEventUpdate, RxChangeEventInsert, RxChangeEventRemove, RxDumpCollection, RxDumpCollectionAny } from './types';
 import { RxGraphQLReplicationState } from './plugins/replication-graphql';
 import { RxSchema } from './rx-schema';
-export declare class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
+export declare class RxCollectionBase<RxDocumentType = {
+    [prop: string]: any;
+}, OrmMethods = {}> {
     database: RxDatabase;
     name: string;
     schema: RxSchema<RxDocumentType>;
@@ -105,15 +107,19 @@ export declare class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
     find(queryObj?: any): RxQuery<RxDocumentType, RxDocument<RxDocumentType, OrmMethods>[]>;
     findOne(queryObj?: any): RxQuery<RxDocumentType, RxDocument<RxDocumentType, OrmMethods> | null>;
     /**
-     * export to json
-     * if true, all encrypted values will be decrypted
+     * Export collection to a JSON friendly format.
+     * @param _decrypted
+     * When true, all encrypted values will be decrypted.
+     * When false or omitted and an interface or type is loaded in this collection,
+     * all base properties of the type are typed as `any` since data could be encrypted.
      */
-    dump(_decrytped?: boolean): Promise<any>;
+    dump(_decrypted: boolean): Promise<RxDumpCollection<RxDocumentType>>;
+    dump(_decrypted?: false): Promise<RxDumpCollectionAny<RxDocumentType>>;
     /**
-     * imports the json-data into the collection
-     * @param should be an array of raw-data
+     * Import the parsed JSON export into the collection.
+     * @param _exportedJSON The previously exported data from the `<collection>.dump()` method.
      */
-    importDump(_exportedJSON: any): Promise<boolean>;
+    importDump(_exportedJSON: RxDumpCollectionAny<RxDocumentType>): Promise<void>;
     /**
      * waits for external changes to the database
      * and ensures they are emitted to the internal RxChangeEvent-Stream
