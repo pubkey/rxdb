@@ -354,9 +354,10 @@ export class RxGraphQLReplicationState {
         await this.collection.pouch.bulkDocs(
             [
                 toPouch
-            ], {
-            new_edits: false
-        }
+            ],
+            {
+                new_edits: false
+            }
         );
 
         /**
@@ -366,9 +367,15 @@ export class RxGraphQLReplicationState {
          * so other instances get informed about it
          */
         const originalDoc = flatClone(toPouch);
-        originalDoc._deleted = deletedValue;
+        if (deletedValue) {
+            originalDoc._deleted = deletedValue;
+        } else {
+            delete originalDoc._deleted;
+        }
         delete originalDoc[this.deletedFlag];
+        delete originalDoc._revisions;
         originalDoc._rev = newRevision;
+
         const cE = changeEventfromPouchChange(
             originalDoc,
             this.collection

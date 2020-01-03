@@ -30,7 +30,6 @@ import {
 // things for the push-checkpoint
 //
 
-
 const pushSequenceId = (endpointHash: string) => LOCAL_PREFIX + PLUGIN_IDENT + '-push-checkpoint-' + endpointHash;
 
 /**
@@ -135,8 +134,6 @@ export async function getChangesSinceLastPushSequence(
 
     return changes;
 }
-
-
 
 
 //

@@ -19,6 +19,9 @@ RxDB.plugin(RxDBErrorMessagesModule);
 import RxDBValidateModule from 'rxdb/plugins/validate';
 RxDB.plugin(RxDBValidateModule);
 
+import UpdatePlugin from 'rxdb/plugins/update';
+RxDB.plugin(UpdatePlugin);
+
 import {
     GRAPHQL_PORT,
     GRAPHQL_PATH,
@@ -188,13 +191,14 @@ async function run() {
     }`;
     const ret = wsClient.request({ query });
     ret.subscribe({
-        next(data) {
-            console.log('subscription emitted => trigger run');
+        next: async (data) => {
+            console.log('subscription emitted => trigger run()');
             console.dir(data);
-            replicationState.run();
+            await replicationState.run();
+            console.log('run() done');
         },
         error(error) {
-            console.log('got error:');
+            console.log('run() got error:');
             console.dir(error);
         }
     });

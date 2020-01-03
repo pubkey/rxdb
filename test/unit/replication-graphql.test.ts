@@ -1766,6 +1766,69 @@ describe('replication-graphql.test.js', () => {
                 server.close();
                 db.destroy();
             });
+            it('#1812 updates fail when graphql is enabled', async () => {
+                const db = await RxDB.create({
+                    name: util.randomCouchString(10),
+                    adapter: 'memory',
+                    multiInstance: false,
+                    queryChangeDetection: true,
+                    password: util.randomCouchString(10)
+                });
+                const schema = clone(schemas.humanWithTimestampAllIndex);
+                schema.properties.name.encrypted = true;
+                const collection = await db.collection({
+                    name: 'humans',
+                    schema
+                });
+                const server = await SpawnServer.spawn();
+                assert.strictEqual(server.getDocuments().length, 0);
+
+                const replicationState = collection.syncGraphQL({
+                    url: server.url,
+                    push: {
+                        batchSize,
+                        queryBuilder: pushQueryBuilder
+                    },
+                    pull: {
+                        queryBuilder
+                    },
+                    live: true,
+                    deletedFlag: 'deleted'
+                });
+                await replicationState.awaitInitialReplication();
+
+                // add one doc
+                const testData = getTestData(1).pop();
+                delete testData.deleted;
+                await collection.insert(testData);
+
+                // sync
+                await replicationState.run();
+                assert.strictEqual(server.getDocuments().length, 1);
+
+                // update document
+                const newTime = Math.round(new Date().getTime() / 1000);
+                const doc = await collection.findOne().exec();
+                await doc.atomicSet('updatedAt', newTime);
+
+                // check server
+                await replicationState.run();
+                await AsyncTestUtil.waitUntil(() => {
+                    const notUpdated = server.getDocuments().find((d: any) => d.updatedAt !== newTime);
+                    return !notUpdated;
+                });
+
+                // also delete to ensure nothing broke
+                await doc.remove();
+                await replicationState.run();
+                await AsyncTestUtil.waitUntil(() => {
+                    const d = server.getDocuments().pop();
+                    return d['deleted'];
+                });
+
+                server.close();
+                db.destroy();
+            });
         });
     });
     describe('browser', () => {
