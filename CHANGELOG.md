@@ -4,6 +4,7 @@
 
 Other:
   - Added a new example for electron with the remote API. Thanks [@SebastienWae](https://github.com/SebastienWae)
+  - Fixed Typing error on `database.dump()` [#1754](https://github.com/pubkey/rxdb/issues/1754). Thanks [@PVermeer](https://github.com/PVermeer)
 
 Bugfixes:
   - Updates to documents fail with GraphQL replication. [#1812](https://github.com/pubkey/rxdb/issues/1812). Thanks [@gautambt](https://github.com/gautambt)
