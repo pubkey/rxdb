@@ -28,7 +28,7 @@
     "vue-router": "3.1.3"
   },
   "devDependencies": {
-    "@types/node": "12.12.22",
+    "@types/node": "12.12.24",
     "@types/pouchdb-adapter-http": "6.1.3",
     "@types/pouchdb-adapter-idb": "6.1.3",
     "@vue/cli-plugin-pwa": "4.1.2",
