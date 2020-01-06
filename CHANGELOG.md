@@ -8,6 +8,7 @@ Other:
 
 Bugfixes:
   - Updates to documents fail with GraphQL replication. [#1812](https://github.com/pubkey/rxdb/issues/1812). Thanks [@gautambt](https://github.com/gautambt)
+  - `RxQuery.doesDocumentDataMatch()` was wrong on queries with `$and` which lead to a wrong result with QueryChangeDetection
 
 ### 8.7.4 (2 December 2019)
 

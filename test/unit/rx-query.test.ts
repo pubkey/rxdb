@@ -12,7 +12,6 @@ import {
     isRxQuery,
     create as createRxDatabase
 } from '../../';
-import * as RxDatabase from '../../dist/lib/rx-database';
 import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from './../helper/schemas';
@@ -366,6 +365,27 @@ config.parallel('rx-query.test.js', () => {
             };
 
             assert.strictEqual(true, q.doesDocumentDataMatch(docData));
+            col.database.destroy();
+        });
+        it('BUG should not match regex', async () => {
+            const col = await humansCollection.create(0);
+            const q = col.find({
+                $and: [{
+                    color: {
+                        $regex: new RegExp('f', 'i')
+                    }
+                }]
+            });
+
+            const docData = {
+                color: 'green',
+                hp: 100,
+                maxHP: 767,
+                name: 'asdfsadf',
+                _rev: '1-971bfd0b8749eb33b6aae7f6c0dc2cd4'
+            };
+
+            assert.strictEqual(false, q.doesDocumentDataMatch(docData));
             col.database.destroy();
         });
     });
