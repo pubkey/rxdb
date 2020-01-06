@@ -549,13 +549,20 @@ function () {
                * so other instances get informed about it
                */
               originalDoc = flatClone(toPouch);
-              originalDoc._deleted = deletedValue;
+
+              if (deletedValue) {
+                originalDoc._deleted = deletedValue;
+              } else {
+                delete originalDoc._deleted;
+              }
+
               delete originalDoc[this.deletedFlag];
+              delete originalDoc._revisions;
               originalDoc._rev = newRevision;
               cE = changeEventfromPouchChange(originalDoc, this.collection);
               this.collection.$emit(cE);
 
-            case 17:
+            case 18:
             case "end":
               return _context6.stop();
           }

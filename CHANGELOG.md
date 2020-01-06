@@ -1,6 +1,6 @@
 # Changelog
 
-### X.X.X (comming soon)
+### 8.7.5 (6 January 2020)
 
 Other:
   - Added a new example for electron with the remote API. Thanks [@SebastienWae](https://github.com/SebastienWae)
