@@ -908,6 +908,43 @@ config.parallel('rx-schema.test.js', () => {
 
             db.destroy();
         });
+        it('Indexes do not work in objects inside arrays', async () => {
+            const mySchema = {
+                version: 0,
+                id: 'post',
+                type: 'object',
+                properties: {
+                    documents: {
+                        type: 'array',
+                        items: {
+                            type: 'object',
+                            properties: {
+                                title: {type: 'string', index: true}
+                            }
+                        }
+                    }
+                },
+            };
+
+            // create a database
+            const db = await RxDB.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory'
+            });
+            const collection = await db.collection({
+                name: 'test',
+                schema: mySchema
+            });
+
+            await collection.insert({
+                documents: [
+                    {title: 'Title1'},
+                    {title: 'Title2'}
+                ]
+            });
+
+            db.destroy();
+        });
     });
     describe('wait a bit', () => {
         it('w8 a bit', async () => {
