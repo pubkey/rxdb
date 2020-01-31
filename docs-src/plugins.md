@@ -59,15 +59,15 @@ The `rxdb`-property signals that this plugin is and rxdb-plugin and not a pouchd
 
 ## prototypes
 
-The `prototypes`-property contains a function for each of RxDB's internal prototype that you want to manipulate. Each function gets the prototype-object of the corresponding class as parameter and than can modify it. You can see a list of all available prototypes [here](https://github.com/pubkey/rxdb/blob/master/src/plugin.js)
+The `prototypes`-property contains a function for each of RxDB's internal prototype that you want to manipulate. Each function gets the prototype-object of the corresponding class as parameter and than can modify it. You can see a list of all available prototypes [here](https://github.com/pubkey/rxdb/blob/master/src/plugin.ts)
 
 ## overwritable
 
-Some of RxDB's functions are not inside of a class-prototype but are static. You can set and overwrite them with the `overwritable`-object. You can see a list of all overwriteables [here](https://github.com/pubkey/rxdb/blob/master/src/overwritable.js).
+Some of RxDB's functions are not inside of a class-prototype but are static. You can set and overwrite them with the `overwritable`-object. You can see a list of all overwriteables [here](https://github.com/pubkey/rxdb/blob/master/src/overwritable.ts).
 
 # hooks
 
-Sometimes you don't want to overwrite an existing RxDB-method, but extend it. You can do this by adding hooks which will be called each time the code jumps into the hooks corresponding call. You can find a list of all hooks here [here](https://github.com/pubkey/rxdb/blob/master/src/hooks.js).
+Sometimes you don't want to overwrite an existing RxDB-method, but extend it. You can do this by adding hooks which will be called each time the code jumps into the hooks corresponding call. You can find a list of all hooks here [here](https://github.com/pubkey/rxdb/blob/master/src/hooks.ts).
 
 # options
 
