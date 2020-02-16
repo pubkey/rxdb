@@ -5,7 +5,7 @@ dist: trusty
 os:
   - linux
 node_js:
-  - "12.7.0"
+  - "13.8.0"
 
 services:
   - xvfb
