@@ -126,7 +126,7 @@
     "@babel/preset-typescript": "7.8.3",
     "@babel/types": "7.8.3",
     "@types/core-js": "2.5.3",
-    "@types/faker": "4.1.9",
+    "@types/faker": "4.1.10",
     "@types/memdown": "3.0.0",
     "@types/mocha": "5.2.7",
     "@types/pouchdb-adapter-memory": "6.1.3",
