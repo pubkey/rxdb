@@ -56,9 +56,7 @@ var BULK_DOC_OPTIONS_FALSE = {
   new_edits: false
 };
 
-var InMemoryRxCollection =
-/*#__PURE__*/
-function (_RxCollectionBase) {
+var InMemoryRxCollection = /*#__PURE__*/function (_RxCollectionBase) {
   (0, _inheritsLoose2["default"])(InMemoryRxCollection, _RxCollectionBase);
 
   function InMemoryRxCollection(parentCollection) {

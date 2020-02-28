@@ -15,10 +15,10 @@ export declare class KeyCompressor {
         [k: string]: string;
     };
     constructor(schema: RxSchema);
-    readonly table: {
+    get table(): {
         [k: string]: string;
     };
-    readonly reverseTable: {
+    get reverseTable(): {
         [k: string]: string;
     };
     /**

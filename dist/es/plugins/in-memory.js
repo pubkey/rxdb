@@ -28,9 +28,7 @@ var BULK_DOC_OPTIONS = {
 var BULK_DOC_OPTIONS_FALSE = {
   new_edits: false
 };
-export var InMemoryRxCollection =
-/*#__PURE__*/
-function (_RxCollectionBase) {
+export var InMemoryRxCollection = /*#__PURE__*/function (_RxCollectionBase) {
   _inheritsLoose(InMemoryRxCollection, _RxCollectionBase);
 
   function InMemoryRxCollection(parentCollection) {

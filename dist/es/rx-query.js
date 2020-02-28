@@ -15,9 +15,7 @@ var newQueryID = function newQueryID() {
   return ++_queryCount;
 };
 
-export var RxQueryBase =
-/*#__PURE__*/
-function () {
+export var RxQueryBase = /*#__PURE__*/function () {
   function RxQueryBase(op, queryObj, collection) {
     this.id = newQueryID();
     this._latestChangeEvent = -1;

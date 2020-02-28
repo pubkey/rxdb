@@ -12,9 +12,9 @@ export declare class RxDatabaseBase<Collections = CollectionsOfDatabase> {
     options: any;
     pouchSettings: PouchSettings;
     constructor(name: string, adapter: any, password: any, multiInstance: boolean, queryChangeDetection: boolean, options: any, pouchSettings: PouchSettings);
-    readonly leaderElector: any;
-    readonly isLeader: boolean;
-    readonly $: Observable<RxChangeEventInsert<any> | RxChangeEventUpdate<any> | RxChangeEventRemove<any> | RxChangeEventCollection>;
+    get leaderElector(): any;
+    get isLeader(): boolean;
+    get $(): Observable<RxChangeEventInsert<any> | RxChangeEventUpdate<any> | RxChangeEventRemove<any> | RxChangeEventCollection>;
     idleQueue: IdleQueue;
     readonly token: string;
     _subs: Subscription[];

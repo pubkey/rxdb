@@ -99,9 +99,7 @@ var _assignMethodsToAttachment = function _assignMethodsToAttachment(attachment)
  */
 
 
-export var RxAttachment =
-/*#__PURE__*/
-function () {
+export var RxAttachment = /*#__PURE__*/function () {
   function RxAttachment(_ref2) {
     var doc = _ref2.doc,
         id = _ref2.id,

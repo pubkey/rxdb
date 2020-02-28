@@ -31,9 +31,7 @@ export function getLastPushSequence(_x, _x2) {
 }
 
 function _getLastPushSequence() {
-  _getLastPushSequence = _asyncToGenerator(
-  /*#__PURE__*/
-  _regeneratorRuntime.mark(function _callee(collection, endpointHash) {
+  _getLastPushSequence = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(collection, endpointHash) {
     var doc;
     return _regeneratorRuntime.wrap(function _callee$(_context) {
       while (1) {
@@ -70,9 +68,7 @@ export function setLastPushSequence(_x3, _x4, _x5) {
 }
 
 function _setLastPushSequence() {
-  _setLastPushSequence = _asyncToGenerator(
-  /*#__PURE__*/
-  _regeneratorRuntime.mark(function _callee2(collection, endpointHash, seq) {
+  _setLastPushSequence = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(collection, endpointHash, seq) {
     var _id, doc, res;
 
     return _regeneratorRuntime.wrap(function _callee2$(_context2) {
@@ -119,9 +115,7 @@ export function getChangesSinceLastPushSequence(_x6, _x7) {
 //
 
 function _getChangesSinceLastPushSequence() {
-  _getChangesSinceLastPushSequence = _asyncToGenerator(
-  /*#__PURE__*/
-  _regeneratorRuntime.mark(function _callee3(collection, endpointHash) {
+  _getChangesSinceLastPushSequence = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3(collection, endpointHash) {
     var batchSize,
         lastPushSequence,
         retry,
@@ -207,9 +201,7 @@ export function getLastPullDocument(_x8, _x9) {
 }
 
 function _getLastPullDocument() {
-  _getLastPullDocument = _asyncToGenerator(
-  /*#__PURE__*/
-  _regeneratorRuntime.mark(function _callee4(collection, endpointHash) {
+  _getLastPullDocument = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4(collection, endpointHash) {
     var localDoc;
     return _regeneratorRuntime.wrap(function _callee4$(_context4) {
       while (1) {
@@ -246,9 +238,7 @@ export function setLastPullDocument(_x10, _x11, _x12) {
 }
 
 function _setLastPullDocument() {
-  _setLastPullDocument = _asyncToGenerator(
-  /*#__PURE__*/
-  _regeneratorRuntime.mark(function _callee5(collection, endpointHash, doc) {
+  _setLastPullDocument = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee5(collection, endpointHash, doc) {
     var _id, localDoc;
 
     return _regeneratorRuntime.wrap(function _callee5$(_context5) {

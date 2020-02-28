@@ -33,9 +33,7 @@ function messageForError(message, parameters) {
   return 'RxError:' + '\n' + message + '\n' + parametersToString(parameters);
 }
 
-export var RxError =
-/*#__PURE__*/
-function (_Error) {
+export var RxError = /*#__PURE__*/function (_Error) {
   _inheritsLoose(RxError, _Error);
 
   function RxError(code, message) {
@@ -71,10 +69,8 @@ function (_Error) {
   }]);
 
   return RxError;
-}(_wrapNativeSuper(Error));
-export var RxTypeError =
-/*#__PURE__*/
-function (_TypeError) {
+}( /*#__PURE__*/_wrapNativeSuper(Error));
+export var RxTypeError = /*#__PURE__*/function (_TypeError) {
   _inheritsLoose(RxTypeError, _TypeError);
 
   function RxTypeError(code, message) {
@@ -110,7 +106,7 @@ function (_TypeError) {
   }]);
 
   return RxTypeError;
-}(_wrapNativeSuper(TypeError)); // const errorKeySearchLink = key => 'https://github.com/pubkey/rxdb/search?q=' + key + '+path%3Asrc%2Fmodules';
+}( /*#__PURE__*/_wrapNativeSuper(TypeError)); // const errorKeySearchLink = key => 'https://github.com/pubkey/rxdb/search?q=' + key + '+path%3Asrc%2Fmodules';
 // const verboseErrorModuleLink = 'https://pubkey.github.io/rxdb/custom-builds.html#verbose-error';
 
 export function newRxError(code, parameters) {

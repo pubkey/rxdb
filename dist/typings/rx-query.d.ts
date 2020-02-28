@@ -7,8 +7,8 @@ export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumen
     queryObj: any;
     collection: RxCollection<RxDocumentType>;
     constructor(op: RxQueryOP, queryObj: any, collection: RxCollection<RxDocumentType>);
-    readonly $: BehaviorSubject<RxQueryResult>;
-    readonly massageSelector: any;
+    get $(): BehaviorSubject<RxQueryResult>;
+    get massageSelector(): any;
     id: number;
     mquery: MQuery;
     _latestChangeEvent: -1 | any;

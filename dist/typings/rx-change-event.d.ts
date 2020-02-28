@@ -6,7 +6,7 @@ import { RxDatabase, RxCollection } from './types';
 export declare class RxChangeEvent {
     data: any;
     constructor(data: any);
-    readonly hash: string;
+    get hash(): string;
     private _hash;
     toJSON(): {
         col: null;

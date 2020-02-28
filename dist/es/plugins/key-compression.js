@@ -5,9 +5,7 @@ import _createClass from "@babel/runtime/helpers/createClass";
  * if you dont use this, ensure that you set disableKeyComression to false in your schema
  */
 import { numberToLetter, trimDots, clone } from '../util';
-export var KeyCompressor =
-/*#__PURE__*/
-function () {
+export var KeyCompressor = /*#__PURE__*/function () {
   function KeyCompressor(schema) {
     this.schema = schema;
   }

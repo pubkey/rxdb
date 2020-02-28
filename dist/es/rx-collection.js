@@ -19,9 +19,7 @@ import { createRxDocument, getRxDocumentConstructor } from './rx-document-protot
 var HOOKS_WHEN = ['pre', 'post'];
 var HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
 var hooksApplied = false;
-export var RxCollectionBase =
-/*#__PURE__*/
-function () {
+export var RxCollectionBase = /*#__PURE__*/function () {
   function RxCollectionBase(database, name, schema) {
     var pouchSettings = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
     var migrationStrategies = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};

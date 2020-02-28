@@ -16,9 +16,7 @@ Core.plugin(PouchReplicationPlugin); // add the watch-for-changes-plugin
 
 Core.plugin(RxDBWatchForChangesPlugin);
 var INTERNAL_POUCHDBS = new WeakSet();
-export var RxReplicationStateBase =
-/*#__PURE__*/
-function () {
+export var RxReplicationStateBase = /*#__PURE__*/function () {
   function RxReplicationStateBase(collection) {
     var _this = this;
 

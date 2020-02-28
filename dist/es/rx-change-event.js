@@ -5,9 +5,7 @@ import _createClass from "@babel/runtime/helpers/createClass";
  * they can be grabbed by the observables of database, collection and document
  */
 import { hash } from './util';
-export var RxChangeEvent =
-/*#__PURE__*/
-function () {
+export var RxChangeEvent = /*#__PURE__*/function () {
   function RxChangeEvent(data) {
     this._hash = null;
     this.data = data;

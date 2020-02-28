@@ -30,9 +30,7 @@ var _hooks = require("./hooks");
 
 var _rxDocument = require("./rx-document");
 
-var RxSchema =
-/*#__PURE__*/
-function () {
+var RxSchema = /*#__PURE__*/function () {
   function RxSchema(jsonID) {
     this.jsonID = jsonID;
     this.compoundIndexes = this.jsonID.compoundIndexes;

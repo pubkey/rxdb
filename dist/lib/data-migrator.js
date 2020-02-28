@@ -47,9 +47,7 @@ var _rxCollectionHelper = require("./rx-collection-helper");
  * - This could have been done in much less code which would be easier to uderstand
  *
  */
-var DataMigrator =
-/*#__PURE__*/
-function () {
+var DataMigrator = /*#__PURE__*/function () {
   function DataMigrator(newestCollection, migrationStrategies) {
     this._migrated = false;
     this.newestCollection = newestCollection;

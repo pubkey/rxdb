@@ -37,9 +37,7 @@ var newQueryID = function newQueryID() {
   return ++_queryCount;
 };
 
-var RxQueryBase =
-/*#__PURE__*/
-function () {
+var RxQueryBase = /*#__PURE__*/function () {
   function RxQueryBase(op, queryObj, collection) {
     this.id = newQueryID();
     this._latestChangeEvent = -1;

@@ -20,9 +20,7 @@ import { create as createRxCollection } from './rx-collection';
  */
 var USED_COMBINATIONS = {};
 var DB_COUNT = 0;
-export var RxDatabaseBase =
-/*#__PURE__*/
-function () {
+export var RxDatabaseBase = /*#__PURE__*/function () {
   function RxDatabaseBase(name, adapter, password, multiInstance) {
     var queryChangeDetection = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
     var options = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};

@@ -1,5 +1,10 @@
 # Changelog
 
+### X.X.X (comming soon)
+
+Other:
+  - Upgraded PouchDB and other dependencies
+
 ### 8.7.5 (6 January 2020)
 
 Other:

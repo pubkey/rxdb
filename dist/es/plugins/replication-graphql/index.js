@@ -23,9 +23,7 @@ Core.plugin(RxDBLeaderElectionPlugin);
  */
 
 Core.plugin(RxDBWatchForChangesPlugin);
-export var RxGraphQLReplicationState =
-/*#__PURE__*/
-function () {
+export var RxGraphQLReplicationState = /*#__PURE__*/function () {
   function RxGraphQLReplicationState(collection, url, headers, pull, push, deletedFlag, live, liveInterval, retryTime) {
     this._subjects = {
       recieved: new Subject(),
@@ -103,9 +101,7 @@ function () {
   _proto.run =
   /*#__PURE__*/
   function () {
-    var _run2 = _asyncToGenerator(
-    /*#__PURE__*/
-    _regeneratorRuntime.mark(function _callee2() {
+    var _run2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2() {
       var _this2 = this;
 
       return _regeneratorRuntime.wrap(function _callee2$(_context2) {
@@ -129,11 +125,7 @@ function () {
 
             case 4:
               this._runQueueCount++;
-              this._runningPromise = this._runningPromise.then(
-              /*#__PURE__*/
-              _asyncToGenerator(
-              /*#__PURE__*/
-              _regeneratorRuntime.mark(function _callee() {
+              this._runningPromise = this._runningPromise.then( /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee() {
                 var willRetry;
                 return _regeneratorRuntime.wrap(function _callee$(_context) {
                   while (1) {
@@ -176,12 +168,8 @@ function () {
     return run;
   }();
 
-  _proto._run =
-  /*#__PURE__*/
-  function () {
-    var _run3 = _asyncToGenerator(
-    /*#__PURE__*/
-    _regeneratorRuntime.mark(function _callee3() {
+  _proto._run = /*#__PURE__*/function () {
+    var _run3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3() {
       var _this3 = this;
 
       var willRetry, ok, _ok;
@@ -254,9 +242,7 @@ function () {
   _proto.runPull =
   /*#__PURE__*/
   function () {
-    var _runPull = _asyncToGenerator(
-    /*#__PURE__*/
-    _regeneratorRuntime.mark(function _callee4() {
+    var _runPull = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4() {
       var _this4 = this;
 
       var latestDocument, latestDocumentData, pullGraphQL, result, data, modified, docIds, docsWithRevisions, newLatestDocument;
@@ -372,12 +358,8 @@ function () {
     return runPull;
   }();
 
-  _proto.runPush =
-  /*#__PURE__*/
-  function () {
-    var _runPush = _asyncToGenerator(
-    /*#__PURE__*/
-    _regeneratorRuntime.mark(function _callee5() {
+  _proto.runPush = /*#__PURE__*/function () {
+    var _runPush = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee5() {
       var _this5 = this;
 
       var changes, changesWithDocs, lastSuccessfullChange, i, changeWithDoc, pushObj, result;
@@ -501,12 +483,8 @@ function () {
     return runPush;
   }();
 
-  _proto.handleDocumentFromRemote =
-  /*#__PURE__*/
-  function () {
-    var _handleDocumentFromRemote = _asyncToGenerator(
-    /*#__PURE__*/
-    _regeneratorRuntime.mark(function _callee6(doc, docsWithRevisions) {
+  _proto.handleDocumentFromRemote = /*#__PURE__*/function () {
+    var _handleDocumentFromRemote = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee6(doc, docsWithRevisions) {
       var deletedValue, toPouch, primaryValue, pouchState, newRevision, newRevisionHeight, revisionId, originalDoc, cE;
       return _regeneratorRuntime.wrap(function _callee6$(_context6) {
         while (1) {
@@ -631,9 +609,7 @@ export function syncGraphQL(_ref2) {
 
     if (replicationState.live) {
       if (pull) {
-        _asyncToGenerator(
-        /*#__PURE__*/
-        _regeneratorRuntime.mark(function _callee7() {
+        _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee7() {
           return _regeneratorRuntime.wrap(function _callee7$(_context7) {
             while (1) {
               switch (_context7.prev = _context7.next) {

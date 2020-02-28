@@ -6,17 +6,17 @@ export declare class RxSchema<T = any> {
     primaryPath: keyof T;
     finalFields: string[];
     constructor(jsonID: RxJsonSchema<T>);
-    readonly version: number;
-    readonly crypt: boolean;
-    readonly normalized: RxJsonSchema;
-    readonly topLevelFields: (keyof T)[];
-    readonly defaultValues: {
+    get version(): number;
+    get crypt(): boolean;
+    get normalized(): RxJsonSchema;
+    get topLevelFields(): (keyof T)[];
+    get defaultValues(): {
         [P in keyof T]: T[P];
     };
-    readonly encryptedPaths: {
+    get encryptedPaths(): {
         [k: string]: JsonSchema;
     };
-    readonly hash: string;
+    get hash(): string;
     /**
      * true if schema contains at least one encrypted path
      */

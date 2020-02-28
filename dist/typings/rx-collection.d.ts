@@ -25,12 +25,12 @@ export declare class RxCollectionBase<RxDocumentType = {
     /**
      * returns observable
      */
-    readonly $: Observable<RxChangeEventInsert<RxDocumentType> | RxChangeEventUpdate<RxDocumentType> | RxChangeEventRemove<RxDocumentType>>;
-    readonly insert$: Observable<RxChangeEventInsert<RxDocumentType>>;
-    readonly update$: Observable<RxChangeEventUpdate<RxDocumentType>>;
-    readonly remove$: Observable<RxChangeEventRemove<RxDocumentType>>;
-    readonly docChanges$: any;
-    readonly onDestroy: Promise<void>;
+    get $(): Observable<RxChangeEventInsert<RxDocumentType> | RxChangeEventUpdate<RxDocumentType> | RxChangeEventRemove<RxDocumentType>>;
+    get insert$(): Observable<RxChangeEventInsert<RxDocumentType>>;
+    get update$(): Observable<RxChangeEventUpdate<RxDocumentType>>;
+    get remove$(): Observable<RxChangeEventRemove<RxDocumentType>>;
+    get docChanges$(): any;
+    get onDestroy(): Promise<void>;
     _isInMemory: boolean;
     destroyed: boolean;
     _atomicUpsertQueues: Map<any, any>;
@@ -55,7 +55,7 @@ export declare class RxCollectionBase<RxDocumentType = {
      */
     private _onDestroy?;
     private _onDestroyCall?;
-    prepare(): Promise<[any, void[]]>;
+    prepare(): Promise<[any, any]>;
     /**
      * checks if a migration is needed
      */
