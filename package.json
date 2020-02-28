@@ -88,7 +88,7 @@
     "@types/pouchdb-find": "6.3.5",
     "@types/spark-md5": "3.0.2",
     "array-push-at-sort-position": "1.2.0",
-    "broadcast-channel": "3.0.5",
+    "broadcast-channel": "3.0.6",
     "clone": "^2.1.1",
     "cors": "2.8.5",
     "crypto-js": "4.0.0",
