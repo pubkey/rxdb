@@ -14,7 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "concurrently": "5.1.0",
-    "local-web-server": "3.0.7",
+    "local-web-server": "4.0.0",
     "normalize.css": "8.0.1",
     "pouchdb-adapter-http": "7.0.0",
     "pouchdb-adapter-localstorage": "7.0.0",
