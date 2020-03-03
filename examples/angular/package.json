@@ -56,7 +56,7 @@
     "concurrently": "5.1.0",
     "local-web-server": "3.0.7",
     "pouchdb-server": "4.2.0",
-    "testcafe": "1.8.1",
+    "testcafe": "1.8.2",
     "ts-node": "8.6.2",
     "tslint": "5.20.1",
     "typescript": "3.8.3",
