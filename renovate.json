@@ -7,7 +7,7 @@
     "node",
     "webpack"
   ],
-  "automerge": false,
+  "automerge": true,
   "major": {
     "automerge": false
   },

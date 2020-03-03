@@ -15,7 +15,7 @@
     "chalk": "3.0.0",
     "keypress": "0.2.1",
     "node": "12.12.0",
-    "pouchdb-adapter-http": "7.1.1",
+    "pouchdb-adapter-http": "7.2.1",
     "pouchdb-adapter-node-websql": "7.0.0",
     "random-name": "0.1.2"
   },
