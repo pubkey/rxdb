@@ -39,7 +39,7 @@
     "rimraf": "3.0.2",
     "style-loader": "1.1.3",
     "testcafe": "1.8.1",
-    "testcafe-hammerhead": "16.0.0",
+    "testcafe-hammerhead": "16.2.0",
     "webpack": "4.39.1",
     "webpack-cli": "3.3.10",
     "webpack-dev-server": "3.10.3"
