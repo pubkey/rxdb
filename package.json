@@ -102,7 +102,7 @@
     "object-path": "0.11.4",
     "pouchdb-all-dbs": "1.0.2",
     "pouchdb-core": "7.2.1",
-    "pouchdb-find": "7.0.0",
+    "pouchdb-find": "7.2.1",
     "pouchdb-replication": "7.2.1",
     "pouchdb-selector-core": "7.2.1",
     "random-token": "0.0.8",
