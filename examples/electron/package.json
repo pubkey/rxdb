@@ -10,19 +10,19 @@
     "babel-polyfill": "6.26.0",
     "babel-runtime": "6.26.0",
     "concurrently": "5.1.0",
-    "electron": "6.1.7",
-    "electron-tabs": "0.12.0",
+    "electron": "8.0.3",
+    "electron-tabs": "0.13.0",
     "electron-window-manager": "1.0.6",
-    "melanke-watchjs": "1.5.1",
-    "pouchdb-adapter-http": "7.0.0",
+    "melanke-watchjs": "1.5.2",
+    "pouchdb-adapter-http": "7.2.1",
     "pouchdb-adapter-websql": "7.0.0",
-    "pouchdb-replication": "7.0.0",
+    "pouchdb-replication": "7.2.1",
     "rxdb": "../../",
     "rxjs": "6.5.4"
   },
   "devDependencies": {
-    "mocha": "7.0.1",
-    "node": "12.9.1",
-    "spectron": "8.0.0"
+    "mocha": "7.1.0",
+    "node": "13.9.0",
+    "spectron": "10.0.1"
   }
 }
