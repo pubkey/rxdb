@@ -526,8 +526,9 @@ function _sortAddToIndex(checkParam: any, clonedThis: any) {
     const schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(checkParam);
     if (!schemaObj) _throwNotInSchema(checkParam);
 
+    const schemaType = Array.isArray(schemaObj.type) ? schemaObj.type.find((type: any) => type !== 'null') : schemaObj.type;
 
-    switch (schemaObj.type) {
+    switch (schemaType) {
         case 'integer':
             // TODO change back to -Infinity when issue resolved
             // @link https://github.com/pouchdb/pouchdb/issues/6454

@@ -121,7 +121,8 @@ export class RxSchema<T = any> {
 
     public getSchemaByObjectPath(path: string): JsonSchema {
         let usePath: string = path as string;
-        usePath = usePath.replace(/\./g, '.properties.');
+        usePath = usePath.replace(/\.([a-z])/g, '.properties.$1');
+        usePath = usePath.replace(/\.([0-9]+)/g, '.items.$1');
         usePath = 'properties.' + usePath;
         usePath = trimDots(usePath);
 
