@@ -48,6 +48,7 @@
       }
     ],
     "no-arg": true,
+    "no-async-without-await": true,
     "no-bitwise": true,
     "no-console": [
       true,
