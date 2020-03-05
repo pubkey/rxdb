@@ -5,7 +5,7 @@
  */
 
 
-const CODES: { [k: string]: string } = {
+export const ERROR_MESSAGES: { [k: string]: string } = {
     // util.js
     UT1: 'given name is no string or empty',
     UT2: `collection- and database-names must match the regex
@@ -163,22 +163,4 @@ const CODES: { [k: string]: string } = {
     // plugins/replication-graphql.js
     QL1: 'TODO'
 
-};
-
-export const rxdb = true;
-export const prototypes = {};
-export const overwritable = {
-    tunnelErrorMessage(code: string) {
-        if (!CODES[code]) {
-            console.error('RxDB: Error-Code not known: ' + code);
-            throw new Error('Error-Cdoe ' + code + ' not known, contact the maintainer');
-        }
-        return CODES[code];
-    }
-};
-
-export default {
-    rxdb,
-    prototypes,
-    overwritable
 };

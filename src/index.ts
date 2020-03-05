@@ -7,11 +7,8 @@
 import Core from './core';
 
 // default plugins
-import SchemaCheckPlugin from './plugins/schema-check';
-Core.plugin(SchemaCheckPlugin);
-
-import ErrorMessagesPlugin from './plugins/error-messages';
-Core.plugin(ErrorMessagesPlugin);
+import DevModePlugin from './plugins/dev-mode';
+Core.plugin(DevModePlugin);
 
 import ValidatePlugin from './plugins/validate';
 Core.plugin(ValidatePlugin);

@@ -97,9 +97,6 @@ export class RxTypeError extends TypeError {
     }
 }
 
-// const errorKeySearchLink = key => 'https://github.com/pubkey/rxdb/search?q=' + key + '+path%3Asrc%2Fmodules';
-// const verboseErrorModuleLink = 'https://pubkey.github.io/rxdb/custom-builds.html#verbose-error';
-
 export function newRxError(
     code: string,
     parameters?: RxErrorParameters

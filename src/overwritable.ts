@@ -43,7 +43,7 @@ const funs: { [k: string]: Function } = {
     tunnelErrorMessage(message: string): string {
         // TODO better text with link
         return `RxDB Error-Code ${message}.
-        - To find out what this means, use the error-messages-plugin https://pubkey.github.io/rxdb/custom-build.html#error-messages
+        - To find out what this means, use the dev-mode-plugin https://pubkey.github.io/rxdb/custom-build.html#dev-mode
         - Or search for this code https://github.com/pubkey/rxdb/search?q=${message}
         `;
     }

@@ -10,16 +10,17 @@ const leveldown = require('leveldown');
 
 import * as util from '../../dist/lib/util';
 import * as configModule from '../../test_tmp/unit/config';
+import { RxJsonSchema } from '../../src/types';
 const config: any = (configModule as any).default;
 
 const RxDB = require('../../plugins/core/');
 RxDB.plugin(require('../../plugins/in-memory'));
-RxDB.plugin(require('../../plugins/error-messages'));
+RxDB.plugin(require('../../plugins/dev-mode').default);
 RxDB.plugin(require('../../plugins/watch-for-changes'));
 
 RxDB.plugin(require('pouchdb-adapter-leveldb'));
 
-const schema = {
+const schema: RxJsonSchema = {
     title: 'human schema',
     description: 'describes a human being',
     version: 0,

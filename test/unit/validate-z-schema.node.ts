@@ -9,7 +9,7 @@ import * as util from '../../dist/lib/util';
 import Core from '../../plugins/core';
 Core.plugin(require('../../plugins/validate-z-schema'));
 Core.plugin(require('../../plugins/key-compression'));
-Core.plugin(require('../../plugins/error-messages'));
+Core.plugin(require('../../plugins/dev-mode'));
 Core.plugin(require('pouchdb-adapter-memory'));
 
 config.parallel('validate-z-schema.node.js', () => {

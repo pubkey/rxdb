@@ -7,7 +7,7 @@ import AsyncTestUtil from 'async-test-util';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 
-import * as SchemaCheck from '../../dist/lib/plugins/schema-check.js';
+import * as SchemaCheck from '../../dist/lib/plugins/dev-mode/check-schema';
 
 import RxDB from '../../';
 import {
