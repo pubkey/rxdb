@@ -2,7 +2,6 @@ import {
     RxCollection
 } from './types';
 import {
-    clone,
     generateId
 } from './util';
 import {

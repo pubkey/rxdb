@@ -1,24 +1,14 @@
 import {
-    Observable
-} from 'rxjs';
-import {
     PouchSettings
 } from './pouch';
 import {
     RxCollection,
-    RxCollectionCreator,
     RxDumpCollection,
     RxDumpCollectionAsAny
 } from './rx-collection';
 import {
     RxLocalDocument
 } from './rx-document';
-import {
-    RxChangeEventInsert,
-    RxChangeEventUpdate,
-    RxChangeEventRemove,
-    RxChangeEventCollection
-} from './rx-change-event';
 import {
     RxDatabaseBase
 } from '../rx-database';

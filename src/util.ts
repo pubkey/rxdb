@@ -6,9 +6,6 @@ import randomToken from 'random-token';
 import {
     default as deepClone
 } from 'clone';
-import {
-    PouchDBInstance
-} from './types';
 
 /**
  * Returns an error that indicates that a plugin is missing

@@ -5,9 +5,6 @@
  */
 import modifyjs from 'modifyjs';
 import {
-    clone
-} from '../util.js';
-import {
     RxDocument,
     RxQuery
 } from '../types';

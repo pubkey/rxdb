@@ -90,8 +90,7 @@ import {
 } from './rx-schema';
 import {
     createWithConstructor as createRxDocumentWithConstructor,
-    isInstanceOf as isRxDocument,
-    properties as rxDocumentProperties
+    isInstanceOf as isRxDocument
 } from './rx-document';
 
 import {

@@ -58,7 +58,6 @@ import {
     PouchSettings,
     ServerOptions,
     RxDatabaseCreator,
-    RxDatabaseGenerated,
     RxDumpDatabase,
     RxDumpDatabaseAny
 } from './types';

@@ -23,10 +23,8 @@ import {
 
 import Core from '../../core';
 import {
-    hash,
-    clone
+    hash
 } from '../../util';
-
 
 import {
     DEFAULT_MODIFIER,

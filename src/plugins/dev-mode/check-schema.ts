@@ -7,17 +7,15 @@ import objectPath from 'object-path';
 
 import RxDocument from '../../rx-document';
 import {
-    newRxError,
-    newRxTypeError
+    newRxError
 } from '../../rx-error';
 import {
-    RxJsonSchema,
-    NumberFunctionMap
+    RxJsonSchema
 } from '../../types';
 import {
-    getPreviousVersions
-} from '../../rx-schema';
-import { flattenObject, trimDots } from '../../util';
+    flattenObject,
+    trimDots
+} from '../../util';
 
 /**
  * checks if the fieldname is allowed

@@ -6,7 +6,6 @@ import {
     hash,
     sortObject,
     trimDots,
-    flattenObject,
     pluginMissing
 } from './util';
 import {
