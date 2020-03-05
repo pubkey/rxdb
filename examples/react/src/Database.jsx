@@ -1,7 +1,5 @@
 import * as RxDB from '../../../';
 
-RxDB.QueryChangeDetector.enableDebugging();
-
 RxDB.plugin(require('pouchdb-adapter-idb'));
 RxDB.plugin(require('pouchdb-adapter-http')); //enable syncing over http
 

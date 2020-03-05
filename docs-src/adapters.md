@@ -88,6 +88,12 @@ const database = await RxDB.create({
     name: 'mydatabase',
     adapter: leveldown // the full leveldown-module
 });
+
+// or use a specific folder to store the data
+const database = await RxDB.create({
+    name: '/root/user/project/mydatabase',
+    adapter: leveldown // the full leveldown-module
+});
 ```
 
 ## Node-Websql
@@ -100,6 +106,12 @@ RxDB.plugin(require('pouchdb-adapter-node-websql'));
 
 const database = await RxDB.create({
     name: 'mydatabase',
+    adapter: 'websql' // the name of your adapter
+});
+
+// or use a specific folder to store the data
+const database = await RxDB.create({
+    name: '/root/user/project/mydatabase',
     adapter: 'websql' // the name of your adapter
 });
 ```

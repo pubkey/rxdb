@@ -20,9 +20,7 @@ import { create as createRxCollection } from './rx-collection';
  */
 var USED_COMBINATIONS = {};
 var DB_COUNT = 0;
-export var RxDatabaseBase =
-/*#__PURE__*/
-function () {
+export var RxDatabaseBase = /*#__PURE__*/function () {
   function RxDatabaseBase(name, adapter, password, multiInstance) {
     var queryChangeDetection = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
     var options = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
@@ -258,22 +256,24 @@ function () {
           return pouch.destroy();
         });
       }));
-    });
+    }).then(function () {});
   }
   /**
    * runs the given function between idleQueue-locking
    */
   ;
 
-  _proto.lockedRun = function lockedRun(fun) {
-    return this.idleQueue.wrapCall(fun);
+  _proto.lockedRun = function lockedRun(fn) {
+    return this.idleQueue.wrapCall(fn);
   };
 
   _proto.requestIdlePromise = function requestIdlePromise() {
     return this.idleQueue.requestIdlePromise();
   }
   /**
-   * export to json
+   * Export database to a JSON friendly format.
+   * @param _decrypted
+   * When true, all encrypted values will be decrypted.
    */
   ;
 
@@ -285,11 +285,14 @@ function () {
     throw pluginMissing('json-dump');
   }
   /**
-   * import json
+   * Import the parsed JSON export into the collection.
+   * @param _exportedJSON The previously exported data from the `<db>.dump()` method.
+   * @note When an interface is loaded in this collection all base properties of the type are typed as `any`
+   * since data could be encrypted.
    */
   ;
 
-  _proto.importDump = function importDump(_json) {
+  _proto.importDump = function importDump(_exportedJSON) {
     throw pluginMissing('json-dump');
   }
   /**

@@ -53,12 +53,8 @@ function tunnelCollectionPath(db, path, app, colName) {
   db[colName].watchForChanges();
   var pathWithSlash = path.endsWith('/') ? path : path + '/';
   var collectionPath = pathWithSlash + colName;
-  app.use(collectionPath,
-  /*#__PURE__*/
-  function () {
-    var _ref = _asyncToGenerator(
-    /*#__PURE__*/
-    _regeneratorRuntime.mark(function _callee(req, res, next) {
+  app.use(collectionPath, /*#__PURE__*/function () {
+    var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(req, res, next) {
       var to, toFull;
       return _regeneratorRuntime.wrap(function _callee$(_context) {
         while (1) {

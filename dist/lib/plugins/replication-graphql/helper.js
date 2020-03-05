@@ -52,9 +52,7 @@ function getDocsWithRevisionsFromPouch(_x, _x2) {
 }
 
 function _getDocsWithRevisionsFromPouch() {
-  _getDocsWithRevisionsFromPouch = (0, _asyncToGenerator2["default"])(
-  /*#__PURE__*/
-  _regenerator["default"].mark(function _callee(collection, docIds) {
+  _getDocsWithRevisionsFromPouch = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(collection, docIds) {
     var pouch, allDocs, docsSearch, bulkGetDocs, ret;
     return _regenerator["default"].wrap(function _callee$(_context) {
       while (1) {

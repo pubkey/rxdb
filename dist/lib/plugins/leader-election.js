@@ -11,9 +11,7 @@ var _broadcastChannel = require("broadcast-channel");
 /**
  * this plugin adds the leader-election-capabilities to rxdb
  */
-var LeaderElector =
-/*#__PURE__*/
-function () {
+var LeaderElector = /*#__PURE__*/function () {
   function LeaderElector(database) {
     this.destroyed = false;
     this.isLeader = false;

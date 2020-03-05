@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>RxDB Heroes Electron Remote</title>
+    <link href="style.css" rel="stylesheet"/>
+  </head>
+  <body>
+    <h1> RxDB Heroes Electron Remote</h1>
+    <div id="list-box" class="box">
+        <h3>Heroes</h3>
+        <ul id="heroes-list"></ul>
+    </div>
+    <div id="insert-box" class="box">
+        <h3>Add Hero</h3>
+        <input type="text" placeholder="Name" name="name" id="input-name" />
+        <input type="text" placeholder="Color" name="color" id="input-color" />
+        <button onclick="addHero();" id="input-submit">Insert</button>
+    </div>
+  </body>
+
+  <script>
+    // You can also require other files to run in this process
+    require('./page.js')
+  </script>
+</html>

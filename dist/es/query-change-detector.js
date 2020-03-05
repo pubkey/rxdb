@@ -11,9 +11,7 @@ import objectPath from 'object-path';
 import { pushAtSortPosition } from 'array-push-at-sort-position';
 import { removeOneFromArrayIfMatches } from './util';
 var DEBUG = false;
-export var QueryChangeDetector =
-/*#__PURE__*/
-function () {
+export var QueryChangeDetector = /*#__PURE__*/function () {
   function QueryChangeDetector(query) {
     this.query = query;
     this.primaryKey = query.collection.schema.primaryPath;

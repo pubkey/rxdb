@@ -37,9 +37,7 @@ var newQueryID = function newQueryID() {
   return ++_queryCount;
 };
 
-var RxQueryBase =
-/*#__PURE__*/
-function () {
+var RxQueryBase = /*#__PURE__*/function () {
   function RxQueryBase(op, queryObj, collection) {
     this.id = newQueryID();
     this._latestChangeEvent = -1;
@@ -237,11 +235,23 @@ function () {
   _proto.doesDocumentDataMatch = function doesDocumentDataMatch(docData) {
     // if doc is deleted, it cannot match
     if (docData._deleted) return false;
-    var selector = this.mquery._conditions;
-    docData = this.collection.schema.swapPrimaryToId(docData);
-    var inMemoryFields = Object.keys(selector);
-    var matches = (0, _pouchdbSelectorCore.rowFilter)(docData, this.massageSelector, inMemoryFields);
-    return matches;
+    docData = this.collection.schema.swapPrimaryToId(docData); // return matchesSelector(docData, selector);
+
+    /**
+     * the following is equal to the implementation of pouchdb
+     * we do not use matchesSelector() directly so we can cache the
+     * result of massageSelector
+     * @link https://github.com/pouchdb/pouchdb/blob/master/packages/node_modules/pouchdb-selector-core/src/matches-selector.js
+     */
+
+    var selector = this.massageSelector;
+    var row = {
+      doc: docData
+    };
+    var rowsMatched = (0, _pouchdbSelectorCore.filterInMemoryFields)([row], {
+      selector: selector
+    }, Object.keys(selector));
+    return rowsMatched && rowsMatched.length === 1;
   }
   /**
    * deletes all found documents

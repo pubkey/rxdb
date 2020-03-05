@@ -19,9 +19,7 @@ var _util = require("./util");
  * RxChangeEvents a emitted when something in the database changes
  * they can be grabbed by the observables of database, collection and document
  */
-var RxChangeEvent =
-/*#__PURE__*/
-function () {
+var RxChangeEvent = /*#__PURE__*/function () {
   function RxChangeEvent(data) {
     this._hash = null;
     this.data = data;

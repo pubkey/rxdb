@@ -1,5 +1,5 @@
 import { PouchSettings } from './pouch';
-import { RxCollection } from './rx-collection';
+import { RxCollection, RxDumpCollection, RxDumpCollectionAsAny } from './rx-collection';
 import { RxLocalDocument } from './rx-document';
 import { RxDatabaseBase } from '../rx-database';
 export interface RxDatabaseCreator {
@@ -26,3 +26,25 @@ export interface RxDatabaseGenerated<Collections> {
     upsertLocal(id: string, data: any): Promise<RxLocalDocument<RxDatabase<Collections>>>;
     getLocal(id: string): Promise<RxLocalDocument<RxDatabase<Collections>>>;
 }
+/**
+ * Extract the **DocumentType** of a collection.
+ */
+declare type ExtractDTcol<P> = P extends RxCollection<infer T> ? T : {
+    [prop: string]: any;
+};
+interface RxDumpDatabaseBase {
+    encrypted: boolean;
+    instanceToken: string;
+    name: string;
+    passwordHash: string | null;
+}
+export interface RxDumpDatabase<Col> extends RxDumpDatabaseBase {
+    collections: RxDumpCollection<ExtractDTcol<Col[keyof Col]>>[];
+}
+/**
+ * All base properties are typed as any because they can be encrypted.
+ */
+export interface RxDumpDatabaseAny<Col> extends RxDumpDatabaseBase {
+    collections: RxDumpCollection<RxDumpCollectionAsAny<ExtractDTcol<Col[keyof Col]>>>[];
+}
+export {};

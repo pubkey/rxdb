@@ -17,9 +17,7 @@ var _util = require("../util");
  * this is based on
  * @link https://github.com/aheckmann/mquery/blob/master/lib/mquery.js
  */
-var MQueryBase =
-/*#__PURE__*/
-function () {
+var MQueryBase = /*#__PURE__*/function () {
   /**
    * MQuery constructor used for building queries.
    *

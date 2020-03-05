@@ -2,9 +2,7 @@
  * this plugin adds the leader-election-capabilities to rxdb
  */
 import { createLeaderElection } from 'broadcast-channel';
-export var LeaderElector =
-/*#__PURE__*/
-function () {
+export var LeaderElector = /*#__PURE__*/function () {
   function LeaderElector(database) {
     this.destroyed = false;
     this.isLeader = false;

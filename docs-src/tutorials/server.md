@@ -8,7 +8,7 @@ The server plugin is usefull
 - To replicate data between the renderer and the node-process in an electron-app
 - To fast spin up a prototype-app without having to define an API
 
-It shell never be used open accessible to the internet, use a couchdb-instance at production.
+It should never be used openly accessible to the internet, use a couchdb-instance at production.
 
 ## In NodeJs
 

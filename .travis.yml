@@ -5,7 +5,7 @@ dist: trusty
 os:
   - linux
 node_js:
-  - "12.7.0"
+  - "13.8.0"
 
 services:
   - xvfb
@@ -16,8 +16,8 @@ addons:
   firefox: latest
 
 before_install:
-  - export CHROME_BIN=chromium-browser	
-  - export DISPLAY=:99.0	
+  - export CHROME_BIN=chromium-browser
+  - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
   - docker run -d -p 5984:5984 --rm --name rxdb-couchdb couchdb:2.1.1
 
@@ -35,7 +35,7 @@ jobs:
       script: travis_retry npm install --depth 0 --silent
 
     - stage: build
-      script: npm run build
+      script: npm run build && git diff dist/es/
 
     - stage: code format
       script: travis_retry npm run test:typings
@@ -88,6 +88,9 @@ jobs:
     - stage: examples
       script: npm run build && (cd ./examples/electron && npm install > "/dev/null" 2>&1 && travis_retry npm run test)
       env: LABEL=electron
+    - stage: examples
+      script: npm run build && (cd ./examples/electron-remote && npm install > "/dev/null" 2>&1 && travis_retry npm run test)
+      env: LABEL=electron-remote
     - stage: examples
       script: npm run build && (cd ./examples/react-native && npx yarn@1.13.0 install > "/dev/null" 2>&1 && travis_retry npm run test && echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p && npm run test:bundle)
       env: LABEL=react-native

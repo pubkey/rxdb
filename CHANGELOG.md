@@ -1,8 +1,27 @@
 # Changelog
 
+
 ### X.X.X (comming soon)
+
 Features:
    - Indexes can now be specified at the top-level of the schema-definition. [#1655](https://github.com/pubkey/rxdb/issues/1655)
+
+### 8.8.0 (5 March 2020)
+
+Other:
+  - Upgraded PouchDB and other dependencies
+
+### 8.7.5 (6 January 2020)
+
+Other:
+  - Added a new example for electron with the remote API. Thanks [@SebastienWae](https://github.com/SebastienWae)
+  - Fixed Typing error on `database.dump()` [#1754](https://github.com/pubkey/rxdb/issues/1754). Thanks [@PVermeer](https://github.com/PVermeer)
+
+Bugfixes:
+  - Updates to documents fail with GraphQL replication. [#1812](https://github.com/pubkey/rxdb/issues/1812). Thanks [@gautambt](https://github.com/gautambt)
+  - `RxQuery.doesDocumentDataMatch()` was wrong on queries with `$and` which lead to a wrong result with QueryChangeDetection
+
+### 8.7.4 (2 December 2019)
 
 Other:
   - Improved performance of `QueryChangeDetection` by using [array-push-at-sort-position](https://github.com/pubkey/array-push-at-sort-position) instead of re-sorting the whole results of a query

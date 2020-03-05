@@ -16,9 +16,7 @@ var _util = require("../util");
  * this plugin adds the keycompression-capabilities to rxdb
  * if you dont use this, ensure that you set disableKeyComression to false in your schema
  */
-var KeyCompressor =
-/*#__PURE__*/
-function () {
+var KeyCompressor = /*#__PURE__*/function () {
   function KeyCompressor(schema) {
     this.schema = schema;
   }

@@ -40,9 +40,7 @@ _core["default"].plugin(_watchForChanges["default"]);
 
 var INTERNAL_POUCHDBS = new WeakSet();
 
-var RxReplicationStateBase =
-/*#__PURE__*/
-function () {
+var RxReplicationStateBase = /*#__PURE__*/function () {
   function RxReplicationStateBase(collection) {
     var _this = this;
 

@@ -32,9 +32,7 @@ var _util = require("./util");
  */
 var DEBUG = false;
 
-var QueryChangeDetector =
-/*#__PURE__*/
-function () {
+var QueryChangeDetector = /*#__PURE__*/function () {
   function QueryChangeDetector(query) {
     this.query = query;
     this.primaryKey = query.collection.schema.primaryPath;

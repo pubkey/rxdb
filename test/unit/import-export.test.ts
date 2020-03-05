@@ -8,7 +8,8 @@ import * as schemaObjects from './../helper/schema-objects';
 import * as humansCollection from './../helper/humans-collection';
 
 import {
-    createRxDatabase
+    createRxDatabase,
+    RxCollection
 } from '../../';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
@@ -25,16 +26,16 @@ config.parallel('import-export.test.js', () => {
                 assert.strictEqual(json.encrypted, false); // false because db has no encrypted field
                 assert.strictEqual(json.passwordHash, null);
                 assert.strictEqual(json.docs.length, 5);
-                json.docs.map((doc: any) => assert.strictEqual(typeof doc, 'object'));
+                json.docs.map(doc => assert.strictEqual(typeof doc, 'object'));
                 col.database.destroy();
             });
             it('export encrypted as encrypted', async () => {
-                const db = await createRxDatabase({
+                const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
                     name: util.randomCouchString(10),
                     adapter: 'memory',
                     password: util.randomCouchString(10)
                 });
-                const col = await db.collection({
+                const col = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
                     name: 'enchuman',
                     schema: schemas.encryptedObjectHuman
                 });
@@ -49,18 +50,18 @@ config.parallel('import-export.test.js', () => {
                 assert.strictEqual(json.encrypted, true);
                 assert.strictEqual(typeof json.passwordHash, 'string');
                 assert.strictEqual(json.docs.length, 10);
-                json.docs.forEach((doc: any) => {
+                json.docs.forEach(doc => {
                     assert.strictEqual(typeof doc.secret, 'string');
                 });
                 db.destroy();
             });
             it('export encrypted as decrypted', async () => {
-                const db = await createRxDatabase({
+                const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
                     name: util.randomCouchString(10),
                     adapter: 'memory',
                     password: util.randomCouchString(10)
                 });
-                const col = await db.collection({
+                const col = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
                     name: 'enchuman',
                     schema: schemas.encryptedObjectHuman
                 });
@@ -74,7 +75,7 @@ config.parallel('import-export.test.js', () => {
                 assert.strictEqual(json.encrypted, false);
                 assert.strictEqual(json.passwordHash, null); // no hash when not encrypted
                 assert.strictEqual(json.docs.length, 10);
-                json.docs.map((doc: any) => {
+                json.docs.map(doc => {
                     assert.strictEqual(typeof doc.secret, 'object');
                     assert.strictEqual(typeof doc.secret.name, 'string');
                     assert.strictEqual(typeof doc.secret.subname, 'string');
@@ -82,12 +83,12 @@ config.parallel('import-export.test.js', () => {
                 db.destroy();
             });
             it('decrypt a single value from an encrypted export', async () => {
-                const db = await createRxDatabase({
+                const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
                     name: util.randomCouchString(10),
                     adapter: 'memory',
                     password: util.randomCouchString(10)
                 });
-                const col = await db.collection({
+                const col = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
                     name: 'enchuman',
                     schema: schemas.encryptedObjectHuman
                 });
@@ -131,12 +132,12 @@ config.parallel('import-export.test.js', () => {
                 });
                 it('import encrypted', async () => {
                     const password = util.randomCouchString(10);
-                    const db = await createRxDatabase({
+                    const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
                         name: util.randomCouchString(10),
                         adapter: 'memory',
                         password
                     });
-                    const col = await db.collection({
+                    const col = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
                         name: 'enchuman',
                         schema: schemas.encryptedObjectHuman
                     });
@@ -148,12 +149,12 @@ config.parallel('import-export.test.js', () => {
 
                     const json = await col.dump();
 
-                    const db2 = await createRxDatabase({
+                    const db2 = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
                         name: util.randomCouchString(10),
                         adapter: 'memory',
                         password
                     });
-                    const emptyCol = await db2.collection({
+                    const emptyCol = await db2.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
                         name: 'enchuman',
                         schema: schemas.encryptedObjectHuman
                     });
@@ -183,29 +184,30 @@ config.parallel('import-export.test.js', () => {
                     const json = await col.dump();
                     const differentSchemaCol = await humansCollection.createNested();
                     await AsyncTestUtil.assertThrows(
-                        () => differentSchemaCol.importDump(json),
+                        // Explicitly typed as any because TS will catch this error
+                        () => differentSchemaCol.importDump(json as any),
                         'RxError'
                     );
                     col.database.destroy();
                     differentSchemaCol.database.destroy();
                 });
                 it('should not import encrypted if password is different', async () => {
-                    const db = await createRxDatabase({
+                    const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
                         name: util.randomCouchString(10),
                         adapter: 'memory',
                         password: util.randomCouchString(10)
                     });
-                    const col = await db.collection({
+                    const col = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
                         name: 'enchuman',
                         schema: schemas.encryptedObjectHuman
                     });
 
-                    const db2 = await createRxDatabase({
+                    const db2 = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
                         name: util.randomCouchString(10),
                         adapter: 'memory',
                         password: util.randomCouchString(10)
                     });
-                    const col2 = await db2.collection({
+                    const col2 = await db2.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
                         name: 'enchuman',
                         schema: schemas.encryptedObjectHuman
                     });
@@ -224,12 +226,12 @@ config.parallel('import-export.test.js', () => {
                     db2.destroy();
                 });
                 it('should not import if schema not matching', async () => {
-                    const db = await createRxDatabase({
+                    const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
                         name: util.randomCouchString(10),
                         adapter: 'memory',
                         password: util.randomCouchString(10)
                     });
-                    const col = await db.collection({
+                    const col = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
                         name: 'enchuman',
                         schema: schemas.encryptedObjectHuman
                     });
@@ -239,7 +241,7 @@ config.parallel('import-export.test.js', () => {
                     await Promise.all(fns);
 
                     // empty collection with same schema
-                    const col2 = await db.collection({
+                    const col2 = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
                         name: 'enchuman2',
                         schema: schemas.encryptedObjectHuman
                     });
@@ -249,7 +251,7 @@ config.parallel('import-export.test.js', () => {
                     json.docs.push({
                         foo: 'bar',
                         _id: '0fg89sm5ui:1478730736884'
-                    });
+                    } as any); // Explicitly set to 'any' because TS will catch this error
                     await AsyncTestUtil.assertThrows(
                         () => col2.importDump(json),
                         'RxError',
@@ -267,7 +269,7 @@ config.parallel('import-export.test.js', () => {
         describe('.dump()', () => {
             it('should export a valid dump', async () => {
                 const col = await humansCollection.createMultiInstance(util.randomCouchString(10), 5);
-                const json: any = await col.database.dump();
+                const json = await col.database.dump();
 
                 assert.strictEqual(typeof json.name, 'string');
                 assert.strictEqual(typeof json.instanceToken, 'string');
@@ -282,16 +284,16 @@ config.parallel('import-export.test.js', () => {
                 assert.strictEqual(colDump.encrypted, false);
                 assert.strictEqual(colDump.passwordHash, null);
                 assert.strictEqual(colDump.docs.length, 5);
-                colDump.docs.map((doc: any) => assert.strictEqual(typeof doc, 'object'));
+                colDump.docs.map(doc => assert.strictEqual(typeof doc, 'object'));
                 col.database.destroy();
             });
             it('export encrypted as encrypted', async () => {
-                const db = await createRxDatabase({
+                const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
                     name: util.randomCouchString(10),
                     adapter: 'memory',
                     password: util.randomCouchString(10)
                 });
-                const col = await db.collection({
+                const col = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
                     name: 'enchuman',
                     schema: schemas.encryptedObjectHuman
                 });
@@ -299,22 +301,22 @@ config.parallel('import-export.test.js', () => {
                 for (let i = 0; i < 10; i++)
                     fns.push(col.insert(schemaObjects.encryptedObjectHuman()));
                 await Promise.all(fns);
-                const json: any = await db.dump();
+                const json = await db.dump();
                 assert.strictEqual(json.encrypted, true);
                 assert.strictEqual(typeof json.passwordHash, 'string');
                 assert.strictEqual(json.collections[0].encrypted, true);
                 assert.strictEqual(typeof json.collections[0].passwordHash, 'string');
                 json.collections[0].docs
-                    .forEach((docData: any) => assert.strictEqual(typeof docData.secret, 'string'));
+                    .forEach(docData => assert.strictEqual(typeof docData.secret, 'string'));
                 db.destroy();
             });
             it('export encrypted as decrypted', async () => {
-                const db = await createRxDatabase({
+                const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
                     name: util.randomCouchString(10),
                     adapter: 'memory',
                     password: util.randomCouchString(10)
                 });
-                const col = await db.collection({
+                const col = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
                     name: 'enchuman',
                     schema: schemas.encryptedObjectHuman
                 });
@@ -322,14 +324,14 @@ config.parallel('import-export.test.js', () => {
                     new Array(10).fill(0)
                         .map(() => col.insert(schemaObjects.encryptedObjectHuman()))
                 );
-                const json: any = await db.dump(true);
+                const json = await db.dump(true);
 
                 assert.strictEqual(json.encrypted, false);
                 assert.strictEqual(typeof json.passwordHash, 'string');
                 assert.strictEqual(json.collections[0].encrypted, false);
                 assert.strictEqual(json.collections[0].passwordHash, null);
                 json.collections[0].docs
-                    .forEach((docData: any) => {
+                    .forEach(docData => {
                         assert.strictEqual(typeof docData.secret, 'object');
                         assert.strictEqual(typeof docData.secret.name, 'string');
                         assert.strictEqual(typeof docData.secret.subname, 'string');
@@ -337,16 +339,16 @@ config.parallel('import-export.test.js', () => {
                 db.destroy();
             });
             it('export with multiple collections', async () => {
-                const db = await createRxDatabase({
+                const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
                     name: util.randomCouchString(10),
                     adapter: 'memory',
                     password: util.randomCouchString(10)
                 });
-                const col = await db.collection({
+                const col = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
                     name: 'enchuman',
                     schema: schemas.encryptedObjectHuman
                 });
-                const col2 = await db.collection({
+                const col2 = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
                     name: 'enchuman2',
                     schema: schemas.encryptedObjectHuman
                 });
@@ -358,23 +360,23 @@ config.parallel('import-export.test.js', () => {
                 }
                 await Promise.all(fns);
 
-                const json: any = await col.database.dump();
+                const json = await col.database.dump();
                 assert.strictEqual(json.collections.length, 2);
                 json.collections
-                    .forEach((c: any) => assert.strictEqual(c.docs.length, 10));
+                    .forEach(c => assert.strictEqual(c.docs.length, 10));
                 db.destroy();
             });
             it('export 1 of 2 collections', async () => {
-                const db = await createRxDatabase({
+                const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
                     name: util.randomCouchString(10),
                     adapter: 'memory',
                     password: util.randomCouchString(10)
                 });
-                const col = await db.collection({
+                const col = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
                     name: 'enchuman',
                     schema: schemas.encryptedObjectHuman
                 });
-                const col2 = await db.collection({
+                const col2 = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
                     name: 'enchuman2',
                     schema: schemas.encryptedObjectHuman
                 });
@@ -386,10 +388,10 @@ config.parallel('import-export.test.js', () => {
                 }
                 await Promise.all(fns);
 
-                const json: any = await col.database.dump(false, ['enchuman']);
+                const json = await col.database.dump(false, ['enchuman']);
                 assert.strictEqual(json.collections.length, 1);
                 json.collections
-                    .forEach((c: any) => assert.strictEqual(c.docs.length, 10));
+                    .forEach(c => assert.strictEqual(c.docs.length, 10));
                 db.destroy();
             });
         });
@@ -411,21 +413,21 @@ config.parallel('import-export.test.js', () => {
                 });
                 it('import encrypted', async () => {
                     const password = util.randomCouchString(10);
-                    const db = await createRxDatabase({
+                    const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
                         name: util.randomCouchString(10),
                         adapter: 'memory',
                         password
                     });
-                    const col = await db.collection({
+                    const col = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
                         name: 'enchuman',
                         schema: schemas.encryptedObjectHuman
                     });
-                    const db2 = await createRxDatabase({
+                    const db2 = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
                         name: util.randomCouchString(10),
                         adapter: 'memory',
                         password
                     });
-                    const col2 = await db2.collection({
+                    const col2 = await db2.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
                         name: 'enchuman',
                         schema: schemas.encryptedObjectHuman
                     });
@@ -445,7 +447,129 @@ config.parallel('import-export.test.js', () => {
                     db2.destroy();
                 });
             });
-            describe('negative', () => { });
+            describe('negative', () => {
+                it('should not import if schema is different', async () => {
+
+                    const db = await createRxDatabase<{ human: RxCollection<schemaObjects.HumanDocumentType> }>({
+                        name: util.randomCouchString(10),
+                        adapter: 'memory',
+                        password: null,
+                        multiInstance: true
+                    });
+                    const col = await db.collection<schemaObjects.HumanDocumentType>({
+                        name: 'human',
+                        schema: schemas.human
+                    });
+
+                    const db2 = await createRxDatabase<{ human: RxCollection<schemaObjects.NestedHumanDocumentType> }>({
+                        name: util.randomCouchString(10),
+                        adapter: 'memory',
+                        password: null,
+                        multiInstance: true
+                    });
+                    const col2 = await db2.collection<schemaObjects.NestedHumanDocumentType>({
+                        name: 'human',
+                        schema: schemas.nestedHuman
+                    });
+
+                    const fns = [];
+                    for (let i = 0; i < 5; i++)
+                        fns.push(col.insert(schemaObjects.human()));
+                    await Promise.all(fns);
+
+                    const json = await db.dump();
+                    await AsyncTestUtil.assertThrows(
+                        // Explicitly typed as any because TS will catch this error
+                        () => db2.importDump(json as any),
+                        'RxError'
+                    );
+
+                    const docs = await col2.find().exec();
+                    assert.strictEqual(docs.length, 0);
+
+                    db.destroy();
+                    db2.destroy();
+                });
+                it('should not import encrypted if password is different', async () => {
+                    const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
+                        name: util.randomCouchString(10),
+                        adapter: 'memory',
+                        password: util.randomCouchString(10)
+                    });
+                    const col = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
+                        name: 'enchuman',
+                        schema: schemas.encryptedObjectHuman
+                    });
+
+                    const db2 = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
+                        name: util.randomCouchString(10),
+                        adapter: 'memory',
+                        password: util.randomCouchString(10)
+                    });
+                    const col2 = await db2.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
+                        name: 'enchuman',
+                        schema: schemas.encryptedObjectHuman
+                    });
+
+                    const fns = [];
+                    for (let i = 0; i < 10; i++)
+                        fns.push(col.insert(schemaObjects.encryptedObjectHuman()));
+                    await Promise.all(fns);
+
+                    const json = await db.dump();
+                    await AsyncTestUtil.assertThrows(
+                        () => db2.importDump(json),
+                        'RxError'
+                    );
+                    db.destroy();
+                    db2.destroy();
+                });
+                it('should not import if schema not matching', async () => {
+                    const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.NestedHumanDocumentType> }>({
+                        name: util.randomCouchString(10),
+                        adapter: 'memory',
+                        multiInstance: true
+                    });
+                    const col = await db.collection<schemaObjects.NestedHumanDocumentType>({
+                        name: 'enchuman',
+                        schema: schemas.nestedHuman
+                    });
+
+                    const db2 = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.NestedHumanDocumentType> }>({
+                        name: util.randomCouchString(10),
+                        adapter: 'memory',
+                        multiInstance: true
+                    });
+                    await db2.collection<schemaObjects.NestedHumanDocumentType>({
+                        name: 'enchuman',
+                        schema: schemas.nestedHuman
+                    });
+
+                    const fns = [];
+                    for (let i = 0; i < 5; i++)
+                        fns.push(col.insert(schemaObjects.nestedHuman()));
+                    await Promise.all(fns);
+
+                    const json = await db.dump();
+
+                    // add one with broken schema
+                    json.collections[0].docs.push({
+                        foo: 'bar',
+                        _id: '0fg89sm5ui:1478730736884'
+                    } as any); // Explicitly set to 'any' because TS will catch this error
+
+                    await AsyncTestUtil.assertThrows(
+                        () => db2.importDump(json),
+                        'RxError',
+                        [
+                            'firstName',
+                            'required'
+                        ]
+                    );
+                    db.destroy();
+                    db2.destroy();
+                });
+            });
         });
     });
     describe('issues', () => {

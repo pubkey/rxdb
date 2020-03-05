@@ -66,9 +66,7 @@ var _getChangeSub = function _getChangeSub(parent) {
 var LOCAL_PREFIX = '_local/';
 var RxDocumentParent = (0, _rxDocument.createRxDocumentConstructor)();
 
-var RxLocalDocument =
-/*#__PURE__*/
-function (_RxDocumentParent) {
+var RxLocalDocument = /*#__PURE__*/function (_RxDocumentParent) {
   (0, _inheritsLoose2["default"])(RxLocalDocument, _RxDocumentParent);
 
   function RxLocalDocument(id, jsonData, parent) {

@@ -1,7 +1,5 @@
 // TODO add a function to run a cache-clear
-export var DocCache =
-/*#__PURE__*/
-function () {
+export var DocCache = /*#__PURE__*/function () {
   function DocCache() {
     this._map = new Map();
     this._map = new Map();

@@ -41,7 +41,7 @@ export default class HeroList extends Vue {
             setTimeout(() => this.loading = false, 1000);
         })
       )
-      .subscribe((heroes) => {
+      .subscribe((heroes: RxHeroDocument[]) => {
         this.heroes = heroes;
       });
   }

@@ -5,9 +5,7 @@ import { clone, hash, sortObject, trimDots, pluginMissing } from './util';
 import { newRxError } from './rx-error';
 import { runPluginHooks } from './hooks';
 import { defineGetterSetter } from './rx-document';
-export var RxSchema =
-/*#__PURE__*/
-function () {
+export var RxSchema = /*#__PURE__*/function () {
   function RxSchema(jsonID) {
     this.jsonID = jsonID;
     this.indexes = getIndexes(this.jsonID); // primary is always required

@@ -12,7 +12,7 @@ import {
 } from 'rxjs/operators';
 import {
     massageSelector,
-    rowFilter
+    filterInMemoryFields
 } from 'pouchdb-selector-core';
 import {
     MQuery,
@@ -344,18 +344,26 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
     doesDocumentDataMatch(docData: RxDocumentType | any): boolean {
         // if doc is deleted, it cannot match
         if (docData._deleted) return false;
-
-        const selector = this.mquery._conditions;
-
         docData = this.collection.schema.swapPrimaryToId(docData);
-        const inMemoryFields = Object.keys(selector);
 
-        const matches = rowFilter(
-            docData,
-            this.massageSelector,
-            inMemoryFields
+        // return matchesSelector(docData, selector);
+
+        /**
+         * the following is equal to the implementation of pouchdb
+         * we do not use matchesSelector() directly so we can cache the
+         * result of massageSelector
+         * @link https://github.com/pouchdb/pouchdb/blob/master/packages/node_modules/pouchdb-selector-core/src/matches-selector.js
+         */
+        const selector = this.massageSelector;
+        const row = {
+            doc: docData
+        };
+        const rowsMatched = filterInMemoryFields(
+            [row],
+            { selector: selector },
+            Object.keys(selector)
         );
-        return matches;
+        return rowsMatched && rowsMatched.length === 1;
     }
 
     /**

@@ -3,17 +3,17 @@
   "version": "3.0.0",
   "dependencies": {
     "babel-polyfill": "6.26.0",
-    "concurrently": "5.0.0",
-    "pouchdb-adapter-http": "7.0.0",
-    "pouchdb-adapter-idb": "7.0.0",
-    "pouchdb-replication": "7.0.0",
-    "pouchdb-server": "4.1.0",
-    "react": "16.12.0",
-    "react-dom": "16.12.0"
+    "concurrently": "5.1.0",
+    "pouchdb-adapter-http": "7.2.1",
+    "pouchdb-adapter-idb": "7.2.1",
+    "pouchdb-replication": "7.2.1",
+    "pouchdb-server": "4.2.0",
+    "react": "16.13.0",
+    "react-dom": "16.13.0"
   },
   "devDependencies": {
-    "react-scripts": "3.2.0",
-    "rimraf": "3.0.0"
+    "react-scripts": "3.4.0",
+    "rimraf": "3.0.2"
   },
   "scripts": {
     "preinstall": "echo \"PREINSTALL\" && npm install --production --prefix ../../",
@@ -23,5 +23,17 @@
     "eject": "react-scripts eject",
     "start": "concurrently \"npm run server\" \"npm run dev\"",
     "server": "pouchdb-server --host 0.0.0.0 -p 10102 -m -d /tmp/pouchdb-server/ -n true"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }

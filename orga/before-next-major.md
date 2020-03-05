@@ -41,6 +41,9 @@ Using the default export is never a good idea because it automatically bundles e
  - The current implemetation does not use pouchdb's bulkDocs which is much faster
  - This could have been done in much less code which would be easier to uderstand
 
+### find() only accepts selector, not limit and skip
+
+Instead of only accepting the mango-selector with `find()`, we should also make it possible to directly pass the limit and skip value.
 
 # Maybe
 

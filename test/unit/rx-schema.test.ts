@@ -42,7 +42,7 @@ config.parallel('rx-schema.test.js', () => {
                 assert.deepStrictEqual(indexes[0], ['other.age']);
             });
             it('get no index', () => {
-                const indexes = getIndexes(schemas.noindexHuman);
+                const indexes = getIndexes(schemas.noIndexHuman);
                 assert.strictEqual(indexes.length, 0);
             });
             it('get compoundIndex', () => {
@@ -67,7 +67,7 @@ config.parallel('rx-schema.test.js', () => {
                     SchemaCheck.checkSchema(schemas.bigHuman);
                 });
                 it('validate without index', () => {
-                    SchemaCheck.checkSchema(schemas.noindexHuman);
+                    SchemaCheck.checkSchema(schemas.noIndexHuman);
                 });
                 it('validate with compoundIndexes', () => {
                     SchemaCheck.checkSchema(schemas.compoundIndex);
@@ -155,7 +155,7 @@ config.parallel('rx-schema.test.js', () => {
                     }), Error);
                 });
                 it('break when index is no string', () => {
-                    assert.throws(() => SchemaCheck.checkSchema(schemas.nostringIndex), Error);
+                    assert.throws(() => SchemaCheck.checkSchema(schemas.noStringIndex), Error);
                 });
                 it('break when index does not exist in schema properties', () => {
                     assert.throws(() => SchemaCheck.checkSchema(schemas.notExistingIndex), Error);
@@ -422,7 +422,7 @@ config.parallel('rx-schema.test.js', () => {
             });
             describe('negative', () => {
                 it('broken schema (nostringIndex)', () => {
-                    assert.throws(() => createRxSchema(schemas.nostringIndex), Error);
+                    assert.throws(() => createRxSchema(schemas.noStringIndex), Error);
                 });
                 it('first-level field is "language" is forbitten', () => {
                     assert.throws(() => createRxSchema({

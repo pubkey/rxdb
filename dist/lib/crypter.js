@@ -15,9 +15,7 @@ var _util = require("./util");
 /**
  * handle the en/decryption of documents-data
  */
-var Crypter =
-/*#__PURE__*/
-function () {
+var Crypter = /*#__PURE__*/function () {
   function Crypter(password, schema) {
     this.password = password;
     this.schema = schema;

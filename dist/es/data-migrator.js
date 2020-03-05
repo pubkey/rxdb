@@ -19,9 +19,7 @@ import { Subject } from 'rxjs';
 import { getPreviousVersions } from './rx-schema';
 import { create as createCrypter } from './crypter';
 import { _handleToPouch, _handleFromPouch } from './rx-collection-helper';
-export var DataMigrator =
-/*#__PURE__*/
-function () {
+export var DataMigrator = /*#__PURE__*/function () {
   function DataMigrator(newestCollection, migrationStrategies) {
     this._migrated = false;
     this.newestCollection = newestCollection;

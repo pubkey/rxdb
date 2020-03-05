@@ -10,13 +10,13 @@ import { HeroesListComponent } from './components/heroes-list/heroes-list.compon
 import { HeroInsertComponent } from './components/hero-insert/hero-insert.component';
 import { HeroEditComponent } from './components/hero-edit/hero-edit.component';
 import { AppComponent } from './app.component';
-import {
-  MatCardModule,
-  MatListModule,
-  MatFormFieldModule,
-  MatInputModule,
-  MatProgressSpinnerModule
-} from '@angular/material';
+
+// Material
+import { MatCardModule } from '@angular/material/card';
+import { MatListModule } from '@angular/material/list';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 /**
  * SERVICES

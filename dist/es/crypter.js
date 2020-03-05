@@ -3,9 +3,7 @@
  */
 import objectPath from 'object-path';
 import { clone, pluginMissing } from './util';
-export var Crypter =
-/*#__PURE__*/
-function () {
+export var Crypter = /*#__PURE__*/function () {
   function Crypter(password, schema) {
     this.password = password;
     this.schema = schema;

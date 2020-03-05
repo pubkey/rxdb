@@ -30,9 +30,7 @@ export function getDocsWithRevisionsFromPouch(_x, _x2) {
 }
 
 function _getDocsWithRevisionsFromPouch() {
-  _getDocsWithRevisionsFromPouch = _asyncToGenerator(
-  /*#__PURE__*/
-  _regeneratorRuntime.mark(function _callee(collection, docIds) {
+  _getDocsWithRevisionsFromPouch = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(collection, docIds) {
     var pouch, allDocs, docsSearch, bulkGetDocs, ret;
     return _regeneratorRuntime.wrap(function _callee$(_context) {
       while (1) {

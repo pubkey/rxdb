@@ -5,9 +5,7 @@
 import { isObject, merge as _merge, mergeClone } from './mquery_utils';
 import { newRxTypeError, newRxError } from '../rx-error';
 import { clone as _clone } from '../util';
-export var MQueryBase =
-/*#__PURE__*/
-function () {
+export var MQueryBase = /*#__PURE__*/function () {
   /**
    * MQuery constructor used for building queries.
    *

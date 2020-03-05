@@ -18,9 +18,10 @@ export interface SimpleHumanDocumentType {
     firstName: string;
     lastName: string;
 }
-export interface HumanDocumentType extends SimpleHumanDocumentType {
+export interface AgeHumanDocumentType {
     age: number;
 }
+export interface HumanDocumentType extends SimpleHumanDocumentType, AgeHumanDocumentType { }
 export function human(
     passportId: string = randomToken(12)
 ): HumanDocumentType {
@@ -42,7 +43,7 @@ export function simpleHuman(): SimpleHumanDocumentType {
 
 export interface SimpleHumanV3DocumentType {
     passportId: string;
-    age: string;
+    age: number;
 }
 export function simpleHumanV3(): SimpleHumanV3DocumentType {
     return {
@@ -59,6 +60,32 @@ export function simpleHumanAge(): SimpleHumanAgeDocumentType {
     return {
         passportId: randomToken(12),
         age: randomInt(10, 50) + ''
+    };
+}
+
+export interface HumanWithSubOtherDocumentType {
+    passportId: string;
+    other: {
+        age: number;
+    };
+}
+export function humanWithSubOther(): HumanWithSubOtherDocumentType {
+    return {
+        passportId: randomToken(12),
+        other: {
+            age: randomInt(10, 50)
+        }
+    };
+}
+
+export interface NoIndexHumanDocumentType {
+    firstName: string;
+    lastName: string;
+}
+export function NoIndexHuman(): NoIndexHumanDocumentType {
+    return {
+        firstName: faker.name.firstName(),
+        lastName: faker.name.lastName()
     };
 }
 
@@ -104,6 +131,23 @@ export function deepNestedHuman(): DeepNestedHumanDocumentType {
     };
 }
 
+export interface BigHumanDocumentType {
+    passportId: string;
+    dnaHash: string;
+    firstName: string;
+    lastName: string;
+    age: number;
+}
+export function bigHumanDocumentType(): BigHumanDocumentType {
+    return {
+        passportId: randomToken(12),
+        dnaHash: randomToken(12),
+        firstName: faker.name.firstName(),
+        lastName: faker.name.lastName(),
+        age: randomInt(10, 50)
+    };
+}
+
 export interface HeroArrayDocumentType {
     name: string;
     skills: {
@@ -120,6 +164,17 @@ export function heroArray(): HeroArrayDocumentType {
                 damage: randomInt(10, 50)
             };
         })
+    };
+}
+
+export interface SimpleHeroArrayDocumentType {
+    name: string;
+    skills: string[];
+}
+export function simpleHeroArray(): SimpleHeroArrayDocumentType {
+    return {
+        name: randomToken(6),
+        skills: new Array(3).fill(0).map(() => randomToken(6))
     };
 }
 
@@ -155,6 +210,81 @@ export function encryptedObjectHuman(): EncryptedObjectHumanDocumentType {
     };
 }
 
+export interface EncryptedDeepHumanDocumentType {
+    passportId: string;
+    firstName: string;
+    firstLevelPassword: string;
+    secretData: {
+        pw: string;
+    };
+    deepSecret: {
+        darkhole: {
+            pw: string
+        }
+    };
+    nestedSecret: {
+        darkhole: {
+            pw: string;
+        }
+    };
+}
+export function encryptedDeepHumanDocumentType(): EncryptedDeepHumanDocumentType {
+    return {
+        passportId: randomToken(12),
+        firstName: faker.name.firstName(),
+        firstLevelPassword: randomToken(12),
+        secretData: {
+            pw: randomToken(12)
+        },
+        deepSecret: {
+            darkhole: {
+                pw: randomToken(12)
+            }
+        },
+        nestedSecret: {
+            darkhole: {
+                pw: randomToken(12)
+            }
+        }
+    };
+}
+
+export interface CompoundIndexDocumentType {
+    passportId: string;
+    passportCountry: string;
+    age: number;
+}
+export function compoundIndex(): CompoundIndexDocumentType {
+    return {
+        passportId: randomToken(12),
+        passportCountry: randomToken(12),
+        age: randomInt(10, 50)
+    };
+}
+
+export interface CompoundIndexNoStringDocumentType {
+    passportId: string;
+    passportCountry: { [prop: string]: string };
+    age: number;
+}
+export function compoundIndexNoString(): CompoundIndexNoStringDocumentType {
+    return {
+        passportId: randomToken(12),
+        passportCountry: { [randomToken(12)]: randomToken(12) },
+        age: randomInt(10, 50)
+    };
+}
+
+export interface NostringIndexDocumentType {
+    passportId: {};
+    firstName: string;
+}
+export function nostringIndex(): NostringIndexDocumentType {
+    return {
+        passportId: {},
+        firstName: faker.name.firstName()
+    };
+}
 
 export interface RefHumanDocumentType {
     name: string;
