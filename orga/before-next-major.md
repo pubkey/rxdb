@@ -33,7 +33,7 @@ The current implementation of this prototype-merging is very complicated and has
 We should rewrite it to a single pure function that returns the constructor.
 Instead of mergin the prototype into a single object, we should chain them together.
 
-### remove the default export
+### DONE - remove the default export
 Using the default export is never a good idea because it automatically bundles every unused function into the build.
 
 ### Refactor data-migrator
