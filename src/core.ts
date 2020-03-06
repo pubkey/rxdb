@@ -3,65 +3,34 @@
  * it can be used as standalone but is also used in the batteries-included main-export
  */
 
-import {
-    QueryChangeDetector
-} from './query-change-detector';
 export {
     QueryChangeDetector
 } from './query-change-detector';
-
-import addPlugin from './plugin';
-import {
-    PouchDB
-} from './pouch-db';
+export { addRxPlugin } from './plugin';
 export {
     PouchDB
 } from './pouch-db';
 
-export const plugin = addPlugin;
-
-import {
-    create,
-    removeDatabase,
+export {
+    createRxDatabase,
+    removeRxDatabase,
     checkAdapter,
     isInstanceOf as isRxDatabase,
     dbCount
 } from './rx-database';
-export {
-    create,
-    removeDatabase,
-    checkAdapter,
-    isInstanceOf as isRxDatabase,
-    dbCount
-} from './rx-database';
-export {
-    create as createRxDatabase
-} from './rx-database';
 
-import {
-    isInstanceOf as isRxCollection
-} from './rx-collection';
 export {
     isInstanceOf as isRxCollection
 } from './rx-collection';
 
-import {
-    isInstanceOf as isRxDocument
-} from './rx-document';
 export {
     isInstanceOf as isRxDocument
 } from './rx-document';
 
-import {
-    isInstanceOf as isRxQuery
-} from './rx-query';
 export {
     isInstanceOf as isRxQuery
 } from './rx-query';
 
-import {
-    isInstanceOf as isRxSchema
-} from './rx-schema';
 export {
     isInstanceOf as isRxSchema,
     createRxSchema,
@@ -71,18 +40,3 @@ export {
 export {
     RxChangeEvent
 } from './rx-change-event';
-
-export default {
-    create,
-    removeDatabase,
-    checkAdapter,
-    plugin,
-    dbCount,
-    isRxDatabase,
-    isRxCollection,
-    isRxDocument,
-    isRxQuery,
-    isRxSchema,
-    PouchDB,
-    QueryChangeDetector
-};

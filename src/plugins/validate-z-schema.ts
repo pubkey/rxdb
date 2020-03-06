@@ -13,6 +13,7 @@ import {
 import {
     RxSchema
 } from '../rx-schema';
+import { RxPlugin } from '../types';
 
 /**
  * cache the validators by the schema-hash
@@ -91,7 +92,7 @@ export const hooks = {
     createRxSchema: runAfterSchemaCreated
 };
 
-export default {
+export const RxDBValidateZSchemaPlugin: RxPlugin = {
     rxdb,
     prototypes,
     hooks

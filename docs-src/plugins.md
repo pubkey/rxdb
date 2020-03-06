@@ -48,7 +48,7 @@ const myPlugin = {
 };
 
 // now you can import the plugin into rxdb
-RxDB.plugin(myPlugin);
+addRxPlugin(myPlugin);
 ```
 
 # Properties

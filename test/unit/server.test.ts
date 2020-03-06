@@ -4,7 +4,10 @@ import AsyncTestUtil from 'async-test-util';
 import request from 'request-promise-native';
 import requestR from 'request';
 
-import RxDB from '../../';
+import {
+    createRxDatabase,
+    addRxPlugin
+} from '../../';
 import * as humansCollection from '../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from '../helper/schemas';
@@ -19,7 +22,7 @@ config.parallel('server.test.js', () => {
     const NodeWebsqlAdapter = require('pouchdb-adapter-leveldb');
 
     const ServerPlugin = require('../../plugins/server');
-    RxDB.plugin(ServerPlugin);
+    addRxPlugin(ServerPlugin);
 
     let lastPort = 3000;
     const nexPort = () => lastPort++;
@@ -216,9 +219,9 @@ config.parallel('server.test.js', () => {
         col2.database.destroy();
     });
     it('using node-websql with an absoulte path should work', async () => {
-        RxDB.plugin(NodeWebsqlAdapter);
+        addRxPlugin(NodeWebsqlAdapter);
         const dbName = config.rootPath + 'test_tmp/' + util.randomCouchString(10);
-        const db1 = await RxDB.create({
+        const db1 = await createRxDatabase({
             name: dbName,
             adapter: 'leveldb',
             multiInstance: false
@@ -240,10 +243,10 @@ config.parallel('server.test.js', () => {
         db1.destroy();
     });
     it('should work on filesystem-storage', async () => {
-        RxDB.plugin(NodeWebsqlAdapter);
+        addRxPlugin(NodeWebsqlAdapter);
 
         const port = nexPort();
-        const db1 = await RxDB.create({
+        const db1 = await createRxDatabase({
             name: config.rootPath + 'test_tmp/' + util.randomCouchString(10),
             adapter: 'leveldb',
             multiInstance: false
@@ -253,7 +256,7 @@ config.parallel('server.test.js', () => {
             schema: schemas.human
         });
 
-        const db2 = await RxDB.create({
+        const db2 = await createRxDatabase({
             name: config.rootPath + 'test_tmp/' + util.randomCouchString(10),
             adapter: 'leveldb',
             multiInstance: false
@@ -354,7 +357,7 @@ config.parallel('server.test.js', () => {
     });
     it('should throw if collections that created after server()', async () => {
         const port = nexPort();
-        const db1 = await RxDB.create({
+        const db1 = await createRxDatabase({
             name: util.randomCouchString(10),
             adapter: 'memory',
             multiInstance: false

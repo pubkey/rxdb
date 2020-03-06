@@ -8,15 +8,17 @@ import {
     newRxError
 } from '../rx-error';
 import {
-    RxDatabase
+    RxDatabase, RxPlugin
 } from '../types';
 
-import Core from '../core';
-import ReplicationPlugin from './replication';
-Core.plugin(ReplicationPlugin);
+import {
+    addRxPlugin
+} from '../core';
+import { RxDBReplicationPlugin } from './replication';
+addRxPlugin(RxDBReplicationPlugin);
 
-import RxDBWatchForChangesPlugin from './watch-for-changes';
-Core.plugin(RxDBWatchForChangesPlugin);
+import { RxDBWatchForChangesPlugin } from './watch-for-changes';
+addRxPlugin(RxDBWatchForChangesPlugin);
 
 let ExpressPouchDB: any;
 try {
@@ -170,10 +172,9 @@ export const hooks = {
 
 export const overwritable = {};
 
-export default {
+export const RxDBServerPlugin: RxPlugin = {
     rxdb,
     prototypes,
     overwritable,
-    hooks,
-    spawnServer
+    hooks
 };

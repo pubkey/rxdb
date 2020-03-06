@@ -6,8 +6,12 @@
 import assert from 'assert';
 import * as util from '../../dist/lib/util';
 
-const RxDB = require('../../');
-RxDB.plugin(require('pouchdb-adapter-memory'));
+const {
+    addRxPlugin,
+    createRxDatabase,
+    isRxDocument
+} = require('../../');
+addRxPlugin(require('pouchdb-adapter-memory'));
 
 const schema = {
     title: 'human schema',
@@ -32,7 +36,7 @@ const schema = {
 
 const run = async function () {
     // create database
-    const db = await RxDB.create({
+    const db = await createRxDatabase({
         name: util.randomCouchString(10),
         adapter: 'memory',
         ignoreDuplicate: true
@@ -53,7 +57,7 @@ const run = async function () {
 
     // query
     const doc = await db.humans.findOne().where('firstName').ne('foobar').exec();
-    assert.ok(RxDB.isRxDocument(doc));
+    assert.ok(isRxDocument(doc));
 
     // destroy database
     await db.destroy();

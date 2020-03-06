@@ -15,7 +15,9 @@ import {
     create
 } from '../../dist/lib/crypter';
 import * as util from '../../dist/lib/util';
-import RxDB from '../../';
+import {
+
+} from '../../';
 import {
     Crypter
 } from '../../src/crypter';
@@ -29,7 +31,7 @@ config.parallel('encryption.test.js', () => {
     }
     describe('Schema.encryptedPaths', () => {
         describe('positive', () => {
-            it('get an encrypted path', async () => {
+            it('get an encrypted path', () => {
                 const schema = createRxSchema(schemas.encryptedHuman);
                 const encPaths = schema.encryptedPaths;
                 assert.strictEqual(Object.keys(encPaths).length, 1);
@@ -39,7 +41,7 @@ config.parallel('encryption.test.js', () => {
                     encrypted: true
                 });
             });
-            it('get all encrypted paths', async () => {
+            it('get all encrypted paths', () => {
                 const schema = createRxSchema(schemas.encryptedDeepHuman);
                 const encPaths = schema.encryptedPaths;
                 assert.strictEqual(Object.keys(encPaths).length, 4);
@@ -48,7 +50,7 @@ config.parallel('encryption.test.js', () => {
                 assert.strictEqual(Object.keys(encPaths)[2], 'deepSecret.darkhole.pw');
                 assert.strictEqual(Object.keys(encPaths)[3], 'nestedSecret.darkhole');
             });
-            it('get no encrypted path', async () => {
+            it('get no encrypted path', () => {
                 const schema = createRxSchema(schemas.human);
                 const encPaths = schema.encryptedPaths;
                 assert.strictEqual(Object.keys(encPaths).length, 0);
@@ -231,7 +233,7 @@ config.parallel('encryption.test.js', () => {
             const password = util.randomCouchString(10);
 
             // 1. create and destroy encrypted db
-            const db1 = await RxDB.create({
+            const db1 = await createRxDatabase({
                 name,
                 adapter: 'memory',
                 password
@@ -240,7 +242,7 @@ config.parallel('encryption.test.js', () => {
 
             // 2. reopen with wrong password
             await AsyncTestUtil.assertThrows(
-                () => RxDB.create({
+                () => createRxDatabase({
                     name,
                     adapter: 'memory',
                     password: 'foobarfoobar'
@@ -250,7 +252,7 @@ config.parallel('encryption.test.js', () => {
             );
 
             // 3. reopen with correct password
-            const db2 = await RxDB.create({
+            const db2 = await createRxDatabase({
                 name,
                 adapter: 'memory',
                 password
@@ -282,7 +284,7 @@ config.parallel('encryption.test.js', () => {
             };
             const dbName = util.randomCouchString(10);
 
-            const db = await RxDB.create({
+            const db = await createRxDatabase({
                 name: dbName,
                 adapter: 'memory',
                 password: 'myLongAndStupidPassword'

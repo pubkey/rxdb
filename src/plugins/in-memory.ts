@@ -21,7 +21,8 @@ import {
 import {
     RxCollection,
     RxReplicationState,
-    PouchDBInstance
+    PouchDBInstance,
+    RxPlugin
 } from '../types';
 import {
     RxCollectionBase
@@ -31,7 +32,9 @@ import {
     randomCouchString,
     adapterObject
 } from '../util';
-import Core from '../core';
+import {
+    addRxPlugin
+} from '../core';
 import Crypter from '../crypter';
 import {
     createChangeEventBuffer
@@ -51,8 +54,8 @@ import {
 } from '../rx-error';
 
 // add the watch-for-changes-plugin
-import RxDBWatchForChangesPlugin from '../plugins/watch-for-changes';
-Core.plugin(RxDBWatchForChangesPlugin);
+import { RxDBWatchForChangesPlugin } from '../plugins/watch-for-changes';
+addRxPlugin(RxDBWatchForChangesPlugin);
 
 const collectionCacheMap = new WeakMap();
 const collectionPromiseCacheMap = new WeakMap();
@@ -395,9 +398,8 @@ export const prototypes = {
 };
 export const overwritable = {};
 
-export default {
+export const RxDBInMemoryPlugin: RxPlugin = {
     rxdb,
     prototypes,
-    overwritable,
-    spawnInMemory
+    overwritable
 };

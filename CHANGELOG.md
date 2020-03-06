@@ -8,6 +8,13 @@ Features:
 
 Breaking:
   - Replaced plugins `error-messages` and `schema-check` with [dev-mode](https://pubkey.github.io/rxdb/custom-build.html#dev-mode)
+  - Removed all default exports. Please only import the stuff that you really need.
+  - Renamed `RxDB.create()` to `createRxDatabase()`
+  - Renamed `removeDatabase()` to `removeRxDatabase()`
+  - Renamed `plugin()` to `addRxPlugin()`
+
+Docs:
+  - Removed examples for `require()` CommonJS loading
 
 ### 8.8.0 (5 March 2020)
 

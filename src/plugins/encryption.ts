@@ -15,6 +15,7 @@ import {
 import {
     Crypter
 } from '../crypter';
+import { RxPlugin } from '../types';
 
 const minPassLength = 8;
 
@@ -63,7 +64,7 @@ export const overwritable = {
     }
 };
 
-export default {
+export const RxDBEncryptionPlugin: RxPlugin = {
     rxdb,
     prototypes,
     overwritable

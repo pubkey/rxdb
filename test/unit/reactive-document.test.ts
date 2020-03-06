@@ -10,7 +10,9 @@ import * as humansCollection from '../helper/humans-collection';
 import * as util from '../../dist/lib/util';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
-import RxDB from '../../';
+import {
+    createRxDatabase
+} from '../../';
 import {
     first
 } from 'rxjs/operators';
@@ -122,7 +124,7 @@ config.parallel('reactive-document.test.js', () => {
                 c.database.destroy();
             });
             it('final fields cannot be observed', async () => {
-                const db = await RxDB.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
                 });

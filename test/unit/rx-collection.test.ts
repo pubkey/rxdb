@@ -9,7 +9,6 @@ import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
-import * as RxDB from '../../';
 import {
     isRxCollection,
     isRxQuery,
@@ -1372,7 +1371,7 @@ config.parallel('rx-collection.test.js', () => {
                     if (!config.platform.isNode()) return;
                     // use a 'slow' adapter because memory might be to fast
                     const leveldown = require('leveldown');
-                    const db = await RxDB.create({
+                    const db = await createRxDatabase({
                         name: config.rootPath + 'test_tmp/' + util.randomCouchString(10),
                         adapter: leveldown
                     });

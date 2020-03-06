@@ -6,7 +6,8 @@
 import modifyjs from 'modifyjs';
 import {
     RxDocument,
-    RxQuery
+    RxQuery,
+    RxPlugin
 } from '../types';
 
 export function update(this: RxDocument, updateObj: any) {
@@ -45,7 +46,7 @@ export const prototypes = {
     }
 };
 
-export default {
+export const RxDBUpdatePlugin: RxPlugin = {
     rxdb,
     prototypes
 };

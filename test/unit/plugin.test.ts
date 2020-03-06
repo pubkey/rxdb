@@ -7,7 +7,9 @@ import assert from 'assert';
 import PouchReplicationPlugin from 'pouchdb-replication';
 
 import config from './config';
-import RxDB from '../../';
+import {
+    addRxPlugin
+} from '../../';
 import * as util from '../../dist/lib/util';
 import * as humansCollection from '../helper/humans-collection';
 
@@ -21,14 +23,14 @@ const REQUIRE_FUN = require;
 config.parallel('plugin.test.js', () => {
     if (!config.platform.isNode()) return;
     describe('.plugin()', () => {
-        it('should not crash when the same plugin is added multiple times', async () => {
-            RxDB.plugin(PouchReplicationPlugin);
-            RxDB.plugin(PouchReplicationPlugin);
-            RxDB.plugin(PouchReplicationPlugin);
+        it('should not crash when the same plugin is added multiple times', () => {
+            addRxPlugin(PouchReplicationPlugin);
+            addRxPlugin(PouchReplicationPlugin);
+            addRxPlugin(PouchReplicationPlugin);
         });
     });
     describe('core.node.js', () => {
-        it('should run without errors', async function() {
+        it('should run without errors', async function () {
             this.timeout(10000);
             if (!config.platform.isNode())
                 return;
@@ -210,7 +212,7 @@ config.parallel('plugin.test.js', () => {
                     createRxDatabase
                 }
             };
-            RxDB.plugin(plugin);
+            addRxPlugin(plugin);
             const col = await humansCollection.create();
             assert.strictEqual(col.database.foo, 'bar_createRxDatabase');
             col.database.destroy();
@@ -227,7 +229,7 @@ config.parallel('plugin.test.js', () => {
                     createRxCollection
                 }
             };
-            RxDB.plugin(plugin);
+            addRxPlugin(plugin);
             const col = await humansCollection.create();
             assert.strictEqual(col.foo, 'bar_createRxCollection');
             col.database.destroy();
@@ -243,7 +245,7 @@ config.parallel('plugin.test.js', () => {
                     createRxSchema
                 }
             };
-            RxDB.plugin(plugin);
+            addRxPlugin(plugin);
             const col: any = await humansCollection.create();
             assert.strictEqual(col.schema['foo'], 'bar_createRxSchema');
             col.database.destroy();
@@ -259,7 +261,7 @@ config.parallel('plugin.test.js', () => {
                     createRxQuery
                 }
             };
-            RxDB.plugin(plugin);
+            addRxPlugin(plugin);
             const col = await humansCollection.create();
             const query: any = col.find();
             assert.strictEqual(query['foo'], 'bar_createRxQuery');
@@ -276,7 +278,7 @@ config.parallel('plugin.test.js', () => {
                     createRxDocument
                 }
             };
-            RxDB.plugin(plugin);
+            addRxPlugin(plugin);
             const col = await humansCollection.create(5);
             const doc: any = await col.findOne().exec();
             assert.strictEqual(doc.foo, 'bar_createRxDocument');
@@ -293,7 +295,7 @@ config.parallel('plugin.test.js', () => {
                     postCreateRxDocument
                 }
             };
-            RxDB.plugin(plugin);
+            addRxPlugin(plugin);
             const col = await humansCollection.create(5);
             const doc: any = await col.findOne().exec();
             assert.strictEqual(doc.fooPostCreate, 'bar_postCreateRxDocument');
@@ -314,7 +316,7 @@ config.parallel('plugin.test.js', () => {
                     preCreatePouchDb
                 }
             };
-            RxDB.plugin(plugin);
+            addRxPlugin(plugin);
             const col = await humansCollection.create(0, collectionName);
             const pouchInstance = col.pouch;
             assert.ok(pouchInstance);

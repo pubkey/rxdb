@@ -1,3 +1,5 @@
+import { RxPlugin } from '../types';
+
 /**
  * this plugin validates all documents
  * no mather if the schema matches or not
@@ -23,7 +25,7 @@ export const prototypes = {
 };
 export const hooks = {};
 
-export default {
+export const RxDBNoValidatePlugin: RxPlugin = {
     rxdb,
     prototypes,
     hooks

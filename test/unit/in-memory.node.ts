@@ -13,12 +13,21 @@ import * as configModule from '../../test_tmp/unit/config';
 import { RxJsonSchema } from '../../src/types';
 const config: any = (configModule as any).default;
 
-const RxDB = require('../../plugins/core/');
-RxDB.plugin(require('../../plugins/in-memory'));
-RxDB.plugin(require('../../plugins/dev-mode').default);
-RxDB.plugin(require('../../plugins/watch-for-changes'));
+const {
+    addRxPlugin,
+    createRxDatabase
+} = require('../../plugins/core/');
 
-RxDB.plugin(require('pouchdb-adapter-leveldb'));
+import {RxDBInMemoryPlugin} from '../../plugins/in-memory';
+addRxPlugin(RxDBInMemoryPlugin);
+
+import {RxDBDevModePlugin} from '../../plugins/dev-mode';
+addRxPlugin(RxDBDevModePlugin);
+
+import {RxDBWatchForChangesPlugin} from '../../plugins/watch-for-changes';
+addRxPlugin(RxDBWatchForChangesPlugin);
+
+addRxPlugin(require('pouchdb-adapter-leveldb'));
 
 const schema: RxJsonSchema = {
     title: 'human schema',
@@ -43,7 +52,7 @@ const schema: RxJsonSchema = {
 
 describe('in-memory.node.js', () => {
     it('should throw when used without memory-adapter', async () => {
-        const db = await RxDB.create({
+        const db = await createRxDatabase({
             name: (config as any).rootPath + 'test_tmp/' + util.randomCouchString(10),
             adapter: leveldown
         });
@@ -61,8 +70,8 @@ describe('in-memory.node.js', () => {
         db.destroy();
     });
     it('should work again when memory-adapter was added', async () => {
-        RxDB.plugin(PouchAdapterMemory);
-        const db = await RxDB.create({
+        addRxPlugin(PouchAdapterMemory);
+        const db = await createRxDatabase({
             name: (config as any).rootPath + 'test_tmp/' + util.randomCouchString(10),
             adapter: leveldown
         });

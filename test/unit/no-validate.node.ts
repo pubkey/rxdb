@@ -2,9 +2,12 @@ import assert from 'assert';
 import * as util from '../../dist/lib/util';
 import config from './config';
 
-import Core from '../../plugins/core';
-Core.plugin(require('../../plugins/no-validate'));
-Core.plugin(require('pouchdb-adapter-memory'));
+import {
+    addRxPlugin,
+    createRxDatabase
+} from '../../plugins/core';
+addRxPlugin(require('../../plugins/no-validate'));
+addRxPlugin(require('pouchdb-adapter-memory'));
 
 const schema = {
     title: 'human schema',
@@ -29,7 +32,7 @@ const schema = {
 
 config.parallel('no-validate.node.js', () => {
     it('should allow to insert everything', async () => {
-        const db = await Core.create({
+        const db = await createRxDatabase({
             name: util.randomCouchString(10),
             adapter: 'memory'
         });
@@ -43,7 +46,7 @@ config.parallel('no-validate.node.js', () => {
         db.destroy();
     });
     it('should allow to save everything', async () => {
-        const db = await Core.create({
+        const db = await createRxDatabase({
             name: util.randomCouchString(10),
             adapter: 'memory'
         });

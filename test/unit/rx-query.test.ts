@@ -7,16 +7,15 @@ import {
     first
 } from 'rxjs/operators';
 
-import RxDB from '../../';
 import {
     isRxQuery,
-    create as createRxDatabase
+    createRxDatabase
 } from '../../';
 import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from './../helper/schemas';
 import * as util from '../../dist/lib/util';
-import {RxJsonSchema} from '../../src/types';
+import { RxJsonSchema } from '../../src/types';
 
 config.parallel('rx-query.test.js', () => {
     describe('mquery', () => {
@@ -464,7 +463,7 @@ config.parallel('rx-query.test.js', () => {
             if (!config.platform.isNode()) return;
             // use a 'slow' adapter because memory might be to fast
             const leveldown = require('leveldown');
-            const db = await RxDB.create({
+            const db = await createRxDatabase({
                 name: config.rootPath + 'test_tmp/' + util.randomCouchString(10),
                 adapter: leveldown
             });
@@ -565,7 +564,7 @@ config.parallel('rx-query.test.js', () => {
         it('exec from other database-instance', async () => {
             const dbName = util.randomCouchString(10);
             const schema = schemas.averageSchema();
-            const db = await RxDB.create({
+            const db = await createRxDatabase({
                 name: dbName,
                 queryChangeDetection: true,
                 adapter: 'memory'
@@ -584,7 +583,7 @@ config.parallel('rx-query.test.js', () => {
 
             await db.destroy();
 
-            const db2 = await RxDB.create({
+            const db2 = await createRxDatabase({
                 name: dbName,
                 adapter: 'memory',
                 queryChangeDetection: true,
@@ -655,7 +654,7 @@ config.parallel('rx-query.test.js', () => {
                         }
                     }
                 };
-                const db = await RxDB.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
@@ -765,7 +764,7 @@ config.parallel('rx-query.test.js', () => {
             });
         });
         it('#164 Sort error, pouchdb-find/mango "unknown operator"', async () => {
-            const db = await RxDB.create({
+            const db = await createRxDatabase({
                 adapter: 'memory',
                 name: util.randomCouchString(12),
                 password: 'password'
@@ -1260,7 +1259,7 @@ config.parallel('rx-query.test.js', () => {
             c2.database.destroy();
         });
         it('#724 find() does not find all matching documents', async () => {
-            const db = await RxDB.create({
+            const db = await createRxDatabase({
                 name: util.randomCouchString(10),
                 adapter: 'memory'
             });
@@ -1333,7 +1332,7 @@ config.parallel('rx-query.test.js', () => {
             const name = util.randomCouchString(10);
 
             // create a database
-            const db = await RxDB.create({
+            const db = await createRxDatabase({
                 name,
                 adapter: 'memory',
                 queryChangeDetection: true,
@@ -1399,7 +1398,7 @@ config.parallel('rx-query.test.js', () => {
                     }
                 }
             };
-            const db = await RxDB.create({
+            const db = await createRxDatabase({
                 name: util.randomCouchString(10),
                 adapter: 'memory',
                 queryChangeDetection: true,

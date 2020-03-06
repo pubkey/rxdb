@@ -9,7 +9,9 @@ import * as schemaObjects from '../helper/schema-objects';
 
 import * as SchemaCheck from '../../dist/lib/plugins/dev-mode/check-schema';
 
-import RxDB from '../../';
+import {
+    createRxDatabase
+} from '../../';
 import {
     createRxSchema
 } from '../../';
@@ -98,7 +100,7 @@ config.parallel('rx-schema.test.js', () => {
                     });
                 });
                 it('validates deep nested indexes', () => {
-                   SchemaCheck.checkSchema(schemas.humanWithDeepNestedIndexes);
+                    SchemaCheck.checkSchema(schemas.humanWithDeepNestedIndexes);
                 });
             });
             describe('negative', () => {
@@ -823,7 +825,7 @@ config.parallel('rx-schema.test.js', () => {
                 },
                 indexes: ['fileInfo.watch.time']
             };
-            const db = await RxDB.create({
+            const db = await createRxDatabase({
                 name: util.randomCouchString(10),
                 adapter: 'memory'
             });
@@ -871,7 +873,7 @@ config.parallel('rx-schema.test.js', () => {
                 indexes: ['lastName']
             };
             // create a database
-            const db = await RxDB.create({
+            const db = await createRxDatabase({
                 name: util.randomCouchString(10),
                 adapter: 'memory'
             });
@@ -907,7 +909,7 @@ config.parallel('rx-schema.test.js', () => {
             };
 
             // create a database
-            const db = await RxDB.create({
+            const db = await createRxDatabase({
                 name: util.randomCouchString(10),
                 adapter: 'memory'
             });
@@ -946,7 +948,7 @@ config.parallel('rx-schema.test.js', () => {
             };
 
             // create a database
-            const db = await RxDB.create({
+            const db = await createRxDatabase({
                 name: util.randomCouchString(10),
                 adapter: 'memory'
             });

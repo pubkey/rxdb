@@ -17,11 +17,12 @@ Our way to go is
 First you import the types from RxDB.
 
 ```typescript
-import RxDB, {
+import {
+    createRxDatabase,
     RxDatabase,
     RxCollection,
     RxJsonSchema,
-    RxDocument
+    RxDocument,
 } from 'rxdb';
 ```
 
@@ -89,7 +90,7 @@ Now that we have declare all our types, we can use them.
 /**
  * create database and collections
  */
-const myDatabase: MyDatabase = await RxDB.create<MyDatabaseCollections>({
+const myDatabase: MyDatabase = await createRxDatabase<MyDatabaseCollections>({
     name: 'mydb',
     adapter: 'memory'
 });

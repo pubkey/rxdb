@@ -226,7 +226,7 @@ await myCollection.destroy();
 ### isRxCollection
 Returns true if the given object is an instance of RxCollection. Returns false if not.
 ```js
-const is = RxDB.isRxCollection(myObj);
+const is = isRxCollection(myObj);
 ```
 
 ---------

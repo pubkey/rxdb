@@ -11,6 +11,7 @@ import {
 import {
     RxSchema
 } from '../rx-schema';
+import { RxPlugin } from '../types';
 
 export class KeyCompressor {
 
@@ -219,7 +220,7 @@ export const overwritable = {
     createKeyCompressor: create
 };
 
-export default {
+export const RxDBKeyCompressionPlugin: RxPlugin = {
     rxdb,
     prototypes,
     overwritable

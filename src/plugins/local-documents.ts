@@ -28,7 +28,8 @@ import {
 import {
     RxCollection,
     RxDatabase,
-    RxDocument
+    RxDocument,
+    RxPlugin
 } from '../types';
 
 import {
@@ -370,7 +371,7 @@ export const prototypes = {
 };
 export const overwritable = {};
 
-export default {
+export const RxDBLocalDocumentsPlugin: RxPlugin = {
     rxdb,
     prototypes,
     overwritable

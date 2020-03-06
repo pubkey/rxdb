@@ -9,7 +9,7 @@ import * as humansCollection from '../helper/humans-collection';
 import * as util from '../../dist/lib/util';
 
 import {
-    create as createRxDatabase,
+    createRxDatabase,
     PouchDB
 } from '../../';
 import {

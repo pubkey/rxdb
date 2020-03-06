@@ -1,8 +1,10 @@
 import assert from 'assert';
-import RxDB from '../../';
+import {
+    dbCount
+} from '../../';
 
 describe('last.test.js', () => {
-    it('ensure every db is cleaned up', async () => {
-        assert.strictEqual(RxDB.dbCount(), 0);
+    it('ensure every db is cleaned up', () => {
+        assert.strictEqual(dbCount(), 0);
     });
 });

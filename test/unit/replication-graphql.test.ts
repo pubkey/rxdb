@@ -14,8 +14,11 @@ import * as util from '../../dist/lib/util';
 import {
     PouchDB
 } from '../../dist/lib/pouch-db';
-import RxDB from '../../';
-import GraphQLPlugin from '../../plugins/replication-graphql';
+import {
+    addRxPlugin,
+    createRxDatabase
+} from '../../';
+import { RxDBReplicationGraphQLPlugin } from '../../plugins/replication-graphql';
 import * as schemas from '../helper/schemas';
 import {
     GRAPHQL_PATH,
@@ -28,7 +31,7 @@ import {
     GraphQLServerModule
 } from '../helper/graphql-server';
 
-RxDB.plugin(GraphQLPlugin);
+addRxPlugin(RxDBReplicationGraphQLPlugin);
 
 import GraphQLClient from 'graphql-client';
 
@@ -102,7 +105,7 @@ describe('replication-graphql.test.js', () => {
     describe('node', () => {
         if (!config.platform.isNode()) return;
         const REQUIRE_FUN = require;
-        RxDB.plugin(REQUIRE_FUN('pouchdb-adapter-http'));
+        addRxPlugin(REQUIRE_FUN('pouchdb-adapter-http'));
         const SpawnServer: GraphQLServerModule = REQUIRE_FUN('../helper/graphql-server');
         const ws = REQUIRE_FUN('ws');
         const { SubscriptionClient } = REQUIRE_FUN('subscriptions-transport-ws');
@@ -1124,7 +1127,7 @@ describe('replication-graphql.test.js', () => {
             });
             it('should not send index-documents', async () => {
                 const server = await SpawnServer.spawn();
-                const db = await RxDB.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory',
                     ignoreDuplicate: true
@@ -1352,12 +1355,12 @@ describe('replication-graphql.test.js', () => {
                 const name = util.randomCouchString(10);
                 const server = await SpawnServer.spawn();
 
-                const db1 = await RxDB.create({
+                const db1 = await createRxDatabase({
                     name,
                     adapter: 'memory',
                     ignoreDuplicate: true
                 });
-                const db2 = await RxDB.create({
+                const db2 = await createRxDatabase({
                     name,
                     adapter: 'memory',
                     ignoreDuplicate: true
@@ -1579,7 +1582,7 @@ describe('replication-graphql.test.js', () => {
 
         config.parallel('integrations', () => {
             it('should work with encryption', async () => {
-                const db = await RxDB.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory',
                     multiInstance: true,
@@ -1621,7 +1624,7 @@ describe('replication-graphql.test.js', () => {
                 db.destroy();
             });
             it('should work with keyCompression', async () => {
-                const db = await RxDB.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory',
                     multiInstance: true,
@@ -1668,7 +1671,7 @@ describe('replication-graphql.test.js', () => {
 
         config.parallel('issues', () => {
             it('push not working on slow db', async () => {
-                const db = await RxDB.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory',
                     multiInstance: true,
@@ -1719,7 +1722,7 @@ describe('replication-graphql.test.js', () => {
                 db.destroy();
             });
             it('push not working when big amount of docs is pulled before', async () => {
-                const db = await RxDB.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory',
                     multiInstance: true,
@@ -1767,7 +1770,7 @@ describe('replication-graphql.test.js', () => {
                 db.destroy();
             });
             it('#1812 updates fail when graphql is enabled', async () => {
-                const db = await RxDB.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory',
                     multiInstance: false,
@@ -1836,7 +1839,7 @@ describe('replication-graphql.test.js', () => {
         describe('issues', () => {
             it('push not working on slow db', async () => {
                 const dbName = util.randomCouchString(10);
-                const db = await RxDB.create({
+                const db = await createRxDatabase({
                     name: dbName,
                     adapter: 'idb',
                     multiInstance: true,
@@ -1876,7 +1879,7 @@ describe('replication-graphql.test.js', () => {
 
                 // insert one in new instance of same db
                 // which will trigger an auto push
-                const db2 = await RxDB.create({
+                const db2 = await createRxDatabase({
                     name: dbName,
                     adapter: 'idb',
                     multiInstance: true,

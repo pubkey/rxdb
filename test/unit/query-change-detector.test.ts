@@ -6,13 +6,12 @@ import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
-import RxDB from '../../';
 import {
-    QueryChangeDetector,
-    create as createQueryChangeDetector,
+    addRxPlugin
+} from '../../';
+import {
     _isDocInResultData,
     _isSortedBefore,
-    enableDebugging,
     _sortFieldChanged
 } from '../../dist/lib/query-change-detector';
 
@@ -26,7 +25,7 @@ import {RxJsonSchema} from '../../src/types';
 let SpawnServer: any;
 if (config.platform.isNode()) {
     SpawnServer = require('../helper/spawn-server');
-    RxDB.plugin(require('pouchdb-adapter-http'));
+    addRxPlugin(require('pouchdb-adapter-http'));
 }
 
 // uncomment to debug
@@ -35,7 +34,7 @@ if (config.platform.isNode()) {
 
 
 config.parallel('query-change-detector.test.js', () => {
-    describe('._isDocInResultData()', async () => {
+    describe('._isDocInResultData()', () => {
         it('should return true', async () => {
             const col = await humansCollection.create(5);
             const q = col.find();

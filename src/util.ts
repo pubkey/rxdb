@@ -15,14 +15,17 @@ import {
 export function pluginMissing(
     pluginKey: string
 ): Error {
+    const keyParts = pluginKey.split('-');
+    let pluginName = 'RxDB';
+    keyParts.forEach(part => {
+        pluginName += ucfirst(part);
+    });
+    pluginName += 'Plugin';
     return new Error(
         `You are using a function which must be overwritten by a plugin.
         You should either prevent the usage of this function or add the plugin via:
-          - es5-require:
-            RxDB.plugin(require('rxdb/plugins/${pluginKey}'))
-          - es6-import:
-            import ${ucfirst(pluginKey)}Plugin from 'rxdb/plugins/${pluginKey}';
-            RxDB.plugin(${ucfirst(pluginKey)}Plugin);
+            import { ${pluginName} } from 'rxdb/plugins/${pluginKey}';
+            addRxPlugin(${pluginName});
         `
     );
 }

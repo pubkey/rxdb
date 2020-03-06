@@ -4,7 +4,7 @@ import * as schemaObjects from './schema-objects';
 
 import * as util from '../../dist/lib/util';
 import {
-    create as createRxDatabase,
+    createRxDatabase,
     RxJsonSchema,
     RxCollection
 } from '../../';

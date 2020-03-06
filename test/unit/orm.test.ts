@@ -3,7 +3,9 @@ import AsyncTestUtil from 'async-test-util';
 
 import config from './config';
 import * as util from '../../dist/lib/util';
-import RxDB from '../../';
+import {
+    createRxDatabase
+} from '../../';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 
@@ -12,7 +14,7 @@ config.parallel('orm.test.js', () => {
         describe('create', () => {
             describe('positive', () => {
                 it('create a collection with static-methods', async () => {
-                    const db = await RxDB.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -30,7 +32,7 @@ config.parallel('orm.test.js', () => {
             });
             describe('negative', () => {
                 it('crash when name not allowed (startsWith(_))', async () => {
-                    const db = await RxDB.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -50,7 +52,7 @@ config.parallel('orm.test.js', () => {
                     db.destroy();
                 });
                 it('crash when name not allowed (name reserved)', async () => {
-                    const db = await RxDB.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -83,7 +85,7 @@ config.parallel('orm.test.js', () => {
         });
         describe('run', () => {
             it('should be able to run the method', async () => {
-                const db = await RxDB.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
@@ -101,7 +103,7 @@ config.parallel('orm.test.js', () => {
                 db.destroy();
             });
             it('should have the right this-context', async () => {
-                const db = await RxDB.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
@@ -119,7 +121,7 @@ config.parallel('orm.test.js', () => {
                 db.destroy();
             });
             it('should be able to use this.insert()', async () => {
-                const db = await RxDB.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
@@ -143,7 +145,7 @@ config.parallel('orm.test.js', () => {
         describe('create', () => {
             describe('positive', () => {
                 it('create a collection with instance-methods', async () => {
-                    const db = await RxDB.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -159,7 +161,7 @@ config.parallel('orm.test.js', () => {
                     db.destroy();
                 });
                 it('this-scope should be bound to document', async () => {
-                    const db = await RxDB.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -191,7 +193,7 @@ config.parallel('orm.test.js', () => {
             });
             describe('negative', () => {
                 it('crash when name not allowed (startsWith(_))', async () => {
-                    const db = await RxDB.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -210,7 +212,7 @@ config.parallel('orm.test.js', () => {
                     db.destroy();
                 });
                 it('crash when name not allowed (name reserved)', async () => {
-                    const db = await RxDB.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -237,7 +239,7 @@ config.parallel('orm.test.js', () => {
                     db.destroy();
                 });
                 it('crash when name not allowed (name is top-level field in schema)', async () => {
-                    const db = await RxDB.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -269,7 +271,7 @@ config.parallel('orm.test.js', () => {
 
         describe('run', () => {
             it('should be able to run the method', async () => {
-                const db = await RxDB.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
@@ -289,7 +291,7 @@ config.parallel('orm.test.js', () => {
                 db.destroy();
             });
             it('should have the right this-context', async () => {
-                const db = await RxDB.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
@@ -310,7 +312,7 @@ config.parallel('orm.test.js', () => {
                 db.destroy();
             });
             it('should not be confused with many collections', async () => {
-                const db = await RxDB.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
@@ -342,7 +344,7 @@ config.parallel('orm.test.js', () => {
     });
     describe('ISSUES', () => {
         it('#791 Document methods are not bind() to the document', async () => {
-            const db = await RxDB.create({
+            const db = await createRxDatabase({
                 name: util.randomCouchString(),
                 adapter: 'memory',
                 multiInstance: false

@@ -89,9 +89,7 @@ export const prototypes = {
     }
 };
 
-const plugin: RxPlugin = {
+export const RxDBWatchForChangesPlugin: RxPlugin = {
     rxdb,
     prototypes
 };
-
-export default plugin;

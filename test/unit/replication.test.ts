@@ -12,7 +12,9 @@ import * as humansCollection from '../helper/humans-collection';
 
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
-import RxDB from '../../';
+import {
+    addRxPlugin, createRxDatabase
+} from '../../';
 
 import {
     fromEvent
@@ -31,7 +33,7 @@ let SpawnServer: any;
 if (config.platform.isNode()) {
     SpawnServer = require('../helper/spawn-server');
     request = require('request-promise');
-    RxDB.plugin(require('pouchdb-adapter-http'));
+    addRxPlugin(require('pouchdb-adapter-http'));
 }
 
 describe('replication.test.js', () => {
@@ -594,7 +596,7 @@ describe('replication.test.js', () => {
             };
 
             // create a database
-            const db1 = await RxDB.create({
+            const db1 = await createRxDatabase({
                 name: util.randomCouchString(12),
                 adapter: 'memory'
             });
@@ -613,7 +615,7 @@ describe('replication.test.js', () => {
             });
 
             // create another database
-            const db2 = await RxDB.create({
+            const db2 = await createRxDatabase({
                 name: util.randomCouchString(12),
                 adapter: 'memory'
             });

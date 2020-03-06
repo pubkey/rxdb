@@ -46,7 +46,7 @@ const PROTOTYPES: { [k: string]: any } = {
 const ADDED_PLUGINS = new Set();
 
 
-export default function addPlugin(plugin: RxPlugin | any) {
+export function addRxPlugin(plugin: RxPlugin | any) {
     // do nothing if added before
     if (ADDED_PLUGINS.has(plugin)) return;
     else ADDED_PLUGINS.add(plugin);

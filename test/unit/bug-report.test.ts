@@ -11,7 +11,9 @@
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
 
-import RxDB from '../../';
+import {
+    createRxDatabase
+} from '../../';
 import * as util from '../../dist/lib/util';
 
 describe('bug-report.test.js', () => {
@@ -43,7 +45,7 @@ describe('bug-report.test.js', () => {
         const name = util.randomCouchString(10);
 
         // create a database
-        const db = await RxDB.create({
+        const db = await createRxDatabase({
             name,
             adapter: 'memory',
             queryChangeDetection: true,
@@ -67,7 +69,7 @@ describe('bug-report.test.js', () => {
          * to simulate the event-propagation over multiple browser-tabs,
          * we create the same database again
          */
-        const dbInOtherTab = await RxDB.create({
+        const dbInOtherTab = await createRxDatabase({
             name,
             adapter: 'memory',
             queryChangeDetection: true,

@@ -21,7 +21,9 @@ import {
     flatClone
 } from '../../util';
 
-import Core from '../../core';
+import {
+    addRxPlugin
+} from '../../core';
 import {
     hash
 } from '../../util';
@@ -39,24 +41,25 @@ import {
     getChangesSinceLastPushSequence
 } from './crawling-checkpoint';
 
-import RxDBWatchForChangesPlugin from '../watch-for-changes';
-import RxDBLeaderElectionPlugin from '../leader-election';
+import { RxDBWatchForChangesPlugin } from '../watch-for-changes';
+import { RxDBLeaderElectionPlugin } from '../leader-election';
 import {
     changeEventfromPouchChange
 } from '../../rx-change-event';
 import {
     RxCollection,
     GraphQLSyncPullOptions,
-    GraphQLSyncPushOptions
+    GraphQLSyncPushOptions,
+    RxPlugin
 } from '../../types';
 
-Core.plugin(RxDBLeaderElectionPlugin);
+addRxPlugin(RxDBLeaderElectionPlugin);
 
 /**
  * add the watch-for-changes-plugin
  * so pouchdb will emit events when something gets written to it
  */
-Core.plugin(RxDBWatchForChangesPlugin);
+addRxPlugin(RxDBWatchForChangesPlugin);
 
 
 export class RxGraphQLReplicationState {
@@ -486,7 +489,7 @@ export const prototypes = {
     }
 };
 
-export default {
+export const RxDBReplicationGraphQLPlugin: RxPlugin = {
     rxdb,
     prototypes
 };

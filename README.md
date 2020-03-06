@@ -101,12 +101,9 @@ npm install rxjs --save
 
 ### Import:
 
-<details>
-  <summary>ES7</summary>
-
 ```javascript
-import RxDB from 'rxdb';
-const db = await RxDB.create({
+import { createRxDatabase } from 'rxdb';
+const db = await createRxDatabase({
     name: 'heroesdb',
     adapter: 'websql',
     password: 'myLongAndStupidPassword', // optional
@@ -116,25 +113,6 @@ const db = await RxDB.create({
 await db.collection({name: 'heroes', schema: mySchema});    // create collection
 db.heroes.insert({ name: 'Bob' });                          // insert document
 ```
-
-</details>
-
-<details>
-  <summary>ES5</summary>
-
-```javascript
-var RxDB = require('rxdb');
-RxDB.create({
-    name: 'heroesdb',
-    adapter: 'websql',
-    password: 'myLongAndStupidPassword', // optional
-    multiInstance: true                  // default: true
-  })                                                                              // create database
-  .then(function(db) {return db.collection({name: 'heroes', schema: mySchema});}) // create collection
-  .then(function(collection) {collection.insert({name: 'Bob'});})                 // insert document
-```
-
-</details>
 
 ## Feature-Showroom (click to toggle)
 

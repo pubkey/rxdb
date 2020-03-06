@@ -1,15 +1,14 @@
 import assert from 'assert';
-import config from './config';
 import AsyncTestUtil from 'async-test-util';
 
+import config from './config';
 import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from '../helper/schemas';
 import * as util from '../../dist/lib/util';
 
-import * as RxCollection from '../../dist/lib/rx-collection';
 import {
-    create as createRxDatabase,
+    createRxDatabase,
     createRxSchema
 } from '../../';
 

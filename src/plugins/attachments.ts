@@ -12,7 +12,7 @@ import {
     newRxError
 } from '../rx-error';
 import {
-    RxDocument
+    RxDocument, RxPlugin
 } from '../types';
 
 function ensureSchemaSupportsAttachments(doc: any) {
@@ -336,10 +336,9 @@ export const hooks = {
     postMigrateDocument
 };
 
-export default {
+export const RxDBAttachmentsPlugin: RxPlugin = {
     rxdb,
     prototypes,
     overwritable,
-    hooks,
-    blobBufferUtil
+    hooks
 };

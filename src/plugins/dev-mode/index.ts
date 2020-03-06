@@ -10,7 +10,7 @@ import { checkOrmMethods } from './check-orm';
 import { checkMigrationStrategies } from './check-migration-strategies';
 
 
-const plugin: RxPlugin = {
+export const RxDBDevModePlugin: RxPlugin = {
     rxdb: true,
     overwritable: {
         tunnelErrorMessage(code: string) {
@@ -39,5 +39,3 @@ const plugin: RxPlugin = {
         }
     }
 };
-
-export default plugin;

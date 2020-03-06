@@ -10,7 +10,7 @@ import {
     adapterObject
 } from '../util';
 import {
-    PouchDBInstance
+    PouchDBInstance, RxPlugin
 } from '../types';
 
 /**
@@ -77,7 +77,7 @@ export const overwritable = {
     checkAdapter
 };
 
-export default {
+export const RxDBAdapterCheckPlugin: RxPlugin = {
     rxdb,
     prototypes,
     overwritable

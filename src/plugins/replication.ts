@@ -17,7 +17,9 @@ import {
     promiseWait,
     flatClone
 } from '../util';
-import Core from '../core';
+import {
+    addRxPlugin
+} from '../core';
 import {
     newRxError
 } from '../rx-error';
@@ -26,7 +28,6 @@ import {
     isInstanceOf as isInstanceOfPouchDB
 } from '../pouch-db';
 
-import RxDBWatchForChangesPlugin from './watch-for-changes';
 import {
     isInstanceOf as isRxCollection
 } from '../rx-collection';
@@ -34,14 +35,16 @@ import {
     RxQuery,
     RxCollection,
     PouchSyncHandler,
-    PouchReplicationOptions
+    PouchReplicationOptions,
+    RxPlugin
 } from '../types';
+import { RxDBWatchForChangesPlugin } from './watch-for-changes';
 
 // add pouchdb-replication-plugin
-Core.plugin(PouchReplicationPlugin);
+addRxPlugin(PouchReplicationPlugin);
 
 // add the watch-for-changes-plugin
-Core.plugin(RxDBWatchForChangesPlugin);
+addRxPlugin(RxDBWatchForChangesPlugin);
 
 const INTERNAL_POUCHDBS = new WeakSet();
 
@@ -280,9 +283,8 @@ export const hooks = {
     }
 };
 
-export default {
+export const RxDBReplicationPlugin: RxPlugin = {
     rxdb,
     prototypes,
-    hooks,
-    sync
+    hooks
 };

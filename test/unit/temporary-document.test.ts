@@ -2,7 +2,9 @@ import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
 import config from './config';
 
-import * as RxDB from '../../';
+import {
+    createRxDatabase
+} from '../../';
 import * as util from '../../dist/lib/util';
 
 import * as schemas from '../helper/schemas';
@@ -42,7 +44,7 @@ config.parallel('temporary-document.test.js', () => {
             c.database.destroy();
         });
         it('should have default-values', async () => {
-            const db = await RxDB.create({
+            const db = await createRxDatabase({
                 name: util.randomCouchString(10),
                 adapter: 'memory'
             });
@@ -101,7 +103,7 @@ config.parallel('temporary-document.test.js', () => {
     });
     describe('ORM', () => {
         it('should be able to use ORM-functions', async () => {
-            const db = await RxDB.create({
+            const db = await createRxDatabase({
                 name: util.randomCouchString(10),
                 adapter: 'memory'
             });

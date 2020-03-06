@@ -53,10 +53,8 @@ export const overwritable = {
     createLeaderElector: create
 };
 
-const plugin: RxPlugin = {
+export const RxDBLeaderElectionPlugin: RxPlugin = {
     rxdb,
     prototypes,
     overwritable
 };
-
-export default plugin;

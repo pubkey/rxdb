@@ -15,7 +15,8 @@ import {
 } from '../rx-change-event';
 import {
     RxDatabase,
-    RxCollection
+    RxCollection,
+    RxPlugin
 } from '../types';
 
 function dumpRxDatabase(
@@ -170,7 +171,7 @@ export const prototypes = {
 
 export const overwritable = {};
 
-export default {
+export const RxDBJsonDumpPlugin: RxPlugin = {
     rxdb,
     prototypes,
     overwritable

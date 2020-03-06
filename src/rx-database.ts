@@ -435,7 +435,7 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
     remove(): Promise<void> {
         return this
             .destroy()
-            .then(() => removeDatabase(this.name, this.adapter));
+            .then(() => removeRxDatabase(this.name, this.adapter));
     }
 }
 
@@ -660,7 +660,7 @@ function prepare(rxDatabase: RxDatabase): Promise<void> {
     });
 }
 
-export function create<Collections = { [key: string]: RxCollection }>({
+export function createRxDatabase<Collections = { [key: string]: RxCollection }>({
     name,
     adapter,
     password,
@@ -804,7 +804,7 @@ function _internalCollectionsPouch(
 /**
  * removes the database and all its known data
  */
-export function removeDatabase(
+export function removeRxDatabase(
     databaseName: string,
     adapter: any
 ): Promise<any> {
@@ -849,8 +849,8 @@ export function dbCount(): number {
 }
 
 export default {
-    create,
-    removeDatabase,
+    createRxDatabase,
+    removeRxDatabase,
     checkAdapter,
     isInstanceOf,
     RxDatabaseBase,
