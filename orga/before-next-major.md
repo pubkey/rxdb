@@ -2,7 +2,7 @@
 
 This list contains things that have to be done but will create breaking changes.
 
-### KeyCompression does not work on objects inside of arrays.
+### DONE - KeyCompression does not work on objects inside of arrays.
 In documents like the following, the properties inside of the array-object will not be compressed `color`
 
 ```json
