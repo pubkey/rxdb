@@ -54,16 +54,6 @@ config.parallel('rx-collection.test.js', () => {
                     assert.ok(isRxCollection(collection));
                     db.destroy();
                 });
-                it('index', async () => {
-                    const col = await humansCollection.create(1);
-                    const indexes = await col.pouch.getIndexes();
-                    const compressedKey = col._keyCompressor.table.passportId;
-                    const has = indexes.indexes
-                        .map(i => i.def.fields[0])
-                        .filter(i => !!i[compressedKey]);
-                    assert.strictEqual(has.length, 1);
-                    col.database.destroy();
-                });
                 it('should create compound-indexes (keyCompression: false)', async () => {
                     const db = await createRxDatabase({
                         name: util.randomCouchString(10),
@@ -954,7 +944,6 @@ config.parallel('rx-collection.test.js', () => {
                         const docs = await c.find()
                             .where('firstName').regex(/Match/)
                             .exec();
-
                         assert.strictEqual(docs.length, 1);
                         const first = docs[0];
                         assert.strictEqual(first.get('firstName'), matchHuman.firstName);
@@ -1432,7 +1421,7 @@ config.parallel('rx-collection.test.js', () => {
                     });
                     await collection.remove();
                     const otherSchema = clone(schemas.primaryHuman);
-                    otherSchema.properties.foobar = {
+                    otherSchema.properties['foobar'] = {
                         type: 'string'
                     };
                     await db.collection({

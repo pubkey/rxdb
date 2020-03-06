@@ -106,8 +106,8 @@ let hooksApplied = false;
 
 
 export class RxCollectionBase<
-RxDocumentType = { [prop: string]: any }, OrmMethods = {}
-> {
+    RxDocumentType = { [prop: string]: any }, OrmMethods = {}
+    > {
 
     constructor(
         public database: RxDatabase,
@@ -324,7 +324,9 @@ RxDocumentType = { [prop: string]: any }, OrmMethods = {}
         noDecrypt: boolean = false
     ): Promise<any[]> {
         const compressedQueryJSON: any = rxQuery.keyCompress();
-        if (limit) compressedQueryJSON['limit'] = limit;
+        if (limit) {
+            compressedQueryJSON['limit'] = limit;
+        }
 
         return this.database.lockedRun(
             () => this.pouch.find(compressedQueryJSON)
@@ -787,10 +789,12 @@ function _prepareCreateIndexes(
             .map(indexAr => {
                 const compressedIdx = indexAr
                     .map(key => {
-                        if (!rxCollection.schema.doKeyCompression())
+                        if (!rxCollection.schema.doKeyCompression()) {
                             return key;
-                        else
-                            return rxCollection._keyCompressor.transformKey('', '', key.split('.'));
+                        } else {
+                            const indexKey = rxCollection._keyCompressor.transformKey(key);
+                            return indexKey;
+                        }
                     });
 
                 return spawnedPouchPromise.then(

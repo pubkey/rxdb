@@ -12,6 +12,7 @@ Breaking:
   - Renamed `RxDB.create()` to `createRxDatabase()`
   - Renamed `removeDatabase()` to `removeRxDatabase()`
   - Renamed `plugin()` to `addRxPlugin()`
+  - Replaced key-compression implementation with [jsonschema-key-compression](https://github.com/pubkey/jsonschema-key-compression)
 
 Docs:
   - Removed examples for `require()` CommonJS loading

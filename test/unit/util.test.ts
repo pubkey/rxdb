@@ -11,50 +11,33 @@ import {
 
 describe('util.test.js', () => {
     describe('.fastUnsecureHash()', () => {
-        it('should work with a string', async () => {
+        it('should work with a string', () => {
             const hash = util.fastUnsecureHash('foobar');
             assert.strictEqual(typeof hash, 'number');
             assert.ok(hash > 0);
         });
-        it('should work on object', async () => {
+        it('should work on object', () => {
             const hash = util.fastUnsecureHash({
                 foo: 'bar'
             });
             assert.strictEqual(typeof hash, 'number');
             assert.ok(hash > 0);
         });
-        it('should get the same hash twice', async () => {
+        it('should get the same hash twice', () => {
             const str = util.randomCouchString(10);
             const hash = util.fastUnsecureHash(str);
             const hash2 = util.fastUnsecureHash(str);
             assert.strictEqual(hash, hash2);
         });
-        it('should work with a very large string', async () => {
+        it('should work with a very large string', () => {
             const str = util.randomCouchString(5000);
             const hash = util.fastUnsecureHash(str);
             assert.strictEqual(typeof hash, 'number');
             assert.ok(hash > 0);
         });
     });
-    describe('.numberToLetter()', () => {
-        it('1 letter', () => {
-            assert.strictEqual(util.numberToLetter(0), 'a');
-            assert.strictEqual(util.numberToLetter(1), 'b');
-            assert.strictEqual(util.numberToLetter(25), 'A');
-        });
-        it('2 letters', () => {
-            assert.strictEqual(util.numberToLetter(100), 'aT');
-            assert.strictEqual(util.numberToLetter(200), 'cB');
-            assert.strictEqual(util.numberToLetter(800), 'nX');
-        });
-        it('many letters', () => {
-            assert.strictEqual(util.numberToLetter(10000), 'b7z');
-            assert.strictEqual(util.numberToLetter(100000), 'DSi');
-            assert.strictEqual(util.numberToLetter(10000000), '2oMX');
-        });
-    });
     describe('.sortObject()', () => {
-        it('should sort when regex in object', async () => {
+        it('should sort when regex in object', () => {
             const obj = {
                 _id: {},
                 color: {
