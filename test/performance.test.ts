@@ -6,18 +6,22 @@ import BroadcastChannel from 'broadcast-channel';
 import convertHrtime from 'convert-hrtime';
 import * as schemas from './helper/schemas';
 import * as schemaObjects from './helper/schema-objects';
+import { mergeMap } from 'rxjs/operators';
 
 import * as util from '../dist/lib/util';
 
 // we do a custom build without dev-plugins,
 // like you would use in production
-import RxDB from '../plugins/core';
-RxDB.plugin(require('pouchdb-adapter-memory'));
-import NoValidate from '../plugins/no-validate';
-RxDB.plugin(NoValidate);
-import KeyCompression from '../plugins/key-compression';
-import { mergeMap } from 'rxjs/operators';
-RxDB.plugin(KeyCompression);
+import {
+    createRxDatabase,
+    addRxPlugin
+} from '../plugins/core';
+addRxPlugin(require('pouchdb-adapter-memory'));
+import { RxDBNoValidatePlugin } from '../plugins/no-validate';
+addRxPlugin(RxDBNoValidatePlugin);
+import { RxDBKeyCompressionPlugin } from '../plugins/key-compression';
+addRxPlugin(RxDBKeyCompressionPlugin);
+
 
 const elapsedTime = (before: any) => {
     try {
@@ -92,7 +96,7 @@ describe('performance.test.js', function () {
 
         const startTime = nowTime();
         for (let i = 0; i < benchmark.spawnDatabases.amount; i++) {
-            const db = await RxDB.create({
+            const db = await createRxDatabase({
                 name: util.randomCouchString(10),
                 queryChangeDetection: true,
                 adapter: 'memory'
@@ -118,7 +122,7 @@ describe('performance.test.js', function () {
         await AsyncTestUtil.wait(1000);
     });
     it('insertDocuments', async () => {
-        const db = await RxDB.create({
+        const db = await createRxDatabase({
             name: util.randomCouchString(10),
             queryChangeDetection: true,
             adapter: 'memory'
@@ -157,7 +161,7 @@ describe('performance.test.js', function () {
     it('findDocuments', async () => {
         const dbName = util.randomCouchString(10);
         const schema = schemas.averageSchema();
-        const db = await RxDB.create({
+        const db = await createRxDatabase({
             name: dbName,
             queryChangeDetection: true,
             adapter: 'memory'
@@ -176,7 +180,7 @@ describe('performance.test.js', function () {
         );
         await db.destroy();
 
-        const db2 = await RxDB.create({
+        const db2 = await createRxDatabase({
             name: dbName,
             adapter: 'memory',
             queryChangeDetection: true,
@@ -203,7 +207,7 @@ describe('performance.test.js', function () {
 
     it('migrateDocuments', async () => {
         const name = util.randomCouchString(10);
-        const db = await RxDB.create({
+        const db = await createRxDatabase({
             name,
             queryChangeDetection: true,
             adapter: 'memory'
@@ -221,7 +225,7 @@ describe('performance.test.js', function () {
                 .map(docData => col.insert(docData))
         );
 
-        const db2 = await RxDB.create({
+        const db2 = await createRxDatabase({
             name,
             queryChangeDetection: true,
             adapter: 'memory',
@@ -254,7 +258,7 @@ describe('performance.test.js', function () {
     });
     it('writeWhileSubscribe', async () => {
         const name = util.randomCouchString(10);
-        const db = await RxDB.create({
+        const db = await createRxDatabase({
             name,
             queryChangeDetection: true,
             adapter: 'memory'
