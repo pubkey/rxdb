@@ -26,8 +26,7 @@ import {
     createRxSchema
 } from './rx-schema';
 import {
-    createChangeEvent,
-    RxChangeEvent
+    RxChangeEvent, createInsertEvent, RxChangeEventInsert, RxChangeEventUpdate, RxChangeEventDelete
 } from './rx-change-event';
 import {
     newRxError,
@@ -75,9 +74,6 @@ import {
     RxQuery,
     RxDocument,
     SyncOptionsGraphQL,
-    RxChangeEventUpdate,
-    RxChangeEventInsert,
-    RxChangeEventRemove,
     RxDumpCollection,
     RxDumpCollectionAny
 } from './types';
@@ -126,32 +122,30 @@ export class RxCollectionBase<
     /**
      * returns observable
      */
-    get $(): Observable<
-        RxChangeEventInsert<RxDocumentType> |
-        RxChangeEventUpdate<RxDocumentType> |
-        RxChangeEventRemove<RxDocumentType>
-    > {
+    get $(): Observable<RxChangeEvent> {
         return this._observable$ as any;
     }
     get insert$(): Observable<RxChangeEventInsert<RxDocumentType>> {
         return this.$.pipe(
-            filter(cE => cE.data.op === 'INSERT')
+            filter(cE => cE.operation === 'INSERT')
         ) as any;
     }
     get update$(): Observable<RxChangeEventUpdate<RxDocumentType>> {
         return this.$.pipe(
-            filter(cE => cE.data.op === 'UPDATE')
+            filter(cE => cE.operation === 'UPDATE')
         ) as any;
     }
-    get remove$(): Observable<RxChangeEventRemove<RxDocumentType>> {
+    get delete$(): Observable<RxChangeEventDelete<RxDocumentType>> {
         return this.$.pipe(
-            filter(cE => cE.data.op === 'REMOVE')
+            filter(cE => cE.operation === 'DELETE')
         ) as any;
     }
+
+    // TODO remove this, we only have doc-changes anyway
     get docChanges$() {
         if (!this.__docChanges$) {
             this.__docChanges$ = this.$.pipe(
-                filter(cEvent => ['INSERT', 'UPDATE', 'REMOVE'].includes(cEvent.data.op))
+                filter((cE: RxChangeEvent) => ['INSERT', 'UPDATE', 'DELETE'].includes(cE.operation))
             );
         }
         return this.__docChanges$;
@@ -215,18 +209,18 @@ export class RxCollectionBase<
         this._crypter = Crypter.create(this.database.password, this.schema);
 
         this._observable$ = this.database.$.pipe(
-            filter(event => (event as RxChangeEvent).data.col === this.name)
+            filter(event => (event as any).collectionName === this.name)
         );
         this._changeEventBuffer = createChangeEventBuffer(this as any);
 
         this._subs.push(
             this._observable$
                 .pipe(
-                    filter(cE => !cE.data.isLocal)
+                    filter((cE: RxChangeEvent<RxDocumentType>) => !cE.isLocal)
                 )
                 .subscribe(cE => {
                     // when data changes, send it to RxDocument in docCache
-                    const doc = this._docCache.get(cE.data.doc);
+                    const doc = this._docCache.get(cE.documentId);
                     if (doc) doc._handleChangeEvent(cE);
                 })
         );
@@ -376,12 +370,10 @@ export class RxCollectionBase<
                 return this._runHooks('post', 'insert', useJson, newDoc);
             }).then(() => {
                 // event
-                const emitEvent = createChangeEvent(
-                    'INSERT',
-                    this.database,
-                    this as any,
-                    newDoc,
-                    useJson
+                const emitEvent = createInsertEvent(
+                    this,
+                    useJson,
+                    newDoc
                 );
                 this.$emit(emitEvent);
 
@@ -411,7 +403,7 @@ export class RxCollectionBase<
             const insertDocs: RxDocumentType[] = docs.map(d => this._handleToPouch(d));
             const docsMap: Map<string, RxDocumentType> = new Map();
             docs.forEach(d => {
-                docsMap.set(d[this.schema.primaryPath] as any, d);
+                docsMap.set((d as any)[this.schema.primaryPath] as any, d);
             });
             return this.database.lockedRun(
                 () => this.pouch.bulkDocs(insertDocs)
@@ -428,10 +420,8 @@ export class RxCollectionBase<
 
                         // emit events
                         rxDocuments.forEach(doc => {
-                            const emitEvent = createChangeEvent(
-                                'INSERT',
-                                this.database,
-                                this as any,
+                            const emitEvent = createInsertEvent(
+                                this,
                                 doc,
                                 docsMap.get(doc.primary)
                             );
@@ -478,7 +468,7 @@ export class RxCollectionBase<
      * upserts to a RxDocument, uses atomicUpdate if document already exists
      */
     atomicUpsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
-        const primary = json[this.schema.primaryPath];
+        const primary = (json as any)[this.schema.primaryPath];
         if (!primary) {
             throw newRxError('COL4', {
                 data: json

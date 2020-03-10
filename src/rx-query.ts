@@ -46,6 +46,7 @@ import {
 import {
     createRxDocuments
 } from './rx-document-prototype-merge';
+import { RxChangeEvent } from './rx-change-event';
 
 let _queryCount = 0;
 const newQueryID = function (): number {
@@ -74,8 +75,6 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
                     mergeMap((docs: any[]) => {
                         return _ensureEqual(this as any)
                             .then((hasChanged: any) => {
-
-
                                 if (hasChanged) return false; // wait for next emit
                                 else return docs;
                             });
@@ -97,7 +96,7 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
 
 
             /**
-             * subscribe to the changeEvent-stream so it detects changed if it has subscribers
+             * subscribe to the changeEvent-stream so it detects changes if it has subscribers
              */
             const changeEvents$ = this.collection.docChanges$
                 .pipe(
@@ -595,9 +594,8 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
             mustReExec = true;
         } else {
             rxQuery._latestChangeEvent = (rxQuery as any).collection._changeEventBuffer.counter;
-            const runChangeEvents = (rxQuery as any).collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
+            const runChangeEvents: RxChangeEvent[] = (rxQuery as any).collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
             const changeResult = rxQuery._queryChangeDetector.runChangeDetection(runChangeEvents);
-
             if (!Array.isArray(changeResult) && changeResult) {
                 // could not calculate the new results, execute must be done
                 mustReExec = true;

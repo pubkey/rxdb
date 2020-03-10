@@ -11,13 +11,11 @@ import {
     newRxError
 } from '../rx-error';
 import {
-    createChangeEvent
-} from '../rx-change-event';
-import {
     RxDatabase,
     RxCollection,
     RxPlugin
 } from '../types';
+import { createInsertEvent } from '../rx-change-event';
 
 function dumpRxDatabase(
     this: RxDatabase,
@@ -143,15 +141,10 @@ function importDumpRxCollection(
     ).then(() => {
         docs.forEach((doc: any) => {
             // emit change events
-            const primary = doc[this.schema.primaryPath];
-            const emitEvent = createChangeEvent(
-                'INSERT',
-                this.database,
+            const emitEvent = createInsertEvent(
                 this,
-                null,
                 doc
             );
-            emitEvent.data.doc = primary;
             this.$emit(emitEvent);
         });
     });

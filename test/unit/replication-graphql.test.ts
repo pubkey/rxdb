@@ -210,7 +210,7 @@ describe('replication-graphql.test.js', () => {
                 const doc = await c.findOne().exec();
                 const docData = doc.toJSON();
                 const customRev = '2-fadae8ee3847d0748381f13988e95502-rxdb-from-graphql';
-                docData._id = docData.id;
+                docData['_id'] = docData.id;
                 docData._rev = customRev;
                 docData.name = 'Alice';
 

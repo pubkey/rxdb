@@ -40,7 +40,9 @@ export class QueryChangeDetector {
      * @return true if mustReExec, false if no change, array if calculated new results
      */
     runChangeDetection(changeEvents: RxChangeEvent[]): boolean | Object[] {
-        if (changeEvents.length === 0) return false;
+        if (changeEvents.length === 0) {
+            return false;
+        }
 
         // check if enabled
         if (!this.query.collection.database.queryChangeDetection) {
@@ -69,9 +71,10 @@ export class QueryChangeDetector {
      * @return true if mustReExec, false if no change, array if calculated new results
      */
     handleSingleChange(resultsData: any[], changeEvent: RxChangeEvent): boolean | any[] {
+
         let results = resultsData.slice(0); // copy to stay immutable
         const options = this.query.toJSON();
-        const docData = changeEvent.data.v;
+        const docData = changeEvent.documentData;
         const wasDocInResults = _isDocInResultData(this, docData, resultsData);
         const doesMatchNow = this.query.doesDocumentDataMatch(docData);
         const isFilled = !options.limit || (options.limit && resultsData.length >= options.limit);
@@ -79,9 +82,10 @@ export class QueryChangeDetector {
 
         if (DEBUG) {
             console.log('QueryChangeDetector.handleSingleChange()'); // TODO this should not be an error
-            _debugMessage(this, 'start', changeEvent.data.v, 'handleSingleChange()');
+            _debugMessage(this, 'start', changeEvent.documentData, 'handleSingleChange()');
+            console.log('changeEvent.operation:' + changeEvent.operation);
             console.log('changeEvent.data:');
-            console.dir(changeEvent.data);
+            console.dir(changeEvent.documentData);
             console.log('wasDocInResults: ' + wasDocInResults);
             console.log('doesMatchNow: ' + doesMatchNow);
             console.log('isFilled: ' + isFilled);
@@ -98,8 +102,9 @@ export class QueryChangeDetector {
 
         let _sortBefore: any = null;
         const sortBefore = () => {
-            if (_sortBefore === null)
+            if (_sortBefore === null) {
                 _sortBefore = _isSortedBefore(this, docData, results[0]);
+            }
             return _sortBefore;
         };
 
@@ -114,22 +119,22 @@ export class QueryChangeDetector {
 
         // console.log('## ' + results.length);
 
-        if (changeEvent.data.op === 'REMOVE') {
+        if (changeEvent.operation === 'DELETE') {
             // R1 (never matched)
-            if (!wasDocInResults && !doesMatchNow) {
+            if (!options.skip && !wasDocInResults && !doesMatchNow) {
                 _debugMessage(this, 'R1', docData);
                 return false;
             }
 
             // R2 sorted before got removed but results not filled
-            if (options.skip && doesMatchNow && sortBefore() && !isFilled) {
+            if (options.skip && !doesMatchNow && sortBefore() && !isFilled) {
                 _debugMessage(this, 'R2', docData);
                 results.shift();
                 return results;
             }
 
             // R3 (was in results and got removed)
-            if (doesMatchNow && wasDocInResults && !isFilled) {
+            if (!doesMatchNow && wasDocInResults && !isFilled) {
                 _debugMessage(this, 'R3', docData);
                 results = removeOneFromArrayIfMatches(results, doc => doc[this.primaryKey] === docData[this.primaryKey]);
                 return results;
@@ -142,7 +147,7 @@ export class QueryChangeDetector {
             }
 
             // R3.1 was in results and got removed, no limit, no skip
-            if (doesMatchNow && wasDocInResults && !options.limit && !options.skip) {
+            if (!doesMatchNow && wasDocInResults && !options.limit && !options.skip) {
                 _debugMessage(this, 'R3.1', docData);
                 results = removeOneFromArrayIfMatches(results, doc => doc[this.primaryKey] === docData[this.primaryKey]);
                 return results;
@@ -150,7 +155,7 @@ export class QueryChangeDetector {
 
 
             // R4 matching but after results got removed
-            if (doesMatchNow && options.limit && sortAfter()) {
+            if (!doesMatchNow && options.limit && sortAfter()) {
                 _debugMessage(this, 'R4', docData);
                 return false;
             }

@@ -20,7 +20,7 @@ import {
     filter,
     map
 } from 'rxjs/operators';
-import {RxJsonSchema} from '../../src/types';
+import { RxJsonSchema } from '../../src/types';
 
 let SpawnServer: any;
 if (config.platform.isNode()) {
@@ -202,7 +202,7 @@ config.parallel('query-change-detector.test.js', () => {
             describe('R2', () => {
                 it('R2: doc which was before first result was removed', async () => {
                     const col = await humansCollection.create(5);
-                    const q = col.find().skip(1).limit(10);
+                    const q = col.find().sort('passportId').skip(1).limit(10);
                     let results = await q.exec();
                     assert.strictEqual(results.length, 4);
                     assert.strictEqual(q._execOverDatabaseCount, 1);

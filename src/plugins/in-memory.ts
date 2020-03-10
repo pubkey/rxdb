@@ -135,7 +135,7 @@ export class InMemoryRxCollection<RxDocumentType, OrmMethods> extends RxCollecti
                 this._subs.push(
                     (this._observable$ as any).subscribe((cE: RxChangeEvent) => {
                         // when data changes, send it to RxDocument in docCache
-                        const doc = this._docCache.get(cE.data.doc);
+                        const doc = this._docCache.get(cE.documentId);
                         if (doc) doc._handleChangeEvent(cE);
                     })
                 );
@@ -197,7 +197,7 @@ export class InMemoryRxCollection<RxDocumentType, OrmMethods> extends RxCollecti
         });
     }
     $emit(changeEvent: RxChangeEvent) {
-        if ((this._changeEventBuffer as any).hasChangeWithRevision(changeEvent.data.v && changeEvent.data.v._rev))
+        if ((this._changeEventBuffer as any).hasChangeWithRevision(changeEvent.documentData && changeEvent.documentData._rev))
             return;
 
         (this._observable$ as any).next(changeEvent);

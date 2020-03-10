@@ -463,7 +463,7 @@ export function syncGraphQL(
                  */
                 const changeEventsSub = collection.$.subscribe(changeEvent => {
                     if (replicationState.isStopped()) return;
-                    const rev = changeEvent.data.v._rev;
+                    const rev = changeEvent.documentData._rev;
                     if (
                         rev &&
                         !wasRevisionfromPullReplication(

@@ -13,6 +13,7 @@ import AsyncTestUtil from 'async-test-util';
 import {
     first
 } from 'rxjs/operators';
+import { RxChangeEvent } from '../../src/rx-change-event';
 
 config.parallel('reactive-collection.test.js', () => {
     describe('.insert()', () => {
@@ -29,11 +30,11 @@ config.parallel('reactive-collection.test.js', () => {
                 });
 
                 c.insert(schemaObjects.human());
-                const changeEvent = await c.$.pipe(first()).toPromise();
+                const changeEvent: RxChangeEvent = await c.$.pipe(first()).toPromise() as any;
                 assert.strictEqual(changeEvent.constructor.name, 'RxChangeEvent');
-                assert.strictEqual(changeEvent.data.col, colName);
-                assert.strictEqual(typeof changeEvent.data.doc, 'string');
-                assert.ok(changeEvent.data.v);
+                assert.strictEqual(changeEvent.collectionName, colName);
+                assert.strictEqual(typeof changeEvent.documentId, 'string');
+                assert.ok(changeEvent.documentData);
                 db.destroy();
             });
         });
@@ -99,8 +100,8 @@ config.parallel('reactive-collection.test.js', () => {
         it('should only emit inserts', async () => {
             const c = await humansCollection.create(0);
 
-            const emitted: any[] = [];
-            c.insert$.subscribe(cE => emitted.push(cE));
+            const emitted: RxChangeEvent[] = [];
+            c.insert$.subscribe(cE => emitted.push(cE as any));
 
             await c.insert(schemaObjects.human());
             const doc = await c.insert(schemaObjects.human());
@@ -110,7 +111,7 @@ config.parallel('reactive-collection.test.js', () => {
             await c.insert(schemaObjects.human());
 
             await AsyncTestUtil.waitUntil(() => emitted.length === 4);
-            emitted.forEach(cE => assert.strictEqual(cE.data.op, 'INSERT'));
+            emitted.forEach(cE => assert.strictEqual(cE.operation, 'INSERT'));
             c.database.destroy();
         });
     });
@@ -118,8 +119,8 @@ config.parallel('reactive-collection.test.js', () => {
         it('should only emit updates', async () => {
             const c = await humansCollection.create(0);
 
-            const emitted: any[] = [];
-            c.update$.subscribe(cE => emitted.push(cE));
+            const emitted: RxChangeEvent[] = [];
+            c.update$.subscribe(cE => emitted.push(cE as any));
 
             const doc1 = await c.insert(schemaObjects.human());
             const doc2 = await c.insert(schemaObjects.human());
@@ -131,16 +132,16 @@ config.parallel('reactive-collection.test.js', () => {
             await doc2.atomicSet('firstName', 'foobar2');
 
             await AsyncTestUtil.waitUntil(() => emitted.length === 2);
-            emitted.forEach(cE => assert.strictEqual(cE.data.op, 'UPDATE'));
+            emitted.forEach(cE => assert.strictEqual(cE.operation, 'UPDATE'));
             c.database.destroy();
         });
     });
-    describe('.remove$', () => {
-        it('should only emit removes', async () => {
+    describe('.delete$', () => {
+        it('should only emit deletes', async () => {
             const c = await humansCollection.create(0);
 
-            const emitted: any[] = [];
-            c.remove$.subscribe(cE => emitted.push(cE));
+            const emitted: RxChangeEvent[] = [];
+            c.delete$.subscribe(cE => emitted.push(cE as any));
             await c.insert(schemaObjects.human());
             const doc1 = await c.insert(schemaObjects.human());
             const doc2 = await c.insert(schemaObjects.human());
@@ -150,7 +151,7 @@ config.parallel('reactive-collection.test.js', () => {
 
 
             await AsyncTestUtil.waitUntil(() => emitted.length === 2);
-            emitted.forEach(cE => assert.strictEqual(cE.data.op, 'REMOVE'));
+            emitted.forEach(cE => assert.strictEqual(cE.operation, 'DELETE'));
             c.database.destroy();
         });
     });

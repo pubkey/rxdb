@@ -16,8 +16,7 @@ import {
     pluginMissing
 } from './util';
 import {
-    createChangeEvent,
-    RxChangeEvent
+    RxChangeEvent, createUpdateEvent, createDeleteEvent
 } from './rx-change-event';
 import {
     newRxError,
@@ -71,22 +70,22 @@ export const basePrototype = {
     },
 
     _handleChangeEvent(this: RxDocument, changeEvent: RxChangeEvent) {
-        if (changeEvent.data.doc !== this.primary)
+        if (changeEvent.documentId !== this.primary)
             return;
 
         // ensure that new _rev is higher then current
-        const newRevNr = getHeightOfRevision(changeEvent.data.v._rev);
+        const newRevNr = getHeightOfRevision(changeEvent.documentData._rev);
         const currentRevNr = getHeightOfRevision(this._data._rev);
         if (currentRevNr > newRevNr) return;
 
-        switch (changeEvent.data.op) {
+        switch (changeEvent.operation) {
             case 'INSERT':
                 break;
             case 'UPDATE':
-                const newData = changeEvent.data.v;
+                const newData = changeEvent.documentData;
                 this._dataSync$.next(newData);
                 break;
-            case 'REMOVE':
+            case 'DELETE':
                 // remove from docCache to assure new upserted RxDocuments will be a new instance
                 this.collection._docCache.delete(this.primary);
                 this._deleted$.next(true);
@@ -322,12 +321,11 @@ export const basePrototype = {
                 newData._rev = ret.rev;
 
                 // emit event
-                const changeEvent = createChangeEvent(
-                    'UPDATE',
-                    this.collection.database,
+                const changeEvent = createUpdateEvent(
                     this.collection,
-                    this,
-                    newData
+                    newData,
+                    oldData,
+                    this
                 );
                 this.$emit(changeEvent);
 
@@ -385,13 +383,14 @@ export const basePrototype = {
                 return this.collection._pouchPut(deletedData);
             })
             .then(() => {
-                this.$emit(createChangeEvent(
-                    'REMOVE',
-                    this.collection.database,
-                    this.collection,
-                    this,
-                    this._data
-                ));
+                this.$emit(
+                    createDeleteEvent(
+                        this.collection,
+                        deletedData,
+                        this._data,
+                        this
+                    )
+                );
 
                 return this.collection._runHooks('post', 'remove', deletedData, this);
             })

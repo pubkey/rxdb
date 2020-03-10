@@ -13,6 +13,9 @@ Breaking:
   - Renamed `removeDatabase()` to `removeRxDatabase()`
   - Renamed `plugin()` to `addRxPlugin()`
   - Replaced key-compression implementation with [jsonschema-key-compression](https://github.com/pubkey/jsonschema-key-compression)
+  - Refactored `RxCollection`
+  - Creating a collection will no longer emit an `RxChangeEvent`
+  - Renamed `RxCollection.remove$()` to `RxCollection.delete$` to be equal to CRUD
 
 Docs:
   - Removed examples for `require()` CommonJS loading

@@ -15,9 +15,7 @@ import {
     createRxSchema
 } from './rx-schema';
 import {
-    isInstanceOf as isInstanceOfRxChangeEvent,
-    createChangeEvent,
-    changeEventfromJSON
+    isInstanceOf as isInstanceOfRxChangeEvent, RxChangeEventBroadcastChannelData
 } from './rx-change-event';
 import overwritable from './overwritable';
 import {
@@ -46,11 +44,7 @@ import {
 } from './rx-change-event';
 import {
     CollectionsOfDatabase,
-    RxChangeEventInsert,
-    RxChangeEventUpdate,
-    RxChangeEventRemove,
     PouchDBInstance,
-    RxChangeEventCollection,
     RxDatabase,
     RxCollectionCreator,
     RxJsonSchema,
@@ -96,12 +90,7 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
         return this.leaderElector.isLeader;
     }
 
-    get $(): Observable<
-        RxChangeEventInsert<any> |
-        RxChangeEventUpdate<any> |
-        RxChangeEventRemove<any> |
-        RxChangeEventCollection
-    > {
+    get $(): Observable<RxChangeEvent<any>> {
         return this.observable$;
     }
 
@@ -181,7 +170,7 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
         this.subject.next(changeEvent);
 
         // write to socket if event was created by this instance
-        if (changeEvent.data.it === this.token) {
+        if (changeEvent.databaseToken === this.token) {
             writeToSocket(this as any, changeEvent);
         }
     }
@@ -307,14 +296,6 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
                 }
             })
             .then(() => {
-                const cEvent = createChangeEvent(
-                    'RxDatabase.collection',
-                    this as any,
-                    col
-                );
-                cEvent.data.v = col.name;
-                cEvent.data.col = '_collections';
-
                 (this.collections as any)[args.name] = col;
 
                 if (!(this as any)[args.name]) {
@@ -322,8 +303,6 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
                         get: () => (this.collections as any)[args.name]
                     });
                 }
-
-                this.$emit(cEvent);
 
                 return col;
             });
@@ -562,13 +541,9 @@ export function writeToSocket(
         !changeEvent.isIntern() &&
         rxDatabase.broadcastChannel
     ) {
-
-        const socketDoc = changeEvent.toJSON();
-        delete socketDoc.db;
-        const sendOverChannel = {
-            db: rxDatabase.token, // database-token
-            st: rxDatabase.storageToken, // storage-token
-            d: socketDoc
+        const sendOverChannel: RxChangeEventBroadcastChannelData = {
+            cE: changeEvent.toJSON(),
+            storageToken: rxDatabase.storageToken as string
         };
         return rxDatabase.broadcastChannel
             .postMessage(sendOverChannel)
@@ -622,10 +597,18 @@ function _prepareBroadcastChannel(rxDatabase: RxDatabase) {
         'socket'
     );
     rxDatabase.broadcastChannel$ = new Subject();
-    rxDatabase.broadcastChannel.onmessage = msg => {
-        if (msg.st !== rxDatabase.storageToken) return; // not same storage-state
-        if (msg.db === rxDatabase.token) return; // same db
-        const changeEvent = changeEventfromJSON(msg.d);
+    rxDatabase.broadcastChannel.onmessage = (msg: RxChangeEventBroadcastChannelData) => {
+        if (msg.storageToken !== rxDatabase.storageToken) return; // not same storage-state
+        if (msg.cE.databaseToken === rxDatabase.token) return; // same db
+        const changeEvent = new RxChangeEvent(
+            msg.cE.operation,
+            msg.cE.documentId,
+            msg.cE.documentData,
+            msg.cE.databaseToken,
+            msg.cE.collectionName,
+            msg.cE.isLocal,
+            msg.cE.previousData
+        );
         (rxDatabase.broadcastChannel$ as any).next(changeEvent);
     };
 

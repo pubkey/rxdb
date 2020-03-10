@@ -11,7 +11,6 @@ import {
     basePrototype
 } from '../rx-document';
 import {
-    createChangeEvent,
     RxChangeEvent
 } from '../rx-change-event';
 import {
@@ -60,11 +59,11 @@ const _getChangeSub = (parent: any) => {
     if (!CHANGE_SUB_BY_PARENT.has(parent)) {
         const sub = parent.$
             .pipe(
-                filter(cE => (cE as RxChangeEvent).data.isLocal)
+                filter(cE => (cE as RxChangeEvent).isLocal)
             )
             .subscribe((cE: RxChangeEvent) => {
                 const docCache = _getDocCache(parent);
-                const doc = docCache.get(cE.data.doc);
+                const doc = docCache.get(cE.documentId);
                 if (doc) doc._handleChangeEvent(cE);
             });
         parent._subs.push(sub);
@@ -119,13 +118,13 @@ const RxLocalDocumentPrototype: any = {
         this: any,
         changeEvent: RxChangeEvent
     ) {
-        if (changeEvent.data.doc !== this.primary) return;
-        switch (changeEvent.data.op) {
+        if (changeEvent.documentId !== this.primary) return;
+        switch (changeEvent.operation) {
             case 'UPDATE':
-                const newData = clone(changeEvent.data.v);
+                const newData = clone(changeEvent.documentData);
                 this._dataSync$.next(clone(newData));
                 break;
-            case 'REMOVE':
+            case 'DELETE':
                 // remove from docCache to assure new upserted RxDocuments will be a new instance
                 const docCache = _getDocCache(this.parent);
                 docCache.delete(this.primary);
@@ -206,13 +205,15 @@ const RxLocalDocumentPrototype: any = {
                 newData._rev = res.rev;
                 this._dataSync$.next(newData);
 
-                const changeEvent = createChangeEvent(
+                const changeEvent = new RxChangeEvent(
                     'UPDATE',
-                    isRxDatabase(this.parent) ? this.parent : this.parent.database,
-                    isRxCollection(this.parent) ? this.parent : null,
-                    this,
+                    this.id,
                     clone(this._data),
-                    true
+                    isRxDatabase(this.parent) ? this.parent.token : this.parent.database.token,
+                    isRxCollection(this.parent) ? this.parent.name : null,
+                    true,
+                    null, // TODO emit old data
+                    this
                 );
                 this.$emit(changeEvent);
             });
@@ -223,13 +224,15 @@ const RxLocalDocumentPrototype: any = {
         return this.parentPouch.remove(removeId, this._data._rev)
             .then(() => {
                 _getDocCache(this.parent).delete(this.id);
-                const changeEvent = createChangeEvent(
-                    'REMOVE',
-                    isRxDatabase(this.parent) ? this.parent : this.parent.database,
-                    isRxCollection(this.parent) ? this.parent : null,
-                    this,
+                const changeEvent = new RxChangeEvent(
+                    'DELETE',
+                    this.id,
                     clone(this._data),
-                    true
+                    isRxDatabase(this.parent) ? this.parent.token : this.parent.database.token,
+                    isRxCollection(this.parent) ? this.parent.name : null,
+                    true,
+                    null,
+                    this
                 );
                 this.$emit(changeEvent);
             });

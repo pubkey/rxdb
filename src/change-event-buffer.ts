@@ -96,7 +96,7 @@ export class ChangeEventBuffer {
     reduceByLastOfDoc(changeEvents: RxChangeEvent[]): RxChangeEvent[] {
         const docEventMap: any = {};
         changeEvents.forEach(changeEvent => {
-            docEventMap[changeEvent.data.doc] = changeEvent;
+            docEventMap[changeEvent.documentId] = changeEvent;
         });
         return Object.values(docEventMap);
     }
@@ -112,7 +112,7 @@ export class ChangeEventBuffer {
         while (t > 0) {
             t--;
             const cE = this.buffer[t];
-            if (cE.data.v && cE.data.v._rev === revision) return true;
+            if (cE.documentData && cE.documentData._rev === revision) return true;
         }
         return false;
     }

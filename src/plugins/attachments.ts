@@ -2,7 +2,7 @@ import {
     map
 } from 'rxjs/operators';
 import {
-    createChangeEvent
+    createUpdateEvent
 } from './../rx-change-event';
 import {
     nextTick,
@@ -27,12 +27,11 @@ function ensureSchemaSupportsAttachments(doc: any) {
 function resyncRxDocument(doc: any) {
     return doc.collection.pouch.get(doc.primary).then((docData: any) => {
         const data = doc.collection._handleFromPouch(docData);
-        const changeEvent = createChangeEvent(
-            'UPDATE',
-            doc.collection.database,
+        const changeEvent = createUpdateEvent(
             doc.collection,
-            doc,
-            data
+            data,
+            null,
+            doc
         );
         doc.$emit(changeEvent);
     });
