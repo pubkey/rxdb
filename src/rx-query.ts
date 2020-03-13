@@ -47,6 +47,7 @@ import {
     createRxDocuments
 } from './rx-document-prototype-merge';
 import { RxChangeEvent } from './rx-change-event';
+import { calculateNewResults } from './event-reduce';
 
 let _queryCount = 0;
 const newQueryID = function (): number {
@@ -128,6 +129,7 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
 
     // contains the results as plain json-data
     public _resultsData: any = null;
+    public _resultsDataMap: Map<string, RxDocumentType> = new Map();
 
     // contains the results as RxDocument[]
     public _resultsDocs$: BehaviorSubject<any> = new BehaviorSubject(null);
@@ -226,7 +228,15 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
                 });
         }
 
-        return docsPromise;
+        return docsPromise.then(docs => {
+            this._resultsDataMap = new Map();
+            const primPath = this.collection.schema.primaryPath;
+            docs.forEach(doc => {
+                const id = doc[primPath];
+                this._resultsDataMap.set(id, doc);
+            });
+            return docs;
+        });
     }
 
     /**
@@ -339,6 +349,7 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
     /**
      * returns true if the document matches the query,
      * does not use the 'skip' and 'limit'
+     * // TODO this was moved to rx-storage
      */
     doesDocumentDataMatch(docData: RxDocumentType | any): boolean {
         // if doc is deleted, it cannot match
@@ -595,15 +606,23 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
         } else {
             rxQuery._latestChangeEvent = (rxQuery as any).collection._changeEventBuffer.counter;
             const runChangeEvents: RxChangeEvent[] = (rxQuery as any).collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
-            const changeResult = rxQuery._queryChangeDetector.runChangeDetection(runChangeEvents);
-            if (!Array.isArray(changeResult) && changeResult) {
+
+            const eventReduceResult = calculateNewResults(
+                rxQuery as any,
+                runChangeEvents
+            );
+
+            console.log('eventReduceResult:');
+            console.dir(runChangeEvents);
+            console.dir(eventReduceResult);
+
+            if (eventReduceResult.runFullQueryAgain) {
                 // could not calculate the new results, execute must be done
                 mustReExec = true;
-            }
-            if (Array.isArray(changeResult) && !deepEqual(changeResult, rxQuery._resultsData)) {
+            } else if (eventReduceResult.changed) {
                 // we got the new results, we do not have to re-execute, mustReExec stays false
                 ret = true; // true because results changed
-                rxQuery._setResultData(changeResult);
+                rxQuery._setResultData(eventReduceResult.newResults);
             }
         }
     }

@@ -26,7 +26,11 @@ import {
     createRxSchema
 } from './rx-schema';
 import {
-    RxChangeEvent, createInsertEvent, RxChangeEventInsert, RxChangeEventUpdate, RxChangeEventDelete
+    RxChangeEvent,
+    createInsertEvent,
+    RxChangeEventInsert,
+    RxChangeEventUpdate,
+    RxChangeEventDelete
 } from './rx-change-event';
 import {
     newRxError,

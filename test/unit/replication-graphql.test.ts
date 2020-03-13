@@ -1586,7 +1586,7 @@ describe('replication-graphql.test.js', () => {
                     name: util.randomCouchString(10),
                     adapter: 'memory',
                     multiInstance: true,
-                    queryChangeDetection: true,
+                    eventReduce: true,
                     ignoreDuplicate: true,
                     password: util.randomCouchString(10)
                 });
@@ -1628,7 +1628,7 @@ describe('replication-graphql.test.js', () => {
                     name: util.randomCouchString(10),
                     adapter: 'memory',
                     multiInstance: true,
-                    queryChangeDetection: true,
+                    eventReduce: true,
                     ignoreDuplicate: true,
                     password: util.randomCouchString(10)
                 });
@@ -1675,7 +1675,7 @@ describe('replication-graphql.test.js', () => {
                     name: util.randomCouchString(10),
                     adapter: 'memory',
                     multiInstance: true,
-                    queryChangeDetection: true,
+                    eventReduce: true,
                     ignoreDuplicate: true,
                     password: util.randomCouchString(10)
                 });
@@ -1726,7 +1726,7 @@ describe('replication-graphql.test.js', () => {
                     name: util.randomCouchString(10),
                     adapter: 'memory',
                     multiInstance: true,
-                    queryChangeDetection: true,
+                    eventReduce: true,
                     ignoreDuplicate: true,
                     password: util.randomCouchString(10)
                 });
@@ -1774,7 +1774,7 @@ describe('replication-graphql.test.js', () => {
                     name: util.randomCouchString(10),
                     adapter: 'memory',
                     multiInstance: false,
-                    queryChangeDetection: true,
+                    eventReduce: true,
                     password: util.randomCouchString(10)
                 });
                 const schema = clone(schemas.humanWithTimestampAllIndex);
@@ -1843,7 +1843,7 @@ describe('replication-graphql.test.js', () => {
                     name: dbName,
                     adapter: 'idb',
                     multiInstance: true,
-                    queryChangeDetection: true,
+                    eventReduce: true,
                     ignoreDuplicate: true
                 });
                 const collection = await db.collection({
@@ -1883,7 +1883,7 @@ describe('replication-graphql.test.js', () => {
                     name: dbName,
                     adapter: 'idb',
                     multiInstance: true,
-                    queryChangeDetection: true,
+                    eventReduce: true,
                     ignoreDuplicate: true
                 });
                 const collection2 = await db2.collection({

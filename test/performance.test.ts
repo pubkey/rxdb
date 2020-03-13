@@ -98,7 +98,7 @@ describe('performance.test.js', function () {
         for (let i = 0; i < benchmark.spawnDatabases.amount; i++) {
             const db = await createRxDatabase({
                 name: util.randomCouchString(10),
-                queryChangeDetection: true,
+                eventReduce: true,
                 adapter: 'memory'
             });
 
@@ -124,7 +124,7 @@ describe('performance.test.js', function () {
     it('insertDocuments', async () => {
         const db = await createRxDatabase({
             name: util.randomCouchString(10),
-            queryChangeDetection: true,
+            eventReduce: true,
             adapter: 'memory'
         });
         const col = await db.collection({
@@ -163,7 +163,7 @@ describe('performance.test.js', function () {
         const schema = schemas.averageSchema();
         const db = await createRxDatabase({
             name: dbName,
-            queryChangeDetection: true,
+            eventReduce: true,
             adapter: 'memory'
         });
         const col = await db.collection({
@@ -183,7 +183,7 @@ describe('performance.test.js', function () {
         const db2 = await createRxDatabase({
             name: dbName,
             adapter: 'memory',
-            queryChangeDetection: true,
+            eventReduce: true,
             ignoreDuplicate: true
         });
         const col2 = await db2.collection({
@@ -209,7 +209,7 @@ describe('performance.test.js', function () {
         const name = util.randomCouchString(10);
         const db = await createRxDatabase({
             name,
-            queryChangeDetection: true,
+            eventReduce: true,
             adapter: 'memory'
         });
         const col = await db.collection({
@@ -227,7 +227,7 @@ describe('performance.test.js', function () {
 
         const db2 = await createRxDatabase({
             name,
-            queryChangeDetection: true,
+            eventReduce: true,
             adapter: 'memory',
             ignoreDuplicate: true
         });
@@ -260,7 +260,7 @@ describe('performance.test.js', function () {
         const name = util.randomCouchString(10);
         const db = await createRxDatabase({
             name,
-            queryChangeDetection: true,
+            eventReduce: true,
             adapter: 'memory'
         });
         const col = await db.collection({

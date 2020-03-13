@@ -27,6 +27,21 @@ export type RxQueryObject<T = any> = keyof T & { [P in keyof T]?: T[P] | RxQuery
     $and: RxQueryObject<T>[];
 };
 
+
+/**
+ * @link https://github.com/pubkey/rxdb/issues/1972
+ */
+export type MangoQuerySortPart<RxDocType = any> = {
+    [k in keyof RxDocType | string]: 'asc' | 'desc';
+};
+
+export type MangoQuery<RxDocType = any> = {
+    selector: any;
+    limit?: number;
+    skip?: number;
+    sort?: MangoQuerySortPart<RxDocType>[]
+};
+
 export type RxQueryOP = 'find' | 'findOne';
 
 export declare class RxQuery<RxDocumentType = any, RxQueryResult = RxDocumentType | RxDocumentType[]> extends RxQueryBase<RxDocumentType, RxQueryResult> {

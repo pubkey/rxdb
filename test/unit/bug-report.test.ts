@@ -48,7 +48,7 @@ describe('bug-report.test.js', () => {
         const db = await createRxDatabase({
             name,
             adapter: 'memory',
-            queryChangeDetection: true,
+            eventReduce: true,
             ignoreDuplicate: true
         });
         // create a collection
@@ -72,7 +72,7 @@ describe('bug-report.test.js', () => {
         const dbInOtherTab = await createRxDatabase({
             name,
             adapter: 'memory',
-            queryChangeDetection: true,
+            eventReduce: true,
             ignoreDuplicate: true
         });
         // create a collection

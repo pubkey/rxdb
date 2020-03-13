@@ -94,6 +94,9 @@ export class ChangeEventBuffer {
      * this function reduces the events to the last ChangeEvent of each doc
      */
     reduceByLastOfDoc(changeEvents: RxChangeEvent[]): RxChangeEvent[] {
+        return changeEvents.slice(0);
+        // TODO the old implementation was wrong
+        // because it did not correctly reassigned the previousData of the changeevents
         const docEventMap: any = {};
         changeEvents.forEach(changeEvent => {
             docEventMap[changeEvent.documentId] = changeEvent;
@@ -124,6 +127,6 @@ export class ChangeEventBuffer {
 
 export function createChangeEventBuffer(
     collection: RxCollection
-    ) {
+) {
     return new ChangeEventBuffer(collection);
 }

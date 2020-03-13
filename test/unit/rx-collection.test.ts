@@ -516,9 +516,11 @@ config.parallel('rx-collection.test.js', () => {
                         const docData = schemaObjects.simpleHuman();
 
                         const docs = await c.find().exec();
+                        console.dir(docs.map(d => d.toJSON()));
                         assert.strictEqual(docs.length, 0);
                         await c.insert(docData);
                         const docs2 = await c.find().exec();
+                        console.dir(docs2.map(d => d.toJSON()));
                         assert.strictEqual(docs2.length, 1);
                         c.database.destroy();
                     });

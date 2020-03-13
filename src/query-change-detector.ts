@@ -45,7 +45,7 @@ export class QueryChangeDetector {
         }
 
         // check if enabled
-        if (!this.query.collection.database.queryChangeDetection) {
+        if (!this.query.collection.database.eventReduce) {
             return true;
         }
 
@@ -209,7 +209,6 @@ export class QueryChangeDetector {
 
         // if no optimisation-algo matches, return mustReExec:true
         _debugMessage(this, 'NO_MATCH', docData);
-
         return true;
     }
 }

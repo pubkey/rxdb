@@ -40,3 +40,7 @@ export {
 export {
     RxChangeEvent
 } from './rx-change-event';
+
+export {
+    RxStoragePouchDb
+} from './rx-storage-pouchdb';

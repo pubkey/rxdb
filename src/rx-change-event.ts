@@ -4,7 +4,8 @@
  */
 
 import {
-    WriteOperation
+    WriteOperation,
+    ChangeEvent as EventReduceChangeEvent
 } from 'event-reduce-js';
 
 import {
@@ -43,6 +44,14 @@ export class RxChangeEvent<DocType = any> {
         public readonly rxDocument?: RxDocument<DocType>
     ) { }
 
+    isIntern(): boolean {
+        if (this.collectionName && this.collectionName.charAt(0) === '_') {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     toJSON(): RxChangeEventJson<DocType> {
         const ret: RxChangeEventJson<DocType> = {
             operation: this.operation,
@@ -56,11 +65,29 @@ export class RxChangeEvent<DocType = any> {
         return ret;
     }
 
-    isIntern(): boolean {
-        if (this.collectionName && this.collectionName.charAt(0) === '_') {
-            return true;
-        } else {
-            return false;
+    toEventReduceChangeEvent(): EventReduceChangeEvent<DocType> {
+        switch (this.operation) {
+            case 'INSERT':
+                return {
+                    operation: this.operation,
+                    id: this.documentId,
+                    doc: this.documentData,
+                    previous: null
+                };
+            case 'UPDATE':
+                return {
+                    operation: this.operation,
+                    id: this.documentId,
+                    doc: this.documentData,
+                    previous: this.previousData ? this.previousData : 'UNKNOWN'
+                };
+            case 'DELETE':
+                return {
+                    operation: this.operation,
+                    id: this.documentId,
+                    doc: null,
+                    previous: this.previousData as DocType
+                };
         }
     }
 }
@@ -109,15 +136,18 @@ export function createInsertEvent<RxDocumentType>(
     docData: RxDocumentType,
     doc?: RxDocument<RxDocumentType>
 ): RxChangeEvent<RxDocumentType> {
-    return new RxChangeEvent<RxDocumentType>(
+    const ret = new RxChangeEvent<RxDocumentType>(
         'INSERT',
         (docData as any)[collection.schema.primaryPath],
         docData,
         collection.database.token,
         collection.name,
         false,
+        null,
         doc
     );
+    return ret;
+
 }
 
 export function createUpdateEvent<RxDocumentType>(

@@ -1,6 +1,7 @@
 import './unit/init.test.js';
 import './unit/util.test.js';
 import './unit/pouch-db-integration.test.js';
+import './unit/rx-storage-pouchdb.test.js';
 import './unit/adapter-check.test.js';
 import './unit/instance-of-check.test.js';
 import './unit/rx-schema.test.js';

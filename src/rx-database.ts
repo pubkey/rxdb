@@ -72,7 +72,7 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
         public adapter: any,
         public password: any,
         public multiInstance: boolean,
-        public queryChangeDetection: boolean = false,
+        public eventReduce: boolean = false,
         public options: any = {},
         public pouchSettings: PouchSettings
     ) {
@@ -648,7 +648,7 @@ export function createRxDatabase<Collections = { [key: string]: RxCollection }>(
     adapter,
     password,
     multiInstance = true,
-    queryChangeDetection = false,
+    eventReduce = false,
     ignoreDuplicate = false,
     options = {},
     pouchSettings = {}
@@ -691,7 +691,7 @@ export function createRxDatabase<Collections = { [key: string]: RxCollection }>(
         adapter,
         password,
         multiInstance,
-        queryChangeDetection,
+        eventReduce,
         options,
         pouchSettings
     );

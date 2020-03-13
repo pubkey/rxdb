@@ -25,7 +25,7 @@ import {
 
 export class RxSchema<T = any> {
     public indexes: string[][];
-    public primaryPath: keyof T;
+    public primaryPath: string;
     public finalFields: string[];
 
     constructor(
@@ -46,8 +46,8 @@ export class RxSchema<T = any> {
             .filter((elem: any, pos: any, arr: any) => arr.indexOf(elem) === pos); // unique;
 
         // add primary to schema if not there (if _id)
-        if (!this.jsonID.properties[this.primaryPath]) {
-            this.jsonID.properties[this.primaryPath] = {
+        if (!(this.jsonID.properties as any)[this.primaryPath]) {
+            (this.jsonID.properties as any)[this.primaryPath] = {
                 type: 'string',
                 minLength: 1
             };
@@ -243,12 +243,12 @@ export function getIndexes<T = any>(
  * returns the primary path of a jsonschema
  * @return primaryPath which is _id if none defined
  */
-export function getPrimary<T = any>(jsonID: RxJsonSchema<T>): keyof T {
+export function getPrimary<T = any>(jsonID: RxJsonSchema<T>): string {
     const ret = Object.keys(jsonID.properties)
         .filter(key => (jsonID as any).properties[key].primary)
         .shift();
-    if (!ret) return '_id' as keyof T;
-    else return ret as keyof T;
+    if (!ret) return '_id';
+    else return ret;
 }
 
 /**

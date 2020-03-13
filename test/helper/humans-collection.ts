@@ -26,7 +26,7 @@ export async function create(
         name: util.randomCouchString(10),
         adapter: 'memory',
         multiInstance,
-        queryChangeDetection: true,
+        eventReduce: true,
         ignoreDuplicate: true
     });
 
@@ -55,7 +55,7 @@ export async function createBySchema<RxDocumentType = {}>(
         name: util.randomCouchString(10),
         adapter: 'memory',
         multiInstance: true,
-        queryChangeDetection: true,
+        eventReduce: true,
         ignoreDuplicate: true
     });
 
@@ -79,7 +79,7 @@ export async function createAttachments(
         name: util.randomCouchString(10),
         adapter: 'memory',
         multiInstance,
-        queryChangeDetection: true,
+        eventReduce: true,
         ignoreDuplicate: true
     });
 
@@ -116,7 +116,7 @@ export async function createEncryptedAttachments(
         password: 'foooooobaaaar',
         adapter: 'memory',
         multiInstance,
-        queryChangeDetection: true,
+        eventReduce: true,
         ignoreDuplicate: true
     });
 
@@ -150,7 +150,7 @@ export async function createNoCompression(
     const db = await createRxDatabase<{ [prop: string]: RxCollection<schemaObjects.HumanDocumentType> }>({
         name: util.randomCouchString(10),
         adapter: 'memory',
-        queryChangeDetection: true,
+        eventReduce: true,
         ignoreDuplicate: true
     });
     const schemaJSON = clone(schemas.human);
@@ -180,7 +180,7 @@ export async function createAgeIndex(
     const db = await createRxDatabase<{ humana: RxCollection<schemaObjects.HumanDocumentType> }>({
         name: util.randomCouchString(10),
         adapter: 'memory',
-        queryChangeDetection: true,
+        eventReduce: true,
         ignoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
@@ -218,7 +218,7 @@ export async function multipleOnSameDB(
     }>({
         name: util.randomCouchString(10),
         adapter: 'memory',
-        queryChangeDetection: true,
+        eventReduce: true,
         ignoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
@@ -260,7 +260,7 @@ export async function createNested(
     const db = await createRxDatabase<{ nestedhuman: RxCollection<schemaObjects.NestedHumanDocumentType> }>({
         name: util.randomCouchString(10),
         adapter,
-        queryChangeDetection: true,
+        eventReduce: true,
         ignoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
@@ -289,7 +289,7 @@ export async function createDeepNested(
     const db = await createRxDatabase<{ nestedhuman: RxCollection<schemaObjects.DeepNestedHumanDocumentType> }>({
         name: util.randomCouchString(10),
         adapter,
-        queryChangeDetection: true,
+        eventReduce: true,
     });
     // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection<schemaObjects.DeepNestedHumanDocumentType>({
@@ -316,7 +316,7 @@ export async function createEncrypted(
     const db = await createRxDatabase<{ encryptedhuman: RxCollection<schemaObjects.EncryptedHumanDocumentType> }>({
         name: util.randomCouchString(10),
         adapter: 'memory',
-        queryChangeDetection: true,
+        eventReduce: true,
         password: util.randomCouchString(10)
     });
     // setTimeout(() => db.destroy(), dbLifetime);
@@ -348,7 +348,7 @@ export async function createMultiInstance(
         adapter: 'memory',
         password,
         multiInstance: true,
-        queryChangeDetection: true,
+        eventReduce: true,
         ignoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
@@ -376,7 +376,7 @@ export async function createPrimary(
         name,
         adapter: 'memory',
         multiInstance: true,
-        queryChangeDetection: true,
+        eventReduce: true,
         ignoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
@@ -405,7 +405,7 @@ export async function createHumanWithTimestamp(
         name,
         adapter: 'memory',
         multiInstance: true,
-        queryChangeDetection: true,
+        eventReduce: true,
         ignoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
@@ -447,7 +447,7 @@ export async function createMigrationCollection(
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.SimpleHumanAgeDocumentType> }>({
         name,
         adapter: 'memory',
-        queryChangeDetection: true,
+        eventReduce: true,
         ignoreDuplicate: true
     });
     const col = await db.collection<schemaObjects.SimpleHumanAgeDocumentType>({
@@ -468,7 +468,7 @@ export async function createMigrationCollection(
     const db2 = await createRxDatabase<{ human: RxCollection<schemaObjects.SimpleHumanV3DocumentType> }>({
         name,
         adapter: 'memory',
-        queryChangeDetection: true,
+        eventReduce: true,
         ignoreDuplicate: true
     });
     const col2 = await db2.collection<schemaObjects.SimpleHumanV3DocumentType>({
@@ -490,7 +490,7 @@ export async function createRelated(
         name,
         adapter: 'memory',
         multiInstance: true,
-        queryChangeDetection: true,
+        eventReduce: true,
         ignoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
@@ -517,7 +517,7 @@ export async function createRelatedNested(
         name,
         adapter: 'memory',
         multiInstance: true,
-        queryChangeDetection: true,
+        eventReduce: true,
         ignoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);

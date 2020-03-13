@@ -450,11 +450,14 @@ config.parallel('rx-query.test.js', () => {
 
             await col.insert(addDoc);
             assert.strictEqual(q.collection._changeEventBuffer.counter, 3);
+
+            console.log('---- 1');
             assert.strictEqual(q._latestChangeEvent, 2);
 
             await util.promiseWait(1);
             results = await q.exec();
             assert.strictEqual(results.length, 1);
+            console.log('---- 2');
             assert.strictEqual(q._execOverDatabaseCount, 2);
 
             col.database.destroy();
@@ -498,20 +501,31 @@ config.parallel('rx-query.test.js', () => {
             const query = col.findOne(docData.passportId);
             query.$.subscribe(data => emitted.push(data.toJSON()));
 
+            console.log('1');
+
             await AsyncTestUtil.waitUntil(() => emitted.length === 1);
             assert.strictEqual(query._execOverDatabaseCount, 1);
+
+            console.log('2');
 
             const doc = await query.exec();
             assert.ok(doc);
             assert.strictEqual(query._execOverDatabaseCount, 1);
 
+            console.log('3');
+
             await col.upsert(otherData());
             await AsyncTestUtil.waitUntil(() => emitted.length === 2);
             assert.strictEqual(query._execOverDatabaseCount, 1);
 
+            console.log('4');
+
             await col.atomicUpsert(otherData());
             await AsyncTestUtil.waitUntil(() => emitted.length === 3);
             assert.strictEqual(query._execOverDatabaseCount, 1);
+
+
+            console.log('5');
 
             await Promise.all(
                 new Array(2)
@@ -566,7 +580,7 @@ config.parallel('rx-query.test.js', () => {
             const schema = schemas.averageSchema();
             const db = await createRxDatabase({
                 name: dbName,
-                queryChangeDetection: true,
+                eventReduce: true,
                 adapter: 'memory'
             });
             const col = await db.collection({
@@ -586,7 +600,7 @@ config.parallel('rx-query.test.js', () => {
             const db2 = await createRxDatabase({
                 name: dbName,
                 adapter: 'memory',
-                queryChangeDetection: true,
+                eventReduce: true,
                 ignoreDuplicate: true
             });
             const col2 = await db2.collection({
@@ -1335,7 +1349,7 @@ config.parallel('rx-query.test.js', () => {
             const db = await createRxDatabase({
                 name,
                 adapter: 'memory',
-                queryChangeDetection: true,
+                eventReduce: true,
                 ignoreDuplicate: true
             });
             // create a collection
@@ -1401,7 +1415,7 @@ config.parallel('rx-query.test.js', () => {
             const db = await createRxDatabase({
                 name: util.randomCouchString(10),
                 adapter: 'memory',
-                queryChangeDetection: true,
+                eventReduce: true,
                 ignoreDuplicate: true
             });
 
