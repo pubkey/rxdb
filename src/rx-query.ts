@@ -25,10 +25,6 @@ import {
     pluginMissing
 } from './util';
 import {
-    create as createQueryChangeDetector,
-    QueryChangeDetector
-} from './query-change-detector';
-import {
     newRxError,
     newRxTypeError
 } from './rx-error';
@@ -61,7 +57,6 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
         public queryObj: any,
         public collection: RxCollection<RxDocumentType>
     ) {
-        this._queryChangeDetector = createQueryChangeDetector(this as any);
         if (!queryObj) queryObj = _getDefaultQuery(this.collection);
         this.mquery = createMQuery(queryObj);
     }
@@ -133,8 +128,6 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
 
     // contains the results as RxDocument[]
     public _resultsDocs$: BehaviorSubject<any> = new BehaviorSubject(null);
-
-    public _queryChangeDetector: QueryChangeDetector;
 
     /**
      * counts how often the execution on the whole db was done
@@ -606,16 +599,10 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
         } else {
             rxQuery._latestChangeEvent = (rxQuery as any).collection._changeEventBuffer.counter;
             const runChangeEvents: RxChangeEvent[] = (rxQuery as any).collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
-
             const eventReduceResult = calculateNewResults(
                 rxQuery as any,
                 runChangeEvents
             );
-
-            console.log('eventReduceResult:');
-            console.dir(runChangeEvents);
-            console.dir(eventReduceResult);
-
             if (eventReduceResult.runFullQueryAgain) {
                 // could not calculate the new results, execute must be done
                 mustReExec = true;

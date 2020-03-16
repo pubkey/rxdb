@@ -62,8 +62,6 @@ export function calculateNewResults<RxDocumentType>(
     rxQuery: RxQuery<RxDocumentType>,
     rxChangeEvents: RxChangeEvent<RxDocumentType>[]
 ): EventReduceResult<RxDocumentType> {
-    console.log('calculateNewResults()');
-    console.dir(rxChangeEvents.map(cE => cE.toEventReduceChangeEvent()));
     if (!rxQuery.collection.database.eventReduce) {
         return {
             runFullQueryAgain: true
@@ -74,9 +72,6 @@ export function calculateNewResults<RxDocumentType>(
     const previousResultsMap: Map<string, RxDocumentType> = rxQuery._resultsDataMap;
     let changed: boolean = false;
 
-    console.log('previousResults:');
-    console.dir(previousResults);
-
     const foundNonOptimizeable = rxChangeEvents.find(cE => {
         const eventReduceEvent = cE.toEventReduceChangeEvent();
         const actionName: ActionName = calculateActionName({
@@ -85,11 +80,9 @@ export function calculateNewResults<RxDocumentType>(
             previousResults,
             keyDocumentMap: previousResultsMap
         });
-        console.log('actionName:', actionName);
         if (actionName === 'runFullQueryAgain') {
             return true;
         } else if (actionName !== 'doNothing') {
-            console.log('run change!');
             changed = true;
             runAction(
                 actionName,
@@ -106,8 +99,6 @@ export function calculateNewResults<RxDocumentType>(
             runFullQueryAgain: true,
         };
     } else {
-        console.log('ret results:');
-        console.dir(previousResults);
         return {
             runFullQueryAgain: false,
             changed,

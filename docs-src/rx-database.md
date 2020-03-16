@@ -13,7 +13,7 @@ const db = await createRxDatabase({
   adapter: 'idb',          // <- storage-adapter
   password: 'myPassword',     // <- password (optional)
   multiInstance: true,         // <- multiInstance (optional, default: true)
-  queryChangeDetection: false // <- queryChangeDetection (optional, default: false)
+  eventReduce: false // <- eventReduce (optional, default: true)
 });
 console.dir(db);
 ```
@@ -52,9 +52,9 @@ If you want to use encrypted fields in the collections of a database, you have t
 `(optional=true)`
 When you create more than one instance of the same database in a single javascript-runtime, you should set multiInstance to ```true```. This will enable the event-sharing between the two instances **serverless**. This should be set to `false` when you have single-instances like a single nodejs-process, a react-native-app, a cordova-app or a single-window electron-app.
 
-### queryChangeDetection
-`(optional=false)`
-If set to true, this enables the [QueryChangeDetection](./query-change-detection.md) for the database.
+### eventReduce
+`(optional=true)`
+If set to true, this enables the [EventReduce Algorithm](./event-reduce.md) for the database.
 
 ### ignoreDuplicate
 `(optional=false)`

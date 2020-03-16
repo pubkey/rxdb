@@ -8,7 +8,7 @@ import { RxStoragePouchDb } from '../../dist/lib/rx-storage-pouchdb';
 
 
 config.parallel('rx-storage-pouchdb.test.js', () => {
-    config.parallel('.getSortComparator()', () => {
+    describe('.getSortComparator()', () => {
         it('should sort in the correct order', async () => {
             const col = await humansCollection.create(1);
             const comparator = RxStoragePouchDb.getSortComparator(
@@ -31,7 +31,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
             col.database.destroy();
         });
     });
-    config.parallel('.getQueryMatcher()', () => {
+    describe('.getQueryMatcher()', () => {
         it('should match the right docs', async () => {
             const col = await humansCollection.create(1);
 

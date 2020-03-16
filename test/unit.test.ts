@@ -14,7 +14,6 @@ import './unit/temporary-document.test.js';
 import './unit/change-event-buffer.test.js';
 import './unit/rx-query.test.js';
 import './unit/idle-queue.test.js';
-import './unit/query-change-detector.test.js';
 import './unit/reactive-collection.test.js';
 import './unit/reactive-query.test.js';
 import './unit/reactive-document.test.js';

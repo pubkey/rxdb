@@ -3,9 +3,6 @@
  * it can be used as standalone but is also used in the batteries-included main-export
  */
 
-export {
-    QueryChangeDetector
-} from './query-change-detector';
 export { addRxPlugin } from './plugin';
 export {
     PouchDB

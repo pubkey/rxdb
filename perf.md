@@ -493,6 +493,8 @@ Combined best of many runs
 
 ## Before event-reduce-js
 
+BEFORE:
+
 {
   "spawnDatabases": {
     "amount": 1000,
@@ -549,3 +551,62 @@ Combined best of many runs
     "total": 10567.352254
   }
 }
+
+AFTER:
+
+{
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 10531.091315,
+    "perInstance": 10.531091315
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 8711.215478,
+    "perBlock": 4.355607739
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 1252.836043,
+    "perDocument": 0.1252836043
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 3284.157926
+  },
+  "writeWhileSubscribe": {
+    "amount": 1000,
+    "total": 9799.769447
+  }
+}
+
+{
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 10312.83543,
+    "perInstance": 10.31283543
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 7101.903463,
+    "perBlock": 3.5509517314999997
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 2265.439954,
+    "perDocument": 0.2265439954
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 4057.848007
+  },
+  "writeWhileSubscribe": {
+    "amount": 1000,
+    "total": 10762.854954
+  }
+}
+

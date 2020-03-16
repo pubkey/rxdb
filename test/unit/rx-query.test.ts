@@ -409,7 +409,7 @@ config.parallel('rx-query.test.js', () => {
         it('should execOverDatabase when still subscribed and changeEvent comes in', async () => {
             const col = await humansCollection.create(2);
 
-            // it is assumed that this query can never handled by the QueryChangeDetector
+            // it is assumed that this query can never handled by event-reduce
             const query = col.find().sort('-passportId').limit(1);
 
             const fired: any[] = [];
@@ -434,11 +434,13 @@ config.parallel('rx-query.test.js', () => {
             sub1.unsubscribe();
             col.database.destroy();
         });
-        it('reusing exec should execOverDatabase when change happened', async () => {
+        it('reusing exec should execOverDatabase when change happened that cannot be optimized', async () => {
             const col = await humansCollection.create(2);
 
-            // it is assumed that this query can never handled by the QueryChangeDetector
-            const q = col.find().where('firstName').ne('Alice').limit(1).skip(1);
+            // it is assumed that this query can never handled by event-reduce
+            const q = col.find()
+                .where('firstName').ne('AliceFoobar')
+                .skip(1);
 
             let results = await q.exec();
             assert.strictEqual(results.length, 1);
@@ -446,18 +448,19 @@ config.parallel('rx-query.test.js', () => {
             assert.strictEqual(q._latestChangeEvent, 2);
 
             const addDoc = schemaObjects.human();
-            addDoc.firstName = 'Alice';
+
+            // set _id to first value to force a re-exec-over database
+            addDoc['_id'] = '1-aaaaaaaaaaaaaaaaaaaaaaaaaaa';
+            addDoc.firstName = 'NotAliceFoobar';
 
             await col.insert(addDoc);
             assert.strictEqual(q.collection._changeEventBuffer.counter, 3);
 
-            console.log('---- 1');
             assert.strictEqual(q._latestChangeEvent, 2);
 
             await util.promiseWait(1);
             results = await q.exec();
-            assert.strictEqual(results.length, 1);
-            console.log('---- 2');
+            assert.strictEqual(results.length, 2);
             assert.strictEqual(q._execOverDatabaseCount, 2);
 
             col.database.destroy();
@@ -501,31 +504,20 @@ config.parallel('rx-query.test.js', () => {
             const query = col.findOne(docData.passportId);
             query.$.subscribe(data => emitted.push(data.toJSON()));
 
-            console.log('1');
-
             await AsyncTestUtil.waitUntil(() => emitted.length === 1);
             assert.strictEqual(query._execOverDatabaseCount, 1);
-
-            console.log('2');
 
             const doc = await query.exec();
             assert.ok(doc);
             assert.strictEqual(query._execOverDatabaseCount, 1);
 
-            console.log('3');
-
             await col.upsert(otherData());
             await AsyncTestUtil.waitUntil(() => emitted.length === 2);
             assert.strictEqual(query._execOverDatabaseCount, 1);
 
-            console.log('4');
-
             await col.atomicUpsert(otherData());
             await AsyncTestUtil.waitUntil(() => emitted.length === 3);
             assert.strictEqual(query._execOverDatabaseCount, 1);
-
-
-            console.log('5');
 
             await Promise.all(
                 new Array(2)
@@ -882,8 +874,6 @@ config.parallel('rx-query.test.js', () => {
             // further investigation needed
             return;
             /*
-
-            // QueryChangeDetector.enable();
             const schema = {
                 primaryPath: '_id',
                 keyCompression: false,
