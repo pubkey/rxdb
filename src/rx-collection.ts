@@ -331,7 +331,6 @@ export class RxCollectionBase<
         ).then((docsCompressed: any) => {
             const docs = docsCompressed.docs
                 .map((doc: any) => this._handleFromPouch(doc, noDecrypt));
-
             return docs;
         });
     }

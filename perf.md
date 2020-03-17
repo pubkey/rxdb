@@ -558,27 +558,27 @@ AFTER:
   "spawnDatabases": {
     "amount": 1000,
     "collections": 5,
-    "total": 10531.091315,
-    "perInstance": 10.531091315
+    "total": 13084.705562,
+    "perInstance": 13.084705562
   },
   "insertDocuments": {
     "blocks": 2000,
     "blockSize": 5,
-    "total": 8711.215478,
-    "perBlock": 4.355607739
+    "total": 8999.905236,
+    "perBlock": 4.499952618
   },
   "findDocuments": {
     "amount": 10000,
-    "total": 1252.836043,
-    "perDocument": 0.1252836043
+    "total": 1645.998414,
+    "perDocument": 0.1645998414
   },
   "migrateDocuments": {
     "amount": 1000,
-    "total": 3284.157926
+    "total": 4212.80011
   },
   "writeWhileSubscribe": {
     "amount": 1000,
-    "total": 9799.769447
+    "total": 9041.238585
   }
 }
 
@@ -586,27 +586,27 @@ AFTER:
   "spawnDatabases": {
     "amount": 1000,
     "collections": 5,
-    "total": 10312.83543,
-    "perInstance": 10.31283543
+    "total": 12290.284759,
+    "perInstance": 12.290284759
   },
   "insertDocuments": {
     "blocks": 2000,
     "blockSize": 5,
-    "total": 7101.903463,
-    "perBlock": 3.5509517314999997
+    "total": 10075.885535,
+    "perBlock": 5.0379427675
   },
   "findDocuments": {
     "amount": 10000,
-    "total": 2265.439954,
-    "perDocument": 0.2265439954
+    "total": 1613.295623,
+    "perDocument": 0.1613295623
   },
   "migrateDocuments": {
     "amount": 1000,
-    "total": 4057.848007
+    "total": 4003.478441
   },
   "writeWhileSubscribe": {
     "amount": 1000,
-    "total": 10762.854954
+    "total": 8911.231049
   }
 }
 
