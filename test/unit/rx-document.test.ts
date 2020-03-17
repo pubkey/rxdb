@@ -542,7 +542,7 @@ config.parallel('rx-document.test.js', () => {
         it('should get the documents data as json', async () => {
             const c = await humansCollection.create(1);
             const doc: any = await c.findOne().exec();
-            const json = doc.toJSON();
+            const json = doc.toJSON(true);
 
             assert.ok(json.passportId);
             assert.ok(json.firstName);

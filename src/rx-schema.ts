@@ -192,6 +192,7 @@ export class RxSchema<T = any> {
     doKeyCompression(): boolean {
         return this.jsonID.keyCompression as boolean;
     }
+
     public getDocumentPrototype() {
         if (!this._getDocumentPrototype) {
             const proto = {};

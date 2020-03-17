@@ -196,7 +196,7 @@ export const basePrototype = {
         return valueObj;
     },
 
-    toJSON(this: RxDocument, withRevAndAttachments = true) {
+    toJSON(this: RxDocument, withRevAndAttachments = false) {
         const data = clone(this._data);
         if (!withRevAndAttachments) {
             delete data._rev;

@@ -17,6 +17,7 @@ Breaking:
   - Creating a collection will no longer emit an `RxChangeEvent`
   - Renamed `RxCollection.remove$()` to `RxCollection.delete$` to be equal to CRUD
   - Renamed `RxDatabase.queryChangeDetection` to `eventReduce` and set default to `true` (no beta anymore)
+  - Change default of `RxDocument().toJSON(withRevAndAttachments)` to `false`
 
 Docs:
   - Removed examples for `require()` CommonJS loading
