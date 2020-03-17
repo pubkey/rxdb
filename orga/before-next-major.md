@@ -19,7 +19,7 @@ In documents like the following, the properties inside of the array-object will 
 
 The best approach will be to use [jsonschema-key-compression](https://github.com/pubkey/jsonschema-key-compression) instead of the own key-compression
 
-### RxDocument().toJSON() should not return rev by default
+### DONE - RxDocument().toJSON() should not return rev by default
 
 Currently `withRev` has default `true`.
 It should be `false` by default because the user does not expect the revision here.
