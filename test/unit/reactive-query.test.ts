@@ -108,7 +108,9 @@ config.parallel('reactive-query.test.js', () => {
 
             let values: any;
             const querySub = c.find({
-                firstName: doc.get('firstName')
+                selector: {
+                    firstName: doc.get('firstName')
+                }
             }).$.subscribe(newV => {
                 values = newV;
                 if (newV) pw8.resolve();
@@ -128,8 +130,10 @@ config.parallel('reactive-query.test.js', () => {
         it('subscribing many times should not result in many database-requests', async () => {
             const c = await humansCollection.create(1);
             const query = c.find({
-                passportId: {
-                    $ne: 'foobar'
+                selector: {
+                    passportId: {
+                        $ne: 'foobar'
+                    }
                 }
             });
             await query.exec();

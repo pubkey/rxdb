@@ -626,7 +626,7 @@ describe('replication.test.js', () => {
             });
 
             // query for all documents on db2-collection2 (query will be cached)
-            let documents = await collection2.find({}).exec();
+            let documents = await collection2.find().exec();
 
             // Replicate from db1-collection1 to db2-collection2
             const pullstate: RxReplicationState = collection2.sync({
@@ -649,7 +649,7 @@ describe('replication.test.js', () => {
 
             // query for all documents on db2-collection2 again (result is read from cache which doesnt contain replicated doc)
             // collection2._queryCache.destroy();
-            documents = await collection2.find({}).exec();
+            documents = await collection2.find().exec();
 
             assert.strictEqual(documents.length, 1);
 

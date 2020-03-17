@@ -15,7 +15,7 @@ import {
     clone
 } from '../util';
 import {
-    RxQueryObject
+    RxQueryObject, MangoQuery
 } from '../types';
 
 export class MQueryBase {
@@ -36,8 +36,9 @@ export class MQueryBase {
      *
      */
     constructor(criteria?: any) {
-        if (criteria)
+        if (criteria) {
             this.find(criteria);
+        }
     }
 
     /**
@@ -371,8 +372,20 @@ export class MQueryBase {
     }
 }
 
-export function createMQuery(criteria: any): MQuery {
-    return new MQueryBase(criteria) as MQuery;
+export function createMQuery(mangoQuery: MangoQuery): MQuery {
+    const ret = new MQueryBase(mangoQuery.selector) as MQuery;
+
+    if (mangoQuery.limit) {
+        ret.limit(mangoQuery.limit);
+    }
+    if (mangoQuery.skip) {
+        ret.skip(mangoQuery.skip);
+    }
+    if (mangoQuery.sort) {
+        mangoQuery.sort.forEach(s => ret.sort(s));
+    }
+
+    return ret;
 }
 
 export interface MQuery extends MQueryBase {

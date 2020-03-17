@@ -38,9 +38,11 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
             const queryMatcher = RxStoragePouchDb.getQueryMatcher(
                 col.schema.primaryPath,
                 col.find({
-                    age: {
-                        $gt: 10,
-                        $ne: 50
+                    selector: {
+                        age: {
+                            $gt: 10,
+                            $ne: 50
+                        }
                     }
                 }).toJSON()
             );

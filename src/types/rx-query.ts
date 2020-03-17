@@ -35,12 +35,16 @@ export type MangoQuerySortPart<RxDocType = any> = {
     [k in keyof RxDocType | string]: 'asc' | 'desc';
 };
 
-export type MangoQuery<RxDocType = any> = {
+export type MangoQueryNoLimit<RxDocType = any> = {
     selector: any;
-    limit?: number;
     skip?: number;
     sort?: MangoQuerySortPart<RxDocType>[]
 };
+
+export type MangoQuery<RxDocType = any> = MangoQueryNoLimit<RxDocType> & {
+    limit?: number;
+};
+
 
 export type RxQueryOP = 'find' | 'findOne';
 

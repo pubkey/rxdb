@@ -36,7 +36,8 @@ import {
     RxDocument,
     PouchdbQuery,
     RxQueryOP,
-    RxQuery
+    RxQuery,
+    MangoQuery
 } from './types';
 
 import {
@@ -54,10 +55,12 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
 
     constructor(
         public op: RxQueryOP,
-        public queryObj: any,
+        public queryObj: MangoQuery,
         public collection: RxCollection<RxDocumentType>
     ) {
-        if (!queryObj) queryObj = _getDefaultQuery(this.collection);
+        if (!queryObj) {
+            queryObj = _getDefaultQuery(this.collection);
+        }
         this.mquery = createMQuery(queryObj);
     }
     get $(): BehaviorSubject<RxQueryResult> {
@@ -442,9 +445,11 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
     }
 }
 
-function _getDefaultQuery(collection: RxCollection): any {
+export function _getDefaultQuery(collection: RxCollection): MangoQuery {
     return {
-        [collection.schema.primaryPath]: {}
+        selector: {
+            [collection.schema.primaryPath]: {}
+        }
     };
 }
 
@@ -479,7 +484,7 @@ function protoMerge(
 let protoMerged = false;
 export function createRxQuery(
     op: RxQueryOP,
-    queryObj: any,
+    queryObj: MangoQuery,
     collection: RxCollection
 ) {
     // checks

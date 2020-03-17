@@ -1,3 +1,5 @@
+import { MangoQuery } from './rx-query';
+
 /**
  * this file contains types that are pouchdb-specific
  * most of it is copied from @types/pouchdb
@@ -51,11 +53,10 @@ declare type Debug = {
     disable(): void;
 };
 
-export type PouchdbQuery = {
-    selector: any;
-    sort?: any[];
-    limit?: number;
-    skip?: number;
+// this is not equal to the standard MangoQuery
+// because of different sorting
+export type PouchdbQuery = MangoQuery & {
+    sort?: (string | string[])[];
 };
 
 export declare class PouchDBInstance {

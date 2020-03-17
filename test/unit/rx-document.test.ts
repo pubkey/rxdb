@@ -250,7 +250,9 @@ config.parallel('rx-document.test.js', () => {
                     }
                 });
                 const updatedDoc = await c.findOne({
-                    firstName: 'new first name'
+                    selector: {
+                        firstName: 'new first name'
+                    }
                 }).exec();
                 assert.strictEqual(updatedDoc.firstName, 'new first name');
                 c.database.destroy();
@@ -869,7 +871,9 @@ config.parallel('rx-document.test.js', () => {
             });
 
             const colDoc = await collection.findOne({
-                _id: doc._id
+                selector: {
+                    _id: doc._id
+                }
             }).exec();
 
 
@@ -905,7 +909,9 @@ config.parallel('rx-document.test.js', () => {
         it('#1325 populate should return null when value is falsy', async () => {
             const collection = await humansCollection.createRelated();
             const doc = await collection.findOne({
-                bestFriend: { $exists: true }
+                selector: {
+                    bestFriend: { $exists: true }
+                }
             }).exec();
 
             await doc.update({

@@ -370,11 +370,13 @@ config.parallel('rx-query.test.js', () => {
         it('BUG should not match regex', async () => {
             const col = await humansCollection.create(0);
             const q = col.find({
-                $and: [{
-                    color: {
-                        $regex: new RegExp('f', 'i')
-                    }
-                }]
+                selector: {
+                    $and: [{
+                        color: {
+                            $regex: new RegExp('f', 'i')
+                        }
+                    }]
+                }
             });
 
             const docData = {
@@ -769,51 +771,12 @@ config.parallel('rx-query.test.js', () => {
                 db.destroy();
             });
         });
-        it('#164 Sort error, pouchdb-find/mango "unknown operator"', async () => {
-            const db = await createRxDatabase({
-                adapter: 'memory',
-                name: util.randomCouchString(12),
-                password: 'password'
-            });
-            const collection = await db.collection({
-                name: 'test3',
-                schema: {
-                    title: 'test3',
-                    type: 'object',
-                    version: 0,
-                    properties: {
-                        name: {
-                            type: 'string'
-                        }
-                    },
-                    indexes: ['name']
-                }
-            });
-
-            const sortedNames = ['a123', 'b123', 'c123', 'f123', 'z123'];
-            await Promise.all(
-                sortedNames.map(name => collection.insert({
-                    name
-                }))
-            );
-
-            // this query is wrong because .find() does not allow sort, limit etc, only the selector
-            await AsyncTestUtil.assertThrows(
-                () => collection.find({
-                    sort: ['name']
-                }).exec(),
-                Error,
-                'lte'
-            );
-            const results2 = await collection.find().sort('name').exec();
-            assert.deepStrictEqual(sortedNames, results2.map(doc => doc.name));
-
-            db.destroy();
-        });
         it('#267 query for null-fields', async () => {
             const c = await humansCollection.create(2);
             const foundDocs = await c.find({
-                foobar: null
+                selector: {
+                    foobar: null
+                }
             }).exec();
             assert.ok(Array.isArray(foundDocs));
             c.database.destroy();
@@ -852,8 +815,9 @@ config.parallel('rx-query.test.js', () => {
             const docData = new Array(200)
                 .fill(0)
                 .map(() => schemaObjects.human());
-            for (const doc of docData)
+            for (const doc of docData) {
                 await c.insert(doc);
+            }
 
             const docs3 = await query.exec();
             assert.strictEqual(docs3.length, 600);
@@ -861,8 +825,9 @@ config.parallel('rx-query.test.js', () => {
             const docData2 = clone(docData);
             docData2.forEach(doc => doc.lastName = doc.lastName + '1');
 
-            for (const doc of docData2)
+            for (const doc of docData2) {
                 await c.upsert(doc);
+            }
 
             const docs4 = await query.exec();
             assert.strictEqual(docs4.length, 600);
@@ -1127,7 +1092,9 @@ config.parallel('rx-query.test.js', () => {
 
             // first query, no sort
             const q1 = collection.findOne({
-                passportId: 'foofbar'
+                selector: {
+                    passportId: 'foofbar'
+                }
             });
             const explained1 = await collection.pouch.explain(q1.toJSON());
             assert.ok(explained1.index.ddoc);
@@ -1135,7 +1102,9 @@ config.parallel('rx-query.test.js', () => {
 
             // second query, with sort
             const q2 = collection.findOne({
-                passportId: 'foofbar'
+                selector: {
+                    passportId: 'foofbar'
+                }
             }).sort('passportId');
             const explained2 = await collection.pouch.explain(q2.toJSON());
             assert.ok(explained2.index.ddoc);
@@ -1204,7 +1173,10 @@ config.parallel('rx-query.test.js', () => {
             };
             /* eslint-enable */
 
-            const resultDocs1 = await collection.find(selector)
+            const resultDocs1 = await collection
+                .find({
+                    selector
+                })
                 .sort({
                     created_at: 'desc'
                 })
@@ -1291,14 +1263,20 @@ config.parallel('rx-query.test.js', () => {
             });
 
             const foundByRoomId = await roomsession.findOne({
-                roomId
+                selector: {
+                    roomId
+                }
             }).exec();
             const foundByRoomAndSessionId = await roomsession.findOne({
-                roomId,
-                sessionId
+                selector: {
+                    roomId,
+                    sessionId
+                }
             }).exec();
             const foundBySessionId = await roomsession.findOne({
-                sessionId
+                selector: {
+                    sessionId
+                }
             }).exec();
 
             assert(foundByRoomId !== null); // fail
@@ -1361,7 +1339,7 @@ config.parallel('rx-query.test.js', () => {
                 age: 56
             });
 
-            const queryOK = collection.find({});
+            const queryOK = collection.find();
             const docsOK = await queryOK.exec();
             assert.strictEqual(docsOK.length, 2);
 
@@ -1373,7 +1351,9 @@ config.parallel('rx-query.test.js', () => {
                 selector
             });
             const pouchDocs = pouchResult.docs;
-            const query = collection.find(selector);
+            const query = collection.find({
+                selector
+            });
             const docs = await query.exec();
 
             assert.strictEqual(pouchDocs.length, docs.length);
@@ -1432,10 +1412,18 @@ config.parallel('rx-query.test.js', () => {
 
             // test 1 with RegExp object
             const regexp = new RegExp('^Doe$', 'i');
-            const result1 = await collection.find({ lastName: { $regex: regexp } }).exec();
+            const result1 = await collection.find({
+                selector: {
+                    lastName: { $regex: regexp }
+                }
+            }).exec();
 
             // test 2 with regex string
-            const result2 = await collection.find({ lastName: { $regex: '^Doe$' } }).exec();
+            const result2 = await collection.find({
+                selector: {
+                    lastName: { $regex: '^Doe$' }
+                }
+            }).exec();
 
 
             // both results should only have the doc1

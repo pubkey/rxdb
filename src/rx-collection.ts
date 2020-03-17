@@ -19,7 +19,8 @@ import {
 } from './rx-collection-helper';
 import {
     createRxQuery,
-    RxQueryBase
+    RxQueryBase,
+    _getDefaultQuery
 } from './rx-query';
 import {
     isInstanceOf as isInstanceOfRxSchema,
@@ -79,7 +80,9 @@ import {
     RxDocument,
     SyncOptionsGraphQL,
     RxDumpCollection,
-    RxDumpCollectionAny
+    RxDumpCollectionAny,
+    MangoQuery,
+    MangoQueryNoLimit
 } from './types';
 import {
     RxGraphQLReplicationState
@@ -502,25 +505,43 @@ export class RxCollectionBase<
     /**
      * takes a mongoDB-query-object and returns the documents
      */
-    find(queryObj?: any): RxQuery<RxDocumentType, RxDocument<RxDocumentType, OrmMethods>[]> {
+    find(queryObj?: MangoQuery<RxDocumentType>): RxQuery<
+        RxDocumentType,
+        RxDocument<RxDocumentType, OrmMethods>[]
+    > {
         if (typeof queryObj === 'string') {
             throw newRxError('COL5', {
                 queryObj
             });
         }
 
+        if (!queryObj) {
+            queryObj = _getDefaultQuery(this as any);
+        }
+
         const query = createRxQuery('find', queryObj, this as any);
         return query as any;
     }
 
-    findOne(queryObj?: any): RxQuery<RxDocumentType, RxDocument<RxDocumentType, OrmMethods> | null> {
+    findOne(queryObj?: MangoQueryNoLimit<RxDocumentType> | string): RxQuery<
+        RxDocumentType,
+        RxDocument<RxDocumentType, OrmMethods>
+        | null
+    > {
         let query;
 
         if (typeof queryObj === 'string') {
             query = createRxQuery('findOne', {
-                _id: queryObj
+                selector: {
+                    _id: queryObj
+                }
             }, this as any);
-        } else query = createRxQuery('findOne', queryObj, this as any);
+        } else {
+            if (!queryObj) {
+                queryObj = _getDefaultQuery(this as any);
+            }
+            query = createRxQuery('findOne', queryObj, this as any);
+        }
 
         if (
             typeof queryObj === 'number' ||

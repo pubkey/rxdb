@@ -59,7 +59,7 @@ export class RxError extends Error {
         this.rxdb = true; // tag them as internal
     }
     get name(): string {
-        return 'RxError';
+        return 'RxError (' + this.code + ')';
     }
     toString(): string {
         return this.message;
@@ -87,7 +87,7 @@ export class RxTypeError extends TypeError {
         this.rxdb = true; // tag them as internal
     }
     get name(): string {
-        return 'RxError';
+        return 'RxTypeError (' + this.code + ')';
     }
     toString(): string {
         return this.message;

@@ -18,6 +18,7 @@ Breaking:
   - Renamed `RxCollection.remove$()` to `RxCollection.delete$` to be equal to CRUD
   - Renamed `RxDatabase.queryChangeDetection` to `eventReduce` and set default to `true` (no beta anymore)
   - Change default of `RxDocument().toJSON(withRevAndAttachments)` to `false`
+  - Change `.find()` and `.findOne()` to acccept a full MangoQuery instead of just the selector
 
 Docs:
   - Removed examples for `require()` CommonJS loading

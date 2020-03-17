@@ -524,7 +524,7 @@ config.parallel('rx-collection.test.js', () => {
                     });
                     it('find all by empty object', async () => {
                         const c = await humansCollection.create();
-                        const docs = await c.find({}).exec();
+                        const docs = await c.find().exec();
                         assert.ok(docs.length >= 10);
                         for (const doc of docs) {
                             assert.ok(RxDocument.isInstanceOf(doc));
@@ -542,7 +542,7 @@ config.parallel('rx-collection.test.js', () => {
                             name: 'humanx',
                             schema
                         });
-                        const docs = await collection.find({}).exec();
+                        const docs = await collection.find().exec();
                         assert.deepStrictEqual(docs, []);
                         db.destroy();
                     });
@@ -596,7 +596,9 @@ config.parallel('rx-collection.test.js', () => {
                         const last: any = docs.pop();
                         const passportId = last._data.passportId;
                         let doc: any = await c.find({
-                            passportId
+                            selector: {
+                                passportId
+                            }
                         }).exec();
                         assert.strictEqual(doc.length, 1);
                         doc = doc[0];
@@ -606,7 +608,9 @@ config.parallel('rx-collection.test.js', () => {
                     it('find none with random passportId', async () => {
                         const c = await humansCollection.create();
                         const docs = await c.find({
-                            passportId: util.randomCouchString(10)
+                            selector: {
+                                passportId: util.randomCouchString(10)
+                            }
                         }).exec();
                         assert.strictEqual(docs.length, 0);
                         c.database.destroy();
@@ -618,8 +622,10 @@ config.parallel('rx-collection.test.js', () => {
                         const last: any = docs.pop();
                         const passportId = last._data.passportId;
                         let doc: any = await c.find({
-                            passportId: {
-                                $eq: passportId
+                            selector: {
+                                passportId: {
+                                    $eq: passportId
+                                }
                             }
                         }).exec();
                         assert.strictEqual(doc.length, 1);
@@ -664,8 +670,10 @@ config.parallel('rx-collection.test.js', () => {
                     it('sort by age desc (with own index-search)', async () => {
                         const c = await humansCollection.createAgeIndex();
                         const query = c.find({
-                            age: {
-                                $gt: null
+                            selector: {
+                                age: {
+                                    $gt: null
+                                }
                             }
                         }).sort({
                             age: -1
@@ -732,7 +740,7 @@ config.parallel('rx-collection.test.js', () => {
                         assert.strictEqual(all.docs.length, 10);
 
                         // with RxQuery
-                        const query = collection.find({}).sort({
+                        const query = collection.find().sort({
                             'other.age': 1
                         });
                         const docs = await query.exec();
@@ -766,7 +774,7 @@ config.parallel('rx-collection.test.js', () => {
                         await Promise.all(objects.map(o => collection.insert(o)));
 
                         // with RxQuery
-                        const query = collection.find({}).sort({
+                        const query = collection.find().sort({
                             'other.age': 1
                         });
                         const docs = await query.exec();
@@ -806,11 +814,13 @@ config.parallel('rx-collection.test.js', () => {
                 describe('negative', () => {
                     it('throw when sort is not index', async () => {
                         const c = await humansCollection.create();
-                        await c.find({}).exec();
+                        await c.find().exec();
                         await AsyncTestUtil.assertThrows(
                             () => c.find({
-                                age: {
-                                    $gt: 0
+                                selector: {
+                                    age: {
+                                        $gt: 0
+                                    }
                                 }
                             })
                                 .sort({

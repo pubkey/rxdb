@@ -158,7 +158,9 @@ config.parallel('primary.test.js', () => {
                     const obj = schemaObjects.simpleHuman();
                     await c.insert(obj);
                     const docs = await c.find({
-                        passportId: obj.passportId
+                        selector: {
+                            passportId: obj.passportId
+                        }
                     }).exec();
                     assert.strictEqual(docs.length, 1);
                     c.database.destroy();
@@ -180,7 +182,7 @@ config.parallel('primary.test.js', () => {
                     c.database.destroy();
                 });
             });
-            describe('negative', () => {});
+            describe('negative', () => { });
         });
         describe('.findOne()', () => {
             describe('positive', () => {
@@ -203,7 +205,9 @@ config.parallel('primary.test.js', () => {
                     const obj = schemaObjects.simpleHuman();
                     await c.insert(obj);
                     const doc = await c.findOne({
-                        firstName: obj.firstName
+                        selector: {
+                            firstName: obj.firstName
+                        }
                     }).exec();
                     assert.strictEqual(doc.primary, obj.passportId);
                     c.database.destroy();
@@ -219,7 +223,7 @@ config.parallel('primary.test.js', () => {
                     c.database.destroy();
                 });
             });
-            describe('negative', () => {});
+            describe('negative', () => { });
         });
     });
     describe('Document', () => {
@@ -234,7 +238,7 @@ config.parallel('primary.test.js', () => {
                     c.database.destroy();
                 });
             });
-            describe('negative', () => {});
+            describe('negative', () => { });
         });
         describe('.save()', () => {
             describe('positive', () => {
@@ -251,7 +255,7 @@ config.parallel('primary.test.js', () => {
                     c.database.destroy();
                 });
             });
-            describe('negative', () => {});
+            describe('negative', () => { });
         });
         describe('.subscribe()', () => {
             describe('positive', () => {
@@ -317,7 +321,7 @@ config.parallel('primary.test.js', () => {
                     c2.database.destroy();
                 });
             });
-            describe('negative', () => {});
+            describe('negative', () => { });
         });
     });
 });
