@@ -15,7 +15,8 @@ import {
     createRxSchema
 } from './rx-schema';
 import {
-    isInstanceOf as isInstanceOfRxChangeEvent, RxChangeEventBroadcastChannelData
+    isInstanceOf as isInstanceOfRxChangeEvent,
+    RxChangeEventBroadcastChannelData
 } from './rx-change-event';
 import overwritable from './overwritable';
 import {
@@ -55,6 +56,8 @@ import {
     RxDumpDatabase,
     RxDumpDatabaseAny
 } from './types';
+import { RxStorage } from './rx-storate.interface';
+import { getRxStoragePouchDb } from './rx-storage-pouchdb';
 
 /**
  * stores the combinations
@@ -67,6 +70,8 @@ let DB_COUNT = 0;
 
 export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
 
+    public storage: RxStorage = getRxStoragePouchDb(this.adapter, this.pouchSettings);
+
     constructor(
         public name: string,
         public adapter: any,
@@ -74,7 +79,7 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
         public multiInstance: boolean,
         public eventReduce: boolean = false,
         public options: any = {},
-        public pouchSettings: PouchSettings
+        public pouchSettings: PouchSettings,
     ) {
         this.collections = {} as any;
         if (typeof name !== 'undefined') DB_COUNT++;
@@ -141,10 +146,13 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
         schemaVersion: number,
         pouchSettings: PouchSettings = {}
     ): PouchDBInstance {
-        return _spawnPouchDB(
-            this.name, this.adapter,
-            collectionName, schemaVersion,
-            pouchSettings, this.pouchSettings
+        return this.storage.createStorageInstance(
+            this.name,
+            collectionName,
+            schemaVersion,
+            {
+                pouchSettings
+            }
         );
     }
 
@@ -703,66 +711,23 @@ export function createRxDatabase<Collections = { [key: string]: RxCollection }>(
         }) as any;
 }
 
-export function getPouchLocation(
-    dbName: string,
-    collectionName: string,
-    schemaVersion: number
-) {
-    const prefix = dbName + '-rxdb-' + schemaVersion + '-';
-    if (!collectionName.includes('/')) {
-        return prefix + collectionName;
-    } else {
-        // if collectionName is a path, we have to prefix the last part only
-        const split = collectionName.split('/');
-        const last = split.pop();
-
-        let ret = split.join('/');
-        ret += '/' + prefix + last;
-        return ret;
-    }
-}
-
-function _spawnPouchDB(
-    dbName: string,
-    adapter: any,
-    collectionName: string,
-    schemaVersion: number,
-    pouchSettings: PouchSettings = {},
-    pouchSettingsFromRxDatabaseCreator: PouchSettings = {}
-): PouchDBInstance {
-    const pouchLocation = getPouchLocation(dbName, collectionName, schemaVersion);
-    const pouchDbParameters = {
-        location: pouchLocation,
-        adapter: adapterObject(adapter),
-        settings: pouchSettings
-    };
-    const pouchDBOptions = Object.assign({},
-        pouchDbParameters.adapter,
-        pouchSettingsFromRxDatabaseCreator,
-        pouchDbParameters.settings
-    );
-    runPluginHooks('preCreatePouchDb', pouchDbParameters);
-    return new PouchDB(
-        pouchDbParameters.location,
-        pouchDBOptions
-    ) as any;
-}
-
 function _internalAdminPouch(
     name: string,
     adapter: any,
     pouchSettingsFromRxDatabaseCreator: PouchSettings = {}
 ) {
-    return _spawnPouchDB(
+    const storage = getRxStoragePouchDb(adapter, pouchSettingsFromRxDatabaseCreator);
+    return storage.createStorageInstance(
         name,
-        adapter,
         '_admin',
-        0, {
-        // no compaction because this only stores local documents
-        auto_compaction: false,
-        revs_limit: 1
-    },
-        pouchSettingsFromRxDatabaseCreator
+        0,
+        {
+            pouchSettings: {
+                // no compaction because this only stores local documents
+                auto_compaction: false,
+                revs_limit: 1
+            }
+        }
     );
 }
 
@@ -771,16 +736,18 @@ function _internalCollectionsPouch(
     adapter: any,
     pouchSettingsFromRxDatabaseCreator: PouchSettings = {}
 ) {
-    return _spawnPouchDB(
+    const storage = getRxStoragePouchDb(adapter, pouchSettingsFromRxDatabaseCreator);
+    return storage.createStorageInstance(
         name,
-        adapter,
-        '_collections', 0,
+        '_collections',
+        0,
         {
-            // no compaction because this only stores local documents
-            auto_compaction: false,
-            revs_limit: 1
-        },
-        pouchSettingsFromRxDatabaseCreator
+            pouchSettings: {
+                // no compaction because this only stores local documents
+                auto_compaction: false,
+                revs_limit: 1
+            }
+        }
     );
 }
 
@@ -791,6 +758,8 @@ export function removeRxDatabase(
     databaseName: string,
     adapter: any
 ): Promise<any> {
+    const storage = getRxStoragePouchDb(adapter);
+
     const adminPouch = _internalAdminPouch(databaseName, adapter);
     const collectionsPouch = _internalCollectionsPouch(databaseName, adapter);
 
@@ -805,7 +774,11 @@ export function removeRxDatabase(
                     const split = id.split('-');
                     const name = split[0];
                     const version = parseInt(split[1], 10);
-                    const pouch = _spawnPouchDB(databaseName, adapter, name, version);
+                    const pouch = storage.createStorageInstance(
+                        databaseName,
+                        name,
+                        version
+                    );
                     return pouch.destroy();
                 })
         ))

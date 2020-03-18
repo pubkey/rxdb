@@ -39,5 +39,5 @@ export {
 } from './rx-change-event';
 
 export {
-    RxStoragePouchDb
+    getRxStoragePouchDb
 } from './rx-storage-pouchdb';

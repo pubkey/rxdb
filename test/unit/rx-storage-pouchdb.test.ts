@@ -4,14 +4,14 @@ import AsyncTestUtil from 'async-test-util';
 import config from './config';
 import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
-import { RxStoragePouchDb } from '../../dist/lib/rx-storage-pouchdb';
+import { getRxStoragePouchDb } from '../../dist/lib/rx-storage-pouchdb';
 
 
 config.parallel('rx-storage-pouchdb.test.js', () => {
     describe('.getSortComparator()', () => {
         it('should sort in the correct order', async () => {
             const col = await humansCollection.create(1);
-            const comparator = RxStoragePouchDb.getSortComparator(
+            const comparator = getRxStoragePouchDb('memory').getSortComparator(
                 col.schema.primaryPath,
                 col.find().sort('age').toJSON()
             );
@@ -35,7 +35,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
         it('should match the right docs', async () => {
             const col = await humansCollection.create(1);
 
-            const queryMatcher = RxStoragePouchDb.getQueryMatcher(
+            const queryMatcher = getRxStoragePouchDb('memory').getQueryMatcher(
                 col.schema.primaryPath,
                 col.find({
                     selector: {

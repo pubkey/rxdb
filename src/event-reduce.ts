@@ -6,10 +6,7 @@ import {
 } from 'event-reduce-js';
 import { RxQuery, MangoQuery } from './types';
 import { RxChangeEvent } from './rx-change-event';
-
-import {
-    RxStoragePouchDb
-} from './rx-storage-pouchdb';
+import { RxStorage } from './rx-storate.interface';
 
 export type EventReduceResultNeg = {
     runFullQueryAgain: true,
@@ -40,6 +37,7 @@ export function getQueryParams<RxDocType>(
     rxQuery: RxQuery<RxDocType>
 ): QueryParams<RxDocType> {
     if (!RXQUERY_QUERY_PARAMS_CACHE.has(rxQuery)) {
+        const storage: RxStorage = rxQuery.collection.database.storage;
         const queryJson: MangoQuery<RxDocType> = rxQuery.toJSON();
         const primaryKey = rxQuery.collection.schema.primaryPath;
         const ret = {
@@ -47,8 +45,8 @@ export function getQueryParams<RxDocType>(
             skip: queryJson.skip,
             limit: queryJson.limit,
             sortFields: getSortFieldsOfQuery(primaryKey, queryJson),
-            sortComparator: RxStoragePouchDb.getSortComparator(primaryKey, queryJson),
-            queryMatcher: RxStoragePouchDb.getQueryMatcher(primaryKey, queryJson)
+            sortComparator: storage.getSortComparator(primaryKey, queryJson),
+            queryMatcher: storage.getQueryMatcher(primaryKey, queryJson)
         };
         RXQUERY_QUERY_PARAMS_CACHE.set(rxQuery, ret);
         return ret;

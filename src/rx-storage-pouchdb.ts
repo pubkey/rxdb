@@ -4,13 +4,27 @@ import {
 } from 'pouchdb-selector-core';
 
 import { RxStorage } from './rx-storate.interface';
-import { MangoQuery, MangoQuerySortPart } from './types';
+import {
+    MangoQuery,
+    MangoQuerySortPart,
+    PouchDBInstance,
+    RxDatabase,
+    PouchSettings
+} from './types';
 import { CompareFunction } from 'array-push-at-sort-position';
-import { flatClone } from './util';
+import { flatClone, adapterObject } from './util';
 import { SortComparator, QueryMatcher } from 'event-reduce-js';
+import { runPluginHooks } from './hooks';
+import {
+    PouchDB
+} from './pouch-db';
 
+export class RxStoragePouchDbClass implements RxStorage<PouchDBInstance> {
 
-export const RxStoragePouchDb: RxStorage = {
+    constructor(
+        public adapter: any, // TODO are there types for pouchdb adapters?
+        public pouchSettings: PouchSettings = {}
+    ) { }
 
     getSortComparator<RxDocType>(
         primaryKey: string,
@@ -49,7 +63,7 @@ export const RxStoragePouchDb: RxStorage = {
             }
         };
         return fun;
-    },
+    }
 
     /**
      * @link https://github.com/pouchdb/pouchdb/blob/master/packages/node_modules/pouchdb-selector-core/src/matches-selector.js
@@ -77,4 +91,66 @@ export const RxStoragePouchDb: RxStorage = {
         };
         return fun;
     }
-};
+
+    createStorageInstance(
+        databaseName: string,
+        collectionName: string,
+        schemaVersion: number,
+        options: any = {}
+    ): PouchDBInstance {
+        if (!options.pouchSettings) {
+            options.pouchSettings = {};
+        }
+
+        const pouchLocation = getPouchLocation(
+            databaseName,
+            collectionName,
+            schemaVersion
+        );
+        const pouchDbParameters = {
+            location: pouchLocation,
+            adapter: adapterObject(this.adapter),
+            settings: options.pouchSettings
+        };
+        const pouchDBOptions = Object.assign(
+            {},
+            pouchDbParameters.adapter,
+            this.pouchSettings,
+            pouchDbParameters.settings
+        );
+        runPluginHooks('preCreatePouchDb', pouchDbParameters);
+        return new PouchDB(
+            pouchDbParameters.location,
+            pouchDBOptions
+        ) as any;
+    }
+}
+
+/**
+ * returns the pouchdb-database-name
+ */
+export function getPouchLocation(
+    dbName: string,
+    collectionName: string,
+    schemaVersion: number
+): string {
+    const prefix = dbName + '-rxdb-' + schemaVersion + '-';
+    if (!collectionName.includes('/')) {
+        return prefix + collectionName;
+    } else {
+        // if collectionName is a path, we have to prefix the last part only
+        const split = collectionName.split('/');
+        const last = split.pop();
+
+        let ret = split.join('/');
+        ret += '/' + prefix + last;
+        return ret;
+    }
+}
+
+export function getRxStoragePouchDb(
+    adapter: any,
+    pouchSettings?: PouchSettings
+): RxStorage<PouchDBInstance> {
+    return new RxStoragePouchDbClass(adapter, pouchSettings);
+}

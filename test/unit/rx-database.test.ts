@@ -19,10 +19,7 @@ import AsyncTestUtil from 'async-test-util';
 import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
-
-import {
-    getPouchLocation
-} from '../../dist/lib/rx-database';
+import { getPouchLocation } from '../../dist/lib/rx-storage-pouchdb';
 
 
 config.parallel('rx-database.test.js', () => {
@@ -368,7 +365,7 @@ config.parallel('rx-database.test.js', () => {
                 await AsyncTestUtil.assertThrows(
                     () => db.collection({
                         name: 'human6',
-                        schema: schemas.nostringIndex
+                        schema: schemas.noStringIndex
                     }),
                     'RxError'
                 );

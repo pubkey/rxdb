@@ -1,5 +1,9 @@
 import { MangoQuery } from './types/rx-query';
-import { SortComparator, QueryMatcher } from 'event-reduce-js';
+import {
+    SortComparator,
+    QueryMatcher
+} from 'event-reduce-js';
+import { RxDatabase } from './types';
 
 /**
  * TODO WORK IN PROGRESS!
@@ -12,7 +16,7 @@ import { SortComparator, QueryMatcher } from 'event-reduce-js';
  *
  *
  */
-export interface RxStorage {
+export interface RxStorage<RxStorageInstance = any> {
 
     /**
      * returns the sort-comparator,
@@ -32,5 +36,17 @@ export interface RxStorage {
         primaryKey: string,
         query: MangoQuery<RxDocType>
     ): QueryMatcher<RxDocType>;
+
+    /**
+     * creates a storage instance
+     * that can contains the internal database
+     * For example the PouchDB instance
+     */
+    createStorageInstance(
+        databaseName: string,
+        collectionName: string,
+        version: number,
+        options?: any
+    ): RxStorageInstance;
 
 }
