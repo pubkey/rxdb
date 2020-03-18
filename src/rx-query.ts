@@ -390,7 +390,7 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
 
     /**
      * updates all found documents
-     * @overwritten by plugin (optinal)
+     * @overwritten by plugin (optional)
      */
     update(_updateObj: any): Promise<RxQueryResult> {
         throw pluginMissing('update');

@@ -3,7 +3,6 @@ import IdleQueue from 'custom-idle-queue';
 import { BroadcastChannel } from 'broadcast-channel';
 
 import {
-    adapterObject,
     hash,
     promiseWait,
     pluginMissing
@@ -70,7 +69,7 @@ let DB_COUNT = 0;
 
 export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
 
-    public storage: RxStorage = getRxStoragePouchDb(this.adapter, this.pouchSettings);
+    public storage: RxStorage;
 
     constructor(
         public name: string,
@@ -81,8 +80,10 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
         public options: any = {},
         public pouchSettings: PouchSettings,
     ) {
+        this.storage = getRxStoragePouchDb(adapter, pouchSettings);
         this.collections = {} as any;
-        if (typeof name !== 'undefined') DB_COUNT++;
+
+        DB_COUNT++;
     }
     get leaderElector() {
         if (!this._leaderElector)
@@ -433,12 +434,18 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
 let _properties: any = null;
 export function properties(): string[] {
     if (!_properties) {
-        const pseudoInstance: RxDatabaseBase = new (RxDatabaseBase as any)();
+        // TODO instead of using the pseudoInstance,
+        // we should get the properties from the prototype of the class
+        const pseudoInstance: RxDatabaseBase = new (RxDatabaseBase as any)(
+            'pseudoInstance',
+            'memory'
+        );
         const ownProperties = Object.getOwnPropertyNames(pseudoInstance);
         const prototypeProperties = Object.getOwnPropertyNames(
             Object.getPrototypeOf(pseudoInstance)
         );
         _properties = [...ownProperties, ...prototypeProperties];
+        pseudoInstance.destroy();
     }
     return _properties;
 }
@@ -690,8 +697,9 @@ export function createRxDatabase<Collections = { [key: string]: RxCollection }>(
     }
 
     // add to used_map
-    if (!USED_COMBINATIONS[name])
+    if (!USED_COMBINATIONS[name]) {
         USED_COMBINATIONS[name] = [];
+    }
     USED_COMBINATIONS[name].push(adapter);
 
     const db = new RxDatabaseBase(

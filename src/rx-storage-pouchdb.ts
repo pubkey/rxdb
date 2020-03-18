@@ -8,7 +8,6 @@ import {
     MangoQuery,
     MangoQuerySortPart,
     PouchDBInstance,
-    RxDatabase,
     PouchSettings
 } from './types';
 import { CompareFunction } from 'array-push-at-sort-position';
@@ -20,6 +19,7 @@ import {
 } from './pouch-db';
 
 export class RxStoragePouchDbClass implements RxStorage<PouchDBInstance> {
+    public name: string = 'pouchdb';
 
     constructor(
         public adapter: any, // TODO are there types for pouchdb adapters?
@@ -152,5 +152,8 @@ export function getRxStoragePouchDb(
     adapter: any,
     pouchSettings?: PouchSettings
 ): RxStorage<PouchDBInstance> {
+    if (!adapter) {
+        throw new Error('adapter missing');
+    }
     return new RxStoragePouchDbClass(adapter, pouchSettings);
 }

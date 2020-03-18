@@ -3,7 +3,6 @@ import {
     SortComparator,
     QueryMatcher
 } from 'event-reduce-js';
-import { RxDatabase } from './types';
 
 /**
  * TODO WORK IN PROGRESS!
@@ -17,6 +16,7 @@ import { RxDatabase } from './types';
  *
  */
 export interface RxStorage<RxStorageInstance = any> {
+    name: string;
 
     /**
      * returns the sort-comparator,

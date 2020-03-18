@@ -5,13 +5,16 @@ import config from './config';
 import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import { getRxStoragePouchDb } from '../../dist/lib/rx-storage-pouchdb';
+import { RxStorage } from '../../dist/typings/rx-storate.interface';
 
 
 config.parallel('rx-storage-pouchdb.test.js', () => {
     describe('.getSortComparator()', () => {
         it('should sort in the correct order', async () => {
             const col = await humansCollection.create(1);
-            const comparator = getRxStoragePouchDb('memory').getSortComparator(
+            const storage: RxStorage = getRxStoragePouchDb('memory');
+
+            const comparator = storage.getSortComparator(
                 col.schema.primaryPath,
                 col.find().sort('age').toJSON()
             );
