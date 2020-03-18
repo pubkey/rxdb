@@ -5,7 +5,7 @@ import {
     hash
 } from '../util';
 import {
-    createRxQuery
+    createRxQuery, _getDefaultQuery
 } from '../rx-query';
 import {
     newRxError
@@ -92,7 +92,7 @@ const dumpRxCollection = function (
         json.encrypted = true;
     }
 
-    const query = createRxQuery('find', {}, this);
+    const query = createRxQuery('find', _getDefaultQuery(this), this);
     return this._pouchFind(query, undefined, encrypted)
         .then((docs: any) => {
             json.docs = docs.map((docData: any) => {
