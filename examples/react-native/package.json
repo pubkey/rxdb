@@ -18,7 +18,7 @@
     "expo-cli": "3.15.4",
     "jest-expo": "36.0.1",
     "react-native-gesture-handler": "1.6.0",
-    "react-test-renderer": "16.13.0",
+    "react-test-renderer": "16.13.1",
     "rimraf": "3.0.2",
     "schedule": "0.5.0"
   },
@@ -29,7 +29,7 @@
     "pouchdb-adapter-asyncstorage": "6.4.1",
     "pouchdb-adapter-http": "7.2.1",
     "random-token": "0.0.8",
-    "react": "16.13.0",
+    "react": "16.13.1",
     "react-native": "https://github.com/expo/react-native/archive/sdk-33.0.0.tar.gz",
     "rxdb": "file:rxdb-local.tgz",
     "rxjs": "6.5.4"
