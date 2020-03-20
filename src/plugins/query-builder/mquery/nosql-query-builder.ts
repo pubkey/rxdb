@@ -11,9 +11,6 @@ import {
     newRxError
 } from '../../../rx-error';
 import {
-    clone
-} from '../../../util';
-import {
     MangoQuery,
     MangoQuerySelector,
     MangoQuerySortPart,
@@ -65,18 +62,6 @@ export class NoSqlQueryBuilderClass<DocType> {
     }
 
     /**
-     * returns a cloned version of the query
-     */
-    clone(): NoSqlQueryBuilder<DocType> {
-        const same: any = new NoSqlQueryBuilderClass<DocType>();
-        Object
-            .entries(this)
-            .forEach(([k, v]) => same[k] = clone(v));
-        return same as NoSqlQueryBuilder<DocType>;
-    }
-
-
-    /**
      * Specifies a `path` for use with chaining.
      */
     where(_path: string, _val?: MangoQuerySelector<DocType>): NoSqlQueryBuilder<DocType> {
@@ -90,8 +75,9 @@ export class NoSqlQueryBuilderClass<DocType> {
             return this as any;
         }
 
-        if ('object' === type && !Array.isArray(arguments[0]))
+        if ('object' === type && !Array.isArray(arguments[0])) {
             return this.merge(arguments[0]);
+        }
 
         throw newRxTypeError('MQ1', {
             path: arguments[0]
@@ -454,7 +440,7 @@ export interface NoSqlQueryBuilder<DocType = any> extends NoSqlQueryBuilderClass
 }
 
 declare type ReturnSelfFunction<DocType> = (v: any) => NoSqlQueryBuilder<DocType>;
-declare type ReturnSelfNumberFunction<DocType> = (v: number) => NoSqlQueryBuilder<DocType>;
+declare type ReturnSelfNumberFunction<DocType> = (v: number | null) => NoSqlQueryBuilder<DocType>;
 
 /**
  * limit, skip, maxScan, batchSize, comment

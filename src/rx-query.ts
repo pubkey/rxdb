@@ -33,7 +33,8 @@ import {
     RxQuery,
     MangoQuery,
     MangoQuerySortPart,
-    MangoQuerySortDirection
+    MangoQuerySortDirection,
+    MangoQuerySelector
 } from './types';
 
 import {
@@ -380,16 +381,16 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
 
     // we only set some methods of query-builder here
     // because the others depend on these ones
-    where(_params: any): RxQuery<RxDocumentType, RxQueryResult> {
+    where(_queryObj: MangoQuerySelector<RxDocumentType> | keyof RxDocumentType | string): RxQuery<RxDocumentType, RxQueryResult> {
         throw pluginMissing('query-builder');
     }
-    sort(_params: any): RxQuery<RxDocumentType, RxQueryResult> {
+    sort(_params: string | MangoQuerySortPart<RxDocumentType>): RxQuery<RxDocumentType, RxQueryResult> {
         throw pluginMissing('query-builder');
     }
-    skip(_params: any): RxQuery<RxDocumentType, RxQueryResult> {
+    skip(_amount: number | null): RxQuery<RxDocumentType, RxQueryResult> {
         throw pluginMissing('query-builder');
     }
-    limit(_params: any): RxQuery<RxDocumentType, RxQueryResult> {
+    limit(_amount: number | null): RxQuery<RxDocumentType, RxQueryResult> {
         throw pluginMissing('query-builder');
     }
 }
