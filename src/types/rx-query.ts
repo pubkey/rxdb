@@ -28,15 +28,24 @@ export type RxQueryObject<T = any> = keyof T & { [P in keyof T]?: T[P] | RxQuery
 };
 
 
+
+// TODO this should be typed
+export type MangoQuerySelector<RxDocType = any> = {
+    [k: string]: MangoQuerySelector<RxDocType> | any;
+};
+
+
 /**
+ * Discussion was at:
  * @link https://github.com/pubkey/rxdb/issues/1972
  */
+export type MangoQuerySortDirection = 'asc' | 'desc';
 export type MangoQuerySortPart<RxDocType = any> = {
-    [k in keyof RxDocType | string]: 'asc' | 'desc';
+    [k in keyof RxDocType | string]: MangoQuerySortDirection;
 };
 
 export type MangoQueryNoLimit<RxDocType = any> = {
-    selector: any;
+    selector: MangoQuerySelector<RxDocType>;
     skip?: number;
     sort?: MangoQuerySortPart<RxDocType>[]
 };

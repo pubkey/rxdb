@@ -48,6 +48,9 @@ addRxPlugin(RxDBAttachmentsPlugin);
 import { RxDBLocalDocumentsPlugin } from './plugins/local-documents';
 addRxPlugin(RxDBLocalDocumentsPlugin);
 
+import { RxDBQueryBuilderPlugin } from './plugins/query-builder';
+addRxPlugin(RxDBQueryBuilderPlugin);
+
 export * from './types';
 
 // re-export things from core

@@ -4,27 +4,35 @@
  */
 import {
     isObject,
-    merge,
-    mergeClone
-} from './mquery_utils';
+    merge
+} from './mquery-utils';
 import {
     newRxTypeError,
     newRxError
-} from '../rx-error';
+} from '../../../rx-error';
 import {
     clone
-} from '../util';
+} from '../../../util';
 import {
-    RxQueryObject, MangoQuery
-} from '../types';
+    MangoQuery,
+    MangoQuerySelector,
+    MangoQuerySortPart,
+    MangoQuerySortDirection
+} from '../../../types';
 
-export class MQueryBase {
 
-    public options: any = {};
-    public _conditions: RxQueryObject = {} as RxQueryObject;
-    public _fields: any;
-    public _path: any;
-    public _update: any;
+declare type MQueryOptions = {
+    limit?: number;
+    skip?: number;
+    sort?: any;
+};
+
+export class NoSqlQueryBuilderClass<DocType> {
+
+    public options: MQueryOptions = {};
+    public _conditions: MangoQuerySelector<DocType> = {};
+    public _fields: any = {};
+    public _path?: any;
     private _distinct: any;
 
     /**
@@ -35,35 +43,51 @@ export class MQueryBase {
      *     query.where('age').gte(21).exec(callback);
      *
      */
-    constructor(criteria?: any) {
-        if (criteria) {
-            this.find(criteria);
+    constructor(
+        mangoQuery?: MangoQuery<DocType>
+    ) {
+        if (mangoQuery) {
+            const queryBuilder: NoSqlQueryBuilder<DocType> = this as any;
+
+            if (mangoQuery.selector) {
+                queryBuilder.find(mangoQuery.selector);
+            }
+            if (mangoQuery.limit) {
+                queryBuilder.limit(mangoQuery.limit);
+            }
+            if (mangoQuery.skip) {
+                queryBuilder.skip(mangoQuery.skip);
+            }
+            if (mangoQuery.sort) {
+                mangoQuery.sort.forEach(s => queryBuilder.sort(s));
+            }
         }
     }
 
     /**
      * returns a cloned version of the query
      */
-    clone(): MQuery {
-        const same: any = new MQueryBase();
+    clone(): NoSqlQueryBuilder<DocType> {
+        const same: any = new NoSqlQueryBuilderClass<DocType>();
         Object
             .entries(this)
             .forEach(([k, v]) => same[k] = clone(v));
-        return same as MQuery;
+        return same as NoSqlQueryBuilder<DocType>;
     }
 
 
     /**
      * Specifies a `path` for use with chaining.
      */
-    where(_path: string, _val: any): MQueryBase {
-        if (!arguments.length) return this;
+    where(_path: string, _val?: MangoQuerySelector<DocType>): NoSqlQueryBuilder<DocType> {
+        if (!arguments.length) return this as any;
         const type = typeof arguments[0];
         if ('string' === type) {
             this._path = arguments[0];
-            if (2 === arguments.length)
+            if (2 === arguments.length) {
                 this._conditions[this._path] = arguments[1];
-            return this;
+            }
+            return this as any;
         }
 
         if ('object' === type && !Array.isArray(arguments[0]))
@@ -79,22 +103,22 @@ export class MQueryBase {
      * ####Example
      *     User.where('age').equals(49);
      */
-    equals(val: any): MQueryBase {
+    equals(val: any): NoSqlQueryBuilder<DocType> {
         this._ensurePath('equals');
         const path = this._path;
         this._conditions[path] = val;
-        return this;
+        return this as any;
     }
 
     /**
      * Specifies the complementary comparison value for paths specified with `where()`
      * This is alias of `equals`
      */
-    eq(val: any): MQueryBase {
+    eq(val: any): NoSqlQueryBuilder<DocType> {
         this._ensurePath('eq');
         const path = this._path;
         this._conditions[path] = val;
-        return this;
+        return this as any;
     }
 
     /**
@@ -102,11 +126,11 @@ export class MQueryBase {
      * ####Example
      *     query.or([{ color: 'red' }, { status: 'emergency' }])
      */
-    or(array: any[]): MQueryBase {
+    or(array: any[]): NoSqlQueryBuilder<DocType> {
         const or = this._conditions.$or || (this._conditions.$or = []);
         if (!Array.isArray(array)) array = [array];
         or.push.apply(or, array);
-        return this;
+        return this as any;
     }
 
     /**
@@ -114,11 +138,11 @@ export class MQueryBase {
      * ####Example
      *     query.nor([{ color: 'green' }, { status: 'ok' }])
      */
-    nor(array: any[]): MQueryBase {
+    nor(array: any[]): NoSqlQueryBuilder<DocType> {
         const nor = this._conditions.$nor || (this._conditions.$nor = []);
         if (!Array.isArray(array)) array = [array];
         nor.push.apply(nor, array);
-        return this;
+        return this as any;
     }
 
     /**
@@ -127,17 +151,17 @@ export class MQueryBase {
      *     query.and([{ color: 'green' }, { status: 'ok' }])
      * @see $and http://docs.mongodb.org/manual/reference/operator/and/
      */
-    and(array: any[]): MQueryBase {
+    and(array: any[]): NoSqlQueryBuilder<DocType> {
         const and = this._conditions.$and || (this._conditions.$and = []);
         if (!Array.isArray(array)) array = [array];
         and.push.apply(and, array);
-        return this;
+        return this as any;
     }
 
     /**
      * Specifies a `$mod` condition
      */
-    mod(_path: string, _val: number): MQueryBase {
+    mod(_path: string, _val: number): NoSqlQueryBuilder<DocType> {
         let val;
         let path;
 
@@ -159,7 +183,7 @@ export class MQueryBase {
 
         const conds = this._conditions[path] || (this._conditions[path] = {});
         conds.$mod = val;
-        return this;
+        return this as any;
     }
 
     /**
@@ -170,7 +194,7 @@ export class MQueryBase {
      *     Thing.where('name').exists(true)
      *     Thing.find().exists('name')
      */
-    exists(_path: string, _val: number): MQueryBase {
+    exists(_path: string, _val: number): NoSqlQueryBuilder<DocType> {
         let path;
         let val;
         if (0 === arguments.length) {
@@ -193,7 +217,7 @@ export class MQueryBase {
 
         const conds = this._conditions[path] || (this._conditions[path] = {});
         conds.$exists = val;
-        return this;
+        return this as any;
     }
 
     /**
@@ -210,7 +234,7 @@ export class MQueryBase {
      *       elem.where('votes').gte(5);
      *     })
      */
-    elemMatch(_path: string, _criteria: any): MQueryBase {
+    elemMatch(_path: string, _criteria: any): NoSqlQueryBuilder<DocType> {
         if (null === arguments[0])
             throw newRxTypeError('MQ2');
 
@@ -236,14 +260,14 @@ export class MQueryBase {
             throw newRxTypeError('MQ2');
 
         if (fn) {
-            criteria = new MQueryBase;
+            criteria = new NoSqlQueryBuilderClass;
             fn(criteria);
             criteria = criteria._conditions;
         }
 
         const conds = this._conditions[path] || (this._conditions[path] = {});
         conds.$elemMatch = criteria;
-        return this;
+        return this as any;
     }
 
     /**
@@ -256,17 +280,18 @@ export class MQueryBase {
      *     query.sort('field -test');
      *     query.sort([['field', 1], ['test', -1]]);
      */
-    sort(arg: any): MQueryBase {
-        if (!arg) return this;
+    sort(arg: any): NoSqlQueryBuilder<DocType> {
+        if (!arg) return this as any;
         let len;
         const type = typeof arg;
         // .sort([['field', 1], ['test', -1]])
         if (Array.isArray(arg)) {
             len = arg.length;
-            for (let i = 0; i < arg.length; ++i)
+            for (let i = 0; i < arg.length; ++i) {
                 _pushArr(this.options, arg[i][0], arg[i][1]);
+            }
 
-            return this;
+            return this as any;
         }
 
         // .sort('field -test')
@@ -281,14 +306,14 @@ export class MQueryBase {
                 push(this.options, field, ascend);
             }
 
-            return this;
+            return this as any;
         }
 
         // .sort({ field: 1, test: -1 })
         if (isObject(arg)) {
             const keys = Object.keys(arg);
             keys.forEach(field => push(this.options, field, arg[field]));
-            return this;
+            return this as any;
         }
 
         throw newRxTypeError('MQ3', {
@@ -302,9 +327,10 @@ export class MQueryBase {
      * When a MQuery is passed, conditions, field selection and options are merged.
      *
      */
-    merge(source: any): MQueryBase {
-        if (!source)
-            return this;
+    merge(source: any): NoSqlQueryBuilder<DocType> {
+        if (!source) {
+            return this as any;
+        }
 
         if (!canMerge(source)) {
             throw newRxTypeError('MQ4', {
@@ -312,7 +338,7 @@ export class MQueryBase {
             });
         }
 
-        if (source instanceof MQueryBase) {
+        if (source instanceof NoSqlQueryBuilderClass) {
             // if source has a feature, apply it to ourselves
 
             if (source._conditions)
@@ -328,21 +354,16 @@ export class MQueryBase {
                 merge(this.options, source.options);
             }
 
-            if (source._update) {
-                if (!this._update) this._update = {};
-                mergeClone(this._update, source._update);
-            }
-
             if (source._distinct)
                 this._distinct = source._distinct;
 
-            return this;
+            return this as any;
         }
 
         // plain object
         merge(this._conditions, source);
 
-        return this;
+        return this as any;
     }
 
     /**
@@ -351,11 +372,12 @@ export class MQueryBase {
      *     query.find()
      *     query.find({ name: 'Burning Lights' })
      */
-    find(criteria: any): MQueryBase {
-        if (canMerge(criteria))
+    find(criteria: any): NoSqlQueryBuilder<DocType> {
+        if (canMerge(criteria)) {
             this.merge(criteria);
+        }
 
-        return this;
+        return this as any;
     }
 
     /**
@@ -370,44 +392,69 @@ export class MQueryBase {
             });
         }
     }
+
+    toJSON(): {
+        query: MangoQuery<DocType>,
+        path?: string
+    } {
+        const query: MangoQuery<DocType> = {
+            selector: this._conditions,
+        };
+
+        if (this.options.skip) {
+            query.skip = this.options.skip;
+        }
+        if (this.options.limit) {
+            query.limit = this.options.limit;
+        }
+        if (this.options.sort) {
+            query.sort = mQuerySortToRxDBSort(this.options.sort);
+        }
+
+        return {
+            query,
+            path: this._path
+        };
+    }
 }
 
-export function createMQuery(mangoQuery: MangoQuery): MQuery {
-    const ret = new MQueryBase(mangoQuery.selector) as MQuery;
-
-    if (mangoQuery.limit) {
-        ret.limit(mangoQuery.limit);
-    }
-    if (mangoQuery.skip) {
-        ret.skip(mangoQuery.skip);
-    }
-    if (mangoQuery.sort) {
-        mangoQuery.sort.forEach(s => ret.sort(s));
-    }
-
-    return ret;
+export function mQuerySortToRxDBSort<DocType>(
+    sort: { [k: string]: 1 | -1 }
+): MangoQuerySortPart<DocType>[] {
+    return Object.entries(sort).map(([k, v]) => {
+        const direction: MangoQuerySortDirection = v === 1 ? 'asc' : 'desc';
+        const part: MangoQuerySortPart<DocType> = { [k]: direction } as any;
+        return part;
+    });
 }
 
-export interface MQuery extends MQueryBase {
-    limit: ReturnSelfFunction;
-    skip: ReturnSelfFunction;
-    maxScan: ReturnSelfFunction;
-    batchSize: ReturnSelfFunction;
-    comment: ReturnSelfFunction;
+/**
+ * Because some prototype-methods are generated,
+ * we have to define the type of NoSqlQueryBuilder here
+ */
 
-    gt: ReturnSelfFunction;
-    gte: ReturnSelfFunction;
-    lt: ReturnSelfFunction;
-    lte: ReturnSelfFunction;
-    ne: ReturnSelfFunction;
-    in: ReturnSelfFunction;
-    nin: ReturnSelfFunction;
-    all: ReturnSelfFunction;
-    regex: ReturnSelfFunction;
-    size: ReturnSelfFunction;
+export interface NoSqlQueryBuilder<DocType = any> extends NoSqlQueryBuilderClass<DocType> {
+    maxScan: ReturnSelfNumberFunction<DocType>;
+    batchSize: ReturnSelfNumberFunction<DocType>;
+    limit: ReturnSelfNumberFunction<DocType>;
+    skip: ReturnSelfNumberFunction<DocType>;
+    comment: ReturnSelfFunction<DocType>;
+
+    gt: ReturnSelfFunction<DocType>;
+    gte: ReturnSelfFunction<DocType>;
+    lt: ReturnSelfFunction<DocType>;
+    lte: ReturnSelfFunction<DocType>;
+    ne: ReturnSelfFunction<DocType>;
+    in: ReturnSelfFunction<DocType>;
+    nin: ReturnSelfFunction<DocType>;
+    all: ReturnSelfFunction<DocType>;
+    regex: ReturnSelfFunction<DocType>;
+    size: ReturnSelfFunction<DocType>;
+
 }
 
-declare type ReturnSelfFunction = (v: any) => MQueryBase;
+declare type ReturnSelfFunction<DocType> = (v: any) => NoSqlQueryBuilder<DocType>;
+declare type ReturnSelfNumberFunction<DocType> = (v: number) => NoSqlQueryBuilder<DocType>;
 
 /**
  * limit, skip, maxScan, batchSize, comment
@@ -416,8 +463,9 @@ declare type ReturnSelfFunction = (v: any) => MQueryBase;
  *
  *     query.comment('feed query');
  */
-['limit', 'skip', 'maxScan', 'batchSize', 'comment'].forEach(function (method) {
-    (MQueryBase.prototype as any)[method] = function (v: any) {
+export const OTHER_MANGO_ATTRIBUTES = ['limit', 'skip', 'maxScan', 'batchSize', 'comment'];
+OTHER_MANGO_ATTRIBUTES.forEach(function (method) {
+    (NoSqlQueryBuilderClass.prototype as any)[method] = function (v: any) {
         this.options[method] = v;
         return this;
     };
@@ -429,31 +477,32 @@ declare type ReturnSelfFunction = (v: any) => MQueryBase;
  *
  *     Thing.where('type').nin(array)
  */
-['gt', 'gte', 'lt', 'lte', 'ne', 'in', 'nin', 'all', 'regex', 'size']
-    .forEach(function ($conditional) {
-        (MQueryBase.prototype as any)[$conditional] = function () {
-            let path;
-            let val;
-            if (1 === arguments.length) {
-                this._ensurePath($conditional);
-                val = arguments[0];
-                path = this._path;
-            } else {
-                val = arguments[1];
-                path = arguments[0];
-            }
+export const OTHER_MANGO_OPERATORS = [
+    'gt', 'gte', 'lt', 'lte', 'ne',
+    'in', 'nin', 'all', 'regex', 'size'
+];
+OTHER_MANGO_OPERATORS.forEach(function ($conditional) {
+    (NoSqlQueryBuilderClass.prototype as any)[$conditional] = function () {
+        let path;
+        let val;
+        if (1 === arguments.length) {
+            this._ensurePath($conditional);
+            val = arguments[0];
+            path = this._path;
+        } else {
+            val = arguments[1];
+            path = arguments[0];
+        }
 
-            const conds = this._conditions[path] === null || typeof this._conditions[path] === 'object' ?
-                this._conditions[path] :
-                (this._conditions[path] = {});
-            conds['$' + $conditional] = val;
-            return this;
-        };
-    });
+        const conds = this._conditions[path] === null || typeof this._conditions[path] === 'object' ?
+            this._conditions[path] :
+            (this._conditions[path] = {});
+        conds['$' + $conditional] = val;
+        return this;
+    };
+});
 
-/*!
- * @ignore
- */
+
 function push(opts: any, field: string, value: any) {
     if (Array.isArray(opts.sort)) {
         throw newRxTypeError('MQ6', {
@@ -512,7 +561,10 @@ function _pushArr(opts: any, field: string, value: any) {
  * Determines if `conds` can be merged using `mquery().merge()`
  */
 export function canMerge(conds: any): boolean {
-    return conds instanceof MQueryBase || isObject(conds);
+    return conds instanceof NoSqlQueryBuilderClass || isObject(conds);
 }
 
 
+export function createQueryBuilder<DocType>(query?: MangoQuery<DocType>): NoSqlQueryBuilder<DocType> {
+    return new NoSqlQueryBuilderClass(query) as NoSqlQueryBuilder<DocType>;
+}

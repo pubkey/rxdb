@@ -14,9 +14,14 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
             const col = await humansCollection.create(1);
             const storage: RxStorage = getRxStoragePouchDb('memory');
 
+            const query = col
+                .find()
+                .limit(1000)
+                .sort('age')
+                .toJSON();
             const comparator = storage.getSortComparator(
                 col.schema.primaryPath,
-                col.find().sort('age').toJSON()
+                query
             );
             const doc1 = schemaObjects.human();
             doc1['_id'] = 'aa';
@@ -38,7 +43,8 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
         it('should match the right docs', async () => {
             const col = await humansCollection.create(1);
 
-            const queryMatcher = getRxStoragePouchDb('memory').getQueryMatcher(
+            const storage: RxStorage = getRxStoragePouchDb('memory');
+            const queryMatcher = storage.getQueryMatcher(
                 col.schema.primaryPath,
                 col.find({
                     selector: {

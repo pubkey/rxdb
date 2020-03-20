@@ -675,9 +675,8 @@ config.parallel('rx-collection.test.js', () => {
                                     $gt: null
                                 }
                             }
-                        }).sort({
-                            age: -1
-                        });
+                        }).sort({ age: 'desc' });
+
                         assert.ok(isRxQuery(query));
                         const docs = await query.exec();
                         assert.strictEqual(docs.length, 20);

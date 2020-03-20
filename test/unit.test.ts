@@ -4,6 +4,7 @@ import './unit/pouch-db-integration.test.js';
 import './unit/rx-storage-pouchdb.test.js';
 import './unit/adapter-check.test.js';
 import './unit/instance-of-check.test.js';
+import './unit/query-builder.test.js'; // TODO move down under rx-query
 import './unit/rx-schema.test.js';
 import './unit/key-compression.test.js';
 import './unit/bug-report.test.js';

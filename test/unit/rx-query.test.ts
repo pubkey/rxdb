@@ -18,41 +18,6 @@ import * as util from '../../dist/lib/util';
 import { RxJsonSchema } from '../../src/types';
 
 config.parallel('rx-query.test.js', () => {
-    describe('mquery', () => {
-        describe('basic', () => {
-            it('should distinguish between different sort-orders', async () => {
-                // TODO I don't know if this is defined in the couchdb-spec
-                /*
-                const q1 = new MQuery();
-                q1.sort('age');
-                q1.sort('name');
-
-                const q2 = new MQuery();
-                q2.sort('name');
-                q2.sort('age');
-
-                */
-            });
-        });
-        describe('.clone()', () => {
-            it('should clone the mquery', async () => {
-                const col = await humansCollection.create(0);
-                const q = col.find()
-                    .where('name').ne('Alice')
-                    .where('age').gt(18).lt(67)
-                    .limit(10)
-                    .sort('-age');
-                const mquery = q.mquery;
-                const cloned = mquery.clone();
-
-                assert.deepStrictEqual(mquery.options, cloned.options);
-                assert.deepStrictEqual(mquery._conditions, cloned._conditions);
-                assert.deepStrictEqual(mquery._fields, cloned._fields);
-                assert.deepStrictEqual(mquery._path, cloned._path);
-                col.database.destroy();
-            });
-        });
-    });
     describe('.toJSON()', () => {
         it('should produce the correct selector-object', async () => {
             const col = await humansCollection.create(0);
@@ -80,24 +45,6 @@ config.parallel('rx-query.test.js', () => {
             col.database.destroy();
         });
     });
-    describe('._clone()', () => {
-        it('should deep-clone the query', async () => {
-            const col = await humansCollection.create(0);
-            const q = col.find()
-                .where('name').ne('Alice')
-                .where('age').gt(18).lt(67)
-                .limit(10)
-                .sort('-age');
-            const cloned = q._clone();
-            assert.ok(isRxQuery(q));
-            assert.ok(isRxQuery(cloned));
-            assert.deepStrictEqual(q.mquery._conditions, cloned.mquery._conditions);
-            assert.deepStrictEqual(q.mquery._fields, cloned.mquery._fields);
-            assert.deepStrictEqual(q.mquery._path, cloned.mquery._path);
-            assert.deepStrictEqual(q.mquery.options, cloned.mquery.options);
-            col.database.destroy();
-        });
-    });
     describe('.toString()', () => {
         it('should get a valid string-representation', async () => {
             const col = await humansCollection.create(0);
@@ -107,7 +54,7 @@ config.parallel('rx-query.test.js', () => {
                 .limit(10)
                 .sort('-age');
             const str = q.toString();
-            const mustString = '{"_conditions":{"_id":{},"age":{"$gt":18,"$lt":67},"name":{"$ne":"Alice"}},"_path":"age","op":"find","options":{"limit":10,"sort":{"age":-1}}}';
+            const mustString = '{"op":"find","other":{"queryBuilderPath":"age"},"query":{"limit":10,"selector":{"_id":{},"age":{"$gt":18,"$lt":67},"name":{"$ne":"Alice"}},"sort":[{"age":"desc"}]}}';
             assert.strictEqual(str, mustString);
             const str2 = q.toString();
             assert.strictEqual(str2, mustString);

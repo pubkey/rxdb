@@ -19,6 +19,7 @@ Breaking:
   - Renamed `RxDatabase.queryChangeDetection` to `eventReduce` and set default to `true` (no beta anymore)
   - Change default of `RxDocument().toJSON(withRevAndAttachments)` to `false`
   - Change `.find()` and `.findOne()` to acccept a full MangoQuery instead of just the selector
+  - Chained queries like `collection.find().where('x').eq('foo')` moved out of the core module into the query-builder plugin
 
 Docs:
   - Removed examples for `require()` CommonJS loading

@@ -88,7 +88,13 @@ config.parallel('core.node.js', () => {
                 lastName: 'piotr'
             });
 
-            const doc = await db.humans.findOne().where('firstName').ne('foobar').exec();
+            const doc = await db.humans.findOne({
+                selector: {
+                    firstName: {
+                        $ne: 'foobar'
+                    }
+                }
+            }).exec();
             assert.ok(isRxDocument(doc));
 
             db.destroy();

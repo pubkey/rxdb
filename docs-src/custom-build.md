@@ -75,6 +75,16 @@ addRxPlugin(RxDBDevModePlugin);
 
 ### replication
 
+Adds the [query-builder](./rx-query.md)-functionality to RxDB which allows you to run queries like `myCollection.find().where('x').eq(5)`
+
+```javascript
+import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
+addRxPlugin(RxDBQueryBuilderPlugin);
+```
+
+
+### replication
+
 Adds the [replication](./replication.md)-functionality to RxDB which allows you to replicate the database with a CouchDB compliant endpoint.
 
 ```javascript

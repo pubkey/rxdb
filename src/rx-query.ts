@@ -15,13 +15,8 @@ import {
     filterInMemoryFields
 } from 'pouchdb-selector-core';
 import {
-    MQuery,
-    createMQuery
-} from './mquery/mquery';
-import {
     sortObject,
     stringifyFilter,
-    clone,
     pluginMissing
 } from './util';
 import {
@@ -34,10 +29,11 @@ import {
 import {
     RxCollection,
     RxDocument,
-    PouchdbQuery,
     RxQueryOP,
     RxQuery,
-    MangoQuery
+    MangoQuery,
+    MangoQuerySortPart,
+    MangoQuerySortDirection
 } from './types';
 
 import {
@@ -53,15 +49,17 @@ const newQueryID = function (): number {
 
 export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] | RxDocumentType> {
 
+    // used by some plugins
+    public other: any = {};
+
     constructor(
         public op: RxQueryOP,
-        public queryObj: MangoQuery,
+        public mangoQuery: Readonly<MangoQuery>,
         public collection: RxCollection<RxDocumentType>
     ) {
-        if (!queryObj) {
-            queryObj = _getDefaultQuery(this.collection);
+        if (!mangoQuery) {
+            mangoQuery = _getDefaultQuery(this.collection);
         }
-        this.mquery = createMQuery(queryObj);
     }
     get $(): BehaviorSubject<RxQueryResult> {
         if (!this._$) {
@@ -114,13 +112,12 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
     }
     get massageSelector() {
         if (!this._massageSelector) {
-            const selector = this.mquery._conditions;
+            const selector = this.mangoQuery.selector;
             this._massageSelector = massageSelector(selector);
         }
         return this._massageSelector;
     }
     public id: number = newQueryID();
-    public mquery: MQuery;
 
     // stores the changeEvent-Number of the last handled change-event
     public _latestChangeEvent: -1 | any = -1;
@@ -171,22 +168,13 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
         if (!this.stringRep) {
             const stringObj = sortObject({
                 op: this.op,
-                options: this.mquery.options,
-                _conditions: this.mquery._conditions,
-                _path: this.mquery._path,
-                _fields: this.mquery._fields
+                query: this.mangoQuery,
+                other: this.other
             }, true);
 
             this.stringRep = JSON.stringify(stringObj, stringifyFilter);
         }
         return this.stringRep;
-    }
-
-    // returns a clone of this RxQuery
-    _clone() {
-        const cloned = new RxQueryBase(this.op, _getDefaultQuery(this.collection), this.collection);
-        cloned.mquery = this.mquery.clone();
-        return cloned;
     }
 
     /**
@@ -252,51 +240,44 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
                     first()
                 ).toPromise());
     }
-    toJSON(): PouchdbQuery {
+    toJSON(): MangoQuery<RxDocumentType> {
         if (this._toJSON) return this._toJSON;
 
+        const mangoQuery = this.mangoQuery;
         const primPath = this.collection.schema.primaryPath;
 
-        const json: PouchdbQuery = {
-            selector: this.mquery._conditions
+        const json: MangoQuery<RxDocumentType> = {
+            selector: mangoQuery.selector
         };
 
-        const options = clone(this.mquery.options);
-
         // sort
-        if (options.sort) {
-            const sortArray: any[] = [];
-            Object.keys(options.sort).map(fieldName => {
-                const dirInt = options.sort[fieldName];
-                let dir = 'asc';
-                if (dirInt === -1) dir = 'desc';
-                const pushMe: any = {};
-                // TODO run primary-swap somewhere else
-                if (fieldName === primPath)
-                    fieldName = '_id';
-
-                pushMe[fieldName] = dir;
-                sortArray.push(pushMe);
+        if (mangoQuery.sort) {
+            const sortArray: MangoQuerySortPart<RxDocumentType>[] = mangoQuery.sort.map(part => {
+                const key = Object.keys(part)[0];
+                const direction: MangoQuerySortDirection = Object.values(part)[0];
+                const useKey = key === primPath ? '_id' : key;
+                const newPart = { [useKey]: direction };
+                return newPart as any;
             });
             json.sort = sortArray;
         }
 
-        if (options.limit) {
-            if (typeof options.limit !== 'number') {
+        // TODO these check should be in dev-mode
+        if (mangoQuery.limit) {
+            if (typeof mangoQuery.limit !== 'number') {
                 throw newRxTypeError('QU2', {
-                    limit: options.limit
+                    limit: mangoQuery.limit
                 });
             }
-            json.limit = options.limit;
+            json.limit = mangoQuery.limit;
         }
-
-        if (options.skip) {
-            if (typeof options.skip !== 'number') {
+        if (mangoQuery.skip) {
+            if (typeof mangoQuery.skip !== 'number') {
                 throw newRxTypeError('QU3', {
-                    skip: options.skip
+                    skip: mangoQuery.skip
                 });
             }
-            json.skip = options.skip;
+            json.skip = mangoQuery.skip;
         }
 
         // strip empty selectors
@@ -396,52 +377,20 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
         throw pluginMissing('update');
     }
 
-    /**
-     * regex cannot run on primary _id
-     * @link https://docs.cloudant.com/cloudant_query.html#creating-selector-expressions
-     */
-    regex(params: any): RxQuery<RxDocumentType, RxQueryResult> {
-        const clonedThis = this._clone();
 
-        if (this.mquery._path === this.collection.schema.primaryPath) {
-            throw newRxError('QU4', {
-                path: this.mquery._path
-            });
-        }
-        clonedThis.mquery.regex(params);
-
-        return _tunnelQueryCache(clonedThis as any);
+    // we only set some methods of query-builder here
+    // because the others depend on these ones
+    where(_params: any): RxQuery<RxDocumentType, RxQueryResult> {
+        throw pluginMissing('query-builder');
     }
-
-    /**
-     * make sure it searches index because of pouchdb-find bug
-     * @link https://github.com/nolanlawson/pouchdb-find/issues/204
-     */
-    sort(params: any): RxQuery<RxDocumentType, RxQueryResult> {
-        const clonedThis = this._clone();
-
-        // workarround because sort wont work on unused keys
-        if (typeof params !== 'object') {
-            const checkParam = params.charAt(0) === '-' ? params.substring(1) : params;
-            if (!clonedThis.mquery._conditions[checkParam])
-                _sortAddToIndex(checkParam, clonedThis);
-        } else {
-            Object.keys(params)
-                .filter(k => !clonedThis.mquery._conditions[k] || !clonedThis.mquery._conditions[k].$gt)
-                .forEach(k => _sortAddToIndex(k, clonedThis));
-        }
-        clonedThis.mquery.sort(params);
-        return _tunnelQueryCache(clonedThis as any);
+    sort(_params: any): RxQuery<RxDocumentType, RxQueryResult> {
+        throw pluginMissing('query-builder');
     }
-
-    limit(amount: number): RxQuery<RxDocumentType, RxQueryResult> {
-        if (this.op === 'findOne')
-            throw newRxError('QU6');
-        else {
-            const clonedThis = this._clone();
-            clonedThis.mquery.limit(amount);
-            return _tunnelQueryCache(clonedThis as any);
-        }
+    skip(_params: any): RxQuery<RxDocumentType, RxQueryResult> {
+        throw pluginMissing('query-builder');
+    }
+    limit(_params: any): RxQuery<RxDocumentType, RxQueryResult> {
+        throw pluginMissing('query-builder');
     }
 }
 
@@ -456,32 +405,12 @@ export function _getDefaultQuery(collection: RxCollection): MangoQuery {
 /**
  * run this query through the QueryCache
  */
-function _tunnelQueryCache<RxDocumentType, RxQueryResult>(
+export function tunnelQueryCache<RxDocumentType, RxQueryResult>(
     rxQuery: RxQueryBase<RxDocumentType, RxQueryResult>
 ): RxQuery<RxDocumentType, RxQueryResult> {
     return rxQuery.collection._queryCache.getByQuery(rxQuery as any);
 }
 
-/**
- * tunnel the proto-functions of mquery to RxQuery
- */
-function protoMerge(
-    rxQueryProto: any,
-    mQueryProtoKeys: string[]
-) {
-    mQueryProtoKeys
-        .filter(attrName => !attrName.startsWith('_'))
-        .filter(attrName => !rxQueryProto[attrName])
-        .forEach(attrName => {
-            rxQueryProto[attrName] = function (p1: any): RxQuery {
-                const clonedThis = this._clone();
-                clonedThis.mquery[attrName](p1);
-                return _tunnelQueryCache(clonedThis);
-            };
-        });
-}
-
-let protoMerged = false;
 export function createRxQuery(
     op: RxQueryOP,
     queryObj: MangoQuery,
@@ -502,56 +431,11 @@ export function createRxQuery(
     let ret = new RxQueryBase(op, queryObj, collection);
 
     // ensure when created with same params, only one is created
-    ret = _tunnelQueryCache(ret);
-
-    if (!protoMerged) {
-        protoMerged = true;
-        protoMerge(
-            Object.getPrototypeOf(ret),
-            Object.getOwnPropertyNames(Object.getPrototypeOf(ret.mquery))
-        );
-    }
+    ret = tunnelQueryCache(ret);
 
     runPluginHooks('createRxQuery', ret);
 
     return ret;
-}
-
-/**
- * throws an error that says that the key is not in the schema
- */
-function _throwNotInSchema(key: string) {
-    throw newRxError('QU5', {
-        key
-    });
-}
-
-/**
- * adds the field of 'sort' to the search-index
- * @link https://github.com/nolanlawson/pouchdb-find/issues/204
- */
-function _sortAddToIndex(checkParam: any, clonedThis: any) {
-    const schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(checkParam);
-    if (!schemaObj) _throwNotInSchema(checkParam);
-
-
-    switch (schemaObj.type) {
-        case 'integer':
-            // TODO change back to -Infinity when issue resolved
-            // @link https://github.com/pouchdb/pouchdb/issues/6454
-            clonedThis.mquery.where(checkParam).gt(-9999999999999999999999999999); // -Infinity does not work since pouchdb 6.2.0
-            break;
-        case 'string':
-            /**
-             * strings need an empty string, see
-             * @link https://github.com/pubkey/rxdb/issues/585
-             */
-            clonedThis.mquery.where(checkParam).gt('');
-            break;
-        default:
-            clonedThis.mquery.where(checkParam).gt(null);
-            break;
-    }
 }
 
 /**
