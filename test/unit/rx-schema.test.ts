@@ -843,13 +843,10 @@ config.parallel('rx-schema.test.js', () => {
                 }
             });
 
-            console.log('aaaaaa');
             const query = col.find()
                 .where('fileInfo.watch.time')
                 .gt(-9999999999999999999999999999)
                 .sort('fileInfo.watch.time');
-            console.dir(query.toJSON());
-            console.log('aaaaaa DONE');
             const found = await query.exec();
             assert.strictEqual(found.length, 1);
             assert.strictEqual(found[0].fileInfo.watch.time, 1);

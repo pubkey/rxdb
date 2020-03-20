@@ -10,7 +10,8 @@ import {
 
 import {
     RxCollection,
-    RxDocument
+    RxDocument,
+    RxDocumentTypeWithRev
 } from './types';
 import { RxCollectionBase } from './rx-collection';
 
@@ -18,7 +19,7 @@ import { RxCollectionBase } from './rx-collection';
 export type RxChangeEventJson<DocType = any> = {
     operation: WriteOperation,
     documentId: string,
-    documentData: DocType
+    documentData: RxDocumentTypeWithRev<DocType>
     previousData?: DocType,
     databaseToken: string,
     collectionName: string,
@@ -36,7 +37,7 @@ export class RxChangeEvent<DocType = any> {
     constructor(
         public readonly operation: WriteOperation,
         public readonly documentId: string,
-        public readonly documentData: DocType,
+        public readonly documentData: RxDocumentTypeWithRev<DocType>,
         public readonly databaseToken: string,
         public readonly collectionName: string,
         public readonly isLocal: boolean,
@@ -116,7 +117,7 @@ export function changeEventfromPouchChange<DocType>(
     }
 
     // decompress / primarySwap
-    const doc: DocType = collection._handleFromPouch(changeDoc);
+    const doc: RxDocumentTypeWithRev<DocType> = collection._handleFromPouch(changeDoc);
     const documentId: string = (doc as any)[collection.schema.primaryPath] as string;
 
     const cE = new RxChangeEvent<DocType>(
@@ -133,7 +134,7 @@ export function changeEventfromPouchChange<DocType>(
 
 export function createInsertEvent<RxDocumentType>(
     collection: RxCollectionBase<RxDocumentType>,
-    docData: RxDocumentType,
+    docData: RxDocumentTypeWithRev<RxDocumentType>,
     doc?: RxDocument<RxDocumentType>
 ): RxChangeEvent<RxDocumentType> {
     const ret = new RxChangeEvent<RxDocumentType>(
@@ -152,7 +153,7 @@ export function createInsertEvent<RxDocumentType>(
 
 export function createUpdateEvent<RxDocumentType>(
     collection: RxCollectionBase<RxDocumentType>,
-    docData: RxDocumentType,
+    docData: RxDocumentTypeWithRev<RxDocumentType>,
     previous: RxDocumentType,
     rxDocument: RxDocument<RxDocumentType>
 ): RxChangeEvent<RxDocumentType> {
@@ -170,7 +171,7 @@ export function createUpdateEvent<RxDocumentType>(
 
 export function createDeleteEvent<RxDocumentType>(
     collection: RxCollectionBase<RxDocumentType>,
-    docData: RxDocumentType,
+    docData: RxDocumentTypeWithRev<RxDocumentType>,
     previous: RxDocumentType,
     rxDocument: RxDocument<RxDocumentType>
 ): RxChangeEvent<RxDocumentType> {

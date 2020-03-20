@@ -377,9 +377,9 @@ export class RxCollectionBase<
             }).then(() => {
                 // event
                 const emitEvent = createInsertEvent(
-                    this,
+                    this as any,
                     useJson,
-                    newDoc
+                    newDoc as any
                 );
                 this.$emit(emitEvent);
 
@@ -427,7 +427,7 @@ export class RxCollectionBase<
                         // emit events
                         rxDocuments.forEach(doc => {
                             const emitEvent = createInsertEvent(
-                                this,
+                                this as any,
                                 doc,
                                 docsMap.get(doc.primary)
                             );

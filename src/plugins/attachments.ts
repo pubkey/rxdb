@@ -12,7 +12,7 @@ import {
     newRxError
 } from '../rx-error';
 import {
-    RxDocument, RxPlugin
+    RxDocument, RxPlugin, RxDocumentTypeWithRev
 } from '../types';
 
 function ensureSchemaSupportsAttachments(doc: any) {
@@ -24,9 +24,9 @@ function ensureSchemaSupportsAttachments(doc: any) {
     }
 }
 
-function resyncRxDocument(doc: any) {
-    return doc.collection.pouch.get(doc.primary).then((docData: any) => {
-        const data = doc.collection._handleFromPouch(docData);
+function resyncRxDocument<RxDocType>(doc: any) {
+    return doc.collection.pouch.get(doc.primary).then((docDataFromPouch: any) => {
+        const data: RxDocumentTypeWithRev<RxDocType> = doc.collection._handleFromPouch(docDataFromPouch);
         const changeEvent = createUpdateEvent(
             doc.collection,
             data,
