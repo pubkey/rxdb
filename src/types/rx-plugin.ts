@@ -9,6 +9,7 @@ export interface RxPlugin {
         RxDatabase?: Function
     };
     overwritable?: {
+        isDevMove?: () => boolean;
         validatePassword?: Function,
         createKeyCompressor?: Function,
         createLeaderElector?: Function,

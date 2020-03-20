@@ -18,8 +18,8 @@ export const ERROR_MESSAGES: { [k: string]: string } = {
 
     // rx-query
     QU1: 'RxQuery._execOverDatabase(): op not known',
-    QU2: 'limit() must get a number',
-    QU3: 'skip() must get a number',
+    // removed in 9.0.0 - QU2: 'limit() must get a number',
+    // removed in 9.0.0 - QU3: 'skip() must get a number',
     QU4: 'RxQuery.regex(): You cannot use .regex() on the primary field',
     QU5: 'RxQuery.sort(): does not work because key is not defined in the schema',
     QU6: 'RxQuery.limit(): cannot be called on .findOne()',

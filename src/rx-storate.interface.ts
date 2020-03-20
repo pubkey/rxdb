@@ -1,8 +1,11 @@
-import { MangoQuery } from './types/rx-query';
+import { MangoQuery, RxQuery } from './types/rx-query';
 import {
     SortComparator,
     QueryMatcher
 } from 'event-reduce-js';
+
+
+export type PreparedQuery<DocType> = MangoQuery<DocType> | any;
 
 /**
  * TODO WORK IN PROGRESS!
@@ -17,6 +20,22 @@ import {
  */
 export interface RxStorage<RxStorageInstance = any> {
     name: string;
+
+    /**
+     * pouchdb and others have some bugs
+     * and behaviors that must be worked arround
+     * before querying the collection.
+     * For performance reason this preparation
+     * runs in a single step so it can be cached
+     * when the query is used multiple times
+     *
+     * @returns a format of the query than can be used with the storage
+     */
+    prepareQuery<RxDocType>(
+        rxQuery: RxQuery<RxDocType, any>,
+        // a query that can be mutated by the function without side effects
+        mutateableQuery: MangoQuery<RxDocType>
+    ): PreparedQuery<RxDocType>;
 
     /**
      * returns the sort-comparator,

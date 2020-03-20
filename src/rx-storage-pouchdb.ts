@@ -3,12 +3,14 @@ import {
     massageSelector
 } from 'pouchdb-selector-core';
 
-import { RxStorage } from './rx-storate.interface';
+import { RxStorage, PreparedQuery } from './rx-storate.interface';
 import {
     MangoQuery,
     MangoQuerySortPart,
     PouchDBInstance,
-    PouchSettings
+    PouchSettings,
+    RxQuery,
+    MangoQuerySortDirection
 } from './types';
 import { CompareFunction } from 'array-push-at-sort-position';
 import { flatClone, adapterObject } from './util';
@@ -17,6 +19,7 @@ import { runPluginHooks } from './hooks';
 import {
     PouchDB
 } from './pouch-db';
+import { newRxError } from './rx-error';
 
 export class RxStoragePouchDbClass implements RxStorage<PouchDBInstance> {
     public name: string = 'pouchdb';
@@ -123,6 +126,113 @@ export class RxStoragePouchDbClass implements RxStorage<PouchDBInstance> {
             pouchDbParameters.location,
             pouchDBOptions
         ) as any;
+    }
+
+    /**
+     * pouchdb has many bugs and strange behaviors
+     * this functions takes a normal mango query
+     * and transforms it to one that fits for pouchdb
+     */
+    prepareQuery<RxDocType>(
+        rxQuery: RxQuery<RxDocType>,
+        mutateableQuery: MangoQuery<RxDocType>
+    ): PreparedQuery<RxDocType> {
+        const primPath = rxQuery.collection.schema.primaryPath;
+        const query = mutateableQuery;
+
+        /**
+         * because sort wont work on unused keys we have to workarround
+         * so we add the key to the selector if necessary
+         * @link https://github.com/nolanlawson/pouchdb-find/issues/204
+         */
+        if (query.sort) {
+            query.sort.forEach(sortPart => {
+                const key = Object.keys(sortPart)[0];
+                if (!query.selector[key] || !query.selector[key].$gt) {
+                    const schemaObj = rxQuery.collection.schema.getSchemaByObjectPath(key);
+                    if (!schemaObj) {
+                        throw newRxError('QU5', {
+                            key
+                        });
+                    }
+                    if (!query.selector[key]) {
+                        query.selector[key] = {};
+                    }
+                    switch (schemaObj.type) {
+                        case 'number':
+                        case 'integer':
+                            // TODO change back to -Infinity when issue resolved
+                            // @link https://github.com/pouchdb/pouchdb/issues/6454
+                            // -Infinity does not work since pouchdb 6.2.0
+                            query.selector[key].$gt = -9999999999999999999999999999;
+                            break;
+                        case 'string':
+                            /**
+                             * strings need an empty string, see
+                             * @link https://github.com/pubkey/rxdb/issues/585
+                             */
+                            if (typeof query.selector[key] !== 'string') {
+                                query.selector[key].$gt = '';
+                            }
+                            break;
+                        default:
+                            query.selector[key].$gt = null;
+                            break;
+                    }
+                }
+            });
+        }
+
+        // regex does not work over the primary key
+        // TODO move this to dev mode
+        if (query.selector[primPath] && query.selector[primPath].$regex) {
+            throw newRxError('QU4', {
+                path: primPath,
+                query: rxQuery.mangoQuery
+            });
+        }
+
+        // primary-swap sorting
+        if (query.sort) {
+            const sortArray: MangoQuerySortPart<RxDocType>[] = query.sort.map(part => {
+                const key = Object.keys(part)[0];
+                const direction: MangoQuerySortDirection = Object.values(part)[0];
+                const useKey = key === primPath ? '_id' : key;
+                const newPart = { [useKey]: direction };
+                return newPart as any;
+            });
+            query.sort = sortArray;
+        }
+
+        // strip empty selectors
+        // TODO this has shit performance because of that many filters, use a single one!
+        Object
+            .entries(query.selector)
+            .filter(([, v]) => (typeof v === 'object'))
+            .filter(([, v]) => v !== null)
+            .filter(([, v]) => !Array.isArray(v))
+            .filter(([, v]) => Object.keys((v as any)).length === 0)
+            .forEach(([k]) => delete query.selector[k]);
+
+        // primary swap
+        if (
+            primPath !== '_id' &&
+            query.selector[primPath]
+        ) {
+            // selector
+            query.selector._id = query.selector[primPath];
+            delete query.selector[primPath];
+        }
+
+        // if no selector is used, pouchdb has a bug, so we add a default-selector
+        if (Object.keys(query.selector).length === 0) {
+            query.selector = {
+                _id: {}
+            };
+        }
+
+
+        return query;
     }
 }
 

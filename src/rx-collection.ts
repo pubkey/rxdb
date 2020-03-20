@@ -540,6 +540,12 @@ export class RxCollectionBase<
             if (!queryObj) {
                 queryObj = _getDefaultQuery(this as any);
             }
+
+            // cannot have limit on findOne queries
+            if ((queryObj as MangoQuery).limit) {
+                throw newRxError('QU6');
+            }
+
             query = createRxQuery('findOne', queryObj, this as any);
         }
 

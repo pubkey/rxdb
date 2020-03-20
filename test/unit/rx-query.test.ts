@@ -104,22 +104,6 @@ config.parallel('rx-query.test.js', () => {
             assert.strictEqual(query1, query2);
             col.database.destroy();
         });
-        it('same queries should have same string even when in different-selector-order', async () => {
-            const col = await humansCollection.create(0);
-
-            const query1 = col.find()
-                .where('age').gt(10)
-                .where('name').ne('foobar')
-                .sort('passportId').toString();
-
-            const query2 = col.find()
-                .where('name').ne('foobar')
-                .where('age').gt(10)
-                .sort('passportId').toString();
-
-            assert.strictEqual(query1, query2);
-            col.database.destroy();
-        });
     });
     describe('immutable', () => {
         it('should not be the same object (sort)', async () => {
@@ -224,28 +208,8 @@ config.parallel('rx-query.test.js', () => {
             assert.ok(query1 === query2);
             col.database.destroy();
         });
-        it('ensure its the same query when selector-order is different', async () => {
-            const col = await humansCollection.create(0);
 
-            const query1 = col.find()
-                .where('age').gt(10)
-                .where('name').ne('foobar')
-                .sort('passportId');
-
-            const query2 = col.find()
-                .where('name').ne('foobar')
-                .where('age').gt(10)
-                .sort('passportId');
-
-            assert.ok(query1 === query2);
-            col.database.destroy();
-        });
-
-        it('TODO should distinguish between different sort-orders', async () => {
-            // TODO I don't know if this is defined in the couchdb-spec
-            /*
-            return;
-
+        it('should distinguish between different sort-orders', async () => {
             const col = await humansCollection.create(0);
             const q = col.find()
                 .where('name').ne('Alice')
@@ -260,11 +224,9 @@ config.parallel('rx-query.test.js', () => {
                 .sort('name')
                 .sort('-age');
 
-
             assert.notStrictEqual(q, q2);
             assert.notStrictEqual(q.id, q2.id);
             col.database.destroy();
-            */
         });
     });
     describe('doesDocMatchQuery()', () => {

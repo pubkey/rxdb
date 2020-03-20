@@ -9,7 +9,15 @@ import {
     pluginMissing
 } from './util';
 
-const funs: { [k: string]: Function } = {
+const funs = {
+    /**
+     * if this method is overwritte with one
+     * that returns true, we do additional checks
+     * which help the developer but have bad performance
+     */
+    isDevMode(): boolean {
+        return false;
+    },
     /**
      * validates if a password can be used
      * @overwritten by plugin (optional)
@@ -49,4 +57,5 @@ const funs: { [k: string]: Function } = {
     }
 };
 
+// TODO no default exports
 export default funs;

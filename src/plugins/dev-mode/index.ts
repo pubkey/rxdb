@@ -13,6 +13,9 @@ import { checkMigrationStrategies } from './check-migration-strategies';
 export const RxDBDevModePlugin: RxPlugin = {
     rxdb: true,
     overwritable: {
+        isDevMove() {
+            return true;
+        },
         tunnelErrorMessage(code: string) {
             if (!ERROR_MESSAGES[code]) {
                 console.error('RxDB: Error-Code not known: ' + code);

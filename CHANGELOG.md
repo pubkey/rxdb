@@ -21,6 +21,9 @@ Breaking:
   - Change `.find()` and `.findOne()` to acccept a full MangoQuery instead of just the selector
   - Chained queries like `collection.find().where('x').eq('foo')` moved out of the core module into the query-builder plugin
 
+Other:
+  - Removed many runtime type checks that now should be covered by typescript in buildtime
+
 Docs:
   - Removed examples for `require()` CommonJS loading
 

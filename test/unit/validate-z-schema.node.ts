@@ -80,8 +80,6 @@ config.parallel('validate-z-schema.node.js', () => {
                     error = e;
                 }
 
-                console.log(error);
-
                 assert.ok(error);
                 assert.ok(error.parameters.errors.length > 0);
                 db.destroy();

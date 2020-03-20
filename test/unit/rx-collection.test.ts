@@ -571,7 +571,7 @@ config.parallel('rx-collection.test.js', () => {
                     it('should crash with string as query', async () => {
                         const c = await humansCollection.create();
                         await AsyncTestUtil.assertThrows(
-                            () => c.find('foobar').exec(),
+                            () => (c as any).find('foobar').exec(),
                             'RxError',
                             'findOne'
                         );
@@ -580,7 +580,7 @@ config.parallel('rx-collection.test.js', () => {
                     it('should crash with array as query', async () => {
                         const c = await humansCollection.create();
                         await AsyncTestUtil.assertThrows(
-                            () => c.find([]).exec(),
+                            () => (c as any).find([]).exec(),
                             'RxTypeError'
                         );
                         c.database.destroy();
@@ -686,7 +686,7 @@ config.parallel('rx-collection.test.js', () => {
                     it('sort by age desc (with default index-search)', async () => {
                         const c = await humansCollection.createAgeIndex();
                         const docs = await c.find().sort({
-                            age: -1
+                            age: 'desc'
                         }).exec();
                         assert.strictEqual(docs.length, 20);
                         assert.ok(docs[0]._data.age >= docs[1]._data.age);
@@ -695,7 +695,7 @@ config.parallel('rx-collection.test.js', () => {
                     it('sort by age asc', async () => {
                         const c = await humansCollection.createAgeIndex();
                         const docs = await c.find().sort({
-                            age: 1
+                            age: 'asc'
                         }).exec();
                         assert.strictEqual(docs.length, 20);
                         assert.ok(docs[0]._data.age <= docs[1]._data.age);
@@ -789,10 +789,10 @@ config.parallel('rx-collection.test.js', () => {
                         const c = await humansCollection.createAgeIndex();
 
                         const desc = await c.find().sort({
-                            age: -1
+                            age: 'desc'
                         }).exec();
                         const asc = await c.find().sort({
-                            age: 1
+                            age: 'asc'
                         }).exec();
                         const lastDesc = desc[desc.length - 1];
                         assert.strictEqual(lastDesc._data.passportId, asc[0]._data.passportId);
@@ -801,10 +801,10 @@ config.parallel('rx-collection.test.js', () => {
                     it('find the same twice', async () => {
                         const c = await humansCollection.createNested(5);
                         const doc1 = await c.findOne().sort({
-                            passportId: 1
+                            passportId: 'asc'
                         }).exec();
                         const doc2 = await c.findOne().sort({
-                            passportId: 1
+                            passportId: 'asc'
                         }).exec();
                         assert.strictEqual(doc1._data.passportId, doc2._data.passportId);
                         c.database.destroy();
@@ -823,7 +823,7 @@ config.parallel('rx-collection.test.js', () => {
                                 }
                             })
                                 .sort({
-                                    age: -1
+                                    age: 'desc'
                                 })
                                 .exec(),
                             Error
@@ -864,14 +864,14 @@ config.parallel('rx-collection.test.js', () => {
                     it('get last in order', async () => {
                         const c = await humansCollection.create(20);
                         const docs = await c.find().sort({
-                            passportId: 1
+                            passportId: 'asc'
                         }).exec();
                         let first: any = await c.find().sort({
-                            passportId: 1
+                            passportId: 'asc'
                         }).limit(1).exec();
                         first = first[0];
                         let last: any = await c.find().sort({
-                            passportId: -1
+                            passportId: 'desc'
                         }).limit(1).exec();
                         last = last[0];
                         assert.strictEqual(last['_data'].passportId, docs[(docs.length - 1)]._data.passportId);
@@ -883,16 +883,6 @@ config.parallel('rx-collection.test.js', () => {
                         const docs = await c.find().limit(1).limit(null).exec();
                         assert.ok(docs.length > 1);
                         assert.ok(isRxDocument(docs[0]));
-                        c.database.destroy();
-                    });
-                });
-                describe('negative', () => {
-                    it('crash if no integer', async () => {
-                        const c = await humansCollection.create(20);
-                        await AsyncTestUtil.assertThrows(
-                            () => c.find().limit('foobar' as any).exec(),
-                            'RxTypeError'
-                        );
                         c.database.destroy();
                     });
                 });
@@ -909,10 +899,10 @@ config.parallel('rx-collection.test.js', () => {
                     it('skip first in order', async () => {
                         const c = await humansCollection.create();
                         const docs = await c.find().sort({
-                            passportId: 1
+                            passportId: 'asc'
                         }).exec();
                         const noFirst = await c.find().sort({
-                            passportId: 1
+                            passportId: 'asc'
                         }).skip(1).exec();
                         assert.strictEqual(noFirst[0]._data.passportId, docs[1]._data.passportId);
                         c.database.destroy();
@@ -929,16 +919,6 @@ config.parallel('rx-collection.test.js', () => {
                         const docs = await c.find().exec();
                         const noFirst = await c.find().skip(1).skip(null).exec();
                         assert.notStrictEqual(noFirst[0]._data.passportId, docs[1]._data.passportId);
-                        c.database.destroy();
-                    });
-                });
-                describe('negative', () => {
-                    it('crash if no integer', async () => {
-                        const c = await humansCollection.create(20);
-                        await AsyncTestUtil.assertThrows(
-                            () => c.find().skip('foobar' as any).exec(),
-                            'RxTypeError'
-                        );
                         c.database.destroy();
                     });
                 });
@@ -1156,19 +1136,10 @@ config.parallel('rx-collection.test.js', () => {
                 });
             });
             describe('negative', () => {
-                it('crash on .limit()', async () => {
-                    const c = await humansCollection.create(20);
-                    await AsyncTestUtil.assertThrows(
-                        () => c.findOne().limit(1).exec(),
-                        'RxError',
-                        'findOne'
-                    );
-                    c.database.destroy();
-                });
                 it('BUG: should throw when no-string given (number)', async () => {
                     const c = await humansCollection.create();
                     assert.throws(
-                        () => c.findOne(5),
+                        () => (c as any).findOne(5),
                         TypeError
                     );
                     c.database.destroy();
@@ -1176,7 +1147,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('BUG: should throw when no-string given (array)', async () => {
                     const c = await humansCollection.create();
                     assert.throws(
-                        () => c.findOne([]),
+                        () => (c as any).findOne([]),
                         TypeError
                     );
                     c.database.destroy();

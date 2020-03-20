@@ -17,7 +17,8 @@ import {
 import {
     sortObject,
     stringifyFilter,
-    pluginMissing
+    pluginMissing,
+    clone
 } from './util';
 import {
     newRxError,
@@ -33,7 +34,6 @@ import {
     RxQuery,
     MangoQuery,
     MangoQuerySortPart,
-    MangoQuerySortDirection,
     MangoQuerySelector
 } from './types';
 
@@ -42,6 +42,7 @@ import {
 } from './rx-document-prototype-merge';
 import { RxChangeEvent } from './rx-change-event';
 import { calculateNewResults } from './event-reduce';
+import { PreparedQuery } from './rx-storate.interface';
 
 let _queryCount = 0;
 const newQueryID = function (): number {
@@ -49,6 +50,14 @@ const newQueryID = function (): number {
 };
 
 export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] | RxDocumentType> {
+
+    public id: number = newQueryID();
+
+    /**
+     * counts how often the execution on the whole db was done
+     * (used for tests and debugging)
+     */
+    public _execOverDatabaseCount: number = 0;
 
     // used by some plugins
     public other: any = {};
@@ -118,7 +127,7 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
         }
         return this._massageSelector;
     }
-    public id: number = newQueryID();
+
 
     // stores the changeEvent-Number of the last handled change-event
     public _latestChangeEvent: -1 | any = -1;
@@ -129,12 +138,6 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
 
     // contains the results as RxDocument[]
     public _resultsDocs$: BehaviorSubject<any> = new BehaviorSubject(null);
-
-    /**
-     * counts how often the execution on the whole db was done
-     * (used for tests and debugging)
-     */
-    public _execOverDatabaseCount: number = 0;
 
     /**
      * ensures that the exec-runs
@@ -153,12 +156,12 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
      */
     private _$?: BehaviorSubject<RxQueryResult>;
 
-    private _toJSON: any;
+    private _toJSON: PreparedQuery<RxDocumentType>;
 
     /**
      * get the key-compression version of this query
      */
-    private _keyCompress?: { selector: {}, sort: [] };
+    private _keyCompress?: MangoQuery<any>;
 
 
     /**
@@ -191,6 +194,8 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
         this._resultsDocs$.next(docs);
         return docs as any;
     }
+
+
 
     /**
      * executes the query on the database
@@ -241,76 +246,18 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
                     first()
                 ).toPromise());
     }
-    toJSON(): MangoQuery<RxDocumentType> {
-        if (this._toJSON) return this._toJSON;
 
-        const mangoQuery = this.mangoQuery;
-        const primPath = this.collection.schema.primaryPath;
-
-        const json: MangoQuery<RxDocumentType> = {
-            selector: mangoQuery.selector
-        };
-
-        // sort
-        if (mangoQuery.sort) {
-            const sortArray: MangoQuerySortPart<RxDocumentType>[] = mangoQuery.sort.map(part => {
-                const key = Object.keys(part)[0];
-                const direction: MangoQuerySortDirection = Object.values(part)[0];
-                const useKey = key === primPath ? '_id' : key;
-                const newPart = { [useKey]: direction };
-                return newPart as any;
-            });
-            json.sort = sortArray;
+    toJSON(): PreparedQuery<RxDocumentType> {
+        if (!this._toJSON) {
+            this._toJSON = this.collection.database.storage.prepareQuery(
+                this.asRxQuery,
+                clone(this.mangoQuery)
+            );
         }
-
-        // TODO these check should be in dev-mode
-        if (mangoQuery.limit) {
-            if (typeof mangoQuery.limit !== 'number') {
-                throw newRxTypeError('QU2', {
-                    limit: mangoQuery.limit
-                });
-            }
-            json.limit = mangoQuery.limit;
-        }
-        if (mangoQuery.skip) {
-            if (typeof mangoQuery.skip !== 'number') {
-                throw newRxTypeError('QU3', {
-                    skip: mangoQuery.skip
-                });
-            }
-            json.skip = mangoQuery.skip;
-        }
-
-        // strip empty selectors
-        Object
-            .entries((json.selector as any))
-            .filter(([, v]) => typeof v === 'object')
-            .filter(([, v]) => v !== null)
-            .filter(([, v]) => !Array.isArray(v))
-            .filter(([, v]) => Object.keys((v as any)).length === 0)
-            .forEach(([k]) => delete json.selector[k]);
-
-        // primary swap
-        if (
-            primPath !== '_id' &&
-            json.selector[primPath]
-        ) {
-            // selector
-            json.selector._id = json.selector[primPath];
-            delete json.selector[primPath];
-        }
-
-        // if no selector is used, pouchdb has a bug, so we add a default-selector
-        if (Object.keys(json.selector).length === 0) {
-            json.selector = {
-                _id: {}
-            };
-        }
-
-        this._toJSON = json;
         return this._toJSON;
     }
-    keyCompress() {
+
+    keyCompress(): MangoQuery<any> {
         if (!this.collection.schema.doKeyCompression()) {
             return this.toJSON();
         } else {
@@ -320,7 +267,7 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
                     ._keyCompressor
                     .compressQuery(this.toJSON());
             }
-            return this._keyCompress;
+            return this._keyCompress as any;
         }
     }
 
@@ -369,6 +316,15 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
             })
             .then(() => ret);
     }
+
+
+    /**
+     * helper function to transform RxQueryBase to RxQuery type
+     */
+    get asRxQuery(): RxQuery<RxDocumentType, RxQueryResult> {
+        return this as any;
+    }
+
 
     /**
      * updates all found documents
