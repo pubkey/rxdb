@@ -316,3 +316,18 @@ export function getHeightOfRevision(revString: string): number {
  * TODO check if this variable exists somewhere else
  */
 export const LOCAL_PREFIX: string = '_local/';
+
+/**
+ * overwrites the getter with the actual value
+ * Mostly used for caching stuff on the first run
+ */
+export function overwriteGetterForCaching<ValueType = any>(
+    obj: any,
+    getterName: string,
+    value: ValueType
+): ValueType {
+    Object.defineProperty(obj, getterName, {
+        get: function () { return value; }
+    });
+    return value;
+}

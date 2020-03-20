@@ -18,7 +18,8 @@ import {
     sortObject,
     stringifyFilter,
     pluginMissing,
-    clone
+    clone,
+    overwriteGetterForCaching
 } from './util';
 import {
     newRxError,
@@ -120,13 +121,6 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
         }
         return this._$ as any;
     }
-    get massageSelector() {
-        if (!this._massageSelector) {
-            const selector = this.mangoQuery.selector;
-            this._massageSelector = massageSelector(selector);
-        }
-        return this._massageSelector;
-    }
 
 
     // stores the changeEvent-Number of the last handled change-event
@@ -145,8 +139,6 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
      */
     public _ensureEqualQueue: Promise<boolean> = Promise.resolve(false);
 
-    private stringRep?: string;
-
     /**
      * Returns an observable that emits the results
      * This should behave like an rxjs-BehaviorSubject which means:
@@ -155,31 +147,6 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
      * - Do not emit anything before the first result-set was created (no null)
      */
     private _$?: BehaviorSubject<RxQueryResult>;
-
-    private _toJSON: PreparedQuery<RxDocumentType>;
-
-    /**
-     * get the key-compression version of this query
-     */
-    private _keyCompress?: MangoQuery<any>;
-
-
-    /**
-     * cached call to get the massageSelector
-     */
-    private _massageSelector?: any;
-    toString(): string {
-        if (!this.stringRep) {
-            const stringObj = sortObject({
-                op: this.op,
-                query: this.mangoQuery,
-                other: this.other
-            }, true);
-
-            this.stringRep = JSON.stringify(stringObj, stringifyFilter);
-        }
-        return this.stringRep;
-    }
 
     /**
      * set the new result-data as result-docs of the query
@@ -247,28 +214,63 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
                 ).toPromise());
     }
 
-    toJSON(): PreparedQuery<RxDocumentType> {
-        if (!this._toJSON) {
-            this._toJSON = this.collection.database.storage.prepareQuery(
-                this.asRxQuery,
-                clone(this.mangoQuery)
-            );
-        }
-        return this._toJSON;
+
+    /**
+     * cached call to get the massageSelector
+     * @overwrites itself with the actual value
+     */
+    get massageSelector(): any {
+        return overwriteGetterForCaching(
+            this,
+            'massageSelector',
+            massageSelector(this.mangoQuery.selector)
+        );
     }
 
+    /**
+     * returns a string that is used for equal-comparisons
+     * @overwrites itself with the actual value
+     */
+    toString(): string {
+        const stringObj = sortObject({
+            op: this.op,
+            query: this.mangoQuery,
+            other: this.other
+        }, true);
+        const value = JSON.stringify(stringObj, stringifyFilter);
+        this.toString = () => value;
+        return value;
+    }
+
+    /**
+     * returns the prepared query
+     * @overwrites itself with the actual value
+     */
+    toJSON(): PreparedQuery<RxDocumentType> {
+        const value = this.collection.database.storage.prepareQuery(
+            this.asRxQuery,
+            clone(this.mangoQuery)
+        );
+        this.toJSON = () => value;
+        return value;
+    }
+
+    /**
+     * returns the key-compressed version of the query
+     * @overwrites itself with the actual value
+     */
     keyCompress(): MangoQuery<any> {
+        let value: MangoQuery<any>;
         if (!this.collection.schema.doKeyCompression()) {
-            return this.toJSON();
+            value = this.toJSON();
         } else {
-            if (!this._keyCompress) {
-                this._keyCompress = this
-                    .collection
-                    ._keyCompressor
-                    .compressQuery(this.toJSON());
-            }
-            return this._keyCompress as any;
+            value = this
+                .collection
+                ._keyCompressor
+                .compressQuery(this.toJSON());
         }
+        this.keyCompress = () => value;
+        return value;
     }
 
     /**
@@ -324,7 +326,6 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
     get asRxQuery(): RxQuery<RxDocumentType, RxQueryResult> {
         return this as any;
     }
-
 
     /**
      * updates all found documents
