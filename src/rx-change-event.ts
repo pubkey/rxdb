@@ -13,8 +13,6 @@ import {
     RxDocument,
     RxDocumentTypeWithRev
 } from './types';
-import { RxCollectionBase } from './rx-collection';
-
 
 export type RxChangeEventJson<DocType = any> = {
     operation: WriteOperation,
@@ -133,7 +131,7 @@ export function changeEventfromPouchChange<DocType>(
 
 
 export function createInsertEvent<RxDocumentType>(
-    collection: RxCollectionBase<RxDocumentType>,
+    collection: RxCollection<RxDocumentType>,
     docData: RxDocumentTypeWithRev<RxDocumentType>,
     doc?: RxDocument<RxDocumentType>
 ): RxChangeEvent<RxDocumentType> {
@@ -152,7 +150,7 @@ export function createInsertEvent<RxDocumentType>(
 }
 
 export function createUpdateEvent<RxDocumentType>(
-    collection: RxCollectionBase<RxDocumentType>,
+    collection: RxCollection<RxDocumentType>,
     docData: RxDocumentTypeWithRev<RxDocumentType>,
     previous: RxDocumentType,
     rxDocument: RxDocument<RxDocumentType>
@@ -170,7 +168,7 @@ export function createUpdateEvent<RxDocumentType>(
 }
 
 export function createDeleteEvent<RxDocumentType>(
-    collection: RxCollectionBase<RxDocumentType>,
+    collection: RxCollection<RxDocumentType>,
     docData: RxDocumentTypeWithRev<RxDocumentType>,
     previous: RxDocumentType,
     rxDocument: RxDocument<RxDocumentType>

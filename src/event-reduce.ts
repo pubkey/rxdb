@@ -6,7 +6,6 @@ import {
 } from 'event-reduce-js';
 import { RxQuery, MangoQuery } from './types';
 import { RxChangeEvent } from './rx-change-event';
-import { RxStorage } from './rx-storate.interface';
 
 export type EventReduceResultNeg = {
     runFullQueryAgain: true,
@@ -37,7 +36,7 @@ export function getQueryParams<RxDocType>(
     rxQuery: RxQuery<RxDocType>
 ): QueryParams<RxDocType> {
     if (!RXQUERY_QUERY_PARAMS_CACHE.has(rxQuery)) {
-        const storage: RxStorage = rxQuery.collection.database.storage;
+        const storage = rxQuery.collection.database.storage;
         const queryJson: MangoQuery<RxDocType> = rxQuery.toJSON();
         const primaryKey = rxQuery.collection.schema.primaryPath;
         const ret = {
