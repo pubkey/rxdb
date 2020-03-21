@@ -261,6 +261,7 @@ export class RxGraphQLReplicationState {
             doc[this.deletedFlag] = !!change['deleted'];
             delete doc._deleted;
             delete doc._attachments;
+            delete doc._replication_id;
 
             if (!this.syncRevisions) {
                 delete doc._rev;
