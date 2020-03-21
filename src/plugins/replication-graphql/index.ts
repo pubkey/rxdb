@@ -359,6 +359,8 @@ export class RxGraphQLReplicationState {
             }
 
             toPouch._rev = newRevision;
+        } else {
+            toPouch._replication_id = toPouch._rev;
         }
 
         await this.collection.pouch.bulkDocs(

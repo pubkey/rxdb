@@ -109,6 +109,7 @@ export async function getChangesSinceLastPushSequence(
                 change.doc._rev
             )) return false;
 
+            if (change.doc._replication_id === change.doc._rev) return false;
             /**
              * filter out internal docs
              * that are used for views or indexes in pouchdb
