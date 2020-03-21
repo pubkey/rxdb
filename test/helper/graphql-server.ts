@@ -81,12 +81,22 @@ export async function spawn<T>(
         type Mutation {
             setHuman(human: HumanInput): Human
         }
+        input RevisionInput {
+          start: Int!,
+          ids: [String!]!
+        }
         input HumanInput {
             id: ID!,
             name: String!,
             age: Int!,
             updatedAt: Int!,
-            deleted: Boolean!
+            deleted: Boolean!,
+            _rev: String,
+            _revisions: RevisionInput,
+        }
+        type Revision {
+          start: Int!,
+          ids: [String!]!
         }
         type Human {
             id: ID!,
@@ -94,6 +104,8 @@ export async function spawn<T>(
             age: Int!,
             updatedAt: Int!,
             deleted: Boolean!
+            _rev: String,
+            _revisions: Revision,
         }
         type Subscription {
             humanChanged: Human
