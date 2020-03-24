@@ -8,19 +8,12 @@ import * as humansCollection from '../helper/humans-collection';
 
 import {
     createRxSchema,
-    RxSchema,
     createRxDatabase
 } from '../../';
 import {
     createCrypter
 } from '../../dist/lib/crypter';
 import * as util from '../../dist/lib/util';
-import {
-
-} from '../../';
-import {
-    Crypter
-} from '../../src/crypter';
 
 config.parallel('encryption.test.js', () => {
     describe('Schema.encryptedPaths', () => {

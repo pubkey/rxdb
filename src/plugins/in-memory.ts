@@ -153,7 +153,6 @@ export class InMemoryRxCollection<RxDocumentType, OrmMethods> extends RxCollecti
                 this._parentCollection.watchForChanges();
                 this.watchForChanges();
 
-
                 /**
                  * create an ongoing replications between both sides
                  */
@@ -304,7 +303,7 @@ export function setIndexes(
  */
 export function streamChangedDocuments(
     rxCollection: RxCollection,
-    prevFilter = (i: any) => true
+    prevFilter = (_i: any) => true
 ): Observable<any> {
     if (!rxCollection._doNotEmitSet) rxCollection._doNotEmitSet = new Set();
 
@@ -398,10 +397,8 @@ export const prototypes = {
         proto.inMemory = spawnInMemory;
     }
 };
-export const overwritable = {};
 
 export const RxDBInMemoryPlugin: RxPlugin = {
     rxdb,
-    prototypes,
-    overwritable
+    prototypes
 };

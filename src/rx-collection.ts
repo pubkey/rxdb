@@ -110,7 +110,9 @@ let hooksApplied = false;
 
 
 export class RxCollectionBase<
-    RxDocumentType = { [prop: string]: any }, OrmMethods = {}
+    RxDocumentType = { [prop: string]: any },
+    OrmMethods = {},
+    StaticMethods = { [key: string]: any }
     > {
 
     constructor(
@@ -124,7 +126,7 @@ export class RxCollectionBase<
         public options: any = {},
         public statics: KeyFunctionMap = {}
     ) {
-        _applyHookFunctions(this as any);
+        _applyHookFunctions(this.asRxCollection);
     }
 
     /**
@@ -210,16 +212,22 @@ export class RxCollectionBase<
 
         // we trigger the non-blocking things first and await them later so we can do stuff in the mean time
         const spawnedPouchPromise = this.pouch.info(); // resolved when the pouchdb is useable
-        const createIndexesPromise = _prepareCreateIndexes((this as any), spawnedPouchPromise);
+        const createIndexesPromise = _prepareCreateIndexes(
+            this.asRxCollection,
+            spawnedPouchPromise
+        );
 
 
-        this._dataMigrator = createDataMigrator((this as any), this.migrationStrategies);
+        this._dataMigrator = createDataMigrator(
+            this.asRxCollection,
+            this.migrationStrategies
+        );
         this._crypter = createCrypter(this.database.password, this.schema);
 
         this._observable$ = this.database.$.pipe(
             filter(event => (event as any).collectionName === this.name)
         );
-        this._changeEventBuffer = createChangeEventBuffer(this as any);
+        this._changeEventBuffer = createChangeEventBuffer(this.asRxCollection);
 
         this._subs.push(
             this._observable$
@@ -357,9 +365,7 @@ export class RxCollectionBase<
             json = tempDoc.toJSON() as any;
         }
 
-
         const useJson = fillObjectDataBeforeInsert(this, json);
-
         let newDoc = tempDoc;
         return this._runHooks('pre', 'insert', useJson)
             .then(() => {
@@ -382,7 +388,6 @@ export class RxCollectionBase<
                     newDoc as any
                 );
                 this.$emit(emitEvent);
-
                 return newDoc as any;
             });
     }
@@ -441,7 +446,6 @@ export class RxCollectionBase<
                     })
             );
         });
-
     }
 
     /**
@@ -722,6 +726,10 @@ export class RxCollectionBase<
     remove(): Promise<any> {
         return this.database.removeCollection(this.name);
     }
+
+    get asRxCollection(): RxCollection<RxDocumentType, OrmMethods, StaticMethods> {
+        return this as any;
+    }
 }
 
 /**
@@ -729,7 +737,7 @@ export class RxCollectionBase<
  * this runs only once
  */
 function _applyHookFunctions(
-    collection: RxCollectionBase
+    collection: RxCollection
 ) {
     if (hooksApplied) return; // already run
     hooksApplied = true;
@@ -798,7 +806,7 @@ function _atomicUpsertEnsureRxDocumentExists(
  * creates the indexes in the pouchdb
  */
 function _prepareCreateIndexes(
-    rxCollection: RxCollectionBase,
+    rxCollection: RxCollection,
     spawnedPouchPromise: Promise<any>
 ) {
     return Promise.all(

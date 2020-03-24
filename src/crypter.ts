@@ -22,7 +22,7 @@ export class Crypter {
      * encrypt and stringify data
      * @overwritten by plugin (optional)
      */
-    _encryptValue(_value: any): string {
+    public _encryptValue(_value: any): string {
         throw pluginMissing('encryption');
     }
 
@@ -30,7 +30,7 @@ export class Crypter {
      * decrypt and json-parse an encrypted value
      * @overwritten by plugin (optional)
      */
-    _decryptValue(_value: any): string {
+    public _decryptValue(_value: any): string {
         throw pluginMissing('encryption');
     }
 
