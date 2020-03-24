@@ -2,7 +2,7 @@
 
 This list contains things that have to be done but will create breaking changes.
 
-### KeyCompression does not work on objects inside of arrays.
+### DONE - KeyCompression does not work on objects inside of arrays.
 In documents like the following, the properties inside of the array-object will not be compressed `color`
 
 ```json
@@ -19,7 +19,7 @@ In documents like the following, the properties inside of the array-object will 
 
 The best approach will be to use [jsonschema-key-compression](https://github.com/pubkey/jsonschema-key-compression) instead of the own key-compression
 
-### RxDocument().toJSON() should not return rev by default
+### DONE - RxDocument().toJSON() should not return rev by default
 
 Currently `withRev` has default `true`.
 It should be `false` by default because the user does not expect the revision here.
@@ -33,7 +33,7 @@ The current implementation of this prototype-merging is very complicated and has
 We should rewrite it to a single pure function that returns the constructor.
 Instead of mergin the prototype into a single object, we should chain them together.
 
-### remove the default export
+### DONE - remove the default export
 Using the default export is never a good idea because it automatically bundles every unused function into the build.
 
 ### Refactor data-migrator
@@ -41,7 +41,7 @@ Using the default export is never a good idea because it automatically bundles e
  - The current implemetation does not use pouchdb's bulkDocs which is much faster
  - This could have been done in much less code which would be easier to uderstand
 
-### find() only accepts selector, not limit and skip
+### DONE - find() only accepts selector, not limit and skip
 
 Instead of only accepting the mango-selector with `find()`, we should also make it possible to directly pass the limit and skip value.
 

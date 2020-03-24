@@ -8,11 +8,11 @@
     "pouchdb-adapter-idb": "7.2.1",
     "pouchdb-replication": "7.2.1",
     "pouchdb-server": "4.2.0",
-    "react": "16.13.0",
-    "react-dom": "16.13.0"
+    "react": "16.13.1",
+    "react-dom": "16.13.1"
   },
   "devDependencies": {
-    "react-scripts": "3.4.0",
+    "react-scripts": "3.4.1",
     "rimraf": "3.0.2"
   },
   "scripts": {
