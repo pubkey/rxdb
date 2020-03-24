@@ -52,15 +52,23 @@ export function fastUnsecureHash(obj: any): number {
 }
 
 /**
- *  spark-md5 is used here
- *  because pouchdb uses the same
- *  and build-size could be reduced by 9kb
+ * Does a RxDB-specific hashing of the given data.
+ * We use a static salt so using a rainbow-table
+ * or google-ing the hash will not work.
+ *
+ * spark-md5 is used here
+ * because pouchdb uses the same
+ * and build-size could be reduced by 9kb
  */
-import Md5 from 'spark-md5';
-export function hash(obj: any): string {
-    let msg = obj;
-    if (typeof obj !== 'string') msg = JSON.stringify(obj);
-    return Md5.hash(msg);
+import {
+    hash as hashSparkMd5
+} from 'spark-md5';
+export const RXDB_HASH_SALT = 'rxdb-specific-hash-salt';
+export function hash(msg: string | any): string {
+    if (typeof msg !== 'string') {
+        msg = JSON.stringify(msg);
+    }
+    return hashSparkMd5(RXDB_HASH_SALT + msg);
 }
 
 /**
