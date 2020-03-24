@@ -16,7 +16,7 @@ import {
 } from '../types';
 
 function ensureSchemaSupportsAttachments(doc: any) {
-    const schemaJson = doc.collection.schema.jsonID;
+    const schemaJson = doc.collection.schema.jsonSchema;
     if (!schemaJson.attachments) {
         throw newRxError('AT1', {
             link: 'https://pubkey.github.io/rxdb/rx-attachment.html'
@@ -180,7 +180,7 @@ export function fromPouchDocument(
 }
 
 function shouldEncrypt(doc: any) {
-    return !!doc.collection.schema.jsonID.attachments.encrypted;
+    return !!doc.collection.schema.jsonSchema.attachments.encrypted;
 }
 
 export function putAttachment(

@@ -222,7 +222,7 @@ export function _getOldCollections(
 ): Promise<OldCollection[]> {
     return Promise
         .all(
-            getPreviousVersions(dataMigrator.currentSchema.jsonID)
+            getPreviousVersions(dataMigrator.currentSchema.jsonSchema)
                 .map(v => (dataMigrator.database._collectionsPouch as any).get(dataMigrator.name + '-' + v))
                 .map(fun => fun.catch(() => null)) // auto-catch so Promise.all continues
         )

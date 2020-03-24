@@ -227,7 +227,7 @@ export class InMemoryRxCollection<RxDocumentType, OrmMethods> extends RxCollecti
  * - has no attachments
  */
 function toCleanSchema(rxSchema: RxSchema): RxSchema {
-    const newSchemaJson = clone(rxSchema.jsonID);
+    const newSchemaJson = clone(rxSchema.jsonSchema);
     newSchemaJson.keyCompression = false;
     delete newSchemaJson.properties._id;
     delete newSchemaJson.properties._rev;

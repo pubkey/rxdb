@@ -542,7 +542,7 @@ config.parallel('rx-schema.test.js', () => {
                     }
                 });
                 assert.deepStrictEqual(
-                    getPreviousVersions(schema.jsonID),
+                    getPreviousVersions(schema.jsonSchema),
                     []
                 );
             });
@@ -558,7 +558,7 @@ config.parallel('rx-schema.test.js', () => {
                     }
                 });
                 assert.deepStrictEqual(
-                    getPreviousVersions(schema.jsonID),
+                    getPreviousVersions(schema.jsonSchema),
                     [0, 1, 2, 3, 4]
                 );
             });

@@ -174,29 +174,29 @@ function getIndexRealPath(shortPath: string) {
  * does the checking
  * @throws {Error} if something is not ok
  */
-export function checkSchema(jsonID: RxJsonSchema) {
+export function checkSchema(jsonSchema: RxJsonSchema) {
     // check _rev
-    if (jsonID.properties._rev) {
+    if (jsonSchema.properties._rev) {
         throw newRxError('SC10', {
-            schema: jsonID
+            schema: jsonSchema
         });
     }
 
     // check version
-    if (!jsonID.hasOwnProperty('version') ||
-        typeof jsonID.version !== 'number' ||
-        jsonID.version < 0
+    if (!jsonSchema.hasOwnProperty('version') ||
+        typeof jsonSchema.version !== 'number' ||
+        jsonSchema.version < 0
     ) {
         throw newRxError('SC11', {
-            version: jsonID.version
+            version: jsonSchema.version
         });
     }
 
-    validateFieldsDeep(jsonID);
+    validateFieldsDeep(jsonSchema);
 
     let primaryPath: string;
-    Object.keys(jsonID.properties).forEach(key => {
-        const value: any = jsonID.properties[key];
+    Object.keys(jsonSchema.properties).forEach(key => {
+        const value: any = jsonSchema.properties[key];
         // check primary
         if (value.primary) {
             if (primaryPath) {
@@ -237,16 +237,16 @@ export function checkSchema(jsonID: RxJsonSchema) {
         }
     });
 
-    // check format of jsonID.indexes
-    if (jsonID.indexes) {
+    // check format of jsonSchema.indexes
+    if (jsonSchema.indexes) {
         // should be an array
-        if (!Array.isArray(jsonID.indexes)) {
+        if (!Array.isArray(jsonSchema.indexes)) {
             throw newRxError('SC18', {
-                indexes: jsonID.indexes
+                indexes: jsonSchema.indexes
             });
         }
 
-        jsonID.indexes.forEach(index => {
+        jsonSchema.indexes.forEach(index => {
             // should contain strings or array of strings
             if (!(typeof index === 'string' || Array.isArray(index))) {
                 throw newRxError('SC19', { index });
@@ -264,11 +264,11 @@ export function checkSchema(jsonID: RxJsonSchema) {
 
     /** FIXME this check has to exist only in beta-version, to help developers migrate their schemas */
     // remove backward-compatibility for compoundIndexes
-    if (Object.keys(jsonID).includes('compoundIndexes')) {
+    if (Object.keys(jsonSchema).includes('compoundIndexes')) {
         throw newRxError('SC25');
     }
     // remove backward-compatibility for index: true
-    Object.keys(flattenObject(jsonID))
+    Object.keys(flattenObject(jsonSchema))
         .map(key => {
             // flattenObject returns only ending paths, we need all paths pointing to an object
             const splitted = key.split('.');
@@ -278,7 +278,7 @@ export function checkSchema(jsonID: RxJsonSchema) {
         .filter(key => key !== '')
         .filter((elem, pos, arr) => arr.indexOf(elem) === pos) // unique
         .filter(key => { // check if this path defines an index
-            const value = objectPath.get(jsonID, key);
+            const value = objectPath.get(jsonSchema, key);
             return !!value.index;
         })
         .forEach(key => { // replace inner properties
@@ -290,7 +290,7 @@ export function checkSchema(jsonID: RxJsonSchema) {
         });
 
     /* check types of the indexes */
-    (jsonID.indexes || [])
+    (jsonSchema.indexes || [])
         .reduce((indexPaths: string[], currentIndex) => {
             if (Array.isArray(currentIndex)) {
                 indexPaths.concat(currentIndex);
@@ -302,7 +302,7 @@ export function checkSchema(jsonID: RxJsonSchema) {
         .filter((elem, pos, arr) => arr.indexOf(elem) === pos) // from now on working only with unique indexes
         .map(indexPath => {
             const realPath = getIndexRealPath(indexPath); // real path in the collection schema
-            const schemaObj = objectPath.get(jsonID, realPath); // get the schema of the indexed property
+            const schemaObj = objectPath.get(jsonSchema, realPath); // get the schema of the indexed property
             if (!schemaObj || typeof schemaObj !== 'object') {
                 throw newRxError('SC21', { index: indexPath });
             }

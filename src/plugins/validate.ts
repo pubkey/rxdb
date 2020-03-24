@@ -30,7 +30,7 @@ function _getValidator(
 ) {
     const hash = rxSchema.hash;
     if (!VALIDATOR_CACHE.has(hash)) {
-        const validator = isMyJsonValid(rxSchema.jsonID as any);
+        const validator = isMyJsonValid(rxSchema.jsonSchema as any);
         VALIDATOR_CACHE.set(hash, validator);
     }
     return VALIDATOR_CACHE.get(hash);
@@ -52,7 +52,7 @@ const validate = function (
         throw newRxError('VD2', {
             errors: useValidator.errors,
             obj,
-            schema: this.jsonID
+            schema: this.jsonSchema
         });
     }
 };

@@ -21,6 +21,7 @@ Breaking:
   - Change `.find()` and `.findOne()` to acccept a full MangoQuery instead of just the selector
   - Chained queries like `collection.find().where('x').eq('foo')` moved out of the core module into the query-builder plugin
   - The internal `hash()` function does now use a RxDB specific salt
+  - Renamed `RxSchema.jsonID` to `RxSchema.jsonSchema`
 
 Other:
   - Removed many runtime type checks that now should be covered by typescript in buildtime
