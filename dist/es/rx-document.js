@@ -2,7 +2,7 @@ import objectPath from 'object-path';
 import { BehaviorSubject } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 import { clone, trimDots, getHeightOfRevision, toPromise, pluginMissing } from './util';
-import { createChangeEvent } from './rx-change-event';
+import { createUpdateEvent, createDeleteEvent } from './rx-change-event';
 import { newRxError, newRxTypeError } from './rx-error';
 import { runPluginHooks } from './hooks';
 export var basePrototype = {
@@ -48,24 +48,24 @@ export var basePrototype = {
   },
 
   _handleChangeEvent: function _handleChangeEvent(changeEvent) {
-    if (changeEvent.data.doc !== this.primary) return; // ensure that new _rev is higher then current
+    if (changeEvent.documentId !== this.primary) return; // ensure that new _rev is higher then current
 
-    var newRevNr = getHeightOfRevision(changeEvent.data.v._rev);
+    var newRevNr = getHeightOfRevision(changeEvent.documentData._rev);
     var currentRevNr = getHeightOfRevision(this._data._rev);
     if (currentRevNr > newRevNr) return;
 
-    switch (changeEvent.data.op) {
+    switch (changeEvent.operation) {
       case 'INSERT':
         break;
 
       case 'UPDATE':
-        var newData = changeEvent.data.v;
+        var newData = changeEvent.documentData;
 
         this._dataSync$.next(newData);
 
         break;
 
-      case 'REMOVE':
+      case 'DELETE':
         // remove from docCache to assure new upserted RxDocuments will be a new instance
         this.collection._docCache["delete"](this.primary);
 
@@ -165,7 +165,7 @@ export var basePrototype = {
     return valueObj;
   },
   toJSON: function toJSON() {
-    var withRevAndAttachments = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+    var withRevAndAttachments = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
     var data = clone(this._data);
 
     if (!withRevAndAttachments) {
@@ -294,7 +294,7 @@ export var basePrototype = {
 
       newData._rev = ret.rev; // emit event
 
-      var changeEvent = createChangeEvent('UPDATE', _this3.collection.database, _this3.collection, _this3, newData);
+      var changeEvent = createUpdateEvent(_this3.collection, newData, oldData, _this3);
 
       _this3.$emit(changeEvent);
 
@@ -355,7 +355,7 @@ export var basePrototype = {
 
       return _this5.collection._pouchPut(deletedData);
     }).then(function () {
-      _this5.$emit(createChangeEvent('REMOVE', _this5.collection.database, _this5.collection, _this5, _this5._data));
+      _this5.$emit(createDeleteEvent(_this5.collection, deletedData, _this5._data, _this5));
 
       return _this5.collection._runHooks('post', 'remove', deletedData, _this5);
     }).then(function () {
@@ -471,11 +471,4 @@ export function isInstanceOf(obj) {
   if (typeof obj === 'undefined') return false;
   return !!obj.isInstanceOfRxDocument;
 }
-export default {
-  createWithConstructor: createWithConstructor,
-  properties: properties,
-  createRxDocumentConstructor: createRxDocumentConstructor,
-  basePrototype: basePrototype,
-  isInstanceOf: isInstanceOf
-};
 //# sourceMappingURL=rx-document.js.map

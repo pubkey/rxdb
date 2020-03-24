@@ -102,12 +102,9 @@ import {
     getRxDocumentConstructor
 } from './rx-document-prototype-merge';
 
-
 const HOOKS_WHEN = ['pre', 'post'];
 const HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
 let hooksApplied = false;
-
-
 
 export class RxCollectionBase<
     RxDocumentType = { [prop: string]: any },

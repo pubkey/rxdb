@@ -2,26 +2,48 @@
  * RxChangeEvents a emitted when something in the database changes
  * they can be grabbed by the observables of database, collection and document
  */
-import { RxDatabase, RxCollection } from './types';
-export declare class RxChangeEvent {
-    data: any;
-    constructor(data: any);
-    get hash(): string;
-    private _hash;
-    toJSON(): {
-        col: null;
-        doc: null;
-        v: null;
-        op: any;
-        t: any;
-        db: any;
-        it: any;
-        isLocal: any;
-    };
+import { WriteOperation, ChangeEvent as EventReduceChangeEvent } from 'event-reduce-js';
+import { RxCollection, RxDocument, RxDocumentTypeWithRev } from './types';
+export declare type RxChangeEventJson<DocType = any> = {
+    operation: WriteOperation;
+    documentId: string;
+    documentData: RxDocumentTypeWithRev<DocType>;
+    previousData?: DocType;
+    databaseToken: string;
+    collectionName: string;
+    isLocal: boolean;
+};
+export declare type RxChangeEventBroadcastChannelData = {
+    cE: RxChangeEventJson;
+    storageToken: string;
+};
+export declare class RxChangeEvent<DocType = any> {
+    readonly operation: WriteOperation;
+    readonly documentId: string;
+    readonly documentData: RxDocumentTypeWithRev<DocType>;
+    readonly databaseToken: string;
+    readonly collectionName: string;
+    readonly isLocal: boolean;
+    readonly previousData?: DocType | null | undefined;
+    readonly rxDocument?: RxDocument<DocType, {}> | undefined;
+    readonly time: number;
+    constructor(operation: WriteOperation, documentId: string, documentData: RxDocumentTypeWithRev<DocType>, databaseToken: string, collectionName: string, isLocal: boolean, previousData?: DocType | null | undefined, rxDocument?: RxDocument<DocType, {}> | undefined);
     isIntern(): boolean;
-    isSocket(): boolean;
+    toJSON(): RxChangeEventJson<DocType>;
+    toEventReduceChangeEvent(): EventReduceChangeEvent<DocType>;
 }
-export declare function changeEventfromJSON(data: any): RxChangeEvent;
-export declare function changeEventfromPouchChange(changeDoc: any, collection: RxCollection): RxChangeEvent;
-export declare function createChangeEvent(op: string, database: RxDatabase, collection?: RxCollection, doc?: any, value?: any, isLocal?: boolean): RxChangeEvent;
-export declare function isInstanceOf(obj: any): boolean;
+export interface RxChangeEventInsert<DocType = any> extends RxChangeEvent<DocType> {
+    operation: 'INSERT';
+    previousData: null;
+}
+export interface RxChangeEventUpdate<DocType = any> extends RxChangeEvent<DocType> {
+    operation: 'UPDATE';
+}
+export interface RxChangeEventDelete<DocType = any> extends RxChangeEvent<DocType> {
+    operation: 'DELETE';
+}
+export declare function changeEventfromPouchChange<DocType>(changeDoc: any, collection: RxCollection): RxChangeEvent<DocType>;
+export declare function createInsertEvent<RxDocumentType>(collection: RxCollection<RxDocumentType>, docData: RxDocumentTypeWithRev<RxDocumentType>, doc?: RxDocument<RxDocumentType>): RxChangeEvent<RxDocumentType>;
+export declare function createUpdateEvent<RxDocumentType>(collection: RxCollection<RxDocumentType>, docData: RxDocumentTypeWithRev<RxDocumentType>, previous: RxDocumentType, rxDocument: RxDocument<RxDocumentType>): RxChangeEvent<RxDocumentType>;
+export declare function createDeleteEvent<RxDocumentType>(collection: RxCollection<RxDocumentType>, docData: RxDocumentTypeWithRev<RxDocumentType>, previous: RxDocumentType, rxDocument: RxDocument<RxDocumentType>): RxChangeEvent<RxDocumentType>;
+export declare function isInstanceOf(obj: RxChangeEvent<any> | any): boolean;

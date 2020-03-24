@@ -28,18 +28,6 @@ Object.keys(_rxAttachment).forEach(function (key) {
   });
 });
 
-var _rxChangeEvent = require("./rx-change-event");
-
-Object.keys(_rxChangeEvent).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _rxChangeEvent[key];
-    }
-  });
-});
-
 var _rxCollection = require("./rx-collection");
 
 Object.keys(_rxCollection).forEach(function (key) {

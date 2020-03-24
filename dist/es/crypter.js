@@ -63,11 +63,7 @@ export var Crypter = /*#__PURE__*/function () {
 
   return Crypter;
 }();
-export function create(password, schema) {
+export function createCrypter(password, schema) {
   return new Crypter(password, schema);
 }
-export default {
-  create: create,
-  Crypter: Crypter
-};
 //# sourceMappingURL=crypter.js.map

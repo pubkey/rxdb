@@ -11,15 +11,19 @@ exports.RxTypeError = exports.RxError = void 0;
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 
+var _possibleConstructorReturn2 = _interopRequireDefault(require("@babel/runtime/helpers/possibleConstructorReturn"));
+
+var _getPrototypeOf2 = _interopRequireDefault(require("@babel/runtime/helpers/getPrototypeOf"));
+
 var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/inheritsLoose"));
 
 var _wrapNativeSuper2 = _interopRequireDefault(require("@babel/runtime/helpers/wrapNativeSuper"));
 
 var _overwritable = _interopRequireDefault(require("./overwritable"));
 
-/**
- * here we use custom errors with the additional field 'parameters'
- */
+function _createSuper(Derived) { return function () { var Super = (0, _getPrototypeOf2["default"])(Derived), result; if (_isNativeReflectConstruct()) { var NewTarget = (0, _getPrototypeOf2["default"])(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2["default"])(this, result); }; }
+
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
 
 /**
  * transform an object of parameters to a presentable string
@@ -50,6 +54,8 @@ function messageForError(message, parameters) {
 var RxError = /*#__PURE__*/function (_Error) {
   (0, _inheritsLoose2["default"])(RxError, _Error);
 
+  var _super = _createSuper(RxError);
+
   function RxError(code, message) {
     var _this;
 
@@ -73,7 +79,7 @@ var RxError = /*#__PURE__*/function (_Error) {
   (0, _createClass2["default"])(RxError, [{
     key: "name",
     get: function get() {
-      return 'RxError';
+      return 'RxError (' + this.code + ')';
     }
   }, {
     key: "typeError",
@@ -88,6 +94,8 @@ exports.RxError = RxError;
 
 var RxTypeError = /*#__PURE__*/function (_TypeError) {
   (0, _inheritsLoose2["default"])(RxTypeError, _TypeError);
+
+  var _super2 = _createSuper(RxTypeError);
 
   function RxTypeError(code, message) {
     var _this2;
@@ -112,7 +120,7 @@ var RxTypeError = /*#__PURE__*/function (_TypeError) {
   (0, _createClass2["default"])(RxTypeError, [{
     key: "name",
     get: function get() {
-      return 'RxError';
+      return 'RxTypeError (' + this.code + ')';
     }
   }, {
     key: "typeError",
@@ -121,9 +129,7 @@ var RxTypeError = /*#__PURE__*/function (_TypeError) {
     }
   }]);
   return RxTypeError;
-}( /*#__PURE__*/(0, _wrapNativeSuper2["default"])(TypeError)); // const errorKeySearchLink = key => 'https://github.com/pubkey/rxdb/search?q=' + key + '+path%3Asrc%2Fmodules';
-// const verboseErrorModuleLink = 'https://pubkey.github.io/rxdb/custom-builds.html#verbose-error';
-
+}( /*#__PURE__*/(0, _wrapNativeSuper2["default"])(TypeError));
 
 exports.RxTypeError = RxTypeError;
 

@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports._getValidator = _getValidator;
-exports["default"] = exports.hooks = exports.prototypes = exports.rxdb = void 0;
+exports.RxDBAjvValidatePlugin = exports.hooks = exports.prototypes = exports.rxdb = void 0;
 
 var _ajv = _interopRequireDefault(require("ajv"));
 
@@ -35,7 +35,7 @@ function _getValidator(rxSchema) {
   if (!VALIDATOR_CACHE.has(hash)) {
     var ajv = new _ajv["default"](); // TODO should we reuse this instance?
 
-    var validator = ajv.compile(rxSchema.jsonID);
+    var validator = ajv.compile(rxSchema.jsonSchema);
     VALIDATOR_CACHE.set(hash, validator);
   }
 
@@ -54,7 +54,7 @@ function validate(obj) {
     throw (0, _rxError.newRxError)('VD2', {
       errors: useValidator.errors,
       obj: obj,
-      schema: this.jsonID
+      schema: this.jsonSchema
     });
   }
 }
@@ -81,11 +81,11 @@ var hooks = {
   createRxSchema: runAfterSchemaCreated
 };
 exports.hooks = hooks;
-var _default = {
+var RxDBAjvValidatePlugin = {
   rxdb: rxdb,
   prototypes: prototypes,
   hooks: hooks
 };
-exports["default"] = _default;
+exports.RxDBAjvValidatePlugin = RxDBAjvValidatePlugin;
 
 //# sourceMappingURL=ajv-validate.js.map

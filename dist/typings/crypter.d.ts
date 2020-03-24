@@ -19,9 +19,4 @@ export declare class Crypter {
     encrypt(obj: any): any;
     decrypt(obj: any): any;
 }
-export declare function create(password: any, schema: RxSchema): Crypter;
-declare const _default: {
-    create: typeof create;
-    Crypter: typeof Crypter;
-};
-export default _default;
+export declare function createCrypter(password: any, schema: RxSchema): Crypter;

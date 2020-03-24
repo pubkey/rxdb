@@ -11,9 +11,8 @@ exports._ensureStorageTokenExists = _ensureStorageTokenExists;
 exports.writeToSocket = writeToSocket;
 exports._collectionNamePrimary = _collectionNamePrimary;
 exports._removeAllOfCollection = _removeAllOfCollection;
-exports.create = create;
-exports.getPouchLocation = getPouchLocation;
-exports.removeDatabase = removeDatabase;
+exports.createRxDatabase = createRxDatabase;
+exports.removeRxDatabase = removeRxDatabase;
 exports.checkAdapter = checkAdapter;
 exports.isInstanceOf = isInstanceOf;
 exports.dbCount = dbCount;
@@ -47,6 +46,8 @@ var _pouchDb = require("./pouch-db");
 
 var _rxCollection = require("./rx-collection");
 
+var _rxStoragePouchdb = require("./rx-storage-pouchdb");
+
 /**
  * stores the combinations
  * of used database-names with their adapters
@@ -57,7 +58,7 @@ var DB_COUNT = 0;
 
 var RxDatabaseBase = /*#__PURE__*/function () {
   function RxDatabaseBase(name, adapter, password, multiInstance) {
-    var queryChangeDetection = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
+    var eventReduce = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
     var options = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
     var pouchSettings = arguments.length > 6 ? arguments[6] : undefined;
     this.idleQueue = new _customIdleQueue["default"]();
@@ -74,11 +75,12 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     this.adapter = adapter;
     this.password = password;
     this.multiInstance = multiInstance;
-    this.queryChangeDetection = queryChangeDetection;
+    this.eventReduce = eventReduce;
     this.options = options;
     this.pouchSettings = pouchSettings;
+    this.storage = (0, _rxStoragePouchdb.getRxStoragePouchDb)(adapter, pouchSettings);
     this.collections = {};
-    if (typeof name !== 'undefined') DB_COUNT++;
+    DB_COUNT++;
   }
 
   var _proto = RxDatabaseBase.prototype;
@@ -108,16 +110,9 @@ var RxDatabaseBase = /*#__PURE__*/function () {
 
   _proto._spawnPouchDB = function _spawnPouchDB(collectionName, schemaVersion) {
     var pouchSettings = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-    return _spawnPouchDB2(this.name, this.adapter, collectionName, schemaVersion, pouchSettings, this.pouchSettings);
-  }
-  /**
-   * returns a promise which resolves when the instance becomes leader
-   */
-  ;
-
-  _proto.waitForLeadership = function waitForLeadership() {
-    if (!this.multiInstance) return Promise.resolve(true);
-    return this.leaderElector.waitForLeadership();
+    return this.storage.createStorageInstance(this.name, collectionName, schemaVersion, {
+      pouchSettings: pouchSettings
+    });
   }
   /**
    * This is the main handle-point for all change events
@@ -133,7 +128,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
 
     this.subject.next(changeEvent); // write to socket if event was created by this instance
 
-    if (changeEvent.data.it === this.token) {
+    if (changeEvent.databaseToken === this.token) {
       writeToSocket(this, changeEvent);
     }
   }
@@ -251,9 +246,6 @@ var RxDatabaseBase = /*#__PURE__*/function () {
         })["catch"](function () {});
       }
     }).then(function () {
-      var cEvent = (0, _rxChangeEvent.createChangeEvent)('RxDatabase.collection', _this2, col);
-      cEvent.data.v = col.name;
-      cEvent.data.col = '_collections';
       _this2.collections[args.name] = col;
 
       if (!_this2[args.name]) {
@@ -263,8 +255,6 @@ var RxDatabaseBase = /*#__PURE__*/function () {
           }
         });
       }
-
-      _this2.$emit(cEvent);
 
       return col;
     });
@@ -339,6 +329,26 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     throw (0, _util.pluginMissing)('server');
   }
   /**
+   * TODO import type of LeaderElector
+   */
+  ;
+
+  _proto.leaderElector = function leaderElector() {
+    throw (0, _util.pluginMissing)('leader-election');
+  };
+
+  _proto.isLeader = function isLeader() {
+    throw (0, _util.pluginMissing)('leader-election');
+  }
+  /**
+   * returns a promise which resolves when the instance becomes leader
+   */
+  ;
+
+  _proto.waitForLeadership = function waitForLeadership() {
+    throw (0, _util.pluginMissing)('leader-election');
+  }
+  /**
    * destroys the database-instance and all collections
    */
   ;
@@ -361,8 +371,6 @@ var RxDatabaseBase = /*#__PURE__*/function () {
         return _this4.broadcastChannel.close();
       }, 1000);
     }
-
-    if (this._leaderElector) this._leaderElector.destroy();
 
     this._subs.map(function (sub) {
       return sub.unsubscribe();
@@ -389,23 +397,11 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     var _this5 = this;
 
     return this.destroy().then(function () {
-      return removeDatabase(_this5.name, _this5.adapter);
+      return removeRxDatabase(_this5.name, _this5.adapter);
     });
   };
 
   (0, _createClass2["default"])(RxDatabaseBase, [{
-    key: "leaderElector",
-    get: function get() {
-      if (!this._leaderElector) this._leaderElector = _overwritable["default"].createLeaderElector(this);
-      return this._leaderElector;
-    }
-  }, {
-    key: "isLeader",
-    get: function get() {
-      if (!this.multiInstance) return true;
-      return this.leaderElector.isLeader;
-    }
-  }, {
     key: "$",
     get: function get() {
       return this.observable$;
@@ -423,10 +419,13 @@ var _properties = null;
 
 function properties() {
   if (!_properties) {
-    var pseudoInstance = new RxDatabaseBase();
+    // TODO instead of using the pseudoInstance,
+    // we should get the properties from the prototype of the class
+    var pseudoInstance = new RxDatabaseBase('pseudoInstance', 'memory');
     var ownProperties = Object.getOwnPropertyNames(pseudoInstance);
     var prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoInstance));
     _properties = [].concat(ownProperties, prototypeProperties);
+    pseudoInstance.destroy();
   }
 
   return _properties;
@@ -526,14 +525,9 @@ function _ensureStorageTokenExists(rxDatabase) {
 
 function writeToSocket(rxDatabase, changeEvent) {
   if (rxDatabase.multiInstance && !changeEvent.isIntern() && rxDatabase.broadcastChannel) {
-    var socketDoc = changeEvent.toJSON();
-    delete socketDoc.db;
     var sendOverChannel = {
-      db: rxDatabase.token,
-      // database-token
-      st: rxDatabase.storageToken,
-      // storage-token
-      d: socketDoc
+      cE: changeEvent.toJSON(),
+      storageToken: rxDatabase.storageToken
     };
     return rxDatabase.broadcastChannel.postMessage(sendOverChannel).then(function () {
       return true;
@@ -586,13 +580,13 @@ function _prepareBroadcastChannel(rxDatabase) {
   rxDatabase.broadcastChannel$ = new _rxjs.Subject();
 
   rxDatabase.broadcastChannel.onmessage = function (msg) {
-    if (msg.st !== rxDatabase.storageToken) return; // not same storage-state
+    if (msg.storageToken !== rxDatabase.storageToken) return; // not same storage-state
 
-    if (msg.db === rxDatabase.token) return; // same db
+    if (msg.cE.databaseToken === rxDatabase.token) return; // same db
 
-    var changeEvent = (0, _rxChangeEvent.changeEventfromJSON)(msg.d);
+    var changeEvent = new _rxChangeEvent.RxChangeEvent(msg.cE.operation, msg.cE.documentId, msg.cE.documentData, msg.cE.databaseToken, msg.cE.collectionName, msg.cE.isLocal, msg.cE.previousData);
     rxDatabase.broadcastChannel$.next(changeEvent);
-  }; // TODO only subscribe when sth is listening to the event-chain
+  }; // TODO only subscribe when something is listening to the event-chain
 
 
   rxDatabase._subs.push(rxDatabase.broadcastChannel$.subscribe(function (cE) {
@@ -621,14 +615,14 @@ function prepare(rxDatabase) {
   });
 }
 
-function create(_ref2) {
+function createRxDatabase(_ref2) {
   var name = _ref2.name,
       adapter = _ref2.adapter,
       password = _ref2.password,
       _ref2$multiInstance = _ref2.multiInstance,
       multiInstance = _ref2$multiInstance === void 0 ? true : _ref2$multiInstance,
-      _ref2$queryChangeDete = _ref2.queryChangeDetection,
-      queryChangeDetection = _ref2$queryChangeDete === void 0 ? false : _ref2$queryChangeDete,
+      _ref2$eventReduce = _ref2.eventReduce,
+      eventReduce = _ref2$eventReduce === void 0 ? false : _ref2$eventReduce,
       _ref2$ignoreDuplicate = _ref2.ignoreDuplicate,
       ignoreDuplicate = _ref2$ignoreDuplicate === void 0 ? false : _ref2$ignoreDuplicate,
       _ref2$options = _ref2.options,
@@ -664,67 +658,49 @@ function create(_ref2) {
   } // add to used_map
 
 
-  if (!USED_COMBINATIONS[name]) USED_COMBINATIONS[name] = [];
+  if (!USED_COMBINATIONS[name]) {
+    USED_COMBINATIONS[name] = [];
+  }
+
   USED_COMBINATIONS[name].push(adapter);
-  var db = new RxDatabaseBase(name, adapter, password, multiInstance, queryChangeDetection, options, pouchSettings);
+  var db = new RxDatabaseBase(name, adapter, password, multiInstance, eventReduce, options, pouchSettings);
   return prepare(db).then(function () {
     (0, _hooks.runPluginHooks)('createRxDatabase', db);
     return db;
   });
 }
 
-function getPouchLocation(dbName, collectionName, schemaVersion) {
-  var prefix = dbName + '-rxdb-' + schemaVersion + '-';
-
-  if (!collectionName.includes('/')) {
-    return prefix + collectionName;
-  } else {
-    // if collectionName is a path, we have to prefix the last part only
-    var split = collectionName.split('/');
-    var last = split.pop();
-    var ret = split.join('/');
-    ret += '/' + prefix + last;
-    return ret;
-  }
-}
-
-function _spawnPouchDB2(dbName, adapter, collectionName, schemaVersion) {
-  var pouchSettings = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
-  var pouchSettingsFromRxDatabaseCreator = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
-  var pouchLocation = getPouchLocation(dbName, collectionName, schemaVersion);
-  var pouchDbParameters = {
-    location: pouchLocation,
-    adapter: (0, _util.adapterObject)(adapter),
-    settings: pouchSettings
-  };
-  var pouchDBOptions = Object.assign({}, pouchDbParameters.adapter, pouchSettingsFromRxDatabaseCreator, pouchDbParameters.settings);
-  (0, _hooks.runPluginHooks)('preCreatePouchDb', pouchDbParameters);
-  return new _pouchDb.PouchDB(pouchDbParameters.location, pouchDBOptions);
-}
-
 function _internalAdminPouch(name, adapter) {
   var pouchSettingsFromRxDatabaseCreator = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-  return _spawnPouchDB2(name, adapter, '_admin', 0, {
-    // no compaction because this only stores local documents
-    auto_compaction: false,
-    revs_limit: 1
-  }, pouchSettingsFromRxDatabaseCreator);
+  var storage = (0, _rxStoragePouchdb.getRxStoragePouchDb)(adapter, pouchSettingsFromRxDatabaseCreator);
+  return storage.createStorageInstance(name, '_admin', 0, {
+    pouchSettings: {
+      // no compaction because this only stores local documents
+      auto_compaction: false,
+      revs_limit: 1
+    }
+  });
 }
 
 function _internalCollectionsPouch(name, adapter) {
   var pouchSettingsFromRxDatabaseCreator = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-  return _spawnPouchDB2(name, adapter, '_collections', 0, {
-    // no compaction because this only stores local documents
-    auto_compaction: false,
-    revs_limit: 1
-  }, pouchSettingsFromRxDatabaseCreator);
+  var storage = (0, _rxStoragePouchdb.getRxStoragePouchDb)(adapter, pouchSettingsFromRxDatabaseCreator);
+  return storage.createStorageInstance(name, '_collections', 0, {
+    pouchSettings: {
+      // no compaction because this only stores local documents
+      auto_compaction: false,
+      revs_limit: 1
+    }
+  });
 }
 /**
  * removes the database and all its known data
  */
 
 
-function removeDatabase(databaseName, adapter) {
+function removeRxDatabase(databaseName, adapter) {
+  var storage = (0, _rxStoragePouchdb.getRxStoragePouchDb)(adapter);
+
   var adminPouch = _internalAdminPouch(databaseName, adapter);
 
   var collectionsPouch = _internalCollectionsPouch(databaseName, adapter);
@@ -739,9 +715,7 @@ function removeDatabase(databaseName, adapter) {
       var split = id.split('-');
       var name = split[0];
       var version = parseInt(split[1], 10);
-
-      var pouch = _spawnPouchDB2(databaseName, adapter, name, version);
-
+      var pouch = storage.createStorageInstance(databaseName, name, version);
       return pouch.destroy();
     }));
   }) // remove internals
@@ -750,7 +724,7 @@ function removeDatabase(databaseName, adapter) {
   });
 }
 /**
- * check is the given adapter can be used
+ * check if the given adapter can be used
  */
 
 
@@ -767,8 +741,8 @@ function dbCount() {
 }
 
 var _default = {
-  create: create,
-  removeDatabase: removeDatabase,
+  createRxDatabase: createRxDatabase,
+  removeRxDatabase: removeRxDatabase,
   checkAdapter: checkAdapter,
   isInstanceOf: isInstanceOf,
   RxDatabaseBase: RxDatabaseBase,

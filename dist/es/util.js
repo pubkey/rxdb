@@ -4,14 +4,20 @@
  */
 import randomToken from 'random-token';
 import { default as deepClone } from 'clone';
-
 /**
  * Returns an error that indicates that a plugin is missing
  * We do not throw a RxError because this should not be handled
  * programmatically but by using the correct import
  */
+
 export function pluginMissing(pluginKey) {
-  return new Error("You are using a function which must be overwritten by a plugin.\n        You should either prevent the usage of this function or add the plugin via:\n          - es5-require:\n            RxDB.plugin(require('rxdb/plugins/" + pluginKey + "'))\n          - es6-import:\n            import " + ucfirst(pluginKey) + "Plugin from 'rxdb/plugins/" + pluginKey + "';\n            RxDB.plugin(" + ucfirst(pluginKey) + "Plugin);\n        ");
+  var keyParts = pluginKey.split('-');
+  var pluginName = 'RxDB';
+  keyParts.forEach(function (part) {
+    pluginName += ucfirst(part);
+  });
+  pluginName += 'Plugin';
+  return new Error("You are using a function which must be overwritten by a plugin.\n        You should either prevent the usage of this function or add the plugin via:\n            import { " + pluginName + " } from 'rxdb/plugins/" + pluginKey + "';\n            addRxPlugin(" + pluginName + ");\n        ");
 }
 /**
  * this is a very fast hashing but its unsecure
@@ -39,16 +45,23 @@ export function fastUnsecureHash(obj) {
   return hashValue;
 }
 /**
- *  spark-md5 is used here
- *  because pouchdb uses the same
- *  and build-size could be reduced by 9kb
+ * Does a RxDB-specific hashing of the given data.
+ * We use a static salt so using a rainbow-table
+ * or google-ing the hash will not work.
+ *
+ * spark-md5 is used here
+ * because pouchdb uses the same
+ * and build-size could be reduced by 9kb
  */
 
-import Md5 from 'spark-md5';
-export function hash(obj) {
-  var msg = obj;
-  if (typeof obj !== 'string') msg = JSON.stringify(obj);
-  return Md5.hash(msg);
+import { hash as hashSparkMd5 } from 'spark-md5';
+export var RXDB_HASH_SALT = 'rxdb-specific-hash-salt';
+export function hash(msg) {
+  if (typeof msg !== 'string') {
+    msg = JSON.stringify(msg);
+  }
+
+  return hashSparkMd5(RXDB_HASH_SALT + msg);
 }
 /**
  * generate a new _id as db-primary-key
@@ -119,33 +132,6 @@ export function ucfirst(str) {
   str += '';
   var f = str.charAt(0).toUpperCase();
   return f + str.substr(1);
-}
-/**
- * @link https://de.wikipedia.org/wiki/Base58
- * this does not start with the numbers to generate valid variable-names
- */
-
-var base58Chars = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ123456789';
-var base58Length = base58Chars.length;
-/**
- * transform a number to a string by using only base58 chars
- * @link https://github.com/matthewmueller/number-to-letter/blob/master/index.js
- * @param nr                                       | 10000000
- * @return the string-representation of the number | '2oMX'
- */
-
-export function numberToLetter(nr) {
-  var digits = [];
-
-  do {
-    var v = nr % base58Length;
-    digits.push(v);
-    nr = Math.floor(nr / base58Length);
-  } while (nr-- > 0);
-
-  return digits.reverse().map(function (d) {
-    return base58Chars[d];
-  }).join('');
 }
 /**
  * removes trailing and ending dots from the string
@@ -320,4 +306,17 @@ export function getHeightOfRevision(revString) {
  */
 
 export var LOCAL_PREFIX = '_local/';
+/**
+ * overwrites the getter with the actual value
+ * Mostly used for caching stuff on the first run
+ */
+
+export function overwriteGetterForCaching(obj, getterName, value) {
+  Object.defineProperty(obj, getterName, {
+    get: function get() {
+      return value;
+    }
+  });
+  return value;
+}
 //# sourceMappingURL=util.js.map

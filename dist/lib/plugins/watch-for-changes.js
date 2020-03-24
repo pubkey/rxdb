@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.watchForChanges = watchForChanges;
-exports["default"] = exports.prototypes = exports.rxdb = void 0;
+exports.RxDBWatchForChangesPlugin = exports.prototypes = exports.rxdb = void 0;
 
 var _rxjs = require("rxjs");
 
@@ -85,11 +85,10 @@ var prototypes = {
   }
 };
 exports.prototypes = prototypes;
-var plugin = {
+var RxDBWatchForChangesPlugin = {
   rxdb: rxdb,
   prototypes: prototypes
 };
-var _default = plugin;
-exports["default"] = _default;
+exports.RxDBWatchForChangesPlugin = RxDBWatchForChangesPlugin;
 
 //# sourceMappingURL=watch-for-changes.js.map

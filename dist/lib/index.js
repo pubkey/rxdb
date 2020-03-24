@@ -1,20 +1,13 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
-var _interopRequireWildcard = require("@babel/runtime/helpers/interopRequireWildcard");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-var _exportNames = {};
-exports["default"] = void 0;
 
-var _core = _interopRequireWildcard(require("./core"));
+var _core = require("./core");
 
 Object.keys(_core).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
-  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
     get: function get() {
@@ -23,39 +16,38 @@ Object.keys(_core).forEach(function (key) {
   });
 });
 
-var _schemaCheck = _interopRequireDefault(require("./plugins/schema-check"));
+var _devMode = require("./plugins/dev-mode");
 
-var _errorMessages = _interopRequireDefault(require("./plugins/error-messages"));
+var _validate = require("./plugins/validate");
 
-var _validate = _interopRequireDefault(require("./plugins/validate"));
+var _keyCompression = require("./plugins/key-compression");
 
-var _keyCompression = _interopRequireDefault(require("./plugins/key-compression"));
+var _leaderElection = require("./plugins/leader-election");
 
-var _leaderElection = _interopRequireDefault(require("./plugins/leader-election"));
+var _encryption = require("./plugins/encryption");
 
-var _encryption = _interopRequireDefault(require("./plugins/encryption"));
+var _update = require("./plugins/update");
 
-var _update = _interopRequireDefault(require("./plugins/update"));
+var _watchForChanges = require("./plugins/watch-for-changes");
 
-var _watchForChanges = _interopRequireDefault(require("./plugins/watch-for-changes"));
+var _replication = require("./plugins/replication");
 
-var _replication = _interopRequireDefault(require("./plugins/replication"));
+var _adapterCheck = require("./plugins/adapter-check");
 
-var _adapterCheck = _interopRequireDefault(require("./plugins/adapter-check"));
+var _jsonDump = require("./plugins/json-dump");
 
-var _jsonDump = _interopRequireDefault(require("./plugins/json-dump"));
+var _inMemory = require("./plugins/in-memory");
 
-var _inMemory = _interopRequireDefault(require("./plugins/in-memory"));
+var _attachments = require("./plugins/attachments");
 
-var _attachments = _interopRequireDefault(require("./plugins/attachments"));
+var _localDocuments = require("./plugins/local-documents");
 
-var _localDocuments = _interopRequireDefault(require("./plugins/local-documents"));
+var _queryBuilder = require("./plugins/query-builder");
 
 var _types = require("./types");
 
 Object.keys(_types).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
-  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
     get: function get() {
@@ -70,49 +62,19 @@ Object.keys(_types).forEach(function (key) {
  * It basically just rxdb-core with some default plugins
  */
 // default plugins
-_core["default"].plugin(_schemaCheck["default"]);
-
-_core["default"].plugin(_errorMessages["default"]);
-
-_core["default"].plugin(_validate["default"]);
-
-_core["default"].plugin(_keyCompression["default"]);
-
-_core["default"].plugin(_leaderElection["default"]);
-
-_core["default"].plugin(_encryption["default"]);
-
-_core["default"].plugin(_update["default"]);
-
-_core["default"].plugin(_watchForChanges["default"]);
-
-_core["default"].plugin(_replication["default"]);
-
-_core["default"].plugin(_adapterCheck["default"]);
-
-_core["default"].plugin(_jsonDump["default"]);
-
-_core["default"].plugin(_inMemory["default"]);
-
-_core["default"].plugin(_attachments["default"]);
-
-_core["default"].plugin(_localDocuments["default"]);
-
-// TODO no more default exports
-var _default = {
-  create: _core.create,
-  checkAdapter: _core.checkAdapter,
-  removeDatabase: _core.removeDatabase,
-  plugin: _core.plugin,
-  dbCount: _core.dbCount,
-  isRxDatabase: _core.isRxDatabase,
-  isRxCollection: _core.isRxCollection,
-  isRxDocument: _core.isRxDocument,
-  isRxQuery: _core.isRxQuery,
-  isRxSchema: _core.isRxSchema,
-  PouchDB: _core.PouchDB,
-  QueryChangeDetector: _core.QueryChangeDetector
-};
-exports["default"] = _default;
+(0, _core.addRxPlugin)(_devMode.RxDBDevModePlugin);
+(0, _core.addRxPlugin)(_validate.RxDBValidatePlugin);
+(0, _core.addRxPlugin)(_keyCompression.RxDBKeyCompressionPlugin);
+(0, _core.addRxPlugin)(_leaderElection.RxDBLeaderElectionPlugin);
+(0, _core.addRxPlugin)(_encryption.RxDBEncryptionPlugin);
+(0, _core.addRxPlugin)(_update.RxDBUpdatePlugin);
+(0, _core.addRxPlugin)(_watchForChanges.RxDBWatchForChangesPlugin);
+(0, _core.addRxPlugin)(_replication.RxDBReplicationPlugin);
+(0, _core.addRxPlugin)(_adapterCheck.RxDBAdapterCheckPlugin);
+(0, _core.addRxPlugin)(_jsonDump.RxDBJsonDumpPlugin);
+(0, _core.addRxPlugin)(_inMemory.RxDBInMemoryPlugin);
+(0, _core.addRxPlugin)(_attachments.RxDBAttachmentsPlugin);
+(0, _core.addRxPlugin)(_localDocuments.RxDBLocalDocumentsPlugin);
+(0, _core.addRxPlugin)(_queryBuilder.RxDBQueryBuilderPlugin);
 
 //# sourceMappingURL=index.js.map

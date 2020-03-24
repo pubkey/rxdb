@@ -1,46 +1,24 @@
-"use strict";
-
-var _interopRequireWildcard = require("@babel/runtime/helpers/interopRequireWildcard");
-
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.checkFieldNameRegex = checkFieldNameRegex;
-exports.validateFieldsDeep = validateFieldsDeep;
-exports.checkSchema = checkSchema;
-exports["default"] = exports.hooks = exports.rxdb = void 0;
-
-var _objectPath = _interopRequireDefault(require("object-path"));
-
-var _rxDocument = _interopRequireWildcard(require("../rx-document"));
-
-var _rxError = require("../rx-error");
-
-var _rxCollection = require("../rx-collection");
-
-var _rxSchema = require("../rx-schema");
-
-var _util = require("../util");
-
 /**
  * does additional checks over the schema-json
  * to ensure nothing is broken or not supported
  */
-
+import objectPath from 'object-path';
+import { properties as rxDocumentProperties } from '../../rx-document';
+import { newRxError } from '../../rx-error';
+import { flattenObject, trimDots } from '../../util';
 /**
  * checks if the fieldname is allowed
  * this makes sure that the fieldnames can be transformed into javascript-vars
  * and does not conquer the observe$ and populate_ fields
  * @throws {Error}
  */
-function checkFieldNameRegex(fieldName) {
+
+export function checkFieldNameRegex(fieldName) {
   if (fieldName === '') return;
   if (fieldName === '_id') return;
 
   if (['properties', 'language'].includes(fieldName)) {
-    throw (0, _rxError.newRxError)('SC23', {
+    throw newRxError('SC23', {
       fieldName: fieldName
     });
   }
@@ -49,7 +27,7 @@ function checkFieldNameRegex(fieldName) {
   var regex = new RegExp(regexStr);
 
   if (!fieldName.match(regex)) {
-    throw (0, _rxError.newRxError)('SC1', {
+    throw newRxError('SC1', {
       regex: regexStr,
       fieldName: fieldName
     });
@@ -59,13 +37,12 @@ function checkFieldNameRegex(fieldName) {
  * validate that all schema-related things are ok
  */
 
-
-function validateFieldsDeep(jsonSchema) {
+export function validateFieldsDeep(jsonSchema) {
   function checkField(fieldName, schemaObj, path) {
     if (typeof fieldName === 'string' && typeof schemaObj === 'object' && !Array.isArray(schemaObj)) checkFieldNameRegex(fieldName); // 'item' only allowed it type=='array'
 
     if (schemaObj.hasOwnProperty('item') && schemaObj.type !== 'array') {
-      throw (0, _rxError.newRxError)('SC2', {
+      throw newRxError('SC2', {
         fieldName: fieldName
       });
     }
@@ -76,7 +53,7 @@ function validateFieldsDeep(jsonSchema) {
 
 
     if (schemaObj.hasOwnProperty('required') && typeof schemaObj.required === 'boolean') {
-      throw (0, _rxError.newRxError)('SC24', {
+      throw newRxError('SC24', {
         fieldName: fieldName
       });
     } // if ref given, must be type=='string' or type=='array' with string-items
@@ -89,7 +66,7 @@ function validateFieldsDeep(jsonSchema) {
 
         case 'array':
           if (!schemaObj.items || !schemaObj.items.type || schemaObj.items.type !== 'string') {
-            throw (0, _rxError.newRxError)('SC3', {
+            throw newRxError('SC3', {
               fieldName: fieldName
             });
           }
@@ -97,7 +74,7 @@ function validateFieldsDeep(jsonSchema) {
           break;
 
         default:
-          throw (0, _rxError.newRxError)('SC4', {
+          throw newRxError('SC4', {
             fieldName: fieldName
           });
       }
@@ -105,7 +82,7 @@ function validateFieldsDeep(jsonSchema) {
 
 
     if (schemaObj.hasOwnProperty('ref') && schemaObj.primary) {
-      throw (0, _rxError.newRxError)('SC5', {
+      throw newRxError('SC5', {
         fieldName: fieldName
       });
     }
@@ -114,14 +91,14 @@ function validateFieldsDeep(jsonSchema) {
 
     if (isNested) {
       if (schemaObj.primary) {
-        throw (0, _rxError.newRxError)('SC6', {
+        throw newRxError('SC6', {
           path: path,
           primary: schemaObj.primary
         });
       }
 
       if (schemaObj["default"]) {
-        throw (0, _rxError.newRxError)('SC7', {
+        throw newRxError('SC7', {
           path: path
         });
       }
@@ -135,7 +112,7 @@ function validateFieldsDeep(jsonSchema) {
           return;
         }
 
-        throw (0, _rxError.newRxError)('SC8', {
+        throw newRxError('SC8', {
           fieldName: fieldName
         });
       }
@@ -162,7 +139,6 @@ function validateFieldsDeep(jsonSchema) {
  * computes real path of the index in the collection schema
  */
 
-
 function getIndexRealPath(shortPath) {
   var pathParts = shortPath.split('.');
   var realPath = '';
@@ -175,7 +151,7 @@ function getIndexRealPath(shortPath) {
     }
   }
 
-  return (0, _util.trimDots)(realPath);
+  return trimDots(realPath);
 }
 /**
  * does the checking
@@ -183,29 +159,29 @@ function getIndexRealPath(shortPath) {
  */
 
 
-function checkSchema(jsonID) {
+export function checkSchema(jsonSchema) {
   // check _rev
-  if (jsonID.properties._rev) {
-    throw (0, _rxError.newRxError)('SC10', {
-      schema: jsonID
+  if (jsonSchema.properties._rev) {
+    throw newRxError('SC10', {
+      schema: jsonSchema
     });
   } // check version
 
 
-  if (!jsonID.hasOwnProperty('version') || typeof jsonID.version !== 'number' || jsonID.version < 0) {
-    throw (0, _rxError.newRxError)('SC11', {
-      version: jsonID.version
+  if (!jsonSchema.hasOwnProperty('version') || typeof jsonSchema.version !== 'number' || jsonSchema.version < 0) {
+    throw newRxError('SC11', {
+      version: jsonSchema.version
     });
   }
 
-  validateFieldsDeep(jsonID);
+  validateFieldsDeep(jsonSchema);
   var primaryPath;
-  Object.keys(jsonID.properties).forEach(function (key) {
-    var value = jsonID.properties[key]; // check primary
+  Object.keys(jsonSchema.properties).forEach(function (key) {
+    var value = jsonSchema.properties[key]; // check primary
 
     if (value.primary) {
       if (primaryPath) {
-        throw (0, _rxError.newRxError)('SC12', {
+        throw newRxError('SC12', {
           value: value
         });
       }
@@ -213,50 +189,50 @@ function checkSchema(jsonID) {
       primaryPath = key;
 
       if (value.index) {
-        throw (0, _rxError.newRxError)('SC13', {
+        throw newRxError('SC13', {
           value: value
         });
       }
 
       if (value.unique) {
-        throw (0, _rxError.newRxError)('SC14', {
+        throw newRxError('SC14', {
           value: value
         });
       }
 
       if (value.encrypted) {
-        throw (0, _rxError.newRxError)('SC15', {
+        throw newRxError('SC15', {
           value: value
         });
       }
 
       if (value.type !== 'string') {
-        throw (0, _rxError.newRxError)('SC16', {
+        throw newRxError('SC16', {
           value: value
         });
       }
     } // check if RxDocument-property
 
 
-    if (_rxDocument["default"].properties().includes(key)) {
-      throw (0, _rxError.newRxError)('SC17', {
+    if (rxDocumentProperties().includes(key)) {
+      throw newRxError('SC17', {
         key: key
       });
     }
-  }); // check format of jsonID.indexes
+  }); // check format of jsonSchema.indexes
 
-  if (jsonID.indexes) {
+  if (jsonSchema.indexes) {
     // should be an array
-    if (!Array.isArray(jsonID.indexes)) {
-      throw (0, _rxError.newRxError)('SC18', {
-        indexes: jsonID.indexes
+    if (!Array.isArray(jsonSchema.indexes)) {
+      throw newRxError('SC18', {
+        indexes: jsonSchema.indexes
       });
     }
 
-    jsonID.indexes.forEach(function (index) {
+    jsonSchema.indexes.forEach(function (index) {
       // should contain strings or array of strings
       if (!(typeof index === 'string' || Array.isArray(index))) {
-        throw (0, _rxError.newRxError)('SC19', {
+        throw newRxError('SC19', {
           index: index
         });
       } // if is a compound index it must contain strings
@@ -265,7 +241,7 @@ function checkSchema(jsonID) {
       if (Array.isArray(index)) {
         for (var i = 0; i < index.length; i += 1) {
           if (typeof index[i] !== 'string') {
-            throw (0, _rxError.newRxError)('SC20', {
+            throw newRxError('SC20', {
               index: index
             });
           }
@@ -277,12 +253,12 @@ function checkSchema(jsonID) {
   // remove backward-compatibility for compoundIndexes
 
 
-  if (Object.keys(jsonID).includes('compoundIndexes')) {
-    throw (0, _rxError.newRxError)('SC25');
+  if (Object.keys(jsonSchema).includes('compoundIndexes')) {
+    throw newRxError('SC25');
   } // remove backward-compatibility for index: true
 
 
-  Object.keys((0, _util.flattenObject)(jsonID)).map(function (key) {
+  Object.keys(flattenObject(jsonSchema)).map(function (key) {
     // flattenObject returns only ending paths, we need all paths pointing to an object
     var splitted = key.split('.');
     splitted.pop(); // all but last
@@ -295,8 +271,7 @@ function checkSchema(jsonID) {
   }) // unique
   .filter(function (key) {
     // check if this path defines an index
-    var value = _objectPath["default"].get(jsonID, key);
-
+    var value = objectPath.get(jsonSchema, key);
     return !!value.index;
   }).forEach(function (key) {
     // replace inner properties
@@ -304,13 +279,13 @@ function checkSchema(jsonID) {
 
     key = key.replace(/\.properties\./g, '.'); // middle
 
-    throw (0, _rxError.newRxError)('SC26', {
-      index: (0, _util.trimDots)(key)
+    throw newRxError('SC26', {
+      index: trimDots(key)
     });
   });
   /* check types of the indexes */
 
-  (jsonID.indexes || []).reduce(function (indexPaths, currentIndex) {
+  (jsonSchema.indexes || []).reduce(function (indexPaths, currentIndex) {
     if (Array.isArray(currentIndex)) {
       indexPaths.concat(currentIndex);
     } else {
@@ -324,11 +299,10 @@ function checkSchema(jsonID) {
   .map(function (indexPath) {
     var realPath = getIndexRealPath(indexPath); // real path in the collection schema
 
-    var schemaObj = _objectPath["default"].get(jsonID, realPath); // get the schema of the indexed property
-
+    var schemaObj = objectPath.get(jsonSchema, realPath); // get the schema of the indexed property
 
     if (!schemaObj || typeof schemaObj !== 'object') {
-      throw (0, _rxError.newRxError)('SC21', {
+      throw newRxError('SC21', {
         index: indexPath
       });
     }
@@ -340,114 +314,10 @@ function checkSchema(jsonID) {
   }).filter(function (index) {
     return index.schemaObj.type !== 'string' && index.schemaObj.type !== 'integer' && index.schemaObj.type !== 'number';
   }).forEach(function (index) {
-    throw (0, _rxError.newRxError)('SC22', {
+    throw newRxError('SC22', {
       key: index.indexPath,
       type: index.schemaObj.type
     });
   });
 }
-/**
- * checks if the given static methods are allowed
- * @throws if not allowed
- */
-
-
-var checkOrmMethods = function checkOrmMethods(statics) {
-  if (!statics) {
-    return;
-  }
-
-  Object.entries(statics).forEach(function (_ref) {
-    var k = _ref[0],
-        v = _ref[1];
-
-    if (typeof k !== 'string') {
-      throw (0, _rxError.newRxTypeError)('COL14', {
-        name: k
-      });
-    }
-
-    if (k.startsWith('_')) {
-      throw (0, _rxError.newRxTypeError)('COL15', {
-        name: k
-      });
-    }
-
-    if (typeof v !== 'function') {
-      throw (0, _rxError.newRxTypeError)('COL16', {
-        name: k,
-        type: typeof k
-      });
-    }
-
-    if ((0, _rxCollection.properties)().includes(k) || (0, _rxDocument.properties)().includes(k)) {
-      throw (0, _rxError.newRxError)('COL17', {
-        name: k
-      });
-    }
-  });
-};
-/**
- * checks if the migrationStrategies are ok, throws if not
- * @throws {Error|TypeError} if not ok
- */
-
-
-function checkMigrationStrategies(schema, migrationStrategies) {
-  // migrationStrategies must be object not array
-  if (typeof migrationStrategies !== 'object' || Array.isArray(migrationStrategies)) {
-    throw (0, _rxError.newRxTypeError)('COL11', {
-      schema: schema
-    });
-  }
-
-  var previousVersions = (0, _rxSchema.getPreviousVersions)(schema); // for every previousVersion there must be strategy
-
-  if (previousVersions.length !== Object.keys(migrationStrategies).length) {
-    throw (0, _rxError.newRxError)('COL12', {
-      have: Object.keys(migrationStrategies),
-      should: previousVersions
-    });
-  } // every strategy must have number as property and be a function
-
-
-  previousVersions.map(function (vNr) {
-    return {
-      v: vNr,
-      s: migrationStrategies[vNr + 1]
-    };
-  }).filter(function (strat) {
-    return typeof strat.s !== 'function';
-  }).forEach(function (strat) {
-    throw (0, _rxError.newRxTypeError)('COL13', {
-      version: strat.v,
-      type: typeof strat,
-      schema: schema
-    });
-  });
-  return true;
-}
-
-var rxdb = true;
-exports.rxdb = rxdb;
-var hooks = {
-  preCreateRxSchema: checkSchema,
-  createRxCollection: function createRxCollection(args) {
-    // check ORM-methods
-    checkOrmMethods(args.statics);
-    checkOrmMethods(args.methods);
-    checkOrmMethods(args.attachments); // check migration strategies
-
-    if (args.schema && args.migrationStrategies) {
-      checkMigrationStrategies(args.schema, args.migrationStrategies);
-    }
-  }
-};
-exports.hooks = hooks;
-var _default = {
-  rxdb: rxdb,
-  hooks: hooks
-};
-exports["default"] = _default;
-
-//# sourceMappingURL=schema-check.js.map
+//# sourceMappingURL=check-schema.js.map

@@ -1,3 +1,4 @@
+import { MangoQuery } from './rx-query';
 /**
  * this file contains types that are pouchdb-specific
  * most of it is copied from @types/pouchdb
@@ -46,11 +47,8 @@ declare type Debug = {
     enable(what: string): void;
     disable(): void;
 };
-export declare type PouchdbQuery = {
-    selector: any;
-    sort?: any[];
-    limit?: number;
-    skip?: number;
+export declare type PouchdbQuery = MangoQuery & {
+    sort?: (string | string[])[];
 };
 export declare class PouchDBInstance {
     constructor(name: string, options: {
@@ -77,7 +75,11 @@ export declare class PouchDBInstance {
     get(docId: string, options?: any): Promise<null | ({
         _id: string;
     } & any)>;
-    put(doc: any, options?: any): Promise<any>;
+    put(doc: any, options?: any): Promise<{
+        ok: boolean;
+        id: string;
+        rev: string;
+    }>;
     remove(doc: any | string, options?: any): Promise<any>;
     changes(options?: PouchReplicationOptions): any;
     sync(remoteDb: string | any, options?: PouchReplicationOptions): PouchSyncHandler;

@@ -5,7 +5,7 @@
  * Writes will still run on the original collection
  */
 import { Observable } from 'rxjs';
-import { RxCollection, RxReplicationState, PouchDBInstance } from '../types';
+import { RxCollection, RxReplicationState, PouchDBInstance, RxPlugin } from '../types';
 import { RxCollectionBase } from '../rx-collection';
 import { RxSchema } from '../rx-schema';
 import { RxChangeEvent } from '../rx-change-event';
@@ -31,7 +31,7 @@ export declare class InMemoryRxCollection<RxDocumentType, OrmMethods> extends Rx
      * the _pouchPut is wrapped
      * @overwrite
      */
-    _pouchPut(obj: any, overwrite: any): any;
+    _pouchPut(obj: any, overwrite: boolean): any;
     $emit(changeEvent: RxChangeEvent): void;
     /**
      * @overwrite
@@ -56,7 +56,7 @@ export declare function setIndexes(schema: RxSchema, pouch: PouchDBInstance): Pr
  * @param prevFilter can be used to filter changes before doing anything
  * @return observable that emits document-data
  */
-export declare function streamChangedDocuments(rxCollection: RxCollection, prevFilter?: (i: any) => boolean): Observable<any>;
+export declare function streamChangedDocuments(rxCollection: RxCollection, prevFilter?: (_i: any) => boolean): Observable<any>;
 /**
  * writes the doc-data into the pouchdb of the collection
  * without changeing the revision
@@ -70,13 +70,4 @@ export declare const rxdb = true;
 export declare const prototypes: {
     RxCollection: (proto: any) => void;
 };
-export declare const overwritable: {};
-declare const _default: {
-    rxdb: boolean;
-    prototypes: {
-        RxCollection: (proto: any) => void;
-    };
-    overwritable: {};
-    spawnInMemory: typeof spawnInMemory;
-};
-export default _default;
+export declare const RxDBInMemoryPlugin: RxPlugin;

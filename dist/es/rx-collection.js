@@ -3,12 +3,12 @@ import { filter } from 'rxjs/operators';
 import { ucfirst, nextTick, flatClone, promiseSeries, pluginMissing } from './util';
 import { validateCouchDBString } from './pouch-db';
 import { _handleToPouch as _handleToPouch2, _handleFromPouch as _handleFromPouch2, fillObjectDataBeforeInsert } from './rx-collection-helper';
-import { createRxQuery } from './rx-query';
+import { createRxQuery, _getDefaultQuery } from './rx-query';
 import { isInstanceOf as isInstanceOfRxSchema, createRxSchema } from './rx-schema';
-import { createChangeEvent } from './rx-change-event';
+import { createInsertEvent } from './rx-change-event';
 import { newRxError, newRxTypeError } from './rx-error';
 import { mustMigrate, createDataMigrator } from './data-migrator';
-import Crypter from './crypter';
+import { createCrypter } from './crypter';
 import { createDocCache } from './doc-cache';
 import { createQueryCache } from './query-cache';
 import { createChangeEventBuffer } from './change-event-buffer';
@@ -74,17 +74,17 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     var createIndexesPromise = _prepareCreateIndexes(this, spawnedPouchPromise);
 
     this._dataMigrator = createDataMigrator(this, this.migrationStrategies);
-    this._crypter = Crypter.create(this.database.password, this.schema);
+    this._crypter = createCrypter(this.database.password, this.schema);
     this._observable$ = this.database.$.pipe(filter(function (event) {
-      return event.data.col === _this.name;
+      return event.collectionName === _this.name;
     }));
     this._changeEventBuffer = createChangeEventBuffer(this);
 
     this._subs.push(this._observable$.pipe(filter(function (cE) {
-      return !cE.data.isLocal;
+      return !cE.isLocal;
     })).subscribe(function (cE) {
       // when data changes, send it to RxDocument in docCache
-      var doc = _this._docCache.get(cE.data.doc);
+      var doc = _this._docCache.get(cE.documentId);
 
       if (doc) doc._handleChangeEvent(cE);
     }));
@@ -185,7 +185,11 @@ export var RxCollectionBase = /*#__PURE__*/function () {
 
     var noDecrypt = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
     var compressedQueryJSON = rxQuery.keyCompress();
-    if (limit) compressedQueryJSON['limit'] = limit;
+
+    if (limit) {
+      compressedQueryJSON['limit'] = limit;
+    }
+
     return this.database.lockedRun(function () {
       return _this4.pouch.find(compressedQueryJSON);
     }).then(function (docsCompressed) {
@@ -235,7 +239,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
       return _this5._runHooks('post', 'insert', useJson, newDoc);
     }).then(function () {
       // event
-      var emitEvent = createChangeEvent('INSERT', _this5.database, _this5, newDoc, useJson);
+      var emitEvent = createInsertEvent(_this5, useJson, newDoc);
 
       _this5.$emit(emitEvent);
 
@@ -278,7 +282,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
           }); // emit events
 
           rxDocuments.forEach(function (doc) {
-            var emitEvent = createChangeEvent('INSERT', _this6.database, _this6, doc, docsMap.get(doc.primary));
+            var emitEvent = createInsertEvent(_this6, doc, docsMap.get(doc.primary));
 
             _this6.$emit(emitEvent);
           });
@@ -364,17 +368,17 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     this._atomicUpsertQueues.set(primary, queue);
 
     return queue;
-  }
-  /**
-   * takes a mongoDB-query-object and returns the documents
-   */
-  ;
+  };
 
   _proto.find = function find(queryObj) {
     if (typeof queryObj === 'string') {
       throw newRxError('COL5', {
         queryObj: queryObj
       });
+    }
+
+    if (!queryObj) {
+      queryObj = _getDefaultQuery(this);
     }
 
     var query = createRxQuery('find', queryObj, this);
@@ -386,9 +390,22 @@ export var RxCollectionBase = /*#__PURE__*/function () {
 
     if (typeof queryObj === 'string') {
       query = createRxQuery('findOne', {
-        _id: queryObj
+        selector: {
+          _id: queryObj
+        }
       }, this);
-    } else query = createRxQuery('findOne', queryObj, this);
+    } else {
+      if (!queryObj) {
+        queryObj = _getDefaultQuery(this);
+      } // cannot have limit on findOne queries
+
+
+      if (queryObj.limit) {
+        throw newRxError('QU6');
+      }
+
+      query = createRxQuery('findOne', queryObj, this);
+    }
 
     if (typeof queryObj === 'number' || Array.isArray(queryObj)) {
       throw newRxTypeError('COL6', {
@@ -583,7 +600,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     return Promise.resolve(true);
   }
   /**
-   * remove all data
+   * remove all data of the collection
    */
   ;
 
@@ -600,29 +617,30 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     key: "insert$",
     get: function get() {
       return this.$.pipe(filter(function (cE) {
-        return cE.data.op === 'INSERT';
+        return cE.operation === 'INSERT';
       }));
     }
   }, {
     key: "update$",
     get: function get() {
       return this.$.pipe(filter(function (cE) {
-        return cE.data.op === 'UPDATE';
+        return cE.operation === 'UPDATE';
       }));
     }
   }, {
-    key: "remove$",
+    key: "delete$",
     get: function get() {
       return this.$.pipe(filter(function (cE) {
-        return cE.data.op === 'REMOVE';
+        return cE.operation === 'DELETE';
       }));
-    }
+    } // TODO remove this, we only have doc-changes anyway
+
   }, {
     key: "docChanges$",
     get: function get() {
       if (!this.__docChanges$) {
-        this.__docChanges$ = this.$.pipe(filter(function (cEvent) {
-          return ['INSERT', 'UPDATE', 'REMOVE'].includes(cEvent.data.op);
+        this.__docChanges$ = this.$.pipe(filter(function (cE) {
+          return ['INSERT', 'UPDATE', 'DELETE'].includes(cE.operation);
         }));
       }
 
@@ -719,7 +737,13 @@ function _atomicUpsertEnsureRxDocumentExists(rxCollection, primary, json) {
 function _prepareCreateIndexes(rxCollection, spawnedPouchPromise) {
   return Promise.all(rxCollection.schema.indexes.map(function (indexAr) {
     var compressedIdx = indexAr.map(function (key) {
-      if (!rxCollection.schema.doKeyCompression()) return key;else return rxCollection._keyCompressor.transformKey('', '', key.split('.'));
+      if (!rxCollection.schema.doKeyCompression()) {
+        return key;
+      } else {
+        var indexKey = rxCollection._keyCompressor.transformKey(key);
+
+        return indexKey;
+      }
     });
     return spawnedPouchPromise.then(function () {
       return rxCollection.pouch.createIndex({

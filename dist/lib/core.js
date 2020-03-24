@@ -1,14 +1,12 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-Object.defineProperty(exports, "QueryChangeDetector", {
+Object.defineProperty(exports, "addRxPlugin", {
   enumerable: true,
   get: function get() {
-    return _queryChangeDetector.QueryChangeDetector;
+    return _plugin.addRxPlugin;
   }
 });
 Object.defineProperty(exports, "PouchDB", {
@@ -17,16 +15,16 @@ Object.defineProperty(exports, "PouchDB", {
     return _pouchDb.PouchDB;
   }
 });
-Object.defineProperty(exports, "create", {
+Object.defineProperty(exports, "createRxDatabase", {
   enumerable: true,
   get: function get() {
-    return _rxDatabase.create;
+    return _rxDatabase.createRxDatabase;
   }
 });
-Object.defineProperty(exports, "removeDatabase", {
+Object.defineProperty(exports, "removeRxDatabase", {
   enumerable: true,
   get: function get() {
-    return _rxDatabase.removeDatabase;
+    return _rxDatabase.removeRxDatabase;
   }
 });
 Object.defineProperty(exports, "checkAdapter", {
@@ -45,12 +43,6 @@ Object.defineProperty(exports, "dbCount", {
   enumerable: true,
   get: function get() {
     return _rxDatabase.dbCount;
-  }
-});
-Object.defineProperty(exports, "createRxDatabase", {
-  enumerable: true,
-  get: function get() {
-    return _rxDatabase.create;
   }
 });
 Object.defineProperty(exports, "isRxCollection", {
@@ -95,11 +87,14 @@ Object.defineProperty(exports, "RxChangeEvent", {
     return _rxChangeEvent.RxChangeEvent;
   }
 });
-exports["default"] = exports.plugin = void 0;
+Object.defineProperty(exports, "getRxStoragePouchDb", {
+  enumerable: true,
+  get: function get() {
+    return _rxStoragePouchdb.getRxStoragePouchDb;
+  }
+});
 
-var _queryChangeDetector = require("./query-change-detector");
-
-var _plugin = _interopRequireDefault(require("./plugin"));
+var _plugin = require("./plugin");
 
 var _pouchDb = require("./pouch-db");
 
@@ -115,26 +110,6 @@ var _rxSchema = require("./rx-schema");
 
 var _rxChangeEvent = require("./rx-change-event");
 
-/**
- * this is the main entry-point for custom builds
- * it can be used as standalone but is also used in the batteries-included main-export
- */
-var plugin = _plugin["default"];
-exports.plugin = plugin;
-var _default = {
-  create: _rxDatabase.create,
-  removeDatabase: _rxDatabase.removeDatabase,
-  checkAdapter: _rxDatabase.checkAdapter,
-  plugin: plugin,
-  dbCount: _rxDatabase.dbCount,
-  isRxDatabase: _rxDatabase.isInstanceOf,
-  isRxCollection: _rxCollection.isInstanceOf,
-  isRxDocument: _rxDocument.isInstanceOf,
-  isRxQuery: _rxQuery.isInstanceOf,
-  isRxSchema: _rxSchema.isInstanceOf,
-  PouchDB: _pouchDb.PouchDB,
-  QueryChangeDetector: _queryChangeDetector.QueryChangeDetector
-};
-exports["default"] = _default;
+var _rxStoragePouchdb = require("./rx-storage-pouchdb");
 
 //# sourceMappingURL=core.js.map

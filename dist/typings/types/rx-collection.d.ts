@@ -28,7 +28,7 @@ export interface MigrationState {
 export declare type RxCollectionHookCallback<RxDocumentType, OrmMethods> = (data: RxDocumentType, instance: RxDocument<RxDocumentType, OrmMethods>) => void | Promise<void> | any;
 export declare type RxCollectionHookNoInstance<RxDocumentType, OrmMethods> = (data: RxDocumentType) => void | Promise<void> | any;
 export declare type RxCollectionHookCallbackNonAsync<RxDocumentType, OrmMethods> = (data: RxDocumentType, instance: RxDocument<RxDocumentType, OrmMethods>) => void | any;
-export declare type RxCollectionHookNoInstanceCallback<RxDocumentType, OrmMethods> = (data: RxDocumentType, instance: RxCollection) => Promise<void> | void | any;
+export declare type RxCollectionHookNoInstanceCallback<RxDocumentType, OrmMethods> = (data: RxDocumentType, instance: RxCollection<RxDocumentType, OrmMethods>) => Promise<void> | void | any;
 export declare type RxCollection<RxDocumentType = any, OrmMethods = {}, StaticMethods = {
     [key: string]: any;
 }> = RxCollectionBase<RxDocumentType, OrmMethods> & RxCollectionGenerated<RxDocumentType, OrmMethods> & StaticMethods;

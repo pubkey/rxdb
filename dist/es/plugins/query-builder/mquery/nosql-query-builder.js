@@ -2,10 +2,9 @@
  * this is based on
  * @link https://github.com/aheckmann/mquery/blob/master/lib/mquery.js
  */
-import { isObject, merge as _merge, mergeClone } from './mquery_utils';
-import { newRxTypeError, newRxError } from '../rx-error';
-import { clone as _clone } from '../util';
-export var MQueryBase = /*#__PURE__*/function () {
+import { isObject, merge as _merge } from './mquery-utils';
+import { newRxTypeError, newRxError } from '../../../rx-error';
+export var NoSqlQueryBuilderClass = /*#__PURE__*/function () {
   /**
    * MQuery constructor used for building queries.
    *
@@ -14,31 +13,39 @@ export var MQueryBase = /*#__PURE__*/function () {
    *     query.where('age').gte(21).exec(callback);
    *
    */
-  function MQueryBase(criteria) {
+  function NoSqlQueryBuilderClass(mangoQuery) {
     this.options = {};
     this._conditions = {};
-    if (criteria) this.find(criteria);
-  }
-  /**
-   * returns a cloned version of the query
-   */
+    this._fields = {};
 
+    if (mangoQuery) {
+      var queryBuilder = this;
 
-  var _proto = MQueryBase.prototype;
+      if (mangoQuery.selector) {
+        queryBuilder.find(mangoQuery.selector);
+      }
 
-  _proto.clone = function clone() {
-    var same = new MQueryBase();
-    Object.entries(this).forEach(function (_ref) {
-      var k = _ref[0],
-          v = _ref[1];
-      return same[k] = _clone(v);
-    });
-    return same;
+      if (mangoQuery.limit) {
+        queryBuilder.limit(mangoQuery.limit);
+      }
+
+      if (mangoQuery.skip) {
+        queryBuilder.skip(mangoQuery.skip);
+      }
+
+      if (mangoQuery.sort) {
+        mangoQuery.sort.forEach(function (s) {
+          return queryBuilder.sort(s);
+        });
+      }
+    }
   }
   /**
    * Specifies a `path` for use with chaining.
    */
-  ;
+
+
+  var _proto = NoSqlQueryBuilderClass.prototype;
 
   _proto.where = function where(_path, _val) {
     if (!arguments.length) return this;
@@ -46,11 +53,18 @@ export var MQueryBase = /*#__PURE__*/function () {
 
     if ('string' === type) {
       this._path = arguments[0];
-      if (2 === arguments.length) this._conditions[this._path] = arguments[1];
+
+      if (2 === arguments.length) {
+        this._conditions[this._path] = arguments[1];
+      }
+
       return this;
     }
 
-    if ('object' === type && !Array.isArray(arguments[0])) return this.merge(arguments[0]);
+    if ('object' === type && !Array.isArray(arguments[0])) {
+      return this.merge(arguments[0]);
+    }
+
     throw newRxTypeError('MQ1', {
       path: arguments[0]
     });
@@ -232,7 +246,7 @@ export var MQueryBase = /*#__PURE__*/function () {
     } else throw newRxTypeError('MQ2');
 
     if (fn) {
-      criteria = new MQueryBase();
+      criteria = new NoSqlQueryBuilderClass();
       fn(criteria);
       criteria = criteria._conditions;
     }
@@ -308,7 +322,9 @@ export var MQueryBase = /*#__PURE__*/function () {
   ;
 
   _proto.merge = function merge(source) {
-    if (!source) return this;
+    if (!source) {
+      return this;
+    }
 
     if (!canMerge(source)) {
       throw newRxTypeError('MQ4', {
@@ -316,7 +332,7 @@ export var MQueryBase = /*#__PURE__*/function () {
       });
     }
 
-    if (source instanceof MQueryBase) {
+    if (source instanceof NoSqlQueryBuilderClass) {
       // if source has a feature, apply it to ourselves
       if (source._conditions) _merge(this._conditions, source._conditions);
 
@@ -330,11 +346,6 @@ export var MQueryBase = /*#__PURE__*/function () {
         if (!this.options) this.options = {};
 
         _merge(this.options, source.options);
-      }
-
-      if (source._update) {
-        if (!this._update) this._update = {};
-        mergeClone(this._update, source._update);
       }
 
       if (source._distinct) this._distinct = source._distinct;
@@ -355,7 +366,10 @@ export var MQueryBase = /*#__PURE__*/function () {
   ;
 
   _proto.find = function find(criteria) {
-    if (canMerge(criteria)) this.merge(criteria);
+    if (canMerge(criteria)) {
+      this.merge(criteria);
+    }
+
     return this;
   }
   /**
@@ -373,11 +387,46 @@ export var MQueryBase = /*#__PURE__*/function () {
     }
   };
 
-  return MQueryBase;
+  _proto.toJSON = function toJSON() {
+    var query = {
+      selector: this._conditions
+    };
+
+    if (this.options.skip) {
+      query.skip = this.options.skip;
+    }
+
+    if (this.options.limit) {
+      query.limit = this.options.limit;
+    }
+
+    if (this.options.sort) {
+      query.sort = mQuerySortToRxDBSort(this.options.sort);
+    }
+
+    return {
+      query: query,
+      path: this._path
+    };
+  };
+
+  return NoSqlQueryBuilderClass;
 }();
-export function createMQuery(criteria) {
-  return new MQueryBase(criteria);
+export function mQuerySortToRxDBSort(sort) {
+  return Object.entries(sort).map(function (_ref) {
+    var _part;
+
+    var k = _ref[0],
+        v = _ref[1];
+    var direction = v === 1 ? 'asc' : 'desc';
+    var part = (_part = {}, _part[k] = direction, _part);
+    return part;
+  });
 }
+/**
+ * Because some prototype-methods are generated,
+ * we have to define the type of NoSqlQueryBuilder here
+ */
 
 /**
  * limit, skip, maxScan, batchSize, comment
@@ -386,8 +435,9 @@ export function createMQuery(criteria) {
  *
  *     query.comment('feed query');
  */
-['limit', 'skip', 'maxScan', 'batchSize', 'comment'].forEach(function (method) {
-  MQueryBase.prototype[method] = function (v) {
+export var OTHER_MANGO_ATTRIBUTES = ['limit', 'skip', 'maxScan', 'batchSize', 'comment'];
+OTHER_MANGO_ATTRIBUTES.forEach(function (method) {
+  NoSqlQueryBuilderClass.prototype[method] = function (v) {
     this.options[method] = v;
     return this;
   };
@@ -398,8 +448,9 @@ export function createMQuery(criteria) {
  *     Thing.where('type').nin(array)
  */
 
-['gt', 'gte', 'lt', 'lte', 'ne', 'in', 'nin', 'all', 'regex', 'size'].forEach(function ($conditional) {
-  MQueryBase.prototype[$conditional] = function () {
+export var OTHER_MANGO_OPERATORS = ['gt', 'gte', 'lt', 'lte', 'ne', 'in', 'nin', 'all', 'regex', 'size'];
+OTHER_MANGO_OPERATORS.forEach(function ($conditional) {
+  NoSqlQueryBuilderClass.prototype[$conditional] = function () {
     var path;
     var val;
 
@@ -418,9 +469,6 @@ export function createMQuery(criteria) {
     return this;
   };
 });
-/*!
- * @ignore
- */
 
 function push(opts, field, value) {
   if (Array.isArray(opts.sort)) {
@@ -480,6 +528,9 @@ function _pushArr(opts, field, value) {
 
 
 export function canMerge(conds) {
-  return conds instanceof MQueryBase || isObject(conds);
+  return conds instanceof NoSqlQueryBuilderClass || isObject(conds);
 }
-//# sourceMappingURL=mquery.js.map
+export function createQueryBuilder(query) {
+  return new NoSqlQueryBuilderClass(query);
+}
+//# sourceMappingURL=nosql-query-builder.js.map

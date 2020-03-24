@@ -51,7 +51,7 @@ export var overwritable = {
     }
   }
 };
-export default {
+export var RxDBEncryptionPlugin = {
   rxdb: rxdb,
   prototypes: prototypes,
   overwritable: overwritable

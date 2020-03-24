@@ -9,14 +9,15 @@ export interface RxPlugin {
         RxDatabase?: Function;
     };
     overwritable?: {
+        isDevMove?: () => boolean;
         validatePassword?: Function;
         createKeyCompressor?: Function;
-        createLeaderElector?: Function;
         checkAdapter?: Function;
         tunnelErrorMessage?: Function;
     };
     hooks?: {
         createRxDatabase?: Function;
+        preDestroyRxDatabase?: Function;
         createRxCollection?: Function;
         preCreateRxCollection?: Function;
         preCreateRxSchema?: Function;

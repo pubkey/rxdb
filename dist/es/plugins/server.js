@@ -4,11 +4,11 @@ import express from 'express';
 import corsFn from 'cors';
 import { PouchDB } from '../pouch-db';
 import { newRxError } from '../rx-error';
-import Core from '../core';
-import ReplicationPlugin from './replication';
-Core.plugin(ReplicationPlugin);
-import RxDBWatchForChangesPlugin from './watch-for-changes';
-Core.plugin(RxDBWatchForChangesPlugin);
+import { addRxPlugin } from '../core';
+import { RxDBReplicationPlugin } from './replication';
+addRxPlugin(RxDBReplicationPlugin);
+import { RxDBWatchForChangesPlugin } from './watch-for-changes';
+addRxPlugin(RxDBWatchForChangesPlugin);
 var ExpressPouchDB;
 
 try {
@@ -170,9 +170,11 @@ function ensureNoMoreCollections(args) {
 
 
 export function onDestroy(db) {
-  if (SERVERS_OF_DB.has(db)) SERVERS_OF_DB.get(db).forEach(function (server) {
-    return server.close();
-  });
+  if (SERVERS_OF_DB.has(db)) {
+    SERVERS_OF_DB.get(db).forEach(function (server) {
+      return server.close();
+    });
+  }
 }
 export var rxdb = true;
 export var prototypes = {
@@ -185,11 +187,10 @@ export var hooks = {
   preCreateRxCollection: ensureNoMoreCollections
 };
 export var overwritable = {};
-export default {
+export var RxDBServerPlugin = {
   rxdb: rxdb,
   prototypes: prototypes,
   overwritable: overwritable,
-  hooks: hooks,
-  spawnServer: spawnServer
+  hooks: hooks
 };
 //# sourceMappingURL=server.js.map

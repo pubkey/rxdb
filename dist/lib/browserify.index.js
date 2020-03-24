@@ -1,20 +1,18 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+var _interopRequireWildcard = require("@babel/runtime/helpers/interopRequireWildcard");
 
 require("@babel/polyfill");
 
-var _index = _interopRequireDefault(require("./index.js"));
+var RxDB = _interopRequireWildcard(require("./index.js"));
 
 /**
  * this is the index for a browserify-build
  * which produces a single file that can be embeded into the html
  * and used via window.RxDB
  */
-_index["default"].plugin(require('pouchdb-adapter-idb'));
-
-_index["default"].plugin(require('pouchdb-adapter-http'));
-
-window['RxDB'] = _index["default"];
+RxDB.addRxPlugin(require('pouchdb-adapter-idb'));
+RxDB.addRxPlugin(require('pouchdb-adapter-http'));
+window['RxDB'] = RxDB;
 
 //# sourceMappingURL=browserify.index.js.map

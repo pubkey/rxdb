@@ -9,7 +9,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.encrypt = encrypt;
 exports.decrypt = decrypt;
-exports["default"] = exports.overwritable = exports.prototypes = exports.rxdb = void 0;
+exports.RxDBEncryptionPlugin = exports.overwritable = exports.prototypes = exports.rxdb = void 0;
 
 var _aes = _interopRequireDefault(require("crypto-js/aes"));
 
@@ -74,11 +74,11 @@ var overwritable = {
   }
 };
 exports.overwritable = overwritable;
-var _default = {
+var RxDBEncryptionPlugin = {
   rxdb: rxdb,
   prototypes: prototypes,
   overwritable: overwritable
 };
-exports["default"] = _default;
+exports.RxDBEncryptionPlugin = RxDBEncryptionPlugin;
 
 //# sourceMappingURL=encryption.js.map

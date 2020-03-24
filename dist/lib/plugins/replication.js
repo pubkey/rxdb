@@ -8,7 +8,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.setPouchEventEmitter = setPouchEventEmitter;
 exports.createRxReplicationState = createRxReplicationState;
 exports.sync = sync;
-exports["default"] = exports.hooks = exports.prototypes = exports.rxdb = exports.RxReplicationStateBase = void 0;
+exports.RxDBReplicationPlugin = exports.hooks = exports.prototypes = exports.rxdb = exports.RxReplicationStateBase = void 0;
 
 var _pouchdbReplication = _interopRequireDefault(require("pouchdb-replication"));
 
@@ -18,26 +18,24 @@ var _operators = require("rxjs/operators");
 
 var _util = require("../util");
 
-var _core = _interopRequireDefault(require("../core"));
+var _core = require("../core");
 
 var _rxError = require("../rx-error");
 
 var _pouchDb = require("../pouch-db");
 
-var _watchForChanges = _interopRequireDefault(require("./watch-for-changes"));
-
 var _rxCollection = require("../rx-collection");
+
+var _watchForChanges = require("./watch-for-changes");
 
 /**
  * this plugin adds the RxCollection.sync()-function to rxdb
  * you can use it to sync collections with remote or local couchdb-instances
  */
 // add pouchdb-replication-plugin
-_core["default"].plugin(_pouchdbReplication["default"]); // add the watch-for-changes-plugin
+(0, _core.addRxPlugin)(_pouchdbReplication["default"]); // add the watch-for-changes-plugin
 
-
-_core["default"].plugin(_watchForChanges["default"]);
-
+(0, _core.addRxPlugin)(_watchForChanges.RxDBWatchForChangesPlugin);
 var INTERNAL_POUCHDBS = new WeakSet();
 
 var RxReplicationStateBase = /*#__PURE__*/function () {
@@ -238,12 +236,11 @@ var hooks = {
   }
 };
 exports.hooks = hooks;
-var _default = {
+var RxDBReplicationPlugin = {
   rxdb: rxdb,
   prototypes: prototypes,
-  hooks: hooks,
-  sync: sync
+  hooks: hooks
 };
-exports["default"] = _default;
+exports.RxDBReplicationPlugin = RxDBReplicationPlugin;
 
 //# sourceMappingURL=replication.js.map

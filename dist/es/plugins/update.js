@@ -36,7 +36,7 @@ export var prototypes = {
     proto.update = RxQueryUpdate;
   }
 };
-export default {
+export var RxDBUpdatePlugin = {
   rxdb: rxdb,
   prototypes: prototypes
 };

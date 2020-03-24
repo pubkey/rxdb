@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import { RxDatabase } from '../types';
+import { RxDatabase, RxPlugin } from '../types';
 export declare function spawnServer(this: RxDatabase, { path, port, cors, startServer, }: {
     path?: string | undefined;
     port?: number | undefined;
@@ -16,7 +16,7 @@ declare function ensureNoMoreCollections(args: any): void;
 /**
  * runs when the database gets destroyed
  */
-export declare function onDestroy(db: any): void;
+export declare function onDestroy(db: RxDatabase): void;
 export declare const rxdb = true;
 export declare const prototypes: {
     RxDatabase: (proto: any) => void;
@@ -26,16 +26,5 @@ export declare const hooks: {
     preCreateRxCollection: typeof ensureNoMoreCollections;
 };
 export declare const overwritable: {};
-declare const _default: {
-    rxdb: boolean;
-    prototypes: {
-        RxDatabase: (proto: any) => void;
-    };
-    overwritable: {};
-    hooks: {
-        preDestroyRxDatabase: typeof onDestroy;
-        preCreateRxCollection: typeof ensureNoMoreCollections;
-    };
-    spawnServer: typeof spawnServer;
-};
-export default _default;
+export declare const RxDBServerPlugin: RxPlugin;
+export {};

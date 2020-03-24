@@ -2,9 +2,9 @@
  * this plugin adds the json export/import capabilities to RxDB
  */
 import { hash } from '../util';
-import { createRxQuery } from '../rx-query';
+import { createRxQuery, _getDefaultQuery } from '../rx-query';
 import { newRxError } from '../rx-error';
-import { createChangeEvent } from '../rx-change-event';
+import { createInsertEvent } from '../rx-change-event';
 
 function dumpRxDatabase() {
   var _this = this;
@@ -79,7 +79,7 @@ var dumpRxCollection = function dumpRxCollection() {
     json.encrypted = true;
   }
 
-  var query = createRxQuery('find', {}, this);
+  var query = createRxQuery('find', _getDefaultQuery(this), this);
   return this._pouchFind(query, undefined, encrypted).then(function (docs) {
     json.docs = docs.map(function (docData) {
       delete docData._rev;
@@ -125,9 +125,7 @@ function importDumpRxCollection(exportedJSON) {
   }).then(function () {
     docs.forEach(function (doc) {
       // emit change events
-      var primary = doc[_this3.schema.primaryPath];
-      var emitEvent = createChangeEvent('INSERT', _this3.database, _this3, null, doc);
-      emitEvent.data.doc = primary;
+      var emitEvent = createInsertEvent(_this3, doc);
 
       _this3.$emit(emitEvent);
     });
@@ -146,7 +144,7 @@ export var prototypes = {
   }
 };
 export var overwritable = {};
-export default {
+export var RxDBJsonDumpPlugin = {
   rxdb: rxdb,
   prototypes: prototypes,
   overwritable: overwritable

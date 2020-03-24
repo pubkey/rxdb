@@ -1,31 +1,28 @@
 import { BehaviorSubject } from 'rxjs';
-import { MQuery } from './mquery/mquery';
-import { QueryChangeDetector } from './query-change-detector';
-import { RxCollection, RxDocument, PouchdbQuery, RxQueryOP, RxQuery } from './types';
+import { RxCollection, RxDocument, RxQueryOP, RxQuery, MangoQuery, MangoQuerySortPart, MangoQuerySelector } from './types';
+import { PreparedQuery } from './rx-storate.interface';
 export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] | RxDocumentType> {
     op: RxQueryOP;
-    queryObj: any;
+    mangoQuery: Readonly<MangoQuery>;
     collection: RxCollection<RxDocumentType>;
-    constructor(op: RxQueryOP, queryObj: any, collection: RxCollection<RxDocumentType>);
-    get $(): BehaviorSubject<RxQueryResult>;
-    get massageSelector(): any;
     id: number;
-    mquery: MQuery;
-    _latestChangeEvent: -1 | any;
-    _resultsData: any;
-    _resultsDocs$: BehaviorSubject<any>;
-    _queryChangeDetector: QueryChangeDetector;
     /**
      * counts how often the execution on the whole db was done
      * (used for tests and debugging)
      */
     _execOverDatabaseCount: number;
+    other: any;
+    constructor(op: RxQueryOP, mangoQuery: Readonly<MangoQuery>, collection: RxCollection<RxDocumentType>);
+    get $(): BehaviorSubject<RxQueryResult>;
+    _latestChangeEvent: -1 | any;
+    _resultsData: any;
+    _resultsDataMap: Map<string, RxDocumentType>;
+    _resultsDocs$: BehaviorSubject<any>;
     /**
      * ensures that the exec-runs
      * are not run in parallel
      */
     _ensureEqualQueue: Promise<boolean>;
-    private stringRep?;
     /**
      * Returns an observable that emits the results
      * This should behave like an rxjs-BehaviorSubject which means:
@@ -34,17 +31,6 @@ export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumen
      * - Do not emit anything before the first result-set was created (no null)
      */
     private _$?;
-    private _toJSON;
-    /**
-     * get the key-compression version of this query
-     */
-    private _keyCompress?;
-    /**
-     * cached call to get the massageSelector
-     */
-    private _massageSelector?;
-    toString(): string;
-    _clone(): RxQueryBase<RxDocumentType, RxDocumentType | RxDocumentType[]>;
     /**
      * set the new result-data as result-docs of the query
      * @param newResultData json-docs that were recieved from pouchdb
@@ -61,14 +47,30 @@ export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumen
      * just subscribe and use the first result
      */
     exec(): Promise<RxQueryResult>;
-    toJSON(): PouchdbQuery;
-    keyCompress(): PouchdbQuery | {
-        selector: {};
-        sort: [];
-    } | undefined;
+    /**
+     * cached call to get the massageSelector
+     * @overwrites itself with the actual value
+     */
+    get massageSelector(): any;
+    /**
+     * returns a string that is used for equal-comparisons
+     * @overwrites itself with the actual value
+     */
+    toString(): string;
+    /**
+     * returns the prepared query
+     * @overwrites itself with the actual value
+     */
+    toJSON(): PreparedQuery<RxDocumentType>;
+    /**
+     * returns the key-compressed version of the query
+     * @overwrites itself with the actual value
+     */
+    keyCompress(): MangoQuery<any>;
     /**
      * returns true if the document matches the query,
      * does not use the 'skip' and 'limit'
+     * // TODO this was moved to rx-storage
      */
     doesDocumentDataMatch(docData: RxDocumentType | any): boolean;
     /**
@@ -77,21 +79,23 @@ export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumen
      */
     remove(): Promise<RxQueryResult>;
     /**
+     * helper function to transform RxQueryBase to RxQuery type
+     */
+    get asRxQuery(): RxQuery<RxDocumentType, RxQueryResult>;
+    /**
      * updates all found documents
-     * @overwritten by plugin (optinal)
+     * @overwritten by plugin (optional)
      */
     update(_updateObj: any): Promise<RxQueryResult>;
-    /**
-     * regex cannot run on primary _id
-     * @link https://docs.cloudant.com/cloudant_query.html#creating-selector-expressions
-     */
-    regex(params: any): RxQuery<RxDocumentType, RxQueryResult>;
-    /**
-     * make sure it searches index because of pouchdb-find bug
-     * @link https://github.com/nolanlawson/pouchdb-find/issues/204
-     */
-    sort(params: any): RxQuery<RxDocumentType, RxQueryResult>;
-    limit(amount: number): RxQuery<RxDocumentType, RxQueryResult>;
+    where(_queryObj: MangoQuerySelector<RxDocumentType> | keyof RxDocumentType | string): RxQuery<RxDocumentType, RxQueryResult>;
+    sort(_params: string | MangoQuerySortPart<RxDocumentType>): RxQuery<RxDocumentType, RxQueryResult>;
+    skip(_amount: number | null): RxQuery<RxDocumentType, RxQueryResult>;
+    limit(_amount: number | null): RxQuery<RxDocumentType, RxQueryResult>;
 }
-export declare function createRxQuery(op: RxQueryOP, queryObj: any, collection: RxCollection): RxQueryBase<any, any>;
+export declare function _getDefaultQuery(collection: RxCollection): MangoQuery;
+/**
+ * run this query through the QueryCache
+ */
+export declare function tunnelQueryCache<RxDocumentType, RxQueryResult>(rxQuery: RxQueryBase<RxDocumentType, RxQueryResult>): RxQuery<RxDocumentType, RxQueryResult>;
+export declare function createRxQuery(op: RxQueryOP, queryObj: MangoQuery, collection: RxCollection): RxQueryBase<any, any>;
 export declare function isInstanceOf(obj: any): boolean;

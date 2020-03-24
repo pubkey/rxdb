@@ -30,7 +30,7 @@ var _rxError = require("./rx-error");
 
 var _dataMigrator = require("./data-migrator");
 
-var _crypter = _interopRequireDefault(require("./crypter"));
+var _crypter = require("./crypter");
 
 var _docCache = require("./doc-cache");
 
@@ -81,7 +81,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
     this.options = options;
     this.statics = statics;
 
-    _applyHookFunctions(this);
+    _applyHookFunctions(this.asRxCollection);
   }
   /**
    * returns observable
@@ -102,20 +102,20 @@ var RxCollectionBase = /*#__PURE__*/function () {
 
     var spawnedPouchPromise = this.pouch.info(); // resolved when the pouchdb is useable
 
-    var createIndexesPromise = _prepareCreateIndexes(this, spawnedPouchPromise);
+    var createIndexesPromise = _prepareCreateIndexes(this.asRxCollection, spawnedPouchPromise);
 
-    this._dataMigrator = (0, _dataMigrator.createDataMigrator)(this, this.migrationStrategies);
-    this._crypter = _crypter["default"].create(this.database.password, this.schema);
+    this._dataMigrator = (0, _dataMigrator.createDataMigrator)(this.asRxCollection, this.migrationStrategies);
+    this._crypter = (0, _crypter.createCrypter)(this.database.password, this.schema);
     this._observable$ = this.database.$.pipe((0, _operators.filter)(function (event) {
-      return event.data.col === _this.name;
+      return event.collectionName === _this.name;
     }));
-    this._changeEventBuffer = (0, _changeEventBuffer.createChangeEventBuffer)(this);
+    this._changeEventBuffer = (0, _changeEventBuffer.createChangeEventBuffer)(this.asRxCollection);
 
     this._subs.push(this._observable$.pipe((0, _operators.filter)(function (cE) {
-      return !cE.data.isLocal;
+      return !cE.isLocal;
     })).subscribe(function (cE) {
       // when data changes, send it to RxDocument in docCache
-      var doc = _this._docCache.get(cE.data.doc);
+      var doc = _this._docCache.get(cE.documentId);
 
       if (doc) doc._handleChangeEvent(cE);
     }));
@@ -216,7 +216,11 @@ var RxCollectionBase = /*#__PURE__*/function () {
 
     var noDecrypt = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
     var compressedQueryJSON = rxQuery.keyCompress();
-    if (limit) compressedQueryJSON['limit'] = limit;
+
+    if (limit) {
+      compressedQueryJSON['limit'] = limit;
+    }
+
     return this.database.lockedRun(function () {
       return _this4.pouch.find(compressedQueryJSON);
     }).then(function (docsCompressed) {
@@ -266,7 +270,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
       return _this5._runHooks('post', 'insert', useJson, newDoc);
     }).then(function () {
       // event
-      var emitEvent = (0, _rxChangeEvent.createChangeEvent)('INSERT', _this5.database, _this5, newDoc, useJson);
+      var emitEvent = (0, _rxChangeEvent.createInsertEvent)(_this5, useJson, newDoc);
 
       _this5.$emit(emitEvent);
 
@@ -309,7 +313,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
           }); // emit events
 
           rxDocuments.forEach(function (doc) {
-            var emitEvent = (0, _rxChangeEvent.createChangeEvent)('INSERT', _this6.database, _this6, doc, docsMap.get(doc.primary));
+            var emitEvent = (0, _rxChangeEvent.createInsertEvent)(_this6, doc, docsMap.get(doc.primary));
 
             _this6.$emit(emitEvent);
           });
@@ -395,17 +399,17 @@ var RxCollectionBase = /*#__PURE__*/function () {
     this._atomicUpsertQueues.set(primary, queue);
 
     return queue;
-  }
-  /**
-   * takes a mongoDB-query-object and returns the documents
-   */
-  ;
+  };
 
   _proto.find = function find(queryObj) {
     if (typeof queryObj === 'string') {
       throw (0, _rxError.newRxError)('COL5', {
         queryObj: queryObj
       });
+    }
+
+    if (!queryObj) {
+      queryObj = (0, _rxQuery._getDefaultQuery)(this);
     }
 
     var query = (0, _rxQuery.createRxQuery)('find', queryObj, this);
@@ -417,9 +421,22 @@ var RxCollectionBase = /*#__PURE__*/function () {
 
     if (typeof queryObj === 'string') {
       query = (0, _rxQuery.createRxQuery)('findOne', {
-        _id: queryObj
+        selector: {
+          _id: queryObj
+        }
       }, this);
-    } else query = (0, _rxQuery.createRxQuery)('findOne', queryObj, this);
+    } else {
+      if (!queryObj) {
+        queryObj = (0, _rxQuery._getDefaultQuery)(this);
+      } // cannot have limit on findOne queries
+
+
+      if (queryObj.limit) {
+        throw (0, _rxError.newRxError)('QU6');
+      }
+
+      query = (0, _rxQuery.createRxQuery)('findOne', queryObj, this);
+    }
 
     if (typeof queryObj === 'number' || Array.isArray(queryObj)) {
       throw (0, _rxError.newRxTypeError)('COL6', {
@@ -614,7 +631,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
     return Promise.resolve(true);
   }
   /**
-   * remove all data
+   * remove all data of the collection
    */
   ;
 
@@ -631,29 +648,30 @@ var RxCollectionBase = /*#__PURE__*/function () {
     key: "insert$",
     get: function get() {
       return this.$.pipe((0, _operators.filter)(function (cE) {
-        return cE.data.op === 'INSERT';
+        return cE.operation === 'INSERT';
       }));
     }
   }, {
     key: "update$",
     get: function get() {
       return this.$.pipe((0, _operators.filter)(function (cE) {
-        return cE.data.op === 'UPDATE';
+        return cE.operation === 'UPDATE';
       }));
     }
   }, {
-    key: "remove$",
+    key: "delete$",
     get: function get() {
       return this.$.pipe((0, _operators.filter)(function (cE) {
-        return cE.data.op === 'REMOVE';
+        return cE.operation === 'DELETE';
       }));
-    }
+    } // TODO remove this, we only have doc-changes anyway
+
   }, {
     key: "docChanges$",
     get: function get() {
       if (!this.__docChanges$) {
-        this.__docChanges$ = this.$.pipe((0, _operators.filter)(function (cEvent) {
-          return ['INSERT', 'UPDATE', 'REMOVE'].includes(cEvent.data.op);
+        this.__docChanges$ = this.$.pipe((0, _operators.filter)(function (cE) {
+          return ['INSERT', 'UPDATE', 'DELETE'].includes(cE.operation);
         }));
       }
 
@@ -668,6 +686,11 @@ var RxCollectionBase = /*#__PURE__*/function () {
         return _this9._onDestroyCall = res;
       });
       return this._onDestroy;
+    }
+  }, {
+    key: "asRxCollection",
+    get: function get() {
+      return this;
     }
   }]);
   return RxCollectionBase;
@@ -753,7 +776,13 @@ function _atomicUpsertEnsureRxDocumentExists(rxCollection, primary, json) {
 function _prepareCreateIndexes(rxCollection, spawnedPouchPromise) {
   return Promise.all(rxCollection.schema.indexes.map(function (indexAr) {
     var compressedIdx = indexAr.map(function (key) {
-      if (!rxCollection.schema.doKeyCompression()) return key;else return rxCollection._keyCompressor.transformKey('', '', key.split('.'));
+      if (!rxCollection.schema.doKeyCompression()) {
+        return key;
+      } else {
+        var indexKey = rxCollection._keyCompressor.transformKey(key);
+
+        return indexKey;
+      }
     });
     return spawnedPouchPromise.then(function () {
       return rxCollection.pouch.createIndex({

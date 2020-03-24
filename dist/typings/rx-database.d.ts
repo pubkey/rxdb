@@ -2,19 +2,19 @@ import IdleQueue from 'custom-idle-queue';
 import { BroadcastChannel } from 'broadcast-channel';
 import { Subject, Subscription, Observable } from 'rxjs';
 import { RxChangeEvent } from './rx-change-event';
-import { CollectionsOfDatabase, RxChangeEventInsert, RxChangeEventUpdate, RxChangeEventRemove, PouchDBInstance, RxChangeEventCollection, RxDatabase, RxCollectionCreator, RxJsonSchema, RxCollection, PouchSettings, ServerOptions, RxDatabaseCreator, RxDumpDatabase, RxDumpDatabaseAny } from './types';
+import { CollectionsOfDatabase, PouchDBInstance, RxDatabase, RxCollectionCreator, RxJsonSchema, RxCollection, PouchSettings, ServerOptions, RxDatabaseCreator, RxDumpDatabase, RxDumpDatabaseAny } from './types';
+import { RxStorage } from './rx-storate.interface';
 export declare class RxDatabaseBase<Collections = CollectionsOfDatabase> {
     name: string;
     adapter: any;
     password: any;
     multiInstance: boolean;
-    queryChangeDetection: boolean;
+    eventReduce: boolean;
     options: any;
     pouchSettings: PouchSettings;
-    constructor(name: string, adapter: any, password: any, multiInstance: boolean, queryChangeDetection: boolean, options: any, pouchSettings: PouchSettings);
-    get leaderElector(): any;
-    get isLeader(): boolean;
-    get $(): Observable<RxChangeEventInsert<any> | RxChangeEventUpdate<any> | RxChangeEventRemove<any> | RxChangeEventCollection>;
+    storage: RxStorage;
+    constructor(name: string, adapter: any, password: any, multiInstance: boolean, eventReduce: boolean, options: any, pouchSettings: PouchSettings);
+    get $(): Observable<RxChangeEvent<any>>;
     idleQueue: IdleQueue;
     readonly token: string;
     _subs: Subscription[];
@@ -27,7 +27,6 @@ export declare class RxDatabaseBase<Collections = CollectionsOfDatabase> {
     broadcastChannel$?: Subject<RxChangeEvent>;
     _adminPouch: PouchDBInstance;
     _collectionsPouch: PouchDBInstance;
-    private _leaderElector?;
     /**
      * removes all internal collection-info
      * only use this if you have to upgrade from a major rxdb-version
@@ -38,10 +37,6 @@ export declare class RxDatabaseBase<Collections = CollectionsOfDatabase> {
      * spawns a new pouch-instance
      */
     _spawnPouchDB(collectionName: string, schemaVersion: number, pouchSettings?: PouchSettings): PouchDBInstance;
-    /**
-     * returns a promise which resolves when the instance becomes leader
-     */
-    waitForLeadership(): Promise<boolean>;
     /**
      * This is the main handle-point for all change events
      * ChangeEvents created by this instance go:
@@ -91,6 +86,15 @@ export declare class RxDatabaseBase<Collections = CollectionsOfDatabase> {
         server: any;
     };
     /**
+     * TODO import type of LeaderElector
+     */
+    leaderElector(): any;
+    isLeader(): boolean;
+    /**
+     * returns a promise which resolves when the instance becomes leader
+     */
+    waitForLeadership(): Promise<boolean>;
+    /**
      * destroys the database-instance and all collections
      */
     destroy(): Promise<boolean>;
@@ -125,23 +129,22 @@ export declare function _collectionNamePrimary(name: string, schema: RxJsonSchem
  * @return resolves all known collection-versions
  */
 export declare function _removeAllOfCollection(rxDatabase: RxDatabase, collectionName: string): Promise<number[]>;
-export declare function create<Collections = {
+export declare function createRxDatabase<Collections = {
     [key: string]: RxCollection;
-}>({ name, adapter, password, multiInstance, queryChangeDetection, ignoreDuplicate, options, pouchSettings }: RxDatabaseCreator): Promise<RxDatabase<Collections>>;
-export declare function getPouchLocation(dbName: string, collectionName: string, schemaVersion: number): string;
+}>({ name, adapter, password, multiInstance, eventReduce, ignoreDuplicate, options, pouchSettings }: RxDatabaseCreator): Promise<RxDatabase<Collections>>;
 /**
  * removes the database and all its known data
  */
-export declare function removeDatabase(databaseName: string, adapter: any): Promise<any>;
+export declare function removeRxDatabase(databaseName: string, adapter: any): Promise<any>;
 /**
- * check is the given adapter can be used
+ * check if the given adapter can be used
  */
 export declare function checkAdapter(adapter: any): Promise<boolean>;
 export declare function isInstanceOf(obj: any): boolean;
 export declare function dbCount(): number;
 declare const _default: {
-    create: typeof create;
-    removeDatabase: typeof removeDatabase;
+    createRxDatabase: typeof createRxDatabase;
+    removeRxDatabase: typeof removeRxDatabase;
     checkAdapter: typeof checkAdapter;
     isInstanceOf: typeof isInstanceOf;
     RxDatabaseBase: typeof RxDatabaseBase;

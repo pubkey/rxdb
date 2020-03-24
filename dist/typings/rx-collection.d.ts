@@ -1,12 +1,12 @@
 import { RxQueryBase } from './rx-query';
-import { RxChangeEvent } from './rx-change-event';
+import { RxChangeEvent, RxChangeEventInsert, RxChangeEventUpdate, RxChangeEventDelete } from './rx-change-event';
 import { DataMigrator } from './data-migrator';
-import { Crypter as CrypterClass } from './crypter';
+import { Crypter } from './crypter';
 import { DocCache } from './doc-cache';
 import { QueryCache } from './query-cache';
 import { ChangeEventBuffer } from './change-event-buffer';
 import { Subscription, Observable } from 'rxjs';
-import { PouchSettings, KeyFunctionMap, RxReplicationState, PouchDBInstance, MigrationState, SyncOptions, RxCollection, RxDatabase, RxQuery, RxDocument, SyncOptionsGraphQL, RxChangeEventUpdate, RxChangeEventInsert, RxChangeEventRemove, RxDumpCollection, RxDumpCollectionAny } from './types';
+import { PouchSettings, KeyFunctionMap, RxReplicationState, PouchDBInstance, MigrationState, SyncOptions, RxCollection, RxDatabase, RxQuery, RxDocument, SyncOptionsGraphQL, RxDumpCollection, RxDumpCollectionAny, MangoQuery, MangoQueryNoLimit } from './types';
 import { RxGraphQLReplicationState } from './plugins/replication-graphql';
 import { RxSchema } from './rx-schema';
 export declare class RxCollectionBase<RxDocumentType = {
@@ -25,10 +25,10 @@ export declare class RxCollectionBase<RxDocumentType = {
     /**
      * returns observable
      */
-    get $(): Observable<RxChangeEventInsert<RxDocumentType> | RxChangeEventUpdate<RxDocumentType> | RxChangeEventRemove<RxDocumentType>>;
+    get $(): Observable<RxChangeEvent>;
     get insert$(): Observable<RxChangeEventInsert<RxDocumentType>>;
     get update$(): Observable<RxChangeEventUpdate<RxDocumentType>>;
-    get remove$(): Observable<RxChangeEventRemove<RxDocumentType>>;
+    get delete$(): Observable<RxChangeEventDelete<RxDocumentType>>;
     get docChanges$(): any;
     get onDestroy(): Promise<void>;
     _isInMemory: boolean;
@@ -42,7 +42,7 @@ export declare class RxCollectionBase<RxDocumentType = {
     _docCache: DocCache<RxDocument<RxDocumentType, OrmMethods>>;
     _queryCache: QueryCache;
     _dataMigrator: DataMigrator;
-    _crypter: CrypterClass;
+    _crypter: Crypter;
     _observable$?: Observable<any>;
     _changeEventBuffer: ChangeEventBuffer;
     _keyCompressor?: any;
@@ -101,11 +101,8 @@ export declare class RxCollectionBase<RxDocumentType = {
      * upserts to a RxDocument, uses atomicUpdate if document already exists
      */
     atomicUpsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>>;
-    /**
-     * takes a mongoDB-query-object and returns the documents
-     */
-    find(queryObj?: any): RxQuery<RxDocumentType, RxDocument<RxDocumentType, OrmMethods>[]>;
-    findOne(queryObj?: any): RxQuery<RxDocumentType, RxDocument<RxDocumentType, OrmMethods> | null>;
+    find(queryObj?: MangoQuery<RxDocumentType>): RxQuery<RxDocumentType, RxDocument<RxDocumentType, OrmMethods>[]>;
+    findOne(queryObj?: MangoQueryNoLimit<RxDocumentType> | string): RxQuery<RxDocumentType, RxDocument<RxDocumentType, OrmMethods> | null>;
     /**
      * Export collection to a JSON friendly format.
      * @param _decrypted
@@ -154,7 +151,7 @@ export declare class RxCollectionBase<RxDocumentType = {
     newDocument(docData?: Partial<RxDocumentType>): RxDocument<RxDocumentType, OrmMethods>;
     destroy(): Promise<boolean>;
     /**
-     * remove all data
+     * remove all data of the collection
      */
     remove(): Promise<any>;
 }

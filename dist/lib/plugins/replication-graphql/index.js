@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.syncGraphQL = syncGraphQL;
-exports["default"] = exports.prototypes = exports.rxdb = exports.RxGraphQLReplicationState = void 0;
+exports.RxDBReplicationGraphQLPlugin = exports.prototypes = exports.rxdb = exports.RxGraphQLReplicationState = void 0;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
@@ -20,15 +20,15 @@ var _graphqlClient = _interopRequireDefault(require("graphql-client"));
 
 var _util = require("../../util");
 
-var _core = _interopRequireDefault(require("../../core"));
+var _core = require("../../core");
 
 var _helper = require("./helper");
 
 var _crawlingCheckpoint = require("./crawling-checkpoint");
 
-var _watchForChanges = _interopRequireDefault(require("../watch-for-changes"));
+var _watchForChanges = require("../watch-for-changes");
 
-var _leaderElection = _interopRequireDefault(require("../leader-election"));
+var _leaderElection = require("../leader-election");
 
 var _rxChangeEvent = require("../../rx-change-event");
 
@@ -36,14 +36,13 @@ var _rxChangeEvent = require("../../rx-change-event");
  * this plugin adds the RxCollection.syncGraphQl()-function to rxdb
  * you can use it to sync collections with remote graphql endpoint
  */
-_core["default"].plugin(_leaderElection["default"]);
+(0, _core.addRxPlugin)(_leaderElection.RxDBLeaderElectionPlugin);
 /**
  * add the watch-for-changes-plugin
  * so pouchdb will emit events when something gets written to it
  */
 
-
-_core["default"].plugin(_watchForChanges["default"]);
+(0, _core.addRxPlugin)(_watchForChanges.RxDBWatchForChangesPlugin);
 
 var RxGraphQLReplicationState = /*#__PURE__*/function () {
   function RxGraphQLReplicationState(collection, url, headers, pull, push, deletedFlag, live, liveInterval, retryTime) {
@@ -680,7 +679,7 @@ function syncGraphQL(_ref2) {
          */
         var changeEventsSub = collection.$.subscribe(function (changeEvent) {
           if (replicationState.isStopped()) return;
-          var rev = changeEvent.data.v._rev;
+          var rev = changeEvent.documentData._rev;
 
           if (rev && !(0, _helper.wasRevisionfromPullReplication)(replicationState.endpointHash, rev)) {
             replicationState.run();
@@ -702,10 +701,10 @@ var prototypes = {
   }
 };
 exports.prototypes = prototypes;
-var _default = {
+var RxDBReplicationGraphQLPlugin = {
   rxdb: rxdb,
   prototypes: prototypes
 };
-exports["default"] = _default;
+exports.RxDBReplicationGraphQLPlugin = RxDBReplicationGraphQLPlugin;
 
 //# sourceMappingURL=index.js.map

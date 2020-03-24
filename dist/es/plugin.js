@@ -4,7 +4,7 @@
  * by passing them to the plugins-functions
  */
 import { RxSchema } from './rx-schema';
-import Crypter from './crypter';
+import { Crypter } from './crypter';
 import { basePrototype as RxDocumentPrototype } from './rx-document';
 import { RxQueryBase } from './rx-query';
 import { RxCollectionBase } from './rx-collection';
@@ -18,14 +18,14 @@ import { HOOKS } from './hooks';
 
 var PROTOTYPES = {
   RxSchema: RxSchema.prototype,
-  Crypter: Crypter.Crypter.prototype,
+  Crypter: Crypter.prototype,
   RxDocument: RxDocumentPrototype,
   RxQuery: RxQueryBase.prototype,
   RxCollection: RxCollectionBase.prototype,
   RxDatabase: RxDatabaseBase.prototype
 };
 var ADDED_PLUGINS = new Set();
-export default function addPlugin(plugin) {
+export function addRxPlugin(plugin) {
   // do nothing if added before
   if (ADDED_PLUGINS.has(plugin)) return;else ADDED_PLUGINS.add(plugin);
 
@@ -48,18 +48,14 @@ export default function addPlugin(plugin) {
 
 
   if (rxPlugin.overwritable) {
-    Object.entries(plugin.overwritable).forEach(function (_ref2) {
-      var name = _ref2[0],
-          fun = _ref2[1];
-      return overwritable[name] = fun;
-    });
+    Object.assign(overwritable, plugin.overwritable);
   } // extend-hooks
 
 
   if (rxPlugin.hooks) {
-    Object.entries(plugin.hooks).forEach(function (_ref3) {
-      var name = _ref3[0],
-          fun = _ref3[1];
+    Object.entries(plugin.hooks).forEach(function (_ref2) {
+      var name = _ref2[0],
+          fun = _ref2[1];
       return HOOKS[name].push(fun);
     });
   }

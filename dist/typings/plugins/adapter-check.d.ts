@@ -1,3 +1,4 @@
+import { RxPlugin } from '../types';
 /**
  * The same pouchdb-location is used on each run
  * To ensure when this is run multiple times,
@@ -10,11 +11,4 @@ export declare const prototypes: {};
 export declare const overwritable: {
     checkAdapter: typeof checkAdapter;
 };
-declare const _default: {
-    rxdb: boolean;
-    prototypes: {};
-    overwritable: {
-        checkAdapter: typeof checkAdapter;
-    };
-};
-export default _default;
+export declare const RxDBAdapterCheckPlugin: RxPlugin;

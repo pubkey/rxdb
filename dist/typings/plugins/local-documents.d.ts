@@ -3,7 +3,7 @@
  * Local documents behave equal then with pouchdb
  * @link https://pouchdb.com/guides/local-documents.html
  */
-import { RxCollection, RxDatabase } from '../types';
+import { RxCollection, RxDatabase, RxPlugin } from '../types';
 declare const RxDocumentParent: any;
 export declare class RxLocalDocument extends RxDocumentParent {
     id: string;
@@ -16,12 +16,5 @@ export declare const prototypes: {
     RxDatabase: (proto: any) => void;
 };
 export declare const overwritable: {};
-declare const _default: {
-    rxdb: boolean;
-    prototypes: {
-        RxCollection: (proto: any) => void;
-        RxDatabase: (proto: any) => void;
-    };
-    overwritable: {};
-};
-export default _default;
+export declare const RxDBLocalDocumentsPlugin: RxPlugin;
+export {};

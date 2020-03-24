@@ -3,7 +3,7 @@
  * you can use it to sync collections with remote graphql endpoint
  */
 import { BehaviorSubject, Subject, Subscription, Observable } from 'rxjs';
-import { RxCollection, GraphQLSyncPullOptions, GraphQLSyncPushOptions } from '../../types';
+import { RxCollection, GraphQLSyncPullOptions, GraphQLSyncPushOptions, RxPlugin } from '../../types';
 export declare class RxGraphQLReplicationState {
     collection: RxCollection;
     pull: GraphQLSyncPullOptions;
@@ -57,10 +57,4 @@ export declare const rxdb = true;
 export declare const prototypes: {
     RxCollection: (proto: any) => void;
 };
-declare const _default: {
-    rxdb: boolean;
-    prototypes: {
-        RxCollection: (proto: any) => void;
-    };
-};
-export default _default;
+export declare const RxDBReplicationGraphQLPlugin: RxPlugin;

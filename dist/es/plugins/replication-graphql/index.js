@@ -9,20 +9,20 @@ import { BehaviorSubject, Subject } from 'rxjs';
 import { first, filter } from 'rxjs/operators';
 import GraphQLClient from 'graphql-client';
 import { promiseWait, flatClone } from '../../util';
-import Core from '../../core';
+import { addRxPlugin } from '../../core';
 import { hash } from '../../util';
 import { DEFAULT_MODIFIER, wasRevisionfromPullReplication, createRevisionForPulledDocument, getDocsWithRevisionsFromPouch } from './helper';
 import { setLastPushSequence, getLastPullDocument, setLastPullDocument, getChangesSinceLastPushSequence } from './crawling-checkpoint';
-import RxDBWatchForChangesPlugin from '../watch-for-changes';
-import RxDBLeaderElectionPlugin from '../leader-election';
+import { RxDBWatchForChangesPlugin } from '../watch-for-changes';
+import { RxDBLeaderElectionPlugin } from '../leader-election';
 import { changeEventfromPouchChange } from '../../rx-change-event';
-Core.plugin(RxDBLeaderElectionPlugin);
+addRxPlugin(RxDBLeaderElectionPlugin);
 /**
  * add the watch-for-changes-plugin
  * so pouchdb will emit events when something gets written to it
  */
 
-Core.plugin(RxDBWatchForChangesPlugin);
+addRxPlugin(RxDBWatchForChangesPlugin);
 export var RxGraphQLReplicationState = /*#__PURE__*/function () {
   function RxGraphQLReplicationState(collection, url, headers, pull, push, deletedFlag, live, liveInterval, retryTime) {
     this._subjects = {
@@ -655,7 +655,7 @@ export function syncGraphQL(_ref2) {
          */
         var changeEventsSub = collection.$.subscribe(function (changeEvent) {
           if (replicationState.isStopped()) return;
-          var rev = changeEvent.data.v._rev;
+          var rev = changeEvent.documentData._rev;
 
           if (rev && !wasRevisionfromPullReplication(replicationState.endpointHash, rev)) {
             replicationState.run();
@@ -674,7 +674,7 @@ export var prototypes = {
     proto.syncGraphQL = syncGraphQL;
   }
 };
-export default {
+export var RxDBReplicationGraphQLPlugin = {
   rxdb: rxdb,
   prototypes: prototypes
 };

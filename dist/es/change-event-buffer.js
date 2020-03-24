@@ -85,9 +85,12 @@ export var ChangeEventBuffer = /*#__PURE__*/function () {
   ;
 
   _proto.reduceByLastOfDoc = function reduceByLastOfDoc(changeEvents) {
+    return changeEvents.slice(0); // TODO the old implementation was wrong
+    // because it did not correctly reassigned the previousData of the changeevents
+
     var docEventMap = {};
     changeEvents.forEach(function (changeEvent) {
-      docEventMap[changeEvent.data.doc] = changeEvent;
+      docEventMap[changeEvent.documentId] = changeEvent;
     });
     return Object.values(docEventMap);
   }
@@ -105,7 +108,7 @@ export var ChangeEventBuffer = /*#__PURE__*/function () {
     while (t > 0) {
       t--;
       var cE = this.buffer[t];
-      if (cE.data.v && cE.data.v._rev === revision) return true;
+      if (cE.documentData && cE.documentData._rev === revision) return true;
     }
 
     return false;

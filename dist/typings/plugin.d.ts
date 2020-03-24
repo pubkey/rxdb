@@ -1,2 +1,2 @@
 import { RxPlugin } from './types';
-export default function addPlugin(plugin: RxPlugin | any): void;
+export declare function addRxPlugin(plugin: RxPlugin | any): void;

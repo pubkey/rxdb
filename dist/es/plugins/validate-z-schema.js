@@ -25,7 +25,7 @@ function _getValidator(rxSchema) {
     var validator = new ZSchema();
 
     var validatorFun = function validatorFun(obj) {
-      validator.validate(obj, rxSchema.jsonID);
+      validator.validate(obj, rxSchema.jsonSchema);
       return validator;
     };
 
@@ -60,7 +60,7 @@ var validate = function validate(obj) {
     throw newRxError('VD2', {
       errors: formattedZSchemaErrors,
       obj: obj,
-      schema: this.jsonID
+      schema: this.jsonSchema
     });
   }
 };
@@ -85,7 +85,7 @@ export var prototypes = {
 export var hooks = {
   createRxSchema: runAfterSchemaCreated
 };
-export default {
+export var RxDBValidateZSchemaPlugin = {
   rxdb: rxdb,
   prototypes: prototypes,
   hooks: hooks

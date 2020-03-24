@@ -17,7 +17,7 @@ import overwritable from './overwritable';
 import { runPluginHooks, runAsyncPluginHooks } from './hooks';
 import { Subject } from 'rxjs';
 import { getPreviousVersions } from './rx-schema';
-import { create as createCrypter } from './crypter';
+import { createCrypter } from './crypter';
 import { _handleToPouch, _handleFromPouch } from './rx-collection-helper';
 export var DataMigrator = /*#__PURE__*/function () {
   function DataMigrator(newestCollection, migrationStrategies) {
@@ -154,7 +154,7 @@ export function createOldCollection(version, schemaObj, dataMigrator) {
  */
 
 export function _getOldCollections(dataMigrator) {
-  return Promise.all(getPreviousVersions(dataMigrator.currentSchema.jsonID).map(function (v) {
+  return Promise.all(getPreviousVersions(dataMigrator.currentSchema.jsonSchema).map(function (v) {
     return dataMigrator.database._collectionsPouch.get(dataMigrator.name + '-' + v);
   }).map(function (fun) {
     return fun["catch"](function () {

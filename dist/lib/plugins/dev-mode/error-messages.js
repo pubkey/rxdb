@@ -3,14 +3,14 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = exports.overwritable = exports.prototypes = exports.rxdb = void 0;
+exports.ERROR_MESSAGES = void 0;
 
 /**
  * this plugin adds the error-messages
  * without it, only error-codes will be shown
  * This is mainly because error-string are hard to compress and we need a smaller build
  */
-var CODES = {
+var ERROR_MESSAGES = {
   // util.js
   UT1: 'given name is no string or empty',
   UT2: "collection- and database-names must match the regex\n    info: if your database-name specifies a folder, the name must contain the slash-char '/' or '\\'",
@@ -20,8 +20,8 @@ var CODES = {
   P1: 'PouchDB.getBatch: limit must be > 2',
   // rx-query
   QU1: 'RxQuery._execOverDatabase(): op not known',
-  QU2: 'limit() must get a number',
-  QU3: 'skip() must get a number',
+  // removed in 9.0.0 - QU2: 'limit() must get a number',
+  // removed in 9.0.0 - QU3: 'skip() must get a number',
   QU4: 'RxQuery.regex(): You cannot use .regex() on the primary field',
   QU5: 'RxQuery.sort(): does not work because key is not defined in the schema',
   QU6: 'RxQuery.limit(): cannot be called on .findOne()',
@@ -148,26 +148,6 @@ var CODES = {
   // plugins/replication-graphql.js
   QL1: 'TODO'
 };
-var rxdb = true;
-exports.rxdb = rxdb;
-var prototypes = {};
-exports.prototypes = prototypes;
-var overwritable = {
-  tunnelErrorMessage: function tunnelErrorMessage(code) {
-    if (!CODES[code]) {
-      console.error('RxDB: Error-Code not known: ' + code);
-      throw new Error('Error-Cdoe ' + code + ' not known, contact the maintainer');
-    }
-
-    return CODES[code];
-  }
-};
-exports.overwritable = overwritable;
-var _default = {
-  rxdb: rxdb,
-  prototypes: prototypes,
-  overwritable: overwritable
-};
-exports["default"] = _default;
+exports.ERROR_MESSAGES = ERROR_MESSAGES;
 
 //# sourceMappingURL=error-messages.js.map

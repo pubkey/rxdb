@@ -10,7 +10,8 @@ export declare function pluginMissing(pluginKey: string): Error;
  * @return a number as hash-result
  */
 export declare function fastUnsecureHash(obj: any): number;
-export declare function hash(obj: any): string;
+export declare const RXDB_HASH_SALT = "rxdb-specific-hash-salt";
+export declare function hash(msg: string | any): string;
 /**
  * generate a new _id as db-primary-key
  */
@@ -38,13 +39,6 @@ export declare function requestIdleCallbackIfAvailable(fun: Function): void;
  * uppercase first char
  */
 export declare function ucfirst(str: string): string;
-/**
- * transform a number to a string by using only base58 chars
- * @link https://github.com/matthewmueller/number-to-letter/blob/master/index.js
- * @param nr                                       | 10000000
- * @return the string-representation of the number | '2oMX'
- */
-export declare function numberToLetter(nr: number): string;
 /**
  * removes trailing and ending dots from the string
  */
@@ -96,4 +90,9 @@ export declare function getHeightOfRevision(revString: string): number;
  * TODO check if this variable exists somewhere else
  */
 export declare const LOCAL_PREFIX: string;
+/**
+ * overwrites the getter with the actual value
+ * Mostly used for caching stuff on the first run
+ */
+export declare function overwriteGetterForCaching<ValueType = any>(obj: any, getterName: string, value: ValueType): ValueType;
 export {};

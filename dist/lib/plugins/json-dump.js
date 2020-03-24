@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = exports.overwritable = exports.prototypes = exports.rxdb = void 0;
+exports.RxDBJsonDumpPlugin = exports.overwritable = exports.prototypes = exports.rxdb = void 0;
 
 var _util = require("../util");
 
@@ -89,7 +89,7 @@ var dumpRxCollection = function dumpRxCollection() {
     json.encrypted = true;
   }
 
-  var query = (0, _rxQuery.createRxQuery)('find', {}, this);
+  var query = (0, _rxQuery.createRxQuery)('find', (0, _rxQuery._getDefaultQuery)(this), this);
   return this._pouchFind(query, undefined, encrypted).then(function (docs) {
     json.docs = docs.map(function (docData) {
       delete docData._rev;
@@ -135,9 +135,7 @@ function importDumpRxCollection(exportedJSON) {
   }).then(function () {
     docs.forEach(function (doc) {
       // emit change events
-      var primary = doc[_this3.schema.primaryPath];
-      var emitEvent = (0, _rxChangeEvent.createChangeEvent)('INSERT', _this3.database, _this3, null, doc);
-      emitEvent.data.doc = primary;
+      var emitEvent = (0, _rxChangeEvent.createInsertEvent)(_this3, doc);
 
       _this3.$emit(emitEvent);
     });
@@ -159,11 +157,11 @@ var prototypes = {
 exports.prototypes = prototypes;
 var overwritable = {};
 exports.overwritable = overwritable;
-var _default = {
+var RxDBJsonDumpPlugin = {
   rxdb: rxdb,
   prototypes: prototypes,
   overwritable: overwritable
 };
-exports["default"] = _default;
+exports.RxDBJsonDumpPlugin = RxDBJsonDumpPlugin;
 
 //# sourceMappingURL=json-dump.js.map

@@ -7,7 +7,7 @@ export interface RxDatabaseCreator {
     adapter: any;
     password?: string | any;
     multiInstance?: boolean;
-    queryChangeDetection?: boolean;
+    eventReduce?: boolean;
     ignoreDuplicate?: boolean;
     options?: any;
     pouchSettings?: PouchSettings;

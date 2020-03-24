@@ -3,7 +3,7 @@
  * you can use it to sync collections with remote or local couchdb-instances
  */
 import { BehaviorSubject, Subject, Subscription, Observable } from 'rxjs';
-import { RxQuery, RxCollection, PouchSyncHandler, PouchReplicationOptions } from '../types';
+import { RxQuery, RxCollection, PouchSyncHandler, PouchReplicationOptions, RxPlugin } from '../types';
 export interface SyncOptions {
     remote: string | any;
     waitForLeadership?: boolean;
@@ -51,16 +51,4 @@ export declare const hooks: {
         [key: string]: any;
     }>) => void;
 };
-declare const _default: {
-    rxdb: boolean;
-    prototypes: {
-        RxCollection: (proto: any) => void;
-    };
-    hooks: {
-        createRxCollection: (collection: RxCollection<any, {}, {
-            [key: string]: any;
-        }>) => void;
-    };
-    sync: typeof sync;
-};
-export default _default;
+export declare const RxDBReplicationPlugin: RxPlugin;

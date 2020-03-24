@@ -8,5 +8,4 @@ export declare const rxdb = true;
 export declare const prototypes: {
     RxCollection: (proto: any) => void;
 };
-declare const plugin: RxPlugin;
-export default plugin;
+export declare const RxDBWatchForChangesPlugin: RxPlugin;

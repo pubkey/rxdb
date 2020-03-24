@@ -1,4 +1,10 @@
+import _possibleConstructorReturn from "@babel/runtime/helpers/possibleConstructorReturn";
+import _getPrototypeOf from "@babel/runtime/helpers/getPrototypeOf";
 import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
+
+function _createSuper(Derived) { return function () { var Super = _getPrototypeOf(Derived), result; if (_isNativeReflectConstruct()) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
 
 /**
  * This plugin adds the local-documents-support
@@ -7,7 +13,7 @@ import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
  */
 import objectPath from 'object-path';
 import { createRxDocumentConstructor, basePrototype } from '../rx-document';
-import { createChangeEvent } from '../rx-change-event';
+import { RxChangeEvent } from '../rx-change-event';
 import { createDocCache } from '../doc-cache';
 import { newRxError, newRxTypeError } from '../rx-error';
 import { clone } from '../util';
@@ -29,11 +35,11 @@ var CHANGE_SUB_BY_PARENT = new WeakMap();
 var _getChangeSub = function _getChangeSub(parent) {
   if (!CHANGE_SUB_BY_PARENT.has(parent)) {
     var sub = parent.$.pipe(filter(function (cE) {
-      return cE.data.isLocal;
+      return cE.isLocal;
     })).subscribe(function (cE) {
       var docCache = _getDocCache(parent);
 
-      var doc = docCache.get(cE.data.doc);
+      var doc = docCache.get(cE.documentId);
       if (doc) doc._handleChangeEvent(cE);
     });
 
@@ -49,6 +55,8 @@ var LOCAL_PREFIX = '_local/';
 var RxDocumentParent = createRxDocumentConstructor();
 export var RxLocalDocument = /*#__PURE__*/function (_RxDocumentParent) {
   _inheritsLoose(RxLocalDocument, _RxDocumentParent);
+
+  var _super = _createSuper(RxLocalDocument);
 
   function RxLocalDocument(id, jsonData, parent) {
     var _this;
@@ -85,17 +93,17 @@ var RxLocalDocumentPrototype = {
   // overwrites
   //
   _handleChangeEvent: function _handleChangeEvent(changeEvent) {
-    if (changeEvent.data.doc !== this.primary) return;
+    if (changeEvent.documentId !== this.primary) return;
 
-    switch (changeEvent.data.op) {
+    switch (changeEvent.operation) {
       case 'UPDATE':
-        var newData = clone(changeEvent.data.v);
+        var newData = clone(changeEvent.documentData);
 
         this._dataSync$.next(clone(newData));
 
         break;
 
-      case 'REMOVE':
+      case 'DELETE':
         // remove from docCache to assure new upserted RxDocuments will be a new instance
         var docCache = _getDocCache(this.parent);
 
@@ -184,7 +192,8 @@ var RxLocalDocumentPrototype = {
 
       _this2._dataSync$.next(newData);
 
-      var changeEvent = createChangeEvent('UPDATE', isRxDatabase(_this2.parent) ? _this2.parent : _this2.parent.database, isRxCollection(_this2.parent) ? _this2.parent : null, _this2, clone(_this2._data), true);
+      var changeEvent = new RxChangeEvent('UPDATE', _this2.id, clone(_this2._data), isRxDatabase(_this2.parent) ? _this2.parent.token : _this2.parent.database.token, isRxCollection(_this2.parent) ? _this2.parent.name : null, true, null, // TODO emit old data
+      _this2);
 
       _this2.$emit(changeEvent);
     });
@@ -196,7 +205,7 @@ var RxLocalDocumentPrototype = {
     return this.parentPouch.remove(removeId, this._data._rev).then(function () {
       _getDocCache(_this3.parent)["delete"](_this3.id);
 
-      var changeEvent = createChangeEvent('REMOVE', isRxDatabase(_this3.parent) ? _this3.parent : _this3.parent.database, isRxCollection(_this3.parent) ? _this3.parent : null, _this3, clone(_this3._data), true);
+      var changeEvent = new RxChangeEvent('DELETE', _this3.id, clone(_this3._data), isRxDatabase(_this3.parent) ? _this3.parent.token : _this3.parent.database.token, isRxCollection(_this3.parent) ? _this3.parent.name : null, true, null, _this3);
 
       _this3.$emit(changeEvent);
     });
@@ -340,7 +349,7 @@ export var prototypes = {
   }
 };
 export var overwritable = {};
-export default {
+export var RxDBLocalDocumentsPlugin = {
   rxdb: rxdb,
   prototypes: prototypes,
   overwritable: overwritable

@@ -1,6 +1,6 @@
 /// <reference types="node" />
 /// <reference types="pouchdb-core" />
-import { RxDocument } from '../types';
+import { RxDocument, RxPlugin } from '../types';
 export declare const blobBufferUtil: {
     /**
      * depending if we are on node or browser,
@@ -49,23 +49,4 @@ export declare const hooks: {
     preMigrateDocument: typeof preMigrateDocument;
     postMigrateDocument: typeof postMigrateDocument;
 };
-declare const _default: {
-    rxdb: boolean;
-    prototypes: {
-        RxDocument: (proto: any) => void;
-    };
-    overwritable: {};
-    hooks: {
-        preMigrateDocument: typeof preMigrateDocument;
-        postMigrateDocument: typeof postMigrateDocument;
-    };
-    blobBufferUtil: {
-        /**
-         * depending if we are on node or browser,
-         * we have to use Buffer(node) or Blob(browser)
-         */
-        createBlobBuffer(data: string, type: string): Buffer;
-        toString(blobBuffer: any): Promise<any>;
-    };
-};
-export default _default;
+export declare const RxDBAttachmentsPlugin: RxPlugin;
