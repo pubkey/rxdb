@@ -30,17 +30,17 @@ type HeroDocMethods = {
     scream: (v: string) => string;
 };
 
-type HeroDocument = RxDocument<HeroDocType, HeroDocMethods>;
-
 type HeroCollectionMethods = {
     countAllDocuments: () => Promise<number>;
-}
+};
+
+type HeroDocument = RxDocument<HeroDocType, HeroDocMethods, HeroCollectionMethods>;
 
 type HeroCollection = RxCollection<HeroDocType, HeroDocMethods, HeroCollectionMethods>;
 
 type MyDatabaseCollections = {
     heroes: HeroCollection
-}
+};
 
 type MyDatabase = RxDatabase<MyDatabaseCollections>;
 
