@@ -15,7 +15,7 @@ Breaking:
   - Replaced key-compression implementation with [jsonschema-key-compression](https://github.com/pubkey/jsonschema-key-compression)
   - Refactored `RxCollection`
   - Creating a collection will no longer emit an `RxChangeEvent`
-  - Renamed `RxCollection.remove$()` to `RxCollection.delete$` to be equal to CRUD
+  - Renamed `RxCollection.remove$()` to `RxCollection.delete$()` to be equal to CRUD
   - Renamed `RxDatabase.queryChangeDetection` to `eventReduce` and set default to `true` (no beta anymore)
   - Change default of `RxDocument().toJSON(withRevAndAttachments)` to `false`
   - Change `.find()` and `.findOne()` to acccept a full MangoQuery instead of just the selector

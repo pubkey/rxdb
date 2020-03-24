@@ -5,7 +5,8 @@ import { BroadcastChannel } from 'broadcast-channel';
 import {
     hash,
     promiseWait,
-    pluginMissing
+    pluginMissing,
+    overwriteGetterForCaching
 } from './util';
 import {
     newRxError
@@ -85,10 +86,17 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
 
         DB_COUNT++;
     }
-    get leaderElector() {
-        if (!this._leaderElector)
-            this._leaderElector = overwritable.createLeaderElector(this as any);
-        return this._leaderElector;
+
+    /**
+     * @overrides itself on first call
+     * TODO import type of LeaderElector
+     */
+    get leaderElector(): any {
+        return overwriteGetterForCaching(
+            this,
+            'leaderElector',
+            overwritable.createLeaderElector(this as any)
+        );
     }
 
     get isLeader(): boolean {
@@ -113,11 +121,9 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
     public broadcastChannel?: BroadcastChannel;
     public storageToken?: string;
     public broadcastChannel$?: Subject<RxChangeEvent>;
+
     public _adminPouch: PouchDBInstance = {} as PouchDBInstance;
-
     public _collectionsPouch: PouchDBInstance = {} as PouchDBInstance;
-
-    private _leaderElector?: any;
 
     /**
      * removes all internal collection-info
@@ -402,8 +408,9 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
             setTimeout(() => (this.broadcastChannel as any).close(), 1000);
         }
 
-        if (this._leaderElector)
-            this._leaderElector.destroy();
+        try {
+            this.leaderElector.destroy();
+        } catch (err) { }
 
         this._subs.map(sub => sub.unsubscribe());
 
@@ -494,7 +501,7 @@ export function _preparePasswordHash(
 
     const pwHash = hash(rxDatabase.password);
 
-    return (rxDatabase._adminPouch as any).get('_local/pwHash')
+    return rxDatabase._adminPouch.get('_local/pwHash')
         .catch(() => null)
         .then((pwHashDoc: any) => {
 
@@ -504,7 +511,7 @@ export function _preparePasswordHash(
              * also we do not await the output because it does not mather
              */
             if (!pwHashDoc) {
-                (rxDatabase._adminPouch as any).put({
+                rxDatabase._adminPouch.put({
                     _id: '_local/pwHash',
                     value: pwHash
                 }).catch(() => null);
@@ -530,17 +537,17 @@ export function _preparePasswordHash(
  * we set a storage-token and use it in the broadcast-channel
  */
 export function _ensureStorageTokenExists(rxDatabase: RxDatabase): Promise<string> {
-    return (rxDatabase._adminPouch as any).get('_local/storageToken')
+    return rxDatabase._adminPouch.get('_local/storageToken')
         .catch(() => {
             // no doc exists -> insert
-            return (rxDatabase._adminPouch as any).put({
+            return rxDatabase._adminPouch.put({
                 _id: '_local/storageToken',
                 value: randomToken(10)
             })
                 .catch(() => { })
                 .then(() => promiseWait(0));
         })
-        .then(() => (rxDatabase._adminPouch as any).get('_local/storageToken'))
+        .then(() => rxDatabase._adminPouch.get('_local/storageToken'))
         .then((storageTokenDoc2: any) => storageTokenDoc2.value);
 }
 
@@ -628,7 +635,7 @@ function _prepareBroadcastChannel(rxDatabase: RxDatabase) {
     };
 
 
-    // TODO only subscribe when sth is listening to the event-chain
+    // TODO only subscribe when something is listening to the event-chain
     rxDatabase._subs.push(
         rxDatabase.broadcastChannel$.subscribe(cE => {
             rxDatabase.$emit(cE);

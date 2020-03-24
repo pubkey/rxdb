@@ -287,7 +287,6 @@ export class RxCollectionBase<
             () => this.pouch.put(obj)
         ).catch((err: any) => {
             if (overwrite && err.status === 409) {
-
                 return this.database.lockedRun(
                     () => this.pouch.get(obj._id)
                 ).then((exist: any) => {
@@ -720,7 +719,7 @@ export class RxCollectionBase<
     }
 
     /**
-     * remove all data
+     * remove all data of the collection
      */
     remove(): Promise<any> {
         return this.database.removeCollection(this.name);

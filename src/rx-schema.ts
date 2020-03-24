@@ -70,7 +70,7 @@ export class RxSchema<T = any> {
             hasCrypt(this.jsonSchema)
         );
     }
-    get normalized(): RxJsonSchema {
+    get normalized(): RxJsonSchema<T> {
         return overwriteGetterForCaching(
             this,
             'normalized',
@@ -83,14 +83,16 @@ export class RxSchema<T = any> {
     }
 
     public get defaultValues(): { [P in keyof T]: T[P] } {
-        if (!this._defaultValues) {
-            this._defaultValues = {} as { [P in keyof T]: T[P] };
-            Object
-                .entries(this.normalized.properties)
-                .filter(([, v]) => v.hasOwnProperty('default'))
-                .forEach(([k, v]) => (this._defaultValues as any)[k] = (v as any).default);
-        }
-        return this._defaultValues;
+        const values = {} as { [P in keyof T]: T[P] };
+        Object
+            .entries(this.normalized.properties)
+            .filter(([, v]) => (v as any).hasOwnProperty('default'))
+            .forEach(([k, v]) => (values as any)[k] = (v as any).default);
+        return overwriteGetterForCaching(
+            this,
+            'defaultValues',
+            values
+        );
     }
 
 
@@ -116,16 +118,6 @@ export class RxSchema<T = any> {
             hash(this.normalized)
         );
     }
-
-    public _normalized?: RxJsonSchema;
-
-    private _defaultValues?: { [P in keyof T]: T[P] };
-
-    /**
-     * creates the schema-based document-prototype,
-     * see RxCollection.getDocumentPrototype()
-     */
-    private _getDocumentPrototype?: any;
 
     public getSchemaByObjectPath(path: string): JsonSchema {
         let usePath: string = path as string;
@@ -180,13 +172,17 @@ export class RxSchema<T = any> {
     }
 
     swapIdToPrimary(obj: any): any {
-        if (this.primaryPath === '_id' || obj[this.primaryPath]) return obj;
+        if (this.primaryPath === '_id' || obj[this.primaryPath]) {
+            return obj;
+        }
         obj[this.primaryPath] = obj._id;
         delete obj._id;
         return obj;
     }
     swapPrimaryToId(obj: any): any {
-        if (this.primaryPath === '_id') return obj;
+        if (this.primaryPath === '_id') {
+            return obj;
+        }
         const ret: any = {};
         Object
             .entries(obj)
@@ -204,13 +200,19 @@ export class RxSchema<T = any> {
         return this.jsonSchema.keyCompression as boolean;
     }
 
-    public getDocumentPrototype() {
-        if (!this._getDocumentPrototype) {
-            const proto = {};
-            defineGetterSetter(this, proto, '');
-            this._getDocumentPrototype = proto;
-        }
-        return this._getDocumentPrototype;
+    /**
+     * creates the schema-based document-prototype,
+     * see RxCollection.getDocumentPrototype()
+     */
+    public getDocumentPrototype(): any {
+        const proto = {};
+        defineGetterSetter(this, proto, '');
+        overwriteGetterForCaching(
+            this,
+            'getDocumentPrototype',
+            () => proto
+        );
+        return proto;
     }
 }
 
