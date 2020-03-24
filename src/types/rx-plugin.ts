@@ -12,7 +12,6 @@ export interface RxPlugin {
         isDevMove?: () => boolean;
         validatePassword?: Function,
         createKeyCompressor?: Function,
-        createLeaderElector?: Function,
         checkAdapter?: Function,
         tunnelErrorMessage?: Function
     };

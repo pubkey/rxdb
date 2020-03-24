@@ -93,34 +93,46 @@ Here some examples to fast learn how to write queries without reading the docs.
 
 ```js
 // directly pass search-object
-myCollection.find({name: {$eq: 'foo'}})
-  .exec().then(documents => console.dir(documents));
+myCollection.find({
+  selector: {
+    name: {$eq: 'foo'}
+  }
+})
+.exec().then(documents => console.dir(documents));
 
 // find by using sql equivalent '%like%' syntax
 // This example will fe: match 'foo' but also 'fifoo' or 'foofa' or 'fifoofa'
-myCollection.find({name: {$regex: '.*foo.*'}})
-  .exec().then(documents => console.dir(documents));
+myCollection.find({
+  selector: {
+    name: {$regex: '.*foo.*'}
+  }
+})
+.exec().then(documents => console.dir(documents));
 
 // find using a composite statement eg: $or
 // This example checks where name is either foo or if name is not existant on the document
-myCollection.find({$or: [ { name: { $eq: 'foo' } }, { name: { $exists: false } }})
-  .exec().then(documents => console.dir(documents));
+myCollection.find({
+  selector: {$or: [ { name: { $eq: 'foo' } }, { name: { $exists: false } }]}
+})
+.exec().then(documents => console.dir(documents));
 
 // do a case insensitive search
 // This example will match 'foo' or 'FOO' or 'FoO' etc...
 var regexp = new RegExp('^foo$', 'i');
-myCollection.find({name: {$regex: regexp}})
-  .exec().then(documents => console.dir(documents));
+myCollection.find({
+  selector: {name: {$regex: regexp}}
+})
+.exec().then(documents => console.dir(documents));
 
 // chained queries
 myCollection.find().where('name').eq('foo')
-  .exec().then(documents => console.dir(documents));
+.exec().then(documents => console.dir(documents));
 ```
 
 ## NOTICE: RxQuery's are immutable
 
 Because RxDB is a reactive database, we can do heavy performance-optimisation on query-results which change over time. To be able to do this, RxQuery's have to be immutable.
-This means, when you have a `RxQuery` and run a `.where()` on it, the original RxQuery-Object is not changed. Instead the where-function returns a new RxQuery-Object with the changed where-field. Keep this in mind if you create RxQuery's and change them afterwards.
+This means, when you have a `RxQuery` and run a `.where()` on it, the original RxQuery-Object is not changed. Instead the where-function returns a new `RxQuery`-Object with the changed where-field. Keep this in mind if you create RxQuery's and change them afterwards.
 
 Example:
 
