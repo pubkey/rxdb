@@ -96,7 +96,11 @@ export declare class PouchDBInstance {
     put(
         doc: any,
         options?: any,
-    ): Promise<any>;
+    ): Promise<{
+        ok: boolean;
+        id: string;
+        rev: string;
+    }>;
     remove(
         doc: any | string,
         options?: any,

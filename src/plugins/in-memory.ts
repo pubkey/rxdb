@@ -190,7 +190,7 @@ export class InMemoryRxCollection<RxDocumentType, OrmMethods> extends RxCollecti
      * the _pouchPut is wrapped
      * @overwrite
      */
-    _pouchPut(obj: any, overwrite: any) {
+    _pouchPut(obj: any, overwrite: boolean) {
         return this._oldPouchPut(obj, overwrite).then((ret: any) => {
             this._nonPersistentRevisions.add(ret.rev);
             return ret;

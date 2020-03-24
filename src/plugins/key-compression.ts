@@ -19,28 +19,34 @@ import {
     RxSchema
 } from '../rx-schema';
 import { RxPlugin } from '../types';
+import { overwriteGetterForCaching } from '../util';
 
 export class KeyCompressor {
 
-    public _table?: CompressionTable;
     constructor(
         public schema: RxSchema
     ) { }
 
-    get table() {
-        if (!this._table) {
-            const jsonSchema = this.schema.normalized;
-            this._table = createCompressionTable(
-                jsonSchema as KeyCompressionJsonSchema,
-                DEFAULT_COMPRESSION_FLAG,
-                [
-                    '_id',
-                    '_rev',
-                    '_attachments'
-                ]
-            );
-        }
-        return this._table;
+    /**
+     * @overwrites itself on the first call
+     */
+    get table(): CompressionTable {
+        const jsonSchema = this.schema.normalized;
+        const table = createCompressionTable(
+            jsonSchema as KeyCompressionJsonSchema,
+            DEFAULT_COMPRESSION_FLAG,
+            [
+                this.schema.primaryPath,
+                '_id', // TODO do we need _id here?
+                '_rev',
+                '_attachments'
+            ]
+        );
+        return overwriteGetterForCaching(
+            this,
+            'table',
+            table
+        );
     }
 
     /**
