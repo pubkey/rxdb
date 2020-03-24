@@ -3,9 +3,6 @@
  */
 
 import {
-    RxDatabase
-} from './types';
-import {
     pluginMissing
 } from './util';
 
@@ -31,12 +28,6 @@ const funs = {
      */
     createKeyCompressor(_rxSchema: any): any {
         throw pluginMissing('key-compression');
-    },
-    /**
-     * creates a leader-elector for the given database
-     */
-    createLeaderElector(_database: RxDatabase | RxDatabase): any {
-        throw pluginMissing('leader-election');
     },
 
     /**

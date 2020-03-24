@@ -5,8 +5,7 @@ import { BroadcastChannel } from 'broadcast-channel';
 import {
     hash,
     promiseWait,
-    pluginMissing,
-    overwriteGetterForCaching
+    pluginMissing
 } from './util';
 import {
     newRxError
@@ -87,23 +86,6 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
         DB_COUNT++;
     }
 
-    /**
-     * @overrides itself on first call
-     * TODO import type of LeaderElector
-     */
-    get leaderElector(): any {
-        return overwriteGetterForCaching(
-            this,
-            'leaderElector',
-            overwritable.createLeaderElector(this as any)
-        );
-    }
-
-    get isLeader(): boolean {
-        if (!this.multiInstance) return true;
-        return this.leaderElector.isLeader;
-    }
-
     get $(): Observable<RxChangeEvent<any>> {
         return this.observable$;
     }
@@ -161,14 +143,6 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
                 pouchSettings
             }
         );
-    }
-
-    /**
-     * returns a promise which resolves when the instance becomes leader
-     */
-    waitForLeadership(): Promise<boolean> {
-        if (!this.multiInstance) return Promise.resolve(true);
-        return this.leaderElector.waitForLeadership();
     }
 
     /**
@@ -391,6 +365,23 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
     }
 
     /**
+     * TODO import type of LeaderElector
+     */
+    public leaderElector(): any {
+        throw pluginMissing('leader-election');
+    }
+
+    public isLeader(): boolean {
+        throw pluginMissing('leader-election');
+    }
+    /**
+     * returns a promise which resolves when the instance becomes leader
+     */
+    public waitForLeadership(): Promise<boolean> {
+        throw pluginMissing('leader-election');
+    }
+
+    /**
      * destroys the database-instance and all collections
      */
     public destroy(): Promise<boolean> {
@@ -407,10 +398,6 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
              */
             setTimeout(() => (this.broadcastChannel as any).close(), 1000);
         }
-
-        try {
-            this.leaderElector.destroy();
-        } catch (err) { }
 
         this._subs.map(sub => sub.unsubscribe());
 

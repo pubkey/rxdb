@@ -15,13 +15,13 @@ config.parallel('leader-election.test.js', () => {
         it('other instance applies on death of leader', async () => {
             const name = util.randomCouchString(10);
             const c = await humansCollection.createMultiInstance(name);
-            const leaderElector = c.database.leaderElector;
+            const leaderElector = c.database.leaderElector();
 
             await leaderElector.waitForLeadership();
             await leaderElector.die();
 
             const c2 = await humansCollection.createMultiInstance(name);
-            await c2.database.leaderElector.waitForLeadership();
+            await c2.database.leaderElector().waitForLeadership();
 
             c.database.destroy();
             c2.database.destroy();
@@ -32,7 +32,7 @@ config.parallel('leader-election.test.js', () => {
         it('a single instance should always elect itself as leader', async () => {
             const c1 = await humansCollection.createMultiInstance(util.randomCouchString(10));
             const db1 = c1.database;
-            await db1.leaderElector.waitForLeadership();
+            await db1.leaderElector().waitForLeadership();
             c1.database.destroy();
         });
         it('should not elect as leader if other instance is leader', async () => {
@@ -42,9 +42,9 @@ config.parallel('leader-election.test.js', () => {
             const db1 = c1.database;
             const db2 = c2.database;
 
-            await db1.leaderElector.waitForLeadership();
+            await db1.leaderElector().waitForLeadership();
             await AsyncTestUtil.wait(150);
-            assert.strictEqual(db2.leaderElector.isLeader, false);
+            assert.strictEqual(db2.isLeader(), false);
 
             c1.database.destroy();
             c2.database.destroy();
@@ -59,8 +59,8 @@ config.parallel('leader-election.test.js', () => {
                 const name = util.randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);
-                const le1 = c1.database.leaderElector;
-                const le2 = c2.database.leaderElector;
+                const le1 = c1.database.leaderElector();
+                const le2 = c2.database.leaderElector();
 
                 le1.waitForLeadership();
                 le2.waitForLeadership();
@@ -87,11 +87,11 @@ config.parallel('leader-election.test.js', () => {
                 const c = await humansCollection.createMultiInstance(name);
                 dbs.push(c.database);
             }
-            dbs.forEach(db => db.leaderElector.waitForLeadership());
+            dbs.forEach(db => db.leaderElector().waitForLeadership());
 
             await AsyncTestUtil.waitUntil(() => {
                 const count = dbs
-                    .map(db => db.leaderElector.isLeader)
+                    .map(db => db.leaderElector().isLeader)
                     .filter(is => is === true)
                     .length;
                 return count === 1;
@@ -99,7 +99,7 @@ config.parallel('leader-election.test.js', () => {
             await AsyncTestUtil.wait(100);
 
             const leaderCount = dbs
-                .map(db => db.leaderElector.isLeader)
+                .map(db => db.leaderElector().isLeader)
                 .filter(is => is === true)
                 .length;
             assert.strictEqual(leaderCount, 1);
@@ -113,41 +113,41 @@ config.parallel('leader-election.test.js', () => {
                 const c = await humansCollection.createMultiInstance(name);
                 dbs.push(c.database);
             }
-            dbs.forEach(db => db.leaderElector.waitForLeadership());
+            dbs.forEach(db => db.leaderElector().waitForLeadership());
 
             await AsyncTestUtil.waitUntil(async () => {
                 const count = dbs
-                    .filter(db => db.leaderElector.isLeader === true)
+                    .filter(db => db.leaderElector().isLeader === true)
                     .length;
                 return count === 1;
             });
             await AsyncTestUtil.wait(100);
             const leaderCount = dbs
-                .filter(db => db.leaderElector.isLeader === true)
+                .filter(db => db.leaderElector().isLeader === true)
                 .length;
             assert.strictEqual(leaderCount, 1);
 
             // let leader die
             const leader = dbs
-                .filter(db => db.leaderElector.isLeader === true)[0];
+                .filter(db => db.leaderElector().isLeader === true)[0];
             const leaderToken = leader.token;
             await leader.destroy();
             const nonDeadDbs = dbs.filter(db => db !== leader);
 
             await AsyncTestUtil.waitUntil(async () => {
                 const count = nonDeadDbs
-                    .filter(db => db.leaderElector.isLeader === true)
+                    .filter(db => db.leaderElector().isLeader === true)
                     .length;
                 return count === 1;
             });
             const leaderCount2 = nonDeadDbs
-                .filter(db => db.leaderElector.isLeader === true)
+                .filter(db => db.leaderElector().isLeader === true)
                 .length;
             assert.strictEqual(leaderCount2, 1);
 
             const leader2 = nonDeadDbs
                 .filter(db => db.token !== leaderToken)
-                .filter(db => db.leaderElector.isLeader === true)[0];
+                .filter(db => db.leaderElector().isLeader === true)[0];
             const leaderToken2 = leader2.token;
 
             assert.notStrictEqual(leaderToken, leaderToken2);
@@ -166,7 +166,7 @@ config.parallel('leader-election.test.js', () => {
                 name: 'human',
                 schema: schemas.human
             });
-            assert.strictEqual(db.isLeader, true);
+            assert.strictEqual(db.isLeader(), true);
             db.destroy();
         });
         it('non-multiInstance: waitForLeadership should instant', async () => {
@@ -192,8 +192,8 @@ config.parallel('leader-election.test.js', () => {
 
             // let leader die
             await dbs
-                .filter(db => db.isLeader)[0]
-                .leaderElector.die();
+                .filter(db => db.isLeader())[0]
+                .leaderElector().die();
 
             await AsyncTestUtil.waitUntil(() => count === 2);
             await Promise.all(dbs.map(db => db.destroy()));

@@ -152,9 +152,10 @@ function ensureNoMoreCollections(args: any) {
 /**
  * runs when the database gets destroyed
  */
-export function onDestroy(db: any) {
-    if (SERVERS_OF_DB.has(db))
+export function onDestroy(db: RxDatabase) {
+    if (SERVERS_OF_DB.has(db)) {
         SERVERS_OF_DB.get(db).forEach((server: any) => server.close());
+    }
 }
 
 

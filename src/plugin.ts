@@ -70,9 +70,10 @@ export function addRxPlugin(plugin: RxPlugin | any) {
     }
     // overwritable-overwrites
     if (rxPlugin.overwritable) {
-        Object
-            .entries(plugin.overwritable)
-            .forEach(([name, fun]) => overwritable[name] = (fun as Function));
+        Object.assign(
+            overwritable,
+            plugin.overwritable
+        );
     }
     // extend-hooks
     if (rxPlugin.hooks) {
