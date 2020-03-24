@@ -61,11 +61,6 @@ export class Crypter {
     }
 }
 
-export function create(password: any, schema: RxSchema) {
+export function createCrypter(password: any, schema: RxSchema): Crypter {
     return new Crypter(password, schema);
 }
-
-export default {
-    create,
-    Crypter
-};

@@ -792,7 +792,7 @@ export function removeRxDatabase(
 }
 
 /**
- * check is the given adapter can be used
+ * check if the given adapter can be used
  */
 export function checkAdapter(adapter: any): Promise<boolean> {
     return overwritable.checkAdapter(adapter);

@@ -6,7 +6,9 @@
 import {
     RxSchema
 } from './rx-schema';
-import Crypter from './crypter';
+import {
+    Crypter
+} from './crypter';
 import {
     basePrototype as RxDocumentPrototype
 } from './rx-document';
@@ -36,7 +38,7 @@ import {
  */
 const PROTOTYPES: { [k: string]: any } = {
     RxSchema: RxSchema.prototype,
-    Crypter: Crypter.Crypter.prototype,
+    Crypter: Crypter.prototype,
     RxDocument: RxDocumentPrototype,
     RxQuery: RxQueryBase.prototype,
     RxCollection: RxCollectionBase.prototype,

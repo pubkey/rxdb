@@ -12,7 +12,7 @@ import {
     createRxDatabase
 } from '../../';
 import {
-    create
+    createCrypter
 } from '../../dist/lib/crypter';
 import * as util from '../../dist/lib/util';
 import {
@@ -23,12 +23,6 @@ import {
 } from '../../src/crypter';
 
 config.parallel('encryption.test.js', () => {
-    function createCrypter(
-        name: string,
-        schema: RxSchema
-    ): Crypter {
-        return create(name, schema) as any;
-    }
     describe('Schema.encryptedPaths', () => {
         describe('positive', () => {
             it('get an encrypted path', () => {

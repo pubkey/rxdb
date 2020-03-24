@@ -4,7 +4,7 @@
 ### X.X.X (comming soon)
 
 Features:
-  - Indexes can now be specified at the top-level of the schema-definition. [#1655](https://github.com/pubkey/rxdb/issues/1655)
+  - Indexes are now specified at the top-level of the schema-definition. [#1655](https://github.com/pubkey/rxdb/issues/1655)
 
 Breaking:
   - Replaced plugins `error-messages` and `schema-check` with [dev-mode](https://pubkey.github.io/rxdb/custom-build.html#dev-mode)

@@ -17,7 +17,6 @@ import {
     toPromise,
     flatClone
 } from './util';
-
 import {
     createRxSchema
 } from './rx-schema';
@@ -52,7 +51,7 @@ import {
 } from './plugins/key-compression';
 import {
     Crypter,
-    create as createCrypter
+    createCrypter
 } from './crypter';
 
 import {

@@ -42,8 +42,9 @@ import {
     createDataMigrator,
     DataMigrator
 } from './data-migrator';
-import Crypter, {
-    Crypter as CrypterClass
+import {
+    Crypter,
+    createCrypter
 } from './crypter';
 import {
     DocCache,
@@ -178,7 +179,7 @@ export class RxCollectionBase<
     > = createDocCache();
     public _queryCache: QueryCache = createQueryCache();
     public _dataMigrator: DataMigrator = {} as DataMigrator;
-    public _crypter: CrypterClass = {} as CrypterClass;
+    public _crypter: Crypter = {} as Crypter;
     public _observable$?: Observable<any>; // TODO type
     public _changeEventBuffer: ChangeEventBuffer = {} as ChangeEventBuffer;
 
@@ -213,7 +214,7 @@ export class RxCollectionBase<
 
 
         this._dataMigrator = createDataMigrator((this as any), this.migrationStrategies);
-        this._crypter = Crypter.create(this.database.password, this.schema);
+        this._crypter = createCrypter(this.database.password, this.schema);
 
         this._observable$ = this.database.$.pipe(
             filter(event => (event as any).collectionName === this.name)
@@ -501,9 +502,6 @@ export class RxCollectionBase<
         return queue;
     }
 
-    /**
-     * takes a mongoDB-query-object and returns the documents
-     */
     find(queryObj?: MangoQuery<RxDocumentType>): RxQuery<
         RxDocumentType,
         RxDocument<RxDocumentType, OrmMethods>[]

@@ -5,7 +5,9 @@
 
 import objectPath from 'object-path';
 
-import RxDocument from '../../rx-document';
+import {
+    properties as rxDocumentProperties
+} from '../../rx-document';
 import {
     newRxError
 } from '../../rx-error';
@@ -230,7 +232,7 @@ export function checkSchema(jsonSchema: RxJsonSchema) {
         }
 
         // check if RxDocument-property
-        if (RxDocument.properties().includes(key)) {
+        if (rxDocumentProperties().includes(key)) {
             throw newRxError('SC17', {
                 key
             });

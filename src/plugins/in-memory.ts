@@ -35,7 +35,9 @@ import {
 import {
     addRxPlugin
 } from '../core';
-import Crypter from '../crypter';
+import {
+    createCrypter
+} from '../crypter';
 import {
     createChangeEventBuffer
 } from '../change-event-buffer';
@@ -81,7 +83,7 @@ export class InMemoryRxCollection<RxDocumentType, OrmMethods> extends RxCollecti
         this._isInMemory = true;
         this._parentCollection = parentCollection;
         this._parentCollection.onDestroy.then(() => this.destroy());
-        this._crypter = Crypter.create(this.database.password, this.schema);
+        this._crypter = createCrypter(this.database.password, this.schema);
         this._changeStreams = [];
 
         /**

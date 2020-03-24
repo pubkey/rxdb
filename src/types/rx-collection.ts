@@ -53,7 +53,7 @@ export type RxCollectionHookNoInstanceCallback<
     OrmMethods
     > = (
         data: RxDocumentType,
-        instance: RxCollection
+        instance: RxCollection<RxDocumentType, OrmMethods>
     ) => Promise<void> | void | any;
 
 export type RxCollection<

@@ -527,11 +527,3 @@ export function isInstanceOf(obj: any): boolean {
     if (typeof obj === 'undefined') return false;
     return !!obj.isInstanceOfRxDocument;
 }
-
-export default {
-    createWithConstructor,
-    properties,
-    createRxDocumentConstructor,
-    basePrototype,
-    isInstanceOf
-};
