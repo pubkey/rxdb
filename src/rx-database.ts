@@ -32,7 +32,6 @@ import {
 
 import {
     PouchDB,
-    validateCouchDBString,
     isLevelDown
 } from './pouch-db';
 
@@ -632,7 +631,17 @@ export function createRxDatabase<Collections = { [key: string]: RxCollection }>(
     options = {},
     pouchSettings = {}
 }: RxDatabaseCreator): Promise<RxDatabase<Collections>> {
-    validateCouchDBString(name);
+
+    runPluginHooks('preCreateRxDatabase', {
+        name,
+        adapter,
+        password,
+        multiInstance,
+        eventReduce,
+        ignoreDuplicate,
+        options,
+        pouchSettings
+    });
 
     // check if pouchdb-adapter
     if (typeof adapter === 'string') {

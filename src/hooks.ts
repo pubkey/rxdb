@@ -6,6 +6,10 @@
  * hook-functions that can be extended by the plugin
  */
 export const HOOKS: { [k: string]: any[] } = {
+    /**
+     * functions that run before the database is created
+     */
+    preCreateRxDatabase: [],
     createRxDatabase: [],
     preCreateRxCollection: [],
     createRxCollection: [],

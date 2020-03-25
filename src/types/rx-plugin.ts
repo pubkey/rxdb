@@ -16,6 +16,7 @@ export interface RxPlugin {
         tunnelErrorMessage?: Function
     };
     hooks?: {
+        preCreateRxDatabase?: Function,
         createRxDatabase?: Function,
         preDestroyRxDatabase?: Function,
         createRxCollection?: Function,

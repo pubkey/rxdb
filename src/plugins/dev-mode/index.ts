@@ -1,4 +1,4 @@
-import { RxPlugin, RxCollectionCreator } from '../../types';
+import { RxPlugin, RxCollectionCreator, RxDatabaseCreator } from '../../types';
 
 import {
     ERROR_MESSAGES
@@ -9,7 +9,7 @@ import {
 import { checkOrmMethods } from './check-orm';
 import { checkMigrationStrategies } from './check-migration-strategies';
 import { ensureCollectionNameValid } from './unallowed-properties';
-
+import { validateCouchDBString } from '../../pouch-db';
 
 export const RxDBDevModePlugin: RxPlugin = {
     rxdb: true,
@@ -27,6 +27,9 @@ export const RxDBDevModePlugin: RxPlugin = {
     },
     hooks: {
         preCreateRxSchema: checkSchema,
+        preCreateRxDatabase: (args: RxDatabaseCreator) => {
+            validateCouchDBString(args.name);
+        },
         preCreateRxCollection: (args: RxCollectionCreator) => {
             ensureCollectionNameValid(args);
         },
