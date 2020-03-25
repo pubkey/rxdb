@@ -45,7 +45,13 @@ type HeroDocMethods = {
 };
 ```
 
-We can also define type for the collection which contains the documents.
+We can merge these into our HeroDocument.
+
+```typescript
+type HeroDocument = RxDocument<HeroDocType, HeroDocMethods>;
+```
+
+Now we can define type for the collection which contains the documents.
 
 ```typescript
 
@@ -53,17 +59,8 @@ We can also define type for the collection which contains the documents.
 type HeroCollectionMethods = {
     countAllDocuments: () => Promise<number>;
 }
-```
 
-Now we can merge these into our HeroDocument.
-
-```typescript
-type HeroDocument = RxDocument<HeroDocType, HeroDocMethods, HeroCollectionMethods>;
-```
-
-And then we merge all our types:
-
-```typescript
+// and then merge all our types
 type HeroCollection = RxCollection<HeroDocType, HeroDocMethods, HeroCollectionMethods>;
 ```
 
