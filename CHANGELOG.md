@@ -6,9 +6,6 @@ Other:
   - Upgraded PouchDB and other dependencies
   - The server plugin no exposes the `pouchApp` [#1992](https://github.com/pubkey/rxdb/pull/1992) Thanks [@Julusian](https://github.com/Julusian)
 
-Typings:
-  - Add collection methods to document type [#1915](https://github.com/pubkey/rxdb/pull/1915) Thanks [@evanc](https://github.com/evanc)
-
 ### 8.7.5 (6 January 2020)
 
 Other:
