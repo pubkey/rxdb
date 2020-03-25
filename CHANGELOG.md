@@ -4,7 +4,7 @@
 
 Other:
   - Upgraded PouchDB and other dependencies
-  - The server plugin no exposes the `pouchApp` [#1992](https://github.com/pubkey/rxdb/pull/1992) Thanks [@Julusian](https://github.com/Julusian)
+  - The server plugin now exposes the `pouchApp` [#1992](https://github.com/pubkey/rxdb/pull/1992) Thanks [@Julusian](https://github.com/Julusian)
 
 ### 8.7.5 (6 January 2020)
 
