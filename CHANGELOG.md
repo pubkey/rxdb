@@ -26,6 +26,7 @@ Breaking:
 
 Other:
   - Removed many runtime type checks that now should be covered by typescript in buildtime
+  - The GraphQL replication is now out of beta mode
 
 Docs:
   - Removed examples for `require()` CommonJS loading

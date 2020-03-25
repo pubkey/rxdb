@@ -1,4 +1,4 @@
-# Replication with GraphQL (beta)
+# Replication with GraphQL
 
 With RxDB you can do a two-way replication with a GraphQL endpoint. This allows you to replicate data from the server into the client-side database and then query and modify it in **realtime**.
 
