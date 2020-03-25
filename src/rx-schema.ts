@@ -291,6 +291,9 @@ const fillWithDefaultSettings = function (
     // required must be array
     schemaObj.required = schemaObj.required || [];
 
+    // encrypted must be array
+    schemaObj.encrypted = schemaObj.encrypted || [];
+
     // add _rev
     schemaObj.properties._rev = {
         type: 'string',
@@ -313,8 +316,9 @@ export function createRxSchema<T = any>(
     jsonSchema: RxJsonSchema,
     runPreCreateHooks = true
 ): RxSchema<T> {
-    if (runPreCreateHooks)
+    if (runPreCreateHooks) {
         runPluginHooks('preCreateRxSchema', jsonSchema);
+    }
     const schema = new RxSchema(fillWithDefaultSettings(jsonSchema));
     runPluginHooks('createRxSchema', schema);
     return schema;

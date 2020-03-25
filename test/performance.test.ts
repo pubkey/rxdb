@@ -269,10 +269,15 @@ describe('performance.test.js', function () {
         });
 
         const query = col.find({
-            var2: {
-                $gt: 1
-            }
-        }).sort('var1');
+            selector: {
+                var2: {
+                    $gt: 1
+                }
+            },
+            sort: [
+                { var1: 'asc' }
+            ]
+        });
 
 
         let t = 0;

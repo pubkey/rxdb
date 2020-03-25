@@ -253,10 +253,10 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
                 } else return collectionDoc;
             })
             .then(() => createRxCollection(args as any))
-            .then((collection: any) => {
+            .then((collection: RxCollection) => {
                 col = collection;
                 if (
-                    collection.schema.encryptedPaths.length > 0 &&
+                    collection.schema.crypt &&
                     !this.password
                 ) {
                     throw newRxError('DB7', {
@@ -565,18 +565,14 @@ function prepare(rxDatabase: RxDatabase<any>): Promise<void> {
     rxDatabase._collectionsPouch = _internalCollectionsPouch(rxDatabase.name, rxDatabase.adapter, rxDatabase.pouchSettings);
 
     // ensure admin-pouch is useable
-    return rxDatabase._adminPouch.info().then(() => {
-        // validate/insert password-hash
-        return Promise.all([
-            _ensureStorageTokenExists(rxDatabase)
-        ]);
-    }).then((res: any[]) => {
-        const [storageToken] = res;
-        rxDatabase.storageToken = storageToken;
-        if (rxDatabase.multiInstance) {
-            _prepareBroadcastChannel(rxDatabase);
-        }
-    });
+    return rxDatabase._adminPouch.info()
+        .then(() => _ensureStorageTokenExists(rxDatabase))
+        .then((storageToken: string) => {
+            rxDatabase.storageToken = storageToken;
+            if (rxDatabase.multiInstance) {
+                _prepareBroadcastChannel(rxDatabase);
+            }
+        });
 }
 
 export function createRxDatabase<Collections = { [key: string]: RxCollection }>({
