@@ -3,7 +3,6 @@ import IdleQueue from 'custom-idle-queue';
 import { BroadcastChannel } from 'broadcast-channel';
 
 import {
-    hash,
     promiseWait,
     pluginMissing
 } from './util';
@@ -19,7 +18,7 @@ import {
 } from './rx-change-event';
 import overwritable from './overwritable';
 import {
-    runPluginHooks
+    runPluginHooks, runAsyncPluginHooks
 } from './hooks';
 import {
     Subject,
@@ -447,47 +446,6 @@ function _removeUsedCombination(name: string, adapter: any) {
 }
 
 /**
- * validates and inserts the password-hash
- * to ensure there is/was no other instance with a different password
- */
-export function _preparePasswordHash(
-    rxDatabase: RxDatabase
-): Promise<boolean> {
-    if (!rxDatabase.password) return Promise.resolve(false);
-
-    const pwHash = hash(rxDatabase.password);
-
-    return rxDatabase._adminPouch.get('_local/pwHash')
-        .catch(() => null)
-        .then((pwHashDoc: any) => {
-
-            /**
-             * if pwHash was not saved, we save it,
-             * this operation might throw because another instance runs save at the same time,
-             * also we do not await the output because it does not mather
-             */
-            if (!pwHashDoc) {
-                rxDatabase._adminPouch.put({
-                    _id: '_local/pwHash',
-                    value: pwHash
-                }).catch(() => null);
-            }
-
-            // different hash was already set by other instance
-            if (pwHashDoc && rxDatabase.password && pwHash !== pwHashDoc.value) {
-                return rxDatabase.destroy().then(() => {
-                    throw newRxError('DB1', {
-                        passwordHash: hash(rxDatabase.password),
-                        existingPasswordHash: pwHashDoc.value
-                    });
-                });
-            }
-            return true;
-        });
-}
-
-
-/**
  * to not confuse multiInstance-messages with other databases that have the same
  * name and adapter, but do not share state with this one (for example in-memory-instances),
  * we set a storage-token and use it in the broadcast-channel
@@ -602,7 +560,7 @@ function _prepareBroadcastChannel(rxDatabase: RxDatabase) {
 /**
  * do the async things for this database
  */
-function prepare(rxDatabase: RxDatabase): Promise<void> {
+function prepare(rxDatabase: RxDatabase<any>): Promise<void> {
     rxDatabase._adminPouch = _internalAdminPouch(rxDatabase.name, rxDatabase.adapter, rxDatabase.pouchSettings);
     rxDatabase._collectionsPouch = _internalCollectionsPouch(rxDatabase.name, rxDatabase.adapter, rxDatabase.pouchSettings);
 
@@ -610,10 +568,10 @@ function prepare(rxDatabase: RxDatabase): Promise<void> {
     return rxDatabase._adminPouch.info().then(() => {
         // validate/insert password-hash
         return Promise.all([
-            _ensureStorageTokenExists(rxDatabase),
-            _preparePasswordHash(rxDatabase)
+            _ensureStorageTokenExists(rxDatabase)
         ]);
-    }).then(([storageToken]) => {
+    }).then((res: any[]) => {
+        const [storageToken] = res;
         rxDatabase.storageToken = storageToken;
         if (rxDatabase.multiInstance) {
             _prepareBroadcastChannel(rxDatabase);
@@ -675,7 +633,7 @@ export function createRxDatabase<Collections = { [key: string]: RxCollection }>(
     }
     USED_COMBINATIONS[name].push(adapter);
 
-    const db = new RxDatabaseBase(
+    const rxDatabase: RxDatabase<Collections> = new RxDatabaseBase(
         name,
         adapter,
         password,
@@ -683,13 +641,11 @@ export function createRxDatabase<Collections = { [key: string]: RxCollection }>(
         eventReduce,
         options,
         pouchSettings
-    );
+    ) as any;
 
-    return prepare(db as any)
-        .then(() => {
-            runPluginHooks('createRxDatabase', db);
-            return db;
-        }) as any;
+    return prepare(rxDatabase)
+        .then(() => runAsyncPluginHooks('createRxDatabase', rxDatabase))
+        .then(() => rxDatabase);
 }
 
 function _internalAdminPouch(
