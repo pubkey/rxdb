@@ -256,7 +256,7 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
             .then((collection: any) => {
                 col = collection;
                 if (
-                    Object.keys(collection.schema.encryptedPaths).length > 0 &&
+                    collection.schema.encryptedPaths.length > 0 &&
                     !this.password
                 ) {
                     throw newRxError('DB7', {

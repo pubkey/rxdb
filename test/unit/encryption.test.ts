@@ -8,7 +8,8 @@ import * as humansCollection from '../helper/humans-collection';
 
 import {
     createRxSchema,
-    createRxDatabase
+    createRxDatabase,
+    RxJsonSchema
 } from '../../';
 import {
     createCrypter
@@ -16,35 +17,6 @@ import {
 import * as util from '../../dist/lib/util';
 
 config.parallel('encryption.test.js', () => {
-    describe('Schema.encryptedPaths', () => {
-        describe('positive', () => {
-            it('get an encrypted path', () => {
-                const schema = createRxSchema(schemas.encryptedHuman);
-                const encPaths = schema.encryptedPaths;
-                assert.strictEqual(Object.keys(encPaths).length, 1);
-                assert.strictEqual(Object.keys(encPaths)[0], 'secret');
-                assert.deepStrictEqual(encPaths.secret, {
-                    type: 'string',
-                    encrypted: true
-                });
-            });
-            it('get all encrypted paths', () => {
-                const schema = createRxSchema(schemas.encryptedDeepHuman);
-                const encPaths = schema.encryptedPaths;
-                assert.strictEqual(Object.keys(encPaths).length, 4);
-                assert.strictEqual(Object.keys(encPaths)[0], 'firstLevelPassword');
-                assert.strictEqual(Object.keys(encPaths)[1], 'secretData');
-                assert.strictEqual(Object.keys(encPaths)[2], 'deepSecret.darkhole.pw');
-                assert.strictEqual(Object.keys(encPaths)[3], 'nestedSecret.darkhole');
-            });
-            it('get no encrypted path', () => {
-                const schema = createRxSchema(schemas.human);
-                const encPaths = schema.encryptedPaths;
-                assert.strictEqual(Object.keys(encPaths).length, 0);
-            });
-        });
-        describe('negative', () => { });
-    });
     describe('Crypter.js', () => {
         it('create', () => {
             const schema = createRxSchema(schemas.human);
@@ -248,7 +220,7 @@ config.parallel('encryption.test.js', () => {
             await db2.destroy();
         });
         it('#917 Unexpected end of JSON input', async () => {
-            const schema = {
+            const schema: RxJsonSchema = {
                 title: 'hero schema',
                 description: 'describes a simple hero',
                 version: 0,
@@ -259,15 +231,17 @@ config.parallel('encryption.test.js', () => {
                         primary: true
                     },
                     color: {
-                        type: 'string',
-                        encrypted: true
+                        type: 'string'
                     },
                     happy: {
-                        type: 'boolean',
-                        encrypted: true
+                        type: 'boolean'
                     }
                 },
-                required: ['color']
+                required: ['color'],
+                encrypted: [
+                    'color',
+                    'happy'
+                ]
             };
             const dbName = util.randomCouchString(10);
 

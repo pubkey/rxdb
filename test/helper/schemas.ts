@@ -416,12 +416,12 @@ export const encryptedHuman: RxJsonSchema<EncryptedHumanDocumentType> = {
             type: 'string'
         },
         secret: {
-            type: 'string',
-            encrypted: true
+            type: 'string'
         }
     },
     indexes: ['passportId'],
-    required: ['firstName', 'secret']
+    required: ['firstName', 'secret'],
+    encrypted: ['secret']
 };
 
 export const encryptedObjectHuman: RxJsonSchema<EncryptedObjectHumanDocumentType> = {
@@ -439,7 +439,6 @@ export const encryptedObjectHuman: RxJsonSchema<EncryptedObjectHumanDocumentType
         },
         secret: {
             type: 'object',
-            encrypted: true,
             properties: {
                 name: {
                     type: 'string'
@@ -451,7 +450,8 @@ export const encryptedObjectHuman: RxJsonSchema<EncryptedObjectHumanDocumentType
         }
     },
     indexes: ['passportId'],
-    required: ['firstName', 'secret']
+    required: ['firstName', 'secret'],
+    encrypted: ['secret']
 };
 
 export const encryptedDeepHuman: RxJsonSchema<EncryptedDeepHumanDocumentType> = {
@@ -469,11 +469,9 @@ export const encryptedDeepHuman: RxJsonSchema<EncryptedDeepHumanDocumentType> = 
         },
         firstLevelPassword: {
             type: 'string',
-            encrypted: true
         },
         secretData: {
             type: 'object',
-            encrypted: true,
             properties: {
                 pw: {
                     type: 'string'
@@ -487,7 +485,6 @@ export const encryptedDeepHuman: RxJsonSchema<EncryptedDeepHumanDocumentType> = 
                     type: 'object',
                     properties: {
                         pw: {
-                            encrypted: true,
                             type: 'string'
                         }
                     }
@@ -498,11 +495,9 @@ export const encryptedDeepHuman: RxJsonSchema<EncryptedDeepHumanDocumentType> = 
             type: 'object',
             properties: {
                 darkhole: {
-                    encrypted: true,
                     type: 'object',
                     properties: {
                         pw: {
-                            encrypted: true,
                             type: 'string'
                         }
                     }
@@ -512,7 +507,13 @@ export const encryptedDeepHuman: RxJsonSchema<EncryptedDeepHumanDocumentType> = 
 
     },
     indexes: ['passportId'],
-    required: ['firstName', 'secretData']
+    required: ['firstName', 'secretData'],
+    encrypted: [
+        'firstLevelPassword',
+        'secretData',
+        'deepSecret.darkhole.pw',
+        'nestedSecret.darkhole.pw'
+    ]
 };
 
 export const notExistingIndex: RxJsonSchema = {

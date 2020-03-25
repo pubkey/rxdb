@@ -43,7 +43,6 @@ export interface JsonSchema {
 
     // RxDB-specific
     ref?: string;
-    encrypted?: boolean;
     final?: boolean;
 }
 
@@ -56,7 +55,7 @@ export interface PrimaryProperty extends TopLevelProperty {
     primary: true;
 }
 
-export declare class RxJsonSchema<T = any> {
+export declare class RxJsonSchema<RxDocType = any> {
     title?: string;
     description?: string;
     version: number;
@@ -66,9 +65,10 @@ export declare class RxJsonSchema<T = any> {
      * retry this in later typescript-versions
      */
     type: 'object' | string;
-    properties: { [key in keyof T]: TopLevelProperty | PrimaryProperty };
-    required?: (keyof T)[];
-    indexes?: Array<string|string[]>;
+    properties: { [key in keyof RxDocType]: TopLevelProperty | PrimaryProperty };
+    required?: (keyof RxDocType)[];
+    indexes?: Array<string | string[]>;
+    encrypted?: string[];
     keyCompression?: boolean;
     /**
      * if not set, rxdb will set 'false' as default

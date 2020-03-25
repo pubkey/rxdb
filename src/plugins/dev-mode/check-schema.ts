@@ -154,9 +154,9 @@ export function validateFieldsDeep(jsonSchema: any): true {
 }
 
 /**
- * computes real path of the index in the collection schema
+ * computes real path of the object path in the collection schema
  */
-function getIndexRealPath(shortPath: string) {
+function getSchemaPropertyRealPath(shortPath: string) {
     const pathParts = shortPath.split('.');
     let realPath = '';
     for (let i = 0; i < pathParts.length; i += 1) {
@@ -261,11 +261,15 @@ export function checkSchema(jsonSchema: RxJsonSchema) {
         });
     }
 
-    /** FIXME this check has to exist only in beta-version, to help developers migrate their schemas */
+    /**
+     * TODO
+     * this check has to exist only in beta-version, to help developers migrate their schemas
+     */
     // remove backward-compatibility for compoundIndexes
     if (Object.keys(jsonSchema).includes('compoundIndexes')) {
         throw newRxError('SC25');
     }
+
     // remove backward-compatibility for index: true
     Object.keys(flattenObject(jsonSchema))
         .map(key => {
@@ -300,7 +304,7 @@ export function checkSchema(jsonSchema: RxJsonSchema) {
         }, [])
         .filter((elem, pos, arr) => arr.indexOf(elem) === pos) // from now on working only with unique indexes
         .map(indexPath => {
-            const realPath = getIndexRealPath(indexPath); // real path in the collection schema
+            const realPath = getSchemaPropertyRealPath(indexPath); // real path in the collection schema
             const schemaObj = objectPath.get(jsonSchema, realPath); // get the schema of the indexed property
             if (!schemaObj || typeof schemaObj !== 'object') {
                 throw newRxError('SC21', { index: indexPath });
@@ -318,4 +322,47 @@ export function checkSchema(jsonSchema: RxJsonSchema) {
                 type: index.schemaObj.type
             });
         });
+
+
+    /**
+     * TODO
+     * in 9.0.0 we changed the way encrypted fields are defined
+     * This check ensures people do not oversee the breaking change
+     * Remove this check in the future
+     */
+    Object.keys(flattenObject(jsonSchema))
+        .map(key => {
+            // flattenObject returns only ending paths, we need all paths pointing to an object
+            const splitted = key.split('.');
+            splitted.pop(); // all but last
+            return splitted.join('.');
+        })
+        .filter(key => key !== '' && key !== 'attachments')
+        .filter((elem, pos, arr) => arr.indexOf(elem) === pos) // unique
+        .filter(key => {
+            // check if this path defines an encrypted field
+            const value = objectPath.get(jsonSchema, key);
+            return !!value.encrypted;
+        })
+        .forEach(key => { // replace inner properties
+            key = key.replace('properties.', ''); // first
+            key = key.replace(/\.properties\./g, '.'); // middle
+            throw newRxError('SC27', {
+                index: trimDots(key)
+            });
+        });
+
+    /* ensure encrypted fields exist in the schema */
+    if (jsonSchema.encrypted) {
+        jsonSchema.encrypted
+            .forEach(propPath => {
+                // real path in the collection schema
+                const realPath = getSchemaPropertyRealPath(propPath);
+                // get the schema of the indexed property
+                const schemaObj = objectPath.get(jsonSchema, realPath);
+                if (!schemaObj || typeof schemaObj !== 'object') {
+                    throw newRxError('SC28', { field: propPath });
+                }
+            });
+    }
 }

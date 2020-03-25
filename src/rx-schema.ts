@@ -59,17 +59,6 @@ export class RxSchema<T = any> {
         return this.jsonSchema.version;
     }
 
-    /**
-     * true if schema contains at least one encrypted path
-     * @overrides itself on the first call
-     */
-    get crypt(): boolean {
-        return overwriteGetterForCaching(
-            this,
-            'crypt',
-            hasCrypt(this.jsonSchema)
-        );
-    }
     get normalized(): RxJsonSchema<T> {
         return overwriteGetterForCaching(
             this,
@@ -95,17 +84,25 @@ export class RxSchema<T = any> {
         );
     }
 
+    /**
+        * true if schema contains at least one encrypted path
+        */
+    get crypt(): boolean {
+        if (
+            !!this.jsonSchema.encrypted && this.jsonSchema.encrypted.length > 0 ||
+            this.jsonSchema.attachments && this.jsonSchema.attachments.encrypted
+        ) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     /**
      * get all encrypted paths
-     * @overrides itself on the first call
      */
-    get encryptedPaths(): { [k: string]: JsonSchema } {
-        return overwriteGetterForCaching(
-            this,
-            'encryptedPaths',
-            getEncryptedPaths(this.jsonSchema)
-        );
+    get encryptedPaths(): string[] {
+        return this.jsonSchema.encrypted || [];
     }
 
     /**
@@ -215,37 +212,6 @@ export class RxSchema<T = any> {
         return proto;
     }
 }
-
-/**
- * returns all encrypted paths of the schema
- */
-export function getEncryptedPaths(jsonSchema: RxJsonSchema): { [k: string]: JsonSchema } {
-    const ret: any = {};
-
-    function traverse(currentObj: any, currentPath: string) {
-        if (typeof currentObj !== 'object') return;
-        if (currentObj.encrypted) {
-            ret[currentPath.substring(1)] = currentObj;
-            return;
-        }
-        Object.keys(currentObj).forEach(attributeName => {
-            let nextPath = currentPath;
-            if (attributeName !== 'properties') nextPath = nextPath + '.' + attributeName;
-            traverse(currentObj[attributeName], nextPath);
-        });
-    }
-    traverse(jsonSchema.properties, '');
-    return ret;
-}
-
-/**
- * returns true if schema contains an encrypted field
- */
-export function hasCrypt(jsonSchema: RxJsonSchema): boolean {
-    const paths = getEncryptedPaths(jsonSchema);
-    return Object.keys(paths).length > 0;
-}
-
 
 export function getIndexes<T = any>(
     jsonSchema: RxJsonSchema<T>

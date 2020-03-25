@@ -598,27 +598,29 @@ config.parallel('rx-query.test.js', () => {
     describe('issues', () => {
         describe('#157 Cannot sort on field(s) "XXX" when using the default index', () => {
             it('schema example 1', async () => {
-                const schema = {
-                    'keyCompression': false,
-                    'version': 0,
-                    'type': 'object',
-                    'properties': {
-                        'user_id': {
-                            'type': 'string',
-                            'primary': true
+                const schema: RxJsonSchema = {
+                    keyCompression: false,
+                    version: 0,
+                    type: 'object',
+                    properties: {
+                        user_id: {
+                            type: 'string',
+                            primary: true
                         },
-                        'user_pwd': {
-                            'type': 'string',
-                            'encrypted': true
+                        user_pwd: {
+                            type: 'string',
                         },
-                        'last_login': {
-                            'type': 'number'
+                        last_login: {
+                            type: 'number'
                         },
-                        'status': {
-                            'type': 'string'
+                        status: {
+                            type: 'string'
                         }
                     },
-                    'required': ['user_pwd', 'last_login', 'status']
+                    required: ['user_pwd', 'last_login', 'status'],
+                    encrypted: [
+                        'user_pwd'
+                    ]
                 };
                 const db = await createRxDatabase({
                     name: util.randomCouchString(10),
@@ -672,7 +674,7 @@ config.parallel('rx-query.test.js', () => {
                 const queryAll = collection
                     .find()
                     .sort({
-                        value: -1
+                        value: 'desc'
                     });
 
                 const resultsAll = await queryAll.exec();

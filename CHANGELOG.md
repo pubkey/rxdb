@@ -4,9 +4,10 @@
 ### X.X.X (comming soon)
 
 Features:
-  - Indexes are now specified at the top-level of the schema-definition. [#1655](https://github.com/pubkey/rxdb/issues/1655)
 
 Breaking:
+  - Indexes are now specified at the top-level of the schema-definition. [#1655](https://github.com/pubkey/rxdb/issues/1655)
+  - Encrypted fields are now specified at the top-level of the schema-definition
   - Replaced plugins `error-messages` and `schema-check` with [dev-mode](https://pubkey.github.io/rxdb/custom-build.html#dev-mode)
   - Removed all default exports. Please only import the stuff that you really need.
   - Renamed `RxDB.create()` to `createRxDatabase()`

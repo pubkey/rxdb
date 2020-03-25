@@ -444,53 +444,6 @@ config.parallel('rx-schema.test.js', () => {
                 });
             });
         });
-        describe('.hasCrypt()', () => {
-            describe('positive', () => {
-                it('true when one field is encrypted', () => {
-                    const ret = hasCrypt({
-                        version: 0,
-                        type: 'object',
-                        properties: {
-                            secret: {
-                                type: 'string',
-                                encrypted: true
-                            }
-                        }
-                    });
-                    assert.strictEqual(ret, true);
-                });
-                it('false when no field is encrypted', () => {
-                    const ret = hasCrypt({
-                        version: 0,
-                        type: 'object',
-                        properties: {
-                            secret: {
-                                type: 'string'
-                            }
-                        }
-                    });
-                    assert.strictEqual(ret, false);
-                });
-                it('true when nested field is encrypted', () => {
-                    const ret = hasCrypt({
-                        version: 0,
-                        type: 'object',
-                        properties: {
-                            any: {
-                                type: 'object',
-                                properties: {
-                                    secret: {
-                                        type: 'string',
-                                        encrypted: true
-                                    }
-                                }
-                            }
-                        }
-                    });
-                    assert.strictEqual(ret, true);
-                });
-            });
-        });
         describe('.getFinalFields()', () => {
             it('should contain the field', () => {
                 const ret = getFinalFields({
@@ -505,7 +458,7 @@ config.parallel('rx-schema.test.js', () => {
                 });
                 assert.ok(ret.includes('myField'));
             });
-            it('should contain the primary', async () => {
+            it('should contain the primary', () => {
                 const ret = getFinalFields({
                     version: 0,
                     type: 'object',

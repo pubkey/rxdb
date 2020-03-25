@@ -37,7 +37,7 @@ export class Crypter {
     encrypt(obj: any) {
         if (!this.password) return obj;
         obj = clone(obj);
-        Object.keys(this.schema.encryptedPaths)
+        this.schema.encryptedPaths
             .forEach(path => {
                 const value = objectPath.get(obj, path);
                 if (typeof value === 'undefined') return;
@@ -50,7 +50,7 @@ export class Crypter {
     decrypt(obj: any) {
         if (!this.password) return obj;
         obj = clone(obj);
-        Object.keys(this.schema.encryptedPaths)
+        this.schema.encryptedPaths
             .forEach(path => {
                 const value = objectPath.get(obj, path);
                 if (typeof value === 'undefined') return;

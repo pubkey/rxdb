@@ -16,7 +16,8 @@ import {
 } from '../../dist/lib/pouch-db';
 import {
     addRxPlugin,
-    createRxDatabase
+    createRxDatabase,
+    RxJsonSchema
 } from '../../';
 import { RxDBReplicationGraphQLPlugin } from '../../plugins/replication-graphql';
 import * as schemas from '../helper/schemas';
@@ -459,8 +460,8 @@ describe('replication-graphql.test.js', () => {
                         [
                             docData
                         ], {
-                            new_edits: false
-                        }
+                        new_edits: false
+                    }
                     );
 
                     const result = await getDocsWithRevisionsFromPouch(
@@ -1590,8 +1591,8 @@ describe('replication-graphql.test.js', () => {
                     ignoreDuplicate: true,
                     password: util.randomCouchString(10)
                 });
-                const schema = clone(schemas.humanWithTimestamp);
-                schema.properties.name.encrypted = true;
+                const schema: RxJsonSchema = clone(schemas.humanWithTimestamp);
+                schema.encrypted = ['name'];
                 const collection = await db.collection({
                     name: 'humans',
                     schema
@@ -1679,8 +1680,8 @@ describe('replication-graphql.test.js', () => {
                     ignoreDuplicate: true,
                     password: util.randomCouchString(10)
                 });
-                const schema = clone(schemas.humanWithTimestampAllIndex);
-                schema.properties.name.encrypted = true;
+                const schema: RxJsonSchema = clone(schemas.humanWithTimestampAllIndex);
+                schema.encrypted = ['name'];
                 const collection = await db.collection({
                     name: 'humans',
                     schema
@@ -1730,8 +1731,8 @@ describe('replication-graphql.test.js', () => {
                     ignoreDuplicate: true,
                     password: util.randomCouchString(10)
                 });
-                const schema = clone(schemas.humanWithTimestampAllIndex);
-                schema.properties.name.encrypted = true;
+                const schema: RxJsonSchema = clone(schemas.humanWithTimestampAllIndex);
+                schema.encrypted = ['name'];
                 const collection = await db.collection({
                     name: 'humans',
                     schema
@@ -1777,8 +1778,8 @@ describe('replication-graphql.test.js', () => {
                     eventReduce: true,
                     password: util.randomCouchString(10)
                 });
-                const schema = clone(schemas.humanWithTimestampAllIndex);
-                schema.properties.name.encrypted = true;
+                const schema: RxJsonSchema = clone(schemas.humanWithTimestampAllIndex);
+                schema.encrypted = ['name'];
                 const collection = await db.collection({
                     name: 'humans',
                     schema
