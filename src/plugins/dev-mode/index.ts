@@ -8,6 +8,7 @@ import {
 } from './check-schema';
 import { checkOrmMethods } from './check-orm';
 import { checkMigrationStrategies } from './check-migration-strategies';
+import { ensureCollectionNameValid } from './unallowed-properties';
 
 
 export const RxDBDevModePlugin: RxPlugin = {
@@ -19,13 +20,16 @@ export const RxDBDevModePlugin: RxPlugin = {
         tunnelErrorMessage(code: string) {
             if (!ERROR_MESSAGES[code]) {
                 console.error('RxDB: Error-Code not known: ' + code);
-                throw new Error('Error-Cdoe ' + code + ' not known, contact the maintainer');
+                throw new Error('Error-Code ' + code + ' not known, contact the maintainer');
             }
             return ERROR_MESSAGES[code];
         }
     },
     hooks: {
         preCreateRxSchema: checkSchema,
+        preCreateRxCollection: (args: RxCollectionCreator) => {
+            ensureCollectionNameValid(args);
+        },
         createRxCollection: (args: RxCollectionCreator) => {
             // check ORM-methods
             checkOrmMethods(args.statics);

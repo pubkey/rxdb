@@ -749,23 +749,6 @@ function _applyHookFunctions(
     });
 }
 
-
-/**
- * returns all possible properties of a RxCollection-instance
- */
-let _properties: string[] | null = null;
-export function properties(): string[] {
-    if (!_properties) {
-        const pseudoInstance = new (RxCollectionBase as any)();
-        const ownProperties = Object.getOwnPropertyNames(pseudoInstance);
-        const prototypeProperties = Object.getOwnPropertyNames(
-            Object.getPrototypeOf(pseudoInstance)
-        );
-        _properties = [...ownProperties, ...prototypeProperties];
-    }
-    return _properties;
-}
-
 function _atomicUpsertUpdate(doc: any, json: any): Promise<any> {
     return doc.atomicUpdate((innerDoc: any) => {
         json._rev = innerDoc._rev;
@@ -900,7 +883,6 @@ export function isInstanceOf(obj: any): boolean {
 
 export default {
     create,
-    properties,
     isInstanceOf,
     RxCollectionBase
 };

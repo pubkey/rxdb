@@ -3,14 +3,7 @@ import {
     newRxTypeError
 } from '../../rx-error';
 import { KeyFunctionMap } from '../../types';
-
-import {
-    properties as rxDocumentProperties
-} from '../../rx-document';
-
-import {
-    properties as rxCollectionProperties
-} from '../../rx-collection';
+import { rxCollectionProperties, rxDocumentProperties } from './entity-properties';
 
 /**
  * checks if the given static methods are allowed

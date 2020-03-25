@@ -428,9 +428,6 @@ export function createRxDocumentConstructor(proto = basePrototype) {
     return constructor;
 }
 
-const pseudoConstructor = createRxDocumentConstructor(basePrototype);
-const pseudoRxDocument = new (pseudoConstructor as any)();
-
 export function defineGetterSetter(
     schema: any,
     valueObj: any,
@@ -507,20 +504,6 @@ export function createWithConstructor(
     const doc = new constructor(collection, jsonData);
     runPluginHooks('createRxDocument', doc);
     return doc;
-}
-
-/**
- * returns all possible properties of a RxDocument
- */
-let _properties: any;
-export function properties(): string[] {
-    if (!_properties) {
-        const reserved = ['deleted', 'synced'];
-        const ownProperties = Object.getOwnPropertyNames(pseudoRxDocument);
-        const prototypeProperties = Object.getOwnPropertyNames(basePrototype);
-        _properties = [...ownProperties, ...prototypeProperties, ...reserved];
-    }
-    return _properties;
 }
 
 export function isInstanceOf(obj: any): boolean {

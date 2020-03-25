@@ -218,13 +218,6 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
 
         const internalPrimary = _collectionNamePrimary(args.name, args.schema);
 
-        // check unallowed collection-names
-        if (properties().includes(args.name)) {
-            throw newRxError('DB5', {
-                name: args.name
-            });
-        }
-
         const schema = createRxSchema(args.schema);
         args.schema = schema as any;
 
@@ -419,29 +412,6 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
             .destroy()
             .then(() => removeRxDatabase(this.name, this.adapter));
     }
-}
-
-
-/**
- * returns all possible properties of a RxDatabase-instance
- */
-let _properties: any = null;
-export function properties(): string[] {
-    if (!_properties) {
-        // TODO instead of using the pseudoInstance,
-        // we should get the properties from the prototype of the class
-        const pseudoInstance: RxDatabaseBase = new (RxDatabaseBase as any)(
-            'pseudoInstance',
-            'memory'
-        );
-        const ownProperties = Object.getOwnPropertyNames(pseudoInstance);
-        const prototypeProperties = Object.getOwnPropertyNames(
-            Object.getPrototypeOf(pseudoInstance)
-        );
-        _properties = [...ownProperties, ...prototypeProperties];
-        pseudoInstance.destroy();
-    }
-    return _properties;
 }
 
 /**

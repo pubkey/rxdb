@@ -4,10 +4,6 @@
  */
 
 import objectPath from 'object-path';
-
-import {
-    properties as rxDocumentProperties
-} from '../../rx-document';
 import {
     newRxError
 } from '../../rx-error';
@@ -18,6 +14,7 @@ import {
     flattenObject,
     trimDots
 } from '../../util';
+import { rxDocumentProperties } from './entity-properties';
 
 /**
  * checks if the fieldname is allowed
