@@ -35,8 +35,7 @@ In this example-schema we define a hero-collection with the following settings:
             "max": 100
         },
         "secret": {
-            "type": "string",
-            "encrypted": true
+            "type": "string"
         },
         "birthyear": {
             "type": "number",
@@ -62,6 +61,7 @@ In this example-schema we define a hero-collection with the following settings:
         }
     },
     "required": ["color"],
+    "encrypted": ["secret"],
     "attachments": {
         "encrypted": true
     }
@@ -208,14 +208,20 @@ const schemaWithFinalAge = {
 
 ## encryption
 
-By setting a field to `encrypted: true` it will be stored encrypted inside of the data-store. The encryption will run internally, so when you get the `RxDocument`, you can access the unencrypted value.
+By adding a field to the `encrypted` list, it will be stored encrypted inside of the data-store. The encryption will run internally, so when you get the `RxDocument`, you can access the unencrypted value.
 You can set all fields to be encrypted, even nested objects. You can not run queries over encrypted fields.
 
-```json
-"mySecretField": {
-    "type": "string",
-    "encrypted": true
-},
+```js
+const schemaWithDefaultAge = {
+  version: 0,
+  type: 'object',
+  properties: {
+      secret: {
+          type: 'string'
+      },
+  },
+  encrypted: ['secret']
+};
 ```
 
 

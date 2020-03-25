@@ -217,7 +217,6 @@ const mySchema = {
         },
         secret: {
             type: "string",
-            encrypted: true     // <- this means that the value of this field is stored encrypted
         },
         skills: {
             type: "array",
@@ -236,7 +235,8 @@ const mySchema = {
             }
         }
     },
-    required: ["color"]
+    required: ["color"],
+    encrypted: ["secret"] // <- this means that the value of this field is stored encrypted
 };
 ```
 
@@ -247,14 +247,22 @@ const mySchema = {
   <b>Encryption</b>
   <p>
 
-By setting a schema-field to `encrypted: true`, the value of this field will be stored in encryption-mode and can't be read without the password. Of course you can also encrypt nested objects. Example:</p>
+By setting a schema-field to `encrypted`, the value of this field will be stored in encryption-mode and can't be read without the password. Of course you can also encrypt nested objects. Example:</p>
 
 </summary>
 
 ```json
-"secret": {
-  "type": "string",
-  "encrypted": true
+{
+  "title": "my schema",
+  "properties": {
+    "secret": {
+      "type": "string",
+      "encrypted": true
+    }
+  },
+  "encrypted": [
+    "secret"
+  ]
 }
 ```
 
