@@ -2,7 +2,8 @@ import assert from 'assert';
 import config from './config';
 import * as RxDB from '../../';
 import {
-    PouchDB
+    PouchDB,
+    addRxPlugin
 } from '../../';
 import {
     POUCHDB_LOCATION
@@ -12,8 +13,9 @@ import {
 } from '../../dist/lib/util';
 
 import memdown from 'memdown';
-if (!config.platform.isNode())
-    RxDB.plugin(require('pouchdb-adapter-idb'));
+if (!config.platform.isNode()) {
+    addRxPlugin(require('pouchdb-adapter-idb'));
+}
 
 config.parallel('adapter-check.test.js', () => {
     describe('outcome', () => {

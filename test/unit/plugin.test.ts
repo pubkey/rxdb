@@ -22,7 +22,7 @@ const REQUIRE_FUN = require;
 
 config.parallel('plugin.test.js', () => {
     if (!config.platform.isNode()) return;
-    describe('.plugin()', () => {
+    describe('.addRxPlugin()', () => {
         it('should not crash when the same plugin is added multiple times', () => {
             addRxPlugin(PouchReplicationPlugin);
             addRxPlugin(PouchReplicationPlugin);

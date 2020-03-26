@@ -68,4 +68,15 @@ export interface RxStorage<RxStorageInstance = any> {
         options?: any
     ): RxStorageInstance;
 
+
+    /**
+     * creates the internal storage instance
+     * which is used by the RxDatabase to store metadata
+     * Created exactly once per RxDatabase
+     */
+    createInternalStorageInstance(
+        databaseName: string,
+        options?: any
+    ): Promise<RxStorageInstance>;
+
 }

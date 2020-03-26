@@ -9,11 +9,12 @@ import RxDB, {
     RxDatabase,
     RxCollection,
     RxJsonSchema,
-    RxDocument
+    RxDocument,
+    addRxPlugin
 } from 'rxdb';
 
 import * as MemoryAdapter from 'pouchdb-adapter-memory';
-RxDB.plugin(MemoryAdapter);
+addRxPlugin(MemoryAdapter);
 
 /**
  * declare types

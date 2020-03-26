@@ -57,7 +57,7 @@ export function storePasswordHashIntoDatabase(
         return Promise.resolve(false);
     }
     const pwHash = hash(rxDatabase.password);
-    return rxDatabase._adminPouch.get('_local/pwHash')
+    return rxDatabase.internalStore.get('_local/pwHash')
         .catch(() => null)
         .then((pwHashDoc: PasswordHashDocument | null) => {
             /**
@@ -65,7 +65,7 @@ export function storePasswordHashIntoDatabase(
              * this operation might throw because another instance runs save at the same time,
              */
             if (!pwHashDoc) {
-                return rxDatabase._adminPouch.put({
+                return rxDatabase.internalStore.put({
                     _id: '_local/pwHash',
                     value: pwHash
                 }).catch(() => null)

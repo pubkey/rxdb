@@ -128,6 +128,25 @@ export class RxStoragePouchDbClass implements RxStorage<PouchDBInstance> {
         ) as any;
     }
 
+    createInternalStorageInstance(
+        databaseName: string,
+        _options?: any
+    ): Promise<PouchDBInstance> {
+        const storageInstance = this.createStorageInstance(
+            databaseName,
+            '_rxdb_internal',
+            0,
+            {
+                pouchSettings: {
+                    // no compaction because this only stores local documents
+                    auto_compaction: false,
+                    revs_limit: 1
+                }
+            }
+        );
+        return Promise.resolve(storageInstance);
+    }
+
     /**
      * pouchdb has many bugs and strange behaviors
      * this functions takes a normal mango query

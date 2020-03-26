@@ -4,15 +4,18 @@
  * ensure it is also changed in /docs-src/tutorials/server.md
  */
 
-import RxDB from 'rxdb';
+import {
+    addRxPlugin,
+    createRxDatabase
+} from 'rxdb';
 import * as MemoryAdapter from 'pouchdb-adapter-memory';
-RxDB.plugin(MemoryAdapter);
+addRxPlugin(MemoryAdapter);
 
 import RxDBServerPlugin from 'rxdb/plugins/server';
-RxDB.plugin(RxDBServerPlugin);
+addRxPlugin(RxDBServerPlugin);
 
 import * as PouchHttpPlugin from 'pouchdb-adapter-http';
-RxDB.plugin(PouchHttpPlugin);
+addRxPlugin(PouchHttpPlugin);
 
 import AsyncTestUtil from 'async-test-util';
 import * as request from 'request-promise-native';
@@ -22,7 +25,7 @@ async function run() {
 
 
     // create database
-    const db = await RxDB.create({
+    const db = await createRxDatabase({
         name: 'mydb',
         adapter: 'memory'
     });
@@ -73,7 +76,7 @@ async function run() {
     /**
      * on the client
      */
-    const clientDB = await RxDB.create({
+    const clientDB = await createRxDatabase({
         name: 'clientdb',
         adapter: 'memory'
     });

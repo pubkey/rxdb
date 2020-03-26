@@ -90,7 +90,7 @@ export class RxLocalDocument extends RxDocumentParent {
 
 const _getPouchByParent = (parent: any) => {
     if (isRxDatabase(parent))
-        return parent._adminPouch; // database
+        return (parent as RxDatabase<{}>).internalStore; // database
     else return parent.pouch; // collection
 };
 

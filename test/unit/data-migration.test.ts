@@ -310,7 +310,7 @@ config.parallel('data-migration.test.js', () => {
 
                     // check that internal doc exists
                     let docId = _collectionNamePrimary(col.name, old.schema);
-                    let iDoc = await old.database._collectionsPouch.get(docId);
+                    let iDoc = await old.database.internalStore.get(docId);
                     assert.strictEqual(typeof iDoc.schemaHash, 'string');
 
 
@@ -327,7 +327,7 @@ config.parallel('data-migration.test.js', () => {
                     let has = true;
                     docId = _collectionNamePrimary(col.name, old.schema);
                     try {
-                        iDoc = await old.database._collectionsPouch.get(docId);
+                        iDoc = await old.database.internalStore.get(docId);
                     } catch (e) {
                         has = false;
                     }

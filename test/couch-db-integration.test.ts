@@ -7,9 +7,11 @@
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
 
-import RxDB from '../';
-RxDB.plugin(require('pouchdb-adapter-memory'));
-RxDB.plugin(require('pouchdb-adapter-http'));
+import {
+    addRxPlugin
+} from '../';
+addRxPlugin(require('pouchdb-adapter-memory'));
+addRxPlugin(require('pouchdb-adapter-http'));
 
 import * as util from '../dist/lib/util';
 import * as humansCollection from './helper/humans-collection';

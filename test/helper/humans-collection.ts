@@ -6,10 +6,10 @@ import * as util from '../../dist/lib/util';
 import {
     createRxDatabase,
     RxJsonSchema,
-    RxCollection
+    RxCollection,
+    PouchDB,
+    RxDatabase
 } from '../../';
-
-import * as RxDB from '../../';
 
 import {
     HumanDocumentType
@@ -21,7 +21,7 @@ export async function create(
     multiInstance: boolean = true
 ): Promise<RxCollection<HumanDocumentType>> {
     if (!name) name = 'human';
-    RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
+    PouchDB.plugin(require('pouchdb-adapter-memory'));
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.HumanDocumentType> }>({
         name: util.randomCouchString(10),
         adapter: 'memory',
@@ -49,7 +49,7 @@ export async function createBySchema<RxDocumentType = {}>(
     schema: RxJsonSchema,
     name = 'human'
 ): Promise<RxCollection<RxDocumentType>> {
-    RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
+    PouchDB.plugin(require('pouchdb-adapter-memory'));
 
     const db = await createRxDatabase<{ [prop: string]: RxCollection<RxDocumentType> }>({
         name: util.randomCouchString(10),
@@ -74,7 +74,7 @@ export async function createAttachments(
 ): Promise<RxCollection<schemaObjects.HumanDocumentType>> {
 
     if (!name) name = 'human';
-    RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
+    PouchDB.plugin(require('pouchdb-adapter-memory'));
     const db = await createRxDatabase<{ [prop: string]: RxCollection<schemaObjects.HumanDocumentType> }>({
         name: util.randomCouchString(10),
         adapter: 'memory',
@@ -109,7 +109,7 @@ export async function createEncryptedAttachments(
 ): Promise<RxCollection<schemaObjects.HumanDocumentType>> {
 
     if (!name) name = 'human';
-    RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
+    PouchDB.plugin(require('pouchdb-adapter-memory'));
 
     const db = await createRxDatabase<{ [prop: string]: RxCollection<schemaObjects.HumanDocumentType> }>({
         name: util.randomCouchString(10),
@@ -145,7 +145,7 @@ export async function createNoCompression(
     size = 20,
     name = 'human'
 ): Promise<RxCollection<schemaObjects.HumanDocumentType>> {
-    RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
+    PouchDB.plugin(require('pouchdb-adapter-memory'));
 
     const db = await createRxDatabase<{ [prop: string]: RxCollection<schemaObjects.HumanDocumentType> }>({
         name: util.randomCouchString(10),
@@ -175,7 +175,7 @@ export async function createNoCompression(
 export async function createAgeIndex(
     amount = 20
 ): Promise<RxCollection<schemaObjects.HumanDocumentType>> {
-    RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
+    PouchDB.plugin(require('pouchdb-adapter-memory'));
 
     const db = await createRxDatabase<{ humana: RxCollection<schemaObjects.HumanDocumentType> }>({
         name: util.randomCouchString(10),
@@ -203,14 +203,14 @@ export async function createAgeIndex(
 export async function multipleOnSameDB(
     size = 10
 ): Promise<{
-    db: RxDB.RxDatabase<{
+    db: RxDatabase<{
         human: RxCollection<schemaObjects.HumanDocumentType>;
         human2: RxCollection<schemaObjects.HumanDocumentType>;
     }>,
     collection: RxCollection<schemaObjects.HumanDocumentType>
     collection2: RxCollection<schemaObjects.HumanDocumentType>
 }> {
-    RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
+    PouchDB.plugin(require('pouchdb-adapter-memory'));
 
     const db = await createRxDatabase<{
         human: RxCollection<schemaObjects.HumanDocumentType>,
@@ -255,7 +255,7 @@ export async function createNested(
     amount = 5,
     adapter = 'memory'
 ): Promise<RxCollection<schemaObjects.NestedHumanDocumentType>> {
-    RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
+    PouchDB.plugin(require('pouchdb-adapter-memory'));
 
     const db = await createRxDatabase<{ nestedhuman: RxCollection<schemaObjects.NestedHumanDocumentType> }>({
         name: util.randomCouchString(10),
@@ -284,7 +284,7 @@ export async function createDeepNested(
     amount = 5,
     adapter = 'memory'
 ): Promise<RxCollection<schemaObjects.DeepNestedHumanDocumentType>> {
-    RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
+    PouchDB.plugin(require('pouchdb-adapter-memory'));
 
     const db = await createRxDatabase<{ nestedhuman: RxCollection<schemaObjects.DeepNestedHumanDocumentType> }>({
         name: util.randomCouchString(10),
@@ -341,7 +341,7 @@ export async function createMultiInstance(
     amount = 0,
     password = null
 ): Promise<RxCollection<schemaObjects.HumanDocumentType>> {
-    RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
+    PouchDB.plugin(require('pouchdb-adapter-memory'));
 
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.HumanDocumentType> }>({
         name,
@@ -484,7 +484,7 @@ export async function createMigrationCollection(
 export async function createRelated(
     name = util.randomCouchString(10)
 ): Promise<RxCollection<schemaObjects.RefHumanDocumentType>> {
-    RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
+    PouchDB.plugin(require('pouchdb-adapter-memory'));
 
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.RefHumanDocumentType> }>({
         name,
