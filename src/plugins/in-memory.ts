@@ -229,6 +229,7 @@ function toCleanSchema(rxSchema: RxSchema): RxSchema {
     delete newSchemaJson.properties._id;
     delete newSchemaJson.properties._rev;
     delete newSchemaJson.properties._attachments;
+    delete newSchemaJson.properties._replication_id;
 
     const removeEncryption = (schema: any, complete: any) => {
         delete schema.encrypted;
