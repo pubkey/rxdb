@@ -32,6 +32,7 @@ import {
     RxSchema,
     createRxSchema
 } from '../rx-schema';
+import {trimDots} from '../util';
 
 /**
  * checks if the fieldname is allowed
@@ -49,7 +50,7 @@ export function checkFieldNameRegex(fieldName: string) {
         });
     }
 
-    const regexStr = '^[a-zA-Z](?:[[a-zA-Z0-9_]*]?[a-zA-Z0-9])?$';
+    const regexStr = '^[a-zA-Z](?:[[a-zA-Z0-9_]*]?[a-zA-Z0-9])?$|^[0-9]$';
     const regex = new RegExp(regexStr);
     if (!fieldName.match(regex)) {
         throw newRxError('SC1', {
@@ -267,8 +268,12 @@ export function checkSchema(jsonID: RxJsonSchema) {
         .reduce((a, b) => a.concat(b), [])
         .filter((elem, pos, arr) => arr.indexOf(elem) === pos) // unique
         .map(key => {
-            const path = 'properties.' + key.replace(/\./g, '.properties.');
-            const schemaObj = objectPath.get(jsonID, path);
+            let usePath = key.replace(/\.([a-z])/g, '.properties.$1');
+            usePath = usePath.replace(/\.([0-9]+)/g, '.items.$1');
+            usePath = 'properties.' + usePath;
+            usePath = trimDots(usePath);
+
+            const schemaObj = objectPath.get(jsonID, usePath);
             if (!schemaObj || typeof schemaObj !== 'object') {
                 throw newRxError('SC21', {
                     key

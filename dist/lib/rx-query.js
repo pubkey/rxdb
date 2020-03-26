@@ -37,9 +37,7 @@ var newQueryID = function newQueryID() {
   return ++_queryCount;
 };
 
-var RxQueryBase =
-/*#__PURE__*/
-function () {
+var RxQueryBase = /*#__PURE__*/function () {
   function RxQueryBase(op, queryObj, collection) {
     this.id = newQueryID();
     this._latestChangeEvent = -1;
@@ -475,8 +473,11 @@ function _throwNotInSchema(key) {
 function _sortAddToIndex(checkParam, clonedThis) {
   var schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(checkParam);
   if (!schemaObj) _throwNotInSchema(checkParam);
+  var schemaType = Array.isArray(schemaObj.type) ? schemaObj.type.find(function (type) {
+    return type !== 'null';
+  }) : schemaObj.type;
 
-  switch (schemaObj.type) {
+  switch (schemaType) {
     case 'integer':
       // TODO change back to -Infinity when issue resolved
       // @link https://github.com/pouchdb/pouchdb/issues/6454

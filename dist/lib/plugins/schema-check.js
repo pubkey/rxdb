@@ -22,6 +22,8 @@ var _rxSchema = require("../rx-schema");
 
 var _rxCollection = require("../rx-collection");
 
+var _util = require("../util");
+
 /**
  * does additional checks over the schema-json
  * to ensure nothing is broken or not supported
@@ -43,7 +45,7 @@ function checkFieldNameRegex(fieldName) {
     });
   }
 
-  var regexStr = '^[a-zA-Z](?:[[a-zA-Z0-9_]*]?[a-zA-Z0-9])?$';
+  var regexStr = '^[a-zA-Z](?:[[a-zA-Z0-9_]*]?[a-zA-Z0-9])?$|^[0-9]$';
   var regex = new RegExp(regexStr);
 
   if (!fieldName.match(regex)) {
@@ -255,9 +257,12 @@ function checkSchema(jsonID) {
     return arr.indexOf(elem) === pos;
   }) // unique
   .map(function (key) {
-    var path = 'properties.' + key.replace(/\./g, '.properties.');
+    var usePath = key.replace(/\.([a-z])/g, '.properties.$1');
+    usePath = usePath.replace(/\.([0-9]+)/g, '.items.$1');
+    usePath = 'properties.' + usePath;
+    usePath = (0, _util.trimDots)(usePath);
 
-    var schemaObj = _objectPath["default"].get(jsonID, path);
+    var schemaObj = _objectPath["default"].get(jsonID, usePath);
 
     if (!schemaObj || typeof schemaObj !== 'object') {
       throw (0, _rxError.newRxError)('SC21', {

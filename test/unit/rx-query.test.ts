@@ -201,6 +201,68 @@ config.parallel('rx-query.test.js', () => {
             col.database.destroy();
         });
     });
+    describe('nested array', () => {
+        it('should be used in sort', async () => {
+            // create a schema
+            const mySchema = {
+                version: 0,
+                type: 'object',
+                properties: {
+                    passportId: {
+                        type: 'string',
+                        primary: true
+                    },
+                    localizations: {
+                        type: 'array',
+                        items: [{
+                            type: 'object',
+                            properties: {
+                                title: {
+                                    type: 'string'
+                                }
+                            }
+                        }],
+                    },
+                    authorId: {
+                        type: ['string', 'null'],
+                    }
+                },
+                compoundIndexes: [['localizations.0.title']]
+            };
+            const db = await RxDB.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory',
+                queryChangeDetection: true,
+                ignoreDuplicate: true
+            });
+
+            // create a collection
+            const collection = await db.collection({
+                name: 'mycollection',
+                schema: mySchema
+            });
+
+            // insert documents
+            await collection.bulkInsert([
+                {
+                    passportId: 'doc1',
+                    localizations: [{ title: 'bob' }]
+                }, {
+                    passportId: 'doc2',
+                    localizations: [{ title: 'alice' }]
+                }
+            ]);
+            const sortedByTitleAsc = await collection.find().sort({ 'localizations.0.title': 'asc' }).exec();
+
+            assert.ok(sortedByTitleAsc.length > 0);
+
+            assert.ok(sortedByTitleAsc[0].passportId === 'doc2');
+
+            assert.ok(sortedByTitleAsc[1].passportId === 'doc1');
+
+            collection.database.destroy();
+        });
+    });
     describe('QueryCache.js', () => {
         it('return the same object', async () => {
             const col = await humansCollection.create(0);

@@ -30,9 +30,7 @@ var _hooks = require("./hooks");
 
 var _rxDocument = require("./rx-document");
 
-var RxSchema =
-/*#__PURE__*/
-function () {
+var RxSchema = /*#__PURE__*/function () {
   function RxSchema(jsonID) {
     this.jsonID = jsonID;
     this.compoundIndexes = this.jsonID.compoundIndexes;
@@ -62,8 +60,8 @@ function () {
   var _proto = RxSchema.prototype;
 
   _proto.getSchemaByObjectPath = function getSchemaByObjectPath(path) {
-    var usePath = path;
-    usePath = usePath.replace(/\./g, '.properties.');
+    var usePath = path.replace(/\.([a-z])/g, '.properties.$1');
+    usePath = usePath.replace(/\.([0-9]+)/g, '.items.$1');
     usePath = 'properties.' + usePath;
     usePath = (0, _util.trimDots)(usePath);
 
