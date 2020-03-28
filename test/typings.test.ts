@@ -22,7 +22,6 @@ describe('typings.test.js', function () {
             RxPlugin,
             addRxPlugin
         } from '${config.rootPath}';
-        import RxDB from '${config.rootPath}';
         import * as PouchMemAdapter from 'pouchdb-adapter-memory';
         addRxPlugin(PouchMemAdapter);
 
@@ -742,7 +741,7 @@ describe('typings.test.js', function () {
                 await transpileCode(code);
             });
         });
-        describe('plugin', () => {
+        describe('addRxPlugin', () => {
             it('should be a valid RxPlugin', async () => {
                 const code = codeBase + `
                 (async() => {
@@ -754,6 +753,13 @@ describe('typings.test.js', function () {
                     }
                     addRxPlugin(myPlugin);
                 });
+            `;
+                await transpileCode(code);
+            });
+            it('should be able to import and add a plugin', async () => {
+                const code = codeBase + `
+                import { RxDBReplicationGraphQLPlugin } from '${config.rootPath}plugins/replication-graphql';
+                addRxPlugin(RxDBReplicationGraphQLPlugin);
             `;
                 await transpileCode(code);
             });
