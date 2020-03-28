@@ -89,6 +89,17 @@ export var RxStoragePouchDbClass = /*#__PURE__*/function () {
     var pouchDBOptions = Object.assign({}, pouchDbParameters.adapter, this.pouchSettings, pouchDbParameters.settings);
     runPluginHooks('preCreatePouchDb', pouchDbParameters);
     return new PouchDB(pouchDbParameters.location, pouchDBOptions);
+  };
+
+  _proto.createInternalStorageInstance = function createInternalStorageInstance(databaseName, _options) {
+    var storageInstance = this.createStorageInstance(databaseName, '_rxdb_internal', 0, {
+      pouchSettings: {
+        // no compaction because this only stores local documents
+        auto_compaction: false,
+        revs_limit: 1
+      }
+    });
+    return Promise.resolve(storageInstance);
   }
   /**
    * pouchdb has many bugs and strange behaviors

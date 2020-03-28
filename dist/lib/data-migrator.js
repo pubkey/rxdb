@@ -187,7 +187,7 @@ function createOldCollection(version, schemaObj, dataMigrator) {
 
 function _getOldCollections(dataMigrator) {
   return Promise.all((0, _rxSchema.getPreviousVersions)(dataMigrator.currentSchema.jsonSchema).map(function (v) {
-    return dataMigrator.database._collectionsPouch.get(dataMigrator.name + '-' + v);
+    return dataMigrator.database.internalStore.get(dataMigrator.name + '-' + v);
   }).map(function (fun) {
     return fun["catch"](function () {
       return null;

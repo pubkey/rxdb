@@ -46,7 +46,7 @@ var Crypter = /*#__PURE__*/function () {
 
     if (!this.password) return obj;
     obj = (0, _util.clone)(obj);
-    Object.keys(this.schema.encryptedPaths).forEach(function (path) {
+    this.schema.encryptedPaths.forEach(function (path) {
       var value = _objectPath["default"].get(obj, path);
 
       if (typeof value === 'undefined') return;
@@ -63,7 +63,7 @@ var Crypter = /*#__PURE__*/function () {
 
     if (!this.password) return obj;
     obj = (0, _util.clone)(obj);
-    Object.keys(this.schema.encryptedPaths).forEach(function (path) {
+    this.schema.encryptedPaths.forEach(function (path) {
       var value = _objectPath["default"].get(obj, path);
 
       if (typeof value === 'undefined') return;

@@ -13,6 +13,10 @@ var _checkOrm = require("./check-orm");
 
 var _checkMigrationStrategies = require("./check-migration-strategies");
 
+var _unallowedProperties = require("./unallowed-properties");
+
+var _pouchDb = require("../../pouch-db");
+
 var RxDBDevModePlugin = {
   rxdb: true,
   overwritable: {
@@ -22,7 +26,7 @@ var RxDBDevModePlugin = {
     tunnelErrorMessage: function tunnelErrorMessage(code) {
       if (!_errorMessages.ERROR_MESSAGES[code]) {
         console.error('RxDB: Error-Code not known: ' + code);
-        throw new Error('Error-Cdoe ' + code + ' not known, contact the maintainer');
+        throw new Error('Error-Code ' + code + ' not known, contact the maintainer');
       }
 
       return _errorMessages.ERROR_MESSAGES[code];
@@ -30,6 +34,12 @@ var RxDBDevModePlugin = {
   },
   hooks: {
     preCreateRxSchema: _checkSchema.checkSchema,
+    preCreateRxDatabase: function preCreateRxDatabase(args) {
+      (0, _pouchDb.validateCouchDBString)(args.name);
+    },
+    preCreateRxCollection: function preCreateRxCollection(args) {
+      (0, _unallowedProperties.ensureCollectionNameValid)(args);
+    },
     createRxCollection: function createRxCollection(args) {
       // check ORM-methods
       (0, _checkOrm.checkOrmMethods)(args.statics);

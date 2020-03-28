@@ -44,18 +44,6 @@ var _localDocuments = require("./plugins/local-documents");
 
 var _queryBuilder = require("./plugins/query-builder");
 
-var _types = require("./types");
-
-Object.keys(_types).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _types[key];
-    }
-  });
-});
-
 /**
  * this is the default rxdb-export
  * It has a batteries-included guarantee.

@@ -3,9 +3,9 @@
  * to ensure nothing is broken or not supported
  */
 import objectPath from 'object-path';
-import { properties as rxDocumentProperties } from '../../rx-document';
 import { newRxError } from '../../rx-error';
 import { flattenObject, trimDots } from '../../util';
+import { rxDocumentProperties } from './entity-properties';
 /**
  * checks if the fieldname is allowed
  * this makes sure that the fieldnames can be transformed into javascript-vars
@@ -136,10 +136,10 @@ export function validateFieldsDeep(jsonSchema) {
   return true;
 }
 /**
- * computes real path of the index in the collection schema
+ * computes real path of the object path in the collection schema
  */
 
-function getIndexRealPath(shortPath) {
+function getSchemaPropertyRealPath(shortPath) {
   var pathParts = shortPath.split('.');
   var realPath = '';
 
@@ -249,7 +249,10 @@ export function checkSchema(jsonSchema) {
       }
     });
   }
-  /** FIXME this check has to exist only in beta-version, to help developers migrate their schemas */
+  /**
+   * TODO
+   * this check has to exist only in beta-version, to help developers migrate their schemas
+   */
   // remove backward-compatibility for compoundIndexes
 
 
@@ -297,7 +300,7 @@ export function checkSchema(jsonSchema) {
     return arr.indexOf(elem) === pos;
   }) // from now on working only with unique indexes
   .map(function (indexPath) {
-    var realPath = getIndexRealPath(indexPath); // real path in the collection schema
+    var realPath = getSchemaPropertyRealPath(indexPath); // real path in the collection schema
 
     var schemaObj = objectPath.get(jsonSchema, realPath); // get the schema of the indexed property
 
@@ -319,5 +322,53 @@ export function checkSchema(jsonSchema) {
       type: index.schemaObj.type
     });
   });
+  /**
+   * TODO
+   * in 9.0.0 we changed the way encrypted fields are defined
+   * This check ensures people do not oversee the breaking change
+   * Remove this check in the future
+   */
+
+  Object.keys(flattenObject(jsonSchema)).map(function (key) {
+    // flattenObject returns only ending paths, we need all paths pointing to an object
+    var splitted = key.split('.');
+    splitted.pop(); // all but last
+
+    return splitted.join('.');
+  }).filter(function (key) {
+    return key !== '' && key !== 'attachments';
+  }).filter(function (elem, pos, arr) {
+    return arr.indexOf(elem) === pos;
+  }) // unique
+  .filter(function (key) {
+    // check if this path defines an encrypted field
+    var value = objectPath.get(jsonSchema, key);
+    return !!value.encrypted;
+  }).forEach(function (key) {
+    // replace inner properties
+    key = key.replace('properties.', ''); // first
+
+    key = key.replace(/\.properties\./g, '.'); // middle
+
+    throw newRxError('SC27', {
+      index: trimDots(key)
+    });
+  });
+  /* ensure encrypted fields exist in the schema */
+
+  if (jsonSchema.encrypted) {
+    jsonSchema.encrypted.forEach(function (propPath) {
+      // real path in the collection schema
+      var realPath = getSchemaPropertyRealPath(propPath); // get the schema of the indexed property
+
+      var schemaObj = objectPath.get(jsonSchema, realPath);
+
+      if (!schemaObj || typeof schemaObj !== 'object') {
+        throw newRxError('SC28', {
+          field: propPath
+        });
+      }
+    });
+  }
 }
 //# sourceMappingURL=check-schema.js.map

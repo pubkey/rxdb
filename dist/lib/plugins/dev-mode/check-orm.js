@@ -7,9 +7,7 @@ exports.checkOrmMethods = checkOrmMethods;
 
 var _rxError = require("../../rx-error");
 
-var _rxDocument = require("../../rx-document");
-
-var _rxCollection = require("../../rx-collection");
+var _entityProperties = require("./entity-properties");
 
 /**
  * checks if the given static methods are allowed
@@ -43,7 +41,7 @@ function checkOrmMethods(statics) {
       });
     }
 
-    if ((0, _rxCollection.properties)().includes(k) || (0, _rxDocument.properties)().includes(k)) {
+    if ((0, _entityProperties.rxCollectionProperties)().includes(k) || (0, _entityProperties.rxDocumentProperties)().includes(k)) {
       throw (0, _rxError.newRxError)('COL17', {
         name: k
       });

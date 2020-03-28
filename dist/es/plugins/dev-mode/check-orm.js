@@ -1,6 +1,5 @@
 import { newRxError, newRxTypeError } from '../../rx-error';
-import { properties as rxDocumentProperties } from '../../rx-document';
-import { properties as rxCollectionProperties } from '../../rx-collection';
+import { rxCollectionProperties, rxDocumentProperties } from './entity-properties';
 /**
  * checks if the given static methods are allowed
  * @throws if not allowed

@@ -50,7 +50,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     this.options = options;
     this.statics = statics;
 
-    _applyHookFunctions(this);
+    _applyHookFunctions(this.asRxCollection);
   }
   /**
    * returns observable
@@ -71,14 +71,14 @@ export var RxCollectionBase = /*#__PURE__*/function () {
 
     var spawnedPouchPromise = this.pouch.info(); // resolved when the pouchdb is useable
 
-    var createIndexesPromise = _prepareCreateIndexes(this, spawnedPouchPromise);
+    var createIndexesPromise = _prepareCreateIndexes(this.asRxCollection, spawnedPouchPromise);
 
-    this._dataMigrator = createDataMigrator(this, this.migrationStrategies);
+    this._dataMigrator = createDataMigrator(this.asRxCollection, this.migrationStrategies);
     this._crypter = createCrypter(this.database.password, this.schema);
     this._observable$ = this.database.$.pipe(filter(function (event) {
       return event.collectionName === _this.name;
     }));
-    this._changeEventBuffer = createChangeEventBuffer(this);
+    this._changeEventBuffer = createChangeEventBuffer(this.asRxCollection);
 
     this._subs.push(this._observable$.pipe(filter(function (cE) {
       return !cE.isLocal;
@@ -656,6 +656,11 @@ export var RxCollectionBase = /*#__PURE__*/function () {
       });
       return this._onDestroy;
     }
+  }, {
+    key: "asRxCollection",
+    get: function get() {
+      return this;
+    }
   }]);
 
   return RxCollectionBase;
@@ -679,22 +684,6 @@ function _applyHookFunctions(collection) {
       };
     });
   });
-}
-/**
- * returns all possible properties of a RxCollection-instance
- */
-
-
-var _properties = null;
-export function properties() {
-  if (!_properties) {
-    var pseudoInstance = new RxCollectionBase();
-    var ownProperties = Object.getOwnPropertyNames(pseudoInstance);
-    var prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoInstance));
-    _properties = [].concat(ownProperties, prototypeProperties);
-  }
-
-  return _properties;
 }
 
 function _atomicUpsertUpdate(doc, json) {
@@ -812,7 +801,6 @@ export function isInstanceOf(obj) {
 }
 export default {
   create: create,
-  properties: properties,
   isInstanceOf: isInstanceOf,
   RxCollectionBase: RxCollectionBase
 };

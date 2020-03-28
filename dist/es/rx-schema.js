@@ -143,16 +143,6 @@ export var RxSchema = /*#__PURE__*/function () {
     get: function get() {
       return this.jsonSchema.version;
     }
-    /**
-     * true if schema contains at least one encrypted path
-     * @overrides itself on the first call
-     */
-
-  }, {
-    key: "crypt",
-    get: function get() {
-      return overwriteGetterForCaching(this, 'crypt', hasCrypt(this.jsonSchema));
-    }
   }, {
     key: "normalized",
     get: function get() {
@@ -178,14 +168,26 @@ export var RxSchema = /*#__PURE__*/function () {
       return overwriteGetterForCaching(this, 'defaultValues', values);
     }
     /**
+        * true if schema contains at least one encrypted path
+        */
+
+  }, {
+    key: "crypt",
+    get: function get() {
+      if (!!this.jsonSchema.encrypted && this.jsonSchema.encrypted.length > 0 || this.jsonSchema.attachments && this.jsonSchema.attachments.encrypted) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+    /**
      * get all encrypted paths
-     * @overrides itself on the first call
      */
 
   }, {
     key: "encryptedPaths",
     get: function get() {
-      return overwriteGetterForCaching(this, 'encryptedPaths', getEncryptedPaths(this.jsonSchema));
+      return this.jsonSchema.encrypted || [];
     }
     /**
      * @overrides itself on the first call
@@ -200,39 +202,6 @@ export var RxSchema = /*#__PURE__*/function () {
 
   return RxSchema;
 }();
-/**
- * returns all encrypted paths of the schema
- */
-
-export function getEncryptedPaths(jsonSchema) {
-  var ret = {};
-
-  function traverse(currentObj, currentPath) {
-    if (typeof currentObj !== 'object') return;
-
-    if (currentObj.encrypted) {
-      ret[currentPath.substring(1)] = currentObj;
-      return;
-    }
-
-    Object.keys(currentObj).forEach(function (attributeName) {
-      var nextPath = currentPath;
-      if (attributeName !== 'properties') nextPath = nextPath + '.' + attributeName;
-      traverse(currentObj[attributeName], nextPath);
-    });
-  }
-
-  traverse(jsonSchema.properties, '');
-  return ret;
-}
-/**
- * returns true if schema contains an encrypted field
- */
-
-export function hasCrypt(jsonSchema) {
-  var paths = getEncryptedPaths(jsonSchema);
-  return Object.keys(paths).length > 0;
-}
 export function getIndexes(jsonSchema) {
   return (jsonSchema.indexes || []).map(function (index) {
     return Array.isArray(index) ? index : [index];
@@ -301,7 +270,9 @@ var fillWithDefaultSettings = function fillWithDefaultSettings(schemaObj) {
 
   schemaObj.indexes = schemaObj.indexes || []; // required must be array
 
-  schemaObj.required = schemaObj.required || []; // add _rev
+  schemaObj.required = schemaObj.required || []; // encrypted must be array
+
+  schemaObj.encrypted = schemaObj.encrypted || []; // add _rev
 
   schemaObj.properties._rev = {
     type: 'string',
@@ -318,7 +289,11 @@ var fillWithDefaultSettings = function fillWithDefaultSettings(schemaObj) {
 
 export function createRxSchema(jsonSchema) {
   var runPreCreateHooks = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-  if (runPreCreateHooks) runPluginHooks('preCreateRxSchema', jsonSchema);
+
+  if (runPreCreateHooks) {
+    runPluginHooks('preCreateRxSchema', jsonSchema);
+  }
+
   var schema = new RxSchema(fillWithDefaultSettings(jsonSchema));
   runPluginHooks('createRxSchema', schema);
   return schema;

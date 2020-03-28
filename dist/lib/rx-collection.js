@@ -5,7 +5,6 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.properties = properties;
 exports.create = create;
 exports.isInstanceOf = isInstanceOf;
 exports["default"] = exports.RxCollectionBase = void 0;
@@ -718,23 +717,6 @@ function _applyHookFunctions(collection) {
     });
   });
 }
-/**
- * returns all possible properties of a RxCollection-instance
- */
-
-
-var _properties = null;
-
-function properties() {
-  if (!_properties) {
-    var pseudoInstance = new RxCollectionBase();
-    var ownProperties = Object.getOwnPropertyNames(pseudoInstance);
-    var prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoInstance));
-    _properties = [].concat(ownProperties, prototypeProperties);
-  }
-
-  return _properties;
-}
 
 function _atomicUpsertUpdate(doc, json) {
   return doc.atomicUpdate(function (innerDoc) {
@@ -853,7 +835,6 @@ function isInstanceOf(obj) {
 
 var _default = {
   create: create,
-  properties: properties,
   isInstanceOf: isInstanceOf,
   RxCollectionBase: RxCollectionBase
 };

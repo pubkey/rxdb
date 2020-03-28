@@ -8,7 +8,6 @@ Object.defineProperty(exports, "__esModule", {
 exports.createRxDocumentConstructor = createRxDocumentConstructor;
 exports.defineGetterSetter = defineGetterSetter;
 exports.createWithConstructor = createWithConstructor;
-exports.properties = properties;
 exports.isInstanceOf = isInstanceOf;
 exports.basePrototype = void 0;
 
@@ -416,9 +415,6 @@ function createRxDocumentConstructor() {
   return constructor;
 }
 
-var pseudoConstructor = createRxDocumentConstructor(basePrototype);
-var pseudoRxDocument = new pseudoConstructor();
-
 function defineGetterSetter(schema, valueObj) {
   var objPath = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
   var thisObj = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
@@ -480,23 +476,6 @@ function createWithConstructor(constructor, collection, jsonData) {
   var doc = new constructor(collection, jsonData);
   (0, _hooks.runPluginHooks)('createRxDocument', doc);
   return doc;
-}
-/**
- * returns all possible properties of a RxDocument
- */
-
-
-var _properties;
-
-function properties() {
-  if (!_properties) {
-    var reserved = ['deleted', 'synced'];
-    var ownProperties = Object.getOwnPropertyNames(pseudoRxDocument);
-    var prototypeProperties = Object.getOwnPropertyNames(basePrototype);
-    _properties = [].concat(ownProperties, prototypeProperties, reserved);
-  }
-
-  return _properties;
 }
 
 function isInstanceOf(obj) {

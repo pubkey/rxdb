@@ -6,6 +6,7 @@
 import AES from 'crypto-js/aes';
 import * as cryptoEnc from 'crypto-js/enc-utf8';
 import { newRxTypeError, newRxError } from '../rx-error';
+import { hash } from '../util';
 var minPassLength = 8;
 export function encrypt(value, password) {
   var encrypted = AES.encrypt(value, password);
@@ -25,6 +26,46 @@ var _decryptValue = function _decryptValue(encryptedValue) {
   return JSON.parse(decrypted);
 };
 
+/**
+ * validates and inserts the password hash into the internal collection
+ * to ensure there is/was no other instance with a different password
+ * which would cause strange side effects when both instances save into the same db
+ */
+export function storePasswordHashIntoDatabase(rxDatabase) {
+  if (!rxDatabase.password) {
+    return Promise.resolve(false);
+  }
+
+  var pwHash = hash(rxDatabase.password);
+  return rxDatabase.internalStore.get('_local/pwHash')["catch"](function () {
+    return null;
+  }).then(function (pwHashDoc) {
+    /**
+     * if pwHash was not saved, we save it,
+     * this operation might throw because another instance runs save at the same time,
+     */
+    if (!pwHashDoc) {
+      return rxDatabase.internalStore.put({
+        _id: '_local/pwHash',
+        value: pwHash
+      })["catch"](function () {
+        return null;
+      }).then(function () {
+        return true;
+      });
+    } else if (pwHash !== pwHashDoc.value) {
+      // different hash was already set by other instance
+      return rxDatabase.destroy().then(function () {
+        throw newRxError('DB1', {
+          passwordHash: hash(rxDatabase.password),
+          existingPasswordHash: pwHashDoc.value
+        });
+      });
+    }
+
+    return true;
+  });
+}
 export var rxdb = true;
 export var prototypes = {
   /**
@@ -54,6 +95,11 @@ export var overwritable = {
 export var RxDBEncryptionPlugin = {
   rxdb: rxdb,
   prototypes: prototypes,
-  overwritable: overwritable
+  overwritable: overwritable,
+  hooks: {
+    createRxDatabase: function createRxDatabase(db) {
+      return storePasswordHashIntoDatabase(db);
+    }
+  }
 };
 //# sourceMappingURL=encryption.js.map

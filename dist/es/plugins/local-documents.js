@@ -71,7 +71,7 @@ export var RxLocalDocument = /*#__PURE__*/function (_RxDocumentParent) {
 }(RxDocumentParent);
 
 var _getPouchByParent = function _getPouchByParent(parent) {
-  if (isRxDatabase(parent)) return parent._adminPouch; // database
+  if (isRxDatabase(parent)) return parent.internalStore; // database
   else return parent.pouch; // collection
 };
 
