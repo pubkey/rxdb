@@ -8,14 +8,16 @@ if (config.platform.isNode())
 
 import {
     createRxDatabase,
-    addRxPlugin
+    addRxPlugin,
+    randomCouchString,
+    promiseWait,
+    clone
 } from '../../';
 import {
     countAllUndeleted,
     getBatch,
     PouchDB
 } from '../../dist/lib/pouch-db';
-import * as util from '../../dist/lib/util';
 import * as schemaObjects from './../helper/schema-objects';
 import AsyncTestUtil from 'async-test-util';
 import {
@@ -33,7 +35,7 @@ config.parallel('pouch-db-integration.test.js', () => {
         it('should not allow leveldown-adapters without the plugin', async () => {
             await AsyncTestUtil.assertThrows(
                 () => createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: memdown
                 }),
                 'RxError',
@@ -44,7 +46,7 @@ config.parallel('pouch-db-integration.test.js', () => {
             if (!config.platform.isNode()) return;
             PouchDB.plugin(leveldb);
             const db = await createRxDatabase({
-                name: util.randomCouchString(10),
+                name: randomCouchString(10),
                 adapter: memdown
             });
             assert.ok(isRxDatabase(db));
@@ -55,7 +57,7 @@ config.parallel('pouch-db-integration.test.js', () => {
         it('should not create a db without adding the adapter', async () => {
             await AsyncTestUtil.assertThrows(
                 () => createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory'
                 }),
                 'RxError',
@@ -65,7 +67,7 @@ config.parallel('pouch-db-integration.test.js', () => {
         it('should work when adapter was added', async () => {
             addRxPlugin(require('pouchdb-adapter-memory'));
             const db = await createRxDatabase({
-                name: util.randomCouchString(10),
+                name: randomCouchString(10),
                 adapter: 'memory'
             });
             assert.ok(isRxDatabase(db));
@@ -78,7 +80,7 @@ config.parallel('pouch-db-integration.test.js', () => {
             PouchDB.plugin(require('pouchdb-adapter-localstorage'));
             await AsyncTestUtil.assertThrows(
                 () => createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'localstorage'
                 }),
                 'RxError',
@@ -91,7 +93,7 @@ config.parallel('pouch-db-integration.test.js', () => {
             it('should fail when no adapter was added', async () => {
                 await AsyncTestUtil.assertThrows(
                     () => createRxDatabase({
-                        name: util.randomCouchString(10),
+                        name: randomCouchString(10),
                         adapter: 'websql'
                     }),
                     'RxError',
@@ -106,11 +108,11 @@ config.parallel('pouch-db-integration.test.js', () => {
 
                 addRxPlugin(require('pouchdb-adapter-websql'));
                 const db = await createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'websql'
                 });
                 assert.ok(isRxDatabase(db));
-                await util.promiseWait(10);
+                await promiseWait(10);
                 db.destroy();
             });
         });
@@ -118,36 +120,36 @@ config.parallel('pouch-db-integration.test.js', () => {
     describe('own pouchdb functions', () => {
         describe('.countAllUndeleted()', () => {
             it('should return 0', async () => {
-                const name = util.randomCouchString(10);
+                const name = randomCouchString(10);
                 const pouchdb = new PouchDB(
                     name, {
-                        adapter: 'memory'
-                    }
+                    adapter: 'memory'
+                }
                 );
                 const count = await countAllUndeleted(pouchdb);
                 assert.deepStrictEqual(count, 0);
             });
             it('should return 1', async () => {
-                const name = util.randomCouchString(10);
+                const name = randomCouchString(10);
                 const pouchdb = new PouchDB(
                     name, {
-                        adapter: 'memory'
-                    }
+                    adapter: 'memory'
+                }
                 );
                 await pouchdb.put({
-                    _id: util.randomCouchString(10)
+                    _id: randomCouchString(10)
                 });
                 const count = await countAllUndeleted(pouchdb);
                 assert.deepStrictEqual(count, 1);
             });
             it('should not count deleted docs', async () => {
-                const name = util.randomCouchString(10);
+                const name = randomCouchString(10);
                 const pouchdb = new PouchDB(
                     name, {
-                        adapter: 'memory'
-                    }
+                    adapter: 'memory'
+                }
                 );
-                const _id = util.randomCouchString(10);
+                const _id = randomCouchString(10);
                 await pouchdb.put({
                     _id,
                     x: 1
@@ -162,14 +164,14 @@ config.parallel('pouch-db-integration.test.js', () => {
                 assert.deepStrictEqual(count, 0);
             });
             it('should count a big amount with one deleted doc', async () => {
-                const name = util.randomCouchString(10);
+                const name = randomCouchString(10);
                 const pouchdb = new PouchDB(
                     name, {
-                        adapter: 'memory'
-                    }
+                    adapter: 'memory'
+                }
                 );
 
-                const _id = util.randomCouchString(10);
+                const _id = randomCouchString(10);
                 await pouchdb.put({
                     _id,
                     x: 1
@@ -182,7 +184,7 @@ config.parallel('pouch-db-integration.test.js', () => {
                 let t = 42;
                 while (t > 0) {
                     await pouchdb.put({
-                        _id: util.randomCouchString(10),
+                        _id: randomCouchString(10),
                         x: 1
                     });
                     t--;
@@ -193,24 +195,24 @@ config.parallel('pouch-db-integration.test.js', () => {
         });
         describe('.getBatch()', () => {
             it('should return empty array', async () => {
-                const name = util.randomCouchString(10);
+                const name = randomCouchString(10);
                 const pouchdb = new PouchDB(
                     name, {
-                        adapter: 'memory'
-                    }
+                    adapter: 'memory'
+                }
                 );
                 const docs = await getBatch(pouchdb, 10);
                 assert.deepStrictEqual(docs, []);
             });
             it('should not return deleted', async () => {
-                const name = util.randomCouchString(10);
+                const name = randomCouchString(10);
                 const pouchdb = new PouchDB(
                     name, {
-                        adapter: 'memory'
-                    }
+                    adapter: 'memory'
+                }
                 );
 
-                const _id = util.randomCouchString(10);
+                const _id = randomCouchString(10);
                 await pouchdb.put({
                     _id,
                     x: 1
@@ -226,13 +228,13 @@ config.parallel('pouch-db-integration.test.js', () => {
                 assert.deepStrictEqual(docs, []);
             });
             it('should return one document in array', async () => {
-                const name = util.randomCouchString(10);
+                const name = randomCouchString(10);
                 const pouchdb = new PouchDB(
                     name, {
-                        adapter: 'memory'
-                    }
+                    adapter: 'memory'
+                }
                 );
-                const _id = util.randomCouchString(10);
+                const _id = randomCouchString(10);
                 await pouchdb.put({
                     _id,
                     x: 1
@@ -244,17 +246,17 @@ config.parallel('pouch-db-integration.test.js', () => {
             });
 
             it('should max return batchSize', async () => {
-                const name = util.randomCouchString(10);
+                const name = randomCouchString(10);
                 const pouchdb = new PouchDB(
                     name, {
-                        adapter: 'memory'
-                    }
+                    adapter: 'memory'
+                }
                 );
 
                 let t = 42;
                 while (t > 0) {
                     await pouchdb.put({
-                        _id: util.randomCouchString(10),
+                        _id: randomCouchString(10),
                         x: 1
                     });
                     t--;
@@ -270,15 +272,15 @@ config.parallel('pouch-db-integration.test.js', () => {
     });
     describe('BUGS: pouchdb', () => {
         it('_local documents should not be cached by pouchdb', async () => {
-            const name = util.randomCouchString(10);
+            const name = randomCouchString(10);
             const _id = '_local/foobar';
             function createPouch(): PouchDBInstance {
                 const pouch = new PouchDB(
                     name, {
-                        adapter: 'memory',
-                        auto_compaction: true,
-                        revs_limit: 1
-                    }
+                    adapter: 'memory',
+                    auto_compaction: true,
+                    revs_limit: 1
+                }
                 ) as any;
                 return pouch;
             }
@@ -304,11 +306,11 @@ config.parallel('pouch-db-integration.test.js', () => {
          */
         it('pouchdb.find() should not return design-docs', async () => {
             const pouch = new PouchDB(
-                util.randomCouchString(10), {
-                    adapter: 'memory',
-                    auto_compaction: true,
-                    revs_limit: 1
-                }
+                randomCouchString(10), {
+                adapter: 'memory',
+                auto_compaction: true,
+                revs_limit: 1
+            }
             );
 
             await pouch.createIndex({
@@ -339,11 +341,11 @@ config.parallel('pouch-db-integration.test.js', () => {
         });
         it('removing via bulkDocs does not work', async () => {
             const pouch: PouchDBInstance = new PouchDB(
-                util.randomCouchString(10), {
-                    adapter: 'memory',
-                    auto_compaction: true,
-                    revs_limit: 1
-                }
+                randomCouchString(10), {
+                adapter: 'memory',
+                auto_compaction: true,
+                revs_limit: 1
+            }
             ) as any;
 
             // add one doc
@@ -377,7 +379,7 @@ config.parallel('pouch-db-integration.test.js', () => {
                 _rev: '3-13af8c9a835820969a8a273b18783a70',
                 _deleted: true
             }, bulkOptions);
-            assert.strictEqual(x.length, 0);
+            assert.strictEqual((x as any).length, 0);
 
             /**
              * If this test ever throws, it means we can remove the hacky workarround in
@@ -398,11 +400,11 @@ config.parallel('pouch-db-integration.test.js', () => {
         });
         it('putting with _deleted does not work', async () => {
             const pouch: PouchDBInstance = new PouchDB(
-                util.randomCouchString(10), {
-                    adapter: 'memory',
-                    auto_compaction: true,
-                    revs_limit: 1
-                }
+                randomCouchString(10), {
+                adapter: 'memory',
+                auto_compaction: true,
+                revs_limit: 1
+            }
             ) as any;
             const bulkOptions = {
                 new_edits: false
@@ -467,9 +469,9 @@ config.parallel('pouch-db-integration.test.js', () => {
         });
         it('put->delete-put will find the previous document', async () => {
             const pouch: PouchDBInstance = new PouchDB(
-                util.randomCouchString(10), {
-                    adapter: 'memory'
-                }
+                randomCouchString(10), {
+                adapter: 'memory'
+            }
             ) as any;
             const BULK_DOC_OPTIONS = {
                 new_edits: false
@@ -481,7 +483,7 @@ config.parallel('pouch-db-integration.test.js', () => {
 
             await AsyncTestUtil.wait(100);
 
-            const docData2: any = (util as any).clone(docData);
+            const docData2: any = clone(docData);
             docData2._rev = ret.rev;
             docData2._deleted = true;
 
@@ -527,7 +529,7 @@ config.parallel('pouch-db-integration.test.js', () => {
             /*            const c = await humansCollection.create(0);
                         const db = c.pouch;*/
             const db = new PouchDBCore(
-                util.randomCouchString(10),
+                randomCouchString(10),
                 {
                     adapter: 'memory'
                 }

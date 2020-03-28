@@ -11,14 +11,15 @@
 
 import assert from 'assert';
 import clone from 'clone';
+import AsyncTestUtil from 'async-test-util';
 
 import config from './config';
 import {
-    createRxSchema
+    createRxSchema,
+    randomCouchString,
+    promiseWait,
+    isRxDocument
 } from '../../';
-import * as RxDocument from '../../dist/lib/rx-document';
-import * as util from '../../dist/lib/util';
-import AsyncTestUtil from 'async-test-util';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
@@ -27,18 +28,18 @@ config.parallel('primary.test.js', () => {
     describe('Schema', () => {
         describe('.create()', () => {
             describe('positive', () => {
-                it('use in schema', async () => {
+                it('use in schema', () => {
                     const schema = createRxSchema(schemas.primaryHuman);
                     assert.strictEqual(typeof schema.primaryPath, 'string');
                 });
             });
             describe('negative', () => {
-                it('throw if primary is also index', async () => {
+                it('throw if primary is also index', () => {
                     const schemaObj = clone(schemas.primaryHuman);
-                    schemaObj.properties.passportId.index = true;
+                    (schemaObj.properties.passportId as any).index = true;
                     assert.throws(() => createRxSchema(schemaObj), Error);
                 });
-                it('throw if primary is also unique', async () => {
+                it('throw if primary is also unique', () => {
                     const schemaObj: any = clone(schemas.primaryHuman);
                     schemaObj.properties.passportId['unique'] = true;
                     assert.throws(() => createRxSchema(schemaObj), Error);
@@ -48,17 +49,17 @@ config.parallel('primary.test.js', () => {
                     schemaObj.properties.passportId.type = 'integer';
                     assert.throws(() => createRxSchema(schemaObj), Error);
                 });
-                it('throw if primary is defined twice', async () => {
+                it('throw if primary is defined twice', () => {
                     const schemaObj = clone(schemas.primaryHuman);
-                    schemaObj.properties.passportId2 = {
+                    (schemaObj.properties as any).passportId2 = {
                         type: 'string',
                         primary: true
                     };
                     assert.throws(() => createRxSchema(schemaObj), Error);
                 });
-                it('throw if primary is encrypted', async () => {
+                it('throw if primary is encrypted', () => {
                     const schemaObj = clone(schemas.primaryHuman);
-                    schemaObj.properties.passportId.encrypted = true;
+                    (schemaObj.properties.passportId as any).encrypted = true;
                     assert.throws(() => createRxSchema(schemaObj), Error);
                 });
             });
@@ -84,8 +85,8 @@ config.parallel('primary.test.js', () => {
                 it('should not validate the human without primary', () => {
                     const schema = createRxSchema(schemas.primaryHuman);
                     const obj = {
-                        firstName: util.randomCouchString(10),
-                        lastName: util.randomCouchString(10)
+                        firstName: randomCouchString(10),
+                        lastName: randomCouchString(10)
                     };
                     assert.throws(() => schema.validate(obj), Error);
                 });
@@ -93,8 +94,8 @@ config.parallel('primary.test.js', () => {
                     const schema = createRxSchema(schemas.primaryHuman);
                     const obj = {
                         passportId: {},
-                        firstName: util.randomCouchString(10),
-                        lastName: util.randomCouchString(10)
+                        firstName: randomCouchString(10),
+                        lastName: randomCouchString(10)
                     };
                     assert.throws(() => schema.validate(obj), Error);
                 });
@@ -168,10 +169,10 @@ config.parallel('primary.test.js', () => {
                 it('sort by primary', async () => {
                     const c = await humansCollection.createPrimary(5);
                     const docsASC = await c.find().sort({
-                        passportId: 1
+                        passportId: 'asc'
                     }).exec();
                     const docsDESC = await c.find().sort({
-                        passportId: -1
+                        passportId: 'desc'
                     }).exec();
                     assert.strictEqual(docsASC.length, 5);
                     assert.strictEqual(docsDESC.length, 5);
@@ -218,7 +219,7 @@ config.parallel('primary.test.js', () => {
                     const passportId = doc.passportId;
                     assert.ok(passportId.length > 4);
                     const doc2 = await c.findOne().where('passportId').eq(passportId).exec();
-                    assert.ok(RxDocument.isInstanceOf(doc2));
+                    assert.ok(isRxDocument(doc2));
                     assert.strictEqual(doc.passportId, doc2.passportId);
                     c.database.destroy();
                 });
@@ -267,7 +268,7 @@ config.parallel('primary.test.js', () => {
                     let value;
                     const sub = doc.get$('firstName').subscribe((newVal: any) => value = newVal);
                     await doc.atomicSet('firstName', 'foobar');
-                    await util.promiseWait(10);
+                    await promiseWait(10);
                     assert.strictEqual(value, 'foobar');
                     sub.unsubscribe();
                     c.database.destroy();
@@ -284,7 +285,7 @@ config.parallel('primary.test.js', () => {
                     c.database.destroy();
                 });
                 it('get event on db2 when db1 fires', async () => {
-                    const name = util.randomCouchString(10);
+                    const name = randomCouchString(10);
                     const c1 = await humansCollection.createPrimary(0, name);
                     const c2 = await humansCollection.createPrimary(0, name);
                     let docs: any[];
@@ -296,7 +297,7 @@ config.parallel('primary.test.js', () => {
                     c2.database.destroy();
                 });
                 it('get new field-value when other db changes', async () => {
-                    const name = util.randomCouchString(10);
+                    const name = randomCouchString(10);
                     const c1 = await humansCollection.createPrimary(0, name);
                     const c2 = await humansCollection.createPrimary(0, name);
                     const obj = schemaObjects.simpleHuman();
@@ -307,7 +308,7 @@ config.parallel('primary.test.js', () => {
                     let value: any;
                     let count = 0;
                     const pW8 = AsyncTestUtil.waitResolveable(1000);
-                    doc.firstName$.subscribe((newVal: any) => {
+                    (doc as any).firstName$.subscribe((newVal: any) => {
                         value = newVal;
                         count++;
                         if (count >= 2) pW8.resolve();

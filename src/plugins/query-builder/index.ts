@@ -45,6 +45,8 @@ export function applyBuildingStep(
     };
 }
 
+export * from './mquery/nosql-query-builder';
+
 export const RxDBQueryBuilderPlugin: RxPlugin = {
     rxdb: true,
     prototypes: {

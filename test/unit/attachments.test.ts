@@ -5,11 +5,12 @@ import AsyncTestUtil from 'async-test-util';
 import * as humansCollection from '../helper/humans-collection';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
-import * as util from '../../dist/lib/util';
 import {
-    createRxDatabase
+    createRxDatabase, randomCouchString
 } from '../../';
-import * as AttachmentPlugin from '../../dist/lib/plugins/attachments';
+import {
+    blobBufferUtil
+} from '../../plugins/attachments';
 
 config.parallel('attachments.test.js', () => {
     describe('.putAttachment()', () => {
@@ -103,7 +104,7 @@ config.parallel('attachments.test.js', () => {
             c.database.destroy();
         });
         it('should find the attachment after database is re-created', async () => {
-            const name = util.randomCouchString(10);
+            const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
                 adapter: 'memory',
@@ -155,7 +156,7 @@ config.parallel('attachments.test.js', () => {
             });
             const attachment = doc.getAttachment('cat.txt');
             const data = await attachment.getData();
-            const dataString = await (AttachmentPlugin as any).blobBufferUtil.toString(data);
+            const dataString = await blobBufferUtil.toString(data);
             assert.strictEqual(dataString, dat);
             c.database.destroy();
         });
@@ -226,7 +227,7 @@ config.parallel('attachments.test.js', () => {
             const attachment = attachments[0];
 
             const data = await attachment.getData();
-            const dataString = await (AttachmentPlugin as any).blobBufferUtil.toString(data);
+            const dataString = await blobBufferUtil.toString(data);
             assert.deepStrictEqual(dataString, 'foo bar');
             c.database.destroy();
         });
@@ -258,7 +259,7 @@ config.parallel('attachments.test.js', () => {
             });
 
             const encryptedData = await doc.collection.pouch.getAttachment(doc.primary, 'cat.txt');
-            const dataString = await (AttachmentPlugin as any).blobBufferUtil.toString(encryptedData);
+            const dataString = await blobBufferUtil.toString(encryptedData);
             assert.notStrictEqual(dataString, 'foo bar');
 
             const data = await attachment.getStringData();
@@ -290,7 +291,7 @@ config.parallel('attachments.test.js', () => {
     });
     describe('multiInstance', () => {
         it('should emit on other instance', async () => {
-            const name = util.randomCouchString(10);
+            const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
                 adapter: 'memory',
@@ -353,7 +354,7 @@ config.parallel('attachments.test.js', () => {
     });
     describe('data-migration', () => {
         it('should also migrate the attachments', async () => {
-            const name = util.randomCouchString(10);
+            const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
                 adapter: 'memory',
@@ -416,7 +417,7 @@ config.parallel('attachments.test.js', () => {
     describe('orm', () => {
         it('should be able to call the defined function', async () => {
             const db = await createRxDatabase({
-                name: util.randomCouchString(10),
+                name: randomCouchString(10),
                 adapter: 'memory',
                 multiInstance: false,
                 ignoreDuplicate: true
@@ -460,7 +461,7 @@ config.parallel('attachments.test.js', () => {
                 },
             };
             const myDB = await createRxDatabase({
-                name: 'mylocaldb' + util.randomCouchString(10),
+                name: 'mylocaldb' + randomCouchString(10),
                 adapter: 'memory',
                 multiInstance: true
             });
@@ -486,7 +487,7 @@ config.parallel('attachments.test.js', () => {
             await myDB.destroy();
         });
         it('calling allAttachments() fails when document has none', async () => {
-            const name = util.randomCouchString(10);
+            const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
                 adapter: 'memory',

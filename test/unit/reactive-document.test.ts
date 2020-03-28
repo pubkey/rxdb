@@ -7,11 +7,12 @@ import AsyncTestUtil from 'async-test-util';
 
 import config from './config';
 import * as humansCollection from '../helper/humans-collection';
-import * as util from '../../dist/lib/util';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import {
-    createRxDatabase
+    createRxDatabase,
+    randomCouchString,
+    promiseWait
 } from '../../';
 import {
     first
@@ -24,7 +25,7 @@ config.parallel('reactive-document.test.js', () => {
                 const c = await humansCollection.create();
                 const doc: any = await c.findOne().exec();
 
-                await doc.atomicSet('firstName', util.randomCouchString(8));
+                await doc.atomicSet('firstName', randomCouchString(8));
 
                 const changeEvent = await doc.$.pipe(first()).toPromise();
                 assert.strictEqual(changeEvent._id, doc.primary);
@@ -39,9 +40,9 @@ config.parallel('reactive-document.test.js', () => {
                 doc.get$('firstName').subscribe((newVal: any) => {
                     valueObj.v = newVal;
                 });
-                const setName = util.randomCouchString(10);
+                const setName = randomCouchString(10);
                 await doc.atomicSet('firstName', setName);
-                await util.promiseWait(5);
+                await promiseWait(5);
                 assert.strictEqual(valueObj.v, setName);
                 c.database.destroy();
             });
@@ -54,9 +55,9 @@ config.parallel('reactive-document.test.js', () => {
                 doc.get$('mainSkill.name').subscribe((newVal: any) => {
                     valueObj.v = newVal;
                 });
-                const setName = util.randomCouchString(10);
+                const setName = randomCouchString(10);
                 await doc.atomicSet('mainSkill.name', setName);
-                util.promiseWait(5);
+                promiseWait(5);
                 assert.strictEqual(valueObj.v, setName);
                 c.database.destroy();
             });
@@ -65,7 +66,7 @@ config.parallel('reactive-document.test.js', () => {
                 const doc: any = await c.findOne().exec();
                 let v1;
                 const sub = doc.get$('firstName').subscribe((newVal: any) => v1 = newVal);
-                await util.promiseWait(5);
+                await promiseWait(5);
 
                 await doc.atomicSet('firstName', 'foobar');
 
@@ -98,15 +99,15 @@ config.parallel('reactive-document.test.js', () => {
                 const doc: any = await c.findOne().exec();
                 let deleted = null;
                 doc.deleted$.subscribe((v: any) => deleted = v);
-                util.promiseWait(5);
+                promiseWait(5);
                 assert.deepStrictEqual(deleted, false);
                 await doc.remove();
-                util.promiseWait(5);
+                promiseWait(5);
                 assert.deepStrictEqual(deleted, true);
                 c.database.destroy();
             });
         });
-        describe('negative', () => {});
+        describe('negative', () => { });
     });
     describe('.get$()', () => {
         describe('positive', () => {
@@ -125,7 +126,7 @@ config.parallel('reactive-document.test.js', () => {
             });
             it('final fields cannot be observed', async () => {
                 const db = await createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory'
                 });
                 const col = await db.collection({

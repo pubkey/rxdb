@@ -5,7 +5,8 @@
 
 export { addRxPlugin } from './plugin';
 export {
-    PouchDB
+    PouchDB,
+    validateCouchDBString
 } from './pouch-db';
 
 export {
@@ -25,13 +26,22 @@ export {
 } from './rx-document';
 
 export {
+    getDocumentOrmPrototype,
+    getDocumentPrototype
+} from './rx-document-prototype-merge';
+
+export {
     isInstanceOf as isRxQuery
 } from './rx-query';
 
 export {
     isInstanceOf as isRxSchema,
     createRxSchema,
-    RxSchema
+    RxSchema,
+    getIndexes,
+    normalize,
+    getFinalFields,
+    getPreviousVersions
 } from './rx-schema';
 
 export {
@@ -39,5 +49,12 @@ export {
 } from './rx-change-event';
 
 export {
-    getRxStoragePouchDb
+    getRxStoragePouchDb,
+    getPouchLocation
 } from './rx-storage-pouchdb';
+
+export type {
+    RxStorage
+} from './rx-storate.interface';
+
+export * from './util';

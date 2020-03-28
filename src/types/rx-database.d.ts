@@ -30,6 +30,7 @@ export interface ServerOptions {
     path?: string;
     port?: number;
     cors?: boolean;
+    startServer?: boolean;
 }
 
 export type CollectionsOfDatabase = { [key: string]: RxCollection };

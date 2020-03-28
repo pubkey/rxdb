@@ -7,13 +7,13 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
 
-import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 import {
     createRxDatabase,
-    RxCollection,
     RxDocument,
-    isRxDocument
+    isRxDocument,
+    promiseWait,
+    randomCouchString
 } from '../../';
 
 import {
@@ -77,7 +77,7 @@ config.parallel('reactive-query.test.js', () => {
             query.$.subscribe(newResults => {
                 lastValue2 = newResults;
             });
-            await util.promiseWait(100);
+            await promiseWait(100);
 
             await AsyncTestUtil.waitUntil(() => lastValue2 && lastValue2.length === 1);
             assert.deepStrictEqual(lastValue, lastValue2);
@@ -96,7 +96,7 @@ config.parallel('reactive-query.test.js', () => {
                 lastValue2 = newResults;
             });
             await AsyncTestUtil.waitUntil(() => lastValue2.length > 0);
-            await util.promiseWait(10);
+            await promiseWait(10);
             assert.strictEqual(lastValue2.length, 1);
             assert.deepStrictEqual(lastValue, lastValue2);
             c.database.destroy();
@@ -182,7 +182,7 @@ config.parallel('reactive-query.test.js', () => {
             // get the 10th
             const doc = await c.findOne()
                 .sort({
-                    age: -1
+                    age: 'desc'
                 })
                 .exec();
 
@@ -195,13 +195,13 @@ config.parallel('reactive-query.test.js', () => {
             await doc.atomicSet('firstName', 'foobar');
             await newPromiseWait.promise;
 
-            await util.promiseWait(20);
+            await promiseWait(20);
             assert.strictEqual(valuesAr.length, 1);
             querySub.unsubscribe();
             c.database.destroy();
         });
         it('ISSUE: should have the document in DocCache when getting it from observe', async () => {
-            const name = util.randomCouchString(10);
+            const name = randomCouchString(10);
             const c = await humansCollection.createPrimary(1, name);
             const c2 = await humansCollection.createPrimary(0, name);
             const doc = await c.findOne().exec();
@@ -288,7 +288,7 @@ config.parallel('reactive-query.test.js', () => {
                 },
                 required: ['state']
             };
-            const name = util.randomCouchString(10);
+            const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
                 adapter: 'memory',
@@ -303,7 +303,7 @@ config.parallel('reactive-query.test.js', () => {
                 adapter: 'memory',
                 ignoreDuplicate: true
             });
-            const crawlstate: RxCollection = await db2.collection({
+            await db2.collection({
                 name: 'crawlstate',
                 schema: crawlStateSchema
             });
@@ -389,7 +389,7 @@ config.parallel('reactive-query.test.js', () => {
         it(
             '#749 RxQuery subscription returns null as first result when ran immediately after another subscription or exec()',
             async () => {
-                const name = util.randomCouchString(10);
+                const name = randomCouchString(10);
                 const db = await createRxDatabase({
                     name,
                     adapter: 'memory',

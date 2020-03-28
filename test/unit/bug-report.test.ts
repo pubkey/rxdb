@@ -12,9 +12,8 @@ import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
 
 import {
-    createRxDatabase
+    createRxDatabase, randomCouchString
 } from '../../';
-import * as util from '../../dist/lib/util';
 
 describe('bug-report.test.js', () => {
     it('should fail because it reproduces the bug', async () => {
@@ -42,7 +41,7 @@ describe('bug-report.test.js', () => {
         };
 
         // generate a random database-name
-        const name = util.randomCouchString(10);
+        const name = randomCouchString(10);
 
         // create a database
         const db = await createRxDatabase({

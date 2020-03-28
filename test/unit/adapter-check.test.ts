@@ -3,14 +3,12 @@ import config from './config';
 import * as RxDB from '../../';
 import {
     PouchDB,
-    addRxPlugin
+    addRxPlugin,
+    adapterObject
 } from '../../';
 import {
     POUCHDB_LOCATION
 } from '../../plugins/adapter-check';
-import {
-    adapterObject
-} from '../../dist/lib/util';
 
 import memdown from 'memdown';
 if (!config.platform.isNode()) {

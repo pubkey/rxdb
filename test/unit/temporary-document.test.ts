@@ -3,9 +3,9 @@ import AsyncTestUtil from 'async-test-util';
 import config from './config';
 
 import {
-    createRxDatabase
+    createRxDatabase,
+    randomCouchString
 } from '../../';
-import * as util from '../../dist/lib/util';
 
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
@@ -45,7 +45,7 @@ config.parallel('temporary-document.test.js', () => {
         });
         it('should have default-values', async () => {
             const db = await createRxDatabase({
-                name: util.randomCouchString(10),
+                name: randomCouchString(10),
                 adapter: 'memory'
             });
             const c = await db.collection({
@@ -104,7 +104,7 @@ config.parallel('temporary-document.test.js', () => {
     describe('ORM', () => {
         it('should be able to use ORM-functions', async () => {
             const db = await createRxDatabase({
-                name: util.randomCouchString(10),
+                name: randomCouchString(10),
                 adapter: 'memory'
             });
             const c = await db.collection({

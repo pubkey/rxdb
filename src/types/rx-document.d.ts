@@ -64,6 +64,7 @@ export declare interface RxDocumentBase<RxDocumentType, OrmMethods = {}> {
     allAttachments(): RxAttachment<RxDocumentType, OrmMethods>[];
 
     toJSON(): RxDocumentTypeWithRev<RxDocumentType>;
+    toJSON(withRevAndAttachments: true): RxDocumentTypeWithRev<RxDocumentType>;
     toJSON(withRevAndAttachments: false): RxDocumentType;
 
     destroy(): void;

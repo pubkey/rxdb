@@ -5,9 +5,7 @@ import {
 } from '../../src/types';
 import {
     HumanDocumentType,
-    SimpleHumanDocumentType,
     SimpleHumanV3DocumentType,
-    SimpleHumanAgeDocumentType,
     HumanWithSubOtherDocumentType,
     NestedHumanDocumentType,
     DeepNestedHumanDocumentType,

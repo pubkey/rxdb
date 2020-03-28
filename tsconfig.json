@@ -29,6 +29,7 @@
         "tabSize": 2
     },
     "include": [
+        "test",
         "src"
     ],
     "exclude": [

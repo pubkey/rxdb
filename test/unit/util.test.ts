@@ -3,35 +3,37 @@
  */
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
-import * as util from '../../dist/lib/util';
-import {
-    validateCouchDBString
-} from '../../dist/lib/pouch-db';
 
+import {
+    validateCouchDBString,
+    fastUnsecureHash,
+    randomCouchString,
+    sortObject
+} from '../../';
 
 describe('util.test.js', () => {
     describe('.fastUnsecureHash()', () => {
         it('should work with a string', () => {
-            const hash = util.fastUnsecureHash('foobar');
+            const hash = fastUnsecureHash('foobar');
             assert.strictEqual(typeof hash, 'number');
             assert.ok(hash > 0);
         });
         it('should work on object', () => {
-            const hash = util.fastUnsecureHash({
+            const hash = fastUnsecureHash({
                 foo: 'bar'
             });
             assert.strictEqual(typeof hash, 'number');
             assert.ok(hash > 0);
         });
         it('should get the same hash twice', () => {
-            const str = util.randomCouchString(10);
-            const hash = util.fastUnsecureHash(str);
-            const hash2 = util.fastUnsecureHash(str);
+            const str = randomCouchString(10);
+            const hash = fastUnsecureHash(str);
+            const hash2 = fastUnsecureHash(str);
             assert.strictEqual(hash, hash2);
         });
         it('should work with a very large string', () => {
-            const str = util.randomCouchString(5000);
-            const hash = util.fastUnsecureHash(str);
+            const str = randomCouchString(5000);
+            const hash = fastUnsecureHash(str);
             assert.strictEqual(typeof hash, 'number');
             assert.ok(hash > 0);
         });
@@ -44,7 +46,7 @@ describe('util.test.js', () => {
                     '$regex': /foobar/g
                 }
             };
-            const sorted = util.sortObject(obj);
+            const sorted = sortObject(obj);
             assert.ok(sorted.color.$regex instanceof RegExp);
         });
     });

@@ -10,9 +10,10 @@ import config from './config';
 
 import {
     isRxDatabase,
-    createRxDatabase
+    createRxDatabase,
+    randomCouchString,
+    promiseWait
 } from '../../';
-import * as util from '../../dist/lib/util';
 import * as schemas from './../helper/schemas';
 import * as schemaObjects from './../helper/schema-objects';
 import * as humansCollection from './../helper/humans-collection';
@@ -22,7 +23,7 @@ config.parallel('cross-instance.test.js', () => {
     describe('create database', () => {
         it('create a multiInstance database', async () => {
             const db = await createRxDatabase({
-                name: util.randomCouchString(10),
+                name: randomCouchString(10),
                 adapter: 'memory',
                 multiInstance: true
             });
@@ -30,7 +31,7 @@ config.parallel('cross-instance.test.js', () => {
             db.destroy();
         });
         it('create a 2 multiInstance databases', async () => {
-            const name = util.randomCouchString(10);
+            const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
                 adapter: 'memory',
@@ -52,7 +53,7 @@ config.parallel('cross-instance.test.js', () => {
     describe('RxDatabase.$', () => {
         describe('positive', () => {
             it('get event on db2 when db1 fires', async () => {
-                const name = util.randomCouchString(10);
+                const name = randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);
                 const db1 = c1.database;
@@ -74,7 +75,7 @@ config.parallel('cross-instance.test.js', () => {
         });
         describe('negative', () => {
             it('should not get the same events twice', async () => {
-                const name = util.randomCouchString(10);
+                const name = randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);
                 const db1 = c1.database;
@@ -97,7 +98,7 @@ config.parallel('cross-instance.test.js', () => {
     });
     describe('Collection.$', () => {
         it('get event on db2 when db1 fires', async () => {
-            const name = util.randomCouchString(10);
+            const name = randomCouchString(10);
             const c1 = await humansCollection.createMultiInstance(name);
             const c2 = await humansCollection.createMultiInstance(name);
             let recieved = 0;
@@ -128,7 +129,7 @@ config.parallel('cross-instance.test.js', () => {
             });
             await c1.insert(schemaObjects.human());
 
-            await util.promiseWait(50);
+            await promiseWait(50);
             assert.strictEqual(got, undefined);
             c1.database.destroy();
             c2.database.destroy();
@@ -137,7 +138,7 @@ config.parallel('cross-instance.test.js', () => {
 
     describe('Document.$', () => {
         it('get event on doc2 when doc1 is changed', async () => {
-            const name = util.randomCouchString(10);
+            const name = randomCouchString(10);
             const c1 = await humansCollection.createMultiInstance(name);
             const c2 = await humansCollection.createMultiInstance(name);
             await c1.insert(schemaObjects.human());
@@ -157,7 +158,7 @@ config.parallel('cross-instance.test.js', () => {
 
             await doc1.atomicSet('firstName', 'foobar');
 
-            await util.promiseWait(10);
+            await promiseWait(10);
             await AsyncTestUtil.waitUntil(() => firstNameAfter === 'foobar');
 
             assert.strictEqual(firstNameAfter, 'foobar');
@@ -165,8 +166,8 @@ config.parallel('cross-instance.test.js', () => {
             c2.database.destroy();
         });
         it('should work with encrypted fields', async () => {
-            const name = util.randomCouchString(10);
-            const password = util.randomCouchString(10);
+            const name = randomCouchString(10);
+            const password = randomCouchString(10);
             const db1 = await createRxDatabase({
                 name,
                 adapter: 'memory',
@@ -218,8 +219,8 @@ config.parallel('cross-instance.test.js', () => {
             db2.destroy();
         });
         it('should work with nested encrypted fields', async () => {
-            const name = util.randomCouchString(10);
-            const password = util.randomCouchString(10);
+            const name = randomCouchString(10);
+            const password = randomCouchString(10);
             const db1 = await createRxDatabase({
                 name,
                 adapter: 'memory',
@@ -280,7 +281,7 @@ config.parallel('cross-instance.test.js', () => {
     describe('AutoPull', () => {
         describe('positive', () => {
             it('should recieve events without calling .socket.pull()', async () => {
-                const name = util.randomCouchString(10);
+                const name = randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);
                 const waitPromise = AsyncTestUtil.waitResolveable(500);
@@ -299,7 +300,7 @@ config.parallel('cross-instance.test.js', () => {
                 c2.database.destroy();
             });
             it('should recieve 2 events', async () => {
-                const name = util.randomCouchString(10);
+                const name = randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);
                 let recieved = 0;

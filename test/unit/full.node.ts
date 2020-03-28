@@ -4,12 +4,12 @@
  */
 
 import assert from 'assert';
-import * as util from '../../dist/lib/util';
 
 const {
     addRxPlugin,
     createRxDatabase,
-    isRxDocument
+    isRxDocument,
+    randomCouchString
 } = require('../../');
 addRxPlugin(require('pouchdb-adapter-memory'));
 
@@ -37,7 +37,7 @@ const schema = {
 const run = async function () {
     // create database
     const db = await createRxDatabase({
-        name: util.randomCouchString(10),
+        name: randomCouchString(10),
         adapter: 'memory',
         ignoreDuplicate: true
     });

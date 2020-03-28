@@ -1,23 +1,14 @@
 import assert from 'assert';
-import clone from 'clone';
 
 import config from './config';
 import {
-    createRxSchema,
     MangoQuery
 } from '../../';
-import * as RxDocument from '../../dist/lib/rx-document';
-import * as util from '../../dist/lib/util';
-import AsyncTestUtil from 'async-test-util';
-import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
-import * as humansCollection from '../helper/humans-collection';
 
 import {
-    NoSqlQueryBuilderClass,
     NoSqlQueryBuilder,
     createQueryBuilder
-} from '../../dist/lib/plugins/query-builder/mquery/nosql-query-builder';
+} from '../../plugins/query-builder';
 
 
 /**
@@ -50,8 +41,8 @@ config.parallel('query-builder.test.js', () => {
             builder2
                 .where('age').gt(4)
                 .where('name').ne('alice')
-                .skip(startQuery.skip)
-                .limit(startQuery.limit)
+                .skip(startQuery.skip as number)
+                .limit(startQuery.limit as number)
                 .sort({ name: 'asc', lastname: 'desc' });
             const buildedJson = builder2.toJSON();
             assert.deepStrictEqual(startQuery, buildedJson.query);

@@ -11,6 +11,8 @@ import { checkMigrationStrategies } from './check-migration-strategies';
 import { ensureCollectionNameValid } from './unallowed-properties';
 import { validateCouchDBString } from '../../pouch-db';
 
+export * from './check-schema';
+
 export const RxDBDevModePlugin: RxPlugin = {
     rxdb: true,
     overwritable: {

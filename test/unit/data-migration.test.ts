@@ -6,21 +6,18 @@ import {
 } from '../../dist/lib/pouch-db';
 import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
-import * as util from '../../dist/lib/util';
 
 import {
     createRxDatabase,
-    PouchDB
+    PouchDB,
+    randomCouchString,
+    promiseWait
 } from '../../';
 import {
     _collectionNamePrimary
 } from '../../dist/lib/rx-database';
 
 import {
-    DataMigrator
-} from '../../src/data-migrator';
-import {
-    createDataMigrator as create,
     _getOldCollections,
     getBatchOfOldCollection,
     migrateDocumentData,
@@ -31,14 +28,11 @@ import {
 } from '../../dist/lib/data-migrator';
 
 config.parallel('data-migration.test.js', () => {
-    function createDataMigrator(newestCollection: any, migrationStrategies: any): DataMigrator {
-        return (create as any)(newestCollection as any, migrationStrategies as any) as DataMigrator;
-    }
     describe('.create() with migrationStrategies', () => {
         describe('positive', () => {
             it('ok to create with strategies', async () => {
                 const db = await createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory'
                 });
                 await db.collection({
@@ -55,7 +49,7 @@ config.parallel('data-migration.test.js', () => {
             });
             it('create same collection with different schema-versions', async () => {
                 const colName = 'human';
-                const name = util.randomCouchString(10);
+                const name = randomCouchString(10);
                 const db = await createRxDatabase({
                     name,
                     adapter: 'memory',
@@ -89,7 +83,7 @@ config.parallel('data-migration.test.js', () => {
         describe('negative', () => {
             it('should throw when array', async () => {
                 const db = await createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory'
                 });
                 await AsyncTestUtil.assertThrows(
@@ -105,7 +99,7 @@ config.parallel('data-migration.test.js', () => {
             });
             it('should throw when property no number', async () => {
                 const db = await createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory'
                 });
                 await AsyncTestUtil.assertThrows(
@@ -123,7 +117,7 @@ config.parallel('data-migration.test.js', () => {
             });
             it('should throw when property no non-float-number', async () => {
                 const db = await createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory'
                 });
                 await AsyncTestUtil.assertThrows(
@@ -141,7 +135,7 @@ config.parallel('data-migration.test.js', () => {
             });
             it('should throw when property-value no function', async () => {
                 const db = await createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory'
                 });
                 await AsyncTestUtil.assertThrows(
@@ -159,7 +153,7 @@ config.parallel('data-migration.test.js', () => {
             });
             it('throw when strategy missing', async () => {
                 const db = await createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory'
                 });
                 await AsyncTestUtil.assertThrows(
@@ -183,7 +177,7 @@ config.parallel('data-migration.test.js', () => {
             it('should NOT get an older version', async () => {
                 const colName = 'human';
                 const db = await createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory'
                 });
                 const col = await db.collection({
@@ -201,7 +195,7 @@ config.parallel('data-migration.test.js', () => {
                 db.destroy();
             });
             it('should get an older version', async () => {
-                const name = util.randomCouchString(10);
+                const name = randomCouchString(10);
                 const colName = 'human';
                 const db = await createRxDatabase({
                     name,
@@ -276,7 +270,7 @@ config.parallel('data-migration.test.js', () => {
                 it('get a valid migrated document from async strategy', async () => {
                     const col = await humansCollection.createMigrationCollection(1, {
                         3: async (doc: any) => {
-                            await util.promiseWait(10);
+                            await promiseWait(10);
                             doc.age = parseInt(doc.age, 10);
                             return doc;
                         }
@@ -293,7 +287,7 @@ config.parallel('data-migration.test.js', () => {
             });
             describe('.delete()', () => {
                 it('should delete the pouchdb with all its content', async () => {
-                    const dbName = util.randomCouchString(10);
+                    const dbName = randomCouchString(10);
                     const col = await humansCollection.createMigrationCollection(10, {}, dbName);
                     const olds = await _getOldCollections(col._dataMigrator);
                     const old = olds.pop();
@@ -401,7 +395,7 @@ config.parallel('data-migration.test.js', () => {
                 it('should emit status for every handled document', async () => {
                     const col = await humansCollection.createMigrationCollection(10, {
                         3: async (doc: any) => {
-                            await util.promiseWait(10);
+                            await promiseWait(10);
                             doc.age = parseInt(doc.age, 10);
                             return doc;
                         }
@@ -449,7 +443,7 @@ config.parallel('data-migration.test.js', () => {
                 });
                 it('should throw when document cannot be migrated', async () => {
                     const col = await humansCollection.createMigrationCollection(10, {
-                        3: async () => {
+                        3: () => {
                             throw new Error('foobar');
                         }
                     });
@@ -582,7 +576,7 @@ config.parallel('data-migration.test.js', () => {
                         return doc;
                     }
                 },
-                    util.randomCouchString(10),
+                    randomCouchString(10),
                     true
                 );
                 const docs = await col.find().exec();
@@ -594,12 +588,12 @@ config.parallel('data-migration.test.js', () => {
                 const col = await humansCollection.createMigrationCollection(
                     10, {
                     3: async (doc: any) => {
-                        util.promiseWait(10);
+                        promiseWait(10);
                         doc.age = parseInt(doc.age, 10);
                         return doc;
                     }
                 },
-                    util.randomCouchString(10),
+                    randomCouchString(10),
                     true
                 );
                 const docs = await col.find().exec();
@@ -644,7 +638,7 @@ config.parallel('data-migration.test.js', () => {
     describe('issues', () => {
         describe('#212 migration runs into infinity-loop', () => {
             it('reproduce and fix', async () => {
-                const dbName = util.randomCouchString(10);
+                const dbName = randomCouchString(10);
                 const schema0 = {
                     title: 'hero schema',
                     description: 'describes a simple hero',

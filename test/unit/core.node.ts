@@ -7,11 +7,11 @@ import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
 
 import config from './config';
-import * as util from '../../dist/lib/util';
 import {
     addRxPlugin,
     createRxDatabase,
-    isRxDocument
+    isRxDocument,
+    randomCouchString
 } from '../../plugins/core';
 import { RxJsonSchema } from '../../src/types';
 
@@ -43,7 +43,7 @@ config.parallel('core.node.js', () => {
     describe('creation', () => {
         it('create database', async () => {
             const db = await createRxDatabase({
-                name: util.randomCouchString(10),
+                name: randomCouchString(10),
                 adapter: 'memory'
             });
             db.destroy();
@@ -51,7 +51,7 @@ config.parallel('core.node.js', () => {
         it('should not be able to create a encrypted database', async () => {
             await AsyncTestUtil.assertThrows(
                 () => createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory',
                     password: 'myLongAndStupidPassword'
                 }),
@@ -61,7 +61,7 @@ config.parallel('core.node.js', () => {
         });
         it('create collection', async () => {
             const db = await createRxDatabase({
-                name: util.randomCouchString(10),
+                name: randomCouchString(10),
                 adapter: 'memory'
             });
             await db.collection({
@@ -74,7 +74,7 @@ config.parallel('core.node.js', () => {
     describe('document interaction', () => {
         it('insert and find a document', async () => {
             const db = await createRxDatabase({
-                name: util.randomCouchString(10),
+                name: randomCouchString(10),
                 adapter: 'memory'
             });
             await db.collection({
@@ -103,7 +103,7 @@ config.parallel('core.node.js', () => {
     describe('error-codes', () => {
         it('should throw error-codes instead of messages', async () => {
             const db = await createRxDatabase({
-                name: util.randomCouchString(10),
+                name: randomCouchString(10),
                 adapter: 'memory'
             });
             const col = await db.collection({

@@ -1,10 +1,10 @@
 import assert from 'assert';
-import * as util from '../../dist/lib/util';
 import config from './config';
 
 import {
     addRxPlugin,
-    createRxDatabase
+    createRxDatabase,
+    randomCouchString
 } from '../../plugins/core';
 addRxPlugin(require('../../plugins/no-validate'));
 addRxPlugin(require('pouchdb-adapter-memory'));
@@ -33,7 +33,7 @@ const schema = {
 config.parallel('no-validate.node.js', () => {
     it('should allow to insert everything', async () => {
         const db = await createRxDatabase({
-            name: util.randomCouchString(10),
+            name: randomCouchString(10),
             adapter: 'memory'
         });
         const col = await db.collection({
@@ -47,7 +47,7 @@ config.parallel('no-validate.node.js', () => {
     });
     it('should allow to save everything', async () => {
         const db = await createRxDatabase({
-            name: util.randomCouchString(10),
+            name: randomCouchString(10),
             adapter: 'memory'
         });
         const col = await db.collection({

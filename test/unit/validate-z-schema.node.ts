@@ -5,7 +5,9 @@ import config from './config';
 import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from '../helper/schemas';
 
-import * as util from '../../dist/lib/util';
+import {
+    randomCouchString
+} from '../../';
 import {
     addRxPlugin,
     createRxDatabase
@@ -27,7 +29,7 @@ config.parallel('validate-z-schema.node.js', () => {
         describe('positive', () => {
             it('should not throw', async () => {
                 const db = await createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory'
                 });
                 const col = await db.collection({
@@ -44,7 +46,7 @@ config.parallel('validate-z-schema.node.js', () => {
         describe('negative', () => {
             it('should not validate wrong data', async () => {
                 const db = await createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory'
                 });
                 const col = await db.collection({
@@ -63,7 +65,7 @@ config.parallel('validate-z-schema.node.js', () => {
             });
             it('should have the correct params in error', async () => {
                 const db = await createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory'
                 });
                 const col = await db.collection({

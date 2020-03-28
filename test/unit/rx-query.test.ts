@@ -14,8 +14,12 @@ import {
 import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from './../helper/schemas';
-import * as util from '../../dist/lib/util';
-import { RxJsonSchema } from '../../src/types';
+
+import {
+    RxJsonSchema,
+    promiseWait,
+    randomCouchString
+} from '../../';
 
 config.parallel('rx-query.test.js', () => {
     describe('.toJSON()', () => {
@@ -310,7 +314,7 @@ config.parallel('rx-query.test.js', () => {
             assert.strictEqual(results.length, 2);
             assert.strictEqual(q._execOverDatabaseCount, 1);
 
-            await util.promiseWait(5);
+            await promiseWait(5);
             results = await q.exec();
             assert.strictEqual(results.length, 2);
             assert.strictEqual(q._execOverDatabaseCount, 1);
@@ -361,7 +365,7 @@ config.parallel('rx-query.test.js', () => {
             const addDoc = schemaObjects.human();
 
             // set _id to first value to force a re-exec-over database
-            addDoc['_id'] = '1-aaaaaaaaaaaaaaaaaaaaaaaaaaa';
+            (addDoc as any)._id = '1-aaaaaaaaaaaaaaaaaaaaaaaaaaa';
             addDoc.firstName = 'NotAliceFoobar';
 
             await col.insert(addDoc);
@@ -369,7 +373,7 @@ config.parallel('rx-query.test.js', () => {
 
             assert.strictEqual(q._latestChangeEvent, 2);
 
-            await util.promiseWait(1);
+            await promiseWait(1);
             results = await q.exec();
             assert.strictEqual(results.length, 2);
             assert.strictEqual(q._execOverDatabaseCount, 2);
@@ -381,7 +385,7 @@ config.parallel('rx-query.test.js', () => {
             // use a 'slow' adapter because memory might be to fast
             const leveldown = require('leveldown');
             const db = await createRxDatabase({
-                name: config.rootPath + 'test_tmp/' + util.randomCouchString(10),
+                name: config.rootPath + 'test_tmp/' + randomCouchString(10),
                 adapter: leveldown
             });
             const c = await db.collection({
@@ -413,7 +417,7 @@ config.parallel('rx-query.test.js', () => {
 
             const emitted = [];
             const query = col.findOne(docData.passportId);
-            query.$.subscribe(data => emitted.push(data.toJSON()));
+            query.$.subscribe((data: any) => emitted.push(data.toJSON()));
 
             await AsyncTestUtil.waitUntil(() => emitted.length === 1);
             assert.strictEqual(query._execOverDatabaseCount, 1);
@@ -479,7 +483,7 @@ config.parallel('rx-query.test.js', () => {
             col.database.destroy();
         });
         it('exec from other database-instance', async () => {
-            const dbName = util.randomCouchString(10);
+            const dbName = randomCouchString(10);
             const schema = schemas.averageSchema();
             const db = await createRxDatabase({
                 name: dbName,
@@ -572,7 +576,7 @@ config.parallel('rx-query.test.js', () => {
                     }
                 };
                 const db = await createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory'
                 });
                 const col = await db.collection({
@@ -623,12 +627,12 @@ config.parallel('rx-query.test.js', () => {
                     ]
                 };
                 const db = await createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory',
-                    password: util.randomCouchString(20)
+                    password: randomCouchString(20)
                 });
                 const collection = await db.collection({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     schema
                 });
 
@@ -662,12 +666,12 @@ config.parallel('rx-query.test.js', () => {
                     indexes: ['value']
                 };
                 const db = await createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory',
-                    password: util.randomCouchString(20)
+                    password: randomCouchString(20)
                 });
                 const collection = await db.collection({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     schema
                 });
 
@@ -734,7 +738,7 @@ config.parallel('rx-query.test.js', () => {
             assert.strictEqual(docs3.length, 600);
 
             const docData2 = clone(docData);
-            docData2.forEach(doc => doc.lastName = doc.lastName + '1');
+            docData2.forEach((doc: any) => doc.lastName = doc.lastName + '1');
 
             for (const doc of docData2) {
                 await c.upsert(doc);
@@ -925,7 +929,7 @@ config.parallel('rx-query.test.js', () => {
                 indexes: ['info.title']
             };
             const db = await createRxDatabase({
-                name: util.randomCouchString(10),
+                name: randomCouchString(10),
                 adapter: 'memory'
             });
             const col = await db.collection({
@@ -1147,7 +1151,7 @@ config.parallel('rx-query.test.js', () => {
         });
         it('#724 find() does not find all matching documents', async () => {
             const db = await createRxDatabase({
-                name: util.randomCouchString(10),
+                name: randomCouchString(10),
                 adapter: 'memory'
             });
             const schema = {
@@ -1222,7 +1226,7 @@ config.parallel('rx-query.test.js', () => {
             };
 
             // generate a random database-name
-            const name = util.randomCouchString(10);
+            const name = randomCouchString(10);
 
             // create a database
             const db = await createRxDatabase({
@@ -1294,7 +1298,7 @@ config.parallel('rx-query.test.js', () => {
                 }
             };
             const db = await createRxDatabase({
-                name: util.randomCouchString(10),
+                name: randomCouchString(10),
                 adapter: 'memory',
                 eventReduce: true,
                 ignoreDuplicate: true

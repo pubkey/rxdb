@@ -1,19 +1,19 @@
 import assert from 'assert';
+import AsyncTestUtil from 'async-test-util';
 import config from './config';
 
 import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
 
 import {
-    createRxDatabase
+    createRxDatabase,
+    randomCouchString
 } from '../../';
-import * as util from '../../dist/lib/util';
-import AsyncTestUtil from 'async-test-util';
 
 config.parallel('leader-election.test.js', () => {
     describe('.die()', () => {
         it('other instance applies on death of leader', async () => {
-            const name = util.randomCouchString(10);
+            const name = randomCouchString(10);
             const c = await humansCollection.createMultiInstance(name);
             const leaderElector = c.database.leaderElector();
 
@@ -30,13 +30,13 @@ config.parallel('leader-election.test.js', () => {
 
     describe('election', () => {
         it('a single instance should always elect itself as leader', async () => {
-            const c1 = await humansCollection.createMultiInstance(util.randomCouchString(10));
+            const c1 = await humansCollection.createMultiInstance(randomCouchString(10));
             const db1 = c1.database;
             await db1.leaderElector().waitForLeadership();
             c1.database.destroy();
         });
         it('should not elect as leader if other instance is leader', async () => {
-            const name = util.randomCouchString(10);
+            const name = randomCouchString(10);
             const c1 = await humansCollection.createMultiInstance(name);
             const c2 = await humansCollection.createMultiInstance(name);
             const db1 = c1.database;
@@ -56,7 +56,7 @@ config.parallel('leader-election.test.js', () => {
             let tries = 0;
             while (tries < 3) {
                 tries++;
-                const name = util.randomCouchString(10);
+                const name = randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);
                 const le1 = c1.database.leaderElector();
@@ -81,7 +81,7 @@ config.parallel('leader-election.test.js', () => {
             }
         });
         it('when many instances apply, one should win', async () => {
-            const name = util.randomCouchString(10);
+            const name = randomCouchString(10);
             const dbs: any[] = [];
             while (dbs.length < 10) {
                 const c = await humansCollection.createMultiInstance(name);
@@ -107,7 +107,7 @@ config.parallel('leader-election.test.js', () => {
         });
         it('when the leader dies, a new one should be elected', async function () {
             this.timeout(5 * 1000);
-            const name = util.randomCouchString(10);
+            const name = randomCouchString(10);
             const dbs: any[] = [];
             while (dbs.length < 6) {
                 const c = await humansCollection.createMultiInstance(name);
@@ -157,7 +157,7 @@ config.parallel('leader-election.test.js', () => {
     describe('integration', () => {
         it('non-multiInstance should always be leader', async () => {
             const db = await createRxDatabase({
-                name: util.randomCouchString(10),
+                name: randomCouchString(10),
                 adapter: 'memory',
                 multiInstance: false
             });
@@ -177,7 +177,7 @@ config.parallel('leader-election.test.js', () => {
         });
 
         it('waitForLeadership: run once when instance becomes leader', async () => {
-            const name = util.randomCouchString(10);
+            const name = randomCouchString(10);
             const cols = await Promise.all(
                 new Array(5)
                     .fill(0)

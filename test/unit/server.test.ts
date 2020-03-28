@@ -6,12 +6,12 @@ import requestR from 'request';
 
 import {
     createRxDatabase,
-    addRxPlugin
+    addRxPlugin,
+    randomCouchString
 } from '../../';
 import * as humansCollection from '../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from '../helper/schemas';
-import * as util from '../../dist/lib/util';
 
 config.parallel('server.test.js', () => {
     if (!config.platform.isNode()) return;
@@ -72,7 +72,7 @@ config.parallel('server.test.js', () => {
             path: '/',
             port,
             cors: false,
-            startServer: false,
+            startServer: false
         });
 
         // check if server was returned
@@ -220,7 +220,7 @@ config.parallel('server.test.js', () => {
     });
     it('using node-websql with an absoulte path should work', async () => {
         addRxPlugin(NodeWebsqlAdapter);
-        const dbName = config.rootPath + 'test_tmp/' + util.randomCouchString(10);
+        const dbName = config.rootPath + 'test_tmp/' + randomCouchString(10);
         const db1 = await createRxDatabase({
             name: dbName,
             adapter: 'leveldb',
@@ -247,7 +247,7 @@ config.parallel('server.test.js', () => {
 
         const port = nexPort();
         const db1 = await createRxDatabase({
-            name: config.rootPath + 'test_tmp/' + util.randomCouchString(10),
+            name: config.rootPath + 'test_tmp/' + randomCouchString(10),
             adapter: 'leveldb',
             multiInstance: false
         });
@@ -257,7 +257,7 @@ config.parallel('server.test.js', () => {
         });
 
         const db2 = await createRxDatabase({
-            name: config.rootPath + 'test_tmp/' + util.randomCouchString(10),
+            name: config.rootPath + 'test_tmp/' + randomCouchString(10),
             adapter: 'leveldb',
             multiInstance: false
         });
@@ -293,7 +293,7 @@ config.parallel('server.test.js', () => {
     it('should work for collections with later schema versions', async function () {
         this.timeout(12 * 1000);
         const port = nexPort();
-        const serverCollection = await humansCollection.createMigrationCollection(0)
+        const serverCollection = await humansCollection.createMigrationCollection(0);
         await serverCollection.database.server({
             path: '/db',
             port
@@ -306,7 +306,7 @@ config.parallel('server.test.js', () => {
         const got = JSON.parse(gotJson);
         assert.strictEqual(got.doc_count, 1);
 
-        const clientCollection = await humansCollection.createMigrationCollection(0)
+        const clientCollection = await humansCollection.createMigrationCollection(0);
 
         // sync
         clientCollection.sync({
@@ -358,7 +358,7 @@ config.parallel('server.test.js', () => {
     it('should throw if collections that created after server()', async () => {
         const port = nexPort();
         const db1 = await createRxDatabase({
-            name: util.randomCouchString(10),
+            name: randomCouchString(10),
             adapter: 'memory',
             multiInstance: false
         });

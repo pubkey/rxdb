@@ -3,21 +3,21 @@ import config from './config';
 import * as faker from 'faker';
 
 import * as humansCollection from '../helper/humans-collection';
-import {
-    createRxSchema
-} from '../../dist/lib/rx-schema';
+
 import {
     createRxDatabase,
-    isRxDocument
+    isRxDocument,
+    randomCouchString,
+    createRxSchema
 } from '../../';
-import * as util from '../../dist/lib/util';
 
 config.parallel('population.test.js', () => {
     describe('createRxSchema', () => {
         describe('positive', () => {
-            it('should allow to create a schema with a relation', async () => {
+            it('should allow to create a schema with a relation', () => {
                 const schema = createRxSchema({
                     version: 0,
+                    type: 'object',
                     properties: {
                         bestFriend: {
                             ref: 'human',
@@ -27,9 +27,10 @@ config.parallel('population.test.js', () => {
                 });
                 assert.strictEqual(schema.constructor.name, 'RxSchema');
             });
-            it('should allow to create a schema with a relation in nested', async () => {
+            it('should allow to create a schema with a relation in nested', () => {
                 const schema = createRxSchema({
                     version: 0,
+                    type: 'object',
                     properties: {
                         foo: {
                             type: 'object',
@@ -44,9 +45,10 @@ config.parallel('population.test.js', () => {
                 });
                 assert.strictEqual(schema.constructor.name, 'RxSchema');
             });
-            it('should allow to create relation of array', async () => {
+            it('should allow to create relation of array', () => {
                 const schema = createRxSchema({
                     version: 0,
+                    type: 'object',
                     properties: {
                         friends: {
                             type: 'array',
@@ -65,6 +67,7 @@ config.parallel('population.test.js', () => {
                 assert.throws(
                     () => createRxSchema({
                         version: 0,
+                        type: 'object',
                         properties: {
                             bestFriend: {
                                 primary: true,
@@ -80,6 +83,7 @@ config.parallel('population.test.js', () => {
                 assert.throws(
                     () => createRxSchema({
                         version: 0,
+                        type: 'object',
                         properties: {
                             bestFriend: {
                                 ref: 'human'
@@ -93,6 +97,7 @@ config.parallel('population.test.js', () => {
                 assert.throws(
                     () => createRxSchema({
                         version: 0,
+                        type: 'object',
                         properties: {
                             friends: {
                                 type: 'array',
@@ -127,7 +132,7 @@ config.parallel('population.test.js', () => {
             });
             it('populate string-array', async () => {
                 const db = await createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory'
                 });
                 const col = await db.collection({
@@ -154,7 +159,7 @@ config.parallel('population.test.js', () => {
                     .fill(0)
                     .map(() => {
                         return {
-                            name: faker.name.firstName() + util.randomCouchString(5),
+                            name: faker.name.firstName() + randomCouchString(5),
                             friends: []
                         };
                     });
@@ -178,7 +183,7 @@ config.parallel('population.test.js', () => {
             it('populate top-level-field', async () => {
                 const col = await humansCollection.createRelated();
                 const doc = await col.findOne().exec();
-                const friend = await doc.bestFriend_;
+                const friend = await (doc as any).bestFriend_;
                 assert.ok(isRxDocument(friend));
                 assert.strictEqual(friend.name, doc.bestFriend);
                 col.database.destroy();
@@ -186,7 +191,7 @@ config.parallel('population.test.js', () => {
             it('populate nested field', async () => {
                 const col = await humansCollection.createRelatedNested();
                 const doc = await col.findOne().exec();
-                const friend = await doc.foo.bestFriend_;
+                const friend = await (doc as any).foo.bestFriend_;
                 assert.ok(isRxDocument(friend));
                 assert.strictEqual(friend.name, doc.foo.bestFriend);
                 col.database.destroy();
@@ -196,7 +201,7 @@ config.parallel('population.test.js', () => {
     describe('issues', () => {
         it('#222 population not working when multiInstance: false', async () => {
             const db = await createRxDatabase({
-                name: util.randomCouchString(10),
+                name: randomCouchString(10),
                 adapter: 'memory',
                 multiInstance: false // this must be false here
             });

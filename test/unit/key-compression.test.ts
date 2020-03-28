@@ -10,11 +10,11 @@ import * as schemaObjects from './../helper/schema-objects';
 import * as humansCollection from './../helper/humans-collection';
 
 import * as RxDocument from '../../dist/lib/rx-document';
-import * as util from '../../dist/lib/util';
 import {
     createRxSchema,
     createRxDatabase,
-    RxSchema
+    RxSchema,
+    randomCouchString
 } from '../../';
 import {
     create,
@@ -334,7 +334,7 @@ config.parallel('key-compression.test.js', () => {
             };
 
             const db = await createRxDatabase({
-                name: util.randomCouchString(10),
+                name: randomCouchString(10),
                 adapter: 'memory'
             });
             const collection = await db.collection({

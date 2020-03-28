@@ -1,20 +1,20 @@
 import assert from 'assert';
-import config from './config';
-
-import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
-import * as humansCollection from '../helper/humans-collection';
-
-import * as RxDatabase from '../../dist/lib/rx-database';
-import {
-    createRxDatabase,
-    isRxDocument
-} from '../../';
-import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 import {
     first
 } from 'rxjs/operators';
+
+import config from './config';
+import * as schemas from '../helper/schemas';
+import * as schemaObjects from '../helper/schema-objects';
+import * as humansCollection from '../helper/humans-collection';
+
+import {
+    createRxDatabase,
+    isRxDocument,
+    promiseWait,
+    randomCouchString
+} from '../../';
 
 config.parallel('hooks.test.js', () => {
     describe('get/set', () => {
@@ -93,7 +93,7 @@ config.parallel('hooks.test.js', () => {
 
                     c.preInsert(async function (d, instance) {
                         assert.strictEqual(typeof instance, 'undefined');
-                        await util.promiseWait(10);
+                        await promiseWait(10);
                         d.lastName = 'foobar';
                     }, false);
 
@@ -237,7 +237,7 @@ config.parallel('hooks.test.js', () => {
 
                     let hasRun = false;
                     c.preSave(async function () {
-                        await util.promiseWait(10);
+                        await promiseWait(10);
                         hasRun = true;
                     }, false);
                     await doc.atomicSet('firstName', 'foobar');
@@ -262,7 +262,7 @@ config.parallel('hooks.test.js', () => {
                         failC++;
                     }
                     assert.strictEqual(failC, 1);
-                    const syncValue = await doc.firstName$.pipe(first()).toPromise();
+                    const syncValue = await (doc as any).firstName$.pipe(first()).toPromise();
                     assert.strictEqual(syncValue, 'test');
                     c.database.destroy();
                 });
@@ -412,7 +412,7 @@ config.parallel('hooks.test.js', () => {
         describe('positive', () => {
             it('should define a getter', async () => {
                 const db = await createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory',
                     multiInstance: true
                 });
@@ -438,7 +438,7 @@ config.parallel('hooks.test.js', () => {
         describe('negative', () => {
             it('should throw when adding an async-hook', async () => {
                 const db = await createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory',
                     multiInstance: true
                 });
@@ -462,7 +462,7 @@ config.parallel('hooks.test.js', () => {
         it('ISSUE #158 : Throwing error in async preInsert does not prevent insert', async () => {
             const c = await humansCollection.create(0);
             c.preInsert(async function () {
-                await util.promiseWait(1);
+                await promiseWait(1);
                 throw new Error('This throw should prevent the insert');
             }, false);
             let hasThrown = false;
@@ -472,7 +472,7 @@ config.parallel('hooks.test.js', () => {
                 hasThrown = true;
             }
             assert.ok(hasThrown);
-            await util.promiseWait(10);
+            await promiseWait(10);
             const allDocs = await c.find().exec();
             assert.strictEqual(allDocs.length, 0);
             c.database.destroy();

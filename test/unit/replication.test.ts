@@ -5,15 +5,14 @@
  */
 
 import assert from 'assert';
+import AsyncTestUtil from 'async-test-util';
 import config from './config';
 
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
-import * as util from '../../dist/lib/util';
-import AsyncTestUtil from 'async-test-util';
 import {
-    addRxPlugin, createRxDatabase
+    addRxPlugin, createRxDatabase, promiseWait, randomCouchString
 } from '../../';
 
 import {
@@ -195,7 +194,7 @@ describe('replication.test.js', () => {
                     const docs = await c.find().exec();
                     return docs.length === 20;
                 });
-                await util.promiseWait(10);
+                await promiseWait(10);
                 const nonSyncedDocs = await c2.find().exec();
                 assert.strictEqual(nonSyncedDocs.length, 10);
 
@@ -244,7 +243,7 @@ describe('replication.test.js', () => {
                     const ds = await c.find().exec();
                     return ds.length === 1;
                 });
-                await util.promiseWait(10);
+                await promiseWait(10);
                 const docs = await c.find().exec();
                 assert.strictEqual(docs.length, 1);
                 assert.strictEqual(docs[0].firstName, 'foobar');
@@ -462,8 +461,8 @@ describe('replication.test.js', () => {
                 const syncC = await humansCollection.create(0);
                 const syncPouch = syncC;
 
-                const c = await humansCollection.create(0, 'colsource' + util.randomCouchString(5));
-                const c2 = await humansCollection.create(0, 'colsync' + util.randomCouchString(5));
+                const c = await humansCollection.create(0, 'colsource' + randomCouchString(5));
+                const c2 = await humansCollection.create(0, 'colsync' + randomCouchString(5));
                 c.sync({
                     remote: syncPouch
                 });
@@ -493,8 +492,8 @@ describe('replication.test.js', () => {
                 const syncC = await humansCollection.create(0);
                 const syncPouch = syncC;
 
-                const c = await humansCollection.create(0, 'colsource' + util.randomCouchString(5));
-                const c2 = await humansCollection.create(0, 'colsync' + util.randomCouchString(5));
+                const c = await humansCollection.create(0, 'colsource' + randomCouchString(5));
+                const c2 = await humansCollection.create(0, 'colsync' + randomCouchString(5));
                 c.sync({
                     remote: syncPouch
                 });
@@ -509,7 +508,7 @@ describe('replication.test.js', () => {
                     if (results.length === 2) pw8.resolve();
                 });
                 assert.strictEqual(results.length, 0);
-                await util.promiseWait(5);
+                await promiseWait(5);
 
 
                 const obj = schemaObjects.human();
@@ -526,8 +525,8 @@ describe('replication.test.js', () => {
                 const syncC = await humansCollection.create(0);
                 const syncPouch = syncC;
 
-                const c = await humansCollection.create(0, 'colsource' + util.randomCouchString(5));
-                const c2 = await humansCollection.create(0, 'colsync' + util.randomCouchString(5));
+                const c = await humansCollection.create(0, 'colsource' + randomCouchString(5));
+                const c2 = await humansCollection.create(0, 'colsync' + randomCouchString(5));
                 c.sync({
                     remote: syncPouch
                 });
@@ -597,7 +596,7 @@ describe('replication.test.js', () => {
 
             // create a database
             const db1 = await createRxDatabase({
-                name: util.randomCouchString(12),
+                name: randomCouchString(12),
                 adapter: 'memory'
             });
             // create a collection
@@ -616,7 +615,7 @@ describe('replication.test.js', () => {
 
             // create another database
             const db2 = await createRxDatabase({
-                name: util.randomCouchString(12),
+                name: randomCouchString(12),
                 adapter: 'memory'
             });
             // create a collection

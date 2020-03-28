@@ -120,7 +120,7 @@ export declare class PouchDBInstance {
     getAttachment(
         docId: string,
         attachmentId: string,
-        options: { rev?: string },
+        options?: { rev?: string },
     ): Promise<any>;
     removeAttachment(
         docId: string,

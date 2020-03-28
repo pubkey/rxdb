@@ -8,9 +8,8 @@ import PouchReplicationPlugin from 'pouchdb-replication';
 
 import config from './config';
 import {
-    addRxPlugin
+    addRxPlugin, randomCouchString
 } from '../../';
-import * as util from '../../dist/lib/util';
 import * as humansCollection from '../helper/humans-collection';
 
 import {
@@ -303,7 +302,7 @@ config.parallel('plugin.test.js', () => {
             clearHook('postCreateRxDocument', postCreateRxDocument);
         });
         it('preCreatePouchDb', async () => {
-            const collectionName = util.randomCouchString(10);
+            const collectionName = randomCouchString(10);
             const preCreatePouchDb = (pouchDbParameters: any) => {
                 if (pouchDbParameters.location.includes(collectionName)) {
                     // only do sth at this specific collection-pouch

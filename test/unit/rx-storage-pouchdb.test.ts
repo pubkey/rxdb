@@ -1,11 +1,12 @@
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
 
 import config from './config';
 import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
-import { getRxStoragePouchDb } from '../../dist/lib/rx-storage-pouchdb';
-import { RxStorage } from '../../dist/typings/rx-storate.interface';
+import {
+    getRxStoragePouchDb,
+    RxStorage
+} from '../../';
 
 
 config.parallel('rx-storage-pouchdb.test.js', () => {
@@ -23,13 +24,12 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 col.schema.primaryPath,
                 query
             );
-            const doc1 = schemaObjects.human();
-            doc1['_id'] = 'aa';
+            const doc1: any = schemaObjects.human();
+            doc1._id = 'aa';
             doc1.age = 1;
-            const doc2 = schemaObjects.human();
-            doc2['_id'] = 'bb';
+            const doc2: any = schemaObjects.human();
+            doc2._id = 'bb';
             doc2.age = 100;
-
 
             // should sort in the correct order
             assert.deepStrictEqual(
@@ -56,11 +56,11 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 }).toJSON()
             );
 
-            const doc1 = schemaObjects.human();
-            doc1['_id'] = 'aa';
+            const doc1: any = schemaObjects.human();
+            doc1._id = 'aa';
             doc1.age = 1;
-            const doc2 = schemaObjects.human();
-            doc2['_id'] = 'bb';
+            const doc2: any = schemaObjects.human();
+            doc2._id = 'bb';
             doc2.age = 100;
 
             assert.strictEqual(queryMatcher(doc1), false);

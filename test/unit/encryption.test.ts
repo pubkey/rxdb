@@ -9,12 +9,12 @@ import * as humansCollection from '../helper/humans-collection';
 import {
     createRxSchema,
     createRxDatabase,
-    RxJsonSchema
+    RxJsonSchema,
+    randomCouchString
 } from '../../';
 import {
     createCrypter
 } from '../../dist/lib/crypter';
-import * as util from '../../dist/lib/util';
 
 config.parallel('encryption.test.js', () => {
     describe('Crypter.js', () => {
@@ -119,9 +119,9 @@ config.parallel('encryption.test.js', () => {
             });
             it('should insert one encrypted value (object)', async () => {
                 const db = await createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory',
-                    password: util.randomCouchString(10)
+                    password: randomCouchString(10)
                 });
                 const c = await db.collection({
                     name: 'enchuman',
@@ -147,7 +147,7 @@ config.parallel('encryption.test.js', () => {
                 const doc = await c.findOne().exec();
                 const secret = doc.get('secret');
                 assert.strictEqual(agent.secret, secret);
-                const newSecret = util.randomCouchString(10);
+                const newSecret = randomCouchString(10);
                 await doc.atomicSet('secret', newSecret);
                 const docNew = await c.findOne().exec();
                 assert.strictEqual(newSecret, docNew.get('secret'));
@@ -155,9 +155,9 @@ config.parallel('encryption.test.js', () => {
             });
             it('should save one encrypted value (object)', async () => {
                 const db = await createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory',
-                    password: util.randomCouchString(10)
+                    password: randomCouchString(10)
                 });
                 const c = await db.collection({
                     name: 'enchuman',
@@ -166,8 +166,8 @@ config.parallel('encryption.test.js', () => {
                 const agent = schemaObjects.encryptedObjectHuman();
                 await c.insert(agent);
                 const newSecret = {
-                    name: util.randomCouchString(10),
-                    subname: util.randomCouchString(10)
+                    name: randomCouchString(10),
+                    subname: randomCouchString(10)
                 };
                 const doc = await c.findOne().exec();
                 const secret = doc.get('secret');
@@ -188,8 +188,8 @@ config.parallel('encryption.test.js', () => {
     });
     describe('ISSUES', () => {
         it('#837 Recover from wrong database password', async () => {
-            const name = util.randomCouchString(10) + '837';
-            const password = util.randomCouchString(10);
+            const name = randomCouchString(10) + '837';
+            const password = randomCouchString(10);
 
             // 1. create and destroy encrypted db
             const db1 = await createRxDatabase({
@@ -243,7 +243,7 @@ config.parallel('encryption.test.js', () => {
                     'happy'
                 ]
             };
-            const dbName = util.randomCouchString(10);
+            const dbName = randomCouchString(10);
 
             const db = await createRxDatabase({
                 name: dbName,

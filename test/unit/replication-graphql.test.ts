@@ -10,25 +10,25 @@ import {
 } from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
-import * as util from '../../dist/lib/util';
 import {
     PouchDB
 } from '../../dist/lib/pouch-db';
 import {
     addRxPlugin,
     createRxDatabase,
-    RxJsonSchema
+    RxJsonSchema,
+    hash,
+    LOCAL_PREFIX,
+    randomCouchString
 } from '../../';
 import { RxDBReplicationGraphQLPlugin } from '../../plugins/replication-graphql';
 import * as schemas from '../helper/schemas';
 import {
     GRAPHQL_PATH,
-    GRAPHQL_SUBSCRIPTION_PATH,
     getDocsOnServer
 } from '../helper/graphql-config';
 
 import {
-    GraphqlServer,
     GraphQLServerModule
 } from '../helper/graphql-server';
 
@@ -111,7 +111,7 @@ describe('replication-graphql.test.js', () => {
         const ws = REQUIRE_FUN('ws');
         const { SubscriptionClient } = REQUIRE_FUN('subscriptions-transport-ws');
         const ERROR_URL = 'http://localhost:15898/foobar';
-        const getEndpointHash = () => util.hash(AsyncTestUtil.randomString(10));
+        const getEndpointHash = () => hash(AsyncTestUtil.randomString(10));
         const getTimestamp = () => Math.round(new Date().getTime() / 1000);
         const endpointHash = getEndpointHash(); // used when we not care about it's value
         const getTestData = (amount: any) => {
@@ -482,7 +482,7 @@ describe('replication-graphql.test.js', () => {
                         getEndpointHash(),
                         1
                     );
-                    assert.ok(ret.id.startsWith(util.LOCAL_PREFIX));
+                    assert.ok(ret.id.startsWith(LOCAL_PREFIX));
                     c.database.destroy();
                 });
                 it('should be able to run multiple times', async () => {
@@ -657,7 +657,7 @@ describe('replication-graphql.test.js', () => {
                         endpointHash,
                         docData
                     );
-                    assert.ok(ret.id.startsWith(util.LOCAL_PREFIX));
+                    assert.ok(ret.id.startsWith(LOCAL_PREFIX));
                     c.database.destroy();
                 });
                 it('should be able to run multiple times', async () => {
@@ -674,7 +674,7 @@ describe('replication-graphql.test.js', () => {
                         endpointHash,
                         docData
                     );
-                    assert.ok(ret.id.startsWith(util.LOCAL_PREFIX));
+                    assert.ok(ret.id.startsWith(LOCAL_PREFIX));
                     c.database.destroy();
                 });
             });
@@ -1129,7 +1129,7 @@ describe('replication-graphql.test.js', () => {
             it('should not send index-documents', async () => {
                 const server = await SpawnServer.spawn();
                 const db = await createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory',
                     ignoreDuplicate: true
                 });
@@ -1353,7 +1353,7 @@ describe('replication-graphql.test.js', () => {
                 c.database.destroy();
             });
             it('should work with multiInstance', async () => {
-                const name = util.randomCouchString(10);
+                const name = randomCouchString(10);
                 const server = await SpawnServer.spawn();
 
                 const db1 = await createRxDatabase({
@@ -1584,12 +1584,12 @@ describe('replication-graphql.test.js', () => {
         config.parallel('integrations', () => {
             it('should work with encryption', async () => {
                 const db = await createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory',
                     multiInstance: true,
                     eventReduce: true,
                     ignoreDuplicate: true,
-                    password: util.randomCouchString(10)
+                    password: randomCouchString(10)
                 });
                 const schema: RxJsonSchema = clone(schemas.humanWithTimestamp);
                 schema.encrypted = ['name'];
@@ -1626,12 +1626,12 @@ describe('replication-graphql.test.js', () => {
             });
             it('should work with keyCompression', async () => {
                 const db = await createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory',
                     multiInstance: true,
                     eventReduce: true,
                     ignoreDuplicate: true,
-                    password: util.randomCouchString(10)
+                    password: randomCouchString(10)
                 });
                 const schema = clone(schemas.humanWithTimestamp);
                 schema.keyCompression = true;
@@ -1673,12 +1673,12 @@ describe('replication-graphql.test.js', () => {
         config.parallel('issues', () => {
             it('push not working on slow db', async () => {
                 const db = await createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory',
                     multiInstance: true,
                     eventReduce: true,
                     ignoreDuplicate: true,
-                    password: util.randomCouchString(10)
+                    password: randomCouchString(10)
                 });
                 const schema: RxJsonSchema = clone(schemas.humanWithTimestampAllIndex);
                 schema.encrypted = ['name'];
@@ -1724,12 +1724,12 @@ describe('replication-graphql.test.js', () => {
             });
             it('push not working when big amount of docs is pulled before', async () => {
                 const db = await createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory',
                     multiInstance: true,
                     eventReduce: true,
                     ignoreDuplicate: true,
-                    password: util.randomCouchString(10)
+                    password: randomCouchString(10)
                 });
                 const schema: RxJsonSchema = clone(schemas.humanWithTimestampAllIndex);
                 schema.encrypted = ['name'];
@@ -1772,11 +1772,11 @@ describe('replication-graphql.test.js', () => {
             });
             it('#1812 updates fail when graphql is enabled', async () => {
                 const db = await createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory',
                     multiInstance: false,
                     eventReduce: true,
-                    password: util.randomCouchString(10)
+                    password: randomCouchString(10)
                 });
                 const schema: RxJsonSchema = clone(schemas.humanWithTimestampAllIndex);
                 schema.encrypted = ['name'];
@@ -1839,7 +1839,7 @@ describe('replication-graphql.test.js', () => {
         if (config.platform.isNode()) return;
         describe('issues', () => {
             it('push not working on slow db', async () => {
-                const dbName = util.randomCouchString(10);
+                const dbName = randomCouchString(10);
                 const db = await createRxDatabase({
                     name: dbName,
                     adapter: 'idb',
