@@ -51,6 +51,7 @@ addRxPlugin(RxDBLocalDocumentsPlugin);
 import { RxDBQueryBuilderPlugin } from './plugins/query-builder';
 addRxPlugin(RxDBQueryBuilderPlugin);
 
+// TODO how to do 'export type * ..' ?
 export type {
     JsonSchemaTypes,
     GraphQLSyncPullOptions,
