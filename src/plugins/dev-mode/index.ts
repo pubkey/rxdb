@@ -1,4 +1,4 @@
-import { RxPlugin, RxCollectionCreator, RxDatabaseCreator } from '../../types';
+import type { RxPlugin, RxCollectionCreator, RxDatabaseCreator } from '../../types';
 
 import {
     ERROR_MESSAGES

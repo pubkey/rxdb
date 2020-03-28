@@ -7,7 +7,7 @@ import {
 import {
     newRxError
 } from '../rx-error';
-import {
+import type {
     RxDatabase, RxPlugin
 } from '../types';
 

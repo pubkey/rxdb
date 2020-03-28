@@ -34,7 +34,7 @@ import {
     Observable
 } from 'rxjs';
 
-import {
+import type {
     RxCollection,
     RxDatabase,
     MigrationState,

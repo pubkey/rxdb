@@ -4,7 +4,7 @@ import {
     runAction,
     QueryParams
 } from 'event-reduce-js';
-import { RxQuery, MangoQuery } from './types';
+import type { RxQuery, MangoQuery } from './types';
 import { RxChangeEvent } from './rx-change-event';
 
 export type EventReduceResultNeg = {

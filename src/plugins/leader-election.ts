@@ -7,7 +7,7 @@ import {
     LeaderElector as BroadcastChannelLeaderElector
 } from 'broadcast-channel';
 
-import {
+import type {
     RxDatabase,
     RxPlugin
 } from '../types';

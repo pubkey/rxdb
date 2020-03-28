@@ -68,7 +68,7 @@ import {
     Observable
 } from 'rxjs';
 
-import {
+import type {
     PouchSettings,
     KeyFunctionMap,
     RxReplicationState,

@@ -6,7 +6,7 @@
 import {
     Subscription
 } from 'rxjs';
-import {
+import type {
     RxCollection
 } from './types';
 import {

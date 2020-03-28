@@ -10,7 +10,7 @@ import {
     newRxTypeError,
     newRxError
 } from '../../../rx-error';
-import {
+import type {
     MangoQuery,
     MangoQuerySelector,
     MangoQuerySortPart,

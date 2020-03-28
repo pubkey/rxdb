@@ -5,7 +5,7 @@
 import {
     Subscription
 } from 'rxjs';
-import {
+import type {
     RxQuery
 } from './types';
 

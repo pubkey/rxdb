@@ -3,7 +3,7 @@
  */
 
 import overwritable from './overwritable';
-import {
+import type {
     RxErrorParameters
 } from './types';
 

@@ -15,7 +15,7 @@ import {
 import {
     Crypter
 } from '../crypter';
-import { RxPlugin, RxDatabase } from '../types';
+import type { RxPlugin, RxDatabase } from '../types';
 import { hash } from '../util';
 
 const minPassLength = 8;

@@ -40,7 +40,7 @@ import {
 import {
     RxChangeEvent
 } from './rx-change-event';
-import {
+import type {
     CollectionsOfDatabase,
     PouchDBInstance,
     RxDatabase,

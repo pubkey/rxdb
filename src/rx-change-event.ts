@@ -8,7 +8,7 @@ import {
     ChangeEvent as EventReduceChangeEvent
 } from 'event-reduce-js';
 
-import {
+import type {
     RxCollection,
     RxDocument,
     RxDocumentTypeWithRev

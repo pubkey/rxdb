@@ -1,4 +1,4 @@
-import { RxJsonSchema, NumberFunctionMap } from '../../types';
+import type { RxJsonSchema, NumberFunctionMap } from '../../types';
 import { newRxTypeError, newRxError } from '../../rx-error';
 import { getPreviousVersions } from '../../rx-schema';
 

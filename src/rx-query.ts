@@ -28,7 +28,7 @@ import {
 import {
     runPluginHooks
 } from './hooks';
-import {
+import type {
     RxCollection,
     RxDocument,
     RxQueryOP,

@@ -7,7 +7,7 @@ import objectPath from 'object-path';
 import {
     newRxError
 } from '../../rx-error';
-import {
+import type {
     RxJsonSchema
 } from '../../types';
 import {

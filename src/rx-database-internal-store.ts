@@ -5,7 +5,7 @@
  * it should work by using the storage.interface
  */
 
-import {
+import type {
     PouchDBInstance,
     RxDocumentTypeWithRev
 } from './types';

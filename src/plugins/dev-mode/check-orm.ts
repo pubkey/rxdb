@@ -2,7 +2,7 @@ import {
     newRxError,
     newRxTypeError
 } from '../../rx-error';
-import { KeyFunctionMap } from '../../types';
+import type { KeyFunctionMap } from '../../types';
 import { rxCollectionProperties, rxDocumentProperties } from './entity-properties';
 
 /**

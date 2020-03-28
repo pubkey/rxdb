@@ -7,7 +7,7 @@ import {
     getDocFromPouchOrNull,
     wasRevisionfromPullReplication
 } from './helper';
-import {
+import type {
     RxCollection
 } from '../../types';
 

@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
 
-import { RxQuery } from '../../types';
+import type { RxQuery } from '../../types';
 import {
     PouchReplicationOptions,
     PouchSyncHandler

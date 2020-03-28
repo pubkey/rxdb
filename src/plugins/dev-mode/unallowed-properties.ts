@@ -1,4 +1,4 @@
-import { RxCollectionCreator } from '../../types';
+import type { RxCollectionCreator } from '../../types';
 import { newRxError } from '../../rx-error';
 import { rxDatabaseProperties } from './entity-properties';
 

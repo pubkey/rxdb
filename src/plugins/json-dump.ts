@@ -10,7 +10,7 @@ import {
 import {
     newRxError
 } from '../rx-error';
-import {
+import type {
     RxDatabase,
     RxCollection,
     RxPlugin

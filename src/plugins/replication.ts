@@ -31,7 +31,7 @@ import {
 import {
     isInstanceOf as isRxCollection
 } from '../rx-collection';
-import {
+import type {
     RxQuery,
     RxCollection,
     PouchSyncHandler,

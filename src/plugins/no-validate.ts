@@ -1,4 +1,4 @@
-import { RxPlugin } from '../types';
+import type { RxPlugin } from '../types';
 
 /**
  * this plugin validates all documents

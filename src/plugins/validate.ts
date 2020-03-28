@@ -13,7 +13,7 @@ import {
 import {
     RxSchema
 } from '../rx-schema';
-import { RxPlugin } from '../types';
+import type { RxPlugin } from '../types';
 
 /**
  * cache the validators by the schema-hash

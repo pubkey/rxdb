@@ -9,7 +9,7 @@ import {
     generateId,
     adapterObject
 } from '../util';
-import {
+import type {
     PouchDBInstance, RxPlugin
 } from '../types';
 

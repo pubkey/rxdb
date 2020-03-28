@@ -4,7 +4,7 @@
  * @link https://github.com/lgandecki/modifyjs
  */
 import modifyjs from 'modifyjs';
-import {
+import type {
     RxDocument,
     RxQuery,
     RxPlugin

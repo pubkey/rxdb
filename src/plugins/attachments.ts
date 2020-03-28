@@ -11,7 +11,7 @@ import {
 import {
     newRxError
 } from '../rx-error';
-import {
+import type {
     RxDocument, RxPlugin, RxDocumentTypeWithRev
 } from '../types';
 

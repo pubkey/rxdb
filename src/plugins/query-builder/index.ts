@@ -1,10 +1,9 @@
-import { RxPlugin } from '../../types/rx-plugin';
 import {
     createQueryBuilder,
     OTHER_MANGO_ATTRIBUTES,
     OTHER_MANGO_OPERATORS
 } from './mquery/nosql-query-builder';
-import { RxQuery } from '../../types';
+import type { RxPlugin, RxQuery } from '../../types';
 import { RxQueryBase, tunnelQueryCache } from '../../rx-query';
 import { clone } from '../../util';
 

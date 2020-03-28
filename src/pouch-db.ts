@@ -23,7 +23,7 @@ import {
     newRxError,
     newRxTypeError
 } from './rx-error';
-import {
+import type {
     PouchDBInstance
 } from './types';
 

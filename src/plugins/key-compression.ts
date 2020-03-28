@@ -18,7 +18,7 @@ import {
 import {
     RxSchema
 } from '../rx-schema';
-import { RxPlugin } from '../types';
+import type { RxPlugin } from '../types';
 import { overwriteGetterForCaching } from '../util';
 
 export class KeyCompressor {

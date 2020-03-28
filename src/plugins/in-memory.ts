@@ -18,7 +18,7 @@ import {
     first
 } from 'rxjs/operators';
 
-import {
+import type {
     RxCollection,
     RxReplicationState,
     PouchDBInstance,

@@ -19,7 +19,7 @@ import {
     defineGetterSetter
 } from './rx-document';
 
-import {
+import type {
     RxJsonSchema,
     JsonSchema
 } from './types';

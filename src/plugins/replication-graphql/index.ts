@@ -46,7 +46,7 @@ import { RxDBLeaderElectionPlugin } from '../leader-election';
 import {
     changeEventfromPouchChange
 } from '../../rx-change-event';
-import {
+import type {
     RxCollection,
     GraphQLSyncPullOptions,
     GraphQLSyncPushOptions,

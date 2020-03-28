@@ -24,7 +24,7 @@ import {
 import {
     PouchDB
 } from './pouch-db';
-import {
+import type {
     RxPlugin
 } from './types';
 

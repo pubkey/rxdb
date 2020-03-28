@@ -24,7 +24,7 @@ import {
     clone
 } from '../util';
 
-import {
+import type {
     RxCollection,
     RxDatabase,
     RxDocument,

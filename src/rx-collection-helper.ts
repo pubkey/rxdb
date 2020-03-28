@@ -1,4 +1,4 @@
-import {
+import type {
     RxCollection
 } from './types';
 import {

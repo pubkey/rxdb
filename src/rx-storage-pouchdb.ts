@@ -4,7 +4,7 @@ import {
 } from 'pouchdb-selector-core';
 
 import { RxStorage, PreparedQuery } from './rx-storate.interface';
-import {
+import type {
     MangoQuery,
     MangoQuerySortPart,
     PouchDBInstance,

@@ -12,7 +12,7 @@ import {
 import {
     changeEventfromPouchChange
 } from '../rx-change-event';
-import {
+import type {
     RxPlugin,
     RxCollection
 } from '../types';

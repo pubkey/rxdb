@@ -1,4 +1,7 @@
-import { MangoQuery, RxQuery } from './types/rx-query';
+import type {
+    MangoQuery,
+    RxQuery
+} from './types/rx-query';
 import {
     SortComparator,
     QueryMatcher
