@@ -1,6 +1,5 @@
 # Changelog
 
-
 ### X.X.X (comming soon)
 
 Features:
@@ -32,6 +31,12 @@ Other:
 
 Docs:
   - Removed examples for `require()` CommonJS loading
+
+
+### X.X.X (comming soon)
+
+Other:
+  - The server plugin now exposes the `pouchApp` [#1992](https://github.com/pubkey/rxdb/pull/1992) Thanks [@Julusian](https://github.com/Julusian)
 
 ### 8.8.0 (5 March 2020)
 

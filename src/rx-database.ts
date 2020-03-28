@@ -351,6 +351,7 @@ export class RxDatabaseBase<
      */
     server(_options?: ServerOptions): {
         app: any;
+        pouchApp: any;
         server: any;
     } {
         throw pluginMissing('server');
