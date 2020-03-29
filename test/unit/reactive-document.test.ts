@@ -48,7 +48,7 @@ config.parallel('reactive-document.test.js', () => {
             });
             it('should observe a nested field', async () => {
                 const c = await humansCollection.createNested();
-                const doc = await c.findOne().exec();
+                const doc = await c.findOne().exec(true);
                 const valueObj = {
                     v: doc.get('mainSkill.name')
                 };
@@ -116,7 +116,7 @@ config.parallel('reactive-document.test.js', () => {
         describe('negative', () => {
             it('primary cannot be observed', async () => {
                 const c = await humansCollection.createPrimary();
-                const doc = await c.findOne().exec();
+                const doc = await c.findOne().exec(true);
                 await AsyncTestUtil.assertThrows(
                     () => doc.get$('passportId'),
                     'RxError',

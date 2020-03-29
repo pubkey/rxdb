@@ -9,20 +9,17 @@ import * as schemas from './../helper/schemas';
 import * as schemaObjects from './../helper/schema-objects';
 import * as humansCollection from './../helper/humans-collection';
 
-import * as RxDocument from '../../dist/lib/rx-document';
 import {
     createRxSchema,
     createRxDatabase,
     RxSchema,
-    randomCouchString
+    randomCouchString,
+    isRxDocument
 } from '../../';
 import {
-    create,
-} from '../../dist/lib/plugins/key-compression';
-
-import {
-    KeyCompressor
-} from '../../src/plugins/key-compression';
+    KeyCompressor,
+    create
+} from '../../plugins/key-compression';
 
 config.parallel('key-compression.test.js', () => {
 
@@ -34,7 +31,7 @@ config.parallel('key-compression.test.js', () => {
         it('normal', () => {
             const k = createKeyCompressor(createRxSchema(schemas.human));
             const human: any = schemaObjects.human();
-            const compressed = k.compress(human);
+            const compressed: any = k.compress(human);
 
             const values = Object.keys(compressed)
                 .map(key => compressed[key]);
@@ -47,7 +44,7 @@ config.parallel('key-compression.test.js', () => {
         it('primary', () => {
             const k = createKeyCompressor(createRxSchema(schemas.primaryHuman));
             const human: any = schemaObjects.human();
-            const compressed = k.compress(human);
+            const compressed: any = k.compress(human);
 
             const values = Object.keys(compressed)
                 .map(key => compressed[key]);
@@ -61,7 +58,7 @@ config.parallel('key-compression.test.js', () => {
             const k = createKeyCompressor(createRxSchema(schemas.primaryHuman));
             const human: any = schemaObjects.human();
             human['_rev'] = 'foobarrev';
-            const compressed = k.compress(human);
+            const compressed: any = k.compress(human);
 
             assert.strictEqual(human['_rev'], 'foobarrev');
             assert.strictEqual(compressed['_rev'], 'foobarrev');
@@ -69,7 +66,7 @@ config.parallel('key-compression.test.js', () => {
         it('nested', () => {
             const k = createKeyCompressor(createRxSchema(schemas.nestedHuman));
             const human: any = schemaObjects.nestedHuman();
-            const compressed = k.compress(human);
+            const compressed: any = k.compress(human);
 
             const values = Object.keys(compressed)
                 .map(key => compressed[key]);
@@ -77,8 +74,9 @@ config.parallel('key-compression.test.js', () => {
             // check top
             Object.keys(human).forEach(key => {
                 const value = human[key];
-                if (typeof value !== 'object')
+                if (typeof value !== 'object') {
                     assert.ok(values.includes(value));
+                }
             });
 
             // check nested
@@ -121,8 +119,7 @@ config.parallel('key-compression.test.js', () => {
                 if (typeof value !== 'object')
                     assert.ok(json.includes(value));
             });
-
-            assert.deepStrictEqual(compressed['foobar'], additionalValue);
+            assert.deepStrictEqual((compressed as any).foobar, additionalValue);
         });
 
         it('schema with array', () => {
@@ -197,7 +194,7 @@ config.parallel('key-compression.test.js', () => {
         it('ISSUE: _rev gets undefined', () => {
             const k = createKeyCompressor(createRxSchema(schemas.heroArray));
             const human = schemaObjects.heroArray();
-            const compressed = k.compress(human);
+            const compressed: any = k.compress(human);
             compressed['_rev'] = 'foobar';
             const decompressed = k.decompress(compressed);
             assert.strictEqual(decompressed._rev, 'foobar');
@@ -312,7 +309,7 @@ config.parallel('key-compression.test.js', () => {
             };
             await collection.insert(docData);
             const doc = await collection.findOne().exec();
-            assert.ok(RxDocument.isInstanceOf(doc));
+            assert.ok(isRxDocument(doc));
             assert.deepStrictEqual(doc.likes, docData.likes);
             db.destroy();
         });

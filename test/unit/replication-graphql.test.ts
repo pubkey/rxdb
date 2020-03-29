@@ -2,6 +2,11 @@ import assert from 'assert';
 import AsyncTestUtil, {
     clone
 } from 'async-test-util';
+import GraphQLClient from 'graphql-client';
+
+import {
+    first
+} from 'rxjs/operators';
 
 import config from './config';
 import * as schemaObjects from '../helper/schema-objects';
@@ -11,17 +16,25 @@ import {
 import * as humansCollection from '../helper/humans-collection';
 
 import {
-    PouchDB
-} from '../../dist/lib/pouch-db';
-import {
     addRxPlugin,
     createRxDatabase,
     RxJsonSchema,
     hash,
     LOCAL_PREFIX,
-    randomCouchString
+    randomCouchString,
+    PouchDB
 } from '../../';
-import { RxDBReplicationGraphQLPlugin } from '../../plugins/replication-graphql';
+import {
+    RxDBReplicationGraphQLPlugin,
+    createRevisionForPulledDocument,
+    wasRevisionfromPullReplication,
+    getDocsWithRevisionsFromPouch,
+    getLastPushSequence,
+    setLastPushSequence,
+    getChangesSinceLastPushSequence,
+    getLastPullDocument,
+    setLastPullDocument
+} from '../../plugins/replication-graphql';
 import * as schemas from '../helper/schemas';
 import {
     GRAPHQL_PATH,
@@ -34,25 +47,6 @@ import {
 
 addRxPlugin(RxDBReplicationGraphQLPlugin);
 
-import GraphQLClient from 'graphql-client';
-
-import {
-    getLastPushSequence,
-    setLastPushSequence,
-    getChangesSinceLastPushSequence,
-    getLastPullDocument,
-    setLastPullDocument
-} from '../../dist/lib/plugins/replication-graphql/crawling-checkpoint';
-
-import {
-    createRevisionForPulledDocument,
-    wasRevisionfromPullReplication,
-    getDocsWithRevisionsFromPouch
-} from '../../dist/lib/plugins/replication-graphql/helper';
-
-import {
-    first
-} from 'rxjs/operators';
 
 declare type WithDeleted<T> = T & { deleted: boolean };
 
@@ -189,7 +183,7 @@ describe('replication-graphql.test.js', () => {
             it('should be possible to retrieve deleted documents in pouchdb', async () => {
                 const c = await humansCollection.createHumanWithTimestamp(2);
                 const pouch = c.pouch;
-                const doc = await c.findOne().exec();
+                const doc = await c.findOne().exec(true);
                 await doc.remove();
 
                 // get deleted and undeleted from pouch
@@ -208,10 +202,10 @@ describe('replication-graphql.test.js', () => {
             it('should be possible to set a custom _rev', async () => {
                 const c = await humansCollection.createHumanWithTimestamp(1);
                 const pouch = c.pouch;
-                const doc = await c.findOne().exec();
+                const doc = await c.findOne().exec(true);
                 const docData = doc.toJSON();
                 const customRev = '2-fadae8ee3847d0748381f13988e95502-rxdb-from-graphql';
-                docData['_id'] = docData.id;
+                (docData as any)._id = docData.id;
                 docData._rev = customRev;
                 docData.name = 'Alice';
 
@@ -265,9 +259,9 @@ describe('replication-graphql.test.js', () => {
                     ],
                     revs: true,
                     latest: true
-                });
+                } as any);
 
-                const overwriteDoc = bulkGetDocs.results[0].docs[0].ok;
+                const overwriteDoc = (bulkGetDocs.results[0].docs[0] as any).ok;
 
                 const addRev = 'ZZZ-rxdb-from-graphql';
                 overwriteDoc._revisions.ids.unshift(addRev);
@@ -281,7 +275,7 @@ describe('replication-graphql.test.js', () => {
                             overwriteDoc
                         ],
                         new_edits: false
-                    },
+                    } as any,
                     {
                     }
                 );
@@ -295,7 +289,7 @@ describe('replication-graphql.test.js', () => {
                 const docsAfterWithDeleted = await pouch.allDocs({
                     include_docs: true,
                     deleted: 'ok'
-                });
+                } as any);
                 assert.strictEqual(docsAfterWithDeleted.rows.length, 1);
 
                 pouch.destroy();
@@ -336,7 +330,7 @@ describe('replication-graphql.test.js', () => {
                     key: 'Alice',
                     revs: true,
                     deleted: 'ok'
-                });
+                } as any);
                 assert.strictEqual(allDocs.rows.length, 1);
                 assert.strictEqual(allDocs.rows[0].id, 'Alice');
 
@@ -351,9 +345,9 @@ describe('replication-graphql.test.js', () => {
                     ],
                     revs: true,
                     latest: true
-                });
+                } as any);
                 assert.strictEqual(bulkGetDocs.results.length, 1);
-                assert.strictEqual(bulkGetDocs.results[0].docs[0].ok._revisions.ids.length, 3);
+                assert.strictEqual((bulkGetDocs.results[0].docs[0] as any).ok._revisions.ids.length, 3);
 
                 pouch.destroy();
             });
@@ -564,13 +558,13 @@ describe('replication-graphql.test.js', () => {
                         10
                     );
                     assert.strictEqual(changes.results.length, amount);
-                    assert.ok(changes.results[0].doc.name);
+                    assert.ok((changes.results[0] as any).doc.name);
                     c.database.destroy();
                 });
                 it('should get only the newest update to documents', async () => {
                     const amount = 5;
                     const c = await humansCollection.createHumanWithTimestamp(amount);
-                    const oneDoc = await c.findOne().exec();
+                    const oneDoc = await c.findOne().exec(true);
                     await oneDoc.atomicSet('age', 1);
                     const changes = await getChangesSinceLastPushSequence(
                         c,
@@ -594,7 +588,7 @@ describe('replication-graphql.test.js', () => {
                 it('should get deletions', async () => {
                     const amount = 5;
                     const c = await humansCollection.createHumanWithTimestamp(amount);
-                    const oneDoc = await c.findOne().exec();
+                    const oneDoc = await c.findOne().exec(true);
                     await oneDoc.remove();
                     const changes = await getChangesSinceLastPushSequence(
                         c,
@@ -650,7 +644,7 @@ describe('replication-graphql.test.js', () => {
             describe('.setLastPullDocument()', () => {
                 it('should set the document', async () => {
                     const c = await humansCollection.createHumanWithTimestamp(1);
-                    const doc = await c.findOne().exec();
+                    const doc = await c.findOne().exec(true);
                     const docData = doc.toJSON(true);
                     const ret = await setLastPullDocument(
                         c,
@@ -662,7 +656,7 @@ describe('replication-graphql.test.js', () => {
                 });
                 it('should be able to run multiple times', async () => {
                     const c = await humansCollection.createHumanWithTimestamp(1);
-                    const doc = await c.findOne().exec();
+                    const doc = await c.findOne().exec(true);
                     const docData = doc.toJSON(true);
                     await setLastPullDocument(
                         c,
@@ -690,7 +684,7 @@ describe('replication-graphql.test.js', () => {
                 });
                 it('should return the doc if it was set', async () => {
                     const c = await humansCollection.createHumanWithTimestamp(1);
-                    const doc = await c.findOne().exec();
+                    const doc = await c.findOne().exec(true);
                     const docData = doc.toJSON(true);
                     docData.name = 'foobar';
                     await setLastPullDocument(
@@ -1062,7 +1056,7 @@ describe('replication-graphql.test.js', () => {
                     SpawnServer.spawn<WithDeleted<HumanWithTimestampDocumentType>>()
                 ]);
 
-                const doc = await c.findOne().exec();
+                const doc = await c.findOne().exec(true);
                 await doc.remove();
 
                 const replicationState = c.syncGraphQL({
@@ -1079,7 +1073,7 @@ describe('replication-graphql.test.js', () => {
                 const docsOnServer = server.getDocuments();
 
                 const shouldBeDeleted = docsOnServer.find((d: any) => d.id === doc.primary);
-                assert.strictEqual(shouldBeDeleted.deleted, true);
+                assert.strictEqual((shouldBeDeleted as any).deleted, true);
 
                 server.close();
                 c.database.destroy();
@@ -1827,7 +1821,7 @@ describe('replication-graphql.test.js', () => {
                 await replicationState.run();
                 await AsyncTestUtil.waitUntil(() => {
                     const d = server.getDocuments().pop();
-                    return d['deleted'];
+                    return (d as any).deleted;
                 });
 
                 server.close();

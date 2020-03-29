@@ -6,7 +6,8 @@ import * as humansCollection from '../helper/humans-collection';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import {
-    createRxDatabase, randomCouchString
+    createRxDatabase,
+    randomCouchString
 } from '../../';
 import {
     blobBufferUtil
@@ -16,7 +17,7 @@ config.parallel('attachments.test.js', () => {
     describe('.putAttachment()', () => {
         it('should insert one attachment', async () => {
             const c = await humansCollection.createAttachments(1);
-            const doc = await c.findOne().exec();
+            const doc = await c.findOne().exec(true);
             const attachment = await doc.putAttachment({
                 id: 'cat.txt',
                 data: 'meow',
@@ -29,7 +30,7 @@ config.parallel('attachments.test.js', () => {
         });
         it('should insert two attachments', async () => {
             const c = await humansCollection.createAttachments(1);
-            const doc = await c.findOne().exec();
+            const doc = await c.findOne().exec(true);
             await doc.putAttachment({
                 id: 'cat.txt',
                 data: 'meow',
@@ -44,7 +45,7 @@ config.parallel('attachments.test.js', () => {
         });
         it('should insert 4 attachments in parallel', async () => {
             const c = await humansCollection.createAttachments(1);
-            const doc = await c.findOne().exec();
+            const doc = await c.findOne().exec(true);
             const attachments = await Promise.all(
                 new Array(4)
                     .fill(0)
@@ -60,7 +61,7 @@ config.parallel('attachments.test.js', () => {
         });
         it('should insert an attachment with a big content', async () => {
             const c = await humansCollection.createAttachments(1);
-            const doc = await c.findOne().exec();
+            const doc = await c.findOne().exec(true);
             await doc.putAttachment({
                 id: 'cat2.txt',
                 data: [
@@ -76,20 +77,20 @@ config.parallel('attachments.test.js', () => {
     describe('.getAttachment()', () => {
         it('should get the attachment', async () => {
             const c = await humansCollection.createAttachments(1);
-            const doc = await c.findOne().exec();
+            const doc = await c.findOne().exec(true);
             await doc.putAttachment({
                 id: 'cat.txt',
                 data: 'meow I am a kitty with a knife',
                 type: 'text/plain'
             });
-            const attachment = doc.getAttachment('cat.txt');
+            const attachment: any = doc.getAttachment('cat.txt');
             assert.ok(attachment);
             assert.strictEqual(attachment.rev, 2);
             c.database.destroy();
         });
         it('should find the attachment after another doc-update', async () => {
             const c = await humansCollection.createAttachments(1);
-            const doc = await c.findOne().exec();
+            const doc = await c.findOne().exec(true);
             await doc.putAttachment({
                 id: 'cat.txt',
                 data: 'meow I am a kitty with a knife',
@@ -98,7 +99,7 @@ config.parallel('attachments.test.js', () => {
 
             await doc.atomicSet('age', 7);
 
-            const attachment = doc.getAttachment('cat.txt');
+            const attachment: any = doc.getAttachment('cat.txt');
             assert.ok(attachment);
             assert.strictEqual(attachment.type, 'text/plain');
             c.database.destroy();
@@ -118,7 +119,7 @@ config.parallel('attachments.test.js', () => {
                 schema: schemaJson
             });
             await collection.insert(schemaObjects.human());
-            const doc = await collection.findOne().exec();
+            const doc = await collection.findOne().exec(true);
             const docAge = doc.age;
             await doc.putAttachment({
                 id: 'cat.txt',
@@ -147,14 +148,14 @@ config.parallel('attachments.test.js', () => {
     describe('RxAttachment.getData()', () => {
         it('should get the data', async () => {
             const c = await humansCollection.createAttachments(1);
-            const doc = await c.findOne().exec();
+            const doc = await c.findOne().exec(true);
             const dat = AsyncTestUtil.randomString(100) + ' ' + AsyncTestUtil.randomString(100);
             await doc.putAttachment({
                 id: 'cat.txt',
                 data: dat,
                 type: 'text/plain'
             });
-            const attachment = doc.getAttachment('cat.txt');
+            const attachment: any = doc.getAttachment('cat.txt');
             const data = await attachment.getData();
             const dataString = await blobBufferUtil.toString(data);
             assert.strictEqual(dataString, dat);
@@ -164,14 +165,14 @@ config.parallel('attachments.test.js', () => {
     describe('RxAttachment.getStringData()', () => {
         it('should get the data as string', async () => {
             const c = await humansCollection.createAttachments(1);
-            const doc = await c.findOne().exec();
+            const doc = await c.findOne().exec(true);
             const dat = AsyncTestUtil.randomString(100) + ' ' + AsyncTestUtil.randomString(100);
             await doc.putAttachment({
                 id: 'cat.txt',
                 data: dat,
                 type: 'text/plain'
             });
-            const attachment = doc.getAttachment('cat.txt');
+            const attachment: any = doc.getAttachment('cat.txt');
             const data = await attachment.getStringData();
             assert.strictEqual(data, dat);
             c.database.destroy();
@@ -180,13 +181,13 @@ config.parallel('attachments.test.js', () => {
     describe('RxAttachment.remove()', () => {
         it('should remove the attachment', async () => {
             const c = await humansCollection.createAttachments(1);
-            const doc = await c.findOne().exec();
+            const doc = await c.findOne().exec(true);
             await doc.putAttachment({
                 id: 'cat.txt',
                 data: 'meow I am a kitty with a knife',
                 type: 'text/plain'
             });
-            const attachment = doc.getAttachment('cat.txt');
+            const attachment: any = doc.getAttachment('cat.txt');
             assert.ok(attachment);
 
             await attachment.remove();
@@ -201,7 +202,7 @@ config.parallel('attachments.test.js', () => {
     describe('.allAttachments()', () => {
         it('should find all attachments', async () => {
             const c = await humansCollection.createAttachments(1);
-            const doc = await c.findOne().exec();
+            const doc = await c.findOne().exec(true);
             await Promise.all(
                 new Array(10)
                     .fill(0)
@@ -217,7 +218,7 @@ config.parallel('attachments.test.js', () => {
         });
         it('should lazy-load the data for the attachment', async () => {
             const c = await humansCollection.createAttachments(1);
-            const doc = await c.findOne().exec();
+            const doc = await c.findOne().exec(true);
             await doc.putAttachment({
                 id: 'janosch.txt',
                 data: 'foo bar',
@@ -251,7 +252,7 @@ config.parallel('attachments.test.js', () => {
     describe('encryption', () => {
         it('should store the data encrypted', async () => {
             const c = await humansCollection.createEncryptedAttachments(1);
-            const doc = await c.findOne().exec();
+            const doc = await c.findOne().exec(true);
             const attachment = await doc.putAttachment({
                 id: 'cat.txt',
                 data: 'foo bar',
@@ -271,7 +272,7 @@ config.parallel('attachments.test.js', () => {
     describe('.allAttachments$', () => {
         it('should emit on subscription', async () => {
             const c = await humansCollection.createEncryptedAttachments(1);
-            const doc = await c.findOne().exec();
+            const doc = await c.findOne().exec(true);
             await doc.putAttachment({
                 id: 'cat.txt',
                 data: 'foo bar',
@@ -279,7 +280,8 @@ config.parallel('attachments.test.js', () => {
             });
 
             const emited: any[] = [];
-            const sub = doc.allAttachments$.subscribe((attachments: any[]) => emited.push(attachments));
+            const sub = doc.allAttachments$
+                .subscribe((attachments: any[]) => emited.push(attachments));
             await AsyncTestUtil.waitUntil(() => emited.length === 1);
 
             assert.strictEqual(emited[0].length, 1);

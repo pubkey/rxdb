@@ -1,6 +1,7 @@
-import config from './config';
 import assert from 'assert';
 import memdown from 'memdown';
+import AsyncTestUtil from 'async-test-util';
+import config from './config';
 
 let leveldb: any;
 if (config.platform.isNode())
@@ -11,15 +12,12 @@ import {
     addRxPlugin,
     randomCouchString,
     promiseWait,
-    clone
-} from '../../';
-import {
+    clone,
     countAllUndeleted,
     getBatch,
     PouchDB
-} from '../../dist/lib/pouch-db';
+} from '../../';
 import * as schemaObjects from './../helper/schema-objects';
-import AsyncTestUtil from 'async-test-util';
 import {
     isRxDatabase,
     PouchDBInstance
@@ -126,7 +124,7 @@ config.parallel('pouch-db-integration.test.js', () => {
                     adapter: 'memory'
                 }
                 );
-                const count = await countAllUndeleted(pouchdb);
+                const count = await countAllUndeleted(pouchdb as any);
                 assert.deepStrictEqual(count, 0);
             });
             it('should return 1', async () => {
@@ -139,7 +137,7 @@ config.parallel('pouch-db-integration.test.js', () => {
                 await pouchdb.put({
                     _id: randomCouchString(10)
                 });
-                const count = await countAllUndeleted(pouchdb);
+                const count = await countAllUndeleted(pouchdb as any);
                 assert.deepStrictEqual(count, 1);
             });
             it('should not count deleted docs', async () => {
@@ -155,12 +153,12 @@ config.parallel('pouch-db-integration.test.js', () => {
                     x: 1
                 });
 
-                const countBefore = await countAllUndeleted(pouchdb);
+                const countBefore = await countAllUndeleted(pouchdb as any);
                 assert.deepStrictEqual(countBefore, 1);
 
                 const doc = await pouchdb.get(_id);
                 await pouchdb.remove(doc);
-                const count = await countAllUndeleted(pouchdb);
+                const count = await countAllUndeleted(pouchdb as any);
                 assert.deepStrictEqual(count, 0);
             });
             it('should count a big amount with one deleted doc', async () => {
@@ -176,7 +174,7 @@ config.parallel('pouch-db-integration.test.js', () => {
                     _id,
                     x: 1
                 });
-                const countBefore = await countAllUndeleted(pouchdb);
+                const countBefore = await countAllUndeleted(pouchdb as any);
                 assert.deepStrictEqual(countBefore, 1);
                 const doc = await pouchdb.get(_id);
                 await pouchdb.remove(doc);
@@ -189,7 +187,7 @@ config.parallel('pouch-db-integration.test.js', () => {
                     });
                     t--;
                 }
-                const count = await countAllUndeleted(pouchdb);
+                const count = await countAllUndeleted(pouchdb as any);
                 assert.deepStrictEqual(count, 42);
             });
         });
@@ -201,7 +199,7 @@ config.parallel('pouch-db-integration.test.js', () => {
                     adapter: 'memory'
                 }
                 );
-                const docs = await getBatch(pouchdb, 10);
+                const docs = await getBatch(pouchdb as any, 10);
                 assert.deepStrictEqual(docs, []);
             });
             it('should not return deleted', async () => {
@@ -218,13 +216,13 @@ config.parallel('pouch-db-integration.test.js', () => {
                     x: 1
                 });
 
-                const countBefore = await countAllUndeleted(pouchdb);
+                const countBefore = await countAllUndeleted(pouchdb as any);
                 assert.deepStrictEqual(countBefore, 1);
 
                 const doc = await pouchdb.get(_id);
                 await pouchdb.remove(doc);
 
-                const docs = await getBatch(pouchdb, 10);
+                const docs = await getBatch(pouchdb as any, 10);
                 assert.deepStrictEqual(docs, []);
             });
             it('should return one document in array', async () => {
@@ -239,12 +237,11 @@ config.parallel('pouch-db-integration.test.js', () => {
                     _id,
                     x: 1
                 });
-                const docs: any[] = await getBatch(pouchdb, 10);
+                const docs: any[] = await getBatch(pouchdb as any, 10);
                 assert.strictEqual(docs.length, 1);
                 assert.strictEqual(docs[0].x, 1);
                 assert.strictEqual(docs[0]._id, _id);
             });
-
             it('should max return batchSize', async () => {
                 const name = randomCouchString(10);
                 const pouchdb = new PouchDB(
@@ -262,7 +259,7 @@ config.parallel('pouch-db-integration.test.js', () => {
                     t--;
                 }
                 const batchSize = 13;
-                const docs: any[] = await getBatch(pouchdb, batchSize);
+                const docs: any[] = await getBatch(pouchdb as any, batchSize);
                 assert.strictEqual(docs.length, batchSize);
                 docs.forEach(doc => {
                     assert.strictEqual(doc.x, 1);

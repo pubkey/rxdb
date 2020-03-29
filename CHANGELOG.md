@@ -3,6 +3,7 @@
 ### X.X.X (comming soon)
 
 Features:
+  - Added `RxQuery.exec(throwIfMissing: true)`
 
 Breaking:
   - Indexes are now specified at the top-level of the schema-definition. [#1655](https://github.com/pubkey/rxdb/issues/1655)

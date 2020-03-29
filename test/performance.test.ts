@@ -8,13 +8,12 @@ import * as schemas from './helper/schemas';
 import * as schemaObjects from './helper/schema-objects';
 import { mergeMap } from 'rxjs/operators';
 
-import * as util from '../dist/lib/util';
-
 // we do a custom build without dev-plugins,
 // like you would use in production
 import {
     createRxDatabase,
-    addRxPlugin
+    addRxPlugin,
+    randomCouchString
 } from '../plugins/core';
 addRxPlugin(require('pouchdb-adapter-memory'));
 import { RxDBNoValidatePlugin } from '../plugins/no-validate';
@@ -97,7 +96,7 @@ describe('performance.test.js', function () {
         const startTime = nowTime();
         for (let i = 0; i < benchmark.spawnDatabases.amount; i++) {
             const db = await createRxDatabase({
-                name: util.randomCouchString(10),
+                name: randomCouchString(10),
                 eventReduce: true,
                 adapter: 'memory'
             });
@@ -107,7 +106,7 @@ describe('performance.test.js', function () {
                     .fill(0)
                     .map(() => {
                         return db.collection({
-                            name: 'human' + util.randomCouchString(10),
+                            name: 'human' + randomCouchString(10),
                             schema: schemas.averageSchema(),
                             statics: ormMethods
                         });
@@ -123,7 +122,7 @@ describe('performance.test.js', function () {
     });
     it('insertDocuments', async () => {
         const db = await createRxDatabase({
-            name: util.randomCouchString(10),
+            name: randomCouchString(10),
             eventReduce: true,
             adapter: 'memory'
         });
@@ -159,7 +158,7 @@ describe('performance.test.js', function () {
     });
 
     it('findDocuments', async () => {
-        const dbName = util.randomCouchString(10);
+        const dbName = randomCouchString(10);
         const schema = schemas.averageSchema();
         const db = await createRxDatabase({
             name: dbName,
@@ -206,7 +205,7 @@ describe('performance.test.js', function () {
     });
 
     it('migrateDocuments', async () => {
-        const name = util.randomCouchString(10);
+        const name = randomCouchString(10);
         const db = await createRxDatabase({
             name,
             eventReduce: true,
@@ -238,7 +237,7 @@ describe('performance.test.js', function () {
             name: 'human',
             schema: newSchema,
             migrationStrategies: {
-                1: oldDoc => {
+                1: (oldDoc: any) => {
                     oldDoc.var2 = oldDoc.var2 + '';
                     return oldDoc;
                 }
@@ -257,7 +256,7 @@ describe('performance.test.js', function () {
         await AsyncTestUtil.wait(1000);
     });
     it('writeWhileSubscribe', async () => {
-        const name = util.randomCouchString(10);
+        const name = randomCouchString(10);
         const db = await createRxDatabase({
             name,
             eventReduce: true,
@@ -281,7 +280,7 @@ describe('performance.test.js', function () {
 
 
         let t = 0;
-        let lastResult;
+        let lastResult: any[] = [];
         const startTime = nowTime();
 
         await new Promise(res => {

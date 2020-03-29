@@ -116,7 +116,7 @@ config.parallel('population.test.js', () => {
         describe('positive', () => {
             it('populate top-level-field', async () => {
                 const col = await humansCollection.createRelated();
-                const doc = await col.findOne().exec();
+                const doc = await col.findOne().exec(true);
                 const friend = await doc.populate('bestFriend');
                 assert.ok(isRxDocument(friend));
                 assert.strictEqual(friend.name, doc.bestFriend);
@@ -124,7 +124,7 @@ config.parallel('population.test.js', () => {
             });
             it('populate nested field', async () => {
                 const col = await humansCollection.createRelatedNested();
-                const doc = await col.findOne().exec();
+                const doc = await col.findOne().exec(true);
                 const friend = await doc.populate('foo.bestFriend');
                 assert.ok(isRxDocument(friend));
                 assert.strictEqual(friend.name, doc.foo.bestFriend);
@@ -182,7 +182,7 @@ config.parallel('population.test.js', () => {
         describe('positive', () => {
             it('populate top-level-field', async () => {
                 const col = await humansCollection.createRelated();
-                const doc = await col.findOne().exec();
+                const doc = await col.findOne().exec(true);
                 const friend = await (doc as any).bestFriend_;
                 assert.ok(isRxDocument(friend));
                 assert.strictEqual(friend.name, doc.bestFriend);
@@ -190,7 +190,7 @@ config.parallel('population.test.js', () => {
             });
             it('populate nested field', async () => {
                 const col = await humansCollection.createRelatedNested();
-                const doc = await col.findOne().exec();
+                const doc = await col.findOne().exec(true);
                 const friend = await (doc as any).foo.bestFriend_;
                 assert.ok(isRxDocument(friend));
                 assert.strictEqual(friend.name, doc.foo.bestFriend);

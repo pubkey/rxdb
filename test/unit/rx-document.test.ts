@@ -113,14 +113,14 @@ config.parallel('rx-document.test.js', () => {
         describe('positive', () => {
             it('get a value', async () => {
                 const c = await humansCollection.create(1);
-                const doc: any = await c.findOne().exec();
+                const doc: any = await c.findOne().exec(true);
                 const value = doc.get('passportId');
                 assert.strictEqual(typeof value, 'string');
                 c.database.destroy();
             });
             it('get a nested value', async () => {
                 const c = await humansCollection.createNested(5);
-                const doc = await c.findOne().exec();
+                const doc = await c.findOne().exec(true);
                 const value = doc.get('mainSkill.name');
                 assert.strictEqual(typeof value, 'string');
                 const value2 = doc.get('mainSkill.level');
@@ -129,7 +129,7 @@ config.parallel('rx-document.test.js', () => {
             });
             it('get undefined on undefined value', async () => {
                 const c = await humansCollection.createNested(5);
-                const doc = await c.findOne().exec();
+                const doc = await c.findOne().exec(true);
                 const value = doc.get('foobar');
                 assert.strictEqual(value, undefined);
                 c.database.destroy();
@@ -141,7 +141,7 @@ config.parallel('rx-document.test.js', () => {
         describe('negative', () => {
             it('should only not work on non-temporary document', async () => {
                 const c = await humansCollection.createNested(5);
-                const doc = await c.findOne().exec();
+                const doc = await c.findOne().exec(true);
                 const path = {
                     foo: 'bar'
                 };
@@ -241,7 +241,7 @@ config.parallel('rx-document.test.js', () => {
         describe('positive', () => {
             it('$set a value with a mongo like query', async () => {
                 const c = await humansCollection.createPrimary(1);
-                const doc: any = await c.findOne().exec();
+                const doc: any = await c.findOne().exec(true);
                 await doc.update({
                     $set: {
                         firstName: 'new first name'
@@ -251,25 +251,25 @@ config.parallel('rx-document.test.js', () => {
                     selector: {
                         firstName: 'new first name'
                     }
-                }).exec();
+                }).exec(true);
                 assert.strictEqual(updatedDoc.firstName, 'new first name');
                 c.database.destroy();
             });
             it('$unset a value with a mongo like query', async () => {
                 const c = await humansCollection.create(1);
-                const doc: any = await c.findOne().exec();
+                const doc: any = await c.findOne().exec(true);
                 await doc.update({
                     $unset: {
                         age: ''
                     }
                 });
-                const updatedDoc: any = await c.findOne().exec();
+                const updatedDoc: any = await c.findOne().exec(true);
                 assert.strictEqual(updatedDoc.age, undefined);
                 c.database.destroy();
             });
             it('$inc a value with a mongo like query', async () => {
                 const c = await humansCollection.create(1);
-                const doc: any = await c.findOne().exec();
+                const doc: any = await c.findOne().exec(true);
                 const agePrev = doc.age;
                 await doc.update({
                     $inc: {
@@ -278,7 +278,7 @@ config.parallel('rx-document.test.js', () => {
                 });
                 assert.strictEqual(doc.age, agePrev + 1);
                 await doc.save;
-                const updatedDoc: any = await c.findOne().exec();
+                const updatedDoc: any = await c.findOne().exec(true);
                 assert.strictEqual(updatedDoc.age, agePrev + 1);
                 c.database.destroy();
             });
@@ -354,7 +354,7 @@ config.parallel('rx-document.test.js', () => {
         describe('positive', () => {
             it('run one update', async () => {
                 const c = await humansCollection.createNested(1);
-                const doc = await c.findOne().exec();
+                const doc = await c.findOne().exec(true);
 
                 const returnedDoc = await doc.atomicUpdate((innerDoc: any) => {
                     innerDoc.firstName = 'foobar';
@@ -366,7 +366,7 @@ config.parallel('rx-document.test.js', () => {
             });
             it('run two updates (last write wins)', async () => {
                 const c = await humansCollection.createNested(1);
-                const doc = await c.findOne().exec();
+                const doc = await c.findOne().exec(true);
 
                 doc.atomicUpdate((innerDoc: any) => {
                     innerDoc.firstName = 'foobar';
@@ -381,7 +381,7 @@ config.parallel('rx-document.test.js', () => {
             });
             it('do many updates (last write wins)', async () => {
                 const c = await humansCollection.create(1);
-                const doc: any = await c.findOne().exec();
+                const doc: any = await c.findOne().exec(true);
                 let lastPromise;
                 let t = 0;
                 new Array(10).fill(0)
@@ -605,27 +605,27 @@ config.parallel('rx-document.test.js', () => {
         describe('get', () => {
             it('top-value', async () => {
                 const c = await humansCollection.create(1);
-                const doc: any = await c.findOne().exec();
+                const doc: any = await c.findOne().exec(true);
                 const passportId = doc.get('passportId');
                 assert.strictEqual(doc.passportId, passportId);
                 c.database.destroy();
             });
             it('hidden properties should not show up', async () => {
                 const c = await humansCollection.create(1);
-                const doc: any = await c.findOne().exec();
+                const doc: any = await c.findOne().exec(true);
                 assert.ok(!Object.keys(doc).includes('lastName_'));
                 c.database.destroy();
             });
             it('nested-value', async () => {
                 const c = await humansCollection.createNested(1);
-                const doc = await c.findOne().exec();
+                const doc = await c.findOne().exec(true);
                 const mainSkillLevel = doc.get('mainSkill.level');
                 assert.strictEqual(doc.mainSkill.level, mainSkillLevel);
                 c.database.destroy();
             });
             it('deep-nested-value', async () => {
                 const c = await humansCollection.createDeepNested(1);
-                const doc = await c.findOne().exec();
+                const doc = await c.findOne().exec(true);
                 const value = doc.get('mainSkill.attack.count');
                 assert.strictEqual(doc.mainSkill.attack.count, value);
 
@@ -635,7 +635,7 @@ config.parallel('rx-document.test.js', () => {
             });
             it('top-value-observable', async () => {
                 const c = await humansCollection.create(1);
-                const doc: any = await c.findOne().exec();
+                const doc: any = await c.findOne().exec(true);
                 const obs = doc.firstName$;
                 assert.ok(obs.subscribe);
 
@@ -660,7 +660,7 @@ config.parallel('rx-document.test.js', () => {
             });
             it('nested-value-observable', async () => {
                 const c = await humansCollection.createNested(1);
-                const doc = await c.findOne().exec();
+                const doc = await c.findOne().exec(true);
                 const obs: Observable<any> = (doc.mainSkill as any).level$;
                 assert.ok(obs.subscribe);
 
@@ -693,7 +693,7 @@ config.parallel('rx-document.test.js', () => {
         describe('set', () => {
             it('should not work on non-temporary document', async () => {
                 const c = await humansCollection.createPrimary(1);
-                const doc = await c.findOne().exec();
+                const doc = await c.findOne().exec(true);
                 assert.throws(
                     () => doc.firstName = 'foobar'
                 );
@@ -710,7 +710,7 @@ config.parallel('rx-document.test.js', () => {
 
             // insert
             await c.insert(docData);
-            const doc1 = await c.findOne(primary).exec();
+            const doc1 = await c.findOne(primary).exec(true);
             assert.strictEqual(doc1.firstName, docData.firstName);
 
             // remove
@@ -719,7 +719,7 @@ config.parallel('rx-document.test.js', () => {
             // upsert
             docData.firstName = 'foobar';
             await c.upsert(docData);
-            const doc2 = await c.findOne(primary).exec();
+            const doc2 = await c.findOne(primary).exec(true);
             assert.strictEqual(doc2.firstName, 'foobar');
 
             c.database.destroy();
@@ -731,7 +731,7 @@ config.parallel('rx-document.test.js', () => {
 
             // insert
             await c.upsert(docData);
-            const doc1 = await c.findOne(primary).exec();
+            const doc1 = await c.findOne(primary).exec(true);
             assert.strictEqual(doc1.firstName, docData.firstName);
 
             // remove
@@ -740,7 +740,7 @@ config.parallel('rx-document.test.js', () => {
             // upsert
             docData.firstName = 'foobar';
             await c.insert(docData);
-            const doc2 = await c.findOne(primary).exec();
+            const doc2 = await c.findOne(primary).exec(true);
             assert.strictEqual(doc2.firstName, 'foobar');
 
             c.database.destroy();
@@ -891,11 +891,14 @@ config.parallel('rx-document.test.js', () => {
         });
         it('#830 should return a rejected promise when already deleted', async () => {
             const c = await humansCollection.createPrimary(1);
-            const doc = await c.findOne().exec();
+            const doc = await c.findOne().exec(true);
             assert.ok(doc);
             await doc.remove();
             assert.ok(doc.deleted);
             const ret = doc.remove();
+            if (!ret) {
+                throw new Error('missing');
+            }
             assert.strictEqual(typeof ret.then, 'function'); // ensure it's a promise
             await AsyncTestUtil.assertThrows(
                 () => ret,
@@ -910,7 +913,7 @@ config.parallel('rx-document.test.js', () => {
                 selector: {
                     bestFriend: { $exists: true }
                 }
-            }).exec();
+            }).exec(true);
 
             await doc.update({
                 $set: {

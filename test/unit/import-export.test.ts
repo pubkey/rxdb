@@ -93,13 +93,14 @@ config.parallel('import-export.test.js', () => {
                     schema: schemas.encryptedObjectHuman
                 });
                 const fns = [];
-                for (let i = 0; i < 10; i++)
+                for (let i = 0; i < 10; i++) {
                     fns.push(col.insert(schemaObjects.encryptedObjectHuman()));
+                }
                 await Promise.all(fns);
 
                 const json = await col.dump(false);
 
-                const firstDoc = json.docs.pop();
+                const firstDoc = json.docs.pop() as any;
                 const decrypted: any = col._crypter._decryptValue(firstDoc.secret);
                 assert.strictEqual(typeof decrypted, 'object');
                 assert.strictEqual(typeof decrypted['name'], 'string');
@@ -627,7 +628,7 @@ config.parallel('import-export.test.js', () => {
         });
         it('#1396 import/export should work with attachments', async () => {
             const sourceCol = await humansCollection.createAttachments(1);
-            const doc = await sourceCol.findOne().exec();
+            const doc = await sourceCol.findOne().exec(true);
             await doc.putAttachment({
                 id: 'cat.txt',
                 data: 'meow',

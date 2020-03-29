@@ -10,7 +10,9 @@ import * as humansCollection from './../helper/humans-collection';
 
 import config from './config';
 import {
-    createRxDatabase, clone, randomCouchString
+    createRxDatabase,
+    clone,
+    randomCouchString
 } from '../../';
 import {
     InMemoryRxCollection,
@@ -18,7 +20,7 @@ import {
     replicateExistingDocuments,
     streamChangedDocuments,
     applyChangedDocumentToPouch
-} from '../../dist/lib/plugins/in-memory';
+} from '../../plugins/in-memory';
 
 config.parallel('in-memory.test.js', () => {
     describe('internals', () => {

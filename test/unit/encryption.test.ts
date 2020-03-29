@@ -10,11 +10,9 @@ import {
     createRxSchema,
     createRxDatabase,
     RxJsonSchema,
-    randomCouchString
-} from '../../';
-import {
+    randomCouchString,
     createCrypter
-} from '../../dist/lib/crypter';
+} from '../../';
 
 config.parallel('encryption.test.js', () => {
     describe('Crypter.js', () => {
@@ -112,7 +110,7 @@ config.parallel('encryption.test.js', () => {
                 const c = await humansCollection.createEncrypted(0);
                 const agent = schemaObjects.encryptedHuman();
                 await c.insert(agent);
-                const doc = await c.findOne().exec();
+                const doc = await c.findOne().exec(true);
                 const secret = doc.get('secret');
                 assert.strictEqual(agent.secret, secret);
                 c.database.destroy();
@@ -138,18 +136,18 @@ config.parallel('encryption.test.js', () => {
         });
         describe('negative', () => { });
     });
-    describe('Document.save()', () => {
+    describe('RxDocument.save()', () => {
         describe('positive', () => {
             it('should save one encrypted value (string)', async () => {
                 const c = await humansCollection.createEncrypted(0);
                 const agent = schemaObjects.encryptedHuman();
                 await c.insert(agent);
-                const doc = await c.findOne().exec();
+                const doc = await c.findOne().exec(true);
                 const secret = doc.get('secret');
                 assert.strictEqual(agent.secret, secret);
                 const newSecret = randomCouchString(10);
                 await doc.atomicSet('secret', newSecret);
-                const docNew = await c.findOne().exec();
+                const docNew = await c.findOne().exec(true);
                 assert.strictEqual(newSecret, docNew.get('secret'));
                 c.database.destroy();
             });
@@ -169,14 +167,14 @@ config.parallel('encryption.test.js', () => {
                     name: randomCouchString(10),
                     subname: randomCouchString(10)
                 };
-                const doc = await c.findOne().exec();
+                const doc = await c.findOne().exec(true);
                 const secret = doc.get('secret');
 
                 assert.strictEqual(agent.secret.name, secret.name);
                 assert.strictEqual(agent.secret.subname, secret.subname);
 
                 await doc.atomicSet('secret', newSecret);
-                const docNew = await c.findOne().exec();
+                const docNew = await c.findOne().exec(true);
 
                 assert.strictEqual(newSecret.name, docNew.get('secret.name'));
                 assert.strictEqual(newSecret.subname, docNew.get('secret.subname'));

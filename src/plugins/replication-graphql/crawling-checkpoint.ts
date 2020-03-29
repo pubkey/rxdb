@@ -75,7 +75,17 @@ export async function getChangesSinceLastPushSequence(
     collection: RxCollection,
     endpointHash: string,
     batchSize = 10,
-): Promise<{ results: { id: string, seq: number, changes: { rev: string }[] }[], last_seq: number }> {
+): Promise<{
+    results: {
+        id: string,
+        seq: number,
+        changes: {
+            rev: string
+        }[],
+        doc: any
+    }[],
+    last_seq: number
+}> {
     let lastPushSequence = await getLastPushSequence(
         collection,
         endpointHash

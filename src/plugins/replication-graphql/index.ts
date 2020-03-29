@@ -482,6 +482,9 @@ export function syncGraphQL(
     return replicationState;
 }
 
+export * from './helper';
+export * from './crawling-checkpoint';
+
 export const rxdb = true;
 export const prototypes = {
     RxCollection: (proto: any) => {

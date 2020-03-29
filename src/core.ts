@@ -6,7 +6,9 @@
 export { addRxPlugin } from './plugin';
 export {
     PouchDB,
-    validateCouchDBString
+    validateCouchDBString,
+    getBatch,
+    countAllUndeleted
 } from './pouch-db';
 
 export {
@@ -14,11 +16,13 @@ export {
     removeRxDatabase,
     checkAdapter,
     isInstanceOf as isRxDatabase,
-    dbCount
+    dbCount,
+    _collectionNamePrimary // used in tests
 } from './rx-database';
 
 export {
-    isInstanceOf as isRxCollection
+    isInstanceOf as isRxCollection,
+    create as _createRxCollection // used in tests
 } from './rx-collection';
 
 export {
@@ -52,6 +56,25 @@ export {
     getRxStoragePouchDb,
     getPouchLocation
 } from './rx-storage-pouchdb';
+
+export {
+    _clearHook // used in tests
+} from './hooks';
+
+export {
+    createCrypter // used in tests
+} from './crypter';
+
+// used in tests
+export {
+    _getOldCollections,
+    getBatchOfOldCollection,
+    migrateDocumentData,
+    _migrateDocument,
+    deleteOldCollection,
+    migrateOldCollection,
+    migratePromise
+} from './data-migrator';
 
 export type {
     RxStorage

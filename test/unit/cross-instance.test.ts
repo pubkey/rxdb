@@ -6,8 +6,9 @@
  */
 
 import assert from 'assert';
-import config from './config';
+import AsyncTestUtil from 'async-test-util';
 
+import config from './config';
 import {
     isRxDatabase,
     createRxDatabase,
@@ -17,7 +18,6 @@ import {
 import * as schemas from './../helper/schemas';
 import * as schemaObjects from './../helper/schema-objects';
 import * as humansCollection from './../helper/humans-collection';
-import AsyncTestUtil from 'async-test-util';
 
 config.parallel('cross-instance.test.js', () => {
     describe('create database', () => {
@@ -143,8 +143,8 @@ config.parallel('cross-instance.test.js', () => {
             const c2 = await humansCollection.createMultiInstance(name);
             await c1.insert(schemaObjects.human());
 
-            const doc1 = await c1.findOne().exec();
-            const doc2 = await c2.findOne().exec();
+            const doc1 = await c1.findOne().exec(true);
+            const doc2 = await c2.findOne().exec(true);
 
             let recieved = 0;
             doc2.$.subscribe(() => {
@@ -192,8 +192,8 @@ config.parallel('cross-instance.test.js', () => {
             });
             await c1.insert(schemaObjects.encryptedHuman());
 
-            const doc1 = await c1.findOne().exec();
-            const doc2 = await c2.findOne().exec();
+            const doc1 = await c1.findOne().exec(true);
+            const doc2 = await c2.findOne().exec(true);
 
             let recievedCollection = 0;
             c2.$.subscribe(() => {
@@ -245,8 +245,8 @@ config.parallel('cross-instance.test.js', () => {
             });
             await c1.insert(schemaObjects.encryptedObjectHuman());
 
-            const doc1 = await c1.findOne().exec();
-            const doc2 = await c2.findOne().exec();
+            const doc1 = await c1.findOne().exec(true);
+            const doc2 = await c2.findOne().exec(true);
 
             let recievedCollection = 0;
             c2.$.subscribe(() => {

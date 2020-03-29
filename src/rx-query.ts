@@ -50,7 +50,10 @@ const newQueryID = function (): number {
     return ++_queryCount;
 };
 
-export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] | RxDocumentType> {
+export class RxQueryBase<
+    RxDocumentType = any,
+    RxQueryResult = RxDocument<RxDocumentType[]> | RxDocument<RxDocumentType>
+    > {
 
     public id: number = newQueryID();
 
@@ -201,7 +204,18 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
      * To have an easier implementations,
      * just subscribe and use the first result
      */
-    exec(): Promise<RxQueryResult> {
+    public exec(throwIfMissing: true): Promise<RxDocument<RxDocumentType>>;
+    public exec(): Promise<RxQueryResult>;
+    public exec(throwIfMissing?: boolean): Promise<any> {
+
+        // TODO this should be ensured by typescript
+        if (throwIfMissing && this.op !== 'findOne') {
+            throw newRxError('QU9', {
+                query: this.mangoQuery,
+                op: this.op
+            });
+        }
+
         /**
          * run _ensureEqual() here,
          * this will make sure that errors in the query which throw inside of pouchdb,
@@ -211,8 +225,19 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
             .then(() => this.$
                 .pipe(
                     first()
-                ).toPromise());
+                ).toPromise())
+            .then(result => {
+                if (!result && throwIfMissing) {
+                    throw newRxError('QU10', {
+                        query: this.mangoQuery,
+                        op: this.op
+                    });
+                } else {
+                    return result;
+                }
+            });
     }
+
 
 
     /**

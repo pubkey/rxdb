@@ -8,9 +8,8 @@ import AsyncTestUtil from 'async-test-util';
 import PouchAdapterMemory from 'pouchdb-adapter-memory';
 const leveldown = require('leveldown');
 
-import * as configModule from '../../test_tmp/unit/config';
-import { RxJsonSchema } from '../../src/types';
-const config: any = (configModule as any).default;
+import type { RxJsonSchema } from '../../';
+import config from './config';
 
 const {
     addRxPlugin,

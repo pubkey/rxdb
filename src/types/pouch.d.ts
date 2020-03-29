@@ -64,6 +64,8 @@ export declare class PouchDBInstance {
         name: string,
         options: { adapter: string }
     );
+    readonly name: string;
+
     static debug: Debug;
 
     static plugin(p: any): void;

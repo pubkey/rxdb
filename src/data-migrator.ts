@@ -442,7 +442,7 @@ export function migrateOldCollection(
 
 export function migratePromise(
     oldCollection: OldCollection,
-    batchSize: number
+    batchSize?: number
 ): Promise<any> {
     if (!oldCollection._migratePromise) {
         oldCollection._migratePromise = new Promise((res, rej) => {

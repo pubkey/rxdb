@@ -178,7 +178,7 @@ config.parallel('primary.test.js', () => {
                     assert.strictEqual(docsDESC.length, 5);
                     assert.strictEqual(
                         docsASC[0].firstName,
-                        docsDESC.pop().firstName
+                        (docsDESC.pop() as any).firstName
                     );
                     c.database.destroy();
                 });
@@ -191,7 +191,7 @@ config.parallel('primary.test.js', () => {
                     const c = await humansCollection.createPrimary(6);
                     const obj = schemaObjects.simpleHuman();
                     await c.insert(obj);
-                    const doc = await c.findOne(obj.passportId).exec();
+                    const doc = await c.findOne(obj.passportId).exec(true);
                     assert.strictEqual(doc.primary, obj.passportId);
                     c.database.destroy();
                 });
@@ -209,16 +209,16 @@ config.parallel('primary.test.js', () => {
                         selector: {
                             firstName: obj.firstName
                         }
-                    }).exec();
+                    }).exec(true);
                     assert.strictEqual(doc.primary, obj.passportId);
                     c.database.destroy();
                 });
                 it('BUG: findOne().where(myPrimary)', async () => {
                     const c = await humansCollection.createPrimary(1);
-                    const doc = await c.findOne().exec();
+                    const doc = await c.findOne().exec(true);
                     const passportId = doc.passportId;
                     assert.ok(passportId.length > 4);
-                    const doc2 = await c.findOne().where('passportId').eq(passportId).exec();
+                    const doc2 = await c.findOne().where('passportId').eq(passportId).exec(true);
                     assert.ok(isRxDocument(doc2));
                     assert.strictEqual(doc.passportId, doc2.passportId);
                     c.database.destroy();
@@ -234,7 +234,7 @@ config.parallel('primary.test.js', () => {
                     const c = await humansCollection.createPrimary(0);
                     const obj = schemaObjects.simpleHuman();
                     await c.insert(obj);
-                    const doc = await c.findOne().exec();
+                    const doc = await c.findOne().exec(true);
                     assert.strictEqual(obj.passportId, doc.get('passportId'));
                     c.database.destroy();
                 });
@@ -247,9 +247,9 @@ config.parallel('primary.test.js', () => {
                     const c = await humansCollection.createPrimary(0);
                     const obj = schemaObjects.simpleHuman();
                     await c.insert(obj);
-                    const doc = await c.findOne().exec();
+                    const doc = await c.findOne().exec(true);
                     await doc.atomicSet('firstName', 'foobar');
-                    const doc2 = await c.findOne().exec();
+                    const doc2 = await c.findOne().exec(true);
 
                     assert.strictEqual(doc2.get('firstName'), 'foobar');
                     assert.strictEqual(doc.get('passportId'), doc2.get('passportId'));
@@ -264,7 +264,7 @@ config.parallel('primary.test.js', () => {
                     const c = await humansCollection.createPrimary(0);
                     const obj = schemaObjects.simpleHuman();
                     await c.insert(obj);
-                    const doc = await c.findOne().exec();
+                    const doc = await c.findOne().exec(true);
                     let value;
                     const sub = doc.get$('firstName').subscribe((newVal: any) => value = newVal);
                     await doc.atomicSet('firstName', 'foobar');
@@ -302,7 +302,7 @@ config.parallel('primary.test.js', () => {
                     const c2 = await humansCollection.createPrimary(0, name);
                     const obj = schemaObjects.simpleHuman();
                     await c1.insert(obj);
-                    const doc = await c1.findOne().exec();
+                    const doc = await c1.findOne().exec(true);
 
 
                     let value: any;
@@ -313,7 +313,7 @@ config.parallel('primary.test.js', () => {
                         count++;
                         if (count >= 2) pW8.resolve();
                     });
-                    const doc2 = await c2.findOne().exec();
+                    const doc2 = await c2.findOne().exec(true);
                     await doc2.atomicSet('firstName', 'foobar');
                     await pW8.promise;
                     await AsyncTestUtil.waitUntil(() => value === 'foobar');

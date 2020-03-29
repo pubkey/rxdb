@@ -103,7 +103,7 @@ config.parallel('reactive-query.test.js', () => {
         });
         it('get new values on RxDocument.save', async () => {
             const c = await humansCollection.create(1);
-            const doc: any = await c.findOne().exec();
+            const doc: any = await c.findOne().exec(true);
             const pw8 = AsyncTestUtil.waitResolveable(500);
 
             let values: any;
@@ -184,7 +184,7 @@ config.parallel('reactive-query.test.js', () => {
                 .sort({
                     age: 'desc'
                 })
-                .exec();
+                .exec(true);
 
             await pw8.promise;
             assert.strictEqual(valuesAr.length, 1);
@@ -204,7 +204,7 @@ config.parallel('reactive-query.test.js', () => {
             const name = randomCouchString(10);
             const c = await humansCollection.createPrimary(1, name);
             const c2 = await humansCollection.createPrimary(0, name);
-            const doc = await c.findOne().exec();
+            const doc = await c.findOne().exec(true);
             const docId = doc.primary;
 
             assert.deepStrictEqual(c2._docCache.get(docId), undefined);
@@ -213,7 +213,7 @@ config.parallel('reactive-query.test.js', () => {
             const sub = c2.find().$.subscribe(docs => results.push(docs));
             await AsyncTestUtil.waitUntil(() => results.length >= 1);
 
-            assert.strictEqual(c2._docCache.get(docId).primary, docId);
+            assert.strictEqual((c2._docCache.get(docId) as any).primary, docId);
 
             sub.unsubscribe();
             c.database.destroy();

@@ -8,13 +8,11 @@ import PouchReplicationPlugin from 'pouchdb-replication';
 
 import config from './config';
 import {
-    addRxPlugin, randomCouchString
+    addRxPlugin,
+    randomCouchString,
+    _clearHook
 } from '../../';
 import * as humansCollection from '../helper/humans-collection';
-
-import {
-    clearHook
-} from '../../dist/lib/hooks';
 
 // used so that browserify will not require things in browsers
 const REQUIRE_FUN = require;
@@ -216,7 +214,7 @@ config.parallel('plugin.test.js', () => {
             assert.strictEqual(col.database.foo, 'bar_createRxDatabase');
             col.database.destroy();
 
-            clearHook('createRxDatabase', createRxDatabase);
+            _clearHook('createRxDatabase', createRxDatabase);
         });
         it('createRxCollection', async () => {
             const createRxCollection = (c: any) => {
@@ -232,7 +230,7 @@ config.parallel('plugin.test.js', () => {
             const col = await humansCollection.create();
             assert.strictEqual(col.foo, 'bar_createRxCollection');
             col.database.destroy();
-            clearHook('createRxCollection', createRxCollection);
+            _clearHook('createRxCollection', createRxCollection);
         });
         it('createRxSchema', async () => {
             const createRxSchema = (c: any) => {
@@ -248,7 +246,7 @@ config.parallel('plugin.test.js', () => {
             const col: any = await humansCollection.create();
             assert.strictEqual(col.schema['foo'], 'bar_createRxSchema');
             col.database.destroy();
-            clearHook('createRxSchema', createRxSchema);
+            _clearHook('createRxSchema', createRxSchema);
         });
         it('createRxQuery', async () => {
             const createRxQuery = (c: any) => {
@@ -265,7 +263,7 @@ config.parallel('plugin.test.js', () => {
             const query: any = col.find();
             assert.strictEqual(query['foo'], 'bar_createRxQuery');
             col.database.destroy();
-            clearHook('createRxQuery', createRxQuery);
+            _clearHook('createRxQuery', createRxQuery);
         });
         it('createRxDocument', async () => {
             const createRxDocument = (c: any) => {
@@ -282,7 +280,7 @@ config.parallel('plugin.test.js', () => {
             const doc: any = await col.findOne().exec();
             assert.strictEqual(doc.foo, 'bar_createRxDocument');
             col.database.destroy();
-            clearHook('createRxDocument', createRxDocument);
+            _clearHook('createRxDocument', createRxDocument);
         });
         it('postCreateRxDocument', async () => {
             const postCreateRxDocument = (c: any) => {
@@ -299,7 +297,7 @@ config.parallel('plugin.test.js', () => {
             const doc: any = await col.findOne().exec();
             assert.strictEqual(doc.fooPostCreate, 'bar_postCreateRxDocument');
             col.database.destroy();
-            clearHook('postCreateRxDocument', postCreateRxDocument);
+            _clearHook('postCreateRxDocument', postCreateRxDocument);
         });
         it('preCreatePouchDb', async () => {
             const collectionName = randomCouchString(10);
@@ -323,7 +321,7 @@ config.parallel('plugin.test.js', () => {
             const info = await pouchInstance.info();
             assert.ok(info.db_name.includes('foobar'));
             col.database.destroy();
-            clearHook('preCreatePouchDb', preCreatePouchDb);
+            _clearHook('preCreatePouchDb', preCreatePouchDb);
         });
     });
 });
