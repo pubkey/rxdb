@@ -60,15 +60,13 @@ export function fastUnsecureHash(obj: any): number {
  * because pouchdb uses the same
  * and build-size could be reduced by 9kb
  */
-import {
-    hash as hashSparkMd5
-} from 'spark-md5';
+import Md5 from 'spark-md5';
 export const RXDB_HASH_SALT = 'rxdb-specific-hash-salt';
 export function hash(msg: string | any): string {
     if (typeof msg !== 'string') {
         msg = JSON.stringify(msg);
     }
-    return hashSparkMd5(RXDB_HASH_SALT + msg);
+    return Md5.hash(RXDB_HASH_SALT + msg);
 }
 
 /**
