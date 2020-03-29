@@ -520,6 +520,26 @@ config.parallel('rx-query.test.js', () => {
 
             db2.destroy();
         });
+        it('exec(true) should throw if missing', async () => {
+            const c = await humansCollection.create(0);
+
+            AsyncTestUtil.assertThrows(
+                () => c.findOne().exec(true),
+                'RxError',
+                'throwIfMissing'
+            );
+
+            c.database.destroy();
+        });
+        it('exec(true) should throw used with non-findOne', async () => {
+            const c = await humansCollection.create(0);
+            AsyncTestUtil.assertThrows(
+                () => c.find().exec(true),
+                'RxError',
+                'findOne'
+            );
+            c.database.destroy();
+        });
     });
     describe('update', () => {
         describe('positive', () => {
