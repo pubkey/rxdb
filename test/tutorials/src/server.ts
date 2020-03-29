@@ -11,7 +11,7 @@ import {
 import * as MemoryAdapter from 'pouchdb-adapter-memory';
 addRxPlugin(MemoryAdapter);
 
-import RxDBServerPlugin from 'rxdb/plugins/server';
+import { RxDBServerPlugin } from 'rxdb/plugins/server';
 addRxPlugin(RxDBServerPlugin);
 
 import * as PouchHttpPlugin from 'pouchdb-adapter-http';
