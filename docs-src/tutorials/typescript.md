@@ -23,6 +23,7 @@ import {
     RxCollection,
     RxJsonSchema,
     RxDocument,
+    createRxDatabase
 } from 'rxdb';
 ```
 
@@ -143,8 +144,8 @@ await myDatabase.collection({
 myDatabase.heroes.postInsert(
     function myPostInsertHook(
         this: HeroCollection, // own collection is bound to the scope
-        docData, // documents data
-        doc // RxDocument
+        docData: HeroDocType, // documents data
+        doc: HeroDocument // RxDocument
     ) {
         console.log('insert to ' + this.name + '-collection: ' + doc.firstName);
     },
@@ -156,7 +157,7 @@ myDatabase.heroes.postInsert(
  */
 
 // insert a document
-const doc: HeroDocument = await myDatabase.heroes.insert({
+const hero: HeroDocument = await myDatabase.heroes.insert({
     passportId: 'myId',
     firstName: 'piotr',
     lastName: 'potter',
@@ -164,10 +165,10 @@ const doc: HeroDocument = await myDatabase.heroes.insert({
 });
 
 // access a property
-console.log(doc.firstName);
+console.log(hero.firstName);
 
 // use a orm method
-doc.scream('AAH!');
+hero.scream('AAH!');
 
 // use a static orm method from the collection
 const amount: number = await myDatabase.heroes.countAllDocuments();
