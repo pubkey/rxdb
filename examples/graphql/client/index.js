@@ -4,23 +4,26 @@ import {
 } from 'subscriptions-transport-ws';
 
 
-import RxDB from 'rxdb/plugins/core';
+import {
+    addRxPlugin,
+    createRxDatabase
+} from 'rxdb/plugins/core';
 
-RxDB.plugin(require('pouchdb-adapter-idb'));
+addRxPlugin(require('pouchdb-adapter-idb'));
 import RxDBReplicationGraphQL from 'rxdb/plugins/replication-graphql';
-RxDB.plugin(RxDBReplicationGraphQL);
+addRxPlugin(RxDBReplicationGraphQL);
 
 
 // TODO import these only in non-production build
 import RxDBSchemaCheckModule from 'rxdb/plugins/schema-check';
-RxDB.plugin(RxDBSchemaCheckModule);
+addRxPlugin(RxDBSchemaCheckModule);
 import RxDBErrorMessagesModule from 'rxdb/plugins/error-messages';
-RxDB.plugin(RxDBErrorMessagesModule);
+addRxPlugin(RxDBErrorMessagesModule);
 import RxDBValidateModule from 'rxdb/plugins/validate';
-RxDB.plugin(RxDBValidateModule);
+addRxPlugin(RxDBValidateModule);
 
 import UpdatePlugin from 'rxdb/plugins/update';
-RxDB.plugin(UpdatePlugin);
+addRxPlugin(UpdatePlugin);
 
 import {
     GRAPHQL_PORT,
@@ -118,7 +121,7 @@ function getDatabaseName() {
 
 async function run() {
     heroesList.innerHTML = 'Create database..';
-    const db = await RxDB.create({
+    const db = await createRxDatabase({
         name: getDatabaseName(),
         adapter: 'idb'
     });

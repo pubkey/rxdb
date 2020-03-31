@@ -38,7 +38,7 @@ async function run() {
      */
     db.heroes.find()
         .sort({
-            name: 1
+            name: 'asc'
         })
         .$.subscribe(function (heroes) {
             if (!heroes) {
