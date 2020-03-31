@@ -1399,7 +1399,7 @@ config.parallel('rx-collection.test.js', () => {
                         schema: schemas.primaryHuman
                     });
                     await collection.remove();
-                    const otherSchema = clone(schemas.primaryHuman);
+                    const otherSchema: any = clone(schemas.primaryHuman);
                     otherSchema.properties['foobar'] = {
                         type: 'string'
                     };
