@@ -73,7 +73,7 @@ import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 addRxPlugin(RxDBDevModePlugin);
 ```
 
-### replication
+### query-builder
 
 Adds the [query-builder](./rx-query.md)-functionality to RxDB which allows you to run queries like `myCollection.find().where('x').eq(5)`
 
@@ -82,6 +82,14 @@ import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
 addRxPlugin(RxDBQueryBuilderPlugin);
 ```
 
+### migration
+
+Adds the [data-migration](./data-migration.md)-functionality to RxDB which allows you to migrate documents when the schema changes.
+
+```javascript
+import { RxDBMigrationPlugin } from 'rxdb/plugins/migration';
+addRxPlugin(RxDBMigrationPlugin);
+```
 
 ### replication
 

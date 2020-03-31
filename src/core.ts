@@ -65,17 +65,6 @@ export {
     createCrypter // used in tests
 } from './crypter';
 
-// used in tests
-export {
-    _getOldCollections,
-    getBatchOfOldCollection,
-    migrateDocumentData,
-    _migrateDocument,
-    deleteOldCollection,
-    migrateOldCollection,
-    migratePromise
-} from './data-migrator';
-
 export type {
     RxStorage
 } from './rx-storate.interface';

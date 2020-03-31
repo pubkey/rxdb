@@ -10,16 +10,19 @@ import {
     PouchDB,
     randomCouchString,
     promiseWait,
+    _collectionNamePrimary,
+    countAllUndeleted
+} from '../../';
+
+import {
     _getOldCollections,
     getBatchOfOldCollection,
     migrateDocumentData,
     _migrateDocument,
     deleteOldCollection,
     migrateOldCollection,
-    migratePromise,
-    _collectionNamePrimary,
-    countAllUndeleted
-} from '../../';
+    migratePromise
+} from '../../plugins/migration';
 
 config.parallel('data-migration.test.js', () => {
     describe('.create() with migrationStrategies', () => {
@@ -184,7 +187,7 @@ config.parallel('data-migration.test.js', () => {
                         3: () => { }
                     }
                 });
-                const old = await _getOldCollections(col._dataMigrator);
+                const old = await _getOldCollections(col.getDataMigrator());
                 assert.deepStrictEqual(old, []);
                 db.destroy();
             });
@@ -217,7 +220,7 @@ config.parallel('data-migration.test.js', () => {
                         3: () => { }
                     }
                 });
-                const old = await _getOldCollections(col2._dataMigrator);
+                const old = await _getOldCollections(col2.getDataMigrator());
                 assert.ok(Array.isArray(old));
                 assert.strictEqual(old.length, 1);
 
@@ -233,7 +236,7 @@ config.parallel('data-migration.test.js', () => {
                 it('create', async () => {
                     const col = await humansCollection.createMigrationCollection();
 
-                    const old = await _getOldCollections(col._dataMigrator);
+                    const old = await _getOldCollections(col.getDataMigrator());
                     const oldCol: any = old.pop();
 
                     assert.strictEqual(oldCol.schema.constructor.name, 'RxSchema');
@@ -253,7 +256,7 @@ config.parallel('data-migration.test.js', () => {
                         }
                     });
 
-                    const old = await _getOldCollections(col._dataMigrator);
+                    const old = await _getOldCollections(col.getDataMigrator());
                     const oldCol: any = old.pop();
 
                     const oldDocs = await getBatchOfOldCollection(oldCol, 10);
@@ -270,7 +273,7 @@ config.parallel('data-migration.test.js', () => {
                         }
                     });
 
-                    const old = await _getOldCollections(col._dataMigrator);
+                    const old = await _getOldCollections(col.getDataMigrator());
                     const oldCol: any = old.pop();
 
                     const oldDocs = await getBatchOfOldCollection(oldCol, 10);
@@ -283,7 +286,7 @@ config.parallel('data-migration.test.js', () => {
                 it('should delete the pouchdb with all its content', async () => {
                     const dbName = randomCouchString(10);
                     const col = await humansCollection.createMigrationCollection(10, {}, dbName);
-                    const olds = await _getOldCollections(col._dataMigrator);
+                    const olds = await _getOldCollections(col.getDataMigrator());
                     const old: any = olds.pop();
 
                     const amount = await countAllUndeleted(old.pouchdb);
@@ -339,7 +342,7 @@ config.parallel('data-migration.test.js', () => {
                             return doc;
                         }
                     });
-                    const olds = await _getOldCollections(col._dataMigrator);
+                    const olds = await _getOldCollections(col.getDataMigrator());
                     const oldCol = olds.pop();
 
                     // simluate prerun of migrate()
@@ -356,7 +359,7 @@ config.parallel('data-migration.test.js', () => {
             describe('.migrate()', () => {
                 it('should resolve finished when no docs', async () => {
                     const col = await humansCollection.createMigrationCollection(0);
-                    const olds = await _getOldCollections(col._dataMigrator);
+                    const olds = await _getOldCollections(col.getDataMigrator());
                     const oldCol = olds.pop();
 
                     await migratePromise(oldCol as any);
@@ -369,7 +372,7 @@ config.parallel('data-migration.test.js', () => {
                             return doc;
                         }
                     });
-                    const olds = await _getOldCollections(col._dataMigrator);
+                    const olds = await _getOldCollections(col.getDataMigrator());
                     const oldCol = olds.pop();
 
                     const docsPrev = await col.pouch.allDocs({
@@ -394,7 +397,7 @@ config.parallel('data-migration.test.js', () => {
                             return doc;
                         }
                     });
-                    const olds = await _getOldCollections(col._dataMigrator);
+                    const olds = await _getOldCollections(col.getDataMigrator());
                     const oldCol = olds.pop();
 
                     const pw8 = AsyncTestUtil.waitResolveable(1000);
@@ -421,7 +424,7 @@ config.parallel('data-migration.test.js', () => {
                             return null;
                         }
                     });
-                    const olds = await _getOldCollections(col._dataMigrator);
+                    const olds = await _getOldCollections(col.getDataMigrator());
                     const oldCol = olds.pop();
 
                     // batchSize is doc.length / 2 to make sure it takes a bit
@@ -441,7 +444,7 @@ config.parallel('data-migration.test.js', () => {
                             throw new Error('foobar');
                         }
                     });
-                    const olds = await _getOldCollections(col._dataMigrator);
+                    const olds = await _getOldCollections(col.getDataMigrator());
                     const oldCol = olds.pop();
                     await AsyncTestUtil.assertThrows(
                         () => migratePromise(oldCol as any),

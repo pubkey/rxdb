@@ -37,11 +37,9 @@ import {
     newRxError,
     newRxTypeError
 } from './rx-error';
-import {
-    mustMigrate,
-    createDataMigrator,
+import type {
     DataMigrator
-} from './data-migrator';
+} from './plugins/migration';
 import {
     Crypter,
     createCrypter
@@ -177,7 +175,6 @@ export class RxCollectionBase<
         RxDocument<RxDocumentType, OrmMethods>
     > = createDocCache();
     public _queryCache: QueryCache = createQueryCache();
-    public _dataMigrator: DataMigrator = {} as DataMigrator;
     public _crypter: Crypter = {} as Crypter;
     public _observable$?: Observable<any>; // TODO type
     public _changeEventBuffer: ChangeEventBuffer = {} as ChangeEventBuffer;
@@ -214,11 +211,6 @@ export class RxCollectionBase<
             spawnedPouchPromise
         );
 
-
-        this._dataMigrator = createDataMigrator(
-            this.asRxCollection,
-            this.migrationStrategies
-        );
         this._crypter = createCrypter(this.database.password, this.schema);
 
         this._observable$ = this.database.$.pipe(
@@ -244,26 +236,22 @@ export class RxCollectionBase<
         ]);
     }
 
-    /**
-     * checks if a migration is needed
-     */
+
+    // overwritte by migration-plugin
     migrationNeeded(): Promise<boolean> {
-        return mustMigrate(this._dataMigrator as any);
+        if (this.schema.version === 0) {
+            return Promise.resolve(false);
+        }
+        throw pluginMissing('migration');
     }
-
-    /**
-     * trigger migration manually
-     */
+    getDataMigrator(): DataMigrator {
+        throw pluginMissing('migration');
+    }
     migrate(batchSize: number = 10): Observable<MigrationState> {
-        return (this._dataMigrator as any).migrate(batchSize);
+        return this.getDataMigrator().migrate(batchSize);
     }
-
-    /**
-     * does the same thing as .migrate() but returns promise
-     * @return resolves when finished
-     */
     migratePromise(batchSize: number = 10): Promise<any> {
-        return (this._dataMigrator as any).migratePromise(batchSize);
+        return this.getDataMigrator().migratePromise(batchSize);
     }
 
     /**
@@ -868,7 +856,9 @@ export function create({
                 });
 
             let ret = Promise.resolve();
-            if (autoMigrate) ret = collection.migratePromise();
+            if (autoMigrate && collection.schema.version !== 0) {
+                ret = collection.migratePromise();
+            }
             return ret;
         })
         .then(() => {

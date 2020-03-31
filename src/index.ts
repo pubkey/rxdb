@@ -18,6 +18,9 @@ addRxPlugin(RxDBValidatePlugin);
 import { RxDBKeyCompressionPlugin } from './plugins/key-compression';
 addRxPlugin(RxDBKeyCompressionPlugin);
 
+import { RxDBMigrationPlugin } from './plugins/migration';
+addRxPlugin(RxDBMigrationPlugin);
+
 import { RxDBLeaderElectionPlugin } from './plugins/leader-election';
 addRxPlugin(RxDBLeaderElectionPlugin);
 

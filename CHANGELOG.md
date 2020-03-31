@@ -9,6 +9,7 @@ Breaking:
   - Indexes are now specified at the top-level of the schema-definition. [#1655](https://github.com/pubkey/rxdb/issues/1655)
   - Encrypted fields are now specified at the top-level of the schema-definition
   - Replaced plugins `error-messages` and `schema-check` with [dev-mode](https://pubkey.github.io/rxdb/custom-build.html#dev-mode)
+  - Moved data migration from core to migration plugin
   - Removed all default exports. Please only import the stuff that you really need.
   - Renamed `RxDB.create()` to `createRxDatabase()`
   - Renamed `removeDatabase()` to `removeRxDatabase()`
@@ -19,13 +20,12 @@ Breaking:
   - Renamed `RxCollection.remove$()` to `RxCollection.delete$()` to be equal to CRUD
   - Renamed `RxDatabase.queryChangeDetection` to `eventReduce` and set default to `true` (no beta anymore)
   - Change default of `RxDocument().toJSON(withRevAndAttachments)` to `false`
-  - Change `.find()` and `.findOne()` to acccept a full MangoQuery instead of just the selector
+  - Change `.find()` and `.findOne()` to acccept a full MangoQuery with `sort` and `limit` instead of just the selector
   - Chained queries like `collection.find().where('x').eq('foo')` moved out of the core module into the query-builder plugin
   - The internal `hash()` function does now use a RxDB specific salt
   - Renamed `RxSchema.jsonID` to `RxSchema.jsonSchema`
   - Moved remaining stuff of leader-election from core into the plugin
   - Merged multiple internal databases for metadata into one `internalStore`
-  - Added `RxQuery.exec(trhowIfMissing = false)`
 
 Other:
   - Removed many runtime type checks that now should be covered by typescript in buildtime

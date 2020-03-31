@@ -9,55 +9,52 @@
  *
  */
 import {
-    countAllUndeleted,
-    getBatch
-} from './pouch-db';
-import {
-    clone,
-    toPromise,
-    flatClone
-} from './util';
-import {
-    createRxSchema
-} from './rx-schema';
-import {
-    newRxError
-} from './rx-error';
-import overwritable from './overwritable';
-import {
-    runPluginHooks,
-    runAsyncPluginHooks
-} from './hooks';
-
-import {
     Subject,
     Observable
 } from 'rxjs';
 
+import {
+    countAllUndeleted,
+    getBatch
+} from '../../pouch-db';
+import {
+    clone,
+    toPromise,
+    flatClone
+} from '../../util';
+import {
+    createRxSchema
+} from '../../rx-schema';
+import {
+    newRxError
+} from '../../rx-error';
+import overwritable from '../../overwritable';
+import {
+    runPluginHooks,
+    runAsyncPluginHooks
+} from '../../hooks';
 import type {
     RxCollection,
     RxDatabase,
     MigrationState,
     PouchDBInstance,
     NumberFunctionMap
-} from './types';
-
+} from '../../types';
 import {
     RxSchema,
     getPreviousVersions
-} from './rx-schema';
-import {
+} from '../../rx-schema';
+import type {
     KeyCompressor
-} from './plugins/key-compression';
+} from '../key-compression';
 import {
     Crypter,
     createCrypter
-} from './crypter';
-
+} from '../../crypter';
 import {
     _handleToPouch,
     _handleFromPouch
-} from './rx-collection-helper';
+} from '../../rx-collection-helper';
 
 export class DataMigrator {
 
@@ -242,7 +239,9 @@ export function _getOldCollections(
  * returns true if a migration is needed
  */
 export function mustMigrate(dataMigrator: DataMigrator): Promise<boolean> {
-    if (dataMigrator.currentSchema.version === 0) return Promise.resolve(false);
+    if (dataMigrator.currentSchema.version === 0) {
+        return Promise.resolve(false);
+    }
     return _getOldCollections(dataMigrator)
         .then(oldCols => {
             if (oldCols.length === 0) return false;
