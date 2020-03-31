@@ -20,6 +20,8 @@ import { RxDBNoValidatePlugin } from '../plugins/no-validate';
 addRxPlugin(RxDBNoValidatePlugin);
 import { RxDBKeyCompressionPlugin } from '../plugins/key-compression';
 addRxPlugin(RxDBKeyCompressionPlugin);
+import { RxDBMigrationPlugin } from '../plugins/migration';
+addRxPlugin(RxDBMigrationPlugin);
 
 
 const elapsedTime = (before: any) => {
