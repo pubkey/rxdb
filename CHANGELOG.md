@@ -34,6 +34,11 @@ Other:
 Docs:
   - Removed examples for `require()` CommonJS loading
 
+TODOs:
+  - rewrite data migration
+  - add e2e tests to react example
+  - fix https://github.com/pouchdb/pouchdb/issues/7810 so we can upgrade `pouchdb-find`
+
 
 ### X.X.X (comming soon)
 

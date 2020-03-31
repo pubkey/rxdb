@@ -3,12 +3,14 @@
  * it can be used as standalone but is also used in the batteries-included main-export
  */
 
-import './types/modules/crypto-js';
-import './types/modules/graphql-client';
-import './types/modules/mocha.parallel';
-import './types/modules/modifiyjs';
-import './types/modules/pouchdb-selector-core';
-import './types/modules/random-token';
+import './types/modules/crypto-js.d';
+import './types/modules/graphql-client.d';
+import './types/modules/mocha.parallel.d';
+import './types/modules/modifiyjs.d';
+import './types/modules/pouchdb-selector-core.d';
+import './types/modules/random-token.d';
+
+
 
 export { addRxPlugin } from './plugin';
 export {
