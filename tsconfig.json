@@ -16,7 +16,7 @@
         "esModuleInterop": true,
 
         "outDir": "./dist/typings",
-        "noEmit": false,
+        "noEmit": true,
         "emitDeclarationOnly": true,
         "declaration": true,
 
