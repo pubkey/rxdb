@@ -10,20 +10,18 @@ import {
 } from 'rxdb/plugins/core';
 
 addRxPlugin(require('pouchdb-adapter-idb'));
-import RxDBReplicationGraphQL from 'rxdb/plugins/replication-graphql';
-addRxPlugin(RxDBReplicationGraphQL);
+import { RxDBReplicationGraphQLPlugin } from 'rxdb/plugins/replication-graphql';
+addRxPlugin(RxDBReplicationGraphQLPlugin);
 
 
 // TODO import these only in non-production build
-import RxDBSchemaCheckModule from 'rxdb/plugins/schema-check';
-addRxPlugin(RxDBSchemaCheckModule);
-import RxDBErrorMessagesModule from 'rxdb/plugins/error-messages';
-addRxPlugin(RxDBErrorMessagesModule);
-import RxDBValidateModule from 'rxdb/plugins/validate';
-addRxPlugin(RxDBValidateModule);
+import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
+addRxPlugin(RxDBDevModePlugin);
+import { RxDBValidatePlugin } from 'rxdb/plugins/validate';
+addRxPlugin(RxDBValidatePlugin);
 
-import UpdatePlugin from 'rxdb/plugins/update';
-addRxPlugin(UpdatePlugin);
+import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
+addRxPlugin(RxDBUpdatePlugin);
 
 import {
     GRAPHQL_PORT,
@@ -219,7 +217,7 @@ async function run() {
     heroesList.innerHTML = 'Subscribe to query..';
     collection.find()
         .sort({
-            name: 1
+            name: 'asc'
         })
         .$.subscribe(function (heroes) {
             let html = '';
