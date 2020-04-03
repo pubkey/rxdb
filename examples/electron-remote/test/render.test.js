@@ -1,6 +1,9 @@
 const assert = require('assert');
-const RxDB = require('../../../');
-RxDB.plugin(require('pouchdb-adapter-idb'));
+const {
+    addRxPlugin,
+    createRxDatabase
+} = require('../../../');
+addRxPlugin(require('pouchdb-adapter-idb'));
 
 
 /**
@@ -11,7 +14,7 @@ module.exports = (function () {
     const runTests = async function () {
         // issue #587 Icorrect working attachments in electron-render
         await (async function () {
-            const db = await RxDB.create({
+            const db = await createRxDatabase({
                 name: 'foobar587' + new Date().getTime(),
                 adapter: 'idb',
                 password: 'myLongAndStupidPassword',

@@ -4,10 +4,10 @@ const electronPath = require('electron'); // Require Electron from the binaries 
 const path = require('path');
 const AsyncTestUtil = require('async-test-util');
 
-describe('Application launch', function() {
+describe('Application launch', function () {
     this.timeout(20000);
     let app;
-    before(function() {
+    before(function () {
         this.app = new Application({
             // Your electron path can be any binary
             // i.e for OSX an example path could be '/Applications/MyApp.app/Contents/MacOS/MyApp'
@@ -33,7 +33,7 @@ describe('Application launch', function() {
         return this.app.start();
     });
 
-    after(function() {
+    after(function () {
         if (this.app && this.app.isRunning())
             return this.app.stop();
     });
