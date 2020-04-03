@@ -55,7 +55,7 @@
     "lint:js": "eslint config",
     "lint:ts": "tslint --project ./",
     "lint:ts:fix": "tslint --project ./ --fix",
-    "check-types": "npm run build && tsc",
+    "check-types": "tsc",
     "transpile": "node scripts/transpile.js",
     "build:es": "rimraf -rf dist/es && cross-env NODE_ENV=es6 babel src --out-dir dist/es --source-maps --extensions \".ts,.js\"",
     "build": "npm run clear && npm run transpile && npm run build:es && browserify dist/lib/browserify.index.js > dist/rxdb.browserify.js && uglifyjs --compress --mangle --output dist/rxdb.browserify.min.js -- dist/rxdb.browserify.js",
