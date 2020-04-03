@@ -23,6 +23,9 @@ addRxPlugin(RxDBValidatePlugin);
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
 addRxPlugin(RxDBUpdatePlugin);
 
+import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
+addRxPlugin(RxDBQueryBuilderPlugin);
+
 import {
     GRAPHQL_PORT,
     GRAPHQL_PATH,
