@@ -8,8 +8,10 @@ const heroesList = document.querySelector('#heroes-list');
 
 const syncURL = 'http://localhost:10102/db/heroes';
 
-const RxDB = require('rxdb');
-RxDB.plugin(require('pouchdb-adapter-idb'));
+const {
+    addRxPlugin
+} = require('rxdb');
+addRxPlugin(require('pouchdb-adapter-idb'));
 
 async function run() {
     /**
