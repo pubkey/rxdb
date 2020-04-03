@@ -610,3 +610,24 @@ AFTER:
   }
 }
 
+
+
+## optimize event-reduce for performance
+
+(measure writeWhileSubscribe)
+
+BEFORE:
+5862
+5672
+5702
+5601
+5586
+avg = 5684.6
+
+AFTER:
+5405
+5455
+5500
+5480
+5451
+avg = 5458.2
