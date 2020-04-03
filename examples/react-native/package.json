@@ -15,7 +15,7 @@
   },
   "devDependencies": {
     "babel-preset-expo": "8.1.0",
-    "expo-cli": "3.17.11",
+    "expo-cli": "3.17.15",
     "jest-expo": "37.0.0",
     "react-native-gesture-handler": "1.6.1",
     "react-test-renderer": "16.13.1",
@@ -24,7 +24,7 @@
   },
   "main": "node_modules/expo/AppEntry.js",
   "dependencies": {
-    "expo": "37.0.3",
+    "expo": "37.0.4",
     "global": "4.4.0",
     "pouchdb-adapter-asyncstorage": "6.4.1",
     "pouchdb-adapter-http": "7.2.1",
