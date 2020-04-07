@@ -576,6 +576,7 @@ describe('replication-graphql.test.js', () => {
                     const changes = await getChangesSinceLastPushSequence(
                         c,
                         endpointHash,
+                        'last_pulled_rev',
                         10
                     );
                     assert.strictEqual(changes.results.length, amount);
@@ -590,6 +591,7 @@ describe('replication-graphql.test.js', () => {
                     const changes = await getChangesSinceLastPushSequence(
                         c,
                         endpointHash,
+                        'last_pulled_rev',
                         10
                     );
                     assert.strictEqual(changes.results.length, amount);
@@ -614,6 +616,7 @@ describe('replication-graphql.test.js', () => {
                     const changes = await getChangesSinceLastPushSequence(
                         c,
                         endpointHash,
+                        'last_pulled_rev',
                         10
                     );
                     assert.strictEqual(changes.results.length, amount);
@@ -652,6 +655,7 @@ describe('replication-graphql.test.js', () => {
                     const changes = await getChangesSinceLastPushSequence(
                         c,
                         endpointHash,
+                        'last_pulled_rev',
                         10
                     );
 
@@ -661,12 +665,12 @@ describe('replication-graphql.test.js', () => {
                     assert.strictEqual(changes.last_seq, amount + 1);
                     c.database.destroy();
                 });
-                it('should have filtered out docs with replication_id set', async () => {
+                it('should have filtered out docs with last_pulled_rev set', async () => {
                     const amount = 5;
                     const c = await humansCollection.createHumanWithTimestamp(amount);
                     const toPouch: any = schemaObjects.humanWithTimestamp();
                     toPouch._rev = `1-${util.hash(toPouch)}`;
-                    toPouch._replication_id = toPouch._rev;
+                    toPouch.last_pulled_rev = toPouch._rev;
 
                     await c.pouch.bulkDocs([c._handleToPouch(toPouch)], {
                         new_edits: false
@@ -678,6 +682,7 @@ describe('replication-graphql.test.js', () => {
                     const changes = await getChangesSinceLastPushSequence(
                         c,
                         endpointHash,
+                        'last_pulled_rev',
                         10
                     );
 
@@ -700,6 +705,7 @@ describe('replication-graphql.test.js', () => {
                     const changes = await getChangesSinceLastPushSequence(
                         c,
                         endpointHash,
+                        'last_pulled_rev',
                         10,
                         true
                     );

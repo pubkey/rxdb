@@ -346,10 +346,6 @@ const fillWithDefaultSettings = function (
         minLength: 1
     };
 
-    schemaObj.properties._replication_id = {
-        type: 'string',
-    };
-
     // add attachments
     schemaObj.properties._attachments = {
         type: 'object'

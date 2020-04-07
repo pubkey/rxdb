@@ -321,7 +321,8 @@ export interface HumanWithTimestampDocumentType {
     _revisions?: {
         start: number;
         ids: [string];
-    }
+    },
+    last_pulled_rev?: string;
 }
 export function humanWithTimestamp(): HumanWithTimestampDocumentType {
     const now = new Date().getTime() / 1000;

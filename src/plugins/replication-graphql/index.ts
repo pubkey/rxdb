@@ -69,6 +69,7 @@ export class RxGraphQLReplicationState {
         public pull: GraphQLSyncPullOptions,
         public push: GraphQLSyncPushOptions,
         public deletedFlag: string,
+        public lastPulledRevField: string,
         public live: boolean,
         public liveInterval: number,
         public retryTime: number,
@@ -251,6 +252,7 @@ export class RxGraphQLReplicationState {
         const changes = await getChangesSinceLastPushSequence(
             this.collection,
             this.endpointHash,
+            this.lastPulledRevField,
             this.push.batchSize,
             this.syncRevisions
         );
@@ -261,7 +263,7 @@ export class RxGraphQLReplicationState {
             doc[this.deletedFlag] = !!change['deleted'];
             delete doc._deleted;
             delete doc._attachments;
-            delete doc._replication_id;
+            delete doc[this.lastPulledRevField];
 
             if (!this.syncRevisions) {
                 delete doc._rev;
@@ -361,7 +363,7 @@ export class RxGraphQLReplicationState {
 
             toPouch._rev = newRevision;
         } else {
-            toPouch._replication_id = toPouch._rev;
+            toPouch[this.lastPulledRevField] = toPouch._rev;
         }
 
         await this.collection.pouch.bulkDocs(
@@ -412,6 +414,7 @@ export function syncGraphQL(
         pull,
         push,
         deletedFlag,
+        lastPulledRevField = 'last_pulled_rev',
         live = false,
         liveInterval = 1000 * 10, // in ms
         retryTime = 1000 * 5, // in ms
@@ -439,6 +442,7 @@ export function syncGraphQL(
         pull,
         push,
         deletedFlag,
+        lastPulledRevField,
         live,
         liveInterval,
         retryTime,
