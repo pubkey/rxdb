@@ -844,6 +844,9 @@ export const humanWithTimestamp: RxJsonSchema<HumanWithTimestampDocumentType> = 
         },
         updatedAt: {
             type: 'number'
+        },
+        last_pulled_rev: {
+            type: 'string'
         }
     },
     required: ['id', 'name', 'age', 'updatedAt']
@@ -872,6 +875,9 @@ export const humanWithTimestampAllIndex: RxJsonSchema<HumanWithTimestampDocument
         updatedAt: {
             type: 'number',
             index: true
+        },
+        last_pulled_rev: {
+            type: 'string'
         }
     },
     required: ['id', 'name', 'age', 'updatedAt']

@@ -74,6 +74,7 @@ export async function setLastPushSequence(
 export async function getChangesSinceLastPushSequence(
     collection: RxCollection,
     endpointHash: string,
+    lastPulledRevField: string,
     batchSize = 10,
     syncRevisions: boolean = false,
 ): Promise<{ results: { id: string, seq: number, changes: { rev: string }[] }[], last_seq: number }> {
@@ -109,7 +110,7 @@ export async function getChangesSinceLastPushSequence(
                 change.doc._rev
             )) return false;
 
-            if (change.doc._replication_id === change.doc._rev) return false;
+            if (change.doc[lastPulledRevField] === change.doc._rev) return false;
             /**
              * filter out internal docs
              * that are used for views or indexes in pouchdb
