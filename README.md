@@ -76,17 +76,17 @@ RxDB is made so that you can use **exactly the same code** at
     ![Safari](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/safari/safari_24x24.png)
     ![Edge](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/edge/edge_24x24.png)
     ![Internet Explorer 11](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/archive/internet-explorer_9-11/internet-explorer_9-11_24x24.png) Browsers
--   ![NodeJS](docs-src/files/icons/nodejs.png) [NodeJS](https://nodejs.org/en/)
--   ![electron](docs-src/files/icons/electron.png) [Electron](https://electronjs.org/)
--   ![react-native](docs-src/files/icons/react-native.png) [React-Native](https://facebook.github.io/react-native/)
+-   ![NodeJS](docs-src/files/icons/nodejs.png) [NodeJS](https://github.com/pubkey/rxdb/tree/master/examples/node)
+-   ![electron](docs-src/files/icons/electron.png) [Electron](https://github.com/pubkey/rxdb/tree/master/examples/electron)
+-   ![react-native](docs-src/files/icons/react-native.png) [React-Native](https://github.com/pubkey/rxdb/tree/master/examples/react-native)
 -   ![cordova](docs-src/files/icons/cordova.png) [Cordova/Phonegap](https://cordova.apache.org/)
 
 We optimized, double-checked and made boilerplates so you can directly start to use RxDB with frameworks like
 
--   ![react](docs-src/files/icons/react.png) [React](https://reactjs.org/)
--   ![angular](docs-src/files/icons/angular.png) [Angular/ng2](https://angular.io/)
--   ![ionic](docs-src/files/icons/ionic.png) [Ionic2](https://ionicframework.com/)
--   ![vuejs](docs-src/files/icons/vuejs.png) [Vuejs](https://vuejs.org/)
+-   ![angular](docs-src/files/icons/angular.png) [Angular](https://github.com/pubkey/rxdb/tree/master/examples/angular)
+-   ![vuejs](docs-src/files/icons/vuejs.png) [Vuejs](https://github.com/pubkey/rxdb/tree/master/examples/vue)
+-   ![react](docs-src/files/icons/react.png) [React](https://github.com/pubkey/rxdb/tree/master/examples/react)
+-   ![ionic](docs-src/files/icons/ionic.png) [Ionic2](https://github.com/pubkey/rxdb/tree/master/examples/ionic2)
 
 ## Quickstart
 
