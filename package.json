@@ -91,7 +91,7 @@
     "broadcast-channel": "3.1.0",
     "clone": "^2.1.1",
     "cors": "2.8.5",
-    "crypto-js": "3.3.0",
+    "crypto-js": "4.0.0",
     "custom-idle-queue": "2.1.2",
     "deep-equal": "^2.0.0",
     "express": "4.17.1",
