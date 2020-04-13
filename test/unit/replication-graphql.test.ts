@@ -2052,8 +2052,10 @@ describe('replication-graphql.test.js', () => {
                     )
                 );
 
+                await AsyncTestUtil.waitUntil(
+                    () => replicationState._runCount > 0
+                );
                 await AsyncTestUtil.wait(50);
-                assert.ok(replicationState._runCount > 0);
                 assert.ok(replicationState._runCount < amount);
 
                 c.database.destroy();
