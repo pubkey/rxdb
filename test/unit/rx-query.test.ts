@@ -1435,5 +1435,22 @@ config.parallel('rx-query.test.js', () => {
 
             db.destroy();
         });
+        it('#2071 RxCollection.findOne().exec() returns deleted document while find().exec() not', async () => {
+            const c = await humansCollection.create(1);
+
+            // delete it
+            const doc = await c.findOne();
+            await doc.remove();
+
+            // now find() returns empty array
+            const docs = await c.find().exec();
+            assert.strictEqual(docs.length, 0);
+
+            // findOne() still returns the deleted object
+            const doc2 = await c.findOne().exec();
+            assert.strictEqual(doc2, null);
+
+            c.database.destroy();
+        });
     });
 });
