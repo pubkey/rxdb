@@ -31,8 +31,8 @@ In this example-schema we define a hero-collection with the following settings:
         },
         "healthpoints": {
             "type": "number",
-            "min": 0,
-            "max": 100
+            "minimum": 0,
+            "maximum": 100
         },
         "secret": {
             "type": "string",
@@ -41,8 +41,8 @@ In this example-schema we define a hero-collection with the following settings:
         "birthyear": {
             "type": "number",
             "final": true,
-            "min": 1900,
-            "max": 2050
+            "minimum": 1900,
+            "maximum": 2050
         },
         "skills": {
             "type": "array",
