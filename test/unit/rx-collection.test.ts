@@ -1655,9 +1655,4 @@ config.parallel('rx-collection.test.js', () => {
             db2.destroy();
         });
     });
-    describe('wait a bit', () => {
-        it('w8 a bit', () => {
-            AsyncTestUtil.wait(20);
-        });
-    });
 });

@@ -74,7 +74,9 @@ export async function setLastPushSequence(
 export async function getChangesSinceLastPushSequence(
     collection: RxCollection,
     endpointHash: string,
+    lastPulledRevField: string,
     batchSize = 10,
+    syncRevisions: boolean = false,
 ): Promise<{
     results: {
         id: string,
@@ -104,9 +106,11 @@ export async function getChangesSinceLastPushSequence(
         changes = await collection.pouch.changes({
             since: lastPushSequence,
             limit: batchSize,
-            include_docs: true
-        });
-        const useResults = changes.results.filter((change: any) => {
+            include_docs: true,
+            // style: 'all_docs'
+        } as any);
+
+        const filteredResults = changes.results.filter((change: any) => {
             /**
              * filter out changes with revisions resulting from the pull-stream
              * so that they will not be upstreamed again
@@ -116,6 +120,7 @@ export async function getChangesSinceLastPushSequence(
                 change.doc._rev
             )) return false;
 
+            if (change.doc[lastPulledRevField] === change.doc._rev) return false;
             /**
              * filter out internal docs
              * that are used for views or indexes in pouchdb
@@ -124,6 +129,31 @@ export async function getChangesSinceLastPushSequence(
 
             return true;
         });
+
+        let useResults = filteredResults;
+
+        if (filteredResults.length > 0 && syncRevisions) {
+            const docsSearch = filteredResults.map((result: any) => {
+                return {
+                    id: result.id,
+                    rev: result.doc._rev
+                };
+            });
+
+            const bulkGetDocs = await collection.pouch.bulkGet({
+                docs: docsSearch,
+                revs: true,
+                latest: true
+            });
+
+            useResults = bulkGetDocs.results.map((result: any) => {
+                return {
+                    id: result.id,
+                    doc: result.docs[0]['ok'],
+                    deleted: result.docs[0]['ok']._deleted
+                };
+            });
+        }
 
         if (useResults.length === 0 && changes.results.length === batchSize) {
             // no pushable docs found but also not reached the end -> re-run

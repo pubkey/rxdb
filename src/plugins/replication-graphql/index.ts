@@ -63,6 +63,7 @@ addRxPlugin(RxDBWatchForChangesPlugin);
 
 
 export class RxGraphQLReplicationState {
+
     constructor(
         public collection: RxCollection,
         url: string,
@@ -70,9 +71,11 @@ export class RxGraphQLReplicationState {
         public pull: GraphQLSyncPullOptions,
         public push: GraphQLSyncPushOptions,
         public deletedFlag: string,
+        public lastPulledRevField: string,
         public live: boolean,
         public liveInterval: number,
-        public retryTime: number
+        public retryTime: number,
+        public syncRevisions: boolean
     ) {
         this.client = GraphQLClient({
             url,
@@ -93,7 +96,12 @@ export class RxGraphQLReplicationState {
     };
     public _runningPromise: Promise<void> = Promise.resolve();
     public _subs: Subscription[] = [];
+
+    // counts how often the replication has run
+    // used in tests
+    public _runCount = 0;
     public _runQueueCount: number = 0;
+
     public initialReplicationComplete$: Observable<any> = undefined as any;
 
     public recieved$: Observable<any> = undefined as any;
@@ -160,6 +168,8 @@ export class RxGraphQLReplicationState {
     }
 
     async _run() {
+        this._runCount = this._runCount + 1;
+
         let willRetry = false;
 
         if (this.push) {
@@ -196,6 +206,7 @@ export class RxGraphQLReplicationState {
         let result;
         try {
             result = await this.client.query(pullGraphQL.query, pullGraphQL.variables);
+
             if (result.errors) {
                 throw new Error(result.errors);
             }
@@ -250,16 +261,22 @@ export class RxGraphQLReplicationState {
         const changes = await getChangesSinceLastPushSequence(
             this.collection,
             this.endpointHash,
-            this.push.batchSize
+            this.lastPulledRevField,
+            this.push.batchSize,
+            this.syncRevisions
         );
 
         const changesWithDocs = changes.results.map((change: any) => {
             let doc = change['doc'];
 
             doc[this.deletedFlag] = !!change['deleted'];
-            delete doc._rev;
             delete doc._deleted;
             delete doc._attachments;
+            delete doc[this.lastPulledRevField];
+
+            if (!this.syncRevisions) {
+                delete doc._rev;
+            }
 
             doc = (this.push as any).modifier(doc);
 
@@ -283,7 +300,7 @@ export class RxGraphQLReplicationState {
                 const pushObj = this.push.queryBuilder(changeWithDoc.doc);
                 const result = await this.client.query(pushObj.query, pushObj.variables);
                 if (result.errors) {
-                    throw new Error(result.errors);
+                    throw new Error(JSON.stringify(result.errors));
                 } else {
                     this._subjects.send.next(changeWithDoc.doc);
                     lastSuccessfullChange = changeWithDoc;
@@ -331,35 +348,39 @@ export class RxGraphQLReplicationState {
         // console.log('handleDocumentFromRemote(' + toPouch._id + ') start');
         toPouch._deleted = deletedValue;
         delete toPouch[this.deletedFlag];
-        const primaryValue = toPouch._id;
 
-        const pouchState = docsWithRevisions[primaryValue];
-        let newRevision = createRevisionForPulledDocument(
-            this.endpointHash,
-            toPouch
-        );
-        if (pouchState) {
-            const newRevisionHeight = pouchState.revisions.start + 1;
-            const revisionId = newRevision;
-            newRevision = newRevisionHeight + '-' + newRevision;
-            toPouch._revisions = {
-                start: newRevisionHeight,
-                ids: pouchState.revisions.ids
-            };
-            toPouch._revisions.ids.unshift(revisionId);
+        if (!this.syncRevisions) {
+            const primaryValue = toPouch._id;
+
+            const pouchState = docsWithRevisions[primaryValue];
+            let newRevision = createRevisionForPulledDocument(
+                this.endpointHash,
+                toPouch
+            );
+            if (pouchState) {
+                const newRevisionHeight = pouchState.revisions.start + 1;
+                const revisionId = newRevision;
+                newRevision = newRevisionHeight + '-' + newRevision;
+                toPouch._revisions = {
+                    start: newRevisionHeight,
+                    ids: pouchState.revisions.ids
+                };
+                toPouch._revisions.ids.unshift(revisionId);
+            } else {
+                newRevision = '1-' + newRevision;
+            }
+
+            toPouch._rev = newRevision;
         } else {
-            newRevision = '1-' + newRevision;
+            toPouch[this.lastPulledRevField] = toPouch._rev;
         }
-        toPouch._rev = newRevision;
 
         await this.collection.pouch.bulkDocs(
             [
                 toPouch
-            ],
-            {
-                new_edits: false
-            }
-        );
+            ], {
+            new_edits: false
+        });
 
         /**
          * because bulkDocs with new_edits: false
@@ -368,6 +389,7 @@ export class RxGraphQLReplicationState {
          * so other instances get informed about it
          */
         const originalDoc = flatClone(toPouch);
+
         if (deletedValue) {
             originalDoc._deleted = deletedValue;
         } else {
@@ -375,7 +397,6 @@ export class RxGraphQLReplicationState {
         }
         delete originalDoc[this.deletedFlag];
         delete originalDoc._revisions;
-        originalDoc._rev = newRevision;
 
         const cE = changeEventfromPouchChange(
             originalDoc,
@@ -402,10 +423,12 @@ export function syncGraphQL(
         pull,
         push,
         deletedFlag,
+        lastPulledRevField = 'last_pulled_rev',
         live = false,
         liveInterval = 1000 * 10, // in ms
         retryTime = 1000 * 5, // in ms
-        autoStart = true // if this is false, the replication does nothing at start
+        autoStart = true, // if this is false, the replication does nothing at start
+        syncRevisions = false,
     }: any
 ) {
     const collection = this;
@@ -428,9 +451,11 @@ export function syncGraphQL(
         pull,
         push,
         deletedFlag,
+        lastPulledRevField,
         live,
         liveInterval,
-        retryTime
+        retryTime,
+        syncRevisions
     );
 
     if (!autoStart) return replicationState;

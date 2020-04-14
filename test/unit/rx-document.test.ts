@@ -662,7 +662,7 @@ config.parallel('rx-document.test.js', () => {
                 const c = await humansCollection.createNested(1);
                 const doc = await c.findOne().exec(true);
                 const obs: Observable<any> = (doc.mainSkill as any).level$;
-                assert.ok(obs.subscribe);
+                assert.ok(obs['subscribe']);
 
                 let value = null;
                 (doc.mainSkill as any).level$.subscribe((newVal: any) => {
