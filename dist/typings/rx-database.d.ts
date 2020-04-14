@@ -88,6 +88,7 @@ export declare class RxDatabaseBase<Collections = CollectionsOfDatabase> {
      */
     server(_options?: ServerOptions): {
         app: any;
+        pouchApp: any;
         server: any;
     };
     /**

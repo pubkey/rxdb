@@ -24,4 +24,5 @@ export declare type SyncOptionsGraphQL = {
     liveInterval?: number;
     retryTime?: number;
     autoStart?: boolean;
+    syncRevisions?: boolean;
 };

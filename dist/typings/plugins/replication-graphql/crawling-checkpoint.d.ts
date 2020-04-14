@@ -4,7 +4,7 @@ import { RxCollection } from '../../types';
  */
 export declare function getLastPushSequence(collection: RxCollection, endpointHash: string): Promise<number>;
 export declare function setLastPushSequence(collection: RxCollection, endpointHash: string, seq: any): Promise<any>;
-export declare function getChangesSinceLastPushSequence(collection: RxCollection, endpointHash: string, batchSize?: number): Promise<{
+export declare function getChangesSinceLastPushSequence(collection: RxCollection, endpointHash: string, lastPulledRevField: string, batchSize?: number, syncRevisions?: boolean): Promise<{
     results: {
         id: string;
         seq: number;

@@ -7,6 +7,7 @@ export declare function spawnServer(this: RxDatabase, { path, port, cors, startS
     startServer?: boolean | undefined;
 }): {
     app: import("express-serve-static-core").Express;
+    pouchApp: any;
     server: import("http").Server | null;
 };
 /**

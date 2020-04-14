@@ -1,7 +1,7 @@
 {
   "name": "rxdb",
   "description": "A realtime Database for JavaScript Applications",
-  "version": "8.8.0",
+  "version": "8.9.0",
   "author": "pubkey",
   "repository": {
     "type": "git",

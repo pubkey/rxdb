@@ -138,7 +138,8 @@ export function spawnServer(_ref2) {
     }));
   }
 
-  app.use(collectionsPath, ExpressPouchDB(pseudo));
+  var pouchApp = ExpressPouchDB(pseudo);
+  app.use(collectionsPath, pouchApp);
   var server = null;
 
   if (startServer) {
@@ -148,6 +149,7 @@ export function spawnServer(_ref2) {
 
   return {
     app: app,
+    pouchApp: pouchApp,
     server: server
   };
 }

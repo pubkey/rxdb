@@ -9,12 +9,14 @@ export declare class RxGraphQLReplicationState {
     pull: GraphQLSyncPullOptions;
     push: GraphQLSyncPushOptions;
     deletedFlag: string;
+    lastPulledRevField: string;
     live: boolean;
     liveInterval: number;
     retryTime: number;
+    syncRevisions: boolean;
     constructor(collection: RxCollection, url: string, headers: {
         [k: string]: string;
-    }, pull: GraphQLSyncPullOptions, push: GraphQLSyncPushOptions, deletedFlag: string, live: boolean, liveInterval: number, retryTime: number);
+    }, pull: GraphQLSyncPullOptions, push: GraphQLSyncPushOptions, deletedFlag: string, lastPulledRevField: string, live: boolean, liveInterval: number, retryTime: number, syncRevisions: boolean);
     client: any;
     endpointHash: string;
     _subjects: {
@@ -27,6 +29,7 @@ export declare class RxGraphQLReplicationState {
     };
     _runningPromise: Promise<void>;
     _subs: Subscription[];
+    _runCount: number;
     _runQueueCount: number;
     initialReplicationComplete$: Observable<any>;
     recieved$: Observable<any>;
@@ -50,9 +53,10 @@ export declare class RxGraphQLReplicationState {
     handleDocumentFromRemote(doc: any, docsWithRevisions: any[]): Promise<void>;
     cancel(): Promise<any>;
 }
-export declare function syncGraphQL(this: RxCollection, { url, headers, waitForLeadership, pull, push, deletedFlag, live, liveInterval, // in ms
+export declare function syncGraphQL(this: RxCollection, { url, headers, waitForLeadership, pull, push, deletedFlag, lastPulledRevField, live, liveInterval, // in ms
 retryTime, // in ms
-autoStart }: any): RxGraphQLReplicationState;
+autoStart, // if this is false, the replication does nothing at start
+syncRevisions, }: any): RxGraphQLReplicationState;
 export declare const rxdb = true;
 export declare const prototypes: {
     RxCollection: (proto: any) => void;
