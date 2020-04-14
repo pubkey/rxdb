@@ -53,10 +53,12 @@ declare type Debug = {
     disable(): void;
 };
 
+export type PouchDbSorting = (string | string[] | { [k: string]: 'asc' | 'desc' | 1 | -1 })[];
+
 // this is not equal to the standard MangoQuery
 // because of different sorting
 export type PouchdbQuery = MangoQuery & {
-    sort?: (string | string[])[];
+    sort?: PouchDbSorting
 };
 
 export declare class PouchDBInstance {
@@ -84,7 +86,7 @@ export declare class PouchDBInstance {
         rev: string;
     }[]>;
 
-    find(mangoQuery: any): Promise<{
+    find(mangoQuery: PouchdbQuery): Promise<{
         docs: any[]
     }>;
     compact(options?: any): Promise<any>;
