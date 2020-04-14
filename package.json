@@ -199,7 +199,7 @@
     "typescript": "3.8.3",
     "uglify-js": "3.9.0",
     "uglifyjs-webpack-plugin": "2.2.0",
-    "walk-sync": "2.0.2",
+    "walk-sync": "2.1.0",
     "watch": "1.0.2",
     "watchify": "3.11.1",
     "webpack": "4.42.0",
