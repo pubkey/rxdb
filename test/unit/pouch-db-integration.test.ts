@@ -1,6 +1,6 @@
 import assert from 'assert';
 import memdown from 'memdown';
-import AsyncTestUtil from 'async-test-util';
+import AsyncTestUtil, { wait } from 'async-test-util';
 import config from './config';
 
 let leveldb: any;
@@ -512,7 +512,7 @@ config.parallel('pouch-db-integration.test.js', () => {
             if (!config.platform.isNode()) return;
 
             /**
-             * TODO run this in node with the new version of pouchdb
+             * TODO run this in node with the new version of pouchdb-find
              * we have to wait until this is fixed:
              * @link https://github.com/pouchdb/pouchdb/issues/7810
              */
@@ -556,6 +556,74 @@ config.parallel('pouch-db-integration.test.js', () => {
 
             console.dir(docs);
             assert.strictEqual(docs.docs.length, 1);
+        });
+
+        it('should handle writes before reads (first insert then find)', async () => {
+            const amount = 20;
+            const pouches: PouchDBInstance[] = [];
+            const results: any[] = [];
+
+            let t = 0;
+            while (t < amount) {
+                t++;
+                const pouch: PouchDBInstance = new PouchDB(
+                    randomCouchString(10), {
+                    adapter: 'memory'
+                }) as any;
+                pouches.push(pouch);
+
+                // do not await
+                pouch.put({
+                    _id: 'foobar',
+                    passportId: 'z3i7q29g4yr1',
+                    firstName: 'Edison',
+                    lastName: 'Keebler',
+                    age: 24
+                });
+                await wait(0);
+                const res = await pouch.find({
+                    selector: {}
+                });
+                results.push(res);
+            }
+
+            results.forEach(res => {
+                assert.equal(res.docs.length, 1);
+            });
+
+            pouches.forEach(pouch => pouch.destroy());
+        });
+        it('should handle writes before reads (first find then insert)', async () => {
+            const amount = 20;
+            const promises: Promise<any>[] = [];
+            const pouches: PouchDBInstance[] = [];
+
+            while (promises.length < amount) {
+                const pouch: PouchDBInstance = new PouchDB(
+                    randomCouchString(10), {
+                    adapter: 'memory'
+                }) as any;
+                pouches.push(pouch);
+
+                promises.push(pouch.find({
+                    selector: {}
+                }));
+                await wait(0);
+                await pouch.put({
+                    _id: 'foobar',
+                    passportId: 'z3i7q29g4yr1',
+                    firstName: 'Edison',
+                    lastName: 'Keebler',
+                    age: 24
+                });
+            }
+
+            const results = await Promise.all(promises);
+
+            results.forEach(res => {
+                assert.equal(res.docs.length, 1);
+            });
+            pouches.forEach(pouch => pouch.destroy());
         });
     });
 });
