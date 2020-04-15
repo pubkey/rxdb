@@ -30,7 +30,6 @@ export type RxChangeEventBroadcastChannelData = {
 };
 
 export class RxChangeEvent<DocType = any> {
-    public readonly time: number = new Date().getTime();
 
     constructor(
         public readonly operation: WriteOperation,
@@ -39,6 +38,14 @@ export class RxChangeEvent<DocType = any> {
         public readonly databaseToken: string,
         public readonly collectionName: string,
         public readonly isLocal: boolean,
+        /**
+         * timestam on when the operation was triggered
+         * and when it was finished
+         * This is optional because we do not have this time
+         * for events that come from pouchdbs changestream.
+         */
+        public startTime?: number,
+        public endTime?: number,
         public readonly previousData?: DocType | null,
         public readonly rxDocument?: RxDocument<DocType>
     ) { }
@@ -133,6 +140,8 @@ export function changeEventfromPouchChange<DocType>(
 export function createInsertEvent<RxDocumentType>(
     collection: RxCollection<RxDocumentType>,
     docData: RxDocumentTypeWithRev<RxDocumentType>,
+    startTime: number,
+    endTime: number,
     doc?: RxDocument<RxDocumentType>
 ): RxChangeEvent<RxDocumentType> {
     const ret = new RxChangeEvent<RxDocumentType>(
@@ -142,6 +151,8 @@ export function createInsertEvent<RxDocumentType>(
         collection.database.token,
         collection.name,
         false,
+        startTime,
+        endTime,
         null,
         doc
     );
@@ -153,6 +164,8 @@ export function createUpdateEvent<RxDocumentType>(
     collection: RxCollection<RxDocumentType>,
     docData: RxDocumentTypeWithRev<RxDocumentType>,
     previous: RxDocumentType,
+    startTime: number,
+    endTime: number,
     rxDocument: RxDocument<RxDocumentType>
 ): RxChangeEvent<RxDocumentType> {
     return new RxChangeEvent<RxDocumentType>(
@@ -162,6 +175,8 @@ export function createUpdateEvent<RxDocumentType>(
         collection.database.token,
         collection.name,
         false,
+        startTime,
+        endTime,
         previous,
         rxDocument
     );
@@ -171,6 +186,8 @@ export function createDeleteEvent<RxDocumentType>(
     collection: RxCollection<RxDocumentType>,
     docData: RxDocumentTypeWithRev<RxDocumentType>,
     previous: RxDocumentType,
+    startTime: number,
+    endTime: number,
     rxDocument: RxDocument<RxDocumentType>
 ): RxChangeEvent<RxDocumentType> {
     return new RxChangeEvent<RxDocumentType>(
@@ -180,6 +197,8 @@ export function createDeleteEvent<RxDocumentType>(
         collection.database.token,
         collection.name,
         false,
+        startTime,
+        endTime,
         previous,
         rxDocument
     );

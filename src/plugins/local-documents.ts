@@ -21,7 +21,7 @@ import {
     newRxTypeError
 } from '../rx-error';
 import {
-    clone
+    clone, now
 } from '../util';
 
 import type {
@@ -200,8 +200,10 @@ const RxLocalDocumentPrototype: any = {
         newData = clone(newData);
         newData._id = LOCAL_PREFIX + this.id;
 
+        const startTime = now();
         return this.parentPouch.put(newData)
             .then((res: any) => {
+                const endTime = now();
                 newData._rev = res.rev;
                 this._dataSync$.next(newData);
 
@@ -212,6 +214,8 @@ const RxLocalDocumentPrototype: any = {
                     isRxDatabase(this.parent) ? this.parent.token : this.parent.database.token,
                     isRxCollection(this.parent) ? this.parent.name : null,
                     true,
+                    startTime,
+                    endTime,
                     null, // TODO emit old data
                     this
                 );
@@ -221,9 +225,11 @@ const RxLocalDocumentPrototype: any = {
 
     remove(this: any): Promise<void> {
         const removeId = LOCAL_PREFIX + this.id;
+        const startTime = now();
         return this.parentPouch.remove(removeId, this._data._rev)
             .then(() => {
                 _getDocCache(this.parent).delete(this.id);
+                const endTime = now();
                 const changeEvent = new RxChangeEvent(
                     'DELETE',
                     this.id,
@@ -231,6 +237,8 @@ const RxLocalDocumentPrototype: any = {
                     isRxDatabase(this.parent) ? this.parent.token : this.parent.database.token,
                     isRxCollection(this.parent) ? this.parent.name : null,
                     true,
+                    startTime,
+                    endTime,
                     null,
                     this
                 );

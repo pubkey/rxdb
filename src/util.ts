@@ -73,7 +73,11 @@ export function hash(msg: string | any): string {
  * generate a new _id as db-primary-key
  */
 export function generateId(): string {
-    return randomToken(10) + ':' + new Date().getTime();
+    return randomToken(10) + ':' + now();
+}
+
+export function now(): number {
+    return new Date().getTime();
 }
 
 /**

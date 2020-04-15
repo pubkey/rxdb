@@ -2,7 +2,7 @@
  * this plugin adds the json export/import capabilities to RxDB
  */
 import {
-    hash
+    hash, now
 } from '../util';
 import {
     createRxQuery, _getDefaultQuery
@@ -135,15 +135,22 @@ function importDumpRxCollection(
         // transform
         .map((doc: any) => this._handleToPouch(doc));
 
+    let startTime: number;
     return this.database.lockedRun(
         // write to disc
-        () => this.pouch.bulkDocs(docs)
+        () => {
+            startTime = now();
+            return this.pouch.bulkDocs(docs);
+        }
     ).then(() => {
+        const endTime = now();
         docs.forEach((doc: any) => {
             // emit change events
             const emitEvent = createInsertEvent(
                 this,
-                doc
+                doc,
+                startTime,
+                endTime
             );
             this.$emit(emitEvent);
         });

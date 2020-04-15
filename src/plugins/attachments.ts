@@ -6,7 +6,8 @@ import {
 } from './../rx-change-event';
 import {
     nextTick,
-    isElectronRenderer
+    isElectronRenderer,
+    now
 } from './../util';
 import {
     newRxError
@@ -25,12 +26,16 @@ function ensureSchemaSupportsAttachments(doc: any) {
 }
 
 function resyncRxDocument<RxDocType>(doc: any) {
+    const startTime = now();
     return doc.collection.pouch.get(doc.primary).then((docDataFromPouch: any) => {
         const data: RxDocumentTypeWithRev<RxDocType> = doc.collection._handleFromPouch(docDataFromPouch);
+        const endTime = now();
         const changeEvent = createUpdateEvent(
             doc.collection,
             data,
             null,
+            startTime,
+            endTime,
             doc
         );
         doc.$emit(changeEvent);

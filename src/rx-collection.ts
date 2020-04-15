@@ -7,7 +7,8 @@ import {
     nextTick,
     flatClone,
     promiseSeries,
-    pluginMissing
+    pluginMissing,
+    now
 } from './util';
 import {
     validateCouchDBString
@@ -352,11 +353,16 @@ export class RxCollectionBase<
 
         const useJson = fillObjectDataBeforeInsert(this, json);
         let newDoc = tempDoc;
+
+        let startTime: number;
+        let endTime: number;
         return this._runHooks('pre', 'insert', useJson)
             .then(() => {
                 this.schema.validate(useJson);
+                startTime = now();
                 return this._pouchPut(useJson);
             }).then(insertResult => {
+                endTime = now();
                 useJson[this.schema.primaryPath as string] = insertResult.id;
                 useJson._rev = insertResult.rev;
 
@@ -370,6 +376,8 @@ export class RxCollectionBase<
                 const emitEvent = createInsertEvent(
                     this as any,
                     useJson,
+                    startTime,
+                    endTime,
                     newDoc as any
                 );
                 this.$emit(emitEvent);
@@ -401,34 +409,41 @@ export class RxCollectionBase<
             docs.forEach(d => {
                 docsMap.set((d as any)[this.schema.primaryPath] as any, d);
             });
+
             return this.database.lockedRun(
-                () => this.pouch.bulkDocs(insertDocs)
-                    .then(results => {
-                        const okResults = results.filter(r => r.ok);
+                () => {
+                    const startTime = now();
+                    return this.pouch.bulkDocs(insertDocs)
+                        .then(results => {
+                            const endTime = now();
+                            const okResults = results.filter(r => r.ok);
 
-                        // create documents
-                        const rxDocuments: any[] = okResults.map(r => {
-                            const docData: any = docsMap.get(r.id);
-                            docData._rev = r.rev;
-                            const doc = createRxDocument(this as any, docData);
-                            return doc;
+                            // create documents
+                            const rxDocuments: any[] = okResults.map(r => {
+                                const docData: any = docsMap.get(r.id);
+                                docData._rev = r.rev;
+                                const doc = createRxDocument(this as any, docData);
+                                return doc;
+                            });
+
+                            // emit events
+                            rxDocuments.forEach(doc => {
+                                const emitEvent = createInsertEvent(
+                                    this as any,
+                                    doc,
+                                    startTime,
+                                    endTime,
+                                    docsMap.get(doc.primary)
+                                );
+                                this.$emit(emitEvent);
+                            });
+
+                            return {
+                                success: rxDocuments,
+                                error: results.filter(r => !r.ok)
+                            };
                         });
-
-                        // emit events
-                        rxDocuments.forEach(doc => {
-                            const emitEvent = createInsertEvent(
-                                this as any,
-                                doc,
-                                docsMap.get(doc.primary)
-                            );
-                            this.$emit(emitEvent);
-                        });
-
-                        return {
-                            success: rxDocuments,
-                            error: results.filter(r => !r.ok)
-                        };
-                    })
+                }
             );
         });
     }

@@ -13,7 +13,8 @@ import {
     trimDots,
     getHeightOfRevision,
     toPromise,
-    pluginMissing
+    pluginMissing,
+    now
 } from './util';
 import {
     RxChangeEvent, createUpdateEvent, createDeleteEvent
@@ -307,12 +308,15 @@ export const basePrototype = {
         // ensure modifications are ok
         this.collection.schema.validateChange(oldData, newData);
 
+        let startTime: number;
         return this.collection._runHooks('pre', 'save', newData, this)
             .then(() => {
                 this.collection.schema.validate(newData);
+                startTime = now();
                 return this.collection._pouchPut(newData);
             })
             .then(ret => {
+                const endTime = now();
                 if (!ret.ok) {
                     throw newRxError('DOC12', {
                         data: ret
@@ -325,6 +329,8 @@ export const basePrototype = {
                     this.collection,
                     newData,
                     oldData,
+                    startTime,
+                    endTime,
                     this
                 );
                 this.$emit(changeEvent);
@@ -373,9 +379,11 @@ export const basePrototype = {
         }
 
         const deletedData = clone(this._data);
+        let startTime: number;
         return this.collection._runHooks('pre', 'remove', deletedData, this)
             .then(() => {
                 deletedData._deleted = true;
+                startTime = now();
                 /**
                  * because pouch.remove will also empty the object,
                  * we set _deleted: true and use pouch.put
@@ -383,11 +391,14 @@ export const basePrototype = {
                 return this.collection._pouchPut(deletedData);
             })
             .then(() => {
+                const endTime = now();
                 this.$emit(
                     createDeleteEvent(
                         this.collection,
                         deletedData,
                         this._data,
+                        startTime,
+                        endTime,
                         this
                     )
                 );
