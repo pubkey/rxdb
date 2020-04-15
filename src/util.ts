@@ -76,8 +76,25 @@ export function generateId(): string {
     return randomToken(10) + ':' + now();
 }
 
+
+/**
+ * Returns the current unix time in milliseconds
+ * Because the accuracy of getTime() in javascript is bad,
+ * and we cannot rely on performance.now() on all plattforms,
+ * this method implements a way to never return the same value twice.
+ * This ensures that when now() is called often, we do not loose the information
+ * about which call came first and which came after.
+ * Caution: Do not call this too often in a short timespan
+ * because it might return 'the future'
+ */
+let _lastNow: number = 0;
 export function now(): number {
-    return new Date().getTime();
+    let ret = new Date().getTime();
+    if (ret <= _lastNow) {
+        ret = _lastNow + 1;
+    }
+    _lastNow = ret;
+    return ret;
 }
 
 /**

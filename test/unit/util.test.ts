@@ -8,7 +8,8 @@ import {
     validateCouchDBString,
     fastUnsecureHash,
     randomCouchString,
-    sortObject
+    sortObject,
+    now
 } from '../../';
 
 describe('util.test.js', () => {
@@ -84,6 +85,22 @@ describe('util.test.js', () => {
                     'RxError',
                     'match the regex'
                 );
+            });
+        });
+    });
+    describe('.now()', () => {
+        it('should increase the returned value each time', () => {
+            const values: number[] = [];
+            new Array(100)
+                .fill(0)
+                .forEach(() => {
+                    values.push(now());
+                });
+
+            let last = 0;
+            values.forEach(value => {
+                assert.ok(value > last);
+                last = value;
             });
         });
     });

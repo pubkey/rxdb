@@ -245,6 +245,7 @@ describe('replication.test.js', () => {
                 });
                 await promiseWait(10);
                 const docs = await c.find().exec();
+
                 assert.strictEqual(docs.length, 1);
                 assert.strictEqual(docs[0].firstName, 'foobar');
 

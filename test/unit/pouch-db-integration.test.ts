@@ -1,6 +1,6 @@
 import assert from 'assert';
 import memdown from 'memdown';
-import AsyncTestUtil, { wait } from 'async-test-util';
+import AsyncTestUtil from 'async-test-util';
 import config from './config';
 
 let leveldb: any;
@@ -580,7 +580,6 @@ config.parallel('pouch-db-integration.test.js', () => {
                     lastName: 'Keebler',
                     age: 24
                 });
-                await wait(0);
                 const res = await pouch.find({
                     selector: {}
                 });
@@ -608,7 +607,6 @@ config.parallel('pouch-db-integration.test.js', () => {
                 promises.push(pouch.find({
                     selector: {}
                 }));
-                await wait(0);
                 await pouch.put({
                     _id: 'foobar',
                     passportId: 'z3i7q29g4yr1',

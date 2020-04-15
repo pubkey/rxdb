@@ -542,6 +542,8 @@ function _prepareBroadcastChannel(rxDatabase: RxDatabase): void {
             msg.cE.databaseToken,
             msg.cE.collectionName,
             msg.cE.isLocal,
+            msg.cE.startTime,
+            msg.cE.endTime,
             msg.cE.previousData
         );
         (rxDatabase.broadcastChannel$ as any).next(changeEvent);

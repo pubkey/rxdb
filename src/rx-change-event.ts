@@ -15,13 +15,15 @@ import type {
 } from './types';
 
 export type RxChangeEventJson<DocType = any> = {
-    operation: WriteOperation,
-    documentId: string,
-    documentData: RxDocumentTypeWithRev<DocType>
-    previousData?: DocType,
-    databaseToken: string,
-    collectionName: string,
-    isLocal: boolean
+    operation: WriteOperation;
+    documentId: string;
+    documentData: RxDocumentTypeWithRev<DocType>;
+    previousData?: DocType;
+    databaseToken: string;
+    collectionName: string;
+    isLocal: boolean;
+    startTime?: number;
+    endTime?: number;
 };
 
 export type RxChangeEventBroadcastChannelData = {
@@ -66,7 +68,9 @@ export class RxChangeEvent<DocType = any> {
             previousData: this.previousData ? this.previousData : undefined,
             databaseToken: this.databaseToken,
             collectionName: this.collectionName,
-            isLocal: this.isLocal
+            isLocal: this.isLocal,
+            startTime: this.startTime,
+            endTime: this.endTime
         };
         return ret;
     }
@@ -114,7 +118,8 @@ export interface RxChangeEventDelete<DocType = any> extends RxChangeEvent<DocTyp
 
 export function changeEventfromPouchChange<DocType>(
     changeDoc: any,
-    collection: RxCollection
+    collection: RxCollection,
+    time: number // time when the event was streamed out of pouchdb
 ): RxChangeEvent<DocType> {
     let operation: WriteOperation = changeDoc._rev.startsWith('1-') ? 'INSERT' : 'UPDATE';
     if (changeDoc._deleted) {
@@ -131,7 +136,9 @@ export function changeEventfromPouchChange<DocType>(
         doc,
         collection.database.token,
         collection.name,
-        false
+        false,
+        time,
+        time
     );
     return cE;
 }

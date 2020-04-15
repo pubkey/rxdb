@@ -19,7 +19,8 @@ import {
     stringifyFilter,
     pluginMissing,
     clone,
-    overwriteGetterForCaching
+    overwriteGetterForCaching,
+    now
 } from './util';
 import {
     newRxError,
@@ -133,6 +134,11 @@ export class RxQueryBase<
     public _resultsData: any = null;
     public _resultsDataMap: Map<string, RxDocumentType> = new Map();
 
+    // time stamps on when the last full exec over the database has run
+    // used to properly handle events that happen while the find-query is running
+    public _lastExecStart: number = 0;
+    public _lastExecEnd: number = 0;
+
     // contains the results as RxDocument[]
     public _resultsDocs$: BehaviorSubject<any> = new BehaviorSubject(null);
 
@@ -165,14 +171,13 @@ export class RxQueryBase<
         return docs as any;
     }
 
-
-
     /**
      * executes the query on the database
      * @return results-array with document-data
      */
     _execOverDatabase(): Promise<any[]> {
         this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
+        this._lastExecStart = now();
 
         let docsPromise;
         switch (this.op) {
@@ -189,6 +194,7 @@ export class RxQueryBase<
         }
 
         return docsPromise.then(docs => {
+            this._lastExecEnd = now();
             this._resultsDataMap = new Map();
             const primPath = this.collection.schema.primaryPath;
             docs.forEach(doc => {
@@ -464,13 +470,33 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
      * try to use the queryChangeDetector to calculate the new results
      */
     if (!mustReExec) {
-        const missedChangeEvents = (rxQuery as any).collection._changeEventBuffer.getFrom(rxQuery._latestChangeEvent + 1);
+        let missedChangeEvents = (rxQuery as any).collection._changeEventBuffer.getFrom(rxQuery._latestChangeEvent + 1);
         if (missedChangeEvents === null) {
             // changeEventBuffer is of bounds -> we must re-execute over the database
             mustReExec = true;
         } else {
             rxQuery._latestChangeEvent = (rxQuery as any).collection._changeEventBuffer.counter;
+
+            /**
+             * because pouchdb prefers writes over reads,
+             * we have to filter out the events that happend before the read has started
+             * so that we do not fill event-reduce with the wrong data
+             */
+            missedChangeEvents = missedChangeEvents.filter((cE: RxChangeEvent) => {
+                return !cE.startTime || cE.startTime > rxQuery._lastExecStart;
+            });
+
+
+
             const runChangeEvents: RxChangeEvent[] = (rxQuery as any).collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
+
+            /*
+            console.log('calculateNewResults() ' + new Date().getTime());
+            console.log(rxQuery._lastExecStart + ' - ' + rxQuery._lastExecEnd);
+            console.dir(rxQuery._resultsData.slice());
+            console.dir(runChangeEvents);
+            */
+
             const eventReduceResult = calculateNewResults(
                 rxQuery as any,
                 runChangeEvents
