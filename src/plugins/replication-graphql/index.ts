@@ -175,7 +175,6 @@ export class RxGraphQLReplicationState {
             const ok = await this.runPush();
             if (!ok) {
                 willRetry = true;
-                setTimeout(() => this.run(), this.retryTime);
             }
         }
 
@@ -183,8 +182,12 @@ export class RxGraphQLReplicationState {
             const ok = await this.runPull();
             if (!ok) {
                 willRetry = true;
-                setTimeout(() => this.run(), this.retryTime);
             }
+        }
+
+        // retry on error
+        if (willRetry) {
+            setTimeout(() => this.run(), this.retryTime);
         }
 
         return willRetry;
