@@ -135,12 +135,12 @@ config.parallel('reactive-collection.test.js', () => {
             c.database.destroy();
         });
     });
-    describe('.delete$', () => {
-        it('should only emit deletes', async () => {
+    describe('.remove$', () => {
+        it('should only emit removes', async () => {
             const c = await humansCollection.create(0);
 
             const emitted: RxChangeEvent[] = [];
-            c.delete$.subscribe(cE => emitted.push(cE as any));
+            c.remove$.subscribe(cE => emitted.push(cE as any));
             await c.insert(schemaObjects.human());
             const doc1 = await c.insert(schemaObjects.human());
             const doc2 = await c.insert(schemaObjects.human());

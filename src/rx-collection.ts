@@ -141,7 +141,7 @@ export class RxCollectionBase<
             filter(cE => cE.operation === 'UPDATE')
         ) as any;
     }
-    get delete$(): Observable<RxChangeEventDelete<RxDocumentType>> {
+    get remove$(): Observable<RxChangeEventDelete<RxDocumentType>> {
         return this.$.pipe(
             filter(cE => cE.operation === 'DELETE')
         ) as any;

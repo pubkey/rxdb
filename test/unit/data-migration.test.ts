@@ -282,7 +282,7 @@ config.parallel('data-migration.test.js', () => {
                     col.database.destroy();
                 });
             });
-            describe('.delete()', () => {
+            describe('.remove()', () => {
                 it('should delete the pouchdb with all its content', async () => {
                     const dbName = randomCouchString(10);
                     const col = await humansCollection.createMigrationCollection(10, {}, dbName);
