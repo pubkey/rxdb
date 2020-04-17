@@ -8,20 +8,20 @@ Features:
 Breaking:
   - Indexes are now specified at the top-level of the schema-definition. [#1655](https://github.com/pubkey/rxdb/issues/1655)
   - Encrypted fields are now specified at the top-level of the schema-definition
-  - Replaced plugins `error-messages` and `schema-check` with [dev-mode](https://pubkey.github.io/rxdb/custom-build.html#dev-mode)
-  - Moved data migration from core to migration plugin
   - Removed all default exports. Please only import the stuff that you really need.
   - Renamed `RxDB.create()` to `createRxDatabase()`
   - Renamed `removeDatabase()` to `removeRxDatabase()`
   - Renamed `plugin()` to `addRxPlugin()`
+  - Replaced plugins `error-messages` and `schema-check` with [dev-mode](https://pubkey.github.io/rxdb/custom-build.html#dev-mode)
+  - Moved data migration from core to migration plugin
   - Replaced key-compression implementation with [jsonschema-key-compression](https://github.com/pubkey/jsonschema-key-compression)
-  - Refactored `RxCollection`
-  - Creating a collection will no longer emit an `RxChangeEvent`
   - Renamed `RxDatabase.queryChangeDetection` to `eventReduce` and set default to `true` (no beta anymore)
-  - Change default of `RxDocument().toJSON(withRevAndAttachments)` to `false`
   - Change `.find()` and `.findOne()` to acccept a full MangoQuery with `sort` and `limit` instead of just the selector
   - Chained queries like `collection.find().where('x').eq('foo')` moved out of the core module into the query-builder plugin
   - The internal `hash()` function does now use a RxDB specific salt
+  - Change default of `RxDocument().toJSON(withRevAndAttachments)` to `false`
+  - Refactored `RxCollection`
+  - Creating a collection will no longer emit an `RxChangeEvent`
   - Renamed `RxSchema.jsonID` to `RxSchema.jsonSchema`
   - Moved remaining stuff of leader-election from core into the plugin
   - Merged multiple internal databases for metadata into one `internalStore`
@@ -32,12 +32,6 @@ Other:
 
 Docs:
   - Removed examples for `require()` CommonJS loading
-
-TODOs:
-  - rewrite data migration
-  - add e2e tests to react example
-  - fix https://github.com/pouchdb/pouchdb/issues/7810 so we can upgrade `pouchdb-find`
-
 
 ### X.X.X (comming soon)
 
