@@ -3,11 +3,27 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+var _exportNames = {
+  runBuildingStep: true,
+  applyBuildingStep: true,
+  RxDBQueryBuilderPlugin: true
+};
 exports.runBuildingStep = runBuildingStep;
 exports.applyBuildingStep = applyBuildingStep;
 exports.RxDBQueryBuilderPlugin = void 0;
 
 var _nosqlQueryBuilder = require("./mquery/nosql-query-builder");
+
+Object.keys(_nosqlQueryBuilder).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _nosqlQueryBuilder[key];
+    }
+  });
+});
 
 var _rxQuery = require("../../rx-query");
 

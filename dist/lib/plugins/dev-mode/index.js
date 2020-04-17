@@ -3,11 +3,25 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+var _exportNames = {
+  RxDBDevModePlugin: true
+};
 exports.RxDBDevModePlugin = void 0;
 
 var _errorMessages = require("./error-messages");
 
 var _checkSchema = require("./check-schema");
+
+Object.keys(_checkSchema).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _checkSchema[key];
+    }
+  });
+});
 
 var _checkOrm = require("./check-orm");
 

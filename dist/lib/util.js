@@ -9,6 +9,7 @@ exports.pluginMissing = pluginMissing;
 exports.fastUnsecureHash = fastUnsecureHash;
 exports.hash = hash;
 exports.generateId = generateId;
+exports.now = now;
 exports.nextTick = nextTick;
 exports.promiseWait = promiseWait;
 exports.toPromise = toPromise;
@@ -33,7 +34,7 @@ var _randomToken = _interopRequireDefault(require("random-token"));
 
 var _clone = _interopRequireDefault(require("clone"));
 
-var _sparkMd = require("spark-md5");
+var _sparkMd = _interopRequireDefault(require("spark-md5"));
 
 var _isElectron = _interopRequireDefault(require("is-electron"));
 
@@ -101,7 +102,7 @@ function hash(msg) {
     msg = JSON.stringify(msg);
   }
 
-  return (0, _sparkMd.hash)(RXDB_HASH_SALT + msg);
+  return _sparkMd["default"].hash(RXDB_HASH_SALT + msg);
 }
 /**
  * generate a new _id as db-primary-key
@@ -109,7 +110,31 @@ function hash(msg) {
 
 
 function generateId() {
-  return (0, _randomToken["default"])(10) + ':' + new Date().getTime();
+  return (0, _randomToken["default"])(10) + ':' + now();
+}
+/**
+ * Returns the current unix time in milliseconds
+ * Because the accuracy of getTime() in javascript is bad,
+ * and we cannot rely on performance.now() on all plattforms,
+ * this method implements a way to never return the same value twice.
+ * This ensures that when now() is called often, we do not loose the information
+ * about which call came first and which came after.
+ * Caution: Do not call this too often in a short timespan
+ * because it might return 'the future'
+ */
+
+
+var _lastNow = 0;
+
+function now() {
+  var ret = new Date().getTime();
+
+  if (ret <= _lastNow) {
+    ret = _lastNow + 1;
+  }
+
+  _lastNow = ret;
+  return ret;
 }
 /**
  * returns a promise that resolves on the next tick

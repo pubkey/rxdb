@@ -11,19 +11,15 @@ exports.RxTypeError = exports.RxError = void 0;
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 
-var _possibleConstructorReturn2 = _interopRequireDefault(require("@babel/runtime/helpers/possibleConstructorReturn"));
-
-var _getPrototypeOf2 = _interopRequireDefault(require("@babel/runtime/helpers/getPrototypeOf"));
-
 var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/inheritsLoose"));
 
 var _wrapNativeSuper2 = _interopRequireDefault(require("@babel/runtime/helpers/wrapNativeSuper"));
 
 var _overwritable = _interopRequireDefault(require("./overwritable"));
 
-function _createSuper(Derived) { return function () { var Super = (0, _getPrototypeOf2["default"])(Derived), result; if (_isNativeReflectConstruct()) { var NewTarget = (0, _getPrototypeOf2["default"])(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2["default"])(this, result); }; }
-
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
+/**
+ * here we use custom errors with the additional field 'parameters'
+ */
 
 /**
  * transform an object of parameters to a presentable string
@@ -53,8 +49,6 @@ function messageForError(message, parameters) {
 
 var RxError = /*#__PURE__*/function (_Error) {
   (0, _inheritsLoose2["default"])(RxError, _Error);
-
-  var _super = _createSuper(RxError);
 
   function RxError(code, message) {
     var _this;
@@ -94,8 +88,6 @@ exports.RxError = RxError;
 
 var RxTypeError = /*#__PURE__*/function (_TypeError) {
   (0, _inheritsLoose2["default"])(RxTypeError, _TypeError);
-
-  var _super2 = _createSuper(RxTypeError);
 
   function RxTypeError(code, message) {
     var _this2;

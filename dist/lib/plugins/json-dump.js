@@ -129,13 +129,16 @@ function importDumpRxCollection(exportedJSON) {
   .map(function (doc) {
     return _this3._handleToPouch(doc);
   });
+  var startTime;
   return this.database.lockedRun( // write to disc
   function () {
+    startTime = (0, _util.now)();
     return _this3.pouch.bulkDocs(docs);
   }).then(function () {
+    var endTime = (0, _util.now)();
     docs.forEach(function (doc) {
       // emit change events
-      var emitEvent = (0, _rxChangeEvent.createInsertEvent)(_this3, doc);
+      var emitEvent = (0, _rxChangeEvent.createInsertEvent)(_this3, doc, startTime, endTime);
 
       _this3.$emit(emitEvent);
     });

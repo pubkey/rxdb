@@ -54,21 +54,43 @@ export function fastUnsecureHash(obj) {
  * and build-size could be reduced by 9kb
  */
 
-import { hash as hashSparkMd5 } from 'spark-md5';
+import Md5 from 'spark-md5';
 export var RXDB_HASH_SALT = 'rxdb-specific-hash-salt';
 export function hash(msg) {
   if (typeof msg !== 'string') {
     msg = JSON.stringify(msg);
   }
 
-  return hashSparkMd5(RXDB_HASH_SALT + msg);
+  return Md5.hash(RXDB_HASH_SALT + msg);
 }
 /**
  * generate a new _id as db-primary-key
  */
 
 export function generateId() {
-  return randomToken(10) + ':' + new Date().getTime();
+  return randomToken(10) + ':' + now();
+}
+/**
+ * Returns the current unix time in milliseconds
+ * Because the accuracy of getTime() in javascript is bad,
+ * and we cannot rely on performance.now() on all plattforms,
+ * this method implements a way to never return the same value twice.
+ * This ensures that when now() is called often, we do not loose the information
+ * about which call came first and which came after.
+ * Caution: Do not call this too often in a short timespan
+ * because it might return 'the future'
+ */
+
+var _lastNow = 0;
+export function now() {
+  var ret = new Date().getTime();
+
+  if (ret <= _lastNow) {
+    ret = _lastNow + 1;
+  }
+
+  _lastNow = ret;
+  return ret;
 }
 /**
  * returns a promise that resolves on the next tick

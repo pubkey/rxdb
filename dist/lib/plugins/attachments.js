@@ -30,10 +30,12 @@ function ensureSchemaSupportsAttachments(doc) {
 }
 
 function resyncRxDocument(doc) {
+  var startTime = (0, _util.now)();
   return doc.collection.pouch.get(doc.primary).then(function (docDataFromPouch) {
     var data = doc.collection._handleFromPouch(docDataFromPouch);
 
-    var changeEvent = (0, _rxChangeEvent.createUpdateEvent)(doc.collection, data, null, doc);
+    var endTime = (0, _util.now)();
+    var changeEvent = (0, _rxChangeEvent.createUpdateEvent)(doc.collection, data, null, startTime, endTime, doc);
     doc.$emit(changeEvent);
   });
 }

@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.runPluginHooks = runPluginHooks;
 exports.runAsyncPluginHooks = runAsyncPluginHooks;
-exports.clearHook = clearHook;
+exports._clearHook = _clearHook;
 exports.HOOKS = void 0;
 
 /**
@@ -98,7 +98,7 @@ function runAsyncPluginHooks(hookKey, obj) {
  */
 
 
-function clearHook(type, fun) {
+function _clearHook(type, fun) {
   HOOKS[type] = HOOKS[type].filter(function (h) {
     return h !== fun;
   });

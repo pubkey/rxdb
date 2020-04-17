@@ -14,10 +14,6 @@ exports.RxDBInMemoryPlugin = exports.prototypes = exports.rxdb = exports.InMemor
 
 var _assertThisInitialized2 = _interopRequireDefault(require("@babel/runtime/helpers/assertThisInitialized"));
 
-var _possibleConstructorReturn2 = _interopRequireDefault(require("@babel/runtime/helpers/possibleConstructorReturn"));
-
-var _getPrototypeOf2 = _interopRequireDefault(require("@babel/runtime/helpers/getPrototypeOf"));
-
 var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/inheritsLoose"));
 
 var _rxjs = require("rxjs");
@@ -42,10 +38,13 @@ var _rxError = require("../rx-error");
 
 var _watchForChanges = require("../plugins/watch-for-changes");
 
-function _createSuper(Derived) { return function () { var Super = (0, _getPrototypeOf2["default"])(Derived), result; if (_isNativeReflectConstruct()) { var NewTarget = (0, _getPrototypeOf2["default"])(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2["default"])(this, result); }; }
-
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
-
+/**
+ * This plugin adds RxCollection.inMemory()
+ * Which replicates the collection into an in-memory-collection
+ * So you can do faster queries and also query over encrypted fields.
+ * Writes will still run on the original collection
+ */
+// add the watch-for-changes-plugin
 (0, _core.addRxPlugin)(_watchForChanges.RxDBWatchForChangesPlugin);
 var collectionCacheMap = new WeakMap();
 var collectionPromiseCacheMap = new WeakMap();
@@ -58,8 +57,6 @@ var BULK_DOC_OPTIONS_FALSE = {
 
 var InMemoryRxCollection = /*#__PURE__*/function (_RxCollectionBase) {
   (0, _inheritsLoose2["default"])(InMemoryRxCollection, _RxCollectionBase);
-
-  var _super = _createSuper(InMemoryRxCollection);
 
   function InMemoryRxCollection(parentCollection) {
     var _this;

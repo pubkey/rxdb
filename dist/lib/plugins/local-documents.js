@@ -7,10 +7,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.RxDBLocalDocumentsPlugin = exports.overwritable = exports.prototypes = exports.rxdb = exports.RxLocalDocument = void 0;
 
-var _possibleConstructorReturn2 = _interopRequireDefault(require("@babel/runtime/helpers/possibleConstructorReturn"));
-
-var _getPrototypeOf2 = _interopRequireDefault(require("@babel/runtime/helpers/getPrototypeOf"));
-
 var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/inheritsLoose"));
 
 var _objectPath = _interopRequireDefault(require("object-path"));
@@ -31,10 +27,11 @@ var _rxCollection = require("../rx-collection");
 
 var _operators = require("rxjs/operators");
 
-function _createSuper(Derived) { return function () { var Super = (0, _getPrototypeOf2["default"])(Derived), result; if (_isNativeReflectConstruct()) { var NewTarget = (0, _getPrototypeOf2["default"])(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2["default"])(this, result); }; }
-
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
-
+/**
+ * This plugin adds the local-documents-support
+ * Local documents behave equal then with pouchdb
+ * @link https://pouchdb.com/guides/local-documents.html
+ */
 var DOC_CACHE_BY_PARENT = new WeakMap();
 
 var _getDocCache = function _getDocCache(parent) {
@@ -71,8 +68,6 @@ var RxDocumentParent = (0, _rxDocument.createRxDocumentConstructor)();
 
 var RxLocalDocument = /*#__PURE__*/function (_RxDocumentParent) {
   (0, _inheritsLoose2["default"])(RxLocalDocument, _RxDocumentParent);
-
-  var _super = _createSuper(RxLocalDocument);
 
   function RxLocalDocument(id, jsonData, parent) {
     var _this;
@@ -208,12 +203,14 @@ var RxLocalDocumentPrototype = {
 
     newData = (0, _util.clone)(newData);
     newData._id = LOCAL_PREFIX + this.id;
+    var startTime = (0, _util.now)();
     return this.parentPouch.put(newData).then(function (res) {
+      var endTime = (0, _util.now)();
       newData._rev = res.rev;
 
       _this2._dataSync$.next(newData);
 
-      var changeEvent = new _rxChangeEvent.RxChangeEvent('UPDATE', _this2.id, (0, _util.clone)(_this2._data), (0, _rxDatabase.isInstanceOf)(_this2.parent) ? _this2.parent.token : _this2.parent.database.token, (0, _rxCollection.isInstanceOf)(_this2.parent) ? _this2.parent.name : null, true, null, // TODO emit old data
+      var changeEvent = new _rxChangeEvent.RxChangeEvent('UPDATE', _this2.id, (0, _util.clone)(_this2._data), (0, _rxDatabase.isInstanceOf)(_this2.parent) ? _this2.parent.token : _this2.parent.database.token, (0, _rxCollection.isInstanceOf)(_this2.parent) ? _this2.parent.name : null, true, startTime, endTime, null, // TODO emit old data
       _this2);
 
       _this2.$emit(changeEvent);
@@ -223,10 +220,12 @@ var RxLocalDocumentPrototype = {
     var _this3 = this;
 
     var removeId = LOCAL_PREFIX + this.id;
+    var startTime = (0, _util.now)();
     return this.parentPouch.remove(removeId, this._data._rev).then(function () {
       _getDocCache(_this3.parent)["delete"](_this3.id);
 
-      var changeEvent = new _rxChangeEvent.RxChangeEvent('DELETE', _this3.id, (0, _util.clone)(_this3._data), (0, _rxDatabase.isInstanceOf)(_this3.parent) ? _this3.parent.token : _this3.parent.database.token, (0, _rxCollection.isInstanceOf)(_this3.parent) ? _this3.parent.name : null, true, null, _this3);
+      var endTime = (0, _util.now)();
+      var changeEvent = new _rxChangeEvent.RxChangeEvent('DELETE', _this3.id, (0, _util.clone)(_this3._data), (0, _rxDatabase.isInstanceOf)(_this3.parent) ? _this3.parent.token : _this3.parent.database.token, (0, _rxCollection.isInstanceOf)(_this3.parent) ? _this3.parent.name : null, true, startTime, endTime, null, _this3);
 
       _this3.$emit(changeEvent);
     });

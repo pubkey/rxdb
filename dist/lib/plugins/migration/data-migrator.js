@@ -1,3 +1,41 @@
+"use strict";
+
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createOldCollection = createOldCollection;
+exports._getOldCollections = _getOldCollections;
+exports.mustMigrate = mustMigrate;
+exports.createDataMigrator = createDataMigrator;
+exports._runStrategyIfNotNull = _runStrategyIfNotNull;
+exports.getBatchOfOldCollection = getBatchOfOldCollection;
+exports.migrateDocumentData = migrateDocumentData;
+exports._migrateDocument = _migrateDocument;
+exports.deleteOldCollection = deleteOldCollection;
+exports.migrateOldCollection = migrateOldCollection;
+exports.migratePromise = migratePromise;
+exports.DataMigrator = void 0;
+
+var _rxjs = require("rxjs");
+
+var _pouchDb = require("../../pouch-db");
+
+var _util = require("../../util");
+
+var _rxSchema = require("../../rx-schema");
+
+var _rxError = require("../../rx-error");
+
+var _overwritable = _interopRequireDefault(require("../../overwritable"));
+
+var _hooks = require("../../hooks");
+
+var _crypter = require("../../crypter");
+
+var _rxCollectionHelper = require("../../rx-collection-helper");
+
 /**
  * The DataMigrator handles the documents from collections with older schemas
  * and transforms/saves them into the newest collection
@@ -9,17 +47,7 @@
  * - This could have been done in much less code which would be easier to uderstand
  *
  */
-import { countAllUndeleted, getBatch } from './pouch-db';
-import { clone, toPromise, flatClone } from './util';
-import { createRxSchema } from './rx-schema';
-import { newRxError } from './rx-error';
-import overwritable from './overwritable';
-import { runPluginHooks, runAsyncPluginHooks } from './hooks';
-import { Subject } from 'rxjs';
-import { getPreviousVersions } from './rx-schema';
-import { createCrypter } from './crypter';
-import { _handleToPouch, _handleFromPouch } from './rx-collection-helper';
-export var DataMigrator = /*#__PURE__*/function () {
+var DataMigrator = /*#__PURE__*/function () {
   function DataMigrator(newestCollection, migrationStrategies) {
     this._migrated = false;
     this.newestCollection = newestCollection;
@@ -35,7 +63,7 @@ export var DataMigrator = /*#__PURE__*/function () {
     var _this = this;
 
     var batchSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
-    if (this._migrated) throw newRxError('DM1');
+    if (this._migrated) throw (0, _rxError.newRxError)('DM1');
     this._migrated = true;
     var state = {
       done: false,
@@ -51,7 +79,7 @@ export var DataMigrator = /*#__PURE__*/function () {
       percent: 0 // percentage
 
     };
-    var observer = new Subject();
+    var observer = new _rxjs.Subject();
     /**
      * TODO this is a side-effect which might throw
      * We did this because it is not possible to create new Observer(async(...))
@@ -63,7 +91,7 @@ export var DataMigrator = /*#__PURE__*/function () {
       return _getOldCollections(_this).then(function (ret) {
         oldCols = ret;
         var countAll = Promise.all(oldCols.map(function (oldCol) {
-          return countAllUndeleted(oldCol.pouchdb);
+          return (0, _pouchDb.countAllUndeleted)(oldCol.pouchdb);
         }));
         return countAll;
       }).then(function (countAll) {
@@ -71,7 +99,7 @@ export var DataMigrator = /*#__PURE__*/function () {
           return prev = cur + prev;
         }, 0);
         state.total = totalCount;
-        observer.next(flatClone(state));
+        observer.next((0, _util.flatClone)(state));
         var currentCol = oldCols.shift();
         var currentPromise = Promise.resolve();
 
@@ -83,7 +111,7 @@ export var DataMigrator = /*#__PURE__*/function () {
                 state.handled++;
                 state[subState.type] = state[subState.type] + 1;
                 state.percent = Math.round(state.handled / state.total * 100);
-                observer.next(flatClone(state));
+                observer.next((0, _util.flatClone)(state));
               }, function (e) {
                 sub.unsubscribe();
                 observer.error(e);
@@ -104,7 +132,7 @@ export var DataMigrator = /*#__PURE__*/function () {
       }).then(function () {
         state.done = true;
         state.percent = 100;
-        observer.next(flatClone(state));
+        observer.next((0, _util.flatClone)(state));
         observer.complete();
       });
     })();
@@ -130,21 +158,24 @@ export var DataMigrator = /*#__PURE__*/function () {
 
   return DataMigrator;
 }();
-export function createOldCollection(version, schemaObj, dataMigrator) {
+
+exports.DataMigrator = DataMigrator;
+
+function createOldCollection(version, schemaObj, dataMigrator) {
   var database = dataMigrator.newestCollection.database;
-  var schema = createRxSchema(schemaObj, false);
+  var schema = (0, _rxSchema.createRxSchema)(schemaObj, false);
   var ret = {
     version: version,
     dataMigrator: dataMigrator,
     newestCollection: dataMigrator.newestCollection,
     database: database,
-    schema: createRxSchema(schemaObj, false),
+    schema: (0, _rxSchema.createRxSchema)(schemaObj, false),
     pouchdb: database._spawnPouchDB(dataMigrator.newestCollection.name, version, dataMigrator.newestCollection.pouchSettings),
-    _crypter: createCrypter(database.password, schema)
+    _crypter: (0, _crypter.createCrypter)(database.password, schema)
   };
 
   if (schema.doKeyCompression()) {
-    ret._keyCompressor = overwritable.createKeyCompressor(schema);
+    ret._keyCompressor = _overwritable["default"].createKeyCompressor(schema);
   }
 
   return ret;
@@ -153,8 +184,9 @@ export function createOldCollection(version, schemaObj, dataMigrator) {
  * get an array with OldCollection-instances from all existing old pouchdb-instance
  */
 
-export function _getOldCollections(dataMigrator) {
-  return Promise.all(getPreviousVersions(dataMigrator.currentSchema.jsonSchema).map(function (v) {
+
+function _getOldCollections(dataMigrator) {
+  return Promise.all((0, _rxSchema.getPreviousVersions)(dataMigrator.currentSchema.jsonSchema).map(function (v) {
     return dataMigrator.database.internalStore.get(dataMigrator.name + '-' + v);
   }).map(function (fun) {
     return fun["catch"](function () {
@@ -173,28 +205,35 @@ export function _getOldCollections(dataMigrator) {
  * returns true if a migration is needed
  */
 
-export function mustMigrate(dataMigrator) {
-  if (dataMigrator.currentSchema.version === 0) return Promise.resolve(false);
+
+function mustMigrate(dataMigrator) {
+  if (dataMigrator.currentSchema.version === 0) {
+    return Promise.resolve(false);
+  }
+
   return _getOldCollections(dataMigrator).then(function (oldCols) {
     if (oldCols.length === 0) return false;else return true;
   });
 }
-export function createDataMigrator(newestCollection, migrationStrategies) {
+
+function createDataMigrator(newestCollection, migrationStrategies) {
   return new DataMigrator(newestCollection, migrationStrategies);
 }
-export function _runStrategyIfNotNull(oldCollection, version, docOrNull) {
+
+function _runStrategyIfNotNull(oldCollection, version, docOrNull) {
   if (docOrNull === null) {
     return Promise.resolve(null);
   } else {
     var ret = oldCollection.dataMigrator.migrationStrategies[version](docOrNull);
-    var retPromise = toPromise(ret);
+    var retPromise = (0, _util.toPromise)(ret);
     return retPromise;
   }
 }
-export function getBatchOfOldCollection(oldCollection, batchSize) {
-  return getBatch(oldCollection.pouchdb, batchSize).then(function (docs) {
+
+function getBatchOfOldCollection(oldCollection, batchSize) {
+  return (0, _pouchDb.getBatch)(oldCollection.pouchdb, batchSize).then(function (docs) {
     return docs.map(function (doc) {
-      return _handleFromPouch(oldCollection, doc);
+      return (0, _rxCollectionHelper._handleFromPouch)(oldCollection, doc);
     });
   });
 }
@@ -205,8 +244,9 @@ export function getBatchOfOldCollection(oldCollection, batchSize) {
  * @return final object or null if migrationStrategy deleted it
  */
 
-export function migrateDocumentData(oldCollection, docData) {
-  docData = clone(docData);
+
+function migrateDocumentData(oldCollection, docData) {
+  docData = (0, _util.clone)(docData);
   var nextVersion = oldCollection.version + 1; // run the document throught migrationStrategies
 
   var currentPromise = Promise.resolve(docData);
@@ -229,7 +269,7 @@ export function migrateDocumentData(oldCollection, docData) {
     try {
       oldCollection.newestCollection.schema.validate(doc);
     } catch (e) {
-      throw newRxError('DM2', {
+      throw (0, _rxError.newRxError)('DM2', {
         fromVersion: oldCollection.version,
         toVersion: oldCollection.newestCollection.schema.version,
         finalDoc: doc
@@ -244,7 +284,8 @@ export function migrateDocumentData(oldCollection, docData) {
  * @return status-action with status and migrated document
  */
 
-export function _migrateDocument(oldCollection, doc) {
+
+function _migrateDocument(oldCollection, doc) {
   var action = {
     res: null,
     type: '',
@@ -257,18 +298,18 @@ export function _migrateDocument(oldCollection, doc) {
     action.migrated = migrated;
 
     if (migrated) {
-      runPluginHooks('preMigrateDocument', action); // save to newest collection
+      (0, _hooks.runPluginHooks)('preMigrateDocument', action); // save to newest collection
 
       delete migrated._rev;
       return oldCollection.newestCollection._pouchPut(migrated, true).then(function (res) {
         action.res = res;
         action.type = 'success';
-        return runAsyncPluginHooks('postMigrateDocument', action);
+        return (0, _hooks.runAsyncPluginHooks)('postMigrateDocument', action);
       });
     } else action.type = 'deleted';
   }).then(function () {
     // remove from old collection
-    return oldCollection.pouchdb.remove(_handleToPouch(oldCollection, doc))["catch"](function () {});
+    return oldCollection.pouchdb.remove((0, _rxCollectionHelper._handleToPouch)(oldCollection, doc))["catch"](function () {});
   }).then(function () {
     return action;
   });
@@ -277,7 +318,8 @@ export function _migrateDocument(oldCollection, doc) {
  * deletes this.pouchdb and removes it from the database.collectionsCollection
  */
 
-export function deleteOldCollection(oldCollection) {
+
+function deleteOldCollection(oldCollection) {
   return oldCollection.pouchdb.destroy().then(function () {
     return oldCollection.database.removeCollectionDoc(oldCollection.dataMigrator.name, oldCollection.schema);
   });
@@ -286,16 +328,17 @@ export function deleteOldCollection(oldCollection) {
  * runs the migration on all documents and deletes the pouchdb afterwards
  */
 
-export function migrateOldCollection(oldCollection) {
+
+function migrateOldCollection(oldCollection) {
   var batchSize = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 10;
 
   if (oldCollection._migrate) {
     // already running
-    throw newRxError('DM3');
+    throw (0, _rxError.newRxError)('DM3');
   }
 
   oldCollection._migrate = true;
-  var observer = new Subject();
+  var observer = new _rxjs.Subject();
   /**
    * TODO this is a side-effect which might throw
    * @see DataMigrator.migrate()
@@ -338,7 +381,8 @@ export function migrateOldCollection(oldCollection) {
 
   return observer.asObservable();
 }
-export function migratePromise(oldCollection, batchSize) {
+
+function migratePromise(oldCollection, batchSize) {
   if (!oldCollection._migratePromise) {
     oldCollection._migratePromise = new Promise(function (res, rej) {
       var state$ = migrateOldCollection(oldCollection, batchSize);
@@ -348,4 +392,5 @@ export function migratePromise(oldCollection, batchSize) {
 
   return oldCollection._migratePromise;
 }
+
 //# sourceMappingURL=data-migrator.js.map

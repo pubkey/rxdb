@@ -3,14 +3,15 @@
  * they can be grabbed by the observables of database, collection and document
  */
 export var RxChangeEvent = /*#__PURE__*/function () {
-  function RxChangeEvent(operation, documentId, documentData, databaseToken, collectionName, isLocal, previousData, rxDocument) {
-    this.time = new Date().getTime();
+  function RxChangeEvent(operation, documentId, documentData, databaseToken, collectionName, isLocal, startTime, endTime, previousData, rxDocument) {
     this.operation = operation;
     this.documentId = documentId;
     this.documentData = documentData;
     this.databaseToken = databaseToken;
     this.collectionName = collectionName;
     this.isLocal = isLocal;
+    this.startTime = startTime;
+    this.endTime = endTime;
     this.previousData = previousData;
     this.rxDocument = rxDocument;
   }
@@ -33,7 +34,9 @@ export var RxChangeEvent = /*#__PURE__*/function () {
       previousData: this.previousData ? this.previousData : undefined,
       databaseToken: this.databaseToken,
       collectionName: this.collectionName,
-      isLocal: this.isLocal
+      isLocal: this.isLocal,
+      startTime: this.startTime,
+      endTime: this.endTime
     };
     return ret;
   };
@@ -68,7 +71,7 @@ export var RxChangeEvent = /*#__PURE__*/function () {
 
   return RxChangeEvent;
 }();
-export function changeEventfromPouchChange(changeDoc, collection) {
+export function changeEventfromPouchChange(changeDoc, collection, time) {
   var operation = changeDoc._rev.startsWith('1-') ? 'INSERT' : 'UPDATE';
 
   if (changeDoc._deleted) {
@@ -79,18 +82,18 @@ export function changeEventfromPouchChange(changeDoc, collection) {
   var doc = collection._handleFromPouch(changeDoc);
 
   var documentId = doc[collection.schema.primaryPath];
-  var cE = new RxChangeEvent(operation, documentId, doc, collection.database.token, collection.name, false);
+  var cE = new RxChangeEvent(operation, documentId, doc, collection.database.token, collection.name, false, time, time);
   return cE;
 }
-export function createInsertEvent(collection, docData, doc) {
-  var ret = new RxChangeEvent('INSERT', docData[collection.schema.primaryPath], docData, collection.database.token, collection.name, false, null, doc);
+export function createInsertEvent(collection, docData, startTime, endTime, doc) {
+  var ret = new RxChangeEvent('INSERT', docData[collection.schema.primaryPath], docData, collection.database.token, collection.name, false, startTime, endTime, null, doc);
   return ret;
 }
-export function createUpdateEvent(collection, docData, previous, rxDocument) {
-  return new RxChangeEvent('UPDATE', docData[collection.schema.primaryPath], docData, collection.database.token, collection.name, false, previous, rxDocument);
+export function createUpdateEvent(collection, docData, previous, startTime, endTime, rxDocument) {
+  return new RxChangeEvent('UPDATE', docData[collection.schema.primaryPath], docData, collection.database.token, collection.name, false, startTime, endTime, previous, rxDocument);
 }
-export function createDeleteEvent(collection, docData, previous, rxDocument) {
-  return new RxChangeEvent('DELETE', docData[collection.schema.primaryPath], docData, collection.database.token, collection.name, false, previous, rxDocument);
+export function createDeleteEvent(collection, docData, previous, startTime, endTime, rxDocument) {
+  return new RxChangeEvent('DELETE', docData[collection.schema.primaryPath], docData, collection.database.token, collection.name, false, startTime, endTime, previous, rxDocument);
 }
 export function isInstanceOf(obj) {
   return obj instanceof RxChangeEvent;

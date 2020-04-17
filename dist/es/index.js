@@ -11,6 +11,8 @@ import { RxDBValidatePlugin } from './plugins/validate';
 addRxPlugin(RxDBValidatePlugin);
 import { RxDBKeyCompressionPlugin } from './plugins/key-compression';
 addRxPlugin(RxDBKeyCompressionPlugin);
+import { RxDBMigrationPlugin } from './plugins/migration';
+addRxPlugin(RxDBMigrationPlugin);
 import { RxDBLeaderElectionPlugin } from './plugins/leader-election';
 addRxPlugin(RxDBLeaderElectionPlugin);
 import { RxDBEncryptionPlugin } from './plugins/encryption';
@@ -32,7 +34,8 @@ addRxPlugin(RxDBAttachmentsPlugin);
 import { RxDBLocalDocumentsPlugin } from './plugins/local-documents';
 addRxPlugin(RxDBLocalDocumentsPlugin);
 import { RxDBQueryBuilderPlugin } from './plugins/query-builder';
-addRxPlugin(RxDBQueryBuilderPlugin);
+addRxPlugin(RxDBQueryBuilderPlugin); // TODO how to do 'export type * ..' ?
+
 // re-export things from core
 export * from './core';
 //# sourceMappingURL=index.js.map

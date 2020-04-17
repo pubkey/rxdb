@@ -1,13 +1,12 @@
 import _createClass from "@babel/runtime/helpers/createClass";
 import { filter } from 'rxjs/operators';
-import { ucfirst, nextTick, flatClone, promiseSeries, pluginMissing } from './util';
+import { ucfirst, nextTick, flatClone, promiseSeries, pluginMissing, now } from './util';
 import { validateCouchDBString } from './pouch-db';
 import { _handleToPouch as _handleToPouch2, _handleFromPouch as _handleFromPouch2, fillObjectDataBeforeInsert } from './rx-collection-helper';
 import { createRxQuery, _getDefaultQuery } from './rx-query';
 import { isInstanceOf as isInstanceOfRxSchema, createRxSchema } from './rx-schema';
 import { createInsertEvent } from './rx-change-event';
 import { newRxError, newRxTypeError } from './rx-error';
-import { mustMigrate, createDataMigrator } from './data-migrator';
 import { createCrypter } from './crypter';
 import { createDocCache } from './doc-cache';
 import { createQueryCache } from './query-cache';
@@ -37,7 +36,6 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     this.pouch = {};
     this._docCache = createDocCache();
     this._queryCache = createQueryCache();
-    this._dataMigrator = {};
     this._crypter = {};
     this._changeEventBuffer = {};
     this.database = database;
@@ -73,7 +71,6 @@ export var RxCollectionBase = /*#__PURE__*/function () {
 
     var createIndexesPromise = _prepareCreateIndexes(this.asRxCollection, spawnedPouchPromise);
 
-    this._dataMigrator = createDataMigrator(this.asRxCollection, this.migrationStrategies);
     this._crypter = createCrypter(this.database.password, this.schema);
     this._observable$ = this.database.$.pipe(filter(function (event) {
       return event.collectionName === _this.name;
@@ -90,33 +87,29 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     }));
 
     return Promise.all([spawnedPouchPromise, createIndexesPromise]);
-  }
-  /**
-   * checks if a migration is needed
-   */
+  } // overwritte by migration-plugin
   ;
 
   _proto.migrationNeeded = function migrationNeeded() {
-    return mustMigrate(this._dataMigrator);
-  }
-  /**
-   * trigger migration manually
-   */
-  ;
+    if (this.schema.version === 0) {
+      return Promise.resolve(false);
+    }
+
+    throw pluginMissing('migration');
+  };
+
+  _proto.getDataMigrator = function getDataMigrator() {
+    throw pluginMissing('migration');
+  };
 
   _proto.migrate = function migrate() {
     var batchSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
-    return this._dataMigrator.migrate(batchSize);
-  }
-  /**
-   * does the same thing as .migrate() but returns promise
-   * @return resolves when finished
-   */
-  ;
+    return this.getDataMigrator().migrate(batchSize);
+  };
 
   _proto.migratePromise = function migratePromise() {
     var batchSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
-    return this._dataMigrator.migratePromise(batchSize);
+    return this.getDataMigrator().migratePromise(batchSize);
   }
   /**
    * wrappers for Pouch.put/get to handle keycompression etc
@@ -224,11 +217,15 @@ export var RxCollectionBase = /*#__PURE__*/function () {
 
     var useJson = fillObjectDataBeforeInsert(this, json);
     var newDoc = tempDoc;
+    var startTime;
+    var endTime;
     return this._runHooks('pre', 'insert', useJson).then(function () {
       _this5.schema.validate(useJson);
 
+      startTime = now();
       return _this5._pouchPut(useJson);
     }).then(function (insertResult) {
+      endTime = now();
       useJson[_this5.schema.primaryPath] = insertResult.id;
       useJson._rev = insertResult.rev;
 
@@ -239,7 +236,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
       return _this5._runHooks('post', 'insert', useJson, newDoc);
     }).then(function () {
       // event
-      var emitEvent = createInsertEvent(_this5, useJson, newDoc);
+      var emitEvent = createInsertEvent(_this5, useJson, startTime, endTime, newDoc);
 
       _this5.$emit(emitEvent);
 
@@ -269,7 +266,9 @@ export var RxCollectionBase = /*#__PURE__*/function () {
         docsMap.set(d[_this6.schema.primaryPath], d);
       });
       return _this6.database.lockedRun(function () {
+        var startTime = now();
         return _this6.pouch.bulkDocs(insertDocs).then(function (results) {
+          var endTime = now();
           var okResults = results.filter(function (r) {
             return r.ok;
           }); // create documents
@@ -282,7 +281,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
           }); // emit events
 
           rxDocuments.forEach(function (doc) {
-            var emitEvent = createInsertEvent(_this6, doc, docsMap.get(doc.primary));
+            var emitEvent = createInsertEvent(_this6, doc, startTime, endTime, docsMap.get(doc.primary));
 
             _this6.$emit(emitEvent);
           });
@@ -628,7 +627,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
       }));
     }
   }, {
-    key: "delete$",
+    key: "remove$",
     get: function get() {
       return this.$.pipe(filter(function (cE) {
         return cE.operation === 'DELETE';
@@ -789,7 +788,11 @@ export function create(_ref) {
       });
     });
     var ret = Promise.resolve();
-    if (autoMigrate) ret = collection.migratePromise();
+
+    if (autoMigrate && collection.schema.version !== 0) {
+      ret = collection.migratePromise();
+    }
+
     return ret;
   }).then(function () {
     runPluginHooks('createRxCollection', collection);

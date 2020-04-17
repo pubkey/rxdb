@@ -27,8 +27,6 @@ var _rxChangeEvent = require("./rx-change-event");
 
 var _rxError = require("./rx-error");
 
-var _dataMigrator = require("./data-migrator");
-
 var _crypter = require("./crypter");
 
 var _docCache = require("./doc-cache");
@@ -67,7 +65,6 @@ var RxCollectionBase = /*#__PURE__*/function () {
     this.pouch = {};
     this._docCache = (0, _docCache.createDocCache)();
     this._queryCache = (0, _queryCache.createQueryCache)();
-    this._dataMigrator = {};
     this._crypter = {};
     this._changeEventBuffer = {};
     this.database = database;
@@ -103,7 +100,6 @@ var RxCollectionBase = /*#__PURE__*/function () {
 
     var createIndexesPromise = _prepareCreateIndexes(this.asRxCollection, spawnedPouchPromise);
 
-    this._dataMigrator = (0, _dataMigrator.createDataMigrator)(this.asRxCollection, this.migrationStrategies);
     this._crypter = (0, _crypter.createCrypter)(this.database.password, this.schema);
     this._observable$ = this.database.$.pipe((0, _operators.filter)(function (event) {
       return event.collectionName === _this.name;
@@ -120,33 +116,29 @@ var RxCollectionBase = /*#__PURE__*/function () {
     }));
 
     return Promise.all([spawnedPouchPromise, createIndexesPromise]);
-  }
-  /**
-   * checks if a migration is needed
-   */
+  } // overwritte by migration-plugin
   ;
 
   _proto.migrationNeeded = function migrationNeeded() {
-    return (0, _dataMigrator.mustMigrate)(this._dataMigrator);
-  }
-  /**
-   * trigger migration manually
-   */
-  ;
+    if (this.schema.version === 0) {
+      return Promise.resolve(false);
+    }
+
+    throw (0, _util.pluginMissing)('migration');
+  };
+
+  _proto.getDataMigrator = function getDataMigrator() {
+    throw (0, _util.pluginMissing)('migration');
+  };
 
   _proto.migrate = function migrate() {
     var batchSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
-    return this._dataMigrator.migrate(batchSize);
-  }
-  /**
-   * does the same thing as .migrate() but returns promise
-   * @return resolves when finished
-   */
-  ;
+    return this.getDataMigrator().migrate(batchSize);
+  };
 
   _proto.migratePromise = function migratePromise() {
     var batchSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
-    return this._dataMigrator.migratePromise(batchSize);
+    return this.getDataMigrator().migratePromise(batchSize);
   }
   /**
    * wrappers for Pouch.put/get to handle keycompression etc
@@ -254,11 +246,15 @@ var RxCollectionBase = /*#__PURE__*/function () {
 
     var useJson = (0, _rxCollectionHelper.fillObjectDataBeforeInsert)(this, json);
     var newDoc = tempDoc;
+    var startTime;
+    var endTime;
     return this._runHooks('pre', 'insert', useJson).then(function () {
       _this5.schema.validate(useJson);
 
+      startTime = (0, _util.now)();
       return _this5._pouchPut(useJson);
     }).then(function (insertResult) {
+      endTime = (0, _util.now)();
       useJson[_this5.schema.primaryPath] = insertResult.id;
       useJson._rev = insertResult.rev;
 
@@ -269,7 +265,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
       return _this5._runHooks('post', 'insert', useJson, newDoc);
     }).then(function () {
       // event
-      var emitEvent = (0, _rxChangeEvent.createInsertEvent)(_this5, useJson, newDoc);
+      var emitEvent = (0, _rxChangeEvent.createInsertEvent)(_this5, useJson, startTime, endTime, newDoc);
 
       _this5.$emit(emitEvent);
 
@@ -299,7 +295,9 @@ var RxCollectionBase = /*#__PURE__*/function () {
         docsMap.set(d[_this6.schema.primaryPath], d);
       });
       return _this6.database.lockedRun(function () {
+        var startTime = (0, _util.now)();
         return _this6.pouch.bulkDocs(insertDocs).then(function (results) {
+          var endTime = (0, _util.now)();
           var okResults = results.filter(function (r) {
             return r.ok;
           }); // create documents
@@ -312,7 +310,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
           }); // emit events
 
           rxDocuments.forEach(function (doc) {
-            var emitEvent = (0, _rxChangeEvent.createInsertEvent)(_this6, doc, docsMap.get(doc.primary));
+            var emitEvent = (0, _rxChangeEvent.createInsertEvent)(_this6, doc, startTime, endTime, docsMap.get(doc.primary));
 
             _this6.$emit(emitEvent);
           });
@@ -658,7 +656,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
       }));
     }
   }, {
-    key: "delete$",
+    key: "remove$",
     get: function get() {
       return this.$.pipe((0, _operators.filter)(function (cE) {
         return cE.operation === 'DELETE';
@@ -821,7 +819,11 @@ function create(_ref) {
       });
     });
     var ret = Promise.resolve();
-    if (autoMigrate) ret = collection.migratePromise();
+
+    if (autoMigrate && collection.schema.version !== 0) {
+      ret = collection.migratePromise();
+    }
+
     return ret;
   }).then(function () {
     (0, _hooks.runPluginHooks)('createRxCollection', collection);

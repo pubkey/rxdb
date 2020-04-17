@@ -22,6 +22,8 @@ var _validate = require("./plugins/validate");
 
 var _keyCompression = require("./plugins/key-compression");
 
+var _migration = require("./plugins/migration");
+
 var _leaderElection = require("./plugins/leader-election");
 
 var _encryption = require("./plugins/encryption");
@@ -53,6 +55,7 @@ var _queryBuilder = require("./plugins/query-builder");
 (0, _core.addRxPlugin)(_devMode.RxDBDevModePlugin);
 (0, _core.addRxPlugin)(_validate.RxDBValidatePlugin);
 (0, _core.addRxPlugin)(_keyCompression.RxDBKeyCompressionPlugin);
+(0, _core.addRxPlugin)(_migration.RxDBMigrationPlugin);
 (0, _core.addRxPlugin)(_leaderElection.RxDBLeaderElectionPlugin);
 (0, _core.addRxPlugin)(_encryption.RxDBEncryptionPlugin);
 (0, _core.addRxPlugin)(_update.RxDBUpdatePlugin);
@@ -63,6 +66,6 @@ var _queryBuilder = require("./plugins/query-builder");
 (0, _core.addRxPlugin)(_inMemory.RxDBInMemoryPlugin);
 (0, _core.addRxPlugin)(_attachments.RxDBAttachmentsPlugin);
 (0, _core.addRxPlugin)(_localDocuments.RxDBLocalDocumentsPlugin);
-(0, _core.addRxPlugin)(_queryBuilder.RxDBQueryBuilderPlugin);
+(0, _core.addRxPlugin)(_queryBuilder.RxDBQueryBuilderPlugin); // TODO how to do 'export type * ..' ?
 
 //# sourceMappingURL=index.js.map

@@ -1,11 +1,5 @@
 import _assertThisInitialized from "@babel/runtime/helpers/assertThisInitialized";
-import _possibleConstructorReturn from "@babel/runtime/helpers/possibleConstructorReturn";
-import _getPrototypeOf from "@babel/runtime/helpers/getPrototypeOf";
 import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
-
-function _createSuper(Derived) { return function () { var Super = _getPrototypeOf(Derived), result; if (_isNativeReflectConstruct()) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
 
 /**
  * This plugin adds RxCollection.inMemory()
@@ -36,8 +30,6 @@ var BULK_DOC_OPTIONS_FALSE = {
 };
 export var InMemoryRxCollection = /*#__PURE__*/function (_RxCollectionBase) {
   _inheritsLoose(InMemoryRxCollection, _RxCollectionBase);
-
-  var _super = _createSuper(InMemoryRxCollection);
 
   function InMemoryRxCollection(parentCollection) {
     var _this;

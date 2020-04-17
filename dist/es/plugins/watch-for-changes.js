@@ -1,6 +1,6 @@
 import { fromEvent } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { promiseWait, nextTick } from '../util';
+import { promiseWait, nextTick, now } from '../util';
 import { changeEventfromPouchChange } from '../rx-change-event';
 
 /**
@@ -46,7 +46,8 @@ export function watchForChanges() {
 
 function _handleSingleChange(collection, change) {
   if (change.id.charAt(0) === '_') return Promise.resolve(false); // do not handle changes of internal docs
-  // wait 2 ticks and 20 ms to give the internal event-handling time to run
+
+  var eventTime = now(); // wait 2 ticks and 20 ms to give the internal event-handling time to run
 
   return promiseWait(20).then(function () {
     return nextTick();
@@ -59,7 +60,7 @@ function _handleSingleChange(collection, change) {
       return false;
     }
 
-    var cE = changeEventfromPouchChange(docData, collection);
+    var cE = changeEventfromPouchChange(docData, collection, eventTime);
     collection.$emit(cE);
     return true;
   });

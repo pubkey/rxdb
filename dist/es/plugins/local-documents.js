@@ -1,10 +1,4 @@
-import _possibleConstructorReturn from "@babel/runtime/helpers/possibleConstructorReturn";
-import _getPrototypeOf from "@babel/runtime/helpers/getPrototypeOf";
 import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
-
-function _createSuper(Derived) { return function () { var Super = _getPrototypeOf(Derived), result; if (_isNativeReflectConstruct()) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
 
 /**
  * This plugin adds the local-documents-support
@@ -16,7 +10,7 @@ import { createRxDocumentConstructor, basePrototype } from '../rx-document';
 import { RxChangeEvent } from '../rx-change-event';
 import { createDocCache } from '../doc-cache';
 import { newRxError, newRxTypeError } from '../rx-error';
-import { clone } from '../util';
+import { clone, now } from '../util';
 import { isInstanceOf as isRxDatabase } from '../rx-database';
 import { isInstanceOf as isRxCollection } from '../rx-collection';
 import { filter, map, distinctUntilChanged } from 'rxjs/operators';
@@ -55,8 +49,6 @@ var LOCAL_PREFIX = '_local/';
 var RxDocumentParent = createRxDocumentConstructor();
 export var RxLocalDocument = /*#__PURE__*/function (_RxDocumentParent) {
   _inheritsLoose(RxLocalDocument, _RxDocumentParent);
-
-  var _super = _createSuper(RxLocalDocument);
 
   function RxLocalDocument(id, jsonData, parent) {
     var _this;
@@ -187,12 +179,14 @@ var RxLocalDocumentPrototype = {
 
     newData = clone(newData);
     newData._id = LOCAL_PREFIX + this.id;
+    var startTime = now();
     return this.parentPouch.put(newData).then(function (res) {
+      var endTime = now();
       newData._rev = res.rev;
 
       _this2._dataSync$.next(newData);
 
-      var changeEvent = new RxChangeEvent('UPDATE', _this2.id, clone(_this2._data), isRxDatabase(_this2.parent) ? _this2.parent.token : _this2.parent.database.token, isRxCollection(_this2.parent) ? _this2.parent.name : null, true, null, // TODO emit old data
+      var changeEvent = new RxChangeEvent('UPDATE', _this2.id, clone(_this2._data), isRxDatabase(_this2.parent) ? _this2.parent.token : _this2.parent.database.token, isRxCollection(_this2.parent) ? _this2.parent.name : null, true, startTime, endTime, null, // TODO emit old data
       _this2);
 
       _this2.$emit(changeEvent);
@@ -202,10 +196,12 @@ var RxLocalDocumentPrototype = {
     var _this3 = this;
 
     var removeId = LOCAL_PREFIX + this.id;
+    var startTime = now();
     return this.parentPouch.remove(removeId, this._data._rev).then(function () {
       _getDocCache(_this3.parent)["delete"](_this3.id);
 
-      var changeEvent = new RxChangeEvent('DELETE', _this3.id, clone(_this3._data), isRxDatabase(_this3.parent) ? _this3.parent.token : _this3.parent.database.token, isRxCollection(_this3.parent) ? _this3.parent.name : null, true, null, _this3);
+      var endTime = now();
+      var changeEvent = new RxChangeEvent('DELETE', _this3.id, clone(_this3._data), isRxDatabase(_this3.parent) ? _this3.parent.token : _this3.parent.database.token, isRxCollection(_this3.parent) ? _this3.parent.name : null, true, startTime, endTime, null, _this3);
 
       _this3.$emit(changeEvent);
     });

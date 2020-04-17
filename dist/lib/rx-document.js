@@ -305,11 +305,15 @@ var basePrototype = {
 
 
     this.collection.schema.validateChange(oldData, newData);
+    var startTime;
     return this.collection._runHooks('pre', 'save', newData, this).then(function () {
       _this3.collection.schema.validate(newData);
 
+      startTime = (0, _util.now)();
       return _this3.collection._pouchPut(newData);
     }).then(function (ret) {
+      var endTime = (0, _util.now)();
+
       if (!ret.ok) {
         throw (0, _rxError.newRxError)('DOC12', {
           data: ret
@@ -318,7 +322,7 @@ var basePrototype = {
 
       newData._rev = ret.rev; // emit event
 
-      var changeEvent = (0, _rxChangeEvent.createUpdateEvent)(_this3.collection, newData, oldData, _this3);
+      var changeEvent = (0, _rxChangeEvent.createUpdateEvent)(_this3.collection, newData, oldData, startTime, endTime, _this3);
 
       _this3.$emit(changeEvent);
 
@@ -370,8 +374,10 @@ var basePrototype = {
     }
 
     var deletedData = (0, _util.clone)(this._data);
+    var startTime;
     return this.collection._runHooks('pre', 'remove', deletedData, this).then(function () {
       deletedData._deleted = true;
+      startTime = (0, _util.now)();
       /**
        * because pouch.remove will also empty the object,
        * we set _deleted: true and use pouch.put
@@ -379,7 +385,9 @@ var basePrototype = {
 
       return _this5.collection._pouchPut(deletedData);
     }).then(function () {
-      _this5.$emit((0, _rxChangeEvent.createDeleteEvent)(_this5.collection, deletedData, _this5._data, _this5));
+      var endTime = (0, _util.now)();
+
+      _this5.$emit((0, _rxChangeEvent.createDeleteEvent)(_this5.collection, deletedData, _this5._data, startTime, endTime, _this5));
 
       return _this5.collection._runHooks('post', 'remove', deletedData, _this5);
     }).then(function () {

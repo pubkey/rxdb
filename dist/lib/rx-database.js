@@ -517,7 +517,7 @@ function _prepareBroadcastChannel(rxDatabase) {
 
     if (msg.cE.databaseToken === rxDatabase.token) return; // same db
 
-    var changeEvent = new _rxChangeEvent.RxChangeEvent(msg.cE.operation, msg.cE.documentId, msg.cE.documentData, msg.cE.databaseToken, msg.cE.collectionName, msg.cE.isLocal, msg.cE.previousData);
+    var changeEvent = new _rxChangeEvent.RxChangeEvent(msg.cE.operation, msg.cE.documentId, msg.cE.documentData, msg.cE.databaseToken, msg.cE.collectionName, msg.cE.isLocal, msg.cE.startTime, msg.cE.endTime, msg.cE.previousData);
     rxDatabase.broadcastChannel$.next(changeEvent);
   }; // TODO only subscribe when something is listening to the event-chain
 

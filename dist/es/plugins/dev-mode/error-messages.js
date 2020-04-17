@@ -20,6 +20,8 @@ export var ERROR_MESSAGES = {
   QU6: 'RxQuery.limit(): cannot be called on .findOne()',
   QU7: 'query must be an object',
   QU8: 'query cannot be an array',
+  QU9: 'throwIfMissing can only be used in findOne queries',
+  QU10: 'result empty and throwIfMissing: true',
   // mquery.js
   MQ1: 'path must be a string or object',
   MQ2: 'Invalid argument',

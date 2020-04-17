@@ -84,7 +84,7 @@ export function runAsyncPluginHooks(hookKey, obj) {
  * used in tests to remove hooks
  */
 
-export function clearHook(type, fun) {
+export function _clearHook(type, fun) {
   HOOKS[type] = HOOKS[type].filter(function (h) {
     return h !== fun;
   });

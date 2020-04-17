@@ -1,7 +1,7 @@
 import objectPath from 'object-path';
 import { BehaviorSubject } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
-import { clone, trimDots, getHeightOfRevision, toPromise, pluginMissing } from './util';
+import { clone, trimDots, getHeightOfRevision, toPromise, pluginMissing, now } from './util';
 import { createUpdateEvent, createDeleteEvent } from './rx-change-event';
 import { newRxError, newRxTypeError } from './rx-error';
 import { runPluginHooks } from './hooks';
@@ -281,11 +281,15 @@ export var basePrototype = {
 
 
     this.collection.schema.validateChange(oldData, newData);
+    var startTime;
     return this.collection._runHooks('pre', 'save', newData, this).then(function () {
       _this3.collection.schema.validate(newData);
 
+      startTime = now();
       return _this3.collection._pouchPut(newData);
     }).then(function (ret) {
+      var endTime = now();
+
       if (!ret.ok) {
         throw newRxError('DOC12', {
           data: ret
@@ -294,7 +298,7 @@ export var basePrototype = {
 
       newData._rev = ret.rev; // emit event
 
-      var changeEvent = createUpdateEvent(_this3.collection, newData, oldData, _this3);
+      var changeEvent = createUpdateEvent(_this3.collection, newData, oldData, startTime, endTime, _this3);
 
       _this3.$emit(changeEvent);
 
@@ -346,8 +350,10 @@ export var basePrototype = {
     }
 
     var deletedData = clone(this._data);
+    var startTime;
     return this.collection._runHooks('pre', 'remove', deletedData, this).then(function () {
       deletedData._deleted = true;
+      startTime = now();
       /**
        * because pouch.remove will also empty the object,
        * we set _deleted: true and use pouch.put
@@ -355,7 +361,9 @@ export var basePrototype = {
 
       return _this5.collection._pouchPut(deletedData);
     }).then(function () {
-      _this5.$emit(createDeleteEvent(_this5.collection, deletedData, _this5._data, _this5));
+      var endTime = now();
+
+      _this5.$emit(createDeleteEvent(_this5.collection, deletedData, _this5._data, startTime, endTime, _this5));
 
       return _this5.collection._runHooks('post', 'remove', deletedData, _this5);
     }).then(function () {

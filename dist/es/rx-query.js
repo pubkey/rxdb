@@ -3,7 +3,7 @@ import deepEqual from 'deep-equal';
 import { merge, BehaviorSubject } from 'rxjs';
 import { mergeMap, filter, map, first, tap } from 'rxjs/operators';
 import { massageSelector, filterInMemoryFields } from 'pouchdb-selector-core';
-import { sortObject, stringifyFilter, pluginMissing, clone, overwriteGetterForCaching } from './util';
+import { sortObject, stringifyFilter, pluginMissing, clone, overwriteGetterForCaching, now } from './util';
 import { newRxError, newRxTypeError } from './rx-error';
 import { runPluginHooks } from './hooks';
 import { createRxDocuments } from './rx-document-prototype-merge';
@@ -27,6 +27,8 @@ export var RxQueryBase = /*#__PURE__*/function () {
     this._latestChangeEvent = -1;
     this._resultsData = null;
     this._resultsDataMap = new Map();
+    this._lastExecStart = 0;
+    this._lastExecEnd = 0;
     this._resultsDocs$ = new BehaviorSubject(null);
     this._ensureEqualQueue = Promise.resolve(false);
     this.op = op;
@@ -62,6 +64,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
     var _this = this;
 
     this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
+    this._lastExecStart = now();
     var docsPromise;
 
     switch (this.op) {
@@ -80,6 +83,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
     }
 
     return docsPromise.then(function (docs) {
+      _this._lastExecEnd = now();
       _this._resultsDataMap = new Map();
       var primPath = _this.collection.schema.primaryPath;
       docs.forEach(function (doc) {
@@ -97,16 +101,34 @@ export var RxQueryBase = /*#__PURE__*/function () {
    */
   ;
 
-  _proto.exec = function exec() {
+  _proto.exec = function exec(throwIfMissing) {
     var _this2 = this;
 
+    // TODO this should be ensured by typescript
+    if (throwIfMissing && this.op !== 'findOne') {
+      throw newRxError('QU9', {
+        query: this.mangoQuery,
+        op: this.op
+      });
+    }
     /**
      * run _ensureEqual() here,
      * this will make sure that errors in the query which throw inside of pouchdb,
      * will be thrown at this execution context
      */
+
+
     return _ensureEqual(this).then(function () {
       return _this2.$.pipe(first()).toPromise();
+    }).then(function (result) {
+      if (!result && throwIfMissing) {
+        throw newRxError('QU10', {
+          query: _this2.mangoQuery,
+          op: _this2.op
+        });
+      } else {
+        return result;
+      }
     });
   }
   /**
@@ -401,8 +423,24 @@ function __ensureEqual(rxQuery) {
       mustReExec = true;
     } else {
       rxQuery._latestChangeEvent = rxQuery.collection._changeEventBuffer.counter;
+      /**
+       * because pouchdb prefers writes over reads,
+       * we have to filter out the events that happend before the read has started
+       * so that we do not fill event-reduce with the wrong data
+       */
+
+      missedChangeEvents = missedChangeEvents.filter(function (cE) {
+        return !cE.startTime || cE.startTime > rxQuery._lastExecStart;
+      });
 
       var runChangeEvents = rxQuery.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
+      /*
+      console.log('calculateNewResults() ' + new Date().getTime());
+      console.log(rxQuery._lastExecStart + ' - ' + rxQuery._lastExecEnd);
+      console.dir(rxQuery._resultsData.slice());
+      console.dir(runChangeEvents);
+      */
+
 
       var eventReduceResult = calculateNewResults(rxQuery, runChangeEvents);
 

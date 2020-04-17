@@ -1,7 +1,7 @@
 /**
  * this plugin adds the json export/import capabilities to RxDB
  */
-import { hash } from '../util';
+import { hash, now } from '../util';
 import { createRxQuery, _getDefaultQuery } from '../rx-query';
 import { newRxError } from '../rx-error';
 import { createInsertEvent } from '../rx-change-event';
@@ -119,13 +119,16 @@ function importDumpRxCollection(exportedJSON) {
   .map(function (doc) {
     return _this3._handleToPouch(doc);
   });
+  var startTime;
   return this.database.lockedRun( // write to disc
   function () {
+    startTime = now();
     return _this3.pouch.bulkDocs(docs);
   }).then(function () {
+    var endTime = now();
     docs.forEach(function (doc) {
       // emit change events
-      var emitEvent = createInsertEvent(_this3, doc);
+      var emitEvent = createInsertEvent(_this3, doc, startTime, endTime);
 
       _this3.$emit(emitEvent);
     });

@@ -58,7 +58,8 @@ function watchForChanges() {
 
 function _handleSingleChange(collection, change) {
   if (change.id.charAt(0) === '_') return Promise.resolve(false); // do not handle changes of internal docs
-  // wait 2 ticks and 20 ms to give the internal event-handling time to run
+
+  var eventTime = (0, _util.now)(); // wait 2 ticks and 20 ms to give the internal event-handling time to run
 
   return (0, _util.promiseWait)(20).then(function () {
     return (0, _util.nextTick)();
@@ -71,7 +72,7 @@ function _handleSingleChange(collection, change) {
       return false;
     }
 
-    var cE = (0, _rxChangeEvent.changeEventfromPouchChange)(docData, collection);
+    var cE = (0, _rxChangeEvent.changeEventfromPouchChange)(docData, collection, eventTime);
     collection.$emit(cE);
     return true;
   });

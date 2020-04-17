@@ -4,6 +4,7 @@ import { checkOrmMethods } from './check-orm';
 import { checkMigrationStrategies } from './check-migration-strategies';
 import { ensureCollectionNameValid } from './unallowed-properties';
 import { validateCouchDBString } from '../../pouch-db';
+export * from './check-schema';
 export var RxDBDevModePlugin = {
   rxdb: true,
   overwritable: {

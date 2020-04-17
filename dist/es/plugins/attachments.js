@@ -1,6 +1,6 @@
 import { map } from 'rxjs/operators';
 import { createUpdateEvent } from './../rx-change-event';
-import { nextTick, isElectronRenderer } from './../util';
+import { nextTick, isElectronRenderer, now } from './../util';
 import { newRxError } from '../rx-error';
 
 function ensureSchemaSupportsAttachments(doc) {
@@ -14,10 +14,12 @@ function ensureSchemaSupportsAttachments(doc) {
 }
 
 function resyncRxDocument(doc) {
+  var startTime = now();
   return doc.collection.pouch.get(doc.primary).then(function (docDataFromPouch) {
     var data = doc.collection._handleFromPouch(docDataFromPouch);
 
-    var changeEvent = createUpdateEvent(doc.collection, data, null, doc);
+    var endTime = now();
+    var changeEvent = createUpdateEvent(doc.collection, data, null, startTime, endTime, doc);
     doc.$emit(changeEvent);
   });
 }
