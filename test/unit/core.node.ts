@@ -4,15 +4,21 @@
  */
 
 import assert from 'assert';
-import config from './config';
 import AsyncTestUtil from 'async-test-util';
-import * as util from '../../dist/lib/util';
 
-import Core from '../../plugins/core';
-Core.plugin(require('../../plugins/validate'));
-Core.plugin(require('pouchdb-adapter-memory'));
+import config from './config';
+import {
+    addRxPlugin,
+    createRxDatabase,
+    isRxDocument,
+    randomCouchString
+} from '../../plugins/core';
+import { RxJsonSchema } from '../../src/types';
 
-const schema = {
+addRxPlugin(require('../../plugins/validate'));
+addRxPlugin(require('pouchdb-adapter-memory'));
+
+const schema: RxJsonSchema = {
     title: 'human schema',
     description: 'describes a human being',
     version: 0,
@@ -20,8 +26,7 @@ const schema = {
     type: 'object',
     properties: {
         passportId: {
-            type: 'string',
-            index: true
+            type: 'string'
         },
         firstName: {
             type: 'string'
@@ -30,22 +35,23 @@ const schema = {
             type: 'string'
         }
     },
+    indexes: ['passportId'],
     required: ['firstName', 'lastName']
 };
 
 config.parallel('core.node.js', () => {
     describe('creation', () => {
         it('create database', async () => {
-            const db = await Core.create({
-                name: util.randomCouchString(10),
+            const db = await createRxDatabase({
+                name: randomCouchString(10),
                 adapter: 'memory'
             });
             db.destroy();
         });
         it('should not be able to create a encrypted database', async () => {
             await AsyncTestUtil.assertThrows(
-                () => Core.create({
-                    name: util.randomCouchString(10),
+                () => createRxDatabase({
+                    name: randomCouchString(10),
                     adapter: 'memory',
                     password: 'myLongAndStupidPassword'
                 }),
@@ -54,8 +60,8 @@ config.parallel('core.node.js', () => {
             );
         });
         it('create collection', async () => {
-            const db = await Core.create({
-                name: util.randomCouchString(10),
+            const db = await createRxDatabase({
+                name: randomCouchString(10),
                 adapter: 'memory'
             });
             await db.collection({
@@ -67,8 +73,8 @@ config.parallel('core.node.js', () => {
     });
     describe('document interaction', () => {
         it('insert and find a document', async () => {
-            const db = await Core.create({
-                name: util.randomCouchString(10),
+            const db = await createRxDatabase({
+                name: randomCouchString(10),
                 adapter: 'memory'
             });
             await db.collection({
@@ -82,16 +88,22 @@ config.parallel('core.node.js', () => {
                 lastName: 'piotr'
             });
 
-            const doc = await db.humans.findOne().where('firstName').ne('foobar').exec();
-            assert.ok(Core.isRxDocument(doc));
+            const doc = await db.humans.findOne({
+                selector: {
+                    firstName: {
+                        $ne: 'foobar'
+                    }
+                }
+            }).exec();
+            assert.ok(isRxDocument(doc));
 
             db.destroy();
         });
     });
     describe('error-codes', () => {
         it('should throw error-codes instead of messages', async () => {
-            const db = await Core.create({
-                name: util.randomCouchString(10),
+            const db = await createRxDatabase({
+                name: randomCouchString(10),
                 adapter: 'memory'
             });
             const col = await db.collection({

@@ -20,12 +20,12 @@ import heroSchema from '../schemas/hero.schema';
  * A default import would be: import RxDB from 'rxdb';
  */
 import {
-    create as createRxDatabase,
-    plugin as addRxDBPlugin
+    createRxDatabase,
+    addRxPlugin
 } from 'rxdb/plugins/core';
-import RxDBNoValidateModule from 'rxdb/plugins/no-validate';
-import RxDBLeaderElectionModule from 'rxdb/plugins/leader-election';
-import RxDBReplicationModule from 'rxdb/plugins/replication';
+import { RxDBNoValidatePlugin } from 'rxdb/plugins/no-validate';
+import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
+import { RxDBReplicationPlugin } from 'rxdb/plugins/replication';
 import * as PouchdbAdapterHttp from 'pouchdb-adapter-http';
 import * as PouchdbAdapterIdb from 'pouchdb-adapter-idb';
 
@@ -52,16 +52,16 @@ if (window.location.hash == '#nosync') doSync = false;
 async function loadRxDBPlugins(): Promise<any> {
 
 
-    addRxDBPlugin(RxDBLeaderElectionModule);
+    addRxPlugin(RxDBLeaderElectionPlugin);
 
-    addRxDBPlugin(RxDBReplicationModule);
+    addRxPlugin(RxDBReplicationPlugin);
     // http-adapter is always needed for replication with the node-server
-    addRxDBPlugin(PouchdbAdapterHttp);
+    addRxPlugin(PouchdbAdapterHttp);
 
     /**
      * indexed-db adapter
      */
-    addRxDBPlugin(PouchdbAdapterIdb);
+    addRxPlugin(PouchdbAdapterIdb);
 
     /**
      * to reduce the build-size,
@@ -70,28 +70,22 @@ async function loadRxDBPlugins(): Promise<any> {
     if (isDevMode()) {
         await Promise.all([
 
-            // schema-checks should be used in dev-mode only
-            // this module checks if your schema is correct
-            import('rxdb/plugins/schema-check').then(
-                module => addRxDBPlugin(module)
-            ),
-
-            // in dev-mode we show full error-messages
-            // instead of RxErrors with theirs keys
-            import('rxdb/plugins/error-messages').then(
-                module => addRxDBPlugin(module)
+            // add dev-mode plugin
+            // which does many checks and add full error-messages
+            import('rxdb/plugins/dev-mode').then(
+                module => addRxPlugin(module)
             ),
 
             // we use the schema-validation only in dev-mode
             // this validates each document if it is matching the jsonschema
             import('rxdb/plugins/validate').then(
-                module => addRxDBPlugin(module)
+                module => addRxPlugin(module)
             )
         ]);
     } else {
         // in production we use the no-validate module instead of the schema-validation
         // to reduce the build-size
-        addRxDBPlugin(RxDBNoValidateModule);
+        addRxPlugin(RxDBNoValidatePlugin);
     }
 
 }
@@ -106,8 +100,7 @@ async function _create(): Promise<RxHeroesDatabase> {
     console.log('DatabaseService: creating database..');
     const db = await createRxDatabase<RxHeroesCollections>({
         name: 'angularheroes',
-        adapter: 'idb',
-        queryChangeDetection: true
+        adapter: 'idb'
         // password: 'myLongAndStupidPassword' // no password needed
     });
     console.log('DatabaseService: created database');
@@ -128,7 +121,13 @@ async function _create(): Promise<RxHeroesDatabase> {
     console.log('DatabaseService: add hooks');
     db.collections.hero.preInsert(function (docObj: RxHeroDocumentType) {
         const color = docObj.color;
-        return db.collections.hero.findOne({ color }).exec()
+        return db.collections.hero
+            .findOne({
+                selector: {
+                    color
+                }
+            })
+            .exec()
             .then((has: RxHeroDocument | null) => {
                 if (has != null) {
                     alert('another hero already has the color ' + color);

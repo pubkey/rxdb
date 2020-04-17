@@ -35,8 +35,7 @@ In this example-schema we define a hero-collection with the following settings:
             "maximum": 100
         },
         "secret": {
-            "type": "string",
-            "encrypted": true
+            "type": "string"
         },
         "birthyear": {
             "type": "number",
@@ -62,6 +61,7 @@ In this example-schema we define a hero-collection with the following settings:
         }
     },
     "required": ["color"],
+    "encrypted": ["secret"],
     "attachments": {
         "encrypted": true
     }
@@ -110,8 +110,6 @@ const mySchema = {
 
 ## Indexes
 RxDB supports secondary indexes which are defined at the schema-level of the collection.
-To add a simple index, add `index: true` inside field options.
-To add compound-indexes, add them in an array to a `compoundIndexes`-field at the top-level of the schema-definition.
 
 Index is only allowed on field types `string`, `integer` and `number`
 
@@ -125,18 +123,30 @@ const schemaWithIndexes = {
   type: 'object',
   properties: {
       firstName: {
-          type: 'string',
-          index: true       // <- an index for firstName will now be created
+          type: 'string'
       },
       lastName: {
           type: 'string'
       },
       familyName: {
           type: 'string'
+      },
+      creditCards: {
+          type: 'array',
+          items: {
+              type: 'object',
+              properties: {
+                    cvc: {
+                        type: 'number'
+                    }
+              }
+          }       
       }
   },
-  compoundIndexes: [
-      ['lastName', 'familyName']   // <- this will create a compound-index for these two fields
+  indexes: [
+    'firstName', // <- this will create a simple index for the `firstName` field
+    'creditCards.[].cvc',
+    ['lastName', 'familyName'] // <- this will create a compound-index for these two fields
   ]
 };
 ```
@@ -198,14 +208,20 @@ const schemaWithFinalAge = {
 
 ## encryption
 
-By setting a field to `encrypted: true` it will be stored encrypted inside of the data-store. The encryption will run internally, so when you get the `RxDocument`, you can access the unencrypted value.
+By adding a field to the `encrypted` list, it will be stored encrypted inside of the data-store. The encryption will run internally, so when you get the `RxDocument`, you can access the unencrypted value.
 You can set all fields to be encrypted, even nested objects. You can not run queries over encrypted fields.
 
-```json
-"mySecretField": {
-    "type": "string",
-    "encrypted": true
-},
+```js
+const schemaWithDefaultAge = {
+  version: 0,
+  type: 'object',
+  properties: {
+      secret: {
+          type: 'string'
+      },
+  },
+  encrypted: ['secret']
+};
 ```
 
 

@@ -7,10 +7,12 @@ import {
     LeaderElector as BroadcastChannelLeaderElector
 } from 'broadcast-channel';
 
-import {
+import type {
     RxDatabase,
     RxPlugin
 } from '../types';
+
+const LEADER_ELECTORS_OF_DB: WeakMap<RxDatabase, LeaderElector> = new WeakMap();
 
 export class LeaderElector {
     public destroyed: boolean = false;
@@ -42,21 +44,54 @@ export class LeaderElector {
     }
 }
 
-export function create(database: RxDatabase) {
-    const elector = new LeaderElector(database);
-    return elector;
+export function getForDatabase(this: RxDatabase): LeaderElector {
+    if (!LEADER_ELECTORS_OF_DB.has(this)) {
+        LEADER_ELECTORS_OF_DB.set(
+            this,
+            new LeaderElector(this)
+        );
+    }
+    return LEADER_ELECTORS_OF_DB.get(this) as LeaderElector;
+}
+
+export function isLeader(this: RxDatabase): boolean {
+    if (!this.multiInstance) {
+        return true;
+    }
+    return this.leaderElector().isLeader;
+}
+
+export function waitForLeadership(this: RxDatabase): Promise<boolean> {
+    if (!this.multiInstance) {
+        return Promise.resolve(true);
+    } else {
+        return this.leaderElector().waitForLeadership();
+    }
+}
+
+/**
+ * runs when the database gets destroyed
+ */
+export function onDestroy(db: RxDatabase) {
+    const has = LEADER_ELECTORS_OF_DB.get(db);
+    if (has) {
+        has.destroy();
+    }
 }
 
 export const rxdb = true;
-export const prototypes = {};
-export const overwritable = {
-    createLeaderElector: create
+export const prototypes = {
+    RxDatabase: (proto: any) => {
+        proto.leaderElector = getForDatabase;
+        proto.isLeader = isLeader;
+        proto.waitForLeadership = waitForLeadership;
+    }
 };
 
-const plugin: RxPlugin = {
+export const RxDBLeaderElectionPlugin: RxPlugin = {
     rxdb,
     prototypes,
-    overwritable
+    hooks: {
+        preDestroyRxDatabase: onDestroy
+    }
 };
-
-export default plugin;

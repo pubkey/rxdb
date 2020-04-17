@@ -33,12 +33,14 @@ export default class HeroList extends Vue {
   public async mounted() {
     const db = await DatabaseService.get();
     this.sub = db.heroes
-      .find()
-      .sort('name')
+      .find({
+        selector: {},
+        sort: [{ name: 'asc' }]
+      })
       .$.pipe(
         tap(() => {
-            // debounce to simulate slow load
-            setTimeout(() => this.loading = false, 1000);
+          // debounce to simulate slow load
+          setTimeout(() => (this.loading = false), 1000);
         })
       )
       .subscribe((heroes: RxHeroDocument[]) => {
@@ -47,7 +49,9 @@ export default class HeroList extends Vue {
   }
 
   public beforeDestroy() {
-    if (this.sub) { this.sub.unsubscribe(); }
+    if (this.sub) {
+      this.sub.unsubscribe();
+    }
   }
 
   private removeHero(hero: RxHeroDocument) {

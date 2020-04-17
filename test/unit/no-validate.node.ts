@@ -1,10 +1,13 @@
 import assert from 'assert';
-import * as util from '../../dist/lib/util';
 import config from './config';
 
-import Core from '../../plugins/core';
-Core.plugin(require('../../plugins/no-validate'));
-Core.plugin(require('pouchdb-adapter-memory'));
+import {
+    addRxPlugin,
+    createRxDatabase,
+    randomCouchString
+} from '../../plugins/core';
+addRxPlugin(require('../../plugins/no-validate'));
+addRxPlugin(require('pouchdb-adapter-memory'));
 
 const schema = {
     title: 'human schema',
@@ -14,8 +17,7 @@ const schema = {
     type: 'object',
     properties: {
         passportId: {
-            type: 'string',
-            index: true
+            type: 'string'
         },
         firstName: {
             type: 'string'
@@ -24,13 +26,14 @@ const schema = {
             type: 'string'
         }
     },
+    indexes: ['passportId'],
     required: ['firstName', 'lastName']
 };
 
 config.parallel('no-validate.node.js', () => {
     it('should allow to insert everything', async () => {
-        const db = await Core.create({
-            name: util.randomCouchString(10),
+        const db = await createRxDatabase({
+            name: randomCouchString(10),
             adapter: 'memory'
         });
         const col = await db.collection({
@@ -43,8 +46,8 @@ config.parallel('no-validate.node.js', () => {
         db.destroy();
     });
     it('should allow to save everything', async () => {
-        const db = await Core.create({
-            name: util.randomCouchString(10),
+        const db = await createRxDatabase({
+            name: randomCouchString(10),
             adapter: 'memory'
         });
         const col = await db.collection({

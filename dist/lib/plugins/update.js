@@ -7,7 +7,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.update = update;
 exports.RxQueryUpdate = RxQueryUpdate;
-exports["default"] = exports.prototypes = exports.rxdb = void 0;
+exports.RxDBUpdatePlugin = exports.prototypes = exports.rxdb = void 0;
 
 var _modifyjs = _interopRequireDefault(require("modifyjs"));
 
@@ -52,10 +52,10 @@ var prototypes = {
   }
 };
 exports.prototypes = prototypes;
-var _default = {
+var RxDBUpdatePlugin = {
   rxdb: rxdb,
   prototypes: prototypes
 };
-exports["default"] = _default;
+exports.RxDBUpdatePlugin = RxDBUpdatePlugin;
 
 //# sourceMappingURL=update.js.map

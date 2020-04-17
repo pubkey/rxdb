@@ -5,8 +5,6 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getEncryptedPaths = getEncryptedPaths;
-exports.hasCrypt = hasCrypt;
 exports.getIndexes = getIndexes;
 exports.getPrimary = getPrimary;
 exports.getPreviousVersions = getPreviousVersions;
@@ -31,26 +29,25 @@ var _hooks = require("./hooks");
 var _rxDocument = require("./rx-document");
 
 var RxSchema = /*#__PURE__*/function () {
-  function RxSchema(jsonID) {
-    this.jsonID = jsonID;
-    this.compoundIndexes = this.jsonID.compoundIndexes;
-    this.indexes = getIndexes(this.jsonID); // primary is always required
+  function RxSchema(jsonSchema) {
+    this.jsonSchema = jsonSchema;
+    this.indexes = getIndexes(this.jsonSchema); // primary is always required
 
-    this.primaryPath = getPrimary(this.jsonID);
+    this.primaryPath = getPrimary(this.jsonSchema);
 
     if (this.primaryPath) {
-      this.jsonID.required.push(this.primaryPath);
+      this.jsonSchema.required.push(this.primaryPath);
     } // final fields are always required
 
 
-    this.finalFields = getFinalFields(this.jsonID);
-    this.jsonID.required = this.jsonID.required.concat(this.finalFields).filter(function (elem, pos, arr) {
+    this.finalFields = getFinalFields(this.jsonSchema);
+    this.jsonSchema.required = this.jsonSchema.required.concat(this.finalFields).filter(function (elem, pos, arr) {
       return arr.indexOf(elem) === pos;
     }); // unique;
     // add primary to schema if not there (if _id)
 
-    if (!this.jsonID.properties[this.primaryPath]) {
-      this.jsonID.properties[this.primaryPath] = {
+    if (!this.jsonSchema.properties[this.primaryPath]) {
+      this.jsonSchema.properties[this.primaryPath] = {
         type: 'string',
         minLength: 1
       };
@@ -65,7 +62,7 @@ var RxSchema = /*#__PURE__*/function () {
     usePath = 'properties.' + usePath;
     usePath = (0, _util.trimDots)(usePath);
 
-    var ret = _objectPath["default"].get(this.jsonID, usePath);
+    var ret = _objectPath["default"].get(this.jsonSchema, usePath);
 
     return ret;
   }
@@ -120,7 +117,10 @@ var RxSchema = /*#__PURE__*/function () {
   };
 
   _proto.swapIdToPrimary = function swapIdToPrimary(obj) {
-    if (this.primaryPath === '_id' || obj[this.primaryPath]) return obj;
+    if (this.primaryPath === '_id' || obj[this.primaryPath]) {
+      return obj;
+    }
+
     obj[this.primaryPath] = obj._id;
     delete obj._id;
     return obj;
@@ -129,7 +129,10 @@ var RxSchema = /*#__PURE__*/function () {
   _proto.swapPrimaryToId = function swapPrimaryToId(obj) {
     var _this = this;
 
-    if (this.primaryPath === '_id') return obj;
+    if (this.primaryPath === '_id') {
+      return obj;
+    }
+
     var ret = {};
     Object.entries(obj).forEach(function (entry) {
       var newKey = entry[0] === _this.primaryPath ? '_id' : entry[0];
@@ -143,35 +146,32 @@ var RxSchema = /*#__PURE__*/function () {
   ;
 
   _proto.doKeyCompression = function doKeyCompression() {
-    return this.jsonID.keyCompression;
-  };
+    return this.jsonSchema.keyCompression;
+  }
+  /**
+   * creates the schema-based document-prototype,
+   * see RxCollection.getDocumentPrototype()
+   */
+  ;
 
   _proto.getDocumentPrototype = function getDocumentPrototype() {
-    if (!this._getDocumentPrototype) {
-      var proto = {};
-      (0, _rxDocument.defineGetterSetter)(this, proto, '');
-      this._getDocumentPrototype = proto;
-    }
-
-    return this._getDocumentPrototype;
+    var proto = {};
+    (0, _rxDocument.defineGetterSetter)(this, proto, '');
+    (0, _util.overwriteGetterForCaching)(this, 'getDocumentPrototype', function () {
+      return proto;
+    });
+    return proto;
   };
 
   (0, _createClass2["default"])(RxSchema, [{
     key: "version",
     get: function get() {
-      return this.jsonID.version;
-    }
-  }, {
-    key: "crypt",
-    get: function get() {
-      if (!this._crypt) this._crypt = hasCrypt(this.jsonID);
-      return this._crypt;
+      return this.jsonSchema.version;
     }
   }, {
     key: "normalized",
     get: function get() {
-      if (!this._normalized) this._normalized = normalize(this.jsonID);
-      return this._normalized;
+      return (0, _util.overwriteGetterForCaching)(this, 'normalized', normalize(this.jsonSchema));
     }
   }, {
     key: "topLevelFields",
@@ -181,110 +181,58 @@ var RxSchema = /*#__PURE__*/function () {
   }, {
     key: "defaultValues",
     get: function get() {
-      var _this2 = this;
-
-      if (!this._defaultValues) {
-        this._defaultValues = {};
-        Object.entries(this.normalized.properties).filter(function (_ref3) {
-          var v = _ref3[1];
-          return v.hasOwnProperty('default');
-        }).forEach(function (_ref4) {
-          var k = _ref4[0],
-              v = _ref4[1];
-          return _this2._defaultValues[k] = v["default"];
-        });
-      }
-
-      return this._defaultValues;
+      var values = {};
+      Object.entries(this.normalized.properties).filter(function (_ref3) {
+        var v = _ref3[1];
+        return v.hasOwnProperty('default');
+      }).forEach(function (_ref4) {
+        var k = _ref4[0],
+            v = _ref4[1];
+        return values[k] = v["default"];
+      });
+      return (0, _util.overwriteGetterForCaching)(this, 'defaultValues', values);
     }
+    /**
+        * true if schema contains at least one encrypted path
+        */
+
+  }, {
+    key: "crypt",
+    get: function get() {
+      if (!!this.jsonSchema.encrypted && this.jsonSchema.encrypted.length > 0 || this.jsonSchema.attachments && this.jsonSchema.attachments.encrypted) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+    /**
+     * get all encrypted paths
+     */
+
   }, {
     key: "encryptedPaths",
     get: function get() {
-      if (!this._encryptedPaths) this._encryptedPaths = getEncryptedPaths(this.jsonID);
-      return this._encryptedPaths;
+      return this.jsonSchema.encrypted || [];
     }
+    /**
+     * @overrides itself on the first call
+     */
+
   }, {
     key: "hash",
     get: function get() {
-      if (!this._hash) this._hash = (0, _util.hash)(this.normalized);
-      return this._hash;
+      return (0, _util.overwriteGetterForCaching)(this, 'hash', (0, _util.hash)(this.normalized));
     }
-    /**
-     * true if schema contains at least one encrypted path
-     */
-
   }]);
   return RxSchema;
 }();
-/**
- * returns all encrypted paths of the schema
- */
-
 
 exports.RxSchema = RxSchema;
 
-function getEncryptedPaths(jsonSchema) {
-  var ret = {};
-
-  function traverse(currentObj, currentPath) {
-    if (typeof currentObj !== 'object') return;
-
-    if (currentObj.encrypted) {
-      ret[currentPath.substring(1)] = currentObj;
-      return;
-    }
-
-    Object.keys(currentObj).forEach(function (attributeName) {
-      var nextPath = currentPath;
-      if (attributeName !== 'properties') nextPath = nextPath + '.' + attributeName;
-      traverse(currentObj[attributeName], nextPath);
-    });
-  }
-
-  traverse(jsonSchema.properties, '');
-  return ret;
-}
-/**
- * returns true if schema contains an encrypted field
- */
-
-
-function hasCrypt(jsonSchema) {
-  var paths = getEncryptedPaths(jsonSchema);
-  if (Object.keys(paths).length > 0) return true;else return false;
-}
-
-function getIndexes(jsonID) {
-  var flattened = (0, _util.flattenObject)(jsonID);
-  var keys = Object.keys(flattened);
-  var indexes = keys // flattenObject returns only ending paths, we need all paths pointing to an object
-  .map(function (key) {
-    var splitted = key.split('.');
-    splitted.pop(); // all but last
-
-    return splitted.join('.');
-  }).filter(function (key) {
-    return key !== '';
-  }).filter(function (elem, pos, arr) {
-    return arr.indexOf(elem) === pos;
-  }) // unique
-  .filter(function (key) {
-    // check if this path defines an index
-    var value = _objectPath["default"].get(jsonID, key);
-
-    if (value.index) return true;else return false;
-  }).map(function (key) {
-    // replace inner properties
-    key = key.replace('properties.', ''); // first
-
-    key = key.replace(/\.properties\./g, '.'); // middle
-
-    return [(0, _util.trimDots)(key)];
-  }); // add compound-indexes
-
-  var addCompound = jsonID.compoundIndexes || [];
-  indexes = indexes.concat(addCompound);
-  return indexes;
+function getIndexes(jsonSchema) {
+  return (jsonSchema.indexes || []).map(function (index) {
+    return Array.isArray(index) ? index : [index];
+  });
 }
 /**
  * returns the primary path of a jsonschema
@@ -292,9 +240,9 @@ function getIndexes(jsonID) {
  */
 
 
-function getPrimary(jsonID) {
-  var ret = Object.keys(jsonID.properties).filter(function (key) {
-    return jsonID.properties[key].primary;
+function getPrimary(jsonSchema) {
+  var ret = Object.keys(jsonSchema.properties).filter(function (key) {
+    return jsonSchema.properties[key].primary;
   }).shift();
   if (!ret) return '_id';else return ret;
 }
@@ -316,12 +264,12 @@ function getPreviousVersions(schema) {
  */
 
 
-function getFinalFields(jsonID) {
-  var ret = Object.keys(jsonID.properties).filter(function (key) {
-    return jsonID.properties[key]["final"];
+function getFinalFields(jsonSchema) {
+  var ret = Object.keys(jsonSchema.properties).filter(function (key) {
+    return jsonSchema.properties[key]["final"];
   }); // primary is also final
 
-  ret.push(getPrimary(jsonID));
+  ret.push(getPrimary(jsonSchema));
   return ret;
 }
 /**
@@ -331,7 +279,13 @@ function getFinalFields(jsonID) {
 
 
 function normalize(jsonSchema) {
-  return (0, _util.sortObject)((0, _util.clone)(jsonSchema));
+  var normalizedSchema = (0, _util.sortObject)((0, _util.clone)(jsonSchema));
+
+  if (jsonSchema.indexes) {
+    normalizedSchema.indexes = Array.from(jsonSchema.indexes); // indexes should remain unsorted
+  }
+
+  return normalizedSchema;
 }
 /**
  * fills the schema-json with default-settings
@@ -344,11 +298,13 @@ var fillWithDefaultSettings = function fillWithDefaultSettings(schemaObj) {
 
   schemaObj.additionalProperties = false; // fill with key-compression-state ()
 
-  if (!schemaObj.hasOwnProperty('keyCompression')) schemaObj.keyCompression = false; // compoundIndexes must be array
+  if (!schemaObj.hasOwnProperty('keyCompression')) schemaObj.keyCompression = false; // indexes must be array
 
-  schemaObj.compoundIndexes = schemaObj.compoundIndexes || []; // required must be array
+  schemaObj.indexes = schemaObj.indexes || []; // required must be array
 
-  schemaObj.required = schemaObj.required || []; // add _rev
+  schemaObj.required = schemaObj.required || []; // encrypted must be array
+
+  schemaObj.encrypted = schemaObj.encrypted || []; // add _rev
 
   schemaObj.properties._rev = {
     type: 'string',
@@ -363,10 +319,14 @@ var fillWithDefaultSettings = function fillWithDefaultSettings(schemaObj) {
   return schemaObj;
 };
 
-function createRxSchema(jsonID) {
+function createRxSchema(jsonSchema) {
   var runPreCreateHooks = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-  if (runPreCreateHooks) (0, _hooks.runPluginHooks)('preCreateRxSchema', jsonID);
-  var schema = new RxSchema(fillWithDefaultSettings(jsonID));
+
+  if (runPreCreateHooks) {
+    (0, _hooks.runPluginHooks)('preCreateRxSchema', jsonSchema);
+  }
+
+  var schema = new RxSchema(fillWithDefaultSettings(jsonSchema));
   (0, _hooks.runPluginHooks)('createRxSchema', schema);
   return schema;
 }

@@ -10,16 +10,17 @@ import * as humansCollection from './../helper/humans-collection';
 
 import config from './config';
 import {
-    createRxDatabase
+    createRxDatabase,
+    clone,
+    randomCouchString
 } from '../../';
-import * as util from '../../dist/lib/util';
 import {
     InMemoryRxCollection,
     setIndexes,
     replicateExistingDocuments,
     streamChangedDocuments,
     applyChangedDocumentToPouch
-} from '../../dist/lib/plugins/in-memory';
+} from '../../plugins/in-memory';
 
 config.parallel('in-memory.test.js', () => {
     describe('internals', () => {
@@ -159,7 +160,7 @@ config.parallel('in-memory.test.js', () => {
                 await AsyncTestUtil.wait(100);
                 const sub = obs.subscribe(doc => emitted.push(doc));
 
-                const docData2 = (util as any).clone(docData);
+                const docData2 = clone(docData);
                 docData2._rev = ret.rev;
                 docData2._deleted = true;
                 await applyChangedDocumentToPouch(col, docData2);
@@ -354,7 +355,7 @@ config.parallel('in-memory.test.js', () => {
     });
     describe('multi-instance', () => {
         it('should emit on other instance when in-mem changes', async () => {
-            const name = util.randomCouchString(10);
+            const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
                 adapter: 'memory',
@@ -515,7 +516,7 @@ config.parallel('in-memory.test.js', () => {
                 },
                 required: ['color', 'maxHp']
             };
-            const name = util.randomCouchString(10);
+            const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
                 adapter: 'memory',
@@ -580,7 +581,7 @@ config.parallel('in-memory.test.js', () => {
         });
         it('#744 inMemory collections don\'t implement static methods and options', async () => {
             const db = await createRxDatabase({
-                name: util.randomCouchString(10),
+                name: randomCouchString(10),
                 adapter: 'memory',
                 multiInstance: true,
                 ignoreDuplicate: true

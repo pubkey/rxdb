@@ -4,83 +4,121 @@
  * It basically just rxdb-core with some default plugins
  */
 
-import Core from './core';
+import {
+    addRxPlugin
+} from './core';
 
 // default plugins
-import SchemaCheckPlugin from './plugins/schema-check';
-Core.plugin(SchemaCheckPlugin);
+import { RxDBDevModePlugin } from './plugins/dev-mode';
+addRxPlugin(RxDBDevModePlugin);
 
-import ErrorMessagesPlugin from './plugins/error-messages';
-Core.plugin(ErrorMessagesPlugin);
+import { RxDBValidatePlugin } from './plugins/validate';
+addRxPlugin(RxDBValidatePlugin);
 
-import ValidatePlugin from './plugins/validate';
-Core.plugin(ValidatePlugin);
+import { RxDBKeyCompressionPlugin } from './plugins/key-compression';
+addRxPlugin(RxDBKeyCompressionPlugin);
 
-import KeyCompressionPlugin from './plugins/key-compression';
-Core.plugin(KeyCompressionPlugin);
+import { RxDBMigrationPlugin } from './plugins/migration';
+addRxPlugin(RxDBMigrationPlugin);
 
-import LeaderElectionPlugin from './plugins/leader-election';
-Core.plugin(LeaderElectionPlugin);
+import { RxDBLeaderElectionPlugin } from './plugins/leader-election';
+addRxPlugin(RxDBLeaderElectionPlugin);
 
-import EncryptionPlugin from './plugins/encryption';
-Core.plugin(EncryptionPlugin);
+import { RxDBEncryptionPlugin } from './plugins/encryption';
+addRxPlugin(RxDBEncryptionPlugin);
 
-import UpdatePlugin from './plugins/update';
-Core.plugin(UpdatePlugin);
+import { RxDBUpdatePlugin } from './plugins/update';
+addRxPlugin(RxDBUpdatePlugin);
 
-import WatchForChangesPlugin from './plugins/watch-for-changes';
-Core.plugin(WatchForChangesPlugin);
+import { RxDBWatchForChangesPlugin } from './plugins/watch-for-changes';
+addRxPlugin(RxDBWatchForChangesPlugin);
 
-import ReplicationPlugin from './plugins/replication';
-Core.plugin(ReplicationPlugin);
+import { RxDBReplicationPlugin } from './plugins/replication';
+addRxPlugin(RxDBReplicationPlugin);
 
-import AdapterCheckPlugin from './plugins/adapter-check';
-Core.plugin(AdapterCheckPlugin);
+import { RxDBAdapterCheckPlugin } from './plugins/adapter-check';
+addRxPlugin(RxDBAdapterCheckPlugin);
 
-import JsonDumpPlugin from './plugins/json-dump';
-Core.plugin(JsonDumpPlugin);
+import { RxDBJsonDumpPlugin } from './plugins/json-dump';
+addRxPlugin(RxDBJsonDumpPlugin);
 
-import InMemoryPlugin from './plugins/in-memory';
-Core.plugin(InMemoryPlugin);
+import { RxDBInMemoryPlugin } from './plugins/in-memory';
+addRxPlugin(RxDBInMemoryPlugin);
 
-import AttachmentsPlugin from './plugins/attachments';
-Core.plugin(AttachmentsPlugin);
+import { RxDBAttachmentsPlugin } from './plugins/attachments';
+addRxPlugin(RxDBAttachmentsPlugin);
 
-import LocalDocumentsPlugin from './plugins/local-documents';
-Core.plugin(LocalDocumentsPlugin);
+import { RxDBLocalDocumentsPlugin } from './plugins/local-documents';
+addRxPlugin(RxDBLocalDocumentsPlugin);
 
-export * from './types';
+import { RxDBQueryBuilderPlugin } from './plugins/query-builder';
+addRxPlugin(RxDBQueryBuilderPlugin);
+
+// TODO how to do 'export type * ..' ?
+export type {
+    JsonSchemaTypes,
+    GraphQLSyncPullOptions,
+    GraphQLSyncPushOptions,
+    AtomicUpdateFunction,
+    CollectionsOfDatabase,
+    MangoQuery,
+    MangoQueryNoLimit,
+    JsonSchema,
+    KeyFunctionMap,
+    MangoQuerySelector,
+    MangoQuerySortDirection,
+    MangoQuerySortPart,
+    MigrationState,
+    NumberFunctionMap,
+    PouchDBInstance,
+    PouchReplicationOptions,
+    PouchSettings,
+    PouchSyncHandler,
+    PouchSyncHandlerEvents,
+    RxAttachment,
+    RxAttachmentCreator,
+    RxCollection,
+    PrimaryProperty,
+    RxCollectionCreator,
+    RxCollectionGenerated,
+    RxCollectionHookCallback,
+    RxCollectionHookCallbackNonAsync,
+    RxCollectionHookNoInstance,
+    RxCollectionHookNoInstanceCallback,
+    RxDatabase,
+    RxDatabaseCreator,
+    RxDocument,
+    RxDocumentTypeWithRev,
+    RxDumpCollection,
+    RxDumpCollectionAny,
+    RxDumpCollectionAsAny,
+    RxDumpDatabase,
+    Buffer,
+    Debug,
+    ExtractDTcol,
+    PouchdbQuery,
+    RxDatabaseGenerated,
+    RxDocumentBase,
+    RxDumpCollectionBase,
+    RxDumpDatabaseAny,
+    RxDumpDatabaseBase,
+    RxError,
+    RxErrorItem,
+    RxErrorParameters,
+    RxGraphQLReplicationQueryBuilder,
+    RxJsonSchema,
+    RxLocalDocument,
+    RxPlugin,
+    RxQuery,
+    RxQueryOP,
+    RxQueryObject,
+    RxQueryOptions,
+    RxReplicationState,
+    RxTypeError,
+    ServerOptions,
+    SyncOptions,
+    SyncOptionsGraphQL,
+} from './types';
 
 // re-export things from core
 export * from './core';
-import {
-    create,
-    removeDatabase,
-    plugin,
-    dbCount,
-    isRxCollection,
-    isRxDatabase,
-    isRxDocument,
-    isRxQuery,
-    isRxSchema,
-    PouchDB,
-    QueryChangeDetector,
-    checkAdapter
-} from './core';
-
-
-// TODO no more default exports
-export default {
-    create,
-    checkAdapter,
-    removeDatabase,
-    plugin,
-    dbCount,
-    isRxDatabase,
-    isRxCollection,
-    isRxDocument,
-    isRxQuery,
-    isRxSchema,
-    PouchDB,
-    QueryChangeDetector
-};

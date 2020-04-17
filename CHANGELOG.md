@@ -2,6 +2,39 @@
 
 ### 8.9.0 (14 March 2020)
 
+Features:
+  - Added `RxQuery.exec(throwIfMissing: true)`
+
+Breaking:
+  - Indexes are now specified at the top-level of the schema-definition. [#1655](https://github.com/pubkey/rxdb/issues/1655)
+  - Encrypted fields are now specified at the top-level of the schema-definition
+  - Removed all default exports. Please only import the stuff that you really need.
+  - Renamed `RxDB.create()` to `createRxDatabase()`
+  - Renamed `removeDatabase()` to `removeRxDatabase()`
+  - Renamed `plugin()` to `addRxPlugin()`
+  - Replaced plugins `error-messages` and `schema-check` with [dev-mode](https://pubkey.github.io/rxdb/custom-build.html#dev-mode)
+  - Moved data migration from core to migration plugin
+  - Replaced key-compression implementation with [jsonschema-key-compression](https://github.com/pubkey/jsonschema-key-compression)
+  - Renamed `RxDatabase.queryChangeDetection` to `eventReduce` and set default to `true` (no beta anymore)
+  - Change `.find()` and `.findOne()` to acccept a full MangoQuery with `sort` and `limit` instead of just the selector
+  - Chained queries like `collection.find().where('x').eq('foo')` moved out of the core module into the query-builder plugin
+  - The internal `hash()` function does now use a RxDB specific salt
+  - Change default of `RxDocument().toJSON(withRevAndAttachments)` to `false`
+  - Refactored `RxCollection`
+  - Creating a collection will no longer emit an `RxChangeEvent`
+  - Renamed `RxSchema.jsonID` to `RxSchema.jsonSchema`
+  - Moved remaining stuff of leader-election from core into the plugin
+  - Merged multiple internal databases for metadata into one `internalStore`
+
+Other:
+  - Removed many runtime type checks that now should be covered by typescript in buildtime
+  - The GraphQL replication is now out of beta mode
+
+Docs:
+  - Removed examples for `require()` CommonJS loading
+
+### X.X.X (comming soon)
+
 Other:
   - The server plugin now exposes the `pouchApp` [#1992](https://github.com/pubkey/rxdb/pull/1992) Thanks [@Julusian](https://github.com/Julusian)
 

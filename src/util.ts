@@ -6,9 +6,6 @@ import randomToken from 'random-token';
 import {
     default as deepClone
 } from 'clone';
-import {
-    PouchDBInstance
-} from './types';
 
 /**
  * Returns an error that indicates that a plugin is missing
@@ -18,14 +15,17 @@ import {
 export function pluginMissing(
     pluginKey: string
 ): Error {
+    const keyParts = pluginKey.split('-');
+    let pluginName = 'RxDB';
+    keyParts.forEach(part => {
+        pluginName += ucfirst(part);
+    });
+    pluginName += 'Plugin';
     return new Error(
         `You are using a function which must be overwritten by a plugin.
         You should either prevent the usage of this function or add the plugin via:
-          - es5-require:
-            RxDB.plugin(require('rxdb/plugins/${pluginKey}'))
-          - es6-import:
-            import ${ucfirst(pluginKey)}Plugin from 'rxdb/plugins/${pluginKey}';
-            RxDB.plugin(${ucfirst(pluginKey)}Plugin);
+            import { ${pluginName} } from 'rxdb/plugins/${pluginKey}';
+            addRxPlugin(${pluginName});
         `
     );
 }
@@ -52,22 +52,49 @@ export function fastUnsecureHash(obj: any): number {
 }
 
 /**
- *  spark-md5 is used here
- *  because pouchdb uses the same
- *  and build-size could be reduced by 9kb
+ * Does a RxDB-specific hashing of the given data.
+ * We use a static salt so using a rainbow-table
+ * or google-ing the hash will not work.
+ *
+ * spark-md5 is used here
+ * because pouchdb uses the same
+ * and build-size could be reduced by 9kb
  */
 import Md5 from 'spark-md5';
-export function hash(obj: any): string {
-    let msg = obj;
-    if (typeof obj !== 'string') msg = JSON.stringify(obj);
-    return Md5.hash(msg);
+export const RXDB_HASH_SALT = 'rxdb-specific-hash-salt';
+export function hash(msg: string | any): string {
+    if (typeof msg !== 'string') {
+        msg = JSON.stringify(msg);
+    }
+    return Md5.hash(RXDB_HASH_SALT + msg);
 }
 
 /**
  * generate a new _id as db-primary-key
  */
 export function generateId(): string {
-    return randomToken(10) + ':' + new Date().getTime();
+    return randomToken(10) + ':' + now();
+}
+
+
+/**
+ * Returns the current unix time in milliseconds
+ * Because the accuracy of getTime() in javascript is bad,
+ * and we cannot rely on performance.now() on all plattforms,
+ * this method implements a way to never return the same value twice.
+ * This ensures that when now() is called often, we do not loose the information
+ * about which call came first and which came after.
+ * Caution: Do not call this too often in a short timespan
+ * because it might return 'the future'
+ */
+let _lastNow: number = 0;
+export function now(): number {
+    let ret = new Date().getTime();
+    if (ret <= _lastNow) {
+        ret = _lastNow + 1;
+    }
+    _lastNow = ret;
+    return ret;
 }
 
 /**
@@ -141,34 +168,6 @@ export function ucfirst(str: string): string {
     const f = str.charAt(0)
         .toUpperCase();
     return f + str.substr(1);
-}
-
-
-/**
- * @link https://de.wikipedia.org/wiki/Base58
- * this does not start with the numbers to generate valid variable-names
- */
-const base58Chars: string = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ123456789';
-const base58Length: number = base58Chars.length;
-
-/**
- * transform a number to a string by using only base58 chars
- * @link https://github.com/matthewmueller/number-to-letter/blob/master/index.js
- * @param nr                                       | 10000000
- * @return the string-representation of the number | '2oMX'
- */
-export function numberToLetter(nr: number): string {
-    const digits = [];
-    do {
-        const v = nr % base58Length;
-        digits.push(v);
-        nr = Math.floor(nr / base58Length);
-    } while (nr-- > 0);
-
-    return digits
-        .reverse()
-        .map(d => base58Chars[d])
-        .join('');
 }
 
 /**
@@ -344,3 +343,18 @@ export function getHeightOfRevision(revString: string): number {
  * TODO check if this variable exists somewhere else
  */
 export const LOCAL_PREFIX: string = '_local/';
+
+/**
+ * overwrites the getter with the actual value
+ * Mostly used for caching stuff on the first run
+ */
+export function overwriteGetterForCaching<ValueType = any>(
+    obj: any,
+    getterName: string,
+    value: ValueType
+): ValueType {
+    Object.defineProperty(obj, getterName, {
+        get: function () { return value; }
+    });
+    return value;
+}

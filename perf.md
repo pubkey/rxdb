@@ -488,3 +488,146 @@ Combined best of many runs
     "total": 12508.054624
   }
 }
+
+
+
+## Before event-reduce-js
+
+BEFORE:
+
+{
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 10472.781867,
+    "perInstance": 10.472781867
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 7473.578767,
+    "perBlock": 3.7367893835
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 1501.103103,
+    "perDocument": 0.1501103103
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 3294.598218
+  },
+  "writeWhileSubscribe": {
+    "amount": 1000,
+    "total": 10447.864809
+  }
+}
+
+
+{
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 10913.7235,
+    "perInstance": 10.9137235
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 7503.363727,
+    "perBlock": 3.7516818635
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 1999.911211,
+    "perDocument": 0.1999911211
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 3329.153105
+  },
+  "writeWhileSubscribe": {
+    "amount": 1000,
+    "total": 10567.352254
+  }
+}
+
+AFTER:
+
+{
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 13084.705562,
+    "perInstance": 13.084705562
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 8999.905236,
+    "perBlock": 4.499952618
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 1645.998414,
+    "perDocument": 0.1645998414
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 4212.80011
+  },
+  "writeWhileSubscribe": {
+    "amount": 1000,
+    "total": 9041.238585
+  }
+}
+
+{
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 12290.284759,
+    "perInstance": 12.290284759
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 10075.885535,
+    "perBlock": 5.0379427675
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 1613.295623,
+    "perDocument": 0.1613295623
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 4003.478441
+  },
+  "writeWhileSubscribe": {
+    "amount": 1000,
+    "total": 8911.231049
+  }
+}
+
+
+
+## optimize event-reduce for performance
+
+(measure writeWhileSubscribe)
+
+BEFORE:
+5862
+5672
+5702
+5601
+5586
+avg = 5684.6
+
+AFTER:
+5405
+5455
+5500
+5480
+5451
+avg = 5458.2

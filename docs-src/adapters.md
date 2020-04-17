@@ -17,9 +17,9 @@ Use this adapter when:
 
 ```js
 // npm install pouchdb-adapter-memory --save
-RxDB.plugin(require('pouchdb-adapter-memory'));
+addRxPlugin(require('pouchdb-adapter-memory'));
 
-const database = await RxDB.create({
+const database = await createRxDatabase({
     name: 'mydatabase',
     adapter: 'memory' // the name of your adapter
 });
@@ -31,11 +31,11 @@ With RxDB you can also use adapters that implement [abstract-leveldown](https://
 ```js
 // npm install memdown --save
 // npm install pouchdb-adapter-leveldb --save
-RxDB.plugin(require('pouchdb-adapter-leveldb')); // leveldown adapters need the leveldb plugin to work
+addRxPlugin(require('pouchdb-adapter-leveldb')); // leveldown adapters need the leveldb plugin to work
 
 const memdown = require('memdown');
 
-const database = await RxDB.create({
+const database = await createRxDatabase({
     name: 'mydatabase',
     adapter: memdown // the full leveldown-module
 });
@@ -50,9 +50,9 @@ The IndexedDB adapter stores the data inside of [IndexedDB](https://developer.mo
 
 ```js
 // npm install pouchdb-adapter-idb --save
-RxDB.plugin(require('pouchdb-adapter-idb'));
+addRxPlugin(require('pouchdb-adapter-idb'));
 
-const database = await RxDB.create({
+const database = await createRxDatabase({
     name: 'mydatabase',
     adapter: 'idb' // the name of your adapter
 });
@@ -64,9 +64,9 @@ This adapter stores the data inside of websql. It has a different performance be
 
 ```js
 // npm install pouchdb-adapter-websql --save
-RxDB.plugin(require('pouchdb-adapter-websql'));
+addRxPlugin(require('pouchdb-adapter-websql'));
 
-const database = await RxDB.create({
+const database = await createRxDatabase({
     name: 'mydatabase',
     adapter: 'websql' // the name of your adapter
 });
@@ -81,16 +81,16 @@ This adapter uses a [LevelDB C++ binding](https://github.com/Level/leveldown) to
 ```js
 // npm install leveldown --save
 // npm install pouchdb-adapter-leveldb --save
-RxDB.plugin(require('pouchdb-adapter-leveldb')); // leveldown adapters need the leveldb plugin to work
+addRxPlugin(require('pouchdb-adapter-leveldb')); // leveldown adapters need the leveldb plugin to work
 const leveldown = require('leveldown');
 
-const database = await RxDB.create({
+const database = await createRxDatabase({
     name: 'mydatabase',
     adapter: leveldown // the full leveldown-module
 });
 
 // or use a specific folder to store the data
-const database = await RxDB.create({
+const database = await createRxDatabase({
     name: '/root/user/project/mydatabase',
     adapter: leveldown // the full leveldown-module
 });
@@ -102,15 +102,15 @@ This adapter uses the [node-websql](https://github.com/nolanlawson/node-websql)-
 
 ```js
 // npm install pouchdb-adapter-node-websql --save
-RxDB.plugin(require('pouchdb-adapter-node-websql'));
+addRxPlugin(require('pouchdb-adapter-node-websql'));
 
-const database = await RxDB.create({
+const database = await createRxDatabase({
     name: 'mydatabase',
     adapter: 'websql' // the name of your adapter
 });
 
 // or use a specific folder to store the data
-const database = await RxDB.create({
+const database = await createRxDatabase({
     name: '/root/user/project/mydatabase',
     adapter: 'websql' // the name of your adapter
 });
@@ -124,9 +124,9 @@ Uses react-native's [asyncstorage](https://facebook.github.io/react-native/docs/
 
 ```js
 // npm install pouchdb-adapter-asyncstorage --save
-RxDB.plugin(require('pouchdb-adapter-asyncstorage'));
+addRxPlugin(require('pouchdb-adapter-asyncstorage'));
 
-const database = await RxDB.create({
+const database = await createRxDatabase({
     name: 'mydatabase',
     adapter: 'node-asyncstorage' // the name of your adapter
 });
@@ -154,7 +154,7 @@ npm install base-64 events
 ```
 
 ```js
-import {decode, encode} from 'base-64'
+import { decode, encode } from 'base-64'
 
 if (!global.btoa) {
     global.btoa = encode;
@@ -171,16 +171,16 @@ process.browser = true;
 Then you can use it inside of your code.
 
 ```js
-import * as RxDB from 'rxdb';
+import { addRxPlugin, createRxDatabase } from 'rxdb';
 import SQLite from 'react-native-sqlite-2'
 import SQLiteAdapterFactory from 'pouchdb-adapter-react-native-sqlite'
 
 const SQLiteAdapter = SQLiteAdapterFactory(SQLite)
 
-RxDB.plugin(SQLiteAdapter);
-RxDB.plugin(require('pouchdb-adapter-http'));
+addRxPlugin(SQLiteAdapter);
+addRxPlugin(require('pouchdb-adapter-http'));
 
-const database = await RxDB.create({
+const database = await createRxDatabase({
     name: 'mydatabase',
     adapter: 'react-native-sqlite' // the name of your adapter
 });
@@ -192,11 +192,11 @@ A leveldown adapter that stores on asyncstorage.
 
 ```js
 // npm install pouchdb-adapter-asyncstorage-down --save
-RxDB.plugin(require('pouchdb-adapter-leveldb')); // leveldown adapters need the leveldb plugin to work
+addRxPlugin(require('pouchdb-adapter-leveldb')); // leveldown adapters need the leveldb plugin to work
 
 const asyncstorageDown = require('asyncstorage-down');
 
-const database = await RxDB.create({
+const database = await createRxDatabase({
     name: 'mydatabase',
     adapter: asyncstorageDown // the full leveldown-module
 });
@@ -210,9 +210,9 @@ Uses cordova's global `cordova.sqlitePlugin`.
 
 ```js
 // npm install pouchdb-adapter-cordova-sqlite --save
-RxDB.plugin(require('pouchdb-adapter-cordova-sqlite'));
+addRxPlugin(require('pouchdb-adapter-cordova-sqlite'));
 
-const database = await RxDB.create({
+const database = await createRxDatabase({
     name: 'mydatabase',
     adapter: 'node-cordova-sqlite' // the name of your adapter
 });

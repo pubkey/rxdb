@@ -10,7 +10,7 @@ describe('typings.test.js', function () {
     this.timeout(180 * 1000); // tests can take very long on slow devices like the CI
     const codeBase = `
         import {
-            create,
+            createRxDatabase,
             RxDatabase,
             RxDatabaseCreator,
             RxCollection,
@@ -20,11 +20,10 @@ describe('typings.test.js', function () {
             RxError,
             RxAttachment,
             RxPlugin,
-            plugin
+            addRxPlugin
         } from '${config.rootPath}';
-        import RxDB from '${config.rootPath}';
         import * as PouchMemAdapter from 'pouchdb-adapter-memory';
-        plugin(PouchMemAdapter);
+        addRxPlugin(PouchMemAdapter);
 
         type DefaultDocType = {
             passportId: string;
@@ -81,11 +80,11 @@ describe('typings.test.js', function () {
         });
     });
     config.parallel('import', () => {
-        it('import default with strict:true', async () => {
+        it('import * with strict:true', async () => {
             const code = `
-                import rxdb from '${config.rootPath}';
+                import * as rxdb from '${config.rootPath}';
                 import * as PouchMemAdapter from 'pouchdb-adapter-memory';
-                rxdb.plugin(PouchMemAdapter);
+                rxdb.addRxPlugin(PouchMemAdapter);
             `;
             await transpileCode(code);
         });
@@ -101,7 +100,7 @@ describe('typings.test.js', function () {
                             multiInstance: false,
                             ignoreDuplicate: false
                         };
-                        const myDb: RxDatabase = await create(databaseCreator);
+                        const myDb: RxDatabase = await createRxDatabase(databaseCreator);
                         await myDb.destroy();
                     })();
                 `;
@@ -146,7 +145,7 @@ describe('typings.test.js', function () {
                         type RxHeroesDatabase = RxDatabase<{
                             hero: RxCollection;
                         }>;
-                        const db: RxHeroesDatabase = await RxDB.create<{
+                        const db: RxHeroesDatabase = await createRxDatabase<{
                             hero: RxCollection;
                         }>({
                             name: 'heroes',
@@ -212,7 +211,7 @@ describe('typings.test.js', function () {
                             multiInstance: false,
                             ignoreDuplicate: false
                         };
-                        const myDb: RxDatabase = await create(databaseCreator);
+                        const myDb: RxDatabase = await createRxDatabase(databaseCreator);
 
 
                         const minimalHuman: RxJsonSchema<DefaultDocType> = ${JSON.stringify(schemas.humanMinimal)};
@@ -244,7 +243,7 @@ describe('typings.test.js', function () {
                             multiInstance: false,
                             ignoreDuplicate: false
                         };
-                        const myDb: RxDatabase = await create(databaseCreator);
+                        const myDb: RxDatabase = await createRxDatabase(databaseCreator);
 
                         const minimalHuman: RxJsonSchema<DefaultDocType> = ${JSON.stringify(schemas.humanMinimalBroken)};
                         const myCollection: RxCollection<any> = await myDb.collection<DefaultDocType>({
@@ -272,7 +271,7 @@ describe('typings.test.js', function () {
             it('collection-creation', async () => {
                 const code = codeBase + `
                     (async() => {
-                        const myDb: RxDatabase = await create({
+                        const myDb: RxDatabase = await createRxDatabase({
                             name: 'mydb',
                             adapter: 'memory',
                             multiInstance: false,
@@ -291,7 +290,7 @@ describe('typings.test.js', function () {
             it('typed collection should know its static orm methods', async () => {
                 const code = codeBase + `
                     (async() => {
-                        const myDb: RxDatabase = await create({
+                        const myDb: RxDatabase = await createRxDatabase({
                             name: 'mydb',
                             adapter: 'memory',
                             multiInstance: false,
@@ -316,7 +315,7 @@ describe('typings.test.js', function () {
             it('use options', async () => {
                 const code = codeBase + `
                     (async() => {
-                        const myDb: RxDatabase = await create({
+                        const myDb: RxDatabase = await createRxDatabase({
                             name: 'mydb',
                             adapter: 'memory',
                             multiInstance: false,
@@ -343,7 +342,7 @@ describe('typings.test.js', function () {
             it('use underlaying pouchdb', async () => {
                 const code = codeBase + `
                     (async() => {
-                        const myDb: RxDatabase = await create({
+                        const myDb: RxDatabase = await createRxDatabase({
                             name: 'mydb',
                             adapter: 'memory',
                             multiInstance: false,
@@ -376,7 +375,7 @@ describe('typings.test.js', function () {
             it('access PouchSyncHandler', async () => {
                 const code = codeBase + `
                     (async() => {
-                        const myDb: RxDatabase = await create({
+                        const myDb: RxDatabase = await createRxDatabase({
                             name: 'mydb',
                             adapter: 'memory',
                             multiInstance: false,
@@ -410,7 +409,7 @@ describe('typings.test.js', function () {
             it('should not allow wrong collection-settings', async () => {
                 const brokenCode = codeBase + `
                     (async() => {
-                        const myDb: RxDatabase = await create({
+                        const myDb: RxDatabase = await createRxDatabase({
                             name: 'mydb',
                             adapter: 'memory',
                             multiInstance: false,
@@ -435,7 +434,7 @@ describe('typings.test.js', function () {
             it('UNTYPED collection should allow to access any static orm-method', async () => {
                 const code = codeBase + `
                     (async() => {
-                        const myDb: RxDatabase = await create({
+                        const myDb: RxDatabase = await createRxDatabase({
                             name: 'mydb',
                             adapter: 'memory',
                             multiInstance: false,
@@ -460,7 +459,7 @@ describe('typings.test.js', function () {
         it('.insert$ .update$ .remove$', async () => {
             const code = codeBase + `
                 (async() => {
-                    const myDb: RxDatabase = await create({
+                    const myDb: RxDatabase = await createRxDatabase({
                         name: 'mydb',
                         adapter: 'memory',
                         multiInstance: false,
@@ -480,8 +479,8 @@ describe('typings.test.js', function () {
                     const names: string[] = [];
                     const revs: string[] = [];
                     const sub1 = myCollection.insert$.subscribe(cE => {
-                        names.push(cE.data.v.firstName);
-                        revs.push(cE.data.v._rev);
+                        names.push(cE.documentData.firstName);
+                        revs.push(cE.documentData._rev);
                     });
                 })();
             `;
@@ -742,7 +741,7 @@ describe('typings.test.js', function () {
                 await transpileCode(code);
             });
         });
-        describe('plugin', () => {
+        describe('addRxPlugin', () => {
             it('should be a valid RxPlugin', async () => {
                 const code = codeBase + `
                 (async() => {
@@ -752,8 +751,15 @@ describe('typings.test.js', function () {
                             RxDocument: () => {}
                         }
                     }
-                    plugin(myPlugin);
+                    addRxPlugin(myPlugin);
                 });
+            `;
+                await transpileCode(code);
+            });
+            it('should be able to import and add a plugin', async () => {
+                const code = codeBase + `
+                import { RxDBReplicationGraphQLPlugin } from '${config.rootPath}plugins/replication-graphql';
+                addRxPlugin(RxDBReplicationGraphQLPlugin);
             `;
                 await transpileCode(code);
             });

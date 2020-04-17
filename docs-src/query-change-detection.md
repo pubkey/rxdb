@@ -8,7 +8,7 @@ QueryChangeDetection is currently in **beta** and disabled by default.
 You can enable it by passing the `queryChangeDetection`-field when creating a database.
 
 ```js
-const db = await RxDB.create({
+const db = await createRxDatabase({
   name: 'heroesdb',
   adapter: 'memory',
   queryChangeDetection: true // <- enable queryChangeDetection

@@ -13,11 +13,14 @@ import React from 'react';
 const { width, height } = Dimensions.get('window');
 
 import { default as randomToken } from 'random-token';
-import * as RxDB from 'rxdb';
+import {
+    createRxDatabase,
+    addRxPlugin
+} from 'rxdb';
 import schema from './src/Schema';
 
-RxDB.plugin(require('pouchdb-adapter-asyncstorage').default);
-RxDB.plugin(require('pouchdb-adapter-http'));
+addRxPlugin(require('pouchdb-adapter-asyncstorage').default);
+addRxPlugin(require('pouchdb-adapter-http'));
 const syncURL = 'http://localhost:10102/'; // Replace localhost with a public ip address!
 const dbName = 'heroesreactdatabase1';
 
@@ -36,7 +39,7 @@ export default class App extends React.Component {
         this.subs = [];
     }
     async createDatabase() {
-        const db = await RxDB.create({
+        const db = await createRxDatabase({
             name: dbName,
             adapter: 'asyncstorage',
             password: 'myLongAndStupidPassword',

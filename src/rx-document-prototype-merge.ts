@@ -7,7 +7,7 @@
  * In the future we should do this by chaining the __proto__ objects
  */
 
-import {
+import type {
     RxCollection,
     RxDocument
 } from './types';

@@ -34,7 +34,7 @@ export var Crypter = /*#__PURE__*/function () {
 
     if (!this.password) return obj;
     obj = clone(obj);
-    Object.keys(this.schema.encryptedPaths).forEach(function (path) {
+    this.schema.encryptedPaths.forEach(function (path) {
       var value = objectPath.get(obj, path);
       if (typeof value === 'undefined') return;
 
@@ -50,7 +50,7 @@ export var Crypter = /*#__PURE__*/function () {
 
     if (!this.password) return obj;
     obj = clone(obj);
-    Object.keys(this.schema.encryptedPaths).forEach(function (path) {
+    this.schema.encryptedPaths.forEach(function (path) {
       var value = objectPath.get(obj, path);
       if (typeof value === 'undefined') return;
 
@@ -63,11 +63,7 @@ export var Crypter = /*#__PURE__*/function () {
 
   return Crypter;
 }();
-export function create(password, schema) {
+export function createCrypter(password, schema) {
   return new Crypter(password, schema);
 }
-export default {
-  create: create,
-  Crypter: Crypter
-};
 //# sourceMappingURL=crypter.js.map

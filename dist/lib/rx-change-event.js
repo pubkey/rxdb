@@ -1,105 +1,114 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.changeEventfromJSON = changeEventfromJSON;
 exports.changeEventfromPouchChange = changeEventfromPouchChange;
-exports.createChangeEvent = createChangeEvent;
+exports.createInsertEvent = createInsertEvent;
+exports.createUpdateEvent = createUpdateEvent;
+exports.createDeleteEvent = createDeleteEvent;
 exports.isInstanceOf = isInstanceOf;
 exports.RxChangeEvent = void 0;
-
-var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
-
-var _util = require("./util");
 
 /**
  * RxChangeEvents a emitted when something in the database changes
  * they can be grabbed by the observables of database, collection and document
  */
 var RxChangeEvent = /*#__PURE__*/function () {
-  function RxChangeEvent(data) {
-    this._hash = null;
-    this.data = data;
+  function RxChangeEvent(operation, documentId, documentData, databaseToken, collectionName, isLocal, previousData, rxDocument) {
+    this.time = new Date().getTime();
+    this.operation = operation;
+    this.documentId = documentId;
+    this.documentData = documentData;
+    this.databaseToken = databaseToken;
+    this.collectionName = collectionName;
+    this.isLocal = isLocal;
+    this.previousData = previousData;
+    this.rxDocument = rxDocument;
   }
 
   var _proto = RxChangeEvent.prototype;
 
+  _proto.isIntern = function isIntern() {
+    if (this.collectionName && this.collectionName.charAt(0) === '_') {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
   _proto.toJSON = function toJSON() {
     var ret = {
-      col: null,
-      doc: null,
-      v: null,
-      op: this.data.op,
-      t: this.data.t,
-      db: this.data.db,
-      it: this.data.it,
-      isLocal: this.data.isLocal
+      operation: this.operation,
+      documentId: this.documentId,
+      documentData: this.documentData,
+      previousData: this.previousData ? this.previousData : undefined,
+      databaseToken: this.databaseToken,
+      collectionName: this.collectionName,
+      isLocal: this.isLocal
     };
-    if (this.data.col) ret.col = this.data.col;
-    if (this.data.doc) ret.doc = this.data.doc;
-    if (this.data.v) ret.v = this.data.v;
     return ret;
   };
 
-  _proto.isIntern = function isIntern() {
-    if (this.data.col && this.data.col.charAt(0) === '_') return true;
-    return false;
-  };
+  _proto.toEventReduceChangeEvent = function toEventReduceChangeEvent() {
+    switch (this.operation) {
+      case 'INSERT':
+        return {
+          operation: this.operation,
+          id: this.documentId,
+          doc: this.documentData,
+          previous: null
+        };
 
-  _proto.isSocket = function isSocket() {
-    if (this.data.col && this.data.col === '_socket') return true;
-    return false;
-  };
+      case 'UPDATE':
+        return {
+          operation: this.operation,
+          id: this.documentId,
+          doc: this.documentData,
+          previous: this.previousData ? this.previousData : 'UNKNOWN'
+        };
 
-  (0, _createClass2["default"])(RxChangeEvent, [{
-    key: "hash",
-    get: function get() {
-      if (!this._hash) this._hash = (0, _util.hash)(this.data);
-      return this._hash;
+      case 'DELETE':
+        return {
+          operation: this.operation,
+          id: this.documentId,
+          doc: null,
+          previous: this.previousData
+        };
     }
-  }]);
+  };
+
   return RxChangeEvent;
 }();
 
 exports.RxChangeEvent = RxChangeEvent;
 
-function changeEventfromJSON(data) {
-  return new RxChangeEvent(data);
-}
-
 function changeEventfromPouchChange(changeDoc, collection) {
-  var op = changeDoc._rev.startsWith('1-') ? 'INSERT' : 'UPDATE';
-  if (changeDoc._deleted) op = 'REMOVE'; // decompress / primarySwap
+  var operation = changeDoc._rev.startsWith('1-') ? 'INSERT' : 'UPDATE';
 
-  changeDoc = collection._handleFromPouch(changeDoc);
-  var data = {
-    op: op,
-    t: new Date().getTime(),
-    db: 'remote',
-    col: collection.name,
-    it: collection.database.token,
-    doc: changeDoc[collection.schema.primaryPath],
-    v: changeDoc
-  };
-  return new RxChangeEvent(data);
+  if (changeDoc._deleted) {
+    operation = 'DELETE';
+  } // decompress / primarySwap
+
+
+  var doc = collection._handleFromPouch(changeDoc);
+
+  var documentId = doc[collection.schema.primaryPath];
+  var cE = new RxChangeEvent(operation, documentId, doc, collection.database.token, collection.name, false);
+  return cE;
 }
 
-function createChangeEvent(op, database, collection, doc, value) {
-  var isLocal = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : false;
-  var data = {
-    col: collection ? collection.name : null,
-    doc: doc ? doc.primary : null,
-    v: value ? value : null,
-    op: op,
-    t: new Date().getTime(),
-    db: database.name,
-    it: database.token,
-    isLocal: isLocal
-  };
-  return new RxChangeEvent(data);
+function createInsertEvent(collection, docData, doc) {
+  var ret = new RxChangeEvent('INSERT', docData[collection.schema.primaryPath], docData, collection.database.token, collection.name, false, null, doc);
+  return ret;
+}
+
+function createUpdateEvent(collection, docData, previous, rxDocument) {
+  return new RxChangeEvent('UPDATE', docData[collection.schema.primaryPath], docData, collection.database.token, collection.name, false, previous, rxDocument);
+}
+
+function createDeleteEvent(collection, docData, previous, rxDocument) {
+  return new RxChangeEvent('DELETE', docData[collection.schema.primaryPath], docData, collection.database.token, collection.name, false, previous, rxDocument);
 }
 
 function isInstanceOf(obj) {

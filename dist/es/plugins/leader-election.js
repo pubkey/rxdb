@@ -2,6 +2,7 @@
  * this plugin adds the leader-election-capabilities to rxdb
  */
 import { createLeaderElection } from 'broadcast-channel';
+var LEADER_ELECTORS_OF_DB = new WeakMap();
 export var LeaderElector = /*#__PURE__*/function () {
   function LeaderElector(database) {
     this.destroyed = false;
@@ -35,19 +36,51 @@ export var LeaderElector = /*#__PURE__*/function () {
 
   return LeaderElector;
 }();
-export function create(database) {
-  var elector = new LeaderElector(database);
-  return elector;
+export function getForDatabase() {
+  if (!LEADER_ELECTORS_OF_DB.has(this)) {
+    LEADER_ELECTORS_OF_DB.set(this, new LeaderElector(this));
+  }
+
+  return LEADER_ELECTORS_OF_DB.get(this);
+}
+export function isLeader() {
+  if (!this.multiInstance) {
+    return true;
+  }
+
+  return this.leaderElector().isLeader;
+}
+export function waitForLeadership() {
+  if (!this.multiInstance) {
+    return Promise.resolve(true);
+  } else {
+    return this.leaderElector().waitForLeadership();
+  }
+}
+/**
+ * runs when the database gets destroyed
+ */
+
+export function onDestroy(db) {
+  var has = LEADER_ELECTORS_OF_DB.get(db);
+
+  if (has) {
+    has.destroy();
+  }
 }
 export var rxdb = true;
-export var prototypes = {};
-export var overwritable = {
-  createLeaderElector: create
+export var prototypes = {
+  RxDatabase: function RxDatabase(proto) {
+    proto.leaderElector = getForDatabase;
+    proto.isLeader = isLeader;
+    proto.waitForLeadership = waitForLeadership;
+  }
 };
-var plugin = {
+export var RxDBLeaderElectionPlugin = {
   rxdb: rxdb,
   prototypes: prototypes,
-  overwritable: overwritable
+  hooks: {
+    preDestroyRxDatabase: onDestroy
+  }
 };
-export default plugin;
 //# sourceMappingURL=leader-election.js.map

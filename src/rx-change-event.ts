@@ -4,101 +4,213 @@
  */
 
 import {
-    hash
-} from './util';
+    WriteOperation,
+    ChangeEvent as EventReduceChangeEvent
+} from 'event-reduce-js';
 
-import {
-    RxDatabase,
-    RxCollection
+import type {
+    RxCollection,
+    RxDocument,
+    RxDocumentTypeWithRev
 } from './types';
 
-export class RxChangeEvent {
+export type RxChangeEventJson<DocType = any> = {
+    operation: WriteOperation;
+    documentId: string;
+    documentData: RxDocumentTypeWithRev<DocType>;
+    previousData?: DocType;
+    databaseToken: string;
+    collectionName: string;
+    isLocal: boolean;
+    startTime?: number;
+    endTime?: number;
+};
+
+export type RxChangeEventBroadcastChannelData = {
+    cE: RxChangeEventJson,
+    storageToken: string
+};
+
+export class RxChangeEvent<DocType = any> {
+
     constructor(
-        public data: any
+        public readonly operation: WriteOperation,
+        public readonly documentId: string,
+        public readonly documentData: RxDocumentTypeWithRev<DocType>,
+        public readonly databaseToken: string,
+        public readonly collectionName: string,
+        public readonly isLocal: boolean,
+        /**
+         * timestam on when the operation was triggered
+         * and when it was finished
+         * This is optional because we do not have this time
+         * for events that come from pouchdbs changestream.
+         */
+        public startTime?: number,
+        public endTime?: number,
+        public readonly previousData?: DocType | null,
+        public readonly rxDocument?: RxDocument<DocType>
     ) { }
-    get hash() {
-        if (!this._hash)
-            this._hash = hash(this.data);
-        return this._hash;
+
+    isIntern(): boolean {
+        if (this.collectionName && this.collectionName.charAt(0) === '_') {
+            return true;
+        } else {
+            return false;
+        }
     }
 
-    private _hash: string | null = null;
-    toJSON() {
-        const ret = {
-            col: null,
-            doc: null,
-            v: null,
-            op: this.data.op,
-            t: this.data.t,
-            db: this.data.db,
-            it: this.data.it,
-            isLocal: this.data.isLocal
+    toJSON(): RxChangeEventJson<DocType> {
+        const ret: RxChangeEventJson<DocType> = {
+            operation: this.operation,
+            documentId: this.documentId,
+            documentData: this.documentData,
+            previousData: this.previousData ? this.previousData : undefined,
+            databaseToken: this.databaseToken,
+            collectionName: this.collectionName,
+            isLocal: this.isLocal,
+            startTime: this.startTime,
+            endTime: this.endTime
         };
-        if (this.data.col) ret.col = this.data.col;
-        if (this.data.doc) ret.doc = this.data.doc;
-        if (this.data.v) ret.v = this.data.v;
         return ret;
     }
 
-    isIntern() {
-        if (this.data.col && this.data.col.charAt(0) === '_')
-            return true;
-        return false;
-    }
-
-    isSocket() {
-        if (this.data.col && this.data.col === '_socket')
-            return true;
-        return false;
+    toEventReduceChangeEvent(): EventReduceChangeEvent<DocType> {
+        switch (this.operation) {
+            case 'INSERT':
+                return {
+                    operation: this.operation,
+                    id: this.documentId,
+                    doc: this.documentData,
+                    previous: null
+                };
+            case 'UPDATE':
+                return {
+                    operation: this.operation,
+                    id: this.documentId,
+                    doc: this.documentData,
+                    previous: this.previousData ? this.previousData : 'UNKNOWN'
+                };
+            case 'DELETE':
+                return {
+                    operation: this.operation,
+                    id: this.documentId,
+                    doc: null,
+                    previous: this.previousData as DocType
+                };
+        }
     }
 }
 
-
-export function changeEventfromJSON(data: any) {
-    return new RxChangeEvent(data);
+export interface RxChangeEventInsert<DocType = any> extends RxChangeEvent<DocType> {
+    operation: 'INSERT';
+    previousData: null;
 }
 
-export function changeEventfromPouchChange(changeDoc: any, collection: RxCollection) {
-    let op = changeDoc._rev.startsWith('1-') ? 'INSERT' : 'UPDATE';
-    if (changeDoc._deleted) op = 'REMOVE';
+export interface RxChangeEventUpdate<DocType = any> extends RxChangeEvent<DocType> {
+    operation: 'UPDATE';
+}
+
+export interface RxChangeEventDelete<DocType = any> extends RxChangeEvent<DocType> {
+    operation: 'DELETE';
+}
+
+
+export function changeEventfromPouchChange<DocType>(
+    changeDoc: any,
+    collection: RxCollection,
+    time: number // time when the event was streamed out of pouchdb
+): RxChangeEvent<DocType> {
+    let operation: WriteOperation = changeDoc._rev.startsWith('1-') ? 'INSERT' : 'UPDATE';
+    if (changeDoc._deleted) {
+        operation = 'DELETE';
+    }
 
     // decompress / primarySwap
-    changeDoc = collection._handleFromPouch(changeDoc);
+    const doc: RxDocumentTypeWithRev<DocType> = collection._handleFromPouch(changeDoc);
+    const documentId: string = (doc as any)[collection.schema.primaryPath] as string;
 
-    const data = {
-        op,
-        t: new Date().getTime(),
-        db: 'remote',
-        col: collection.name,
-        it: collection.database.token,
-        doc: changeDoc[collection.schema.primaryPath],
-        v: changeDoc
-    };
-    return new RxChangeEvent(data);
-}
-
-export function createChangeEvent(
-    op: string,
-    database: RxDatabase,
-    collection?: RxCollection,
-    doc?: any,
-    value?: any,
-    isLocal = false
-) {
-    const data = {
-        col: collection ? collection.name : null,
-        doc: doc ? doc.primary : null,
-        v: value ? value : null,
-        op: op,
-        t: new Date().getTime(),
-        db: database.name,
-        it: database.token,
-        isLocal
-    };
-    return new RxChangeEvent(data);
+    const cE = new RxChangeEvent<DocType>(
+        operation,
+        documentId,
+        doc,
+        collection.database.token,
+        collection.name,
+        false,
+        time,
+        time
+    );
+    return cE;
 }
 
 
-export function isInstanceOf(obj: any) {
+export function createInsertEvent<RxDocumentType>(
+    collection: RxCollection<RxDocumentType>,
+    docData: RxDocumentTypeWithRev<RxDocumentType>,
+    startTime: number,
+    endTime: number,
+    doc?: RxDocument<RxDocumentType>
+): RxChangeEvent<RxDocumentType> {
+    const ret = new RxChangeEvent<RxDocumentType>(
+        'INSERT',
+        (docData as any)[collection.schema.primaryPath],
+        docData,
+        collection.database.token,
+        collection.name,
+        false,
+        startTime,
+        endTime,
+        null,
+        doc
+    );
+    return ret;
+
+}
+
+export function createUpdateEvent<RxDocumentType>(
+    collection: RxCollection<RxDocumentType>,
+    docData: RxDocumentTypeWithRev<RxDocumentType>,
+    previous: RxDocumentType,
+    startTime: number,
+    endTime: number,
+    rxDocument: RxDocument<RxDocumentType>
+): RxChangeEvent<RxDocumentType> {
+    return new RxChangeEvent<RxDocumentType>(
+        'UPDATE',
+        (docData as any)[collection.schema.primaryPath],
+        docData,
+        collection.database.token,
+        collection.name,
+        false,
+        startTime,
+        endTime,
+        previous,
+        rxDocument
+    );
+}
+
+export function createDeleteEvent<RxDocumentType>(
+    collection: RxCollection<RxDocumentType>,
+    docData: RxDocumentTypeWithRev<RxDocumentType>,
+    previous: RxDocumentType,
+    startTime: number,
+    endTime: number,
+    rxDocument: RxDocument<RxDocumentType>
+): RxChangeEvent<RxDocumentType> {
+    return new RxChangeEvent<RxDocumentType>(
+        'DELETE',
+        (docData as any)[collection.schema.primaryPath],
+        docData,
+        collection.database.token,
+        collection.name,
+        false,
+        startTime,
+        endTime,
+        previous,
+        rxDocument
+    );
+}
+
+export function isInstanceOf(obj: RxChangeEvent<any> | any): boolean {
     return obj instanceof RxChangeEvent;
 }

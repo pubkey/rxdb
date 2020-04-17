@@ -20,7 +20,7 @@ Or just use RxDB which does all these things for you.
 To make it easy, here is an example where the temperature is pulled every ten seconds and saved to a collection. The pulling starts at the moment where the opened tab becomes the leader.
 
 ```javascript
-const db = await RxDB.create({
+const db = await createRxDatabase({
   name: 'weatherDB',
   adapter: 'localstorage',
   password: 'myPassword',

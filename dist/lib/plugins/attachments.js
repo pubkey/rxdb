@@ -9,7 +9,7 @@ exports.getAttachment = getAttachment;
 exports.allAttachments = allAttachments;
 exports.preMigrateDocument = preMigrateDocument;
 exports.postMigrateDocument = postMigrateDocument;
-exports["default"] = exports.hooks = exports.overwritable = exports.prototypes = exports.rxdb = exports.RxAttachment = exports.blobBufferUtil = void 0;
+exports.RxDBAttachmentsPlugin = exports.hooks = exports.overwritable = exports.prototypes = exports.rxdb = exports.RxAttachment = exports.blobBufferUtil = void 0;
 
 var _operators = require("rxjs/operators");
 
@@ -20,7 +20,7 @@ var _util = require("./../util");
 var _rxError = require("../rx-error");
 
 function ensureSchemaSupportsAttachments(doc) {
-  var schemaJson = doc.collection.schema.jsonID;
+  var schemaJson = doc.collection.schema.jsonSchema;
 
   if (!schemaJson.attachments) {
     throw (0, _rxError.newRxError)('AT1', {
@@ -30,10 +30,10 @@ function ensureSchemaSupportsAttachments(doc) {
 }
 
 function resyncRxDocument(doc) {
-  return doc.collection.pouch.get(doc.primary).then(function (docData) {
-    var data = doc.collection._handleFromPouch(docData);
+  return doc.collection.pouch.get(doc.primary).then(function (docDataFromPouch) {
+    var data = doc.collection._handleFromPouch(docDataFromPouch);
 
-    var changeEvent = (0, _rxChangeEvent.createChangeEvent)('UPDATE', doc.collection.database, doc.collection, doc, data);
+    var changeEvent = (0, _rxChangeEvent.createUpdateEvent)(doc.collection, data, null, doc);
     doc.$emit(changeEvent);
   });
 }
@@ -183,7 +183,7 @@ function fromPouchDocument(id, pouchDocAttachment, rxDocument) {
 }
 
 function shouldEncrypt(doc) {
-  return !!doc.collection.schema.jsonID.attachments.encrypted;
+  return !!doc.collection.schema.jsonSchema.attachments.encrypted;
 }
 
 function putAttachment(_ref3) {
@@ -306,13 +306,12 @@ var hooks = {
   postMigrateDocument: postMigrateDocument
 };
 exports.hooks = hooks;
-var _default = {
+var RxDBAttachmentsPlugin = {
   rxdb: rxdb,
   prototypes: prototypes,
   overwritable: overwritable,
-  hooks: hooks,
-  blobBufferUtil: blobBufferUtil
+  hooks: hooks
 };
-exports["default"] = _default;
+exports.RxDBAttachmentsPlugin = RxDBAttachmentsPlugin;
 
 //# sourceMappingURL=attachments.js.map

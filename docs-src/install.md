@@ -41,11 +41,11 @@ Replace `commitHash` with the hash of the latest [build-commit](https://github.c
 To import `rxdb`, add this to your javascript file:
 
 ```javascript
-// es6
-import RxDB from 'rxdb';
-
-// CommonJS
-var RxDB = require('rxdb');
+import {
+  createRxDatabase,
+  RxDatabase
+  /* ... */
+} from 'rxdb';
 ```
 
 --------------------------------------------------------------------------------

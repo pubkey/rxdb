@@ -101,12 +101,9 @@ npm install rxjs --save
 
 ### Import:
 
-<details>
-  <summary>ES7</summary>
-
 ```javascript
-import RxDB from 'rxdb';
-const db = await RxDB.create({
+import { createRxDatabase } from 'rxdb';
+const db = await createRxDatabase({
     name: 'heroesdb',
     adapter: 'websql',
     password: 'myLongAndStupidPassword', // optional
@@ -116,25 +113,6 @@ const db = await RxDB.create({
 await db.collection({name: 'heroes', schema: mySchema});    // create collection
 db.heroes.insert({ name: 'Bob' });                          // insert document
 ```
-
-</details>
-
-<details>
-  <summary>ES5</summary>
-
-```javascript
-var RxDB = require('rxdb');
-RxDB.create({
-    name: 'heroesdb',
-    adapter: 'websql',
-    password: 'myLongAndStupidPassword', // optional
-    multiInstance: true                  // default: true
-  })                                                                              // create database
-  .then(function(db) {return db.collection({name: 'heroes', schema: mySchema});}) // create collection
-  .then(function(collection) {collection.insert({name: 'Bob'});})                 // insert document
-```
-
-</details>
 
 ## Feature-Showroom (click to toggle)
 
@@ -239,7 +217,6 @@ const mySchema = {
         },
         secret: {
             type: "string",
-            encrypted: true     // <- this means that the value of this field is stored encrypted
         },
         skills: {
             type: "array",
@@ -258,7 +235,8 @@ const mySchema = {
             }
         }
     },
-    required: ["color"]
+    required: ["color"],
+    encrypted: ["secret"] // <- this means that the value of this field is stored encrypted
 };
 ```
 
@@ -269,14 +247,22 @@ const mySchema = {
   <b>Encryption</b>
   <p>
 
-By setting a schema-field to `encrypted: true`, the value of this field will be stored in encryption-mode and can't be read without the password. Of course you can also encrypt nested objects. Example:</p>
+By setting a schema-field to `encrypted`, the value of this field will be stored in encryption-mode and can't be read without the password. Of course you can also encrypt nested objects. Example:</p>
 
 </summary>
 
 ```json
-"secret": {
-  "type": "string",
-  "encrypted": true
+{
+  "title": "my schema",
+  "properties": {
+    "secret": {
+      "type": "string",
+      "encrypted": true
+    }
+  },
+  "encrypted": [
+    "secret"
+  ]
 }
 ```
 
@@ -458,4 +444,4 @@ A big **Thank you** to every [contributor](https://github.com/pubkey/rxdb/graphs
 
 ## License
 
-[Apache-2.0](https://github.com/pubkey/rxdb/blob/master/LICENSE.txt)
+[Apache-2.0](https://github.com/pubkey/rxdb/blob/master/LICENSE.txt) 

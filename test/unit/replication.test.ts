@@ -5,14 +5,15 @@
  */
 
 import assert from 'assert';
+import AsyncTestUtil from 'async-test-util';
 import config from './config';
 
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
-import * as util from '../../dist/lib/util';
-import AsyncTestUtil from 'async-test-util';
-import RxDB from '../../';
+import {
+    addRxPlugin, createRxDatabase, promiseWait, randomCouchString
+} from '../../';
 
 import {
     fromEvent
@@ -31,7 +32,7 @@ let SpawnServer: any;
 if (config.platform.isNode()) {
     SpawnServer = require('../helper/spawn-server');
     request = require('request-promise');
-    RxDB.plugin(require('pouchdb-adapter-http'));
+    addRxPlugin(require('pouchdb-adapter-http'));
 }
 
 describe('replication.test.js', () => {
@@ -193,7 +194,7 @@ describe('replication.test.js', () => {
                     const docs = await c.find().exec();
                     return docs.length === 20;
                 });
-                await util.promiseWait(10);
+                await promiseWait(10);
                 const nonSyncedDocs = await c2.find().exec();
                 assert.strictEqual(nonSyncedDocs.length, 10);
 
@@ -242,8 +243,9 @@ describe('replication.test.js', () => {
                     const ds = await c.find().exec();
                     return ds.length === 1;
                 });
-                await util.promiseWait(10);
+                await promiseWait(10);
                 const docs = await c.find().exec();
+
                 assert.strictEqual(docs.length, 1);
                 assert.strictEqual(docs[0].firstName, 'foobar');
 
@@ -460,8 +462,8 @@ describe('replication.test.js', () => {
                 const syncC = await humansCollection.create(0);
                 const syncPouch = syncC;
 
-                const c = await humansCollection.create(0, 'colsource' + util.randomCouchString(5));
-                const c2 = await humansCollection.create(0, 'colsync' + util.randomCouchString(5));
+                const c = await humansCollection.create(0, 'colsource' + randomCouchString(5));
+                const c2 = await humansCollection.create(0, 'colsync' + randomCouchString(5));
                 c.sync({
                     remote: syncPouch
                 });
@@ -491,8 +493,8 @@ describe('replication.test.js', () => {
                 const syncC = await humansCollection.create(0);
                 const syncPouch = syncC;
 
-                const c = await humansCollection.create(0, 'colsource' + util.randomCouchString(5));
-                const c2 = await humansCollection.create(0, 'colsync' + util.randomCouchString(5));
+                const c = await humansCollection.create(0, 'colsource' + randomCouchString(5));
+                const c2 = await humansCollection.create(0, 'colsync' + randomCouchString(5));
                 c.sync({
                     remote: syncPouch
                 });
@@ -507,7 +509,7 @@ describe('replication.test.js', () => {
                     if (results.length === 2) pw8.resolve();
                 });
                 assert.strictEqual(results.length, 0);
-                await util.promiseWait(5);
+                await promiseWait(5);
 
 
                 const obj = schemaObjects.human();
@@ -524,8 +526,8 @@ describe('replication.test.js', () => {
                 const syncC = await humansCollection.create(0);
                 const syncPouch = syncC;
 
-                const c = await humansCollection.create(0, 'colsource' + util.randomCouchString(5));
-                const c2 = await humansCollection.create(0, 'colsync' + util.randomCouchString(5));
+                const c = await humansCollection.create(0, 'colsource' + randomCouchString(5));
+                const c2 = await humansCollection.create(0, 'colsync' + randomCouchString(5));
                 c.sync({
                     remote: syncPouch
                 });
@@ -594,8 +596,8 @@ describe('replication.test.js', () => {
             };
 
             // create a database
-            const db1 = await RxDB.create({
-                name: util.randomCouchString(12),
+            const db1 = await createRxDatabase({
+                name: randomCouchString(12),
                 adapter: 'memory'
             });
             // create a collection
@@ -613,8 +615,8 @@ describe('replication.test.js', () => {
             });
 
             // create another database
-            const db2 = await RxDB.create({
-                name: util.randomCouchString(12),
+            const db2 = await createRxDatabase({
+                name: randomCouchString(12),
                 adapter: 'memory'
             });
             // create a collection
@@ -624,7 +626,7 @@ describe('replication.test.js', () => {
             });
 
             // query for all documents on db2-collection2 (query will be cached)
-            let documents = await collection2.find({}).exec();
+            let documents = await collection2.find().exec();
 
             // Replicate from db1-collection1 to db2-collection2
             const pullstate: RxReplicationState = collection2.sync({
@@ -647,7 +649,7 @@ describe('replication.test.js', () => {
 
             // query for all documents on db2-collection2 again (result is read from cache which doesnt contain replicated doc)
             // collection2._queryCache.destroy();
-            documents = await collection2.find({}).exec();
+            documents = await collection2.find().exec();
 
             assert.strictEqual(documents.length, 1);
 

@@ -15,6 +15,8 @@ import {
 import {
     Crypter
 } from '../crypter';
+import type { RxPlugin, RxDatabase } from '../types';
+import { hash } from '../util';
 
 const minPassLength = 8;
 
@@ -36,6 +38,53 @@ const _decryptValue = function (this: Crypter, encryptedValue: any) {
     const decrypted = decrypt(encryptedValue, this.password);
     return JSON.parse(decrypted);
 };
+
+
+export type PasswordHashDocument = {
+    _id: string;
+    value: string;
+};
+
+/**
+ * validates and inserts the password hash into the internal collection
+ * to ensure there is/was no other instance with a different password
+ * which would cause strange side effects when both instances save into the same db
+ */
+export function storePasswordHashIntoDatabase(
+    rxDatabase: RxDatabase
+): Promise<boolean> {
+    if (!rxDatabase.password) {
+        return Promise.resolve(false);
+    }
+    const pwHash = hash(rxDatabase.password);
+    return rxDatabase.internalStore.get('_local/pwHash')
+        .catch(() => null)
+        .then((pwHashDoc: PasswordHashDocument | null) => {
+            /**
+             * if pwHash was not saved, we save it,
+             * this operation might throw because another instance runs save at the same time,
+             */
+            if (!pwHashDoc) {
+                return rxDatabase.internalStore.put({
+                    _id: '_local/pwHash',
+                    value: pwHash
+                }).catch(() => null)
+                    .then(() => true);
+            } else if (pwHash !== pwHashDoc.value) {
+                // different hash was already set by other instance
+                return rxDatabase.destroy().then(() => {
+                    throw newRxError('DB1', {
+                        passwordHash: hash(rxDatabase.password),
+                        existingPasswordHash: pwHashDoc.value
+                    });
+                });
+            }
+            return true;
+        });
+}
+
+
+
 
 export const rxdb = true;
 export const prototypes = {
@@ -63,8 +112,13 @@ export const overwritable = {
     }
 };
 
-export default {
+export const RxDBEncryptionPlugin: RxPlugin = {
     rxdb,
     prototypes,
-    overwritable
+    overwritable,
+    hooks: {
+        createRxDatabase: (db: RxDatabase) => {
+            return storePasswordHashIntoDatabase(db);
+        }
+    }
 };

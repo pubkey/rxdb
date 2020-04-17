@@ -5,19 +5,29 @@ import config from './config';
 import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from '../helper/schemas';
 
-import * as util from '../../dist/lib/util';
-import Core from '../../plugins/core';
-Core.plugin(require('../../plugins/ajv-validate'));
-Core.plugin(require('../../plugins/key-compression'));
-Core.plugin(require('../../plugins/error-messages'));
-Core.plugin(require('pouchdb-adapter-memory'));
+import {
+    addRxPlugin,
+    createRxDatabase,
+    randomCouchString
+} from '../../plugins/core';
+
+import { RxDBAjvValidatePlugin } from '../../plugins/ajv-validate';
+addRxPlugin(RxDBAjvValidatePlugin);
+
+import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
+addRxPlugin(RxDBKeyCompressionPlugin);
+
+import { RxDBDevModePlugin } from '../../plugins/dev-mode';
+addRxPlugin(RxDBDevModePlugin);
+
+addRxPlugin(require('pouchdb-adapter-memory'));
 
 config.parallel('ajv-validate.node.js', () => {
     describe('validation', () => {
         describe('positive', () => {
             it('should not throw', async () => {
-                const db = await Core.create({
-                    name: util.randomCouchString(10),
+                const db = await createRxDatabase({
+                    name: randomCouchString(10),
                     adapter: 'memory'
                 });
                 const col = await db.collection({
@@ -33,8 +43,8 @@ config.parallel('ajv-validate.node.js', () => {
         });
         describe('negative', () => {
             it('should not validate wrong data', async () => {
-                const db = await Core.create({
-                    name: util.randomCouchString(10),
+                const db = await createRxDatabase({
+                    name: randomCouchString(10),
                     adapter: 'memory'
                 });
                 const col = await db.collection({
@@ -52,8 +62,8 @@ config.parallel('ajv-validate.node.js', () => {
                 db.destroy();
             });
             it('should have the correct params in error', async () => {
-                const db = await Core.create({
-                    name: util.randomCouchString(10),
+                const db = await createRxDatabase({
+                    name: randomCouchString(10),
                     adapter: 'memory'
                 });
                 const col = await db.collection({

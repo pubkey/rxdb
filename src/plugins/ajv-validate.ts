@@ -13,6 +13,7 @@ import {
 import {
     RxSchema
 } from '../rx-schema';
+import type { RxPlugin } from '../types';
 
 /**
  * cache the validators by the schema-hash
@@ -30,7 +31,7 @@ export function _getValidator(
     const hash = rxSchema.hash;
     if (!VALIDATOR_CACHE.has(hash)) {
         const ajv = new Ajv(); // TODO should we reuse this instance?
-        const validator = ajv.compile(rxSchema.jsonID);
+        const validator = ajv.compile(rxSchema.jsonSchema);
         VALIDATOR_CACHE.set(hash, validator);
     }
     return VALIDATOR_CACHE.get(hash);
@@ -50,7 +51,7 @@ function validate(
         throw newRxError('VD2', {
             errors: useValidator.errors,
             obj,
-            schema: this.jsonID
+            schema: this.jsonSchema
         });
     }
 }
@@ -73,7 +74,7 @@ export const hooks = {
     createRxSchema: runAfterSchemaCreated
 };
 
-export default {
+export const RxDBAjvValidatePlugin: RxPlugin = {
     rxdb,
     prototypes,
     hooks

@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.checkAdapter = checkAdapter;
-exports["default"] = exports.overwritable = exports.prototypes = exports.rxdb = exports.POUCHDB_LOCATION = void 0;
+exports.RxDBAdapterCheckPlugin = exports.overwritable = exports.prototypes = exports.rxdb = exports.POUCHDB_LOCATION = void 0;
 
 var _pouchDb = require("../pouch-db");
 
@@ -82,11 +82,11 @@ var overwritable = {
   checkAdapter: checkAdapter
 };
 exports.overwritable = overwritable;
-var _default = {
+var RxDBAdapterCheckPlugin = {
   rxdb: rxdb,
   prototypes: prototypes,
   overwritable: overwritable
 };
-exports["default"] = _default;
+exports.RxDBAdapterCheckPlugin = RxDBAdapterCheckPlugin;
 
 //# sourceMappingURL=adapter-check.js.map

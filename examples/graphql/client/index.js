@@ -4,23 +4,27 @@ import {
 } from 'subscriptions-transport-ws';
 
 
-import RxDB from 'rxdb/plugins/core';
+import {
+    addRxPlugin,
+    createRxDatabase
+} from 'rxdb/plugins/core';
 
-RxDB.plugin(require('pouchdb-adapter-idb'));
-import RxDBReplicationGraphQL from 'rxdb/plugins/replication-graphql';
-RxDB.plugin(RxDBReplicationGraphQL);
+addRxPlugin(require('pouchdb-adapter-idb'));
+import { RxDBReplicationGraphQLPlugin } from 'rxdb/plugins/replication-graphql';
+addRxPlugin(RxDBReplicationGraphQLPlugin);
 
 
 // TODO import these only in non-production build
-import RxDBSchemaCheckModule from 'rxdb/plugins/schema-check';
-RxDB.plugin(RxDBSchemaCheckModule);
-import RxDBErrorMessagesModule from 'rxdb/plugins/error-messages';
-RxDB.plugin(RxDBErrorMessagesModule);
-import RxDBValidateModule from 'rxdb/plugins/validate';
-RxDB.plugin(RxDBValidateModule);
+import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
+addRxPlugin(RxDBDevModePlugin);
+import { RxDBValidatePlugin } from 'rxdb/plugins/validate';
+addRxPlugin(RxDBValidatePlugin);
 
-import UpdatePlugin from 'rxdb/plugins/update';
-RxDB.plugin(UpdatePlugin);
+import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
+addRxPlugin(RxDBUpdatePlugin);
+
+import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
+addRxPlugin(RxDBQueryBuilderPlugin);
 
 import {
     GRAPHQL_PORT,
@@ -42,18 +46,16 @@ const heroSchema = {
             primary: true
         },
         name: {
-            type: 'string',
-            index: true
+            type: 'string'
         },
         color: {
-            type: 'string',
-            index: true
+            type: 'string'
         },
         updatedAt: {
-            type: 'number',
-            index: true
+            type: 'number'
         }
     },
+    indexes: ['name', 'color', 'updatedAt'],
     required: ['color']
 };
 
@@ -120,7 +122,7 @@ function getDatabaseName() {
 
 async function run() {
     heroesList.innerHTML = 'Create database..';
-    const db = await RxDB.create({
+    const db = await createRxDatabase({
         name: getDatabaseName(),
         adapter: 'idb'
     });
@@ -218,7 +220,7 @@ async function run() {
     heroesList.innerHTML = 'Subscribe to query..';
     collection.find()
         .sort({
-            name: 1
+            name: 'asc'
         })
         .$.subscribe(function (heroes) {
             let html = '';

@@ -7,13 +7,13 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
 
-import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
-import RxDB from '../../';
 import {
-    RxCollection,
+    createRxDatabase,
     RxDocument,
-    isRxDocument
+    isRxDocument,
+    promiseWait,
+    randomCouchString
 } from '../../';
 
 import {
@@ -77,7 +77,7 @@ config.parallel('reactive-query.test.js', () => {
             query.$.subscribe(newResults => {
                 lastValue2 = newResults;
             });
-            await util.promiseWait(100);
+            await promiseWait(100);
 
             await AsyncTestUtil.waitUntil(() => lastValue2 && lastValue2.length === 1);
             assert.deepStrictEqual(lastValue, lastValue2);
@@ -96,19 +96,21 @@ config.parallel('reactive-query.test.js', () => {
                 lastValue2 = newResults;
             });
             await AsyncTestUtil.waitUntil(() => lastValue2.length > 0);
-            await util.promiseWait(10);
+            await promiseWait(10);
             assert.strictEqual(lastValue2.length, 1);
             assert.deepStrictEqual(lastValue, lastValue2);
             c.database.destroy();
         });
         it('get new values on RxDocument.save', async () => {
             const c = await humansCollection.create(1);
-            const doc: any = await c.findOne().exec();
+            const doc: any = await c.findOne().exec(true);
             const pw8 = AsyncTestUtil.waitResolveable(500);
 
             let values: any;
             const querySub = c.find({
-                firstName: doc.get('firstName')
+                selector: {
+                    firstName: doc.get('firstName')
+                }
             }).$.subscribe(newV => {
                 values = newV;
                 if (newV) pw8.resolve();
@@ -128,8 +130,10 @@ config.parallel('reactive-query.test.js', () => {
         it('subscribing many times should not result in many database-requests', async () => {
             const c = await humansCollection.create(1);
             const query = c.find({
-                passportId: {
-                    $ne: 'foobar'
+                selector: {
+                    passportId: {
+                        $ne: 'foobar'
+                    }
                 }
             });
             await query.exec();
@@ -178,9 +182,9 @@ config.parallel('reactive-query.test.js', () => {
             // get the 10th
             const doc = await c.findOne()
                 .sort({
-                    age: -1
+                    age: 'desc'
                 })
-                .exec();
+                .exec(true);
 
             await pw8.promise;
             assert.strictEqual(valuesAr.length, 1);
@@ -191,16 +195,16 @@ config.parallel('reactive-query.test.js', () => {
             await doc.atomicSet('firstName', 'foobar');
             await newPromiseWait.promise;
 
-            await util.promiseWait(20);
+            await promiseWait(20);
             assert.strictEqual(valuesAr.length, 1);
             querySub.unsubscribe();
             c.database.destroy();
         });
         it('ISSUE: should have the document in DocCache when getting it from observe', async () => {
-            const name = util.randomCouchString(10);
+            const name = randomCouchString(10);
             const c = await humansCollection.createPrimary(1, name);
             const c2 = await humansCollection.createPrimary(0, name);
-            const doc = await c.findOne().exec();
+            const doc = await c.findOne().exec(true);
             const docId = doc.primary;
 
             assert.deepStrictEqual(c2._docCache.get(docId), undefined);
@@ -209,7 +213,7 @@ config.parallel('reactive-query.test.js', () => {
             const sub = c2.find().$.subscribe(docs => results.push(docs));
             await AsyncTestUtil.waitUntil(() => results.length >= 1);
 
-            assert.strictEqual(c2._docCache.get(docId).primary, docId);
+            assert.strictEqual((c2._docCache.get(docId) as any).primary, docId);
 
             sub.unsubscribe();
             c.database.destroy();
@@ -284,8 +288,8 @@ config.parallel('reactive-query.test.js', () => {
                 },
                 required: ['state']
             };
-            const name = util.randomCouchString(10);
-            const db = await RxDB.create({
+            const name = randomCouchString(10);
+            const db = await createRxDatabase({
                 name,
                 adapter: 'memory',
                 ignoreDuplicate: true
@@ -294,12 +298,12 @@ config.parallel('reactive-query.test.js', () => {
                 name: 'crawlstate',
                 schema: crawlStateSchema
             });
-            const db2 = await RxDB.create({
+            const db2 = await createRxDatabase({
                 name,
                 adapter: 'memory',
                 ignoreDuplicate: true
             });
-            const crawlstate: RxCollection = await db2.collection({
+            await db2.collection({
                 name: 'crawlstate',
                 schema: crawlStateSchema
             });
@@ -382,55 +386,57 @@ config.parallel('reactive-query.test.js', () => {
             db.destroy();
             db2.destroy();
         });
-        it('#749 RxQuery subscription returns null as first result when ran immediately after another subscription or exec()', async () => {
-            const name = util.randomCouchString(10);
-            const db = await RxDB.create({
-                name,
-                adapter: 'memory',
-                ignoreDuplicate: true
-            });
-            const collection = await db.collection({
-                name: 'humans',
-                schema: schemas.human
-            });
-
-            await collection.insert(schemaObjects.human());
-
-            const results: any[] = [];
-
-            const subs1 = collection.find().$.subscribe(x => {
-                results.push(x);
-                subs1.unsubscribe();
-            });
-
-            const subs2 = collection.find().$.subscribe(x => {
-                results.push(x);
-                subs2.unsubscribe();
-            });
-
-            // Let's try with a different query
-            collection
-                .find()
-                .sort('_id')
-                .exec()
-                .then((x) => {
-                    results.push(x);
+        it(
+            '#749 RxQuery subscription returns null as first result when ran immediately after another subscription or exec()',
+            async () => {
+                const name = randomCouchString(10);
+                const db = await createRxDatabase({
+                    name,
+                    adapter: 'memory',
+                    ignoreDuplicate: true
+                });
+                const collection = await db.collection({
+                    name: 'humans',
+                    schema: schemas.human
                 });
 
-            const subs3 = collection
-                .find()
-                .sort('_id')
-                .$.subscribe(x => {
+                await collection.insert(schemaObjects.human());
+
+                const results: any[] = [];
+
+                const subs1 = collection.find().$.subscribe(x => {
                     results.push(x);
-                    subs3.unsubscribe();
+                    subs1.unsubscribe();
                 });
 
-            await AsyncTestUtil.waitUntil(() => results.length === 4);
-            results.forEach(res => {
-                assert.strictEqual(res.length, 1);
-            });
+                const subs2 = collection.find().$.subscribe(x => {
+                    results.push(x);
+                    subs2.unsubscribe();
+                });
 
-            db.destroy();
-        });
+                // Let's try with a different query
+                collection
+                    .find()
+                    .sort('_id')
+                    .exec()
+                    .then((x) => {
+                        results.push(x);
+                    });
+
+                const subs3 = collection
+                    .find()
+                    .sort('_id')
+                    .$.subscribe(x => {
+                        results.push(x);
+                        subs3.unsubscribe();
+                    });
+
+                await AsyncTestUtil.waitUntil(() => results.length === 4);
+                results.forEach(res => {
+                    assert.strictEqual(res.length, 1);
+                });
+
+                db.destroy();
+            });
     });
 });

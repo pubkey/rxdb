@@ -1,7 +1,10 @@
 require('babel-polyfill');
-const RxDB = require('../../../');
-RxDB.plugin(require('pouchdb-adapter-node-websql'));
-RxDB.plugin(require('pouchdb-adapter-http'));
+const {
+    addRxPlugin,
+    createRxDatabase
+} = require('../../../');
+addRxPlugin(require('pouchdb-adapter-node-websql'));
+addRxPlugin(require('pouchdb-adapter-http'));
 
 const Database = {};
 
@@ -25,13 +28,12 @@ const heroSchema = {
 const SYNC_URL = 'http://localhost:10102/';
 
 const create = async () => {
-    const database = await RxDB
-        .create({
-            name: 'heroesdb',
-            adapter: 'websql',
-            password: 'myLongAndStupidPassword',
-            multiInstance: true
-        });
+    const database = await createRxDatabase({
+        name: 'heroesdb',
+        adapter: 'websql',
+        password: 'myLongAndStupidPassword',
+        multiInstance: true
+    });
     await database.collection({
         name: 'heroes',
         schema: heroSchema,

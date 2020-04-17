@@ -6,15 +6,15 @@ import PouchReplicationPlugin from 'pouchdb-replication';
 import { BehaviorSubject, Subject, fromEvent } from 'rxjs';
 import { skipUntil } from 'rxjs/operators';
 import { promiseWait, flatClone } from '../util';
-import Core from '../core';
+import { addRxPlugin } from '../core';
 import { newRxError } from '../rx-error';
 import { pouchReplicationFunction, isInstanceOf as isInstanceOfPouchDB } from '../pouch-db';
-import RxDBWatchForChangesPlugin from './watch-for-changes';
 import { isInstanceOf as isRxCollection } from '../rx-collection';
-// add pouchdb-replication-plugin
-Core.plugin(PouchReplicationPlugin); // add the watch-for-changes-plugin
+import { RxDBWatchForChangesPlugin } from './watch-for-changes'; // add pouchdb-replication-plugin
 
-Core.plugin(RxDBWatchForChangesPlugin);
+addRxPlugin(PouchReplicationPlugin); // add the watch-for-changes-plugin
+
+addRxPlugin(RxDBWatchForChangesPlugin);
 var INTERNAL_POUCHDBS = new WeakSet();
 export var RxReplicationStateBase = /*#__PURE__*/function () {
   function RxReplicationStateBase(collection) {
@@ -205,10 +205,9 @@ export var hooks = {
     INTERNAL_POUCHDBS.add(collection.pouch);
   }
 };
-export default {
+export var RxDBReplicationPlugin = {
   rxdb: rxdb,
   prototypes: prototypes,
-  hooks: hooks,
-  sync: sync
+  hooks: hooks
 };
 //# sourceMappingURL=replication.js.map

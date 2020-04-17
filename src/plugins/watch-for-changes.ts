@@ -7,12 +7,13 @@ import {
 
 import {
     promiseWait,
-    nextTick
+    nextTick,
+    now
 } from '../util';
 import {
     changeEventfromPouchChange
 } from '../rx-change-event';
-import {
+import type {
     RxPlugin,
     RxCollection
 } from '../types';
@@ -64,6 +65,7 @@ function _handleSingleChange(
 ): Promise<boolean> {
     if (change.id.charAt(0) === '_') return Promise.resolve(false); // do not handle changes of internal docs
 
+    const eventTime = now();
     // wait 2 ticks and 20 ms to give the internal event-handling time to run
     return promiseWait(20)
         .then(() => nextTick())
@@ -75,7 +77,11 @@ function _handleSingleChange(
                 return false;
             }
 
-            const cE = changeEventfromPouchChange(docData, collection);
+            const cE = changeEventfromPouchChange(
+                docData,
+                collection,
+                eventTime
+            );
 
             collection.$emit(cE);
             return true;
@@ -89,9 +95,7 @@ export const prototypes = {
     }
 };
 
-const plugin: RxPlugin = {
+export const RxDBWatchForChangesPlugin: RxPlugin = {
     rxdb,
     prototypes
 };
-
-export default plugin;

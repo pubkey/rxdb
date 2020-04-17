@@ -5,6 +5,8 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports._getDefaultQuery = _getDefaultQuery;
+exports.tunnelQueryCache = tunnelQueryCache;
 exports.createRxQuery = createRxQuery;
 exports.isInstanceOf = isInstanceOf;
 exports.RxQueryBase = void 0;
@@ -19,17 +21,15 @@ var _operators = require("rxjs/operators");
 
 var _pouchdbSelectorCore = require("pouchdb-selector-core");
 
-var _mquery = require("./mquery/mquery");
-
 var _util = require("./util");
-
-var _queryChangeDetector = require("./query-change-detector");
 
 var _rxError = require("./rx-error");
 
 var _hooks = require("./hooks");
 
 var _rxDocumentPrototypeMerge = require("./rx-document-prototype-merge");
+
+var _eventReduce = require("./event-reduce");
 
 var _queryCount = 0;
 
@@ -38,50 +38,35 @@ var newQueryID = function newQueryID() {
 };
 
 var RxQueryBase = /*#__PURE__*/function () {
-  function RxQueryBase(op, queryObj, collection) {
+  /**
+   * counts how often the execution on the whole db was done
+   * (used for tests and debugging)
+   */
+  // used by some plugins
+  function RxQueryBase(op, mangoQuery, collection) {
     this.id = newQueryID();
+    this._execOverDatabaseCount = 0;
+    this.other = {};
     this._latestChangeEvent = -1;
     this._resultsData = null;
+    this._resultsDataMap = new Map();
     this._resultsDocs$ = new _rxjs.BehaviorSubject(null);
-    this._execOverDatabaseCount = 0;
     this._ensureEqualQueue = Promise.resolve(false);
     this.op = op;
-    this.queryObj = queryObj;
+    this.mangoQuery = mangoQuery;
     this.collection = collection;
-    this._queryChangeDetector = (0, _queryChangeDetector.create)(this);
-    if (!queryObj) queryObj = _getDefaultQuery(this.collection);
-    this.mquery = (0, _mquery.createMQuery)(queryObj);
+
+    if (!mangoQuery) {
+      mangoQuery = _getDefaultQuery(this.collection);
+    }
   }
 
   var _proto = RxQueryBase.prototype;
 
-  _proto.toString = function toString() {
-    if (!this.stringRep) {
-      var stringObj = (0, _util.sortObject)({
-        op: this.op,
-        options: this.mquery.options,
-        _conditions: this.mquery._conditions,
-        _path: this.mquery._path,
-        _fields: this.mquery._fields
-      }, true);
-      this.stringRep = JSON.stringify(stringObj, _util.stringifyFilter);
-    }
-
-    return this.stringRep;
-  } // returns a clone of this RxQuery
-  ;
-
-  _proto._clone = function _clone() {
-    var cloned = new RxQueryBase(this.op, _getDefaultQuery(this.collection), this.collection);
-    cloned.mquery = this.mquery.clone();
-    return cloned;
-  }
   /**
    * set the new result-data as result-docs of the query
    * @param newResultData json-docs that were recieved from pouchdb
    */
-  ;
-
   _proto._setResultData = function _setResultData(newResultData) {
     this._resultsData = newResultData;
     var docs = (0, _rxDocumentPrototypeMerge.createRxDocuments)(this.collection, this._resultsData);
@@ -97,6 +82,8 @@ var RxQueryBase = /*#__PURE__*/function () {
   ;
 
   _proto._execOverDatabase = function _execOverDatabase() {
+    var _this = this;
+
     this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
     var docsPromise;
 
@@ -115,7 +102,16 @@ var RxQueryBase = /*#__PURE__*/function () {
         });
     }
 
-    return docsPromise;
+    return docsPromise.then(function (docs) {
+      _this._resultsDataMap = new Map();
+      var primPath = _this.collection.schema.primaryPath;
+      docs.forEach(function (doc) {
+        var id = doc[primPath];
+
+        _this._resultsDataMap.set(id, doc);
+      });
+      return docs;
+    });
   }
   /**
    * Execute the query
@@ -125,7 +121,7 @@ var RxQueryBase = /*#__PURE__*/function () {
   ;
 
   _proto.exec = function exec() {
-    var _this = this;
+    var _this2 = this;
 
     /**
      * run _ensureEqual() here,
@@ -133,102 +129,73 @@ var RxQueryBase = /*#__PURE__*/function () {
      * will be thrown at this execution context
      */
     return _ensureEqual(this).then(function () {
-      return _this.$.pipe((0, _operators.first)()).toPromise();
+      return _this2.$.pipe((0, _operators.first)()).toPromise();
     });
-  };
+  }
+  /**
+   * cached call to get the massageSelector
+   * @overwrites itself with the actual value
+   */
+  ;
+
+  /**
+   * returns a string that is used for equal-comparisons
+   * @overwrites itself with the actual value
+   */
+  _proto.toString = function toString() {
+    var stringObj = (0, _util.sortObject)({
+      op: this.op,
+      query: this.mangoQuery,
+      other: this.other
+    }, true);
+    var value = JSON.stringify(stringObj, _util.stringifyFilter);
+
+    this.toString = function () {
+      return value;
+    };
+
+    return value;
+  }
+  /**
+   * returns the prepared query
+   * @overwrites itself with the actual value
+   */
+  ;
 
   _proto.toJSON = function toJSON() {
-    if (this._toJSON) return this._toJSON;
-    var primPath = this.collection.schema.primaryPath;
-    var json = {
-      selector: this.mquery._conditions
+    var value = this.collection.database.storage.prepareQuery(this.asRxQuery, (0, _util.clone)(this.mangoQuery));
+
+    this.toJSON = function () {
+      return value;
     };
-    var options = (0, _util.clone)(this.mquery.options); // sort
 
-    if (options.sort) {
-      var sortArray = [];
-      Object.keys(options.sort).map(function (fieldName) {
-        var dirInt = options.sort[fieldName];
-        var dir = 'asc';
-        if (dirInt === -1) dir = 'desc';
-        var pushMe = {}; // TODO run primary-swap somewhere else
-
-        if (fieldName === primPath) fieldName = '_id';
-        pushMe[fieldName] = dir;
-        sortArray.push(pushMe);
-      });
-      json.sort = sortArray;
-    }
-
-    if (options.limit) {
-      if (typeof options.limit !== 'number') {
-        throw (0, _rxError.newRxTypeError)('QU2', {
-          limit: options.limit
-        });
-      }
-
-      json.limit = options.limit;
-    }
-
-    if (options.skip) {
-      if (typeof options.skip !== 'number') {
-        throw (0, _rxError.newRxTypeError)('QU3', {
-          skip: options.skip
-        });
-      }
-
-      json.skip = options.skip;
-    } // strip empty selectors
-
-
-    Object.entries(json.selector).filter(function (_ref) {
-      var v = _ref[1];
-      return typeof v === 'object';
-    }).filter(function (_ref2) {
-      var v = _ref2[1];
-      return v !== null;
-    }).filter(function (_ref3) {
-      var v = _ref3[1];
-      return !Array.isArray(v);
-    }).filter(function (_ref4) {
-      var v = _ref4[1];
-      return Object.keys(v).length === 0;
-    }).forEach(function (_ref5) {
-      var k = _ref5[0];
-      return delete json.selector[k];
-    }); // primary swap
-
-    if (primPath !== '_id' && json.selector[primPath]) {
-      // selector
-      json.selector._id = json.selector[primPath];
-      delete json.selector[primPath];
-    } // if no selector is used, pouchdb has a bug, so we add a default-selector
-
-
-    if (Object.keys(json.selector).length === 0) {
-      json.selector = {
-        _id: {}
-      };
-    }
-
-    this._toJSON = json;
-    return this._toJSON;
-  };
+    return value;
+  }
+  /**
+   * returns the key-compressed version of the query
+   * @overwrites itself with the actual value
+   */
+  ;
 
   _proto.keyCompress = function keyCompress() {
-    if (!this.collection.schema.doKeyCompression()) {
-      return this.toJSON();
-    } else {
-      if (!this._keyCompress) {
-        this._keyCompress = this.collection._keyCompressor.compressQuery(this.toJSON());
-      }
+    var value;
 
-      return this._keyCompress;
+    if (!this.collection.schema.doKeyCompression()) {
+      value = this.toJSON();
+    } else {
+      value = this.collection._keyCompressor.compressQuery(this.toJSON());
     }
+
+    this.keyCompress = function () {
+      return value;
+    };
+
+    return value;
   }
   /**
    * returns true if the document matches the query,
    * does not use the 'skip' and 'limit'
+   * // TODO this was moved to rx-storage
    */
   ;
 
@@ -271,70 +238,40 @@ var RxQueryBase = /*#__PURE__*/function () {
     });
   }
   /**
-   * updates all found documents
-   * @overwritten by plugin (optinal)
+   * helper function to transform RxQueryBase to RxQuery type
    */
   ;
 
+  /**
+   * updates all found documents
+   * @overwritten by plugin (optional)
+   */
   _proto.update = function update(_updateObj) {
     throw (0, _util.pluginMissing)('update');
-  }
-  /**
-   * regex cannot run on primary _id
-   * @link https://docs.cloudant.com/cloudant_query.html#creating-selector-expressions
-   */
+  } // we only set some methods of query-builder here
+  // because the others depend on these ones
   ;
 
-  _proto.regex = function regex(params) {
-    var clonedThis = this._clone();
-
-    if (this.mquery._path === this.collection.schema.primaryPath) {
-      throw (0, _rxError.newRxError)('QU4', {
-        path: this.mquery._path
-      });
-    }
-
-    clonedThis.mquery.regex(params);
-    return _tunnelQueryCache(clonedThis);
-  }
-  /**
-   * make sure it searches index because of pouchdb-find bug
-   * @link https://github.com/nolanlawson/pouchdb-find/issues/204
-   */
-  ;
-
-  _proto.sort = function sort(params) {
-    var clonedThis = this._clone(); // workarround because sort wont work on unused keys
-
-
-    if (typeof params !== 'object') {
-      var checkParam = params.charAt(0) === '-' ? params.substring(1) : params;
-      if (!clonedThis.mquery._conditions[checkParam]) _sortAddToIndex(checkParam, clonedThis);
-    } else {
-      Object.keys(params).filter(function (k) {
-        return !clonedThis.mquery._conditions[k] || !clonedThis.mquery._conditions[k].$gt;
-      }).forEach(function (k) {
-        return _sortAddToIndex(k, clonedThis);
-      });
-    }
-
-    clonedThis.mquery.sort(params);
-    return _tunnelQueryCache(clonedThis);
+  _proto.where = function where(_queryObj) {
+    throw (0, _util.pluginMissing)('query-builder');
   };
 
-  _proto.limit = function limit(amount) {
-    if (this.op === 'findOne') throw (0, _rxError.newRxError)('QU6');else {
-      var clonedThis = this._clone();
+  _proto.sort = function sort(_params) {
+    throw (0, _util.pluginMissing)('query-builder');
+  };
 
-      clonedThis.mquery.limit(amount);
-      return _tunnelQueryCache(clonedThis);
-    }
+  _proto.skip = function skip(_amount) {
+    throw (0, _util.pluginMissing)('query-builder');
+  };
+
+  _proto.limit = function limit(_amount) {
+    throw (0, _util.pluginMissing)('query-builder');
   };
 
   (0, _createClass2["default"])(RxQueryBase, [{
     key: "$",
     get: function get() {
-      var _this2 = this;
+      var _this3 = this;
 
       if (!this._$) {
         /**
@@ -342,7 +279,7 @@ var RxQueryBase = /*#__PURE__*/function () {
          * This also ensure that there is a reemit on subscribe
          */
         var results$ = this._resultsDocs$.pipe((0, _operators.mergeMap)(function (docs) {
-          return _ensureEqual(_this2).then(function (hasChanged) {
+          return _ensureEqual(_this3).then(function (hasChanged) {
             if (hasChanged) return false; // wait for next emit
             else return docs;
           });
@@ -351,7 +288,7 @@ var RxQueryBase = /*#__PURE__*/function () {
         }), // not if previous returned false
         (0, _operators.map)(function (docs) {
           // findOne()-queries emit document or null
-          if (_this2.op === 'findOne') {
+          if (_this3.op === 'findOne') {
             var doc = docs.length === 0 ? null : docs[0];
             return doc;
           } else return docs; // find()-queries emit RxDocument[]
@@ -362,12 +299,12 @@ var RxQueryBase = /*#__PURE__*/function () {
           return ret;
         }))['asObservable']();
         /**
-         * subscribe to the changeEvent-stream so it detects changed if it has subscribers
+         * subscribe to the changeEvent-stream so it detects changes if it has subscribers
          */
 
 
         var changeEvents$ = this.collection.docChanges$.pipe((0, _operators.tap)(function () {
-          return _ensureEqual(_this2);
+          return _ensureEqual(_this3);
         }), (0, _operators.filter)(function () {
           return false;
         }));
@@ -376,16 +313,17 @@ var RxQueryBase = /*#__PURE__*/function () {
       }
 
       return this._$;
-    }
+    } // stores the changeEvent-Number of the last handled change-event
+
   }, {
     key: "massageSelector",
     get: function get() {
-      if (!this._massageSelector) {
-        var selector = this.mquery._conditions;
-        this._massageSelector = (0, _pouchdbSelectorCore.massageSelector)(selector);
-      }
-
-      return this._massageSelector;
+      return (0, _util.overwriteGetterForCaching)(this, 'massageSelector', (0, _pouchdbSelectorCore.massageSelector)(this.mangoQuery.selector));
+    }
+  }, {
+    key: "asRxQuery",
+    get: function get() {
+      return this;
     }
   }]);
   return RxQueryBase;
@@ -394,39 +332,20 @@ var RxQueryBase = /*#__PURE__*/function () {
 exports.RxQueryBase = RxQueryBase;
 
 function _getDefaultQuery(collection) {
-  var _ref6;
+  var _selector;
 
-  return _ref6 = {}, _ref6[collection.schema.primaryPath] = {}, _ref6;
+  return {
+    selector: (_selector = {}, _selector[collection.schema.primaryPath] = {}, _selector)
+  };
 }
 /**
  * run this query through the QueryCache
  */
 
 
-function _tunnelQueryCache(rxQuery) {
+function tunnelQueryCache(rxQuery) {
   return rxQuery.collection._queryCache.getByQuery(rxQuery);
 }
-/**
- * tunnel the proto-functions of mquery to RxQuery
- */
-
-
-function protoMerge(rxQueryProto, mQueryProtoKeys) {
-  mQueryProtoKeys.filter(function (attrName) {
-    return !attrName.startsWith('_');
-  }).filter(function (attrName) {
-    return !rxQueryProto[attrName];
-  }).forEach(function (attrName) {
-    rxQueryProto[attrName] = function (p1) {
-      var clonedThis = this._clone();
-
-      clonedThis.mquery[attrName](p1);
-      return _tunnelQueryCache(clonedThis);
-    };
-  });
-}
-
-var protoMerged = false;
 
 function createRxQuery(op, queryObj, collection) {
   // checks
@@ -444,56 +363,9 @@ function createRxQuery(op, queryObj, collection) {
 
   var ret = new RxQueryBase(op, queryObj, collection); // ensure when created with same params, only one is created
 
-  ret = _tunnelQueryCache(ret);
-
-  if (!protoMerged) {
-    protoMerged = true;
-    protoMerge(Object.getPrototypeOf(ret), Object.getOwnPropertyNames(Object.getPrototypeOf(ret.mquery)));
-  }
-
+  ret = tunnelQueryCache(ret);
   (0, _hooks.runPluginHooks)('createRxQuery', ret);
   return ret;
-}
-/**
- * throws an error that says that the key is not in the schema
- */
-
-
-function _throwNotInSchema(key) {
-  throw (0, _rxError.newRxError)('QU5', {
-    key: key
-  });
-}
-/**
- * adds the field of 'sort' to the search-index
- * @link https://github.com/nolanlawson/pouchdb-find/issues/204
- */
-
-
-function _sortAddToIndex(checkParam, clonedThis) {
-  var schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(checkParam);
-  if (!schemaObj) _throwNotInSchema(checkParam);
-
-  switch (schemaObj.type) {
-    case 'integer':
-      // TODO change back to -Infinity when issue resolved
-      // @link https://github.com/pouchdb/pouchdb/issues/6454
-      clonedThis.mquery.where(checkParam).gt(-9999999999999999999999999999); // -Infinity does not work since pouchdb 6.2.0
-
-      break;
-
-    case 'string':
-      /**
-       * strings need an empty string, see
-       * @link https://github.com/pubkey/rxdb/issues/585
-       */
-      clonedThis.mquery.where(checkParam).gt('');
-      break;
-
-    default:
-      clonedThis.mquery.where(checkParam).gt(null);
-      break;
-  }
 }
 /**
  * check if the current results-state is in sync with the database
@@ -560,18 +432,16 @@ function __ensureEqual(rxQuery) {
 
       var runChangeEvents = rxQuery.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
 
-      var changeResult = rxQuery._queryChangeDetector.runChangeDetection(runChangeEvents);
+      var eventReduceResult = (0, _eventReduce.calculateNewResults)(rxQuery, runChangeEvents);
 
-      if (!Array.isArray(changeResult) && changeResult) {
+      if (eventReduceResult.runFullQueryAgain) {
         // could not calculate the new results, execute must be done
         mustReExec = true;
-      }
-
-      if (Array.isArray(changeResult) && !(0, _deepEqual["default"])(changeResult, rxQuery._resultsData)) {
+      } else if (eventReduceResult.changed) {
         // we got the new results, we do not have to re-execute, mustReExec stays false
         ret = true; // true because results changed
 
-        rxQuery._setResultData(changeResult);
+        rxQuery._setResultData(eventReduceResult.newResults);
       }
     }
   } // oh no we have to re-execute the whole query over the database

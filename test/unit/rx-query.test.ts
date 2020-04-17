@@ -7,52 +7,21 @@ import {
     first
 } from 'rxjs/operators';
 
-import RxDB from '../../';
 import {
     isRxQuery,
-    create as createRxDatabase
+    createRxDatabase
 } from '../../';
 import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from './../helper/schemas';
-import * as util from '../../dist/lib/util';
+
+import {
+    RxJsonSchema,
+    promiseWait,
+    randomCouchString
+} from '../../';
 
 config.parallel('rx-query.test.js', () => {
-    describe('mquery', () => {
-        describe('basic', () => {
-            it('should distinguish between different sort-orders', async () => {
-                // TODO I don't know if this is defined in the couchdb-spec
-                /*
-                const q1 = new MQuery();
-                q1.sort('age');
-                q1.sort('name');
-
-                const q2 = new MQuery();
-                q2.sort('name');
-                q2.sort('age');
-
-                */
-            });
-        });
-        describe('.clone()', () => {
-            it('should clone the mquery', async () => {
-                const col = await humansCollection.create(0);
-                const q = col.find()
-                    .where('name').ne('Alice')
-                    .where('age').gt(18).lt(67)
-                    .limit(10)
-                    .sort('-age');
-                const mquery = q.mquery;
-                const cloned = mquery.clone();
-
-                assert.deepStrictEqual(mquery.options, cloned.options);
-                assert.deepStrictEqual(mquery._conditions, cloned._conditions);
-                assert.deepStrictEqual(mquery._fields, cloned._fields);
-                assert.deepStrictEqual(mquery._path, cloned._path);
-                col.database.destroy();
-            });
-        });
-    });
     describe('.toJSON()', () => {
         it('should produce the correct selector-object', async () => {
             const col = await humansCollection.create(0);
@@ -80,24 +49,6 @@ config.parallel('rx-query.test.js', () => {
             col.database.destroy();
         });
     });
-    describe('._clone()', () => {
-        it('should deep-clone the query', async () => {
-            const col = await humansCollection.create(0);
-            const q = col.find()
-                .where('name').ne('Alice')
-                .where('age').gt(18).lt(67)
-                .limit(10)
-                .sort('-age');
-            const cloned = q._clone();
-            assert.ok(isRxQuery(q));
-            assert.ok(isRxQuery(cloned));
-            assert.deepStrictEqual(q.mquery._conditions, cloned.mquery._conditions);
-            assert.deepStrictEqual(q.mquery._fields, cloned.mquery._fields);
-            assert.deepStrictEqual(q.mquery._path, cloned.mquery._path);
-            assert.deepStrictEqual(q.mquery.options, cloned.mquery.options);
-            col.database.destroy();
-        });
-    });
     describe('.toString()', () => {
         it('should get a valid string-representation', async () => {
             const col = await humansCollection.create(0);
@@ -107,7 +58,7 @@ config.parallel('rx-query.test.js', () => {
                 .limit(10)
                 .sort('-age');
             const str = q.toString();
-            const mustString = '{"_conditions":{"_id":{},"age":{"$gt":18,"$lt":67},"name":{"$ne":"Alice"}},"_path":"age","op":"find","options":{"limit":10,"sort":{"age":-1}}}';
+            const mustString = '{"op":"find","other":{"queryBuilderPath":"age"},"query":{"limit":10,"selector":{"_id":{},"age":{"$gt":18,"$lt":67},"name":{"$ne":"Alice"}},"sort":[{"age":"desc"}]}}';
             assert.strictEqual(str, mustString);
             const str2 = q.toString();
             assert.strictEqual(str2, mustString);
@@ -152,22 +103,6 @@ config.parallel('rx-query.test.js', () => {
             const query2 = col.find()
                 .where('age').gt(10)
                 .where('name').ne('foobar')
-                .sort('passportId').toString();
-
-            assert.strictEqual(query1, query2);
-            col.database.destroy();
-        });
-        it('same queries should have same string even when in different-selector-order', async () => {
-            const col = await humansCollection.create(0);
-
-            const query1 = col.find()
-                .where('age').gt(10)
-                .where('name').ne('foobar')
-                .sort('passportId').toString();
-
-            const query2 = col.find()
-                .where('name').ne('foobar')
-                .where('age').gt(10)
                 .sort('passportId').toString();
 
             assert.strictEqual(query1, query2);
@@ -277,28 +212,8 @@ config.parallel('rx-query.test.js', () => {
             assert.ok(query1 === query2);
             col.database.destroy();
         });
-        it('ensure its the same query when selector-order is different', async () => {
-            const col = await humansCollection.create(0);
 
-            const query1 = col.find()
-                .where('age').gt(10)
-                .where('name').ne('foobar')
-                .sort('passportId');
-
-            const query2 = col.find()
-                .where('name').ne('foobar')
-                .where('age').gt(10)
-                .sort('passportId');
-
-            assert.ok(query1 === query2);
-            col.database.destroy();
-        });
-
-        it('TODO should distinguish between different sort-orders', async () => {
-            // TODO I don't know if this is defined in the couchdb-spec
-            /*
-            return;
-
+        it('should distinguish between different sort-orders', async () => {
             const col = await humansCollection.create(0);
             const q = col.find()
                 .where('name').ne('Alice')
@@ -313,11 +228,9 @@ config.parallel('rx-query.test.js', () => {
                 .sort('name')
                 .sort('-age');
 
-
             assert.notStrictEqual(q, q2);
             assert.notStrictEqual(q.id, q2.id);
             col.database.destroy();
-            */
         });
     });
     describe('doesDocMatchQuery()', () => {
@@ -370,11 +283,13 @@ config.parallel('rx-query.test.js', () => {
         it('BUG should not match regex', async () => {
             const col = await humansCollection.create(0);
             const q = col.find({
-                $and: [{
-                    color: {
-                        $regex: new RegExp('f', 'i')
-                    }
-                }]
+                selector: {
+                    $and: [{
+                        color: {
+                            $regex: new RegExp('f', 'i')
+                        }
+                    }]
+                }
             });
 
             const docData = {
@@ -399,7 +314,7 @@ config.parallel('rx-query.test.js', () => {
             assert.strictEqual(results.length, 2);
             assert.strictEqual(q._execOverDatabaseCount, 1);
 
-            await util.promiseWait(5);
+            await promiseWait(5);
             results = await q.exec();
             assert.strictEqual(results.length, 2);
             assert.strictEqual(q._execOverDatabaseCount, 1);
@@ -409,7 +324,7 @@ config.parallel('rx-query.test.js', () => {
         it('should execOverDatabase when still subscribed and changeEvent comes in', async () => {
             const col = await humansCollection.create(2);
 
-            // it is assumed that this query can never handled by the QueryChangeDetector
+            // it is assumed that this query can never handled by event-reduce
             const query = col.find().sort('-passportId').limit(1);
 
             const fired: any[] = [];
@@ -434,11 +349,13 @@ config.parallel('rx-query.test.js', () => {
             sub1.unsubscribe();
             col.database.destroy();
         });
-        it('reusing exec should execOverDatabase when change happened', async () => {
+        it('reusing exec should execOverDatabase when change happened that cannot be optimized', async () => {
             const col = await humansCollection.create(2);
 
-            // it is assumed that this query can never handled by the QueryChangeDetector
-            const q = col.find().where('firstName').ne('Alice').limit(1).skip(1);
+            // it is assumed that this query can never handled by event-reduce
+            const q = col.find()
+                .where('firstName').ne('AliceFoobar')
+                .skip(1);
 
             let results = await q.exec();
             assert.strictEqual(results.length, 1);
@@ -446,15 +363,19 @@ config.parallel('rx-query.test.js', () => {
             assert.strictEqual(q._latestChangeEvent, 2);
 
             const addDoc = schemaObjects.human();
-            addDoc.firstName = 'Alice';
+
+            // set _id to first value to force a re-exec-over database
+            (addDoc as any)._id = '1-aaaaaaaaaaaaaaaaaaaaaaaaaaa';
+            addDoc.firstName = 'NotAliceFoobar';
 
             await col.insert(addDoc);
             assert.strictEqual(q.collection._changeEventBuffer.counter, 3);
+
             assert.strictEqual(q._latestChangeEvent, 2);
 
-            await util.promiseWait(1);
+            await promiseWait(1);
             results = await q.exec();
-            assert.strictEqual(results.length, 1);
+            assert.strictEqual(results.length, 2);
             assert.strictEqual(q._execOverDatabaseCount, 2);
 
             col.database.destroy();
@@ -463,8 +384,8 @@ config.parallel('rx-query.test.js', () => {
             if (!config.platform.isNode()) return;
             // use a 'slow' adapter because memory might be to fast
             const leveldown = require('leveldown');
-            const db = await RxDB.create({
-                name: config.rootPath + 'test_tmp/' + util.randomCouchString(10),
+            const db = await createRxDatabase({
+                name: config.rootPath + 'test_tmp/' + randomCouchString(10),
                 adapter: leveldown
             });
             const c = await db.collection({
@@ -496,7 +417,7 @@ config.parallel('rx-query.test.js', () => {
 
             const emitted = [];
             const query = col.findOne(docData.passportId);
-            query.$.subscribe(data => emitted.push(data.toJSON()));
+            query.$.subscribe((data: any) => emitted.push(data.toJSON()));
 
             await AsyncTestUtil.waitUntil(() => emitted.length === 1);
             assert.strictEqual(query._execOverDatabaseCount, 1);
@@ -562,11 +483,11 @@ config.parallel('rx-query.test.js', () => {
             col.database.destroy();
         });
         it('exec from other database-instance', async () => {
-            const dbName = util.randomCouchString(10);
+            const dbName = randomCouchString(10);
             const schema = schemas.averageSchema();
-            const db = await RxDB.create({
+            const db = await createRxDatabase({
                 name: dbName,
-                queryChangeDetection: true,
+                eventReduce: true,
                 adapter: 'memory'
             });
             const col = await db.collection({
@@ -583,10 +504,10 @@ config.parallel('rx-query.test.js', () => {
 
             await db.destroy();
 
-            const db2 = await RxDB.create({
+            const db2 = await createRxDatabase({
                 name: dbName,
                 adapter: 'memory',
-                queryChangeDetection: true,
+                eventReduce: true,
                 ignoreDuplicate: true
             });
             const col2 = await db2.collection({
@@ -598,6 +519,26 @@ config.parallel('rx-query.test.js', () => {
             assert.strictEqual(allDocs.length, 10);
 
             db2.destroy();
+        });
+        it('exec(true) should throw if missing', async () => {
+            const c = await humansCollection.create(0);
+
+            AsyncTestUtil.assertThrows(
+                () => c.findOne().exec(true),
+                'RxError',
+                'throwIfMissing'
+            );
+
+            c.database.destroy();
+        });
+        it('exec(true) should throw used with non-findOne', async () => {
+            const c = await humansCollection.create(0);
+            AsyncTestUtil.assertThrows(
+                () => c.find().exec(true),
+                'RxError',
+                'findOne'
+            );
+            c.database.destroy();
         });
     });
     describe('update', () => {
@@ -654,8 +595,8 @@ config.parallel('rx-query.test.js', () => {
                         }
                     }
                 };
-                const db = await RxDB.create({
-                    name: util.randomCouchString(10),
+                const db = await createRxDatabase({
+                    name: randomCouchString(10),
                     adapter: 'memory'
                 });
                 const col = await db.collection({
@@ -681,35 +622,37 @@ config.parallel('rx-query.test.js', () => {
     describe('issues', () => {
         describe('#157 Cannot sort on field(s) "XXX" when using the default index', () => {
             it('schema example 1', async () => {
-                const schema = {
-                    'keyCompression': false,
-                    'version': 0,
-                    'type': 'object',
-                    'properties': {
-                        'user_id': {
-                            'type': 'string',
-                            'primary': true
+                const schema: RxJsonSchema = {
+                    keyCompression: false,
+                    version: 0,
+                    type: 'object',
+                    properties: {
+                        user_id: {
+                            type: 'string',
+                            primary: true
                         },
-                        'user_pwd': {
-                            'type': 'string',
-                            'encrypted': true
+                        user_pwd: {
+                            type: 'string',
                         },
-                        'last_login': {
-                            'type': 'number'
+                        last_login: {
+                            type: 'number'
                         },
-                        'status': {
-                            'type': 'string'
+                        status: {
+                            type: 'string'
                         }
                     },
-                    'required': ['user_pwd', 'last_login', 'status']
+                    required: ['user_pwd', 'last_login', 'status'],
+                    encrypted: [
+                        'user_pwd'
+                    ]
                 };
                 const db = await createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory',
-                    password: util.randomCouchString(20)
+                    password: randomCouchString(20)
                 });
                 const collection = await db.collection({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     schema
                 });
 
@@ -731,31 +674,31 @@ config.parallel('rx-query.test.js', () => {
                 db.destroy();
             });
             it('schema example 2', async () => {
-                const schema = {
+                const schema: RxJsonSchema = {
                     keyCompression: false,
                     version: 0,
                     type: 'object',
                     properties: {
                         value: {
-                            type: 'number',
-                            index: true
+                            type: 'number'
                         }
-                    }
+                    },
+                    indexes: ['value']
                 };
                 const db = await createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory',
-                    password: util.randomCouchString(20)
+                    password: randomCouchString(20)
                 });
                 const collection = await db.collection({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     schema
                 });
 
                 const queryAll = collection
                     .find()
                     .sort({
-                        value: -1
+                        value: 'desc'
                     });
 
                 const resultsAll = await queryAll.exec();
@@ -763,51 +706,12 @@ config.parallel('rx-query.test.js', () => {
                 db.destroy();
             });
         });
-        it('#164 Sort error, pouchdb-find/mango "unknown operator"', async () => {
-            const db = await RxDB.create({
-                adapter: 'memory',
-                name: util.randomCouchString(12),
-                password: 'password'
-            });
-            const collection = await db.collection({
-                name: 'test3',
-                schema: {
-                    title: 'test3',
-                    type: 'object',
-                    version: 0,
-                    properties: {
-                        name: {
-                            type: 'string',
-                            index: true
-                        }
-                    }
-                }
-            });
-
-            const sortedNames = ['a123', 'b123', 'c123', 'f123', 'z123'];
-            await Promise.all(
-                sortedNames.map(name => collection.insert({
-                    name
-                }))
-            );
-
-            // this query is wrong because .find() does not allow sort, limit etc, only the selector
-            await AsyncTestUtil.assertThrows(
-                () => collection.find({
-                    sort: ['name']
-                }).exec(),
-                Error,
-                'lte'
-            );
-            const results2 = await collection.find().sort('name').exec();
-            assert.deepStrictEqual(sortedNames, results2.map(doc => doc.name));
-
-            db.destroy();
-        });
         it('#267 query for null-fields', async () => {
             const c = await humansCollection.create(2);
             const foundDocs = await c.find({
-                foobar: null
+                selector: {
+                    foobar: null
+                }
             }).exec();
             assert.ok(Array.isArray(foundDocs));
             c.database.destroy();
@@ -846,17 +750,19 @@ config.parallel('rx-query.test.js', () => {
             const docData = new Array(200)
                 .fill(0)
                 .map(() => schemaObjects.human());
-            for (const doc of docData)
+            for (const doc of docData) {
                 await c.insert(doc);
+            }
 
             const docs3 = await query.exec();
             assert.strictEqual(docs3.length, 600);
 
             const docData2 = clone(docData);
-            docData2.forEach(doc => doc.lastName = doc.lastName + '1');
+            docData2.forEach((doc: any) => doc.lastName = doc.lastName + '1');
 
-            for (const doc of docData2)
+            for (const doc of docData2) {
                 await c.upsert(doc);
+            }
 
             const docs4 = await query.exec();
             assert.strictEqual(docs4.length, 600);
@@ -868,8 +774,6 @@ config.parallel('rx-query.test.js', () => {
             // further investigation needed
             return;
             /*
-
-            // QueryChangeDetector.enable();
             const schema = {
                 primaryPath: '_id',
                 keyCompression: false,
@@ -1037,15 +941,15 @@ config.parallel('rx-query.test.js', () => {
                         type: 'object',
                         properties: {
                             title: {
-                                type: 'string',
-                                index: true
+                                type: 'string'
                             },
                         },
                     }
-                }
+                },
+                indexes: ['info.title']
             };
             const db = await createRxDatabase({
-                name: util.randomCouchString(10),
+                name: randomCouchString(10),
                 adapter: 'memory'
             });
             const col = await db.collection({
@@ -1100,7 +1004,7 @@ config.parallel('rx-query.test.js', () => {
             db.destroy();
         });
         it('#609 default index on _id when better possible', async () => {
-            const mySchema = {
+            const mySchema: RxJsonSchema = {
                 version: 0,
                 keyCompression: false,
                 type: 'object',
@@ -1109,10 +1013,10 @@ config.parallel('rx-query.test.js', () => {
                         type: 'string'
                     },
                     passportId: {
-                        type: 'string',
-                        index: true
+                        type: 'string'
                     }
-                }
+                },
+                indexes: ['passportId']
             };
             const collection = await humansCollection.createBySchema(mySchema);
 
@@ -1123,7 +1027,9 @@ config.parallel('rx-query.test.js', () => {
 
             // first query, no sort
             const q1 = collection.findOne({
-                passportId: 'foofbar'
+                selector: {
+                    passportId: 'foofbar'
+                }
             });
             const explained1 = await collection.pouch.explain(q1.toJSON());
             assert.ok(explained1.index.ddoc);
@@ -1131,7 +1037,9 @@ config.parallel('rx-query.test.js', () => {
 
             // second query, with sort
             const q2 = collection.findOne({
-                passportId: 'foofbar'
+                selector: {
+                    passportId: 'foofbar'
+                }
             }).sort('passportId');
             const explained2 = await collection.pouch.explain(q2.toJSON());
             assert.ok(explained2.index.ddoc);
@@ -1140,7 +1048,7 @@ config.parallel('rx-query.test.js', () => {
             collection.database.destroy();
         });
         it('#698 Same query producing a different result', async () => {
-            const mySchema = {
+            const mySchema: RxJsonSchema = {
                 version: 0,
                 keyCompression: false,
                 type: 'object',
@@ -1152,10 +1060,10 @@ config.parallel('rx-query.test.js', () => {
                         type: 'string'
                     },
                     created_at: {
-                        type: 'number',
-                        index: true
+                        type: 'number'
                     }
-                }
+                },
+                indexes: ['created_at']
             };
             const collection = await humansCollection.createBySchema(mySchema);
 
@@ -1186,12 +1094,24 @@ config.parallel('rx-query.test.js', () => {
                     created_at: {
                         $gt: null
                     }
+                }, {
+                    user_id: {
+                        $eq: '6'
+                    }
+                },
+                {
+                    created_at: {
+                        $gt: null
+                    }
                 }
                 ]
             };
             /* eslint-enable */
 
-            const resultDocs1 = await collection.find(selector)
+            const resultDocs1 = await collection
+                .find({
+                    selector
+                })
                 .sort({
                     created_at: 'desc'
                 })
@@ -1250,8 +1170,8 @@ config.parallel('rx-query.test.js', () => {
             c2.database.destroy();
         });
         it('#724 find() does not find all matching documents', async () => {
-            const db = await RxDB.create({
-                name: util.randomCouchString(10),
+            const db = await createRxDatabase({
+                name: randomCouchString(10),
                 adapter: 'memory'
             });
             const schema = {
@@ -1278,14 +1198,20 @@ config.parallel('rx-query.test.js', () => {
             });
 
             const foundByRoomId = await roomsession.findOne({
-                roomId
+                selector: {
+                    roomId
+                }
             }).exec();
             const foundByRoomAndSessionId = await roomsession.findOne({
-                roomId,
-                sessionId
+                selector: {
+                    roomId,
+                    sessionId
+                }
             }).exec();
             const foundBySessionId = await roomsession.findOne({
-                sessionId
+                selector: {
+                    sessionId
+                }
             }).exec();
 
             assert(foundByRoomId !== null); // fail
@@ -1320,13 +1246,13 @@ config.parallel('rx-query.test.js', () => {
             };
 
             // generate a random database-name
-            const name = util.randomCouchString(10);
+            const name = randomCouchString(10);
 
             // create a database
-            const db = await RxDB.create({
+            const db = await createRxDatabase({
                 name,
                 adapter: 'memory',
-                queryChangeDetection: true,
+                eventReduce: true,
                 ignoreDuplicate: true
             });
             // create a collection
@@ -1348,7 +1274,7 @@ config.parallel('rx-query.test.js', () => {
                 age: 56
             });
 
-            const queryOK = collection.find({});
+            const queryOK = collection.find();
             const docsOK = await queryOK.exec();
             assert.strictEqual(docsOK.length, 2);
 
@@ -1360,7 +1286,9 @@ config.parallel('rx-query.test.js', () => {
                 selector
             });
             const pouchDocs = pouchResult.docs;
-            const query = collection.find(selector);
+            const query = collection.find({
+                selector
+            });
             const docs = await query.exec();
 
             assert.strictEqual(pouchDocs.length, docs.length);
@@ -1389,10 +1317,10 @@ config.parallel('rx-query.test.js', () => {
                     }
                 }
             };
-            const db = await RxDB.create({
-                name: util.randomCouchString(10),
+            const db = await createRxDatabase({
+                name: randomCouchString(10),
                 adapter: 'memory',
-                queryChangeDetection: true,
+                eventReduce: true,
                 ignoreDuplicate: true
             });
 
@@ -1419,10 +1347,18 @@ config.parallel('rx-query.test.js', () => {
 
             // test 1 with RegExp object
             const regexp = new RegExp('^Doe$', 'i');
-            const result1 = await collection.find({ lastName: { $regex: regexp } }).exec();
+            const result1 = await collection.find({
+                selector: {
+                    lastName: { $regex: regexp }
+                }
+            }).exec();
 
             // test 2 with regex string
-            const result2 = await collection.find({ lastName: { $regex: '^Doe$' } }).exec();
+            const result2 = await collection.find({
+                selector: {
+                    lastName: { $regex: '^Doe$' }
+                }
+            }).exec();
 
 
             // both results should only have the doc1

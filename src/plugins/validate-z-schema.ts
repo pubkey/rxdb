@@ -13,6 +13,7 @@ import {
 import {
     RxSchema
 } from '../rx-schema';
+import type { RxPlugin } from '../types';
 
 /**
  * cache the validators by the schema-hash
@@ -33,7 +34,7 @@ function _getValidator(
     if (!VALIDATOR_CACHE.has(hash)) {
         const validator = new (ZSchema as any)();
         const validatorFun = (obj: any) => {
-            validator.validate(obj, rxSchema.jsonID);
+            validator.validate(obj, rxSchema.jsonSchema);
             return validator;
         };
         VALIDATOR_CACHE.set(hash, validatorFun);
@@ -67,7 +68,7 @@ const validate = function (
         throw newRxError('VD2', {
             errors: formattedZSchemaErrors,
             obj,
-            schema: this.jsonID
+            schema: this.jsonSchema
         });
     }
 };
@@ -91,7 +92,7 @@ export const hooks = {
     createRxSchema: runAfterSchemaCreated
 };
 
-export default {
+export const RxDBValidateZSchemaPlugin: RxPlugin = {
     rxdb,
     prototypes,
     hooks

@@ -66,7 +66,7 @@ export var prototypes = {};
 export var overwritable = {
   checkAdapter: checkAdapter
 };
-export default {
+export var RxDBAdapterCheckPlugin = {
   rxdb: rxdb,
   prototypes: prototypes,
   overwritable: overwritable

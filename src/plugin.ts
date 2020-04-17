@@ -6,7 +6,9 @@
 import {
     RxSchema
 } from './rx-schema';
-import Crypter from './crypter';
+import {
+    Crypter
+} from './crypter';
 import {
     basePrototype as RxDocumentPrototype
 } from './rx-document';
@@ -22,7 +24,7 @@ import {
 import {
     PouchDB
 } from './pouch-db';
-import {
+import type {
     RxPlugin
 } from './types';
 
@@ -36,7 +38,7 @@ import {
  */
 const PROTOTYPES: { [k: string]: any } = {
     RxSchema: RxSchema.prototype,
-    Crypter: Crypter.Crypter.prototype,
+    Crypter: Crypter.prototype,
     RxDocument: RxDocumentPrototype,
     RxQuery: RxQueryBase.prototype,
     RxCollection: RxCollectionBase.prototype,
@@ -46,7 +48,7 @@ const PROTOTYPES: { [k: string]: any } = {
 const ADDED_PLUGINS = new Set();
 
 
-export default function addPlugin(plugin: RxPlugin | any) {
+export function addRxPlugin(plugin: RxPlugin | any) {
     // do nothing if added before
     if (ADDED_PLUGINS.has(plugin)) return;
     else ADDED_PLUGINS.add(plugin);
@@ -70,9 +72,10 @@ export default function addPlugin(plugin: RxPlugin | any) {
     }
     // overwritable-overwrites
     if (rxPlugin.overwritable) {
-        Object
-            .entries(plugin.overwritable)
-            .forEach(([name, fun]) => overwritable[name] = (fun as Function));
+        Object.assign(
+            overwritable,
+            plugin.overwritable
+        );
     }
     // extend-hooks
     if (rxPlugin.hooks) {

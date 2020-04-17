@@ -22,7 +22,7 @@ export function _getValidator(rxSchema) {
   if (!VALIDATOR_CACHE.has(hash)) {
     var ajv = new Ajv(); // TODO should we reuse this instance?
 
-    var validator = ajv.compile(rxSchema.jsonID);
+    var validator = ajv.compile(rxSchema.jsonSchema);
     VALIDATOR_CACHE.set(hash, validator);
   }
 
@@ -40,7 +40,7 @@ function validate(obj) {
     throw newRxError('VD2', {
       errors: useValidator.errors,
       obj: obj,
-      schema: this.jsonID
+      schema: this.jsonSchema
     });
   }
 }
@@ -64,7 +64,7 @@ export var prototypes = {
 export var hooks = {
   createRxSchema: runAfterSchemaCreated
 };
-export default {
+export var RxDBAjvValidatePlugin = {
   rxdb: rxdb,
   prototypes: prototypes,
   hooks: hooks

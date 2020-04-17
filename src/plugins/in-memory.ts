@@ -18,10 +18,11 @@ import {
     first
 } from 'rxjs/operators';
 
-import {
+import type {
     RxCollection,
     RxReplicationState,
-    PouchDBInstance
+    PouchDBInstance,
+    RxPlugin
 } from '../types';
 import {
     RxCollectionBase
@@ -31,8 +32,12 @@ import {
     randomCouchString,
     adapterObject
 } from '../util';
-import Core from '../core';
-import Crypter from '../crypter';
+import {
+    addRxPlugin
+} from '../core';
+import {
+    createCrypter
+} from '../crypter';
 import {
     createChangeEventBuffer
 } from '../change-event-buffer';
@@ -51,8 +56,8 @@ import {
 } from '../rx-error';
 
 // add the watch-for-changes-plugin
-import RxDBWatchForChangesPlugin from '../plugins/watch-for-changes';
-Core.plugin(RxDBWatchForChangesPlugin);
+import { RxDBWatchForChangesPlugin } from '../plugins/watch-for-changes';
+addRxPlugin(RxDBWatchForChangesPlugin);
 
 const collectionCacheMap = new WeakMap();
 const collectionPromiseCacheMap = new WeakMap();
@@ -78,7 +83,7 @@ export class InMemoryRxCollection<RxDocumentType, OrmMethods> extends RxCollecti
         this._isInMemory = true;
         this._parentCollection = parentCollection;
         this._parentCollection.onDestroy.then(() => this.destroy());
-        this._crypter = Crypter.create(this.database.password, this.schema);
+        this._crypter = createCrypter(this.database.password, this.schema);
         this._changeStreams = [];
 
         /**
@@ -132,7 +137,7 @@ export class InMemoryRxCollection<RxDocumentType, OrmMethods> extends RxCollecti
                 this._subs.push(
                     (this._observable$ as any).subscribe((cE: RxChangeEvent) => {
                         // when data changes, send it to RxDocument in docCache
-                        const doc = this._docCache.get(cE.data.doc);
+                        const doc = this._docCache.get(cE.documentId);
                         if (doc) doc._handleChangeEvent(cE);
                     })
                 );
@@ -147,7 +152,6 @@ export class InMemoryRxCollection<RxDocumentType, OrmMethods> extends RxCollecti
                  */
                 this._parentCollection.watchForChanges();
                 this.watchForChanges();
-
 
                 /**
                  * create an ongoing replications between both sides
@@ -187,14 +191,14 @@ export class InMemoryRxCollection<RxDocumentType, OrmMethods> extends RxCollecti
      * the _pouchPut is wrapped
      * @overwrite
      */
-    _pouchPut(obj: any, overwrite: any) {
+    _pouchPut(obj: any, overwrite: boolean) {
         return this._oldPouchPut(obj, overwrite).then((ret: any) => {
             this._nonPersistentRevisions.add(ret.rev);
             return ret;
         });
     }
     $emit(changeEvent: RxChangeEvent) {
-        if ((this._changeEventBuffer as any).hasChangeWithRevision(changeEvent.data.v && changeEvent.data.v._rev))
+        if ((this._changeEventBuffer as any).hasChangeWithRevision(changeEvent.documentData && changeEvent.documentData._rev))
             return;
 
         (this._observable$ as any).next(changeEvent);
@@ -224,7 +228,7 @@ export class InMemoryRxCollection<RxDocumentType, OrmMethods> extends RxCollecti
  * - has no attachments
  */
 function toCleanSchema(rxSchema: RxSchema): RxSchema {
-    const newSchemaJson = clone(rxSchema.jsonID);
+    const newSchemaJson = clone(rxSchema.jsonSchema);
     newSchemaJson.keyCompression = false;
     delete newSchemaJson.properties._id;
     delete newSchemaJson.properties._rev;
@@ -299,7 +303,7 @@ export function setIndexes(
  */
 export function streamChangedDocuments(
     rxCollection: RxCollection,
-    prevFilter = (i: any) => true
+    prevFilter = (_i: any) => true
 ): Observable<any> {
     if (!rxCollection._doNotEmitSet) rxCollection._doNotEmitSet = new Set();
 
@@ -393,11 +397,8 @@ export const prototypes = {
         proto.inMemory = spawnInMemory;
     }
 };
-export const overwritable = {};
 
-export default {
+export const RxDBInMemoryPlugin: RxPlugin = {
     rxdb,
-    prototypes,
-    overwritable,
-    spawnInMemory
+    prototypes
 };

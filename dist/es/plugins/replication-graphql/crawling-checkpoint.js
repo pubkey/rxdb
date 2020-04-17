@@ -108,60 +108,53 @@ function _setLastPushSequence() {
   return _setLastPushSequence.apply(this, arguments);
 }
 
-export function getChangesSinceLastPushSequence(_x6, _x7, _x8) {
+export function getChangesSinceLastPushSequence(_x6, _x7) {
   return _getChangesSinceLastPushSequence.apply(this, arguments);
 } //
 // things for pull-checkpoint
 //
 
 function _getChangesSinceLastPushSequence() {
-  _getChangesSinceLastPushSequence = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3(collection, endpointHash, lastPulledRevField) {
+  _getChangesSinceLastPushSequence = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3(collection, endpointHash) {
     var batchSize,
-        syncRevisions,
         lastPushSequence,
         retry,
         changes,
-        filteredResults,
         useResults,
-        docsSearch,
-        bulkGetDocs,
         _args3 = arguments;
     return _regeneratorRuntime.wrap(function _callee3$(_context3) {
       while (1) {
         switch (_context3.prev = _context3.next) {
           case 0:
-            batchSize = _args3.length > 3 && _args3[3] !== undefined ? _args3[3] : 10;
-            syncRevisions = _args3.length > 4 && _args3[4] !== undefined ? _args3[4] : false;
-            _context3.next = 4;
+            batchSize = _args3.length > 2 && _args3[2] !== undefined ? _args3[2] : 10;
+            _context3.next = 3;
             return getLastPushSequence(collection, endpointHash);
 
-          case 4:
+          case 3:
             lastPushSequence = _context3.sent;
             retry = true;
 
-          case 6:
+          case 5:
             if (!retry) {
-              _context3.next = 21;
+              _context3.next = 13;
               break;
             }
 
-            _context3.next = 9;
+            _context3.next = 8;
             return collection.pouch.changes({
               since: lastPushSequence,
               limit: batchSize,
-              include_docs: true // style: 'all_docs'
-
+              include_docs: true
             });
 
-          case 9:
+          case 8:
             changes = _context3.sent;
-            filteredResults = changes.results.filter(function (change) {
+            useResults = changes.results.filter(function (change) {
               /**
                * filter out changes with revisions resulting from the pull-stream
                * so that they will not be upstreamed again
                */
               if (wasRevisionfromPullReplication(endpointHash, change.doc._rev)) return false;
-              if (change.doc[lastPulledRevField] === change.doc._rev) return false;
               /**
                * filter out internal docs
                * that are used for views or indexes in pouchdb
@@ -170,37 +163,7 @@ function _getChangesSinceLastPushSequence() {
               if (change.id.startsWith('_design/')) return false;
               return true;
             });
-            useResults = filteredResults;
 
-            if (!(filteredResults.length > 0 && syncRevisions)) {
-              _context3.next = 18;
-              break;
-            }
-
-            docsSearch = filteredResults.map(function (result) {
-              return {
-                id: result.id,
-                rev: result.doc._rev
-              };
-            });
-            _context3.next = 16;
-            return collection.pouch.bulkGet({
-              docs: docsSearch,
-              revs: true,
-              latest: true
-            });
-
-          case 16:
-            bulkGetDocs = _context3.sent;
-            useResults = bulkGetDocs.results.map(function (result) {
-              return {
-                id: result.id,
-                doc: result.docs[0]['ok'],
-                deleted: result.docs[0]['ok']._deleted
-              };
-            });
-
-          case 18:
             if (useResults.length === 0 && changes.results.length === batchSize) {
               // no pushable docs found but also not reached the end -> re-run
               lastPushSequence = changes.last_seq;
@@ -210,16 +173,16 @@ function _getChangesSinceLastPushSequence() {
               retry = false;
             }
 
-            _context3.next = 6;
+            _context3.next = 5;
             break;
 
-          case 21:
+          case 13:
             changes.results.forEach(function (change) {
               change.doc = collection._handleFromPouch(change.doc);
             });
             return _context3.abrupt("return", changes);
 
-          case 23:
+          case 15:
           case "end":
             return _context3.stop();
         }
@@ -233,7 +196,7 @@ var pullLastDocumentId = function pullLastDocumentId(endpointHash) {
   return LOCAL_PREFIX + PLUGIN_IDENT + '-pull-checkpoint-' + endpointHash;
 };
 
-export function getLastPullDocument(_x9, _x10) {
+export function getLastPullDocument(_x8, _x9) {
   return _getLastPullDocument.apply(this, arguments);
 }
 
@@ -270,7 +233,7 @@ function _getLastPullDocument() {
   return _getLastPullDocument.apply(this, arguments);
 }
 
-export function setLastPullDocument(_x11, _x12, _x13) {
+export function setLastPullDocument(_x10, _x11, _x12) {
   return _setLastPullDocument.apply(this, arguments);
 }
 

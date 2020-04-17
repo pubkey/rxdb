@@ -71,9 +71,8 @@ export var prototypes = {
     proto.watchForChanges = watchForChanges;
   }
 };
-var plugin = {
+export var RxDBWatchForChangesPlugin = {
   rxdb: rxdb,
   prototypes: prototypes
 };
-export default plugin;
 //# sourceMappingURL=watch-for-changes.js.map

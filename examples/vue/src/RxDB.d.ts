@@ -3,7 +3,6 @@
  */
 
 import { RxDocument, RxCollection, RxDatabase } from 'rxdb';
-import { Observable } from 'rxjs';
 
 export interface RxHeroDocumentType {
     name: string;

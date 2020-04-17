@@ -2,21 +2,22 @@ import {
     map
 } from 'rxjs/operators';
 import {
-    createChangeEvent
+    createUpdateEvent
 } from './../rx-change-event';
 import {
     nextTick,
-    isElectronRenderer
+    isElectronRenderer,
+    now
 } from './../util';
 import {
     newRxError
 } from '../rx-error';
-import {
-    RxDocument
+import type {
+    RxDocument, RxPlugin, RxDocumentTypeWithRev
 } from '../types';
 
 function ensureSchemaSupportsAttachments(doc: any) {
-    const schemaJson = doc.collection.schema.jsonID;
+    const schemaJson = doc.collection.schema.jsonSchema;
     if (!schemaJson.attachments) {
         throw newRxError('AT1', {
             link: 'https://pubkey.github.io/rxdb/rx-attachment.html'
@@ -24,15 +25,18 @@ function ensureSchemaSupportsAttachments(doc: any) {
     }
 }
 
-function resyncRxDocument(doc: any) {
-    return doc.collection.pouch.get(doc.primary).then((docData: any) => {
-        const data = doc.collection._handleFromPouch(docData);
-        const changeEvent = createChangeEvent(
-            'UPDATE',
-            doc.collection.database,
+function resyncRxDocument<RxDocType>(doc: any) {
+    const startTime = now();
+    return doc.collection.pouch.get(doc.primary).then((docDataFromPouch: any) => {
+        const data: RxDocumentTypeWithRev<RxDocType> = doc.collection._handleFromPouch(docDataFromPouch);
+        const endTime = now();
+        const changeEvent = createUpdateEvent(
             doc.collection,
-            doc,
-            data
+            data,
+            null,
+            startTime,
+            endTime,
+            doc
         );
         doc.$emit(changeEvent);
     });
@@ -181,7 +185,7 @@ export function fromPouchDocument(
 }
 
 function shouldEncrypt(doc: any) {
-    return !!doc.collection.schema.jsonID.attachments.encrypted;
+    return !!doc.collection.schema.jsonSchema.attachments.encrypted;
 }
 
 export function putAttachment(
@@ -336,10 +340,9 @@ export const hooks = {
     postMigrateDocument
 };
 
-export default {
+export const RxDBAttachmentsPlugin: RxPlugin = {
     rxdb,
     prototypes,
     overwritable,
-    hooks,
-    blobBufferUtil
+    hooks
 };

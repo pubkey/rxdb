@@ -2,21 +2,20 @@
  * this plugin adds the json export/import capabilities to RxDB
  */
 import {
-    hash
+    hash, now
 } from '../util';
 import {
-    createRxQuery
+    createRxQuery, _getDefaultQuery
 } from '../rx-query';
 import {
     newRxError
 } from '../rx-error';
-import {
-    createChangeEvent
-} from '../rx-change-event';
-import {
+import type {
     RxDatabase,
-    RxCollection
+    RxCollection,
+    RxPlugin
 } from '../types';
+import { createInsertEvent } from '../rx-change-event';
 
 function dumpRxDatabase(
     this: RxDatabase,
@@ -93,7 +92,7 @@ const dumpRxCollection = function (
         json.encrypted = true;
     }
 
-    const query = createRxQuery('find', {}, this);
+    const query = createRxQuery('find', _getDefaultQuery(this), this);
     return this._pouchFind(query, undefined, encrypted)
         .then((docs: any) => {
             json.docs = docs.map((docData: any) => {
@@ -136,21 +135,23 @@ function importDumpRxCollection(
         // transform
         .map((doc: any) => this._handleToPouch(doc));
 
+    let startTime: number;
     return this.database.lockedRun(
         // write to disc
-        () => this.pouch.bulkDocs(docs)
+        () => {
+            startTime = now();
+            return this.pouch.bulkDocs(docs);
+        }
     ).then(() => {
+        const endTime = now();
         docs.forEach((doc: any) => {
             // emit change events
-            const primary = doc[this.schema.primaryPath];
-            const emitEvent = createChangeEvent(
-                'INSERT',
-                this.database,
+            const emitEvent = createInsertEvent(
                 this,
-                null,
-                doc
+                doc,
+                startTime,
+                endTime
             );
-            emitEvent.data.doc = primary;
             this.$emit(emitEvent);
         });
     });
@@ -170,7 +171,7 @@ export const prototypes = {
 
 export const overwritable = {};
 
-export default {
+export const RxDBJsonDumpPlugin: RxPlugin = {
     rxdb,
     prototypes,
     overwritable

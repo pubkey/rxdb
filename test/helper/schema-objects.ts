@@ -321,7 +321,7 @@ export interface HumanWithTimestampDocumentType {
     _revisions?: {
         start: number;
         ids: [string];
-    },
+    };
     last_pulled_rev?: string;
 }
 export function humanWithTimestamp(): HumanWithTimestampDocumentType {

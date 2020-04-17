@@ -7,12 +7,13 @@ A RxDatabase-Object contains your collections and handles the synchronisation of
 The database is created by the asynchronous .create()-function of the main RxDB-module. It has the following parameters:
 
 ```javascript
-const db = await RxDB.create({
+import { createRxDatabase } from 'rxdb';
+const db = await createRxDatabase({
   name: 'heroesdb',           // <- name
   adapter: 'idb',          // <- storage-adapter
   password: 'myPassword',     // <- password (optional)
   multiInstance: true,         // <- multiInstance (optional, default: true)
-  queryChangeDetection: false // <- queryChangeDetection (optional, default: false)
+  eventReduce: false // <- eventReduce (optional, default: true)
 });
 console.dir(db);
 ```
@@ -32,9 +33,9 @@ Example for browsers:
 ```javascript
 
 // this adapter stores the data in indexeddb
-RxDB.plugin(require('pouchdb-adapter-idb'));
+addRxPlugin(require('pouchdb-adapter-idb'));
 
-const db = await RxDB.create({
+const db = await createRxDatabase({
   name: 'mydatabase',
   adapter: 'idb' // name of the adapter
 });
@@ -51,9 +52,9 @@ If you want to use encrypted fields in the collections of a database, you have t
 `(optional=true)`
 When you create more than one instance of the same database in a single javascript-runtime, you should set multiInstance to ```true```. This will enable the event-sharing between the two instances **serverless**. This should be set to `false` when you have single-instances like a single nodejs-process, a react-native-app, a cordova-app or a single-window electron-app.
 
-### queryChangeDetection
-`(optional=false)`
-If set to true, this enables the [QueryChangeDetection](./query-change-detection.md) for the database.
+### eventReduce
+`(optional=true)`
+If set to true, this enables the [EventReduce Algorithm](./event-reduce.md) for the database.
 
 ### ignoreDuplicate
 `(optional=false)`
@@ -62,12 +63,12 @@ To prevent this common mistake, RxDB will throw an error when you do this.
 In some rare cases like unit-tests, you want to do this intentional by setting `ignoreDuplicate` to `true`.
 
 ```js
-const db1 = await RxDB.create({
+const db1 = await createRxDatabase({
   name: 'heroesdb',
   adapter: 'websql',
   ignoreDuplicate: true
 });
-const db2 = await RxDB.create({
+const db2 = await createRxDatabase({
   name: 'heroesdb',
   adapter: 'websql',
   ignoreDuplicate: true // this create-call will not throw because you explicitly allow it
@@ -147,23 +148,26 @@ await myDatabase.remove();
 // database is now gone
 
 // NOTICE: You can also remove a database without its instance
-RxDB.removeDatabase('mydatabasename', 'localstorage');
+import { removeRxDatabase } from 'rxdb';
+removeRxDatabase('mydatabasename', 'localstorage');
 ```
 
 ### checkAdapter()
 Checks if the given adapter can be used with RxDB in the current environment.
 
 ```js
-RxDB.plugin(require('pouchdb-adapter-localstorage')); // adapter must be added before
+import { checkAdapter, addRxPlugin } from 'rxdb';
+addRxPlugin(require('pouchdb-adapter-localstorage')); // adapter must be added before
 
-const ok = await RxDB.checkAdapter('localstorage');
+const ok = await checkAdapter('localstorage');
 console.dir(ok); // true on most browsers, false on nodejs
 ```
 
 ### isRxDatabase
 Returns true if the given object is an instance of RxDatabase. Returns false if not.
 ```js
-const is = RxDB.isRxDatabase(myObj);
+import { isRxDatabase } from 'rxdb';
+const is = isRxDatabase(myObj);
 ```
 
 

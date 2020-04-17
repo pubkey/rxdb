@@ -20,7 +20,7 @@ function _getValidator(rxSchema) {
   var hash = rxSchema.hash;
 
   if (!VALIDATOR_CACHE.has(hash)) {
-    var validator = isMyJsonValid(rxSchema.jsonID);
+    var validator = isMyJsonValid(rxSchema.jsonSchema);
     VALIDATOR_CACHE.set(hash, validator);
   }
 
@@ -41,7 +41,7 @@ var validate = function validate(obj) {
     throw newRxError('VD2', {
       errors: useValidator.errors,
       obj: obj,
-      schema: this.jsonID
+      schema: this.jsonSchema
     });
   }
 };
@@ -67,7 +67,7 @@ export var prototypes = {
 export var hooks = {
   createRxSchema: runAfterSchemaCreated
 };
-export default {
+export var RxDBValidatePlugin = {
   rxdb: rxdb,
   prototypes: prototypes,
   hooks: hooks

@@ -18,15 +18,16 @@ import GraphQLClient from 'graphql-client';
 
 import {
     promiseWait,
-    flatClone
+    flatClone,
+    now
 } from '../../util';
 
-import Core from '../../core';
 import {
-    hash,
-    clone
+    addRxPlugin
+} from '../../core';
+import {
+    hash
 } from '../../util';
-
 
 import {
     DEFAULT_MODIFIER,
@@ -41,24 +42,25 @@ import {
     getChangesSinceLastPushSequence
 } from './crawling-checkpoint';
 
-import RxDBWatchForChangesPlugin from '../watch-for-changes';
-import RxDBLeaderElectionPlugin from '../leader-election';
+import { RxDBWatchForChangesPlugin } from '../watch-for-changes';
+import { RxDBLeaderElectionPlugin } from '../leader-election';
 import {
     changeEventfromPouchChange
 } from '../../rx-change-event';
-import {
+import type {
     RxCollection,
     GraphQLSyncPullOptions,
-    GraphQLSyncPushOptions
+    GraphQLSyncPushOptions,
+    RxPlugin
 } from '../../types';
 
-Core.plugin(RxDBLeaderElectionPlugin);
+addRxPlugin(RxDBLeaderElectionPlugin);
 
 /**
  * add the watch-for-changes-plugin
  * so pouchdb will emit events when something gets written to it
  */
-Core.plugin(RxDBWatchForChangesPlugin);
+addRxPlugin(RxDBWatchForChangesPlugin);
 
 
 export class RxGraphQLReplicationState {
@@ -399,7 +401,8 @@ export class RxGraphQLReplicationState {
 
         const cE = changeEventfromPouchChange(
             originalDoc,
-            this.collection
+            this.collection,
+            now()
         );
         this.collection.$emit(cE);
     }
@@ -487,7 +490,7 @@ export function syncGraphQL(
                  */
                 const changeEventsSub = collection.$.subscribe(changeEvent => {
                     if (replicationState.isStopped()) return;
-                    const rev = changeEvent.data.v._rev;
+                    const rev = changeEvent.documentData._rev;
                     if (
                         rev &&
                         !wasRevisionfromPullReplication(
@@ -506,6 +509,9 @@ export function syncGraphQL(
     return replicationState;
 }
 
+export * from './helper';
+export * from './crawling-checkpoint';
+
 export const rxdb = true;
 export const prototypes = {
     RxCollection: (proto: any) => {
@@ -513,7 +519,7 @@ export const prototypes = {
     }
 };
 
-export default {
+export const RxDBReplicationGraphQLPlugin: RxPlugin = {
     rxdb,
     prototypes
 };

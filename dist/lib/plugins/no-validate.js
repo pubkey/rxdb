@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = exports.hooks = exports.prototypes = exports.rxdb = void 0;
+exports.RxDBNoValidatePlugin = exports.hooks = exports.prototypes = exports.rxdb = void 0;
 
 /**
  * this plugin validates all documents
@@ -31,11 +31,11 @@ var prototypes = {
 exports.prototypes = prototypes;
 var hooks = {};
 exports.hooks = hooks;
-var _default = {
+var RxDBNoValidatePlugin = {
   rxdb: rxdb,
   prototypes: prototypes,
   hooks: hooks
 };
-exports["default"] = _default;
+exports.RxDBNoValidatePlugin = RxDBNoValidatePlugin;
 
 //# sourceMappingURL=no-validate.js.map

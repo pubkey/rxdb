@@ -7,11 +7,12 @@
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
 
-import RxDB from '../';
-RxDB.plugin(require('pouchdb-adapter-memory'));
-RxDB.plugin(require('pouchdb-adapter-http'));
+import {
+    addRxPlugin, randomCouchString
+} from '../';
+addRxPlugin(require('pouchdb-adapter-memory'));
+addRxPlugin(require('pouchdb-adapter-http'));
 
-import * as util from '../dist/lib/util';
 import * as humansCollection from './helper/humans-collection';
 import * as schemaObjects from './helper/schema-objects';
 
@@ -21,7 +22,7 @@ describe('couchdb-db-integration.test.js', () => {
     it('sync to couchdb', async () => {
         const col = await humansCollection.create(0);
 
-        const couchName = COUCHDB_URL + util.randomCouchString(12);
+        const couchName = COUCHDB_URL + randomCouchString(12);
         console.log(couchName);
         const replicationState = await col.sync({
             remote: couchName,

@@ -8,18 +8,27 @@ import AsyncTestUtil from 'async-test-util';
 import PouchAdapterMemory from 'pouchdb-adapter-memory';
 const leveldown = require('leveldown');
 
-import * as util from '../../dist/lib/util';
-import * as configModule from '../../test_tmp/unit/config';
-const config: any = (configModule as any).default;
+import type { RxJsonSchema } from '../../';
+import config from './config';
 
-const RxDB = require('../../plugins/core/');
-RxDB.plugin(require('../../plugins/in-memory'));
-RxDB.plugin(require('../../plugins/error-messages'));
-RxDB.plugin(require('../../plugins/watch-for-changes'));
+const {
+    addRxPlugin,
+    createRxDatabase,
+    randomCouchString
+} = require('../../plugins/core/');
 
-RxDB.plugin(require('pouchdb-adapter-leveldb'));
+import {RxDBInMemoryPlugin} from '../../plugins/in-memory';
+addRxPlugin(RxDBInMemoryPlugin);
 
-const schema = {
+import {RxDBDevModePlugin} from '../../plugins/dev-mode';
+addRxPlugin(RxDBDevModePlugin);
+
+import {RxDBWatchForChangesPlugin} from '../../plugins/watch-for-changes';
+addRxPlugin(RxDBWatchForChangesPlugin);
+
+addRxPlugin(require('pouchdb-adapter-leveldb'));
+
+const schema: RxJsonSchema = {
     title: 'human schema',
     description: 'describes a human being',
     version: 0,
@@ -27,8 +36,7 @@ const schema = {
     type: 'object',
     properties: {
         passportId: {
-            type: 'string',
-            index: true
+            type: 'string'
         },
         firstName: {
             type: 'string'
@@ -37,13 +45,14 @@ const schema = {
             type: 'string'
         }
     },
+    indexes: ['passportId'],
     required: ['firstName', 'lastName']
 };
 
 describe('in-memory.node.js', () => {
     it('should throw when used without memory-adapter', async () => {
-        const db = await RxDB.create({
-            name: (config as any).rootPath + 'test_tmp/' + util.randomCouchString(10),
+        const db = await createRxDatabase({
+            name: (config as any).rootPath + 'test_tmp/' + randomCouchString(10),
             adapter: leveldown
         });
         const col = await db.collection({
@@ -60,9 +69,9 @@ describe('in-memory.node.js', () => {
         db.destroy();
     });
     it('should work again when memory-adapter was added', async () => {
-        RxDB.plugin(PouchAdapterMemory);
-        const db = await RxDB.create({
-            name: (config as any).rootPath + 'test_tmp/' + util.randomCouchString(10),
+        addRxPlugin(PouchAdapterMemory);
+        const db = await createRxDatabase({
+            name: (config as any).rootPath + 'test_tmp/' + randomCouchString(10),
             adapter: leveldown
         });
         const col = await db.collection({

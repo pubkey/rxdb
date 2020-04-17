@@ -5,9 +5,8 @@ import * as humansCollection from '../helper/humans-collection';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import {
-    createRxDatabase
+    createRxDatabase, randomCouchString
 } from '../../';
-import * as util from '../../dist/lib/util';
 import config from './config';
 import {
     filter,
@@ -140,7 +139,7 @@ config.parallel('local-documents.test.js', () => {
             c.database.destroy();
         });
         it('should save the doc persistent', async () => {
-            const name = util.randomCouchString(10);
+            const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
                 adapter: 'memory'
@@ -178,7 +177,7 @@ config.parallel('local-documents.test.js', () => {
     });
     describe('multi-instance', () => {
         it('should stream events over multi-instance', async () => {
-            const name = util.randomCouchString(10);
+            const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
                 adapter: 'memory'
@@ -202,7 +201,7 @@ config.parallel('local-documents.test.js', () => {
             db2.destroy();
         });
         it('should emit deleted', async () => {
-            const name = util.randomCouchString(10);
+            const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
                 adapter: 'memory'
@@ -232,7 +231,7 @@ config.parallel('local-documents.test.js', () => {
             db2.destroy();
         });
         it('should not conflict with non-local-doc that has same id', async () => {
-            const name = util.randomCouchString(10);
+            const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
                 adapter: 'memory'
@@ -278,7 +277,7 @@ config.parallel('local-documents.test.js', () => {
     });
     describe('in-memory', () => {
         it('should call the non-mem parent', async () => {
-            const name = util.randomCouchString(10);
+            const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
                 adapter: 'memory'
@@ -345,8 +344,8 @@ config.parallel('local-documents.test.js', () => {
             const myCollection = await humansCollection.create(0);
             await myCollection.upsertLocal(
                 'foobar', {
-                    foo: 'bar'
-                }
+                foo: 'bar'
+            }
             );
 
             const emitted: any[] = [];
@@ -359,7 +358,7 @@ config.parallel('local-documents.test.js', () => {
             myCollection.database.destroy();
         });
         it('#663', async () => {
-            const name = util.randomCouchString(10);
+            const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
                 adapter: 'memory'

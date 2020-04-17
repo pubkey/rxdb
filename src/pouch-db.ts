@@ -10,7 +10,6 @@ import PouchDBFind from 'pouchdb-find';
 
 PouchDBCore.plugin(PouchDBFind);
 
-
 /*
 // comment in to debug
 const pouchdbDebug = require('pouchdb-debug');
@@ -18,12 +17,11 @@ PouchDB.plugin(pouchdbDebug);
 PouchDB.debug.enable('*');
 */
 
-
 import {
     newRxError,
     newRxTypeError
 } from './rx-error';
-import {
+import type {
     PouchDBInstance
 } from './types';
 

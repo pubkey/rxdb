@@ -171,7 +171,7 @@ function createOldCollection(version, schemaObj, dataMigrator) {
     database: database,
     schema: (0, _rxSchema.createRxSchema)(schemaObj, false),
     pouchdb: database._spawnPouchDB(dataMigrator.newestCollection.name, version, dataMigrator.newestCollection.pouchSettings),
-    _crypter: (0, _crypter.create)(database.password, schema)
+    _crypter: (0, _crypter.createCrypter)(database.password, schema)
   };
 
   if (schema.doKeyCompression()) {
@@ -186,8 +186,8 @@ function createOldCollection(version, schemaObj, dataMigrator) {
 
 
 function _getOldCollections(dataMigrator) {
-  return Promise.all((0, _rxSchema.getPreviousVersions)(dataMigrator.currentSchema.jsonID).map(function (v) {
-    return dataMigrator.database._collectionsPouch.get(dataMigrator.name + '-' + v);
+  return Promise.all((0, _rxSchema.getPreviousVersions)(dataMigrator.currentSchema.jsonSchema).map(function (v) {
+    return dataMigrator.database.internalStore.get(dataMigrator.name + '-' + v);
   }).map(function (fun) {
     return fun["catch"](function () {
       return null;

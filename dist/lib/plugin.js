@@ -5,11 +5,11 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = addPlugin;
+exports.addRxPlugin = addRxPlugin;
 
 var _rxSchema = require("./rx-schema");
 
-var _crypter = _interopRequireDefault(require("./crypter"));
+var _crypter = require("./crypter");
 
 var _rxDocument = require("./rx-document");
 
@@ -36,7 +36,7 @@ var _hooks = require("./hooks");
  */
 var PROTOTYPES = {
   RxSchema: _rxSchema.RxSchema.prototype,
-  Crypter: _crypter["default"].Crypter.prototype,
+  Crypter: _crypter.Crypter.prototype,
   RxDocument: _rxDocument.basePrototype,
   RxQuery: _rxQuery.RxQueryBase.prototype,
   RxCollection: _rxCollection.RxCollectionBase.prototype,
@@ -44,7 +44,7 @@ var PROTOTYPES = {
 };
 var ADDED_PLUGINS = new Set();
 
-function addPlugin(plugin) {
+function addRxPlugin(plugin) {
   // do nothing if added before
   if (ADDED_PLUGINS.has(plugin)) return;else ADDED_PLUGINS.add(plugin);
 
@@ -69,18 +69,14 @@ function addPlugin(plugin) {
 
 
   if (rxPlugin.overwritable) {
-    Object.entries(plugin.overwritable).forEach(function (_ref2) {
-      var name = _ref2[0],
-          fun = _ref2[1];
-      return _overwritable["default"][name] = fun;
-    });
+    Object.assign(_overwritable["default"], plugin.overwritable);
   } // extend-hooks
 
 
   if (rxPlugin.hooks) {
-    Object.entries(plugin.hooks).forEach(function (_ref3) {
-      var name = _ref3[0],
-          fun = _ref3[1];
+    Object.entries(plugin.hooks).forEach(function (_ref2) {
+      var name = _ref2[0],
+          fun = _ref2[1];
       return _hooks.HOOKS[name].push(fun);
     });
   }

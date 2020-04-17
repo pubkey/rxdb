@@ -2,7 +2,6 @@ import {
     Component,
     Output,
     EventEmitter,
-    ChangeDetectorRef,
     ChangeDetectionStrategy
 } from '@angular/core';
 import {
@@ -13,7 +12,7 @@ import {
 } from 'rxjs/operators';
 
 import { DatabaseService } from '../../services/database.service';
-import {
+import type {
     RxHeroDocument
 } from '../../RxDB.d';
 
@@ -31,12 +30,14 @@ export class HeroesListComponent {
     @Output('edit') editChange: EventEmitter<RxHeroDocument> = new EventEmitter();
 
     constructor(
-        private dbService: DatabaseService,
-        private _cdr: ChangeDetectorRef
+        private dbService: DatabaseService
     ) {
         this.heroes$ = this.dbService
             .db.hero                // collection
-            .find().sort('name')    // query
+            .find({                 // query
+                selector: {},
+                sort: [{ name: 'asc' }]
+            })
             .$.pipe(                // observable
                 tap(() => this.emittedFirst = true)          // hide loading-icon on first emit
             );

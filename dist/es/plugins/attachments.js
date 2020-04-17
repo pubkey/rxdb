@@ -1,10 +1,10 @@
 import { map } from 'rxjs/operators';
-import { createChangeEvent } from './../rx-change-event';
+import { createUpdateEvent } from './../rx-change-event';
 import { nextTick, isElectronRenderer } from './../util';
 import { newRxError } from '../rx-error';
 
 function ensureSchemaSupportsAttachments(doc) {
-  var schemaJson = doc.collection.schema.jsonID;
+  var schemaJson = doc.collection.schema.jsonSchema;
 
   if (!schemaJson.attachments) {
     throw newRxError('AT1', {
@@ -14,10 +14,10 @@ function ensureSchemaSupportsAttachments(doc) {
 }
 
 function resyncRxDocument(doc) {
-  return doc.collection.pouch.get(doc.primary).then(function (docData) {
-    var data = doc.collection._handleFromPouch(docData);
+  return doc.collection.pouch.get(doc.primary).then(function (docDataFromPouch) {
+    var data = doc.collection._handleFromPouch(docDataFromPouch);
 
-    var changeEvent = createChangeEvent('UPDATE', doc.collection.database, doc.collection, doc, data);
+    var changeEvent = createUpdateEvent(doc.collection, data, null, doc);
     doc.$emit(changeEvent);
   });
 }
@@ -163,7 +163,7 @@ export function fromPouchDocument(id, pouchDocAttachment, rxDocument) {
 }
 
 function shouldEncrypt(doc) {
-  return !!doc.collection.schema.jsonID.attachments.encrypted;
+  return !!doc.collection.schema.jsonSchema.attachments.encrypted;
 }
 
 export function putAttachment(_ref3) {
@@ -277,11 +277,10 @@ export var hooks = {
   preMigrateDocument: preMigrateDocument,
   postMigrateDocument: postMigrateDocument
 };
-export default {
+export var RxDBAttachmentsPlugin = {
   rxdb: rxdb,
   prototypes: prototypes,
   overwritable: overwritable,
-  hooks: hooks,
-  blobBufferUtil: blobBufferUtil
+  hooks: hooks
 };
 //# sourceMappingURL=attachments.js.map

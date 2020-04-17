@@ -6,6 +6,16 @@
  * hook-functions that can be extended by the plugin
  */
 export var HOOKS = {
+  /**
+   * functions that run before the database is created
+   */
+  preCreateRxDatabase: [],
+
+  /**
+   * runs after the database is created and prepared
+   * but before the instance is returned to the user
+   * @async
+   */
   createRxDatabase: [],
   preCreateRxCollection: [],
   createRxCollection: [],

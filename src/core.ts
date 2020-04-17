@@ -3,86 +3,79 @@
  * it can be used as standalone but is also used in the batteries-included main-export
  */
 
-import {
-    QueryChangeDetector
-} from './query-change-detector';
+import './types/modules/crypto-js.d';
+import './types/modules/graphql-client.d';
+import './types/modules/mocha.parallel.d';
+import './types/modules/modifiyjs.d';
+import './types/modules/pouchdb-selector-core.d';
+import './types/modules/random-token.d';
+
+
+
+export { addRxPlugin } from './plugin';
 export {
-    QueryChangeDetector
-} from './query-change-detector';
-
-import addPlugin from './plugin';
-import {
-    PouchDB
+    PouchDB,
+    validateCouchDBString,
+    getBatch,
+    countAllUndeleted
 } from './pouch-db';
+
 export {
-    PouchDB
-} from './pouch-db';
-
-export const plugin = addPlugin;
-
-import {
-    create,
-    removeDatabase,
+    createRxDatabase,
+    removeRxDatabase,
     checkAdapter,
     isInstanceOf as isRxDatabase,
-    dbCount
-} from './rx-database';
-export {
-    create,
-    removeDatabase,
-    checkAdapter,
-    isInstanceOf as isRxDatabase,
-    dbCount
-} from './rx-database';
-export {
-    create as createRxDatabase
+    dbCount,
+    _collectionNamePrimary // used in tests
 } from './rx-database';
 
-import {
-    isInstanceOf as isRxCollection
-} from './rx-collection';
 export {
-    isInstanceOf as isRxCollection
+    isInstanceOf as isRxCollection,
+    create as _createRxCollection // used in tests
 } from './rx-collection';
 
-import {
-    isInstanceOf as isRxDocument
-} from './rx-document';
 export {
     isInstanceOf as isRxDocument
 } from './rx-document';
 
-import {
-    isInstanceOf as isRxQuery
-} from './rx-query';
+export {
+    getDocumentOrmPrototype,
+    getDocumentPrototype
+} from './rx-document-prototype-merge';
+
 export {
     isInstanceOf as isRxQuery
 } from './rx-query';
 
-import {
-    isInstanceOf as isRxSchema
-} from './rx-schema';
 export {
     isInstanceOf as isRxSchema,
     createRxSchema,
-    RxSchema
+    RxSchema,
+    getIndexes,
+    normalize,
+    getFinalFields,
+    getPreviousVersions
 } from './rx-schema';
 
 export {
     RxChangeEvent
 } from './rx-change-event';
 
-export default {
-    create,
-    removeDatabase,
-    checkAdapter,
-    plugin,
-    dbCount,
-    isRxDatabase,
-    isRxCollection,
-    isRxDocument,
-    isRxQuery,
-    isRxSchema,
-    PouchDB,
-    QueryChangeDetector
-};
+export {
+    getRxStoragePouchDb,
+    getPouchLocation
+} from './rx-storage-pouchdb';
+
+export {
+    _clearHook // used in tests
+} from './hooks';
+
+export {
+    createCrypter // used in tests
+} from './crypter';
+
+export type {
+    RxStorage
+} from './rx-storate.interface';
+
+export * from './util';

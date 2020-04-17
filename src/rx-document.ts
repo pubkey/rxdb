@@ -13,11 +13,11 @@ import {
     trimDots,
     getHeightOfRevision,
     toPromise,
-    pluginMissing
+    pluginMissing,
+    now
 } from './util';
 import {
-    createChangeEvent,
-    RxChangeEvent
+    RxChangeEvent, createUpdateEvent, createDeleteEvent
 } from './rx-change-event';
 import {
     newRxError,
@@ -27,7 +27,7 @@ import {
     runPluginHooks
 } from './hooks';
 
-import {
+import type {
     RxDocument,
     RxCollection
 } from './types';
@@ -71,22 +71,22 @@ export const basePrototype = {
     },
 
     _handleChangeEvent(this: RxDocument, changeEvent: RxChangeEvent) {
-        if (changeEvent.data.doc !== this.primary)
+        if (changeEvent.documentId !== this.primary)
             return;
 
         // ensure that new _rev is higher then current
-        const newRevNr = getHeightOfRevision(changeEvent.data.v._rev);
+        const newRevNr = getHeightOfRevision(changeEvent.documentData._rev);
         const currentRevNr = getHeightOfRevision(this._data._rev);
         if (currentRevNr > newRevNr) return;
 
-        switch (changeEvent.data.op) {
+        switch (changeEvent.operation) {
             case 'INSERT':
                 break;
             case 'UPDATE':
-                const newData = changeEvent.data.v;
+                const newData = changeEvent.documentData;
                 this._dataSync$.next(newData);
                 break;
-            case 'REMOVE':
+            case 'DELETE':
                 // remove from docCache to assure new upserted RxDocuments will be a new instance
                 this.collection._docCache.delete(this.primary);
                 this._deleted$.next(true);
@@ -197,7 +197,7 @@ export const basePrototype = {
         return valueObj;
     },
 
-    toJSON(this: RxDocument, withRevAndAttachments = true) {
+    toJSON(this: RxDocument, withRevAndAttachments = false) {
         const data = clone(this._data);
         if (!withRevAndAttachments) {
             delete data._rev;
@@ -308,12 +308,15 @@ export const basePrototype = {
         // ensure modifications are ok
         this.collection.schema.validateChange(oldData, newData);
 
+        let startTime: number;
         return this.collection._runHooks('pre', 'save', newData, this)
             .then(() => {
                 this.collection.schema.validate(newData);
+                startTime = now();
                 return this.collection._pouchPut(newData);
             })
             .then(ret => {
+                const endTime = now();
                 if (!ret.ok) {
                     throw newRxError('DOC12', {
                         data: ret
@@ -322,12 +325,13 @@ export const basePrototype = {
                 newData._rev = ret.rev;
 
                 // emit event
-                const changeEvent = createChangeEvent(
-                    'UPDATE',
-                    this.collection.database,
+                const changeEvent = createUpdateEvent(
                     this.collection,
-                    this,
-                    newData
+                    newData,
+                    oldData,
+                    startTime,
+                    endTime,
+                    this
                 );
                 this.$emit(changeEvent);
 
@@ -375,9 +379,11 @@ export const basePrototype = {
         }
 
         const deletedData = clone(this._data);
+        let startTime: number;
         return this.collection._runHooks('pre', 'remove', deletedData, this)
             .then(() => {
                 deletedData._deleted = true;
+                startTime = now();
                 /**
                  * because pouch.remove will also empty the object,
                  * we set _deleted: true and use pouch.put
@@ -385,13 +391,17 @@ export const basePrototype = {
                 return this.collection._pouchPut(deletedData);
             })
             .then(() => {
-                this.$emit(createChangeEvent(
-                    'REMOVE',
-                    this.collection.database,
-                    this.collection,
-                    this,
-                    this._data
-                ));
+                const endTime = now();
+                this.$emit(
+                    createDeleteEvent(
+                        this.collection,
+                        deletedData,
+                        this._data,
+                        startTime,
+                        endTime,
+                        this
+                    )
+                );
 
                 return this.collection._runHooks('post', 'remove', deletedData, this);
             })
@@ -428,9 +438,6 @@ export function createRxDocumentConstructor(proto = basePrototype) {
     constructor.prototype = proto;
     return constructor;
 }
-
-const pseudoConstructor = createRxDocumentConstructor(basePrototype);
-const pseudoRxDocument = new (pseudoConstructor as any)();
 
 export function defineGetterSetter(
     schema: any,
@@ -510,29 +517,7 @@ export function createWithConstructor(
     return doc;
 }
 
-/**
- * returns all possible properties of a RxDocument
- */
-let _properties: any;
-export function properties(): string[] {
-    if (!_properties) {
-        const reserved = ['deleted', 'synced'];
-        const ownProperties = Object.getOwnPropertyNames(pseudoRxDocument);
-        const prototypeProperties = Object.getOwnPropertyNames(basePrototype);
-        _properties = [...ownProperties, ...prototypeProperties, ...reserved];
-    }
-    return _properties;
-}
-
 export function isInstanceOf(obj: any): boolean {
     if (typeof obj === 'undefined') return false;
     return !!obj.isInstanceOfRxDocument;
 }
-
-export default {
-    createWithConstructor,
-    properties,
-    createRxDocumentConstructor,
-    basePrototype,
-    isInstanceOf
-};

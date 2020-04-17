@@ -5,7 +5,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = exports.hooks = exports.prototypes = exports.rxdb = void 0;
+exports.RxDBValidatePlugin = exports.hooks = exports.prototypes = exports.rxdb = void 0;
 
 var _isMyJsonValid = _interopRequireDefault(require("is-my-json-valid"));
 
@@ -32,7 +32,7 @@ function _getValidator(rxSchema) {
   var hash = rxSchema.hash;
 
   if (!VALIDATOR_CACHE.has(hash)) {
-    var validator = (0, _isMyJsonValid["default"])(rxSchema.jsonID);
+    var validator = (0, _isMyJsonValid["default"])(rxSchema.jsonSchema);
     VALIDATOR_CACHE.set(hash, validator);
   }
 
@@ -53,7 +53,7 @@ var validate = function validate(obj) {
     throw (0, _rxError.newRxError)('VD2', {
       errors: useValidator.errors,
       obj: obj,
-      schema: this.jsonID
+      schema: this.jsonSchema
     });
   }
 };
@@ -82,11 +82,11 @@ var hooks = {
   createRxSchema: runAfterSchemaCreated
 };
 exports.hooks = hooks;
-var _default = {
+var RxDBValidatePlugin = {
   rxdb: rxdb,
   prototypes: prototypes,
   hooks: hooks
 };
-exports["default"] = _default;
+exports.RxDBValidatePlugin = RxDBValidatePlugin;
 
 //# sourceMappingURL=validate.js.map

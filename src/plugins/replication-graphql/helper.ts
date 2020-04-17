@@ -1,7 +1,7 @@
 import {
     hash
 } from '../../util';
-import {
+import type {
     RxCollection
 } from '../../types';
 

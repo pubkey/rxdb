@@ -4,10 +4,14 @@
  */
 
 import assert from 'assert';
-import * as util from '../../dist/lib/util';
 
-const RxDB = require('../../');
-RxDB.plugin(require('pouchdb-adapter-memory'));
+const {
+    addRxPlugin,
+    createRxDatabase,
+    isRxDocument,
+    randomCouchString
+} = require('../../');
+addRxPlugin(require('pouchdb-adapter-memory'));
 
 const schema = {
     title: 'human schema',
@@ -17,8 +21,7 @@ const schema = {
     type: 'object',
     properties: {
         passportId: {
-            type: 'string',
-            index: true
+            type: 'string'
         },
         firstName: {
             type: 'string'
@@ -27,13 +30,14 @@ const schema = {
             type: 'string'
         }
     },
+    indexes: ['passportId'],
     required: ['firstName', 'lastName']
 };
 
 const run = async function () {
     // create database
-    const db = await RxDB.create({
-        name: util.randomCouchString(10),
+    const db = await createRxDatabase({
+        name: randomCouchString(10),
         adapter: 'memory',
         ignoreDuplicate: true
     });
@@ -53,7 +57,7 @@ const run = async function () {
 
     // query
     const doc = await db.humans.findOne().where('firstName').ne('foobar').exec();
-    assert.ok(RxDB.isRxDocument(doc));
+    assert.ok(isRxDocument(doc));
 
     // destroy database
     await db.destroy();

@@ -1,5 +1,8 @@
-const RxDB = require('rxdb');
-RxDB.plugin(require('pouchdb-adapter-memory'));
+const {
+    createRxDatabase,
+    addRxPlugin
+} = require('rxdb');
+addRxPlugin(require('pouchdb-adapter-memory'));
 
 const heroSchema = {
     title: 'hero schema',
@@ -25,7 +28,7 @@ function getDatabase(name, adapter) {
 }
 
 async function createDatabase(name, adapter) {
-    const db = await RxDB.create({
+    const db = await createRxDatabase({
         name,
         adapter,
         password: 'myLongAndStupidPassword'

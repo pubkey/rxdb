@@ -22,7 +22,7 @@ export class Crypter {
      * encrypt and stringify data
      * @overwritten by plugin (optional)
      */
-    _encryptValue(_value: any): string {
+    public _encryptValue(_value: any): string {
         throw pluginMissing('encryption');
     }
 
@@ -30,14 +30,14 @@ export class Crypter {
      * decrypt and json-parse an encrypted value
      * @overwritten by plugin (optional)
      */
-    _decryptValue(_value: any): string {
+    public _decryptValue(_value: any): string {
         throw pluginMissing('encryption');
     }
 
     encrypt(obj: any) {
         if (!this.password) return obj;
         obj = clone(obj);
-        Object.keys(this.schema.encryptedPaths)
+        this.schema.encryptedPaths
             .forEach(path => {
                 const value = objectPath.get(obj, path);
                 if (typeof value === 'undefined') return;
@@ -50,7 +50,7 @@ export class Crypter {
     decrypt(obj: any) {
         if (!this.password) return obj;
         obj = clone(obj);
-        Object.keys(this.schema.encryptedPaths)
+        this.schema.encryptedPaths
             .forEach(path => {
                 const value = objectPath.get(obj, path);
                 if (typeof value === 'undefined') return;
@@ -61,11 +61,6 @@ export class Crypter {
     }
 }
 
-export function create(password: any, schema: RxSchema) {
+export function createCrypter(password: any, schema: RxSchema): Crypter {
     return new Crypter(password, schema);
 }
-
-export default {
-    create,
-    Crypter
-};

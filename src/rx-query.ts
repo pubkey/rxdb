@@ -15,19 +15,13 @@ import {
     filterInMemoryFields
 } from 'pouchdb-selector-core';
 import {
-    MQuery,
-    createMQuery
-} from './mquery/mquery';
-import {
     sortObject,
     stringifyFilter,
+    pluginMissing,
     clone,
-    pluginMissing
+    overwriteGetterForCaching,
+    now
 } from './util';
-import {
-    create as createQueryChangeDetector,
-    QueryChangeDetector
-} from './query-change-detector';
 import {
     newRxError,
     newRxTypeError
@@ -35,33 +29,52 @@ import {
 import {
     runPluginHooks
 } from './hooks';
-import {
+import type {
     RxCollection,
     RxDocument,
-    PouchdbQuery,
     RxQueryOP,
-    RxQuery
+    RxQuery,
+    MangoQuery,
+    MangoQuerySortPart,
+    MangoQuerySelector
 } from './types';
 
 import {
     createRxDocuments
 } from './rx-document-prototype-merge';
+import { RxChangeEvent } from './rx-change-event';
+import { calculateNewResults } from './event-reduce';
+import { PreparedQuery } from './rx-storate.interface';
 
 let _queryCount = 0;
 const newQueryID = function (): number {
     return ++_queryCount;
 };
 
-export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] | RxDocumentType> {
+export class RxQueryBase<
+    RxDocumentType = any,
+    RxQueryResult = RxDocument<RxDocumentType[]> | RxDocument<RxDocumentType>
+    > {
+
+    public id: number = newQueryID();
+
+    /**
+     * counts how often the execution on the whole db was done
+     * (used for tests and debugging)
+     */
+    public _execOverDatabaseCount: number = 0;
+
+    // used by some plugins
+    public other: any = {};
 
     constructor(
         public op: RxQueryOP,
-        public queryObj: any,
+        public mangoQuery: Readonly<MangoQuery>,
         public collection: RxCollection<RxDocumentType>
     ) {
-        this._queryChangeDetector = createQueryChangeDetector(this as any);
-        if (!queryObj) queryObj = _getDefaultQuery(this.collection);
-        this.mquery = createMQuery(queryObj);
+        if (!mangoQuery) {
+            mangoQuery = _getDefaultQuery(this.collection);
+        }
     }
     get $(): BehaviorSubject<RxQueryResult> {
         if (!this._$) {
@@ -74,8 +87,6 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
                     mergeMap((docs: any[]) => {
                         return _ensureEqual(this as any)
                             .then((hasChanged: any) => {
-
-
                                 if (hasChanged) return false; // wait for next emit
                                 else return docs;
                             });
@@ -97,7 +108,7 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
 
 
             /**
-             * subscribe to the changeEvent-stream so it detects changed if it has subscribers
+             * subscribe to the changeEvent-stream so it detects changes if it has subscribers
              */
             const changeEvents$ = this.collection.docChanges$
                 .pipe(
@@ -114,40 +125,28 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
         }
         return this._$ as any;
     }
-    get massageSelector() {
-        if (!this._massageSelector) {
-            const selector = this.mquery._conditions;
-            this._massageSelector = massageSelector(selector);
-        }
-        return this._massageSelector;
-    }
-    public id: number = newQueryID();
-    public mquery: MQuery;
+
 
     // stores the changeEvent-Number of the last handled change-event
     public _latestChangeEvent: -1 | any = -1;
 
     // contains the results as plain json-data
     public _resultsData: any = null;
+    public _resultsDataMap: Map<string, RxDocumentType> = new Map();
+
+    // time stamps on when the last full exec over the database has run
+    // used to properly handle events that happen while the find-query is running
+    public _lastExecStart: number = 0;
+    public _lastExecEnd: number = 0;
 
     // contains the results as RxDocument[]
     public _resultsDocs$: BehaviorSubject<any> = new BehaviorSubject(null);
-
-    public _queryChangeDetector: QueryChangeDetector;
-
-    /**
-     * counts how often the execution on the whole db was done
-     * (used for tests and debugging)
-     */
-    public _execOverDatabaseCount: number = 0;
 
     /**
      * ensures that the exec-runs
      * are not run in parallel
      */
     public _ensureEqualQueue: Promise<boolean> = Promise.resolve(false);
-
-    private stringRep?: string;
 
     /**
      * Returns an observable that emits the results
@@ -157,40 +156,6 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
      * - Do not emit anything before the first result-set was created (no null)
      */
     private _$?: BehaviorSubject<RxQueryResult>;
-
-    private _toJSON: any;
-
-    /**
-     * get the key-compression version of this query
-     */
-    private _keyCompress?: { selector: {}, sort: [] };
-
-
-    /**
-     * cached call to get the massageSelector
-     */
-    private _massageSelector?: any;
-    toString(): string {
-        if (!this.stringRep) {
-            const stringObj = sortObject({
-                op: this.op,
-                options: this.mquery.options,
-                _conditions: this.mquery._conditions,
-                _path: this.mquery._path,
-                _fields: this.mquery._fields
-            }, true);
-
-            this.stringRep = JSON.stringify(stringObj, stringifyFilter);
-        }
-        return this.stringRep;
-    }
-
-    // returns a clone of this RxQuery
-    _clone() {
-        const cloned = new RxQueryBase(this.op, _getDefaultQuery(this.collection), this.collection);
-        cloned.mquery = this.mquery.clone();
-        return cloned;
-    }
 
     /**
      * set the new result-data as result-docs of the query
@@ -212,6 +177,7 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
      */
     _execOverDatabase(): Promise<any[]> {
         this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
+        this._lastExecStart = now();
 
         let docsPromise;
         switch (this.op) {
@@ -227,7 +193,16 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
                 });
         }
 
-        return docsPromise;
+        return docsPromise.then(docs => {
+            this._lastExecEnd = now();
+            this._resultsDataMap = new Map();
+            const primPath = this.collection.schema.primaryPath;
+            docs.forEach(doc => {
+                const id = doc[primPath];
+                this._resultsDataMap.set(id, doc);
+            });
+            return docs;
+        });
     }
 
     /**
@@ -235,7 +210,18 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
      * To have an easier implementations,
      * just subscribe and use the first result
      */
-    exec(): Promise<RxQueryResult> {
+    public exec(throwIfMissing: true): Promise<RxDocument<RxDocumentType>>;
+    public exec(): Promise<RxQueryResult>;
+    public exec(throwIfMissing?: boolean): Promise<any> {
+
+        // TODO this should be ensured by typescript
+        if (throwIfMissing && this.op !== 'findOne') {
+            throw newRxError('QU9', {
+                query: this.mangoQuery,
+                op: this.op
+            });
+        }
+
         /**
          * run _ensureEqual() here,
          * this will make sure that errors in the query which throw inside of pouchdb,
@@ -245,101 +231,83 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
             .then(() => this.$
                 .pipe(
                     first()
-                ).toPromise());
-    }
-    toJSON(): PouchdbQuery {
-        if (this._toJSON) return this._toJSON;
-
-        const primPath = this.collection.schema.primaryPath;
-
-        const json: PouchdbQuery = {
-            selector: this.mquery._conditions
-        };
-
-        const options = clone(this.mquery.options);
-
-        // sort
-        if (options.sort) {
-            const sortArray: any[] = [];
-            Object.keys(options.sort).map(fieldName => {
-                const dirInt = options.sort[fieldName];
-                let dir = 'asc';
-                if (dirInt === -1) dir = 'desc';
-                const pushMe: any = {};
-                // TODO run primary-swap somewhere else
-                if (fieldName === primPath)
-                    fieldName = '_id';
-
-                pushMe[fieldName] = dir;
-                sortArray.push(pushMe);
+                ).toPromise())
+            .then(result => {
+                if (!result && throwIfMissing) {
+                    throw newRxError('QU10', {
+                        query: this.mangoQuery,
+                        op: this.op
+                    });
+                } else {
+                    return result;
+                }
             });
-            json.sort = sortArray;
-        }
-
-        if (options.limit) {
-            if (typeof options.limit !== 'number') {
-                throw newRxTypeError('QU2', {
-                    limit: options.limit
-                });
-            }
-            json.limit = options.limit;
-        }
-
-        if (options.skip) {
-            if (typeof options.skip !== 'number') {
-                throw newRxTypeError('QU3', {
-                    skip: options.skip
-                });
-            }
-            json.skip = options.skip;
-        }
-
-        // strip empty selectors
-        Object
-            .entries((json.selector as any))
-            .filter(([, v]) => typeof v === 'object')
-            .filter(([, v]) => v !== null)
-            .filter(([, v]) => !Array.isArray(v))
-            .filter(([, v]) => Object.keys((v as any)).length === 0)
-            .forEach(([k]) => delete json.selector[k]);
-
-        // primary swap
-        if (
-            primPath !== '_id' &&
-            json.selector[primPath]
-        ) {
-            // selector
-            json.selector._id = json.selector[primPath];
-            delete json.selector[primPath];
-        }
-
-        // if no selector is used, pouchdb has a bug, so we add a default-selector
-        if (Object.keys(json.selector).length === 0) {
-            json.selector = {
-                _id: {}
-            };
-        }
-
-        this._toJSON = json;
-        return this._toJSON;
     }
-    keyCompress() {
+
+
+
+    /**
+     * cached call to get the massageSelector
+     * @overwrites itself with the actual value
+     */
+    get massageSelector(): any {
+        return overwriteGetterForCaching(
+            this,
+            'massageSelector',
+            massageSelector(this.mangoQuery.selector)
+        );
+    }
+
+    /**
+     * returns a string that is used for equal-comparisons
+     * @overwrites itself with the actual value
+     */
+    toString(): string {
+        const stringObj = sortObject({
+            op: this.op,
+            query: this.mangoQuery,
+            other: this.other
+        }, true);
+        const value = JSON.stringify(stringObj, stringifyFilter);
+        this.toString = () => value;
+        return value;
+    }
+
+    /**
+     * returns the prepared query
+     * @overwrites itself with the actual value
+     */
+    toJSON(): PreparedQuery<RxDocumentType> {
+        const value = this.collection.database.storage.prepareQuery(
+            this.asRxQuery,
+            clone(this.mangoQuery)
+        );
+        this.toJSON = () => value;
+        return value;
+    }
+
+    /**
+     * returns the key-compressed version of the query
+     * @overwrites itself with the actual value
+     */
+    keyCompress(): MangoQuery<any> {
+        let value: MangoQuery<any>;
         if (!this.collection.schema.doKeyCompression()) {
-            return this.toJSON();
+            value = this.toJSON();
         } else {
-            if (!this._keyCompress) {
-                this._keyCompress = this
-                    .collection
-                    ._keyCompressor
-                    .compressQuery(this.toJSON());
-            }
-            return this._keyCompress;
+            value = this
+                .collection
+                ._keyCompressor
+                .compressQuery(this.toJSON());
         }
+        this.keyCompress = () => value;
+        return value;
     }
 
     /**
      * returns true if the document matches the query,
      * does not use the 'skip' and 'limit'
+     * // TODO this was moved to rx-storage
      */
     doesDocumentDataMatch(docData: RxDocumentType | any): boolean {
         // if doc is deleted, it cannot match
@@ -382,101 +350,59 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
             .then(() => ret);
     }
 
+
+    /**
+     * helper function to transform RxQueryBase to RxQuery type
+     */
+    get asRxQuery(): RxQuery<RxDocumentType, RxQueryResult> {
+        return this as any;
+    }
+
     /**
      * updates all found documents
-     * @overwritten by plugin (optinal)
+     * @overwritten by plugin (optional)
      */
     update(_updateObj: any): Promise<RxQueryResult> {
         throw pluginMissing('update');
     }
 
-    /**
-     * regex cannot run on primary _id
-     * @link https://docs.cloudant.com/cloudant_query.html#creating-selector-expressions
-     */
-    regex(params: any): RxQuery<RxDocumentType, RxQueryResult> {
-        const clonedThis = this._clone();
 
-        if (this.mquery._path === this.collection.schema.primaryPath) {
-            throw newRxError('QU4', {
-                path: this.mquery._path
-            });
-        }
-        clonedThis.mquery.regex(params);
-
-        return _tunnelQueryCache(clonedThis as any);
+    // we only set some methods of query-builder here
+    // because the others depend on these ones
+    where(_queryObj: MangoQuerySelector<RxDocumentType> | keyof RxDocumentType | string): RxQuery<RxDocumentType, RxQueryResult> {
+        throw pluginMissing('query-builder');
     }
-
-    /**
-     * make sure it searches index because of pouchdb-find bug
-     * @link https://github.com/nolanlawson/pouchdb-find/issues/204
-     */
-    sort(params: any): RxQuery<RxDocumentType, RxQueryResult> {
-        const clonedThis = this._clone();
-
-        // workarround because sort wont work on unused keys
-        if (typeof params !== 'object') {
-            const checkParam = params.charAt(0) === '-' ? params.substring(1) : params;
-            if (!clonedThis.mquery._conditions[checkParam])
-                _sortAddToIndex(checkParam, clonedThis);
-        } else {
-            Object.keys(params)
-                .filter(k => !clonedThis.mquery._conditions[k] || !clonedThis.mquery._conditions[k].$gt)
-                .forEach(k => _sortAddToIndex(k, clonedThis));
-        }
-        clonedThis.mquery.sort(params);
-        return _tunnelQueryCache(clonedThis as any);
+    sort(_params: string | MangoQuerySortPart<RxDocumentType>): RxQuery<RxDocumentType, RxQueryResult> {
+        throw pluginMissing('query-builder');
     }
-
-    limit(amount: number): RxQuery<RxDocumentType, RxQueryResult> {
-        if (this.op === 'findOne')
-            throw newRxError('QU6');
-        else {
-            const clonedThis = this._clone();
-            clonedThis.mquery.limit(amount);
-            return _tunnelQueryCache(clonedThis as any);
-        }
+    skip(_amount: number | null): RxQuery<RxDocumentType, RxQueryResult> {
+        throw pluginMissing('query-builder');
+    }
+    limit(_amount: number | null): RxQuery<RxDocumentType, RxQueryResult> {
+        throw pluginMissing('query-builder');
     }
 }
 
-function _getDefaultQuery(collection: RxCollection): any {
+export function _getDefaultQuery(collection: RxCollection): MangoQuery {
     return {
-        [collection.schema.primaryPath]: {}
+        selector: {
+            [collection.schema.primaryPath]: {}
+        }
     };
 }
 
 /**
  * run this query through the QueryCache
  */
-function _tunnelQueryCache<RxDocumentType, RxQueryResult>(
+export function tunnelQueryCache<RxDocumentType, RxQueryResult>(
     rxQuery: RxQueryBase<RxDocumentType, RxQueryResult>
 ): RxQuery<RxDocumentType, RxQueryResult> {
     return rxQuery.collection._queryCache.getByQuery(rxQuery as any);
 }
 
-/**
- * tunnel the proto-functions of mquery to RxQuery
- */
-function protoMerge(
-    rxQueryProto: any,
-    mQueryProtoKeys: string[]
-) {
-    mQueryProtoKeys
-        .filter(attrName => !attrName.startsWith('_'))
-        .filter(attrName => !rxQueryProto[attrName])
-        .forEach(attrName => {
-            rxQueryProto[attrName] = function (p1: any): RxQuery {
-                const clonedThis = this._clone();
-                clonedThis.mquery[attrName](p1);
-                return _tunnelQueryCache(clonedThis);
-            };
-        });
-}
-
-let protoMerged = false;
 export function createRxQuery(
     op: RxQueryOP,
-    queryObj: any,
+    queryObj: MangoQuery,
     collection: RxCollection
 ) {
     // checks
@@ -494,56 +420,11 @@ export function createRxQuery(
     let ret = new RxQueryBase(op, queryObj, collection);
 
     // ensure when created with same params, only one is created
-    ret = _tunnelQueryCache(ret);
-
-    if (!protoMerged) {
-        protoMerged = true;
-        protoMerge(
-            Object.getPrototypeOf(ret),
-            Object.getOwnPropertyNames(Object.getPrototypeOf(ret.mquery))
-        );
-    }
+    ret = tunnelQueryCache(ret);
 
     runPluginHooks('createRxQuery', ret);
 
     return ret;
-}
-
-/**
- * throws an error that says that the key is not in the schema
- */
-function _throwNotInSchema(key: string) {
-    throw newRxError('QU5', {
-        key
-    });
-}
-
-/**
- * adds the field of 'sort' to the search-index
- * @link https://github.com/nolanlawson/pouchdb-find/issues/204
- */
-function _sortAddToIndex(checkParam: any, clonedThis: any) {
-    const schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(checkParam);
-    if (!schemaObj) _throwNotInSchema(checkParam);
-
-
-    switch (schemaObj.type) {
-        case 'integer':
-            // TODO change back to -Infinity when issue resolved
-            // @link https://github.com/pouchdb/pouchdb/issues/6454
-            clonedThis.mquery.where(checkParam).gt(-9999999999999999999999999999); // -Infinity does not work since pouchdb 6.2.0
-            break;
-        case 'string':
-            /**
-             * strings need an empty string, see
-             * @link https://github.com/pubkey/rxdb/issues/585
-             */
-            clonedThis.mquery.where(checkParam).gt('');
-            break;
-        default:
-            clonedThis.mquery.where(checkParam).gt(null);
-            break;
-    }
 }
 
 /**
@@ -589,23 +470,44 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
      * try to use the queryChangeDetector to calculate the new results
      */
     if (!mustReExec) {
-        const missedChangeEvents = (rxQuery as any).collection._changeEventBuffer.getFrom(rxQuery._latestChangeEvent + 1);
+        let missedChangeEvents = (rxQuery as any).collection._changeEventBuffer.getFrom(rxQuery._latestChangeEvent + 1);
         if (missedChangeEvents === null) {
             // changeEventBuffer is of bounds -> we must re-execute over the database
             mustReExec = true;
         } else {
             rxQuery._latestChangeEvent = (rxQuery as any).collection._changeEventBuffer.counter;
-            const runChangeEvents = (rxQuery as any).collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
-            const changeResult = rxQuery._queryChangeDetector.runChangeDetection(runChangeEvents);
 
-            if (!Array.isArray(changeResult) && changeResult) {
+            /**
+             * because pouchdb prefers writes over reads,
+             * we have to filter out the events that happend before the read has started
+             * so that we do not fill event-reduce with the wrong data
+             */
+            missedChangeEvents = missedChangeEvents.filter((cE: RxChangeEvent) => {
+                return !cE.startTime || cE.startTime > rxQuery._lastExecStart;
+            });
+
+
+
+            const runChangeEvents: RxChangeEvent[] = (rxQuery as any).collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
+
+            /*
+            console.log('calculateNewResults() ' + new Date().getTime());
+            console.log(rxQuery._lastExecStart + ' - ' + rxQuery._lastExecEnd);
+            console.dir(rxQuery._resultsData.slice());
+            console.dir(runChangeEvents);
+            */
+
+            const eventReduceResult = calculateNewResults(
+                rxQuery as any,
+                runChangeEvents
+            );
+            if (eventReduceResult.runFullQueryAgain) {
                 // could not calculate the new results, execute must be done
                 mustReExec = true;
-            }
-            if (Array.isArray(changeResult) && !deepEqual(changeResult, rxQuery._resultsData)) {
+            } else if (eventReduceResult.changed) {
                 // we got the new results, we do not have to re-execute, mustReExec stays false
                 ret = true; // true because results changed
-                rxQuery._setResultData(changeResult);
+                rxQuery._setResultData(eventReduceResult.newResults);
             }
         }
     }

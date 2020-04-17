@@ -192,7 +192,7 @@ When you get a method from a `RxDocument`, the method is automatically bound to 
 ### isRxDocument
 Returns true if the given object is an instance of RxDocument. Returns false if not.
 ```js
-const is = RxDB.isRxDocument(myObj);
+const is = isRxDocument(myObj);
 ```
 
 ---------

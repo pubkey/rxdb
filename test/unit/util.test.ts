@@ -3,65 +3,51 @@
  */
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
-import * as util from '../../dist/lib/util';
-import {
-    validateCouchDBString
-} from '../../dist/lib/pouch-db';
 
+import {
+    validateCouchDBString,
+    fastUnsecureHash,
+    randomCouchString,
+    sortObject,
+    now
+} from '../../';
 
 describe('util.test.js', () => {
     describe('.fastUnsecureHash()', () => {
-        it('should work with a string', async () => {
-            const hash = util.fastUnsecureHash('foobar');
+        it('should work with a string', () => {
+            const hash = fastUnsecureHash('foobar');
             assert.strictEqual(typeof hash, 'number');
             assert.ok(hash > 0);
         });
-        it('should work on object', async () => {
-            const hash = util.fastUnsecureHash({
+        it('should work on object', () => {
+            const hash = fastUnsecureHash({
                 foo: 'bar'
             });
             assert.strictEqual(typeof hash, 'number');
             assert.ok(hash > 0);
         });
-        it('should get the same hash twice', async () => {
-            const str = util.randomCouchString(10);
-            const hash = util.fastUnsecureHash(str);
-            const hash2 = util.fastUnsecureHash(str);
+        it('should get the same hash twice', () => {
+            const str = randomCouchString(10);
+            const hash = fastUnsecureHash(str);
+            const hash2 = fastUnsecureHash(str);
             assert.strictEqual(hash, hash2);
         });
-        it('should work with a very large string', async () => {
-            const str = util.randomCouchString(5000);
-            const hash = util.fastUnsecureHash(str);
+        it('should work with a very large string', () => {
+            const str = randomCouchString(5000);
+            const hash = fastUnsecureHash(str);
             assert.strictEqual(typeof hash, 'number');
             assert.ok(hash > 0);
         });
     });
-    describe('.numberToLetter()', () => {
-        it('1 letter', () => {
-            assert.strictEqual(util.numberToLetter(0), 'a');
-            assert.strictEqual(util.numberToLetter(1), 'b');
-            assert.strictEqual(util.numberToLetter(25), 'A');
-        });
-        it('2 letters', () => {
-            assert.strictEqual(util.numberToLetter(100), 'aT');
-            assert.strictEqual(util.numberToLetter(200), 'cB');
-            assert.strictEqual(util.numberToLetter(800), 'nX');
-        });
-        it('many letters', () => {
-            assert.strictEqual(util.numberToLetter(10000), 'b7z');
-            assert.strictEqual(util.numberToLetter(100000), 'DSi');
-            assert.strictEqual(util.numberToLetter(10000000), '2oMX');
-        });
-    });
     describe('.sortObject()', () => {
-        it('should sort when regex in object', async () => {
+        it('should sort when regex in object', () => {
             const obj = {
                 _id: {},
                 color: {
                     '$regex': /foobar/g
                 }
             };
-            const sorted = util.sortObject(obj);
+            const sorted = sortObject(obj);
             assert.ok(sorted.color.$regex instanceof RegExp);
         });
     });
@@ -99,6 +85,22 @@ describe('util.test.js', () => {
                     'RxError',
                     'match the regex'
                 );
+            });
+        });
+    });
+    describe('.now()', () => {
+        it('should increase the returned value each time', () => {
+            const values: number[] = [];
+            new Array(100)
+                .fill(0)
+                .forEach(() => {
+                    values.push(now());
+                });
+
+            let last = 0;
+            values.forEach(value => {
+                assert.ok(value > last);
+                last = value;
             });
         });
     });

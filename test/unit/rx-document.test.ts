@@ -1,23 +1,20 @@
 import assert from 'assert';
-import config from './config';
 import AsyncTestUtil from 'async-test-util';
+import { Observable } from 'rxjs';
 
+import config from './config';
 import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from '../helper/schemas';
-import * as util from '../../dist/lib/util';
-
-import * as RxCollection from '../../dist/lib/rx-collection';
-import {
-    create as createRxDatabase,
-    createRxSchema
-} from '../../';
 
 import {
+    createRxDatabase,
+    createRxSchema,
+    randomCouchString,
+    promiseWait,
     getDocumentOrmPrototype,
     getDocumentPrototype
-} from '../../dist/lib/rx-document-prototype-merge';
-
+} from '../../';
 
 
 config.parallel('rx-document.test.js', () => {
@@ -63,7 +60,7 @@ config.parallel('rx-document.test.js', () => {
         describe('RxCollection.getDocumentOrmPrototype()', () => {
             it('should get a prototype with all orm-methods', async () => {
                 const db = await createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory'
                 });
                 const col = await db.collection({
@@ -90,7 +87,7 @@ config.parallel('rx-document.test.js', () => {
         describe('RxCollection.getDocumentPrototype()', () => {
             it('should get a valid prototype', async () => {
                 const db = await createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory'
                 });
                 const col = await db.collection({
@@ -116,14 +113,14 @@ config.parallel('rx-document.test.js', () => {
         describe('positive', () => {
             it('get a value', async () => {
                 const c = await humansCollection.create(1);
-                const doc: any = await c.findOne().exec();
+                const doc: any = await c.findOne().exec(true);
                 const value = doc.get('passportId');
                 assert.strictEqual(typeof value, 'string');
                 c.database.destroy();
             });
             it('get a nested value', async () => {
                 const c = await humansCollection.createNested(5);
-                const doc = await c.findOne().exec();
+                const doc = await c.findOne().exec(true);
                 const value = doc.get('mainSkill.name');
                 assert.strictEqual(typeof value, 'string');
                 const value2 = doc.get('mainSkill.level');
@@ -132,7 +129,7 @@ config.parallel('rx-document.test.js', () => {
             });
             it('get undefined on undefined value', async () => {
                 const c = await humansCollection.createNested(5);
-                const doc = await c.findOne().exec();
+                const doc = await c.findOne().exec(true);
                 const value = doc.get('foobar');
                 assert.strictEqual(value, undefined);
                 c.database.destroy();
@@ -144,12 +141,12 @@ config.parallel('rx-document.test.js', () => {
         describe('negative', () => {
             it('should only not work on non-temporary document', async () => {
                 const c = await humansCollection.createNested(5);
-                const doc = await c.findOne().exec();
+                const doc = await c.findOne().exec(true);
                 const path = {
                     foo: 'bar'
                 };
                 await AsyncTestUtil.assertThrows(
-                    () => doc.set(path, 'foo'),
+                    () => doc.set(path as any, 'foo'),
                     'RxTypeError',
                     'temporary RxDocuments'
                 );
@@ -244,33 +241,35 @@ config.parallel('rx-document.test.js', () => {
         describe('positive', () => {
             it('$set a value with a mongo like query', async () => {
                 const c = await humansCollection.createPrimary(1);
-                const doc: any = await c.findOne().exec();
+                const doc: any = await c.findOne().exec(true);
                 await doc.update({
                     $set: {
                         firstName: 'new first name'
                     }
                 });
                 const updatedDoc = await c.findOne({
-                    firstName: 'new first name'
-                }).exec();
+                    selector: {
+                        firstName: 'new first name'
+                    }
+                }).exec(true);
                 assert.strictEqual(updatedDoc.firstName, 'new first name');
                 c.database.destroy();
             });
             it('$unset a value with a mongo like query', async () => {
                 const c = await humansCollection.create(1);
-                const doc: any = await c.findOne().exec();
+                const doc: any = await c.findOne().exec(true);
                 await doc.update({
                     $unset: {
                         age: ''
                     }
                 });
-                const updatedDoc: any = await c.findOne().exec();
+                const updatedDoc: any = await c.findOne().exec(true);
                 assert.strictEqual(updatedDoc.age, undefined);
                 c.database.destroy();
             });
             it('$inc a value with a mongo like query', async () => {
                 const c = await humansCollection.create(1);
-                const doc: any = await c.findOne().exec();
+                const doc: any = await c.findOne().exec(true);
                 const agePrev = doc.age;
                 await doc.update({
                     $inc: {
@@ -279,7 +278,7 @@ config.parallel('rx-document.test.js', () => {
                 });
                 assert.strictEqual(doc.age, agePrev + 1);
                 await doc.save;
-                const updatedDoc: any = await c.findOne().exec();
+                const updatedDoc: any = await c.findOne().exec(true);
                 assert.strictEqual(updatedDoc.age, agePrev + 1);
                 c.database.destroy();
             });
@@ -298,7 +297,7 @@ config.parallel('rx-document.test.js', () => {
                     }
                 };
                 const db = await createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory'
                 });
                 const col = await db.collection({
@@ -323,7 +322,7 @@ config.parallel('rx-document.test.js', () => {
             });
             it('should throw when final field is modified', async () => {
                 const db = await createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory'
                 });
                 const col = await db.collection({
@@ -355,7 +354,7 @@ config.parallel('rx-document.test.js', () => {
         describe('positive', () => {
             it('run one update', async () => {
                 const c = await humansCollection.createNested(1);
-                const doc = await c.findOne().exec();
+                const doc = await c.findOne().exec(true);
 
                 const returnedDoc = await doc.atomicUpdate((innerDoc: any) => {
                     innerDoc.firstName = 'foobar';
@@ -367,7 +366,7 @@ config.parallel('rx-document.test.js', () => {
             });
             it('run two updates (last write wins)', async () => {
                 const c = await humansCollection.createNested(1);
-                const doc = await c.findOne().exec();
+                const doc = await c.findOne().exec(true);
 
                 doc.atomicUpdate((innerDoc: any) => {
                     innerDoc.firstName = 'foobar';
@@ -382,7 +381,7 @@ config.parallel('rx-document.test.js', () => {
             });
             it('do many updates (last write wins)', async () => {
                 const c = await humansCollection.create(1);
-                const doc: any = await c.findOne().exec();
+                const doc: any = await c.findOne().exec(true);
                 let lastPromise;
                 let t = 0;
                 new Array(10).fill(0)
@@ -409,7 +408,7 @@ config.parallel('rx-document.test.js', () => {
                         return t;
                     })
                     .forEach(x => lastPromise = doc.atomicUpdate(async (innerDoc: any) => {
-                        await util.promiseWait(1);
+                        await promiseWait(1);
                         innerDoc.age = x;
                         return innerDoc;
                     }));
@@ -422,7 +421,7 @@ config.parallel('rx-document.test.js', () => {
                 // use a 'slow' adapter because memory might be to fast
                 const leveldown = require('leveldown');
                 const db = await createRxDatabase({
-                    name: config.rootPath + 'test_tmp/' + util.randomCouchString(10),
+                    name: config.rootPath + 'test_tmp/' + randomCouchString(10),
                     adapter: leveldown
                 });
                 const c = await db.collection({
@@ -453,7 +452,7 @@ config.parallel('rx-document.test.js', () => {
                 // use a 'slow' adapter because memory might be to fast
                 const leveldown = require('leveldown');
 
-                const dbName = config.rootPath + 'test_tmp/' + util.randomCouchString(10);
+                const dbName = config.rootPath + 'test_tmp/' + randomCouchString(10);
                 const db = await createRxDatabase({
                     name: dbName,
                     adapter: leveldown
@@ -511,7 +510,7 @@ config.parallel('rx-document.test.js', () => {
             });
             it('should throw when final field is modified', async () => {
                 const db = await createRxDatabase({
-                    name: util.randomCouchString(10),
+                    name: randomCouchString(10),
                     adapter: 'memory'
                 });
                 const col = await db.collection({
@@ -543,7 +542,7 @@ config.parallel('rx-document.test.js', () => {
         it('should get the documents data as json', async () => {
             const c = await humansCollection.create(1);
             const doc: any = await c.findOne().exec();
-            const json = doc.toJSON();
+            const json = doc.toJSON(true);
 
             assert.ok(json.passportId);
             assert.ok(json.firstName);
@@ -573,7 +572,7 @@ config.parallel('rx-document.test.js', () => {
         });
         it('should not return _attachments if not wanted', async () => {
             const db = await createRxDatabase({
-                name: util.randomCouchString(10),
+                name: randomCouchString(10),
                 adapter: 'memory',
                 multiInstance: false,
                 ignoreDuplicate: true
@@ -606,27 +605,27 @@ config.parallel('rx-document.test.js', () => {
         describe('get', () => {
             it('top-value', async () => {
                 const c = await humansCollection.create(1);
-                const doc: any = await c.findOne().exec();
+                const doc: any = await c.findOne().exec(true);
                 const passportId = doc.get('passportId');
                 assert.strictEqual(doc.passportId, passportId);
                 c.database.destroy();
             });
             it('hidden properties should not show up', async () => {
                 const c = await humansCollection.create(1);
-                const doc: any = await c.findOne().exec();
+                const doc: any = await c.findOne().exec(true);
                 assert.ok(!Object.keys(doc).includes('lastName_'));
                 c.database.destroy();
             });
             it('nested-value', async () => {
                 const c = await humansCollection.createNested(1);
-                const doc = await c.findOne().exec();
+                const doc = await c.findOne().exec(true);
                 const mainSkillLevel = doc.get('mainSkill.level');
                 assert.strictEqual(doc.mainSkill.level, mainSkillLevel);
                 c.database.destroy();
             });
             it('deep-nested-value', async () => {
                 const c = await humansCollection.createDeepNested(1);
-                const doc = await c.findOne().exec();
+                const doc = await c.findOne().exec(true);
                 const value = doc.get('mainSkill.attack.count');
                 assert.strictEqual(doc.mainSkill.attack.count, value);
 
@@ -636,7 +635,7 @@ config.parallel('rx-document.test.js', () => {
             });
             it('top-value-observable', async () => {
                 const c = await humansCollection.create(1);
-                const doc: any = await c.findOne().exec();
+                const doc: any = await c.findOne().exec(true);
                 const obs = doc.firstName$;
                 assert.ok(obs.subscribe);
 
@@ -647,7 +646,7 @@ config.parallel('rx-document.test.js', () => {
 
                 await doc.atomicSet('firstName', 'foobar');
 
-                await util.promiseWait(5);
+                await promiseWait(5);
                 assert.strictEqual(value, 'foobar');
 
                 // resubscribe should emit again
@@ -655,29 +654,29 @@ config.parallel('rx-document.test.js', () => {
                 obs.subscribe((newVal: any) => {
                     value2 = newVal;
                 });
-                await util.promiseWait(5);
+                await promiseWait(5);
                 assert.strictEqual(value2, 'foobar');
                 c.database.destroy();
             });
             it('nested-value-observable', async () => {
                 const c = await humansCollection.createNested(1);
-                const doc = await c.findOne().exec();
-                const obs = doc.mainSkill.level$;
-                assert.ok(obs.subscribe);
+                const doc = await c.findOne().exec(true);
+                const obs: Observable<any> = (doc.mainSkill as any).level$;
+                assert.ok(obs['subscribe']);
 
                 let value = null;
-                doc.mainSkill.level$.subscribe((newVal: any) => {
+                (doc.mainSkill as any).level$.subscribe((newVal: any) => {
                     value = newVal;
                 });
 
                 await doc.atomicSet('mainSkill.level', 10);
-                await util.promiseWait(5);
+                await promiseWait(5);
                 assert.strictEqual(value, 10);
                 c.database.destroy();
             });
             it('deep-nested-value-observable', async () => {
                 const c = await humansCollection.createDeepNested(1);
-                const doc = await c.findOne().exec();
+                const doc: any = await c.findOne().exec();
                 const obs = doc.mainSkill.attack.good$;
                 assert.ok(obs.subscribe);
 
@@ -686,7 +685,7 @@ config.parallel('rx-document.test.js', () => {
                     value = newVal;
                 });
                 await doc.atomicSet('mainSkill.attack.good', true);
-                await util.promiseWait(5);
+                await promiseWait(5);
                 assert.strictEqual(value, true);
                 c.database.destroy();
             });
@@ -694,7 +693,7 @@ config.parallel('rx-document.test.js', () => {
         describe('set', () => {
             it('should not work on non-temporary document', async () => {
                 const c = await humansCollection.createPrimary(1);
-                const doc = await c.findOne().exec();
+                const doc = await c.findOne().exec(true);
                 assert.throws(
                     () => doc.firstName = 'foobar'
                 );
@@ -711,7 +710,7 @@ config.parallel('rx-document.test.js', () => {
 
             // insert
             await c.insert(docData);
-            const doc1 = await c.findOne(primary).exec();
+            const doc1 = await c.findOne(primary).exec(true);
             assert.strictEqual(doc1.firstName, docData.firstName);
 
             // remove
@@ -720,7 +719,7 @@ config.parallel('rx-document.test.js', () => {
             // upsert
             docData.firstName = 'foobar';
             await c.upsert(docData);
-            const doc2 = await c.findOne(primary).exec();
+            const doc2 = await c.findOne(primary).exec(true);
             assert.strictEqual(doc2.firstName, 'foobar');
 
             c.database.destroy();
@@ -732,7 +731,7 @@ config.parallel('rx-document.test.js', () => {
 
             // insert
             await c.upsert(docData);
-            const doc1 = await c.findOne(primary).exec();
+            const doc1 = await c.findOne(primary).exec(true);
             assert.strictEqual(doc1.firstName, docData.firstName);
 
             // remove
@@ -741,14 +740,14 @@ config.parallel('rx-document.test.js', () => {
             // upsert
             docData.firstName = 'foobar';
             await c.insert(docData);
-            const doc2 = await c.findOne(primary).exec();
+            const doc2 = await c.findOne(primary).exec(true);
             assert.strictEqual(doc2.firstName, 'foobar');
 
             c.database.destroy();
         });
         it('#76 - deepEqual does not work correctly for Arrays', async () => {
             const db = await createRxDatabase({
-                name: util.randomCouchString(10),
+                name: randomCouchString(10),
                 adapter: 'memory'
             });
             const col = await await db.collection({
@@ -778,7 +777,7 @@ config.parallel('rx-document.test.js', () => {
         });
         it('#646 Skip defining getter and setter when property not defined in schema', async () => {
             const db = await createRxDatabase({
-                name: util.randomCouchString(10),
+                name: randomCouchString(10),
                 adapter: 'memory'
             });
             const schema = {
@@ -839,7 +838,7 @@ config.parallel('rx-document.test.js', () => {
             };
 
             // generate a random database-name
-            const name = util.randomCouchString(10);
+            const name = randomCouchString(10);
 
             // create a database
             const db = await createRxDatabase({
@@ -849,7 +848,7 @@ config.parallel('rx-document.test.js', () => {
             });
             // create a collection
             const collection = await db.collection({
-                name: util.randomCouchString(10),
+                name: randomCouchString(10),
                 schema: mySchema
             });
 
@@ -870,7 +869,9 @@ config.parallel('rx-document.test.js', () => {
             });
 
             const colDoc = await collection.findOne({
-                _id: doc._id
+                selector: {
+                    _id: doc._id
+                }
             }).exec();
 
 
@@ -890,11 +891,14 @@ config.parallel('rx-document.test.js', () => {
         });
         it('#830 should return a rejected promise when already deleted', async () => {
             const c = await humansCollection.createPrimary(1);
-            const doc = await c.findOne().exec();
+            const doc = await c.findOne().exec(true);
             assert.ok(doc);
             await doc.remove();
             assert.ok(doc.deleted);
             const ret = doc.remove();
+            if (!ret) {
+                throw new Error('missing');
+            }
             assert.strictEqual(typeof ret.then, 'function'); // ensure it's a promise
             await AsyncTestUtil.assertThrows(
                 () => ret,
@@ -906,8 +910,10 @@ config.parallel('rx-document.test.js', () => {
         it('#1325 populate should return null when value is falsy', async () => {
             const collection = await humansCollection.createRelated();
             const doc = await collection.findOne({
-                bestFriend: { $exists: true }
-            }).exec();
+                selector: {
+                    bestFriend: { $exists: true }
+                }
+            }).exec(true);
 
             await doc.update({
                 $set: {

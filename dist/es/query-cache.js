@@ -18,7 +18,11 @@ export var QueryCache = /*#__PURE__*/function () {
 
   _proto.getByQuery = function getByQuery(query) {
     var stringRep = query.toString();
-    if (!this._map.has(stringRep)) this._map.set(stringRep, query);
+
+    if (!this._map.has(stringRep)) {
+      this._map.set(stringRep, query);
+    }
+
     return this._map.get(stringRep);
   };
 

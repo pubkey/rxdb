@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.syncGraphQL = syncGraphQL;
-exports["default"] = exports.prototypes = exports.rxdb = exports.RxGraphQLReplicationState = void 0;
+exports.RxDBReplicationGraphQLPlugin = exports.prototypes = exports.rxdb = exports.RxGraphQLReplicationState = void 0;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
@@ -20,15 +20,15 @@ var _graphqlClient = _interopRequireDefault(require("graphql-client"));
 
 var _util = require("../../util");
 
-var _core = _interopRequireDefault(require("../../core"));
+var _core = require("../../core");
 
 var _helper = require("./helper");
 
 var _crawlingCheckpoint = require("./crawling-checkpoint");
 
-var _watchForChanges = _interopRequireDefault(require("../watch-for-changes"));
+var _watchForChanges = require("../watch-for-changes");
 
-var _leaderElection = _interopRequireDefault(require("../leader-election"));
+var _leaderElection = require("../leader-election");
 
 var _rxChangeEvent = require("../../rx-change-event");
 
@@ -36,17 +36,16 @@ var _rxChangeEvent = require("../../rx-change-event");
  * this plugin adds the RxCollection.syncGraphQl()-function to rxdb
  * you can use it to sync collections with remote graphql endpoint
  */
-_core["default"].plugin(_leaderElection["default"]);
+(0, _core.addRxPlugin)(_leaderElection.RxDBLeaderElectionPlugin);
 /**
  * add the watch-for-changes-plugin
  * so pouchdb will emit events when something gets written to it
  */
 
-
-_core["default"].plugin(_watchForChanges["default"]);
+(0, _core.addRxPlugin)(_watchForChanges.RxDBWatchForChangesPlugin);
 
 var RxGraphQLReplicationState = /*#__PURE__*/function () {
-  function RxGraphQLReplicationState(collection, url, headers, pull, push, deletedFlag, lastPulledRevField, live, liveInterval, retryTime, syncRevisions) {
+  function RxGraphQLReplicationState(collection, url, headers, pull, push, deletedFlag, live, liveInterval, retryTime) {
     this._subjects = {
       recieved: new _rxjs.Subject(),
       // all documents that are recieved from the endpoint
@@ -63,7 +62,6 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
     };
     this._runningPromise = Promise.resolve();
     this._subs = [];
-    this._runCount = 0;
     this._runQueueCount = 0;
     this.initialReplicationComplete$ = undefined;
     this.recieved$ = undefined;
@@ -75,11 +73,9 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
     this.pull = pull;
     this.push = push;
     this.deletedFlag = deletedFlag;
-    this.lastPulledRevField = lastPulledRevField;
     this.live = live;
     this.liveInterval = liveInterval;
     this.retryTime = retryTime;
-    this.syncRevisions = syncRevisions;
     this.client = (0, _graphqlClient["default"])({
       url: url,
       headers: headers
@@ -203,18 +199,17 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
         while (1) {
           switch (_context3.prev = _context3.next) {
             case 0:
-              this._runCount = this._runCount + 1;
               willRetry = false;
 
               if (!this.push) {
-                _context3.next = 7;
+                _context3.next = 6;
                 break;
               }
 
-              _context3.next = 5;
+              _context3.next = 4;
               return this.runPush();
 
-            case 5:
+            case 4:
               ok = _context3.sent;
 
               if (!ok) {
@@ -224,16 +219,16 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
                 }, this.retryTime);
               }
 
-            case 7:
+            case 6:
               if (!this.pull) {
-                _context3.next = 12;
+                _context3.next = 11;
                 break;
               }
 
-              _context3.next = 10;
+              _context3.next = 9;
               return this.runPull();
 
-            case 10:
+            case 9:
               _ok = _context3.sent;
 
               if (!_ok) {
@@ -243,10 +238,10 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
                 }, this.retryTime);
               }
 
-            case 12:
+            case 11:
               return _context3.abrupt("return", willRetry);
 
-            case 13:
+            case 12:
             case "end":
               return _context3.stop();
           }
@@ -394,21 +389,16 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
           switch (_context5.prev = _context5.next) {
             case 0:
               _context5.next = 2;
-              return (0, _crawlingCheckpoint.getChangesSinceLastPushSequence)(this.collection, this.endpointHash, this.lastPulledRevField, this.push.batchSize, this.syncRevisions);
+              return (0, _crawlingCheckpoint.getChangesSinceLastPushSequence)(this.collection, this.endpointHash, this.push.batchSize);
 
             case 2:
               changes = _context5.sent;
               changesWithDocs = changes.results.map(function (change) {
                 var doc = change['doc'];
                 doc[_this5.deletedFlag] = !!change['deleted'];
+                delete doc._rev;
                 delete doc._deleted;
                 delete doc._attachments;
-                delete doc[_this5.lastPulledRevField];
-
-                if (!_this5.syncRevisions) {
-                  delete doc._rev;
-                }
-
                 doc = _this5.push.modifier(doc);
                 var seq = change.seq;
                 return {
@@ -439,7 +429,7 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
                 break;
               }
 
-              throw new Error(JSON.stringify(result.errors));
+              throw new Error(result.errors);
 
             case 17:
               this._subjects.send.next(changeWithDoc.doc);
@@ -526,37 +516,31 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
 
               toPouch._deleted = deletedValue;
               delete toPouch[this.deletedFlag];
+              primaryValue = toPouch._id;
+              pouchState = docsWithRevisions[primaryValue];
+              newRevision = (0, _helper.createRevisionForPulledDocument)(this.endpointHash, toPouch);
 
-              if (!this.syncRevisions) {
-                primaryValue = toPouch._id;
-                pouchState = docsWithRevisions[primaryValue];
-                newRevision = (0, _helper.createRevisionForPulledDocument)(this.endpointHash, toPouch);
+              if (pouchState) {
+                newRevisionHeight = pouchState.revisions.start + 1;
+                revisionId = newRevision;
+                newRevision = newRevisionHeight + '-' + newRevision;
+                toPouch._revisions = {
+                  start: newRevisionHeight,
+                  ids: pouchState.revisions.ids
+                };
 
-                if (pouchState) {
-                  newRevisionHeight = pouchState.revisions.start + 1;
-                  revisionId = newRevision;
-                  newRevision = newRevisionHeight + '-' + newRevision;
-                  toPouch._revisions = {
-                    start: newRevisionHeight,
-                    ids: pouchState.revisions.ids
-                  };
-
-                  toPouch._revisions.ids.unshift(revisionId);
-                } else {
-                  newRevision = '1-' + newRevision;
-                }
-
-                toPouch._rev = newRevision;
+                toPouch._revisions.ids.unshift(revisionId);
               } else {
-                toPouch[this.lastPulledRevField] = toPouch._rev;
+                newRevision = '1-' + newRevision;
               }
 
-              _context6.next = 7;
+              toPouch._rev = newRevision;
+              _context6.next = 11;
               return this.collection.pouch.bulkDocs([toPouch], {
                 new_edits: false
               });
 
-            case 7:
+            case 11:
               /**
                * because bulkDocs with new_edits: false
                * does not stream changes to the pouchdb,
@@ -573,10 +557,11 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
 
               delete originalDoc[this.deletedFlag];
               delete originalDoc._revisions;
+              originalDoc._rev = newRevision;
               cE = (0, _rxChangeEvent.changeEventfromPouchChange)(originalDoc, this.collection);
               this.collection.$emit(cE);
 
-            case 13:
+            case 18:
             case "end":
               return _context6.stop();
           }
@@ -618,8 +603,6 @@ function syncGraphQL(_ref2) {
       pull = _ref2.pull,
       push = _ref2.push,
       deletedFlag = _ref2.deletedFlag,
-      _ref2$lastPulledRevFi = _ref2.lastPulledRevField,
-      lastPulledRevField = _ref2$lastPulledRevFi === void 0 ? 'last_pulled_rev' : _ref2$lastPulledRevFi,
       _ref2$live = _ref2.live,
       live = _ref2$live === void 0 ? false : _ref2$live,
       _ref2$liveInterval = _ref2.liveInterval,
@@ -627,9 +610,7 @@ function syncGraphQL(_ref2) {
       _ref2$retryTime = _ref2.retryTime,
       retryTime = _ref2$retryTime === void 0 ? 1000 * 5 : _ref2$retryTime,
       _ref2$autoStart = _ref2.autoStart,
-      autoStart = _ref2$autoStart === void 0 ? true : _ref2$autoStart,
-      _ref2$syncRevisions = _ref2.syncRevisions,
-      syncRevisions = _ref2$syncRevisions === void 0 ? false : _ref2$syncRevisions;
+      autoStart = _ref2$autoStart === void 0 ? true : _ref2$autoStart;
   var collection = this; // fill in defaults for pull & push
 
   if (pull) {
@@ -642,7 +623,7 @@ function syncGraphQL(_ref2) {
 
 
   collection.watchForChanges();
-  var replicationState = new RxGraphQLReplicationState(collection, url, headers, pull, push, deletedFlag, lastPulledRevField, live, liveInterval, retryTime, syncRevisions);
+  var replicationState = new RxGraphQLReplicationState(collection, url, headers, pull, push, deletedFlag, live, liveInterval, retryTime);
   if (!autoStart) return replicationState; // run internal so .sync() does not have to be async
 
   var waitTillRun = waitForLeadership ? this.database.waitForLeadership() : (0, _util.promiseWait)(0);
@@ -698,7 +679,7 @@ function syncGraphQL(_ref2) {
          */
         var changeEventsSub = collection.$.subscribe(function (changeEvent) {
           if (replicationState.isStopped()) return;
-          var rev = changeEvent.data.v._rev;
+          var rev = changeEvent.documentData._rev;
 
           if (rev && !(0, _helper.wasRevisionfromPullReplication)(replicationState.endpointHash, rev)) {
             replicationState.run();
@@ -720,10 +701,10 @@ var prototypes = {
   }
 };
 exports.prototypes = prototypes;
-var _default = {
+var RxDBReplicationGraphQLPlugin = {
   rxdb: rxdb,
   prototypes: prototypes
 };
-exports["default"] = _default;
+exports.RxDBReplicationGraphQLPlugin = RxDBReplicationGraphQLPlugin;
 
 //# sourceMappingURL=index.js.map

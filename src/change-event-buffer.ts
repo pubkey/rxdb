@@ -6,7 +6,7 @@
 import {
     Subscription
 } from 'rxjs';
-import {
+import type {
     RxCollection
 } from './types';
 import {
@@ -94,9 +94,12 @@ export class ChangeEventBuffer {
      * this function reduces the events to the last ChangeEvent of each doc
      */
     reduceByLastOfDoc(changeEvents: RxChangeEvent[]): RxChangeEvent[] {
+        return changeEvents.slice(0);
+        // TODO the old implementation was wrong
+        // because it did not correctly reassigned the previousData of the changeevents
         const docEventMap: any = {};
         changeEvents.forEach(changeEvent => {
-            docEventMap[changeEvent.data.doc] = changeEvent;
+            docEventMap[changeEvent.documentId] = changeEvent;
         });
         return Object.values(docEventMap);
     }
@@ -112,7 +115,7 @@ export class ChangeEventBuffer {
         while (t > 0) {
             t--;
             const cE = this.buffer[t];
-            if (cE.data.v && cE.data.v._rev === revision) return true;
+            if (cE.documentData && cE.documentData._rev === revision) return true;
         }
         return false;
     }
@@ -124,6 +127,6 @@ export class ChangeEventBuffer {
 
 export function createChangeEventBuffer(
     collection: RxCollection
-    ) {
+) {
     return new ChangeEventBuffer(collection);
 }

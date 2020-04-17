@@ -18,35 +18,36 @@ import heroSchema from '../schemas/Hero.schema';
 /**
  * custom build
  */
-import RxDB from 'rxdb/plugins/core';
+import {
+    createRxDatabase,
+    addRxPlugin
+} from 'rxdb/plugins/core';
 
 // import modules
-import RxDBSchemaCheckModule from 'rxdb/plugins/schema-check';
-import RxDBErrorMessagesModule from 'rxdb/plugins/error-messages';
+import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 
 if (process.env.NODE_ENV === 'development') {
-    // in dev-mode we show full error-messages
-    RxDB.plugin(RxDBErrorMessagesModule);
-
-    // schema-checks should be used in dev-mode only
-    RxDB.plugin(RxDBSchemaCheckModule);
+    // in dev-mode we add the dev-mode plugin
+    // which does many checks and adds full error messages
+    addRxPlugin(RxDBDevModePlugin);
 }
 
-import RxDBValidateModule from 'rxdb/plugins/validate';
-RxDB.plugin(RxDBValidateModule);
+import { RxDBValidatePlugin } from 'rxdb/plugins/validate';
+addRxPlugin(RxDBValidatePlugin);
 
-import RxDBLeaderElectionModule from 'rxdb/plugins/leader-election';
-RxDB.plugin(RxDBLeaderElectionModule);
+import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
+addRxPlugin(RxDBLeaderElectionPlugin);
 
-import RxDBReplicationModule from 'rxdb/plugins/replication';
-RxDB.plugin(RxDBReplicationModule);
+import { RxDBReplicationPlugin } from 'rxdb/plugins/replication';
+addRxPlugin(RxDBReplicationPlugin);
+
 // always needed for replication with the node-server
 import * as PouchdbAdapterHttp from 'pouchdb-adapter-http';
-RxDB.plugin(PouchdbAdapterHttp);
+addRxPlugin(PouchdbAdapterHttp);
 
 
 import * as PouchdbAdapterIdb from 'pouchdb-adapter-idb';
-RxDB.plugin(PouchdbAdapterIdb);
+addRxPlugin(PouchdbAdapterIdb);
 const useAdapter = 'idb';
 
 
@@ -75,10 +76,9 @@ if (window.location.hash === '#nosync') { doSync = false; }
  */
 async function _create(): Promise<RxHeroesDatabase> {
     console.log('DatabaseService: creating database..');
-    const db = await RxDB.create<RxHeroesCollections>({
+    const db = await createRxDatabase<RxHeroesCollections>({
         name: 'heroes',
         adapter: useAdapter,
-        queryChangeDetection: true
         // password: 'myLongAndStupidPassword' // no password needed
     });
     console.log('DatabaseService: created database');
@@ -99,7 +99,13 @@ async function _create(): Promise<RxHeroesDatabase> {
     console.log('DatabaseService: add hooks');
     db.collections.heroes.preInsert((docObj: RxHeroDocumentType) => {
         const color = docObj.color;
-        return db.collections.heroes.findOne({ color }).exec()
+        return db.collections.heroes
+            .findOne({
+                selector: {
+                    color
+                }
+            })
+            .exec()
             .then((has: RxHeroDocument | null) => {
                 if (has != null) {
                     alert('another hero already has the color ' + color);

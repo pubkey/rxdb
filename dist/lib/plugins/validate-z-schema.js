@@ -5,7 +5,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = exports.hooks = exports.prototypes = exports.rxdb = void 0;
+exports.RxDBValidateZSchemaPlugin = exports.hooks = exports.prototypes = exports.rxdb = void 0;
 
 var _zSchema = _interopRequireDefault(require("z-schema"));
 
@@ -37,7 +37,7 @@ function _getValidator(rxSchema) {
     var validator = new _zSchema["default"]();
 
     var validatorFun = function validatorFun(obj) {
-      validator.validate(obj, rxSchema.jsonID);
+      validator.validate(obj, rxSchema.jsonSchema);
       return validator;
     };
 
@@ -72,7 +72,7 @@ var validate = function validate(obj) {
     throw (0, _rxError.newRxError)('VD2', {
       errors: formattedZSchemaErrors,
       obj: obj,
-      schema: this.jsonID
+      schema: this.jsonSchema
     });
   }
 };
@@ -100,11 +100,11 @@ var hooks = {
   createRxSchema: runAfterSchemaCreated
 };
 exports.hooks = hooks;
-var _default = {
+var RxDBValidateZSchemaPlugin = {
   rxdb: rxdb,
   prototypes: prototypes,
   hooks: hooks
 };
-exports["default"] = _default;
+exports.RxDBValidateZSchemaPlugin = RxDBValidateZSchemaPlugin;
 
 //# sourceMappingURL=validate-z-schema.js.map

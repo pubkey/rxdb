@@ -4,12 +4,10 @@
  * @link https://github.com/lgandecki/modifyjs
  */
 import modifyjs from 'modifyjs';
-import {
-    clone
-} from '../util.js';
-import {
+import type {
     RxDocument,
-    RxQuery
+    RxQuery,
+    RxPlugin
 } from '../types';
 
 export function update(this: RxDocument, updateObj: any) {
@@ -48,7 +46,7 @@ export const prototypes = {
     }
 };
 
-export default {
+export const RxDBUpdatePlugin: RxPlugin = {
     rxdb,
     prototypes
 };

@@ -16,8 +16,7 @@
         "esModuleInterop": true,
 
         "outDir": "./dist/typings",
-        "noEmit": false,
-        "emitDeclarationOnly": true,
+        "noEmit": true,
         "declaration": true,
 
         "typeRoots": [
@@ -29,6 +28,7 @@
         "tabSize": 2
     },
     "include": [
+        "test",
         "src"
     ],
     "exclude": [

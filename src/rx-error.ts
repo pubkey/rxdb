@@ -3,7 +3,7 @@
  */
 
 import overwritable from './overwritable';
-import {
+import type {
     RxErrorParameters
 } from './types';
 
@@ -59,7 +59,7 @@ export class RxError extends Error {
         this.rxdb = true; // tag them as internal
     }
     get name(): string {
-        return 'RxError';
+        return 'RxError (' + this.code + ')';
     }
     toString(): string {
         return this.message;
@@ -87,7 +87,7 @@ export class RxTypeError extends TypeError {
         this.rxdb = true; // tag them as internal
     }
     get name(): string {
-        return 'RxError';
+        return 'RxTypeError (' + this.code + ')';
     }
     toString(): string {
         return this.message;
@@ -96,9 +96,6 @@ export class RxTypeError extends TypeError {
         return true;
     }
 }
-
-// const errorKeySearchLink = key => 'https://github.com/pubkey/rxdb/search?q=' + key + '+path%3Asrc%2Fmodules';
-// const verboseErrorModuleLink = 'https://pubkey.github.io/rxdb/custom-builds.html#verbose-error';
 
 export function newRxError(
     code: string,

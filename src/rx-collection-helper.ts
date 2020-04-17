@@ -1,8 +1,7 @@
-import {
+import type {
     RxCollection
 } from './types';
 import {
-    clone,
     generateId
 } from './util';
 import {

@@ -7,7 +7,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.spawnServer = spawnServer;
 exports.onDestroy = onDestroy;
-exports["default"] = exports.overwritable = exports.hooks = exports.prototypes = exports.rxdb = void 0;
+exports.RxDBServerPlugin = exports.overwritable = exports.hooks = exports.prototypes = exports.rxdb = void 0;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
@@ -21,16 +21,14 @@ var _pouchDb = require("../pouch-db");
 
 var _rxError = require("../rx-error");
 
-var _core = _interopRequireDefault(require("../core"));
+var _core = require("../core");
 
-var _replication = _interopRequireDefault(require("./replication"));
+var _replication = require("./replication");
 
-var _watchForChanges = _interopRequireDefault(require("./watch-for-changes"));
+var _watchForChanges = require("./watch-for-changes");
 
-_core["default"].plugin(_replication["default"]);
-
-_core["default"].plugin(_watchForChanges["default"]);
-
+(0, _core.addRxPlugin)(_replication.RxDBReplicationPlugin);
+(0, _core.addRxPlugin)(_watchForChanges.RxDBWatchForChangesPlugin);
 var ExpressPouchDB;
 
 try {
@@ -197,9 +195,11 @@ function ensureNoMoreCollections(args) {
 
 
 function onDestroy(db) {
-  if (SERVERS_OF_DB.has(db)) SERVERS_OF_DB.get(db).forEach(function (server) {
-    return server.close();
-  });
+  if (SERVERS_OF_DB.has(db)) {
+    SERVERS_OF_DB.get(db).forEach(function (server) {
+      return server.close();
+    });
+  }
 }
 
 var rxdb = true;
@@ -217,13 +217,12 @@ var hooks = {
 exports.hooks = hooks;
 var overwritable = {};
 exports.overwritable = overwritable;
-var _default = {
+var RxDBServerPlugin = {
   rxdb: rxdb,
   prototypes: prototypes,
   overwritable: overwritable,
-  hooks: hooks,
-  spawnServer: spawnServer
+  hooks: hooks
 };
-exports["default"] = _default;
+exports.RxDBServerPlugin = RxDBServerPlugin;
 
 //# sourceMappingURL=server.js.map

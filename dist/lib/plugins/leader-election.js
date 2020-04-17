@@ -3,14 +3,19 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.create = create;
-exports["default"] = exports.overwritable = exports.prototypes = exports.rxdb = exports.LeaderElector = void 0;
+exports.getForDatabase = getForDatabase;
+exports.isLeader = isLeader;
+exports.waitForLeadership = waitForLeadership;
+exports.onDestroy = onDestroy;
+exports.RxDBLeaderElectionPlugin = exports.prototypes = exports.rxdb = exports.LeaderElector = void 0;
 
 var _broadcastChannel = require("broadcast-channel");
 
 /**
  * this plugin adds the leader-election-capabilities to rxdb
  */
+var LEADER_ELECTORS_OF_DB = new WeakMap();
+
 var LeaderElector = /*#__PURE__*/function () {
   function LeaderElector(database) {
     this.destroyed = false;
@@ -47,25 +52,59 @@ var LeaderElector = /*#__PURE__*/function () {
 
 exports.LeaderElector = LeaderElector;
 
-function create(database) {
-  var elector = new LeaderElector(database);
-  return elector;
+function getForDatabase() {
+  if (!LEADER_ELECTORS_OF_DB.has(this)) {
+    LEADER_ELECTORS_OF_DB.set(this, new LeaderElector(this));
+  }
+
+  return LEADER_ELECTORS_OF_DB.get(this);
+}
+
+function isLeader() {
+  if (!this.multiInstance) {
+    return true;
+  }
+
+  return this.leaderElector().isLeader;
+}
+
+function waitForLeadership() {
+  if (!this.multiInstance) {
+    return Promise.resolve(true);
+  } else {
+    return this.leaderElector().waitForLeadership();
+  }
+}
+/**
+ * runs when the database gets destroyed
+ */
+
+
+function onDestroy(db) {
+  var has = LEADER_ELECTORS_OF_DB.get(db);
+
+  if (has) {
+    has.destroy();
+  }
 }
 
 var rxdb = true;
 exports.rxdb = rxdb;
-var prototypes = {};
-exports.prototypes = prototypes;
-var overwritable = {
-  createLeaderElector: create
+var prototypes = {
+  RxDatabase: function RxDatabase(proto) {
+    proto.leaderElector = getForDatabase;
+    proto.isLeader = isLeader;
+    proto.waitForLeadership = waitForLeadership;
+  }
 };
-exports.overwritable = overwritable;
-var plugin = {
+exports.prototypes = prototypes;
+var RxDBLeaderElectionPlugin = {
   rxdb: rxdb,
   prototypes: prototypes,
-  overwritable: overwritable
+  hooks: {
+    preDestroyRxDatabase: onDestroy
+  }
 };
-var _default = plugin;
-exports["default"] = _default;
+exports.RxDBLeaderElectionPlugin = RxDBLeaderElectionPlugin;
 
 //# sourceMappingURL=leader-election.js.map

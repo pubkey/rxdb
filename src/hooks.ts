@@ -6,6 +6,15 @@
  * hook-functions that can be extended by the plugin
  */
 export const HOOKS: { [k: string]: any[] } = {
+    /**
+     * functions that run before the database is created
+     */
+    preCreateRxDatabase: [],
+    /**
+     * runs after the database is created and prepared
+     * but before the instance is returned to the user
+     * @async
+     */
     createRxDatabase: [],
     preCreateRxCollection: [],
     createRxCollection: [],
@@ -67,6 +76,6 @@ export function runAsyncPluginHooks(hookKey: string, obj: any): Promise<any> {
 /**
  * used in tests to remove hooks
  */
-export function clearHook(type: string, fun: Function) {
+export function _clearHook(type: string, fun: Function) {
     HOOKS[type] = HOOKS[type].filter(h => h !== fun);
 }

@@ -13,7 +13,7 @@
         * [adapter](./rx-database.md#adapter)
         * [password](./rx-database.md#password)
         * [multiInstance](./rx-database.md#multiinstance)
-        * [queryChangeDetection](./rx-database.md#queryChangeDetection)
+        * [eventReduce](./rx-database.md#eventreduce)
         * [ignoreDuplicate](./rx-database.md#ignoreduplicate)
         * [pouchSettings](./rx-database.md#pouchSettings)
     * [Functions](./rx-database.md#functions)
@@ -106,7 +106,7 @@
 
 * [Replication GraphQL](./replication-graphql.md)
 
-* [QueryChangeDetection](./query-change-detection.md)
+* [EventReduce](./event-reduce.md)
 
 * [InMemory](./in-memory.md)
 

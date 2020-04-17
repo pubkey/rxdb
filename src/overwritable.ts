@@ -3,13 +3,18 @@
  */
 
 import {
-    RxDatabase
-} from './types';
-import {
     pluginMissing
 } from './util';
 
-const funs: { [k: string]: Function } = {
+const funs = {
+    /**
+     * if this method is overwritte with one
+     * that returns true, we do additional checks
+     * which help the developer but have bad performance
+     */
+    isDevMode(): boolean {
+        return false;
+    },
     /**
      * validates if a password can be used
      * @overwritten by plugin (optional)
@@ -24,12 +29,6 @@ const funs: { [k: string]: Function } = {
     createKeyCompressor(_rxSchema: any): any {
         throw pluginMissing('key-compression');
     },
-    /**
-     * creates a leader-elector for the given database
-     */
-    createLeaderElector(_database: RxDatabase | RxDatabase): any {
-        throw pluginMissing('leader-election');
-    },
 
     /**
      * checks if the given adapter can be used
@@ -43,10 +42,11 @@ const funs: { [k: string]: Function } = {
     tunnelErrorMessage(message: string): string {
         // TODO better text with link
         return `RxDB Error-Code ${message}.
-        - To find out what this means, use the error-messages-plugin https://pubkey.github.io/rxdb/custom-build.html#error-messages
+        - To find out what this means, use the dev-mode-plugin https://pubkey.github.io/rxdb/custom-build.html#dev-mode
         - Or search for this code https://github.com/pubkey/rxdb/search?q=${message}
         `;
     }
 };
 
+// TODO no default exports
 export default funs;

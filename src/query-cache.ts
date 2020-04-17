@@ -5,7 +5,7 @@
 import {
     Subscription
 } from 'rxjs';
-import {
+import type {
     RxQuery
 } from './types';
 
@@ -22,8 +22,9 @@ export class QueryCache {
      */
     getByQuery(query: RxQuery): RxQuery {
         const stringRep = query.toString();
-        if (!this._map.has(stringRep))
+        if (!this._map.has(stringRep)) {
             this._map.set(stringRep, query);
+        }
         return this._map.get(stringRep) as RxQuery;
     }
 

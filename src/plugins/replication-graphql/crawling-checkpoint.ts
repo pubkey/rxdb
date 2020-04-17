@@ -7,7 +7,7 @@ import {
     getDocFromPouchOrNull,
     wasRevisionfromPullReplication
 } from './helper';
-import {
+import type {
     RxCollection
 } from '../../types';
 
@@ -77,7 +77,17 @@ export async function getChangesSinceLastPushSequence(
     lastPulledRevField: string,
     batchSize = 10,
     syncRevisions: boolean = false,
-): Promise<{ results: { id: string, seq: number, changes: { rev: string }[] }[], last_seq: number }> {
+): Promise<{
+    results: {
+        id: string,
+        seq: number,
+        changes: {
+            rev: string
+        }[],
+        doc: any
+    }[],
+    last_seq: number
+}> {
     let lastPushSequence = await getLastPushSequence(
         collection,
         endpointHash
