@@ -18,7 +18,8 @@ import GraphQLClient from 'graphql-client';
 
 import {
     promiseWait,
-    flatClone
+    flatClone,
+    now
 } from '../../util';
 
 import {
@@ -400,7 +401,8 @@ export class RxGraphQLReplicationState {
 
         const cE = changeEventfromPouchChange(
             originalDoc,
-            this.collection
+            this.collection,
+            now()
         );
         this.collection.$emit(cE);
     }
