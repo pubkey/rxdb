@@ -378,12 +378,11 @@ console.log(myDoc.firstName);
 
 <details>
 <summary>
-  <b>QueryChangeDetection</b>
+  <b>EventReduce</b>
   <p>
-    Similar to Meteors <a href="https://github.com/meteor/docs/blob/version-NEXT/long-form/oplog-observe-driver.md">oplog-observe-driver</a>,
-    RxDB has a QueryChangeDetection to optimize observed or reused queries. This makes sure that when you update/insert/remove documents,
+    One big benefit of having a realtime database is that big performance optimizations can be done when the database knows a query is observed and the updated results are needed continuously. RxDB internally uses the <a href="https://github.com/pubkey/event-reduce">Event-Reduce algorithm</a>. This makes sure that when you update/insert/remove documents,
     the query does not have to re-run over the whole database but the new results will be calculated from the events. This creates a huge performance-gain
-    with zero cost. The QueryChangeDetection works internally and is currently in <b>beta</b> (disabled by default).
+    with zero cost.
   </p>
 </summary>
 

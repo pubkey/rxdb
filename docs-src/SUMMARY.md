@@ -106,8 +106,6 @@
 
 * [Replication GraphQL](./replication-graphql.md)
 
-* [EventReduce](./event-reduce.md)
-
 * [InMemory](./in-memory.md)
 
 * [LocalDocuments](./rx-local-document.md)

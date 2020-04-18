@@ -1,11 +1,13 @@
 # QueryChangeDetection
 
-Similar to Meteors [oplog-observe-driver](https://github.com/meteor/docs/blob/version-NEXT/long-form/oplog-observe-driver.md),
-RxDB has a QueryChangeDetection to optimize observed or reused queries. This makes sure that when you update/insert/remove documents, the query does not have to re-run over the whole database but the new results will be calculated from the events. This creates a huge performance gain with zero cost.
 
 ## NOTICE:
-QueryChangeDetection is currently in **beta** and disabled by default.
-You can enable it by passing the `queryChangeDetection`-field when creating a database.
+Since version [9.0.0](https://github.com/pubkey/rxdb/blob/master/orga/releases/9.0.0.md) RxDB is using the [EventReduce algorithm](https://github.com/pubkey/event-reduce) instead of the QueryChangeDetection. So this document is **outdated**.
+
+
+
+Similar to Meteors [oplog-observe-driver](https://github.com/meteor/docs/blob/version-NEXT/long-form/oplog-observe-driver.md),
+RxDB has a QueryChangeDetection to optimize observed or reused queries. This makes sure that when you update/insert/remove documents, the query does not have to re-run over the whole database but the new results will be calculated from the events. This creates a huge performance gain with zero cost.
 
 ```js
 const db = await createRxDatabase({

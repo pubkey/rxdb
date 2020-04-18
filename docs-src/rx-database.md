@@ -54,7 +54,8 @@ When you create more than one instance of the same database in a single javascri
 
 ### eventReduce
 `(optional=true)`
-If set to true, this enables the [EventReduce Algorithm](./event-reduce.md) for the database.
+
+One big benefit of having a realtime database is that big performance optimizations can be done when the database knows a query is observed and the updated results are needed continuously. RxDB uses the [EventReduce Algorithm](https://github.com/pubkey/event-reduce) to optimize observer or recurring queries.
 
 ### ignoreDuplicate
 `(optional=false)`

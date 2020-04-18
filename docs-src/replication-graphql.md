@@ -342,4 +342,4 @@ An `Observable` that emits `true` when the replication is doing something, `fals
 
 --------------------------------------------------------------------------------
 
-If you are new to RxDB, you should continue [here](./query-change-detection.md)
+If you are new to RxDB, you should continue [here](./in-memory.md)
