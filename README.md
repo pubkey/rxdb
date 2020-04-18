@@ -105,9 +105,8 @@ npm install rxjs --save
 import { createRxDatabase } from 'rxdb';
 const db = await createRxDatabase({
     name: 'heroesdb',
-    adapter: 'websql',
-    password: 'myLongAndStupidPassword', // optional
-    multiInstance: true                  // default: true
+    adapter: 'indexeddb',
+    password: 'myLongAndStupidPassword' // optional
   });                                                       // create database
 
 await db.collection({name: 'heroes', schema: mySchema});    // create collection
@@ -284,7 +283,7 @@ RxDB.plugin(require('pouchdb-adapter-idb'));
 // this creates a database with the indexeddb-adapter
 const database = await RxDB.create({
     name: 'mydatabase',
-    adapter: 'idb' // the name of your adapter
+    adapter: 'indexeddb' // the name of your adapter
 });
 ```
 
@@ -347,7 +346,7 @@ In this example the leader is marked with the crown ♛
   <b>Key-Compression</b>
   <p>
 
-Depending on which adapter and in which environment you use RxDB, client-side storage is [limited](https://pouchdb.com/2014/10/26/10-things-i-learned-from-reading-and-writing-the-pouchdb-source.html) in some way or the other. To save disc-space, RxDB has an internal schema-based key-compression to minimize the size of saved documents.</p>
+Depending on which adapter and in which environment you use RxDB, client-side storage is [limited](https://pouchdb.com/2014/10/26/10-things-i-learned-from-reading-and-writing-the-pouchdb-source.html) in some way or the other. To save disc-space, RxDB uses a schema based [keycompression](https://github.com/pubkey/jsonschema-key-compression) to minimize the size of saved documents. This saves about 40% of used storage.</p>
 
 </summary>
 
@@ -361,7 +360,7 @@ await myCollection.insert({
   stupidLongKey: 5
 });
 
-// RxDB will internally transform it to
+// key compression will internally transform it to
 {
   '|a': 'foo'
   '|b':  'bar'
@@ -369,7 +368,7 @@ await myCollection.insert({
 }
 
 // so instead of 46 chars, the compressed-version has only 28
-// the compression works internally, so you can of course still access values via the original key.names
+// the compression works internally, so you can of course still access values via the original key.names and run normal queries.
 console.log(myDoc.firstName);
 // 'foo'
 ```
@@ -407,22 +406,10 @@ anyUser.loggedIn = false;
 await anyUser.save();
 ```
 
-But not with the QueryChangeDetection enabled.
-Now, when one user logs off, it will calculate the new results from the current results plus the RxChangeEvent. This often can be done in-memory without making IO-requests to the storage-engine. The QueryChangeDetection not only works on subscribed queries, but also when you do multiple `.exec()`'s on the same query.
+But not with the EventReduce.
+Now, when one user logs off, it will calculate the new results from the current results plus the RxChangeEvent. This often can be done in-memory without making IO-requests to the storage-engine. EventReduce not only works on subscribed queries, but also when you do multiple `.exec()`'s on the same query.
 
 </details>
-
-## Browser support
-
-All major evergreen browsers and IE11 are supported. Tests automatically run against Firefox and Chrome, and manually in a VirtualBox for IE11 and Edge.
-
-We soon will switch to [Browserstack](https://www.browserstack.com/) and run automated tests in all major browsers<br/>
-
-<div align="center">
-    <img src="https://user-images.githubusercontent.com/7760/34738829-7327ddc4-f561-11e7-97e2-2fe0474eaf05.png" width="280px" />
-</div>
-
-As RxDB heavily relies on PouchDB, see [their browser support](https://pouchdb.com/learn.html#browser_support) for more information. Also do keep in mind that different browsers have different storage limits, especially on mobile devices.
 
 ## Getting started
 
@@ -437,7 +424,7 @@ Get started now by [reading the docs](https://rxdb.info/) or exploring the [exam
 -   Follow RxDB on [twitter](https://twitter.com/intent/follow?screen_name=rxdbjs) to not miss the latest enhancements.
 -   Join the chat on [gitter](https://gitter.im/pubkey/rxdb) for discussion.
 
-# Thank you
+## Thank you
 
 A big **Thank you** to every [contributor](https://github.com/pubkey/rxdb/graphs/contributors) of this project.
 
