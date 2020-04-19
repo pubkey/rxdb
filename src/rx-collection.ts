@@ -430,7 +430,7 @@ export class RxCollectionBase<
                             rxDocuments.forEach(doc => {
                                 const emitEvent = createInsertEvent(
                                     this as any,
-                                    doc,
+                                    doc.toJSON(true),
                                     startTime,
                                     endTime,
                                     docsMap.get(doc.primary)
