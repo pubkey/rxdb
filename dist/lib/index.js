@@ -66,6 +66,6 @@ var _queryBuilder = require("./plugins/query-builder");
 (0, _core.addRxPlugin)(_inMemory.RxDBInMemoryPlugin);
 (0, _core.addRxPlugin)(_attachments.RxDBAttachmentsPlugin);
 (0, _core.addRxPlugin)(_localDocuments.RxDBLocalDocumentsPlugin);
-(0, _core.addRxPlugin)(_queryBuilder.RxDBQueryBuilderPlugin); // TODO how to do 'export type * ..' ?
+(0, _core.addRxPlugin)(_queryBuilder.RxDBQueryBuilderPlugin); // re-export things from core
 
 //# sourceMappingURL=index.js.map
