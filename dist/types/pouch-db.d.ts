@@ -26,4 +26,4 @@ export declare function pouchReplicationFunction(pouch: PouchDBInstance, { pull,
     push?: boolean | undefined;
 }): any;
 export declare function isInstanceOf(obj: any): boolean;
-export declare const PouchDB: PouchDB.Static;
+export declare const PouchDB: any;
