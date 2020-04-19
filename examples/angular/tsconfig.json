@@ -7,10 +7,13 @@
     "declaration": false,
     "downlevelIteration": true,
     "experimentalDecorators": true,
+
+    // do not set this to true!, RxDB must work without it
+    "allowSyntheticDefaultImports": false,
+
     "module": "esnext",
     "moduleResolution": "node",
     "importHelpers": true,
-    "allowSyntheticDefaultImports": true,
     "strict": true,
     "target": "es2015",
     "typeRoots": [

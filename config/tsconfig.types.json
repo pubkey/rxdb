@@ -1,0 +1,17 @@
+{
+  "// description": "this tsconfig is used when the types are generated",
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../dist/types",
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "declarationMap": false,
+    "stripInternal": true,
+    "noEmit": false,
+    "types": []
+  },
+  "include": [
+    "../src"
+  ],
+  "exclude": []
+}

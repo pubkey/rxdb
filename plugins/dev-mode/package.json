@@ -3,5 +3,5 @@
   "main": "../../dist/lib/plugins/dev-mode/index.js",
   "jsnext:main": "../../dist/es/plugins/dev-mode/index.js",
   "module": "../../dist/es/plugins/dev-mode/index.js",
-  "types": "../../src/plugins/dev-mode/index.ts"
+  "types": "../../dist/types/plugins/dev-mode/index.d.ts"
 }

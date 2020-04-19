@@ -2,7 +2,7 @@ import AsyncTestUtil from 'async-test-util';
 
 import {
     RxJsonSchema
-} from '../../src/types';
+} from '../../';
 import {
     HumanDocumentType,
     SimpleHumanV3DocumentType,

@@ -3,5 +3,5 @@
   "main": "../../dist/lib/plugins/query-builder/index.js",
   "jsnext:main": "../../dist/es/plugins/query-builder/index.js",
   "module": "../../dist/es/plugins/query-builder/index.js",
-  "types": "../../src/plugins/query-builder/index.ts"
+  "types": "../../dist/types/plugins/query-builder/index.d.ts"
 }
