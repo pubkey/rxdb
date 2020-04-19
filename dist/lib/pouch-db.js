@@ -13,6 +13,8 @@ exports.pouchReplicationFunction = pouchReplicationFunction;
 exports.isInstanceOf = isInstanceOf;
 exports.PouchDB = void 0;
 
+var _pouchdbCore = _interopRequireDefault(require("pouchdb-core"));
+
 var _pouchdbFind = _interopRequireDefault(require("pouchdb-find"));
 
 var _rxError = require("./rx-error");
@@ -23,16 +25,15 @@ var _rxError = require("./rx-error");
  * Adapters can be found here:
  * @link https://github.com/pouchdb/pouchdb/tree/master/packages/node_modules
  */
-var PouchDBCore = require('pouchdb-core'); // pouchdb-find
-
-
-PouchDBCore.plugin(_pouchdbFind["default"]);
+// pouchdb-find
+_pouchdbCore["default"].plugin(_pouchdbFind["default"]);
 /*
 // comment in to debug
 const pouchdbDebug = require('pouchdb-debug');
 PouchDB.plugin(pouchdbDebug);
 PouchDB.debug.enable('*');
 */
+
 
 /**
  * get the number of all undeleted documents
@@ -137,10 +138,10 @@ function pouchReplicationFunction(pouch, _ref) {
 }
 
 function isInstanceOf(obj) {
-  return obj instanceof PouchDBCore;
+  return obj instanceof _pouchdbCore["default"];
 }
 
-var PouchDB = PouchDBCore;
+var PouchDB = _pouchdbCore["default"];
 exports.PouchDB = PouchDB;
 
 //# sourceMappingURL=pouch-db.js.map

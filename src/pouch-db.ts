@@ -4,7 +4,7 @@
  * Adapters can be found here:
  * @link https://github.com/pouchdb/pouchdb/tree/master/packages/node_modules
  */
-const PouchDBCore = require('pouchdb-core');
+import PouchDBCore from 'pouchdb-core';
 
 // pouchdb-find
 import PouchDBFind from 'pouchdb-find';
@@ -141,4 +141,4 @@ export function isInstanceOf(obj: any) {
     return obj instanceof PouchDBCore;
 }
 
-export const PouchDB = PouchDBCore;
+export const PouchDB: any = PouchDBCore as any;
