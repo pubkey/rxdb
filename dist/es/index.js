@@ -34,8 +34,7 @@ addRxPlugin(RxDBAttachmentsPlugin);
 import { RxDBLocalDocumentsPlugin } from './plugins/local-documents';
 addRxPlugin(RxDBLocalDocumentsPlugin);
 import { RxDBQueryBuilderPlugin } from './plugins/query-builder';
-addRxPlugin(RxDBQueryBuilderPlugin); // TODO how to do 'export type * ..' ?
+addRxPlugin(RxDBQueryBuilderPlugin); // re-export things from core
 
-// re-export things from core
 export * from './core';
 //# sourceMappingURL=index.js.map

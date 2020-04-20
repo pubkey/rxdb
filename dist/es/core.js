@@ -24,5 +24,5 @@ export { _clearHook // used in tests
 } from './hooks';
 export { createCrypter // used in tests
 } from './crypter';
-export * from './util';
+export * from './util'; // TODO how to do 'export type * ..' ?
 //# sourceMappingURL=core.js.map

@@ -816,7 +816,7 @@ var _queryBuilder = require("./plugins/query-builder");
 (0, _core.addRxPlugin)(_inMemory.RxDBInMemoryPlugin);
 (0, _core.addRxPlugin)(_attachments.RxDBAttachmentsPlugin);
 (0, _core.addRxPlugin)(_localDocuments.RxDBLocalDocumentsPlugin);
-(0, _core.addRxPlugin)(_queryBuilder.RxDBQueryBuilderPlugin); // TODO how to do 'export type * ..' ?
+(0, _core.addRxPlugin)(_queryBuilder.RxDBQueryBuilderPlugin); // re-export things from core
 
 
 },{"./core":3,"./plugins/adapter-check":11,"./plugins/attachments":12,"./plugins/dev-mode":18,"./plugins/encryption":20,"./plugins/in-memory":21,"./plugins/json-dump":22,"./plugins/key-compression":23,"./plugins/leader-election":24,"./plugins/local-documents":25,"./plugins/migration":27,"./plugins/query-builder":28,"./plugins/replication":31,"./plugins/update":32,"./plugins/validate":33,"./plugins/watch-for-changes":34}],9:[function(require,module,exports){
@@ -5864,7 +5864,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
           }); // emit events
 
           rxDocuments.forEach(function (doc) {
-            var emitEvent = (0, _rxChangeEvent.createInsertEvent)(_this6, doc, startTime, endTime, docsMap.get(doc.primary));
+            var emitEvent = (0, _rxChangeEvent.createInsertEvent)(_this6, doc.toJSON(true), startTime, endTime, docsMap.get(doc.primary));
 
             _this6.$emit(emitEvent);
           });
