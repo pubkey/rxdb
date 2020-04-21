@@ -325,7 +325,7 @@ var RxQueryBase = /*#__PURE__*/function () {
          */
 
 
-        var changeEvents$ = this.collection.docChanges$.pipe((0, _operators.tap)(function () {
+        var changeEvents$ = this.collection.$.pipe((0, _operators.tap)(function () {
           return _ensureEqual(_this3);
         }), (0, _operators.filter)(function () {
           return false;

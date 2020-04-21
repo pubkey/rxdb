@@ -61,8 +61,7 @@ export var KeyCompressor = /*#__PURE__*/function () {
     key: "table",
     get: function get() {
       var jsonSchema = this.schema.normalized;
-      var table = createCompressionTable(jsonSchema, DEFAULT_COMPRESSION_FLAG, [this.schema.primaryPath, '_id', // TODO do we need _id here?
-      '_rev', '_attachments']);
+      var table = createCompressionTable(jsonSchema, DEFAULT_COMPRESSION_FLAG, [this.schema.primaryPath, '_rev', '_attachments']);
       return overwriteGetterForCaching(this, 'table', table);
     }
   }]);

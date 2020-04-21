@@ -12,6 +12,7 @@ import { requestIdleCallbackIfAvailable } from '../util';
  * so we can reuse them when multiple collections have the same schema
  */
 var VALIDATOR_CACHE = new Map();
+var ajv = new Ajv();
 /**
  * returns the parsed validator from ajv
  */
@@ -20,8 +21,6 @@ export function _getValidator(rxSchema) {
   var hash = rxSchema.hash;
 
   if (!VALIDATOR_CACHE.has(hash)) {
-    var ajv = new Ajv(); // TODO should we reuse this instance?
-
     var validator = ajv.compile(rxSchema.jsonSchema);
     VALIDATOR_CACHE.set(hash, validator);
   }

@@ -5,8 +5,7 @@ export declare class RxStoragePouchDbClass implements RxStorage<PouchDBInstance>
     adapter: any;
     pouchSettings: PouchSettings;
     name: string;
-    constructor(adapter: any, // TODO are there types for pouchdb adapters?
-    pouchSettings?: PouchSettings);
+    constructor(adapter: any, pouchSettings?: PouchSettings);
     getSortComparator<RxDocType>(primaryKey: string, query: MangoQuery<RxDocType>): SortComparator<RxDocType>;
     /**
      * @link https://github.com/pouchdb/pouchdb/blob/master/packages/node_modules/pouchdb-selector-core/src/matches-selector.js

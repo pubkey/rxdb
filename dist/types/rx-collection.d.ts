@@ -31,7 +31,6 @@ export declare class RxCollectionBase<RxDocumentType = {
     get insert$(): Observable<RxChangeEventInsert<RxDocumentType>>;
     get update$(): Observable<RxChangeEventUpdate<RxDocumentType>>;
     get remove$(): Observable<RxChangeEventDelete<RxDocumentType>>;
-    get docChanges$(): any;
     get onDestroy(): Promise<void>;
     _isInMemory: boolean;
     destroyed: boolean;
@@ -47,10 +46,6 @@ export declare class RxCollectionBase<RxDocumentType = {
     _observable$?: Observable<any>;
     _changeEventBuffer: ChangeEventBuffer;
     _keyCompressor?: any;
-    /**
-     * only emits the change-events that change something with the documents
-     */
-    private __docChanges$?;
     /**
      * returns a promise that is resolved when the collection gets destroyed
      */

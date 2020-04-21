@@ -386,8 +386,7 @@ function getHeightOfRevision(revString) {
   return parseInt(first, 10);
 }
 /**
- * prefix of local documents
- * TODO check if this variable exists somewhere else
+ * prefix of local pouchdb documents
  */
 
 

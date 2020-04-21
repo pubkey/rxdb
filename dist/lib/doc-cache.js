@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", {
 exports.createDocCache = createDocCache;
 exports.DocCache = void 0;
 
-// TODO add a function to run a cache-clear
 var DocCache = /*#__PURE__*/function () {
   function DocCache() {
     this._map = new Map();

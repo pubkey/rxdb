@@ -5,7 +5,7 @@ import _wrapNativeSuper from "@babel/runtime/helpers/wrapNativeSuper";
 /**
  * here we use custom errors with the additional field 'parameters'
  */
-import overwritable from './overwritable';
+import { overwritable } from './overwritable';
 
 /**
  * transform an object of parameters to a presentable string

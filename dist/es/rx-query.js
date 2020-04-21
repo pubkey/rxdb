@@ -302,7 +302,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
          */
 
 
-        var changeEvents$ = this.collection.docChanges$.pipe(tap(function () {
+        var changeEvents$ = this.collection.$.pipe(tap(function () {
           return _ensureEqual(_this3);
         }), filter(function () {
           return false;

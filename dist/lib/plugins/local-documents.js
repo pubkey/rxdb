@@ -63,7 +63,6 @@ var _getChangeSub = function _getChangeSub(parent) {
   return CHANGE_SUB_BY_PARENT.get(parent);
 };
 
-var LOCAL_PREFIX = '_local/';
 var RxDocumentParent = (0, _rxDocument.createRxDocumentConstructor)();
 
 var RxLocalDocument = /*#__PURE__*/function (_RxDocumentParent) {
@@ -91,7 +90,7 @@ var _getPouchByParent = function _getPouchByParent(parent) {
 var RxLocalDocumentPrototype = {
   toPouchJson: function toPouchJson() {
     var data = (0, _util.clone)(this._data);
-    data._id = LOCAL_PREFIX + this.id;
+    data._id = _util.LOCAL_PREFIX + this.id;
   },
 
   get isLocal() {
@@ -201,8 +200,10 @@ var RxLocalDocumentPrototype = {
   _saveData: function _saveData(newData) {
     var _this2 = this;
 
+    var oldData = this._dataSync$.getValue();
+
     newData = (0, _util.clone)(newData);
-    newData._id = LOCAL_PREFIX + this.id;
+    newData._id = _util.LOCAL_PREFIX + this.id;
     var startTime = (0, _util.now)();
     return this.parentPouch.put(newData).then(function (res) {
       var endTime = (0, _util.now)();
@@ -210,8 +211,7 @@ var RxLocalDocumentPrototype = {
 
       _this2._dataSync$.next(newData);
 
-      var changeEvent = new _rxChangeEvent.RxChangeEvent('UPDATE', _this2.id, (0, _util.clone)(_this2._data), (0, _rxDatabase.isInstanceOf)(_this2.parent) ? _this2.parent.token : _this2.parent.database.token, (0, _rxCollection.isInstanceOf)(_this2.parent) ? _this2.parent.name : null, true, startTime, endTime, null, // TODO emit old data
-      _this2);
+      var changeEvent = new _rxChangeEvent.RxChangeEvent('UPDATE', _this2.id, (0, _util.clone)(_this2._data), (0, _rxDatabase.isInstanceOf)(_this2.parent) ? _this2.parent.token : _this2.parent.database.token, (0, _rxCollection.isInstanceOf)(_this2.parent) ? _this2.parent.name : null, true, startTime, endTime, oldData, _this2);
 
       _this2.$emit(changeEvent);
     });
@@ -219,7 +219,7 @@ var RxLocalDocumentPrototype = {
   remove: function remove() {
     var _this3 = this;
 
-    var removeId = LOCAL_PREFIX + this.id;
+    var removeId = _util.LOCAL_PREFIX + this.id;
     var startTime = (0, _util.now)();
     return this.parentPouch.remove(removeId, this._data._rev).then(function () {
       _getDocCache(_this3.parent)["delete"](_this3.id);
@@ -297,7 +297,7 @@ function insertLocal(id, data) {
     var pouch = _getPouchByParent(_this4);
 
     var saveData = (0, _util.clone)(data);
-    saveData._id = LOCAL_PREFIX + id;
+    saveData._id = _util.LOCAL_PREFIX + id;
     return pouch.put(saveData);
   }).then(function (res) {
     data._rev = res.rev;
@@ -346,7 +346,7 @@ function getLocal(id) {
   var found = docCache.get(id);
   if (found) return Promise.resolve(found); // if not found, check in pouch
 
-  return pouch.get(LOCAL_PREFIX + id).then(function (docData) {
+  return pouch.get(_util.LOCAL_PREFIX + id).then(function (docData) {
     if (!docData) return null;
     var doc = RxLocalDocument.create(id, docData, _this6);
     return doc;

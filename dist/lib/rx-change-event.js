@@ -86,7 +86,8 @@ var RxChangeEvent = /*#__PURE__*/function () {
 
 exports.RxChangeEvent = RxChangeEvent;
 
-function changeEventfromPouchChange(changeDoc, collection, time) {
+function changeEventfromPouchChange(changeDoc, collection, startTime, // time when the event was streamed out of pouchdb
+endTime) {
   var operation = changeDoc._rev.startsWith('1-') ? 'INSERT' : 'UPDATE';
 
   if (changeDoc._deleted) {
@@ -97,7 +98,7 @@ function changeEventfromPouchChange(changeDoc, collection, time) {
   var doc = collection._handleFromPouch(changeDoc);
 
   var documentId = doc[collection.schema.primaryPath];
-  var cE = new RxChangeEvent(operation, documentId, doc, collection.database.token, collection.name, false, time, time);
+  var cE = new RxChangeEvent(operation, documentId, doc, collection.database.token, collection.name, false, startTime, endTime);
   return cE;
 }
 

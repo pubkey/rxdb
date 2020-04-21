@@ -1,8 +1,9 @@
 import IdleQueue from 'custom-idle-queue';
 import { BroadcastChannel } from 'broadcast-channel';
+import type { LeaderElector } from './plugins/leader-election';
+import type { CollectionsOfDatabase, PouchDBInstance, RxDatabase, RxCollectionCreator, RxJsonSchema, RxCollection, PouchSettings, ServerOptions, RxDatabaseCreator, RxDumpDatabase, RxDumpDatabaseAny } from './types';
 import { Subject, Subscription, Observable } from 'rxjs';
 import { RxChangeEvent } from './rx-change-event';
-import type { CollectionsOfDatabase, PouchDBInstance, RxDatabase, RxCollectionCreator, RxJsonSchema, RxCollection, PouchSettings, ServerOptions, RxDatabaseCreator, RxDumpDatabase, RxDumpDatabaseAny } from './types';
 import { RxStorage } from './rx-storate.interface';
 export declare class RxDatabaseBase<Collections = CollectionsOfDatabase, RxStorageInstance = PouchDBInstance> {
     name: string;
@@ -85,10 +86,7 @@ export declare class RxDatabaseBase<Collections = CollectionsOfDatabase, RxStora
         pouchApp: any;
         server: any;
     };
-    /**
-     * TODO import type of LeaderElector
-     */
-    leaderElector(): any;
+    leaderElector(): LeaderElector;
     isLeader(): boolean;
     /**
      * returns a promise which resolves when the instance becomes leader

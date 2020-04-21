@@ -72,8 +72,9 @@ export declare class RxJsonSchema<RxDocType = any> {
     keyCompression?: boolean;
     /**
      * if not set, rxdb will set 'false' as default
+     * true is not allwed on the root level
      */
-    additionalProperties?: boolean;
+    additionalProperties?: false;
     attachments?: {
         encrypted?: boolean;
     };

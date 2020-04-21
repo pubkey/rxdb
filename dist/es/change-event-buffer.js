@@ -1,6 +1,5 @@
 /**
  * a buffer-cache which holds the last X changeEvents of the collection
- * TODO this could be optimized to only store the last event of one document
  */
 export var ChangeEventBuffer = /*#__PURE__*/function () {
   /**
@@ -87,6 +86,7 @@ export var ChangeEventBuffer = /*#__PURE__*/function () {
   _proto.reduceByLastOfDoc = function reduceByLastOfDoc(changeEvents) {
     return changeEvents.slice(0); // TODO the old implementation was wrong
     // because it did not correctly reassigned the previousData of the changeevents
+    // this should be added to the event-reduce library and not be done in RxDB
 
     var docEventMap = {};
     changeEvents.forEach(function (changeEvent) {

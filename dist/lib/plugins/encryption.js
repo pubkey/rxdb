@@ -59,7 +59,7 @@ function storePasswordHashIntoDatabase(rxDatabase) {
   }
 
   var pwHash = (0, _util.hash)(rxDatabase.password);
-  return rxDatabase.internalStore.get('_local/pwHash')["catch"](function () {
+  return rxDatabase.internalStore.get(_util.LOCAL_PREFIX + 'pwHash')["catch"](function () {
     return null;
   }).then(function (pwHashDoc) {
     /**
@@ -68,7 +68,7 @@ function storePasswordHashIntoDatabase(rxDatabase) {
      */
     if (!pwHashDoc) {
       return rxDatabase.internalStore.put({
-        _id: '_local/pwHash',
+        _id: _util.LOCAL_PREFIX + 'pwHash',
         value: pwHash
       })["catch"](function () {
         return null;

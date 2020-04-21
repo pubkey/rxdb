@@ -1,7 +1,5 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -21,7 +19,7 @@ var _rxDatabase = require("./rx-database");
 
 var _pouchDb = require("./pouch-db");
 
-var _overwritable = _interopRequireDefault(require("./overwritable"));
+var _overwritable = require("./overwritable");
 
 var _hooks = require("./hooks");
 
@@ -69,7 +67,7 @@ function addRxPlugin(plugin) {
 
 
   if (rxPlugin.overwritable) {
-    Object.assign(_overwritable["default"], plugin.overwritable);
+    Object.assign(_overwritable.overwritable, plugin.overwritable);
   } // extend-hooks
 
 

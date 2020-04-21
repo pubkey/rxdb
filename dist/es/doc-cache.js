@@ -1,4 +1,3 @@
-// TODO add a function to run a cache-clear
 export var DocCache = /*#__PURE__*/function () {
   function DocCache() {
     this._map = new Map();

@@ -87,8 +87,7 @@ export declare const isElectronRenderer: boolean;
 export declare function flattenObject(ob: any): any;
 export declare function getHeightOfRevision(revString: string): number;
 /**
- * prefix of local documents
- * TODO check if this variable exists somewhere else
+ * prefix of local pouchdb documents
  */
 export declare const LOCAL_PREFIX: string;
 /**

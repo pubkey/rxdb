@@ -15,7 +15,7 @@ var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/inh
 
 var _wrapNativeSuper2 = _interopRequireDefault(require("@babel/runtime/helpers/wrapNativeSuper"));
 
-var _overwritable = _interopRequireDefault(require("./overwritable"));
+var _overwritable = require("./overwritable");
 
 /**
  * here we use custom errors with the additional field 'parameters'
@@ -126,11 +126,11 @@ var RxTypeError = /*#__PURE__*/function (_TypeError) {
 exports.RxTypeError = RxTypeError;
 
 function newRxError(code, parameters) {
-  return new RxError(code, _overwritable["default"].tunnelErrorMessage(code), parameters);
+  return new RxError(code, _overwritable.overwritable.tunnelErrorMessage(code), parameters);
 }
 
 function newRxTypeError(code, parameters) {
-  return new RxTypeError(code, _overwritable["default"].tunnelErrorMessage(code), parameters);
+  return new RxTypeError(code, _overwritable.overwritable.tunnelErrorMessage(code), parameters);
 }
 
 //# sourceMappingURL=rx-error.js.map

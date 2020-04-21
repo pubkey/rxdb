@@ -1,7 +1,5 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -28,7 +26,7 @@ var _rxSchema = require("../../rx-schema");
 
 var _rxError = require("../../rx-error");
 
-var _overwritable = _interopRequireDefault(require("../../overwritable"));
+var _overwritable = require("../../overwritable");
 
 var _hooks = require("../../hooks");
 
@@ -175,7 +173,7 @@ function createOldCollection(version, schemaObj, dataMigrator) {
   };
 
   if (schema.doKeyCompression()) {
-    ret._keyCompressor = _overwritable["default"].createKeyCompressor(schema);
+    ret._keyCompressor = _overwritable.overwritable.createKeyCompressor(schema);
   }
 
   return ret;

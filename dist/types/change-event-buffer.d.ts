@@ -1,7 +1,3 @@
-/**
- * a buffer-cache which holds the last X changeEvents of the collection
- * TODO this could be optimized to only store the last event of one document
- */
 import type { RxCollection } from './types';
 import { RxChangeEvent } from './rx-change-event';
 export declare class ChangeEventBuffer {

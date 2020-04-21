@@ -47,7 +47,8 @@ export function watchForChanges() {
 function _handleSingleChange(collection, change) {
   if (change.id.charAt(0) === '_') return Promise.resolve(false); // do not handle changes of internal docs
 
-  var eventTime = now(); // wait 2 ticks and 20 ms to give the internal event-handling time to run
+  var startTime = now();
+  var endTime = now(); // wait 2 ticks and 20 ms to give the internal event-handling time to run
 
   return promiseWait(20).then(function () {
     return nextTick();
@@ -60,7 +61,7 @@ function _handleSingleChange(collection, change) {
       return false;
     }
 
-    var cE = changeEventfromPouchChange(docData, collection, eventTime);
+    var cE = changeEventfromPouchChange(docData, collection, startTime, endTime);
     collection.$emit(cE);
     return true;
   });

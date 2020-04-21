@@ -1,7 +1,7 @@
 /**
  * functions that can or should be overwritten by plugins
  */
-declare const funs: {
+export declare const overwritable: {
     /**
      * if this method is overwritte with one
      * that returns true, we do additional checks
@@ -27,4 +27,3 @@ declare const funs: {
      */
     tunnelErrorMessage(message: string): string;
 };
-export default funs;

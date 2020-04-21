@@ -2,7 +2,7 @@
  * functions that can or should be overwritten by plugins
  */
 import { pluginMissing } from './util';
-var funs = {
+export var overwritable = {
   /**
    * if this method is overwritte with one
    * that returns true, we do additional checks
@@ -39,10 +39,7 @@ var funs = {
    * overwritte to map error-codes to text-messages
    */
   tunnelErrorMessage: function tunnelErrorMessage(message) {
-    // TODO better text with link
     return "RxDB Error-Code " + message + ".\n        - To find out what this means, use the dev-mode-plugin https://pubkey.github.io/rxdb/custom-build.html#dev-mode\n        - Or search for this code https://github.com/pubkey/rxdb/search?q=" + message + "\n        ";
   }
-}; // TODO no default exports
-
-export default funs;
+};
 //# sourceMappingURL=overwritable.js.map

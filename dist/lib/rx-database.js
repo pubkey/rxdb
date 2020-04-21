@@ -32,7 +32,7 @@ var _rxSchema = require("./rx-schema");
 
 var _rxChangeEvent = require("./rx-change-event");
 
-var _overwritable = _interopRequireDefault(require("./overwritable"));
+var _overwritable = require("./overwritable");
 
 var _hooks = require("./hooks");
 
@@ -320,11 +320,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
 
   _proto.server = function server(_options) {
     throw (0, _util.pluginMissing)('server');
-  }
-  /**
-   * TODO import type of LeaderElector
-   */
-  ;
+  };
 
   _proto.leaderElector = function leaderElector() {
     throw (0, _util.pluginMissing)('leader-election');
@@ -439,16 +435,16 @@ function _removeUsedCombination(name, adapter) {
 
 
 function _ensureStorageTokenExists(rxDatabase) {
-  return rxDatabase.internalStore.get('_local/storageToken')["catch"](function () {
+  return rxDatabase.internalStore.get(_util.LOCAL_PREFIX + 'storageToken')["catch"](function () {
     // no doc exists -> insert
     return rxDatabase.internalStore.put({
-      _id: '_local/storageToken',
+      _id: _util.LOCAL_PREFIX + 'storageToken',
       value: (0, _randomToken["default"])(10)
     })["catch"](function () {}).then(function () {
       return (0, _util.promiseWait)(0);
     });
   }).then(function () {
-    return rxDatabase.internalStore.get('_local/storageToken');
+    return rxDatabase.internalStore.get(_util.LOCAL_PREFIX + 'storageToken');
   }).then(function (storageTokenDoc2) {
     return storageTokenDoc2.value;
   });
@@ -587,7 +583,7 @@ function createRxDatabase(_ref) {
   }
 
   if (password) {
-    _overwritable["default"].validatePassword(password);
+    _overwritable.overwritable.validatePassword(password);
   } // check if combination already used
 
 
@@ -639,7 +635,7 @@ function removeRxDatabase(databaseName, adapter) {
 
 
 function checkAdapter(adapter) {
-  return _overwritable["default"].checkAdapter(adapter);
+  return _overwritable.overwritable.checkAdapter(adapter);
 }
 
 function isInstanceOf(obj) {

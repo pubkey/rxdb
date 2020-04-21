@@ -11,7 +11,7 @@ import { createCrypter } from './crypter';
 import { createDocCache } from './doc-cache';
 import { createQueryCache } from './query-cache';
 import { createChangeEventBuffer } from './change-event-buffer';
-import overwritable from './overwritable';
+import { overwritable } from './overwritable';
 import { runPluginHooks } from './hooks';
 import { createWithConstructor as createRxDocumentWithConstructor, isInstanceOf as isRxDocument } from './rx-document';
 import { createRxDocument, getRxDocumentConstructor } from './rx-document-prototype-merge';
@@ -632,18 +632,6 @@ export var RxCollectionBase = /*#__PURE__*/function () {
       return this.$.pipe(filter(function (cE) {
         return cE.operation === 'DELETE';
       }));
-    } // TODO remove this, we only have doc-changes anyway
-
-  }, {
-    key: "docChanges$",
-    get: function get() {
-      if (!this.__docChanges$) {
-        this.__docChanges$ = this.$.pipe(filter(function (cE) {
-          return ['INSERT', 'UPDATE', 'DELETE'].includes(cE.operation);
-        }));
-      }
-
-      return this.__docChanges$;
     }
   }, {
     key: "onDestroy",

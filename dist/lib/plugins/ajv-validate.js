@@ -25,6 +25,7 @@ var _util = require("../util");
  * so we can reuse them when multiple collections have the same schema
  */
 var VALIDATOR_CACHE = new Map();
+var ajv = new _ajv["default"]();
 /**
  * returns the parsed validator from ajv
  */
@@ -33,8 +34,6 @@ function _getValidator(rxSchema) {
   var hash = rxSchema.hash;
 
   if (!VALIDATOR_CACHE.has(hash)) {
-    var ajv = new _ajv["default"](); // TODO should we reuse this instance?
-
     var validator = ajv.compile(rxSchema.jsonSchema);
     VALIDATOR_CACHE.set(hash, validator);
   }

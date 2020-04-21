@@ -2,11 +2,11 @@ import _createClass from "@babel/runtime/helpers/createClass";
 import randomToken from 'random-token';
 import IdleQueue from 'custom-idle-queue';
 import { BroadcastChannel } from 'broadcast-channel';
-import { promiseWait, pluginMissing } from './util';
+import { promiseWait, pluginMissing, LOCAL_PREFIX } from './util';
 import { newRxError } from './rx-error';
 import { createRxSchema } from './rx-schema';
 import { isInstanceOf as isInstanceOfRxChangeEvent } from './rx-change-event';
-import overwritable from './overwritable';
+import { overwritable } from './overwritable';
 import { runPluginHooks, runAsyncPluginHooks } from './hooks';
 import { Subject } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -287,11 +287,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
 
   _proto.server = function server(_options) {
     throw pluginMissing('server');
-  }
-  /**
-   * TODO import type of LeaderElector
-   */
-  ;
+  };
 
   _proto.leaderElector = function leaderElector() {
     throw pluginMissing('leader-election');
@@ -404,16 +400,16 @@ function _removeUsedCombination(name, adapter) {
 
 
 export function _ensureStorageTokenExists(rxDatabase) {
-  return rxDatabase.internalStore.get('_local/storageToken')["catch"](function () {
+  return rxDatabase.internalStore.get(LOCAL_PREFIX + 'storageToken')["catch"](function () {
     // no doc exists -> insert
     return rxDatabase.internalStore.put({
-      _id: '_local/storageToken',
+      _id: LOCAL_PREFIX + 'storageToken',
       value: randomToken(10)
     })["catch"](function () {}).then(function () {
       return promiseWait(0);
     });
   }).then(function () {
-    return rxDatabase.internalStore.get('_local/storageToken');
+    return rxDatabase.internalStore.get(LOCAL_PREFIX + 'storageToken');
   }).then(function (storageTokenDoc2) {
     return storageTokenDoc2.value;
   });

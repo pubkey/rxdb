@@ -10,7 +10,7 @@ import { RxQueryBase } from './rx-query';
 import { RxCollectionBase } from './rx-collection';
 import { RxDatabaseBase } from './rx-database';
 import { PouchDB } from './pouch-db';
-import overwritable from './overwritable';
+import { overwritable } from './overwritable';
 import { HOOKS } from './hooks';
 /**
  * prototypes that can be manipulated with a plugin

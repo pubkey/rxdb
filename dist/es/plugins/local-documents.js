@@ -10,7 +10,7 @@ import { createRxDocumentConstructor, basePrototype } from '../rx-document';
 import { RxChangeEvent } from '../rx-change-event';
 import { createDocCache } from '../doc-cache';
 import { newRxError, newRxTypeError } from '../rx-error';
-import { clone, now } from '../util';
+import { clone, now, LOCAL_PREFIX } from '../util';
 import { isInstanceOf as isRxDatabase } from '../rx-database';
 import { isInstanceOf as isRxCollection } from '../rx-collection';
 import { filter, map, distinctUntilChanged } from 'rxjs/operators';
@@ -45,7 +45,6 @@ var _getChangeSub = function _getChangeSub(parent) {
   return CHANGE_SUB_BY_PARENT.get(parent);
 };
 
-var LOCAL_PREFIX = '_local/';
 var RxDocumentParent = createRxDocumentConstructor();
 export var RxLocalDocument = /*#__PURE__*/function (_RxDocumentParent) {
   _inheritsLoose(RxLocalDocument, _RxDocumentParent);
@@ -177,6 +176,8 @@ var RxLocalDocumentPrototype = {
   _saveData: function _saveData(newData) {
     var _this2 = this;
 
+    var oldData = this._dataSync$.getValue();
+
     newData = clone(newData);
     newData._id = LOCAL_PREFIX + this.id;
     var startTime = now();
@@ -186,8 +187,7 @@ var RxLocalDocumentPrototype = {
 
       _this2._dataSync$.next(newData);
 
-      var changeEvent = new RxChangeEvent('UPDATE', _this2.id, clone(_this2._data), isRxDatabase(_this2.parent) ? _this2.parent.token : _this2.parent.database.token, isRxCollection(_this2.parent) ? _this2.parent.name : null, true, startTime, endTime, null, // TODO emit old data
-      _this2);
+      var changeEvent = new RxChangeEvent('UPDATE', _this2.id, clone(_this2._data), isRxDatabase(_this2.parent) ? _this2.parent.token : _this2.parent.database.token, isRxCollection(_this2.parent) ? _this2.parent.name : null, true, startTime, endTime, oldData, _this2);
 
       _this2.$emit(changeEvent);
     });

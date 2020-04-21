@@ -14,7 +14,7 @@ import { countAllUndeleted, getBatch } from '../../pouch-db';
 import { clone, toPromise, flatClone } from '../../util';
 import { createRxSchema } from '../../rx-schema';
 import { newRxError } from '../../rx-error';
-import overwritable from '../../overwritable';
+import { overwritable } from '../../overwritable';
 import { runPluginHooks, runAsyncPluginHooks } from '../../hooks';
 import { getPreviousVersions } from '../../rx-schema';
 import { createCrypter } from '../../crypter';

@@ -58,7 +58,8 @@ export interface RxChangeEventUpdate<DocType = any> extends RxChangeEvent<DocTyp
 export interface RxChangeEventDelete<DocType = any> extends RxChangeEvent<DocType> {
     operation: 'DELETE';
 }
-export declare function changeEventfromPouchChange<DocType>(changeDoc: any, collection: RxCollection, time: number): RxChangeEvent<DocType>;
+export declare function changeEventfromPouchChange<DocType>(changeDoc: any, collection: RxCollection, startTime: number, // time when the event was streamed out of pouchdb
+endTime: number): RxChangeEvent<DocType>;
 export declare function createInsertEvent<RxDocumentType>(collection: RxCollection<RxDocumentType>, docData: RxDocumentTypeWithRev<RxDocumentType>, startTime: number, endTime: number, doc?: RxDocument<RxDocumentType>): RxChangeEvent<RxDocumentType>;
 export declare function createUpdateEvent<RxDocumentType>(collection: RxCollection<RxDocumentType>, docData: RxDocumentTypeWithRev<RxDocumentType>, previous: RxDocumentType, startTime: number, endTime: number, rxDocument: RxDocument<RxDocumentType>): RxChangeEvent<RxDocumentType>;
 export declare function createDeleteEvent<RxDocumentType>(collection: RxCollection<RxDocumentType>, docData: RxDocumentTypeWithRev<RxDocumentType>, previous: RxDocumentType, startTime: number, endTime: number, rxDocument: RxDocument<RxDocumentType>): RxChangeEvent<RxDocumentType>;

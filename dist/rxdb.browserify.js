@@ -28,7 +28,6 @@ exports.ChangeEventBuffer = void 0;
 
 /**
  * a buffer-cache which holds the last X changeEvents of the collection
- * TODO this could be optimized to only store the last event of one document
  */
 var ChangeEventBuffer = /*#__PURE__*/function () {
   /**
@@ -115,6 +114,7 @@ var ChangeEventBuffer = /*#__PURE__*/function () {
   _proto.reduceByLastOfDoc = function reduceByLastOfDoc(changeEvents) {
     return changeEvents.slice(0); // TODO the old implementation was wrong
     // because it did not correctly reassigned the previousData of the changeevents
+    // this should be added to the event-reduce library and not be done in RxDB
 
     var docEventMap = {};
     changeEvents.forEach(function (changeEvent) {
@@ -517,7 +517,6 @@ Object.defineProperty(exports, "__esModule", {
 exports.createDocCache = createDocCache;
 exports.DocCache = void 0;
 
-// TODO add a function to run a cache-clear
 var DocCache = /*#__PURE__*/function () {
   function DocCache() {
     this._map = new Map();
@@ -825,14 +824,14 @@ var _queryBuilder = require("./plugins/query-builder");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = void 0;
+exports.overwritable = void 0;
 
 var _util = require("./util");
 
 /**
  * functions that can or should be overwritten by plugins
  */
-var funs = {
+var overwritable = {
   /**
    * if this method is overwritte with one
    * that returns true, we do additional checks
@@ -869,19 +868,14 @@ var funs = {
    * overwritte to map error-codes to text-messages
    */
   tunnelErrorMessage: function tunnelErrorMessage(message) {
-    // TODO better text with link
     return "RxDB Error-Code " + message + ".\n        - To find out what this means, use the dev-mode-plugin https://pubkey.github.io/rxdb/custom-build.html#dev-mode\n        - Or search for this code https://github.com/pubkey/rxdb/search?q=" + message + "\n        ";
   }
-}; // TODO no default exports
-
-var _default = funs;
-exports["default"] = _default;
+};
+exports.overwritable = overwritable;
 
 
 },{"./util":54}],10:[function(require,module,exports){
 "use strict";
-
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -902,7 +896,7 @@ var _rxDatabase = require("./rx-database");
 
 var _pouchDb = require("./pouch-db");
 
-var _overwritable = _interopRequireDefault(require("./overwritable"));
+var _overwritable = require("./overwritable");
 
 var _hooks = require("./hooks");
 
@@ -950,7 +944,7 @@ function addRxPlugin(plugin) {
 
 
   if (rxPlugin.overwritable) {
-    Object.assign(_overwritable["default"], plugin.overwritable);
+    Object.assign(_overwritable.overwritable, plugin.overwritable);
   } // extend-hooks
 
 
@@ -964,7 +958,7 @@ function addRxPlugin(plugin) {
 }
 
 
-},{"./crypter":4,"./hooks":7,"./overwritable":9,"./pouch-db":35,"./rx-collection":39,"./rx-database":41,"./rx-document":43,"./rx-query":45,"./rx-schema":46,"@babel/runtime/helpers/interopRequireDefault":62}],11:[function(require,module,exports){
+},{"./crypter":4,"./hooks":7,"./overwritable":9,"./pouch-db":35,"./rx-collection":39,"./rx-database":41,"./rx-document":43,"./rx-query":45,"./rx-schema":46}],11:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2104,9 +2098,8 @@ var ERROR_MESSAGES = {
   IM1: 'InMemory: Memory-Adapter must be added. Use RxDB.plugin(require(\'pouchdb-adapter-memory\'));',
   IM2: 'inMemoryCollection.sync(): Do not replicate with the in-memory instance. Replicate with the parent instead',
   // plugins/server.js
-  S1: 'You cannot create collections after calling RxDatabase.server()',
-  // plugins/replication-graphql.js
-  QL1: 'TODO'
+  S1: 'You cannot create collections after calling RxDatabase.server()' // plugins/replication-graphql.js
+
 };
 exports.ERROR_MESSAGES = ERROR_MESSAGES;
 
@@ -2271,7 +2264,7 @@ function storePasswordHashIntoDatabase(rxDatabase) {
   }
 
   var pwHash = (0, _util.hash)(rxDatabase.password);
-  return rxDatabase.internalStore.get('_local/pwHash')["catch"](function () {
+  return rxDatabase.internalStore.get(_util.LOCAL_PREFIX + 'pwHash')["catch"](function () {
     return null;
   }).then(function (pwHashDoc) {
     /**
@@ -2280,7 +2273,7 @@ function storePasswordHashIntoDatabase(rxDatabase) {
      */
     if (!pwHashDoc) {
       return rxDatabase.internalStore.put({
-        _id: '_local/pwHash',
+        _id: _util.LOCAL_PREFIX + 'pwHash',
         value: pwHash
       })["catch"](function () {
         return null;
@@ -2997,8 +2990,7 @@ var KeyCompressor = /*#__PURE__*/function () {
     key: "table",
     get: function get() {
       var jsonSchema = this.schema.normalized;
-      var table = (0, _jsonschemaKeyCompression.createCompressionTable)(jsonSchema, _jsonschemaKeyCompression.DEFAULT_COMPRESSION_FLAG, [this.schema.primaryPath, '_id', // TODO do we need _id here?
-      '_rev', '_attachments']);
+      var table = (0, _jsonschemaKeyCompression.createCompressionTable)(jsonSchema, _jsonschemaKeyCompression.DEFAULT_COMPRESSION_FLAG, [this.schema.primaryPath, '_rev', '_attachments']);
       return (0, _util.overwriteGetterForCaching)(this, 'table', table);
     }
   }]);
@@ -3204,7 +3196,6 @@ var _getChangeSub = function _getChangeSub(parent) {
   return CHANGE_SUB_BY_PARENT.get(parent);
 };
 
-var LOCAL_PREFIX = '_local/';
 var RxDocumentParent = (0, _rxDocument.createRxDocumentConstructor)();
 
 var RxLocalDocument = /*#__PURE__*/function (_RxDocumentParent) {
@@ -3232,7 +3223,7 @@ var _getPouchByParent = function _getPouchByParent(parent) {
 var RxLocalDocumentPrototype = {
   toPouchJson: function toPouchJson() {
     var data = (0, _util.clone)(this._data);
-    data._id = LOCAL_PREFIX + this.id;
+    data._id = _util.LOCAL_PREFIX + this.id;
   },
 
   get isLocal() {
@@ -3342,8 +3333,10 @@ var RxLocalDocumentPrototype = {
   _saveData: function _saveData(newData) {
     var _this2 = this;
 
+    var oldData = this._dataSync$.getValue();
+
     newData = (0, _util.clone)(newData);
-    newData._id = LOCAL_PREFIX + this.id;
+    newData._id = _util.LOCAL_PREFIX + this.id;
     var startTime = (0, _util.now)();
     return this.parentPouch.put(newData).then(function (res) {
       var endTime = (0, _util.now)();
@@ -3351,8 +3344,7 @@ var RxLocalDocumentPrototype = {
 
       _this2._dataSync$.next(newData);
 
-      var changeEvent = new _rxChangeEvent.RxChangeEvent('UPDATE', _this2.id, (0, _util.clone)(_this2._data), (0, _rxDatabase.isInstanceOf)(_this2.parent) ? _this2.parent.token : _this2.parent.database.token, (0, _rxCollection.isInstanceOf)(_this2.parent) ? _this2.parent.name : null, true, startTime, endTime, null, // TODO emit old data
-      _this2);
+      var changeEvent = new _rxChangeEvent.RxChangeEvent('UPDATE', _this2.id, (0, _util.clone)(_this2._data), (0, _rxDatabase.isInstanceOf)(_this2.parent) ? _this2.parent.token : _this2.parent.database.token, (0, _rxCollection.isInstanceOf)(_this2.parent) ? _this2.parent.name : null, true, startTime, endTime, oldData, _this2);
 
       _this2.$emit(changeEvent);
     });
@@ -3360,7 +3352,7 @@ var RxLocalDocumentPrototype = {
   remove: function remove() {
     var _this3 = this;
 
-    var removeId = LOCAL_PREFIX + this.id;
+    var removeId = _util.LOCAL_PREFIX + this.id;
     var startTime = (0, _util.now)();
     return this.parentPouch.remove(removeId, this._data._rev).then(function () {
       _getDocCache(_this3.parent)["delete"](_this3.id);
@@ -3438,7 +3430,7 @@ function insertLocal(id, data) {
     var pouch = _getPouchByParent(_this4);
 
     var saveData = (0, _util.clone)(data);
-    saveData._id = LOCAL_PREFIX + id;
+    saveData._id = _util.LOCAL_PREFIX + id;
     return pouch.put(saveData);
   }).then(function (res) {
     data._rev = res.rev;
@@ -3487,7 +3479,7 @@ function getLocal(id) {
   var found = docCache.get(id);
   if (found) return Promise.resolve(found); // if not found, check in pouch
 
-  return pouch.get(LOCAL_PREFIX + id).then(function (docData) {
+  return pouch.get(_util.LOCAL_PREFIX + id).then(function (docData) {
     if (!docData) return null;
     var doc = RxLocalDocument.create(id, docData, _this6);
     return doc;
@@ -3524,8 +3516,6 @@ exports.RxDBLocalDocumentsPlugin = RxDBLocalDocumentsPlugin;
 },{"../doc-cache":5,"../rx-change-event":37,"../rx-collection":39,"../rx-database":41,"../rx-document":43,"../rx-error":44,"../util":54,"@babel/runtime/helpers/inheritsLoose":61,"@babel/runtime/helpers/interopRequireDefault":62,"object-path":489,"rxjs/operators":762}],26:[function(require,module,exports){
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -3552,7 +3542,7 @@ var _rxSchema = require("../../rx-schema");
 
 var _rxError = require("../../rx-error");
 
-var _overwritable = _interopRequireDefault(require("../../overwritable"));
+var _overwritable = require("../../overwritable");
 
 var _hooks = require("../../hooks");
 
@@ -3699,7 +3689,7 @@ function createOldCollection(version, schemaObj, dataMigrator) {
   };
 
   if (schema.doKeyCompression()) {
-    ret._keyCompressor = _overwritable["default"].createKeyCompressor(schema);
+    ret._keyCompressor = _overwritable.overwritable.createKeyCompressor(schema);
   }
 
   return ret;
@@ -3918,7 +3908,7 @@ function migratePromise(oldCollection, batchSize) {
 }
 
 
-},{"../../crypter":4,"../../hooks":7,"../../overwritable":9,"../../pouch-db":35,"../../rx-collection-helper":38,"../../rx-error":44,"../../rx-schema":46,"../../util":54,"@babel/runtime/helpers/interopRequireDefault":62,"rxjs":564}],27:[function(require,module,exports){
+},{"../../crypter":4,"../../hooks":7,"../../overwritable":9,"../../pouch-db":35,"../../rx-collection-helper":38,"../../rx-error":44,"../../rx-schema":46,"../../util":54,"rxjs":564}],27:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5136,7 +5126,8 @@ function watchForChanges() {
 function _handleSingleChange(collection, change) {
   if (change.id.charAt(0) === '_') return Promise.resolve(false); // do not handle changes of internal docs
 
-  var eventTime = (0, _util.now)(); // wait 2 ticks and 20 ms to give the internal event-handling time to run
+  var startTime = (0, _util.now)();
+  var endTime = (0, _util.now)(); // wait 2 ticks and 20 ms to give the internal event-handling time to run
 
   return (0, _util.promiseWait)(20).then(function () {
     return (0, _util.nextTick)();
@@ -5149,7 +5140,7 @@ function _handleSingleChange(collection, change) {
       return false;
     }
 
-    var cE = (0, _rxChangeEvent.changeEventfromPouchChange)(docData, collection, eventTime);
+    var cE = (0, _rxChangeEvent.changeEventfromPouchChange)(docData, collection, startTime, endTime);
     collection.$emit(cE);
     return true;
   });
@@ -5461,7 +5452,8 @@ var RxChangeEvent = /*#__PURE__*/function () {
 
 exports.RxChangeEvent = RxChangeEvent;
 
-function changeEventfromPouchChange(changeDoc, collection, time) {
+function changeEventfromPouchChange(changeDoc, collection, startTime, // time when the event was streamed out of pouchdb
+endTime) {
   var operation = changeDoc._rev.startsWith('1-') ? 'INSERT' : 'UPDATE';
 
   if (changeDoc._deleted) {
@@ -5472,7 +5464,7 @@ function changeEventfromPouchChange(changeDoc, collection, time) {
   var doc = collection._handleFromPouch(changeDoc);
 
   var documentId = doc[collection.schema.primaryPath];
-  var cE = new RxChangeEvent(operation, documentId, doc, collection.database.token, collection.name, false, time, time);
+  var cE = new RxChangeEvent(operation, documentId, doc, collection.database.token, collection.name, false, startTime, endTime);
   return cE;
 }
 
@@ -5589,7 +5581,7 @@ var _queryCache = require("./query-cache");
 
 var _changeEventBuffer = require("./change-event-buffer");
 
-var _overwritable = _interopRequireDefault(require("./overwritable"));
+var _overwritable = require("./overwritable");
 
 var _hooks = require("./hooks");
 
@@ -5646,7 +5638,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
     this.pouch = this.database._spawnPouchDB(this.name, this.schema.version, this.pouchSettings);
 
     if (this.schema.doKeyCompression()) {
-      this._keyCompressor = _overwritable["default"].createKeyCompressor(this.schema);
+      this._keyCompressor = _overwritable.overwritable.createKeyCompressor(this.schema);
     } // we trigger the non-blocking things first and await them later so we can do stuff in the mean time
 
 
@@ -6215,18 +6207,6 @@ var RxCollectionBase = /*#__PURE__*/function () {
       return this.$.pipe((0, _operators.filter)(function (cE) {
         return cE.operation === 'DELETE';
       }));
-    } // TODO remove this, we only have doc-changes anyway
-
-  }, {
-    key: "docChanges$",
-    get: function get() {
-      if (!this.__docChanges$) {
-        this.__docChanges$ = this.$.pipe((0, _operators.filter)(function (cE) {
-          return ['INSERT', 'UPDATE', 'DELETE'].includes(cE.operation);
-        }));
-      }
-
-      return this.__docChanges$;
     }
   }, {
     key: "onDestroy",
@@ -6505,7 +6485,7 @@ var _rxSchema = require("./rx-schema");
 
 var _rxChangeEvent = require("./rx-change-event");
 
-var _overwritable = _interopRequireDefault(require("./overwritable"));
+var _overwritable = require("./overwritable");
 
 var _hooks = require("./hooks");
 
@@ -6793,11 +6773,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
 
   _proto.server = function server(_options) {
     throw (0, _util.pluginMissing)('server');
-  }
-  /**
-   * TODO import type of LeaderElector
-   */
-  ;
+  };
 
   _proto.leaderElector = function leaderElector() {
     throw (0, _util.pluginMissing)('leader-election');
@@ -6912,16 +6888,16 @@ function _removeUsedCombination(name, adapter) {
 
 
 function _ensureStorageTokenExists(rxDatabase) {
-  return rxDatabase.internalStore.get('_local/storageToken')["catch"](function () {
+  return rxDatabase.internalStore.get(_util.LOCAL_PREFIX + 'storageToken')["catch"](function () {
     // no doc exists -> insert
     return rxDatabase.internalStore.put({
-      _id: '_local/storageToken',
+      _id: _util.LOCAL_PREFIX + 'storageToken',
       value: (0, _randomToken["default"])(10)
     })["catch"](function () {}).then(function () {
       return (0, _util.promiseWait)(0);
     });
   }).then(function () {
-    return rxDatabase.internalStore.get('_local/storageToken');
+    return rxDatabase.internalStore.get(_util.LOCAL_PREFIX + 'storageToken');
   }).then(function (storageTokenDoc2) {
     return storageTokenDoc2.value;
   });
@@ -7060,7 +7036,7 @@ function createRxDatabase(_ref) {
   }
 
   if (password) {
-    _overwritable["default"].validatePassword(password);
+    _overwritable.overwritable.validatePassword(password);
   } // check if combination already used
 
 
@@ -7112,7 +7088,7 @@ function removeRxDatabase(databaseName, adapter) {
 
 
 function checkAdapter(adapter) {
-  return _overwritable["default"].checkAdapter(adapter);
+  return _overwritable.overwritable.checkAdapter(adapter);
 }
 
 function isInstanceOf(obj) {
@@ -7774,7 +7750,7 @@ var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/inh
 
 var _wrapNativeSuper2 = _interopRequireDefault(require("@babel/runtime/helpers/wrapNativeSuper"));
 
-var _overwritable = _interopRequireDefault(require("./overwritable"));
+var _overwritable = require("./overwritable");
 
 /**
  * here we use custom errors with the additional field 'parameters'
@@ -7885,11 +7861,11 @@ var RxTypeError = /*#__PURE__*/function (_TypeError) {
 exports.RxTypeError = RxTypeError;
 
 function newRxError(code, parameters) {
-  return new RxError(code, _overwritable["default"].tunnelErrorMessage(code), parameters);
+  return new RxError(code, _overwritable.overwritable.tunnelErrorMessage(code), parameters);
 }
 
 function newRxTypeError(code, parameters) {
-  return new RxTypeError(code, _overwritable["default"].tunnelErrorMessage(code), parameters);
+  return new RxTypeError(code, _overwritable.overwritable.tunnelErrorMessage(code), parameters);
 }
 
 
@@ -8221,7 +8197,7 @@ var RxQueryBase = /*#__PURE__*/function () {
          */
 
 
-        var changeEvents$ = this.collection.docChanges$.pipe((0, _operators.tap)(function () {
+        var changeEvents$ = this.collection.$.pipe((0, _operators.tap)(function () {
           return _ensureEqual(_this3);
         }), (0, _operators.filter)(function () {
           return false;
@@ -8945,24 +8921,15 @@ var RxStoragePouchDbClass = /*#__PURE__*/function () {
       });
       query.sort = sortArray;
     } // strip empty selectors
-    // TODO this has shit performance because of that many filters, use a single one!
 
 
-    Object.entries(query.selector).filter(function (_ref2) {
-      var v = _ref2[1];
-      return typeof v === 'object';
-    }).filter(function (_ref3) {
-      var v = _ref3[1];
-      return v !== null;
-    }).filter(function (_ref4) {
-      var v = _ref4[1];
-      return !Array.isArray(v);
-    }).filter(function (_ref5) {
-      var v = _ref5[1];
-      return Object.keys(v).length === 0;
-    }).forEach(function (_ref6) {
-      var k = _ref6[0];
-      return delete query.selector[k];
+    Object.entries(query.selector).forEach(function (_ref2) {
+      var k = _ref2[0],
+          v = _ref2[1];
+
+      if (typeof v === 'object' && v !== null && !Array.isArray(v) && Object.keys(v).length === 0) {
+        delete query.selector[k];
+      }
     }); // primary swap
 
     if (primPath !== '_id' && query.selector[primPath]) {
@@ -9427,8 +9394,7 @@ function getHeightOfRevision(revString) {
   return parseInt(first, 10);
 }
 /**
- * prefix of local documents
- * TODO check if this variable exists somewhere else
+ * prefix of local pouchdb documents
  */
 
 

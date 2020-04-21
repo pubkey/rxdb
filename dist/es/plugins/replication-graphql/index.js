@@ -494,7 +494,7 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
 
   _proto.handleDocumentFromRemote = /*#__PURE__*/function () {
     var _handleDocumentFromRemote = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee6(doc, docsWithRevisions) {
-      var deletedValue, toPouch, primaryValue, pouchState, newRevision, newRevisionHeight, revisionId, originalDoc, cE;
+      var deletedValue, toPouch, primaryValue, pouchState, newRevision, newRevisionHeight, revisionId, startTime, endTime, originalDoc, cE;
       return _regeneratorRuntime.wrap(function _callee6$(_context6) {
         while (1) {
           switch (_context6.prev = _context6.next) {
@@ -529,18 +529,21 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
                 toPouch[this.lastPulledRevField] = toPouch._rev;
               }
 
-              _context6.next = 7;
+              startTime = now();
+              _context6.next = 8;
               return this.collection.pouch.bulkDocs([toPouch], {
                 new_edits: false
               });
 
-            case 7:
+            case 8:
+              endTime = now();
               /**
                * because bulkDocs with new_edits: false
                * does not stream changes to the pouchdb,
                * we create the event and emit it,
                * so other instances get informed about it
                */
+
               originalDoc = flatClone(toPouch);
 
               if (deletedValue) {
@@ -551,10 +554,10 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
 
               delete originalDoc[this.deletedFlag];
               delete originalDoc._revisions;
-              cE = changeEventfromPouchChange(originalDoc, this.collection, now());
+              cE = changeEventfromPouchChange(originalDoc, this.collection, startTime, endTime);
               this.collection.$emit(cE);
 
-            case 13:
+            case 15:
             case "end":
               return _context6.stop();
           }
@@ -576,8 +579,7 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
       return sub.unsubscribe();
     });
 
-    this._subjects.canceled.next(true); // TODO
-
+    this._subjects.canceled.next(true);
 
     return Promise.resolve(true);
   };

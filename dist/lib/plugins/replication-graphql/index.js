@@ -544,7 +544,7 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
 
   _proto.handleDocumentFromRemote = /*#__PURE__*/function () {
     var _handleDocumentFromRemote = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee6(doc, docsWithRevisions) {
-      var deletedValue, toPouch, primaryValue, pouchState, newRevision, newRevisionHeight, revisionId, originalDoc, cE;
+      var deletedValue, toPouch, primaryValue, pouchState, newRevision, newRevisionHeight, revisionId, startTime, endTime, originalDoc, cE;
       return _regenerator["default"].wrap(function _callee6$(_context6) {
         while (1) {
           switch (_context6.prev = _context6.next) {
@@ -579,18 +579,21 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
                 toPouch[this.lastPulledRevField] = toPouch._rev;
               }
 
-              _context6.next = 7;
+              startTime = (0, _util.now)();
+              _context6.next = 8;
               return this.collection.pouch.bulkDocs([toPouch], {
                 new_edits: false
               });
 
-            case 7:
+            case 8:
+              endTime = (0, _util.now)();
               /**
                * because bulkDocs with new_edits: false
                * does not stream changes to the pouchdb,
                * we create the event and emit it,
                * so other instances get informed about it
                */
+
               originalDoc = (0, _util.flatClone)(toPouch);
 
               if (deletedValue) {
@@ -601,10 +604,10 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
 
               delete originalDoc[this.deletedFlag];
               delete originalDoc._revisions;
-              cE = (0, _rxChangeEvent.changeEventfromPouchChange)(originalDoc, this.collection, (0, _util.now)());
+              cE = (0, _rxChangeEvent.changeEventfromPouchChange)(originalDoc, this.collection, startTime, endTime);
               this.collection.$emit(cE);
 
-            case 13:
+            case 15:
             case "end":
               return _context6.stop();
           }
@@ -626,8 +629,7 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
       return sub.unsubscribe();
     });
 
-    this._subjects.canceled.next(true); // TODO
-
+    this._subjects.canceled.next(true);
 
     return Promise.resolve(true);
   };

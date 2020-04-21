@@ -35,7 +35,7 @@ var _queryCache = require("./query-cache");
 
 var _changeEventBuffer = require("./change-event-buffer");
 
-var _overwritable = _interopRequireDefault(require("./overwritable"));
+var _overwritable = require("./overwritable");
 
 var _hooks = require("./hooks");
 
@@ -92,7 +92,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
     this.pouch = this.database._spawnPouchDB(this.name, this.schema.version, this.pouchSettings);
 
     if (this.schema.doKeyCompression()) {
-      this._keyCompressor = _overwritable["default"].createKeyCompressor(this.schema);
+      this._keyCompressor = _overwritable.overwritable.createKeyCompressor(this.schema);
     } // we trigger the non-blocking things first and await them later so we can do stuff in the mean time
 
 
@@ -661,18 +661,6 @@ var RxCollectionBase = /*#__PURE__*/function () {
       return this.$.pipe((0, _operators.filter)(function (cE) {
         return cE.operation === 'DELETE';
       }));
-    } // TODO remove this, we only have doc-changes anyway
-
-  }, {
-    key: "docChanges$",
-    get: function get() {
-      if (!this.__docChanges$) {
-        this.__docChanges$ = this.$.pipe((0, _operators.filter)(function (cE) {
-          return ['INSERT', 'UPDATE', 'DELETE'].includes(cE.operation);
-        }));
-      }
-
-      return this.__docChanges$;
     }
   }, {
     key: "onDestroy",

@@ -198,24 +198,15 @@ var RxStoragePouchDbClass = /*#__PURE__*/function () {
       });
       query.sort = sortArray;
     } // strip empty selectors
-    // TODO this has shit performance because of that many filters, use a single one!
 
 
-    Object.entries(query.selector).filter(function (_ref2) {
-      var v = _ref2[1];
-      return typeof v === 'object';
-    }).filter(function (_ref3) {
-      var v = _ref3[1];
-      return v !== null;
-    }).filter(function (_ref4) {
-      var v = _ref4[1];
-      return !Array.isArray(v);
-    }).filter(function (_ref5) {
-      var v = _ref5[1];
-      return Object.keys(v).length === 0;
-    }).forEach(function (_ref6) {
-      var k = _ref6[0];
-      return delete query.selector[k];
+    Object.entries(query.selector).forEach(function (_ref2) {
+      var k = _ref2[0],
+          v = _ref2[1];
+
+      if (typeof v === 'object' && v !== null && !Array.isArray(v) && Object.keys(v).length === 0) {
+        delete query.selector[k];
+      }
     }); // primary swap
 
     if (primPath !== '_id' && query.selector[primPath]) {
