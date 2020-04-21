@@ -1,4 +1,3 @@
-// TODO add a function to run a cache-clear
 export class DocCache<T> {
     private _map: Map<string, T> = new Map();
     constructor() {

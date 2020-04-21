@@ -110,7 +110,7 @@ export class RxQueryBase<
             /**
              * subscribe to the changeEvent-stream so it detects changes if it has subscribers
              */
-            const changeEvents$ = this.collection.docChanges$
+            const changeEvents$ = this.collection.$
                 .pipe(
                     tap(() => _ensureEqual(this)),
                     filter(() => false)

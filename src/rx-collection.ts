@@ -57,7 +57,7 @@ import {
     ChangeEventBuffer,
     createChangeEventBuffer
 } from './change-event-buffer';
-import overwritable from './overwritable';
+import { overwritable } from './overwritable';
 import {
     runPluginHooks
 } from './hooks';
@@ -147,15 +147,6 @@ export class RxCollectionBase<
         ) as any;
     }
 
-    // TODO remove this, we only have doc-changes anyway
-    get docChanges$() {
-        if (!this.__docChanges$) {
-            this.__docChanges$ = this.$.pipe(
-                filter((cE: RxChangeEvent) => ['INSERT', 'UPDATE', 'DELETE'].includes(cE.operation))
-            );
-        }
-        return this.__docChanges$;
-    }
     get onDestroy() {
         if (!this._onDestroy)
             this._onDestroy = new Promise(res => this._onDestroyCall = res);
@@ -182,11 +173,6 @@ export class RxCollectionBase<
 
     // other
     public _keyCompressor?: any;
-
-    /**
-     * only emits the change-events that change something with the documents
-     */
-    private __docChanges$?: any;
 
     /**
      * returns a promise that is resolved when the collection gets destroyed

@@ -355,6 +355,7 @@ config.parallel('rx-query.test.js', () => {
             // it is assumed that this query can never handled by event-reduce
             const q = col.find()
                 .where('firstName').ne('AliceFoobar')
+                .sort('_id')
                 .skip(1);
 
             let results = await q.exec();

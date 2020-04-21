@@ -2,9 +2,25 @@ import randomToken from 'random-token';
 import IdleQueue from 'custom-idle-queue';
 import { BroadcastChannel } from 'broadcast-channel';
 
+import type { LeaderElector } from './plugins/leader-election';
+import type {
+    CollectionsOfDatabase,
+    PouchDBInstance,
+    RxDatabase,
+    RxCollectionCreator,
+    RxJsonSchema,
+    RxCollection,
+    PouchSettings,
+    ServerOptions,
+    RxDatabaseCreator,
+    RxDumpDatabase,
+    RxDumpDatabaseAny
+} from './types';
+
 import {
     promiseWait,
-    pluginMissing
+    pluginMissing,
+    LOCAL_PREFIX
 } from './util';
 import {
     newRxError
@@ -16,7 +32,7 @@ import {
     isInstanceOf as isInstanceOfRxChangeEvent,
     RxChangeEventBroadcastChannelData
 } from './rx-change-event';
-import overwritable from './overwritable';
+import { overwritable } from './overwritable';
 import {
     runPluginHooks, runAsyncPluginHooks
 } from './hooks';
@@ -40,19 +56,6 @@ import {
 import {
     RxChangeEvent
 } from './rx-change-event';
-import type {
-    CollectionsOfDatabase,
-    PouchDBInstance,
-    RxDatabase,
-    RxCollectionCreator,
-    RxJsonSchema,
-    RxCollection,
-    PouchSettings,
-    ServerOptions,
-    RxDatabaseCreator,
-    RxDumpDatabase,
-    RxDumpDatabaseAny
-} from './types';
 import { RxStorage } from './rx-storate.interface';
 import { getRxStoragePouchDb } from './rx-storage-pouchdb';
 import { getAllDocuments, deleteStorageInstance } from './rx-database-internal-store';
@@ -357,10 +360,7 @@ export class RxDatabaseBase<
         throw pluginMissing('server');
     }
 
-    /**
-     * TODO import type of LeaderElector
-     */
-    public leaderElector(): any {
+    public leaderElector(): LeaderElector {
         throw pluginMissing('leader-election');
     }
 
@@ -453,17 +453,17 @@ function _removeUsedCombination(name: string, adapter: any) {
  * we set a storage-token and use it in the broadcast-channel
  */
 export function _ensureStorageTokenExists(rxDatabase: RxDatabase): Promise<string> {
-    return rxDatabase.internalStore.get('_local/storageToken')
+    return rxDatabase.internalStore.get(LOCAL_PREFIX + 'storageToken')
         .catch(() => {
             // no doc exists -> insert
             return rxDatabase.internalStore.put({
-                _id: '_local/storageToken',
+                _id: LOCAL_PREFIX + 'storageToken',
                 value: randomToken(10)
             })
                 .catch(() => { })
                 .then(() => promiseWait(0));
         })
-        .then(() => rxDatabase.internalStore.get('_local/storageToken'))
+        .then(() => rxDatabase.internalStore.get(LOCAL_PREFIX + 'storageToken'))
         .then((storageTokenDoc2: any) => storageTokenDoc2.value);
 }
 

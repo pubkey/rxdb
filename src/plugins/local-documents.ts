@@ -21,7 +21,7 @@ import {
     newRxTypeError
 } from '../rx-error';
 import {
-    clone, now
+    clone, now, LOCAL_PREFIX
 } from '../util';
 
 import type {
@@ -74,8 +74,6 @@ const _getChangeSub = (parent: any) => {
     }
     return CHANGE_SUB_BY_PARENT.get(parent);
 };
-
-const LOCAL_PREFIX = '_local/';
 
 const RxDocumentParent = createRxDocumentConstructor() as any;
 export class RxLocalDocument extends RxDocumentParent {
@@ -197,6 +195,7 @@ const RxLocalDocumentPrototype: any = {
         return this;
     },
     _saveData(this: any, newData: any) {
+        const oldData = this._dataSync$.getValue();
         newData = clone(newData);
         newData._id = LOCAL_PREFIX + this.id;
 
@@ -216,7 +215,7 @@ const RxLocalDocumentPrototype: any = {
                     true,
                     startTime,
                     endTime,
-                    null, // TODO emit old data
+                    oldData,
                     this
                 );
                 this.$emit(changeEvent);

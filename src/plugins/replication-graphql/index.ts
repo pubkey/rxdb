@@ -412,8 +412,6 @@ export class RxGraphQLReplicationState {
         if (this.isStopped()) return Promise.resolve(false);
         this._subs.forEach(sub => sub.unsubscribe());
         this._subjects.canceled.next(true);
-        // TODO
-
         return Promise.resolve(true);
     }
 }

@@ -72,7 +72,5 @@ export declare class RxQuery<RxDocumentType = any, RxQueryResult = RxDocumentTyp
     regex(queryObj: RegExp): RxQuery<RxDocumentType, RxQueryResult>;
     exists(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;
     elemMatch(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;
-
-    // TODO fix attribute-types of this function
     mod(p1: any, p2: any, p3: any): RxQuery<RxDocumentType, RxQueryResult>;
 }

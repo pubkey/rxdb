@@ -20,7 +20,6 @@ export declare class RxTypeError extends TypeError {
 
 /**
  * this lists all possible parameters
- * TODO reuse the same parameters more often
  */
 export interface RxErrorParameters {
     readonly errors?: RxErrorItem[];

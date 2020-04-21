@@ -165,6 +165,4 @@ export const ERROR_MESSAGES: { [k: string]: string } = {
     S1: 'You cannot create collections after calling RxDatabase.server()',
 
     // plugins/replication-graphql.js
-    QL1: 'TODO'
-
 };

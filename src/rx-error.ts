@@ -2,7 +2,7 @@
  * here we use custom errors with the additional field 'parameters'
  */
 
-import overwritable from './overwritable';
+import { overwritable } from './overwritable';
 import type {
     RxErrorParameters
 } from './types';

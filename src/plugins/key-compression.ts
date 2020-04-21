@@ -37,7 +37,6 @@ export class KeyCompressor {
             DEFAULT_COMPRESSION_FLAG,
             [
                 this.schema.primaryPath,
-                '_id', // TODO do we need _id here?
                 '_rev',
                 '_attachments'
             ]

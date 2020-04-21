@@ -22,6 +22,8 @@ import type { RxPlugin } from '../types';
 const VALIDATOR_CACHE: Map<string, any> = new Map();
 
 
+const ajv = new Ajv();
+
 /**
  * returns the parsed validator from ajv
  */
@@ -30,7 +32,6 @@ export function _getValidator(
 ): any {
     const hash = rxSchema.hash;
     if (!VALIDATOR_CACHE.has(hash)) {
-        const ajv = new Ajv(); // TODO should we reuse this instance?
         const validator = ajv.compile(rxSchema.jsonSchema);
         VALIDATOR_CACHE.set(hash, validator);
     }

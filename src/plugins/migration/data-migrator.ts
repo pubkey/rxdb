@@ -28,7 +28,7 @@ import {
 import {
     newRxError
 } from '../../rx-error';
-import overwritable from '../../overwritable';
+import { overwritable } from '../../overwritable';
 import {
     runPluginHooks,
     runAsyncPluginHooks

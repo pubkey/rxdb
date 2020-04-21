@@ -339,8 +339,7 @@ export function getHeightOfRevision(revString: string): number {
 
 
 /**
- * prefix of local documents
- * TODO check if this variable exists somewhere else
+ * prefix of local pouchdb documents
  */
 export const LOCAL_PREFIX: string = '_local/';
 

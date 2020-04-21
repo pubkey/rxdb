@@ -28,7 +28,7 @@ import type {
     RxPlugin
 } from './types';
 
-import overwritable from './overwritable';
+import { overwritable } from './overwritable';
 import {
     HOOKS
 } from './hooks';

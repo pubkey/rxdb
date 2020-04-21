@@ -22,6 +22,7 @@ Breaking:
   - Change default of `RxDocument().toJSON(withRevAndAttachments)` to `false`
   - Refactored `RxCollection`
   - Creating a collection will no longer emit an `RxChangeEvent`
+  - Removed `RxCollection.docChanges$()` because all events are from the docs
   - Renamed `RxSchema.jsonID` to `RxSchema.jsonSchema`
   - Moved remaining stuff of leader-election from core into the plugin
   - Merged multiple internal databases for metadata into one `internalStore`
