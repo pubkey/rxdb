@@ -54,7 +54,12 @@ describe('event-reduce.test.js', () => {
                     age: {
                         $gt: 20
                     }
-                }
+                },
+                // TODO it should also work without the sorting
+                // because RxDB should add predicatble sort if primary not used in sorting
+                sort: [{
+                    passportId: 'asc'
+                }]
             }
 
         ];
