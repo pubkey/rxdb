@@ -81,7 +81,7 @@ describe('event-reduce.test.js', () => {
         await testQueries();
 
         // update one
-        Promise.all(
+        await Promise.all(
             [
                 colNoEventReduce,
                 colWithEventReduce
@@ -97,7 +97,7 @@ describe('event-reduce.test.js', () => {
         await testQueries();
 
         // remove one
-        Promise.all(
+        await Promise.all(
             [
                 colNoEventReduce,
                 colWithEventReduce
@@ -110,6 +110,21 @@ describe('event-reduce.test.js', () => {
             })
         );
 
+        await testQueries();
+
+        // remove another one
+        await Promise.all(
+            [
+                colNoEventReduce,
+                colWithEventReduce
+            ].map(async (col) => {
+                const doc = await col
+                    .findOne()
+                    .sort('age')
+                    .exec(true);
+                await doc.remove();
+            })
+        );
         await testQueries();
 
         // clean up
