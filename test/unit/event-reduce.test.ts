@@ -29,6 +29,10 @@ describe('event-reduce.test.js', () => {
     }
     function ensureResultsEqual(res1: RxDocument[], res2: RxDocument[]) {
         assert.deepStrictEqual(
+            res1.map(d => d.primary),
+            res2.map(d => d.primary)
+        );
+        assert.deepStrictEqual(
             res1.map(d => d.toJSON()),
             res2.map(d => d.toJSON())
         );
@@ -59,7 +63,7 @@ describe('event-reduce.test.js', () => {
             await Promise.all(
                 queries.map(async (query) => {
                     const res1 = await colNoEventReduce.find(query).exec();
-                    const res2 = await colNoEventReduce.find(query).exec();
+                    const res2 = await colWithEventReduce.find(query).exec();
                     ensureResultsEqual(res1, res2);
                 })
             );
