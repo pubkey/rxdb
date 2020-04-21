@@ -190,7 +190,6 @@ export class RxGraphQLReplicationState {
         }
 
         return willRetry;
-
     }
 
     /**
@@ -376,12 +375,14 @@ export class RxGraphQLReplicationState {
             toPouch[this.lastPulledRevField] = toPouch._rev;
         }
 
+        const startTime = now();
         await this.collection.pouch.bulkDocs(
             [
                 toPouch
             ], {
             new_edits: false
         });
+        const endTime = now();
 
         /**
          * because bulkDocs with new_edits: false
@@ -402,7 +403,8 @@ export class RxGraphQLReplicationState {
         const cE = changeEventfromPouchChange(
             originalDoc,
             this.collection,
-            now()
+            startTime,
+            endTime
         );
         this.collection.$emit(cE);
     }

@@ -119,7 +119,8 @@ export interface RxChangeEventDelete<DocType = any> extends RxChangeEvent<DocTyp
 export function changeEventfromPouchChange<DocType>(
     changeDoc: any,
     collection: RxCollection,
-    time: number // time when the event was streamed out of pouchdb
+    startTime: number, // time when the event was streamed out of pouchdb
+    endTime: number, // time when the event was streamed out of pouchdb
 ): RxChangeEvent<DocType> {
     let operation: WriteOperation = changeDoc._rev.startsWith('1-') ? 'INSERT' : 'UPDATE';
     if (changeDoc._deleted) {
@@ -137,8 +138,8 @@ export function changeEventfromPouchChange<DocType>(
         collection.database.token,
         collection.name,
         false,
-        time,
-        time
+        startTime,
+        endTime
     );
     return cE;
 }

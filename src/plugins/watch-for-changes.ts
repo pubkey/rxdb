@@ -65,7 +65,8 @@ function _handleSingleChange(
 ): Promise<boolean> {
     if (change.id.charAt(0) === '_') return Promise.resolve(false); // do not handle changes of internal docs
 
-    const eventTime = now();
+    const startTime = now();
+    const endTime = now();
     // wait 2 ticks and 20 ms to give the internal event-handling time to run
     return promiseWait(20)
         .then(() => nextTick())
@@ -80,7 +81,8 @@ function _handleSingleChange(
             const cE = changeEventfromPouchChange(
                 docData,
                 collection,
-                eventTime
+                startTime,
+                endTime
             );
 
             collection.$emit(cE);
