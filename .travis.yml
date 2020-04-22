@@ -59,6 +59,11 @@ jobs:
     - stage: unit tests
       script: travis_retry npm run test:fast
       env: LABEL=test:fast
+    # in the past we had tests that failed randomly
+    # to prevent this we run the tests in fast-mode 10 times
+    - stage: unit tests
+      script: for i in `seq 10`; do npm run test:fast; done
+      env: LABEL=test:fast:often
     - stage: unit tests
       script: travis_retry npm run test:browser
       env: LABEL=test:browser
