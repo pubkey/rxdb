@@ -61,10 +61,18 @@ export interface GraphQLServerModule {
     spawn<T>(docs?: T[]): Promise<GraphqlServer<T>>;
 }
 
-export async function spawn<T>(
-    documents: T[] = [],
+declare type Human = {
+    id: string;
+    name: string;
+    age: number;
+    updatedAt: number;
+    deleted: boolean;
+};
+
+export async function spawn(
+    documents: Human[] = [],
     port = getPort()
-): Promise<GraphqlServer<T>> {
+): Promise<GraphqlServer<Human>> {
     const app = express();
     app.use(cors());
 
@@ -134,7 +142,7 @@ export async function spawn<T>(
             const sortedDocuments = documents.sort(sortByUpdatedAtAndPrimary);
 
             // only return where updatedAt >= minUpdatedAt
-            const filterForMinUpdatedAtAndId = sortedDocuments.filter((doc: any) => {
+            const filterForMinUpdatedAtAndId = sortedDocuments.filter((doc) => {
                 if (doc.updatedAt < args.minUpdatedAt) return false;
                 if (doc.updatedAt > args.minUpdatedAt) return true;
                 if (doc.updatedAt === args.minUpdatedAt) {
@@ -163,10 +171,22 @@ export async function spawn<T>(
         setHuman: (args: any) => {
             // console.log('## setHuman()');
             // console.dir(args);
-            const doc: any = args.human;
-            documents = documents.filter((d: any) => d.id !== doc.id);
-            doc.updatedAt = Math.round(new Date().getTime() / 1000);
+            const doc: Human = args.human;
+            const previousDoc = documents.find((d: Human) => d.id === doc.id);
+            documents = documents.filter((d: Human) => d.id !== doc.id);
+            doc.updatedAt = Math.ceil(new Date().getTime() / 1000);
+
+            // because javascript timer precission is not high enought,
+            // and we store seconds, not microseconds
+            // we have to ensure that the new updatedAt is always higher then the previous one
+            // otherwise the feed would not return updated documents some times
+            if (previousDoc && previousDoc.updatedAt >= doc.updatedAt) {
+                doc.updatedAt = doc.updatedAt + 1;
+            }
+
             documents.push(doc);
+
+            // console.log('server: setHuman(' + doc.id + ') with new updatedAt: ' + doc.updatedAt);
             // console.dir(documents);
 
             pubsub.publish(
@@ -190,7 +210,7 @@ export async function spawn<T>(
     const client = graphQlClient({
         url: ret
     });
-    const retServer: Promise<GraphqlServer<T>> = new Promise(res => {
+    const retServer: Promise<GraphqlServer<Human>> = new Promise(res => {
         const server = app.listen(port, function () {
 
             const wsPort = port + 500;

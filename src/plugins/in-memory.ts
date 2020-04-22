@@ -198,8 +198,9 @@ export class InMemoryRxCollection<RxDocumentType, OrmMethods> extends RxCollecti
         });
     }
     $emit(changeEvent: RxChangeEvent) {
-        if ((this._changeEventBuffer as any).hasChangeWithRevision(changeEvent.documentData && changeEvent.documentData._rev))
+        if ((this._changeEventBuffer as any).hasChangeWithRevision(changeEvent.documentData && changeEvent.documentData._rev)) {
             return;
+        }
 
         (this._observable$ as any).next(changeEvent);
 
