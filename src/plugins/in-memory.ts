@@ -29,11 +29,10 @@ import {
 } from '../rx-collection';
 import {
     clone,
-    randomCouchString,
-    adapterObject
+    randomCouchString
 } from '../util';
 import {
-    addRxPlugin
+    addRxPlugin,
 } from '../core';
 import {
     createCrypter
@@ -54,6 +53,9 @@ import {
 import {
     newRxError
 } from '../rx-error';
+import {
+    getRxStoragePouchDb
+} from '../rx-storage-pouchdb';
 
 // add the watch-for-changes-plugin
 import { RxDBWatchForChangesPlugin } from '../plugins/watch-for-changes';
@@ -105,10 +107,12 @@ export class InMemoryRxCollection<RxDocumentType, OrmMethods> extends RxCollecti
                 });
             });
 
-        this.pouch = new PouchDB(
-            'rxdb-in-memory-' + randomCouchString(10),
-            adapterObject('memory')
-        ) as any;
+        const storage = getRxStoragePouchDb('memory');
+        this.pouch = storage.createStorageInstance(
+            'rxdb-in-memory',
+            randomCouchString(10),
+            0
+        );
 
         this._observable$ = new Subject();
         this._changeEventBuffer = createChangeEventBuffer(this as any);
@@ -121,7 +125,7 @@ export class InMemoryRxCollection<RxDocumentType, OrmMethods> extends RxCollecti
     }
     private _parentCollection: RxCollection<RxDocumentType, OrmMethods>;
     public _changeStreams: any;
-    public _oldPouchPut: any;
+    public _oldPouchPut: Function;
     public _nonPersistentRevisions: any;
     public _nonPersistentRevisionsSubject: any;
 
