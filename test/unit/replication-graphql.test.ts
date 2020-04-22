@@ -1996,6 +1996,7 @@ describe('replication-graphql.test.js', () => {
                     live: true,
                     deletedFlag: 'deleted'
                 });
+
                 await replicationState.awaitInitialReplication();
 
                 // add one doc
@@ -2008,25 +2009,30 @@ describe('replication-graphql.test.js', () => {
                 assert.strictEqual(server.getDocuments().length, 1);
 
                 // update document
-                const newTime = Math.round(new Date().getTime() / 1000);
-                const doc = await collection.findOne().exec();
-                await doc.atomicSet('updatedAt', newTime);
+                const newAge = 1111;
+                const doc = await collection.findOne().exec(true);
+                await doc.atomicSet('age', newAge);
+
+                const docAfter = await collection.findOne().exec(true);
+                assert.strictEqual(docAfter.age, newAge);
 
                 // check server
                 await replicationState.run();
+
                 await AsyncTestUtil.waitUntil(() => {
-                    const notUpdated = server.getDocuments().find((d: any) => d.updatedAt !== newTime);
+                    const serverDocs = server.getDocuments();
+                    const notUpdated = serverDocs.find((d: any) => d.age !== newAge);
                     return !notUpdated;
                 });
 
                 // also delete to ensure nothing broke
                 await doc.remove();
                 await replicationState.run();
+
                 await AsyncTestUtil.waitUntil(() => {
                     const d = server.getDocuments().pop();
                     return (d as any).deleted;
                 });
-
                 server.close();
                 db.destroy();
             });
