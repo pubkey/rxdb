@@ -98,9 +98,6 @@ export class RxGraphQLReplicationState {
     public _runningPromise: Promise<void> = Promise.resolve();
     public _subs: Subscription[] = [];
 
-    // counts how often the replication has run
-    // used in tests
-    public _runCount = 0;
     public _runQueueCount: number = 0;
 
     public initialReplicationComplete$: Observable<any> = undefined as any;
@@ -169,8 +166,6 @@ export class RxGraphQLReplicationState {
     }
 
     async _run() {
-        this._runCount = this._runCount + 1;
-
         let willRetry = false;
 
         if (this.push) {

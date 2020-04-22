@@ -1541,8 +1541,10 @@ describe('replication-graphql.test.js', () => {
                     )
                 );
 
+                await AsyncTestUtil.waitUntil(
+                    () => replicationState._runQueueCount === 0
+                );
                 assert.ok(count < 10);
-                assert.strictEqual(replicationState._runQueueCount, 0);
 
                 server.close();
                 c.database.destroy();
@@ -2027,36 +2029,6 @@ describe('replication-graphql.test.js', () => {
 
                 server.close();
                 db.destroy();
-            });
-            it('#2048 GraphQL .run() fires exponentially', async () => {
-                const c = await humansCollection.createHumanWithTimestamp(0);
-                const server = await SpawnServer.spawn(getTestData(1));
-
-                const replicationState = c.syncGraphQL({
-                    url: server.url,
-                    pull: {
-                        queryBuilder
-                    },
-                    live: true,
-                    deletedFlag: 'deleted'
-                });
-                assert.strictEqual(replicationState._runCount, 0);
-
-                // call run() many times
-                const amount = 100;
-                await Promise.all(
-                    new Array(amount).map(
-                        () => replicationState.run()
-                    )
-                );
-
-                await AsyncTestUtil.waitUntil(
-                    () => replicationState._runCount > 0
-                );
-                await AsyncTestUtil.wait(50);
-                assert.ok(replicationState._runCount < amount);
-
-                c.database.destroy();
             });
         });
     });
