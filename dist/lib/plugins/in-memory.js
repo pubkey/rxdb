@@ -36,6 +36,8 @@ var _pouchDb = require("../pouch-db");
 
 var _rxError = require("../rx-error");
 
+var _rxStoragePouchdb = require("../rx-storage-pouchdb");
+
 var _watchForChanges = require("../plugins/watch-for-changes");
 
 /**
@@ -98,7 +100,8 @@ var InMemoryRxCollection = /*#__PURE__*/function (_RxCollectionBase) {
         }
       });
     });
-    _this.pouch = new _pouchDb.PouchDB('rxdb-in-memory-' + (0, _util.randomCouchString)(10), (0, _util.adapterObject)('memory'));
+    var storage = (0, _rxStoragePouchdb.getRxStoragePouchDb)('memory');
+    _this.pouch = storage.createStorageInstance('rxdb-in-memory', (0, _util.randomCouchString)(10), 0);
     _this._observable$ = new _rxjs.Subject();
     _this._changeEventBuffer = (0, _changeEventBuffer.createChangeEventBuffer)((0, _assertThisInitialized2["default"])(_this));
     var parentProto = Object.getPrototypeOf(parentCollection);
@@ -189,7 +192,9 @@ var InMemoryRxCollection = /*#__PURE__*/function (_RxCollectionBase) {
   };
 
   _proto.$emit = function $emit(changeEvent) {
-    if (this._changeEventBuffer.hasChangeWithRevision(changeEvent.documentData && changeEvent.documentData._rev)) return;
+    if (this._changeEventBuffer.hasChangeWithRevision(changeEvent.documentData && changeEvent.documentData._rev)) {
+      return;
+    }
 
     this._observable$.next(changeEvent); // run compaction each 10 events
 

@@ -13,7 +13,7 @@ export declare class InMemoryRxCollection<RxDocumentType, OrmMethods> extends Rx
     constructor(parentCollection: RxCollection, pouchSettings?: {});
     private _parentCollection;
     _changeStreams: any;
-    _oldPouchPut: any;
+    _oldPouchPut: Function;
     _nonPersistentRevisions: any;
     _nonPersistentRevisionsSubject: any;
     /**

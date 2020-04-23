@@ -10,13 +10,14 @@ import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
 import { Subject, fromEvent as ObservableFromEvent } from 'rxjs';
 import { filter, map, mergeMap, first } from 'rxjs/operators';
 import { RxCollectionBase } from '../rx-collection';
-import { clone, randomCouchString, adapterObject } from '../util';
+import { clone, randomCouchString } from '../util';
 import { addRxPlugin } from '../core';
 import { createCrypter } from '../crypter';
 import { createChangeEventBuffer } from '../change-event-buffer';
 import { createRxSchema } from '../rx-schema';
 import { PouchDB } from '../pouch-db';
-import { newRxError } from '../rx-error'; // add the watch-for-changes-plugin
+import { newRxError } from '../rx-error';
+import { getRxStoragePouchDb } from '../rx-storage-pouchdb'; // add the watch-for-changes-plugin
 
 import { RxDBWatchForChangesPlugin } from '../plugins/watch-for-changes';
 addRxPlugin(RxDBWatchForChangesPlugin);
@@ -71,7 +72,8 @@ export var InMemoryRxCollection = /*#__PURE__*/function (_RxCollectionBase) {
         }
       });
     });
-    _this.pouch = new PouchDB('rxdb-in-memory-' + randomCouchString(10), adapterObject('memory'));
+    var storage = getRxStoragePouchDb('memory');
+    _this.pouch = storage.createStorageInstance('rxdb-in-memory', randomCouchString(10), 0);
     _this._observable$ = new Subject();
     _this._changeEventBuffer = createChangeEventBuffer(_assertThisInitialized(_this));
     var parentProto = Object.getPrototypeOf(parentCollection);
@@ -162,7 +164,9 @@ export var InMemoryRxCollection = /*#__PURE__*/function (_RxCollectionBase) {
   };
 
   _proto.$emit = function $emit(changeEvent) {
-    if (this._changeEventBuffer.hasChangeWithRevision(changeEvent.documentData && changeEvent.documentData._rev)) return;
+    if (this._changeEventBuffer.hasChangeWithRevision(changeEvent.documentData && changeEvent.documentData._rev)) {
+      return;
+    }
 
     this._observable$.next(changeEvent); // run compaction each 10 events
 

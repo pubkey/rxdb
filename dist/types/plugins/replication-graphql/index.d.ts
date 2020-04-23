@@ -29,7 +29,6 @@ export declare class RxGraphQLReplicationState {
     };
     _runningPromise: Promise<void>;
     _subs: Subscription[];
-    _runCount: number;
     _runQueueCount: number;
     initialReplicationComplete$: Observable<any>;
     recieved$: Observable<any>;

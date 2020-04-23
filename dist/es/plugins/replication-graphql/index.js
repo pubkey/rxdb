@@ -41,7 +41,6 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
     };
     this._runningPromise = Promise.resolve();
     this._subs = [];
-    this._runCount = 0;
     this._runQueueCount = 0;
     this.initialReplicationComplete$ = undefined;
     this.recieved$ = undefined;
@@ -181,18 +180,17 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
         while (1) {
           switch (_context3.prev = _context3.next) {
             case 0:
-              this._runCount = this._runCount + 1;
               willRetry = false;
 
               if (!this.push) {
-                _context3.next = 7;
+                _context3.next = 6;
                 break;
               }
 
-              _context3.next = 5;
+              _context3.next = 4;
               return this.runPush();
 
-            case 5:
+            case 4:
               ok = _context3.sent;
 
               if (!ok) {
@@ -202,16 +200,16 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
                 }, this.retryTime);
               }
 
-            case 7:
+            case 6:
               if (!this.pull) {
-                _context3.next = 12;
+                _context3.next = 11;
                 break;
               }
 
-              _context3.next = 10;
+              _context3.next = 9;
               return this.runPull();
 
-            case 10:
+            case 9:
               _ok = _context3.sent;
 
               if (!_ok) {
@@ -221,10 +219,10 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
                 }, this.retryTime);
               }
 
-            case 12:
+            case 11:
               return _context3.abrupt("return", willRetry);
 
-            case 13:
+            case 12:
             case "end":
               return _context3.stop();
           }
