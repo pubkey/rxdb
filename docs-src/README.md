@@ -4,14 +4,13 @@
   </a>
 </p>
 
-<p align="center">
+<h1 align="center">
   <strong>A realtime Database for JavaScript Applications</strong>
-</p>
+</h1>
 <p align="justify">
-  RxDB (short for <b>R</b>eactive <b>D</b>ata<b>b</b>ase) is a NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps and NodeJs.
-  Reactive means that you can not only query the current state, but <b>subscribe</b> to all state-changes like the result of a query or even a single field of a document.
-  This is useful for <b>UI-based</b> apps that always display the realtime state to the user.
-    RxDB can do a realtime replication with any <b>CouchDB</b> compliant endpoint and also with <b>GraphQL</b> endpoints.
+  RxDB (short for <b>R</b>eactive <b>D</b>ata<b>b</b>ase) is a NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and NodeJs.
+  Reactive means that you can not only query the current state, but <b>subscribe</b> to all state changes like the result of a query or even a single field of a document.
+  This is great for UI-based <b>realtime</b> applications in way that makes it easy to develop and also has great performance benefits. To replicate data between your clients and server, RxDB provides modules for realtime replication with any <b>CouchDB</b> compliant endpoint and also with custom <b>GraphQL</b> endpoints.
 </p>
 
 <p align="center">
@@ -26,8 +25,67 @@
   </a> -->
 </p>
 
-<br/><br/><br/>
 
+<h2 align="center">
+  <strong>Core features</strong>
+</h2>
+
+
+<h3>
+  <strong>Realtime Queries</strong>
+</h3>
+
+<p align="justify">
+In addition to normal pull-based queries, RxDB is capable of having so called <b>realtime queries</b>. These do not only give you the results once but instead emit the new query results each time the state of your database changes.
+The stream comes as simple <a href="https://github.com/ReactiveX/rxjs" target="_blank">RxJS</a> Observable and works flawless together with your frontend framework.
+</p>
+
+```javascript
+db.heroes
+  .find({
+    sort: ['name']
+  })
+  .$ // <- returns observable of query
+  .subscribe( docs => {
+    myDomElement.innerHTML = docs
+      .map(doc => '<li>' + doc.name + '</li>')
+      .join();
+  });
+```
+
+![reactive.gif](./files/reactive.gif)
+
+
+<h3>
+  <strong>Replication</strong>
+</h3>
+
+<p align="justify">
+  To synchronize data between your clients and your server, RxDB provides replication modules for <b>CouchDB</b> and <b>GraphQL</b>. So when your server changes data, your application will autmatically stream that change to the client and updates its visual representation.
+</p>
+
+<img src="./files/sync.gif" />
+
+
+
+
+
+<h3>
+  <strong>Multi-Window / Tap Support</strong>
+</h3>
+
+<p align="justify">
+  When your application is opened in multiple windows or tabs at the same time, it can be tricky to synchronize actions between the open states. RxDB automatically broadcasts all changes between these tabs so you do not have to take any care of it.
+</p>
+
+<center>
+  <img src="./files/multiwindow.gif" />
+</center>
+
+
+
+
+<br/><br/><br/>
 <p align="center">
-    <b>If you are new to RxDB, you should start <a href="./install.html">here.</a></b>
+    <b>If you are new to RxDB, you should start reading the documentation <a href="./install.html">here.</a></b>
 </p>

@@ -16,10 +16,9 @@
 </p>
 
 <p align="justify">
-  RxDB (short for <b>R</b>eactive <b>D</b>ata<b>b</b>ase) is a NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps and NodeJs.
-  Reactive means that you can query the current state and <b>subscribe</b> to all state-changes, such as the result of a query or even a single field of a document.
-  This is useful for <b>UI-based</b> apps that always display the realtime state to the user.
-    RxDB can do a realtime replication with any <b>CouchDB</b> compliant endpoint and also with <b>GraphQL</b> endpoints.
+  RxDB (short for <b>R</b>eactive <b>D</b>ata<b>b</b>ase) is a NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and NodeJs.
+  Reactive means that you can not only query the current state, but <b>subscribe</b> to all state changes like the result of a query or even a single field of a document.
+  This is great for UI-based <b>realtime</b> applications in way that makes it easy to develop and also has great performance benefits. To replicate data between your clients and server, RxDB provides modules for realtime replication with any <b>CouchDB</b> compliant endpoint and also with custom <b>GraphQL</b> endpoints.
 </p>
 
 
