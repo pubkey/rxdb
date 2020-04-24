@@ -83,6 +83,32 @@ db.heroes
 </center>
 
 
+<h2>
+  <strong>Other features</strong>
+</h2>
+
+<h4>
+  <strong>Schema</strong>
+</h4>
+
+<p align="justify">
+  RxDB is based on <a href="https://json-schema.org/">json-schema</a> where the structure of documents is defined for each collection. This is useful when you develope in a team with multiple developers. It also provides information for RxDB to do performance optimizations. Also the schema is versionized and you can provide migration strategies to migrate the data which is already stored on the clients.
+</p>
+
+<h4>
+  <strong>Encryption</strong>
+</h4>
+
+<p align="justify">
+  RxDB comes with an encryption module where specific fields of a document can be stored encrypted. So when your clients device is stolen or hacked, you can be sure that sensitive data is not readable by third parties.
+</p>
+
+<h4>
+  <strong>Key Compression</strong>
+</h4>
+<p align="justify">
+  Saving data on a client can be tricky because you cannot predict how much storage capacity will be available. RxDB provides a key-compression module that compresses the stored json documents which saves about 40% of storage space.
+</p>
 
 
 <br/><br/><br/>
