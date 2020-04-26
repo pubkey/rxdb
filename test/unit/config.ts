@@ -6,6 +6,14 @@ import BroadcastChannel from 'broadcast-channel';
 import * as path from 'path';
 import parallel from 'mocha.parallel';
 
+function isFastMode(): boolean {
+    try {
+        return process.env.NODE_ENV === 'fast';
+    } catch (err) {
+        return false;
+    }
+}
+
 let useParallel = describe;
 try {
     if (process.env.NODE_ENV === 'fast') {
@@ -21,7 +29,8 @@ try {
 const config = {
     platform: detect(),
     parallel: useParallel,
-    rootPath: ''
+    rootPath: '',
+    isFastMode
 };
 
 if (config.platform.name === 'node') {

@@ -1,6 +1,6 @@
 # Changelog
 
-### 8.9.0 (14 March 2020)
+### 9.0.0 (comming soon)
 
 Features:
   - Added `RxQuery.exec(throwIfMissing: true)`
@@ -34,7 +34,10 @@ Other:
 Docs:
   - Removed examples for `require()` CommonJS loading
 
-### X.X.X (comming soon)
+Bugfixes:
+  - GraphQL replication plugin fires exponentially [#2048](https://github.com/pubkey/rxdb/issues/2048)
+
+### 8.9.0 (14 March 2020)
 
 Other:
   - The server plugin now exposes the `pouchApp` [#1992](https://github.com/pubkey/rxdb/pull/1992) Thanks [@Julusian](https://github.com/Julusian)

@@ -99,6 +99,7 @@ export class RxGraphQLReplicationState {
     public _subs: Subscription[] = [];
 
     public _runQueueCount: number = 0;
+    public _runCount: number = 0; // used in tests
 
     public initialReplicationComplete$: Observable<any> = undefined as any;
 
@@ -156,39 +157,46 @@ export class RxGraphQLReplicationState {
             this._subjects.active.next(true);
             const willRetry = await this._run();
             this._subjects.active.next(false);
-
-            if (!willRetry && this._subjects.initialReplicationComplete['_value'] === false)
+            if (!willRetry && this._subjects.initialReplicationComplete['_value'] === false) {
                 this._subjects.initialReplicationComplete.next(true);
-
+            }
             this._runQueueCount--;
         });
         return this._runningPromise;
     }
 
-    async _run() {
-        let willRetry = false;
+    /**
+     * returns true if retry must be done
+     */
+    async _run(): Promise<boolean> {
+        this._runCount++;
 
         if (this.push) {
             const ok = await this.runPush();
             if (!ok) {
-                willRetry = true;
                 setTimeout(() => this.run(), this.retryTime);
+                /*
+                    Because we assume that conflicts are solved on the server side,
+                    if push failed, do not attempt to pull before push was successful
+                    otherwise we do not know how to merge changes with the local state
+                */
+                return true;
             }
         }
 
         if (this.pull) {
             const ok = await this.runPull();
             if (!ok) {
-                willRetry = true;
                 setTimeout(() => this.run(), this.retryTime);
+                return true;
             }
         }
 
-        return willRetry;
+        return false;
     }
 
     /**
-     * @return true if no errors occured
+     * @return true if sucessfull
      */
     async runPull(): Promise<boolean> {
         // console.log('RxGraphQLReplicationState.runPull(): start');
@@ -207,7 +215,6 @@ export class RxGraphQLReplicationState {
             }
         } catch (err) {
             this._subjects.error.next(err);
-            setTimeout(() => this.run(), this.retryTime);
             return false;
         }
 
@@ -250,7 +257,10 @@ export class RxGraphQLReplicationState {
         return true;
     }
 
-    async runPush() {
+    /**
+     * @return true if successfull, false if not
+     */
+    async runPush(): Promise<boolean> {
         // console.log('RxGraphQLReplicationState.runPush(): start');
 
         const changes = await getChangesSinceLastPushSequence(
@@ -310,9 +320,7 @@ export class RxGraphQLReplicationState {
                     lastSuccessfullChange.seq
                 );
             }
-
             this._subjects.error.next(err);
-            setTimeout(() => this.run(), this.retryTime);
             return false;
         }
 
