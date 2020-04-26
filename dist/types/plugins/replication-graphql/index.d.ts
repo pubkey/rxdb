@@ -30,6 +30,7 @@ export declare class RxGraphQLReplicationState {
     _runningPromise: Promise<void>;
     _subs: Subscription[];
     _runQueueCount: number;
+    _runCount: number;
     initialReplicationComplete$: Observable<any>;
     recieved$: Observable<any>;
     send$: Observable<any>;
@@ -43,11 +44,17 @@ export declare class RxGraphQLReplicationState {
     isStopped(): boolean;
     awaitInitialReplication(): Promise<true>;
     run(): Promise<void>;
+    /**
+     * returns true if retry must be done
+     */
     _run(): Promise<boolean>;
     /**
-     * @return true if no errors occured
+     * @return true if sucessfull
      */
     runPull(): Promise<boolean>;
+    /**
+     * @return true if successfull, false if not
+     */
     runPush(): Promise<boolean>;
     handleDocumentFromRemote(doc: any, docsWithRevisions: any[]): Promise<void>;
     cancel(): Promise<any>;

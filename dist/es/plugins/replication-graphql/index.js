@@ -42,6 +42,7 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
     this._runningPromise = Promise.resolve();
     this._subs = [];
     this._runQueueCount = 0;
+    this._runCount = 0;
     this.initialReplicationComplete$ = undefined;
     this.recieved$ = undefined;
     this.send$ = undefined;
@@ -143,7 +144,10 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
 
                         _this2._subjects.active.next(false);
 
-                        if (!willRetry && _this2._subjects.initialReplicationComplete['_value'] === false) _this2._subjects.initialReplicationComplete.next(true);
+                        if (!willRetry && _this2._subjects.initialReplicationComplete['_value'] === false) {
+                          _this2._subjects.initialReplicationComplete.next(true);
+                        }
+
                         _this2._runQueueCount--;
 
                       case 7:
@@ -168,22 +172,28 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
     }
 
     return run;
-  }();
+  }()
+  /**
+   * returns true if retry must be done
+   */
+  ;
 
-  _proto._run = /*#__PURE__*/function () {
+  _proto._run =
+  /*#__PURE__*/
+  function () {
     var _run3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3() {
       var _this3 = this;
 
-      var willRetry, ok, _ok;
+      var ok, _ok;
 
       return _regeneratorRuntime.wrap(function _callee3$(_context3) {
         while (1) {
           switch (_context3.prev = _context3.next) {
             case 0:
-              willRetry = false;
+              this._runCount++;
 
               if (!this.push) {
-                _context3.next = 6;
+                _context3.next = 8;
                 break;
               }
 
@@ -193,36 +203,48 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
             case 4:
               ok = _context3.sent;
 
-              if (!ok) {
-                willRetry = true;
-                setTimeout(function () {
-                  return _this3.run();
-                }, this.retryTime);
-              }
-
-            case 6:
-              if (!this.pull) {
-                _context3.next = 11;
+              if (ok) {
+                _context3.next = 8;
                 break;
               }
 
-              _context3.next = 9;
-              return this.runPull();
+              setTimeout(function () {
+                return _this3.run();
+              }, this.retryTime);
+              /*
+                  Because we assume that conflicts are solved on the server side,
+                  if push failed, do not attempt to pull before push was successful
+                  otherwise we do not know how to merge changes with the local state
+              */
 
-            case 9:
-              _ok = _context3.sent;
+              return _context3.abrupt("return", true);
 
-              if (!_ok) {
-                willRetry = true;
-                setTimeout(function () {
-                  return _this3.run();
-                }, this.retryTime);
+            case 8:
+              if (!this.pull) {
+                _context3.next = 15;
+                break;
               }
 
-            case 11:
-              return _context3.abrupt("return", willRetry);
+              _context3.next = 11;
+              return this.runPull();
 
-            case 12:
+            case 11:
+              _ok = _context3.sent;
+
+              if (_ok) {
+                _context3.next = 15;
+                break;
+              }
+
+              setTimeout(function () {
+                return _this3.run();
+              }, this.retryTime);
+              return _context3.abrupt("return", true);
+
+            case 15:
+              return _context3.abrupt("return", false);
+
+            case 16:
             case "end":
               return _context3.stop();
           }
@@ -237,7 +259,7 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
     return _run;
   }()
   /**
-   * @return true if no errors occured
+   * @return true if sucessfull
    */
   ;
 
@@ -282,7 +304,7 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
               throw new Error(result.errors);
 
             case 13:
-              _context4.next = 20;
+              _context4.next = 19;
               break;
 
             case 15:
@@ -291,12 +313,9 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
 
               this._subjects.error.next(_context4.t0);
 
-              setTimeout(function () {
-                return _this4.run();
-              }, this.retryTime);
               return _context4.abrupt("return", false);
 
-            case 20:
+            case 19:
               // this assumes that there will be always only one property in the response
               // is this correct?
               data = result.data[Object.keys(result.data)[0]];
@@ -306,23 +325,23 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
               docIds = modified.map(function (doc) {
                 return doc[_this4.collection.schema.primaryPath];
               });
-              _context4.next = 25;
+              _context4.next = 24;
               return getDocsWithRevisionsFromPouch(this.collection, docIds);
 
-            case 25:
+            case 24:
               docsWithRevisions = _context4.sent;
-              _context4.next = 28;
+              _context4.next = 27;
               return Promise.all(modified.map(function (doc) {
                 return _this4.handleDocumentFromRemote(doc, docsWithRevisions);
               }));
 
-            case 28:
+            case 27:
               modified.map(function (doc) {
                 return _this4._subjects.recieved.next(doc);
               });
 
               if (!(modified.length === 0)) {
-                _context4.next = 33;
+                _context4.next = 32;
                 break;
               }
 
@@ -330,22 +349,22 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
               } else {// console.log('RxGraphQLReplicationState._run(): no more docs and not live; complete = true');
                 }
 
-              _context4.next = 38;
+              _context4.next = 37;
               break;
 
-            case 33:
+            case 32:
               newLatestDocument = modified[modified.length - 1];
-              _context4.next = 36;
+              _context4.next = 35;
               return setLastPullDocument(this.collection, this.endpointHash, newLatestDocument);
 
-            case 36:
-              _context4.next = 38;
+            case 35:
+              _context4.next = 37;
               return this.runPull();
 
-            case 38:
+            case 37:
               return _context4.abrupt("return", true);
 
-            case 39:
+            case 38:
             case "end":
               return _context4.stop();
           }
@@ -358,9 +377,15 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
     }
 
     return runPull;
-  }();
+  }()
+  /**
+   * @return true if successfull, false if not
+   */
+  ;
 
-  _proto.runPush = /*#__PURE__*/function () {
+  _proto.runPush =
+  /*#__PURE__*/
+  function () {
     var _runPush = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee5() {
       var _this5 = this;
 
@@ -428,7 +453,7 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
               break;
 
             case 22:
-              _context5.next = 32;
+              _context5.next = 31;
               break;
 
             case 24:
@@ -446,18 +471,15 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
             case 29:
               this._subjects.error.next(_context5.t0);
 
-              setTimeout(function () {
-                return _this5.run();
-              }, this.retryTime);
               return _context5.abrupt("return", false);
 
-            case 32:
-              _context5.next = 34;
+            case 31:
+              _context5.next = 33;
               return setLastPushSequence(this.collection, this.endpointHash, changes.last_seq);
 
-            case 34:
+            case 33:
               if (!(changes.results.length === 0)) {
-                _context5.next = 38;
+                _context5.next = 37;
                 break;
               }
 
@@ -465,17 +487,17 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
               } else {// console.log('RxGraphQLReplicationState._runPull(): no more docs to push and not live; complete = true');
                 }
 
-              _context5.next = 40;
+              _context5.next = 39;
               break;
 
-            case 38:
-              _context5.next = 40;
+            case 37:
+              _context5.next = 39;
               return this.runPush();
 
-            case 40:
+            case 39:
               return _context5.abrupt("return", true);
 
-            case 41:
+            case 40:
             case "end":
               return _context5.stop();
           }
