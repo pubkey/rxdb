@@ -2082,8 +2082,8 @@ describe('replication-graphql.test.js', () => {
                 await AsyncTestUtil.wait(5000);
 
                 // Since push will error out we expect it there to be around 5000/500 = 10 retries
-                assert.ok(replicationState._runCount >= 9, replicationState._runCount);
-                assert.ok(replicationState._runCount <= 11, replicationState._runCount);
+                assert.ok(replicationState._runCount >= 9, replicationState._runCount.toString());
+                assert.ok(replicationState._runCount <= 11, replicationState._runCount.toString());
 
                 c.database.destroy();
             });
