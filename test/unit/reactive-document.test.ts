@@ -12,7 +12,8 @@ import * as schemaObjects from '../helper/schema-objects';
 import {
     createRxDatabase,
     randomCouchString,
-    promiseWait
+    promiseWait,
+    RxChangeEvent
 } from '../../';
 import {
     first
@@ -22,13 +23,31 @@ config.parallel('reactive-document.test.js', () => {
     describe('.save()', () => {
         describe('positive', () => {
             it('should fire on save', async () => {
-                const c = await humansCollection.create();
-                const doc: any = await c.findOne().exec();
+                const c = await humansCollection.create(1);
+                const doc = await c.findOne().exec(true);
 
-                await doc.atomicSet('firstName', randomCouchString(8));
+                const oldName = doc.firstName;
+                const newName = randomCouchString(8);
 
-                const changeEvent = await doc.$.pipe(first()).toPromise();
-                assert.strictEqual(changeEvent._id, doc.primary);
+                const emittedCollection: RxChangeEvent[] = [];
+                const colSub = c.$.subscribe(cE => {
+                    emittedCollection.push(cE);
+                });
+
+                await doc.atomicSet('firstName', newName);
+
+                await AsyncTestUtil.waitUntil(() => emittedCollection.length === 1);
+                const docDataAfter = await doc.$.pipe(first()).toPromise();
+
+
+                const changeEvent: RxChangeEvent = emittedCollection[0];
+                assert.strictEqual(changeEvent.documentData.firstName, newName);
+                assert.strictEqual(changeEvent.previousData.firstName, oldName);
+
+
+                assert.strictEqual(docDataAfter._id, doc.primary);
+                assert.strictEqual(docDataAfter._id, doc.primary);
+                colSub.unsubscribe();
                 c.database.destroy();
             });
             it('should observe a single field', async () => {

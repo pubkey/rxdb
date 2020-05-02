@@ -36,6 +36,7 @@ Docs:
 
 Bugfixes:
   - GraphQL replication plugin fires exponentially [#2048](https://github.com/pubkey/rxdb/issues/2048)
+  - When a `default` is set in the schema, the default values are also applied after `atomicUpdate()` and `atomicSet()`
 
 ### 8.9.0 (14 March 2020)
 

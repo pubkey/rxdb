@@ -18,8 +18,11 @@ import {
     RxError,
     randomCouchString,
     shuffleArray,
-    _createRxCollection
+    _createRxCollection,
+    RxJsonSchema,
+    PrimaryProperty
 } from '../../';
+import { HumanDocumentType } from '../helper/schema-objects';
 
 config.parallel('rx-collection.test.js', () => {
     describe('static', () => {
@@ -1358,6 +1361,37 @@ config.parallel('rx-collection.test.js', () => {
                     assert.strictEqual(docs.length, 1);
                     const doc = await c.findOne().exec();
                     assert.strictEqual(doc.firstName, 'foobar1');
+
+                    db.destroy();
+                });
+                it('should set correct default values', async () => {
+                    const db = await createRxDatabase({
+                        name: randomCouchString(10),
+                        adapter: 'memory'
+                    });
+
+                    const schema: RxJsonSchema<HumanDocumentType> = clone(schemas.humanDefault);
+                    (schema.properties.passportId as PrimaryProperty).primary = true;
+
+                    const defaultValue = schema.properties.age.default;
+                    const collection = await db.collection({
+                        name: 'nestedhuman',
+                        schema
+                    });
+
+                    const doc = await collection.atomicUpsert({
+                        passportId: 'foobar',
+                        firstName: 'foobar2'
+                    });
+
+                    assert.strictEqual(doc.age, defaultValue);
+
+                    // should also set after atomicUpdate when document exists
+                    const afterUpdate = await collection.atomicUpsert({
+                        passportId: 'foobar',
+                        firstName: 'foobar3'
+                    });
+                    assert.strictEqual(afterUpdate.age, defaultValue);
 
                     db.destroy();
                 });

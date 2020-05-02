@@ -277,7 +277,13 @@ export const basePrototype = {
                 const ret = fun(clone(this._dataSync$.getValue()), this);
                 const retPromise = toPromise(ret);
                 return retPromise
-                    .then(newData => this._saveData(newData, oldData));
+                    .then(newData => {
+                        // collection does not exist on local documents
+                        if (this.collection) {
+                            newData = this.collection.schema.fillObjectWithDefaults(newData);
+                        }
+                        return this._saveData(newData, oldData);
+                    });
             });
         return this._atomicQueue.then(() => this);
     },
@@ -295,7 +301,6 @@ export const basePrototype = {
      */
     _saveData(this: RxDocument, newData: any, oldData: any): Promise<void> {
         newData = newData;
-
 
         // deleted documents cannot be changed
         if (this._deleted$.getValue()) {
@@ -333,6 +338,7 @@ export const basePrototype = {
                     endTime,
                     this
                 );
+
                 this.$emit(changeEvent);
 
                 return this.collection._runHooks('post', 'save', newData, this);
