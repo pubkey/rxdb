@@ -7517,6 +7517,11 @@ var basePrototype = {
       var ret = fun((0, _util.clone)(_this2._dataSync$.getValue()), _this2);
       var retPromise = (0, _util.toPromise)(ret);
       return retPromise.then(function (newData) {
+        // collection does not exist on local documents
+        if (_this2.collection) {
+          newData = _this2.collection.schema.fillObjectWithDefaults(newData);
+        }
+
         return _this2._saveData(newData, oldData);
       });
     });
@@ -9999,7 +10004,7 @@ var AbstractNode = /** @class */ (function () {
                 throw new Error('cannot remove node with parents ' + this.id);
             }
         }
-        if (this['branches']) {
+        if (this.branches) {
             var useNode = this;
             if (useNode.branches.areBranchesStrictEqual()) {
                 useNode.branches.getBranch('0').parents.remove(useNode);
@@ -10020,14 +10025,14 @@ var AbstractNode = /** @class */ (function () {
             type: this.type,
             level: this.level
         };
-        if (withId && this['parents']) {
-            ret.parents = this['parents'].toString();
+        if (withId && this.parents) {
+            ret.parents = this.parents.toString();
         }
         if (this.isLeafNode()) {
             ret.value = this.asLeafNode().value;
         }
-        if (this['branches'] && !this['branches'].deleted) {
-            var branches = this['branches'];
+        if (this.branches && !this.branches.deleted) {
+            var branches = this.branches;
             ret.branches = {
                 '0': branches.getBranch('0').toJSON(withId),
                 '1': branches.getBranch('1').toJSON(withId)
@@ -10041,8 +10046,8 @@ var AbstractNode = /** @class */ (function () {
         var ret = '' +
             '<' +
             this.type + ':' + this.level;
-        if (this['branches']) {
-            var branches = this['branches'];
+        if (this.branches) {
+            var branches = this.branches;
             ret += '|0:' + branches.getBranch('0');
             ret += '|1:' + branches.getBranch('1');
         }
@@ -10321,7 +10326,7 @@ function ensureCorrectBdd(bdd) {
             var firstId_1 = nodesOnlyInRecursive[0];
             var referenceToFirst = allNodes.find(function (n) {
                 if (n.isInternalNode()) {
-                    return n['branches'].hasNodeIdAsBranch(firstId_1);
+                    return n.branches.hasNodeIdAsBranch(firstId_1);
                 }
                 return false;
             });
@@ -26156,6 +26161,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var states_1 = require("./states");
 var actions_1 = require("./actions");
 var bdd_generated_1 = require("./bdd/bdd.generated");
+__export(require("./states"));
 __export(require("./util"));
 function calculateActionFromMap(stateSetToActionMap, input) {
     var stateSet = states_1.getStateSet(input);

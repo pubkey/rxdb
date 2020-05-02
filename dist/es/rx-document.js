@@ -249,6 +249,11 @@ export var basePrototype = {
       var ret = fun(clone(_this2._dataSync$.getValue()), _this2);
       var retPromise = toPromise(ret);
       return retPromise.then(function (newData) {
+        // collection does not exist on local documents
+        if (_this2.collection) {
+          newData = _this2.collection.schema.fillObjectWithDefaults(newData);
+        }
+
         return _this2._saveData(newData, oldData);
       });
     });
