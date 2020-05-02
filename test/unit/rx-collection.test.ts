@@ -1395,6 +1395,32 @@ config.parallel('rx-collection.test.js', () => {
 
                     db.destroy();
                 });
+                it('should completely remove fields that are unset', async () => {
+                    const db = await createRxDatabase({
+                        name: randomCouchString(10),
+                        adapter: 'memory'
+                    });
+                    const schema: RxJsonSchema<HumanDocumentType> = clone(schemas.humanDefault);
+                    (schema.properties.passportId as PrimaryProperty).primary = true;
+
+                    const collection = await db.collection({
+                        name: 'nestedhuman',
+                        schema
+                    });
+
+                    const doc = await collection.atomicUpsert({
+                        passportId: 'foobar',
+                        firstName: 'foobar2'
+                    });
+                    assert.strictEqual(doc.firstName, 'foobar2');
+
+                    const afterUpdate = await collection.atomicUpsert({
+                        passportId: 'foobar'
+                    });
+                    assert.strictEqual(typeof afterUpdate.firstName, 'undefined');
+
+                    db.destroy();
+                });
             });
             describe('negative', () => {
                 it('should throw when not matching schema', async () => {
