@@ -47,6 +47,8 @@ import {
 
 addRxPlugin(RxDBReplicationGraphQLPlugin);
 
+import { RxDBDevModePlugin } from '../../plugins/dev-mode';
+addRxPlugin(RxDBDevModePlugin);
 
 declare type WithDeleted<T> = T & { deleted: boolean };
 
@@ -910,7 +912,6 @@ describe('replication-graphql.test.js', () => {
                 server.close();
                 c.database.destroy();
             });
-
             it('should pull all documents in multiple batches', async () => {
                 const amount = batchSize * 4;
                 const testData = getTestData(amount);
@@ -1025,6 +1026,38 @@ describe('replication-graphql.test.js', () => {
                 const docs = await c.find().exec();
                 assert.strictEqual(docs.length, amount);
 
+                server.close();
+                c.database.destroy();
+            });
+            it('should not save pulled documents that do not match the schema', async () => {
+                const testData = getTestData(1);
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(0),
+                    SpawnServer.spawn(testData)
+                ]);
+                const replicationState = c.syncGraphQL({
+                    url: server.url,
+                    pull: {
+                        queryBuilder,
+                        modifier: docData => {
+                            // delete name which is required in the schema
+                            delete docData.name;
+                            return docData;
+                        }
+                    },
+                    deletedFlag: 'deleted'
+                });
+
+                const errors: any[] = [];
+                const errorSub = replicationState.error$.subscribe(err => {
+                    errors.push(err);
+                });
+                await AsyncTestUtil.waitUntil(() => errors.length === 1);
+
+                const firstError = errors[0];
+                assert.strictEqual(firstError.code, 'VD2');
+
+                errorSub.unsubscribe();
                 server.close();
                 c.database.destroy();
             });

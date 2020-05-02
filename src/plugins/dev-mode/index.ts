@@ -16,7 +16,7 @@ export * from './check-schema';
 export const RxDBDevModePlugin: RxPlugin = {
     rxdb: true,
     overwritable: {
-        isDevMove() {
+        isDevMode() {
             return true;
         },
         tunnelErrorMessage(code: string) {

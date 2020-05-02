@@ -47,6 +47,9 @@ import { RxDBLeaderElectionPlugin } from '../leader-election';
 import {
     changeEventfromPouchChange
 } from '../../rx-change-event';
+import {
+    overwritable
+} from '../../overwritable';
 import type {
     RxCollection,
     GraphQLSyncPullOptions,
@@ -209,7 +212,6 @@ export class RxGraphQLReplicationState {
         let result;
         try {
             result = await this.client.query(pullGraphQL.query, pullGraphQL.variables);
-
             if (result.errors) {
                 throw new Error(result.errors);
             }
@@ -221,8 +223,25 @@ export class RxGraphQLReplicationState {
         // this assumes that there will be always only one property in the response
         // is this correct?
         const data = result.data[Object.keys(result.data)[0]];
-
         const modified = data.map((doc: any) => (this.pull as any).modifier(doc));
+
+
+        /**
+         * Run schema validation in dev-mode
+         */
+        if (overwritable.isDevMode()) {
+            try {
+                modified.forEach((doc: any) => {
+                    const withoutDeleteFlag = Object.assign({}, doc);
+                    delete withoutDeleteFlag[this.deletedFlag];
+                    delete withoutDeleteFlag._revisions;
+                    this.collection.schema.validate(withoutDeleteFlag);
+                });
+            } catch (err) {
+                this._subjects.error.next(err);
+                return false;
+            }
+        }
 
         const docIds = modified.map((doc: any) => doc[this.collection.schema.primaryPath]);
         const docsWithRevisions = await getDocsWithRevisionsFromPouch(

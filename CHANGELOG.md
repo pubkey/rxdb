@@ -26,6 +26,7 @@ Breaking:
   - Renamed `RxSchema.jsonID` to `RxSchema.jsonSchema`
   - Moved remaining stuff of leader-election from core into the plugin
   - Merged multiple internal databases for metadata into one `internalStore`
+  - In dev-mode, the GraphQL-replication will run a schema validation of each document that comes from the server
 
 Other:
   - Removed many runtime type checks that now should be covered by typescript in buildtime
