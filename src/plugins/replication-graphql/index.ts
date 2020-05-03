@@ -207,7 +207,7 @@ export class RxGraphQLReplicationState {
 
         const latestDocument = await getLastPullDocument(this.collection, this.endpointHash);
         const latestDocumentData = latestDocument ? latestDocument : null;
-        const pullGraphQL = this.pull.queryBuilder(latestDocumentData);
+        const pullGraphQL = await this.pull.queryBuilder(latestDocumentData);
 
         let result;
         try {
@@ -321,7 +321,7 @@ export class RxGraphQLReplicationState {
              */
             for (let i = 0; i < changesWithDocs.length; i++) {
                 const changeWithDoc = changesWithDocs[i];
-                const pushObj = this.push.queryBuilder(changeWithDoc.doc);
+                const pushObj = await this.push.queryBuilder(changeWithDoc.doc);
                 const result = await this.client.query(pushObj.query, pushObj.variables);
                 if (result.errors) {
                     throw new Error(JSON.stringify(result.errors));
