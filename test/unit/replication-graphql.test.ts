@@ -1427,6 +1427,45 @@ describe('replication-graphql.test.js', () => {
                 server.close();
                 c.database.destroy();
             });
+            it('should allow asynchronous push and pull queryBuilders', async () => {
+                const amount = batchSize * 4;
+                const testData = getTestData(amount);
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(amount),
+                    SpawnServer.spawn(testData)
+                ]);
+
+                const asyncPushQueryBuilder = async (doc: any): Promise<any> => {
+                    return pushQueryBuilder(doc);
+                };
+                const asyncQueryBuilder = async (doc: any): Promise<any> => {
+                    return queryBuilder(doc);
+                };
+
+                const replicationState = c.syncGraphQL({
+                    url: server.url,
+                    push: {
+                        batchSize,
+                        queryBuilder: asyncPushQueryBuilder
+                    },
+                    pull: {
+                        queryBuilder: asyncQueryBuilder
+                    },
+                    live: false,
+                    deletedFlag: 'deleted'
+                });
+
+                await replicationState.awaitInitialReplication();
+
+                const docsOnServer = server.getDocuments();
+                assert.strictEqual(docsOnServer.length, amount * 2);
+
+                const docsOnDb = await c.find().exec();
+                assert.strictEqual(docsOnDb.length, amount * 2);
+
+                server.close();
+                c.database.destroy();
+            });
             it('should push and pull some docs; live: true', async () => {
                 const amount = batchSize * 1;
                 const testData = getTestData(amount);
