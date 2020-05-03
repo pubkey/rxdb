@@ -125,7 +125,7 @@ addRxPlugin(RxDBReplicationGraphQL);
 
 #### Pull replication
 
-For the pull-replication, you first need a `pullQueryBuilder`. This is a function that gets the last replicated document as input and returns an object with a GraphQL-query and its variables. RxDB will use the query builder to construct what is later send to the GraphQL endpoint.
+For the pull-replication, you first need a `pullQueryBuilder`. This is a function that gets the last replicated document as input and returns an object with a GraphQL-query and its variables (or a promise that resolves to the same object). RxDB will use the query builder to construct what is later send to the GraphQL endpoint.
 
 ```js
 const pullQueryBuilder = doc => {
