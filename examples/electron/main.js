@@ -53,7 +53,7 @@ app.on('ready', async function () {
      * which is used as sync-goal by page.js
      */
     console.log('start server');
-    db.server({
+    await db.server({
         path: '/db',
         port: 10102,
         cors: true
