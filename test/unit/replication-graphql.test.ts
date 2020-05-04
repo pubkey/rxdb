@@ -907,7 +907,7 @@ describe('replication-graphql.test.js', () => {
                     const remoteDoc = remoteDocs.find((d) => d.id === doc.id);
                     assert.ok(remoteDoc);
                     assert.ok(remoteDoc._rev, doc.docs[0].ok._rev);
-                    assert.deepEqual(doc.docs[0].ok._revisions, remoteDoc._revisions);
+                    assert.deepStrictEqual(doc.docs[0].ok._revisions, remoteDoc._revisions);
                 });
                 server.close();
                 c.database.destroy();

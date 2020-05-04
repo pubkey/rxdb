@@ -587,7 +587,7 @@ config.parallel('pouch-db-integration.test.js', () => {
             }
 
             results.forEach(res => {
-                assert.equal(res.docs.length, 1);
+                assert.strictEqual(res.docs.length, 1);
             });
 
             pouches.forEach(pouch => pouch.destroy());
@@ -619,7 +619,7 @@ config.parallel('pouch-db-integration.test.js', () => {
             const results = await Promise.all(promises);
 
             results.forEach(res => {
-                assert.equal(res.docs.length, 1);
+                assert.strictEqual(res.docs.length, 1);
             });
             pouches.forEach(pouch => pouch.destroy());
         });

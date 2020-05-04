@@ -92,7 +92,7 @@ config.parallel('server.test.js', () => {
         const gotJson = await request(colUrl);
 
         const got = JSON.parse(gotJson);
-        assert.equal(got.doc_count, 1);
+        assert.strictEqual(got.doc_count, 1);
 
         const clientCollection = await humansCollection.create(0);
 
