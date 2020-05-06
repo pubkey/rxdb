@@ -314,7 +314,7 @@ export const deepNestedHuman: RxJsonSchema<DeepNestedHumanDocumentType> = {
                     }
                 }
             },
-            required: ['name', 'attack']
+            required: ['name']
         }
     },
     indexes: ['passportId'],

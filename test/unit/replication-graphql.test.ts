@@ -33,7 +33,10 @@ import {
     setLastPushSequence,
     getChangesSinceLastPushSequence,
     getLastPullDocument,
-    setLastPullDocument
+    setLastPullDocument,
+    graphQLSchemaFromRxSchema,
+    pullQueryBuilderFromRxSchema,
+    pushQueryBuilderFromRxSchema
 } from '../../plugins/replication-graphql';
 import * as schemas from '../helper/schemas';
 import {
@@ -48,6 +51,10 @@ import {
 addRxPlugin(RxDBReplicationGraphQLPlugin);
 
 import { RxDBDevModePlugin } from '../../plugins/dev-mode';
+import {
+    buildSchema,
+    parse as parseQuery
+} from 'graphql';
 addRxPlugin(RxDBDevModePlugin);
 
 declare type WithDeleted<T> = T & { deleted: boolean };
@@ -1850,6 +1857,98 @@ describe('replication-graphql.test.js', () => {
             });
         });
 
+        config.parallel('.graphQLSchemaFromRxSchema()', () => {
+            it('assumption: buildSchema() fails on non-graphql input', () => {
+                assert.throws(
+                    () => buildSchema('foobar')
+                );
+            });
+            it('should create a valid output', () => {
+                const output = graphQLSchemaFromRxSchema({
+                    human: {
+                        schema: schemas.humanWithTimestamp,
+                        feedKeys: [
+                            'id',
+                            'updatedAt'
+                        ],
+                        deletedFlag: 'deleted'
+                    },
+                    deepNestedHuman: {
+                        schema: schemas.deepNestedHuman,
+                        feedKeys: [
+                            'passportId'
+                        ],
+                        deletedFlag: 'deleted'
+                    }
+                });
+                const build = buildSchema(output.asString);
+                assert.ok(build);
+            });
+        });
+        config.parallel('.pullQueryBuilderFromRxSchema()', () => {
+            it('assumption: parseQuery() fails on non-graphql input', () => {
+                assert.throws(
+                    () => parseQuery('foobar')
+                );
+            });
+            it('should create a valid builder', () => {
+                const builder = pullQueryBuilderFromRxSchema(
+                    'human', {
+                    schema: schemas.humanWithTimestamp,
+                    feedKeys: [
+                        'id',
+                        'updatedAt'
+                    ],
+                    deletedFlag: 'deleted'
+                });
+
+                const output = builder({
+                    id: 'foo',
+                    updatedAt: 12343
+                });
+
+                const parsed = parseQuery(output.query);
+                assert.ok(parsed);
+            });
+            it('builder should work on null-document', () => {
+                const builder = pullQueryBuilderFromRxSchema(
+                    'human', {
+                    schema: schemas.humanWithTimestamp,
+                    feedKeys: [
+                        'id',
+                        'updatedAt'
+                    ],
+                    deletedFlag: 'deleted'
+                });
+
+                const output = builder(null);
+                const parsed = parseQuery(output.query);
+                assert.ok(parsed);
+            });
+        });
+        config.parallel('.pushQueryBuilderFromRxSchema()', () => {
+            it('should create a valid builder', () => {
+                const builder = pushQueryBuilderFromRxSchema(
+                    'human', {
+                    schema: schemas.humanWithTimestamp,
+                    feedKeys: [
+                        'id',
+                        'updatedAt'
+                    ],
+                    deletedFlag: 'deleted'
+                });
+
+                const output = builder({
+                    id: 'foo',
+                    name: 'foo',
+                    age: 1234,
+                    updatedAt: 12343
+                });
+
+                const parsed = parseQuery(output.query);
+                assert.ok(parsed);
+            });
+        });
         config.parallel('integrations', () => {
             it('should work with encryption', async () => {
                 const db = await createRxDatabase({

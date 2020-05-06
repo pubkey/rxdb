@@ -262,6 +262,11 @@ changeObservable.subscribe({
 
 ```
 
+#### Helper Functions (beta)
+
+RxDB provides the helper functions `graphQLSchemaFromRxSchema()`, `pullQueryBuilderFromRxSchema()` and `pushQueryBuilderFromRxSchema()` that can be used to generate the GraphQL Schema from the `RxJsonSchema`. To learn how to use them, please inspect the (GraphQL Example)[https://github.com/pubkey/rxdb/tree/master/examples/graphql]
+
+
 ### Conflict Resolution
 RxDB assumes that the Conflict Resolution will happen on the server side.
 When the clients sends a document to the server which causes a conflict, this has to be resolved there and then the resulting document can be synced down to RxDB. While CouchDB uses revision-flags for conflicts, you can use any logic like relying on the `updatedAt` date or other flags.

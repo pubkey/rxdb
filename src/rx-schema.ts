@@ -273,7 +273,7 @@ export function normalize(jsonSchema: RxJsonSchema): RxJsonSchema {
  * fills the schema-json with default-settings
  * @return cloned schemaObj
  */
-const fillWithDefaultSettings = function (
+export const fillWithDefaultSettings = function (
     schemaObj: RxJsonSchema
 ): RxJsonSchema {
     schemaObj = clone(schemaObj);

@@ -533,6 +533,8 @@ export function syncGraphQL(
 
 export * from './helper';
 export * from './crawling-checkpoint';
+export * from './graphql-schema-from-rx-schema';
+export * from './query-builder-from-rx-schema';
 
 export const rxdb = true;
 export const prototypes = {

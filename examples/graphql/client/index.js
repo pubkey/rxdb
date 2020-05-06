@@ -10,7 +10,11 @@ import {
 } from 'rxdb/plugins/core';
 
 addRxPlugin(require('pouchdb-adapter-idb'));
-import { RxDBReplicationGraphQLPlugin } from 'rxdb/plugins/replication-graphql';
+import {
+    RxDBReplicationGraphQLPlugin,
+    pullQueryBuilderFromRxSchema,
+    pushQueryBuilderFromRxSchema
+} from 'rxdb/plugins/replication-graphql';
 addRxPlugin(RxDBReplicationGraphQLPlugin);
 
 
@@ -30,78 +34,30 @@ import {
     GRAPHQL_PORT,
     GRAPHQL_PATH,
     GRAPHQL_SUBSCRIPTION_PORT,
-    GRAPHQL_SUBSCRIPTION_PATH
+    GRAPHQL_SUBSCRIPTION_PATH,
+    heroSchema,
+    graphQLGenerationInput
 } from '../shared';
 
 const insertButton = document.querySelector('#insert-button');
 const heroesList = document.querySelector('#heroes-list');
 const leaderIcon = document.querySelector('#leader-icon');
 
-const heroSchema = {
-    version: 0,
-    type: 'object',
-    properties: {
-        id: {
-            type: 'string',
-            primary: true
-        },
-        name: {
-            type: 'string'
-        },
-        color: {
-            type: 'string'
-        },
-        updatedAt: {
-            type: 'number'
-        }
-    },
-    indexes: ['name', 'color', 'updatedAt'],
-    required: ['color']
-};
-
 console.log('hostname: ' + window.location.hostname);
 const syncURL = 'http://' + window.location.hostname + ':' + GRAPHQL_PORT + GRAPHQL_PATH;
 
-const batchSize = 5;
-const queryBuilder = doc => {
-    if (!doc) {
-        doc = {
-            id: '',
-            updatedAt: 0
-        };
-    }
-    const query = `{
-        feedForRxDBReplication(lastId: "${doc.id}", minUpdatedAt: ${doc.updatedAt}, limit: ${batchSize}) {
-            id
-            name
-            color
-            updatedAt
-            deleted
-        }
-    }`;
-    return {
-        query,
-        variables: {}
-    };
-};
-const pushQueryBuilder = doc => {
-    const query = `
-        mutation CreateHuman($human: HumanInput) {
-            setHuman(human: $human) {
-                id,
-                updatedAt
-            }
-       }
-    `;
-    const variables = {
-        human: doc
-    };
 
-    return {
-        query,
-        variables
-    };
-};
+const batchSize = 5;
+
+const pullQueryBuilder = pullQueryBuilderFromRxSchema(
+    'hero',
+    graphQLGenerationInput.hero,
+    batchSize
+);
+const pushQueryBuilder = pushQueryBuilderFromRxSchema(
+    'hero',
+    graphQLGenerationInput.hero
+);
 
 /**
  * In the e2e-test we get the database-name from the get-parameter
@@ -150,7 +106,7 @@ async function run() {
             queryBuilder: pushQueryBuilder
         },
         pull: {
-            queryBuilder
+            queryBuilder: pullQueryBuilder
         },
         live: true,
         /**
@@ -186,8 +142,8 @@ async function run() {
         lazy: true
     });
     heroesList.innerHTML = 'Subscribe to GraphQL Subscriptions..';
-    const query = `subscription onHumanChanged {
-        humanChanged {
+    const query = `subscription onChangedHero {
+        changedHero {
             id
         }
     }`;

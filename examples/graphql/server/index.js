@@ -15,8 +15,13 @@ import {
     GRAPHQL_PORT,
     GRAPHQL_PATH,
     GRAPHQL_SUBSCRIPTION_PORT,
-    GRAPHQL_SUBSCRIPTION_PATH
+    GRAPHQL_SUBSCRIPTION_PATH,
+    graphQLGenerationInput
 } from '../shared';
+
+import {
+    graphQLSchemaFromRxSchema
+} from 'rxdb/plugins/replication-graphql';
 
 function log(msg) {
     const prefix = '# GraphQL Server: ';
@@ -41,7 +46,10 @@ export async function run() {
     const app = express();
     app.use(cors());
 
-    const schema = buildSchema(`
+    const generatedSchema = graphQLSchemaFromRxSchema(graphQLGenerationInput);
+    const graphQLSchema = generatedSchema.asString;
+
+    /*`
     type Query {
         info: Int
         feedForRxDBReplication(lastId: String!, minUpdatedAt: Int!, limit: Int!): [Human!]!
@@ -71,26 +79,46 @@ export async function run() {
         mutation: Mutation
         subscription: Subscription
     }
-    `);
+    `;
+
+    */
+    console.log('Server side GraphQL Schema:');
+    console.log(graphQLSchema);
+    const schema = buildSchema(graphQLSchema);
 
     const pubsub = new PubSub();
 
     // The root provides a resolver function for each API endpoint
     const root = {
-        info: () => 1,
-        feedForRxDBReplication: args => {
-            log('## feedForRxDBReplication()');
+        feedHero: args => {
+            log('## feedHero()');
             log(args);
+
+            if (!args.id) {
+                // use empty string because it will always be first on sorting
+                args.id = '';
+            }
+
             // sorted by updatedAt and primary
             const sortedDocuments = documents.sort(sortByUpdatedAtAndPrimary);
 
             // only return where updatedAt >= minUpdatedAt
             const filterForMinUpdatedAtAndId = sortedDocuments.filter(doc => {
-                if (doc.updatedAt < args.minUpdatedAt) return false;
-                if (doc.updatedAt > args.minUpdatedAt) return true;
-                if (doc.updatedAt === args.minUpdatedAt) {
-                    if (doc.id > args.lastId) return true;
-                    else return false;
+                if (!args.updatedAt) {
+                    return true;
+                }
+                if (doc.updatedAt < args.updatedAt) {
+                    return false;
+                }
+                if (doc.updatedAt > args.updatedAt) {
+                    return true;
+                }
+                if (doc.updatedAt === args.updatedAt) {
+                    if (doc.id > args.id) {
+                        return true;
+                    } else {
+                        return false;
+                    }
                 }
             });
 
@@ -98,25 +126,25 @@ export async function run() {
             const limited = filterForMinUpdatedAtAndId.slice(0, args.limit);
             return limited;
         },
-        setHuman: args => {
-            log('## setHuman()');
+        setHero: args => {
+            log('## setHero()');
             log(args);
-            const doc = args.human;
+            const doc = args.hero;
             documents = documents.filter(d => d.id !== doc.id);
             doc.updatedAt = Math.round(new Date().getTime() / 1000);
             documents.push(doc);
 
             pubsub.publish(
-                'humanChanged',
+                'changedHero',
                 {
-                    humanChanged: doc
+                    changedHero: doc
                 }
             );
-            log('published humanChanged ' + doc.id);
+            log('published changedHero ' + doc.id);
 
             return doc;
         },
-        humanChanged: () => pubsub.asyncIterator('humanChanged')
+        changedHero: () => pubsub.asyncIterator('changedHero')
     };
 
     // server multitab.html - used in the e2e test

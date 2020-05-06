@@ -4,6 +4,11 @@
 
 Features:
   - Added `RxQuery.exec(throwIfMissing: true)`
+  - Added helper functions to [GraphQL replication](https://rxdb.info/replication-graphql.html) to generate GraphQL Schemas from the `RxJsonSchema`
+
+Bugfixes:
+  - GraphQL replication plugin fires exponentially [#2048](https://github.com/pubkey/rxdb/issues/2048)
+  - When a `default` is set in the schema, the default values are also applied after `atomicUpdate()` and `atomicSet()`
 
 Breaking:
   - Indexes are now specified at the top-level of the schema-definition. [#1655](https://github.com/pubkey/rxdb/issues/1655)
@@ -34,10 +39,6 @@ Other:
 
 Docs:
   - Removed examples for `require()` CommonJS loading
-
-Bugfixes:
-  - GraphQL replication plugin fires exponentially [#2048](https://github.com/pubkey/rxdb/issues/2048)
-  - When a `default` is set in the schema, the default values are also applied after `atomicUpdate()` and `atomicSet()`
 
 ### 8.9.0 (14 March 2020)
 
