@@ -1891,7 +1891,7 @@ describe('replication-graphql.test.js', () => {
                     () => parseQuery('foobar')
                 );
             });
-            it('should create a valid builder', () => {
+            it('should create a valid builder', async () => {
                 const builder = pullQueryBuilderFromRxSchema(
                     'human', {
                     schema: schemas.humanWithTimestamp,
@@ -1902,7 +1902,7 @@ describe('replication-graphql.test.js', () => {
                     deletedFlag: 'deleted'
                 });
 
-                const output = builder({
+                const output = await builder({
                     id: 'foo',
                     updatedAt: 12343
                 });
@@ -1910,7 +1910,7 @@ describe('replication-graphql.test.js', () => {
                 const parsed = parseQuery(output.query);
                 assert.ok(parsed);
             });
-            it('builder should work on null-document', () => {
+            it('builder should work on null-document', async () => {
                 const builder = pullQueryBuilderFromRxSchema(
                     'human', {
                     schema: schemas.humanWithTimestamp,
@@ -1921,13 +1921,13 @@ describe('replication-graphql.test.js', () => {
                     deletedFlag: 'deleted'
                 });
 
-                const output = builder(null);
+                const output = await builder(null);
                 const parsed = parseQuery(output.query);
                 assert.ok(parsed);
             });
         });
         config.parallel('.pushQueryBuilderFromRxSchema()', () => {
-            it('should create a valid builder', () => {
+            it('should create a valid builder', async () => {
                 const builder = pushQueryBuilderFromRxSchema(
                     'human', {
                     schema: schemas.humanWithTimestamp,
@@ -1938,7 +1938,7 @@ describe('replication-graphql.test.js', () => {
                     deletedFlag: 'deleted'
                 });
 
-                const output = builder({
+                const output = await builder({
                     id: 'foo',
                     name: 'foo',
                     age: 1234,
