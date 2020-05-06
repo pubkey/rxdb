@@ -65,6 +65,8 @@ autoStart, // if this is false, the replication does nothing at start
 syncRevisions, }: any): RxGraphQLReplicationState;
 export * from './helper';
 export * from './crawling-checkpoint';
+export * from './graphql-schema-from-rx-schema';
+export * from './query-builder-from-rx-schema';
 export declare const rxdb = true;
 export declare const prototypes: {
     RxCollection: (proto: any) => void;

@@ -61,6 +61,34 @@ var _leaderElection = require("../leader-election");
 
 var _rxChangeEvent = require("../../rx-change-event");
 
+var _overwritable = require("../../overwritable");
+
+var _graphqlSchemaFromRxSchema = require("./graphql-schema-from-rx-schema");
+
+Object.keys(_graphqlSchemaFromRxSchema).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _graphqlSchemaFromRxSchema[key];
+    }
+  });
+});
+
+var _queryBuilderFromRxSchema = require("./query-builder-from-rx-schema");
+
+Object.keys(_queryBuilderFromRxSchema).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _queryBuilderFromRxSchema[key];
+    }
+  });
+});
+
 /**
  * this plugin adds the RxCollection.syncGraphQl()-function to rxdb
  * you can use it to sync collections with remote graphql endpoint
@@ -338,60 +366,93 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
             case 4:
               latestDocument = _context4.sent;
               latestDocumentData = latestDocument ? latestDocument : null;
-              pullGraphQL = this.pull.queryBuilder(latestDocumentData);
-              _context4.prev = 7;
-              _context4.next = 10;
+              _context4.next = 8;
+              return this.pull.queryBuilder(latestDocumentData);
+
+            case 8:
+              pullGraphQL = _context4.sent;
+              _context4.prev = 9;
+              _context4.next = 12;
               return this.client.query(pullGraphQL.query, pullGraphQL.variables);
 
-            case 10:
+            case 12:
               result = _context4.sent;
 
               if (!result.errors) {
-                _context4.next = 13;
+                _context4.next = 15;
                 break;
               }
 
               throw new Error(result.errors);
 
-            case 13:
-              _context4.next = 19;
+            case 15:
+              _context4.next = 21;
               break;
 
-            case 15:
-              _context4.prev = 15;
-              _context4.t0 = _context4["catch"](7);
+            case 17:
+              _context4.prev = 17;
+              _context4.t0 = _context4["catch"](9);
 
               this._subjects.error.next(_context4.t0);
 
               return _context4.abrupt("return", false);
 
-            case 19:
+            case 21:
               // this assumes that there will be always only one property in the response
               // is this correct?
               data = result.data[Object.keys(result.data)[0]];
               modified = data.map(function (doc) {
                 return _this4.pull.modifier(doc);
               });
+              /**
+               * Run schema validation in dev-mode
+               */
+
+              if (!_overwritable.overwritable.isDevMode()) {
+                _context4.next = 32;
+                break;
+              }
+
+              _context4.prev = 24;
+              modified.forEach(function (doc) {
+                var withoutDeleteFlag = Object.assign({}, doc);
+                delete withoutDeleteFlag[_this4.deletedFlag];
+                delete withoutDeleteFlag._revisions;
+
+                _this4.collection.schema.validate(withoutDeleteFlag);
+              });
+              _context4.next = 32;
+              break;
+
+            case 28:
+              _context4.prev = 28;
+              _context4.t1 = _context4["catch"](24);
+
+              this._subjects.error.next(_context4.t1);
+
+              return _context4.abrupt("return", false);
+
+            case 32:
               docIds = modified.map(function (doc) {
                 return doc[_this4.collection.schema.primaryPath];
               });
-              _context4.next = 24;
+              _context4.next = 35;
               return (0, _helper.getDocsWithRevisionsFromPouch)(this.collection, docIds);
 
-            case 24:
+            case 35:
               docsWithRevisions = _context4.sent;
-              _context4.next = 27;
+              _context4.next = 38;
               return Promise.all(modified.map(function (doc) {
                 return _this4.handleDocumentFromRemote(doc, docsWithRevisions);
               }));
 
-            case 27:
+            case 38:
               modified.map(function (doc) {
                 return _this4._subjects.recieved.next(doc);
               });
 
               if (!(modified.length === 0)) {
-                _context4.next = 32;
+                _context4.next = 43;
                 break;
               }
 
@@ -399,27 +460,27 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
               } else {// console.log('RxGraphQLReplicationState._run(): no more docs and not live; complete = true');
                 }
 
-              _context4.next = 37;
+              _context4.next = 48;
               break;
 
-            case 32:
+            case 43:
               newLatestDocument = modified[modified.length - 1];
-              _context4.next = 35;
+              _context4.next = 46;
               return (0, _crawlingCheckpoint.setLastPullDocument)(this.collection, this.endpointHash, newLatestDocument);
 
-            case 35:
-              _context4.next = 37;
+            case 46:
+              _context4.next = 48;
               return this.runPull();
 
-            case 37:
+            case 48:
               return _context4.abrupt("return", true);
 
-            case 38:
+            case 49:
             case "end":
               return _context4.stop();
           }
         }
-      }, _callee4, this, [[7, 15]]);
+      }, _callee4, this, [[9, 17], [24, 28]]);
     }));
 
     function runPull() {
@@ -473,63 +534,67 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
 
             case 7:
               if (!(i < changesWithDocs.length)) {
-                _context5.next = 22;
+                _context5.next = 24;
                 break;
               }
 
               changeWithDoc = changesWithDocs[i];
-              pushObj = this.push.queryBuilder(changeWithDoc.doc);
-              _context5.next = 12;
+              _context5.next = 11;
+              return this.push.queryBuilder(changeWithDoc.doc);
+
+            case 11:
+              pushObj = _context5.sent;
+              _context5.next = 14;
               return this.client.query(pushObj.query, pushObj.variables);
 
-            case 12:
+            case 14:
               result = _context5.sent;
 
               if (!result.errors) {
-                _context5.next = 17;
+                _context5.next = 19;
                 break;
               }
 
               throw new Error(JSON.stringify(result.errors));
 
-            case 17:
+            case 19:
               this._subjects.send.next(changeWithDoc.doc);
 
               lastSuccessfullChange = changeWithDoc;
 
-            case 19:
+            case 21:
               i++;
               _context5.next = 7;
               break;
 
-            case 22:
-              _context5.next = 31;
+            case 24:
+              _context5.next = 33;
               break;
 
-            case 24:
-              _context5.prev = 24;
+            case 26:
+              _context5.prev = 26;
               _context5.t0 = _context5["catch"](5);
 
               if (!lastSuccessfullChange) {
-                _context5.next = 29;
+                _context5.next = 31;
                 break;
               }
 
-              _context5.next = 29;
+              _context5.next = 31;
               return (0, _crawlingCheckpoint.setLastPushSequence)(this.collection, this.endpointHash, lastSuccessfullChange.seq);
 
-            case 29:
+            case 31:
               this._subjects.error.next(_context5.t0);
 
               return _context5.abrupt("return", false);
 
-            case 31:
-              _context5.next = 33;
+            case 33:
+              _context5.next = 35;
               return (0, _crawlingCheckpoint.setLastPushSequence)(this.collection, this.endpointHash, changes.last_seq);
 
-            case 33:
+            case 35:
               if (!(changes.results.length === 0)) {
-                _context5.next = 37;
+                _context5.next = 39;
                 break;
               }
 
@@ -537,22 +602,22 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
               } else {// console.log('RxGraphQLReplicationState._runPull(): no more docs to push and not live; complete = true');
                 }
 
-              _context5.next = 39;
+              _context5.next = 41;
               break;
 
-            case 37:
-              _context5.next = 39;
+            case 39:
+              _context5.next = 41;
               return this.runPush();
 
-            case 39:
+            case 41:
               return _context5.abrupt("return", true);
 
-            case 40:
+            case 42:
             case "end":
               return _context5.stop();
           }
         }
-      }, _callee5, this, [[5, 24]]);
+      }, _callee5, this, [[5, 26]]);
     }));
 
     function runPush() {

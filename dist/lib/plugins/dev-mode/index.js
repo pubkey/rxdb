@@ -34,7 +34,7 @@ var _pouchDb = require("../../pouch-db");
 var RxDBDevModePlugin = {
   rxdb: true,
   overwritable: {
-    isDevMove: function isDevMove() {
+    isDevMode: function isDevMode() {
       return true;
     },
     tunnelErrorMessage: function tunnelErrorMessage(code) {

@@ -1,7 +1,14 @@
-export type RxGraphQLReplicationQueryBuilder = (doc: any) => {
+export interface RxGraphQLReplicationQueryBuilderResponseObject {
     query: string;
     variables: any;
-};
+}
+
+export type RxGraphQLReplicationQueryBuilderResponse =
+    RxGraphQLReplicationQueryBuilderResponseObject |
+    Promise<RxGraphQLReplicationQueryBuilderResponseObject>;
+
+export type RxGraphQLReplicationQueryBuilder = (doc: any) =>
+    RxGraphQLReplicationQueryBuilderResponse;
 
 export interface GraphQLSyncPullOptions {
     queryBuilder: RxGraphQLReplicationQueryBuilder;

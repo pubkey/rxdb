@@ -261,7 +261,7 @@ export function normalize(jsonSchema) {
  * @return cloned schemaObj
  */
 
-var fillWithDefaultSettings = function fillWithDefaultSettings(schemaObj) {
+export var fillWithDefaultSettings = function fillWithDefaultSettings(schemaObj) {
   schemaObj = clone(schemaObj); // additionalProperties is always false
 
   schemaObj.additionalProperties = false; // fill with key-compression-state ()
@@ -286,7 +286,6 @@ var fillWithDefaultSettings = function fillWithDefaultSettings(schemaObj) {
   schemaObj.version = schemaObj.version || 0;
   return schemaObj;
 };
-
 export function createRxSchema(jsonSchema) {
   var runPreCreateHooks = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
 

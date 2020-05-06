@@ -8,7 +8,7 @@ export * from './check-schema';
 export var RxDBDevModePlugin = {
   rxdb: true,
   overwritable: {
-    isDevMove: function isDevMove() {
+    isDevMode: function isDevMode() {
       return true;
     },
     tunnelErrorMessage: function tunnelErrorMessage(code) {

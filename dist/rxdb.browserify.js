@@ -2141,7 +2141,7 @@ var _pouchDb = require("../../pouch-db");
 var RxDBDevModePlugin = {
   rxdb: true,
   overwritable: {
-    isDevMove: function isDevMove() {
+    isDevMode: function isDevMode() {
       return true;
     },
     tunnelErrorMessage: function tunnelErrorMessage(code) {
@@ -8406,7 +8406,7 @@ exports.getFinalFields = getFinalFields;
 exports.normalize = normalize;
 exports.createRxSchema = createRxSchema;
 exports.isInstanceOf = isInstanceOf;
-exports.RxSchema = void 0;
+exports.fillWithDefaultSettings = exports.RxSchema = void 0;
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 
@@ -8712,6 +8712,8 @@ var fillWithDefaultSettings = function fillWithDefaultSettings(schemaObj) {
   schemaObj.version = schemaObj.version || 0;
   return schemaObj;
 };
+
+exports.fillWithDefaultSettings = fillWithDefaultSettings;
 
 function createRxSchema(jsonSchema) {
   var runPreCreateHooks = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
