@@ -14,11 +14,15 @@ import type {
 import {
     addRxPlugin
 } from '../core';
+
+import { PouchDbAllDbsPlugin } from './all-dbs';
 import { RxDBReplicationPlugin } from './replication';
 addRxPlugin(RxDBReplicationPlugin);
 
 import { RxDBWatchForChangesPlugin } from './watch-for-changes';
 addRxPlugin(RxDBWatchForChangesPlugin);
+
+PouchDbAllDbsPlugin(PouchDB);
 
 let ExpressPouchDB: any;
 try {
@@ -29,11 +33,6 @@ try {
         'You can install it with \'npm install express-pouchdb\''
     );
 }
-
-// we have to clean up after tests so there is no stupid logging
-// @link https://github.com/pouchdb/pouchdb-server/issues/226
-const PouchdbAllDbs = require('pouchdb-all-dbs');
-PouchdbAllDbs(PouchDB);
 
 const APP_OF_DB = new WeakMap();
 const SERVERS_OF_DB = new WeakMap();
