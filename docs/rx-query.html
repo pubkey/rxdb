@@ -259,10 +259,10 @@
     
         <li class="chapter " data-level="1.3.1.5" data-path="rx-database.html">
             
-                <a href="rx-database.html#queryChangeDetection">
+                <a href="rx-database.html#eventreduce">
             
                     
-                    queryChangeDetection
+                    eventReduce
             
                 </a>
             
@@ -1355,20 +1355,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.16" data-path="query-change-detection.html">
-            
-                <a href="query-change-detection.html">
-            
-                    
-                    QueryChangeDetection
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.17" data-path="in-memory.html">
+        <li class="chapter " data-level="1.16" data-path="in-memory.html">
             
                 <a href="in-memory.html">
             
@@ -1381,7 +1368,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.18" data-path="rx-local-document.html">
+        <li class="chapter " data-level="1.17" data-path="rx-local-document.html">
             
                 <a href="rx-local-document.html">
             
@@ -1394,7 +1381,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19" data-path="custom-build.html">
+        <li class="chapter " data-level="1.18" data-path="custom-build.html">
             
                 <a href="custom-build.html">
             
@@ -1407,7 +1394,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.20" data-path="plugins.html">
+        <li class="chapter " data-level="1.19" data-path="plugins.html">
             
                 <a href="plugins.html">
             
@@ -1420,7 +1407,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.21" data-path="adapters.html">
+        <li class="chapter " data-level="1.20" data-path="adapters.html">
             
                 <a href="adapters.html">
             
@@ -1433,7 +1420,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.22" >
+        <li class="chapter " data-level="1.21" >
             
                 <span>
             
@@ -1447,7 +1434,7 @@
             <ul class="articles">
                 
     
-        <li class="chapter " data-level="1.22.1" data-path="tutorials/typescript.html">
+        <li class="chapter " data-level="1.21.1" data-path="tutorials/typescript.html">
             
                 <a href="tutorials/typescript.html">
             
@@ -1460,7 +1447,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.22.2" data-path="tutorials/server.html">
+        <li class="chapter " data-level="1.21.2" data-path="tutorials/server.html">
             
                 <a href="tutorials/server.html">
             
@@ -1478,7 +1465,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.23" data-path="questions-answers.html">
+        <li class="chapter " data-level="1.22" data-path="questions-answers.html">
             
                 <a href="questions-answers.html">
             
@@ -1491,7 +1478,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.24" data-path="contribute.html">
+        <li class="chapter " data-level="1.23" data-path="contribute.html">
             
                 <a href="contribute.html">
             
@@ -1619,32 +1606,44 @@ myCollection.find().where(<span class="hljs-string">&apos;age&apos;</span>).gt(<
 <li><a href="https://github.com/aheckmann/mquery/blob/master/README.md" target="_blank">mquery-docs</a> - learn how to use chained-queries</li>
 </ul>
 <pre><code class="lang-js"><span class="hljs-comment">// directly pass search-object</span>
-myCollection.find({name: {$eq: <span class="hljs-string">&apos;foo&apos;</span>}})
-  .exec().then(documents =&gt; <span class="hljs-built_in">console</span>.dir(documents));
+myCollection.find({
+  selector: {
+    name: {$eq: <span class="hljs-string">&apos;foo&apos;</span>}
+  }
+})
+.exec().then(documents =&gt; <span class="hljs-built_in">console</span>.dir(documents));
 
 <span class="hljs-comment">// find by using sql equivalent &apos;%like%&apos; syntax</span>
 <span class="hljs-comment">// This example will fe: match &apos;foo&apos; but also &apos;fifoo&apos; or &apos;foofa&apos; or &apos;fifoofa&apos;</span>
-myCollection.find({name: {$regex: <span class="hljs-string">&apos;.*foo.*&apos;</span>}})
-  .exec().then(documents =&gt; <span class="hljs-built_in">console</span>.dir(documents));
+myCollection.find({
+  selector: {
+    name: {$regex: <span class="hljs-string">&apos;.*foo.*&apos;</span>}
+  }
+})
+.exec().then(documents =&gt; <span class="hljs-built_in">console</span>.dir(documents));
 
 <span class="hljs-comment">// find using a composite statement eg: $or</span>
 <span class="hljs-comment">// This example checks where name is either foo or if name is not existant on the document</span>
-myCollection.find({$or: [ { name: { $eq: <span class="hljs-string">&apos;foo&apos;</span> } }, { name: { $exists: <span class="hljs-literal">false</span> } }})
-  .exec().then(documents =&gt; <span class="hljs-built_in">console</span>.dir(documents));
+myCollection.find({
+  selector: {$or: [ { name: { $eq: <span class="hljs-string">&apos;foo&apos;</span> } }, { name: { $exists: <span class="hljs-literal">false</span> } }]}
+})
+.exec().then(documents =&gt; <span class="hljs-built_in">console</span>.dir(documents));
 
 <span class="hljs-comment">// do a case insensitive search</span>
 <span class="hljs-comment">// This example will match &apos;foo&apos; or &apos;FOO&apos; or &apos;FoO&apos; etc...</span>
 <span class="hljs-keyword">var</span> regexp = <span class="hljs-keyword">new</span> <span class="hljs-built_in">RegExp</span>(<span class="hljs-string">&apos;^foo$&apos;</span>, <span class="hljs-string">&apos;i&apos;</span>);
-myCollection.find({name: {$regex: regexp}})
-  .exec().then(documents =&gt; <span class="hljs-built_in">console</span>.dir(documents));
+myCollection.find({
+  selector: {name: {$regex: regexp}}
+})
+.exec().then(documents =&gt; <span class="hljs-built_in">console</span>.dir(documents));
 
 <span class="hljs-comment">// chained queries</span>
 myCollection.find().where(<span class="hljs-string">&apos;name&apos;</span>).eq(<span class="hljs-string">&apos;foo&apos;</span>)
-  .exec().then(documents =&gt; <span class="hljs-built_in">console</span>.dir(documents));
+.exec().then(documents =&gt; <span class="hljs-built_in">console</span>.dir(documents));
 </code></pre>
 <h2 id="notice-rxquerys-are-immutable">NOTICE: RxQuery&apos;s are immutable</h2>
 <p>Because RxDB is a reactive database, we can do heavy performance-optimisation on query-results which change over time. To be able to do this, RxQuery&apos;s have to be immutable.
-This means, when you have a <code>RxQuery</code> and run a <code>.where()</code> on it, the original RxQuery-Object is not changed. Instead the where-function returns a new RxQuery-Object with the changed where-field. Keep this in mind if you create RxQuery&apos;s and change them afterwards.</p>
+This means, when you have a <code>RxQuery</code> and run a <code>.where()</code> on it, the original RxQuery-Object is not changed. Instead the where-function returns a new <code>RxQuery</code>-Object with the changed where-field. Keep this in mind if you create RxQuery&apos;s and change them afterwards.</p>
 <p>Example:</p>
 <pre><code class="lang-javascript"><span class="hljs-keyword">const</span> queryObject = myCollection.find().where(<span class="hljs-string">&apos;age&apos;</span>).gt(<span class="hljs-number">18</span>);
 <span class="hljs-comment">// Creates a new RxQuery object, does not modify previous one</span>
@@ -1658,7 +1657,7 @@ queryObject.sort(<span class="hljs-string">&apos;name&apos;</span>);
 </code></pre>
 <h3 id="isrxquery">isRxQuery</h3>
 <p>Returns true if the given object is an instance of RxQuery. Returns false if not.</p>
-<pre><code class="lang-js"><span class="hljs-keyword">const</span> is = RxDB.isRxQuery(myObj);
+<pre><code class="lang-js"><span class="hljs-keyword">const</span> is = isRxQuery(myObj);
 </code></pre>
 <hr>
 <p>If you are new to RxDB, you should continue <a href="rx-attachment.html">here</a></p>
@@ -1705,7 +1704,7 @@ queryObject.sort(<span class="hljs-string">&apos;name&apos;</span>);
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"RxQuery","level":"1.7","depth":1,"next":{"title":"find()","level":"1.7.1","depth":2,"anchor":"#find","path":"rx-query.md","ref":"./rx-query.md#find","articles":[]},"previous":{"title":"isRxDocument()","level":"1.6.3.13","depth":3,"anchor":"#isrxdocument","path":"rx-document.md","ref":"./rx-document.md#isrxdocument","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @patreon ":"https://www.patreon.com/rxdb/"}},"gitbook":"3.2.3"},"file":{"path":"rx-query.md","mtime":"2020-03-03T19:39:03.008Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2020-03-05T19:16:38.295Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"RxQuery","level":"1.7","depth":1,"next":{"title":"find()","level":"1.7.1","depth":2,"anchor":"#find","path":"rx-query.md","ref":"./rx-query.md#find","articles":[]},"previous":{"title":"isRxDocument()","level":"1.6.3.13","depth":3,"anchor":"#isrxdocument","path":"rx-document.md","ref":"./rx-document.md#isrxdocument","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @patreon ":"https://www.patreon.com/rxdb/"}},"gitbook":"3.2.3"},"file":{"path":"rx-query.md","mtime":"2020-04-17T23:50:35.435Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2020-05-16T18:27:54.936Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

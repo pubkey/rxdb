@@ -259,10 +259,10 @@
     
         <li class="chapter " data-level="1.3.1.5" data-path="rx-database.html">
             
-                <a href="rx-database.html#queryChangeDetection">
+                <a href="rx-database.html#eventreduce">
             
                     
-                    queryChangeDetection
+                    eventReduce
             
                 </a>
             
@@ -1355,20 +1355,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.16" data-path="query-change-detection.html">
-            
-                <a href="query-change-detection.html">
-            
-                    
-                    QueryChangeDetection
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.17" data-path="in-memory.html">
+        <li class="chapter " data-level="1.16" data-path="in-memory.html">
             
                 <a href="in-memory.html">
             
@@ -1381,7 +1368,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.18" data-path="rx-local-document.html">
+        <li class="chapter " data-level="1.17" data-path="rx-local-document.html">
             
                 <a href="rx-local-document.html">
             
@@ -1394,7 +1381,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19" data-path="custom-build.html">
+        <li class="chapter " data-level="1.18" data-path="custom-build.html">
             
                 <a href="custom-build.html">
             
@@ -1407,7 +1394,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.20" data-path="plugins.html">
+        <li class="chapter " data-level="1.19" data-path="plugins.html">
             
                 <a href="plugins.html">
             
@@ -1420,7 +1407,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.21" data-path="adapters.html">
+        <li class="chapter " data-level="1.20" data-path="adapters.html">
             
                 <a href="adapters.html">
             
@@ -1433,7 +1420,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.22" >
+        <li class="chapter " data-level="1.21" >
             
                 <span>
             
@@ -1447,7 +1434,7 @@
             <ul class="articles">
                 
     
-        <li class="chapter " data-level="1.22.1" data-path="tutorials/typescript.html">
+        <li class="chapter " data-level="1.21.1" data-path="tutorials/typescript.html">
             
                 <a href="tutorials/typescript.html">
             
@@ -1460,7 +1447,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.22.2" data-path="tutorials/server.html">
+        <li class="chapter " data-level="1.21.2" data-path="tutorials/server.html">
             
                 <a href="tutorials/server.html">
             
@@ -1478,7 +1465,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.23" data-path="questions-answers.html">
+        <li class="chapter " data-level="1.22" data-path="questions-answers.html">
             
                 <a href="questions-answers.html">
             
@@ -1491,7 +1478,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.24" data-path="contribute.html">
+        <li class="chapter " data-level="1.23" data-path="contribute.html">
             
                 <a href="contribute.html">
             
@@ -1557,7 +1544,7 @@ You can sync every RxCollection with another RxCollection, a PouchDB-instance or
 It basically does the same as <a href="https://pouchdb.com/guides/replication.html" target="_blank">pouchdb-sync</a> but also adds event-handlers to make sure that change-events will be recognized in the internal event-stream.</p>
 <pre><code class="lang-js">
 <span class="hljs-comment">// you need these plugins to sync</span>
-RxDB.plugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;pouchdb-adapter-http&apos;</span>)); <span class="hljs-comment">// enable syncing over http (remote database)</span>
+addRxPlugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;pouchdb-adapter-http&apos;</span>)); <span class="hljs-comment">// enable syncing over http (remote database)</span>
 
 <span class="hljs-keyword">const</span> replicationState = myCollection.sync({
     remote: <span class="hljs-string">&apos;http://localhost:10102/db/&apos;</span>, <span class="hljs-comment">// remote database. This can be the serverURL, another RxCollection or a PouchDB-instance</span>
@@ -1654,7 +1641,7 @@ Only one-time-replications will complete.</p>
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Replication CouchDB","level":"1.14","depth":1,"next":{"title":"Replication GraphQL","level":"1.15","depth":1,"path":"replication-graphql.md","ref":"./replication-graphql.md","articles":[]},"previous":{"title":"LeaderElection","level":"1.13","depth":1,"path":"leader-election.md","ref":"./leader-election.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @patreon ":"https://www.patreon.com/rxdb/"}},"gitbook":"3.2.3"},"file":{"path":"replication.md","mtime":"2020-03-03T19:39:03.008Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2020-03-05T19:16:38.295Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Replication CouchDB","level":"1.14","depth":1,"next":{"title":"Replication GraphQL","level":"1.15","depth":1,"path":"replication-graphql.md","ref":"./replication-graphql.md","articles":[]},"previous":{"title":"LeaderElection","level":"1.13","depth":1,"path":"leader-election.md","ref":"./leader-election.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @patreon ":"https://www.patreon.com/rxdb/"}},"gitbook":"3.2.3"},"file":{"path":"replication.md","mtime":"2020-04-17T23:50:35.435Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2020-05-16T18:27:54.936Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

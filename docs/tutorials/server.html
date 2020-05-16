@@ -259,10 +259,10 @@
     
         <li class="chapter " data-level="1.3.1.5" data-path="../rx-database.html">
             
-                <a href="../rx-database.html#queryChangeDetection">
+                <a href="../rx-database.html#eventreduce">
             
                     
-                    queryChangeDetection
+                    eventReduce
             
                 </a>
             
@@ -1355,20 +1355,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.16" data-path="../query-change-detection.html">
-            
-                <a href="../query-change-detection.html">
-            
-                    
-                    QueryChangeDetection
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.17" data-path="../in-memory.html">
+        <li class="chapter " data-level="1.16" data-path="../in-memory.html">
             
                 <a href="../in-memory.html">
             
@@ -1381,7 +1368,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.18" data-path="../rx-local-document.html">
+        <li class="chapter " data-level="1.17" data-path="../rx-local-document.html">
             
                 <a href="../rx-local-document.html">
             
@@ -1394,7 +1381,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19" data-path="../custom-build.html">
+        <li class="chapter " data-level="1.18" data-path="../custom-build.html">
             
                 <a href="../custom-build.html">
             
@@ -1407,7 +1394,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.20" data-path="../plugins.html">
+        <li class="chapter " data-level="1.19" data-path="../plugins.html">
             
                 <a href="../plugins.html">
             
@@ -1420,7 +1407,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.21" data-path="../adapters.html">
+        <li class="chapter " data-level="1.20" data-path="../adapters.html">
             
                 <a href="../adapters.html">
             
@@ -1433,7 +1420,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.22" >
+        <li class="chapter " data-level="1.21" >
             
                 <span>
             
@@ -1447,7 +1434,7 @@
             <ul class="articles">
                 
     
-        <li class="chapter " data-level="1.22.1" data-path="typescript.html">
+        <li class="chapter " data-level="1.21.1" data-path="typescript.html">
             
                 <a href="typescript.html">
             
@@ -1460,7 +1447,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.22.2" data-path="server.html">
+        <li class="chapter active" data-level="1.21.2" data-path="server.html">
             
                 <a href="server.html">
             
@@ -1478,7 +1465,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.23" data-path="../questions-answers.html">
+        <li class="chapter " data-level="1.22" data-path="../questions-answers.html">
             
                 <a href="../questions-answers.html">
             
@@ -1491,7 +1478,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.24" data-path="../contribute.html">
+        <li class="chapter " data-level="1.23" data-path="../contribute.html">
             
                 <a href="../contribute.html">
             
@@ -1560,22 +1547,23 @@
 <p>It should never be used openly accessible to the internet, use a couchdb-instance at production.</p>
 <h2 id="in-nodejs">In NodeJs</h2>
 <p>Because the server plugin only works in node, it is not part of the default rxdb-build. You have to import it before you can use it.</p>
-<pre><code class="lang-typescript"><span class="hljs-keyword">import</span> RxDB from <span class="hljs-string">&apos;rxdb&apos;</span>;
+<pre><code class="lang-typescript"><span class="hljs-keyword">import</span> { addRxPlugin } from <span class="hljs-string">&apos;rxdb&apos;</span>;
 
 <span class="hljs-comment">// add the server-plugin</span>
-<span class="hljs-keyword">import</span> RxDBServerPlugin from <span class="hljs-string">&apos;rxdb/plugins/server&apos;</span>;
-RxDB.plugin(RxDBServerPlugin);
+<span class="hljs-keyword">import</span> { RxDBServerPlugin } from <span class="hljs-string">&apos;rxdb/plugins/server&apos;</span>;
+addRxPlugin(RxDBServerPlugin);
 
 <span class="hljs-comment">// add the memory-adapter</span>
 <span class="hljs-keyword">import</span> * as MemoryAdapter from <span class="hljs-string">&apos;pouchdb-adapter-memory&apos;</span>;
-RxDB.plugin(MemoryAdapter);
+addRxPlugin(MemoryAdapter);
 </code></pre>
 <p>You also have to install the module <code>express-pouchdb</code> which does not come with RxDB.</p>
 <pre><code class="lang-bash">  npm install express-pouchdb --save
 </code></pre>
 <p>Now we can create a database and a collection.</p>
-<pre><code class="lang-typescript"><span class="hljs-comment">// create database</span>
-<span class="hljs-keyword">const</span> db = await RxDB.create({
+<pre><code class="lang-typescript"><span class="hljs-keyword">import</span> { createRxDatabase } from <span class="hljs-string">&apos;rxdb&apos;</span>;
+<span class="hljs-comment">// create database</span>
+<span class="hljs-keyword">const</span> db = await createRxDatabase({
     name: <span class="hljs-string">&apos;mydb&apos;</span>,
     adapter: <span class="hljs-string">&apos;memory&apos;</span>
 });
@@ -1647,14 +1635,14 @@ mainApp.listen(<span class="hljs-number">3000</span>, () =&gt; <span class="hljs
 <h2 id="on-the-client">On the client</h2>
 <p>On the client you can now also create a database and replicate it with our server.</p>
 <p>Start with creating the database and collection.</p>
-<pre><code class="lang-typescript"><span class="hljs-keyword">import</span> RxDB from <span class="hljs-string">&apos;rxdb&apos;</span>;
+<pre><code class="lang-typescript"><span class="hljs-keyword">import</span> { addRxPlugin, createRxDatabase } from <span class="hljs-string">&apos;rxdb&apos;</span>;
 
 <span class="hljs-comment">// we need the http-plugin to relicate over http</span>
 <span class="hljs-keyword">import</span> * as PouchHttpPlugin from <span class="hljs-string">&apos;pouchdb-adapter-http&apos;</span>;
-RxDB.plugin(PouchHttpPlugin);
+addRxPlugin(PouchHttpPlugin);
 
 
-<span class="hljs-keyword">const</span> clientDB = await RxDB.create({
+<span class="hljs-keyword">const</span> clientDB = await createRxDatabase({
     name: <span class="hljs-string">&apos;clientdb&apos;</span>,
     adapter: <span class="hljs-string">&apos;memory&apos;</span>
 });
@@ -1718,7 +1706,7 @@ await clientDB.collection({
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Using the Server Plugin","level":"1.22.2","depth":2,"next":{"title":"Questions & Answers","level":"1.23","depth":1,"path":"questions-answers.md","ref":"./questions-answers.md","articles":[]},"previous":{"title":"Use RxDB with Typescript","level":"1.22.1","depth":2,"path":"tutorials/typescript.md","ref":"./tutorials/typescript.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @patreon ":"https://www.patreon.com/rxdb/"}},"gitbook":"3.2.3"},"file":{"path":"tutorials/server.md","mtime":"2020-03-03T19:39:03.008Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2020-03-05T19:16:38.295Z"},"basePath":"..","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Using the Server Plugin","level":"1.21.2","depth":2,"next":{"title":"Questions & Answers","level":"1.22","depth":1,"path":"questions-answers.md","ref":"./questions-answers.md","articles":[]},"previous":{"title":"Use RxDB with Typescript","level":"1.21.1","depth":2,"path":"tutorials/typescript.md","ref":"./tutorials/typescript.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @patreon ":"https://www.patreon.com/rxdb/"}},"gitbook":"3.2.3"},"file":{"path":"tutorials/server.md","mtime":"2020-04-17T23:50:35.435Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2020-05-16T18:27:54.936Z"},"basePath":"..","book":{"language":""}});
         });
     </script>
 </div>

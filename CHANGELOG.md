@@ -1,6 +1,6 @@
 # Changelog
 
-### 9.0.0 (comming soon)
+### 9.0.0 (16 May 2020) BREAKING [read the announcement](./orga/releases/9.0.0.md)
 
 Features:
   - Added `RxQuery.exec(throwIfMissing: true)`
