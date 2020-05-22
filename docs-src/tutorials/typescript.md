@@ -23,7 +23,6 @@ import {
     RxCollection,
     RxJsonSchema,
     RxDocument,
-    createRxDatabase
 } from 'rxdb';
 ```
 
