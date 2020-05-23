@@ -160,14 +160,16 @@ export class RxStoragePouchDbClass implements RxStorage<PouchDBInstance> {
         const query = mutateableQuery;
 
         /**
-         * because sort wont work on unused keys we have to workarround
+         * because sort wont work on unused keys we have to workaround
          * so we add the key to the selector if necessary
          * @link https://github.com/nolanlawson/pouchdb-find/issues/204
          */
         if (query.sort) {
             query.sort.forEach(sortPart => {
                 const key = Object.keys(sortPart)[0];
-                if (!query.selector[key] || !query.selector[key].$gt) {
+                const comparisonOperators = ['$gt', '$gte', '$lt', '$lte'];
+                const keyUsed = query.selector[key] && Object.keys(query.selector[key]).some(op => comparisonOperators.includes(op)) || false;
+                if (!keyUsed) {
                     const schemaObj = rxQuery.collection.schema.getSchemaByObjectPath(key);
                     if (!schemaObj) {
                         throw newRxError('QU5', {
