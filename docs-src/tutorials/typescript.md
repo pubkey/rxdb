@@ -139,7 +139,7 @@ await myDatabase.collection({
     statics: heroCollectionMethods
 });
 
-// add a preInsert-hook
+// add a postInsert-hook
 myDatabase.heroes.postInsert(
     function myPostInsertHook(
         this: HeroCollection, // own collection is bound to the scope
