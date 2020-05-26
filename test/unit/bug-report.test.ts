@@ -100,7 +100,7 @@ describe('bug-report.test.js', () => {
             })
             .exec();
 
-        console.log(myDocument);
+        // console.log(myDocument);
 
         /*
          * assert things,
