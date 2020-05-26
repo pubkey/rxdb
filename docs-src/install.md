@@ -21,7 +21,7 @@ RxDB is coded with es8 and transpiled to es5\. This means you have to install [p
 If you need polyfills, you have to import them in your code.
 
 ```js
-require('@babel/polyfill');
+import '@babel/polyfill';
 ```
 
 ## Latest
