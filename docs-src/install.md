@@ -20,7 +20,7 @@ RxDB is coded with es8 and transpiled to es5\. This means you have to install [p
 
 If you need polyfills, you have to import them in your code.
 
-```js
+```typescript
 import '@babel/polyfill';
 ```
 
@@ -40,7 +40,7 @@ Replace `commitHash` with the hash of the latest [build-commit](https://github.c
 
 To import `rxdb`, add this to your javascript file:
 
-```javascript
+```typescript
 import {
   createRxDatabase,
   RxDatabase
