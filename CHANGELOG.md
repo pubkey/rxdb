@@ -1,5 +1,10 @@
 # Changelog
 
+### X.X.X (comming soon)
+
+Bugfixes:
+  - prepareQuery should handle all comparison operators [#2213](https://github.com/pubkey/rxdb/pull/2213/) Thanks [@kunal15595](https://github.com/kunal15595)
+
 ### 9.0.0 (16 May 2020) BREAKING [read the announcement](./orga/releases/9.0.0.md)
 
 Features:

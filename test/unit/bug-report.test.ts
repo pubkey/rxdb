@@ -37,8 +37,7 @@ describe('bug-report.test.js', () => {
                     minimum: 0,
                     maximum: 150
                 }
-            },
-            indexes: ['age'],
+            }
         };
 
         // generate a random database-name
@@ -65,13 +64,6 @@ describe('bug-report.test.js', () => {
             age: 56
         });
 
-        await collection.insert({
-            passportId: 'foobar2',
-            firstName: 'Bob2',
-            lastName: 'Kelso2',
-            age: 58
-        });
-
         /**
          * to simulate the event-propagation over multiple browser-tabs,
          * we create the same database again
@@ -90,23 +82,16 @@ describe('bug-report.test.js', () => {
 
         // find the document in the other tab
         const myDocument = await collectionInOtherTab
-            .findOne({
-                selector: {
-                    age: {
-                        $gte: 57,
-                    },
-                },
-                sort: [{ age: 'asc' }]
-            })
+            .findOne()
+            .where('firstName')
+            .eq('Bob')
             .exec();
-
-        // console.log(myDocument);
 
         /*
          * assert things,
          * here your tests should fail to show that there is a bug
          */
-        assert.strictEqual(myDocument.age, 58);
+        assert.strictEqual(myDocument.age, 56);
 
         // you can also wait for events
         const emitted = [];

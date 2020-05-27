@@ -1389,5 +1389,34 @@ config.parallel('rx-query.test.js', () => {
 
             c.database.destroy();
         });
+        it('#2213 prepareQuery should handle all comparison operators', async () => {
+            const collection = await humansCollection.createAgeIndex(0);
+            await collection.insert({
+                passportId: 'foobar',
+                firstName: 'Bob',
+                lastName: 'Kelso',
+                age: 56
+            });
+
+            await collection.insert({
+                passportId: 'foobar2',
+                firstName: 'Bob2',
+                lastName: 'Kelso2',
+                age: 58
+            });
+
+            const myDocument = await collection.findOne({
+                selector: {
+                    age: {
+                        $gte: 57,
+                    },
+                },
+                sort: [{ age: 'asc' }]
+            }).exec(true);
+
+            assert.strictEqual(myDocument.age, 58);
+
+            collection.database.destroy();
+        });
     });
 });
