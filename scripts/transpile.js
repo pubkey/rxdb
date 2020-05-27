@@ -96,8 +96,14 @@ const files = Object.entries(transpileFolders)
 
 DEBUG && console.dir(files);
 
+const resolved = Promise.resolve();
 Promise.all(files
     .map(fileEntry => {
+        if (fileEntry.relativePath.includes('/node_modules/')) {
+            // skip node modules of examples or tests
+            return resolved;
+        }
+
         return transpileFile(
             path.join(fileEntry.basePath, fileEntry.relativePath),
             fileEntry.goalPath

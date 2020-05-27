@@ -69,7 +69,7 @@ await db.items.insert({
 });
 ```
 
-Now we can spawn the server.
+Now we can spawn the server. Besides the RxDB specific options, you can set `pouchdbExpressOptions` which are [defined by the express-pouchdb module](https://github.com/pouchdb/pouchdb-server#api).
 
 ```typescript
 const {app, server} = db.server({
@@ -77,6 +77,11 @@ const {app, server} = db.server({
     port: 3000,  // (optional)
     cors: true,   // (optional), enable CORS-headers
     startServer: true // (optional), start express server
+    // options of the pouchdb express server
+    pouchdbExpressOptions: {
+        inMemoryConfig: true, // do not write a config.json
+        logPath: '/tmp/rxdb-server-log.txt' // save logs in tmp folder
+    }
 });
 ```
 

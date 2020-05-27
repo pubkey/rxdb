@@ -2,6 +2,9 @@
 
 ### X.X.X (comming soon)
 
+Features:
+  - The `RxDatabase.server()` does now accept `pouchdbExpressOptions` to set the log file and other stuff configured [on express-pouchdb](https://github.com/pouchdb/pouchdb-server#api)
+
 Bugfixes:
   - prepareQuery should handle all comparison operators [#2213](https://github.com/pubkey/rxdb/pull/2213/) Thanks [@kunal15595](https://github.com/kunal15595)
 

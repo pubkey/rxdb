@@ -35,7 +35,7 @@
         "node_modules",
         "**/node_modules/*",
         "dist",
-        "test/tutorials/src/*",
+        "test/tutorials/*",
         "examples",
         "docs",
         "docs-src",

@@ -25,12 +25,35 @@ export interface RxDatabaseCreator {
 }
 
 
+/**
+ * Options that can be passed to express-pouchdb
+ * @link https://github.com/pouchdb/pouchdb-server#api
+ */
+export type PouchDBExpressServerOptions = {
+    // a path to the configuration file to use. Defaults to './config.json'.
+    configPath?: string;
+    // a path to the log file to use. Defaults to './log.txt'.
+    logPath?: string;
+    // if all configuration should be in-memory. Defaults to false.
+    inMemoryConfig?: boolean;
+    // determines which parts of the HTTP API express-pouchdb offers are enabled
+    mode?: 'fullCouchDB' | 'minimumForPouchDB' | 'custom',
+    // Sometimes the preprogrammed modes are insufficient for your needs
+    overrideMode?: {
+        // a javascript array that specifies parts to include on top of the ones specified by opts.mode
+        include?: any[];
+        // a javascript array that specifies parts to exclude from the ones specified by opts.mode
+        excluse: any[];
+    }
+};
+
 // options for the server-plugin
 export interface ServerOptions {
     path?: string;
     port?: number;
     cors?: boolean;
     startServer?: boolean;
+    pouchdbExpressOptions?: PouchDBExpressServerOptions;
 }
 
 export type CollectionsOfDatabase = { [key: string]: RxCollection };

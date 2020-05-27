@@ -40,12 +40,12 @@ const SERVERS_OF_DB = new WeakMap();
 const DBS_WITH_SERVER = new WeakSet();
 
 
-const normalizeDbName = function (db: any) {
+const normalizeDbName = function (db: RxDatabase) {
     const splitted = db.name.split('/').filter((str: string) => str !== '');
     return splitted.pop();
 };
 
-const getPrefix = function (db: any) {
+const getPrefix = function (db: RxDatabase) {
     const splitted = db.name.split('/').filter((str: string) => str !== '');
     splitted.pop(); // last was the name
     if (splitted.length === 0) return '';
@@ -89,6 +89,7 @@ export function spawnServer(
         port = 3000,
         cors = false,
         startServer = true,
+        pouchdbExpressOptions = {}
     }) {
     const db = this;
     const collectionsPath = startServer ? path : '/';
@@ -97,7 +98,8 @@ export function spawnServer(
 
     const pseudo = PouchDB.defaults({
         adapter: db.adapter,
-        prefix: getPrefix(db)
+        prefix: getPrefix(db),
+        log: false
     });
 
     const app = express();
@@ -106,7 +108,7 @@ export function spawnServer(
     // tunnel requests so collection-names can be used as paths
     Object.keys(db.collections).forEach(colName => tunnelCollectionPath(db, collectionsPath, app, colName));
 
-    // show error if collection is created afterwards
+    // remember to throw error if collection is created after the server is already there
     DBS_WITH_SERVER.add(db);
 
     if (cors) {
@@ -120,7 +122,7 @@ export function spawnServer(
         }));
     }
 
-    const pouchApp = ExpressPouchDB(pseudo);
+    const pouchApp = ExpressPouchDB(pseudo, pouchdbExpressOptions);
     app.use(collectionsPath, pouchApp);
 
     let server = null;
