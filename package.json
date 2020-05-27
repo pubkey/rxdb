@@ -31,6 +31,7 @@
   "jsnext:main": "./dist/es/index.js",
   "module": "./dist/es/index.js",
   "types": "./dist/types/index.d.ts",
+  "sideEffects": false,
   "scripts": {
     "postinstall": "node scripts/postinstall.js || echo \"ignore\"",
     "pretest": "npm run transpile",

@@ -5,6 +5,9 @@
 Bugfixes:
   - prepareQuery should handle all comparison operators [#2213](https://github.com/pubkey/rxdb/pull/2213/) Thanks [@kunal15595](https://github.com/kunal15595)
 
+Other:
+  - Added webpack [tree shaking optimization](https://webpack.js.org/guides/tree-shaking/#clarifying-tree-shaking-and-sideeffects) via `sideEffects: false`
+
 ### 9.0.0 (16 May 2020) BREAKING [read the announcement](./orga/releases/9.0.0.md)
 
 Features:
