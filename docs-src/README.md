@@ -61,7 +61,7 @@ db.heroes
 </h3>
 
 <p align="justify">
-  To synchronize data between your clients and your server, RxDB provides replication modules for <b>CouchDB</b> and <b>GraphQL</b>. So when your server changes data, your application will autmatically stream that change to the client and updates its visual representation.
+  To synchronize data between your clients and your server, RxDB provides replication modules for <b>CouchDB</b> and <b>GraphQL</b>. So when your server changes data, your application will automatically stream that change to the client and updates its visual representation.
 </p>
 
 <img src="./files/sync.gif" />
@@ -113,5 +113,5 @@ db.heroes
 
 <br/><br/><br/>
 <p align="center">
-    <b>If you are new to RxDB, you should start reading the documentation <a href="./install.html">here.</a></b>
+    <b>If you are new to RxDB, you should continue reading the documentation <a href="./install.html">here.</a></b>
 </p>
