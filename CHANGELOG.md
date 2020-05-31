@@ -1,6 +1,6 @@
 # Changelog
 
-### X.X.X (comming soon)
+### 9.1.0 (31 May 2020)
 
 Features:
   - `RxDatabase.server()` does now accept `pouchdbExpressOptions` to set the log file and other stuff configured [on express-pouchdb](https://github.com/pouchdb/pouchdb-server#api)

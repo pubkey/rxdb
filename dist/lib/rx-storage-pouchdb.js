@@ -126,7 +126,7 @@ var RxStoragePouchDbClass = /*#__PURE__*/function () {
     var primPath = rxQuery.collection.schema.primaryPath;
     var query = mutateableQuery;
     /**
-     * because sort wont work on unused keys we have to workarround
+     * because sort wont work on unused keys we have to workaround
      * so we add the key to the selector if necessary
      * @link https://github.com/nolanlawson/pouchdb-find/issues/204
      */
@@ -134,8 +134,12 @@ var RxStoragePouchDbClass = /*#__PURE__*/function () {
     if (query.sort) {
       query.sort.forEach(function (sortPart) {
         var key = Object.keys(sortPart)[0];
+        var comparisonOperators = ['$gt', '$gte', '$lt', '$lte'];
+        var keyUsed = query.selector[key] && Object.keys(query.selector[key]).some(function (op) {
+          return comparisonOperators.includes(op);
+        }) || false;
 
-        if (!query.selector[key] || !query.selector[key].$gt) {
+        if (!keyUsed) {
           var schemaObj = rxQuery.collection.schema.getSchemaByObjectPath(key);
 
           if (!schemaObj) {

@@ -1,6 +1,6 @@
 import _createClass from "@babel/runtime/helpers/createClass";
 import randomToken from 'random-token';
-import IdleQueue from 'custom-idle-queue';
+import { IdleQueue } from 'custom-idle-queue';
 import { BroadcastChannel } from 'broadcast-channel';
 import { promiseWait, pluginMissing, LOCAL_PREFIX } from './util';
 import { newRxError } from './rx-error';

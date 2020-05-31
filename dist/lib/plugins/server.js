@@ -130,14 +130,17 @@ function spawnServer(_ref2) {
       _ref2$cors = _ref2.cors,
       cors = _ref2$cors === void 0 ? false : _ref2$cors,
       _ref2$startServer = _ref2.startServer,
-      startServer = _ref2$startServer === void 0 ? true : _ref2$startServer;
+      startServer = _ref2$startServer === void 0 ? true : _ref2$startServer,
+      _ref2$pouchdbExpressO = _ref2.pouchdbExpressOptions,
+      pouchdbExpressOptions = _ref2$pouchdbExpressO === void 0 ? {} : _ref2$pouchdbExpressO;
   var db = this;
   var collectionsPath = startServer ? path : '/';
   if (!SERVERS_OF_DB.has(db)) SERVERS_OF_DB.set(db, []);
 
   var pseudo = _pouchDb.PouchDB.defaults({
     adapter: db.adapter,
-    prefix: getPrefix(db)
+    prefix: getPrefix(db),
+    log: false
   });
 
   var app = (0, _express["default"])();
@@ -145,7 +148,7 @@ function spawnServer(_ref2) {
 
   Object.keys(db.collections).forEach(function (colName) {
     return tunnelCollectionPath(db, collectionsPath, app, colName);
-  }); // show error if collection is created afterwards
+  }); // remember to throw error if collection is created after the server is already there
 
   DBS_WITH_SERVER.add(db);
 
@@ -160,7 +163,7 @@ function spawnServer(_ref2) {
     }));
   }
 
-  var pouchApp = ExpressPouchDB(pseudo);
+  var pouchApp = ExpressPouchDB(pseudo, pouchdbExpressOptions);
   app.use(collectionsPath, pouchApp);
   var server = null;
 

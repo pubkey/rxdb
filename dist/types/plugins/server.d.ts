@@ -1,10 +1,11 @@
 /// <reference types="node" />
 import type { RxDatabase, RxPlugin } from '../types';
-export declare function spawnServer(this: RxDatabase, { path, port, cors, startServer, }: {
+export declare function spawnServer(this: RxDatabase, { path, port, cors, startServer, pouchdbExpressOptions }: {
     path?: string | undefined;
     port?: number | undefined;
     cors?: boolean | undefined;
     startServer?: boolean | undefined;
+    pouchdbExpressOptions?: {} | undefined;
 }): {
     app: import("express-serve-static-core").Express;
     pouchApp: any;

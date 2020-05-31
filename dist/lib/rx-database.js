@@ -20,7 +20,7 @@ var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/creat
 
 var _randomToken = _interopRequireDefault(require("random-token"));
 
-var _customIdleQueue = _interopRequireDefault(require("custom-idle-queue"));
+var _customIdleQueue = require("custom-idle-queue");
 
 var _broadcastChannel = require("broadcast-channel");
 
@@ -62,7 +62,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     var options = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
     var pouchSettings = arguments.length > 6 ? arguments[6] : undefined;
     this.internalStore = {};
-    this.idleQueue = new _customIdleQueue["default"]();
+    this.idleQueue = new _customIdleQueue.IdleQueue();
     this.token = (0, _randomToken["default"])(10);
     this._subs = [];
     this.destroyed = false;
