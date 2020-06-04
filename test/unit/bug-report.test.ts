@@ -6,7 +6,7 @@
  *
  * To run this test do:
  * - 'npm run test:node' so it runs in nodejs
- * - 'npm run test:browsers' so it runs in the browser
+ * - 'npm run test:browser' so it runs in the browser
  */
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
