@@ -12,8 +12,8 @@ export type EventReduceResultNeg = {
 };
 export type EventReduceResultPos<RxDocumentType> = {
     runFullQueryAgain: false,
-    changed: boolean,
-    newResults: RxDocumentType[];
+    changed?: boolean,
+    newResults?: RxDocumentType[];
 };
 export type EventReduceResult<RxDocumentType> = EventReduceResultNeg | EventReduceResultPos<RxDocumentType>;
 
