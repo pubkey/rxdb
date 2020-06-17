@@ -61,6 +61,22 @@ config.parallel('population.test.js', () => {
                 });
                 assert.strictEqual(schema.constructor.name, 'RxSchema');
             });
+            it('should allow to create relation with nullable string', () => {
+                const schema = createRxSchema({
+                    version: 0,
+                    type: 'object',
+                    properties: {
+                        friends: {
+                            type: 'array',
+                            items: {
+                                ref: 'human',
+                                type: ['string', 'null']
+                            }
+                        }
+                    }
+                });
+                assert.strictEqual(schema.constructor.name, 'RxSchema');
+            });
         });
         describe('negative', () => {
             it('throw if primary is ref', () => {
