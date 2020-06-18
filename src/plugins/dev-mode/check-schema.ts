@@ -75,22 +75,30 @@ export function validateFieldsDeep(jsonSchema: any): true {
         }
 
 
-        // if ref given, must be type=='string' or type=='array' with string-items
+        // if ref given, must be type=='string', type=='array' with string-items or type==['string','null']
         if (schemaObj.hasOwnProperty('ref')) {
-            switch (schemaObj.type) {
-                case 'string':
-                    break;
-                case 'array':
-                    if (!schemaObj.items || !schemaObj.items.type || schemaObj.items.type !== 'string') {
-                        throw newRxError('SC3', {
-                            fieldName
-                        });
-                    }
-                    break;
-                default:
+            if (Array.isArray(schemaObj.type)) {
+                if (schemaObj.type.length > 2 || !schemaObj.type.includes('string') || !schemaObj.type.includes('null')) {
                     throw newRxError('SC4', {
                         fieldName
                     });
+                }
+            } else {
+                switch (schemaObj.type) {
+                    case 'string':
+                        break;
+                    case 'array':
+                        if (!schemaObj.items || !schemaObj.items.type || schemaObj.items.type !== 'string') {
+                            throw newRxError('SC3', {
+                                fieldName
+                            });
+                        }
+                        break;
+                    default:
+                        throw newRxError('SC4', {
+                            fieldName
+                        });
+                }
             }
         }
 

@@ -20,13 +20,13 @@ export const refHuman = {
         },
         bestFriend: {
             ref: 'human',     // refers to collection human
-            type: 'string'    // ref-values must always be string (primary of foreign RxDocument)
+            type: 'string'    // ref-values must always be string or ['string','null'] (primary of foreign RxDocument) 
         }
     }
 };
 ```
 
-You can also have a one-to-may reference by using a string-array.
+You can also have a one-to-many reference by using a string-array.
 
 ```js
 export const schemaWithOneToManyReference = {
