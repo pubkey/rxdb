@@ -119,8 +119,8 @@ const rootValue = {
 The graphql-replication is not part of the default-build of RxDB. You have to import the plugin before you can use it.
 
 ```js
-import RxDBReplicationGraphQL from 'rxdb/plugins/replication-graphql';
-addRxPlugin(RxDBReplicationGraphQL);
+import { RxDBReplicationGraphQLPlugin } from 'rxdb/plugins/replication-graphql';
+addRxPlugin(RxDBReplicationGraphQLPlugin);
 ```
 
 #### Pull replication
