@@ -1,5 +1,10 @@
 # Changelog
 
+### X.X.X (comming soon)
+
+Bugfixes:
+  - `ref`-fields must be nullable [#2285](https://github.com/pubkey/rxdb/pull/2285/) Thanks [@kunal15595](https://github.com/DDoerner)
+
 ### 9.1.0 (31 May 2020)
 
 Features:
