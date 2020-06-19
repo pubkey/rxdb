@@ -239,7 +239,6 @@ config.parallel('server.test.js', () => {
 
         await col1.insert(schemaObjects.human());
 
-        await AsyncTestUtil.wait(1000);
         db1.destroy();
     });
     it('should work on filesystem-storage', async () => {

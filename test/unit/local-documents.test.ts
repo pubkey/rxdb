@@ -13,6 +13,12 @@ import {
     first
 } from 'rxjs/operators';
 
+
+let leveldown: any;
+if (config.platform.isNode()) {
+    leveldown = require('leveldown');
+}
+
 config.parallel('local-documents.test.js', () => {
     describe('.insertLocal()', () => {
         describe('positive', () => {
@@ -418,6 +424,50 @@ config.parallel('local-documents.test.js', () => {
             assert.strictEqual(json.boudariesGrp[0], 'mygroup');
 
             db.destroy();
+        });
+        it('local documents not persistent on db restart', async () => {
+            const dbName: string = config.rootPath + 'test_tmp/' + randomCouchString(10);
+
+            const localDocId = 'foobar';
+            const localDocData = {
+                foo: 'bar'
+            };
+
+            const db = await createRxDatabase({
+                name: dbName,
+                adapter: leveldown,
+                multiInstance: false
+            });
+            const col = await db.collection({
+                name: 'humans',
+                schema: schemas.human
+            });
+
+            await db.insertLocal(localDocId, localDocData);
+            await col.insertLocal(localDocId, localDocData);
+
+            await db.destroy();
+
+            const db2 = await createRxDatabase({
+                name: dbName,
+                adapter: leveldown,
+                multiInstance: false
+            });
+            const col2 = await db2.collection({
+                name: 'humans',
+                schema: schemas.human
+            });
+
+            const docDb = await db2.getLocal(localDocId);
+            const docCol = await col2.getLocal(localDocId);
+
+            assert.ok(docDb);
+            assert.ok(docCol);
+
+            assert.strictEqual(docDb.get('foo'), 'bar');
+            assert.strictEqual(docCol.get('foo'), 'bar');
+
+            await db2.destroy();
         });
     });
 });
