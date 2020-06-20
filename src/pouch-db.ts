@@ -25,6 +25,7 @@ import {
 import type {
     PouchDBInstance
 } from './types';
+import { isFolderPath } from './util';
 
 /**
  * get the number of all undeleted documents
@@ -98,10 +99,9 @@ export function validateCouchDBString(name: string): true {
 
 
     // do not check, if foldername is given
-    if (
-        name.includes('/') || // unix
-        name.includes('\\') // windows
-    ) return true;
+    if (isFolderPath(name)) {
+        return true;
+    }
 
 
     const regStr = '^[a-z][_$a-z0-9]*$';
