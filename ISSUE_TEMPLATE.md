@@ -8,6 +8,9 @@
   If you have a common question which cannot be solved with a PR, ask it at one of these places:
   - https://stackoverflow.com/
   - https://gitter.im/pubkey/rxdb
+
+  If you have found a bug in RxDB, use this checklist so you can provide additional information for the maintainer
+  https://github.com/pubkey/rxdb/blob/master/orga/bug-checklist.md
 -->
 
 <!-- DID YOU KNOW?
