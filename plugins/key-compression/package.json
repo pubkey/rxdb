@@ -3,5 +3,6 @@
   "main": "../../dist/lib/plugins/key-compression.js",
   "jsnext:main": "../../dist/es/plugins/key-compression.js",
   "module": "../../dist/es/plugins/key-compression.js",
-  "types": "../../dist/types/plugins/key-compression.d.ts"
+  "types": "../../dist/types/plugins/key-compression.d.ts",
+  "sideEffects": false
 }

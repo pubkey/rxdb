@@ -2,6 +2,9 @@
 
 ### X.X.X (comming soon)
 
+Features:
+  - Added `"sideEffects": false` to all plugins
+
 Bugfixes:
   - `ref`-fields must be nullable [#2285](https://github.com/pubkey/rxdb/pull/2285/) Thanks [@kunal15595](https://github.com/DDoerner)
 

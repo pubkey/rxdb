@@ -3,5 +3,6 @@
   "main": "../../dist/lib/plugins/local-documents.js",
   "jsnext:main": "../../dist/es/plugins/local-documents.js",
   "module": "../../dist/es/plugins/local-documents.js",
-  "types": "../../dist/types/plugins/local-documents.d.ts"
+  "types": "../../dist/types/plugins/local-documents.d.ts",
+  "sideEffects": false
 }
