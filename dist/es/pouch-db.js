@@ -16,10 +16,11 @@ PouchDB.debug.enable('*');
 */
 
 import { newRxError, newRxTypeError } from './rx-error';
-
+import { isFolderPath } from './util';
 /**
  * get the number of all undeleted documents
  */
+
 export function countAllUndeleted(pouchdb) {
   return pouchdb.allDocs({
     include_docs: false,
@@ -79,9 +80,10 @@ export function validateCouchDBString(name) {
   } // do not check, if foldername is given
 
 
-  if (name.includes('/') || // unix
-  name.includes('\\') // windows
-  ) return true;
+  if (isFolderPath(name)) {
+    return true;
+  }
+
   var regStr = '^[a-z][_$a-z0-9]*$';
   var reg = new RegExp(regStr);
 

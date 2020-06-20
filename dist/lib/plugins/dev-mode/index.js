@@ -29,8 +29,6 @@ var _checkMigrationStrategies = require("./check-migration-strategies");
 
 var _unallowedProperties = require("./unallowed-properties");
 
-var _pouchDb = require("../../pouch-db");
-
 var RxDBDevModePlugin = {
   rxdb: true,
   overwritable: {
@@ -49,7 +47,7 @@ var RxDBDevModePlugin = {
   hooks: {
     preCreateRxSchema: _checkSchema.checkSchema,
     preCreateRxDatabase: function preCreateRxDatabase(args) {
-      (0, _pouchDb.validateCouchDBString)(args.name);
+      (0, _unallowedProperties.ensureDatabaseNameIsValid)(args);
     },
     preCreateRxCollection: function preCreateRxCollection(args) {
       (0, _unallowedProperties.ensureCollectionNameValid)(args);

@@ -72,27 +72,35 @@ function validateFieldsDeep(jsonSchema) {
       throw (0, _rxError.newRxError)('SC24', {
         fieldName: fieldName
       });
-    } // if ref given, must be type=='string' or type=='array' with string-items
+    } // if ref given, must be type=='string', type=='array' with string-items or type==['string','null']
 
 
     if (schemaObj.hasOwnProperty('ref')) {
-      switch (schemaObj.type) {
-        case 'string':
-          break;
-
-        case 'array':
-          if (!schemaObj.items || !schemaObj.items.type || schemaObj.items.type !== 'string') {
-            throw (0, _rxError.newRxError)('SC3', {
-              fieldName: fieldName
-            });
-          }
-
-          break;
-
-        default:
+      if (Array.isArray(schemaObj.type)) {
+        if (schemaObj.type.length > 2 || !schemaObj.type.includes('string') || !schemaObj.type.includes('null')) {
           throw (0, _rxError.newRxError)('SC4', {
             fieldName: fieldName
           });
+        }
+      } else {
+        switch (schemaObj.type) {
+          case 'string':
+            break;
+
+          case 'array':
+            if (!schemaObj.items || !schemaObj.items.type || schemaObj.items.type !== 'string') {
+              throw (0, _rxError.newRxError)('SC3', {
+                fieldName: fieldName
+              });
+            }
+
+            break;
+
+          default:
+            throw (0, _rxError.newRxError)('SC4', {
+              fieldName: fieldName
+            });
+        }
       }
     } // if primary is ref, throw
 

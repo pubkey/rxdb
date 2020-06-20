@@ -42,6 +42,7 @@ export var ERROR_MESSAGES = {
   DB8: 'RxDatabase.create(): A RxDatabase with the same name and adapter already exists.\n' + 'Make sure to use this combination only once or set ignoreDuplicate to true if you do this intentional',
   DB9: 'RxDatabase.create(): Adapter not added. Use RxDB.plugin(require(\'pouchdb-adapter-[adaptername]\');',
   DB10: 'RxDatabase.create(): To use leveldown-adapters, you have to add the leveldb-plugin. Use RxDB.plugin(require(\'pouchdb-adapter-leveldb\'));',
+  DB11: 'RxDatabase.create(): Invalid db-name, folder-paths must not have an ending slash',
   // rx-collection
   COL1: 'RxDocument.insert() You cannot insert an existing document',
   COL2: 'RxCollection.insert() do not provide ._id when it is not the primary key',
@@ -110,7 +111,7 @@ export var ERROR_MESSAGES = {
   SC1: 'fieldnames do not match the regex',
   SC2: 'SchemaCheck: name \'item\' reserved for array-fields',
   SC3: 'SchemaCheck: fieldname has a ref-array but items-type is not string',
-  SC4: 'SchemaCheck: fieldname has a ref but is not type string or array<string>',
+  SC4: 'SchemaCheck: fieldname has a ref but is not type string, [string,null] or array<string>',
   SC5: 'SchemaCheck: fieldname cannot be primary and ref at same time',
   SC6: 'SchemaCheck: primary can only be defined at top-level',
   SC7: 'SchemaCheck: default-values can only be defined at top-level',

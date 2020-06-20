@@ -19,6 +19,8 @@ var _pouchdbFind = _interopRequireDefault(require("pouchdb-find"));
 
 var _rxError = require("./rx-error");
 
+var _util = require("./util");
+
 /**
  * this handles the pouchdb-instance
  * to easy add modules and manipulate things
@@ -100,9 +102,10 @@ function validateCouchDBString(name) {
   } // do not check, if foldername is given
 
 
-  if (name.includes('/') || // unix
-  name.includes('\\') // windows
-  ) return true;
+  if ((0, _util.isFolderPath)(name)) {
+    return true;
+  }
+
   var regStr = '^[a-z][_$a-z0-9]*$';
   var reg = new RegExp(regStr);
 

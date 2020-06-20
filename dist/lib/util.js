@@ -28,6 +28,7 @@ exports.flatClone = flatClone;
 exports.flattenObject = flattenObject;
 exports.getHeightOfRevision = getHeightOfRevision;
 exports.overwriteGetterForCaching = overwriteGetterForCaching;
+exports.isFolderPath = isFolderPath;
 exports.LOCAL_PREFIX = exports.isElectronRenderer = exports.clone = exports.RXDB_HASH_SALT = void 0;
 
 var _randomToken = _interopRequireDefault(require("random-token"));
@@ -405,6 +406,21 @@ function overwriteGetterForCaching(obj, getterName, value) {
     }
   });
   return value;
+}
+/**
+ * returns true if the given name is likely a folder path
+ */
+
+
+function isFolderPath(name) {
+  // do not check, if foldername is given
+  if (name.includes('/') || // unix
+  name.includes('\\') // windows
+  ) {
+      return true;
+    } else {
+    return false;
+  }
 }
 
 //# sourceMappingURL=util.js.map

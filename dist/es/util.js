@@ -340,4 +340,18 @@ export function overwriteGetterForCaching(obj, getterName, value) {
   });
   return value;
 }
+/**
+ * returns true if the given name is likely a folder path
+ */
+
+export function isFolderPath(name) {
+  // do not check, if foldername is given
+  if (name.includes('/') || // unix
+  name.includes('\\') // windows
+  ) {
+      return true;
+    } else {
+    return false;
+  }
+}
 //# sourceMappingURL=util.js.map

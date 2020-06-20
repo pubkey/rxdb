@@ -43,7 +43,7 @@ export type PouchDBExpressServerOptions = {
         // a javascript array that specifies parts to include on top of the ones specified by opts.mode
         include?: any[];
         // a javascript array that specifies parts to exclude from the ones specified by opts.mode
-        excluse: any[];
+        exclude?: any[];
     }
 };
 

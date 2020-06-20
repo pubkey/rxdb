@@ -95,4 +95,8 @@ export declare const LOCAL_PREFIX: string;
  * Mostly used for caching stuff on the first run
  */
 export declare function overwriteGetterForCaching<ValueType = any>(obj: any, getterName: string, value: ValueType): ValueType;
+/**
+ * returns true if the given name is likely a folder path
+ */
+export declare function isFolderPath(name: string): boolean;
 export {};

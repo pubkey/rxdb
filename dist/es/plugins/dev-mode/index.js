@@ -2,8 +2,7 @@ import { ERROR_MESSAGES } from './error-messages';
 import { checkSchema } from './check-schema';
 import { checkOrmMethods } from './check-orm';
 import { checkMigrationStrategies } from './check-migration-strategies';
-import { ensureCollectionNameValid } from './unallowed-properties';
-import { validateCouchDBString } from '../../pouch-db';
+import { ensureCollectionNameValid, ensureDatabaseNameIsValid } from './unallowed-properties';
 export * from './check-schema';
 export var RxDBDevModePlugin = {
   rxdb: true,
@@ -23,7 +22,7 @@ export var RxDBDevModePlugin = {
   hooks: {
     preCreateRxSchema: checkSchema,
     preCreateRxDatabase: function preCreateRxDatabase(args) {
-      validateCouchDBString(args.name);
+      ensureDatabaseNameIsValid(args);
     },
     preCreateRxCollection: function preCreateRxCollection(args) {
       ensureCollectionNameValid(args);
