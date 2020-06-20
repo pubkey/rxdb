@@ -426,6 +426,9 @@ config.parallel('local-documents.test.js', () => {
             db.destroy();
         });
         it('local documents not persistent on db restart', async () => {
+            if (!config.platform.isNode()) {
+                return;
+            }
             const dbName: string = config.rootPath + 'test_tmp/' + randomCouchString(10);
 
             const localDocId = 'foobar';
