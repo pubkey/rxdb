@@ -50,6 +50,7 @@ export const ERROR_MESSAGES: { [k: string]: string } = {
         'Make sure to use this combination only once or set ignoreDuplicate to true if you do this intentional',
     DB9: 'RxDatabase.create(): Adapter not added. Use RxDB.plugin(require(\'pouchdb-adapter-[adaptername]\');',
     DB10: 'RxDatabase.create(): To use leveldown-adapters, you have to add the leveldb-plugin. Use RxDB.plugin(require(\'pouchdb-adapter-leveldb\'));',
+    DB11: 'RxDatabase.create(): Invalid db-name, folder-paths must not have an ending slash',
 
     // rx-collection
     COL1: 'RxDocument.insert() You cannot insert an existing document',

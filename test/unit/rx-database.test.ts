@@ -142,6 +142,16 @@ config.parallel('rx-database.test.js', () => {
                     'null'
                 );
             });
+            it('should crash with and ending slash', async () => {
+                await AsyncTestUtil.assertThrows(
+                    () => createRxDatabase({
+                        name: '/foo/bar/',
+                        adapter: 'memory'
+                    } as any),
+                    'RxError',
+                    'ending'
+                );
+            });
             it('should crash with invalid adapter', async () => {
                 await AsyncTestUtil.assertThrows(
                     () => createRxDatabase({

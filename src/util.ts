@@ -357,3 +357,18 @@ export function overwriteGetterForCaching<ValueType = any>(
     });
     return value;
 }
+
+/**
+ * returns true if the given name is likely a folder path
+ */
+export function isFolderPath(name: string) {
+    // do not check, if foldername is given
+    if (
+        name.includes('/') || // unix
+        name.includes('\\') // windows
+    ) {
+        return true;
+    } else {
+        return false;
+    }
+}

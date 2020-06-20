@@ -18,6 +18,7 @@ config.parallel('server.test.js', () => {
 
     // below imports have to be conditionally imported (only for Node) that's why we use require here instead of import:
     const express = require('express');
+    const fs = require('fs');
 
     const NodeWebsqlAdapter = require('pouchdb-adapter-leveldb');
 
@@ -245,8 +246,14 @@ config.parallel('server.test.js', () => {
         addRxPlugin(NodeWebsqlAdapter);
 
         const port = nexPort();
+
+        const db1Name = config.rootPath + 'test_tmp/' + randomCouchString(10);
+        const db2Name = config.rootPath + 'test_tmp/' + randomCouchString(10);
+        fs.mkdirSync(db1Name, { recursive: true });
+        fs.mkdirSync(db2Name, { recursive: true });
+
         const db1 = await createRxDatabase({
-            name: config.rootPath + 'test_tmp/' + randomCouchString(10),
+            name: db1Name,
             adapter: 'leveldb',
             multiInstance: false
         });
@@ -256,7 +263,7 @@ config.parallel('server.test.js', () => {
         });
 
         const db2 = await createRxDatabase({
-            name: config.rootPath + 'test_tmp/' + randomCouchString(10),
+            name: db2Name,
             adapter: 'leveldb',
             multiInstance: false
         });

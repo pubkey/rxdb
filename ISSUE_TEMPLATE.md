@@ -35,7 +35,7 @@
 ## Code
 
 ```js
-  const collection = await myDatabase.colleciton(/* ... */);
+  const collection = await myDatabase.collection(/* ... */);
   await collection.insert(/* ... */);
   /* ... */
 ```

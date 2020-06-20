@@ -7,6 +7,7 @@ Features:
 
 Bugfixes:
   - `ref`-fields must be nullable [#2285](https://github.com/pubkey/rxdb/pull/2285/) Thanks [@kunal15595](https://github.com/DDoerner)
+  - RxDatabase names can no longer end with a slash [#2251](https://github.com/pubkey/rxdb/issues/2251) which breaks the server plugin.
 
 ### 9.1.0 (31 May 2020)
 
