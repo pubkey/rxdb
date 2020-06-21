@@ -1,13 +1,14 @@
 # Changelog
 
-### X.X.X (comming soon)
-
-Features:
-  - Added `"sideEffects": false` to all plugins
+### 9.2.0 (21 June 2020)
 
 Bugfixes:
   - `ref`-fields must be nullable [#2285](https://github.com/pubkey/rxdb/pull/2285/) Thanks [@kunal15595](https://github.com/DDoerner)
   - RxDatabase names can no longer end with a slash [#2251](https://github.com/pubkey/rxdb/issues/2251) which breaks the server plugin.
+
+Other:
+  - Added `"sideEffects": false` to all plugins
+
 
 ### 9.1.0 (31 May 2020)
 
