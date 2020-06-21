@@ -21,6 +21,12 @@ const confLocation = path.join(basePath, '.transpile_state.json');
 const DEBUG = false;
 
 /**
+ * if this is too height,
+ * travis will kill the process when there are too many
+ */
+const MAX_PARALLEL_TRANSPILE = 6;
+
+/**
  * key->value | src -> compiled
  */
 const transpileFolders = {
@@ -34,6 +40,18 @@ nconf.argv()
         file: confLocation
     });
 
+
+function splitArrayInChunks(array, chunkSize) {
+    let i;
+    let j;
+    let temparray;
+    const ret = [];
+    for (i = 0, j = array.length; i < j; i += chunkSize) {
+        temparray = array.slice(i, i + chunkSize);
+        ret.push(temparray);
+    }
+    return ret;
+}
 
 
 async function transpileFile(srcLocation, goalLocation) {
@@ -67,53 +85,69 @@ async function transpileFile(srcLocation, goalLocation) {
     return;
 }
 
-const files = Object.entries(transpileFolders)
-    .map(entry => entry.map(folder => path.join(basePath, folder)))
-    .map(entry => {
-        const srcFolder = entry[0];
-        const toFolder = entry[1];
-        return walkSync.entries(srcFolder)
-            .map(fileEntry => {
+async function getFiles() {
+    const unfiltered = await Promise.all(
+        Object.entries(transpileFolders)
+            .map(entry => entry.map(folder => path.join(basePath, folder)))
+            .map(entry => {
+                const srcFolder = entry[0];
+                const toFolder = entry[1];
+                return walkSync.entries(srcFolder)
+                    .map(fileEntry => {
+                        // ensure goal-file-ending is .js
+                        const relativePathSplit = fileEntry.relativePath.split('.');
+                        relativePathSplit.pop();
+                        relativePathSplit.push('js');
 
-                // ensure goal-file-ending is .js
-                const relativePathSplit = fileEntry.relativePath.split('.');
-                relativePathSplit.pop();
-                relativePathSplit.push('js');
+                        fileEntry.goalPath = path.join(toFolder, relativePathSplit.join('.'));
+                        return fileEntry;
+                    });
+            })
+    );
+    const files = unfiltered.reduce((pre, cur) => pre.concat(cur), [])
+        .filter(entry => !entry.isDirectory())
+        .filter(entry => entry.relativePath.endsWith('.js') || entry.relativePath.endsWith('.ts'))
+        .map(entry => {
+            entry.fullPath = path.join(entry.basePath, entry.relativePath);
+            entry.lastTime = nconf.get(entry.fullPath);
+            return entry;
+        })
+        .filter(entry => entry.lastTime !== entry.mtime || !existsFile.sync(entry.goalPath));
 
-                fileEntry.goalPath = path.join(toFolder, relativePathSplit.join('.'));
-                return fileEntry;
-            });
-    })
-    .reduce((pre, cur) => pre.concat(cur), [])
-    .filter(entry => !entry.isDirectory())
-    .filter(entry => entry.relativePath.endsWith('.js') || entry.relativePath.endsWith('.ts'))
-    .map(entry => {
-        entry.fullPath = path.join(entry.basePath, entry.relativePath);
-        entry.lastTime = nconf.get(entry.fullPath);
-        return entry;
-    })
-    .filter(entry => entry.lastTime !== entry.mtime || !existsFile.sync(entry.goalPath));
+    DEBUG && console.dir(files);
 
-DEBUG && console.dir(files);
+    return files;
+}
 
-const resolved = Promise.resolve();
-Promise.all(files
-    .map(fileEntry => {
+async function run() {
+    const files = await getFiles();
+
+    const fileEntries = await Promise.all(files);
+    const noneNodeModuleEntries = fileEntries.filter(fileEntry => {
         if (fileEntry.relativePath.includes('/node_modules/')) {
             // skip node modules of examples or tests
-            return resolved;
+            return false;
+        } else {
+            return true;
         }
-
-        return transpileFile(
-            path.join(fileEntry.basePath, fileEntry.relativePath),
-            fileEntry.goalPath
-        ).then(() => {
-            nconf.set(fileEntry.fullPath, fileEntry.mtime);
-        });
-    }))
-    .then(() => {
-        nconf.save(function () {
-            DEBUG && console.log('conf saved');
-            console.log('# transpiling DONE');
-        });
     });
+    const entryChunks = splitArrayInChunks(noneNodeModuleEntries, MAX_PARALLEL_TRANSPILE);
+    for (const chunk of entryChunks) {
+        await Promise.all(
+            chunk.map(fileEntry => {
+                return transpileFile(
+                    path.join(fileEntry.basePath, fileEntry.relativePath),
+                    fileEntry.goalPath
+                ).then(() => {
+                    nconf.set(fileEntry.fullPath, fileEntry.mtime);
+                });
+            })
+        );
+    }
+    nconf.save(function () {
+        DEBUG && console.log('conf saved');
+        console.log('# transpiling DONE');
+    });
+}
+run();
+
