@@ -23,6 +23,7 @@ const DEBUG = false;
 /**
  * if this is too height,
  * travis will kill the process when there are too many
+ * @link https://docs.travis-ci.com/user/common-build-problems/#parallel-processes
  */
 const MAX_PARALLEL_TRANSPILE = 6;
 
