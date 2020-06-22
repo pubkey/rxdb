@@ -36,7 +36,7 @@
     "@vue/cli-service": "4.4.4",
     "concurrently": "5.2.0",
     "less": "3.11.3",
-    "less-loader": "6.1.1",
+    "less-loader": "6.1.2",
     "local-web-server": "4.2.1",
     "testcafe": "1.8.6",
     "typescript": "3.8.3",
