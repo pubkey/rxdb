@@ -1,5 +1,10 @@
 # Changelog
 
+### X.X.X (comming soon)
+
+Other:
+  - Added typings for `pouch.allDocs()`
+
 ### 9.2.0 (21 June 2020)
 
 Bugfixes:

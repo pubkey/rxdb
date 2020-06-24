@@ -41,6 +41,26 @@ export interface PouchSettings {
     iosDatabaseLocation?: string;
 }
 
+/**
+ * options for pouch.allDocs()
+ * @link https://pouchdb.com/api.html#batch_fetch
+ */
+export type PouchAllDocsOptions = {
+    include_docs?: boolean;
+    conflicts?: boolean;
+    attachments?: boolean;
+    binary?: boolean;
+    startkey?: string;
+    endkey?: string;
+    inclusive_end?: boolean;
+    limit?: number;
+    skip?: number;
+    descending?: boolean;
+    key?: string;
+    keys?: string[];
+    update_seq?: string;
+};
+
 export type PouchSyncHandlerEvents = 'change' | 'paused' | 'active' | 'error' | 'complete';
 export type PouchSyncHandler = {
     on(ev: PouchSyncHandlerEvents, fn: (el: any) => void): void;
@@ -75,7 +95,7 @@ export declare class PouchDBInstance {
     static countAllUndeleted(pouchdb: PouchDBInstance): Promise<number>;
     info(): Promise<any>;
 
-    allDocs(options?: any): Promise<any>;
+    allDocs(options?: PouchAllDocsOptions): Promise<any>;
 
     bulkDocs(
         docs: { docs: any[] } | any[],
