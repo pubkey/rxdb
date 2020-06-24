@@ -95,7 +95,18 @@ export declare class PouchDBInstance {
     static countAllUndeleted(pouchdb: PouchDBInstance): Promise<number>;
     info(): Promise<any>;
 
-    allDocs(options?: PouchAllDocsOptions): Promise<any>;
+    allDocs(options?: PouchAllDocsOptions): Promise<{
+        offset: number;
+        rows: {
+            id: string;
+            doc: any;
+            key: string;
+            value: {
+                rev: string;
+            }
+        }[];
+        total_rows: number;
+    }>;
 
     bulkDocs(
         docs: { docs: any[] } | any[],
