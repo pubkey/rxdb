@@ -165,13 +165,14 @@ export const basePrototype = {
             });
         }
 
-        if (schemaObj.type === 'array')
-            return Promise.all(
-                value.map((id: string) => refCollection
-                    .findOne(id).exec())
-            ) as any;
-        else
+        if (schemaObj.type === 'array') {
+            return refCollection.findByIds(value).then(res => {
+                const valuesIterator = res.values();
+                return Array.from(valuesIterator) as any;
+            });
+        } else {
             return refCollection.findOne(value).exec();
+        }
     },
 
     /**

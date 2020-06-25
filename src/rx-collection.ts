@@ -549,6 +549,47 @@ export class RxCollectionBase<
     }
 
     /**
+     * find a list documents by their primary key
+     * has way better performance then running multiple findOne() or a find() with a complex $or-selected
+     */
+    async findByIds(
+        ids: string[]
+    ): Promise<Map<string, RxDocument<RxDocumentType, OrmMethods>>> {
+
+        const ret = new Map();
+        const mustBeQueried: string[] = [];
+
+        // first try to fill from docCache
+        ids.forEach(id => {
+            const doc = this._docCache.get(id);
+            if (doc) {
+                ret.set(id, doc);
+            } else {
+                mustBeQueried.push(id);
+            }
+        });
+
+        // find everything which was not in docCache
+        if (mustBeQueried.length > 0) {
+            const result = await this.pouch.allDocs({
+                include_docs: true,
+                keys: mustBeQueried
+            });
+            result.rows.forEach(row => {
+                if (!row.doc) {
+                    // not found
+                    return;
+                }
+                const plainData = this._handleFromPouch(row.doc);
+                const doc = createRxDocument(this as any, plainData);
+                ret.set(doc.primary, doc);
+            });
+        }
+
+        return ret;
+    }
+
+    /**
      * Export collection to a JSON friendly format.
      * @param _decrypted
      * When true, all encrypted values will be decrypted.

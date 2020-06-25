@@ -59,6 +59,10 @@ export type PouchAllDocsOptions = {
     key?: string;
     keys?: string[];
     update_seq?: string;
+
+    // undocument but needed
+    revs?: boolean;
+    deleted?: 'ok';
 };
 
 export type PouchSyncHandlerEvents = 'change' | 'paused' | 'active' | 'error' | 'complete';

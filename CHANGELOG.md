@@ -2,6 +2,9 @@
 
 ### X.X.X (comming soon)
 
+Features:
+  - Added (beta) `RxCollection.findByIds()` to get many documents by their id with a better performance.
+
 Other:
   - Added typings for `pouch.allDocs()`
 

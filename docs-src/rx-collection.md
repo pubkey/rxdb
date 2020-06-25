@@ -183,6 +183,27 @@ myCollection.findOne('foo')
   .exec().then(doc => console.dir(doc));
 ```
 
+
+### findByIds()
+
+Notice: This method is in beta and might be changed without notice.
+
+Find many documents by their id (primary value). This has a way better performance than running multiple `findOne()` or a `find()` with a big `$or` selector.
+
+Returns a `Map` where the primary key of the document is mapped to the document. Documents that do not exist or are deleted, will not be inside of the returned Map.
+
+```js
+const ids = [
+  'alice',
+  'bob',
+  /* ... */
+];
+const docsMap = await myCollection.findByIds(ids);
+
+console.dir(docsMap); // Map(2)
+```
+
+
 ### dump()
 Use this function to create a json export from every document in the collection. You can pass true as parameter to decrypt the encrypted data fields of your documents.
 ```js

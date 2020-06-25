@@ -1561,6 +1561,41 @@ config.parallel('rx-collection.test.js', () => {
                 });
             });
         });
+        describe('.findByIds()', () => {
+            it('should not crash', async () => {
+                const c = await humansCollection.create();
+                const res = await c.findByIds([
+                    'foo',
+                    'bar'
+                ]);
+                assert.ok(res);
+                c.database.destroy();
+            });
+            it('should find the documents', async () => {
+                const c = await humansCollection.create(5);
+
+                const docs = await c.find().exec();
+                const ids = docs.map(d => d.primary);
+                const res = await c.findByIds(ids);
+
+                assert.ok(res.has(docs[0].primary));
+                assert.strictEqual(res.size, 5);
+
+                c.database.destroy();
+            });
+            it('should find the documents when they are not in the docCache', async () => {
+                const c = await humansCollection.create(5);
+                const docs = await c.find().exec();
+                const ids = docs.map(d => d.primary);
+
+                // clear docCache
+                ids.forEach(id => c._docCache.delete(id));
+
+                const res = await c.findByIds(ids);
+                assert.strictEqual(res.size, 5);
+                c.database.destroy();
+            });
+        });
     });
     describe('issues', () => {
         it('#528  default value ignored when 0', async () => {
