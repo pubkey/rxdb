@@ -1,6 +1,6 @@
 # Changelog
 
-### X.X.X (comming soon)
+### 9.3.0 (26 June 2020)
 
 Features:
   - Added (beta) `RxCollection.findByIds()` to get many documents by their id with a better performance.

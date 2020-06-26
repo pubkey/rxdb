@@ -167,9 +167,14 @@ var basePrototype = {
       });
     }
 
-    if (schemaObj.type === 'array') return Promise.all(value.map(function (id) {
-      return refCollection.findOne(id).exec();
-    }));else return refCollection.findOne(value).exec();
+    if (schemaObj.type === 'array') {
+      return refCollection.findByIds(value).then(function (res) {
+        var valuesIterator = res.values();
+        return Array.from(valuesIterator);
+      });
+    } else {
+      return refCollection.findOne(value).exec();
+    }
   },
 
   /**

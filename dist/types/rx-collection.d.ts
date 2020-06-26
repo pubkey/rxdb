@@ -91,6 +91,11 @@ export declare class RxCollectionBase<RxDocumentType = {
     find(queryObj?: MangoQuery<RxDocumentType>): RxQuery<RxDocumentType, RxDocument<RxDocumentType, OrmMethods>[]>;
     findOne(queryObj?: MangoQueryNoLimit<RxDocumentType> | string): RxQuery<RxDocumentType, RxDocument<RxDocumentType, OrmMethods> | null>;
     /**
+     * find a list documents by their primary key
+     * has way better performance then running multiple findOne() or a find() with a complex $or-selected
+     */
+    findByIds(ids: string[]): Promise<Map<string, RxDocument<RxDocumentType, OrmMethods>>>;
+    /**
      * Export collection to a JSON friendly format.
      * @param _decrypted
      * When true, all encrypted values will be decrypted.

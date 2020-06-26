@@ -9,6 +9,10 @@ exports.create = create;
 exports.isInstanceOf = isInstanceOf;
 exports["default"] = exports.RxCollectionBase = void 0;
 
+var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
+
+var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
+
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 
 var _operators = require("rxjs/operators");
@@ -444,6 +448,78 @@ var RxCollectionBase = /*#__PURE__*/function () {
     return query;
   }
   /**
+   * find a list documents by their primary key
+   * has way better performance then running multiple findOne() or a find() with a complex $or-selected
+   */
+  ;
+
+  _proto.findByIds =
+  /*#__PURE__*/
+  function () {
+    var _findByIds = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(ids) {
+      var _this9 = this;
+
+      var ret, mustBeQueried, result;
+      return _regenerator["default"].wrap(function _callee$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              ret = new Map();
+              mustBeQueried = []; // first try to fill from docCache
+
+              ids.forEach(function (id) {
+                var doc = _this9._docCache.get(id);
+
+                if (doc) {
+                  ret.set(id, doc);
+                } else {
+                  mustBeQueried.push(id);
+                }
+              }); // find everything which was not in docCache
+
+              if (!(mustBeQueried.length > 0)) {
+                _context.next = 8;
+                break;
+              }
+
+              _context.next = 6;
+              return this.pouch.allDocs({
+                include_docs: true,
+                keys: mustBeQueried
+              });
+
+            case 6:
+              result = _context.sent;
+              result.rows.forEach(function (row) {
+                if (!row.doc) {
+                  // not found
+                  return;
+                }
+
+                var plainData = _this9._handleFromPouch(row.doc);
+
+                var doc = (0, _rxDocumentPrototypeMerge.createRxDocument)(_this9, plainData);
+                ret.set(doc.primary, doc);
+              });
+
+            case 8:
+              return _context.abrupt("return", ret);
+
+            case 9:
+            case "end":
+              return _context.stop();
+          }
+        }
+      }, _callee, this);
+    }));
+
+    function findByIds(_x) {
+      return _findByIds.apply(this, arguments);
+    }
+
+    return findByIds;
+  }()
+  /**
    * Export collection to a JSON friendly format.
    * @param _decrypted
    * When true, all encrypted values will be decrypted.
@@ -665,10 +741,10 @@ var RxCollectionBase = /*#__PURE__*/function () {
   }, {
     key: "onDestroy",
     get: function get() {
-      var _this9 = this;
+      var _this10 = this;
 
       if (!this._onDestroy) this._onDestroy = new Promise(function (res) {
-        return _this9._onDestroyCall = res;
+        return _this10._onDestroyCall = res;
       });
       return this._onDestroy;
     }
