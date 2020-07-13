@@ -44,6 +44,7 @@ const database = await createRxDatabase({
 
 # Browser
 
+
 ## IndexedDB
 
 The IndexedDB adapter stores the data inside of [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) use this in browsers environments as default.
@@ -55,6 +56,20 @@ addRxPlugin(require('pouchdb-adapter-idb'));
 const database = await createRxDatabase({
     name: 'mydatabase',
     adapter: 'idb' // the name of your adapter
+});
+```
+
+## IndexedDB (new)
+
+A reimplementation of the indexeddb adapter which uses native secondary indexes. Should have a much better performance but can behave [different on some edge cases](https://github.com/pouchdb/pouchdb/tree/master/packages/node_modules/pouchdb-adapter-indexeddb#differences-between-couchdb-and-pouchdbs-find-implementations-under-indexeddb).
+
+```js
+// npm install pouchdb-adapter-indexeddb --save
+addRxPlugin(require('pouchdb-adapter-indexeddb'));
+
+const database = await createRxDatabase({
+    name: 'mydatabase',
+    adapter: 'indexeddb' // the name of your adapter
 });
 ```
 
