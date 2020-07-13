@@ -118,20 +118,6 @@ const database = await createRxDatabase({
 
 # React-Native
 
-## asyncstorage
-
-Uses react-native's [asyncstorage](https://facebook.github.io/react-native/docs/asyncstorage).
-
-```js
-// npm install pouchdb-adapter-asyncstorage --save
-addRxPlugin(require('pouchdb-adapter-asyncstorage'));
-
-const database = await createRxDatabase({
-    name: 'mydatabase',
-    adapter: 'node-asyncstorage' // the name of your adapter
-});
-```
-
 ## react-native-sqlite
 
 Uses ReactNative SQLite as storage. Claims to be much faster than the asyncstorage adapter.
@@ -186,6 +172,21 @@ const database = await createRxDatabase({
 });
 ```
 
+## asyncstorage
+
+Uses react-native's [asyncstorage](https://facebook.github.io/react-native/docs/asyncstorage).
+
+**Notice**: There are [known problems](https://github.com/pubkey/rxdb/issues/2286) with this adapter and it is **not** recommended to use it.
+
+```js
+// npm install pouchdb-adapter-asyncstorage --save
+addRxPlugin(require('pouchdb-adapter-asyncstorage'));
+
+const database = await createRxDatabase({
+    name: 'mydatabase',
+    adapter: 'node-asyncstorage' // the name of your adapter
+});
+```
 
 ## asyncstorage-down
 A leveldown adapter that stores on asyncstorage.
