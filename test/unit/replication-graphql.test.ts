@@ -2258,6 +2258,53 @@ describe('replication-graphql.test.js', () => {
 
                 c.database.destroy();
             });
+            it('#2336 liveInterval-retries should not stack up', async () => {
+                if (config.isFastMode()) {
+                    // this test takes too long, do not run in fast mode
+                    return;
+                }
+
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(batchSize),
+                    SpawnServer.spawn()
+                ]);
+                const pullQueryBuilderFailing = (doc: any) => {
+                    // Note: setHumanFail will error out
+                    const query = `
+                    mutation CreateHuman($human: HumanInput) {
+                        setHumanFail(human: $human) {
+                            id,
+                            updatedAt
+                        }
+                    }
+                    `;
+                    const variables = {
+                        human: doc
+                    };
+
+                    return {
+                        query,
+                        variables
+                    };
+                };
+
+                const replicationState = c.syncGraphQL({
+                    url: server.url,
+                    pull: {
+                        queryBuilder: pullQueryBuilderFailing
+                    },
+                    live: true,
+                    deletedFlag: 'deleted',
+                    retryTime: 1000,
+                    liveInterval: 500
+                });
+
+                // Since push will error out we expect it there to be around 5000/500 = 10 runs with some retries
+                await AsyncTestUtil.wait(5000);
+                assert.ok(replicationState._runCount < 20, replicationState._runCount.toString());
+
+                c.database.destroy();
+            });
         });
     });
     describe('browser', () => {

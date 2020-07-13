@@ -146,7 +146,7 @@ export class RxGraphQLReplicationState {
     }
 
     // ensures this._run() does not run in parallel
-    async run(): Promise<void> {
+    async run(retryOnFail = true): Promise<void> {
         if (this.isStopped()) {
             return;
         }
@@ -158,7 +158,7 @@ export class RxGraphQLReplicationState {
         this._runQueueCount++;
         this._runningPromise = this._runningPromise.then(async () => {
             this._subjects.active.next(true);
-            const willRetry = await this._run();
+            const willRetry = await this._run(retryOnFail);
             this._subjects.active.next(false);
             if (!willRetry && this._subjects.initialReplicationComplete['_value'] === false) {
                 this._subjects.initialReplicationComplete.next(true);
@@ -171,12 +171,12 @@ export class RxGraphQLReplicationState {
     /**
      * returns true if retry must be done
      */
-    async _run(): Promise<boolean> {
+    async _run(retryOnFail = true): Promise<boolean> {
         this._runCount++;
 
         if (this.push) {
             const ok = await this.runPush();
-            if (!ok) {
+            if (!ok && retryOnFail) {
                 setTimeout(() => this.run(), this.retryTime);
                 /*
                     Because we assume that conflicts are solved on the server side,
@@ -189,7 +189,7 @@ export class RxGraphQLReplicationState {
 
         if (this.pull) {
             const ok = await this.runPull();
-            if (!ok) {
+            if (!ok && retryOnFail) {
                 setTimeout(() => this.run(), this.retryTime);
                 return true;
             }
@@ -499,7 +499,11 @@ export function syncGraphQL(
                     while (!replicationState.isStopped()) {
                         await promiseWait(replicationState.liveInterval);
                         if (replicationState.isStopped()) return;
-                        await replicationState.run();
+                        await replicationState.run(
+                            // do not retry on liveInterval-runs because they might stack up
+                            // when failing
+                            false
+                        );
                     }
                 })();
             }

@@ -1,5 +1,10 @@
 # Changelog
 
+### 9.X.X (comming soon)
+
+Bugfixes:
+  - GraphQL replication run increasing requests when offline [#2336](https://github.com/pubkey/rxdb/issues/2336)
+
 ### 9.3.0 (26 June 2020)
 
 Features:
