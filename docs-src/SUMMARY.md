@@ -113,7 +113,7 @@
 
 * [Custom Build](./custom-build.md)
 
-* [Plugins](./plugins.md)
+* [Creating Plugins](./plugins.md)
 
 * [Adapters](./adapters.md)
 

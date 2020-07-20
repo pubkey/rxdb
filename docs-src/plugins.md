@@ -1,4 +1,4 @@
-# Plugins
+# Creating Plugins
 
 Creating an own plugin is very simple. A plugin is basically an javascript-object which overwrites or extends RxDB's internal classes, prototypes and hooks.
 
