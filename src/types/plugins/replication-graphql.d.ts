@@ -12,11 +12,11 @@ export type RxGraphQLReplicationQueryBuilder = (doc: any) =>
 
 export interface GraphQLSyncPullOptions {
     queryBuilder: RxGraphQLReplicationQueryBuilder;
-    modifier?: (doc: any) => any;
+    modifier?: (doc: any) => Promise<any> | any;
 }
 export interface GraphQLSyncPushOptions {
     queryBuilder: RxGraphQLReplicationQueryBuilder;
-    modifier?: (doc: any) => any;
+    modifier?: (doc: any) => Promise<any> | any;
     batchSize?: number;
 }
 

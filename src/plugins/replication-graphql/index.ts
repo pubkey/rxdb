@@ -223,7 +223,7 @@ export class RxGraphQLReplicationState {
         // this assumes that there will be always only one property in the response
         // is this correct?
         const data = result.data[Object.keys(result.data)[0]];
-        const modified = data.map((doc: any) => (this.pull as any).modifier(doc));
+        const modified: any[] = await Promise.all(data.map(async (doc: any) => await (this.pull as any).modifier(doc)));
 
 
         /**
@@ -290,7 +290,7 @@ export class RxGraphQLReplicationState {
             this.syncRevisions
         );
 
-        const changesWithDocs = changes.results.map((change: any) => {
+        const changesWithDocs = await Promise.all(changes.results.map(async (change: any) => {
             let doc = change['doc'];
 
             doc[this.deletedFlag] = !!change['deleted'];
@@ -302,14 +302,14 @@ export class RxGraphQLReplicationState {
                 delete doc._rev;
             }
 
-            doc = (this.push as any).modifier(doc);
+            doc = await (this.push as any).modifier(doc);
 
             const seq = change.seq;
             return {
                 doc,
                 seq
             };
-        });
+        }));
 
         let lastSuccessfullChange = null;
         try {
