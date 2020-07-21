@@ -2,6 +2,9 @@
 
 ### 9.X.X (comming soon)
 
+Features:
+  - GraphQL replication async modifier function [#2367](https://github.com/pubkey/rxdb/issues/2367)
+
 Bugfixes:
   - GraphQL replication run increasing requests when offline [#2336](https://github.com/pubkey/rxdb/issues/2336)
 

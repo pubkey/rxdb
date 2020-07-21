@@ -8,7 +8,7 @@ import type {
 export const PLUGIN_IDENT = 'rxdbreplicationgraphql';
 
 // does nothing
-export const DEFAULT_MODIFIER = (d: any) => d;
+export const DEFAULT_MODIFIER = (d: any) => Promise.resolve(d);
 
 /**
  * pouchdb will throw if a document is not found
