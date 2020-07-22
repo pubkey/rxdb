@@ -6,7 +6,7 @@ A collection stores documents of the same type.
 To create a collection you need a RxDatabase object which has the .collection()-method. Every collection needs a collection name and a valid RxSchema. Other attributes are optional.
 
 ```js
-myDatabase.collection({
+const myCollection = await myDatabase.collection({
   name: 'humans',
   schema: mySchema,
   pouchSettings: {} // (optional)
@@ -16,8 +16,8 @@ myDatabase.collection({
   options: {}, // (optional) Custom paramters that might be used in plugins
   migrationStrategies: {}, // (optional)
   autoMigrate: true, // (optional)
-})
-  .then(collection => console.dir(collection));
+  cacheReplacementPolicy: function(){}, // (optional) custoom cache replacement policy
+});
 ```
 
 ### name
@@ -45,12 +45,7 @@ const collection = await db.collection({
   schema: mySchema
 });
 const collection2 = db.heroes;
-// or
-// const collection2 = db['heroes']
-
-console.log(collection == collection2);
-// true
-
+console.log(collection === collection2); //> true
 ```
 
 ## Functions

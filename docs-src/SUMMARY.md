@@ -109,6 +109,8 @@
 
 * [InMemory](./in-memory.md)
 
+* [QueryCache](./query-cache.md)
+
 * [LocalDocuments](./rx-local-document.md)
 
 * [Custom Build](./custom-build.md)

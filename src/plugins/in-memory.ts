@@ -70,7 +70,10 @@ const BULK_DOC_OPTIONS_FALSE = {
     new_edits: false
 };
 
-export class InMemoryRxCollection<RxDocumentType, OrmMethods> extends RxCollectionBase<RxDocumentType, OrmMethods> {
+export
+    class InMemoryRxCollection<RxDocumentType, OrmMethods>
+    extends RxCollectionBase<RxDocumentType, OrmMethods> {
+
     constructor(
         parentCollection: RxCollection,
         pouchSettings = {}

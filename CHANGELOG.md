@@ -5,6 +5,10 @@
 Bugfixes:
   - GraphQL replication run increasing requests when offline [#2336](https://github.com/pubkey/rxdb/issues/2336)
 
+Features:
+  - Add cache-replacement-policy for the [QueryCache](https://pubkey.github.io/rxdb/query-cache.html)
+
+
 ### 9.3.0 (26 June 2020)
 
 Features:

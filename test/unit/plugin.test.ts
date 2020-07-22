@@ -39,7 +39,7 @@ config.parallel('plugin.test.js', () => {
             const childProcess = promise.childProcess;
             childProcess.stdout.on('data', (data: any) => {
                 // comment in to debug
-                //                console.log(':: ' + data.toString());
+                //               console.log(':: ' + data.toString());
                 stdout.push(data.toString());
             });
             childProcess.stderr.on('data', (data: any) => stderr.push(data.toString()));

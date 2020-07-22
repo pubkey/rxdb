@@ -51,7 +51,8 @@ import {
 } from './doc-cache';
 import {
     QueryCache,
-    createQueryCache
+    createQueryCache,
+    defaultCacheReplacementPolicy
 } from './query-cache';
 import {
     ChangeEventBuffer,
@@ -62,7 +63,7 @@ import {
     runPluginHooks
 } from './hooks';
 
-import {
+import type {
     Subscription,
     Observable
 } from 'rxjs';
@@ -82,9 +83,10 @@ import type {
     RxDumpCollection,
     RxDumpCollectionAny,
     MangoQuery,
-    MangoQueryNoLimit
+    MangoQueryNoLimit,
+    RxCacheReplacementPolicy
 } from './types';
-import {
+import type {
     RxGraphQLReplicationState
 } from './plugins/replication-graphql';
 
@@ -120,6 +122,7 @@ export class RxCollectionBase<
         public methods: KeyFunctionMap = {},
         public attachments: KeyFunctionMap = {},
         public options: any = {},
+        public cacheReplacementPolicy: RxCacheReplacementPolicy = defaultCacheReplacementPolicy,
         public statics: KeyFunctionMap = {}
     ) {
         _applyHookFunctions(this.asRxCollection);
@@ -148,8 +151,9 @@ export class RxCollectionBase<
     }
 
     get onDestroy() {
-        if (!this._onDestroy)
+        if (!this._onDestroy) {
             this._onDestroy = new Promise(res => this._onDestroyCall = res);
+        }
         return this._onDestroy;
     }
 
@@ -736,11 +740,9 @@ export class RxCollectionBase<
     }
     destroy(): Promise<boolean> {
         if (this.destroyed) return Promise.resolve(false);
-
         if (this._onDestroyCall) { this._onDestroyCall(); }
         this._subs.forEach(sub => sub.unsubscribe());
         if (this._changeEventBuffer) { this._changeEventBuffer.destroy(); }
-        this._queryCache.destroy();
         this._repStates.forEach(sync => sync.cancel());
         delete this.database.collections[this.name];
         this.destroyed = true;
@@ -856,14 +858,16 @@ export function create({
     statics = {},
     methods = {},
     attachments = {},
-    options = {}
+    options = {},
+    cacheReplacementPolicy = defaultCacheReplacementPolicy
 }: any
 ): Promise<RxCollection> {
     validateCouchDBString(name);
 
     // ensure it is a schema-object
-    if (!isInstanceOfRxSchema(schema))
+    if (!isInstanceOfRxSchema(schema)) {
         schema = createRxSchema(schema);
+    }
 
     Object.keys(methods)
         .filter(funName => schema.topLevelFields.includes(funName))
@@ -882,6 +886,7 @@ export function create({
         methods,
         attachments,
         options,
+        cacheReplacementPolicy,
         statics
     );
 

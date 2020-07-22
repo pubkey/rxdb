@@ -74,9 +74,12 @@ export {
     createCrypter // used in tests
 } from './crypter';
 
+export * from './query-cache';
+
 export type {
     RxStorage
 } from './rx-storate.interface';
+
 
 export * from './util';
 
@@ -104,6 +107,7 @@ export type {
     RxAttachment,
     RxAttachmentCreator,
     RxCollection,
+    RxCacheReplacementPolicy,
     PrimaryProperty,
     RxCollectionCreator,
     RxCollectionGenerated,

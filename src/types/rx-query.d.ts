@@ -52,7 +52,6 @@ export type MangoQuery<RxDocType = any> = MangoQueryNoLimit<RxDocType> & {
     limit?: number;
 };
 
-
 export type RxQueryOP = 'find' | 'findOne';
 
 export declare class RxQuery<RxDocumentType = any, RxQueryResult = RxDocumentType | RxDocumentType[]> extends RxQueryBase<RxDocumentType, RxQueryResult> {

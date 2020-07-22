@@ -1,12 +1,13 @@
-import {
+import type {
     RxJsonSchema,
     PouchSettings,
     RxDocument,
     RxLocalDocument
 } from './';
-import {
+import type {
     RxCollectionBase
 } from '../rx-collection';
+import type { QueryCache } from '../query-cache';
 
 export interface KeyFunctionMap {
     [key: string]: Function;
@@ -25,6 +26,7 @@ export interface RxCollectionCreator {
     methods?: KeyFunctionMap;
     attachments?: KeyFunctionMap;
     options?: any;
+    cacheReplacementPolicy?: RxCacheReplacementPolicy;
 }
 
 export interface MigrationState {
@@ -35,6 +37,9 @@ export interface MigrationState {
     deleted: number; // handled docs which got deleted
     percent: number; // percentage
 }
+
+
+export type RxCacheReplacementPolicy = (collection: RxCollection, queryCache: QueryCache) => void;
 
 export type RxCollectionHookCallback<
     RxDocumentType,

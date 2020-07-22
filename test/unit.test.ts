@@ -8,6 +8,7 @@ import './unit/rx-schema.test.js';
 import './unit/key-compression.test.js';
 import './unit/bug-report.test.js';
 import './unit/rx-database.test.js';
+import './unit/cache-replacement-policy.test';
 import './unit/rx-collection.test.js';
 import './unit/rx-document.test.js';
 import './unit/temporary-document.test.js';
