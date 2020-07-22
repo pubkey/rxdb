@@ -1,6 +1,6 @@
 import assert from 'assert';
 import AsyncTestUtil, {
-    clone
+    clone, wait
 } from 'async-test-util';
 import GraphQLClient from 'graphql-client';
 
@@ -1457,6 +1457,45 @@ describe('replication-graphql.test.js', () => {
                     },
                     pull: {
                         queryBuilder: asyncQueryBuilder
+                    },
+                    live: false,
+                    deletedFlag: 'deleted'
+                });
+
+                await replicationState.awaitInitialReplication();
+
+                const docsOnServer = server.getDocuments();
+                assert.strictEqual(docsOnServer.length, amount * 2);
+
+                const docsOnDb = await c.find().exec();
+                assert.strictEqual(docsOnDb.length, amount * 2);
+
+                server.close();
+                c.database.destroy();
+            });
+            it('should allow asynchronous push and pull modifiers', async () => {
+                const amount = batchSize * 4;
+                const testData = getTestData(amount);
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(amount),
+                    SpawnServer.spawn(testData)
+                ]);
+
+                const asyncModifier = async (d: any) => {
+                    await wait(10);
+                    return d;
+                };
+
+                const replicationState = c.syncGraphQL({
+                    url: server.url,
+                    push: {
+                        batchSize,
+                        queryBuilder: pushQueryBuilder,
+                        modifier: asyncModifier
+                    },
+                    pull: {
+                        queryBuilder: queryBuilder,
+                        modifier: asyncModifier
                     },
                     live: false,
                     deletedFlag: 'deleted'
