@@ -3,14 +3,11 @@
 ### 9.X.X (comming soon)
 
 Features:
+  - Add cache-replacement-policy for the [QueryCache](https://pubkey.github.io/rxdb/query-cache.html)
   - GraphQL replication async modifier function [#2367](https://github.com/pubkey/rxdb/issues/2367)
 
 Bugfixes:
   - GraphQL replication run increasing requests when offline [#2336](https://github.com/pubkey/rxdb/issues/2336)
-
-Features:
-  - Add cache-replacement-policy for the [QueryCache](https://pubkey.github.io/rxdb/query-cache.html)
-
 
 ### 9.3.0 (26 June 2020)
 
