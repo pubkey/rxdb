@@ -66,6 +66,8 @@ export function isLevelDown(adapter) {
     });
   }
 }
+var validCouchDBStringRegexStr = '^[a-z][_$a-z0-9]*$';
+var validCouchDBStringRegex = new RegExp(validCouchDBStringRegexStr);
 /**
  * validates that a given string is ok to be used with couchdb-collection-names
  * @link https://wiki.apache.org/couchdb/HTTP_database_API
@@ -84,12 +86,9 @@ export function validateCouchDBString(name) {
     return true;
   }
 
-  var regStr = '^[a-z][_$a-z0-9]*$';
-  var reg = new RegExp(regStr);
-
-  if (!name.match(reg)) {
+  if (!name.match(validCouchDBStringRegex)) {
     throw newRxError('UT2', {
-      regex: regStr,
+      regex: validCouchDBStringRegexStr,
       givenName: name
     });
   }

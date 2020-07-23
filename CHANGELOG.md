@@ -1,6 +1,6 @@
 # Changelog
 
-### 9.X.X (comming soon)
+### 9.4.0 (24 July 2020)
 
 Features:
   - Add cache-replacement-policy for the [QueryCache](https://pubkey.github.io/rxdb/query-cache.html)

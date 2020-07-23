@@ -1379,7 +1379,20 @@
             
         </li>
     
-        <li class="chapter " data-level="1.17" data-path="rx-local-document.html">
+        <li class="chapter " data-level="1.17" data-path="query-cache.html">
+            
+                <a href="query-cache.html">
+            
+                    
+                    QueryCache
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.18" data-path="rx-local-document.html">
             
                 <a href="rx-local-document.html">
             
@@ -1392,7 +1405,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.18" data-path="custom-build.html">
+        <li class="chapter " data-level="1.19" data-path="custom-build.html">
             
                 <a href="custom-build.html">
             
@@ -1405,12 +1418,12 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19" data-path="plugins.html">
+        <li class="chapter " data-level="1.20" data-path="plugins.html">
             
                 <a href="plugins.html">
             
                     
-                    Plugins
+                    Creating Plugins
             
                 </a>
             
@@ -1418,7 +1431,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.20" data-path="adapters.html">
+        <li class="chapter active" data-level="1.21" data-path="adapters.html">
             
                 <a href="adapters.html">
             
@@ -1431,7 +1444,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.21" >
+        <li class="chapter " data-level="1.22" >
             
                 <span>
             
@@ -1445,7 +1458,7 @@
             <ul class="articles">
                 
     
-        <li class="chapter " data-level="1.21.1" data-path="tutorials/typescript.html">
+        <li class="chapter " data-level="1.22.1" data-path="tutorials/typescript.html">
             
                 <a href="tutorials/typescript.html">
             
@@ -1458,7 +1471,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.21.2" data-path="tutorials/server.html">
+        <li class="chapter " data-level="1.22.2" data-path="tutorials/server.html">
             
                 <a href="tutorials/server.html">
             
@@ -1476,7 +1489,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.22" data-path="questions-answers.html">
+        <li class="chapter " data-level="1.23" data-path="questions-answers.html">
             
                 <a href="questions-answers.html">
             
@@ -1489,7 +1502,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.23" data-path="contribute.html">
+        <li class="chapter " data-level="1.24" data-path="contribute.html">
             
                 <a href="contribute.html">
             
@@ -1591,6 +1604,16 @@ addRxPlugin(<span class="hljs-built_in">require</span>(<span class="hljs-string"
     adapter: <span class="hljs-string">&apos;idb&apos;</span> <span class="hljs-comment">// the name of your adapter</span>
 });
 </code></pre>
+<h2 id="indexeddb-new">IndexedDB (new)</h2>
+<p>A reimplementation of the indexeddb adapter which uses native secondary indexes. Should have a much better performance but can behave <a href="https://github.com/pouchdb/pouchdb/tree/master/packages/node_modules/pouchdb-adapter-indexeddb#differences-between-couchdb-and-pouchdbs-find-implementations-under-indexeddb" target="_blank">different on some edge cases</a>.</p>
+<pre><code class="lang-js"><span class="hljs-comment">// npm install pouchdb-adapter-indexeddb --save</span>
+addRxPlugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;pouchdb-adapter-indexeddb&apos;</span>));
+
+<span class="hljs-keyword">const</span> database = <span class="hljs-keyword">await</span> createRxDatabase({
+    name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
+    adapter: <span class="hljs-string">&apos;indexeddb&apos;</span> <span class="hljs-comment">// the name of your adapter</span>
+});
+</code></pre>
 <h2 id="websql">Websql</h2>
 <p>This adapter stores the data inside of websql. It has a different performance behavior. <a href="https://softwareengineering.stackexchange.com/questions/220254/why-is-web-sql-database-deprecated" target="_blank">Websql is deprecated</a>. You should not use the websql adapter unless you have a really good reason.</p>
 <pre><code class="lang-js"><span class="hljs-comment">// npm install pouchdb-adapter-websql --save</span>
@@ -1637,16 +1660,6 @@ addRxPlugin(<span class="hljs-built_in">require</span>(<span class="hljs-string"
 });
 </code></pre>
 <h1 id="react-native">React-Native</h1>
-<h2 id="asyncstorage">asyncstorage</h2>
-<p>Uses react-native&apos;s <a href="https://facebook.github.io/react-native/docs/asyncstorage" target="_blank">asyncstorage</a>.</p>
-<pre><code class="lang-js"><span class="hljs-comment">// npm install pouchdb-adapter-asyncstorage --save</span>
-addRxPlugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;pouchdb-adapter-asyncstorage&apos;</span>));
-
-<span class="hljs-keyword">const</span> database = <span class="hljs-keyword">await</span> createRxDatabase({
-    name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
-    adapter: <span class="hljs-string">&apos;node-asyncstorage&apos;</span> <span class="hljs-comment">// the name of your adapter</span>
-});
-</code></pre>
 <h2 id="react-native-sqlite">react-native-sqlite</h2>
 <p>Uses ReactNative SQLite as storage. Claims to be much faster than the asyncstorage adapter.
 To use it, you have to do some steps from <a href="https://dev.to/craftzdog/hacking-pouchdb-to-use-on-react-native-1gjh" target="_blank">this tutorial</a>.</p>
@@ -1685,6 +1698,17 @@ addRxPlugin(<span class="hljs-built_in">require</span>(<span class="hljs-string"
 <span class="hljs-keyword">const</span> database = <span class="hljs-keyword">await</span> createRxDatabase({
     name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
     adapter: <span class="hljs-string">&apos;react-native-sqlite&apos;</span> <span class="hljs-comment">// the name of your adapter</span>
+});
+</code></pre>
+<h2 id="asyncstorage">asyncstorage</h2>
+<p>Uses react-native&apos;s <a href="https://facebook.github.io/react-native/docs/asyncstorage" target="_blank">asyncstorage</a>.</p>
+<p><strong>Notice</strong>: There are <a href="https://github.com/pubkey/rxdb/issues/2286" target="_blank">known problems</a> with this adapter and it is <strong>not</strong> recommended to use it.</p>
+<pre><code class="lang-js"><span class="hljs-comment">// npm install pouchdb-adapter-asyncstorage --save</span>
+addRxPlugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;pouchdb-adapter-asyncstorage&apos;</span>));
+
+<span class="hljs-keyword">const</span> database = <span class="hljs-keyword">await</span> createRxDatabase({
+    name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
+    adapter: <span class="hljs-string">&apos;node-asyncstorage&apos;</span> <span class="hljs-comment">// the name of your adapter</span>
 });
 </code></pre>
 <h2 id="asyncstorage-down">asyncstorage-down</h2>
@@ -1739,7 +1763,7 @@ addRxPlugin(<span class="hljs-built_in">require</span>(<span class="hljs-string"
 
             
                 
-                <a href="plugins.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page: Plugins">
+                <a href="plugins.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page: Creating Plugins">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
@@ -1751,7 +1775,7 @@ addRxPlugin(<span class="hljs-built_in">require</span>(<span class="hljs-string"
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Adapters","level":"1.20","depth":1,"next":{"title":"Tutorials","level":"1.21","depth":1,"ref":"","articles":[{"title":"Use RxDB with Typescript","level":"1.21.1","depth":2,"path":"tutorials/typescript.md","ref":"./tutorials/typescript.md","articles":[]},{"title":"Using the Server Plugin","level":"1.21.2","depth":2,"path":"tutorials/server.md","ref":"./tutorials/server.md","articles":[]}]},"previous":{"title":"Plugins","level":"1.19","depth":1,"path":"plugins.md","ref":"./plugins.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @patreon ":"https://www.patreon.com/rxdb/"}},"gitbook":"3.2.3"},"file":{"path":"adapters.md","mtime":"2020-04-17T23:50:35.431Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2020-06-26T07:42:11.102Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Adapters","level":"1.21","depth":1,"next":{"title":"Tutorials","level":"1.22","depth":1,"ref":"","articles":[{"title":"Use RxDB with Typescript","level":"1.22.1","depth":2,"path":"tutorials/typescript.md","ref":"./tutorials/typescript.md","articles":[]},{"title":"Using the Server Plugin","level":"1.22.2","depth":2,"path":"tutorials/server.md","ref":"./tutorials/server.md","articles":[]}]},"previous":{"title":"Creating Plugins","level":"1.20","depth":1,"path":"plugins.md","ref":"./plugins.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @patreon ":"https://www.patreon.com/rxdb/"}},"gitbook":"3.2.3"},"file":{"path":"adapters.md","mtime":"2020-07-22T22:17:56.173Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2020-07-23T22:39:58.039Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

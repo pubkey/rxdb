@@ -11,7 +11,7 @@ import { createInsertEvent } from './rx-change-event';
 import { newRxError, newRxTypeError } from './rx-error';
 import { createCrypter } from './crypter';
 import { createDocCache } from './doc-cache';
-import { createQueryCache } from './query-cache';
+import { createQueryCache, defaultCacheReplacementPolicy } from './query-cache';
 import { createChangeEventBuffer } from './change-event-buffer';
 import { overwritable } from './overwritable';
 import { runPluginHooks } from './hooks';
@@ -27,7 +27,8 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     var methods = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
     var attachments = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : {};
     var options = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : {};
-    var statics = arguments.length > 8 && arguments[8] !== undefined ? arguments[8] : {};
+    var cacheReplacementPolicy = arguments.length > 8 && arguments[8] !== undefined ? arguments[8] : defaultCacheReplacementPolicy;
+    var statics = arguments.length > 9 && arguments[9] !== undefined ? arguments[9] : {};
     this._isInMemory = false;
     this.destroyed = false;
     this._atomicUpsertQueues = new Map();
@@ -48,6 +49,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     this.methods = methods;
     this.attachments = attachments;
     this.options = options;
+    this.cacheReplacementPolicy = cacheReplacementPolicy;
     this.statics = statics;
 
     _applyHookFunctions(this.asRxCollection);
@@ -662,8 +664,6 @@ export var RxCollectionBase = /*#__PURE__*/function () {
       this._changeEventBuffer.destroy();
     }
 
-    this._queryCache.destroy();
-
     this._repStates.forEach(function (sync) {
       return sync.cancel();
     });
@@ -712,9 +712,12 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     get: function get() {
       var _this10 = this;
 
-      if (!this._onDestroy) this._onDestroy = new Promise(function (res) {
-        return _this10._onDestroyCall = res;
-      });
+      if (!this._onDestroy) {
+        this._onDestroy = new Promise(function (res) {
+          return _this10._onDestroyCall = res;
+        });
+      }
+
       return this._onDestroy;
     }
   }, {
@@ -826,10 +829,15 @@ export function create(_ref) {
       _ref$attachments = _ref.attachments,
       attachments = _ref$attachments === void 0 ? {} : _ref$attachments,
       _ref$options = _ref.options,
-      options = _ref$options === void 0 ? {} : _ref$options;
+      options = _ref$options === void 0 ? {} : _ref$options,
+      _ref$cacheReplacement = _ref.cacheReplacementPolicy,
+      cacheReplacementPolicy = _ref$cacheReplacement === void 0 ? defaultCacheReplacementPolicy : _ref$cacheReplacement;
   validateCouchDBString(name); // ensure it is a schema-object
 
-  if (!isInstanceOfRxSchema(schema)) schema = createRxSchema(schema);
+  if (!isInstanceOfRxSchema(schema)) {
+    schema = createRxSchema(schema);
+  }
+
   Object.keys(methods).filter(function (funName) {
     return schema.topLevelFields.includes(funName);
   }).forEach(function (funName) {
@@ -837,7 +845,7 @@ export function create(_ref) {
       funName: funName
     });
   });
-  var collection = new RxCollectionBase(database, name, schema, pouchSettings, migrationStrategies, methods, attachments, options, statics);
+  var collection = new RxCollectionBase(database, name, schema, pouchSettings, migrationStrategies, methods, attachments, options, cacheReplacementPolicy, statics);
   return collection.prepare().then(function () {
     // ORM add statics
     Object.entries(statics).forEach(function (_ref2) {

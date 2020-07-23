@@ -245,6 +245,19 @@ var _hooks = require("./hooks");
 
 var _crypter = require("./crypter");
 
+var _queryCache = require("./query-cache");
+
+Object.keys(_queryCache).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _queryCache[key];
+    }
+  });
+});
+
 var _util = require("./util");
 
 Object.keys(_util).forEach(function (key) {

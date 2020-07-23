@@ -22,7 +22,7 @@ var PLUGIN_IDENT = 'rxdbreplicationgraphql'; // does nothing
 exports.PLUGIN_IDENT = PLUGIN_IDENT;
 
 var DEFAULT_MODIFIER = function DEFAULT_MODIFIER(d) {
-  return d;
+  return Promise.resolve(d);
 };
 /**
  * pouchdb will throw if a document is not found

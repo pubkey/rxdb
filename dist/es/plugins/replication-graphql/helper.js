@@ -4,7 +4,7 @@ import { hash } from '../../util';
 export var PLUGIN_IDENT = 'rxdbreplicationgraphql'; // does nothing
 
 export var DEFAULT_MODIFIER = function DEFAULT_MODIFIER(d) {
-  return d;
+  return Promise.resolve(d);
 };
 /**
  * pouchdb will throw if a document is not found

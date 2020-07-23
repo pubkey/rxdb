@@ -5,9 +5,9 @@ import { Crypter } from './crypter';
 import { DocCache } from './doc-cache';
 import { QueryCache } from './query-cache';
 import { ChangeEventBuffer } from './change-event-buffer';
-import { Subscription, Observable } from 'rxjs';
-import type { PouchSettings, KeyFunctionMap, RxReplicationState, PouchDBInstance, MigrationState, SyncOptions, RxCollection, RxDatabase, RxQuery, RxDocument, SyncOptionsGraphQL, RxDumpCollection, RxDumpCollectionAny, MangoQuery, MangoQueryNoLimit } from './types';
-import { RxGraphQLReplicationState } from './plugins/replication-graphql';
+import type { Subscription, Observable } from 'rxjs';
+import type { PouchSettings, KeyFunctionMap, RxReplicationState, PouchDBInstance, MigrationState, SyncOptions, RxCollection, RxDatabase, RxQuery, RxDocument, SyncOptionsGraphQL, RxDumpCollection, RxDumpCollectionAny, MangoQuery, MangoQueryNoLimit, RxCacheReplacementPolicy } from './types';
+import type { RxGraphQLReplicationState } from './plugins/replication-graphql';
 import { RxSchema } from './rx-schema';
 export declare class RxCollectionBase<RxDocumentType = {
     [prop: string]: any;
@@ -22,8 +22,9 @@ export declare class RxCollectionBase<RxDocumentType = {
     methods: KeyFunctionMap;
     attachments: KeyFunctionMap;
     options: any;
+    cacheReplacementPolicy: RxCacheReplacementPolicy;
     statics: KeyFunctionMap;
-    constructor(database: RxDatabase, name: string, schema: RxSchema<RxDocumentType>, pouchSettings?: PouchSettings, migrationStrategies?: KeyFunctionMap, methods?: KeyFunctionMap, attachments?: KeyFunctionMap, options?: any, statics?: KeyFunctionMap);
+    constructor(database: RxDatabase, name: string, schema: RxSchema<RxDocumentType>, pouchSettings?: PouchSettings, migrationStrategies?: KeyFunctionMap, methods?: KeyFunctionMap, attachments?: KeyFunctionMap, options?: any, cacheReplacementPolicy?: RxCacheReplacementPolicy, statics?: KeyFunctionMap);
     /**
      * returns observable
      */
@@ -151,7 +152,7 @@ export declare class RxCollectionBase<RxDocumentType = {
 /**
  * creates and prepares a new collection
  */
-export declare function create({ database, name, schema, pouchSettings, migrationStrategies, autoMigrate, statics, methods, attachments, options }: any): Promise<RxCollection>;
+export declare function create({ database, name, schema, pouchSettings, migrationStrategies, autoMigrate, statics, methods, attachments, options, cacheReplacementPolicy }: any): Promise<RxCollection>;
 export declare function isInstanceOf(obj: any): boolean;
 declare const _default: {
     create: typeof create;

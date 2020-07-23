@@ -1,6 +1,6 @@
 import type { RxCollection } from '../../types';
 export declare const PLUGIN_IDENT = "rxdbreplicationgraphql";
-export declare const DEFAULT_MODIFIER: (d: any) => any;
+export declare const DEFAULT_MODIFIER: (d: any) => Promise<any>;
 /**
  * pouchdb will throw if a document is not found
  * this instead return null

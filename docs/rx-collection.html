@@ -1381,7 +1381,20 @@
             
         </li>
     
-        <li class="chapter " data-level="1.17" data-path="rx-local-document.html">
+        <li class="chapter " data-level="1.17" data-path="query-cache.html">
+            
+                <a href="query-cache.html">
+            
+                    
+                    QueryCache
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.18" data-path="rx-local-document.html">
             
                 <a href="rx-local-document.html">
             
@@ -1394,7 +1407,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.18" data-path="custom-build.html">
+        <li class="chapter " data-level="1.19" data-path="custom-build.html">
             
                 <a href="custom-build.html">
             
@@ -1407,12 +1420,12 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19" data-path="plugins.html">
+        <li class="chapter " data-level="1.20" data-path="plugins.html">
             
                 <a href="plugins.html">
             
                     
-                    Plugins
+                    Creating Plugins
             
                 </a>
             
@@ -1420,7 +1433,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.20" data-path="adapters.html">
+        <li class="chapter " data-level="1.21" data-path="adapters.html">
             
                 <a href="adapters.html">
             
@@ -1433,7 +1446,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.21" >
+        <li class="chapter " data-level="1.22" >
             
                 <span>
             
@@ -1447,7 +1460,7 @@
             <ul class="articles">
                 
     
-        <li class="chapter " data-level="1.21.1" data-path="tutorials/typescript.html">
+        <li class="chapter " data-level="1.22.1" data-path="tutorials/typescript.html">
             
                 <a href="tutorials/typescript.html">
             
@@ -1460,7 +1473,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.21.2" data-path="tutorials/server.html">
+        <li class="chapter " data-level="1.22.2" data-path="tutorials/server.html">
             
                 <a href="tutorials/server.html">
             
@@ -1478,7 +1491,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.22" data-path="questions-answers.html">
+        <li class="chapter " data-level="1.23" data-path="questions-answers.html">
             
                 <a href="questions-answers.html">
             
@@ -1491,7 +1504,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.23" data-path="contribute.html">
+        <li class="chapter " data-level="1.24" data-path="contribute.html">
             
                 <a href="contribute.html">
             
@@ -1553,7 +1566,7 @@
 <p>A collection stores documents of the same type.</p>
 <h2 id="creating-a-collection">Creating a Collection</h2>
 <p>To create a collection you need a RxDatabase object which has the .collection()-method. Every collection needs a collection name and a valid RxSchema. Other attributes are optional.</p>
-<pre><code class="lang-js">myDatabase.collection({
+<pre><code class="lang-js"><span class="hljs-keyword">const</span> myCollection = <span class="hljs-keyword">await</span> myDatabase.collection({
   name: <span class="hljs-string">&apos;humans&apos;</span>,
   schema: mySchema,
   pouchSettings: {} <span class="hljs-comment">// (optional)</span>
@@ -1563,8 +1576,8 @@
   options: {}, <span class="hljs-comment">// (optional) Custom paramters that might be used in plugins</span>
   migrationStrategies: {}, <span class="hljs-comment">// (optional)</span>
   autoMigrate: <span class="hljs-literal">true</span>, <span class="hljs-comment">// (optional)</span>
-})
-  .then(collection =&gt; <span class="hljs-built_in">console</span>.dir(collection));
+  cacheReplacementPolicy: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{}, <span class="hljs-comment">// (optional) custoom cache replacement policy</span>
+});
 </code></pre>
 <h3 id="name">name</h3>
 <p>The name uniquely identifies the collection and should be used to refind the collection in the database. Two different collections in the same database can never have the same name. Collection names must match the following regex: <code>^[a-z][a-z0-9]*$</code>.</p>
@@ -1584,11 +1597,7 @@
   schema: mySchema
 });
 <span class="hljs-keyword">const</span> collection2 = db.heroes;
-<span class="hljs-comment">// or</span>
-<span class="hljs-comment">// const collection2 = db[&apos;heroes&apos;]</span>
-
-<span class="hljs-built_in">console</span>.log(collection == collection2);
-<span class="hljs-comment">// true</span>
+<span class="hljs-built_in">console</span>.log(collection === collection2); <span class="hljs-comment">//&gt; true</span>
 </code></pre>
 <h2 id="functions">Functions</h2>
 <h3 id="observe-">Observe $</h3>
@@ -1779,7 +1788,7 @@ This removes the documents, the schemas, and older schemaVersions.</p>
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"RxCollection","level":"1.5","depth":1,"next":{"title":"Creation","level":"1.5.1","depth":2,"anchor":"#creating-a-collection","path":"rx-collection.md","ref":"./rx-collection.md#creating-a-collection","articles":[{"title":"name","level":"1.5.1.1","depth":3,"anchor":"#name","path":"rx-collection.md","ref":"./rx-collection.md#name","articles":[]},{"title":"schema","level":"1.5.1.2","depth":3,"anchor":"#schema","path":"rx-collection.md","ref":"./rx-collection.md#schema","articles":[]},{"title":"pouchSettings","level":"1.5.1.3","depth":3,"anchor":"#pouchSettings","path":"rx-collection.md","ref":"./rx-collection.md#pouchSettings","articles":[]},{"title":"ORM-functions","level":"1.5.1.4","depth":3,"anchor":"#orm-functions","path":"rx-collection.md","ref":"./rx-collection.md#orm-functions","articles":[]},{"title":"Migration","level":"1.5.1.5","depth":3,"anchor":"#Migration","path":"rx-collection.md","ref":"./rx-collection.md#Migration","articles":[]}]},"previous":{"title":"encryption","level":"1.4.9","depth":2,"anchor":"#encryption","path":"rx-schema.md","ref":"./rx-schema.md#encryption","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @patreon ":"https://www.patreon.com/rxdb/"}},"gitbook":"3.2.3"},"file":{"path":"rx-collection.md","mtime":"2020-06-25T00:33:17.656Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2020-06-26T07:42:11.102Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"RxCollection","level":"1.5","depth":1,"next":{"title":"Creation","level":"1.5.1","depth":2,"anchor":"#creating-a-collection","path":"rx-collection.md","ref":"./rx-collection.md#creating-a-collection","articles":[{"title":"name","level":"1.5.1.1","depth":3,"anchor":"#name","path":"rx-collection.md","ref":"./rx-collection.md#name","articles":[]},{"title":"schema","level":"1.5.1.2","depth":3,"anchor":"#schema","path":"rx-collection.md","ref":"./rx-collection.md#schema","articles":[]},{"title":"pouchSettings","level":"1.5.1.3","depth":3,"anchor":"#pouchSettings","path":"rx-collection.md","ref":"./rx-collection.md#pouchSettings","articles":[]},{"title":"ORM-functions","level":"1.5.1.4","depth":3,"anchor":"#orm-functions","path":"rx-collection.md","ref":"./rx-collection.md#orm-functions","articles":[]},{"title":"Migration","level":"1.5.1.5","depth":3,"anchor":"#Migration","path":"rx-collection.md","ref":"./rx-collection.md#Migration","articles":[]}]},"previous":{"title":"encryption","level":"1.4.9","depth":2,"anchor":"#encryption","path":"rx-schema.md","ref":"./rx-schema.md#encryption","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @patreon ":"https://www.patreon.com/rxdb/"}},"gitbook":"3.2.3"},"file":{"path":"rx-collection.md","mtime":"2020-07-22T22:17:56.213Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2020-07-23T22:39:58.039Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

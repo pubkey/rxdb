@@ -7,11 +7,14 @@ export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumen
     collection: RxCollection<RxDocumentType>;
     id: number;
     /**
-     * counts how often the execution on the whole db was done
-     * (used for tests and debugging)
+     * Some stats then are used for debugging and cache replacement policies
      */
     _execOverDatabaseCount: number;
+    _creationTime: number;
+    _lastEnsureEqual: number;
     other: any;
+    uncached: boolean;
+    refCount$: BehaviorSubject<null>;
     constructor(op: RxQueryOP, mangoQuery: Readonly<MangoQuery>, collection: RxCollection<RxDocumentType>);
     get $(): BehaviorSubject<RxQueryResult>;
     _latestChangeEvent: -1 | any;
@@ -32,7 +35,7 @@ export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumen
      * - Emit the new result-set when an RxChangeEvent comes in
      * - Do not emit anything before the first result-set was created (no null)
      */
-    private _$?;
+    _$?: BehaviorSubject<RxQueryResult>;
     /**
      * set the new result-data as result-docs of the query
      * @param newResultData json-docs that were recieved from pouchdb

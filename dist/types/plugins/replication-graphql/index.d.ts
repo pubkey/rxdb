@@ -43,11 +43,11 @@ export declare class RxGraphQLReplicationState {
     _prepare(): void;
     isStopped(): boolean;
     awaitInitialReplication(): Promise<true>;
-    run(): Promise<void>;
+    run(retryOnFail?: boolean): Promise<void>;
     /**
      * returns true if retry must be done
      */
-    _run(): Promise<boolean>;
+    _run(retryOnFail?: boolean): Promise<boolean>;
     /**
      * @return true if sucessfull
      */

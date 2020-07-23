@@ -8,6 +8,7 @@ import { newRxError, newRxTypeError } from './rx-error';
 import { runPluginHooks } from './hooks';
 import { createRxDocuments } from './rx-document-prototype-merge';
 import { calculateNewResults } from './event-reduce';
+import { triggerCacheReplacement } from './query-cache';
 var _queryCount = 0;
 
 var newQueryID = function newQueryID() {
@@ -16,14 +17,18 @@ var newQueryID = function newQueryID() {
 
 export var RxQueryBase = /*#__PURE__*/function () {
   /**
-   * counts how often the execution on the whole db was done
-   * (used for tests and debugging)
+   * Some stats then are used for debugging and cache replacement policies
    */
   // used by some plugins
+  // used to count the subscribers to the query
   function RxQueryBase(op, mangoQuery, collection) {
     this.id = newQueryID();
     this._execOverDatabaseCount = 0;
+    this._creationTime = now();
+    this._lastEnsureEqual = 0;
     this.other = {};
+    this.uncached = false;
+    this.refCount$ = new BehaviorSubject(null);
     this._latestChangeEvent = -1;
     this._resultsData = null;
     this._resultsDataMap = new Map();
@@ -308,7 +313,9 @@ export var RxQueryBase = /*#__PURE__*/function () {
           return false;
         }));
         this._$ = // tslint:disable-next-line
-        merge(results$, changeEvents$);
+        merge(results$, changeEvents$, this.refCount$.pipe(filter(function () {
+          return false;
+        })));
       }
 
       return this._$;
@@ -360,6 +367,7 @@ export function createRxQuery(op, queryObj, collection) {
 
   ret = tunnelQueryCache(ret);
   runPluginHooks('createRxQuery', ret);
+  triggerCacheReplacement(collection);
   return ret;
 }
 /**
@@ -402,6 +410,7 @@ function _ensureEqual(rxQuery) {
 
 
 function __ensureEqual(rxQuery) {
+  rxQuery._lastEnsureEqual = now();
   if (rxQuery.collection.database.destroyed) return false; // db is closed
 
   if (_isResultsInSync(rxQuery)) return false; // nothing happend
