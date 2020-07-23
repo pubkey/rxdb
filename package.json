@@ -108,7 +108,7 @@
     "get-graphql-from-jsonschema": "5.0.3",
     "graphql-client": "2.0.1",
     "is-electron": "2.2.0",
-    "is-my-json-valid": "2.20.4",
+    "is-my-json-valid": "2.20.5",
     "jsonschema-key-compression": "1.1.1",
     "modifyjs": "0.3.1",
     "object-path": "0.11.4",
