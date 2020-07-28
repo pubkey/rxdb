@@ -94,7 +94,7 @@
     "@types/is-my-json-valid": "0.0.20",
     "@types/object-path": "0.11.0",
     "@types/pouchdb-core": "7.0.6",
-    "@types/pouchdb-find": "6.3.5",
+    "@types/pouchdb-find": "6.3.6",
     "@types/pouchdb-replication": "6.4.2",
     "@types/spark-md5": "3.0.2",
     "broadcast-channel": "3.1.0",
