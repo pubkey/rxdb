@@ -1,5 +1,5 @@
 const path = require('path');
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 
@@ -15,8 +15,9 @@ module.exports = {
     mode: 'production',
     entry: './dist/es/index.js',
     optimization: {
+        minimize: true,
         minimizer: [
-            new UglifyJsPlugin()
+            new TerserPlugin()
         ]
     },
     plugins,
