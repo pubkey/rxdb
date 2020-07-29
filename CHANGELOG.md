@@ -1,5 +1,10 @@
 # Changelog
 
+### X.X.X (comming soon)
+
+Other:
+  - Upgraded pouchdb to `7.2.2`
+
 ### 9.4.0 (24 July 2020)
 
 Features:

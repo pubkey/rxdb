@@ -892,7 +892,7 @@ config.parallel('rx-collection.test.js', () => {
                 describe('positive', () => {
                     it('skip first', async () => {
                         const c = await humansCollection.create();
-                        const query = {
+                        const query: any = {
                             selector: {},
                             sort: [
                                 { passportId: 'asc' }
