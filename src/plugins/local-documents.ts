@@ -102,9 +102,7 @@ const RxLocalDocumentPrototype: any = {
     get isLocal() {
         return true;
     },
-    get parentPouch(
-        this: any
-    ) {
+    get parentPouch() {
         return _getPouchByParent(this.parent);
     },
 
@@ -140,11 +138,11 @@ const RxLocalDocumentPrototype: any = {
     get primaryPath() {
         return 'id';
     },
-    get primary(this: any) {
+    get primary() {
         return this.id;
     },
-    get $(this: RxDocument) {
-        return this._dataSync$.asObservable();
+    get $() {
+        return (this as RxDocument)._dataSync$.asObservable();
     },
     $emit(this: any, changeEvent: RxChangeEvent) {
         return this.parent.$emit(changeEvent);

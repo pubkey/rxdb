@@ -33,41 +33,66 @@ import type {
 } from './types';
 
 export const basePrototype = {
-    get _data(this: RxDocument) {
+
+    /**
+     * TODO
+     * instead of appliying the _this-hack
+     * we should make these accesors functions instead of getters.
+     */
+    get _data() {
+        const _this: RxDocument = this as any;
         /**
          * Might be undefined when vuejs-devtools are used
          * @link https://github.com/pubkey/rxdb/issues/1126
          */
-        if (!this.isInstanceOfRxDocument) return undefined;
+        if (!_this.isInstanceOfRxDocument) {
+            return undefined;
+        }
 
-        return this._dataSync$.getValue();
+        return _this._dataSync$.getValue();
     },
-    get primaryPath(this: RxDocument) {
-        if (!this.isInstanceOfRxDocument) return undefined;
-        return this.collection.schema.primaryPath;
+    get primaryPath() {
+        const _this: RxDocument = this as any;
+        if (!_this.isInstanceOfRxDocument) {
+            return undefined;
+        }
+        return _this.collection.schema.primaryPath;
     },
-    get primary(this: RxDocument) {
-        if (!this.isInstanceOfRxDocument) return undefined;
-        return this._data[this.primaryPath];
+    get primary() {
+        const _this: RxDocument = this as any;
+        if (!_this.isInstanceOfRxDocument) {
+            return undefined;
+        }
+        return _this._data[_this.primaryPath];
     },
-    get revision(this: RxDocument) {
-        if (!this.isInstanceOfRxDocument) return undefined;
-        return this._data._rev;
+    get revision() {
+        const _this: RxDocument = this as any;
+        if (!_this.isInstanceOfRxDocument) {
+            return undefined;
+        }
+        return _this._data._rev;
     },
-    get deleted$(this: RxDocument) {
-        if (!this.isInstanceOfRxDocument) return undefined;
-        return this._deleted$.asObservable();
+    get deleted$() {
+        const _this: RxDocument = this as any;
+        if (!_this.isInstanceOfRxDocument) {
+            return undefined;
+        }
+        return _this._deleted$.asObservable();
     },
-    get deleted(this: RxDocument) {
-        if (!this.isInstanceOfRxDocument) return undefined;
-        return this._deleted$.getValue();
+    get deleted() {
+        const _this: RxDocument = this as any;
+        if (!_this.isInstanceOfRxDocument) {
+            return undefined;
+        }
+        return _this._deleted$.getValue();
     },
 
     /**
      * returns the observable which emits the plain-data of this document
      */
-    get $(this: RxDocument): Observable<any> {
-        return this._dataSync$.asObservable();
+    get $(): Observable<any> {
+        const _this: RxDocument = this as any;
+        return _this._dataSync$.asObservable();
     },
 
     _handleChangeEvent(this: RxDocument, changeEvent: RxChangeEvent) {

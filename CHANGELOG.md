@@ -4,6 +4,7 @@
 
 Other:
   - Upgraded pouchdb to `7.2.2`
+  - Upgraded typescript to `3.9.7`
 
 ### 9.4.0 (24 July 2020)
 

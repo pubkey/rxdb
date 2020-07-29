@@ -43,6 +43,13 @@ This would also make it possible to use RxDB together with [NativeScript](https:
 Pouchdb will still be the default in the main build.
 
 
+## Make RxDocument-acessors functions
+
+Things like `RxDocument.deleted$` or `RxDocument.$` should be functions instead of getters.
+We apply a hack atm which does not really work with typescript.
+https://github.com/microsoft/TypeScript/issues/39254#issuecomment-649831793
+
+
 ## Make RxDcouments immutable
 At the current version of RxDB, RxDocuments mutate themself when they recieve ChangeEvents from the database.
 For example when you have a document where `name = 'foo'` and some update changes the state to `name = 'bar'` in the database, then the previous javascript-object will change it's own property to the have `doc.name === 'bar'`.
