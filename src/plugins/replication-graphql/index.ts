@@ -70,7 +70,7 @@ export class RxGraphQLReplicationState {
 
     constructor(
         public collection: RxCollection,
-        url: string,
+        private url: string,
         headers: { [k: string]: string },
         public pull: GraphQLSyncPullOptions,
         public push: GraphQLSyncPushOptions,
@@ -430,11 +430,19 @@ export class RxGraphQLReplicationState {
         );
         this.collection.$emit(cE);
     }
+
     cancel(): Promise<any> {
         if (this.isStopped()) return Promise.resolve(false);
         this._subs.forEach(sub => sub.unsubscribe());
         this._subjects.canceled.next(true);
         return Promise.resolve(true);
+    }
+
+    setHeaders(headers: { [k: string]: string }): void {
+        this.client = GraphQLClient({
+            url: this.url,
+            headers
+        });
     }
 }
 
