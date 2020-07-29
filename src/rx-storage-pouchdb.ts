@@ -247,14 +247,6 @@ export class RxStoragePouchDbClass implements RxStorage<PouchDBInstance> {
             delete query.selector[primPath];
         }
 
-        // if no selector is used, pouchdb has a bug, so we add a default-selector
-        if (Object.keys(query.selector).length === 0) {
-            query.selector = {
-                _id: {}
-            };
-        }
-
-
         return query;
     }
 }

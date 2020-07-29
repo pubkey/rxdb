@@ -248,9 +248,7 @@ describe('replication-graphql.test.js', () => {
 
 
                 const pouchDocs = await pouch.find({
-                    selector: {
-                        _id: {}
-                    }
+                    selector: {}
                 });
                 assert.strictEqual(pouchDocs.docs.length, 1);
                 assert.strictEqual(pouchDocs.docs[0]._rev, customRev);
@@ -2023,9 +2021,7 @@ describe('replication-graphql.test.js', () => {
                 assert.strictEqual(docs[0].name, 'Alice');
 
                 const pouchDocs = await collection.pouch.find({
-                    selector: {
-                        _id: {}
-                    }
+                    selector: {}
                 });
                 assert.ok(pouchDocs.docs[0].name !== 'Alice');
 
@@ -2065,9 +2061,7 @@ describe('replication-graphql.test.js', () => {
                 assert.strictEqual(docs[0].name, 'Alice');
 
                 const pouchDocs = await collection.pouch.find({
-                    selector: {
-                        _id: {}
-                    }
+                    selector: {}
                 });
 
                 // first key must be compressed

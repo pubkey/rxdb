@@ -312,7 +312,6 @@ export class RxCollectionBase<
         if (limit) {
             compressedQueryJSON['limit'] = limit;
         }
-
         return this.database.lockedRun(
             () => this.pouch.find(compressedQueryJSON)
         ).then((docsCompressed: any) => {

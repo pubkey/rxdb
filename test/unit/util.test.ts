@@ -42,7 +42,6 @@ describe('util.test.js', () => {
     describe('.sortObject()', () => {
         it('should sort when regex in object', () => {
             const obj = {
-                _id: {},
                 color: {
                     '$regex': /foobar/g
                 }

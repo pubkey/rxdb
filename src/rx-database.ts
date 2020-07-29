@@ -239,9 +239,7 @@ export class RxDatabaseBase<
                     // collection already exists with different schema, check if it has documents
                     const pouch = this._spawnPouchDB(args.name, args.schema.version, args.pouchSettings);
                     return pouch.find({
-                        selector: {
-                            _id: {}
-                        },
+                        selector: {},
                         limit: 1
                     }).then(oneDoc => {
                         if (oneDoc.docs.length !== 0) {

@@ -508,56 +508,6 @@ config.parallel('pouch-db-integration.test.js', () => {
             // process.exit();
             pouch.destroy();
         });
-        it('v7.1.1 has strange timing-problem', async () => {
-            if (!config.platform.isNode()) return;
-
-            /**
-             * TODO run this in node with the new version of pouchdb-find
-             * we have to wait until this is fixed:
-             * @link https://github.com/pouchdb/pouchdb/issues/7810
-             */
-            if (config.platform.isNode()) return;
-
-
-            const PouchDBCore = require('pouchdb-core');
-            PouchDBCore.plugin(require('pouchdb-find'));
-            PouchDBCore.plugin(require('pouchdb-adapter-memory'));
-
-            /*            const c = await humansCollection.create(0);
-                        const db = c.pouch;*/
-            const db = new PouchDBCore(
-                randomCouchString(10),
-                {
-                    adapter: 'memory'
-                }
-            );
-            //            await db.info();
-            await db.createIndex({
-                index: {
-                    fields: [
-                        'passportId'
-                    ]
-                }
-            });
-            await db.put({
-                _id: 'foobar',
-                passportId: 'z3i7q29g4yr1',
-                firstName: 'Edison',
-                lastName: 'Keebler',
-                age: 24
-            });
-
-            const docs = await db.find({
-                selector: {
-                    _id: {}
-                },
-                limit: 1
-            });
-
-            console.dir(docs);
-            assert.strictEqual(docs.docs.length, 1);
-        });
-
         it('should handle writes before reads (first insert then find)', async () => {
             const amount = 20;
             const pouches: PouchDBInstance[] = [];

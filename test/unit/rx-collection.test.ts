@@ -729,7 +729,6 @@ config.parallel('rx-collection.test.js', () => {
                         // do it manually
                         const all = await collection.pouch.find({
                             selector: {
-                                _id: {},
                                 'other.age': {
                                     '$gt': 0
                                 }
@@ -893,8 +892,14 @@ config.parallel('rx-collection.test.js', () => {
                 describe('positive', () => {
                     it('skip first', async () => {
                         const c = await humansCollection.create();
-                        const docs = await c.find().exec();
-                        const noFirst = await c.find().skip(1).exec();
+                        const query = {
+                            selector: {},
+                            sort: [
+                                { passportId: 'asc' }
+                            ]
+                        };
+                        const docs = await c.find(query).exec();
+                        const noFirst = await c.find(query).skip(1).exec();
                         assert.strictEqual(noFirst[0]._data.passportId, docs[1]._data.passportId);
                         c.database.destroy();
                     });
