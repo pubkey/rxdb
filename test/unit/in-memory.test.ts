@@ -173,7 +173,11 @@ config.parallel('in-memory.test.js', () => {
                 });
 
                 assert.strictEqual(foundAfter.docs.length, 0);
-                assert.strictEqual(emitted.length, 0); // should not have emitted an event
+                /**
+                 * should not have emitted an event
+                 * becaues the change was written via applyChangedDocumentToPouch()
+                 */
+                assert.strictEqual(emitted.length, 0);
 
                 sub.unsubscribe();
                 col.database.destroy();
@@ -240,7 +244,7 @@ config.parallel('in-memory.test.js', () => {
             });
             col.database.destroy();
         });
-        it('should fire the correct amount of events', async () => {
+        it('should fire the correct amount of events (a)', async () => {
             const col = await humansCollection.create(0);
             const memCol = await col.inMemory();
             const emitted = [];
@@ -257,13 +261,13 @@ config.parallel('in-memory.test.js', () => {
             assert.strictEqual(emitted.length, 2);
 
             await doc.remove();
-            await AsyncTestUtil.wait(500);
+            await AsyncTestUtil.wait(300);
             assert.strictEqual(emitted.length, 3);
 
             sub.unsubscribe();
             col.database.destroy();
         });
-        it('should fire the correct amount of events', async () => {
+        it('should fire the correct amount of events (b)', async () => {
             const col = await humansCollection.create(0);
             const memCol = await col.inMemory();
             const emitted = [];

@@ -15,7 +15,8 @@ import {
     filter,
     map,
     mergeMap,
-    first
+    first,
+    delay
 } from 'rxjs/operators';
 
 import type {
@@ -322,6 +323,13 @@ export function streamChangedDocuments(
             include_docs: true
         }), 'change')
         .pipe(
+            /**
+             * we need this delay because with pouchdb 7.2.2
+             * it happened that _doNotEmitSet.add() from applyChangedDocumentToPouch()
+             * was called after the change was streamed downwards
+             * which then leads to a wrong detection
+             */
+            delay(0),
             map((changeAr: any) => changeAr[0]), // rxjs emits an array for whatever reason
             filter(change => {
                 // changes on the doNotEmit-list shell not be fired
