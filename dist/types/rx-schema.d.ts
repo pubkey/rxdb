@@ -80,6 +80,6 @@ export declare function normalize(jsonSchema: RxJsonSchema): RxJsonSchema;
  * fills the schema-json with default-settings
  * @return cloned schemaObj
  */
-export declare const fillWithDefaultSettings: (schemaObj: RxJsonSchema<any>) => RxJsonSchema<any>;
+export declare const fillWithDefaultSettings: (schemaObj: RxJsonSchema) => RxJsonSchema;
 export declare function createRxSchema<T = any>(jsonSchema: RxJsonSchema, runPreCreateHooks?: boolean): RxSchema<T>;
 export declare function isInstanceOf(obj: any): boolean;

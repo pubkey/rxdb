@@ -13,7 +13,7 @@ export declare const overwritable: {
      * @overwritten by plugin (optional)
      * @throws if password not valid
      */
-    validatePassword(_password: any): void;
+    validatePassword(_password: string | any): void;
     /**
      * creates a key-compressor for the given schema
      */

@@ -312,7 +312,14 @@ function streamChangedDocuments(rxCollection) {
     since: 'now',
     live: true,
     include_docs: true
-  }), 'change').pipe((0, _operators.map)(function (changeAr) {
+  }), 'change').pipe(
+  /**
+   * we need this delay because with pouchdb 7.2.2
+   * it happened that _doNotEmitSet.add() from applyChangedDocumentToPouch()
+   * was called after the change was streamed downwards
+   * which then leads to a wrong detection
+   */
+  (0, _operators.delay)(0), (0, _operators.map)(function (changeAr) {
     return changeAr[0];
   }), // rxjs emits an array for whatever reason
   (0, _operators.filter)(function (change) {

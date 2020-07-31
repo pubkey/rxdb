@@ -47,8 +47,6 @@ export declare const prototypes: {
     RxCollection: (proto: any) => void;
 };
 export declare const hooks: {
-    createRxCollection: (collection: RxCollection<any, {}, {
-        [key: string]: any;
-    }>) => void;
+    createRxCollection: (collection: RxCollection) => void;
 };
 export declare const RxDBReplicationPlugin: RxPlugin;

@@ -52,7 +52,7 @@ export declare class RxCollectionBase<RxDocumentType = {
      */
     private _onDestroy?;
     private _onDestroyCall?;
-    prepare(): Promise<[any, any]>;
+    prepare(): Promise<[any, void[]]>;
     migrationNeeded(): Promise<boolean>;
     getDataMigrator(): DataMigrator;
     migrate(batchSize?: number): Observable<MigrationState>;

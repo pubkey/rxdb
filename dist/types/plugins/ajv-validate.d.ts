@@ -12,6 +12,6 @@ export declare const prototypes: {
     RxSchema: (proto: any) => void;
 };
 export declare const hooks: {
-    createRxSchema: (rxSchema: RxSchema<any>) => void;
+    createRxSchema: (rxSchema: RxSchema) => void;
 };
 export declare const RxDBAjvValidatePlugin: RxPlugin;

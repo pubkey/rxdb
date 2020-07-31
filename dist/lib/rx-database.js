@@ -200,9 +200,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
         var pouch = _this3._spawnPouchDB(args.name, args.schema.version, args.pouchSettings);
 
         return pouch.find({
-          selector: {
-            _id: {}
-          },
+          selector: {},
           limit: 1
         }).then(function (oneDoc) {
           if (oneDoc.docs.length !== 0) {

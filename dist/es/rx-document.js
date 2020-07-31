@@ -6,45 +6,83 @@ import { createUpdateEvent, createDeleteEvent } from './rx-change-event';
 import { newRxError, newRxTypeError } from './rx-error';
 import { runPluginHooks } from './hooks';
 export var basePrototype = {
+  /**
+   * TODO
+   * instead of appliying the _this-hack
+   * we should make these accesors functions instead of getters.
+   */
   get _data() {
+    var _this = this;
     /**
      * Might be undefined when vuejs-devtools are used
      * @link https://github.com/pubkey/rxdb/issues/1126
      */
-    if (!this.isInstanceOfRxDocument) return undefined;
-    return this._dataSync$.getValue();
+
+
+    if (!_this.isInstanceOfRxDocument) {
+      return undefined;
+    }
+
+    return _this._dataSync$.getValue();
   },
 
   get primaryPath() {
-    if (!this.isInstanceOfRxDocument) return undefined;
-    return this.collection.schema.primaryPath;
+    var _this = this;
+
+    if (!_this.isInstanceOfRxDocument) {
+      return undefined;
+    }
+
+    return _this.collection.schema.primaryPath;
   },
 
   get primary() {
-    if (!this.isInstanceOfRxDocument) return undefined;
-    return this._data[this.primaryPath];
+    var _this = this;
+
+    if (!_this.isInstanceOfRxDocument) {
+      return undefined;
+    }
+
+    return _this._data[_this.primaryPath];
   },
 
   get revision() {
-    if (!this.isInstanceOfRxDocument) return undefined;
-    return this._data._rev;
+    var _this = this;
+
+    if (!_this.isInstanceOfRxDocument) {
+      return undefined;
+    }
+
+    return _this._data._rev;
   },
 
   get deleted$() {
-    if (!this.isInstanceOfRxDocument) return undefined;
-    return this._deleted$.asObservable();
+    var _this = this;
+
+    if (!_this.isInstanceOfRxDocument) {
+      return undefined;
+    }
+
+    return _this._deleted$.asObservable();
   },
 
   get deleted() {
-    if (!this.isInstanceOfRxDocument) return undefined;
-    return this._deleted$.getValue();
+    var _this = this;
+
+    if (!_this.isInstanceOfRxDocument) {
+      return undefined;
+    }
+
+    return _this._deleted$.getValue();
   },
 
   /**
    * returns the observable which emits the plain-data of this document
    */
   get $() {
-    return this._dataSync$.asObservable();
+    var _this = this;
+
+    return _this._dataSync$.asObservable();
   },
 
   _handleChangeEvent: function _handleChangeEvent(changeEvent) {

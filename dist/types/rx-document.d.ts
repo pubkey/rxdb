@@ -2,6 +2,11 @@ import { Observable } from 'rxjs';
 import { RxChangeEvent } from './rx-change-event';
 import type { RxDocument, RxCollection } from './types';
 export declare const basePrototype: {
+    /**
+     * TODO
+     * instead of appliying the _this-hack
+     * we should make these accesors functions instead of getters.
+     */
     readonly _data: {} | undefined;
     readonly primaryPath: string | undefined;
     readonly primary: any;
@@ -12,11 +17,11 @@ export declare const basePrototype: {
      * returns the observable which emits the plain-data of this document
      */
     readonly $: Observable<any>;
-    _handleChangeEvent(this: import("./types").RxDocumentBase<{}, {}>, changeEvent: RxChangeEvent<any>): void;
+    _handleChangeEvent(this: import("./types").RxDocumentBase<{}, {}>, changeEvent: RxChangeEvent): void;
     /**
      * emits the changeEvent to the upper instance (RxCollection)
      */
-    $emit(this: import("./types").RxDocumentBase<{}, {}>, changeEvent: RxChangeEvent<any>): void;
+    $emit(this: import("./types").RxDocumentBase<{}, {}>, changeEvent: RxChangeEvent): void;
     /**
      * returns observable of the value of the given path
      */
@@ -24,11 +29,11 @@ export declare const basePrototype: {
     /**
      * populate the given path
      */
-    populate(this: import("./types").RxDocumentBase<{}, {}>, path: string): Promise<import("./types").RxDocumentBase<{}, {}> | null>;
+    populate(this: import("./types").RxDocumentBase<{}, {}>, path: string): Promise<RxDocument | null>;
     /**
      * get data by objectPath
      */
-    get(this: import("./types").RxDocumentBase<{}, {}>, objPath: string): any;
+    get(this: import("./types").RxDocumentBase<{}, {}>, objPath: string): any | null;
     toJSON(this: import("./types").RxDocumentBase<{}, {}>, withRevAndAttachments?: boolean): any;
     /**
      * set data by objectPath
@@ -49,7 +54,7 @@ export declare const basePrototype: {
      * runs an atomic update over the document
      * @param fun that takes the document-data and returns a new data-object
      */
-    atomicUpdate(this: import("./types").RxDocumentBase<{}, {}>, fun: Function): Promise<import("./types").RxDocumentBase<{}, {}>>;
+    atomicUpdate(this: import("./types").RxDocumentBase<{}, {}>, fun: Function): Promise<RxDocument>;
     atomicSet(this: import("./types").RxDocumentBase<{}, {}>, key: string, value: any): Promise<import("./types").RxDocumentBase<{}, {}>>;
     /**
      * saves the new document-data
@@ -67,10 +72,15 @@ export declare const basePrototype: {
      * this not not equal to a pouchdb.remove(),
      * instead we keep the values and only set _deleted: true
      */
-    remove(this: import("./types").RxDocumentBase<{}, {}>): Promise<import("./types").RxDocumentBase<{}, {}>>;
+    remove(this: import("./types").RxDocumentBase<{}, {}>): Promise<RxDocument>;
     destroy(): never;
 };
 export declare function createRxDocumentConstructor(proto?: {
+    /**
+     * TODO
+     * instead of appliying the _this-hack
+     * we should make these accesors functions instead of getters.
+     */
     readonly _data: {} | undefined;
     readonly primaryPath: string | undefined;
     readonly primary: any;
@@ -139,10 +149,13 @@ export declare function createRxDocumentConstructor(proto?: {
     remove(this: import("./types").RxDocumentBase<{}, {}>): Promise<import("./types").RxDocumentBase<{}, {}>>;
     destroy(): never;
 }): {
-    (this: import("./types").RxDocumentBase<{}, {}>, collection: RxCollection<any, {}, {
-        [key: string]: any;
-    }>, jsonData: any): void;
+    (this: import("./types").RxDocumentBase<{}, {}>, collection: RxCollection, jsonData: any): void;
     prototype: {
+        /**
+         * TODO
+         * instead of appliying the _this-hack
+         * we should make these accesors functions instead of getters.
+         */
         readonly _data: {} | undefined;
         readonly primaryPath: string | undefined;
         readonly primary: any;

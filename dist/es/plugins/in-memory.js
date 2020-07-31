@@ -8,7 +8,7 @@ import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
  * Writes will still run on the original collection
  */
 import { Subject, fromEvent as ObservableFromEvent } from 'rxjs';
-import { filter, map, mergeMap, first } from 'rxjs/operators';
+import { filter, map, mergeMap, first, delay } from 'rxjs/operators';
 import { RxCollectionBase } from '../rx-collection';
 import { clone, randomCouchString } from '../util';
 import { addRxPlugin } from '../core';
@@ -279,7 +279,14 @@ export function streamChangedDocuments(rxCollection) {
     since: 'now',
     live: true,
     include_docs: true
-  }), 'change').pipe(map(function (changeAr) {
+  }), 'change').pipe(
+  /**
+   * we need this delay because with pouchdb 7.2.2
+   * it happened that _doNotEmitSet.add() from applyChangedDocumentToPouch()
+   * was called after the change was streamed downwards
+   * which then leads to a wrong detection
+   */
+  delay(0), map(function (changeAr) {
     return changeAr[0];
   }), // rxjs emits an array for whatever reason
   filter(function (change) {
