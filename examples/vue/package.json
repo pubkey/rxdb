@@ -5,6 +5,7 @@
   "author": "pubkey",
   "private": true,
   "scripts": {
+    "preinstall": "(cd ../../ && npx yarn@1.13.0 pack ../../ --filename ./examples/vue/rxdb-local.tgz)",
     "start": "concurrently \"npm run server\" \"npm run dev\"",
     "server": "pouchdb-server --host 0.0.0.0 -p 10101 -m -d /tmp/pouchdb-server/ -n true",
     "dev": "vue-cli-service serve",
@@ -16,12 +17,12 @@
     "test": "concurrently \"npm run build:serve \" \"npm run test:run\" --kill-others --success first"
   },
   "dependencies": {
-    "pouchdb-adapter-http": "7.2.1",
-    "pouchdb-adapter-idb": "7.2.1",
+    "pouchdb-adapter-http": "7.2.2",
+    "pouchdb-adapter-idb": "7.2.2",
     "pouchdb-server": "4.2.0",
     "random-int": "2.0.1",
     "register-service-worker": "1.7.1",
-    "rxdb": "../../",
+    "rxdb": "file:rxdb-local.tgz",
     "vue": "2.6.11",
     "vue-class-component": "7.2.5",
     "vue-property-decorator": "9.0.0",

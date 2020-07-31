@@ -2,6 +2,7 @@
 node_modules
 /dist
 package-lock.json
+/rxdb-local.tgz
 log.txt
 
 # local env files
