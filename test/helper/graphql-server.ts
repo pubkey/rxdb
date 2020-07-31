@@ -17,7 +17,7 @@ import { SubscriptionServer } from 'subscriptions-transport-ws';
 const express = require('express');
 // we need cors because this server is also used in browser-tests
 const cors = require('cors');
-const graphqlHTTP = require('express-graphql');
+import { graphqlHTTP } from 'express-graphql';
 
 import {
     GRAPHQL_PATH,
