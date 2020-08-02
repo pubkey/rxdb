@@ -1,6 +1,6 @@
 # Changelog
 
-### X.X.X (comming soon)
+### 9.5.0 (2 August 2020)
 
 Other:
   - Upgraded pouchdb to `7.2.2`
