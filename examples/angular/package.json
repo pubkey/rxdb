@@ -40,7 +40,7 @@
     "pouchdb-adapter-idb": "7.2.1",
     "roboto-npm-webfont": "1.0.1",
     "rxdb": "file:rxdb-local.tgz",
-    "rxjs": "6.6.0",
+    "rxjs": "6.6.2",
     "tslib": "2.0.0",
     "zone.js": "0.10.3"
   },
