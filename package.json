@@ -150,7 +150,7 @@
     "async-test-util": "1.7.3",
     "babel-plugin-transform-class-properties": "6.24.1",
     "brfs": "2.0.2",
-    "browserify": "16.5.1",
+    "browserify": "16.5.2",
     "child-process-promise": "2.2.1",
     "concurrently": "5.2.0",
     "convert-hrtime": "3.0.0",
