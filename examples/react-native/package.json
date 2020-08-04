@@ -27,7 +27,7 @@
     "expo": "37.0.12",
     "global": "4.4.0",
     "pouchdb-adapter-asyncstorage": "6.4.1",
-    "pouchdb-adapter-http": "7.2.1",
+    "pouchdb-adapter-http": "7.2.2",
     "random-token": "0.0.8",
     "react": "16.13.1",
     "react-native": "https://github.com/expo/react-native/archive/sdk-38.0.2.tar.gz",
