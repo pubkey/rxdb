@@ -105,7 +105,7 @@
     "deep-equal": "^2.0.1",
     "event-reduce-js": "1.0.3",
     "express": "4.17.1",
-    "get-graphql-from-jsonschema": "5.0.3",
+    "get-graphql-from-jsonschema": "6.0.0",
     "graphql-client": "2.0.1",
     "is-electron": "2.2.0",
     "is-my-json-valid": "2.20.5",
