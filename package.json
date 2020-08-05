@@ -86,7 +86,7 @@
     "rxjs": "^6.6.2"
   },
   "dependencies": {
-    "@babel/runtime": "7.11.1",
+    "@babel/runtime": "7.11.2",
     "@types/clone": "0.1.30",
     "@types/cors": "2.8.7",
     "@types/deep-equal": "1.0.1",
