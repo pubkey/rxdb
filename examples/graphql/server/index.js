@@ -1,6 +1,6 @@
 import express from 'express';
 import * as path from 'path';
-const graphqlHTTP = require('express-graphql');
+const { graphqlHTTP } = require('express-graphql');
 const cors = require('cors');
 import { PubSub } from 'graphql-subscriptions';
 import {
