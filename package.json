@@ -152,7 +152,7 @@
     "brfs": "2.0.2",
     "browserify": "16.5.2",
     "child-process-promise": "2.2.1",
-    "concurrently": "5.2.0",
+    "concurrently": "5.3.0",
     "convert-hrtime": "3.0.0",
     "cross-env": "7.0.2",
     "delete": "1.1.0",
