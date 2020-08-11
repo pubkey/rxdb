@@ -12,7 +12,7 @@
     "react-dom": "16.13.1"
   },
   "devDependencies": {
-    "react-scripts": "3.4.1",
+    "react-scripts": "3.4.2",
     "rimraf": "3.0.2"
   },
   "scripts": {
