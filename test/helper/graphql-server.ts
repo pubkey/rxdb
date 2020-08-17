@@ -13,6 +13,7 @@ import {
 } from 'graphql';
 import { createServer } from 'http';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
+import { Request, Response, NextFunction } from 'express';
 
 const express = require('express');
 // we need cors because this server is also used in browser-tests
@@ -54,6 +55,7 @@ export interface GraphqlServer<T> {
     setDocument(doc: T): Promise<{ data: any }>;
     overwriteDocuments(docs: T[]): void;
     getDocuments(): T[];
+    requireHeader(name: string, value: string): void;
     close(now?: boolean): void;
 }
 
@@ -205,6 +207,23 @@ export async function spawn(
         humanChanged: () => pubsub.asyncIterator('humanChanged')
     };
 
+    // header simulation middleware
+    let reqHeaderName: string = '';
+    let reqHeaderValue: string = '';
+    app.use((req: Request, res: Response, next: NextFunction) => {
+        if (!reqHeaderName) {
+            next();
+            return;
+        }
+        if (req.header(reqHeaderName.toLowerCase()) !== reqHeaderValue) {
+            res.status(401).json({
+                errors: ['Unauthorized']
+            });
+        } else {
+            next();
+        }
+    });
+
     app.use(GRAPHQL_PATH, graphqlHTTP({
         schema: schema,
         rootValue: root,
@@ -212,7 +231,7 @@ export async function spawn(
     }));
 
     const ret = 'http://localhost:' + port + GRAPHQL_PATH;
-    const client = graphQlClient({
+    let client = graphQlClient({
         url: ret
     });
     const retServer: Promise<GraphqlServer<Human>> = new Promise(res => {
@@ -263,6 +282,24 @@ export async function spawn(
                     },
                     getDocuments() {
                         return documents;
+                    },
+                    requireHeader(name: string, value: string) {
+                        if (!name) {
+                            reqHeaderName = '';
+                            reqHeaderValue = '';
+                            client = graphQlClient({
+                                url: ret
+                            });
+                        } else {
+                            reqHeaderName = name;
+                            reqHeaderValue = value;
+                            const headers: {[key: string]: string} = {};
+                            headers[name] = value;
+                            client = graphQlClient({
+                                url: ret,
+                                headers
+                            });
+                        }
                     },
                     close(now = false) {
                         if (now) {

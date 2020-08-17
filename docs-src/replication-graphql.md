@@ -286,6 +286,16 @@ Returns true if the replication is stopped. This can be if a non-live replicatio
 replicationState.isStopped(); // true/false
 ```
 
+#### .setHeaders()
+
+Changes the headers for the replication after it has been set up.
+
+```js
+replicationState.setHeaders({
+    Authorization: `...`
+});
+```
+
 #### .awaitInitialReplication()
 
 Returns a `Promise` that is resolved as soon as the initial replication is done.

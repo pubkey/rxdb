@@ -2069,6 +2069,70 @@ describe('replication-graphql.test.js', () => {
 
                 db.destroy();
             });
+            it('should work with headers', async () => {
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(0),
+                    SpawnServer.spawn(getTestData(1))
+                ]);
+
+                server.requireHeader('Authorization', 'password');
+                const replicationState = c.syncGraphQL({
+                    url: server.url,
+                    pull: {
+                        queryBuilder
+                    },
+                    headers: {
+                        Authorization: 'password'
+                    },
+                    live: true,
+                    deletedFlag: 'deleted'
+                });
+                await replicationState.awaitInitialReplication();
+
+                const docs = await c.find().exec();
+                assert.strictEqual(docs.length, 1);
+
+                server.close();
+                await c.database.destroy();
+            });
+            it('should work after headers change', async () => {
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(0),
+                    SpawnServer.spawn(getTestData(1))
+                ]);
+
+                server.requireHeader('Authorization', 'password');
+                const replicationState = c.syncGraphQL({
+                    url: server.url,
+                    pull: {
+                        queryBuilder
+                    },
+                    headers: {
+                        Authorization: 'password'
+                    },
+                    live: true,
+                    deletedFlag: 'deleted'
+                });
+                await replicationState.awaitInitialReplication();
+
+                server.requireHeader('Authorization', '1234');
+                const doc = getTestData(1).pop();
+                await server.setDocument(doc);
+
+                replicationState.setHeaders({
+                    'Authorization': '1234'
+                });
+                await replicationState.run();
+
+                const docs = await c.find().exec();
+                assert.strictEqual(docs.length, 2);
+
+                server.close();
+                await c.database.destroy();
+
+                // replication should be canceled when collection is destroyed
+                assert.ok(replicationState.isStopped());
+            });
         });
 
         config.parallel('issues', () => {
