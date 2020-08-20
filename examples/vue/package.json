@@ -23,7 +23,7 @@
     "random-int": "2.0.1",
     "register-service-worker": "1.7.1",
     "rxdb": "file:rxdb-local.tgz",
-    "vue": "2.6.11",
+    "vue": "2.6.12",
     "vue-class-component": "7.2.5",
     "vue-property-decorator": "9.0.0",
     "vue-router": "3.4.3"
@@ -41,6 +41,6 @@
     "local-web-server": "4.2.1",
     "testcafe": "1.9.1",
     "typescript": "3.9.7",
-    "vue-template-compiler": "2.6.11"
+    "vue-template-compiler": "2.6.12"
   }
 }
