@@ -984,3 +984,28 @@ export const humanWithDeepNestedIndexes: RxJsonSchema = {
     },
     indexes: ['name', 'job.name', 'job.manager.fullName', 'job.manager.previousJobs.[].name']
 };
+
+export const humanIdAndAgeIndex: RxJsonSchema = {
+    version: 0,
+    description: 'uses a compound index with id as lowest level',
+    type: 'object',
+    properties: {
+        id: {
+            type: 'string',
+            primary: true
+        },
+        name: {
+            type: 'string'
+        },
+        age: {
+            description: 'Age in years',
+            type: 'integer',
+            minimum: 0,
+            maximum: 150
+        }
+    },
+    required: ['id', 'name', 'age'],
+    indexes: [
+        ['age', 'id']
+    ]
+};

@@ -810,6 +810,32 @@ config.parallel('rx-collection.test.js', () => {
                         assert.strictEqual(doc1._data.passportId, doc2._data.passportId);
                         c.database.destroy();
                     });
+                    it('sort by compound index with id', async () => {
+                        const c = await humansCollection.createIdAndAgeIndex();
+                        const query = c.find({
+                            selector: {
+                                age: {
+                                    $gt: 0
+                                }
+                            }
+                        }).sort({
+                            age: 'desc',
+                            id: 'desc'
+                        });
+
+                        assert.ok(isRxQuery(query));
+                        const docs = await query.exec();
+
+                        assert.strictEqual(docs.length, 20);
+                        assert.ok(
+                            docs[0]._data.age > docs[1]._data.age ||
+                            (
+                                docs[0]._data.age === docs[1]._data.age &&
+                                docs[0]._data.id > docs[1]._data.id
+                            )
+                        );
+                        c.database.destroy();
+                    });
                 });
                 describe('negative', () => {
                     it('throw when sort is not index', async () => {
