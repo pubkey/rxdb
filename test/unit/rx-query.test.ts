@@ -65,6 +65,19 @@ config.parallel('rx-query.test.js', () => {
 
             col.database.destroy();
         });
+        it('should get a valid string-representation with two sort params', async () => {
+            const col = await humansCollection.createAgeIndex();
+            const q = col.find().sort({
+                passportId: 'desc', age: 'desc'
+            });
+            const str = q.toString();
+            const mustString = '{"op":"find","other":{},"query":{"selector":{"_id":{}},"sort":[{"passportId":"desc"},{"age":"desc"}]}}';
+            assert.strictEqual(str, mustString);
+            const str2 = q.toString();
+            assert.strictEqual(str2, mustString);
+
+            col.database.destroy();
+        });
         it('ISSUE #190: should contain the regex', async () => {
             const col = await humansCollection.create(0);
             const queryWithoutRegex = col.find();
