@@ -202,11 +202,12 @@ export function sortObject(obj: any, noArraySort = false): any {
                 if (typeof a === 'object') return 1;
                 else return -1;
             })
-            .map(i => sortObject(i));
+            .map(i => sortObject(i, noArraySort));
     }
 
     // object
-    if (typeof obj === 'object') {
+    // array is also of type object
+    if (typeof obj === 'object' && !Array.isArray(obj)) {
         if (obj instanceof RegExp)
             return obj;
 
@@ -214,7 +215,7 @@ export function sortObject(obj: any, noArraySort = false): any {
         Object.keys(obj)
             .sort((a, b) => a.localeCompare(b))
             .forEach(key => {
-                out[key] = sortObject(obj[key]);
+                out[key] = sortObject(obj[key], noArraySort);
             });
         return out;
     }

@@ -535,3 +535,31 @@ export async function createRelatedNested(
 
     return collection;
 }
+
+export async function createIdAndAgeIndex(
+    amount = 20
+): Promise<RxCollection<schemaObjects.HumanWithIdAndAgeIndexDocumentType>> {
+    PouchDB.plugin(require('pouchdb-adapter-memory'));
+
+    const db = await createRxDatabase<{ humana: RxCollection<schemaObjects.HumanWithIdAndAgeIndexDocumentType> }>({
+        name: randomCouchString(10),
+        adapter: 'memory',
+        eventReduce: true,
+        ignoreDuplicate: true
+    });
+    // setTimeout(() => db.destroy(), dbLifetime);
+    const collection = await db.collection<schemaObjects.HumanWithIdAndAgeIndexDocumentType>({
+        name: 'humana',
+        schema: schemas.humanIdAndAgeIndex
+    });
+
+    // insert data
+    if (amount > 0) {
+        const docsData = new Array(amount)
+            .fill(0)
+            .map(() => schemaObjects.humanWithIdAndAgeIndexDocumentType());
+        await collection.bulkInsert(docsData);
+    }
+
+    return collection;
+}

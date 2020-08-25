@@ -825,10 +825,12 @@ function _prepareCreateIndexes(
             .map(indexAr => {
                 const compressedIdx = indexAr
                     .map(key => {
+                        const primPath = rxCollection.schema.primaryPath;
+                        const useKey = key === primPath ? '_id' : key;
                         if (!rxCollection.schema.doKeyCompression()) {
-                            return key;
+                            return useKey;
                         } else {
-                            const indexKey = rxCollection._keyCompressor.transformKey(key);
+                            const indexKey = rxCollection._keyCompressor.transformKey(useKey);
                             return indexKey;
                         }
                     });

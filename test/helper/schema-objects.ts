@@ -384,3 +384,16 @@ export function _idPrimary(): IdPrimaryDocumentType {
         firstName: faker.name.firstName()
     };
 }
+
+export interface HumanWithIdAndAgeIndexDocumentType {
+    id: string;
+    name: string;
+    age: number;
+}
+export function humanWithIdAndAgeIndexDocumentType(): HumanWithIdAndAgeIndexDocumentType {
+    return {
+        id: randomToken(12),
+        name: faker.name.firstName(),
+        age: randomNumber(1, 100)
+    };
+}
