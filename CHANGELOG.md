@@ -1,5 +1,13 @@
 # Changelog
 
+### X.X.X (comming soon) 
+
+Features:
+  - Add `RxReplicationState.setHeaders()` [#2399](https://github.com/pubkey/rxdb/pull/2399/) Thanks [@DDoerner](https://github.com/DDoerner)
+
+Bugfixes:
+  - wrong key handling on compound indexes [#2456](https://github.com/pubkey/rxdb/pull/2456/) Thanks [@dome4](https://github.com/dome4)
+
 ### 9.5.0 (2 August 2020)
 
 Other:
