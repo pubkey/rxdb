@@ -9,7 +9,7 @@
   ],
   "automerge": true,
   "major": {
-    "automerge": false
+    "automerge": true
   },
   "ignorePaths": [
     "docs-src/files/logo/package.json",
