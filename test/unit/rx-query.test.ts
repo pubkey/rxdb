@@ -1431,5 +1431,60 @@ config.parallel('rx-query.test.js', () => {
 
             collection.database.destroy();
         });
+        /**
+        * via gitter @sfordjasiri 27.8.2020 10:27
+        */
+        it('gitter: mutating find-params causes different results', async () => {
+            const db = await createRxDatabase({
+                name: randomCouchString(10),
+                adapter: 'memory',
+                eventReduce: false
+            });
+            const schema = clone(schemas.human);
+            schema.keyCompression = false;
+
+            const c = await db.collection({
+                name: 'humans',
+                schema
+            });
+
+            const docDataMatching = schemaObjects.human();
+            docDataMatching.age = 42;
+            await c.insert(docDataMatching);
+
+            const docDataNotMatching = schemaObjects.human();
+            docDataNotMatching.age = 99;
+            await c.insert(docDataNotMatching);
+
+            const queryParams = {
+                selector: {
+                    age: 42
+                }
+            };
+            const queryMatching = c.find(queryParams);
+            const queryMatchingOne = c.findOne(queryParams);
+
+            const res1 = await queryMatching.exec();
+            const resOne1 = await queryMatchingOne.exec();
+            assert.strictEqual(res1.length, 1);
+            assert.ok(resOne1);
+            assert.strictEqual(resOne1.age, 42);
+
+            queryParams.selector.age = 0;
+
+            // trigger a write so the results are not cached
+            const addData = schemaObjects.human();
+            addData.age = 55;
+            await c.insert(addData);
+
+            const res2 = await queryMatching.exec();
+            const resOne2 = await queryMatchingOne.exec();
+
+            assert.strictEqual(res2.length, 1);
+            assert.ok(res2);
+            assert.strictEqual(resOne2.age, 42);
+
+            db.destroy();
+        });
     });
 });
