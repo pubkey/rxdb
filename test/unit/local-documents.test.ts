@@ -114,6 +114,21 @@ config.parallel('local-documents.test.js', () => {
                 assert.strictEqual(doc.get('foo'), 'bar2');
                 c.database.destroy();
             });
+            it('should invoke subscription onces', async () => {
+                let invocations = 0;
+                const c = await humansCollection.create();
+                const doc = await c.upsertLocal('foobar', {
+                    foo: 'bar',
+                });
+                const doc$ = doc.$.subscribe((doc) => {
+                    invocations++;
+                });
+                await c.upsertLocal('foobar', {
+                    foo: 'bar2',
+                });
+                doc$.unsubscribe();
+                assert.strictEqual(invocations, 1);
+            });
         });
         describe('negative', () => { });
     });
