@@ -120,7 +120,7 @@ config.parallel('local-documents.test.js', () => {
                 const doc = await c.upsertLocal('foobar', {
                     foo: 'bar',
                 });
-                const doc$ = doc.$.subscribe((doc) => {
+                const doc$ = doc.$.subscribe(() => {
                     invocations++;
                 });
                 await c.upsertLocal('foobar', {
