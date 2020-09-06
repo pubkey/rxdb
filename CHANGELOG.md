@@ -7,6 +7,7 @@ Features:
 
 Bugfixes:
   - wrong key handling on compound indexes [#2456](https://github.com/pubkey/rxdb/pull/2456/) Thanks [@dome4](https://github.com/dome4)
+  - Nested `$or` queries where broken when they used the primaryKey in the selector
 
 ### 9.5.0 (2 August 2020)
 

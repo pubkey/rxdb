@@ -237,17 +237,40 @@ export class RxStoragePouchDbClass implements RxStorage<PouchDBInstance> {
             }
         });
 
-        // primary swap
-        if (
-            primPath !== '_id' &&
-            query.selector[primPath]
-        ) {
-            // selector
-            query.selector._id = query.selector[primPath];
-            delete query.selector[primPath];
+
+        if (primPath !== '_id') {
+            query.selector = primarySwapPouchDbQuerySelector(query.selector, primPath);
         }
 
         return query;
+    }
+}
+
+
+/**
+ * Runs a primary swap with transform all custom primaryKey occurences
+ * into '_id'
+ * @recursive
+ */
+export function primarySwapPouchDbQuerySelector(selector: any, primaryKey: string): any {
+    if (Array.isArray(selector)) {
+        return selector.map(item => primarySwapPouchDbQuerySelector(item, primaryKey));
+    } else if (typeof selector === 'object') {
+        const ret: any = {};
+        Object.entries(selector).forEach(([k, v]) => {
+            if (k === primaryKey) {
+                ret._id = v;
+            } else {
+                if (k.startsWith('$')) {
+                    ret[k] = primarySwapPouchDbQuerySelector(v, primaryKey);
+                } else {
+                    ret[k] = v;
+                }
+            }
+        });
+        return ret;
+    } else {
+        return selector;
     }
 }
 

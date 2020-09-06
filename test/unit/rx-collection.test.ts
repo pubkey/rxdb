@@ -666,6 +666,26 @@ config.parallel('rx-collection.test.js', () => {
                     assert.ok(foundFirstNames.includes('foobarBob'));
                     c.database.destroy();
                 });
+                it('should find the correct documents via $or on the primary key', async () => {
+                    console.log('###############################');
+                    const c = await humansCollection.createPrimary(10);
+                    const allDocs = await c.find().exec();
+                    const firstFive = allDocs.slice(0, 5);
+
+                    const selector = {
+                        $or: firstFive.map(doc => ({ passportId: doc.passportId }))
+                    };
+                    const found = await c.find({
+                        selector
+                    }).exec();
+
+                    assert.strictEqual(firstFive.length, found.length);
+                    const firstId = firstFive[0].passportId;
+                    assert.ok(
+                        found.map(d => d.passportId).includes(firstId)
+                    );
+                    c.database.destroy();
+                });
             });
             describe('.sort()', () => {
                 describe('positive', () => {
