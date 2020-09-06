@@ -4,6 +4,7 @@
 
 Features:
   - Add `RxReplicationState.setHeaders()` [#2399](https://github.com/pubkey/rxdb/pull/2399/) Thanks [@DDoerner](https://github.com/DDoerner)
+  - Added `RxCollection.findByIds$()` [see](./docs-src/tutorials/rx-collection.md#findbyids$)
 
 Bugfixes:
   - wrong key handling on compound indexes [#2456](https://github.com/pubkey/rxdb/pull/2456/) Thanks [@dome4](https://github.com/dome4)

@@ -1,5 +1,5 @@
 import {
-    filter
+    filter, startWith, mergeMap, map, shareReplay
 } from 'rxjs/operators';
 
 import {
@@ -588,8 +588,44 @@ export class RxCollectionBase<
                 ret.set(doc.primary, doc);
             });
         }
-
         return ret;
+    }
+
+    /**
+     * like this.findByIds but returns an observable
+     * that always emitts the current state
+     */
+    findByIds$(
+        ids: string[]
+    ): Observable<Map<string, RxDocument<RxDocumentType, OrmMethods>>> {
+        let currentValue: Map<string, RxDocument<RxDocumentType, OrmMethods>> | null = null;
+        const initialPromise = this.findByIds(ids).then(docsMap => {
+            currentValue = docsMap;
+        });
+        return this.$.pipe(
+            startWith(null),
+            mergeMap(ev => initialPromise.then(() => ev)),
+            map(ev => {
+                if (!currentValue) {
+                    throw new Error('should not happen');
+                }
+                if (!ev) {
+                    return currentValue;
+                }
+                if (!ids.includes(ev.documentId)) {
+                    return null;
+                }
+                const op = ev.operation;
+                if (op === 'INSERT' || op === 'UPDATE') {
+                    currentValue.set(ev.documentId, this._docCache.get(ev.documentId) as any);
+                } else {
+                    currentValue.delete(ev.documentId);
+                }
+                return currentValue as any;
+            }),
+            filter(x => !!x),
+            shareReplay(1)
+        );
     }
 
     /**

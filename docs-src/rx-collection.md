@@ -198,6 +198,10 @@ const docsMap = await myCollection.findByIds(ids);
 console.dir(docsMap); // Map(2)
 ```
 
+### findByIds$()
+
+Same as `findByIds()` but returns and `Observable` that emits the `Map` each time a value of it has changed because of a database write.
+
 
 ### dump()
 Use this function to create a json export from every document in the collection. You can pass true as parameter to decrypt the encrypted data fields of your documents.

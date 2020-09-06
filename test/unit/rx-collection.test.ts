@@ -23,6 +23,7 @@ import {
     PrimaryProperty
 } from '../../';
 import { HumanDocumentType } from '../helper/schema-objects';
+import { first } from 'rxjs/operators';
 
 config.parallel('rx-collection.test.js', () => {
     describe('static', () => {
@@ -667,11 +668,9 @@ config.parallel('rx-collection.test.js', () => {
                     c.database.destroy();
                 });
                 it('should find the correct documents via $or on the primary key', async () => {
-                    console.log('###############################');
                     const c = await humansCollection.createPrimary(10);
                     const allDocs = await c.find().exec();
                     const firstFive = allDocs.slice(0, 5);
-
                     const selector = {
                         $or: firstFive.map(doc => ({ passportId: doc.passportId }))
                     };
@@ -913,16 +912,16 @@ config.parallel('rx-collection.test.js', () => {
                         const docs = await c.find().sort({
                             passportId: 'asc'
                         }).exec();
-                        let first: any = await c.find().sort({
+                        let firstDoc: any = await c.find().sort({
                             passportId: 'asc'
                         }).limit(1).exec();
-                        first = first[0];
+                        firstDoc = firstDoc[0];
                         let last: any = await c.find().sort({
                             passportId: 'desc'
                         }).limit(1).exec();
                         last = last[0];
                         assert.strictEqual(last['_data'].passportId, docs[(docs.length - 1)]._data.passportId);
-                        assert.notStrictEqual(first['_data'].passportId, last['_data'].passportId);
+                        assert.notStrictEqual(firstDoc['_data'].passportId, last['_data'].passportId);
                         c.database.destroy();
                     });
                     it('reset limit with .limit(null)', async () => {
@@ -987,8 +986,8 @@ config.parallel('rx-collection.test.js', () => {
                             .where('firstName').regex(/Match/)
                             .exec();
                         assert.strictEqual(docs.length, 1);
-                        const first = docs[0];
-                        assert.strictEqual(first.get('firstName'), matchHuman.firstName);
+                        const firstDoc = docs[0];
+                        assert.strictEqual(firstDoc.get('firstName'), matchHuman.firstName);
                         c.database.destroy();
                     });
                     it('case sensitive regex', async () => {
@@ -1001,8 +1000,8 @@ config.parallel('rx-collection.test.js', () => {
                             .exec();
 
                         assert.strictEqual(docs.length, 1);
-                        const first = docs[0];
-                        assert.strictEqual(first.get('firstName'), matchHuman.firstName);
+                        const firstDoc = docs[0];
+                        assert.strictEqual(firstDoc.get('firstName'), matchHuman.firstName);
                         c.database.destroy();
                     });
                     it('regex on index', async () => {
@@ -1015,8 +1014,8 @@ config.parallel('rx-collection.test.js', () => {
                             .exec();
 
                         assert.strictEqual(docs.length, 1);
-                        const first = docs[0];
-                        assert.strictEqual(first.get('passportId'), matchHuman.passportId);
+                        const firstDoc = docs[0];
+                        assert.strictEqual(firstDoc.get('passportId'), matchHuman.passportId);
                         c.database.destroy();
                     });
                 });
@@ -1647,6 +1646,65 @@ config.parallel('rx-collection.test.js', () => {
                 c.database.destroy();
             });
         });
+    });
+    describe('.findByIds$()', () => {
+        it('should not crash and emit a map', async () => {
+            const c = await humansCollection.create(5);
+            const docs = await c.find().exec();
+            const ids = docs.map(d => d.primary);
+            const res = await c.findByIds$(ids).pipe(first()).toPromise();
+
+            assert.ok(res);
+            assert.ok(res instanceof Map);
+
+            c.database.destroy();
+        });
+        it('should emit the correct initial values', async () => {
+            const c = await humansCollection.create(5);
+
+            const docs = await c.find().exec();
+            const ids = docs.map(d => d.primary);
+            const res = await c.findByIds$(ids).pipe(first()).toPromise();
+
+            assert.ok(res.has(docs[0].primary));
+            assert.strictEqual(res.size, 5);
+
+            c.database.destroy();
+        });
+        it('should merge the insert/update/delete event correctly', async () => {
+            const c = await humansCollection.createPrimary(5);
+            const docs = await c.find().exec();
+            const ids = docs.map(d => d.primary);
+            ids.push('foobar');
+            const obs = c.findByIds$(ids);
+            await obs.pipe(first()).toPromise();
+
+            // check insert
+            const addData = schemaObjects.human();
+            addData.passportId = 'foobar';
+            await c.insert(addData);
+            // insert whose id is not in ids-list should not affect anything
+            await c.insert(schemaObjects.human());
+            const res2 = await obs.pipe(first()).toPromise();
+            assert.strictEqual(res2.size, 6);
+            assert.ok(res2.has('foobar'));
+
+            // check update
+            addData.firstName = 'barfoo';
+            await c.upsert(addData);
+            const res3 = await obs.pipe(first()).toPromise();
+            const getDoc = res3.get('foobar');
+            assert.ok(getDoc);
+            assert.strictEqual(getDoc.firstName, 'barfoo');
+
+            // check delete
+            await getDoc.remove();
+            const res4 = await obs.pipe(first()).toPromise();
+            assert.strictEqual(false, res4.has('foobar'));
+
+            c.database.destroy();
+        });
+
     });
     describe('issues', () => {
         it('#528  default value ignored when 0', async () => {
