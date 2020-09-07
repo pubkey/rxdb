@@ -97,6 +97,11 @@ export declare class RxCollectionBase<RxDocumentType = {
      */
     findByIds(ids: string[]): Promise<Map<string, RxDocument<RxDocumentType, OrmMethods>>>;
     /**
+     * like this.findByIds but returns an observable
+     * that always emitts the current state
+     */
+    findByIds$(ids: string[]): Observable<Map<string, RxDocument<RxDocumentType, OrmMethods>>>;
+    /**
      * Export collection to a JSON friendly format.
      * @param _decrypted
      * When true, all encrypted values will be decrypted.

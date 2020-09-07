@@ -187,18 +187,19 @@ export function sortObject(obj) {
       if (typeof a === 'string' && typeof b === 'string') return a.localeCompare(b);
       if (typeof a === 'object') return 1;else return -1;
     }).map(function (i) {
-      return sortObject(i);
+      return sortObject(i, noArraySort);
     });
   } // object
+  // array is also of type object
 
 
-  if (typeof obj === 'object') {
+  if (typeof obj === 'object' && !Array.isArray(obj)) {
     if (obj instanceof RegExp) return obj;
     var out = {};
     Object.keys(obj).sort(function (a, b) {
       return a.localeCompare(b);
     }).forEach(function (key) {
-      out[key] = sortObject(obj[key]);
+      out[key] = sortObject(obj[key], noArraySort);
     });
     return out;
   } // everything else

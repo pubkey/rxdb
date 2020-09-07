@@ -1,7 +1,7 @@
 import _regeneratorRuntime from "@babel/runtime/regenerator";
 import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _createClass from "@babel/runtime/helpers/createClass";
-import { filter } from 'rxjs/operators';
+import { filter, startWith, mergeMap, map, shareReplay } from 'rxjs/operators';
 import { ucfirst, nextTick, flatClone, promiseSeries, pluginMissing, now } from './util';
 import { validateCouchDBString } from './pouch-db';
 import { _handleToPouch as _handleToPouch2, _handleFromPouch as _handleFromPouch2, fillObjectDataBeforeInsert } from './rx-collection-helper';
@@ -491,6 +491,49 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     return findByIds;
   }()
   /**
+   * like this.findByIds but returns an observable
+   * that always emitts the current state
+   */
+  ;
+
+  _proto.findByIds$ = function findByIds$(ids) {
+    var _this10 = this;
+
+    var currentValue = null;
+    var initialPromise = this.findByIds(ids).then(function (docsMap) {
+      currentValue = docsMap;
+    });
+    return this.$.pipe(startWith(null), mergeMap(function (ev) {
+      return initialPromise.then(function () {
+        return ev;
+      });
+    }), map(function (ev) {
+      if (!currentValue) {
+        throw new Error('should not happen');
+      }
+
+      if (!ev) {
+        return currentValue;
+      }
+
+      if (!ids.includes(ev.documentId)) {
+        return null;
+      }
+
+      var op = ev.operation;
+
+      if (op === 'INSERT' || op === 'UPDATE') {
+        currentValue.set(ev.documentId, _this10._docCache.get(ev.documentId));
+      } else {
+        currentValue["delete"](ev.documentId);
+      }
+
+      return currentValue;
+    }), filter(function (x) {
+      return !!x;
+    }), shareReplay(1));
+  }
+  /**
    * Export collection to a JSON friendly format.
    * @param _decrypted
    * When true, all encrypted values will be decrypted.
@@ -710,11 +753,11 @@ export var RxCollectionBase = /*#__PURE__*/function () {
   }, {
     key: "onDestroy",
     get: function get() {
-      var _this10 = this;
+      var _this11 = this;
 
       if (!this._onDestroy) {
         this._onDestroy = new Promise(function (res) {
-          return _this10._onDestroyCall = res;
+          return _this11._onDestroyCall = res;
         });
       }
 
@@ -790,10 +833,13 @@ function _atomicUpsertEnsureRxDocumentExists(rxCollection, primary, json) {
 function _prepareCreateIndexes(rxCollection, spawnedPouchPromise) {
   return Promise.all(rxCollection.schema.indexes.map(function (indexAr) {
     var compressedIdx = indexAr.map(function (key) {
+      var primPath = rxCollection.schema.primaryPath;
+      var useKey = key === primPath ? '_id' : key;
+
       if (!rxCollection.schema.doKeyCompression()) {
-        return key;
+        return useKey;
       } else {
-        var indexKey = rxCollection._keyCompressor.transformKey(key);
+        var indexKey = rxCollection._keyCompressor.transformKey(useKey);
 
         return indexKey;
       }

@@ -197,12 +197,10 @@ export var RxStoragePouchDbClass = /*#__PURE__*/function () {
       if (typeof v === 'object' && v !== null && !Array.isArray(v) && Object.keys(v).length === 0) {
         delete query.selector[k];
       }
-    }); // primary swap
+    });
 
-    if (primPath !== '_id' && query.selector[primPath]) {
-      // selector
-      query.selector._id = query.selector[primPath];
-      delete query.selector[primPath];
+    if (primPath !== '_id') {
+      query.selector = primarySwapPouchDbQuerySelector(query.selector, primPath);
     }
 
     return query;
@@ -210,6 +208,38 @@ export var RxStoragePouchDbClass = /*#__PURE__*/function () {
 
   return RxStoragePouchDbClass;
 }();
+/**
+ * Runs a primary swap with transform all custom primaryKey occurences
+ * into '_id'
+ * @recursive
+ */
+
+export function primarySwapPouchDbQuerySelector(selector, primaryKey) {
+  if (Array.isArray(selector)) {
+    return selector.map(function (item) {
+      return primarySwapPouchDbQuerySelector(item, primaryKey);
+    });
+  } else if (typeof selector === 'object') {
+    var ret = {};
+    Object.entries(selector).forEach(function (_ref3) {
+      var k = _ref3[0],
+          v = _ref3[1];
+
+      if (k === primaryKey) {
+        ret._id = v;
+      } else {
+        if (k.startsWith('$')) {
+          ret[k] = primarySwapPouchDbQuerySelector(v, primaryKey);
+        } else {
+          ret[k] = v;
+        }
+      }
+    });
+    return ret;
+  } else {
+    return selector;
+  }
+}
 /**
  * returns the pouchdb-database-name
  */

@@ -1,6 +1,6 @@
 # Changelog
 
-### X.X.X (comming soon) 
+### 9.6.0 (7 September 2020) 
 
 Features:
   - Add `RxReplicationState.setHeaders()` [#2399](https://github.com/pubkey/rxdb/pull/2399/) Thanks [@DDoerner](https://github.com/DDoerner)

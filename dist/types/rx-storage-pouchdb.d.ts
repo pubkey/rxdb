@@ -21,6 +21,12 @@ export declare class RxStoragePouchDbClass implements RxStorage<PouchDBInstance>
     prepareQuery<RxDocType>(rxQuery: RxQuery<RxDocType>, mutateableQuery: MangoQuery<RxDocType>): PreparedQuery<RxDocType>;
 }
 /**
+ * Runs a primary swap with transform all custom primaryKey occurences
+ * into '_id'
+ * @recursive
+ */
+export declare function primarySwapPouchDbQuerySelector(selector: any, primaryKey: string): any;
+/**
  * returns the pouchdb-database-name
  */
 export declare function getPouchLocation(dbName: string, collectionName: string, schemaVersion: number): string;

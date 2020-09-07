@@ -128,6 +128,7 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
     this.canceled$ = undefined;
     this.active$ = undefined;
     this.collection = collection;
+    this.url = url;
     this.pull = pull;
     this.push = push;
     this.deletedFlag = deletedFlag;
@@ -773,6 +774,13 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
     this._subjects.canceled.next(true);
 
     return Promise.resolve(true);
+  };
+
+  _proto.setHeaders = function setHeaders(headers) {
+    this.client = (0, _graphqlClient["default"])({
+      url: this.url,
+      headers: headers
+    });
   };
 
   return RxGraphQLReplicationState;

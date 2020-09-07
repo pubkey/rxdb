@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.primarySwapPouchDbQuerySelector = primarySwapPouchDbQuerySelector;
 exports.getPouchLocation = getPouchLocation;
 exports.getRxStoragePouchDb = getRxStoragePouchDb;
 exports.RxStoragePouchDbClass = void 0;
@@ -211,12 +212,10 @@ var RxStoragePouchDbClass = /*#__PURE__*/function () {
       if (typeof v === 'object' && v !== null && !Array.isArray(v) && Object.keys(v).length === 0) {
         delete query.selector[k];
       }
-    }); // primary swap
+    });
 
-    if (primPath !== '_id' && query.selector[primPath]) {
-      // selector
-      query.selector._id = query.selector[primPath];
-      delete query.selector[primPath];
+    if (primPath !== '_id') {
+      query.selector = primarySwapPouchDbQuerySelector(query.selector, primPath);
     }
 
     return query;
@@ -225,11 +224,44 @@ var RxStoragePouchDbClass = /*#__PURE__*/function () {
   return RxStoragePouchDbClass;
 }();
 /**
- * returns the pouchdb-database-name
+ * Runs a primary swap with transform all custom primaryKey occurences
+ * into '_id'
+ * @recursive
  */
 
 
 exports.RxStoragePouchDbClass = RxStoragePouchDbClass;
+
+function primarySwapPouchDbQuerySelector(selector, primaryKey) {
+  if (Array.isArray(selector)) {
+    return selector.map(function (item) {
+      return primarySwapPouchDbQuerySelector(item, primaryKey);
+    });
+  } else if (typeof selector === 'object') {
+    var ret = {};
+    Object.entries(selector).forEach(function (_ref3) {
+      var k = _ref3[0],
+          v = _ref3[1];
+
+      if (k === primaryKey) {
+        ret._id = v;
+      } else {
+        if (k.startsWith('$')) {
+          ret[k] = primarySwapPouchDbQuerySelector(v, primaryKey);
+        } else {
+          ret[k] = v;
+        }
+      }
+    });
+    return ret;
+  } else {
+    return selector;
+  }
+}
+/**
+ * returns the pouchdb-database-name
+ */
+
 
 function getPouchLocation(dbName, collectionName, schemaVersion) {
   var prefix = dbName + '-rxdb-' + schemaVersion + '-';

@@ -6,6 +6,7 @@ import { BehaviorSubject, Subject, Subscription, Observable } from 'rxjs';
 import type { RxCollection, GraphQLSyncPullOptions, GraphQLSyncPushOptions, RxPlugin } from '../../types';
 export declare class RxGraphQLReplicationState {
     collection: RxCollection;
+    private url;
     pull: GraphQLSyncPullOptions;
     push: GraphQLSyncPushOptions;
     deletedFlag: string;
@@ -58,6 +59,9 @@ export declare class RxGraphQLReplicationState {
     runPush(): Promise<boolean>;
     handleDocumentFromRemote(doc: any, docsWithRevisions: any[]): Promise<void>;
     cancel(): Promise<any>;
+    setHeaders(headers: {
+        [k: string]: string;
+    }): void;
 }
 export declare function syncGraphQL(this: RxCollection, { url, headers, waitForLeadership, pull, push, deletedFlag, lastPulledRevField, live, liveInterval, // in ms
 retryTime, // in ms
