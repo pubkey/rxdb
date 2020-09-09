@@ -570,7 +570,7 @@ describe('typings.test.js', function () {
 
                     const result = await myCollection.findOne().exec();
                     if(!result) throw new Error('got no doc');
-                    const rev: string = result.toJSON()._rev;
+                    const rev: string = result.toJSON(true)._rev;
                 });
             `;
             await transpileCode(code);
