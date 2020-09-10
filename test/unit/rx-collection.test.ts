@@ -349,7 +349,7 @@ config.parallel('rx-collection.test.js', () => {
                         name: 'human',
                         schema: schemas.human
                     });
-                    const human = schemaObjects.human();
+                    const human: any = schemaObjects.human();
                     delete human.firstName;
                     await AsyncTestUtil.assertThrows(
                         () => collection.insert(human),
@@ -1275,7 +1275,7 @@ config.parallel('rx-collection.test.js', () => {
                     });
                     const obj = schemaObjects.simpleHuman();
                     await collection.insert(obj);
-                    const cloned = clone(obj);
+                    const cloned: any = clone(obj);
 
                     cloned.firstName = 'foobar';
                     delete cloned.passportId;
