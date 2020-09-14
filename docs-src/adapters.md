@@ -230,7 +230,7 @@ addRxPlugin(require('pouchdb-adapter-cordova-sqlite'));
 
 const database = await createRxDatabase({
     name: 'mydatabase',
-    adapter: 'node-cordova-sqlite' // the name of your adapter
+    adapter: 'cordova-sqlite' // the name of your adapter
 });
 ```
 
