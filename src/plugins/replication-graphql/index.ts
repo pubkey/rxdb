@@ -248,11 +248,7 @@ export class RxGraphQLReplicationState {
             this.collection,
             docIds
         );
-        await Promise.all(
-            modified
-                .map((doc: any) => this.handleDocumentFromRemote(
-                    doc, docsWithRevisions as any))
-        );
+        await this.handleDocumentsFromRemote(modified, docsWithRevisions as any);
         modified.map((doc: any) => this._subjects.recieved.next(doc));
 
         if (modified.length === 0) {
@@ -364,44 +360,48 @@ export class RxGraphQLReplicationState {
         return true;
     }
 
-    async handleDocumentFromRemote(doc: any, docsWithRevisions: any[]) {
-        const deletedValue = doc[this.deletedFlag];
-        const toPouch = this.collection._handleToPouch(doc);
-        // console.log('handleDocumentFromRemote(' + toPouch._id + ') start');
-        toPouch._deleted = deletedValue;
-        delete toPouch[this.deletedFlag];
+    async handleDocumentsFromRemote(docs: any[], docsWithRevisions: any[]) {
+        const toPouchDocs = [];
+        for (const doc of docs) {
+            const deletedValue = doc[this.deletedFlag];
+            const toPouch = this.collection._handleToPouch(doc);
+            toPouch._deleted = deletedValue;
+            delete toPouch[this.deletedFlag];
 
-        if (!this.syncRevisions) {
-            const primaryValue = toPouch._id;
+            if (!this.syncRevisions) {
+                const primaryValue = toPouch._id;
 
-            const pouchState = docsWithRevisions[primaryValue];
-            let newRevision = createRevisionForPulledDocument(
-                this.endpointHash,
-                toPouch
-            );
-            if (pouchState) {
-                const newRevisionHeight = pouchState.revisions.start + 1;
-                const revisionId = newRevision;
-                newRevision = newRevisionHeight + '-' + newRevision;
-                toPouch._revisions = {
-                    start: newRevisionHeight,
-                    ids: pouchState.revisions.ids
-                };
-                toPouch._revisions.ids.unshift(revisionId);
+                const pouchState = docsWithRevisions[primaryValue];
+                let newRevision = createRevisionForPulledDocument(
+                    this.endpointHash,
+                    toPouch
+                );
+                if (pouchState) {
+                    const newRevisionHeight = pouchState.revisions.start + 1;
+                    const revisionId = newRevision;
+                    newRevision = newRevisionHeight + '-' + newRevision;
+                    toPouch._revisions = {
+                        start: newRevisionHeight,
+                        ids: pouchState.revisions.ids
+                    };
+                    toPouch._revisions.ids.unshift(revisionId);
+                } else {
+                    newRevision = '1-' + newRevision;
+                }
+
+                toPouch._rev = newRevision;
             } else {
-                newRevision = '1-' + newRevision;
+                toPouch[this.lastPulledRevField] = toPouch._rev;
             }
 
-            toPouch._rev = newRevision;
-        } else {
-            toPouch[this.lastPulledRevField] = toPouch._rev;
+            toPouchDocs.push({
+                doc: toPouch,
+                deletedValue
+            });
         }
-
         const startTime = now();
         await this.collection.pouch.bulkDocs(
-            [
-                toPouch
-            ], {
+            toPouchDocs.map(tpd => tpd.doc), {
             new_edits: false
         });
         const endTime = now();
@@ -412,23 +412,25 @@ export class RxGraphQLReplicationState {
          * we create the event and emit it,
          * so other instances get informed about it
          */
-        const originalDoc = flatClone(toPouch);
+        for (const tpd of toPouchDocs) {
+            const originalDoc = flatClone(tpd.doc);
 
-        if (deletedValue) {
-            originalDoc._deleted = deletedValue;
-        } else {
-            delete originalDoc._deleted;
+            if (tpd.deletedValue) {
+                originalDoc._deleted = tpd.deletedValue;
+            } else {
+                delete originalDoc._deleted;
+            }
+            delete originalDoc[this.deletedFlag];
+            delete originalDoc._revisions;
+
+            const cE = changeEventfromPouchChange(
+                originalDoc,
+                this.collection,
+                startTime,
+                endTime
+            );
+            this.collection.$emit(cE);
         }
-        delete originalDoc[this.deletedFlag];
-        delete originalDoc._revisions;
-
-        const cE = changeEventfromPouchChange(
-            originalDoc,
-            this.collection,
-            startTime,
-            endTime
-        );
-        this.collection.$emit(cE);
     }
 
     cancel(): Promise<any> {
