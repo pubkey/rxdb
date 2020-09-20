@@ -210,6 +210,7 @@ const schemaWithFinalAge = {
 
 By adding a field to the `encrypted` list, it will be stored encrypted inside of the data-store. The encryption will run internally, so when you get the `RxDocument`, you can access the unencrypted value.
 You can set all fields to be encrypted, even nested objects. You can not run queries over encrypted fields.
+The password used for encryption is set during database creation. [See RxDatabase](./rx-database.md#password).
 
 ```js
 const schemaWithDefaultAge = {
