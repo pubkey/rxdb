@@ -158,7 +158,7 @@ With the queryBuilder, you can then setup the pull-replication.
 const replicationState = myCollection.syncGraphQL({
     url: 'http://example.com/graphql', // url to the GraphQL endpoint
     pull: {
-        pullQueryBuilder, // the queryBuilder from above
+        queryBuilder: pullQueryBuilder, // the queryBuilder from above
         modifier: doc => doc // (optional) modifies all pulled documents before they are handeled by RxDB
     },
     deletedFlag: 'deleted', // the flag which indicates if a pulled document is deleted
@@ -196,7 +196,7 @@ With the queryBuilder, you can then setup the push-replication.
 const replicationState = myCollection.syncGraphQL({
     url: 'http://example.com/graphql', // url to the GraphQL endpoint
     push: {
-        pushQueryBuilder, // the queryBuilder from above
+        queryBuilder: pushQueryBuilder, // the queryBuilder from above
         batchSize: 5, // (optional) amount of documents that will be send in one batch
         modifier: d => d // (optional) modifies all pushed documents before they are send to the GraphQL endpoint
     },
