@@ -71,7 +71,7 @@ db.heroes
 
 
 <h3>
-  <strong>Multi-Window / Tap Support</strong>
+  <strong>Multi-Window / Tab Support</strong>
 </h3>
 
 <p align="justify">
