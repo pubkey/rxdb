@@ -21,7 +21,9 @@ import {
     newRxTypeError
 } from '../rx-error';
 import {
-    clone, now, LOCAL_PREFIX
+    clone,
+    now,
+    LOCAL_PREFIX
 } from '../util';
 
 import type {
@@ -114,7 +116,9 @@ const RxLocalDocumentPrototype: any = {
         this: any,
         changeEvent: RxChangeEvent
     ) {
-        if (changeEvent.documentId !== this.primary) return;
+        if (changeEvent.documentId !== this.primary) {
+            return;
+        }
         switch (changeEvent.operation) {
             case 'UPDATE':
                 const newData = clone(changeEvent.documentData);
@@ -202,12 +206,10 @@ const RxLocalDocumentPrototype: any = {
             .then((res: any) => {
                 const endTime = now();
                 newData._rev = res.rev;
-                this._dataSync$.next(newData);
-
                 const changeEvent = new RxChangeEvent(
                     'UPDATE',
                     this.id,
-                    clone(this._data),
+                    clone(newData),
                     isRxDatabase(this.parent) ? this.parent.token : this.parent.database.token,
                     isRxCollection(this.parent) ? this.parent.name : null,
                     true,
@@ -294,8 +296,9 @@ RxLocalDocument.create = (id: string, data: any, parent: any) => {
  * throws if already exists
  */
 function insertLocal(this: any, id: string, data: any): Promise<RxLocalDocument> {
-    if (isRxCollection(this) && this._isInMemory)
+    if (isRxCollection(this) && this._isInMemory) {
         return this._parentCollection.insertLocal(id, data);
+    }
 
     data = clone(data);
 
@@ -326,15 +329,16 @@ function insertLocal(this: any, id: string, data: any): Promise<RxLocalDocument>
  * overwrites existing if exists
  */
 function upsertLocal(this: any, id: string, data: any): Promise<RxLocalDocument> {
-    if (isRxCollection(this) && this._isInMemory)
+    if (isRxCollection(this) && this._isInMemory) {
         return this._parentCollection.upsertLocal(id, data);
+    }
 
     return this.getLocal(id)
-        .then((existing: any) => {
+        .then((existing: RxDocument) => {
             if (!existing) {
                 // create new one
-                const doc = this.insertLocal(id, data);
-                return doc;
+                const docPromise = this.insertLocal(id, data);
+                return docPromise;
             } else {
                 // update existing
                 data._rev = existing._data._rev;

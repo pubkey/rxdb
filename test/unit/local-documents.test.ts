@@ -1,5 +1,5 @@
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
+import AsyncTestUtil, { wait } from 'async-test-util';
 
 import * as humansCollection from '../helper/humans-collection';
 import * as schemas from '../helper/schemas';
@@ -103,15 +103,42 @@ config.parallel('local-documents.test.js', () => {
                 c.database.destroy();
             });
             it('should update when exists', async () => {
-                const c = await humansCollection.create();
+                const c = await humansCollection.create(0);
                 await c.upsertLocal('foobar', {
                     foo: 'bar'
                 });
                 const doc = await c.upsertLocal('foobar', {
                     foo: 'bar2'
                 });
+                await wait(1000);
                 assert.ok(doc);
                 assert.strictEqual(doc.get('foo'), 'bar2');
+                c.database.destroy();
+            });
+            /**
+             * @link https://github.com/pubkey/rxdb/issues/2471
+             */
+            it('should invoke subscription once', async () => {
+                const c = await humansCollection.create();
+                const emitted: any[] = [];
+                const doc = await c.upsertLocal('foobar', {
+                    foo: 'barOne',
+                });
+                await wait(50);
+                const docSub = doc.$.subscribe(x => {
+                    emitted.push(x);
+                });
+                await c.upsertLocal('foobar', {
+                    foo: 'barTwo',
+                });
+
+                assert.strictEqual(emitted.length, 2);
+                // first 'barOne' is emitted because.$ is a BehaviorSubject
+                assert.strictEqual(emitted[0].foo, 'barOne');
+                // second after the change, barTwo is emitted
+                assert.strictEqual(emitted[1].foo, 'barTwo');
+
+                docSub.unsubscribe();
                 c.database.destroy();
             });
         });
