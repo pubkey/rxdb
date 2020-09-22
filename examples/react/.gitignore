@@ -1,3 +1,5 @@
 node_modules/
 npm-debug.log
 firefox_root/
+build/
+rxdb-local.tgz

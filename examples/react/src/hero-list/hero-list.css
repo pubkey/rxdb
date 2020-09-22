@@ -1,6 +1,11 @@
-.actions{
+#heroes-list {
+  width: 100%;
+}
+
+.actions {
   float: right;
 }
-i{
-  cursor:pointer;
+
+i {
+  cursor: pointer;
 }

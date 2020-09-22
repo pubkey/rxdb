@@ -1,10 +1,10 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import * as Database from '../Database';
 import './hero-list.css';
 
 class HeroList extends Component {
     state = {
-        heroes: [],
+        heroes: null,
         loading: true
     };
     subs = [];
@@ -12,13 +12,18 @@ class HeroList extends Component {
     async componentDidMount() {
         const db = await Database.get();
 
-        const sub = db.heroes.find().sort({name: 1}).$.subscribe(heroes => {
+        const sub = db.heroes.find({
+            selector: {},
+            sort: [
+                { name: 'asc' }
+            ]
+        }).$.subscribe(heroes => {
             if (!heroes) {
                 return;
             }
             console.log('reload heroes-list ');
             console.dir(heroes);
-            this.setState({heroes, loading: false});
+            this.setState({ heroes, loading: false });
         });
         this.subs.push(sub);
     }
@@ -30,6 +35,7 @@ class HeroList extends Component {
     deleteHero = async (hero) => {
         console.log('delete hero:');
         console.dir(hero);
+        await hero.remove();
     }
 
     editHero = async (hero) => {
@@ -37,39 +43,33 @@ class HeroList extends Component {
         console.dir(hero);
     }
 
-    renderActions = () => {
-        // TODO
-        // return (
-        //     <div className="actions">
-        //         <i className="fa fa-pencil-square-o" aria-hidden="true" onClick={() => this.editHero(hero)}></i>
-        //         <i className="fa fa-trash-o" aria-hidden="true" onClick={() => this.deleteHero(hero)}></i>
-        //     </div>
-        // )
-        return null
-    }
-
     render() {
         const { heroes, loading } = this.state
         return (
             <div id="list-box" className="box">
                 <h3>Heroes</h3>
-                <ul id="heroes-list">
-                    {loading && <span>Loading...</span>}
-                    {!loading && heroes.length === 0 && <span>No heroes</span>}
-                    {heroes.map(hero => {
-                        return (
-                            <li key={hero.name}>
-                                <div className="color-box" style={{
-                                    background: hero.color
-                                }}></div>
-                                <span className="name">
-                                    {hero.name}
-                                </span>
-                                {this.renderActions()}
-                            </li>
-                        );
-                    })}
-                </ul>
+                {loading && <span>Loading...</span>}
+                {!loading && heroes.length === 0 && <span>No heroes</span>}
+                {!loading &&
+                    <ul id="heroes-list">
+                        {heroes.map(hero => {
+                            return (
+                                <li key={hero.name}>
+                                    <div className="color-box" style={{
+                                        background: hero.color
+                                    }}></div>
+                                    <span className="name">
+                                        {hero.name}
+                                    </span>
+                                    <div className="actions">
+                                        {/* <i className="fa fa-pencil-square-o" aria-hidden="true" onClick={() => this.editHero(hero)}></i> */}
+                                        <span className="delete fa fa-trash-o" aria-hidden="true" onClick={() => this.deleteHero(hero)}>DELETE</span>
+                                    </div>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                }
             </div>
         );
     }

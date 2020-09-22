@@ -1,12 +1,18 @@
-import * as RxDB from '../../../';
+import {
+    createRxDatabase,
+    addRxPlugin
+} from 'rxdb';
+import {
+    heroSchema
+} from './Schema';
 
-RxDB.plugin(require('pouchdb-adapter-idb'));
-RxDB.plugin(require('pouchdb-adapter-http')); //enable syncing over http
+addRxPlugin(require('pouchdb-adapter-idb'));
+addRxPlugin(require('pouchdb-adapter-http')); // enable syncing over http
 
 const collections = [
     {
         name: 'heroes',
-        schema: require('./Schema.js').default,
+        schema: heroSchema,
         methods: {
             hpPercent() {
                 return this.hp / this.maxHP * 100;
@@ -23,7 +29,12 @@ let dbPromise = null;
 
 const _create = async () => {
     console.log('DatabaseService: creating database..');
-    const db = await RxDB.create({name: 'heroesreactdb', adapter: 'idb', password: 'myLongAndStupidPassword'});
+    const db = await createRxDatabase({
+        name: 'heroesreactdb',
+        adapter: 'idb',
+        password: 'myLongAndStupidPassword'
+    }
+    );
     console.log('DatabaseService: created database');
     window['db'] = db; // write to window for debugging
 
@@ -41,7 +52,9 @@ const _create = async () => {
     console.log('DatabaseService: add hooks');
     db.collections.heroes.preInsert(docObj => {
         const { color } = docObj;
-        return db.collections.heroes.findOne({color}).exec().then(has => {
+        return db.collections.heroes.findOne({
+            selector: { color }
+        }).exec().then(has => {
             if (has != null) {
                 alert('another hero already has the color ' + color);
                 throw new Error('color already there');
@@ -63,4 +76,4 @@ export const get = () => {
     if (!dbPromise)
         dbPromise = _create();
     return dbPromise;
-}
+};

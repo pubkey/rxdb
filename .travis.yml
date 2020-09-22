@@ -97,6 +97,9 @@ jobs:
       script: npm run build && (cd ./examples/electron-remote && npm install > "/dev/null" 2>&1 && travis_retry npm run test)
       env: LABEL=electron-remote
     - stage: examples
+      script: npm run build && (cd ./examples/react && npm install > "/dev/null" 2>&1 && npm run lint && npm run build && travis_retry npm run test:build)
+      env: LABEL=react
+    - stage: examples
       script: npm run build && (cd ./examples/react-native && npx yarn@1.13.0 install > "/dev/null" 2>&1 && travis_retry npm run test && echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p && npm run test:bundle)
       env: LABEL=react-native
     - stage: examples
