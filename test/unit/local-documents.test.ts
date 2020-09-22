@@ -110,7 +110,6 @@ config.parallel('local-documents.test.js', () => {
                 const doc = await c.upsertLocal('foobar', {
                     foo: 'bar2'
                 });
-                await wait(1000);
                 assert.ok(doc);
                 assert.strictEqual(doc.get('foo'), 'bar2');
                 c.database.destroy();
