@@ -69,7 +69,7 @@ await myDocument.update({
         age: 1 // increases age by 1
     },
     $set: {
-        fistName: 'foobar' // sets firstName to foobar
+        firstName: 'foobar' // sets firstName to foobar
     }
 });
 ```
