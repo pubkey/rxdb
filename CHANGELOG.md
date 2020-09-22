@@ -6,7 +6,7 @@ Bugfixes:
   - `RxLocalDocument.$` emitted to often on changes [#2471](https://github.com/pubkey/rxdb/issues/2471)
 
 Other:
-  - Refactored GraphQL replication to run faster [#2524](https://github.com/pubkey/rxdb/pull/2524/)` Thanks [@corinv](https://github.com/corinv)
+  - Refactored GraphQL replication to run faster [#2524](https://github.com/pubkey/rxdb/pull/2524/) Thanks [@corinv](https://github.com/corinv)
 
 ### 9.6.0 (7 September 2020) 
 
