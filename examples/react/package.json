@@ -15,7 +15,8 @@
   "devDependencies": {
     "react-scripts": "3.4.3",
     "rimraf": "3.0.2",
-    "testcafe": "1.9.3"
+    "testcafe": "1.9.3",
+    "local-web-server": "4.2.1"
   },
   "scripts": {
     "preinstall": "npm run preinstall:rxdb && npm run preinstall:versions",
