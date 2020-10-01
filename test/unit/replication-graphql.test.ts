@@ -2133,6 +2133,30 @@ describe('replication-graphql.test.js', () => {
                 // replication should be canceled when collection is destroyed
                 assert.ok(replicationState.isStopped());
             });
+            it('should not lose error information', async () => {
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(0),
+                    SpawnServer.spawn(getTestData(1))
+                ]);
+
+                server.requireHeader('Authorization', 'password');
+                const replicationState = c.syncGraphQL({
+                    url: server.url,
+                    pull: {
+                        queryBuilder
+                    },
+                    headers: {
+                        Authorization: 'wrong-password'
+                    },
+                    live: true,
+                    deletedFlag: 'deleted'
+                });
+                const replicationError = await replicationState.error$.pipe(first()).toPromise();
+                assert.notStrictEqual(replicationError.message, '[object Object]');
+
+                server.close();
+                await c.database.destroy();
+            });
         });
 
         config.parallel('issues', () => {
