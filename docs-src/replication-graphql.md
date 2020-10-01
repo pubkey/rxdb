@@ -159,7 +159,7 @@ const replicationState = myCollection.syncGraphQL({
     url: 'http://example.com/graphql', // url to the GraphQL endpoint
     pull: {
         queryBuilder: pullQueryBuilder, // the queryBuilder from above
-        modifier: doc => doc // (optional) modifies all pulled documents before they are handeled by RxDB
+        modifier: doc => doc // (optional) modifies all pulled documents before they are handeled by RxDB. Returning null will skip the document.
     },
     deletedFlag: 'deleted', // the flag which indicates if a pulled document is deleted
     live: true // if this is true, rxdb will watch for ongoing changes and sync them, when false, a one-time-replication will be done
@@ -198,7 +198,7 @@ const replicationState = myCollection.syncGraphQL({
     push: {
         queryBuilder: pushQueryBuilder, // the queryBuilder from above
         batchSize: 5, // (optional) amount of documents that will be send in one batch
-        modifier: d => d // (optional) modifies all pushed documents before they are send to the GraphQL endpoint
+        modifier: d => d // (optional) modifies all pushed documents before they are send to the GraphQL endpoint. Returning null will skip the document.
     },
     deletedFlag: 'deleted', // the flag which indicates if a pulled document is deleted
     live: true // if this is true, rxdb will watch for ongoing changes and sync them
