@@ -213,7 +213,13 @@ export class RxGraphQLReplicationState {
         try {
             result = await this.client.query(pullGraphQL.query, pullGraphQL.variables);
             if (result.errors) {
-                throw new Error(result.errors);
+                if (typeof result.errors === 'string') {
+                    throw new Error(result.errors);
+                } else {
+                    const err: any = new Error('unknown errors occured - see innerErrors for more details');
+                    err.innerErrors = result.errors;
+                    throw err;
+                }
             }
         } catch (err) {
             this._subjects.error.next(err);
@@ -320,7 +326,13 @@ export class RxGraphQLReplicationState {
                 const pushObj = await this.push.queryBuilder(changeWithDoc.doc);
                 const result = await this.client.query(pushObj.query, pushObj.variables);
                 if (result.errors) {
-                    throw new Error(JSON.stringify(result.errors));
+                    if (typeof result.errors === 'string') {
+                        throw new Error(result.errors);
+                    } else {
+                        const err: any = new Error('unknown errors occured - see innerErrors for more details');
+                        err.innerErrors = result.errors;
+                        throw err;
+                    }
                 } else {
                     this._subjects.send.next(changeWithDoc.doc);
                     lastSuccessfullChange = changeWithDoc;
