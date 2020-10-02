@@ -6,10 +6,12 @@ import {
     heroSchema
 } from './Schema';
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
+import { RxDBReplicationPlugin } from 'rxdb/plugins/replication';
 
 addRxPlugin(require('pouchdb-adapter-idb'));
 addRxPlugin(require('pouchdb-adapter-http')); // enable syncing over http
 addRxPlugin(RxDBLeaderElectionPlugin);
+addRxPlugin(RxDBReplicationPlugin);
 
 const collections = [
     {
