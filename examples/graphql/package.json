@@ -30,7 +30,7 @@
   "devDependencies": {
     "async-test-util": "1.7.3",
     "css-loader": "4.3.0",
-    "eslint": "7.9.0",
+    "eslint": "7.10.0",
     "esm": "3.2.25",
     "file-loader": "6.1.0",
     "html-webpack-plugin": "4.5.0",
