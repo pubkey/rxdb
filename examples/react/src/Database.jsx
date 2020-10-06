@@ -5,9 +5,15 @@ import {
 import {
     heroSchema
 } from './Schema';
+import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
+import { RxDBReplicationPlugin } from 'rxdb/plugins/replication';
+import { RxDBNoValidatePlugin } from 'rxdb/plugins/no-validate';
 
 addRxPlugin(require('pouchdb-adapter-idb'));
 addRxPlugin(require('pouchdb-adapter-http')); // enable syncing over http
+addRxPlugin(RxDBLeaderElectionPlugin);
+addRxPlugin(RxDBReplicationPlugin);
+addRxPlugin(RxDBNoValidatePlugin);
 
 const collections = [
     {
