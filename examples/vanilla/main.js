@@ -30,7 +30,7 @@ console.log('hostname: ' + window.location.hostname);
 const syncURL = 'http://' + window.location.hostname + ':10102/';
 
 window.RxDB
-    .create({
+    .createRxDatabase({
         name: 'heroesdb',
         adapter: 'idb',
         password: 'myLongAndStupidPassword'
