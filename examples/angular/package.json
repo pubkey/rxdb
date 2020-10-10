@@ -42,7 +42,7 @@
     "roboto-npm-webfont": "1.0.1",
     "rxdb": "file:rxdb-local.tgz",
     "rxjs": "6.6.3",
-    "tslib": "2.0.2",
+    "tslib": "2.0.3",
     "zone.js": "0.11.1"
   },
   "devDependencies": {
