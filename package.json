@@ -111,7 +111,7 @@
     "is-my-json-valid": "2.20.5",
     "jsonschema-key-compression": "1.2.0",
     "modifyjs": "0.3.1",
-    "object-path": "0.11.4",
+    "object-path": "0.11.5",
     "pouchdb-all-dbs": "1.0.2",
     "pouchdb-core": "7.2.2",
     "pouchdb-find": "7.2.2",
