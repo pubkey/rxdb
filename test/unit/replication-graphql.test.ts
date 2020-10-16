@@ -1732,6 +1732,68 @@ describe('replication-graphql.test.js', () => {
                 db1.destroy();
                 db2.destroy();
             });
+            it('should push and pull with modifier filter', async () => {
+                const amount = batchSize * 1;
+
+                const serverData = getTestData(amount);
+                const serverDoc: any = getTestData(1)[0];
+                serverDoc.age = 101;
+                serverData.push(serverDoc);
+                const server = await SpawnServer.spawn(serverData);
+
+                const name = randomCouchString(10);
+                const db = await createRxDatabase({
+                    name,
+                    adapter: 'memory'
+                });
+                const collection = await db.collection({
+                    name: 'humans',
+                    schema: schemas.humanWithTimestamp
+                });
+
+                for (let i = 0; i < amount; i++) {
+                    await collection.insert(schemaObjects.humanWithTimestamp());
+                }
+                const localDoc: any = schemaObjects.humanWithTimestamp();
+                localDoc.age = 102;
+                await collection.insert(localDoc);
+
+                const replicationState = collection.syncGraphQL({
+                    url: server.url,
+                    push: {
+                        batchSize,
+                        queryBuilder: pushQueryBuilder,
+                        modifier: (doc) => {
+                            if (doc.age > 100) {
+                                return null;
+                            }
+                            return doc;
+                        }
+                    },
+                    pull: {
+                        queryBuilder,
+                        modifier: (doc) => {
+                            if (doc.age > 100) {
+                                return null;
+                            }
+                            return doc;
+                        }
+                    },
+                    live: false,
+                    deletedFlag: 'deleted'
+                });
+
+                await replicationState.awaitInitialReplication();
+
+                const docsOnServer = server.getDocuments();
+                const docsOnDb = await collection.find().exec();
+
+                assert.strictEqual(docsOnServer.length, 2 * amount + 1);
+                assert.strictEqual(docsOnDb.length, 2 * amount + 1);
+
+                server.close();
+                db.destroy();
+            });
         });
 
         config.parallel('observables', () => {
