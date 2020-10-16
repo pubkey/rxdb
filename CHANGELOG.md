@@ -5,6 +5,9 @@
 Bugfixes:
   - `RxLocalDocument.$` emitted to often on changes [#2471](https://github.com/pubkey/rxdb/issues/2471)
 
+Features:
+  - Allow to skip docs in push/pull modifiers with the graphql-replication. [#2552](https://github.com/pubkey/rxdb/issues/2552) Thanks [@DDoerner](https://github.com/DDoerner)
+
 Other:
   - Refactored GraphQL replication to run faster [#2524](https://github.com/pubkey/rxdb/pull/2524/) Thanks [@corinv](https://github.com/corinv)
 
