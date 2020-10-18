@@ -14,7 +14,7 @@ import {
     filter
 } from 'rxjs/operators';
 import GraphQLClient from 'graphql-client';
-
+import objectPath from 'object-path';
 
 import {
     promiseWait,
@@ -74,6 +74,7 @@ export class RxGraphQLReplicationState {
         headers: { [k: string]: string },
         public pull: GraphQLSyncPullOptions,
         public push: GraphQLSyncPushOptions,
+        public pulledDataPath: string[],
         public deletedFlag: string,
         public lastPulledRevField: string,
         public live: boolean,
@@ -226,9 +227,9 @@ export class RxGraphQLReplicationState {
             return false;
         }
 
-        // this assumes that there will be always only one property in the response
-        // is this correct?
-        const data: any[] = result.data[Object.keys(result.data)[0]];
+        // If dataPath is defined, use it; otherwise fallback to default behavior;
+        // which is to get the first child of the data root
+        const data = objectPath.get(result, this.pulledDataPath || ['data', Object.keys(result.data)[0]]);
         const modified: any[] = (await Promise.all(data
             .map(async (doc: any) => await (this.pull as any).modifier(doc))
         )).filter(doc => !!doc);
@@ -472,6 +473,7 @@ export function syncGraphQL(
         waitForLeadership = true,
         pull,
         push,
+        pulledDataPath,
         deletedFlag,
         lastPulledRevField = 'last_pulled_rev',
         live = false,
@@ -500,6 +502,7 @@ export function syncGraphQL(
         headers,
         pull,
         push,
+        pulledDataPath,
         deletedFlag,
         lastPulledRevField,
         live,
