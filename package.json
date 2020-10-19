@@ -207,7 +207,7 @@
     "shelljs": "0.8.4",
     "source-map-support": "0.5.19",
     "subscriptions-transport-ws": "0.9.18",
-    "terser": "5.3.5",
+    "terser": "5.3.6",
     "terser-webpack-plugin": "4.2.3",
     "ts-node": "9.0.0",
     "tslint": "6.1.3",
