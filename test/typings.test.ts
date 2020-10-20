@@ -636,6 +636,33 @@ describe('typings.test.js', function () {
             await transpileCode(code);
         });
     });
+    config.parallel('local documents', () => {
+        it('should allow to type the return data', async () => {
+            const code = codeBase + `
+            (async() => {
+                const myDb: RxDatabase = {} as any;
+                const typedLocalDoc = await myDb.getLocal<{foo: string;}>('foobar');
+                const typedLocalDocUpsert = await myDb.upsertLocal<{foo: string;}>('foobar', { foo: 'bar' });
+                const x: string = typedLocalDoc.foo;
+                const x2: string = typedLocalDocUpsert.foo;
+            });
+            `;
+            await transpileCode(code);
+        });
+        it('should allow to access differnt property', async () => {
+            const code = codeBase + `
+            (async() => {
+                const myDb: RxDatabase = {} as any;
+                const typedLocalDoc = await myDb.getLocal<{foo: string;}>('foobar');
+                const x: string = typedLocalDoc.bar;
+            });
+            `;
+            await AsyncTestUtil.assertThrows(
+                () => transpileCode(code),
+                Error
+            );
+        });
+    });
     config.parallel('other', () => {
         describe('orm', () => {
             it('should correctly recognize orm-methods', async () => {
@@ -659,9 +686,8 @@ describe('typings.test.js', function () {
                     });
 
                     const x: string = doc.foobar();
-
                 });
-            `;
+                `;
                 await transpileCode(code);
             });
         });
