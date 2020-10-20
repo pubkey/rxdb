@@ -12,7 +12,12 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
 import {
-    addRxPlugin, createRxDatabase, promiseWait, randomCouchString
+    addRxPlugin,
+    createRxDatabase,
+    promiseWait,
+    randomCouchString,
+    isRxCollection,
+    RxReplicationState
 } from '../../';
 
 import {
@@ -23,9 +28,6 @@ import {
     filter,
     first
 } from 'rxjs/operators';
-import {
-    RxReplicationState
-} from '../../';
 
 let request: any;
 let SpawnServer: any;
@@ -160,7 +162,7 @@ describe('replication.test.js', () => {
             it('push-only-sync', async () => {
                 const c = await humansCollection.create(10, undefined, false);
                 const c2 = await humansCollection.create(10, undefined, false);
-                c.sync({
+                const replicationState = c.sync({
                     remote: c2,
                     waitForLeadership: false,
                     direction: {
@@ -168,6 +170,7 @@ describe('replication.test.js', () => {
                         push: true
                     }
                 });
+                assert.ok(isRxCollection(replicationState.collection));
                 await AsyncTestUtil.waitUntil(async () => {
                     const docs = await c2.find().exec();
                     return docs.length === 20;
