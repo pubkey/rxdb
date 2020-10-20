@@ -38,7 +38,7 @@ jobs:
       script: npm run build && git diff dist/es/
 
     - stage: code format
-      script: travis_retry npm run test:typings
+      script: travis_retry npm run build && travis_retry npm run test:typings
       env: LABEL=test:typings:ci
     - stage: code format
       script: travis_retry npm run build && travis_retry npm run check-types
