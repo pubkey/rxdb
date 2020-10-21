@@ -293,7 +293,7 @@ export class RxGraphQLReplicationState {
             this.syncRevisions
         );
 
-        const changesWithDocs: any = await Promise.all(changes.results.map(async (change: any) => {
+        const changesWithDocs: any = (await Promise.all(changes.results.map(async (change: any) => {
             let doc = change['doc'];
 
             doc[this.deletedFlag] = !!change['deleted'];
@@ -315,7 +315,7 @@ export class RxGraphQLReplicationState {
                 doc,
                 seq
             };
-        }).filter(doc => doc));
+        }))).filter(doc => doc);
 
         let lastSuccessfullChange = null;
         try {
