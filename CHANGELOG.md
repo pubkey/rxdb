@@ -4,6 +4,7 @@
 
 Bugfixes:
   - Server-Plugin: Replication did not work until there is at least one document.
+  - Fix skipping docs in graphql push replication [#2627](https://github.com/pubkey/rxdb/pull/2627) Thanks [@DDoerner](https://github.com/DDoerner)
 
 ### 9.7.0 (21 October 2020)
 
