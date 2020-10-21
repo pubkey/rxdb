@@ -20,6 +20,9 @@ addRxPlugin(RxDBReplicationPlugin);
 import { RxDBWatchForChangesPlugin } from './watch-for-changes';
 addRxPlugin(RxDBWatchForChangesPlugin);
 
+import PouchAdapterHttp from 'pouchdb-adapter-http';
+addRxPlugin(PouchAdapterHttp);
+
 let ExpressPouchDB: any;
 try {
     ExpressPouchDB = require('express-pouchdb');
@@ -142,6 +145,7 @@ export function spawnServer(
                 try {
                     const pingDb = new PouchDB(url);
                     await pingDb.info();
+                    await pingDb.close();
                 } catch (_err) { }
             })
         );
