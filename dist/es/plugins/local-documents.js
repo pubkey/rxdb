@@ -84,7 +84,9 @@ var RxLocalDocumentPrototype = {
   // overwrites
   //
   _handleChangeEvent: function _handleChangeEvent(changeEvent) {
-    if (changeEvent.documentId !== this.primary) return;
+    if (changeEvent.documentId !== this.primary) {
+      return;
+    }
 
     switch (changeEvent.operation) {
       case 'UPDATE':
@@ -184,10 +186,7 @@ var RxLocalDocumentPrototype = {
     return this.parentPouch.put(newData).then(function (res) {
       var endTime = now();
       newData._rev = res.rev;
-
-      _this2._dataSync$.next(newData);
-
-      var changeEvent = new RxChangeEvent('UPDATE', _this2.id, clone(_this2._data), isRxDatabase(_this2.parent) ? _this2.parent.token : _this2.parent.database.token, isRxCollection(_this2.parent) ? _this2.parent.name : null, true, startTime, endTime, oldData, _this2);
+      var changeEvent = new RxChangeEvent('UPDATE', _this2.id, clone(newData), isRxDatabase(_this2.parent) ? _this2.parent.token : _this2.parent.database.token, isRxCollection(_this2.parent) ? _this2.parent.name : null, true, startTime, endTime, oldData, _this2);
 
       _this2.$emit(changeEvent);
     });
@@ -259,7 +258,10 @@ RxLocalDocument.create = function (id, data, parent) {
 function insertLocal(id, data) {
   var _this4 = this;
 
-  if (isRxCollection(this) && this._isInMemory) return this._parentCollection.insertLocal(id, data);
+  if (isRxCollection(this) && this._isInMemory) {
+    return this._parentCollection.insertLocal(id, data);
+  }
+
   data = clone(data);
   return this.getLocal(id).then(function (existing) {
     if (existing) {
@@ -290,13 +292,16 @@ function insertLocal(id, data) {
 function upsertLocal(id, data) {
   var _this5 = this;
 
-  if (isRxCollection(this) && this._isInMemory) return this._parentCollection.upsertLocal(id, data);
+  if (isRxCollection(this) && this._isInMemory) {
+    return this._parentCollection.upsertLocal(id, data);
+  }
+
   return this.getLocal(id).then(function (existing) {
     if (!existing) {
       // create new one
-      var doc = _this5.insertLocal(id, data);
+      var docPromise = _this5.insertLocal(id, data);
 
-      return doc;
+      return docPromise;
     } else {
       // update existing
       data._rev = existing._data._rev;

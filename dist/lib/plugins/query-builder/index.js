@@ -17,6 +17,7 @@ var _nosqlQueryBuilder = require("./mquery/nosql-query-builder");
 Object.keys(_nosqlQueryBuilder).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _nosqlQueryBuilder[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
     get: function get() {

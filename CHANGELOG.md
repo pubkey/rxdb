@@ -2,6 +2,8 @@
 
 ### X.X.X (comming soon)
 
+### 9.7.0 (21 October 2020)
+
 Bugfixes:
   - `RxLocalDocument.$` emitted to often on changes [#2471](https://github.com/pubkey/rxdb/issues/2471)
   - Fix typings of `RxReplicationState.collection`

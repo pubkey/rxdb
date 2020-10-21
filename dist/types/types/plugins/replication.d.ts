@@ -1,12 +1,14 @@
 import { Observable } from 'rxjs';
 
-import type { RxQuery } from '../../types';
+import type { RxQuery, RxCollection } from '../../types';
 import {
     PouchReplicationOptions,
     PouchSyncHandler
 } from '../pouch';
 
 export declare class RxReplicationState {
+    collection: RxCollection;
+
     change$: Observable<any>;
     docs$: Observable<any>;
     denied$: Observable<any>;

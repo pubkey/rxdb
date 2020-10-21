@@ -105,7 +105,9 @@ var RxLocalDocumentPrototype = {
   // overwrites
   //
   _handleChangeEvent: function _handleChangeEvent(changeEvent) {
-    if (changeEvent.documentId !== this.primary) return;
+    if (changeEvent.documentId !== this.primary) {
+      return;
+    }
 
     switch (changeEvent.operation) {
       case 'UPDATE':
@@ -208,10 +210,7 @@ var RxLocalDocumentPrototype = {
     return this.parentPouch.put(newData).then(function (res) {
       var endTime = (0, _util.now)();
       newData._rev = res.rev;
-
-      _this2._dataSync$.next(newData);
-
-      var changeEvent = new _rxChangeEvent.RxChangeEvent('UPDATE', _this2.id, (0, _util.clone)(_this2._data), (0, _rxDatabase.isInstanceOf)(_this2.parent) ? _this2.parent.token : _this2.parent.database.token, (0, _rxCollection.isInstanceOf)(_this2.parent) ? _this2.parent.name : null, true, startTime, endTime, oldData, _this2);
+      var changeEvent = new _rxChangeEvent.RxChangeEvent('UPDATE', _this2.id, (0, _util.clone)(newData), (0, _rxDatabase.isInstanceOf)(_this2.parent) ? _this2.parent.token : _this2.parent.database.token, (0, _rxCollection.isInstanceOf)(_this2.parent) ? _this2.parent.name : null, true, startTime, endTime, oldData, _this2);
 
       _this2.$emit(changeEvent);
     });
@@ -283,7 +282,10 @@ RxLocalDocument.create = function (id, data, parent) {
 function insertLocal(id, data) {
   var _this4 = this;
 
-  if ((0, _rxCollection.isInstanceOf)(this) && this._isInMemory) return this._parentCollection.insertLocal(id, data);
+  if ((0, _rxCollection.isInstanceOf)(this) && this._isInMemory) {
+    return this._parentCollection.insertLocal(id, data);
+  }
+
   data = (0, _util.clone)(data);
   return this.getLocal(id).then(function (existing) {
     if (existing) {
@@ -314,13 +316,16 @@ function insertLocal(id, data) {
 function upsertLocal(id, data) {
   var _this5 = this;
 
-  if ((0, _rxCollection.isInstanceOf)(this) && this._isInMemory) return this._parentCollection.upsertLocal(id, data);
+  if ((0, _rxCollection.isInstanceOf)(this) && this._isInMemory) {
+    return this._parentCollection.upsertLocal(id, data);
+  }
+
   return this.getLocal(id).then(function (existing) {
     if (!existing) {
       // create new one
-      var doc = _this5.insertLocal(id, data);
+      var docPromise = _this5.insertLocal(id, data);
 
-      return doc;
+      return docPromise;
     } else {
       // update existing
       data._rev = existing._data._rev;

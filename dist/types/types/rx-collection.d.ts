@@ -81,8 +81,8 @@ export interface RxCollectionGenerated<RxDocumentType = any, OrmMethods = {}> {
     postCreate(fun: RxCollectionHookCallbackNonAsync<RxDocumentType, OrmMethods>): void;
 
     insertLocal(id: string, data: any): Promise<RxLocalDocument<RxCollection<RxDocumentType, OrmMethods>>>;
-    upsertLocal(id: string, data: any): Promise<RxLocalDocument<RxCollection<RxDocumentType, OrmMethods>>>;
-    getLocal(id: string): Promise<RxLocalDocument<RxCollection<RxDocumentType, OrmMethods>>>;
+    upsertLocal<LocalDocType = any>(id: string, data: LocalDocType): Promise<RxLocalDocument<RxCollection<RxDocumentType, OrmMethods>, LocalDocType>>;
+    getLocal<LocalDocType = any>(id: string): Promise<RxLocalDocument<RxCollection<RxDocumentType, OrmMethods>, LocalDocType>>;
 
     // only inMemory-collections
     awaitPersistence(): Promise<void>;

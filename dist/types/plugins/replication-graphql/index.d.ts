@@ -57,7 +57,7 @@ export declare class RxGraphQLReplicationState {
      * @return true if successfull, false if not
      */
     runPush(): Promise<boolean>;
-    handleDocumentFromRemote(doc: any, docsWithRevisions: any[]): Promise<void>;
+    handleDocumentsFromRemote(docs: any[], docsWithRevisions: any[]): Promise<void>;
     cancel(): Promise<any>;
     setHeaders(headers: {
         [k: string]: string;

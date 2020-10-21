@@ -65,11 +65,11 @@ export interface RxDatabaseGenerated<Collections> {
     insertLocal(id: string, data: any): Promise<
         RxLocalDocument<RxDatabase<Collections>>
     >;
-    upsertLocal(id: string, data: any): Promise<
-        RxLocalDocument<RxDatabase<Collections>>
+    upsertLocal<LocalDocType = any>(id: string, data: LocalDocType): Promise<
+        RxLocalDocument<RxDatabase<Collections>, LocalDocType>
     >;
-    getLocal(id: string): Promise<
-        RxLocalDocument<RxDatabase<Collections>>
+    getLocal<LocalDocType = any>(id: string): Promise<
+        RxLocalDocument<RxDatabase<Collections>, LocalDocType>
     >;
 }
 
