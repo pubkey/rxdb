@@ -382,7 +382,7 @@ config.parallel('local-documents.test.js', () => {
 
             const emitted: any[] = [];
             const localDoc = await myCollection.getLocal('foobar');
-            localDoc.get$('foo').subscribe(val => emitted.push(val));
+            localDoc.get$('foo').subscribe((val: any) => emitted.push(val));
 
             await AsyncTestUtil.waitUntil(() => emitted.length === 1);
             assert.strictEqual(emitted[0], 'bar');
