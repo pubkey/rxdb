@@ -88,6 +88,9 @@ describe('replication-graphql.test.js', () => {
         };
     };
     const pushQueryBuilder = (doc: any) => {
+        if (!doc) {
+            throw new Error();
+        }
         const query = `
         mutation CreateHuman($human: HumanInput) {
             setHuman(human: $human) {
@@ -1782,6 +1785,9 @@ describe('replication-graphql.test.js', () => {
                     live: false,
                     deletedFlag: 'deleted'
                 });
+                const errSub = replicationState.error$.subscribe(() => {
+                    throw new Error('The replication threw an error');
+                });
 
                 await replicationState.awaitInitialReplication();
 
@@ -1791,6 +1797,7 @@ describe('replication-graphql.test.js', () => {
                 assert.strictEqual(docsOnServer.length, 2 * amount + 1);
                 assert.strictEqual(docsOnDb.length, 2 * amount + 1);
 
+                errSub.unsubscribe();
                 server.close();
                 db.destroy();
             });
