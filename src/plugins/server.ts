@@ -129,6 +129,22 @@ export function spawnServer(
     if (startServer) {
         server = app.listen(port);
         SERVERS_OF_DB.get(db).push(server);
+
+        /**
+         * When the database has no documents, there is no db file
+         * and so the replication would not work.
+         * This is a hack which ensures that the couchdb instance exists
+         * and we can replicate even if there is no document.
+         */
+        Promise.all(
+            Object.values(db.collections).map(async (collection) => {
+                const url = 'http://localhost:' + port + collectionsPath + '/' + collection.name;
+                try {
+                    const pingDb = new PouchDB(url);
+                    await pingDb.info();
+                } catch (_err) { }
+            })
+        );
     }
 
     return {

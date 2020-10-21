@@ -435,6 +435,32 @@ config.parallel('server.test.js', () => {
 
                 serverCollection.database.destroy();
             });
+            it('having a collection with leveldb and no doc, will not make sync working', async function () {
+                const dbName = config.rootPath + 'test_tmp/' + randomCouchString(10);
+                const db = await createRxDatabase({
+                    name: dbName,
+                    adapter: 'leveldb',
+                    multiInstance: false
+                });
+                const col = await db.collection({
+                    name: 'human',
+                    schema: schemas.human
+                });
+                const port = nexPort();
+                await db.server({
+                    port
+                });
+                await AsyncTestUtil.waitUntil(async () => {
+                    try {
+                        const gotJson = await request('http://localhost:' + port + '/db/' + col.name);
+                        const got = JSON.parse(gotJson);
+                        return !!got.doc_count;
+                    } catch (err) {
+                        return false;
+                    }
+                });
+                db.destroy();
+            });
         });
     });
 });

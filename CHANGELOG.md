@@ -2,6 +2,9 @@
 
 ### X.X.X (comming soon)
 
+Bugfixes:
+  - Server-Plugin: Replication did not work until there is at least one document.
+
 ### 9.7.0 (21 October 2020)
 
 Bugfixes:

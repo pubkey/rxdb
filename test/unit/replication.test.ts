@@ -179,8 +179,8 @@ describe('replication.test.js', () => {
                 const nonSyncedDocs = await c.find().exec();
                 assert.strictEqual(nonSyncedDocs.length, 10);
 
-                await c.database.destroy();
-                await c2.database.destroy();
+                c.database.destroy();
+                c2.database.destroy();
             });
             it('pull-only-sync', async () => {
                 const c = await humansCollection.create(10, undefined, false);
