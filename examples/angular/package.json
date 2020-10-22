@@ -33,7 +33,7 @@
     "@angular/material": "10.2.5",
     "@angular/platform-browser": "10.2.0",
     "@angular/platform-browser-dynamic": "10.2.0",
-    "@angular/pwa": "0.1001.7",
+    "@angular/pwa": "0.1002.0",
     "@angular/router": "10.2.0",
     "@angular/service-worker": "10.2.0",
     "font-awesome": "4.7.0",
@@ -46,8 +46,8 @@
     "zone.js": "0.11.2"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "0.1001.7",
-    "@angular/cli": "10.1.7",
+    "@angular-devkit/build-angular": "0.1002.0",
+    "@angular/cli": "10.2.0",
     "@angular/compiler-cli": "10.2.0",
     "@angular/language-service": "10.2.0",
     "@types/node": "13.13.15",
