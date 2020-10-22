@@ -9,6 +9,8 @@ import { RxDBReplicationPlugin } from './replication';
 addRxPlugin(RxDBReplicationPlugin);
 import { RxDBWatchForChangesPlugin } from './watch-for-changes';
 addRxPlugin(RxDBWatchForChangesPlugin);
+import PouchAdapterHttp from 'pouchdb-adapter-http';
+addRxPlugin(PouchAdapterHttp);
 var ExpressPouchDB;
 
 try {
@@ -148,6 +150,50 @@ export function spawnServer(_ref2) {
   if (startServer) {
     server = app.listen(port);
     SERVERS_OF_DB.get(db).push(server);
+    /**
+     * When the database has no documents, there is no db file
+     * and so the replication would not work.
+     * This is a hack which ensures that the couchdb instance exists
+     * and we can replicate even if there is no document.
+     */
+
+    Promise.all(Object.values(db.collections).map( /*#__PURE__*/function () {
+      var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(collection) {
+        var url, pingDb;
+        return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+          while (1) {
+            switch (_context2.prev = _context2.next) {
+              case 0:
+                url = 'http://localhost:' + port + collectionsPath + '/' + collection.name;
+                _context2.prev = 1;
+                pingDb = new PouchDB(url);
+                _context2.next = 5;
+                return pingDb.info();
+
+              case 5:
+                _context2.next = 7;
+                return pingDb.close();
+
+              case 7:
+                _context2.next = 11;
+                break;
+
+              case 9:
+                _context2.prev = 9;
+                _context2.t0 = _context2["catch"](1);
+
+              case 11:
+              case "end":
+                return _context2.stop();
+            }
+          }
+        }, _callee2, null, [[1, 9]]);
+      }));
+
+      return function (_x4) {
+        return _ref3.apply(this, arguments);
+      };
+    }()));
   }
 
   return {

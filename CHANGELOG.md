@@ -1,6 +1,6 @@
 # Changelog
 
-### X.X.X (comming soon)
+### 9.7.1 (22 October 2020)
 
 Bugfixes:
   - Server-Plugin: Replication did not work until there is at least one document.

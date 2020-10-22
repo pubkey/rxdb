@@ -606,12 +606,12 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
                 return function (_x2) {
                   return _ref3.apply(this, arguments);
                 };
-              }()).filter(function (doc) {
-                return doc;
-              }));
+              }()));
 
             case 5:
-              changesWithDocs = _context7.sent;
+              changesWithDocs = _context7.sent.filter(function (doc) {
+                return doc;
+              });
               lastSuccessfullChange = null;
               _context7.prev = 7;
               i = 0;

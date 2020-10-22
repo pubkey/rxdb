@@ -27,8 +27,11 @@ var _replication = require("./replication");
 
 var _watchForChanges = require("./watch-for-changes");
 
+var _pouchdbAdapterHttp = _interopRequireDefault(require("pouchdb-adapter-http"));
+
 (0, _core.addRxPlugin)(_replication.RxDBReplicationPlugin);
 (0, _core.addRxPlugin)(_watchForChanges.RxDBWatchForChangesPlugin);
+(0, _core.addRxPlugin)(_pouchdbAdapterHttp["default"]);
 var ExpressPouchDB;
 
 try {
@@ -170,6 +173,50 @@ function spawnServer(_ref2) {
   if (startServer) {
     server = app.listen(port);
     SERVERS_OF_DB.get(db).push(server);
+    /**
+     * When the database has no documents, there is no db file
+     * and so the replication would not work.
+     * This is a hack which ensures that the couchdb instance exists
+     * and we can replicate even if there is no document.
+     */
+
+    Promise.all(Object.values(db.collections).map( /*#__PURE__*/function () {
+      var _ref3 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(collection) {
+        var url, pingDb;
+        return _regenerator["default"].wrap(function _callee2$(_context2) {
+          while (1) {
+            switch (_context2.prev = _context2.next) {
+              case 0:
+                url = 'http://localhost:' + port + collectionsPath + '/' + collection.name;
+                _context2.prev = 1;
+                pingDb = new _pouchDb.PouchDB(url);
+                _context2.next = 5;
+                return pingDb.info();
+
+              case 5:
+                _context2.next = 7;
+                return pingDb.close();
+
+              case 7:
+                _context2.next = 11;
+                break;
+
+              case 9:
+                _context2.prev = 9;
+                _context2.t0 = _context2["catch"](1);
+
+              case 11:
+              case "end":
+                return _context2.stop();
+            }
+          }
+        }, _callee2, null, [[1, 9]]);
+      }));
+
+      return function (_x4) {
+        return _ref3.apply(this, arguments);
+      };
+    }()));
   }
 
   return {
