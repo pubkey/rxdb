@@ -4,12 +4,14 @@
 
 Features:
   - Added subscription parameters for `graphQLSchemaFromRxSchema()`
+  - Added [RxDocument.atomicPatch()](https://rxdb.info/rx-document.md#atomicpatch)
 
 Bugfixes:
   - (types) Returned values of `syncGraphQL()` did not type-match with `RxGraphQLReplicationState` 
 
 Other:
   - Added authentication to graphql example
+  - Deprecated `RxDocument.atomicSet()`. Used `atomicPatch` instead, it works better with typescript
 
 ### 9.7.1 (22 October 2020)
 

@@ -72,6 +72,9 @@ In production-mode, there will be nothing that ensures immutability.
 ## server-plugin: overwrite defaults of pouchdbExpressOptions
 The defaults of `pouchdbExpressOptions` from `RxDatabase.server()` require the user to configure stuff to not polute the projects folder with config and log files. We should overwrite the defaults to use `inMemoryConfig: true` and store the logs in the tmp folder.
 
+## remove deprecated RxDocument.atomicSet()
+`atomicSet` is deprecated in favor of `atomicPatch`. Remove the function in the next major release.
+
 # Maybe
 
 ## Use Proxy instead of getters/setter on RxDocument

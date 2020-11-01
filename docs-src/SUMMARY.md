@@ -72,6 +72,7 @@
         * [proxy-get](./rx-document.md#proxy-get)
         * [update()](./rx-document.md#update)
         * [atomicUpdate()](./rx-document.md#atomicupdate)
+        * [atomicPatch()](./rx-document.md#atomicpatch)
         * [atomicSet()](./rx-document.md#atomicset)
         * [$](./rx-document.md#observe-)
         * [remove()](./rx-document.md#remove)

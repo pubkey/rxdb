@@ -47,9 +47,23 @@ export declare interface RxDocumentBase<RxDocumentType, OrmMethods = {}> {
     get(objPath: string): any;
     populate(objPath: string): Promise<RxDocument<RxDocumentType, OrmMethods> | any | null>;
 
-    // change data of document
+    /**
+     * mutate the document with a function
+     */
     atomicUpdate(fun: AtomicUpdateFunction<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>>;
+    /**
+     * patches the given properties
+     */
+    atomicPatch(patch: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>>;
+
+    /**
+     * @deprecated use atomicPatch or atomicUpdate instead
+     * because it is better works with typescript
+     */
     atomicSet(objPath: string, value: any): Promise<RxDocument<RxDocumentType, OrmMethods>>;
+
+
+
     update(updateObj: any): Promise<any>;
     remove(): Promise<boolean>;
     _handleChangeEvent(cE: any): void;

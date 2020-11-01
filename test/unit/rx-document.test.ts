@@ -538,6 +538,47 @@ config.parallel('rx-document.test.js', () => {
             });
         });
     });
+    describe('.atomicPatch()', () => {
+        describe('positive', () => {
+            it('run one update', async () => {
+                const c = await humansCollection.createNested(1);
+                const doc = await c.findOne().exec(true);
+
+                const returnedDoc = await doc.atomicPatch({
+                    firstName: 'foobar'
+                });
+                assert.strictEqual('foobar', doc.firstName);
+                assert.ok(doc === returnedDoc);
+                c.database.destroy();
+            });
+            it('unset optional property by assigning undefined', async () => {
+                const c = await humansCollection.createNested(1);
+                const doc = await c.findOne().exec(true);
+
+                assert.ok(doc.mainSkill);
+
+                await doc.atomicPatch({
+                    mainSkill: undefined
+                });
+
+                assert.strictEqual(doc.mainSkill, undefined);
+                c.database.destroy();
+            });
+        });
+        describe('negative', () => {
+            it('should crash on non document field', async () => {
+                const c = await humansCollection.createNested(1);
+                const doc = await c.findOne().exec(true);
+                await AsyncTestUtil.assertThrows(
+                    () => doc.atomicPatch({
+                        foobar: 'foobar'
+                    } as any),
+                    'RxError'
+                );
+                c.database.destroy();
+            });
+        });
+    });
     describe('.toJSON()', () => {
         it('should get the documents data as json', async () => {
             const c = await humansCollection.create(1);

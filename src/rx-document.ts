@@ -294,7 +294,7 @@ export const basePrototype = {
 
     /**
      * runs an atomic update over the document
-     * @param fun that takes the document-data and returns a new data-object
+     * @param function that takes the document-data and returns a new data-object
      */
     atomicUpdate(this: RxDocument, fun: Function): Promise<RxDocument> {
         this._atomicQueue = this._atomicQueue
@@ -314,6 +314,28 @@ export const basePrototype = {
         return this._atomicQueue.then(() => this);
     },
 
+
+    /**
+     * patches the given properties
+     */
+    atomicPatch<RxDocumentType = any>(
+        this: RxDocument<RxDocumentType>,
+        patch: Partial<RxDocumentType>
+    ): Promise<RxDocument<RxDocumentType>> {
+        return this.atomicUpdate((docData: RxDocumentType) => {
+            Object
+                .entries(patch)
+                .forEach(([k, v]) => {
+                    (docData as any)[k] = v;
+                });
+            return docData;
+        });
+    },
+
+    /**
+     * @deprecated use atomicPatch instead because it is better typed
+     * and does not allow any keys and values
+     */
     atomicSet(this: RxDocument, key: string, value: any) {
         return this.atomicUpdate(docData => {
             objectPath.set(docData, key, value);
