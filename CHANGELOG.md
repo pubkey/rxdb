@@ -5,6 +5,9 @@
 Features:
   - Added subscription parameters for `graphQLSchemaFromRxSchema()`
 
+Bugfixes:
+  - (types) Returned values of `syncGraphQL()` did not type-match with `RxGraphQLReplicationState` 
+
 Other:
   - Added authentication to graphql example
 

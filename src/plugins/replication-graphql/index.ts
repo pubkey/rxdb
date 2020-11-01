@@ -69,17 +69,17 @@ addRxPlugin(RxDBWatchForChangesPlugin);
 export class RxGraphQLReplicationState {
 
     constructor(
-        public collection: RxCollection,
-        private url: string,
-        headers: { [k: string]: string },
-        public pull: GraphQLSyncPullOptions,
-        public push: GraphQLSyncPushOptions,
-        public deletedFlag: string,
-        public lastPulledRevField: string,
-        public live: boolean,
+        public readonly collection: RxCollection,
+        public readonly url: string,
+        public headers: { [k: string]: string },
+        public readonly pull: GraphQLSyncPullOptions,
+        public readonly push: GraphQLSyncPushOptions,
+        public readonly deletedFlag: string,
+        public readonly lastPulledRevField: string,
+        public readonly live: boolean,
         public liveInterval: number,
         public retryTime: number,
-        public syncRevisions: boolean
+        public readonly syncRevisions: boolean
     ) {
         this.client = GraphQLClient({
             url,
