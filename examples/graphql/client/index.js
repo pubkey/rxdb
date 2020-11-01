@@ -36,7 +36,8 @@ import {
     GRAPHQL_SUBSCRIPTION_PORT,
     GRAPHQL_SUBSCRIPTION_PATH,
     heroSchema,
-    graphQLGenerationInput
+    graphQLGenerationInput,
+    JWT_BEARER_TOKEN
 } from '../shared';
 
 const insertButton = document.querySelector('#insert-button');
@@ -76,6 +77,7 @@ function getDatabaseName() {
     return ret;
 }
 
+
 async function run() {
     heroesList.innerHTML = 'Create database..';
     const db = await createRxDatabase({
@@ -101,6 +103,10 @@ async function run() {
     heroesList.innerHTML = 'Start replication..';
     const replicationState = collection.syncGraphQL({
         url: syncURL,
+        headers: {
+            /* optional, set an auth header */
+            Authorization: 'Bearer ' + JWT_BEARER_TOKEN
+        },
         push: {
             batchSize,
             queryBuilder: pushQueryBuilder
@@ -128,26 +134,42 @@ async function run() {
     // setup graphql-subscriptions for pull-trigger
     heroesList.innerHTML = 'Create SubscriptionClient..';
     const endpointUrl = 'ws://localhost:' + GRAPHQL_SUBSCRIPTION_PORT + GRAPHQL_SUBSCRIPTION_PATH;
-    const wsClient = new SubscriptionClient(endpointUrl, {
-        reconnect: true,
-        timeout: 1000 * 60,
-        onConnect: () => {
-            console.log('SubscriptionClient.onConnect()');
-        },
-        connectionCallback: () => {
-            console.log('SubscriptionClient.connectionCallback:');
-        },
-        reconnectionAttempts: 10000,
-        inactivityTimeout: 10 * 1000,
-        lazy: true
-    });
+    const wsClient = new SubscriptionClient(
+        endpointUrl,
+        {
+            reconnect: true,
+            timeout: 1000 * 60,
+            onConnect: () => {
+                console.log('SubscriptionClient.onConnect()');
+            },
+            connectionCallback: () => {
+                console.log('SubscriptionClient.connectionCallback:');
+            },
+            reconnectionAttempts: 10000,
+            inactivityTimeout: 10 * 1000,
+            lazy: true
+        });
     heroesList.innerHTML = 'Subscribe to GraphQL Subscriptions..';
-    const query = `subscription onChangedHero {
-        changedHero {
-            id
+    const query = `
+        subscription onChangedHero($token: String!) {
+            changedHero(token: $token) {
+                id
+            }
         }
-    }`;
-    const ret = wsClient.request({ query });
+    `;
+    const ret = wsClient.request(
+        {
+            query,
+            /**
+             * there is no method in javascript to set custom auth headers
+             * at websockets. So we send the auth header directly as variable
+             * @link https://stackoverflow.com/a/4361358/3443137
+             */
+            variables: {
+                token: JWT_BEARER_TOKEN
+            }
+        }
+    );
     ret.subscribe({
         next: async (data) => {
             console.log('subscription emitted => trigger run()');

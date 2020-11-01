@@ -1,5 +1,13 @@
 # Changelog
 
+### X.X.X (comming soon)
+
+Features:
+  - Added subscription parameters for `graphQLSchemaFromRxSchema()`
+
+Other:
+  - Added authentication to graphql example
+
 ### 9.7.1 (22 October 2020)
 
 Bugfixes:

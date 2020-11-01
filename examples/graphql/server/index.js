@@ -16,7 +16,8 @@ import {
     GRAPHQL_PATH,
     GRAPHQL_SUBSCRIPTION_PORT,
     GRAPHQL_SUBSCRIPTION_PATH,
-    graphQLGenerationInput
+    graphQLGenerationInput,
+    JWT_BEARER_TOKEN
 } from '../shared';
 
 import {
@@ -25,9 +26,11 @@ import {
 
 function log(msg) {
     const prefix = '# GraphQL Server: ';
-    if (typeof msg === 'string')
+    if (typeof msg === 'string') {
         console.log(prefix + msg);
-    else console.log(prefix + JSON.stringify(msg, null, 2));
+    } else {
+        console.log(prefix + JSON.stringify(msg, null, 2));
+    }
 }
 
 function sortByUpdatedAtAndPrimary(a, b) {
@@ -41,47 +44,41 @@ function sortByUpdatedAtAndPrimary(a, b) {
     }
 }
 
+
+/**
+ * Returns true if the request is authenticated
+ * throws if not.
+ * In a real world app you would parse and validate the bearer token.
+ * @link https://graphql.org/graphql-js/authentication-and-express-middleware/
+ */
+export function authenticateRequest(request) {
+    const authHeader = request.header('authorization');
+    const splitted = authHeader.split(' ');
+    const token = splitted[1];
+    validateBearerToken(token);
+}
+
+export function validateBearerToken(token) {
+    if (token === JWT_BEARER_TOKEN) {
+        return true;
+    } else {
+        console.log('token not valid ' + token);
+        throw new Error('not authenticated');
+    }
+}
+
 export async function run() {
     let documents = [];
     const app = express();
     app.use(cors());
 
+    /**
+     * In this example we generate the GraphQL schema from the RxDB schema.
+     * Of course you could also write it by hand or extend and existing one.
+     */
     const generatedSchema = graphQLSchemaFromRxSchema(graphQLGenerationInput);
     const graphQLSchema = generatedSchema.asString;
 
-    /*`
-    type Query {
-        info: Int
-        feedForRxDBReplication(lastId: String!, minUpdatedAt: Int!, limit: Int!): [Human!]!
-    }
-    type Mutation {
-        setHuman(human: HumanInput): Human
-    }
-    input HumanInput {
-        id: ID!,
-        name: String!,
-        color: String!,
-        updatedAt: Int,
-        deleted: Boolean!
-    }
-    type Human {
-        id: ID!,
-        name: String!,
-        color: String!,
-        updatedAt: Int!,
-        deleted: Boolean!
-    }
-    type Subscription {
-        humanChanged: Human
-    }
-    schema {
-        query: Query
-        mutation: Mutation
-        subscription: Subscription
-    }
-    `;
-
-    */
     console.log('Server side GraphQL Schema:');
     console.log(graphQLSchema);
     const schema = buildSchema(graphQLSchema);
@@ -90,9 +87,10 @@ export async function run() {
 
     // The root provides a resolver function for each API endpoint
     const root = {
-        feedHero: args => {
+        feedHero: (args, request) => {
             log('## feedHero()');
             log(args);
+            authenticateRequest(request);
 
             if (!args.id) {
                 // use empty string because it will always be first on sorting
@@ -126,9 +124,11 @@ export async function run() {
             const limited = filterForMinUpdatedAtAndId.slice(0, args.limit);
             return limited;
         },
-        setHero: args => {
+        setHero: (args, request) => {
             log('## setHero()');
             log(args);
+            authenticateRequest(request);
+
             const doc = args.hero;
             documents = documents.filter(d => d.id !== doc.id);
             doc.updatedAt = Math.round(new Date().getTime() / 1000);
@@ -144,18 +144,26 @@ export async function run() {
 
             return doc;
         },
-        changedHero: () => pubsub.asyncIterator('changedHero')
+        changedHero: (args) => {
+            log('## changedHero()');
+            console.dir(args);
+            validateBearerToken(args.token);
+
+            return pubsub.asyncIterator('changedHero');
+        }
     };
 
     // server multitab.html - used in the e2e test
     app.use('/static', express.static(path.join(__dirname, '/static')));
 
     // server graphql-endpoint
-    app.use(GRAPHQL_PATH, graphqlHTTP({
-        schema: schema,
-        rootValue: root,
-        graphiql: true,
-    }));
+    app.use(GRAPHQL_PATH,
+        graphqlHTTP({
+            schema: schema,
+            rootValue: root,
+            graphiql: true,
+        })
+    );
 
 
     app.listen(GRAPHQL_PORT, function () {

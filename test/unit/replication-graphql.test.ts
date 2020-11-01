@@ -1990,6 +1990,30 @@ describe('replication-graphql.test.js', () => {
                 const build = buildSchema(output.asString);
                 assert.ok(build);
             });
+            it('should create a valid output with subscription params', () => {
+                const output = graphQLSchemaFromRxSchema({
+                    human: {
+                        schema: schemas.humanWithTimestamp,
+                        feedKeys: [
+                            'id',
+                            'updatedAt'
+                        ],
+                        deletedFlag: 'deleted'
+                    },
+                    deepNestedHuman: {
+                        schema: schemas.deepNestedHuman,
+                        feedKeys: [
+                            'passportId'
+                        ],
+                        deletedFlag: 'deleted',
+                        subscriptionParams: {
+                            foo: 'ID!'
+                        }
+                    }
+                });
+                const build = buildSchema(output.asString);
+                assert.ok(build);
+            });
         });
         config.parallel('.pullQueryBuilderFromRxSchema()', () => {
             it('assumption: parseQuery() fails on non-graphql input', () => {

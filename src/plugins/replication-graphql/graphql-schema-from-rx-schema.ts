@@ -12,6 +12,13 @@ export type Prefixes = {
     changed?: string;
 };
 
+/**
+ * just type some common types
+ * to have better IDE autocomplete,
+ * all strings are allowed
+ */
+export type GraphQLParamType = 'ID' | 'ID!' | 'String' | 'String!' | 'Int' | 'Int!' | string;
+
 export type GraphQLSchemaFromRxSchemaInputSingleCollection = {
     schema: RxJsonSchema;
     deletedFlag: string;
@@ -20,7 +27,8 @@ export type GraphQLSchemaFromRxSchemaInputSingleCollection = {
     ignoreInputKeys?: string[];
     ignoreOutputKeys?: string[];
     withRevisions?: boolean;
-    prefixes?: Prefixes
+    prefixes?: Prefixes;
+    subscriptionParams?: { [k: string]: GraphQLParamType }
 };
 
 export type GraphQLSchemaFromRxSchemaInput = {
@@ -46,7 +54,6 @@ export const SPACING = '  ';
 export function graphQLSchemaFromRxSchema(
     input: GraphQLSchemaFromRxSchemaInput
 ): GraphQLSchemaFromRxSchemaOutput {
-
     const ret: GraphQLSchemaFromRxSchemaOutput = {
         asString: '',
         queries: [],
@@ -108,8 +115,17 @@ export function graphQLSchemaFromRxSchema(
         ret.mutations.push(SPACING + mutationString);
 
         // subscription
+        let subscriptionParamsString = '';
+        if (collectionSettings.subscriptionParams && Object.keys(collectionSettings.subscriptionParams).length > 0) {
+            subscriptionParamsString = '(' +
+                Object
+                    .entries(collectionSettings.subscriptionParams)
+                    .map(([name, type]) => name + ': ' + type)
+                    .join(', ') +
+                ')';
+        }
         const subscriptionName = prefixes.changed + ucCollectionName;
-        const subscriptionString = subscriptionName + ': ' + ucCollectionName;
+        const subscriptionString = subscriptionName + subscriptionParamsString + ': ' + ucCollectionName;
         ret.subscriptions.push(SPACING + subscriptionString);
     });
 
@@ -135,6 +151,7 @@ export function graphQLSchemaFromRxSchema(
         fullTypeString + '\n' +
         fullInputString + '\n' +
         fullSchemaString;
+
     return ret;
 }
 
