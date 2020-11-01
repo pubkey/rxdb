@@ -22,7 +22,7 @@ import {
 import {
     newRxError,
     newRxTypeError,
-    RxError
+    isPouchdbConflictError
 } from './rx-error';
 import {
     runPluginHooks
@@ -322,7 +322,7 @@ export const basePrototype = {
                          * Because atomicUpdate has a mutation function,
                          * we can just re-run the mutation until there is no conflict
                          */
-                        if ((err as RxError).parameters?.pouchDbError?.status === 409) {
+                        if (isPouchdbConflictError(err)) {
                             // pouchdb conflict error -> retrying
                         } else {
                             throw err;

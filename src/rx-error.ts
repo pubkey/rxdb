@@ -117,3 +117,11 @@ export function newRxTypeError(
         parameters
     );
 }
+
+export function isPouchdbConflictError(err: RxError | RxTypeError): boolean {
+    if (err.parameters && err.parameters.pouchDbError && err.parameters.pouchDbError.status === 409) {
+        return true;
+    } else {
+        return false;
+    }
+}
