@@ -8,6 +8,7 @@ Features:
 
 Bugfixes:
   - (types) Returned values of `syncGraphQL()` did not type-match with `RxGraphQLReplicationState` 
+  - `RxDocument.atomicUpdate()` now does a retry on 409 write conflicts
 
 Other:
   - Added authentication to graphql example

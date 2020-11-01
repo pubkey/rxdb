@@ -488,6 +488,41 @@ config.parallel('rx-document.test.js', () => {
                 assert.strictEqual(doc2.firstName, 'foobar');
                 db2.destroy();
             });
+            it('should retry on conflict errors', async () => {
+                const dbName = randomCouchString(10);
+                const db = await createRxDatabase({
+                    name: dbName,
+                    adapter: 'memory'
+                });
+                const c = await db.collection({
+                    name: 'humans',
+                    schema: schemas.primaryHuman
+                });
+                const doc = await c.insert(schemaObjects.simpleHuman());
+                const db2 = await createRxDatabase({
+                    name: dbName,
+                    adapter: 'memory',
+                    ignoreDuplicate: true
+                });
+                const c2 = await db2.collection({
+                    name: 'humans',
+                    schema: schemas.primaryHuman
+                });
+                const doc2 = await c2.findOne().exec(true);
+
+                await Promise.all([
+                    doc.atomicUpdate((d: any) => {
+                        d.firstName = 'foobar1';
+                        return d;
+                    }),
+                    doc2.atomicUpdate((d: any) => {
+                        d.firstName = 'foobar2';
+                        return d;
+                    })
+                ]);
+                db.destroy();
+                db2.destroy();
+            });
         });
         describe('negative', () => {
             it('should throw when not matching schema', async () => {

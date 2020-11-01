@@ -75,7 +75,8 @@ await myDocument.update({
 ```
 
 ### atomicUpdate()
-Updates a documents data based on a function that transforms the current data and returns the new value.
+Updates a documents data based on a function that mutates the current data and returns the new value.
+In difference to `update()`, the atomic function cannot lead to 409 write conflicts.
 
 ```js
 
