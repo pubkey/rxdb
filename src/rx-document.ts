@@ -14,7 +14,8 @@ import {
     getHeightOfRevision,
     toPromise,
     pluginMissing,
-    now
+    now,
+    nextTick
 } from './util';
 import {
     RxChangeEvent, createUpdateEvent, createDeleteEvent
@@ -323,6 +324,8 @@ export const basePrototype = {
                          * we can just re-run the mutation until there is no conflict
                          */
                         if (isPouchdbConflictError(err)) {
+                            // we need to free the cpu for a tick or the browser tests will fail
+                            await nextTick();
                             // pouchdb conflict error -> retrying
                         } else {
                             throw err;
