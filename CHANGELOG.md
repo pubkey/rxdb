@@ -2,6 +2,8 @@
 
 ### X.X.X (comming soon)
 
+### 9.8.0 (2 November 2020)
+
 Features:
   - Added subscription parameters for `graphQLSchemaFromRxSchema()`
   - Added [RxDocument.atomicPatch()](https://rxdb.info/rx-document.md#atomicpatch)
