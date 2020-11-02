@@ -6,7 +6,7 @@
 
 Features:
   - Added subscription parameters for `graphQLSchemaFromRxSchema()`
-  - Added [RxDocument.atomicPatch()](https://rxdb.info/rx-document.md#atomicpatch)
+  - Added [RxDocument.atomicPatch()](https://rxdb.info/rx-document.html#atomicpatch)
 
 Bugfixes:
   - (types) Returned values of `syncGraphQL()` did not type-match with `RxGraphQLReplicationState` 
