@@ -24,3 +24,4 @@ export declare class RxTypeError extends TypeError {
 }
 export declare function newRxError(code: string, parameters?: RxErrorParameters): RxError;
 export declare function newRxTypeError(code: string, parameters?: RxErrorParameters): RxTypeError;
+export declare function isPouchdbConflictError(err: RxError | RxTypeError): boolean;

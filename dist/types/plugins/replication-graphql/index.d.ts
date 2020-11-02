@@ -5,16 +5,19 @@
 import { BehaviorSubject, Subject, Subscription, Observable } from 'rxjs';
 import type { RxCollection, GraphQLSyncPullOptions, GraphQLSyncPushOptions, RxPlugin } from '../../types';
 export declare class RxGraphQLReplicationState {
-    collection: RxCollection;
-    private url;
-    pull: GraphQLSyncPullOptions;
-    push: GraphQLSyncPushOptions;
-    deletedFlag: string;
-    lastPulledRevField: string;
-    live: boolean;
+    readonly collection: RxCollection;
+    readonly url: string;
+    headers: {
+        [k: string]: string;
+    };
+    readonly pull: GraphQLSyncPullOptions;
+    readonly push: GraphQLSyncPushOptions;
+    readonly deletedFlag: string;
+    readonly lastPulledRevField: string;
+    readonly live: boolean;
     liveInterval: number;
     retryTime: number;
-    syncRevisions: boolean;
+    readonly syncRevisions: boolean;
     constructor(collection: RxCollection, url: string, headers: {
         [k: string]: string;
     }, pull: GraphQLSyncPullOptions, push: GraphQLSyncPushOptions, deletedFlag: string, lastPulledRevField: string, live: boolean, liveInterval: number, retryTime: number, syncRevisions: boolean);

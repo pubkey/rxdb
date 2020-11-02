@@ -7,6 +7,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.newRxError = newRxError;
 exports.newRxTypeError = newRxTypeError;
+exports.isPouchdbConflictError = isPouchdbConflictError;
 exports.RxTypeError = exports.RxError = void 0;
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
@@ -131,6 +132,14 @@ function newRxError(code, parameters) {
 
 function newRxTypeError(code, parameters) {
   return new RxTypeError(code, _overwritable.overwritable.tunnelErrorMessage(code), parameters);
+}
+
+function isPouchdbConflictError(err) {
+  if (err.parameters && err.parameters.pouchDbError && err.parameters.pouchDbError.status === 409) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 //# sourceMappingURL=rx-error.js.map

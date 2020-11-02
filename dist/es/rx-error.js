@@ -113,4 +113,11 @@ export function newRxError(code, parameters) {
 export function newRxTypeError(code, parameters) {
   return new RxTypeError(code, overwritable.tunnelErrorMessage(code), parameters);
 }
+export function isPouchdbConflictError(err) {
+  if (err.parameters && err.parameters.pouchDbError && err.parameters.pouchDbError.status === 409) {
+    return true;
+  } else {
+    return false;
+  }
+}
 //# sourceMappingURL=rx-error.js.map

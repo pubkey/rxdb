@@ -135,6 +135,7 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
     this.active$ = undefined;
     this.collection = collection;
     this.url = url;
+    this.headers = headers;
     this.pull = pull;
     this.push = push;
     this.deletedFlag = deletedFlag;

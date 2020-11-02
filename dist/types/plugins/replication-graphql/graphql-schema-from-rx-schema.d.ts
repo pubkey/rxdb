@@ -4,6 +4,12 @@ export declare type Prefixes = {
     feed?: string;
     changed?: string;
 };
+/**
+ * just type some common types
+ * to have better IDE autocomplete,
+ * all strings are allowed
+ */
+export declare type GraphQLParamType = 'ID' | 'ID!' | 'String' | 'String!' | 'Int' | 'Int!' | string;
 export declare type GraphQLSchemaFromRxSchemaInputSingleCollection = {
     schema: RxJsonSchema;
     deletedFlag: string;
@@ -12,6 +18,9 @@ export declare type GraphQLSchemaFromRxSchemaInputSingleCollection = {
     ignoreOutputKeys?: string[];
     withRevisions?: boolean;
     prefixes?: Prefixes;
+    subscriptionParams?: {
+        [k: string]: GraphQLParamType;
+    };
 };
 export declare type GraphQLSchemaFromRxSchemaInput = {
     [collectionName: string]: GraphQLSchemaFromRxSchemaInputSingleCollection;

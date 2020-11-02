@@ -1029,6 +1029,19 @@
     
         <li class="chapter " data-level="1.6.3.6" data-path="rx-document.html">
             
+                <a href="rx-document.html#atomicpatch">
+            
+                    
+                    atomicPatch()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.6.3.7" data-path="rx-document.html">
+            
                 <a href="rx-document.html#atomicset">
             
                     
@@ -1040,7 +1053,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.7" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.8" data-path="rx-document.html">
             
                 <a href="rx-document.html#observe-">
             
@@ -1053,7 +1066,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.8" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.9" data-path="rx-document.html">
             
                 <a href="rx-document.html#remove">
             
@@ -1066,7 +1079,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.9" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.10" data-path="rx-document.html">
             
                 <a href="rx-document.html#deleted$">
             
@@ -1079,7 +1092,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.10" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.11" data-path="rx-document.html">
             
                 <a href="rx-document.html#tojson">
             
@@ -1092,7 +1105,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.11" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.12" data-path="rx-document.html">
             
                 <a href="rx-document.html#set">
             
@@ -1105,7 +1118,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.12" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.13" data-path="rx-document.html">
             
                 <a href="rx-document.html#save">
             
@@ -1118,7 +1131,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.13" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.14" data-path="rx-document.html">
             
                 <a href="rx-document.html#isrxdocument">
             
@@ -1604,7 +1617,7 @@ myDocument.get$(<span class="hljs-string">&apos;name&apos;</span>)
     isName = newName;
   });
 
-<span class="hljs-keyword">await</span> myDocument.atomicSet(<span class="hljs-string">&apos;name&apos;</span>, <span class="hljs-string">&apos;foobar2&apos;</span>);
+<span class="hljs-keyword">await</span> myDocument.atomicPatch({name: <span class="hljs-string">&apos;foobar2&apos;</span>});
 <span class="hljs-built_in">console</span>.dir(isName); <span class="hljs-comment">// isName is now &apos;foobar2&apos;</span>
 </code></pre>
 <h3 id="proxy-get">proxy-get</h3>
@@ -1617,7 +1630,7 @@ myDocument.get$(<span class="hljs-string">&apos;name&apos;</span>)
   <span class="hljs-comment">// Also useable with observables:</span>
   myDocument.firstName$.subscribe(newName =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&apos;name is: &apos;</span> + newName));
   <span class="hljs-comment">// &gt; &apos;name is: Stefe&apos;</span>
-  <span class="hljs-keyword">await</span> myDocument.atomicSet(<span class="hljs-string">&apos;firstName&apos;</span>, <span class="hljs-string">&apos;Steve&apos;</span>);
+  <span class="hljs-keyword">await</span> myDocument.atomicPatch({firstName: <span class="hljs-string">&apos;Steve&apos;</span>});
   <span class="hljs-comment">// &gt; &apos;name is: Steve&apos;</span>
 </code></pre>
 <h3 id="update">update()</h3>
@@ -1632,7 +1645,8 @@ myDocument.get$(<span class="hljs-string">&apos;name&apos;</span>)
 });
 </code></pre>
 <h3 id="atomicupdate">atomicUpdate()</h3>
-<p>Updates a documents data based on a function that transforms the current data and returns the new value.</p>
+<p>Updates a documents data based on a function that mutates the current data and returns the new value.
+In difference to <code>update()</code>, the atomic function cannot lead to 409 write conflicts.</p>
 <pre><code class="lang-js">
 <span class="hljs-keyword">const</span> changeFunction = (oldData) =&gt; {
     oldData.age = oldData.age + <span class="hljs-number">1</span>;
@@ -1642,8 +1656,17 @@ myDocument.get$(<span class="hljs-string">&apos;name&apos;</span>)
 <span class="hljs-keyword">await</span> myDocument.atomicUpdate(changeFunction);
 <span class="hljs-built_in">console</span>.log(myDocument.name); <span class="hljs-comment">// &apos;foooobarNew&apos;</span>
 </code></pre>
+<h3 id="atomicpatch">atomicPatch()</h3>
+<p>Works like <code>atomicUpdate</code> but overwrites the given attributes over the documents data.</p>
+<pre><code class="lang-js"><span class="hljs-keyword">await</span> myDocument.atomicPatch({
+  name: <span class="hljs-string">&apos;Steve&apos;</span>,
+  age: <span class="hljs-literal">undefined</span> <span class="hljs-comment">// setting an attribute to undefined will remove it</span>
+});
+<span class="hljs-built_in">console</span>.log(myDocument.name); <span class="hljs-comment">// &apos;Steve&apos;</span>
+</code></pre>
 <h3 id="atomicset">atomicSet()</h3>
 <p>Works like <code>atomicUpdate</code> but only sets the value for a single attribute.</p>
+<h2 id="notice-atomicset-is-deprecated-use-atomicpatch-instead">NOTICE: atomicSet is deprecated, use atomicPatch instead</h2>
 <pre><code class="lang-js"><span class="hljs-keyword">await</span> myDocument.atomicSet(<span class="hljs-string">&apos;nested.attribute&apos;</span>, <span class="hljs-string">&apos;foobar&apos;</span>);
 <span class="hljs-built_in">console</span>.log(myDocument.nested.attribute); <span class="hljs-comment">// &apos;foobar&apos;</span>
 </code></pre>
@@ -1759,7 +1782,7 @@ myDocument.whatever.nestedfield = <span class="hljs-string">&apos;foobar2&apos;<
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"RxDocument","level":"1.6","depth":1,"next":{"title":"Insert","level":"1.6.1","depth":2,"anchor":"#insert","path":"rx-document.md","ref":"./rx-document.md#insert","articles":[]},"previous":{"title":"isRxCollection()","level":"1.5.2.15","depth":3,"anchor":"#isrxcollection","path":"rx-collection.md","ref":"./rx-collection.md#isrxcollection","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-document.md","mtime":"2020-10-17T00:07:37.964Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2020-10-22T08:46:10.825Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"RxDocument","level":"1.6","depth":1,"next":{"title":"Insert","level":"1.6.1","depth":2,"anchor":"#insert","path":"rx-document.md","ref":"./rx-document.md#insert","articles":[]},"previous":{"title":"isRxCollection()","level":"1.5.2.15","depth":3,"anchor":"#isrxcollection","path":"rx-collection.md","ref":"./rx-collection.md#isrxcollection","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-document.md","mtime":"2020-11-01T21:18:39.305Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2020-11-02T13:14:38.189Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

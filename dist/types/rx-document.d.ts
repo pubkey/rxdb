@@ -52,9 +52,17 @@ export declare const basePrototype: {
     readonly allAttachments$: void;
     /**
      * runs an atomic update over the document
-     * @param fun that takes the document-data and returns a new data-object
+     * @param function that takes the document-data and returns a new data-object
      */
     atomicUpdate(this: import("./types").RxDocumentBase<{}, {}>, fun: Function): Promise<RxDocument>;
+    /**
+     * patches the given properties
+     */
+    atomicPatch<RxDocumentType = any>(this: RxDocument<RxDocumentType, {}>, patch: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, {}>>;
+    /**
+     * @deprecated use atomicPatch instead because it is better typed
+     * and does not allow any keys and values
+     */
     atomicSet(this: import("./types").RxDocumentBase<{}, {}>, key: string, value: any): Promise<import("./types").RxDocumentBase<{}, {}>>;
     /**
      * saves the new document-data
@@ -126,9 +134,17 @@ export declare function createRxDocumentConstructor(proto?: {
     readonly allAttachments$: void;
     /**
      * runs an atomic update over the document
-     * @param fun that takes the document-data and returns a new data-object
+     * @param function that takes the document-data and returns a new data-object
      */
     atomicUpdate(this: import("./types").RxDocumentBase<{}, {}>, fun: Function): Promise<import("./types").RxDocumentBase<{}, {}>>;
+    /**
+     * patches the given properties
+     */
+    atomicPatch<RxDocumentType = any>(this: RxDocument<RxDocumentType, {}>, patch: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, {}>>;
+    /**
+     * @deprecated use atomicPatch instead because it is better typed
+     * and does not allow any keys and values
+     */
     atomicSet(this: import("./types").RxDocumentBase<{}, {}>, key: string, value: any): Promise<import("./types").RxDocumentBase<{}, {}>>;
     /**
      * saves the new document-data
@@ -201,9 +217,17 @@ export declare function createRxDocumentConstructor(proto?: {
         readonly allAttachments$: void;
         /**
          * runs an atomic update over the document
-         * @param fun that takes the document-data and returns a new data-object
+         * @param function that takes the document-data and returns a new data-object
          */
         atomicUpdate(this: import("./types").RxDocumentBase<{}, {}>, fun: Function): Promise<import("./types").RxDocumentBase<{}, {}>>;
+        /**
+         * patches the given properties
+         */
+        atomicPatch<RxDocumentType = any>(this: RxDocument<RxDocumentType, {}>, patch: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, {}>>;
+        /**
+         * @deprecated use atomicPatch instead because it is better typed
+         * and does not allow any keys and values
+         */
         atomicSet(this: import("./types").RxDocumentBase<{}, {}>, key: string, value: any): Promise<import("./types").RxDocumentBase<{}, {}>>;
         /**
          * saves the new document-data

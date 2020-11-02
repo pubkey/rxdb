@@ -78,8 +78,18 @@ function graphQLSchemaFromRxSchema(input) {
     var mutationString = mutationName + '(' + collectionName + ': ' + collectionNameInput + '): ' + ucCollectionName;
     ret.mutations.push(SPACING + mutationString); // subscription
 
+    var subscriptionParamsString = '';
+
+    if (collectionSettings.subscriptionParams && Object.keys(collectionSettings.subscriptionParams).length > 0) {
+      subscriptionParamsString = '(' + Object.entries(collectionSettings.subscriptionParams).map(function (_ref2) {
+        var name = _ref2[0],
+            type = _ref2[1];
+        return name + ': ' + type;
+      }).join(', ') + ')';
+    }
+
     var subscriptionName = prefixes.changed + ucCollectionName;
-    var subscriptionString = subscriptionName + ': ' + ucCollectionName;
+    var subscriptionString = subscriptionName + subscriptionParamsString + ': ' + ucCollectionName;
     ret.subscriptions.push(SPACING + subscriptionString);
   }); // build full string
 

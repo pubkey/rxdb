@@ -1,9 +1,11 @@
+import _regeneratorRuntime from "@babel/runtime/regenerator";
+import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import objectPath from 'object-path';
 import { BehaviorSubject } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
-import { clone, trimDots, getHeightOfRevision, toPromise, pluginMissing, now } from './util';
+import { clone, trimDots, getHeightOfRevision, toPromise, pluginMissing, now, nextTick } from './util';
 import { createUpdateEvent, createDeleteEvent } from './rx-change-event';
-import { newRxError, newRxTypeError } from './rx-error';
+import { newRxError, newRxTypeError, isPouchdbConflictError } from './rx-error';
 import { runPluginHooks } from './hooks';
 export var basePrototype = {
   /**
@@ -281,29 +283,100 @@ export var basePrototype = {
 
   /**
    * runs an atomic update over the document
-   * @param fun that takes the document-data and returns a new data-object
+   * @param function that takes the document-data and returns a new data-object
    */
   atomicUpdate: function atomicUpdate(fun) {
     var _this2 = this;
 
-    this._atomicQueue = this._atomicQueue.then(function () {
-      var oldData = _this2._dataSync$.getValue();
+    this._atomicQueue = this._atomicQueue.then( /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee() {
+      var done, oldData, ret, newData;
+      return _regeneratorRuntime.wrap(function _callee$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              done = false; // we need a hacky while loop to stay incide the chain-link of _atomicQueue
+              // while still having the option to run a retry on conflicts
 
-      var ret = fun(clone(_this2._dataSync$.getValue()), _this2);
-      var retPromise = toPromise(ret);
-      return retPromise.then(function (newData) {
-        // collection does not exist on local documents
-        if (_this2.collection) {
-          newData = _this2.collection.schema.fillObjectWithDefaults(newData);
+            case 1:
+              if (done) {
+                _context.next = 24;
+                break;
+              }
+
+              oldData = _this2._dataSync$.getValue();
+              ret = fun(clone(_this2._dataSync$.getValue()), _this2);
+              _context.next = 6;
+              return toPromise(ret);
+
+            case 6:
+              newData = _context.sent;
+
+              if (_this2.collection) {
+                newData = _this2.collection.schema.fillObjectWithDefaults(newData);
+              }
+
+              _context.prev = 8;
+              _context.next = 11;
+              return _this2._saveData(newData, oldData);
+
+            case 11:
+              done = true;
+              _context.next = 22;
+              break;
+
+            case 14:
+              _context.prev = 14;
+              _context.t0 = _context["catch"](8);
+
+              if (!isPouchdbConflictError(_context.t0)) {
+                _context.next = 21;
+                break;
+              }
+
+              _context.next = 19;
+              return nextTick();
+
+            case 19:
+              _context.next = 22;
+              break;
+
+            case 21:
+              throw _context.t0;
+
+            case 22:
+              _context.next = 1;
+              break;
+
+            case 24:
+            case "end":
+              return _context.stop();
+          }
         }
-
-        return _this2._saveData(newData, oldData);
-      });
-    });
+      }, _callee, null, [[8, 14]]);
+    })));
     return this._atomicQueue.then(function () {
       return _this2;
     });
   },
+
+  /**
+   * patches the given properties
+   */
+  atomicPatch: function atomicPatch(patch) {
+    return this.atomicUpdate(function (docData) {
+      Object.entries(patch).forEach(function (_ref2) {
+        var k = _ref2[0],
+            v = _ref2[1];
+        docData[k] = v;
+      });
+      return docData;
+    });
+  },
+
+  /**
+   * @deprecated use atomicPatch instead because it is better typed
+   * and does not allow any keys and values
+   */
   atomicSet: function atomicSet(key, value) {
     return this.atomicUpdate(function (docData) {
       objectPath.set(docData, key, value);
