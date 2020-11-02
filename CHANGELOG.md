@@ -13,6 +13,7 @@ Bugfixes:
 Other:
   - Added authentication to graphql example
   - Deprecated `RxDocument.atomicSet()`. Used `atomicPatch` instead, it works better with typescript
+  - (docs) added workarounds for 6-connection limit at couchdb replication [#2659](https://github.com/pubkey/rxdb/pull/2659). Thanks [@MuresanSergiu](https://github.com/MuresanSergiu)
 
 ### 9.7.1 (22 October 2020)
 
