@@ -153,6 +153,7 @@ export const ERROR_MESSAGES: { [k: string]: string } = {
     SC26: 'SchemaCheck: indexes needs to be specified at collection schema level',
     SC27: 'SchemaCheck: encrypted fields need to be specified at collection schema level',
     SC28: 'SchemaCheck: encrypted fields is not defined in the schema',
+    SC29: 'SchemaCheck: missing object key \'properties\'',
 
     // plugins/validate.js
     VD1: 'Sub-schema not found, does the schemaPath exists in your schema?',

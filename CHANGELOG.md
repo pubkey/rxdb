@@ -2,6 +2,9 @@
 
 ### X.X.X (comming soon)
 
+Other:
+  - Added check for `properties` to dev-mode schema check
+
 ### 9.8.0 (2 November 2020)
 
 Features:
