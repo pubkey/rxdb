@@ -138,7 +138,7 @@
     "@babel/polyfill": "7.12.1",
     "@babel/preset-env": "7.12.1",
     "@babel/preset-typescript": "7.12.1",
-    "@babel/types": "7.12.5",
+    "@babel/types": "7.12.6",
     "@types/core-js": "2.5.4",
     "@types/faker": "5.1.4",
     "@types/memdown": "3.0.0",
