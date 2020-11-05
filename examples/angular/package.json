@@ -35,7 +35,7 @@
     "@angular/platform-browser-dynamic": "10.2.2",
     "@angular/pwa": "0.1002.0",
     "@angular/router": "10.2.2",
-    "@angular/service-worker": "10.2.2",
+    "@angular/service-worker": "10.2.1",
     "font-awesome": "4.7.0",
     "pouchdb-adapter-http": "7.2.2",
     "pouchdb-adapter-idb": "7.2.2",
