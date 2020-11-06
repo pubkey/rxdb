@@ -28,6 +28,7 @@ export const HOOKS: { [k: string]: any[] } = {
      * gets RxSchema as attribute
      */
     createRxSchema: [],
+    preCreateRxQuery: [],
     createRxQuery: [],
     createRxDocument: [],
     /**

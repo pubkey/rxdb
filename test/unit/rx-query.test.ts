@@ -22,6 +22,19 @@ import {
 } from '../../';
 
 config.parallel('rx-query.test.js', () => {
+    describe('.constructor', () => {
+        it('should throw dev-mode error on wrong query object', async () => {
+            const col = await humansCollection.create(0);
+
+            await AsyncTestUtil.assertThrows(
+                () => col.find({ foo: 'bar' } as any),
+                'RxTypeError',
+                'no valid query params'
+            );
+
+            col.database.destroy();
+        });
+    });
     describe('.toJSON()', () => {
         it('should produce the correct selector-object', async () => {
             const col = await humansCollection.create(0);

@@ -4,6 +4,7 @@
 
 Other:
   - Added check for `properties` to dev-mode schema check
+  - Add better checks for query input in dev-mode
 
 ### 9.8.0 (2 November 2020)
 

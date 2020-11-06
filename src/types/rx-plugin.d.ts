@@ -1,3 +1,12 @@
+import { RxQuery, RxQueryOP, MangoQuery } from './rx-query';
+import { RxCollection } from './rx-collection';
+
+export type RxPluginPreCreateRxQueryArgs = {
+    op: RxQueryOP;
+    queryObj: MangoQuery;
+    collection: RxCollection;
+}
+
 export interface RxPlugin {
     readonly rxdb: true;
     prototypes?: {
@@ -15,6 +24,7 @@ export interface RxPlugin {
         checkAdapter?: Function,
         tunnelErrorMessage?: Function
     };
+    // TODO add typings to hook functions
     hooks?: {
         preCreateRxDatabase?: Function,
         createRxDatabase?: Function,
@@ -23,7 +33,8 @@ export interface RxPlugin {
         preCreateRxCollection?: Function,
         preCreateRxSchema?: Function,
         createRxSchema?: Function,
-        createRxQuery?: Function,
+        preCreateRxQuery?: (data: RxPluginPreCreateRxQueryArgs) => void,
+        createRxQuery?: (query: RxQuery) => void,
         createRxDocument?: Function,
         postCreateRxDocument?: Function,
         preCreatePouchDb?: Function,

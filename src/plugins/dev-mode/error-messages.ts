@@ -27,6 +27,7 @@ export const ERROR_MESSAGES: { [k: string]: string } = {
     QU8: 'query cannot be an array',
     QU9: 'throwIfMissing can only be used in findOne queries',
     QU10: 'result empty and throwIfMissing: true',
+    QU11: 'RxQuery: no valid query params given',
 
     // mquery.js
     MQ1: 'path must be a string or object',

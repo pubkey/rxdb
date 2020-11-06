@@ -427,6 +427,12 @@ export function createRxQuery(
         });
     }
 
+    runPluginHooks('preCreateRxQuery', {
+        op,
+        queryObj,
+        collection
+    });
+
     let ret = new RxQueryBase(op, queryObj, collection);
 
     // ensure when created with same params, only one is created

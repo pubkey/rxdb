@@ -16,6 +16,7 @@ import {
     ensureCollectionNameValid,
     ensureDatabaseNameIsValid
 } from './unallowed-properties';
+import { checkQuery } from './check-query';
 
 export * from './check-schema';
 
@@ -40,6 +41,9 @@ export const RxDBDevModePlugin: RxPlugin = {
         },
         preCreateRxCollection: (args: RxCollectionCreator) => {
             ensureCollectionNameValid(args);
+        },
+        preCreateRxQuery: (args) => {
+            checkQuery(args);
         },
         createRxCollection: (args: RxCollectionCreator) => {
             // check ORM-methods
