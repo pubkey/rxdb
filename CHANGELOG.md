@@ -3,6 +3,7 @@
 ### X.X.X (comming soon)
 
 Other:
+  - Improved startup performance by doing a index-exist check
   - Added check for `properties` to dev-mode schema check
   - Add better checks for query input in dev-mode
 

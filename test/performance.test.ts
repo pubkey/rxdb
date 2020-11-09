@@ -14,7 +14,8 @@ import {
     createRxDatabase,
     addRxPlugin,
     randomCouchString,
-    dbCount
+    dbCount,
+    RxDatabase
 } from '../plugins/core';
 addRxPlugin(require('pouchdb-adapter-memory'));
 import { RxDBNoValidatePlugin } from '../plugins/no-validate';
@@ -102,7 +103,6 @@ for (let r = 0; r < runs; r++) {
 
     describe('performance.test.js', function () {
         this.timeout(90 * 1000);
-
         it('clear broadcast-channel tmp-folder', async () => {
             await BroadcastChannel.clearNodeFolder();
         });
@@ -111,7 +111,7 @@ for (let r = 0; r < runs; r++) {
         });
         it('spawnDatabases', async () => {
             // create databases with some collections each
-            const dbs: any[] = [];
+            const dbs: RxDatabase[] = [];
 
             const startTime = nowTime();
             for (let i = 0; i < benchmark.spawnDatabases.amount; i++) {

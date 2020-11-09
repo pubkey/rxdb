@@ -803,7 +803,15 @@ export function averageSchema(): RxJsonSchema<AverageSchemaDocumentType> {
                 }
             }
         },
-        indexes: ['var1']
+        indexes: [
+            'var1',
+            'deep.deep1',
+            // one compound index
+            [
+                'var2',
+                'var1'
+            ]
+        ]
     };
     return ret;
 }

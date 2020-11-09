@@ -854,32 +854,59 @@ function _atomicUpsertEnsureRxDocumentExists(
  */
 function _prepareCreateIndexes(
     rxCollection: RxCollection,
-    spawnedPouchPromise: Promise<any>
-) {
-    return Promise.all(
-        rxCollection.schema.indexes
-            .map(indexAr => {
-                const compressedIdx = indexAr
-                    .map(key => {
-                        const primPath = rxCollection.schema.primaryPath;
-                        const useKey = key === primPath ? '_id' : key;
-                        if (!rxCollection.schema.doKeyCompression()) {
-                            return useKey;
-                        } else {
-                            const indexKey = rxCollection._keyCompressor.transformKey(useKey);
-                            return indexKey;
-                        }
-                    });
+    spawnedPouchPromise: Promise<void>
+): Promise<any> {
 
-                return spawnedPouchPromise.then(
-                    () => rxCollection.pouch.createIndex({
-                        index: {
-                            fields: compressedIdx
+    /**
+     * pouchdb does no check on already existing indexes
+     * which makes collection re-creation really slow on page reloads
+     * So we have to manully check if the index already exists
+     */
+    return spawnedPouchPromise
+        .then(() => rxCollection.pouch.getIndexes())
+        .then(indexResult => {
+            const existingIndexes: Set<string> = new Set();
+            indexResult.indexes.forEach(idx => existingIndexes.add(idx.name));
+            return existingIndexes;
+        }).then(existingIndexes => {
+            return Promise.all(
+                rxCollection.schema.indexes
+                    .map(indexAr => {
+                        const compressedIdx: string[] = indexAr
+                            .map(key => {
+                                const primPath = rxCollection.schema.primaryPath;
+                                const useKey = key === primPath ? '_id' : key;
+                                if (!rxCollection.schema.doKeyCompression()) {
+                                    return useKey;
+                                } else {
+                                    const indexKey = rxCollection._keyCompressor.transformKey(useKey);
+                                    return indexKey;
+                                }
+                            });
+
+                        const indexName = 'idx-rxdb-index-' + compressedIdx.join(',');
+                        if (existingIndexes.has(indexName)) {
+                            // index already exists
+                            return;
                         }
+
+                        /**
+                         * TODO
+                         * we might have even better performance by doing a bulkDocs
+                         * on index creation
+                         */
+                        return spawnedPouchPromise.then(
+                            () => rxCollection.pouch.createIndex({
+                                name: indexName,
+                                ddoc: indexName,
+                                index: {
+                                    fields: compressedIdx
+                                }
+                            })
+                        );
                     })
-                );
-            })
-    );
+            );
+        });
 }
 
 /**
