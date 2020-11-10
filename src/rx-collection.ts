@@ -860,7 +860,7 @@ function _prepareCreateIndexes(
     /**
      * pouchdb does no check on already existing indexes
      * which makes collection re-creation really slow on page reloads
-     * So we have to manully check if the index already exists
+     * So we have to manually check if the index already exists
      */
     return spawnedPouchPromise
         .then(() => rxCollection.pouch.getIndexes())

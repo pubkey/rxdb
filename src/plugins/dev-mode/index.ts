@@ -17,6 +17,7 @@ import {
     ensureDatabaseNameIsValid
 } from './unallowed-properties';
 import { checkQuery } from './check-query';
+import { newRxError } from '../../rx-error';
 
 export * from './check-schema';
 
@@ -41,6 +42,17 @@ export const RxDBDevModePlugin: RxPlugin = {
         },
         preCreateRxCollection: (args: RxCollectionCreator) => {
             ensureCollectionNameValid(args);
+            if (args.name.charAt(0) === '_') {
+                throw newRxError('DB2', {
+                    name: args.name
+                });
+            }
+            if (!args.schema) {
+                throw newRxError('DB4', {
+                    name: args.name,
+                    args
+                });
+            }
         },
         preCreateRxQuery: (args) => {
             checkQuery(args);

@@ -192,8 +192,9 @@ export class RxDatabaseBase<
             StaticMethods
         >
     > {
-        if (typeof args === 'string')
+        if (typeof args === 'string') {
             return Promise.resolve(this.collections[args]);
+        }
 
         args = Object.assign({}, args);
 
@@ -201,20 +202,9 @@ export class RxDatabaseBase<
 
         runPluginHooks('preCreateRxCollection', args);
 
-        if (args.name.charAt(0) === '_') {
-            throw newRxError('DB2', {
-                name: args.name
-            });
-        }
         if ((this.collections as any)[args.name]) {
             throw newRxError('DB3', {
                 name: args.name
-            });
-        }
-        if (!args.schema) {
-            throw newRxError('DB4', {
-                name: args.name,
-                args
             });
         }
 
