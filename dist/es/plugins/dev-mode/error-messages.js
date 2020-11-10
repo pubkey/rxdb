@@ -22,6 +22,7 @@ export var ERROR_MESSAGES = {
   QU8: 'query cannot be an array',
   QU9: 'throwIfMissing can only be used in findOne queries',
   QU10: 'result empty and throwIfMissing: true',
+  QU11: 'RxQuery: no valid query params given',
   // mquery.js
   MQ1: 'path must be a string or object',
   MQ2: 'Invalid argument',
@@ -135,6 +136,7 @@ export var ERROR_MESSAGES = {
   SC26: 'SchemaCheck: indexes needs to be specified at collection schema level',
   SC27: 'SchemaCheck: encrypted fields need to be specified at collection schema level',
   SC28: 'SchemaCheck: encrypted fields is not defined in the schema',
+  SC29: 'SchemaCheck: missing object key \'properties\'',
   // plugins/validate.js
   VD1: 'Sub-schema not found, does the schemaPath exists in your schema?',
   VD2: 'object does not match schema',

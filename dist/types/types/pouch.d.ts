@@ -175,6 +175,8 @@ export declare class PouchDBInstance {
     }>;
 
     createIndex(opts: {
+        name: string;
+        ddoc: string;
         index: any;
     }): Promise<void>;
 }

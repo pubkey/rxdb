@@ -3,6 +3,8 @@ import { checkSchema } from './check-schema';
 import { checkOrmMethods } from './check-orm';
 import { checkMigrationStrategies } from './check-migration-strategies';
 import { ensureCollectionNameValid, ensureDatabaseNameIsValid } from './unallowed-properties';
+import { checkQuery } from './check-query';
+import { newRxError } from '../../rx-error';
 export * from './check-schema';
 export var RxDBDevModePlugin = {
   rxdb: true,
@@ -26,6 +28,22 @@ export var RxDBDevModePlugin = {
     },
     preCreateRxCollection: function preCreateRxCollection(args) {
       ensureCollectionNameValid(args);
+
+      if (args.name.charAt(0) === '_') {
+        throw newRxError('DB2', {
+          name: args.name
+        });
+      }
+
+      if (!args.schema) {
+        throw newRxError('DB4', {
+          name: args.name,
+          args: args
+        });
+      }
+    },
+    preCreateRxQuery: function preCreateRxQuery(args) {
+      checkQuery(args);
     },
     createRxCollection: function createRxCollection(args) {
       // check ORM-methods

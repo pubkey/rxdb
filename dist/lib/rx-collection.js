@@ -864,27 +864,57 @@ function _atomicUpsertEnsureRxDocumentExists(rxCollection, primary, json) {
 
 
 function _prepareCreateIndexes(rxCollection, spawnedPouchPromise) {
-  return Promise.all(rxCollection.schema.indexes.map(function (indexAr) {
-    var compressedIdx = indexAr.map(function (key) {
-      var primPath = rxCollection.schema.primaryPath;
-      var useKey = key === primPath ? '_id' : key;
-
-      if (!rxCollection.schema.doKeyCompression()) {
-        return useKey;
-      } else {
-        var indexKey = rxCollection._keyCompressor.transformKey(useKey);
-
-        return indexKey;
-      }
+  /**
+   * pouchdb does no check on already existing indexes
+   * which makes collection re-creation really slow on page reloads
+   * So we have to manually check if the index already exists
+   */
+  return spawnedPouchPromise.then(function () {
+    return rxCollection.pouch.getIndexes();
+  }).then(function (indexResult) {
+    var existingIndexes = new Set();
+    indexResult.indexes.forEach(function (idx) {
+      return existingIndexes.add(idx.name);
     });
-    return spawnedPouchPromise.then(function () {
-      return rxCollection.pouch.createIndex({
-        index: {
-          fields: compressedIdx
+    return existingIndexes;
+  }).then(function (existingIndexes) {
+    return Promise.all(rxCollection.schema.indexes.map(function (indexAr) {
+      var compressedIdx = indexAr.map(function (key) {
+        var primPath = rxCollection.schema.primaryPath;
+        var useKey = key === primPath ? '_id' : key;
+
+        if (!rxCollection.schema.doKeyCompression()) {
+          return useKey;
+        } else {
+          var indexKey = rxCollection._keyCompressor.transformKey(useKey);
+
+          return indexKey;
         }
       });
-    });
-  }));
+      var indexName = 'idx-rxdb-index-' + compressedIdx.join(',');
+
+      if (existingIndexes.has(indexName)) {
+        // index already exists
+        return;
+      }
+      /**
+       * TODO
+       * we might have even better performance by doing a bulkDocs
+       * on index creation
+       */
+
+
+      return spawnedPouchPromise.then(function () {
+        return rxCollection.pouch.createIndex({
+          name: indexName,
+          ddoc: indexName,
+          index: {
+            fields: compressedIdx
+          }
+        });
+      });
+    }));
+  });
 }
 /**
  * creates and prepares a new collection

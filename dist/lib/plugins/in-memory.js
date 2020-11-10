@@ -287,7 +287,10 @@ function replicateExistingDocuments(fromCollection, toCollection) {
 
 function setIndexes(schema, pouch) {
   return Promise.all(schema.indexes.map(function (indexAr) {
+    var indexName = 'idx-rxdb-' + indexAr.join(',');
     return pouch.createIndex({
+      ddoc: indexName,
+      name: indexName,
       index: {
         fields: indexAr
       }

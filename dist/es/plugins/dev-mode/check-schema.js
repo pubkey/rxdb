@@ -168,7 +168,13 @@ function getSchemaPropertyRealPath(shortPath) {
 
 
 export function checkSchema(jsonSchema) {
-  // check _rev
+  if (!jsonSchema.hasOwnProperty('properties')) {
+    throw newRxError('SC29', {
+      schema: jsonSchema
+    });
+  } // _rev MUST NOT exist, it is added by RxDB
+
+
   if (jsonSchema.properties._rev) {
     throw newRxError('SC10', {
       schema: jsonSchema

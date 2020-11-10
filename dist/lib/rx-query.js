@@ -391,6 +391,11 @@ function createRxQuery(op, queryObj, collection) {
     });
   }
 
+  (0, _hooks.runPluginHooks)('preCreateRxQuery', {
+    op: op,
+    queryObj: queryObj,
+    collection: collection
+  });
   var ret = new RxQueryBase(op, queryObj, collection); // ensure when created with same params, only one is created
 
   ret = tunnelQueryCache(ret);

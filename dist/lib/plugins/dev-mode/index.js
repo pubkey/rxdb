@@ -30,6 +30,10 @@ var _checkMigrationStrategies = require("./check-migration-strategies");
 
 var _unallowedProperties = require("./unallowed-properties");
 
+var _checkQuery = require("./check-query");
+
+var _rxError = require("../../rx-error");
+
 var RxDBDevModePlugin = {
   rxdb: true,
   overwritable: {
@@ -52,6 +56,22 @@ var RxDBDevModePlugin = {
     },
     preCreateRxCollection: function preCreateRxCollection(args) {
       (0, _unallowedProperties.ensureCollectionNameValid)(args);
+
+      if (args.name.charAt(0) === '_') {
+        throw (0, _rxError.newRxError)('DB2', {
+          name: args.name
+        });
+      }
+
+      if (!args.schema) {
+        throw (0, _rxError.newRxError)('DB4', {
+          name: args.name,
+          args: args
+        });
+      }
+    },
+    preCreateRxQuery: function preCreateRxQuery(args) {
+      (0, _checkQuery.checkQuery)(args);
     },
     createRxCollection: function createRxCollection(args) {
       // check ORM-methods

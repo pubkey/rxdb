@@ -123,27 +123,17 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
   _proto.collection = function collection(args) {
     var _this3 = this;
 
-    if (typeof args === 'string') return Promise.resolve(this.collections[args]);
+    if (typeof args === 'string') {
+      return Promise.resolve(this.collections[args]);
+    }
+
     args = Object.assign({}, args);
     args.database = this;
     runPluginHooks('preCreateRxCollection', args);
 
-    if (args.name.charAt(0) === '_') {
-      throw newRxError('DB2', {
-        name: args.name
-      });
-    }
-
     if (this.collections[args.name]) {
       throw newRxError('DB3', {
         name: args.name
-      });
-    }
-
-    if (!args.schema) {
-      throw newRxError('DB4', {
-        name: args.name,
-        args: args
       });
     }
 

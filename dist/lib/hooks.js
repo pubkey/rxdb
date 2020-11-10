@@ -41,6 +41,7 @@ var HOOKS = {
    * gets RxSchema as attribute
    */
   createRxSchema: [],
+  preCreateRxQuery: [],
   createRxQuery: [],
   createRxDocument: [],
 

@@ -2,6 +2,8 @@
 
 ### X.X.X (comming soon)
 
+### 9.9.0 (10 November 2020)
+
 Other:
   - Improved startup performance by doing a index-exist check
   - Added check for `properties` to dev-mode schema check
