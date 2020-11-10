@@ -985,11 +985,15 @@ config.parallel('rx-query.test.js', () => {
             });
 
             await col.pouch.createIndex({
+                name: 'idx-rxdb-info',
+                ddoc: 'idx-rxdb-info',
                 index: {
                     fields: ['info']
                 }
             });
             await col.pouch.createIndex({
+                name: 'idx-rxdb-info.title',
+                ddoc: 'idx-rxdb-info.title',
                 index: {
                     fields: ['info.title']
                 }
