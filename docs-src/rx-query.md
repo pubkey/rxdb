@@ -18,6 +18,16 @@ const query = myCollection
 A findOne-query has only a single `RxDocument` or `null` as result-set.
 
 ```js
+// find alice
+const query = myCollection
+    .findOne({
+      selector: {
+        name: 'alice'
+      }
+    })
+```
+
+```js
 // find the youngest one
 const query = myCollection
     .findOne()
