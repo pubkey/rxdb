@@ -170,8 +170,11 @@ To find documents in your collection, use this method. [See RxQuery.find()](./rx
 
 ```js
 // get document with name:foobar
-myCollection.findOne().where('name').eq('foo')
-  .exec().then(doc => console.dir(doc));
+myCollection.findOne({
+  selector: {
+    name: 'foo'
+  }
+}).exec().then(doc => console.dir(doc));
 
 // get document by primary, functionally identical to above query
 myCollection.findOne('foo')

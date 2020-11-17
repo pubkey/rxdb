@@ -83,6 +83,23 @@ localDoc.foo = 'bar'; // does not work!
 localDoc.set('foo', 'bar'); // works
 ```
 
+For the usage with typescript, you can have access to the typed data of the document over `toJSON()`
+
+```ts
+declare type MyLocalDocumentType = {
+  foo: string
+}
+const localDoc = await myCollection.upsertLocal<MyLocalDocumentType>(
+    'foobar',   // id
+    {           // data
+        foo: 'bar'
+    }
+);
+
+// typescript will know that foo is a string
+const foo: string = localDoc.toJSON().foo;
+```
+
 
 --------------------------------------------------------------------------------
 
