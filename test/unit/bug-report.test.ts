@@ -9,46 +9,36 @@
  * - 'npm run test:browser' so it runs in the browser
  */
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
 
 import {
-    createRxDatabase, randomCouchString
+    createRxDatabase, randomCouchString, addRxPlugin
 } from '../../';
 
 describe('bug-report.test.js', () => {
-    it('should fail because it reproduces the bug', async () => {
+    it('should fail because it reproduces a bug with deleted documents showing up in find().sort()', async () => {
         // create a schema
         const mySchema = {
             version: 0,
             type: 'object',
             properties: {
-                passportId: {
-                    type: 'string',
-                    primary: true
-                },
-                firstName: {
-                    type: 'string'
-                },
-                lastName: {
-                    type: 'string'
-                },
-                age: {
-                    type: 'integer',
-                    minimum: 0,
-                    maximum: 150
+                num: {
+                    type: 'integer'
                 }
-            }
+            },
+            indexes: [
+                'num'
+            ]
         };
+
 
         // generate a random database-name
         const name = randomCouchString(10);
 
-        // create a database
+        // use indexeddb adapter to create a database
+        addRxPlugin(require('pouchdb-adapter-indexeddb'));
         const db = await createRxDatabase({
             name,
-            adapter: 'memory',
-            eventReduce: true,
-            ignoreDuplicate: true
+            adapter: 'indexeddb',
         });
         // create a collection
         const collection = await db.collection({
@@ -56,54 +46,28 @@ describe('bug-report.test.js', () => {
             schema: mySchema
         });
 
-        // insert a document
-        await collection.insert({
-            passportId: 'foobar',
-            firstName: 'Bob',
-            lastName: 'Kelso',
-            age: 56
-        });
+        // insert a single document
+        await collection.insert({ num: 1234 });
 
-        /**
-         * to simulate the event-propagation over multiple browser-tabs,
-         * we create the same database again
+        // find all the documents - there should be only one returned
+        let docs = await collection.find().exec();
+        assert.strictEqual(docs.length, 1);
+
+        // delete the document - there should be none left now
+        let doc = docs.pop();
+        await doc.remove();
+        docs = await collection.find().exec();
+        assert.strictEqual(docs.length, 0);
+
+        /* 
+         * with the sole document being deleted, it should also not 
+         * show up if a sort() is applied to the find():
          */
-        const dbInOtherTab = await createRxDatabase({
-            name,
-            adapter: 'memory',
-            eventReduce: true,
-            ignoreDuplicate: true
-        });
-        // create a collection
-        const collectionInOtherTab = await dbInOtherTab.collection({
-            name: 'mycollection',
-            schema: mySchema
-        });
-
-        // find the document in the other tab
-        const myDocument = await collectionInOtherTab
-            .findOne()
-            .where('firstName')
-            .eq('Bob')
-            .exec();
-
-        /*
-         * assert things,
-         * here your tests should fail to show that there is a bug
-         */
-        assert.strictEqual(myDocument.age, 56);
-
-        // you can also wait for events
-        const emitted = [];
-        const sub = collectionInOtherTab
-            .findOne().$
-            .subscribe(doc => emitted.push(doc));
-        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+        docs = await collection.find().sort('-num').exec();
+        assert.strictEqual(docs.length, 0);
 
 
         // clean up afterwards
-        sub.unsubscribe();
         db.destroy();
-        dbInOtherTab.destroy();
     });
 });
