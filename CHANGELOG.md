@@ -2,6 +2,9 @@
 
 ### X.X.X (comming soon)
 
+Other:
+  - Improved typings for `pouchdb.changes()`
+
 ### 9.9.0 (10 November 2020)
 
 Other:

@@ -65,12 +65,42 @@ export type PouchAllDocsOptions = {
     deleted?: 'ok';
 };
 
+export type WithAttachments<T> = T & {
+    _attachments: {
+        [attachmentId: string]: {
+            digest: string;
+            content_type: string;
+            revpos: number;
+            length: number;
+            stub: boolean;
+        }
+    }
+}
+
 export type PouchSyncHandlerEvents = 'change' | 'paused' | 'active' | 'error' | 'complete';
 export type PouchSyncHandler = {
     on(ev: PouchSyncHandlerEvents, fn: (el: any) => void): void;
     off(ev: PouchSyncHandlerEvents, fn: any): void;
     cancel(): void;
 };
+
+export type PouchdbChangesResult = {
+    results: {
+        id: string;
+        seq: number;
+        changes: {
+            rev: 'string'
+        }[],
+        /**
+         * only if include_docs === true
+         */
+        doc?: WithAttachments<{
+            _id: string;
+            _rev: string;
+        }>
+    }[];
+    last_seq: number;
+}
 
 declare type Debug = {
     enable(what: string): void;
@@ -144,7 +174,7 @@ export declare class PouchDBInstance {
         doc: any | string,
         options?: any,
     ): Promise<any>;
-    changes(options?: PouchReplicationOptions): any;
+    changes(options?: PouchReplicationOptions): Promise<PouchdbChangesResult>;
     sync(remoteDb: string | any, options?: PouchReplicationOptions): PouchSyncHandler;
     replicate(options?: PouchReplicationOptions): PouchSyncHandler;
 
