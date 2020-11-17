@@ -8,7 +8,7 @@ import {
     wasRevisionfromPullReplication
 } from './helper';
 import type {
-    RxCollection, PouchChangeRow, PouchChangeDoc
+    RxCollection, PouchChangeRow, PouchChangeDoc, PouchdbChangesResult
 } from '../../types';
 
 /**
@@ -139,13 +139,11 @@ export async function getChangesSinceLastPushSequence(
             });
 
             useResults = bulkGetDocs.results.map((result: any) => {
-                const ret = {
+                return {
                     id: result.id,
                     doc: result.docs[0]['ok'],
                     deleted: result.docs[0]['ok']._deleted
                 };
-                ret.doc._id = result.docs[0]['ok'].id;
-                return ret;
             });
         }
 
@@ -159,10 +157,7 @@ export async function getChangesSinceLastPushSequence(
         }
     }
 
-    if (!changes) {
-        throw new Error('changes not defined, this should never happen');
-    }
-    changes.results.forEach((change: any) => {
+    (changes as PouchdbChangesResult).results.forEach((change: any) => {
         change.doc = collection._handleFromPouch(change.doc);
     });
 
