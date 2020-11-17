@@ -643,7 +643,7 @@ describe('replication-graphql.test.js', () => {
                         10
                     );
                     const firstDoc = changes.results[0];
-                    assert.ok(firstDoc.doc.id);
+                    assert.ok((firstDoc as any).doc.id);
                     c.database.destroy();
                 });
                 it('should have filtered out replicated docs from the endpoint', async () => {
@@ -720,11 +720,14 @@ describe('replication-graphql.test.js', () => {
                         true
                     );
                     assert.strictEqual(changes.results.length, amount);
-                    assert.ok(changes.results[0].doc.name);
+                    assert.ok((changes as any).results[0].doc.name);
 
                     changes.results.forEach((result) => {
                         const doc = result.doc;
-                        const revisions = doc._revisions;
+                        if (!doc) {
+                            throw new Error('doc not defined');
+                        }
+                        const revisions = (doc as any)._revisions;
 
                         assert.ok(revisions);
                         assert.ok(revisions.ids);

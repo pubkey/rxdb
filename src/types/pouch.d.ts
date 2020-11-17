@@ -25,6 +25,41 @@ export interface PouchReplicationOptions {
 }
 
 /**
+ * @link https://pouchdb.com/api.html#changes
+ */
+export interface PouchChangesOptionsBase {
+    include_docs?: boolean;
+    conflicts?: boolean;
+    attachments?: boolean;
+    binary?: boolean;
+    descending?: string;
+    since?: any;
+    limit?: number;
+    timeout?: any;
+    heartbeat?: number | boolean;
+    filter?: any;
+    doc_ids?: string | string[];
+    query_param?: any;
+    view?: any;
+    return_docs?: boolean;
+    batch_size?: number;
+    style?: string;
+}
+
+export interface PouchChangesOptionsLive extends PouchChangesOptionsBase {
+    live: true;
+}
+
+export interface PouchChangesOptionsNonLive extends PouchChangesOptionsBase {
+    live: false;
+}
+interface PouchChangesOnChangeEvent {
+    on: (eventName: string, handler: Function) => void;
+    off: (eventName: string, handler: Function) => void;
+    cancel(): void;
+}
+
+/**
  * possible pouch-settings
  * @link https://pouchdb.com/api.html#create_database
  */
@@ -65,7 +100,29 @@ export type PouchAllDocsOptions = {
     deleted?: 'ok';
 };
 
-export type WithAttachments<T> = T & {
+export type PouchSyncHandlerEvents = 'change' | 'paused' | 'active' | 'error' | 'complete';
+export type PouchSyncHandler = {
+    on(ev: PouchSyncHandlerEvents, fn: (el: any) => void): void;
+    off(ev: PouchSyncHandlerEvents, fn: any): void;
+    cancel(): void;
+};
+
+export type PouchChangeRow = {
+    id: string;
+    seq: number;
+    deleted?: true;
+    changes: {
+        rev: 'string'
+    }[],
+    /**
+     * only if include_docs === true
+     */
+    doc?: PouchChangeDoc
+}
+
+export type PouchChangeDoc = {
+    _id: string;
+    _rev: string;
     _attachments: {
         [attachmentId: string]: {
             digest: string;
@@ -74,31 +131,11 @@ export type WithAttachments<T> = T & {
             length: number;
             stub: boolean;
         }
-    }
+    };
 }
 
-export type PouchSyncHandlerEvents = 'change' | 'paused' | 'active' | 'error' | 'complete';
-export type PouchSyncHandler = {
-    on(ev: PouchSyncHandlerEvents, fn: (el: any) => void): void;
-    off(ev: PouchSyncHandlerEvents, fn: any): void;
-    cancel(): void;
-};
-
 export type PouchdbChangesResult = {
-    results: {
-        id: string;
-        seq: number;
-        changes: {
-            rev: 'string'
-        }[],
-        /**
-         * only if include_docs === true
-         */
-        doc?: WithAttachments<{
-            _id: string;
-            _rev: string;
-        }>
-    }[];
+    results: PouchChangeRow[];
     last_seq: number;
 }
 
@@ -174,7 +211,11 @@ export declare class PouchDBInstance {
         doc: any | string,
         options?: any,
     ): Promise<any>;
-    changes(options?: PouchReplicationOptions): Promise<PouchdbChangesResult>;
+
+    changes(options: PouchChangesOptionsNonLive): Promise<PouchdbChangesResult>;
+    changes(options: PouchChangesOptionsLive): PouchChangesOnChangeEvent;
+    changes(): Promise<PouchdbChangesResult>;
+
     sync(remoteDb: string | any, options?: PouchReplicationOptions): PouchSyncHandler;
     replicate(options?: PouchReplicationOptions): PouchSyncHandler;
 
