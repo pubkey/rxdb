@@ -125,8 +125,8 @@
     "z-schema": "5.0.0"
   },
   "devDependencies": {
-    "@babel/cli": "7.12.1",
-    "@babel/core": "7.12.3",
+    "@babel/cli": "7.12.7",
+    "@babel/core": "7.12.7",
     "@babel/plugin-check-constants": "7.0.0-beta.38",
     "@babel/plugin-proposal-class-properties": "7.12.1",
     "@babel/plugin-proposal-object-rest-spread": "7.12.1",
@@ -136,9 +136,9 @@
     "@babel/plugin-transform-runtime": "7.12.1",
     "@babel/plugin-transform-spread": "7.12.1",
     "@babel/polyfill": "7.12.1",
-    "@babel/preset-env": "7.12.1",
-    "@babel/preset-typescript": "7.12.1",
-    "@babel/types": "7.12.6",
+    "@babel/preset-env": "7.12.7",
+    "@babel/preset-typescript": "7.12.7",
+    "@babel/types": "7.12.7",
     "@types/core-js": "2.5.4",
     "@types/faker": "5.1.4",
     "@types/memdown": "3.0.0",
