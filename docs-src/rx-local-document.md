@@ -52,6 +52,16 @@ Find a `RxLocalDocument` by it's id. Returns a Promise which resolves the `RxLoc
 const localDoc = await myCollection.getLocal('foobar');
 ```
 
+## getLocal$()
+
+Like `getLocal$()` but returns an `Observable` that emits the document or `null` if not exists.
+
+```javascript
+const subscription = myCollection.getLocal$('foobar').subscribe(documentOrNull => {
+    console.dir(documentOrNull); // > RxLocalDocument or null
+});
+```
+
 ## RxLocalDocument
 
 A `RxLocalDocument` behaves like a normal `RxDocument`.

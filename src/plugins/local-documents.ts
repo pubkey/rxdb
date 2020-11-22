@@ -43,8 +43,11 @@ import {
 import {
     filter,
     map,
-    distinctUntilChanged
+    distinctUntilChanged,
+    startWith,
+    mergeMap
 } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 const DOC_CACHE_BY_PARENT = new WeakMap();
 const _getDocCache = (parent: any) => {
@@ -316,11 +319,26 @@ function insertLocal(this: any, id: string, data: any): Promise<RxLocalDocument>
             const saveData = clone(data);
             saveData._id = LOCAL_PREFIX + id;
 
-            return pouch.put(saveData);
-        }).then((res: any) => {
-            data._rev = res.rev;
-            const newDoc = RxLocalDocument.create(id, data, this);
-            return newDoc;
+            const startTime = now();
+            return pouch.put(saveData).then((res: any) => {
+                data._rev = res.rev;
+                const newDoc = RxLocalDocument.create(id, data, this);
+                const endTime = now();
+                const changeEvent = new RxChangeEvent(
+                    'INSERT',
+                    id,
+                    clone(data),
+                    isRxDatabase(this) ? this.database : this.database.token,
+                    isRxCollection(this) ? this.name : null,
+                    true,
+                    startTime,
+                    endTime,
+                    undefined,
+                    newDoc
+                );
+                this.$emit(changeEvent);
+                return newDoc;
+            });
         });
 }
 
@@ -368,17 +386,62 @@ function getLocal(this: any, id: string): Promise<RxLocalDocument> {
         .catch(() => null);
 }
 
+function getLocal$(this: RxCollection, id: string): Observable<RxLocalDocument | null> {
+    return this.$.pipe(
+        startWith(null),
+        mergeMap(async (cE: RxChangeEvent | null) => {
+            if (cE) {
+                return {
+                    changeEvent: cE
+                };
+            } else {
+                const doc = await this.getLocal(id);
+                return {
+                    doc: doc
+                };
+            }
+        }),
+        mergeMap(async (changeEventOrDoc) => {
+            if (changeEventOrDoc.changeEvent) {
+                const cE = changeEventOrDoc.changeEvent;
+                if (!cE.isLocal || cE.documentId !== id) {
+                    return {
+                        use: false
+                    };
+                } else {
+                    const doc = cE.rxDocument ? cE.rxDocument : await this.getLocal(id);
+                    return {
+                        use: true,
+                        doc: doc
+                    };
+                }
+            } else {
+                return {
+                    use: true,
+                    doc: changeEventOrDoc.doc
+                };
+            }
+        }),
+        filter(filterFlagged => filterFlagged.use),
+        map(filterFlagged => {
+            return filterFlagged.doc;
+        })
+    );
+}
+
 export const rxdb = true;
 export const prototypes = {
     RxCollection: (proto: any) => {
         proto.insertLocal = insertLocal;
         proto.upsertLocal = upsertLocal;
         proto.getLocal = getLocal;
+        proto.getLocal$ = getLocal$;
     },
     RxDatabase: (proto: any) => {
         proto.insertLocal = insertLocal;
         proto.upsertLocal = upsertLocal;
         proto.getLocal = getLocal;
+        proto.getLocal$ = getLocal$;
     }
 };
 export const overwritable = {};

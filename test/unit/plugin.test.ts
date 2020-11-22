@@ -228,7 +228,7 @@ config.parallel('plugin.test.js', () => {
             };
             addRxPlugin(plugin);
             const col = await humansCollection.create();
-            assert.strictEqual(col.foo, 'bar_createRxCollection');
+            assert.strictEqual((col as any).foo, 'bar_createRxCollection');
             col.database.destroy();
             _clearHook('createRxCollection', createRxCollection);
         });

@@ -1,11 +1,11 @@
 import assert from 'assert';
-import AsyncTestUtil, { wait } from 'async-test-util';
+import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
 
 import * as humansCollection from '../helper/humans-collection';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import {
-    createRxDatabase, randomCouchString
+    createRxDatabase, randomCouchString, RxLocalDocument
 } from '../../';
 import config from './config';
 import {
@@ -89,6 +89,86 @@ config.parallel('local-documents.test.js', () => {
                 assert.strictEqual(doc, null);
                 c.database.destroy();
             });
+        });
+    });
+    describe('.getLocal$()', () => {
+        const id = 'foo';
+        it('should emit null when not exists', async () => {
+            const c = await humansCollection.create();
+            const cData = await c.getLocal$(id).pipe(first()).toPromise();
+            const dbData = await c.database.getLocal$(id).pipe(first()).toPromise();
+
+            assert.strictEqual(cData, null);
+            assert.strictEqual(dbData, null);
+
+            c.database.destroy();
+        });
+        it('should emit the document when exists', async () => {
+            const c = await humansCollection.create();
+            await c.insertLocal(id, {
+                foo: 'bar'
+            });
+            await c.database.insertLocal(id, {
+                foo: 'bar'
+            });
+
+            const cDoc = await c.getLocal$(id).pipe(first()).toPromise();
+            const dbDoc = await c.database.getLocal$(id).pipe(first()).toPromise();
+
+            assert.strictEqual(cDoc.get('foo'), 'bar');
+            assert.strictEqual(dbDoc.get('foo'), 'bar');
+
+            c.database.destroy();
+        });
+        it('collection: should emit again when state changed', async () => {
+            const c = await humansCollection.create();
+
+            const cEmits: any[] = [];
+
+            const sub = c.getLocal$(id).subscribe((x: RxLocalDocument<any>) => {
+                cEmits.push(x ? x.toJSON() : null);
+            });
+
+            await waitUntil(() => cEmits.length === 1);
+            assert.strictEqual(cEmits[0], null);
+
+            // insert
+            await c.insertLocal(id, { foo: 'bar' });
+            await waitUntil(() => cEmits.length === 2);
+            assert.strictEqual(cEmits[1].foo, 'bar');
+
+            // update
+            await c.upsertLocal(id, { foo: 'bar2' });
+            await waitUntil(() => cEmits.length === 3);
+            assert.strictEqual(cEmits[2].foo, 'bar2');
+
+            sub.unsubscribe();
+            c.database.destroy();
+        });
+        it('database: should emit again when state changed', async () => {
+            const c = await humansCollection.create();
+            const db = c.database;
+
+            const cEmits: any[] = [];
+            const sub = db.getLocal$(id).subscribe((x: RxLocalDocument<any>) => {
+                cEmits.push(x ? x.toJSON() : null);
+            });
+
+            await waitUntil(() => cEmits.length === 1);
+            assert.strictEqual(cEmits[0], null);
+
+            // insert
+            await db.insertLocal(id, { foo: 'bar' });
+            await waitUntil(() => cEmits.length === 2);
+            assert.strictEqual(cEmits[1].foo, 'bar');
+
+            // update
+            await db.upsertLocal(id, { foo: 'bar2' });
+            await waitUntil(() => cEmits.length === 3);
+            assert.strictEqual(cEmits[2].foo, 'bar2');
+
+            sub.unsubscribe();
+            c.database.destroy();
         });
     });
     describe('.upsertLocal()', () => {

@@ -2,6 +2,9 @@
 
 ### X.X.X (comming soon)
 
+Features:
+  - Added `RxCollection.getLocal$()` and `RxDatabase.getLocal$()` to observe local documents.
+
 Other:
   - Improved typings for `pouchdb.changes()`
 
