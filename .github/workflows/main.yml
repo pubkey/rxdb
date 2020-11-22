@@ -25,6 +25,9 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
+      - name: start couchdb container
+        run: docker run -d -p 5984:5984 --rm --name rxdb-couchdb couchdb:2.1.1
+
       - name: Setup Node.js environment
         uses: actions/setup-node@v2.1.2
         with:
@@ -50,3 +53,24 @@ jobs:
 
       - name: lint
         run: npm run lint
+        
+      - name: npm run test:node
+        run: npm run test:node
+  
+      - name: npm run test:fast
+        run: npm run test:fast
+
+      # in the past we had tests that failed randomly
+      # to prevent this we run the tests in fast-mode 10 times
+      - name: unit tests 10 times
+        run: for i in `seq 10`; do npm run test:fast; done
+
+      - name: npm run test:browser
+        run: npm run test:browser
+        
+      - name: npm run test:couchdb
+        run: npm run test:couchdb
+        
+      - name: npm run test:performance
+        run: npm run test:performance
+
