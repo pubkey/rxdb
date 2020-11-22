@@ -45,34 +45,34 @@ jobs:
       - name: install npm dependencies
         run: npm install --depth 0 --silent
       
-      - name: build
-        run: npm run build
+#      - name: build
+#        run: npm run build
       
-      - name: test:typings
-        run: npm run test:typings
+#      - name: test:typings
+#        run: npm run test:typings
 
-      - name: check types
-        run: npm run check-types
+#      - name: check types
+#        run: npm run check-types
 
-      - name: test:deps
-        run: npm run test:deps
+#      - name: test:deps
+#        run: npm run test:deps
 
-      - name: test:circular
-        run: npm run test:circular
+#      - name: test:circular
+#        run: npm run test:circular
 
-      - name: lint
-        run: npm run lint
+#      - name: lint
+#        run: npm run lint
         
-      - name: npm run test:node
-        run: npm run test:node
+#      - name: npm run test:node
+#        run: npm run test:node
   
-      - name: npm run test:fast
-        run: npm run test:fast
+#      - name: npm run test:fast
+#        run: npm run test:fast
 
       # in the past we had tests that failed randomly
       # to prevent this we run the tests in fast-mode 10 times
-      - name: unit tests 10 times
-        run: for i in `seq 10`; do npm run test:fast; done
+#      - name: unit tests 10 times
+#        run: for i in `seq 10`; do npm run test:fast; done
 
       - name: npm run test:browser
         run: npm run test:browser
