@@ -33,6 +33,11 @@ jobs:
         with:
           node-version: 13.8.0
 
+      # https://github.com/juliangruber/browser-run/issues/147
+      - name: Setup X server
+        run: sudo apt-get install xvfb && export DISPLAY=':99.0' && Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+
+
       - name: install npm dependencies
         run: npm install --depth 0 --silent
       
