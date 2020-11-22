@@ -80,23 +80,24 @@ async function run() {
     };
 
     const heroDocMethods: HeroDocMethods = {
-        scream: function(this: HeroDocument, what: string) {
+        scream: function (this: HeroDocument, what: string) {
             return this.firstName + ' screams: ' + what.toUpperCase();
         }
     };
 
     const heroCollectionMethods: HeroCollectionMethods = {
-        countAllDocuments: async function(this: HeroCollection) {
+        countAllDocuments: async function (this: HeroCollection) {
             const allDocs = await this.find().exec();
             return allDocs.length;
         }
     };
 
-    await myDatabase.collection({
-        name: 'heroes',
-        schema: heroSchema,
-        methods: heroDocMethods,
-        statics: heroCollectionMethods
+    await myDatabase.addCollections({
+        heroes: {
+            schema: heroSchema,
+            methods: heroDocMethods,
+            statics: heroCollectionMethods
+        }
     });
 
     // add a preInsert-hook

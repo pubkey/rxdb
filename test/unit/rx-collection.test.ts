@@ -20,13 +20,36 @@ import {
     shuffleArray,
     _createRxCollection,
     RxJsonSchema,
-    PrimaryProperty
+    PrimaryProperty,
+    RxDatabase
 } from '../../';
 import { HumanDocumentType } from '../helper/schema-objects';
 import { first } from 'rxjs/operators';
 
 config.parallel('rx-collection.test.js', () => {
+    async function getDb(): Promise<RxDatabase> {
+        return await createRxDatabase({
+            name: randomCouchString(10),
+            adapter: 'memory'
+        });
+    }
     describe('static', () => {
+        describe('.addCollections()', () => {
+            it('should not crash', async () => {
+                const db = await getDb();
+                await db.addCollections({
+                    one: {
+                        schema: schemas.human
+                    },
+                    two: {
+                        schema: schemas.human
+                    }
+                });
+                assert.ok(isRxCollection(db.one));
+                assert.ok(isRxCollection(db.two));
+                db.destroy();
+            });
+        });
         describe('.create()', () => {
             describe('positive', () => {
                 it('human', async () => {

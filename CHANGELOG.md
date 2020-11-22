@@ -4,6 +4,7 @@
 
 Features:
   - Added `RxCollection.getLocal$()` and `RxDatabase.getLocal$()` to observe local documents.
+  - Added `RxDatabase.addCollections()` to create multiple collections at once. Is faster and better typed than the now deprecated `RxDatabase.collection()`
 
 Other:
   - Improved typings for `pouchdb.changes()`

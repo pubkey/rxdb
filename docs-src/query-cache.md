@@ -28,10 +28,11 @@ It gets the `RxCollection` as first parameter and the `QueryCache` as second. Th
 To apply a custom policy to a `RxCollection`, add the function as attribute `cacheReplacementPolicy`.
 
 ```ts
-const collection = await myDatabase.collection({
-    name: 'humans',
-    schema: mySchema,
-    cacheReplacementPolicy: function(){ /* ... */ }
+const collection = await myDatabase.addCollections({
+    humans: {
+        schema: mySchema,
+        cacheReplacementPolicy: function(){ /* ... */ }
+    }
 });
 ```
 

@@ -174,14 +174,17 @@ export declare class PouchDBInstance {
             key: string;
             value: {
                 rev: string;
-            }
+            };
+            error?: 'not_found' | string;
         }[];
         total_rows: number;
     }>;
 
     bulkDocs(
         docs: { docs: any[] } | any[],
-        options?: any
+        options?: {
+            new_edits?: boolean;
+        }
     ): Promise<{
         ok: boolean;
         id: string;
@@ -253,6 +256,8 @@ export declare class PouchDBInstance {
         }[],
         // Each returned revision body will include its revision history as a _revisions property. Default is false
         revs?: boolean;
+        // what does this?
+        latest?: boolean;
         // Include attachment data in the response. Default is false, resulting in only stubs being returned.
         attachments?: boolean;
         // Return attachment data as Blobs/Buffers, instead of as base64-encoded strings. Default is false

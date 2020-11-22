@@ -327,31 +327,6 @@ config.parallel('rx-database.test.js', () => {
                 db1.destroy();
                 db2.destroy();
             });
-            it('create 2 time with different schema should work when no docs exist', async () => {
-                const name = randomCouchString(10);
-                const collectionName = 'foobar';
-                const db1 = await createRxDatabase({
-                    name,
-                    adapter: 'memory',
-                    ignoreDuplicate: true
-                });
-                const db2 = await createRxDatabase({
-                    name,
-                    adapter: 'memory',
-                    ignoreDuplicate: true
-                });
-                await db1.collection({
-                    name: collectionName,
-                    schema: schemas.human
-                });
-                await db2.collection({
-                    name: collectionName,
-                    schema: schemas.humanFinal
-                });
-
-                db1.destroy();
-                db2.destroy();
-            });
             it('get the collection by passing the name', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),

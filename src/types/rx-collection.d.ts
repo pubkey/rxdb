@@ -17,8 +17,15 @@ export interface NumberFunctionMap {
     [key: number]: Function;
 }
 
-export interface RxCollectionCreator {
+export interface RxCollectionCreator extends RxCollectionCreatorBase {
     name: string;
+}
+
+/**
+ * TODO remove RxCollectionCreator
+ * and rename this one in the next release
+ */
+export type RxCollectionCreatorBase = {
     schema: RxJsonSchema;
     pouchSettings?: PouchSettings;
     migrationStrategies?: KeyFunctionMap;

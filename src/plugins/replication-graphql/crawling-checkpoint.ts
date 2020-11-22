@@ -144,7 +144,7 @@ export async function getChangesSinceLastPushSequence(
                     doc: result.docs[0]['ok'],
                     deleted: result.docs[0]['ok']._deleted
                 };
-            });
+            }) as any;
         }
 
         if (useResults.length === 0 && changes.results.length === batchSize) {

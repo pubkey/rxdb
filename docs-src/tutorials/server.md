@@ -57,9 +57,10 @@ const mySchema = {
         }
     }
 };
-await db.collection({
-    name: 'items',
-    schema: mySchema
+await db.addCollections({
+    items: {
+        schema: mySchema
+    }
 });
 
 // insert one document
@@ -141,9 +142,10 @@ const clientDB = await createRxDatabase({
 });
 
 // create a collection
-await clientDB.collection({
-    name: 'items',
-    schema: mySchema
+await clientDB.addCollections({
+    items: {
+        schema: mySchema
+    }
 });
 ```
 

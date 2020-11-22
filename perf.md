@@ -631,3 +631,23 @@ AFTER:
 5480
 5451
 avg = 5458.2
+
+
+
+## use addCollections
+
+BEFORE:
+
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 17758.374207,
+    "perInstance": 17.758374207
+  }
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 17622.248933,
+    "perInstance": 17.622248932999998
+  },
+

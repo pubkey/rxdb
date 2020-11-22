@@ -3,20 +3,26 @@ A collection stores documents of the same type.
 
 
 ## Creating a Collection
-To create a collection you need a RxDatabase object which has the .collection()-method. Every collection needs a collection name and a valid RxSchema. Other attributes are optional.
+To create one or more collections you need a RxDatabase object which has the `.addCollections()`-method. Every collection needs a collection name and a valid RxSchema. Other attributes are optional.
 
 ```js
-const myCollection = await myDatabase.collection({
-  name: 'humans',
-  schema: mySchema,
-  pouchSettings: {} // (optional)
-  statics: {}, // (optional) // ORM-functions for this collection
-  methods: {}, // (optional) ORM-functions for documents
-  attachments: {}, // (optional) ORM-functions for attachments
-  options: {}, // (optional) Custom paramters that might be used in plugins
-  migrationStrategies: {}, // (optional)
-  autoMigrate: true, // (optional)
-  cacheReplacementPolicy: function(){}, // (optional) custoom cache replacement policy
+const myCollection = await myDatabase.addCollection({
+  // key = collectionName
+  humans: {
+    schema: mySchema,
+    pouchSettings: {} // (optional)
+    statics: {}, // (optional) // ORM-functions for this collection
+    methods: {}, // (optional) ORM-functions for documents
+    attachments: {}, // (optional) ORM-functions for attachments
+    options: {}, // (optional) Custom paramters that might be used in plugins
+    migrationStrategies: {}, // (optional)
+    autoMigrate: true, // (optional)
+    cacheReplacementPolicy: function(){}, // (optional) custoom cache replacement policy
+  },
+  // you can create multiple collections at once
+  otherHumans: {
+    // ...
+  }
 });
 ```
 
@@ -40,12 +46,13 @@ To get an existing collection from the database, call the collection name direct
 
 ```javascript
 // newly created collection
-const collection = await db.collection({
-  name: 'heroes',
-  schema: mySchema
+const collections = await db.addCollection({
+  heroes: {
+    schema: mySchema
+  }
 });
 const collection2 = db.heroes;
-console.log(collection === collection2); //> true
+console.log(collections.heroes === collection2); //> true
 ```
 
 ## Functions

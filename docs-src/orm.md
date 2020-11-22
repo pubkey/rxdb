@@ -11,12 +11,13 @@ Statics are defined collection-wide and can be called on the collection.
 To add static functions, pass a `statics`-object when you create your collection. The object contains functions, mapped to their function-names.
 
 ```javascript
-const heroes = await myDatabase.collection({
-  name: 'heroes',
-  schema: mySchema,
-  statics: {
-    scream: function(){
-        return 'AAAH!!';
+const heroes = await myDatabase.addCollections({
+  heroes: {
+    schema: mySchema,
+    statics: {
+      scream: function(){
+          return 'AAAH!!';
+      }
     }
   }
 });
@@ -28,12 +29,13 @@ console.log(heroes.scream());
 You can also use the this-keyword which resolves to the collection:
 
 ```javascript
-const heroes = await myDatabase.collection({
-  name: 'heroes',
-  schema: mySchema,
-  statics: {
-    whoAmI: function(){
-        return this.name;
+const heroes = await myDatabase.addCollections({
+  heroes: {
+    schema: mySchema,
+    statics: {
+      whoAmI: function(){
+          return this.name;
+      }
     }
   }
 });
@@ -48,12 +50,13 @@ Instance-methods are defined collection-wide. They can be called on the RxDocume
 ### Add instance-methods to a collection
 
 ```javascript
-const heroes = await myDatabase.collection({
-  name: 'heroes',
-  schema: mySchema,
-  methods: {
-    scream: function(){
+const heroes = await myDatabase.addCollections({
+  heroes: {
+    schema: mySchema,
+    methods: {
+      scream: function(){
         return 'AAAH!!';
+      }
     }
   }
 });
@@ -65,12 +68,13 @@ console.log(doc.scream());
 Here you can also use the this-keyword:
 
 ```javascript
-const heroes = await myDatabase.collection({
-  name: 'heroes',
-  schema: mySchema,
-  methods: {
-    whoAmI: function(){
-        return 'I am ' + this.name + '!!';
+const heroes = await myDatabase.addCollections({
+  heroes: {
+    schema: mySchema,
+    methods: {
+      whoAmI: function(){
+          return 'I am ' + this.name + '!!';
+      }
     }
   }
 });
@@ -87,12 +91,13 @@ console.log(doc.whoAmI());
 Attachment-methods are defined collection-wide. They can be called on the RxAttachemnts of the RxDocuments of the collection.
 
 ```javascript
-const heroes = await myDatabase.collection({
-  name: 'heroes',
-  schema: mySchema,
-  attachments: {
-    scream: function(){
-        return 'AAAH!!';
+const heroes = await myDatabase.addCollections({
+  heroes: {
+    schema: mySchema,
+    attachments: {
+      scream: function(){
+          return 'AAAH!!';
+      }
     }
   }
 });

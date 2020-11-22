@@ -71,9 +71,10 @@ In this example-schema we define a hero-collection with the following settings:
 ## Create a collection with the schema
 
 ```javascript
-await myDatabase.collection({
-  name: 'heroes',
-  schema: myHeroSchema
+await myDatabase.addCollections({
+    heroes: {
+        schema: myHeroSchema
+    }
 });
 console.dir(myDatabase.heroes.name);
 // heroes

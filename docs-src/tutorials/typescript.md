@@ -132,11 +132,12 @@ const heroCollectionMethods: HeroCollectionMethods = {
     }
 };
 
-await myDatabase.collection({
-    name: 'heroes',
-    schema: heroSchema,
-    methods: heroDocMethods,
-    statics: heroCollectionMethods
+await myDatabase.addCollections({
+    heroes: {
+        schema: heroSchema,
+        methods: heroDocMethods,
+        statics: heroCollectionMethods
+    }
 });
 
 // add a postInsert-hook

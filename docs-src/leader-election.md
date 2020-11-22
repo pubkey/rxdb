@@ -26,9 +26,10 @@ const db = await createRxDatabase({
   password: 'myPassword',
   multiInstance: true
 });
-await db.collection({
-  name: 'temperature',
-  schema: mySchema
+await db.addCollections({
+  temperature: {
+    schema: mySchema
+  }
 });
 
 db.waitForLeadership()

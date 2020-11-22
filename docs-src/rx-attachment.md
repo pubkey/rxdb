@@ -21,9 +21,10 @@ const mySchema = {
     }
 };
 
-const myCollection = await myDatabase.collection({
-    name: 'humans',
-    schema: mySchema
+const myCollection = await myDatabase.addCollections({
+    humans: {
+        schema: mySchema
+    }
 });
 ```
 

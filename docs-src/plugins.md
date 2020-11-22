@@ -74,11 +74,12 @@ Sometimes you don't want to overwrite an existing RxDB-method, but extend it. Yo
 RxDatabase and RxCollection have an additional options-parameter, which can be filled with any data required be the plugin.
 
 ```javascript
-const collection = myDatabase.collection({
-    name: 'foo'.
-    schema: mySchema,
-    options: { // anything can be passed into the options
-        foo: ()=>'bar'
+const collection = myDatabase.addCollections({
+    foo: {
+        schema: mySchema,
+        options: { // anything can be passed into the options
+            foo: ()=>'bar'
+        }
     }
 })
 

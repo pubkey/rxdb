@@ -89,21 +89,22 @@ console.dir(bestFriend); //> RxDocument[Alice]
 ## Example with nested reference
 
 ```javascript
-const myCollection = await myDatabase.collection({
-  name: 'human',
-  schema: {
-    version: 0,
-    type: 'object',
-    properties: {
-      name: {
-        type: 'string'
-      },
-      family: {
-        type: 'object',
-        properties: {
-          mother: {
-            type: 'string',
-            ref: 'human'
+const myCollection = await myDatabase.addCollections({
+  human: {
+    schema: {
+      version: 0,
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string'
+        },
+        family: {
+          type: 'object',
+          properties: {
+            mother: {
+              type: 'string',
+              ref: 'human'
+            }
           }
         }
       }
@@ -118,24 +119,25 @@ console.dir(mother); //> RxDocument
 ## Example with array
 
 ```javascript
-const myCollection = await myDatabase.collection({
-  name: 'human',
-  schema: {
-    version: 0,
-    type: 'object',
-    properties: {
-      name: {
-        type: 'string'
-      },
-      friends: {
-        type: 'array',
-        ref: 'human',
-        items: {
-            type: 'string'
+const myCollection = await myDatabase.addCollections({
+  human: {
+    schema: {
+      version: 0,
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string'
+        },
+        friends: {
+          type: 'array',
+          ref: 'human',
+          items: {
+              type: 'string'
+          }
         }
       }
     }
-  }
+  } 
 });
 
 //[insert other humans here]

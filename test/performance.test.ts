@@ -122,17 +122,17 @@ for (let r = 0; r < runs; r++) {
                 });
                 dbs.push(db);
 
-                await Promise.all(
-                    new Array(benchmark.spawnDatabases.collections)
-                        .fill(0)
-                        .map(() => {
-                            return db.collection({
-                                name: 'human' + randomCouchString(10),
-                                schema: schemas.averageSchema(),
-                                statics: ormMethods
-                            });
-                        })
-                );
+                const collectionData: any = {};
+                new Array(benchmark.spawnDatabases.collections)
+                    .fill(0)
+                    .forEach(() => {
+                        const name = 'human' + randomCouchString(10);
+                        collectionData[name] = {
+                            schema: schemas.averageSchema(),
+                            statics: ormMethods
+                        };
+                    });
+                await db.addCollections(collectionData);
             }
             const elapsed = elapsedTime(startTime);
             benchmark.spawnDatabases.total = benchmark.spawnDatabases.total + elapsed;
