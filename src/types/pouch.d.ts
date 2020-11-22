@@ -237,7 +237,48 @@ export declare class PouchDBInstance {
         attachmentId: string,
         rev: string
     ): Promise<void>;
-    bulkGet(options?: any): Promise<any>;
+
+    /**
+     * @link https://pouchdb.com/api.html#bulk_get
+     */
+    bulkGet(options: {
+        docs: {
+            // ID of the document to fetch
+            id: string;
+            // Revision of the document to fetch. If this is not specified, all available revisions are fetched
+            rev?: string;
+
+            //  I could not find out what this should be
+            atts_since?: any;
+        }[],
+        // Each returned revision body will include its revision history as a _revisions property. Default is false
+        revs?: boolean;
+        // Include attachment data in the response. Default is false, resulting in only stubs being returned.
+        attachments?: boolean;
+        // Return attachment data as Blobs/Buffers, instead of as base64-encoded strings. Default is false
+        binary?: boolean;
+    }): Promise<{
+        results: {
+            id: string;
+            docs: {
+                ok?: {
+                    _id: string;
+                    _rev: string;
+                    _revisions: {
+                        ids: string[];
+                        start: number;
+                    }
+                }
+                error?: {
+                    error: string;
+                    id: string;
+                    reason: string;
+                    rev: string;
+                }
+            }[]
+        }[]
+    }>;
+
     revsDiff(diff: any): Promise<any>;
     explain(query: any): Promise<any>;
 
