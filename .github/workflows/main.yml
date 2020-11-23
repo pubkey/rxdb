@@ -33,14 +33,6 @@ jobs:
         with:
           node-version: 13.8.0
 
-      # https://github.com/juliangruber/browser-run/issues/147
-      - name: Setup X server install
-        run: |
-          sudo apt-get install xvfb
-          export DISPLAY=:99.0
-          Xvfb -ac :99 -screen 0 1280x1024x16 > /dev/null 2>&1 &
-
-
       - name: install npm dependencies
         run: npm install --depth 0 --silent
       
@@ -94,8 +86,14 @@ jobs:
       - name: test tutorials
         run: npm run build && (cd ./test/tutorials/ && npm install && npm test)
       
-      - name: angular example
-        run: npm run build && (cd ./examples/angular && npm install > "/dev/null" 2>&1 && npm run lint && npm run build && npm run test:build)
+      - name: angular build
+        run: npm run build && (cd ./examples/angular && npm install > "/dev/null" 2>&1 && npm run lint && npm run build)
+
+      - name: angular test
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          working-directory: ./examples/angular #optional
+          run: npm run test:build
 
       - name: vue example
         run: npm run build && (cd ./examples/vue && npm install > "/dev/null" 2>&1 && npm run lint && npm run build && npm run test)
