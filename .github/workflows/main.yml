@@ -119,7 +119,8 @@ jobs:
         uses: GabrielBB/xvfb-action@v1.4
         with:
           working-directory: ./examples/electron
-          run: npm run test
+          # retry 3 times
+          run: npm run test || npm run test || npm run test
 
       - name: electron-remote install
         run: cd ./examples/electron-remote && npm install > "/dev/null" 2>&1
@@ -128,7 +129,8 @@ jobs:
         uses: GabrielBB/xvfb-action@v1.4
         with:
           working-directory: ./examples/electron-remote
-          run: npm run test
+          # retry 3 times
+          run: npm run test || npm run test || npm run test
 
       - name: react install
         run: |
