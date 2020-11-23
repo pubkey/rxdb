@@ -107,14 +107,14 @@ jobs:
 #          working-directory: ./examples/vue
 #          run: npm run test
 
-      - name: electron install
-        run: cd ./examples/electron && npm install > "/dev/null" 2>&1
+#      - name: electron install
+#        run: cd ./examples/electron && npm install > "/dev/null" 2>&1
 
-      - name: electron test
-        uses: GabrielBB/xvfb-action@v1.4
-        with:
-          working-directory: ./examples/electron
-          run: npm run test
+#      - name: electron test
+#        uses: GabrielBB/xvfb-action@v1.4
+#        with:
+#          working-directory: ./examples/electron
+#          run: npm run test
 
       - name: electron-remote install
         run: cd ./examples/electron-remote && npm install > "/dev/null" 2>&1
