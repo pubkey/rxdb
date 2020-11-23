@@ -1,5 +1,10 @@
 # Changelog
 
+### X.X.X (comming soon)
+
+Other:
+  - Additional refactorings to improve collection creation speed
+
 ### 9.10.0 (23 November 2020)
 
 Features:

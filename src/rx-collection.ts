@@ -184,7 +184,12 @@ export class RxCollectionBase<
     private _onDestroy?: Promise<void>;
 
     private _onDestroyCall?: () => void;
-    prepare() {
+    prepare(
+        /**
+         * set to true if the collection data already exists on this storage adapter
+         */
+        wasCreatedBefore: boolean
+    ) {
         this.pouch = this.database._spawnPouchDB(
             this.name,
             this.schema.version,
@@ -196,8 +201,18 @@ export class RxCollectionBase<
         }
 
         // we trigger the non-blocking things first and await them later so we can do stuff in the mean time
-        const spawnedPouchPromise = this.pouch.info(); // resolved when the pouchdb is useable
-        const createIndexesPromise = _prepareCreateIndexes(
+
+        /**
+         * Sometimes pouchdb emits before the instance is useable.
+         * To prevent random errors, we wait until the .info() call resolved
+         */
+        const spawnedPouchPromise = wasCreatedBefore ? Promise.resolve() : this.pouch.info();
+
+        /**
+         * if wasCreatedBefore we can assume that the indexes already exist
+         * because changing them anyway requires a schema-version change
+         */
+        const createIndexesPromise: Promise<any> = wasCreatedBefore ? Promise.resolve() : _prepareCreateIndexes(
             this.asRxCollection,
             spawnedPouchPromise
         );
@@ -912,19 +927,21 @@ function _prepareCreateIndexes(
 /**
  * creates and prepares a new collection
  */
-export function create({
-    database,
-    name,
-    schema,
-    pouchSettings = {},
-    migrationStrategies = {},
-    autoMigrate = true,
-    statics = {},
-    methods = {},
-    attachments = {},
-    options = {},
-    cacheReplacementPolicy = defaultCacheReplacementPolicy
-}: any
+export function create(
+    {
+        database,
+        name,
+        schema,
+        pouchSettings = {},
+        migrationStrategies = {},
+        autoMigrate = true,
+        statics = {},
+        methods = {},
+        attachments = {},
+        options = {},
+        cacheReplacementPolicy = defaultCacheReplacementPolicy
+    }: any,
+    wasCreatedBefore: boolean
 ): Promise<RxCollection> {
     validateCouchDBString(name);
 
@@ -954,7 +971,7 @@ export function create({
         statics
     );
 
-    return collection.prepare()
+    return collection.prepare(wasCreatedBefore)
         .then(() => {
 
             // ORM add statics

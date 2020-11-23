@@ -239,7 +239,7 @@ export class RxDatabaseBase<
                 hookData.name = name;
                 runPluginHooks('preCreateRxCollection', hookData);
 
-                return createRxCollection(useArgs);
+                return createRxCollection(useArgs, !!internalDoc);
             })
         );
 

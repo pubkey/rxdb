@@ -62,7 +62,7 @@ config.parallel('rx-collection.test.js', () => {
                         database: db,
                         name: 'humanx',
                         schema
-                    });
+                    }, false);
                     assert.ok(isRxCollection(collection));
                     db.destroy();
                 });
@@ -76,7 +76,7 @@ config.parallel('rx-collection.test.js', () => {
                         database: db,
                         name: 'human',
                         schema
-                    });
+                    }, false);
                     assert.ok(isRxCollection(collection));
                     db.destroy();
                 });
@@ -92,7 +92,7 @@ config.parallel('rx-collection.test.js', () => {
                         database: db,
                         name: 'human',
                         schema
-                    });
+                    }, false);
                     const indexes = await col.pouch.getIndexes();
                     assert.strictEqual(indexes.indexes.length, 2);
                     const lastIndexDefFields = indexes.indexes[1].def.fields;
@@ -115,7 +115,7 @@ config.parallel('rx-collection.test.js', () => {
                         database: db,
                         name: 'human',
                         schema
-                    });
+                    }, false);
                     const indexes = await col.pouch.getIndexes();
                     assert.strictEqual(indexes.indexes.length, 2);
                     const lastIndexDefFields = indexes.indexes[1].def.fields;
@@ -138,7 +138,7 @@ config.parallel('rx-collection.test.js', () => {
                         database: db,
                         name: 'human',
                         schema
-                    });
+                    }, false);
                     assert.deepStrictEqual(schema.version, 0);
                     assert.ok(collection.pouch.name.includes('-' + schema.version + '-'));
                     db.destroy();
@@ -168,7 +168,7 @@ config.parallel('rx-collection.test.js', () => {
                             database: db,
                             name: 'human',
                             schema
-                        }),
+                        }, false),
                         TypeError
                     );
                 });
@@ -183,7 +183,7 @@ config.parallel('rx-collection.test.js', () => {
                             database: db,
                             name: null,
                             schema
-                        }),
+                        }, false),
                         'RxTypeError',
                         'null'
                     );
@@ -205,7 +205,7 @@ config.parallel('rx-collection.test.js', () => {
                             database: db,
                             name: '_foobar',
                             schema
-                        }),
+                        }, false),
                         'RxError',
                         'foobar'
                     );
@@ -221,13 +221,13 @@ config.parallel('rx-collection.test.js', () => {
                         database: db,
                         name: 'fooba4r',
                         schema
-                    });
+                    }, false);
                     assert.ok(isRxCollection(collection1));
                     const collection2 = await _createRxCollection({
                         database: db,
                         name: 'foobar4',
                         schema
-                    });
+                    }, false);
                     assert.ok(isRxCollection(collection2));
                     db.destroy();
                 });
@@ -244,7 +244,7 @@ config.parallel('rx-collection.test.js', () => {
                             database: db,
                             name: '0foobar',
                             schema
-                        }),
+                        }, false),
                         'RxError'
                     );
                     db.destroy();
@@ -260,7 +260,7 @@ config.parallel('rx-collection.test.js', () => {
                             database: db,
                             name: 'Foobar',
                             schema
-                        }),
+                        }, false),
                         'RxError'
                     );
                     await AsyncTestUtil.assertThrows(
@@ -268,7 +268,7 @@ config.parallel('rx-collection.test.js', () => {
                             database: db,
                             name: 'fooBar',
                             schema
-                        }),
+                        }, false),
                         'RxError'
                     );
                     db.destroy();
@@ -567,7 +567,7 @@ config.parallel('rx-collection.test.js', () => {
                             database: db,
                             name: 'humanx',
                             schema
-                        });
+                        }, false);
                         const docs = await collection.find().exec();
                         assert.deepStrictEqual(docs, []);
                         db.destroy();
@@ -757,7 +757,7 @@ config.parallel('rx-collection.test.js', () => {
                             database: db,
                             name: 'human',
                             schema
-                        });
+                        }, false);
                         const objects = new Array(10).fill(0).map(() => {
                             return {
                                 passportId: randomCouchString(10),
@@ -804,7 +804,7 @@ config.parallel('rx-collection.test.js', () => {
                             database: db,
                             name: 'human',
                             schema
-                        });
+                        }, false);
                         const objects = new Array(10).fill(0).map(() => {
                             return {
                                 passportId: randomCouchString(10),
