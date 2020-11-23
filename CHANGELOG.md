@@ -2,6 +2,8 @@
 
 ### X.X.X (comming soon)
 
+### 9.10.1 (23 November 2020)
+
 Other:
   - Additional refactorings to improve collection creation speed
 

@@ -92,7 +92,11 @@ var RxCollectionBase = /*#__PURE__*/function () {
 
   var _proto = RxCollectionBase.prototype;
 
-  _proto.prepare = function prepare() {
+  _proto.prepare = function prepare(
+  /**
+   * set to true if the collection data already exists on this storage adapter
+   */
+  wasCreatedBefore) {
     var _this = this;
 
     this.pouch = this.database._spawnPouchDB(this.name, this.schema.version, this.pouchSettings);
@@ -101,11 +105,19 @@ var RxCollectionBase = /*#__PURE__*/function () {
       this._keyCompressor = _overwritable.overwritable.createKeyCompressor(this.schema);
     } // we trigger the non-blocking things first and await them later so we can do stuff in the mean time
 
+    /**
+     * Sometimes pouchdb emits before the instance is useable.
+     * To prevent random errors, we wait until the .info() call resolved
+     */
 
-    var spawnedPouchPromise = this.pouch.info(); // resolved when the pouchdb is useable
 
-    var createIndexesPromise = _prepareCreateIndexes(this.asRxCollection, spawnedPouchPromise);
+    var spawnedPouchPromise = wasCreatedBefore ? Promise.resolve() : this.pouch.info();
+    /**
+     * if wasCreatedBefore we can assume that the indexes already exist
+     * because changing them anyway requires a schema-version change
+     */
 
+    var createIndexesPromise = wasCreatedBefore ? Promise.resolve() : _prepareCreateIndexes(this.asRxCollection, spawnedPouchPromise);
     this._crypter = (0, _crypter.createCrypter)(this.database.password, this.schema);
     this._observable$ = this.database.$.pipe((0, _operators.filter)(function (event) {
       return event.collectionName === _this.name;
@@ -921,7 +933,7 @@ function _prepareCreateIndexes(rxCollection, spawnedPouchPromise) {
  */
 
 
-function create(_ref) {
+function create(_ref, wasCreatedBefore) {
   var database = _ref.database,
       name = _ref.name,
       schema = _ref.schema,
@@ -955,7 +967,7 @@ function create(_ref) {
     });
   });
   var collection = new RxCollectionBase(database, name, schema, pouchSettings, migrationStrategies, methods, attachments, options, cacheReplacementPolicy, statics);
-  return collection.prepare().then(function () {
+  return collection.prepare(wasCreatedBefore).then(function () {
     // ORM add statics
     Object.entries(statics).forEach(function (_ref2) {
       var funName = _ref2[0],

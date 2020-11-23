@@ -190,7 +190,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
                 hookData.database = _this3;
                 hookData.name = name;
                 runPluginHooks('preCreateRxCollection', hookData);
-                return createRxCollection(useArgs);
+                return createRxCollection(useArgs, !!internalDoc);
               }));
 
             case 9:
@@ -229,15 +229,20 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
                 }
               }); // make a single call to the pouchdb instance
 
-              _context.next = 15;
+              if (!(bulkPutDocs.length > 0)) {
+                _context.next = 16;
+                break;
+              }
+
+              _context.next = 16;
               return pouch.bulkDocs({
                 docs: bulkPutDocs
               });
 
-            case 15:
+            case 16:
               return _context.abrupt("return", ret);
 
-            case 16:
+            case 17:
             case "end":
               return _context.stop();
           }

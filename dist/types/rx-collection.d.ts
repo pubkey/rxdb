@@ -52,7 +52,11 @@ export declare class RxCollectionBase<RxDocumentType = {
      */
     private _onDestroy?;
     private _onDestroyCall?;
-    prepare(): Promise<[any, any]>;
+    prepare(
+    /**
+     * set to true if the collection data already exists on this storage adapter
+     */
+    wasCreatedBefore: boolean): Promise<[any, any]>;
     migrationNeeded(): Promise<boolean>;
     getDataMigrator(): DataMigrator;
     migrate(batchSize?: number): Observable<MigrationState>;
@@ -157,7 +161,7 @@ export declare class RxCollectionBase<RxDocumentType = {
 /**
  * creates and prepares a new collection
  */
-export declare function create({ database, name, schema, pouchSettings, migrationStrategies, autoMigrate, statics, methods, attachments, options, cacheReplacementPolicy }: any): Promise<RxCollection>;
+export declare function create({ database, name, schema, pouchSettings, migrationStrategies, autoMigrate, statics, methods, attachments, options, cacheReplacementPolicy }: any, wasCreatedBefore: boolean): Promise<RxCollection>;
 export declare function isInstanceOf(obj: any): boolean;
 declare const _default: {
     create: typeof create;
