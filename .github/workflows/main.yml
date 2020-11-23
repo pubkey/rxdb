@@ -16,7 +16,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  build:
+  all:
     # The type of runner that the job will run on
     runs-on: ubuntu-18.04
 
@@ -37,93 +37,93 @@ jobs:
           node-version: 13.8.0
 
       - name: install npm dependencies
-        run: npm install --depth 0 --silent
+        run: npm install
       
-#      - name: build
-#        run: npm run build
+      - name: build
+        run: npm run build
       
-#      - name: test:typings
-#        run: npm run test:typings
+      - name: test:typings
+        run: npm run test:typings
 
-#      - name: check types
-#        run: npm run check-types
+      - name: check types
+        run: npm run check-types
 
-#      - name: test:deps
-#        run: npm run test:deps
+      - name: test:deps
+        run: npm run test:deps
 
-#      - name: test:circular
-#        run: npm run test:circular
+      - name: test:circular
+        run: npm run test:circular
 
-#      - name: lint
-#        run: npm run lint
+      - name: lint
+        run: npm run lint
         
-#      - name: npm run test:node
-#        run: npm run test:node
+      - name: npm run test:node
+        run: npm run test:node
   
-#      - name: npm run test:fast
-#        run: npm run test:fast
+      - name: npm run test:fast
+        run: npm run test:fast
 
-      # in the past we had tests that failed randomly
-      # to prevent this we run the tests in fast-mode 10 times
-#      - name: unit tests 10 times
-#        run: for i in `seq 10`; do npm run test:fast; done
+       # in the past we had tests that failed randomly
+       # to prevent this we run the tests in fast-mode 10 times
+      - name: unit tests 10 times
+        run: for i in `seq 10`; do npm run test:fast; done
 
-#      - name: npm run test:browser
-#        uses: GabrielBB/xvfb-action@v1
-#        with:
-#          working-directory: ./ #optional
-#          run: npm run test:browser
+      - name: npm run test:browser
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          working-directory: ./ #optional
+          run: npm run test:browser
         
-#      - name: npm run test:couchdb
-#        run: npm run test:couchdb
+      - name: npm run test:couchdb
+        run: npm run test:couchdb
         
-#      - name: npm run test:performance
-#        run: npm run test:performance
+      - name: npm run test:performance
+        run: npm run test:performance
 
-#      - name: measure build size
-#        run: npm run build:size
+      - name: measure build size
+        run: npm run build:size
         
-#      - name: test rollup build
-#        run: npm run build:rollup
+      - name: test rollup build
+        run: npm run build:rollup
 
-#      - name: test tutorials
-#        run: npm run build && (cd ./test/tutorials/ && npm install && npm test)
+      - name: test tutorials
+        run: npm run build && (cd ./test/tutorials/ && npm install && npm test)
       
-#      - name: angular build
-#        run: cd ./examples/angular && npm install > "/dev/null" 2>&1 && npm run lint && npm run build
+      - name: angular build
+        run: cd ./examples/angular && npm install > "/dev/null" 2>&1 && npm run lint && npm run build
 
-#      - name: angular test
-#        uses: GabrielBB/xvfb-action@v1
-#        with:
-#          working-directory: ./examples/angular #optional
-#          run: npm run test:build
+      - name: angular test
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          working-directory: ./examples/angular #optional
+          run: npm run test:build
 
-#      - name: vue build
-#        run: cd ./examples/vue && npm install > "/dev/null" 2>&1 && npm run lint && npm run build
-#        
-#      - name: vue test
-#        uses: GabrielBB/xvfb-action@v1
-#        with:
-#          working-directory: ./examples/vue
-#          run: npm run test
+      - name: vue build
+        run: cd ./examples/vue && npm install > "/dev/null" 2>&1 && npm run lint && npm run build
+        
+      - name: vue test
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          working-directory: ./examples/vue
+          run: npm run test
 
-#      - name: electron install
-#        run: cd ./examples/electron && npm install > "/dev/null" 2>&1
+      - name: electron install
+        run: cd ./examples/electron && npm install > "/dev/null" 2>&1
 
-#      - name: electron test
-#        uses: GabrielBB/xvfb-action@v1.4
-#        with:
-#          working-directory: ./examples/electron
-#          run: npm run test
+      - name: electron test
+        uses: GabrielBB/xvfb-action@v1.4
+        with:
+          working-directory: ./examples/electron
+          run: npm run test
 
-#      - name: electron-remote install
-#        run: cd ./examples/electron-remote && npm install > "/dev/null" 2>&1
+      - name: electron-remote install
+        run: cd ./examples/electron-remote && npm install > "/dev/null" 2>&1
 
-#      - name: electron-remote test
-#        uses: GabrielBB/xvfb-action@v1.4
-#        with:
-#          working-directory: ./examples/electron-remote
-#          run: npm run test
+      - name: electron-remote test
+        uses: GabrielBB/xvfb-action@v1.4
+        with:
+          working-directory: ./examples/electron-remote
+          run: npm run test
 
       - name: react install
         run: cd ./examples/react && npm install > "/dev/null" 2>&1 && npm run build
