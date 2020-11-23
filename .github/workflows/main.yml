@@ -108,13 +108,13 @@ jobs:
 #          run: npm run test
 
       - name: electron
-        uses: GabrielBB/xvfb-action@v1
+        uses: GabrielBB/xvfb-action@v1.4
         with:
           working-directory: ./examples/electron
           run: npm install > "/dev/null" 2>&1 && npm run test
 
       - name: electron-remote
-        uses: GabrielBB/xvfb-action@v1
+        uses: GabrielBB/xvfb-action@v1.4
         with:
           working-directory: ./examples/electron-remove
           run: npm install > "/dev/null" 2>&1 && npm run test
@@ -132,7 +132,7 @@ jobs:
         run: cd ./examples/graphql && npm install > "/dev/null" 2>&1 && npm run build
 
       - name: graphql test
-        uses: GabrielBB/xvfb-action@v1
+        uses: GabrielBB/xvfb-action@v1.4
         with:
           working-directory: ./examples/graphql
           run: npm run test:ci
