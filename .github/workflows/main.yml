@@ -29,7 +29,7 @@ jobs:
         run: docker run -d -p 5984:5984 --rm --name rxdb-couchdb couchdb:2.1.1
 
       - name: install dependencies
-        run: sudo apt-get install -y chromium-browser
+        run: sudo apt-get update && sudo apt-get install -y chromium-browser
 
       - name: Setup Node.js environment
         uses: actions/setup-node@v2.1.2
