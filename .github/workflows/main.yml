@@ -90,7 +90,10 @@ jobs:
         run: npm run build && (cd ./test/tutorials/ && npm install && npm test)
       
       - name: angular build
-        run: cd ./examples/angular && npm install > "/dev/null" 2>&1 && npm run lint && npm run build
+        run: |
+          cd ./examples/angular
+          npm install > "/dev/null" 2>&1
+          npm run lint && npm run build
 
       - name: angular test
         uses: GabrielBB/xvfb-action@v1
@@ -99,7 +102,9 @@ jobs:
           run: npm run test:build
 
       - name: vue build
-        run: cd ./examples/vue && npm install > "/dev/null" 2>&1 && npm run lint && npm run build
+        run: |
+          cd ./examples/vue && npm install > "/dev/null" 2>&1
+          npm run lint && npm run build
         
       - name: vue test
         uses: GabrielBB/xvfb-action@v1
@@ -126,7 +131,10 @@ jobs:
           run: npm run test
 
       - name: react install
-        run: cd ./examples/react && npm install > "/dev/null" 2>&1 && npm run build
+        run: |
+          cd ./examples/react
+          npm install > "/dev/null" 2>&1
+          npm run build
 
       - name: react test
         uses: GabrielBB/xvfb-action@v1.4
@@ -135,7 +143,13 @@ jobs:
           run: npm run test:build
 
       - name: react-native
-        run: cd ./examples/react-native && npx yarn@1.13.0 install > "/dev/null" 2>&1 && npm run test && echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p && npm run test:bundle
+        run: |
+          cd ./examples/react-native
+          npx yarn@1.13.0 install > "/dev/null" 2>&1
+          npm run test
+          echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
+          sudo sysctl -p
+          npm run test:bundle
 
       - name: node example
         run: cd ./examples/node && npm install > "/dev/null" 2>&1 && npm run test
