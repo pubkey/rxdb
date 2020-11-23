@@ -98,20 +98,26 @@ jobs:
 #          working-directory: ./examples/angular #optional
 #          run: npm run test:build
 
-      - name: vue build
-        run: cd ./examples/vue && npm install > "/dev/null" 2>&1 && npm run lint && npm run build
-        
-      - name: vue test
-        uses: GabrielBB/xvfb-action@v1
-        with:
-          working-directory: ./examples/vue
-          run: npm run test
+#      - name: vue build
+#        run: cd ./examples/vue && npm install > "/dev/null" 2>&1 && npm run lint && npm run build
+#        
+#      - name: vue test
+#        uses: GabrielBB/xvfb-action@v1
+#        with:
+#          working-directory: ./examples/vue
+#          run: npm run test
 
       - name: electron
-        run: cd ./examples/electron && npm install > "/dev/null" 2>&1 && npm run test
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          working-directory: ./examples/electron
+          run: npm install > "/dev/null" 2>&1 && npm run test
 
       - name: electron-remote
-        run: cd ./examples/electron-remote && npm install > "/dev/null" 2>&1 && npm run test
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          working-directory: ./examples/electron-remove
+          run: npm install > "/dev/null" 2>&1 && npm run test
 
       - name: react
         run: cd ./examples/react && npm install > "/dev/null" 2>&1 && npm run build && npm run test:build
