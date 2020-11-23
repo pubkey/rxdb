@@ -8,6 +8,7 @@ Features:
 
 Other:
   - Improved typings for `pouchdb.changes()`
+  - Moved from travisci to github actions
 
 ### 9.9.0 (10 November 2020)
 
