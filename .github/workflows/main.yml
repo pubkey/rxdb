@@ -90,7 +90,7 @@ jobs:
 #        run: npm run build && (cd ./test/tutorials/ && npm install && npm test)
       
       - name: angular build
-        run: npm run build && (cd ./examples/angular && npm install > "/dev/null" 2>&1 && npm run lint && npm run build)
+        run: cd ./examples/angular && npm install > "/dev/null" 2>&1 && npm run lint && npm run build
 
       - name: angular test
         uses: GabrielBB/xvfb-action@v1
