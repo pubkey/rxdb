@@ -277,9 +277,11 @@ export class RxDatabaseBase<
         });
 
         // make a single call to the pouchdb instance
-        await pouch.bulkDocs({
-            docs: bulkPutDocs,
-        });
+        if (bulkPutDocs.length > 0) {
+            await pouch.bulkDocs({
+                docs: bulkPutDocs,
+            });
+        }
 
         return ret;
     }
