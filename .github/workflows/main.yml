@@ -18,7 +18,7 @@ jobs:
   # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -74,7 +74,10 @@ jobs:
 #        run: for i in `seq 10`; do npm run test:fast; done
 
       - name: npm run test:browser
-        run: npm run test:browser
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          working-directory: ./ #optional
+          run: npm run test:browser
         
       - name: npm run test:couchdb
         run: npm run test:couchdb
