@@ -1,6 +1,6 @@
 # Changelog
 
-### X.X.X (comming soon)
+### 9.10.0 (23 November 2020)
 
 Features:
   - Added `RxCollection.getLocal$()` and `RxDatabase.getLocal$()` to observe local documents.

@@ -1634,9 +1634,10 @@ addRxPlugin(MemoryAdapter);
         }
     }
 };
-await db.collection({
-    name: <span class="hljs-string">&apos;items&apos;</span>,
-    schema: mySchema
+await db.addCollections({
+    items: {
+        schema: mySchema
+    }
 });
 
 <span class="hljs-comment">// insert one document</span>
@@ -1705,9 +1706,10 @@ addRxPlugin(PouchHttpPlugin);
 });
 
 <span class="hljs-comment">// create a collection</span>
-await clientDB.collection({
-    name: <span class="hljs-string">&apos;items&apos;</span>,
-    schema: mySchema
+await clientDB.addCollections({
+    items: {
+        schema: mySchema
+    }
 });
 </code></pre>
 <p>Now you replicate the client collection with the server.</p>
@@ -1763,7 +1765,7 @@ await clientDB.collection({
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Using the Server Plugin","level":"1.22.2","depth":2,"next":{"title":"Questions & Answers","level":"1.23","depth":1,"path":"questions-answers.md","ref":"./questions-answers.md","articles":[]},"previous":{"title":"Use RxDB with Typescript","level":"1.22.1","depth":2,"path":"tutorials/typescript.md","ref":"./tutorials/typescript.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"tutorials/server.md","mtime":"2020-07-22T22:17:56.213Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2020-11-10T05:24:35.319Z"},"basePath":"..","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Using the Server Plugin","level":"1.22.2","depth":2,"next":{"title":"Questions & Answers","level":"1.23","depth":1,"path":"questions-answers.md","ref":"./questions-answers.md","articles":[]},"previous":{"title":"Use RxDB with Typescript","level":"1.22.1","depth":2,"path":"tutorials/typescript.md","ref":"./tutorials/typescript.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"tutorials/server.md","mtime":"2020-11-22T22:28:21.292Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2020-11-23T15:00:36.100Z"},"basePath":"..","book":{"language":""}});
         });
     </script>
 </div>

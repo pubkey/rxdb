@@ -1629,6 +1629,12 @@ They come in handy when you want to store settings or additional data next to yo
 <p>Find a <code>RxLocalDocument</code> by it&apos;s id. Returns a Promise which resolves the <code>RxLocalDocument</code> or <code>null</code> if not exists.</p>
 <pre><code class="lang-javascript"><span class="hljs-keyword">const</span> localDoc = <span class="hljs-keyword">await</span> myCollection.getLocal(<span class="hljs-string">&apos;foobar&apos;</span>);
 </code></pre>
+<h2 id="getlocal">getLocal$()</h2>
+<p>Like <code>getLocal$()</code> but returns an <code>Observable</code> that emits the document or <code>null</code> if not exists.</p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> subscription = myCollection.getLocal$(<span class="hljs-string">&apos;foobar&apos;</span>).subscribe(documentOrNull =&gt; {
+    <span class="hljs-built_in">console</span>.dir(documentOrNull); <span class="hljs-comment">// &gt; RxLocalDocument or null</span>
+});
+</code></pre>
 <h2 id="rxlocaldocument">RxLocalDocument</h2>
 <p>A <code>RxLocalDocument</code> behaves like a normal <code>RxDocument</code>.</p>
 <pre><code class="lang-javascript"><span class="hljs-keyword">const</span> localDoc = <span class="hljs-keyword">await</span> myCollection.getLocal(<span class="hljs-string">&apos;foobar&apos;</span>);
@@ -1652,6 +1658,20 @@ localDoc.get$(<span class="hljs-string">&apos;foo&apos;</span>).subscribe(value 
 
 localDoc.foo = <span class="hljs-string">&apos;bar&apos;</span>; <span class="hljs-comment">// does not work!</span>
 localDoc.set(<span class="hljs-string">&apos;foo&apos;</span>, <span class="hljs-string">&apos;bar&apos;</span>); <span class="hljs-comment">// works</span>
+</code></pre>
+<p>For the usage with typescript, you can have access to the typed data of the document over <code>toJSON()</code></p>
+<pre><code class="lang-ts"><span class="hljs-keyword">declare</span> <span class="hljs-keyword">type</span> MyLocalDocumentType = {
+  foo: <span class="hljs-built_in">string</span>
+}
+<span class="hljs-keyword">const</span> localDoc = await myCollection.upsertLocal&lt;MyLocalDocumentType&gt;(
+    <span class="hljs-string">&apos;foobar&apos;</span>,   <span class="hljs-comment">// id</span>
+    {           <span class="hljs-comment">// data</span>
+        foo: <span class="hljs-string">&apos;bar&apos;</span>
+    }
+);
+
+<span class="hljs-comment">// typescript will know that foo is a string</span>
+<span class="hljs-keyword">const</span> foo: <span class="hljs-built_in">string</span> = localDoc.toJSON().foo;
 </code></pre>
 <hr>
 <p>If you are new to RxDB, you should continue <a href="custom-build.html">here</a></p>
@@ -1698,7 +1718,7 @@ localDoc.set(<span class="hljs-string">&apos;foo&apos;</span>, <span class="hljs
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"LocalDocuments","level":"1.18","depth":1,"next":{"title":"Custom Build","level":"1.19","depth":1,"path":"custom-build.md","ref":"./custom-build.md","articles":[]},"previous":{"title":"QueryCache","level":"1.17","depth":1,"path":"query-cache.md","ref":"./query-cache.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-local-document.md","mtime":"2020-07-22T22:17:56.213Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2020-11-10T05:24:35.319Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"LocalDocuments","level":"1.18","depth":1,"next":{"title":"Custom Build","level":"1.19","depth":1,"path":"custom-build.md","ref":"./custom-build.md","articles":[]},"previous":{"title":"QueryCache","level":"1.17","depth":1,"path":"query-cache.md","ref":"./query-cache.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-local-document.md","mtime":"2020-11-22T04:03:08.412Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2020-11-23T15:00:36.100Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

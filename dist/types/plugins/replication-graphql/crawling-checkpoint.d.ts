@@ -1,4 +1,4 @@
-import type { RxCollection } from '../../types';
+import type { RxCollection, PouchChangeRow, PouchChangeDoc } from '../../types';
 /**
  * @return last sequence checkpoint
  */
@@ -9,14 +9,7 @@ export declare function setLastPushSequence(collection: RxCollection, endpointHa
     rev: string;
 }>;
 export declare function getChangesSinceLastPushSequence(collection: RxCollection, endpointHash: string, lastPulledRevField: string, batchSize?: number, syncRevisions?: boolean): Promise<{
-    results: {
-        id: string;
-        seq: number;
-        changes: {
-            rev: string;
-        }[];
-        doc: any;
-    }[];
+    results: (PouchChangeRow & PouchChangeDoc)[];
     last_seq: number;
 }>;
 export declare function getLastPullDocument(collection: RxCollection, endpointHash: string): Promise<any>;

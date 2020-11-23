@@ -1,7 +1,7 @@
 import { IdleQueue } from 'custom-idle-queue';
 import { BroadcastChannel } from 'broadcast-channel';
 import type { LeaderElector } from './plugins/leader-election';
-import type { CollectionsOfDatabase, PouchDBInstance, RxDatabase, RxCollectionCreator, RxJsonSchema, RxCollection, PouchSettings, ServerOptions, RxDatabaseCreator, RxDumpDatabase, RxDumpDatabaseAny } from './types';
+import type { CollectionsOfDatabase, PouchDBInstance, RxDatabase, RxCollectionCreator, RxJsonSchema, RxCollection, PouchSettings, ServerOptions, RxDatabaseCreator, RxDumpDatabase, RxDumpDatabaseAny, RxCollectionCreatorBase } from './types';
 import { Subject, Subscription, Observable } from 'rxjs';
 import { RxChangeEvent } from './rx-change-event';
 import { RxStorage } from './rx-storate.interface';
@@ -50,7 +50,19 @@ export declare class RxDatabaseBase<Collections = CollectionsOfDatabase, RxStora
      */
     removeCollectionDoc(name: string, schema: any): Promise<void>;
     /**
+     * creates multiple RxCollections at once
+     * to be much faster by saving db txs and doing stuff in bulk-operations
+     * This function is not called often, but mostly in the critical path at the initial page load
+     * So it must be as fast as possible
+     */
+    addCollections(collectionCreators: {
+        [name: string]: RxCollectionCreatorBase;
+    }): Promise<{
+        [key: string]: RxCollection;
+    }>;
+    /**
      * create or fetch a collection
+     * @deprecated use addCollections() instead, it is faster and better typed
      */
     collection<RxDocumentType = any, OrmMethods = {}, StaticMethods = {
         [key: string]: any;

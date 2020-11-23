@@ -12,6 +12,7 @@ import {
 import {
     RxDatabaseBase
 } from '../rx-database';
+import { Observable } from 'rxjs';
 
 export interface RxDatabaseCreator {
     name: string;
@@ -70,6 +71,9 @@ export interface RxDatabaseGenerated<Collections> {
     >;
     getLocal<LocalDocType = any>(id: string): Promise<
         RxLocalDocument<RxDatabase<Collections>, LocalDocType>
+    >;
+    getLocal$<LocalDocType = any>(id: string): Observable<
+        RxLocalDocument<RxDatabase<Collections>, LocalDocType> | null
     >;
 }
 

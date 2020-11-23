@@ -1593,78 +1593,82 @@
 <p>With RxDB you can provide migrationStrategies for your collections that automatically (or on call) transform your existing data from older to newer schemas. This assures that the client&apos;s data always matches your newest code-version.</p>
 <h2 id="providing-strategies">Providing strategies</h2>
 <p>Upon creation of a collection, you have to provide migrationStrategies when your schema&apos;s version-number is greater than <code>0</code>. To do this, you have to add an object to the <code>migrationStrategies</code> property where a function for every schema-version is assigned. A migrationStrategy is a function which gets the old document-data as a parameter and returns the new, transformed document-data. If the strategy returns <code>null</code>, the document will be removed instead of migrated.</p>
-<pre><code class="lang-javascript">myDatabase.collection({
-  name: <span class="hljs-string">&apos;messages&apos;</span>,
-  schema: messageSchemaV1,
-  migrationStrategies: {
-    <span class="hljs-comment">// 1 means, this transforms data from version 0 to version 1</span>
-    <span class="hljs-number">1</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">oldDoc</span>)</span>{
-      oldDoc.time = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(oldDoc.time).getTime(); <span class="hljs-comment">// string to unix</span>
-      <span class="hljs-keyword">return</span> oldDoc;
+<pre><code class="lang-javascript">myDatabase.addCollections({
+  messages: {
+    schema: messageSchemaV1,
+    migrationStrategies: {
+      <span class="hljs-comment">// 1 means, this transforms data from version 0 to version 1</span>
+      <span class="hljs-number">1</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">oldDoc</span>)</span>{
+        oldDoc.time = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(oldDoc.time).getTime(); <span class="hljs-comment">// string to unix</span>
+        <span class="hljs-keyword">return</span> oldDoc;
+      }
     }
   }
 });
 </code></pre>
 <p>Asynchronous strategies can also be used:</p>
-<pre><code class="lang-javascript">myDatabase.collection({
-  name: <span class="hljs-string">&apos;messages&apos;</span>,
-  schema: messageSchemaV1,
-  migrationStrategies: {
-    <span class="hljs-number">1</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">oldDoc</span>)</span>{
-      oldDoc.time = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(oldDoc.time).getTime(); <span class="hljs-comment">// string to unix</span>
-      <span class="hljs-keyword">return</span> oldDoc;
-    },
-    <span class="hljs-comment">/**
-     * 2 means, this transforms data from version 1 to version 2
-     * this returns a promise which resolves with the new document-data
-     */</span>
-    <span class="hljs-number">2</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">oldDoc</span>)</span>{
-      <span class="hljs-comment">// in the new schema (version: 2) we defined &apos;senderCountry&apos; as required field (string)</span>
-      <span class="hljs-comment">// so we must get the country of the message-sender from the server</span>
-      <span class="hljs-keyword">const</span> coordinates = oldDoc.coordinates;
-      <span class="hljs-keyword">return</span> fetch(<span class="hljs-string">&apos;http://myserver.com/api/countryByCoordinates/&apos;</span>+coordinates+<span class="hljs-string">&apos;/&apos;</span>)
-        .then(response =&gt; {
-          <span class="hljs-keyword">const</span> response = response.json();
-          oldDoc.senderCountry=response;
-          <span class="hljs-keyword">return</span> oldDoc;
-        });
+<pre><code class="lang-javascript">myDatabase.addCollections({
+  messages: {
+    schema: messageSchemaV1,
+    migrationStrategies: {
+      <span class="hljs-number">1</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">oldDoc</span>)</span>{
+        oldDoc.time = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(oldDoc.time).getTime(); <span class="hljs-comment">// string to unix</span>
+        <span class="hljs-keyword">return</span> oldDoc;
+      },
+      <span class="hljs-comment">/**
+       * 2 means, this transforms data from version 1 to version 2
+       * this returns a promise which resolves with the new document-data
+       */</span>
+      <span class="hljs-number">2</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">oldDoc</span>)</span>{
+        <span class="hljs-comment">// in the new schema (version: 2) we defined &apos;senderCountry&apos; as required field (string)</span>
+        <span class="hljs-comment">// so we must get the country of the message-sender from the server</span>
+        <span class="hljs-keyword">const</span> coordinates = oldDoc.coordinates;
+        <span class="hljs-keyword">return</span> fetch(<span class="hljs-string">&apos;http://myserver.com/api/countryByCoordinates/&apos;</span>+coordinates+<span class="hljs-string">&apos;/&apos;</span>)
+          .then(response =&gt; {
+            <span class="hljs-keyword">const</span> response = response.json();
+            oldDoc.senderCountry=response;
+            <span class="hljs-keyword">return</span> oldDoc;
+          });
+      }
     }
   }
 });
 </code></pre>
 <p>you can also filter which documents should be migrated:</p>
-<pre><code class="lang-js">myDatabase.collection({
-  name: <span class="hljs-string">&apos;messages&apos;</span>,
-  schema: messageSchemaV1,
-  migrationStrategies: {
-    <span class="hljs-comment">// 1 means, this transforms data from version 0 to version 1</span>
-    <span class="hljs-number">1</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">oldDoc</span>)</span>{
-      oldDoc.time = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(oldDoc.time).getTime(); <span class="hljs-comment">// string to unix</span>
-      <span class="hljs-keyword">return</span> oldDoc;
-    },
-    <span class="hljs-comment">/**
-     * this removes all documents older then 2017-02-12
-     * they will not appear in the new collection
-     */</span>
-    <span class="hljs-number">2</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">oldDoc</span>)</span>{
-      <span class="hljs-keyword">if</span>(oldDoc.time &lt; <span class="hljs-number">1486940585</span>) <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
-      <span class="hljs-keyword">else</span> <span class="hljs-keyword">return</span> oldDoc;
+<pre><code class="lang-js">myDatabase.addCollections({
+  messages: {
+    schema: messageSchemaV1,
+    migrationStrategies: {
+      <span class="hljs-comment">// 1 means, this transforms data from version 0 to version 1</span>
+      <span class="hljs-number">1</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">oldDoc</span>)</span>{
+        oldDoc.time = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(oldDoc.time).getTime(); <span class="hljs-comment">// string to unix</span>
+        <span class="hljs-keyword">return</span> oldDoc;
+      },
+      <span class="hljs-comment">/**
+       * this removes all documents older then 2017-02-12
+       * they will not appear in the new collection
+       */</span>
+      <span class="hljs-number">2</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">oldDoc</span>)</span>{
+        <span class="hljs-keyword">if</span>(oldDoc.time &lt; <span class="hljs-number">1486940585</span>) <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
+        <span class="hljs-keyword">else</span> <span class="hljs-keyword">return</span> oldDoc;
+      }
     }
   }
 });
 </code></pre>
 <h2 id="automigrate">autoMigrate</h2>
 <p>By default, the migration automatically happens when the collection is created. If you have lots of data or the migrationStrategies take a long time, it might be better to start the migration &apos;by hand&apos; and show the migration-state to the user as a loading-bar.</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> messageCol = <span class="hljs-keyword">await</span> myDatabase.collection({
-  name: <span class="hljs-string">&apos;messages&apos;</span>,
-  schema: messageSchemaV1,
-  autoMigrate: <span class="hljs-literal">false</span>, <span class="hljs-comment">// &lt;- migration will not run at creation</span>
-  migrationStrategies: {
-    <span class="hljs-number">1</span>: <span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">oldDoc</span>)</span>{
-      ...
-      anything that takes very long
-      ...
-      return oldDoc;
+<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> messageCol = <span class="hljs-keyword">await</span> myDatabase.addCollections({
+  messages: {
+    schema: messageSchemaV1,
+    autoMigrate: <span class="hljs-literal">false</span>, <span class="hljs-comment">// &lt;- migration will not run at creation</span>
+    migrationStrategies: {
+      <span class="hljs-number">1</span>: <span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">oldDoc</span>)</span>{
+        ...
+        anything that takes very long
+        ...
+        return oldDoc;
+      }
     }
   }
 });
@@ -1745,7 +1749,7 @@ migrationState$.subscribe(
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"DataMigration","level":"1.12","depth":1,"next":{"title":"LeaderElection","level":"1.13","depth":1,"path":"leader-election.md","ref":"./leader-election.md","articles":[]},"previous":{"title":"Population","level":"1.11","depth":1,"path":"population.md","ref":"./population.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"data-migration.md","mtime":"2020-07-22T22:17:56.177Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2020-11-10T05:24:35.319Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"DataMigration","level":"1.12","depth":1,"next":{"title":"LeaderElection","level":"1.13","depth":1,"path":"leader-election.md","ref":"./leader-election.md","articles":[]},"previous":{"title":"Population","level":"1.11","depth":1,"path":"population.md","ref":"./population.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"data-migration.md","mtime":"2020-11-22T22:21:33.706Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2020-11-23T15:00:36.100Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

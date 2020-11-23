@@ -1,8 +1,10 @@
+import _regeneratorRuntime from "@babel/runtime/regenerator";
+import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _createClass from "@babel/runtime/helpers/createClass";
 import randomToken from 'random-token';
 import { IdleQueue } from 'custom-idle-queue';
 import { BroadcastChannel } from 'broadcast-channel';
-import { promiseWait, pluginMissing, LOCAL_PREFIX } from './util';
+import { promiseWait, pluginMissing, LOCAL_PREFIX, flatClone } from './util';
 import { newRxError } from './rx-error';
 import { createRxSchema } from './rx-schema';
 import { isInstanceOf as isInstanceOfRxChangeEvent } from './rx-change-event';
@@ -116,95 +118,155 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
     });
   }
   /**
+   * creates multiple RxCollections at once
+   * to be much faster by saving db txs and doing stuff in bulk-operations
+   * This function is not called often, but mostly in the critical path at the initial page load
+   * So it must be as fast as possible
+   */
+  ;
+
+  _proto.addCollections =
+  /*#__PURE__*/
+  function () {
+    var _addCollections = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(collectionCreators) {
+      var _this3 = this;
+
+      var pouch, result, internalDocByCollectionName, schemaHashByName, collections, bulkPutDocs, ret;
+      return _regeneratorRuntime.wrap(function _callee$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              pouch = this.internalStore; // get local management docs in bulk request
+
+              _context.next = 3;
+              return pouch.allDocs({
+                include_docs: true,
+                keys: Object.keys(collectionCreators).map(function (name) {
+                  return _collectionNamePrimary(name, collectionCreators[name].schema);
+                })
+              });
+
+            case 3:
+              result = _context.sent;
+              internalDocByCollectionName = {};
+              result.rows.forEach(function (row) {
+                if (!row.error) {
+                  internalDocByCollectionName[row.key] = row.doc;
+                }
+              });
+              schemaHashByName = {};
+              _context.next = 9;
+              return Promise.all(Object.entries(collectionCreators).map(function (_ref) {
+                var name = _ref[0],
+                    args = _ref[1];
+
+                var internalDoc = internalDocByCollectionName[_collectionNamePrimary(name, collectionCreators[name].schema)];
+
+                var useArgs = flatClone(args);
+                useArgs.name = name;
+                var schema = createRxSchema(args.schema);
+                schemaHashByName[name] = schema.hash;
+                useArgs.schema = schema;
+                useArgs.database = _this3; // TODO check if already exists and schema hash has changed
+                // collection already exists
+
+                if (_this3.collections[name]) {
+                  throw newRxError('DB3', {
+                    name: name
+                  });
+                } // collection already exists but has different schema
+
+
+                if (internalDoc && internalDoc.schemaHash !== schemaHashByName[name]) {
+                  throw newRxError('DB6', {
+                    name: name,
+                    previousSchemaHash: internalDoc.schemaHash,
+                    schemaHash: schemaHashByName[name]
+                  });
+                } // run hooks
+
+
+                var hookData = flatClone(args);
+                hookData.database = _this3;
+                hookData.name = name;
+                runPluginHooks('preCreateRxCollection', hookData);
+                return createRxCollection(useArgs);
+              }));
+
+            case 9:
+              collections = _context.sent;
+              bulkPutDocs = [];
+              ret = {};
+              collections.forEach(function (collection) {
+                var name = collection.name;
+                ret[name] = collection;
+
+                if (collection.schema.crypt && !_this3.password) {
+                  throw newRxError('DB7', {
+                    name: name
+                  });
+                } // add to bulk-docs list
+
+
+                if (!internalDocByCollectionName[name]) {
+                  bulkPutDocs.push({
+                    _id: _collectionNamePrimary(name, collectionCreators[name].schema),
+                    schemaHash: schemaHashByName[name],
+                    schema: collection.schema.normalized,
+                    version: collection.schema.version
+                  });
+                } // set as getter to the database
+
+
+                _this3.collections[name] = collection;
+
+                if (!_this3[name]) {
+                  Object.defineProperty(_this3, name, {
+                    get: function get() {
+                      return _this3.collections[name];
+                    }
+                  });
+                }
+              }); // make a single call to the pouchdb instance
+
+              _context.next = 15;
+              return pouch.bulkDocs({
+                docs: bulkPutDocs
+              });
+
+            case 15:
+              return _context.abrupt("return", ret);
+
+            case 16:
+            case "end":
+              return _context.stop();
+          }
+        }
+      }, _callee, this);
+    }));
+
+    function addCollections(_x) {
+      return _addCollections.apply(this, arguments);
+    }
+
+    return addCollections;
+  }()
+  /**
    * create or fetch a collection
+   * @deprecated use addCollections() instead, it is faster and better typed
    */
   ;
 
   _proto.collection = function collection(args) {
-    var _this3 = this;
+    var _this$addCollections;
 
     if (typeof args === 'string') {
       return Promise.resolve(this.collections[args]);
-    }
+    } // collection() is deprecated, call new bulk-creation method
 
-    args = Object.assign({}, args);
-    args.database = this;
-    runPluginHooks('preCreateRxCollection', args);
 
-    if (this.collections[args.name]) {
-      throw newRxError('DB3', {
-        name: args.name
-      });
-    }
-
-    var internalPrimary = _collectionNamePrimary(args.name, args.schema);
-
-    var schema = createRxSchema(args.schema);
-    args.schema = schema; // check schemaHash
-
-    var schemaHash = schema.hash;
-    var colDoc;
-    var col;
-    return this.lockedRun(function () {
-      return _this3.internalStore.get(internalPrimary);
-    })["catch"](function () {
-      return null;
-    }).then(function (collectionDoc) {
-      colDoc = collectionDoc;
-
-      if (collectionDoc && collectionDoc.schemaHash !== schemaHash) {
-        // collection already exists with different schema, check if it has documents
-        var pouch = _this3._spawnPouchDB(args.name, args.schema.version, args.pouchSettings);
-
-        return pouch.find({
-          selector: {},
-          limit: 1
-        }).then(function (oneDoc) {
-          if (oneDoc.docs.length !== 0) {
-            // we have one document
-            throw newRxError('DB6', {
-              name: args.name,
-              previousSchemaHash: collectionDoc.schemaHash,
-              schemaHash: schemaHash
-            });
-          }
-
-          return collectionDoc;
-        });
-      } else return collectionDoc;
-    }).then(function () {
-      return createRxCollection(args);
-    }).then(function (collection) {
-      col = collection;
-
-      if (collection.schema.crypt && !_this3.password) {
-        throw newRxError('DB7', {
-          name: args.name
-        });
-      }
-
-      if (!colDoc) {
-        return _this3.lockedRun(function () {
-          return _this3.internalStore.put({
-            _id: internalPrimary,
-            schemaHash: schemaHash,
-            schema: collection.schema.normalized,
-            version: collection.schema.version
-          });
-        })["catch"](function () {});
-      }
-    }).then(function () {
-      _this3.collections[args.name] = col;
-
-      if (!_this3[args.name]) {
-        Object.defineProperty(_this3, args.name, {
-          get: function get() {
-            return _this3.collections[args.name];
-          }
-        });
-      }
-
-      return col;
+    return this.addCollections((_this$addCollections = {}, _this$addCollections[args.name] = args, _this$addCollections)).then(function (colObject) {
+      return colObject[args.name];
     });
   }
   /**
@@ -490,20 +552,20 @@ function prepare(rxDatabase) {
   });
 }
 
-export function createRxDatabase(_ref) {
-  var name = _ref.name,
-      adapter = _ref.adapter,
-      password = _ref.password,
-      _ref$multiInstance = _ref.multiInstance,
-      multiInstance = _ref$multiInstance === void 0 ? true : _ref$multiInstance,
-      _ref$eventReduce = _ref.eventReduce,
-      eventReduce = _ref$eventReduce === void 0 ? false : _ref$eventReduce,
-      _ref$ignoreDuplicate = _ref.ignoreDuplicate,
-      ignoreDuplicate = _ref$ignoreDuplicate === void 0 ? false : _ref$ignoreDuplicate,
-      _ref$options = _ref.options,
-      options = _ref$options === void 0 ? {} : _ref$options,
-      _ref$pouchSettings = _ref.pouchSettings,
-      pouchSettings = _ref$pouchSettings === void 0 ? {} : _ref$pouchSettings;
+export function createRxDatabase(_ref2) {
+  var name = _ref2.name,
+      adapter = _ref2.adapter,
+      password = _ref2.password,
+      _ref2$multiInstance = _ref2.multiInstance,
+      multiInstance = _ref2$multiInstance === void 0 ? true : _ref2$multiInstance,
+      _ref2$eventReduce = _ref2.eventReduce,
+      eventReduce = _ref2$eventReduce === void 0 ? false : _ref2$eventReduce,
+      _ref2$ignoreDuplicate = _ref2.ignoreDuplicate,
+      ignoreDuplicate = _ref2$ignoreDuplicate === void 0 ? false : _ref2$ignoreDuplicate,
+      _ref2$options = _ref2.options,
+      options = _ref2$options === void 0 ? {} : _ref2$options,
+      _ref2$pouchSettings = _ref2.pouchSettings,
+      pouchSettings = _ref2$pouchSettings === void 0 ? {} : _ref2$pouchSettings;
   runPluginHooks('preCreateRxDatabase', {
     name: name,
     adapter: adapter,

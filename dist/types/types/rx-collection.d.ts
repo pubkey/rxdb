@@ -8,6 +8,7 @@ import type {
     RxCollectionBase
 } from '../rx-collection';
 import type { QueryCache } from '../query-cache';
+import { Observable } from 'rxjs';
 
 export interface KeyFunctionMap {
     [key: string]: Function;
@@ -16,8 +17,15 @@ export interface NumberFunctionMap {
     [key: number]: Function;
 }
 
-export interface RxCollectionCreator {
+export interface RxCollectionCreator extends RxCollectionCreatorBase {
     name: string;
+}
+
+/**
+ * TODO remove RxCollectionCreator
+ * and rename this one in the next release
+ */
+export type RxCollectionCreatorBase = {
     schema: RxJsonSchema;
     pouchSettings?: PouchSettings;
     migrationStrategies?: KeyFunctionMap;
@@ -83,6 +91,7 @@ export interface RxCollectionGenerated<RxDocumentType = any, OrmMethods = {}> {
     insertLocal(id: string, data: any): Promise<RxLocalDocument<RxCollection<RxDocumentType, OrmMethods>>>;
     upsertLocal<LocalDocType = any>(id: string, data: LocalDocType): Promise<RxLocalDocument<RxCollection<RxDocumentType, OrmMethods>, LocalDocType>>;
     getLocal<LocalDocType = any>(id: string): Promise<RxLocalDocument<RxCollection<RxDocumentType, OrmMethods>, LocalDocType>>;
+    getLocal$<LocalDocType = any>(id: string): Observable<RxLocalDocument<RxCollection<RxDocumentType, OrmMethods>, LocalDocType> | null>;
 
     // only inMemory-collections
     awaitPersistence(): Promise<void>;

@@ -1,3 +1,5 @@
+import _regeneratorRuntime from "@babel/runtime/regenerator";
+import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
 
 /**
@@ -13,7 +15,7 @@ import { newRxError, newRxTypeError } from '../rx-error';
 import { clone, now, LOCAL_PREFIX } from '../util';
 import { isInstanceOf as isRxDatabase } from '../rx-database';
 import { isInstanceOf as isRxCollection } from '../rx-collection';
-import { filter, map, distinctUntilChanged } from 'rxjs/operators';
+import { filter, map, distinctUntilChanged, startWith, mergeMap } from 'rxjs/operators';
 var DOC_CACHE_BY_PARENT = new WeakMap();
 
 var _getDocCache = function _getDocCache(parent) {
@@ -276,11 +278,17 @@ function insertLocal(id, data) {
 
     var saveData = clone(data);
     saveData._id = LOCAL_PREFIX + id;
-    return pouch.put(saveData);
-  }).then(function (res) {
-    data._rev = res.rev;
-    var newDoc = RxLocalDocument.create(id, data, _this4);
-    return newDoc;
+    var startTime = now();
+    return pouch.put(saveData).then(function (res) {
+      data._rev = res.rev;
+      var newDoc = RxLocalDocument.create(id, data, _this4);
+      var endTime = now();
+      var changeEvent = new RxChangeEvent('INSERT', id, clone(data), isRxDatabase(_this4) ? _this4.database : _this4.database.token, isRxCollection(_this4) ? _this4.name : null, true, startTime, endTime, undefined, newDoc);
+
+      _this4.$emit(changeEvent);
+
+      return newDoc;
+    });
   });
 }
 /**
@@ -336,17 +344,134 @@ function getLocal(id) {
   });
 }
 
+function getLocal$(id) {
+  var _this7 = this;
+
+  return this.$.pipe(startWith(null), mergeMap( /*#__PURE__*/function () {
+    var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(cE) {
+      var doc;
+      return _regeneratorRuntime.wrap(function _callee$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              if (!cE) {
+                _context.next = 4;
+                break;
+              }
+
+              return _context.abrupt("return", {
+                changeEvent: cE
+              });
+
+            case 4:
+              _context.next = 6;
+              return _this7.getLocal(id);
+
+            case 6:
+              doc = _context.sent;
+              return _context.abrupt("return", {
+                doc: doc
+              });
+
+            case 8:
+            case "end":
+              return _context.stop();
+          }
+        }
+      }, _callee);
+    }));
+
+    return function (_x) {
+      return _ref.apply(this, arguments);
+    };
+  }()), mergeMap( /*#__PURE__*/function () {
+    var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(changeEventOrDoc) {
+      var cE, doc;
+      return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+        while (1) {
+          switch (_context2.prev = _context2.next) {
+            case 0:
+              if (!changeEventOrDoc.changeEvent) {
+                _context2.next = 17;
+                break;
+              }
+
+              cE = changeEventOrDoc.changeEvent;
+
+              if (!(!cE.isLocal || cE.documentId !== id)) {
+                _context2.next = 6;
+                break;
+              }
+
+              return _context2.abrupt("return", {
+                use: false
+              });
+
+            case 6:
+              if (!cE.rxDocument) {
+                _context2.next = 10;
+                break;
+              }
+
+              _context2.t0 = cE.rxDocument;
+              _context2.next = 13;
+              break;
+
+            case 10:
+              _context2.next = 12;
+              return _this7.getLocal(id);
+
+            case 12:
+              _context2.t0 = _context2.sent;
+
+            case 13:
+              doc = _context2.t0;
+              return _context2.abrupt("return", {
+                use: true,
+                doc: doc
+              });
+
+            case 15:
+              _context2.next = 18;
+              break;
+
+            case 17:
+              return _context2.abrupt("return", {
+                use: true,
+                doc: changeEventOrDoc.doc
+              });
+
+            case 18:
+            case "end":
+              return _context2.stop();
+          }
+        }
+      }, _callee2);
+    }));
+
+    return function (_x2) {
+      return _ref2.apply(this, arguments);
+    };
+  }()), filter(function (filterFlagged) {
+    return filterFlagged.use;
+  }), map(function (filterFlagged) {
+    return filterFlagged.doc;
+  }));
+}
+
 export var rxdb = true;
 export var prototypes = {
   RxCollection: function RxCollection(proto) {
     proto.insertLocal = insertLocal;
     proto.upsertLocal = upsertLocal;
     proto.getLocal = getLocal;
+    proto.getLocal$ = getLocal$;
   },
   RxDatabase: function RxDatabase(proto) {
     proto.insertLocal = insertLocal;
     proto.upsertLocal = upsertLocal;
     proto.getLocal = getLocal;
+    proto.getLocal$ = getLocal$;
   }
 };
 export var overwritable = {};
