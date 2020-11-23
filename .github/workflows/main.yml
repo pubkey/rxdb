@@ -116,17 +116,23 @@ jobs:
 #          working-directory: ./examples/electron
 #          run: npm run test
 
-      - name: electron-remote install
-        run: cd ./examples/electron-remote && npm install > "/dev/null" 2>&1
+#      - name: electron-remote install
+#        run: cd ./examples/electron-remote && npm install > "/dev/null" 2>&1
 
-      - name: electron-remote test
+#      - name: electron-remote test
+#        uses: GabrielBB/xvfb-action@v1.4
+#        with:
+#          working-directory: ./examples/electron-remote
+#          run: npm run test
+
+      - name: react install
+        run: cd ./examples/react && npm install > "/dev/null" 2>&1 && npm run build
+
+      - name: react test
         uses: GabrielBB/xvfb-action@v1.4
         with:
-          working-directory: ./examples/electron-remote
-          run: npm run test
-
-      - name: react
-        run: cd ./examples/react && npm install > "/dev/null" 2>&1 && npm run build && npm run test:build
+          working-directory: ./examples/react
+          run: npm run test:build
 
       - name: react-native
         run: cd ./examples/react-native && npx yarn@1.13.0 install > "/dev/null" 2>&1 && npm run test && echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p && npm run test:bundle
