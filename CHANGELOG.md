@@ -1,6 +1,6 @@
 # Changelog
 
-### X.X.X (comming soon)
+### X.X.X (coming soon)
 
 ### 9.10.1 (23 November 2020)
 

@@ -10,14 +10,14 @@ const myCollection = await myDatabase.addCollection({
   // key = collectionName
   humans: {
     schema: mySchema,
-    pouchSettings: {} // (optional)
-    statics: {}, // (optional) // ORM-functions for this collection
+    pouchSettings: {}, // (optional)
+    statics: {}, // (optional) ORM-functions for this collection
     methods: {}, // (optional) ORM-functions for documents
     attachments: {}, // (optional) ORM-functions for attachments
-    options: {}, // (optional) Custom paramters that might be used in plugins
+    options: {}, // (optional) Custom parameters that might be used in plugins
     migrationStrategies: {}, // (optional)
     autoMigrate: true, // (optional)
-    cacheReplacementPolicy: function(){}, // (optional) custoom cache replacement policy
+    cacheReplacementPolicy: function(){}, // (optional) custom cache replacement policy
   },
   // you can create multiple collections at once
   otherHumans: {
@@ -36,10 +36,10 @@ The schema defines how your data looks and how it should be handled. You can pas
 You can pass settings directly to the [pouchdb database create options](https://pouchdb.com/api.html#options) through this property.
 
 ### ORM-functions
-With the parameters `statics`, `methods` and `attachments`, you can defined ORM-functions that are applied to each of these objects that belong to this collection. See [ORM/DRM](./orm.md).
+With the parameters `statics`, `methods` and `attachments`, you can define ORM-functions that are applied to each of these objects that belong to this collection. See [ORM/DRM](./orm.md).
 
 ### Migration
-With the parameters `migrationStrategies` and `autoMigrate` you can specify how mirgration between different schema-versions should be done. [See Migration](./data-migration.md).
+With the parameters `migrationStrategies` and `autoMigrate` you can specify how migration between different schema-versions should be done. [See Migration](./data-migration.md).
 
 ## Get a collection from the database
 To get an existing collection from the database, call the collection name directly on the database:
@@ -82,7 +82,7 @@ const doc = await myCollection.insert({
 
 ### bulkInsert()
 
-When you have to insert many documents at once, use bulk insert. This is much faster then calling `.insert()` multiple times.
+When you have to insert many documents at once, use bulk insert. This is much faster than calling `.insert()` multiple times.
 Returns an object with a `success`- and `error`-array.
 
 ```js
@@ -161,7 +161,7 @@ await myCollection.atomicUpsert(docData);
 To find documents in your collection, use this method. [See RxQuery.find()](./rx-query.md#find).
 
 ```js
-// find all that are older then 18
+// find all that are older than 18
 const olderDocuments = await myCollection
     .find()
     .where('age')
@@ -214,7 +214,7 @@ Same as `findByIds()` but returns and `Observable` that emits the `Map` each tim
 
 
 ### dump()
-Use this function to create a json export from every document in the collection. You can pass true as parameter to decrypt the encrypted data fields of your documents.
+Use this function to create a json export from every document in the collection. You can pass true as a parameter to decrypt the encrypted data fields of your documents.
 ```js
 myCollection.dump()
   .then(json => console.dir(json));
