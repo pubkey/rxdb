@@ -1,6 +1,6 @@
 # Attachments
 
-Like [pouchdb](https://pouchdb.com/guides/attachments.html), RxDB can store attachments which has a better performance and a higher [quota-limit](https://www.html5rocks.com/en/tutorials/offline/quota-research/) then regular data.
+Like [pouchdb](https://pouchdb.com/guides/attachments.html), RxDB can store attachments which have better performance and a higher [quota-limit](https://www.html5rocks.com/en/tutorials/offline/quota-research/) than regular data.
 
 You can store string, binary files, images and whatever you want side by side with your documents.
 
@@ -34,7 +34,7 @@ Adds an attachment to a `RxDocument`. Returns a Promise with the new attachment.
 
 ```javascript
 const attachment = await myDocument.putAttachment({
-    id,     // string, name of the attachment like 'cat.jpg'
+    id,     // (string) name of the attachment like 'cat.jpg'
     data,   // (string|Blob|Buffer) data of the attachment
     type    // (string) type of the attachment-data like 'image/jpeg'
 });
