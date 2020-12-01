@@ -4,9 +4,8 @@
 
 import faker from 'faker';
 
-// TODO replace these 2 with methods of async-test-util
+// TODO replace this method with corresponding method from async-test-util
 import randomToken from 'random-token';
-import randomInt from 'random-int';
 
 import {
     randomNumber
@@ -29,7 +28,7 @@ export function human(
         passportId: passportId,
         firstName: faker.name.firstName(),
         lastName: faker.name.lastName(),
-        age: randomInt(10, 50)
+        age: randomNumber(10, 50)
     };
 }
 
@@ -48,7 +47,7 @@ export interface SimpleHumanV3DocumentType {
 export function simpleHumanV3(): SimpleHumanV3DocumentType {
     return {
         passportId: randomToken(12),
-        age: randomInt(10, 50)
+        age: randomNumber(10, 50)
     };
 }
 
@@ -59,7 +58,7 @@ export interface SimpleHumanAgeDocumentType {
 export function simpleHumanAge(): SimpleHumanAgeDocumentType {
     return {
         passportId: randomToken(12),
-        age: randomInt(10, 50) + ''
+        age: randomNumber(10, 50) + ''
     };
 }
 
@@ -73,7 +72,7 @@ export function humanWithSubOther(): HumanWithSubOtherDocumentType {
     return {
         passportId: randomToken(12),
         other: {
-            age: randomInt(10, 50)
+            age: randomNumber(10, 50)
         }
     };
 }
@@ -144,7 +143,7 @@ export function bigHumanDocumentType(): BigHumanDocumentType {
         dnaHash: randomToken(12),
         firstName: faker.name.firstName(),
         lastName: faker.name.lastName(),
-        age: randomInt(10, 50)
+        age: randomNumber(10, 50)
     };
 }
 
@@ -161,7 +160,7 @@ export function heroArray(): HeroArrayDocumentType {
         skills: new Array(3).fill(0).map(() => {
             return {
                 name: randomToken(6),
-                damage: randomInt(10, 50)
+                damage: randomNumber(10, 50)
             };
         })
     };
@@ -258,7 +257,7 @@ export function compoundIndex(): CompoundIndexDocumentType {
     return {
         passportId: randomToken(12),
         passportCountry: randomToken(12),
-        age: randomInt(10, 50)
+        age: randomNumber(10, 50)
     };
 }
 
@@ -271,7 +270,7 @@ export function compoundIndexNoString(): CompoundIndexNoStringDocumentType {
     return {
         passportId: randomToken(12),
         passportCountry: { [randomToken(12)]: randomToken(12) },
-        age: randomInt(10, 50)
+        age: randomNumber(10, 50)
     };
 }
 
@@ -351,7 +350,7 @@ export function averageSchema(): AverageSchemaDocumentType {
     return {
         id: randomToken(12),
         var1: randomToken(12),
-        var2: randomInt(100, 50000),
+        var2: randomNumber(100, 50000),
         deep: {
             deep1: randomToken(5),
             deep2: randomToken(8)

@@ -1,9 +1,8 @@
 import assert from 'assert';
-import randomInt from 'random-int';
 import randomToken from 'random-token';
 import clone from 'clone';
 import config from './config';
-import AsyncTestUtil from 'async-test-util';
+import AsyncTestUtil, { randomNumber } from 'async-test-util';
 
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
@@ -670,13 +669,13 @@ config.parallel('rx-collection.test.js', () => {
                         passportId: randomToken(12),
                         firstName: 'foobarAlice',
                         lastName: 'aliceLastName',
-                        age: randomInt(10, 50)
+                        age: randomNumber(10, 50)
                     });
                     await c.insert({
                         passportId: randomToken(12),
                         firstName: 'foobarBob',
                         lastName: 'bobLastName',
-                        age: randomInt(10, 50)
+                        age: randomNumber(10, 50)
                     });
                     const query = c.find().or([{
                         firstName: 'foobarAlice'
@@ -762,7 +761,7 @@ config.parallel('rx-collection.test.js', () => {
                             return {
                                 passportId: randomCouchString(10),
                                 other: {
-                                    age: randomInt(10, 50)
+                                    age: randomNumber(10, 50)
                                 }
                             };
                         });
@@ -809,7 +808,7 @@ config.parallel('rx-collection.test.js', () => {
                             return {
                                 passportId: randomCouchString(10),
                                 other: {
-                                    age: randomInt(10, 50)
+                                    age: randomNumber(10, 50)
                                 }
                             };
                         });
