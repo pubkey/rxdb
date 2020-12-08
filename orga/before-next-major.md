@@ -78,6 +78,9 @@ The defaults of `pouchdbExpressOptions` from `RxDatabase.server()` require the u
 ## remove RxDatabase.collection()
 It was replaced by `RxDatabase.addCollections()` which is faster and better typed.
 
+## rename wording of the json dump plugin
+The words `dump()` and `importDump()` are confusing. Name it import/export or sth.
+
 # Maybe
 
 ## Use Proxy instead of getters/setter on RxDocument
