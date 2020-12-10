@@ -1195,6 +1195,48 @@ describe('replication-graphql.test.js', () => {
                 server.close();
                 c.database.destroy();
             });
+            it('should fail because initial replication never resolves', async () => {
+                if (config.isFastMode()) {
+                    // this test takes too long, do not run in fast mode
+                    return;
+                }
+                const liveInterval = 4000;
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(0),
+                    SpawnServer.spawn()
+                ]);
+
+                const replicationState = c.syncGraphQL({
+                    url: ERROR_URL,
+                    pull: {
+                        queryBuilder
+                    },
+                    deletedFlag: 'deleted',
+                    live: true,
+                    liveInterval: liveInterval,
+                });
+
+                let timeoutId: any;
+                const timeout = new Promise((_, reject) => {
+                    timeoutId = setTimeout(() => {
+                        clearTimeout(timeoutId);
+                        reject(new Error('Timeout reached'));
+                    },
+                        // small buffer until the promise rejects
+                        liveInterval + 5000);
+                });
+
+                const raceProm = Promise.race([
+                    replicationState.awaitInitialReplication(),
+                    timeout
+                ]).then(_ => clearTimeout(timeoutId));
+
+                // error should be thrown because awaitInitialReplication() should never resolve
+                await AsyncTestUtil.assertThrows(() => raceProm, Error, 'Timeout');
+
+                server.close();
+                c.database.destroy();
+            });
         });
 
         config.parallel('push only', () => {
