@@ -26,6 +26,7 @@ export const prototypes = {
 export const hooks = {};
 
 export const RxDBNoValidatePlugin: RxPlugin = {
+    name: 'no-validate',
     rxdb,
     prototypes,
     hooks

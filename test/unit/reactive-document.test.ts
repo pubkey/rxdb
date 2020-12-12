@@ -14,7 +14,7 @@ import {
     randomCouchString,
     promiseWait,
     RxChangeEvent
-} from '../../';
+} from '../../plugins/core';
 import {
     first
 } from 'rxjs/operators';

@@ -80,6 +80,7 @@ export const hooks = {
 };
 
 export const RxDBValidatePlugin: RxPlugin = {
+    name: 'validate',
     rxdb,
     prototypes,
     hooks

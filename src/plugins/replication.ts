@@ -284,6 +284,7 @@ export const hooks = {
 };
 
 export const RxDBReplicationPlugin: RxPlugin = {
+    name: 'replication',
     rxdb,
     prototypes,
     hooks

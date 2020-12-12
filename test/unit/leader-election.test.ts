@@ -8,7 +8,7 @@ import * as humansCollection from '../helper/humans-collection';
 import {
     createRxDatabase,
     randomCouchString
-} from '../../';
+} from '../../plugins/core';
 
 config.parallel('leader-election.test.js', () => {
     describe('.die()', () => {

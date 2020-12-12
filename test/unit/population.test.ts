@@ -9,7 +9,7 @@ import {
     isRxDocument,
     randomCouchString,
     createRxSchema
-} from '../../';
+} from '../../plugins/core';
 
 config.parallel('population.test.js', () => {
     describe('createRxSchema', () => {

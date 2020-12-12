@@ -89,6 +89,7 @@ export const prototypes = {
 };
 
 export const RxDBLeaderElectionPlugin: RxPlugin = {
+    name: 'leader-election',
     rxdb,
     prototypes,
     hooks: {

@@ -198,6 +198,7 @@ export const hooks = {
 export const overwritable = {};
 
 export const RxDBServerPlugin: RxPlugin = {
+    name: 'server',
     rxdb,
     prototypes,
     overwritable,

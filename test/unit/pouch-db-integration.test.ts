@@ -15,13 +15,11 @@ import {
     clone,
     countAllUndeleted,
     getBatch,
-    PouchDB
-} from '../../';
-import * as schemaObjects from './../helper/schema-objects';
-import {
+    PouchDB,
     isRxDatabase,
     PouchDBInstance
-} from '../../';
+} from '../../plugins/core';
+import * as schemaObjects from './../helper/schema-objects';
 
 config.parallel('pouch-db-integration.test.js', () => {
     describe('init', () => {

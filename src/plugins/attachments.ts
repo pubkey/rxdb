@@ -341,6 +341,7 @@ export const hooks = {
 };
 
 export const RxDBAttachmentsPlugin: RxPlugin = {
+    name: 'attachments',
     rxdb,
     prototypes,
     overwritable,

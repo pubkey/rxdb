@@ -1,8 +1,8 @@
 import AsyncTestUtil from 'async-test-util';
 
-import {
+import type {
     RxJsonSchema
-} from '../../';
+} from '../../plugins/core';
 import {
     HumanDocumentType,
     SimpleHumanV3DocumentType,

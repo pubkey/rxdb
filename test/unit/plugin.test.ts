@@ -11,8 +11,11 @@ import {
     addRxPlugin,
     randomCouchString,
     _clearHook
-} from '../../';
+} from '../../plugins/core';
+
 import * as humansCollection from '../helper/humans-collection';
+import { assertThrows } from 'async-test-util';
+import { RxDBDevModePlugin } from '../../plugins/dev-mode';
 
 // used so that browserify will not require things in browsers
 const REQUIRE_FUN = require;
@@ -20,10 +23,25 @@ const REQUIRE_FUN = require;
 config.parallel('plugin.test.js', () => {
     if (!config.platform.isNode()) return;
     describe('.addRxPlugin()', () => {
-        it('should not crash when the same plugin is added multiple times', () => {
-            addRxPlugin(PouchReplicationPlugin);
-            addRxPlugin(PouchReplicationPlugin);
-            addRxPlugin(PouchReplicationPlugin);
+        describe('positive', () => {
+            it('should not crash when the same plugin is added multiple times', () => {
+                addRxPlugin(PouchReplicationPlugin);
+                addRxPlugin(PouchReplicationPlugin);
+                addRxPlugin(PouchReplicationPlugin);
+            });
+        });
+        describe('positive', () => {
+            /**
+             * this test assumes that at this point,
+             * the full RxDB has been imported and dev-mode is already there
+             */
+            it('should crash when dev-mode is added multiple times', async () => {
+                await assertThrows(
+                    () => addRxPlugin(RxDBDevModePlugin),
+                    'RxError',
+                    'DEV1'
+                );
+            });
         });
     });
     describe('core.node.js', () => {

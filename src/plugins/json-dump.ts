@@ -172,6 +172,7 @@ export const prototypes = {
 export const overwritable = {};
 
 export const RxDBJsonDumpPlugin: RxPlugin = {
+    name: 'json-dump',
     rxdb,
     prototypes,
     overwritable

@@ -5,9 +5,17 @@ import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import {
     getRxStoragePouchDb,
-    RxStorage
-} from '../../';
+    RxStorage,
+    addRxPlugin
+} from '../../plugins/core';
 
+import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
+addRxPlugin(RxDBKeyCompressionPlugin);
+import { RxDBValidatePlugin } from '../../plugins/validate';
+addRxPlugin(RxDBValidatePlugin);
+
+import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder';
+addRxPlugin(RxDBQueryBuilderPlugin);
 
 config.parallel('rx-storage-pouchdb.test.js', () => {
     describe('.getSortComparator()', () => {

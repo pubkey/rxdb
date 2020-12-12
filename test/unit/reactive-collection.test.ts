@@ -7,7 +7,7 @@ import * as humansCollection from '../helper/humans-collection';
 
 import {
     createRxDatabase, randomCouchString
-} from '../../';
+} from '../../plugins/core';
 import AsyncTestUtil from 'async-test-util';
 import {
     first

@@ -12,7 +12,7 @@ import {
     promiseWait,
     _collectionNamePrimary,
     countAllUndeleted
-} from '../../';
+} from '../../plugins/core';
 
 import {
     _getOldCollections,

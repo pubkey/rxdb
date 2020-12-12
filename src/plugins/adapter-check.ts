@@ -78,6 +78,7 @@ export const overwritable = {
 };
 
 export const RxDBAdapterCheckPlugin: RxPlugin = {
+    name: 'adapter-check',
     rxdb,
     prototypes,
     overwritable

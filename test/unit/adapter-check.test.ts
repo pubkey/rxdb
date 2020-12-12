@@ -1,14 +1,16 @@
 import assert from 'assert';
 import config from './config';
-import * as RxDB from '../../';
+import * as RxDB from '../../plugins/core';
 import {
     PouchDB,
     addRxPlugin,
     adapterObject
-} from '../../';
+} from '../../plugins/core';
 import {
+    RxDBAdapterCheckPlugin,
     POUCHDB_LOCATION
 } from '../../plugins/adapter-check';
+addRxPlugin(RxDBAdapterCheckPlugin);
 
 import memdown from 'memdown';
 if (!config.platform.isNode()) {

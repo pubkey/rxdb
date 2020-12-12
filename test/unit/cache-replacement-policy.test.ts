@@ -10,7 +10,7 @@ import {
     RxCollection,
     QueryCache,
     triggerCacheReplacement,
-} from '../../';
+} from '../../plugins/core';
 import { Subscription } from 'rxjs';
 
 config.parallel('cache-replacement-policy.test.js', () => {

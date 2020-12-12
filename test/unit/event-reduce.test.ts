@@ -9,7 +9,7 @@ import {
     RxCollection,
     RxDocument,
     MangoQuery
-} from '../../';
+} from '../../plugins/core';
 
 describe('event-reduce.test.js', () => {
     async function createCollection(eventReduce: boolean): Promise<RxCollection> {

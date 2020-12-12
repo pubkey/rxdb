@@ -9,7 +9,7 @@ import {
     PouchDB,
     RxDatabase,
     randomCouchString
-} from '../../';
+} from '../../plugins/core';
 
 import {
     HumanDocumentType

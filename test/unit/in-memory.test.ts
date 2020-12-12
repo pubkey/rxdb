@@ -12,15 +12,18 @@ import config from './config';
 import {
     createRxDatabase,
     clone,
-    randomCouchString
-} from '../../';
+    randomCouchString,
+    addRxPlugin
+} from '../../plugins/core';
 import {
+    RxDBInMemoryPlugin,
     InMemoryRxCollection,
     setIndexes,
     replicateExistingDocuments,
     streamChangedDocuments,
     applyChangedDocumentToPouch
 } from '../../plugins/in-memory';
+addRxPlugin(RxDBInMemoryPlugin);
 
 config.parallel('in-memory.test.js', () => {
     describe('internals', () => {

@@ -93,6 +93,7 @@ export const hooks = {
 };
 
 export const RxDBValidateZSchemaPlugin: RxPlugin = {
+    name: 'validate-z-schema',
     rxdb,
     prototypes,
     hooks

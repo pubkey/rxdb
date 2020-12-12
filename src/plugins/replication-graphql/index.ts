@@ -574,6 +574,7 @@ export const prototypes = {
 };
 
 export const RxDBReplicationGraphQLPlugin: RxPlugin = {
+    name: 'replication-graphql',
     rxdb,
     prototypes
 };

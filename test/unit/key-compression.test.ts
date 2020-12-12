@@ -15,7 +15,7 @@ import {
     RxSchema,
     randomCouchString,
     isRxDocument
-} from '../../';
+} from '../../plugins/core';
 import {
     KeyCompressor,
     create

@@ -7,19 +7,17 @@ import {
     first
 } from 'rxjs/operators';
 
-import {
-    isRxQuery,
-    createRxDatabase
-} from '../../';
 import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from './../helper/schemas';
 
 import {
+    isRxQuery,
+    createRxDatabase,
     RxJsonSchema,
     promiseWait,
     randomCouchString
-} from '../../';
+} from '../../plugins/core';
 
 config.parallel('rx-query.test.js', () => {
     describe('.constructor', () => {

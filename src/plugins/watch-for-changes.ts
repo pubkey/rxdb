@@ -98,6 +98,7 @@ export const prototypes = {
 };
 
 export const RxDBWatchForChangesPlugin: RxPlugin = {
+    name: 'watch-for-changes',
     rxdb,
     prototypes
 };

@@ -76,6 +76,7 @@ export const hooks = {
 };
 
 export const RxDBAjvValidatePlugin: RxPlugin = {
+    name: 'ajv-validate',
     rxdb,
     prototypes,
     hooks

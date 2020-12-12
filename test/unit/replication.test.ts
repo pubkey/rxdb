@@ -18,7 +18,7 @@ import {
     randomCouchString,
     isRxCollection,
     RxReplicationState
-} from '../../';
+} from '../../plugins/core';
 
 import {
     fromEvent

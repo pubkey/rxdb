@@ -13,9 +13,13 @@ import {
     randomCouchString,
     promiseWait,
     getDocumentOrmPrototype,
-    getDocumentPrototype
-} from '../../';
-
+    getDocumentPrototype,
+    addRxPlugin
+} from '../../plugins/core';
+import { RxDBAttachmentsPlugin } from '../../plugins/attachments';
+addRxPlugin(RxDBAttachmentsPlugin);
+import { RxDBJsonDumpPlugin } from '../../plugins/json-dump';
+addRxPlugin(RxDBJsonDumpPlugin);
 
 config.parallel('rx-document.test.js', () => {
     describe('statics', () => { });

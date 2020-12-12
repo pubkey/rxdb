@@ -5,8 +5,13 @@ import * as humansCollection from '../helper/humans-collection';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import {
-    createRxDatabase, randomCouchString, RxLocalDocument
-} from '../../';
+    createRxDatabase,
+    randomCouchString,
+    RxLocalDocument,
+    addRxPlugin
+} from '../../plugins/core';
+import { RxDBLocalDocumentsPlugin } from '../../plugins/local-documents';
+addRxPlugin(RxDBLocalDocumentsPlugin);
 import config from './config';
 import {
     filter,

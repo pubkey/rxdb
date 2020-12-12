@@ -11,7 +11,7 @@ import {
     createRxDatabase,
     RxCollection,
     randomCouchString
-} from '../../';
+} from '../../plugins/core';
 import AsyncTestUtil from 'async-test-util';
 import config from './config';
 

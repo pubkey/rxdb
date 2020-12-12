@@ -7,8 +7,28 @@ export type RxPluginPreCreateRxQueryArgs = {
     collection: RxCollection;
 }
 
+export type RxPluginPreAddRxPluginArgs = {
+    // the plugin that is getting added
+    plugin: RxPlugin | any;
+    // previous added plugins
+    plugins: Set<RxPlugin | any>
+}
+
 export interface RxPlugin {
+    /**
+     * A string to uniquely identifies the plugin.
+     * Can be used to throw when different versions of the same plugin are used.
+     * And also other checks.
+     * Use kebab-case.
+     */
+    name: string;
+
+    /**
+     * set this to true so RxDB
+     * knows that this object in a rxdb plugin
+     */
     readonly rxdb: true;
+
     prototypes?: {
         RxSchema?: Function,
         Crypter?: Function,
@@ -26,6 +46,7 @@ export interface RxPlugin {
     };
     // TODO add typings to hook functions
     hooks?: {
+        preAddRxPlugin?: (args: RxPluginPreAddRxPluginArgs) => void,
         preCreateRxDatabase?: Function,
         createRxDatabase?: Function,
         preDestroyRxDatabase?: Function,

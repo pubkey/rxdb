@@ -5,7 +5,7 @@ import config from './config';
 import {
     createRxDatabase,
     randomCouchString
-} from '../../';
+} from '../../plugins/core';
 
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';

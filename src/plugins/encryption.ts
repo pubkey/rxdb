@@ -113,6 +113,7 @@ export const overwritable = {
 };
 
 export const RxDBEncryptionPlugin: RxPlugin = {
+    name: 'encryption',
     rxdb,
     prototypes,
     overwritable,

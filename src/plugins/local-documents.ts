@@ -447,6 +447,7 @@ export const prototypes = {
 export const overwritable = {};
 
 export const RxDBLocalDocumentsPlugin: RxPlugin = {
+    name: 'local-documents',
     rxdb,
     prototypes,
     overwritable

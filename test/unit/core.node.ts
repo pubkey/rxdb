@@ -11,9 +11,9 @@ import {
     addRxPlugin,
     createRxDatabase,
     isRxDocument,
-    randomCouchString
+    randomCouchString,
+    RxJsonSchema
 } from '../../plugins/core';
-import { RxJsonSchema } from '../../src/types';
 
 addRxPlugin(require('../../plugins/validate'));
 addRxPlugin(require('pouchdb-adapter-memory'));

@@ -8,6 +8,7 @@ import { mustMigrate, DataMigrator, createDataMigrator } from './data-migrator';
 export const DATA_MIGRATOR_BY_COLLECTION: WeakMap<RxCollection, DataMigrator> = new WeakMap();
 
 export const RxDBMigrationPlugin: RxPlugin = {
+    name: 'migration',
     rxdb: true,
     prototypes: {
         RxCollection: (proto: any) => {

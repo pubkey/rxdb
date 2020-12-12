@@ -14,7 +14,7 @@ import {
     createRxDatabase,
     randomCouchString,
     promiseWait
-} from '../../';
+} from '../../plugins/core';
 import * as schemas from './../helper/schemas';
 import * as schemaObjects from './../helper/schema-objects';
 import * as humansCollection from './../helper/humans-collection';

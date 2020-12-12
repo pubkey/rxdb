@@ -3,14 +3,13 @@
  */
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
-
 import {
     validateCouchDBString,
     fastUnsecureHash,
     randomCouchString,
     sortObject,
     now
-} from '../../';
+} from '../../plugins/core';
 
 describe('util.test.js', () => {
     describe('.fastUnsecureHash()', () => {
@@ -64,12 +63,12 @@ describe('util.test.js', () => {
                 await AsyncTestUtil.assertThrows(
                     () => validateCouchDBString('$foobar'),
                     'RxError',
-                    'match the regex'
+                    'UT2'
                 );
                 await AsyncTestUtil.assertThrows(
                     () => validateCouchDBString('_foobar'),
                     'RxError',
-                    'match the regex'
+                    'UT2'
                 );
             });
             it('should validate foldernames', () => {
@@ -82,7 +81,7 @@ describe('util.test.js', () => {
                 await AsyncTestUtil.assertThrows(
                     () => validateCouchDBString('foo bar'),
                     'RxError',
-                    'match the regex'
+                    'UT2'
                 );
             });
         });

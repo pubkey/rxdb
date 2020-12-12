@@ -14,7 +14,7 @@ import {
     isRxDocument,
     promiseWait,
     randomCouchString
-} from '../../';
+} from '../../plugins/core';
 
 config.parallel('hooks.test.js', () => {
     describe('get/set', () => {

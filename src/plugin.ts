@@ -30,7 +30,7 @@ import type {
 
 import { overwritable } from './overwritable';
 import {
-    HOOKS
+    HOOKS, runPluginHooks
 } from './hooks';
 
 /**
@@ -45,13 +45,18 @@ const PROTOTYPES: { [k: string]: any } = {
     RxDatabase: RxDatabaseBase.prototype
 };
 
-const ADDED_PLUGINS = new Set();
+const ADDED_PLUGINS: Set<RxPlugin | any> = new Set();
 
 
 export function addRxPlugin(plugin: RxPlugin | any) {
+    runPluginHooks('preAddRxPlugin', { plugin, plugins: ADDED_PLUGINS });
+
     // do nothing if added before
-    if (ADDED_PLUGINS.has(plugin)) return;
-    else ADDED_PLUGINS.add(plugin);
+    if (ADDED_PLUGINS.has(plugin)) {
+        return;
+    } else {
+        ADDED_PLUGINS.add(plugin);
+    }
 
     if (!plugin.rxdb) {
         // pouchdb-plugin

@@ -47,6 +47,7 @@ export const prototypes = {
 };
 
 export const RxDBUpdatePlugin: RxPlugin = {
+    name: 'update',
     rxdb,
     prototypes
 };

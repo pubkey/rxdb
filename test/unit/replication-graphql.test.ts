@@ -23,7 +23,7 @@ import {
     LOCAL_PREFIX,
     randomCouchString,
     PouchDB
-} from '../../';
+} from '../../plugins/core';
 import {
     RxDBReplicationGraphQLPlugin,
     createRevisionForPulledDocument,
@@ -50,12 +50,10 @@ import {
 
 addRxPlugin(RxDBReplicationGraphQLPlugin);
 
-import { RxDBDevModePlugin } from '../../plugins/dev-mode';
 import {
     buildSchema,
     parse as parseQuery
 } from 'graphql';
-addRxPlugin(RxDBDevModePlugin);
 
 declare type WithDeleted<T> = T & { deleted: boolean };
 

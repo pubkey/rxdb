@@ -5,6 +5,10 @@
 Bugfixes:
   - `awaitInitialReplication()` resolves on failed replication [#2745](https://github.com/pubkey/rxdb/pull/2745). Thanks [@dome4](https://github.com/dome4)
 
+Other:
+  - Added `name` identifier to `RxPlugin`
+  - Throw error when `dev-mode` plugin is added multiple times because there is no way that this was done intentional likely the developer has mixed core and default usage of RxDB.
+
 ### 9.10.1 (23 November 2020)
 
 Other:

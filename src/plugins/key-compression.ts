@@ -115,6 +115,7 @@ export const overwritable = {
 };
 
 export const RxDBKeyCompressionPlugin: RxPlugin = {
+    name: 'key-compression',
     rxdb,
     prototypes,
     overwritable

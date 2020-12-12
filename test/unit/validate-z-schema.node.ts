@@ -6,9 +6,7 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from '../helper/schemas';
 
 import {
-    randomCouchString
-} from '../../';
-import {
+    randomCouchString,
     addRxPlugin,
     createRxDatabase
 } from '../../plugins/core';

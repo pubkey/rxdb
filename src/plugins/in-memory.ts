@@ -418,6 +418,7 @@ export const prototypes = {
 };
 
 export const RxDBInMemoryPlugin: RxPlugin = {
+    name: 'in-memory',
     rxdb,
     prototypes
 };

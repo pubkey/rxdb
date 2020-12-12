@@ -13,7 +13,7 @@ import AsyncTestUtil from 'async-test-util';
 
 import {
     createRxDatabase, randomCouchString
-} from '../../';
+} from '../../plugins/core';
 
 describe('bug-report.test.js', () => {
     it('should fail because it reproduces the bug', async () => {

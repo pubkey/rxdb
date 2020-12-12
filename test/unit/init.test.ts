@@ -8,8 +8,12 @@ import BroadcastChannel from 'broadcast-channel';
 import faker from 'faker';
 faker.seed(123);
 
+// add dev-mode plugin
+import { addRxPlugin } from '../../plugins/core';
+import { RxDBDevModePlugin } from '../../plugins/dev-mode';
+addRxPlugin(RxDBDevModePlugin);
 
-config.platform.isNode = function() {
+config.platform.isNode = function () {
     return config.platform.name === 'node';
 };
 
@@ -27,7 +31,7 @@ if (config.platform.name !== 'node') {
     /**
      * exit with non-zero on unhandledRejection
      */
-    process.on('unhandledRejection', function(err) {
+    process.on('unhandledRejection', function (err) {
         console.log('init.test.js: unhandledRejection');
         console.error(err);
         process.exit(1);
@@ -46,7 +50,7 @@ if (config.platform.name !== 'node') {
  */
 if (config.platform.name === 'firefox') {
     const consoleErrorBefore = console.error.bind(console);
-    console.error = function(msg: string) {
+    console.error = function (msg: string) {
         if (msg !== 'Unhandled promise rejection')
             consoleErrorBefore(msg);
     };

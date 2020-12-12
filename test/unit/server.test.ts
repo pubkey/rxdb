@@ -8,7 +8,7 @@ import {
     createRxDatabase,
     addRxPlugin,
     randomCouchString
-} from '../../';
+} from '../../plugins/core';
 import * as humansCollection from '../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from '../helper/schemas';

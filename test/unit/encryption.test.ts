@@ -12,7 +12,7 @@ import {
     RxJsonSchema,
     randomCouchString,
     createCrypter
-} from '../../';
+} from '../../plugins/core';
 
 config.parallel('encryption.test.js', () => {
     describe('Crypter.js', () => {

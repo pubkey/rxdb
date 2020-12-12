@@ -8,7 +8,7 @@ import AsyncTestUtil from 'async-test-util';
 import PouchAdapterMemory from 'pouchdb-adapter-memory';
 const leveldown = require('leveldown');
 
-import type { RxJsonSchema } from '../../';
+import type { RxJsonSchema } from '../../plugins/core';
 import config from './config';
 
 const {

@@ -20,8 +20,14 @@ import {
     _createRxCollection,
     RxJsonSchema,
     PrimaryProperty,
-    RxDatabase
-} from '../../';
+    RxDatabase,
+    addRxPlugin
+} from '../../plugins/core';
+import { RxDBUpdatePlugin } from '../../plugins/update';
+addRxPlugin(RxDBUpdatePlugin);
+import { RxDBMigrationPlugin } from '../../plugins/migration';
+addRxPlugin(RxDBMigrationPlugin);
+
 import { HumanDocumentType } from '../helper/schema-objects';
 import { first } from 'rxjs/operators';
 
