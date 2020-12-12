@@ -2,6 +2,9 @@
 
 ### X.X.X (coming soon)
 
+Bugfixes:
+  - `awaitInitialReplication()` resolves on failed replication [#2745](https://github.com/pubkey/rxdb/pull/2745). Thanks [@dome4](https://github.com/dome4)
+
 ### 9.10.1 (23 November 2020)
 
 Other:
