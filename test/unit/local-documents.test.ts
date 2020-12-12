@@ -24,6 +24,10 @@ if (config.platform.isNode()) {
     leveldown = require('leveldown');
 }
 
+declare type TestDocType = {
+    foo: string;
+}
+
 config.parallel('local-documents.test.js', () => {
     describe('.insertLocal()', () => {
         describe('positive', () => {
@@ -366,6 +370,67 @@ config.parallel('local-documents.test.js', () => {
                 )
                 .toPromise();
 
+            db.destroy();
+            db2.destroy();
+        });
+        it('should emit changes (database)', async () => {
+            const name = randomCouchString(10);
+            const db = await createRxDatabase({
+                name,
+                adapter: 'memory'
+            });
+            const db2 = await createRxDatabase({
+                name,
+                adapter: 'memory',
+                ignoreDuplicate: true
+            });
+
+            const doc1 = await db.insertLocal('foobar', {
+                foo: 'bar'
+            });
+            const doc2 = await db2.getLocal<TestDocType>('foobar');
+
+            await doc1.atomicSet('foo', 'bar2');
+
+            await waitUntil(() => doc2.toJSON().foo === 'bar2');
+
+            db.destroy();
+            db2.destroy();
+        });
+        it('should emit changes (collection)', async () => {
+            const name = randomCouchString(10);
+            const db = await createRxDatabase({
+                name,
+                adapter: 'memory'
+            });
+            const db2 = await createRxDatabase({
+                name,
+                adapter: 'memory',
+                ignoreDuplicate: true
+            });
+            const c1 = await db.collection({
+                name: 'humans',
+                schema: schemas.primaryHuman
+            });
+            const c2 = await db2.collection({
+                name: 'humans',
+                schema: schemas.primaryHuman
+            });
+            const doc1 = await c1.insertLocal('foobar', {
+                foo: 'bar'
+            });
+            const doc2 = await c2.getLocal<TestDocType>('foobar');
+            await doc1.atomicSet('foo', 'bar2');
+
+            const emitted = [];
+            const sub = c2.getLocal$('foobar').subscribe(x => {
+                emitted.push(x);
+            });
+
+            await waitUntil(() => doc2.toJSON().foo === 'bar2');
+            await waitUntil(() => emitted.length === 2);
+
+            sub.unsubscribe();
             db.destroy();
             db2.destroy();
         });
