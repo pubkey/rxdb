@@ -160,7 +160,7 @@ export class RxGraphQLReplicationState {
             this._subjects.active.next(true);
             const willRetry = await this._run(retryOnFail);
             this._subjects.active.next(false);
-            if (!willRetry && this._subjects.initialReplicationComplete['_value'] === false) {
+            if (retryOnFail && !willRetry && this._subjects.initialReplicationComplete['_value'] === false) {
                 this._subjects.initialReplicationComplete.next(true);
             }
             this._runQueueCount--;
