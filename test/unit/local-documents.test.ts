@@ -1,5 +1,5 @@
 import assert from 'assert';
-import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
+import AsyncTestUtil, { wait, waitUntil, randomString } from 'async-test-util';
 
 import * as humansCollection from '../helper/humans-collection';
 import * as schemas from '../helper/schemas';
@@ -277,6 +277,28 @@ config.parallel('local-documents.test.js', () => {
             assert.ok(doc2);
             assert.strictEqual(doc2.get('foo'), 'bar2');
             db2.destroy();
+        });
+        it('should not fail with many atomic updates in parallel', async () => {
+            const c = await humansCollection.create(0);
+            const db = c.database;
+
+            // database
+            const docDb = await db.insertLocal('foobar', {
+                foo: 'bar'
+            });
+            await Promise.all(
+                new Array(20).map(() => docDb.atomicSet('foo', randomString()))
+            );
+
+            // collection
+            const doc = await c.insertLocal('foobar', {
+                foo: 'bar'
+            });
+            await Promise.all(
+                new Array(20).map(() => doc.atomicSet('foo', randomString()))
+            );
+
+            await db.destroy();
         });
     });
     describe('with database', () => {
