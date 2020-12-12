@@ -9,6 +9,7 @@ Bugfixes:
 Other:
   - Added `name` identifier to `RxPlugin`
   - Throw error when `dev-mode` plugin is added multiple times because there is no way that this was done intentional likely the developer has mixed core and default usage of RxDB.
+  - Fix reported security problem with the query builders mquery api.
 
 ### 9.10.1 (23 November 2020)
 
