@@ -298,14 +298,14 @@ RxLocalDocument.create = (id: string, data: any, parent: any) => {
  * save the local-document-data
  * throws if already exists
  */
-function insertLocal(this: any, id: string, data: any): Promise<RxLocalDocument> {
+function insertLocal(this: RxDatabase | RxCollection, id: string, data: any): Promise<RxLocalDocument> {
     if (isRxCollection(this) && this._isInMemory) {
         return this._parentCollection.insertLocal(id, data);
     }
 
     data = clone(data);
 
-    return this.getLocal(id)
+    return (this as any).getLocal(id)
         .then((existing: any) => {
             if (existing) {
                 throw newRxError('LD7', {
@@ -328,8 +328,8 @@ function insertLocal(this: any, id: string, data: any): Promise<RxLocalDocument>
                     'INSERT',
                     id,
                     clone(data),
-                    isRxDatabase(this) ? this.database : this.database.token,
-                    isRxCollection(this) ? this.name : null,
+                    isRxDatabase(this) ? this.token : this.database.token,
+                    isRxCollection(this) ? this.name : '',
                     true,
                     startTime,
                     endTime,

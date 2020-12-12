@@ -434,7 +434,7 @@ config.parallel('local-documents.test.js', () => {
             db.destroy();
             db2.destroy();
         });
-        it('BUG cross tab not streamed on upserts', async () => {
+        it('BUG insertLocal not send to other instance', async () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
@@ -446,14 +446,22 @@ config.parallel('local-documents.test.js', () => {
                 ignoreDuplicate: true
             });
 
-            await db.insertLocal('foobar', {
+            const emitted: any[] = [];
+            const sub = db2.getLocal$<TestDocType>('foobar').subscribe(x => {
+                emitted.push(x);
+            });
+
+            await db.insertLocal<TestDocType>('foobar', {
                 foo: 'bar'
             });
-            const doc2 = await db2.getLocal<TestDocType>('foobar');
-            await db.upsertLocal<TestDocType>('foobar', {
-                foo: 'bar2'
-            });
-            await waitUntil(() => doc2.toJSON().foo === 'bar2');
+
+            await waitUntil(() => emitted.length === 2);
+            assert.ok(emitted.pop());
+
+            const doc = await db2.getLocal<TestDocType>('foobar');
+            assert.strictEqual(doc.toJSON().foo, 'bar');
+
+            sub.unsubscribe();
             db.destroy();
             db2.destroy();
         });

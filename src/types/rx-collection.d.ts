@@ -88,7 +88,7 @@ export interface RxCollectionGenerated<RxDocumentType = any, OrmMethods = {}> {
     postRemove(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
     postCreate(fun: RxCollectionHookCallbackNonAsync<RxDocumentType, OrmMethods>): void;
 
-    insertLocal(id: string, data: any): Promise<RxLocalDocument<RxCollection<RxDocumentType, OrmMethods>>>;
+    insertLocal<LocalDocType = any>(id: string, data: any): Promise<RxLocalDocument<RxCollection<RxDocumentType, OrmMethods>, LocalDocType>>;
     upsertLocal<LocalDocType = any>(id: string, data: LocalDocType): Promise<RxLocalDocument<RxCollection<RxDocumentType, OrmMethods>, LocalDocType>>;
     getLocal<LocalDocType = any>(id: string): Promise<RxLocalDocument<RxCollection<RxDocumentType, OrmMethods>, LocalDocType>>;
     getLocal$<LocalDocType = any>(id: string): Observable<RxLocalDocument<RxCollection<RxDocumentType, OrmMethods>, LocalDocType> | null>;

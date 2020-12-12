@@ -4,6 +4,7 @@
 
 Bugfixes:
   - `awaitInitialReplication()` resolves on failed replication [#2745](https://github.com/pubkey/rxdb/pull/2745). Thanks [@dome4](https://github.com/dome4)
+  - `insertLocal()` not emitted the state change across tabs
 
 Other:
   - Added `name` identifier to `RxPlugin`
