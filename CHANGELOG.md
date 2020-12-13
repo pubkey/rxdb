@@ -2,6 +2,9 @@
 
 ### X.X.X (coming soon)
 
+Features:
+  - Added `putAttachment(skipIfSame)`, if set to `true` a write will be skipped if the attachment already exists with the same data.
+
 Bugfixes:
   - `awaitInitialReplication()` resolves on failed replication [#2745](https://github.com/pubkey/rxdb/pull/2745). Thanks [@dome4](https://github.com/dome4)
   - `insertLocal()` not emitted the state change across tabs

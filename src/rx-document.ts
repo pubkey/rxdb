@@ -65,7 +65,7 @@ export const basePrototype = {
         if (!_this.isInstanceOfRxDocument) {
             return undefined;
         }
-        return _this._data[_this.primaryPath];
+        return (_this._data as any)[_this.primaryPath];
     },
     get revision() {
         const _this: RxDocument = this as any;
@@ -228,7 +228,7 @@ export const basePrototype = {
     toJSON(this: RxDocument, withRevAndAttachments = false) {
         const data = clone(this._data);
         if (!withRevAndAttachments) {
-            delete data._rev;
+            delete (data as any)._rev;
             delete data._attachments;
         }
         return data;

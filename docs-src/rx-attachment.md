@@ -33,11 +33,14 @@ const myCollection = await myDatabase.addCollections({
 Adds an attachment to a `RxDocument`. Returns a Promise with the new attachment.
 
 ```javascript
-const attachment = await myDocument.putAttachment({
-    id,     // (string) name of the attachment like 'cat.jpg'
-    data,   // (string|Blob|Buffer) data of the attachment
-    type    // (string) type of the attachment-data like 'image/jpeg'
-});
+const attachment = await myDocument.putAttachment(
+    {
+        id,     // (string) name of the attachment like 'cat.jpg'
+        data,   // (string|Blob|Buffer) data of the attachment
+        type    // (string) type of the attachment-data like 'image/jpeg'
+    },
+    true // (boolean, optional) skipIfSame:If true and attachment already exists with same data, the write will be skipped
+);
 ```
 
 ## getAttachment()

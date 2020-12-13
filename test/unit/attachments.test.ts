@@ -1,6 +1,6 @@
 import assert from 'assert';
 import config from './config';
-import AsyncTestUtil from 'async-test-util';
+import AsyncTestUtil, { wait } from 'async-test-util';
 
 import * as humansCollection from '../helper/humans-collection';
 import * as schemas from '../helper/schemas';
@@ -71,6 +71,50 @@ config.parallel('attachments.test.js', () => {
                 ].join(' '), // use space here
                 type: 'text/plain'
             });
+            c.database.destroy();
+        });
+        it('should not update the document if skipIfSame=true and same data', async () => {
+            const c = await humansCollection.createAttachments(1);
+            const doc = await c.findOne().exec(true);
+            const data = AsyncTestUtil.randomString(100);
+            await doc.putAttachment({
+                id: 'cat.txt',
+                data,
+                type: 'text/plain'
+            });
+            const revBefore = doc.revision;
+            await doc.putAttachment({
+                id: 'cat.txt',
+                data,
+                type: 'text/plain'
+            }, true);
+            await wait(50);
+            assert.strictEqual(
+                revBefore,
+                doc.revision
+            );
+
+            c.database.destroy();
+        });
+        it('should update the document if skipIfSame=true and different data', async () => {
+            const c = await humansCollection.createAttachments(1);
+            const doc = await c.findOne().exec(true);
+            await doc.putAttachment({
+                id: 'cat.txt',
+                data: AsyncTestUtil.randomString(100),
+                type: 'text/plain'
+            });
+            const revBefore = doc.revision;
+            await doc.putAttachment({
+                id: 'cat.txt',
+                data: AsyncTestUtil.randomString(100),
+                type: 'text/plain'
+            }, false);
+            await wait(50);
+            assert.notStrictEqual(
+                revBefore,
+                doc.revision
+            );
             c.database.destroy();
         });
     });

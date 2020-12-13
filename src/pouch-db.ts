@@ -8,6 +8,7 @@ import PouchDBCore from 'pouchdb-core';
 
 // pouchdb-find
 import PouchDBFind from 'pouchdb-find';
+import { binaryMd5 } from 'pouchdb-md5';
 
 PouchDBCore.plugin(PouchDBFind);
 
@@ -137,6 +138,19 @@ export function pouchReplicationFunction(
             push
         });
     }
+}
+
+
+/**
+ * create the same diggest as an attachment with that data
+ * would have
+ */
+export function pouchAttachmentBinaryHash(data: any): Promise<string> {
+    return new Promise(res => {
+        binaryMd5(data, (d: any) => {
+            res('md5-' + d);
+        });
+    });
 }
 
 export function isInstanceOf(obj: any) {

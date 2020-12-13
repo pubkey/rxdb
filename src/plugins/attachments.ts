@@ -15,6 +15,7 @@ import {
 import type {
     RxDocument, RxPlugin, RxDocumentTypeWithRev
 } from '../types';
+import { pouchAttachmentBinaryHash } from '../pouch-db';
 
 function ensureSchemaSupportsAttachments(doc: any) {
     const schemaJson = doc.collection.schema.jsonSchema;
@@ -188,41 +189,59 @@ function shouldEncrypt(doc: any) {
     return !!doc.collection.schema.jsonSchema.attachments.encrypted;
 }
 
-export function putAttachment(
+export async function putAttachment(
     this: RxDocument,
     {
         id,
         data,
         type = 'text/plain'
-    }: any): Promise<any> {
+    }: any,
+    /**
+     * TODO set to default=true
+     * in next major release
+     */
+    skipIfSame: boolean = false
+): Promise<any> {
     ensureSchemaSupportsAttachments(this);
 
-    if (shouldEncrypt(this))
+    if (shouldEncrypt(this)) {
         data = (this.collection._crypter as any)._encryptValue(data);
+    }
 
     const blobBuffer = blobBufferUtil.createBlobBuffer(data, type);
 
     this._atomicQueue = this._atomicQueue
-        .then(() => this.collection.pouch.putAttachment(
-            this.primary,
-            id,
-            this._data._rev,
-            blobBuffer,
-            type
-        ))
-        .then(() => this.collection.pouch.get(this.primary))
-        .then(docData => {
-            const attachmentData = docData._attachments[id];
-            const attachment = fromPouchDocument(
-                id,
-                attachmentData,
-                this
-            );
+        .then(async () => {
+            if (skipIfSame && this._data._attachments && this._data._attachments[id]) {
+                const currentMeta = this._data._attachments[id];
 
-            this._data._rev = docData._rev;
-            this._data._attachments = docData._attachments;
-            return resyncRxDocument(this)
-                .then(() => attachment);
+                const newHash: string = await pouchAttachmentBinaryHash(data);
+
+                if (currentMeta.content_type === type && currentMeta.digest === newHash) {
+                    // skip because same data and same type
+                    return this.getAttachment(id);
+                }
+            }
+            return this.collection.pouch.putAttachment(
+                this.primary,
+                id,
+                this._data._rev,
+                blobBuffer,
+                type
+            ).then(() => this.collection.pouch.get(this.primary))
+                .then(docData => {
+                    const attachmentData = docData._attachments[id];
+                    const attachment = fromPouchDocument(
+                        id,
+                        attachmentData,
+                        this
+                    );
+
+                    this._data._rev = docData._rev;
+                    this._data._attachments = docData._attachments;
+                    return resyncRxDocument(this)
+                        .then(() => attachment);
+                });
         });
     return this._atomicQueue;
 }

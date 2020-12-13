@@ -81,6 +81,10 @@ It was replaced by `RxDatabase.addCollections()` which is faster and better type
 ## rename wording of the json dump plugin
 The words `dump()` and `importDump()` are confusing. Name it import/export or sth.
 
+## set putAttachment(skipIfSame=true)
+
+This should be the default. `skipIfSame=true`
+
 # Maybe
 
 ## Use Proxy instead of getters/setter on RxDocument
