@@ -422,13 +422,13 @@ config.parallel('local-documents.test.js', () => {
             const doc2 = await c2.getLocal<TestDocType>('foobar');
             await doc1.atomicSet('foo', 'bar2');
 
-            const emitted = [];
-            const sub = c2.getLocal$('foobar').subscribe(x => {
+            const emitted: any[] = [];
+            const sub = c2.getLocal$('foobar').subscribe((x: any) => {
                 emitted.push(x);
             });
 
             await waitUntil(() => doc2.toJSON().foo === 'bar2');
-            await waitUntil(() => emitted.length === 2);
+            await waitUntil(() => emitted.length >= 2);
 
             sub.unsubscribe();
             db.destroy();
