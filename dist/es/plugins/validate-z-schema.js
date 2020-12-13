@@ -86,6 +86,7 @@ export var hooks = {
   createRxSchema: runAfterSchemaCreated
 };
 export var RxDBValidateZSchemaPlugin = {
+  name: 'validate-z-schema',
   rxdb: rxdb,
   prototypes: prototypes,
   hooks: hooks

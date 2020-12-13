@@ -17,6 +17,12 @@ exports.HOOKS = void 0;
  */
 var HOOKS = {
   /**
+   * Runs before a plugin is added.
+   * Use this to block the usage of non-compatible plugins.
+   */
+  preAddRxPlugin: [],
+
+  /**
    * functions that run before the database is created
    */
   preCreateRxDatabase: [],

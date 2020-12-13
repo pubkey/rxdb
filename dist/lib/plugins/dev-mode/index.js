@@ -34,7 +34,9 @@ var _checkQuery = require("./check-query");
 
 var _rxError = require("../../rx-error");
 
+var DEV_MODE_PLUGIN_NAME = 'dev-mode';
 var RxDBDevModePlugin = {
+  name: DEV_MODE_PLUGIN_NAME,
   rxdb: true,
   overwritable: {
     isDevMode: function isDevMode() {
@@ -50,6 +52,18 @@ var RxDBDevModePlugin = {
     }
   },
   hooks: {
+    preAddRxPlugin: function preAddRxPlugin(args) {
+      /**
+       * throw when dev mode is added multiple times
+       * because there is no way that this was done intentional.
+       * Likely the developer has mixed core and default usage of RxDB.
+       */
+      if (args.plugin.name === DEV_MODE_PLUGIN_NAME) {
+        throw (0, _rxError.newRxError)('DEV1', {
+          plugins: args.plugins
+        });
+      }
+    },
     preCreateRxSchema: _checkSchema.checkSchema,
     preCreateRxDatabase: function preCreateRxDatabase(args) {
       (0, _unallowedProperties.ensureDatabaseNameIsValid)(args);

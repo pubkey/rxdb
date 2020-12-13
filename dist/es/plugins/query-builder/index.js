@@ -29,6 +29,7 @@ export function applyBuildingStep(proto, functionName) {
 }
 export * from './mquery/nosql-query-builder';
 export var RxDBQueryBuilderPlugin = {
+  name: 'query-builder',
   rxdb: true,
   prototypes: {
     RxQuery: function RxQuery(proto) {

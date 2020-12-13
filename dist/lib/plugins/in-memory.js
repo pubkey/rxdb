@@ -413,6 +413,7 @@ var prototypes = {
 };
 exports.prototypes = prototypes;
 var RxDBInMemoryPlugin = {
+  name: 'in-memory',
   rxdb: rxdb,
   prototypes: prototypes
 };

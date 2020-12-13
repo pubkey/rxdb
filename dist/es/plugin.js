@@ -11,7 +11,7 @@ import { RxCollectionBase } from './rx-collection';
 import { RxDatabaseBase } from './rx-database';
 import { PouchDB } from './pouch-db';
 import { overwritable } from './overwritable';
-import { HOOKS } from './hooks';
+import { HOOKS, runPluginHooks } from './hooks';
 /**
  * prototypes that can be manipulated with a plugin
  */
@@ -26,8 +26,16 @@ var PROTOTYPES = {
 };
 var ADDED_PLUGINS = new Set();
 export function addRxPlugin(plugin) {
-  // do nothing if added before
-  if (ADDED_PLUGINS.has(plugin)) return;else ADDED_PLUGINS.add(plugin);
+  runPluginHooks('preAddRxPlugin', {
+    plugin: plugin,
+    plugins: ADDED_PLUGINS
+  }); // do nothing if added before
+
+  if (ADDED_PLUGINS.has(plugin)) {
+    return;
+  } else {
+    ADDED_PLUGINS.add(plugin);
+  }
 
   if (!plugin.rxdb) {
     // pouchdb-plugin

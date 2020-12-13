@@ -268,6 +268,7 @@ exports.hooks = hooks;
 var overwritable = {};
 exports.overwritable = overwritable;
 var RxDBServerPlugin = {
+  name: 'server',
   rxdb: rxdb,
   prototypes: prototypes,
   overwritable: overwritable,

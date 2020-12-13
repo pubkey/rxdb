@@ -161,6 +161,7 @@ exports.prototypes = prototypes;
 var overwritable = {};
 exports.overwritable = overwritable;
 var RxDBJsonDumpPlugin = {
+  name: 'json-dump',
   rxdb: rxdb,
   prototypes: prototypes,
   overwritable: overwritable

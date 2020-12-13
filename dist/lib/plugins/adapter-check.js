@@ -83,6 +83,7 @@ var overwritable = {
 };
 exports.overwritable = overwritable;
 var RxDBAdapterCheckPlugin = {
+  name: 'adapter-check',
   rxdb: rxdb,
   prototypes: prototypes,
   overwritable: overwritable

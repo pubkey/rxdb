@@ -120,18 +120,28 @@ export type PouchChangeRow = {
     doc?: PouchChangeDoc
 }
 
+export type PouchAttachmentMeta = {
+    digest: string;
+    content_type: string;
+    revpos: number;
+    length: number;
+    stub: boolean;
+};
+
 export type PouchChangeDoc = {
     _id: string;
     _rev: string;
     _attachments: {
-        [attachmentId: string]: {
-            digest: string;
-            content_type: string;
-            revpos: number;
-            length: number;
-            stub: boolean;
-        }
+        [attachmentId: string]: PouchAttachmentMeta
     };
+}
+
+export type WithPouchMeta<Data> = Data & {
+    _rev: string;
+    _attachments?: {
+        [attachmentId: string]: PouchAttachmentMeta
+    };
+    _deleted?: boolean;
 }
 
 export type PouchdbChangesResult = {

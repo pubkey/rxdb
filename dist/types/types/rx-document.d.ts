@@ -13,6 +13,7 @@ import {
     RxAttachment,
     RxAttachmentCreator
 } from './rx-attachment';
+import { WithPouchMeta } from './pouch';
 
 export type RxDocument<RxDocumentType = {}, OrmMethods = {}> = RxDocumentBase<RxDocumentType, OrmMethods> & RxDocumentType & OrmMethods;
 
@@ -34,7 +35,7 @@ export declare interface RxDocumentBase<RxDocumentType, OrmMethods = {}> {
     // internal things
     _isTemporary: boolean;
     _dataSync$: BehaviorSubject<RxDocumentType>;
-    _data: any;
+    _data: WithPouchMeta<RxDocumentType>;
     _deleted$: BehaviorSubject<boolean>;
     primaryPath: string;
     revision: string;
@@ -73,7 +74,16 @@ export declare interface RxDocumentBase<RxDocumentType, OrmMethods = {}> {
     save(): Promise<boolean>;
 
     // attachments
-    putAttachment(creator: RxAttachmentCreator): Promise<RxAttachment<RxDocumentType, OrmMethods>>;
+    putAttachment(
+        creator: RxAttachmentCreator,
+        /**
+         * If set to true and data is equal,
+         * operation will be skipped.
+         * This prevents us from upgrading the revision
+         * and causing events in the change stream.
+         */
+        skipIfSame?: boolean
+    ): Promise<RxAttachment<RxDocumentType, OrmMethods>>;
     getAttachment(id: string): RxAttachment<RxDocumentType, OrmMethods> | null;
     allAttachments(): RxAttachment<RxDocumentType, OrmMethods>[];
 

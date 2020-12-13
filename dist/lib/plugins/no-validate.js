@@ -32,6 +32,7 @@ exports.prototypes = prototypes;
 var hooks = {};
 exports.hooks = hooks;
 var RxDBNoValidatePlugin = {
+  name: 'no-validate',
   rxdb: rxdb,
   prototypes: prototypes,
   hooks: hooks

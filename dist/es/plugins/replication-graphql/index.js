@@ -157,7 +157,7 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
 
                         _this2._subjects.active.next(false);
 
-                        if (!willRetry && _this2._subjects.initialReplicationComplete['_value'] === false) {
+                        if (retryOnFail && !willRetry && _this2._subjects.initialReplicationComplete['_value'] === false) {
                           _this2._subjects.initialReplicationComplete.next(true);
                         }
 
@@ -880,6 +880,7 @@ export var prototypes = {
   }
 };
 export var RxDBReplicationGraphQLPlugin = {
+  name: 'replication-graphql',
   rxdb: rxdb,
   prototypes: prototypes
 };

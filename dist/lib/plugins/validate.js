@@ -83,6 +83,7 @@ var hooks = {
 };
 exports.hooks = hooks;
 var RxDBValidatePlugin = {
+  name: 'validate',
   rxdb: rxdb,
   prototypes: prototypes,
   hooks: hooks

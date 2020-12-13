@@ -309,7 +309,7 @@ function insertLocal(id, data) {
       data._rev = res.rev;
       var newDoc = RxLocalDocument.create(id, data, _this4);
       var endTime = (0, _util.now)();
-      var changeEvent = new _rxChangeEvent.RxChangeEvent('INSERT', id, (0, _util.clone)(data), (0, _rxDatabase.isInstanceOf)(_this4) ? _this4.database : _this4.database.token, (0, _rxCollection.isInstanceOf)(_this4) ? _this4.name : null, true, startTime, endTime, undefined, newDoc);
+      var changeEvent = new _rxChangeEvent.RxChangeEvent('INSERT', id, (0, _util.clone)(data), (0, _rxDatabase.isInstanceOf)(_this4) ? _this4.token : _this4.database.token, (0, _rxCollection.isInstanceOf)(_this4) ? _this4.name : '', true, startTime, endTime, undefined, newDoc);
 
       _this4.$emit(changeEvent);
 
@@ -505,6 +505,7 @@ exports.prototypes = prototypes;
 var overwritable = {};
 exports.overwritable = overwritable;
 var RxDBLocalDocumentsPlugin = {
+  name: 'local-documents',
   rxdb: rxdb,
   prototypes: prototypes,
   overwritable: overwritable

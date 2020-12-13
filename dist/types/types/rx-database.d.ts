@@ -63,8 +63,8 @@ export type RxDatabase<Collections = CollectionsOfDatabase> = RxDatabaseBase<Col
 
 
 export interface RxDatabaseGenerated<Collections> {
-    insertLocal(id: string, data: any): Promise<
-        RxLocalDocument<RxDatabase<Collections>>
+    insertLocal<LocalDocType = any>(id: string, data: any): Promise<
+        RxLocalDocument<RxDatabase<Collections>, LocalDocType>
     >;
     upsertLocal<LocalDocType = any>(id: string, data: LocalDocType): Promise<
         RxLocalDocument<RxDatabase<Collections>, LocalDocType>

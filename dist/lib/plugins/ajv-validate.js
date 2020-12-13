@@ -81,6 +81,7 @@ var hooks = {
 };
 exports.hooks = hooks;
 var RxDBAjvValidatePlugin = {
+  name: 'ajv-validate',
   rxdb: rxdb,
   prototypes: prototypes,
   hooks: hooks

@@ -237,6 +237,7 @@ var hooks = {
 };
 exports.hooks = hooks;
 var RxDBReplicationPlugin = {
+  name: 'replication',
   rxdb: rxdb,
   prototypes: prototypes,
   hooks: hooks

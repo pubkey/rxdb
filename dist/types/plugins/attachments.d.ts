@@ -29,7 +29,12 @@ export declare class RxAttachment {
     getStringData(): Promise<any>;
 }
 export declare function fromPouchDocument(id: string, pouchDocAttachment: any, rxDocument: RxDocument): RxAttachment;
-export declare function putAttachment(this: RxDocument, { id, data, type }: any): Promise<any>;
+export declare function putAttachment(this: RxDocument, { id, data, type }: any, 
+/**
+ * TODO set to default=true
+ * in next major release
+ */
+skipIfSame?: boolean): Promise<any>;
 /**
  * get an attachment of the document by its id
  */

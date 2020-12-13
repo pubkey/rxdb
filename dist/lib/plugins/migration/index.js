@@ -58,6 +58,7 @@ var _dataMigrator = require("./data-migrator");
 var DATA_MIGRATOR_BY_COLLECTION = new WeakMap();
 exports.DATA_MIGRATOR_BY_COLLECTION = DATA_MIGRATOR_BY_COLLECTION;
 var RxDBMigrationPlugin = {
+  name: 'migration',
   rxdb: true,
   prototypes: {
     RxCollection: function RxCollection(proto) {

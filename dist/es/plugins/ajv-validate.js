@@ -64,6 +64,7 @@ export var hooks = {
   createRxSchema: runAfterSchemaCreated
 };
 export var RxDBAjvValidatePlugin = {
+  name: 'ajv-validate',
   rxdb: rxdb,
   prototypes: prototypes,
   hooks: hooks

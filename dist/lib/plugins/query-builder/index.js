@@ -60,6 +60,7 @@ function applyBuildingStep(proto, functionName) {
 }
 
 var RxDBQueryBuilderPlugin = {
+  name: 'query-builder',
   rxdb: true,
   prototypes: {
     RxQuery: function RxQuery(proto) {

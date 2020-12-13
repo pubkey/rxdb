@@ -68,6 +68,7 @@ export var hooks = {
   createRxSchema: runAfterSchemaCreated
 };
 export var RxDBValidatePlugin = {
+  name: 'validate',
   rxdb: rxdb,
   prototypes: prototypes,
   hooks: hooks

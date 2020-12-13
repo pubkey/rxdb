@@ -29,8 +29,8 @@ function parametersToString(parameters) {
   return ret;
 }
 
-function messageForError(message, parameters) {
-  return 'RxError:' + '\n' + message + '\n' + parametersToString(parameters);
+function messageForError(message, code, parameters) {
+  return 'RxError (' + code + '):' + '\n' + message + '\n' + parametersToString(parameters);
 }
 
 export var RxError = /*#__PURE__*/function (_Error) {
@@ -40,7 +40,7 @@ export var RxError = /*#__PURE__*/function (_Error) {
     var _this;
 
     var parameters = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-    var mes = messageForError(message, parameters);
+    var mes = messageForError(message, code, parameters);
     _this = _Error.call(this, mes) || this;
     _this.code = code;
     _this.message = mes;
@@ -77,7 +77,7 @@ export var RxTypeError = /*#__PURE__*/function (_TypeError) {
     var _this2;
 
     var parameters = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-    var mes = messageForError(message, parameters);
+    var mes = messageForError(message, code, parameters);
     _this2 = _TypeError.call(this, mes) || this;
     _this2.code = code;
     _this2.message = mes;

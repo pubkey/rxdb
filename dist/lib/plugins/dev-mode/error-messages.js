@@ -115,7 +115,7 @@ var ERROR_MESSAGES = {
   RC1: 'Replication: already added',
   RC2: 'RxCollection.sync() query must be from the same RxCollection',
   RC3: 'RxCollection.sync() Do not use a collection\'s pouchdb as remote, use the collection instead',
-  // plugins/schema-check.js
+  // plugins/dev-mode/check-schema.js
   SC1: 'fieldnames do not match the regex',
   SC2: 'SchemaCheck: name \'item\' reserved for array-fields',
   SC3: 'SchemaCheck: fieldname has a ref-array but items-type is not string',
@@ -144,6 +144,8 @@ var ERROR_MESSAGES = {
   SC27: 'SchemaCheck: encrypted fields need to be specified at collection schema level',
   SC28: 'SchemaCheck: encrypted fields is not defined in the schema',
   SC29: 'SchemaCheck: missing object key \'properties\'',
+  // plugins/dev-mode
+  DEV1: 'dev-mode added multiple times, ' + 'this is likely because you have mixed up the import from the the plugins/core and the full RxDB',
   // plugins/validate.js
   VD1: 'Sub-schema not found, does the schemaPath exists in your schema?',
   VD2: 'object does not match schema',

@@ -74,6 +74,7 @@ export var prototypes = {
   }
 };
 export var RxDBWatchForChangesPlugin = {
+  name: 'watch-for-changes',
   rxdb: rxdb,
   prototypes: prototypes
 };

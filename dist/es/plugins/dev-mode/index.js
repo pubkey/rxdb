@@ -6,7 +6,9 @@ import { ensureCollectionNameValid, ensureDatabaseNameIsValid } from './unallowe
 import { checkQuery } from './check-query';
 import { newRxError } from '../../rx-error';
 export * from './check-schema';
+var DEV_MODE_PLUGIN_NAME = 'dev-mode';
 export var RxDBDevModePlugin = {
+  name: DEV_MODE_PLUGIN_NAME,
   rxdb: true,
   overwritable: {
     isDevMode: function isDevMode() {
@@ -22,6 +24,18 @@ export var RxDBDevModePlugin = {
     }
   },
   hooks: {
+    preAddRxPlugin: function preAddRxPlugin(args) {
+      /**
+       * throw when dev mode is added multiple times
+       * because there is no way that this was done intentional.
+       * Likely the developer has mixed core and default usage of RxDB.
+       */
+      if (args.plugin.name === DEV_MODE_PLUGIN_NAME) {
+        throw newRxError('DEV1', {
+          plugins: args.plugins
+        });
+      }
+    },
     preCreateRxSchema: checkSchema,
     preCreateRxDatabase: function preCreateRxDatabase(args) {
       ensureDatabaseNameIsValid(args);

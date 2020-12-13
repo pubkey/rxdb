@@ -10,7 +10,7 @@ export declare const basePrototype: {
     readonly _data: {} | undefined;
     readonly primaryPath: string | undefined;
     readonly primary: any;
-    readonly revision: any;
+    readonly revision: string | undefined;
     readonly deleted$: Observable<boolean> | undefined;
     readonly deleted: boolean | undefined;
     /**
@@ -34,7 +34,13 @@ export declare const basePrototype: {
      * get data by objectPath
      */
     get(this: import("./types").RxDocumentBase<{}, {}>, objPath: string): any | null;
-    toJSON(this: import("./types").RxDocumentBase<{}, {}>, withRevAndAttachments?: boolean): any;
+    toJSON(this: import("./types").RxDocumentBase<{}, {}>, withRevAndAttachments?: boolean): {
+        _rev: string;
+        _attachments?: {
+            [attachmentId: string]: import("./types").PouchAttachmentMeta;
+        } | undefined;
+        _deleted?: boolean | undefined;
+    };
     /**
      * set data by objectPath
      * This can only be called on temporary documents
@@ -92,7 +98,7 @@ export declare function createRxDocumentConstructor(proto?: {
     readonly _data: {} | undefined;
     readonly primaryPath: string | undefined;
     readonly primary: any;
-    readonly revision: any;
+    readonly revision: string | undefined;
     readonly deleted$: Observable<boolean> | undefined;
     readonly deleted: boolean | undefined;
     /**
@@ -116,7 +122,13 @@ export declare function createRxDocumentConstructor(proto?: {
      * get data by objectPath
      */
     get(this: import("./types").RxDocumentBase<{}, {}>, objPath: string): any;
-    toJSON(this: import("./types").RxDocumentBase<{}, {}>, withRevAndAttachments?: boolean): any;
+    toJSON(this: import("./types").RxDocumentBase<{}, {}>, withRevAndAttachments?: boolean): {
+        _rev: string;
+        _attachments?: {
+            [attachmentId: string]: import("./types").PouchAttachmentMeta;
+        } | undefined;
+        _deleted?: boolean | undefined;
+    };
     /**
      * set data by objectPath
      * This can only be called on temporary documents
@@ -175,7 +187,7 @@ export declare function createRxDocumentConstructor(proto?: {
         readonly _data: {} | undefined;
         readonly primaryPath: string | undefined;
         readonly primary: any;
-        readonly revision: any;
+        readonly revision: string | undefined;
         readonly deleted$: Observable<boolean> | undefined;
         readonly deleted: boolean | undefined;
         /**
@@ -199,7 +211,13 @@ export declare function createRxDocumentConstructor(proto?: {
          * get data by objectPath
          */
         get(this: import("./types").RxDocumentBase<{}, {}>, objPath: string): any;
-        toJSON(this: import("./types").RxDocumentBase<{}, {}>, withRevAndAttachments?: boolean): any;
+        toJSON(this: import("./types").RxDocumentBase<{}, {}>, withRevAndAttachments?: boolean): {
+            _rev: string;
+            _attachments?: {
+                [attachmentId: string]: import("./types").PouchAttachmentMeta;
+            } | undefined;
+            _deleted?: boolean | undefined;
+        };
         /**
          * set data by objectPath
          * This can only be called on temporary documents

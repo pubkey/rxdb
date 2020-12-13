@@ -95,6 +95,7 @@ var overwritable = {
 };
 exports.overwritable = overwritable;
 var RxDBKeyCompressionPlugin = {
+  name: 'key-compression',
   rxdb: rxdb,
   prototypes: prototypes,
   overwritable: overwritable

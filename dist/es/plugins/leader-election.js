@@ -77,6 +77,7 @@ export var prototypes = {
   }
 };
 export var RxDBLeaderElectionPlugin = {
+  name: 'leader-election',
   rxdb: rxdb,
   prototypes: prototypes,
   hooks: {

@@ -10,12 +10,15 @@ exports.getBatch = getBatch;
 exports.isLevelDown = isLevelDown;
 exports.validateCouchDBString = validateCouchDBString;
 exports.pouchReplicationFunction = pouchReplicationFunction;
+exports.pouchAttachmentBinaryHash = pouchAttachmentBinaryHash;
 exports.isInstanceOf = isInstanceOf;
 exports.PouchDB = void 0;
 
 var _pouchdbCore = _interopRequireDefault(require("pouchdb-core"));
 
 var _pouchdbFind = _interopRequireDefault(require("pouchdb-find"));
+
+var _pouchdbMd = require("pouchdb-md5");
 
 var _rxError = require("./rx-error");
 
@@ -137,6 +140,19 @@ function pouchReplicationFunction(pouch, _ref) {
       push: push
     });
   }
+}
+/**
+ * create the same diggest as an attachment with that data
+ * would have
+ */
+
+
+function pouchAttachmentBinaryHash(data) {
+  return new Promise(function (res) {
+    (0, _pouchdbMd.binaryMd5)(data, function (d) {
+      res('md5-' + d);
+    });
+  });
 }
 
 function isInstanceOf(obj) {

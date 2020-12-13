@@ -375,6 +375,7 @@ export var prototypes = {
   }
 };
 export var RxDBInMemoryPlugin = {
+  name: 'in-memory',
   rxdb: rxdb,
   prototypes: prototypes
 };

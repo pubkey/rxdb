@@ -101,6 +101,7 @@ var hooks = {
 };
 exports.hooks = hooks;
 var RxDBValidateZSchemaPlugin = {
+  name: 'validate-z-schema',
   rxdb: rxdb,
   prototypes: prototypes,
   hooks: hooks

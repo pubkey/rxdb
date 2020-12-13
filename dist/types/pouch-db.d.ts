@@ -25,5 +25,10 @@ export declare function pouchReplicationFunction(pouch: PouchDBInstance, { pull,
     pull?: boolean | undefined;
     push?: boolean | undefined;
 }): any;
+/**
+ * create the same diggest as an attachment with that data
+ * would have
+ */
+export declare function pouchAttachmentBinaryHash(data: any): Promise<string>;
 export declare function isInstanceOf(obj: any): boolean;
 export declare const PouchDB: any;

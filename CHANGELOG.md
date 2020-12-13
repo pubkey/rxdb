@@ -2,6 +2,8 @@
 
 ### X.X.X (coming soon)
 
+### 9.11.0 (13 December 2020)
+
 Features:
   - Added `putAttachment(skipIfSame)`, if set to `true` a write will be skipped if the attachment already exists with the same data.
 

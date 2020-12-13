@@ -53,6 +53,7 @@ var prototypes = {
 };
 exports.prototypes = prototypes;
 var RxDBUpdatePlugin = {
+  name: 'update',
   rxdb: rxdb,
   prototypes: prototypes
 };

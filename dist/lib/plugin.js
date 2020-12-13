@@ -43,8 +43,16 @@ var PROTOTYPES = {
 var ADDED_PLUGINS = new Set();
 
 function addRxPlugin(plugin) {
-  // do nothing if added before
-  if (ADDED_PLUGINS.has(plugin)) return;else ADDED_PLUGINS.add(plugin);
+  (0, _hooks.runPluginHooks)('preAddRxPlugin', {
+    plugin: plugin,
+    plugins: ADDED_PLUGINS
+  }); // do nothing if added before
+
+  if (ADDED_PLUGINS.has(plugin)) {
+    return;
+  } else {
+    ADDED_PLUGINS.add(plugin);
+  }
 
   if (!plugin.rxdb) {
     // pouchdb-plugin

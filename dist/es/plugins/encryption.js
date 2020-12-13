@@ -93,6 +93,7 @@ export var overwritable = {
   }
 };
 export var RxDBEncryptionPlugin = {
+  name: 'encryption',
   rxdb: rxdb,
   prototypes: prototypes,
   overwritable: overwritable,
