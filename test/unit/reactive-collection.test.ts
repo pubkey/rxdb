@@ -6,7 +6,7 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
 import {
-    createRxDatabase, randomCouchString
+    createRxDatabase, randomCouchString, isRxDocument
 } from '../../plugins/core';
 import AsyncTestUtil from 'async-test-util';
 import {
@@ -60,6 +60,39 @@ config.parallel('reactive-collection.test.js', () => {
                 );
                 assert.strictEqual(calls, 0);
                 sub.unsubscribe();
+                db.destroy();
+            });
+        });
+    });
+    describe('.bulkInsert()', () => {
+        describe('positive', () => {
+            it('should fire on bulk insert', async () => {
+                const db = await createRxDatabase({
+                    name: randomCouchString(10),
+                    adapter: 'memory'
+                });
+                const collection = await db.collection({
+                    name: 'human',
+                    schema: schemas.primaryHuman
+                });
+
+                const emittedCollection: RxChangeEvent[] = [];
+                const colSub = collection.insert$.subscribe((ce) => {
+                    emittedCollection.push(ce);
+                });
+
+                const docs = new Array(1).fill(0).map(() => schemaObjects.human());
+
+                await collection.bulkInsert(docs);
+
+                const changeEvent = emittedCollection[0];
+                assert.strictEqual(changeEvent.operation, 'INSERT');
+                assert.strictEqual(changeEvent.collectionName, 'human');
+                assert.strictEqual(changeEvent.documentId, docs[0].passportId);
+                assert.ok(isRxDocument(changeEvent.rxDocument));
+                assert.ok(changeEvent.documentData);
+
+                colSub.unsubscribe();
                 db.destroy();
             });
         });

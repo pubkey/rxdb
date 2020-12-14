@@ -437,7 +437,7 @@ export class RxCollectionBase<
                                     doc.toJSON(true),
                                     startTime,
                                     endTime,
-                                    docsMap.get(doc.primary)
+                                    doc
                                 );
                                 this.$emit(emitEvent);
                             });
