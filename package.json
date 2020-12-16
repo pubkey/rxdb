@@ -217,7 +217,7 @@
     "watch": "1.0.2",
     "watchify": "3.11.1",
     "webpack": "4.44.1",
-    "webpack-bundle-analyzer": "4.2.0",
+    "webpack-bundle-analyzer": "4.3.0",
     "webpack-cli": "3.3.12"
   }
 }
