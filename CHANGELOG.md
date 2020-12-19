@@ -2,6 +2,9 @@
 
 ### X.X.X (coming soon)
 
+Bugfixes:
+  - [#2705](https://github.com/pubkey/rxdb/issues/2705) when use bulkInsert to insert doc, the rxDocument property on changeEvent is an object, not a RxDocument instance. Thanks [@qinyang912](https://github.com/qinyang912)
+
 ### 9.11.0 (13 December 2020)
 
 Features:
