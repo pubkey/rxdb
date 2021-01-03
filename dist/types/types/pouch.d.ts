@@ -306,4 +306,10 @@ export declare class PouchDBInstance {
         ddoc: string;
         index: any;
     }): Promise<void>;
+
+    /**
+     * @link https://pouchdb.com/errors.html#event_emitter_limit
+     */
+    setMaxListeners(maxListenersAmount: number): void;
+    getMaxListeners(): number;
 }

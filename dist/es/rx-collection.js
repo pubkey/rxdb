@@ -297,7 +297,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
           }); // emit events
 
           rxDocuments.forEach(function (doc) {
-            var emitEvent = createInsertEvent(_this6, doc.toJSON(true), startTime, endTime, docsMap.get(doc.primary));
+            var emitEvent = createInsertEvent(_this6, doc.toJSON(true), startTime, endTime, doc);
 
             _this6.$emit(emitEvent);
           });

@@ -60,7 +60,7 @@ export declare const basePrototype: {
      * runs an atomic update over the document
      * @param function that takes the document-data and returns a new data-object
      */
-    atomicUpdate(this: import("./types").RxDocumentBase<{}, {}>, fun: Function): Promise<RxDocument>;
+    atomicUpdate(this: import("./types").RxDocumentBase<{}, {}>, mutationFunction: Function): Promise<RxDocument>;
     /**
      * patches the given properties
      */
@@ -148,7 +148,7 @@ export declare function createRxDocumentConstructor(proto?: {
      * runs an atomic update over the document
      * @param function that takes the document-data and returns a new data-object
      */
-    atomicUpdate(this: import("./types").RxDocumentBase<{}, {}>, fun: Function): Promise<import("./types").RxDocumentBase<{}, {}>>;
+    atomicUpdate(this: import("./types").RxDocumentBase<{}, {}>, mutationFunction: Function): Promise<import("./types").RxDocumentBase<{}, {}>>;
     /**
      * patches the given properties
      */
@@ -237,7 +237,7 @@ export declare function createRxDocumentConstructor(proto?: {
          * runs an atomic update over the document
          * @param function that takes the document-data and returns a new data-object
          */
-        atomicUpdate(this: import("./types").RxDocumentBase<{}, {}>, fun: Function): Promise<import("./types").RxDocumentBase<{}, {}>>;
+        atomicUpdate(this: import("./types").RxDocumentBase<{}, {}>, mutationFunction: Function): Promise<import("./types").RxDocumentBase<{}, {}>>;
         /**
          * patches the given properties
          */

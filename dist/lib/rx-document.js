@@ -310,77 +310,79 @@ var basePrototype = {
    * runs an atomic update over the document
    * @param function that takes the document-data and returns a new data-object
    */
-  atomicUpdate: function atomicUpdate(fun) {
+  atomicUpdate: function atomicUpdate(mutationFunction) {
     var _this2 = this;
 
-    this._atomicQueue = this._atomicQueue.then( /*#__PURE__*/(0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
-      var done, oldData, ret, newData;
-      return _regenerator["default"].wrap(function _callee$(_context) {
-        while (1) {
-          switch (_context.prev = _context.next) {
-            case 0:
-              done = false; // we need a hacky while loop to stay incide the chain-link of _atomicQueue
-              // while still having the option to run a retry on conflicts
+    return new Promise(function (res, rej) {
+      _this2._atomicQueue = _this2._atomicQueue.then( /*#__PURE__*/(0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
+        var done, oldData, newData;
+        return _regenerator["default"].wrap(function _callee$(_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                done = false; // we need a hacky while loop to stay incide the chain-link of _atomicQueue
+                // while still having the option to run a retry on conflicts
 
-            case 1:
-              if (done) {
-                _context.next = 24;
+              case 1:
+                if (done) {
+                  _context.next = 24;
+                  break;
+                }
+
+                oldData = _this2._dataSync$.getValue();
+                _context.prev = 3;
+                _context.next = 6;
+                return mutationFunction((0, _util.clone)(_this2._dataSync$.getValue()), _this2);
+
+              case 6:
+                newData = _context.sent;
+
+                if (_this2.collection) {
+                  newData = _this2.collection.schema.fillObjectWithDefaults(newData);
+                }
+
+                _context.next = 10;
+                return _this2._saveData(newData, oldData);
+
+              case 10:
+                done = true;
+                _context.next = 22;
                 break;
-              }
 
-              oldData = _this2._dataSync$.getValue();
-              ret = fun((0, _util.clone)(_this2._dataSync$.getValue()), _this2);
-              _context.next = 6;
-              return (0, _util.toPromise)(ret);
+              case 13:
+                _context.prev = 13;
+                _context.t0 = _context["catch"](3);
 
-            case 6:
-              newData = _context.sent;
+                if (!(0, _rxError.isPouchdbConflictError)(_context.t0)) {
+                  _context.next = 20;
+                  break;
+                }
 
-              if (_this2.collection) {
-                newData = _this2.collection.schema.fillObjectWithDefaults(newData);
-              }
+                _context.next = 18;
+                return (0, _util.nextTick)();
 
-              _context.prev = 8;
-              _context.next = 11;
-              return _this2._saveData(newData, oldData);
-
-            case 11:
-              done = true;
-              _context.next = 22;
-              break;
-
-            case 14:
-              _context.prev = 14;
-              _context.t0 = _context["catch"](8);
-
-              if (!(0, _rxError.isPouchdbConflictError)(_context.t0)) {
-                _context.next = 21;
+              case 18:
+                _context.next = 22;
                 break;
-              }
 
-              _context.next = 19;
-              return (0, _util.nextTick)();
+              case 20:
+                rej(_context.t0);
+                return _context.abrupt("return");
 
-            case 19:
-              _context.next = 22;
-              break;
+              case 22:
+                _context.next = 1;
+                break;
 
-            case 21:
-              throw _context.t0;
+              case 24:
+                res(_this2);
 
-            case 22:
-              _context.next = 1;
-              break;
-
-            case 24:
-            case "end":
-              return _context.stop();
+              case 25:
+              case "end":
+                return _context.stop();
+            }
           }
-        }
-      }, _callee, null, [[8, 14]]);
-    })));
-    return this._atomicQueue.then(function () {
-      return _this2;
+        }, _callee, null, [[3, 13]]);
+      })));
     });
   },
 

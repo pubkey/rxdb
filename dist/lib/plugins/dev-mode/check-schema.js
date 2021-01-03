@@ -102,13 +102,6 @@ function validateFieldsDeep(jsonSchema) {
             });
         }
       }
-    } // if primary is ref, throw
-
-
-    if (schemaObj.hasOwnProperty('ref') && schemaObj.primary) {
-      throw (0, _rxError.newRxError)('SC5', {
-        fieldName: fieldName
-      });
     }
 
     var isNested = path.split('.').length >= 2; // nested only

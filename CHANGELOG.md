@@ -2,6 +2,8 @@
 
 ### X.X.X (coming soon)
 
+### 9.12.0 (3 January 2021)
+
 Features:
   - Allow `primary` and `ref` at the same time in a schema. [#2747](https://github.com/pubkey/rxdb/issues/2747)
 

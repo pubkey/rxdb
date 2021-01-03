@@ -34,7 +34,7 @@ export declare function putAttachment(this: RxDocument, { id, data, type }: any,
  * TODO set to default=true
  * in next major release
  */
-skipIfSame?: boolean): Promise<any>;
+skipIfSame?: boolean): Promise<RxAttachment>;
 /**
  * get an attachment of the document by its id
  */
