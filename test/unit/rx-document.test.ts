@@ -1,5 +1,5 @@
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
+import AsyncTestUtil, { wait } from 'async-test-util';
 import { Observable } from 'rxjs';
 
 import config from './config';
@@ -574,6 +574,31 @@ config.parallel('rx-document.test.js', () => {
                     'final'
                 );
                 db.destroy();
+            });
+            it('should still be useable if previous mutation function has thrown', async () => {
+                const col = await humansCollection.create(1);
+                const doc = await col.findOne().exec(true);
+
+                try {
+                    await doc.atomicUpdate(() => {
+                        throw new Error('ouch');
+                    });
+                } catch (err) { }
+                // async mutation
+                try {
+                    await doc.atomicUpdate(async () => {
+                        await wait(10);
+                        throw new Error('ouch');
+                    });
+                } catch (err) { }
+
+                await doc.atomicUpdate(d => {
+                    d.age = 150;
+                    return d;
+                });
+
+                assert.strictEqual(doc.age, 150);
+                col.database.destroy();
             });
         });
     });

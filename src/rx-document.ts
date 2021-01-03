@@ -12,7 +12,6 @@ import {
     clone,
     trimDots,
     getHeightOfRevision,
-    toPromise,
     pluginMissing,
     now,
     nextTick
@@ -299,41 +298,44 @@ export const basePrototype = {
      * runs an atomic update over the document
      * @param function that takes the document-data and returns a new data-object
      */
-    atomicUpdate(this: RxDocument, fun: Function): Promise<RxDocument> {
-        this._atomicQueue = this._atomicQueue
-            .then(async () => {
-                let done = false;
-                // we need a hacky while loop to stay incide the chain-link of _atomicQueue
-                // while still having the option to run a retry on conflicts
-                while (!done) {
-                    const oldData = this._dataSync$.getValue();
-                    const ret = fun(clone(this._dataSync$.getValue()), this);
-                    let newData = await toPromise(ret);
-                    if (this.collection) {
-                        newData = this.collection.schema.fillObjectWithDefaults(newData);
-                    }
-                    try {
-                        await this._saveData(newData, oldData);
-                        done = true;
-                    } catch (err) {
-                        /**
-                         * conflicts cannot happen by just using RxDB in one process
-                         * There are two ways they still can appear which is
-                         * replication and multi-tab usage
-                         * Because atomicUpdate has a mutation function,
-                         * we can just re-run the mutation until there is no conflict
-                         */
-                        if (isPouchdbConflictError(err)) {
-                            // we need to free the cpu for a tick or the browser tests will fail
-                            await nextTick();
-                            // pouchdb conflict error -> retrying
-                        } else {
-                            throw err;
+    atomicUpdate(this: RxDocument, mutationFunction: Function): Promise<RxDocument> {
+        return new Promise((res, rej) => {
+            this._atomicQueue = this._atomicQueue
+                .then(async () => {
+                    let done = false;
+                    // we need a hacky while loop to stay incide the chain-link of _atomicQueue
+                    // while still having the option to run a retry on conflicts
+                    while (!done) {
+                        const oldData = this._dataSync$.getValue();
+                        try {
+                            // always await because mutationFunction might be async
+                            let newData = await mutationFunction(clone(this._dataSync$.getValue()), this);
+                            if (this.collection) {
+                                newData = this.collection.schema.fillObjectWithDefaults(newData);
+                            }
+                            await this._saveData(newData, oldData);
+                            done = true;
+                        } catch (err) {
+                            /**
+                             * conflicts cannot happen by just using RxDB in one process
+                             * There are two ways they still can appear which is
+                             * replication and multi-tab usage
+                             * Because atomicUpdate has a mutation function,
+                             * we can just re-run the mutation until there is no conflict
+                             */
+                            if (isPouchdbConflictError(err)) {
+                                // we need to free the cpu for a tick or the browser tests will fail
+                                await nextTick();
+                                // pouchdb conflict error -> retrying
+                            } else {
+                                rej(err);
+                                return;
+                            }
                         }
                     }
-                }
-            });
-        return this._atomicQueue.then(() => this);
+                    res(this);
+                });
+        });
     },
 
 

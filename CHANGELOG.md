@@ -4,6 +4,7 @@
 
 Bugfixes:
   - [#2705](https://github.com/pubkey/rxdb/issues/2705) when use bulkInsert to insert doc, the rxDocument property on changeEvent is an object, not a RxDocument instance. Thanks [@qinyang912](https://github.com/qinyang912)
+  - When the mutation function of `atomicUpdate()` has thrown once, it was not possible to use it again.
 
 ### 9.11.0 (13 December 2020)
 
