@@ -131,7 +131,6 @@ export const ERROR_MESSAGES: { [k: string]: string } = {
     SC2: 'SchemaCheck: name \'item\' reserved for array-fields',
     SC3: 'SchemaCheck: fieldname has a ref-array but items-type is not string',
     SC4: 'SchemaCheck: fieldname has a ref but is not type string, [string,null] or array<string>',
-    SC5: 'SchemaCheck: fieldname cannot be primary and ref at same time',
     SC6: 'SchemaCheck: primary can only be defined at top-level',
     SC7: 'SchemaCheck: default-values can only be defined at top-level',
     SC8: 'SchemaCheck: first level-fields cannot start with underscore _',

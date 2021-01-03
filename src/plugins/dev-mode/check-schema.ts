@@ -102,14 +102,6 @@ export function validateFieldsDeep(jsonSchema: any): true {
             }
         }
 
-        // if primary is ref, throw
-        if (schemaObj.hasOwnProperty('ref') && schemaObj.primary) {
-            throw newRxError('SC5', {
-                fieldName
-            });
-        }
-
-
         const isNested = path.split('.').length >= 2;
 
         // nested only

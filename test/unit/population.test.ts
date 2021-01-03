@@ -8,7 +8,8 @@ import {
     createRxDatabase,
     isRxDocument,
     randomCouchString,
-    createRxSchema
+    createRxSchema,
+    RxJsonSchema
 } from '../../plugins/core';
 
 config.parallel('population.test.js', () => {
@@ -22,6 +23,25 @@ config.parallel('population.test.js', () => {
                         bestFriend: {
                             ref: 'human',
                             type: 'string'
+                        }
+                    }
+                });
+                assert.strictEqual(schema.constructor.name, 'RxSchema');
+            });
+            /**
+             * This was not allowed in the past
+             * but is makes no sense to not allow using the primary as ref key
+             * @link https://github.com/pubkey/rxdb/issues/2747
+             */
+            it('should allow primary as relation key', () => {
+                const schema = createRxSchema({
+                    version: 0,
+                    type: 'object',
+                    properties: {
+                        bestFriend: {
+                            ref: 'human',
+                            type: 'string',
+                            primary: true
                         }
                     }
                 });
@@ -79,22 +99,6 @@ config.parallel('population.test.js', () => {
             });
         });
         describe('negative', () => {
-            it('throw if primary is ref', () => {
-                assert.throws(
-                    () => createRxSchema({
-                        version: 0,
-                        type: 'object',
-                        properties: {
-                            bestFriend: {
-                                primary: true,
-                                ref: 'human',
-                                type: 'string'
-                            }
-                        }
-                    }),
-                    Error
-                );
-            });
             it('throw if ref-type is no string', () => {
                 assert.throws(
                     () => createRxSchema({
@@ -190,6 +194,42 @@ config.parallel('population.test.js', () => {
                 friendDocs.forEach((friend: any) => {
                     assert.ok(isRxDocument(friend));
                 });
+                db.destroy();
+            });
+            it('populate with primary as ref', async () => {
+                const db = await createRxDatabase({
+                    name: randomCouchString(10),
+                    adapter: 'memory'
+                });
+                const schema: RxJsonSchema = {
+                    version: 0,
+                    type: 'object',
+                    properties: {
+                        name: {
+                            type: 'string',
+                            primary: true,
+                            ref: 'human2'
+                        }
+                    }
+                };
+                const col = await db.collection<{ name: string }>({
+                    name: 'human',
+                    schema
+                });
+                const col2 = await db.collection({
+                    name: 'human2',
+                    schema
+                });
+
+                const doc = await col.insert({
+                    name: 'foobar'
+                });
+                await col2.insert({
+                    name: 'foobar'
+                });
+                const doc2 = await doc.populate(doc.primaryPath);
+                assert.ok(doc2.collection === col2);
+
                 db.destroy();
             });
         });
