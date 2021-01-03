@@ -96,6 +96,24 @@ Calling this method will cancel the replication.
 await replicationState.cancel(); // cancel() is async
 ```
 
+## Known problems and workarounds
+  - When you do many writes in parallen and replicate them. Your replication might stuck because it reaches the maxSockets value of nodejs. You can increase it by setting
+```js
+require('http').globalAgent.maxSockets = 10;
+```  
+  - Especially when you replicate big attachments, you might get a stuck or slow replication. [See](https://pouchdb.com/errors.html#replicating_attachments_slow). You can solve this be changing the batches configuration.
+```js
+const replicationState = await myCollection.sync({
+    remote: 'http://...',
+    options: {
+        retry: true,
+        batch_size: 1, // only transfer one document per batch
+        batches_limit: 1 // only one batch in parrallel
+    }
+}); 
+```
+  - When you replicate attachments bigger then `1mb` you might cause the replication to stuck. This is an unsolved problem with pouchdb that requires further analysis. It is recommended to not store attachments bigger then `1mb` when using the replication.
+
 --------------------------------------------------------------------------------
 
 If you are new to RxDB, you should continue [here](./replication-graphql.md)

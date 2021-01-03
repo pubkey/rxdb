@@ -201,7 +201,7 @@ export async function putAttachment(
      * in next major release
      */
     skipIfSame: boolean = false
-): Promise<any> {
+): Promise<RxAttachment> {
     ensureSchemaSupportsAttachments(this);
 
     if (shouldEncrypt(this)) {
