@@ -701,5 +701,32 @@ config.parallel('local-documents.test.js', () => {
 
             await db2.destroy();
         });
+        it('doing many upsertLocal() can cause a 404 document not found', async () => {
+            if (!config.platform.isNode()) {
+                return;
+            }
+            const dbName: string = config.rootPath + 'test_tmp/' + randomCouchString(10);
+            const db = await createRxDatabase({
+                name: dbName,
+                adapter: 'leveldb',
+                multiInstance: false
+            });
+
+            const key = 'foobar';
+            let doc = await db.getLocal(key);
+            doc = await db.insertLocal(key, {
+                foo: 'bar'
+            });
+
+            let t = 0;
+            while (t < 50) {
+                await db.upsertLocal(key, {
+                    foo: randomString(10)
+                });
+                t++;
+            }
+
+            db.destroy();
+        });
     });
 });
