@@ -1,6 +1,8 @@
 # Changelog
 
 ### X.X.X (coming soon)
+Bugfixes:
+  - [#2785](https://github.com/pubkey/rxdb/pull/2785) postInsert hook not working when use bulkInsert to insert doc. Thanks [@qinyang912](https://github.com/qinyang912)
 
 ### 9.12.0 (3 January 2021)
 
