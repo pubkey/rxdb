@@ -419,7 +419,6 @@ export class RxCollectionBase<
                     const startTime = now();
                     return this.pouch.bulkDocs(insertDocs)
                         .then(results => {
-                            const endTime = now();
                             const okResults = results.filter(r => r.ok);
 
                             // create documents
@@ -430,6 +429,20 @@ export class RxCollectionBase<
                                 return doc;
                             });
 
+                            return Promise.all(
+                                rxDocuments.map(doc => {
+                                    return this._runHooks(
+                                        'post',
+                                        'insert',
+                                        docsMap.get(doc.primary),
+                                        doc
+                                    );
+                                })
+                            ).then(() => {
+                                return { rxDocuments, errorResults: results.filter(r => !r.ok) };
+                            });
+                        }).then(({ rxDocuments, errorResults }) => {
+                            const endTime = now();
                             // emit events
                             rxDocuments.forEach(doc => {
                                 const emitEvent = createInsertEvent(
@@ -444,7 +457,7 @@ export class RxCollectionBase<
 
                             return {
                                 success: rxDocuments,
-                                error: results.filter(r => !r.ok)
+                                error: errorResults
                             };
                         });
                 }
