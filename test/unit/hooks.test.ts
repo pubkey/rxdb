@@ -180,6 +180,19 @@ config.parallel('hooks.test.js', () => {
                     assert.strictEqual(count, 1);
                     c.database.destroy();
                 });
+                it('should call post insert hook after bulkInsert', async () => {
+                    const c = await humansCollection.create(0);
+                    const human = schemaObjects.human();
+                    let count = 0;
+                    c.postInsert((data, instance) => {
+                        assert.ok(data.age);
+                        assert.ok(isRxDocument(instance));
+                        count++;
+                    }, false);
+                    await c.bulkInsert([human]);
+                    assert.strictEqual(count, 1);
+                    c.database.destroy();
+                });
             });
         });
     });
