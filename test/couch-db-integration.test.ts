@@ -38,6 +38,7 @@ describe('couchdb-db-integration.test.js', () => {
      fetchOptions.method = 'PUT';
      const resp =  await fetch(COUCHDB_URL, fetchOptions);
      const respJson = await resp.json();
+
      assert.strictEqual(respJson.ok, true);
     });
 
