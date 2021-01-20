@@ -1,4 +1,5 @@
 'use strict';
+require('isomorphic-fetch')
 
 const mochaSettings = {
     bail: true,
@@ -11,7 +12,7 @@ if (process.env.TRAVIS) {
     // that are randomly slow
     mochaSettings.timeout = 120 * 1000;
     mochaSettings.reporter = 'min';
-};
+}
 if (process.env.NODE_PROF) {
     console.log('profiler actived:');
     mochaSettings.prof = true;

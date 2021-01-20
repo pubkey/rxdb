@@ -170,6 +170,7 @@
     "graphql": "15.4.0",
     "graphql-subscriptions": "1.1.0",
     "gzip-size-cli": "4.0.0",
+    "isomorphic-fetch": "^3.0.0",
     "karma": "6.0.0",
     "karma-babel-preprocessor": "8.0.1",
     "karma-browserify": "8.0.0",
