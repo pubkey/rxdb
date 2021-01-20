@@ -55,6 +55,8 @@ export const human: RxJsonSchema<HumanDocumentType> = {
     indexes: ['passportId']
 };
 
+
+
 export const humanDefault: RxJsonSchema<HumanDocumentType> = {
     title: 'human schema',
     version: 0,

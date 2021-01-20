@@ -18,7 +18,8 @@ import {
 export async function create(
     size: number = 20,
     name: string = 'human',
-    multiInstance: boolean = true
+    multiInstance: boolean = true,
+    compression: boolean = true
 ): Promise<RxCollection<HumanDocumentType, {}, {}>> {
     if (!name) name = 'human';
     PouchDB.plugin(require('pouchdb-adapter-memory'));
@@ -30,9 +31,12 @@ export async function create(
         ignoreDuplicate: true
     });
 
+    const shema = schemas.human;
+    shema.keyCompression = compression;
+
     const collection = await db.collection<schemaObjects.HumanDocumentType>({
         name,
-        schema: schemas.human
+        schema:  shema
     });
 
     // insert data
