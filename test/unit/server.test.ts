@@ -154,7 +154,7 @@ config.parallel('server.test.js', () => {
                             JSON.stringify(response.headers, null, 2)
                         )
                     );
-                } else res();
+                } else res(null);
             });
         });
 
@@ -199,7 +199,7 @@ config.parallel('server.test.js', () => {
                             JSON.stringify(response.headers, null, 2)
                         )
                     );
-                } else res();
+                } else res(null);
             });
         });
 

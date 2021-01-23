@@ -19,7 +19,7 @@ let lastPort = 12121;
 
 export async function spawn(): Promise<{
     url: string,
-    close: () => void
+    close: () => Promise<void>
 }> {
     lastPort++;
     const path = '/db';
@@ -33,6 +33,7 @@ export async function spawn(): Promise<{
                 close(now = false) {
                     if (now) {
                         server.close();
+                        return Promise.resolve();
                     } else {
                         return new Promise(res2 => {
                             setTimeout(() => {

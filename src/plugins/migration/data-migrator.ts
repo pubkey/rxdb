@@ -151,6 +151,7 @@ export class DataMigrator {
 
         return observer.asObservable();
     }
+
     migratePromise(batchSize: number): Promise<any> {
         if (!this._migratePromise) {
             this._migratePromise = mustMigrate(this)
@@ -158,7 +159,7 @@ export class DataMigrator {
                     if (!must) return Promise.resolve(false);
                     else return new Promise((res, rej) => {
                         const state$ = this.migrate(batchSize);
-                        state$['subscribe'](null, rej, res);
+                        (state$ as any).subscribe(null, rej, res);
                     });
                 });
         }
@@ -446,7 +447,7 @@ export function migratePromise(
     if (!oldCollection._migratePromise) {
         oldCollection._migratePromise = new Promise((res, rej) => {
             const state$ = migrateOldCollection(oldCollection, batchSize);
-            state$['subscribe'](null, rej, res);
+            (state$ as any).subscribe(null, rej, res);
         });
     }
     return oldCollection._migratePromise;

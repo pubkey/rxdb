@@ -8,7 +8,8 @@ import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
 
 import {
-    addRxPlugin, randomCouchString
+    addRxPlugin,
+    randomCouchString
 } from '../';
 addRxPlugin(require('pouchdb-adapter-memory'));
 addRxPlugin(require('pouchdb-adapter-http'));

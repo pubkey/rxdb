@@ -7,6 +7,7 @@ Bugfixes:
 
 Other:
   - (docs) added warning about indexeddb adapter
+  - Upgraded typescript to `4.1.3`
 
 ### 9.12.0 (3 January 2021)
 

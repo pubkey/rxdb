@@ -312,7 +312,7 @@ for (let r = 0; r < runs; r++) {
                             await col.insert(schemaObjects.averageSchema());
                         } else {
                             sub.unsubscribe();
-                            res();
+                            res(null);
                         }
                         return result;
                     })

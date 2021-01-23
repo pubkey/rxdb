@@ -56,7 +56,7 @@ export interface GraphqlServer<T> {
     overwriteDocuments(docs: T[]): void;
     getDocuments(): T[];
     requireHeader(name: string, value: string): void;
-    close(now?: boolean): void;
+    close(now?: boolean): Promise<void>;
 }
 
 export interface GraphQLServerModule {
@@ -312,6 +312,7 @@ export async function spawn(
                         if (now) {
                             server.close();
                             subServer.close();
+                            return Promise.resolve();
                         } else {
                             return new Promise(res2 => {
                                 setTimeout(() => {
