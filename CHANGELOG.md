@@ -3,6 +3,7 @@
 ### X.X.X (coming soon)
 Bugfixes:
   - [#2785](https://github.com/pubkey/rxdb/pull/2785) postInsert hook not working when use bulkInsert to insert doc. Thanks [@qinyang912](https://github.com/qinyang912)
+  - Setted `sideEffects: true` for main module (#2798)[https://github.com/pubkey/rxdb/issues/2798].
 
 Other:
   - (docs) added warning about indexeddb adapter
