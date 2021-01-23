@@ -88,7 +88,11 @@ When the version is greater than 0, you have to provide the migrationStrategies 
 ## keyCompression
 
 Since version `8.0.0`, the keyCompression is disabled by default. If you have a huge amount of documents it makes sense to enable the keyCompression and save disk-space.
-Notice that `keyCompression` can only be used on the **top-level** of a schema.
+`keyCompression` can only be used on the **top-level** of a schema.
+
+**Notice:** When you use `keyCompression` together with the graphql replication, you must ensure that direct non-RxDB writes to the remote database must also write compressed documents. Therefore it is not recommended to enable `keyCompression` for that use case.
+
+
 
 ```javascript
 const mySchema = {
