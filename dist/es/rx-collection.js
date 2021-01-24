@@ -284,7 +284,6 @@ export var RxCollectionBase = /*#__PURE__*/function () {
       return _this6.database.lockedRun(function () {
         var startTime = now();
         return _this6.pouch.bulkDocs(insertDocs).then(function (results) {
-          var endTime = now();
           var okResults = results.filter(function (r) {
             return r.ok;
           }); // create documents
@@ -294,7 +293,21 @@ export var RxCollectionBase = /*#__PURE__*/function () {
             docData._rev = r.rev;
             var doc = createRxDocument(_this6, docData);
             return doc;
-          }); // emit events
+          });
+          return Promise.all(rxDocuments.map(function (doc) {
+            return _this6._runHooks('post', 'insert', docsMap.get(doc.primary), doc);
+          })).then(function () {
+            return {
+              rxDocuments: rxDocuments,
+              errorResults: results.filter(function (r) {
+                return !r.ok;
+              })
+            };
+          });
+        }).then(function (_ref) {
+          var rxDocuments = _ref.rxDocuments,
+              errorResults = _ref.errorResults;
+          var endTime = now(); // emit events
 
           rxDocuments.forEach(function (doc) {
             var emitEvent = createInsertEvent(_this6, doc.toJSON(true), startTime, endTime, doc);
@@ -303,9 +316,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
           });
           return {
             success: rxDocuments,
-            error: results.filter(function (r) {
-              return !r.ok;
-            })
+            error: errorResults
           };
         });
       });
@@ -900,26 +911,26 @@ function _prepareCreateIndexes(rxCollection, spawnedPouchPromise) {
  */
 
 
-export function create(_ref, wasCreatedBefore) {
-  var database = _ref.database,
-      name = _ref.name,
-      schema = _ref.schema,
-      _ref$pouchSettings = _ref.pouchSettings,
-      pouchSettings = _ref$pouchSettings === void 0 ? {} : _ref$pouchSettings,
-      _ref$migrationStrateg = _ref.migrationStrategies,
-      migrationStrategies = _ref$migrationStrateg === void 0 ? {} : _ref$migrationStrateg,
-      _ref$autoMigrate = _ref.autoMigrate,
-      autoMigrate = _ref$autoMigrate === void 0 ? true : _ref$autoMigrate,
-      _ref$statics = _ref.statics,
-      statics = _ref$statics === void 0 ? {} : _ref$statics,
-      _ref$methods = _ref.methods,
-      methods = _ref$methods === void 0 ? {} : _ref$methods,
-      _ref$attachments = _ref.attachments,
-      attachments = _ref$attachments === void 0 ? {} : _ref$attachments,
-      _ref$options = _ref.options,
-      options = _ref$options === void 0 ? {} : _ref$options,
-      _ref$cacheReplacement = _ref.cacheReplacementPolicy,
-      cacheReplacementPolicy = _ref$cacheReplacement === void 0 ? defaultCacheReplacementPolicy : _ref$cacheReplacement;
+export function create(_ref2, wasCreatedBefore) {
+  var database = _ref2.database,
+      name = _ref2.name,
+      schema = _ref2.schema,
+      _ref2$pouchSettings = _ref2.pouchSettings,
+      pouchSettings = _ref2$pouchSettings === void 0 ? {} : _ref2$pouchSettings,
+      _ref2$migrationStrate = _ref2.migrationStrategies,
+      migrationStrategies = _ref2$migrationStrate === void 0 ? {} : _ref2$migrationStrate,
+      _ref2$autoMigrate = _ref2.autoMigrate,
+      autoMigrate = _ref2$autoMigrate === void 0 ? true : _ref2$autoMigrate,
+      _ref2$statics = _ref2.statics,
+      statics = _ref2$statics === void 0 ? {} : _ref2$statics,
+      _ref2$methods = _ref2.methods,
+      methods = _ref2$methods === void 0 ? {} : _ref2$methods,
+      _ref2$attachments = _ref2.attachments,
+      attachments = _ref2$attachments === void 0 ? {} : _ref2$attachments,
+      _ref2$options = _ref2.options,
+      options = _ref2$options === void 0 ? {} : _ref2$options,
+      _ref2$cacheReplacemen = _ref2.cacheReplacementPolicy,
+      cacheReplacementPolicy = _ref2$cacheReplacemen === void 0 ? defaultCacheReplacementPolicy : _ref2$cacheReplacemen;
   validateCouchDBString(name); // ensure it is a schema-object
 
   if (!isInstanceOfRxSchema(schema)) {
@@ -936,9 +947,9 @@ export function create(_ref, wasCreatedBefore) {
   var collection = new RxCollectionBase(database, name, schema, pouchSettings, migrationStrategies, methods, attachments, options, cacheReplacementPolicy, statics);
   return collection.prepare(wasCreatedBefore).then(function () {
     // ORM add statics
-    Object.entries(statics).forEach(function (_ref2) {
-      var funName = _ref2[0],
-          fun = _ref2[1];
+    Object.entries(statics).forEach(function (_ref3) {
+      var funName = _ref3[0],
+          fun = _ref3[1];
       Object.defineProperty(collection, funName, {
         get: function get() {
           return fun.bind(collection);
