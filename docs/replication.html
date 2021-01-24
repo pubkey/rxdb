@@ -1614,10 +1614,12 @@ addRxPlugin(<span class="hljs-built_in">require</span>(<span class="hljs-string"
 </code></pre>
 <h2 id="limitations">Limitations</h2>
 <p>Since CouchDB only allows synchronization through HTTP1.1 long polling requests there is a limitation of 6 active synchronization connections before the browser prevents sending any further request. This limitation is at the level of browser per tab per domain (some browser, especially older ones, might have a different limit, <a href="https://docs.pushtechnology.com/cloud/latest/manual/html/designguide/solution/support/connection_limitations.html" target="_blank">see here</a>).</p>
-<p>Since this limitation is at the <strong>browser</strong> level there are several solutions:
- 1) Use a proxy (ex: HAProxy) between the browser and CouchDB and configure it to use HTTP2.0, since HTTP2.0 doesn&apos;t have this limitation (RECOMMENDED)
- 2) Use only a single database for all entities and set a &quot;type&quot; field for each of the documents
- 3) Create multiple subdomains for CouchDB and use a max of 6 active synchronizations (or less) for each</p>
+<p>Since this limitation is at the <strong>browser</strong> level there are several solutions:</p>
+<ol>
+<li>Use a proxy (ex: HAProxy) between the browser and CouchDB and configure it to use HTTP2.0, since HTTP2.0 doesn&apos;t have this limitation (RECOMMENDED)</li>
+<li>Use only a single database for all entities and set a &quot;type&quot; field for each of the documents</li>
+<li>Create multiple subdomains for CouchDB and use a max of 6 active synchronizations (or less) for each</li>
+</ol>
 <h2 id="rxreplicationstate">RxReplicationState</h2>
 <p>The method <code>RxCollection.sync()</code> returns a RxReplicationState which can be used to observe events via rxjs-observables and to cancel the replication.</p>
 <h3 id="change">change$</h3>
@@ -1654,6 +1656,23 @@ Only one-time-replications will complete.</p>
 <p>Calling this method will cancel the replication.</p>
 <pre><code class="lang-js"><span class="hljs-keyword">await</span> replicationState.cancel(); <span class="hljs-comment">// cancel() is async</span>
 </code></pre>
+<h2 id="known-problems-and-workarounds">Known problems and workarounds</h2>
+<ul>
+<li>When you do many writes in parallen and replicate them. Your replication might stuck because it reaches the maxSockets value of nodejs. You can increase it by setting<pre><code class="lang-js"><span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;http&apos;</span>).globalAgent.maxSockets = <span class="hljs-number">10</span>;
+</code></pre>
+</li>
+<li>Especially when you replicate big attachments, you might get a stuck or slow replication. <a href="https://pouchdb.com/errors.html#replicating_attachments_slow" target="_blank">See</a>. You can solve this be changing the batches configuration.<pre><code class="lang-js"><span class="hljs-keyword">const</span> replicationState = <span class="hljs-keyword">await</span> myCollection.sync({
+remote: <span class="hljs-string">&apos;http://...&apos;</span>,
+options: {
+    retry: <span class="hljs-literal">true</span>,
+    batch_size: <span class="hljs-number">1</span>, <span class="hljs-comment">// only transfer one document per batch</span>
+    batches_limit: <span class="hljs-number">1</span> <span class="hljs-comment">// only one batch in parrallel</span>
+}
+});
+</code></pre>
+</li>
+<li>When you replicate attachments bigger then <code>1mb</code> you might cause the replication to stuck. This is an unsolved problem with pouchdb that requires further analysis. It is recommended to not store attachments bigger then <code>1mb</code> when using the replication.</li>
+</ul>
 <hr>
 <p>If you are new to RxDB, you should continue <a href="replication-graphql.html">here</a></p>
 
@@ -1699,7 +1718,7 @@ Only one-time-replications will complete.</p>
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Replication CouchDB","level":"1.14","depth":1,"next":{"title":"Replication GraphQL","level":"1.15","depth":1,"path":"replication-graphql.md","ref":"./replication-graphql.md","articles":[]},"previous":{"title":"LeaderElection","level":"1.13","depth":1,"path":"leader-election.md","ref":"./leader-election.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"replication.md","mtime":"2020-11-02T13:01:34.157Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2020-12-13T01:44:16.892Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Replication CouchDB","level":"1.14","depth":1,"next":{"title":"Replication GraphQL","level":"1.15","depth":1,"path":"replication-graphql.md","ref":"./replication-graphql.md","articles":[]},"previous":{"title":"LeaderElection","level":"1.13","depth":1,"path":"leader-election.md","ref":"./leader-election.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"replication.md","mtime":"2021-01-24T22:01:49.501Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-01-24T22:04:43.027Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
@@ -1721,7 +1740,7 @@ Only one-time-replications will complete.</p>
         
     
         
-        <script src="gitbook/gitbook-plugin-scripts/c6361af027a93a41d58227852f7ae965-gitter.js"></script>
+        <script src="gitbook/gitbook-plugin-scripts/5fba4a97b13c90ad3a5e9179941e5a9a-gitter.js"></script>
         
     
         

@@ -18,6 +18,6 @@
     "request": "2.88.2",
     "request-promise-native": "1.0.9",
     "ts-node": "9.1.1",
-    "typescript": "4.0.5"
+    "typescript": "4.1.3"
   }
 }

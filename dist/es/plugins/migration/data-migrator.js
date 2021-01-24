@@ -120,7 +120,7 @@ export var DataMigrator = /*#__PURE__*/function () {
         if (!must) return Promise.resolve(false);else return new Promise(function (res, rej) {
           var state$ = _this2.migrate(batchSize);
 
-          state$['subscribe'](null, rej, res);
+          state$.subscribe(null, rej, res);
         });
       });
     }
@@ -345,7 +345,7 @@ export function migratePromise(oldCollection, batchSize) {
   if (!oldCollection._migratePromise) {
     oldCollection._migratePromise = new Promise(function (res, rej) {
       var state$ = migrateOldCollection(oldCollection, batchSize);
-      state$['subscribe'](null, rej, res);
+      state$.subscribe(null, rej, res);
     });
   }
 
