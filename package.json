@@ -166,7 +166,7 @@
     "exists-file": "3.0.2",
     "express-graphql": "0.12.0",
     "express-pouchdb": "4.2.0",
-    "faker": "5.1.0",
+    "faker": "5.2.0",
     "gitbook-cli": "2.3.2",
     "graphql": "15.4.0",
     "graphql-subscriptions": "1.1.0",
