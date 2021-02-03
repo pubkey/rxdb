@@ -367,6 +367,23 @@ config.parallel('hooks.test.js', () => {
                     assert.strictEqual(doc2.get('passportId'), human.passportId);
                     c.database.destroy();
                 });
+                it('should call pre remove hook before bulkRemove', async () => {
+                    const c = await humansCollection.create(5);
+                    const docList = await c.find().exec();
+                    const primaryList = docList.map(doc => doc.primary);
+
+                    let count = 0;
+                    c.preRemove((data, instance) => {
+                        assert.ok(isRxDocument(instance));
+                        assert.ok(data.age);
+                        count++;
+                    }, true);
+
+                    await c.bulkRemove(primaryList);
+                    assert.strictEqual(count, 5);
+
+                    c.database.destroy();
+                });
             });
             describe('negative', () => { });
         });
@@ -414,6 +431,22 @@ config.parallel('hooks.test.js', () => {
                     await doc.remove();
 
                     assert.ok(hasRun);
+                    c.database.destroy();
+                });
+                it('should call post remove hook after bulkRemove', async () => {
+                    const c = await humansCollection.create(5);
+                    const docList = await c.find().exec();
+                    const primaryList = docList.map(doc => doc.primary);
+
+                    let count = 0;
+                    c.postRemove((data, instance) => {
+                        assert.ok(isRxDocument(instance));
+                        assert.ok(data.age);
+                        count++;
+                    }, true);
+                    await c.bulkRemove(primaryList);
+                    assert.strictEqual(count, 5);
+
                     c.database.destroy();
                 });
             });

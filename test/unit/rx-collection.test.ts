@@ -522,6 +522,25 @@ config.parallel('rx-collection.test.js', () => {
 
             });
         });
+        describe('.bulkRemove()', () => {
+            describe('positive', () => {
+                it('should remove some humans', async () => {
+                    const c = await humansCollection.create(10);
+                    const docList = await c.find().exec();
+
+                    assert.strictEqual(docList.length, 10);
+
+                    const primaryList = docList.map(doc => doc.primary);
+                    const ret = await c.bulkRemove(primaryList);
+                    assert.strictEqual(ret.success.length, 10);
+
+                    const finalList = await c.find().exec();
+                    assert.strictEqual(finalList.length, 0);
+
+                    c.database.destroy();
+                });
+            });
+        });
         describe('.find()', () => {
             describe('find all', () => {
                 describe('positive', () => {

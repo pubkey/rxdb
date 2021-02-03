@@ -32,7 +32,8 @@ import {
     createInsertEvent,
     RxChangeEventInsert,
     RxChangeEventUpdate,
-    RxChangeEventDelete
+    RxChangeEventDelete,
+    createDeleteEvent
 } from './rx-change-event';
 import {
     newRxError,
@@ -84,7 +85,8 @@ import type {
     RxDumpCollectionAny,
     MangoQuery,
     MangoQueryNoLimit,
-    RxCacheReplacementPolicy
+    RxCacheReplacementPolicy,
+    WithPouchMeta
 } from './types';
 import type {
     RxGraphQLReplicationState
@@ -463,6 +465,78 @@ export class RxCollectionBase<
                 }
             );
         });
+    }
+
+    async bulkRemove(
+        ids: string[]
+    ): Promise<{
+        success: RxDocument<RxDocumentType, OrmMethods>[],
+        error: any[]
+    }> {
+        const rxDocumentMap = await this.findByIds(ids);
+        const docsData: WithPouchMeta<RxDocumentType>[] = [];
+        const docsMap: Map<string, WithPouchMeta<RxDocumentType>> = new Map();
+        Array.from(rxDocumentMap.values()).forEach(rxDocument => {
+            const data = rxDocument.toJSON(true);
+            docsData.push(data);
+            docsMap.set(rxDocument.primary, data);
+        });
+
+        await Promise.all(
+            docsData.map(doc => {
+                const primary = (doc as any)[this.schema.primaryPath];
+                return this._runHooks('pre', 'remove', doc, rxDocumentMap.get(primary));
+            })
+        );
+
+        docsData.forEach(doc => doc._deleted = true);
+
+        const removeDocs = docsData.map(doc => this._handleToPouch(doc));
+
+        let startTime: number;
+
+        const results =  await this.database.lockedRun(async () => {
+            startTime = now();
+            const bulkResults = await this.pouch.bulkDocs(removeDocs);
+            return bulkResults;
+        });
+
+        const endTime = now();
+
+        const okResults = results.filter(r => r.ok);
+
+        await Promise.all(
+            okResults.map(r => {
+                return this._runHooks(
+                    'post',
+                    'remove',
+                    docsMap.get(r.id),
+                    rxDocumentMap.get(r.id)
+                );
+            })
+        );
+
+        okResults.forEach(r => {
+            const rxDocument = rxDocumentMap.get(r.id) as RxDocument<RxDocumentType, OrmMethods>;
+            const emitEvent = createDeleteEvent(
+                this as any,
+                docsMap.get(r.id) as any,
+                rxDocument._data,
+                startTime,
+                endTime,
+                rxDocument as any,
+            );
+            this.$emit(emitEvent);
+        });
+
+        const rxDocuments: any[] = okResults.map(r => {
+            return rxDocumentMap.get(r.id);
+        });
+
+        return {
+            success: rxDocuments,
+            error: okResults.filter(r => !r.ok)
+        };
     }
 
     /**
