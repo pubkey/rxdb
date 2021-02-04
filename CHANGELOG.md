@@ -2,6 +2,11 @@
 
 ### X.X.X (coming soon)
 
+Features: 
+
+  - Added `RxCollection().bulkRemove()` [#2845](https://github.com/pubkey/rxdb/pull/2845) Thanks [@qinyang912](https://github.com/qinyang912)
+
+
 ### 9.12.1 (24 January 2020)
 
 Bugfixes:
