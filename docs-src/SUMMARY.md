@@ -49,6 +49,8 @@
     * [Functions](./rx-collection.md#functions)
         * [$](./rx-collection.md#observe-)
         * [insert()](./rx-collection.md#insert)
+        * [bulkInsert()](./rx-collection.md#bulkinsert)
+        * [bulkRemove()](./rx-collection.md#bulkremove)
         * [newDocument()](./rx-collection.md#newdocument)
         * [upsert()](./rx-collection.md#upsert)
         * [atomicUpsert()](./rx-collection.md#atomicupsert)

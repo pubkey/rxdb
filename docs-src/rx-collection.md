@@ -103,6 +103,22 @@ const result = await myCollection.bulkInsert([{
 
 NOTICE: `bulkInsert` will not fail on update conflicts and you cannot expect that on failure the other documents are not inserted.
 
+### bulkRemove()
+
+When you want to remove many documents at once, use bulk remove. Returns an object with a `success`- and `error`-array.
+
+```js
+const result = await myCollection.bulkRemove([
+  'primary1',
+  'primary2'
+]);
+
+// > {
+//   success: [RxDocument, RxDocument],
+//   error: []
+// }
+```
+
 ### newDocument()
 Sometimes it can be helpful to spawn and use documents before saving them into the database.
 This is useful especially when you want to use the ORM methods or prefill values from form data.

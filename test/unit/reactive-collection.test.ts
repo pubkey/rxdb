@@ -12,7 +12,7 @@ import AsyncTestUtil from 'async-test-util';
 import {
     first
 } from 'rxjs/operators';
-import { RxChangeEvent } from '../../src/rx-change-event';
+import { RxChangeEvent, RxChangeEventDelete } from '../../src/rx-change-event';
 
 config.parallel('reactive-collection.test.js', () => {
     describe('.insert()', () => {
@@ -94,6 +94,35 @@ config.parallel('reactive-collection.test.js', () => {
 
                 colSub.unsubscribe();
                 db.destroy();
+            });
+        });
+    });
+    describe('.bulkRemove()', () => {
+        describe('positive', () => {
+            it('should fire on bulk remove', async () => {
+                const c = await humansCollection.create(10);
+
+                const emittedCollection: RxChangeEventDelete[] = [];
+                const colSub = c.remove$.subscribe((ce) => {
+                    emittedCollection.push(ce);
+                });
+
+                const docList = await c.find().exec();
+                const primaryList = docList.map(doc => doc.primary);
+
+                await c.bulkRemove(primaryList);
+
+                const changeEvent = emittedCollection[0];
+
+                assert.strictEqual(changeEvent.operation, 'DELETE');
+                assert.strictEqual(changeEvent.collectionName, 'human');
+                assert.strictEqual(changeEvent.documentId, docList[0].primary);
+                assert.ok(isRxDocument(changeEvent.rxDocument));
+                assert.ok(changeEvent.documentData);
+                assert.ok(changeEvent.previousData);
+
+                colSub.unsubscribe();
+                c.database.destroy();
             });
         });
     });
