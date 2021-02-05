@@ -660,6 +660,21 @@ describe('typings.test.js', function () {
         });
     });
     config.parallel('local documents', () => {
+        it('should allow to type input data', async () => {
+            const code = codeBase + `
+            (async() => {
+                const myDb: RxDatabase = {} as any;
+                const typedLocalDoc = await myDb.getLocal<{foo: string;}>('foobar');
+                const typedLocalDocInsert = await myDb.insertLocal<{foo: string;}>('foobar', { bar: 'foo' });
+                const x: string = typedLocalDoc.foo;
+                const x2: string = typedLocalDocInsert.foo;
+            });
+            `;
+            await AsyncTestUtil.assertThrows(
+                () => transpileCode(code),
+                Error
+            );
+        });
         it('should allow to type the return data', async () => {
             const code = codeBase + `
             (async() => {
