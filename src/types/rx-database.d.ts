@@ -61,21 +61,22 @@ export type CollectionsOfDatabase = { [key: string]: RxCollection };
 export type RxDatabase<Collections = CollectionsOfDatabase> = RxDatabaseBase<Collections> &
     Collections & RxDatabaseGenerated<Collections>;
 
-
-export interface RxDatabaseGenerated<Collections> {
-    insertLocal<LocalDocType = any>(id: string, data: any): Promise<
-        RxLocalDocument<RxDatabase<Collections>, LocalDocType>
+export interface RxLocalDocumentMutation<StorageType> {
+    insertLocal<LocalDocType = any>(id: string, data: LocalDocType): Promise<
+        RxLocalDocument<StorageType, LocalDocType>
     >;
     upsertLocal<LocalDocType = any>(id: string, data: LocalDocType): Promise<
-        RxLocalDocument<RxDatabase<Collections>, LocalDocType>
+        RxLocalDocument<StorageType, LocalDocType>
     >;
     getLocal<LocalDocType = any>(id: string): Promise<
-        RxLocalDocument<RxDatabase<Collections>, LocalDocType>
+        RxLocalDocument<StorageType, LocalDocType>
     >;
     getLocal$<LocalDocType = any>(id: string): Observable<
-        RxLocalDocument<RxDatabase<Collections>, LocalDocType> | null
+        RxLocalDocument<StorageType, LocalDocType> | null
     >;
 }
+
+export interface RxDatabaseGenerated<Collections> extends RxLocalDocumentMutation<RxDatabase<Collections>> { }
 
 /**
  * Extract the **DocumentType** of a collection.
