@@ -6,6 +6,9 @@ Features:
 
   - Added `RxCollection().bulkRemove()` [#2845](https://github.com/pubkey/rxdb/pull/2845) Thanks [@qinyang912](https://github.com/qinyang912)
 
+Other:
+
+  - Improved typings of `insertLocal` [#2850](https://github.com/pubkey/rxdb/pull/2850) Thanks [@openscript](https://github.com/openscript)
 
 ### 9.12.1 (24 January 2020)
 
