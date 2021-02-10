@@ -8,7 +8,6 @@ import type {
     RxCollectionBase
 } from '../rx-collection';
 import type { QueryCache } from '../query-cache';
-import { Observable } from 'rxjs';
 import { RxLocalDocumentMutation } from './rx-database';
 
 export interface KeyFunctionMap {

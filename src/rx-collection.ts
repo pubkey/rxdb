@@ -86,7 +86,8 @@ import type {
     MangoQuery,
     MangoQueryNoLimit,
     RxCacheReplacementPolicy,
-    WithPouchMeta
+    WithPouchMeta,
+    PouchWriteError
 } from './types';
 import type {
     RxGraphQLReplicationState
@@ -287,7 +288,7 @@ export class RxCollectionBase<
         obj = this._handleToPouch(obj);
         return this.database.lockedRun(
             () => this.pouch.put(obj)
-        ).catch((err: any) => {
+        ).catch((err: PouchWriteError) => {
             if (overwrite && err.status === 409) {
                 return this.database.lockedRun(
                     () => this.pouch.get(obj._id)
@@ -395,7 +396,7 @@ export class RxCollectionBase<
         docsData: RxDocumentType[]
     ): Promise<{
         success: RxDocument<RxDocumentType, OrmMethods>[],
-        error: any[]
+        error: PouchWriteError[]
     }> {
         const useDocs: RxDocumentType[] = docsData.map(docData => {
             const useDocData = fillObjectDataBeforeInsert(this, docData);
@@ -441,7 +442,11 @@ export class RxCollectionBase<
                                     );
                                 })
                             ).then(() => {
-                                return { rxDocuments, errorResults: results.filter(r => !r.ok) };
+                                const errorResults: PouchWriteError[] = results.filter(r => !r.ok) as any;
+                                return {
+                                    rxDocuments,
+                                    errorResults
+                                };
                             });
                         }).then(({ rxDocuments, errorResults }) => {
                             const endTime = now();
@@ -456,7 +461,6 @@ export class RxCollectionBase<
                                 );
                                 this.$emit(emitEvent);
                             });
-
                             return {
                                 success: rxDocuments,
                                 error: errorResults
@@ -495,16 +499,16 @@ export class RxCollectionBase<
 
         let startTime: number;
 
-        const results =  await this.database.lockedRun(async () => {
-            startTime = now();
-            const bulkResults = await this.pouch.bulkDocs(removeDocs);
-            return bulkResults;
-        });
+        const results = await this.database.lockedRun(
+            async () => {
+                startTime = now();
+                const bulkResults = await this.pouch.bulkDocs(removeDocs);
+                return bulkResults;
+            }
+        );
 
         const endTime = now();
-
         const okResults = results.filter(r => r.ok);
-
         await Promise.all(
             okResults.map(r => {
                 return this._runHooks(

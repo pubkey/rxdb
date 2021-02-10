@@ -4,7 +4,7 @@
 
 import { overwritable } from './overwritable';
 import type {
-    RxErrorParameters
+    RxErrorParameters, PouchWriteError
 } from './types';
 
 /**
@@ -120,7 +120,10 @@ export function newRxTypeError(
 }
 
 export function isPouchdbConflictError(err: RxError | RxTypeError): boolean {
-    if (err.parameters && err.parameters.pouchDbError && err.parameters.pouchDbError.status === 409) {
+    if (
+        err.parameters && err.parameters.pouchDbError &&
+        (err.parameters.pouchDbError as PouchWriteError).status === 409
+    ) {
         return true;
     } else {
         return false;

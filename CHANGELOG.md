@@ -8,7 +8,8 @@ Features:
 
 Other:
 
-  - Improved typings of `insertLocal` [#2850](https://github.com/pubkey/rxdb/pull/2850) Thanks [@openscript](https://github.com/openscript)
+  - Improved typings of `insertLocal()` [#2850](https://github.com/pubkey/rxdb/pull/2850) Thanks [@openscript](https://github.com/openscript)
+  - Improved typings of `bulkInsert()`
 
 ### 9.12.1 (24 January 2020)
 

@@ -59,6 +59,19 @@ interface PouchChangesOnChangeEvent {
     cancel(): void;
 }
 
+export type PouchWriteError = {
+    /**
+      * status code from pouchdb
+      * 409 for 'conflict'
+    */
+    status: number;
+    error: true;
+    /**
+     * primary key value of the errored document
+     */
+    id: string;
+};
+
 /**
  * possible pouch-settings
  * @link https://pouchdb.com/api.html#create_database
