@@ -2,6 +2,9 @@
 
 ### X.X.X (coming soon)
 
+
+### 9.13.0 (10 February 2021)
+
 Features: 
 
   - Added `RxCollection().bulkRemove()` [#2845](https://github.com/pubkey/rxdb/pull/2845) Thanks [@qinyang912](https://github.com/qinyang912)
@@ -11,7 +14,7 @@ Other:
   - Improved typings of `insertLocal()` [#2850](https://github.com/pubkey/rxdb/pull/2850) Thanks [@openscript](https://github.com/openscript)
   - Improved typings of `bulkInsert()`
 
-### 9.12.1 (24 January 2020)
+### 9.12.1 (24 January 2021)
 
 Bugfixes:
   - [#2785](https://github.com/pubkey/rxdb/pull/2785) postInsert hook not working when use bulkInsert to insert doc. Thanks [@qinyang912](https://github.com/qinyang912)
