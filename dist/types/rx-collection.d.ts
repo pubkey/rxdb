@@ -6,7 +6,7 @@ import { DocCache } from './doc-cache';
 import { QueryCache } from './query-cache';
 import { ChangeEventBuffer } from './change-event-buffer';
 import type { Subscription, Observable } from 'rxjs';
-import type { PouchSettings, KeyFunctionMap, RxReplicationState, PouchDBInstance, MigrationState, SyncOptions, RxCollection, RxDatabase, RxQuery, RxDocument, SyncOptionsGraphQL, RxDumpCollection, RxDumpCollectionAny, MangoQuery, MangoQueryNoLimit, RxCacheReplacementPolicy } from './types';
+import type { PouchSettings, KeyFunctionMap, RxReplicationState, PouchDBInstance, MigrationState, SyncOptions, RxCollection, RxDatabase, RxQuery, RxDocument, SyncOptionsGraphQL, RxDumpCollection, RxDumpCollectionAny, MangoQuery, MangoQueryNoLimit, RxCacheReplacementPolicy, PouchWriteError } from './types';
 import type { RxGraphQLReplicationState } from './plugins/replication-graphql';
 import { RxSchema } from './rx-schema';
 export declare class RxCollectionBase<RxDocumentType = {
@@ -82,6 +82,10 @@ export declare class RxCollectionBase<RxDocumentType = {
     $emit(changeEvent: RxChangeEvent): void;
     insert(json: RxDocumentType | RxDocument): Promise<RxDocument<RxDocumentType, OrmMethods>>;
     bulkInsert(docsData: RxDocumentType[]): Promise<{
+        success: RxDocument<RxDocumentType, OrmMethods>[];
+        error: PouchWriteError[];
+    }>;
+    bulkRemove(ids: string[]): Promise<{
         success: RxDocument<RxDocumentType, OrmMethods>[];
         error: any[];
     }>;

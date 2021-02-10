@@ -8,7 +8,7 @@ import type {
     RxCollectionBase
 } from '../rx-collection';
 import type { QueryCache } from '../query-cache';
-import { Observable } from 'rxjs';
+import { RxLocalDocumentMutation } from './rx-database';
 
 export interface KeyFunctionMap {
     [key: string]: Function;
@@ -77,7 +77,7 @@ export type RxCollection<
     RxCollectionGenerated<RxDocumentType, OrmMethods> &
     StaticMethods;
 
-export interface RxCollectionGenerated<RxDocumentType = any, OrmMethods = {}> {
+export interface RxCollectionGenerated<RxDocumentType = any, OrmMethods = {}> extends RxLocalDocumentMutation<RxCollection<RxDocumentType, OrmMethods>> {
 
     // HOOKS
     preInsert(fun: RxCollectionHookNoInstanceCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
@@ -87,11 +87,6 @@ export interface RxCollectionGenerated<RxDocumentType = any, OrmMethods = {}> {
     postSave(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
     postRemove(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
     postCreate(fun: RxCollectionHookCallbackNonAsync<RxDocumentType, OrmMethods>): void;
-
-    insertLocal<LocalDocType = any>(id: string, data: any): Promise<RxLocalDocument<RxCollection<RxDocumentType, OrmMethods>, LocalDocType>>;
-    upsertLocal<LocalDocType = any>(id: string, data: LocalDocType): Promise<RxLocalDocument<RxCollection<RxDocumentType, OrmMethods>, LocalDocType>>;
-    getLocal<LocalDocType = any>(id: string): Promise<RxLocalDocument<RxCollection<RxDocumentType, OrmMethods>, LocalDocType>>;
-    getLocal$<LocalDocType = any>(id: string): Observable<RxLocalDocument<RxCollection<RxDocumentType, OrmMethods>, LocalDocType> | null>;
 
     // only inMemory-collections
     awaitPersistence(): Promise<void>;

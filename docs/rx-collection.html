@@ -731,6 +731,32 @@
     
         <li class="chapter " data-level="1.5.2.3" data-path="rx-collection.html">
             
+                <a href="rx-collection.html#bulkinsert">
+            
+                    
+                    bulkInsert()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2.4" data-path="rx-collection.html">
+            
+                <a href="rx-collection.html#bulkremove">
+            
+                    
+                    bulkRemove()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2.5" data-path="rx-collection.html">
+            
                 <a href="rx-collection.html#newdocument">
             
                     
@@ -742,7 +768,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.4" data-path="rx-collection.html">
+        <li class="chapter " data-level="1.5.2.6" data-path="rx-collection.html">
             
                 <a href="rx-collection.html#upsert">
             
@@ -755,7 +781,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.5" data-path="rx-collection.html">
+        <li class="chapter " data-level="1.5.2.7" data-path="rx-collection.html">
             
                 <a href="rx-collection.html#atomicupsert">
             
@@ -768,7 +794,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.6" data-path="rx-collection.html">
+        <li class="chapter " data-level="1.5.2.8" data-path="rx-collection.html">
             
                 <a href="rx-collection.html#find">
             
@@ -781,7 +807,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.7" data-path="rx-collection.html">
+        <li class="chapter " data-level="1.5.2.9" data-path="rx-collection.html">
             
                 <a href="rx-collection.html#findone">
             
@@ -794,7 +820,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.8" data-path="rx-collection.html">
+        <li class="chapter " data-level="1.5.2.10" data-path="rx-collection.html">
             
                 <a href="rx-collection.html#findbyids">
             
@@ -807,7 +833,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.9" data-path="rx-collection.html">
+        <li class="chapter " data-level="1.5.2.11" data-path="rx-collection.html">
             
                 <a href="rx-collection.html#findbyids$">
             
@@ -820,7 +846,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.10" data-path="rx-collection.html">
+        <li class="chapter " data-level="1.5.2.12" data-path="rx-collection.html">
             
                 <a href="rx-collection.html#dump">
             
@@ -833,7 +859,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.11" data-path="rx-collection.html">
+        <li class="chapter " data-level="1.5.2.13" data-path="rx-collection.html">
             
                 <a href="rx-collection.html#importdump">
             
@@ -846,7 +872,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.12" data-path="rx-collection.html">
+        <li class="chapter " data-level="1.5.2.14" data-path="rx-collection.html">
             
                 <a href="rx-collection.html#sync">
             
@@ -859,7 +885,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.13" data-path="rx-collection.html">
+        <li class="chapter " data-level="1.5.2.15" data-path="rx-collection.html">
             
                 <a href="rx-collection.html#remove">
             
@@ -872,7 +898,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.14" data-path="rx-collection.html">
+        <li class="chapter " data-level="1.5.2.16" data-path="rx-collection.html">
             
                 <a href="rx-collection.html#destroy">
             
@@ -885,7 +911,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.15" data-path="rx-collection.html">
+        <li class="chapter " data-level="1.5.2.17" data-path="rx-collection.html">
             
                 <a href="rx-collection.html#isrxcollection">
             
@@ -1667,6 +1693,18 @@ Returns an object with a <code>success</code>- and <code>error</code>-array.</p>
 <span class="hljs-comment">// }</span>
 </code></pre>
 <p>NOTICE: <code>bulkInsert</code> will not fail on update conflicts and you cannot expect that on failure the other documents are not inserted.</p>
+<h3 id="bulkremove">bulkRemove()</h3>
+<p>When you want to remove many documents at once, use bulk remove. Returns an object with a <code>success</code>- and <code>error</code>-array.</p>
+<pre><code class="lang-js"><span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> myCollection.bulkRemove([
+  <span class="hljs-string">&apos;primary1&apos;</span>,
+  <span class="hljs-string">&apos;primary2&apos;</span>
+]);
+
+<span class="hljs-comment">// &gt; {</span>
+<span class="hljs-comment">//   success: [RxDocument, RxDocument],</span>
+<span class="hljs-comment">//   error: []</span>
+<span class="hljs-comment">// }</span>
+</code></pre>
 <h3 id="newdocument">newDocument()</h3>
 <p>Sometimes it can be helpful to spawn and use documents before saving them into the database.
 This is useful especially when you want to use the ORM methods or prefill values from form data.
@@ -1826,7 +1864,7 @@ This removes the documents, the schemas, and older schemaVersions.</p>
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"RxCollection","level":"1.5","depth":1,"next":{"title":"Creation","level":"1.5.1","depth":2,"anchor":"#creating-a-collection","path":"rx-collection.md","ref":"./rx-collection.md#creating-a-collection","articles":[{"title":"name","level":"1.5.1.1","depth":3,"anchor":"#name","path":"rx-collection.md","ref":"./rx-collection.md#name","articles":[]},{"title":"schema","level":"1.5.1.2","depth":3,"anchor":"#schema","path":"rx-collection.md","ref":"./rx-collection.md#schema","articles":[]},{"title":"pouchSettings","level":"1.5.1.3","depth":3,"anchor":"#pouchSettings","path":"rx-collection.md","ref":"./rx-collection.md#pouchSettings","articles":[]},{"title":"ORM-functions","level":"1.5.1.4","depth":3,"anchor":"#orm-functions","path":"rx-collection.md","ref":"./rx-collection.md#orm-functions","articles":[]},{"title":"Migration","level":"1.5.1.5","depth":3,"anchor":"#Migration","path":"rx-collection.md","ref":"./rx-collection.md#Migration","articles":[]}]},"previous":{"title":"encryption","level":"1.4.9","depth":2,"anchor":"#encryption","path":"rx-schema.md","ref":"./rx-schema.md#encryption","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-collection.md","mtime":"2021-01-24T22:01:49.501Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-01-24T22:04:43.027Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"RxCollection","level":"1.5","depth":1,"next":{"title":"Creation","level":"1.5.1","depth":2,"anchor":"#creating-a-collection","path":"rx-collection.md","ref":"./rx-collection.md#creating-a-collection","articles":[{"title":"name","level":"1.5.1.1","depth":3,"anchor":"#name","path":"rx-collection.md","ref":"./rx-collection.md#name","articles":[]},{"title":"schema","level":"1.5.1.2","depth":3,"anchor":"#schema","path":"rx-collection.md","ref":"./rx-collection.md#schema","articles":[]},{"title":"pouchSettings","level":"1.5.1.3","depth":3,"anchor":"#pouchSettings","path":"rx-collection.md","ref":"./rx-collection.md#pouchSettings","articles":[]},{"title":"ORM-functions","level":"1.5.1.4","depth":3,"anchor":"#orm-functions","path":"rx-collection.md","ref":"./rx-collection.md#orm-functions","articles":[]},{"title":"Migration","level":"1.5.1.5","depth":3,"anchor":"#Migration","path":"rx-collection.md","ref":"./rx-collection.md#Migration","articles":[]}]},"previous":{"title":"encryption","level":"1.4.9","depth":2,"anchor":"#encryption","path":"rx-schema.md","ref":"./rx-schema.md#encryption","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-collection.md","mtime":"2021-02-10T20:16:34.050Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-02-10T20:20:15.767Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
