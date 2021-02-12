@@ -17,7 +17,7 @@
     "babel-preset-expo": "8.3.0",
     "expo-cli": "3.21.5",
     "jest-expo": "37.0.0",
-    "react-native-gesture-handler": "1.10.0",
+    "react-native-gesture-handler": "1.10.1",
     "react-test-renderer": "17.0.1",
     "rimraf": "3.0.2",
     "schedule": "0.5.0"
