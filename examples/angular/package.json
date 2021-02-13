@@ -15,7 +15,7 @@
     "build:serve": "ws -p 8888 -d dist/angular/",
     "build:serve9000": "ws -p 9000 -d dist/angular/",
     "build:copy": "cp test/multitab.html dist/angular/multitab.html",
-    "test": "testcafe chromium test/ --selector-timeout 30000",
+    "test": "testcafe chromium test/e2e.test.js --selector-timeout 30000",
     "test:build": "concurrently \"npm run build:serve\" \"npm run test\" --kill-others --success first",
     "test:ssr": "concurrently \"npm run server\" \"sleep 10 && npm run serve:ssr\" \"sleep 10 && ts-mocha  --bail --exit ./test/ssr.test.ts\" --kill-others --success first",
     "lint": "tslint app/src/**/*.ts",
