@@ -4,7 +4,7 @@ import {
     EventEmitter,
     ChangeDetectionStrategy
 } from '@angular/core';
-import {
+import type {
     Observable,
 } from 'rxjs';
 import {

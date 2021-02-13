@@ -1,6 +1,8 @@
 # RxDB Angular example
 
-This is an example usage of RxDB with Angular. It implements a simple heroes-list which can be filled by the user.
+This is an example usage of RxDB with Angular.
+It implements a simple heroes-list which can be filled by the user.
+Also it uses **angular-universal** to enable server side rendering.
 
 # Try it out
 1. clone the whole [RxDB-repo](https://github.com/pubkey/rxdb)

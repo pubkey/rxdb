@@ -99,7 +99,9 @@ jobs:
         uses: GabrielBB/xvfb-action@v1
         with:
           working-directory: ./examples/angular #optional
-          run: npm run test:build
+          run: |
+            npm run test:build
+            npm run test:ssr
 
       - name: vue build
         run: |
