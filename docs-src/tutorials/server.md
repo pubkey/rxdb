@@ -77,7 +77,7 @@ const {app, server} = db.server({
     path: '/db', // (optional)
     port: 3000,  // (optional)
     cors: true,   // (optional), enable CORS-headers
-    startServer: true // (optional), start express server
+    startServer: true, // (optional), start express server
     // options of the pouchdb express server
     pouchdbExpressOptions: {
         inMemoryConfig: true, // do not write a config.json
