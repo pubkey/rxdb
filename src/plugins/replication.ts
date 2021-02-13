@@ -90,10 +90,6 @@ export class RxReplicationStateBase {
         });
     }
 
-    /**
-     * waits until the inital replication is done
-     * and the client can be expected to have the same data as the server
-     */
     awaitInitialReplication(): Promise<void> {
         if (this.syncOptions.options && this.syncOptions.options.live) {
             throw newRxError('RC4', {
