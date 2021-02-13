@@ -543,6 +543,67 @@ export class RxCollectionBase<
         };
     }
 
+    async bulkUpdate<T>(docs: T[]): Promise<{
+        success: RxDocument<RxDocumentType, OrmMethods>[],
+        error: any[]
+    }> {
+        const docsMap: Map<string, T> = new Map();
+        const updatedDocs = docs.map((doc: any) => {
+            docsMap.set(doc.id, doc)
+            return this._handleToPouch(doc)
+        });
+
+        const ids = docs.map((doc: any) => doc.id)
+        const rxDocumentMap = await this.findByIds(ids);
+
+        let startTime: number;
+
+        updatedDocs.forEach((doc) => {
+            this._runHooks('pre', 'save', doc, this)
+        })
+
+        const results = await this.database.lockedRun(async () => {
+            startTime = now();
+            const bulkResults = await this.pouch.bulkDocs(updatedDocs);
+            return bulkResults;
+        });
+        const endTime = now();
+
+        const okResults = results.filter((r: any) => r.ok);
+
+        okResults.forEach((r: any) => {
+            const rxDocument = rxDocumentMap.get(r.id) as RxDocument<RxDocumentType>;
+            const newData = docsMap.get(r.id)! as any
+            newData._rev = r.rev
+
+            const emitEvent = new RxChangeEvent(
+                'UPDATE',
+                (newData as any)[this.schema.primaryPath],
+                newData,
+                this.database.token,
+                this.name,
+                false,
+                startTime,
+                endTime,
+                rxDocument._data,
+                rxDocument
+            );
+
+            rxDocument.$emit(emitEvent);
+            this._runHooks('post', 'save', newData, this)
+        });
+
+        const rxDocuments: any[] = okResults.map(r => {
+            return rxDocumentMap.get(r.id);
+        });
+
+        return {
+            success: rxDocuments,
+            error: okResults.filter(r => !r.ok)
+        };
+    };
+
+
     /**
      * same as insert but overwrites existing document with same primary
      */
