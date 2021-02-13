@@ -29,9 +29,18 @@ export function app(): express.Express {
     maxAge: '1y'
   }) as any);
 
+  let requestId = 0;
+
   // All regular routes use the Universal engine
   server.get('*', (req, res) => {
-    res.render(indexHtml, { req, providers: [{ provide: APP_BASE_HREF, useValue: req.baseUrl }] });
+    requestId++;
+    const requestKey = 'render request #' + requestId;
+    console.log('# render via universal engine, url: ' + req.headers.host + req.url);
+    console.time(requestKey);
+    res.render(indexHtml, { req, providers: [{ provide: APP_BASE_HREF, useValue: req.baseUrl }] }, () => {
+      console.log('# rendering done');
+      console.timeEnd(requestKey);
+    });
   });
 
   return server;
