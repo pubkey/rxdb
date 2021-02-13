@@ -11,8 +11,6 @@ import {
     RxHeroDocumentType
 } from './../RxDB.d';
 
-import heroSchema from '../schemas/hero.schema';
-
 /**
  * Instead of using the default rxdb-import,
  * we do a custom build which lets us cherry-pick
@@ -28,11 +26,17 @@ import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
 import { RxDBReplicationPlugin } from 'rxdb/plugins/replication';
 import * as PouchdbAdapterHttp from 'pouchdb-adapter-http';
 import * as PouchdbAdapterIdb from 'pouchdb-adapter-idb';
+import {
+    COUCHDB_PORT,
+    HERO_COLLECTION_NAME,
+    DATABASE_NAME
+} from '../../shared';
+import { HERO_SCHEMA } from '../schemas/hero.schema';
 
 let collections = [
     {
-        name: 'hero',
-        schema: heroSchema,
+        name: HERO_COLLECTION_NAME,
+        schema: HERO_SCHEMA,
         methods: {
             hpPercent(this: RxHeroDocument): number {
                 return this.hp / this.maxHP * 100;
@@ -43,7 +47,7 @@ let collections = [
 ];
 
 console.log('hostname: ' + window.location.hostname);
-const syncURL = 'http://' + window.location.hostname + ':10101/';
+const syncURL = 'http://' + window.location.hostname + ':' + COUCHDB_PORT + '/' + DATABASE_NAME;
 
 let doSync = true;
 if (window.location.hash == '#nosync') doSync = false;
@@ -141,7 +145,7 @@ async function _create(): Promise<RxHeroesDatabase> {
     if (doSync) {
         console.log('DatabaseService: sync');
         await db.hero.sync({
-            remote: syncURL + '/hero'
+            remote: syncURL + '/' + HERO_COLLECTION_NAME
         });
     }
 

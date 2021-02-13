@@ -9,7 +9,7 @@
     "experimentalDecorators": true,
     // do not set this to true!, RxDB must work without it
     "allowSyntheticDefaultImports": false,
-    "module": "esnext",
+    "module": "commonjs",
     "moduleResolution": "node",
     "importHelpers": true,
     "strict": true,

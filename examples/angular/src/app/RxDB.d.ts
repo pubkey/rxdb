@@ -11,8 +11,8 @@ export type RxHeroDocumentType = {
     hp: number;
     team?: string;
     skills: Array<{
-        name?: string,
-        damage?: string
+        name?: string;
+        damage?: number;
     }>;
 };
 

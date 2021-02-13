@@ -1,7 +1,7 @@
-import {
+import type {
     RxJsonSchema
-} from 'rxdb';
-const schema: RxJsonSchema = {
+} from 'rxdb/plugins/core';
+export const HERO_SCHEMA: RxJsonSchema = {
     title: 'hero schema',
     description: 'describes a simple hero',
     version: 0,
@@ -53,5 +53,3 @@ const schema: RxJsonSchema = {
     },
     required: ['color', 'hp', 'maxHP', 'skills']
 };
-
-export default schema;
