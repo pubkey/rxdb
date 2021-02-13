@@ -458,6 +458,25 @@ describe('replication.test.js', () => {
                 c2.database.destroy();
             });
         });
+        describe('.awaitInitialReplication()', () => {
+            it('should have the full data when resolved', async () => {
+                const c = await humansCollection.create(0);
+                const c2 = await humansCollection.create(10);
+                const repState = await c.sync({
+                    remote: c2,
+                    waitForLeadership: false,
+                    options: {
+                        live: false
+                    }
+                });
+                await repState.awaitInitialReplication();
+                const docs = await c.find().exec();
+                assert.strictEqual(docs.length, 10);
+
+                c.database.destroy();
+                c2.database.destroy();
+            });
+        });
     });
     config.parallel('events', () => {
         describe('positive', () => {

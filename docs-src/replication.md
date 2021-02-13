@@ -90,6 +90,23 @@ If errors occur during the replication, they will get emitted here.
 replicationState.error$.subscribe(error => console.dir(error));
 ```
 
+### awaitInitialReplication()
+
+Returns a `Promise` that resolves when the initial replication is done and the data is equal to replication goal.
+This only works on non-live replications and when `waitForLeadership: false`
+
+```js
+const repState = await myCollection.sync({
+  remote: 'http://localhost:8080/db',
+  waitForLeadership: false,
+  options: {
+    live: false
+  }
+});
+await repState.awaitInitialReplication();
+```
+
+
 ### cancel()
 Calling this method will cancel the replication.
 ```js

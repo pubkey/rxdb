@@ -11,7 +11,7 @@ import {
     Subscription,
     Observable
 } from 'rxjs';
-import { skipUntil } from 'rxjs/operators';
+import { skipUntil, filter, first } from 'rxjs/operators';
 
 import {
     promiseWait,
@@ -77,7 +77,8 @@ export class RxReplicationStateBase {
     };
 
     constructor(
-        public collection: RxCollection
+        public collection: RxCollection,
+        private syncOptions: SyncOptions
     ) {
         // create getters
         Object.keys(this._subjects).forEach(key => {
@@ -87,6 +88,31 @@ export class RxReplicationStateBase {
                 }
             });
         });
+    }
+
+    /**
+     * waits until the inital replication is done
+     * and the client can be expected to have the same data as the server
+     */
+    awaitInitialReplication(): Promise<void> {
+        if (this.syncOptions.options && this.syncOptions.options.live) {
+            throw newRxError('RC4', {
+                database: this.collection.database.name,
+                collection: this.collection.name
+            });
+        }
+        if (this.collection.database.multiInstance && this.syncOptions.waitForLeadership) {
+            throw newRxError('RC5', {
+                database: this.collection.database.name,
+                collection: this.collection.name
+            });
+        }
+
+        const that: RxReplicationState = this as any;
+        return that.complete$.pipe(
+            filter(x => !!x),
+            first()
+        ).toPromise();
     }
 
     cancel() {
@@ -206,9 +232,13 @@ export function setPouchEventEmitter(
 }
 
 export function createRxReplicationState(
-    collection: RxCollection
+    collection: RxCollection,
+    syncOptions: SyncOptions
 ): RxReplicationState {
-    return new RxReplicationStateBase(collection) as RxReplicationState;
+    return new RxReplicationStateBase(
+        collection,
+        syncOptions
+    ) as RxReplicationState;
 }
 
 export function sync(
@@ -254,7 +284,16 @@ export function sync(
     const syncFun = pouchReplicationFunction(this.pouch, direction);
     if (query) useOptions.selector = (query as any).keyCompress().selector;
 
-    const repState: any = createRxReplicationState(this);
+    const repState: any = createRxReplicationState(
+        this,
+        {
+            remote,
+            waitForLeadership,
+            direction,
+            options,
+            query
+        }
+    );
 
     // run internal so .sync() does not have to be async
     const waitTillRun = (

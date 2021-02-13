@@ -2,6 +2,9 @@
 
 ### X.X.X (coming soon)
 
+Features:
+  - Added `RxReplicationState.awaitInitialReplication()`
+
 Bugfixes:
   - Using the replication plugins must not required to also use leader-election
 

@@ -182,10 +182,7 @@ async function _create(): Promise<RxHeroesDatabase> {
                     live: false
                 }
             });
-            await firstReplication.complete$.pipe(
-                filter(x => !!x),
-                first()
-            ).toPromise();
+            await firstReplication.awaitInitialReplication();
         }
 
         // start a live replication

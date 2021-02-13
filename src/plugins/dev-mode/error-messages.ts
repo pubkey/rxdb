@@ -125,6 +125,8 @@ export const ERROR_MESSAGES: { [k: string]: string } = {
     RC1: 'Replication: already added',
     RC2: 'RxCollection.sync() query must be from the same RxCollection',
     RC3: 'RxCollection.sync() Do not use a collection\'s pouchdb as remote, use the collection instead',
+    RC4: 'RxReplicationState.awaitInitialReplication() cannot await inital replication when live: true',
+    RC5: 'RxReplicationState.awaitInitialReplication() cannot await inital replication if multiInstance because the replication might run on another instance',
 
     // plugins/dev-mode/check-schema.js
     SC1: 'fieldnames do not match the regex',
