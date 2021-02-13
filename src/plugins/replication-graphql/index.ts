@@ -511,7 +511,10 @@ export function syncGraphQL(
     if (!autoStart) return replicationState;
 
     // run internal so .sync() does not have to be async
-    const waitTillRun: any = waitForLeadership ? this.database.waitForLeadership() : promiseWait(0);
+    const waitTillRun: any = (
+        waitForLeadership &&
+        this.database.multiInstance // do not await leadership if not multiInstance
+    ) ? this.database.waitForLeadership() : promiseWait(0);
     waitTillRun.then(() => {
 
         // trigger run once

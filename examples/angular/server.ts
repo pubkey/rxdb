@@ -27,7 +27,7 @@ export function app(): express.Express {
   // Serve static files from /browser
   server.get('*.*', express.static(distFolder, {
     maxAge: '1y'
-  }));
+  }) as any);
 
   // All regular routes use the Universal engine
   server.get('*', (req, res) => {

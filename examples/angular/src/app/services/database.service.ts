@@ -75,12 +75,6 @@ async function loadRxDBPlugins(): Promise<void> {
     // http-adapter is always needed for replication with the node-server
     addRxPlugin(PouchdbAdapterHttp);
 
-
-    // then we also need the leader election
-    // TODO this should only be needed when not in SSR, but somehow that breaks
-    addRxPlugin(RxDBLeaderElectionPlugin);
-
-
     if (IS_SERVER_SIDE_RENDERING) {
         // for server side rendering, import the memory adapter
         const PouchdbAdapterMemory = require('pouchdb-adapter-' + 'memory');
@@ -88,6 +82,9 @@ async function loadRxDBPlugins(): Promise<void> {
     } else {
         // else, use indexeddb
         addRxPlugin(PouchdbAdapterIdb);
+
+        // then we also need the leader election
+        addRxPlugin(RxDBLeaderElectionPlugin);
     }
 
 

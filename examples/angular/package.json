@@ -43,7 +43,7 @@
     "@angular/router": "11.2.0",
     "@angular/service-worker": "11.2.0",
     "@nguniversal/express-engine": "11.1.2",
-    "express": "4.15.2",
+    "express": "4.17.1",
     "express-pouchdb": "4.2.0",
     "font-awesome": "4.7.0",
     "pouchdb-adapter-http": "7.2.2",

@@ -257,7 +257,10 @@ export function sync(
     const repState: any = createRxReplicationState(this);
 
     // run internal so .sync() does not have to be async
-    const waitTillRun = waitForLeadership ? this.database.waitForLeadership() : promiseWait(0);
+    const waitTillRun = (
+        waitForLeadership &&
+        this.database.multiInstance // do not await leadership if not multiInstance
+    ) ? this.database.waitForLeadership() : promiseWait(0);
     (waitTillRun as any).then(() => {
         const pouchSync = syncFun(remote, useOptions);
         this.watchForChanges();

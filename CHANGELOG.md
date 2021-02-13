@@ -2,6 +2,11 @@
 
 ### X.X.X (coming soon)
 
+Bugfixes:
+  - Using the replication plugins must not required to also use leader-election
+
+Other:
+  - Added server side rendering to angular example
 
 ### 9.13.0 (10 February 2021)
 
