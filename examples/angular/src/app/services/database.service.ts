@@ -186,18 +186,17 @@ async function _create(): Promise<RxHeroesDatabase> {
                 }
             });
             await firstReplication.awaitInitialReplication();
-        } else {
-            /**
-             * For normal clients,
-             * we start a live replication which also sync the ongoing changes
-             */
-            await db.hero.sync({
-                remote: collectionUrl,
-                options: {
-                    live: true
-                }
-            });
         }
+
+        /**
+         * we start a live replication which also sync the ongoing changes
+         */
+        await db.hero.sync({
+            remote: collectionUrl,
+            options: {
+                live: true
+            }
+        });
     }
 
     console.log('DatabaseService: created');

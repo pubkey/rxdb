@@ -4,7 +4,7 @@ import {
     waitUntil
 } from 'async-test-util';
 
-const baseUrl = 'http://localhost:4000/';
+const baseUrl = 'http://localhost:4200/';
 
 describe('ssr.test.ts', function () {
     this.timeout(1000 * 120);
@@ -18,7 +18,9 @@ describe('ssr.test.ts', function () {
     }
 
     it('should get some html', async () => {
+        console.log('run first request');
         const html = await getHtml(baseUrl);
+        console.log('run first request DONE');
         assert.ok(html);
     });
     it('should contain data from the rxdb instance', async () => {

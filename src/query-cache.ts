@@ -99,10 +99,7 @@ export const defaultCacheReplacementPolicy: RxCacheReplacementPolicy = defaultCa
     DEFAULT_UNEXECUTED_LIFETME
 );
 
-
 export const COLLECTIONS_WITH_RUNNING_CLEANUP: WeakSet<RxCollection> = new WeakSet();
-
-export const COLLECTIONS_WITH_DESTROY_HOOK: WeakSet<RxCollection> = new WeakSet();
 
 /**
  * Triggers the cache replacement policy after waitTime has passed.
