@@ -2,6 +2,8 @@
 
 ### X.X.X (coming soon)
 
+### 9.14.0 (14 February 2021)
+
 Features:
   - Added `RxReplicationState.awaitInitialReplication()`
 
