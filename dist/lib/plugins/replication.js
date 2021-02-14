@@ -39,7 +39,7 @@ var _watchForChanges = require("./watch-for-changes");
 var INTERNAL_POUCHDBS = new WeakSet();
 
 var RxReplicationStateBase = /*#__PURE__*/function () {
-  function RxReplicationStateBase(collection) {
+  function RxReplicationStateBase(collection, syncOptions) {
     var _this = this;
 
     this._subs = [];
@@ -53,6 +53,7 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
       error: new _rxjs.Subject()
     };
     this.collection = collection;
+    this.syncOptions = syncOptions;
     // create getters
     Object.keys(this._subjects).forEach(function (key) {
       Object.defineProperty(_this, key + '$', {
@@ -64,6 +65,27 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
   }
 
   var _proto = RxReplicationStateBase.prototype;
+
+  _proto.awaitInitialReplication = function awaitInitialReplication() {
+    if (this.syncOptions.options && this.syncOptions.options.live) {
+      throw (0, _rxError.newRxError)('RC4', {
+        database: this.collection.database.name,
+        collection: this.collection.name
+      });
+    }
+
+    if (this.collection.database.multiInstance && this.syncOptions.waitForLeadership) {
+      throw (0, _rxError.newRxError)('RC5', {
+        database: this.collection.database.name,
+        collection: this.collection.name
+      });
+    }
+
+    var that = this;
+    return that.complete$.pipe((0, _operators.filter)(function (x) {
+      return !!x;
+    }), (0, _operators.first)()).toPromise();
+  };
 
   _proto.cancel = function cancel() {
     if (this._pouchEventEmitterObject) this._pouchEventEmitterObject.cancel();
@@ -163,8 +185,8 @@ function setPouchEventEmitter(rxRepState, evEmitter) {
   }));
 }
 
-function createRxReplicationState(collection) {
-  return new RxReplicationStateBase(collection);
+function createRxReplicationState(collection, syncOptions) {
+  return new RxReplicationStateBase(collection, syncOptions);
 }
 
 function sync(_ref) {
@@ -207,9 +229,16 @@ function sync(_ref) {
 
   var syncFun = (0, _pouchDb.pouchReplicationFunction)(this.pouch, direction);
   if (query) useOptions.selector = query.keyCompress().selector;
-  var repState = createRxReplicationState(this); // run internal so .sync() does not have to be async
+  var repState = createRxReplicationState(this, {
+    remote: remote,
+    waitForLeadership: waitForLeadership,
+    direction: direction,
+    options: options,
+    query: query
+  }); // run internal so .sync() does not have to be async
 
-  var waitTillRun = waitForLeadership ? this.database.waitForLeadership() : (0, _util.promiseWait)(0);
+  var waitTillRun = waitForLeadership && this.database.multiInstance // do not await leadership if not multiInstance
+  ? this.database.waitForLeadership() : (0, _util.promiseWait)(0);
   waitTillRun.then(function () {
     var pouchSync = syncFun(remote, useOptions);
 

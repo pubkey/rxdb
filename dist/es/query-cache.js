@@ -8,7 +8,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
  * the query-cache makes sure that on every query-state, exactly one instance can exist
  * if you use the same mango-query more then once, it will reuse the first RxQuery
  */
-import { now } from './util';
+import { nextTick, now, requestIdlePromise } from './util';
 export var QueryCache = /*#__PURE__*/function () {
   function QueryCache() {
     this._map = new Map();
@@ -47,7 +47,6 @@ export function countRxQuerySubscribers(rxQuery) {
 }
 export var DEFAULT_TRY_TO_KEEP_MAX = 100;
 export var DEFAULT_UNEXECUTED_LIFETME = 30 * 1000;
-export var DEFAULT_CACHE_REPLACEMENT_WAIT_TIME = 20 * 1000;
 /**
  * The default cache replacement policy
  * See docs-src/query-cache.md to learn how it should work.
@@ -96,10 +95,8 @@ export var defaultCacheReplacementPolicyMonad = function defaultCacheReplacement
     });
   };
 };
-export var defaultCacheReplacementPolicy = defaultCacheReplacementPolicyMonad(DEFAULT_TRY_TO_KEEP_MAX, DEFAULT_UNEXECUTED_LIFETME); // @link https://stackoverflow.com/a/56239226/3443137
-
-export var CACHE_REPLACEMENT_STATE_BY_COLLECTION = new WeakMap();
-export var COLLECTIONS_WITH_DESTROY_HOOK = new WeakSet();
+export var defaultCacheReplacementPolicy = defaultCacheReplacementPolicyMonad(DEFAULT_TRY_TO_KEEP_MAX, DEFAULT_UNEXECUTED_LIFETME);
+export var COLLECTIONS_WITH_RUNNING_CLEANUP = new WeakSet();
 /**
  * Triggers the cache replacement policy after waitTime has passed.
  * We do not run this directly because at exactly the time a query is created,
@@ -108,29 +105,26 @@ export var COLLECTIONS_WITH_DESTROY_HOOK = new WeakSet();
  */
 
 export function triggerCacheReplacement(rxCollection) {
-  var waitTime = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : DEFAULT_CACHE_REPLACEMENT_WAIT_TIME;
-
-  if (CACHE_REPLACEMENT_STATE_BY_COLLECTION.has(rxCollection)) {
+  if (COLLECTIONS_WITH_RUNNING_CLEANUP.has(rxCollection)) {
     // already started
     return;
-  } // ensure we clean up the runnung timeouts when the collection is destroyed
-
-
-  if (!COLLECTIONS_WITH_DESTROY_HOOK.has(rxCollection)) {
-    rxCollection.onDestroy.then(function () {
-      var timeout = CACHE_REPLACEMENT_STATE_BY_COLLECTION.get(rxCollection);
-
-      if (timeout) {
-        clearTimeout(timeout);
-      }
-    });
-    COLLECTIONS_WITH_DESTROY_HOOK.add(rxCollection);
   }
 
-  var val = setTimeout(function () {
-    CACHE_REPLACEMENT_STATE_BY_COLLECTION["delete"](rxCollection);
-    rxCollection.cacheReplacementPolicy(rxCollection, rxCollection._queryCache);
-  }, waitTime);
-  CACHE_REPLACEMENT_STATE_BY_COLLECTION.set(rxCollection, val);
+  COLLECTIONS_WITH_RUNNING_CLEANUP.add(rxCollection);
+  /**
+   * Do not run directly to not reduce result latency of a new query
+   */
+
+  nextTick() // wait at least one tick
+  .then(function () {
+    return requestIdlePromise();
+  }) // and then wait for the CPU to be idle
+  .then(function () {
+    if (!rxCollection.destroyed) {
+      rxCollection.cacheReplacementPolicy(rxCollection, rxCollection._queryCache);
+    }
+
+    COLLECTIONS_WITH_RUNNING_CLEANUP["delete"](rxCollection);
+  });
 }
 //# sourceMappingURL=query-cache.js.map

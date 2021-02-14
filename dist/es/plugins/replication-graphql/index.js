@@ -801,7 +801,8 @@ export function syncGraphQL(_ref4) {
   var replicationState = new RxGraphQLReplicationState(collection, url, headers, pull, push, deletedFlag, lastPulledRevField, live, liveInterval, retryTime, syncRevisions);
   if (!autoStart) return replicationState; // run internal so .sync() does not have to be async
 
-  var waitTillRun = waitForLeadership ? this.database.waitForLeadership() : promiseWait(0);
+  var waitTillRun = waitForLeadership && this.database.multiInstance // do not await leadership if not multiInstance
+  ? this.database.waitForLeadership() : promiseWait(0);
   waitTillRun.then(function () {
     // trigger run once
     replicationState.run(); // start sync-interval

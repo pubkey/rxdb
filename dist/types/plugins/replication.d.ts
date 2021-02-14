@@ -16,6 +16,7 @@ export interface SyncOptions {
 }
 export declare class RxReplicationStateBase {
     collection: RxCollection;
+    private syncOptions;
     _subs: Subscription[];
     _pouchEventEmitterObject?: PouchSyncHandler | null;
     _subjects: {
@@ -27,7 +28,8 @@ export declare class RxReplicationStateBase {
         alive: BehaviorSubject<boolean>;
         error: Subject<unknown>;
     };
-    constructor(collection: RxCollection);
+    constructor(collection: RxCollection, syncOptions: SyncOptions);
+    awaitInitialReplication(): Promise<void>;
     cancel(): void;
 }
 export declare type RxReplicationState = RxReplicationStateBase & {
@@ -40,7 +42,7 @@ export declare type RxReplicationState = RxReplicationStateBase & {
     error$: Observable<any>;
 };
 export declare function setPouchEventEmitter(rxRepState: RxReplicationState, evEmitter: PouchSyncHandler): void;
-export declare function createRxReplicationState(collection: RxCollection): RxReplicationState;
+export declare function createRxReplicationState(collection: RxCollection, syncOptions: SyncOptions): RxReplicationState;
 export declare function sync(this: RxCollection, { remote, waitForLeadership, direction, options, query }: SyncOptions): any;
 export declare const rxdb = true;
 export declare const prototypes: {

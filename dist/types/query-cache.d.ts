@@ -17,7 +17,6 @@ export declare function uncacheRxQuery(queryCache: QueryCache, rxQuery: RxQuery)
 export declare function countRxQuerySubscribers(rxQuery: RxQuery): number;
 export declare const DEFAULT_TRY_TO_KEEP_MAX = 100;
 export declare const DEFAULT_UNEXECUTED_LIFETME: number;
-export declare const DEFAULT_CACHE_REPLACEMENT_WAIT_TIME: number;
 /**
  * The default cache replacement policy
  * See docs-src/query-cache.md to learn how it should work.
@@ -26,14 +25,11 @@ export declare const DEFAULT_CACHE_REPLACEMENT_WAIT_TIME: number;
  */
 export declare const defaultCacheReplacementPolicyMonad: (tryToKeepMax: number, unExecutedLifetime: number) => RxCacheReplacementPolicy;
 export declare const defaultCacheReplacementPolicy: RxCacheReplacementPolicy;
-declare type TimeoutType = ReturnType<typeof setTimeout>;
-export declare const CACHE_REPLACEMENT_STATE_BY_COLLECTION: WeakMap<RxCollection, TimeoutType>;
-export declare const COLLECTIONS_WITH_DESTROY_HOOK: WeakSet<RxCollection>;
+export declare const COLLECTIONS_WITH_RUNNING_CLEANUP: WeakSet<RxCollection>;
 /**
  * Triggers the cache replacement policy after waitTime has passed.
  * We do not run this directly because at exactly the time a query is created,
  * we need all CPU to minimize latency.
  * Also this should not be triggered multiple times when waitTime is still waiting.
  */
-export declare function triggerCacheReplacement(rxCollection: RxCollection, waitTime?: number): void;
-export {};
+export declare function triggerCacheReplacement(rxCollection: RxCollection): void;
