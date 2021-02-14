@@ -12,7 +12,7 @@ Bugfixes:
   - Refactor `QueryCache.triggerCacheReplacement()` to not spawn `setTimeout` regulary. This is needed for server side rendering with angular universal.
 
 Other:
-  - Added server side rendering to angular example
+  - Added server side rendering to the [angular example](https://github.com/pubkey/rxdb/tree/master/examples/angular)
 
 ### 9.13.0 (10 February 2021)
 
