@@ -62,7 +62,7 @@
     "@angular/compiler-cli": "11.2.0",
     "@angular/language-service": "11.2.0",
     "@nguniversal/builders": "11.1.2",
-    "@types/express": "4.17.0",
+    "@types/express": "4.17.11",
     "@types/mocha": "8.2.0",
     "@types/node": "14.14.27",
     "@types/pouchdb-adapter-http": "6.1.3",
