@@ -7,6 +7,7 @@ Features:
 
 Bugfixes:
   - Using the replication plugins must not required to also use leader-election
+  - Refactor `QueryCache.triggerCacheReplacement()` to not spawn `setTimeout` regulary. This is needed for server side rendering with angular universal.
 
 Other:
   - Added server side rendering to angular example

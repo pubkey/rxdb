@@ -189,7 +189,7 @@ config.parallel('cache-replacement-policy.test.js', () => {
         });
     });
     describe('.triggerCacheReplacement()', () => {
-        it('should run after waitTime exactly once', async () => {
+        it('should run exactly once', async () => {
             const col = await humansCollection.create(0);
 
             let runs = 0;
@@ -204,35 +204,18 @@ config.parallel('cache-replacement-policy.test.js', () => {
             col.cacheReplacementPolicy = trackingPolicy;
 
             new Array(5).fill(0).forEach(() => {
-                triggerCacheReplacement(
-                    col,
-                    100
-                );
+                triggerCacheReplacement(col);
             });
-
-            await wait(10);
-            assert.strictEqual(runs, 0);
 
             await wait(150);
             assert.strictEqual(runs, 1);
 
             // run again when first was done
-            triggerCacheReplacement(
-                col,
-                10
-            );
+            triggerCacheReplacement(col);
             await wait(20);
             assert.strictEqual(runs, 2);
 
             col.database.destroy();
         });
     });
-
-    // TODO
-    describe('TODO remove me', () => {
-        it('exit', () => {
-            //   process.exit();
-        });
-    });
-
 });

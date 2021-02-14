@@ -7,7 +7,7 @@ import type {
     RxCacheReplacementPolicy,
     RxCollection
 } from './types';
-import { now } from './util';
+import { nextTick, now, requestIdlePromise } from './util';
 
 export class QueryCache {
     public _map: Map<string, RxQuery> = new Map();
@@ -46,7 +46,6 @@ export function countRxQuerySubscribers(rxQuery: RxQuery): number {
 
 export const DEFAULT_TRY_TO_KEEP_MAX = 100;
 export const DEFAULT_UNEXECUTED_LIFETME = 30 * 1000;
-export const DEFAULT_CACHE_REPLACEMENT_WAIT_TIME = 20 * 1000;
 
 /**
  * The default cache replacement policy
@@ -101,10 +100,8 @@ export const defaultCacheReplacementPolicy: RxCacheReplacementPolicy = defaultCa
 );
 
 
-// @link https://stackoverflow.com/a/56239226/3443137
-declare type TimeoutType = ReturnType<typeof setTimeout>;
+export const COLLECTIONS_WITH_RUNNING_CLEANUP: WeakSet<RxCollection> = new WeakSet();
 
-export const CACHE_REPLACEMENT_STATE_BY_COLLECTION: WeakMap<RxCollection, TimeoutType> = new WeakMap();
 export const COLLECTIONS_WITH_DESTROY_HOOK: WeakSet<RxCollection> = new WeakSet();
 
 /**
@@ -114,28 +111,24 @@ export const COLLECTIONS_WITH_DESTROY_HOOK: WeakSet<RxCollection> = new WeakSet(
  * Also this should not be triggered multiple times when waitTime is still waiting.
  */
 export function triggerCacheReplacement(
-    rxCollection: RxCollection,
-    waitTime: number = DEFAULT_CACHE_REPLACEMENT_WAIT_TIME
+    rxCollection: RxCollection
 ) {
-    if (CACHE_REPLACEMENT_STATE_BY_COLLECTION.has(rxCollection)) {
+    if (COLLECTIONS_WITH_RUNNING_CLEANUP.has(rxCollection)) {
         // already started
         return;
     }
 
-    // ensure we clean up the runnung timeouts when the collection is destroyed
-    if (!COLLECTIONS_WITH_DESTROY_HOOK.has(rxCollection)) {
-        rxCollection.onDestroy.then(() => {
-            const timeout: TimeoutType | undefined = CACHE_REPLACEMENT_STATE_BY_COLLECTION.get(rxCollection);
-            if (timeout) {
-                clearTimeout(timeout);
-            }
-        });
-        COLLECTIONS_WITH_DESTROY_HOOK.add(rxCollection);
-    }
+    COLLECTIONS_WITH_RUNNING_CLEANUP.add(rxCollection);
 
-    const val: TimeoutType = setTimeout(() => {
-        CACHE_REPLACEMENT_STATE_BY_COLLECTION.delete(rxCollection);
-        rxCollection.cacheReplacementPolicy(rxCollection, rxCollection._queryCache);
-    }, waitTime);
-    CACHE_REPLACEMENT_STATE_BY_COLLECTION.set(rxCollection, val);
+    /**
+     * Do not run directly to not reduce result latency of a new query
+     */
+    nextTick() // wait at least one tick
+        .then(() => requestIdlePromise()) // and then wait for the CPU to be idle
+        .then(() => {
+            if (!rxCollection.destroyed) {
+                rxCollection.cacheReplacementPolicy(rxCollection, rxCollection._queryCache);
+            }
+            COLLECTIONS_WITH_RUNNING_CLEANUP.delete(rxCollection);
+        });
 }

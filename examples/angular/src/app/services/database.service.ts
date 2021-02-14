@@ -33,7 +33,6 @@ import {
     IS_SERVER_SIDE_RENDERING
 } from '../../shared';
 import { HERO_SCHEMA } from '../schemas/hero.schema';
-import { filter, first } from 'rxjs/operators';
 
 let collections = [
     {

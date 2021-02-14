@@ -29,18 +29,17 @@ export function app(): express.Express {
     maxAge: '1y'
   }) as any);
 
-  let requestId = 0;
+  server.use(function (req, res, next) { (req as any).start = Date.now(); next(); });
 
   // All regular routes use the Universal engine
   server.get('*', (req, res) => {
-    requestId++;
-    const requestKey = 'render request #' + requestId;
     console.log('# render via universal engine, url: ' + req.headers.host + req.url);
-    console.time(requestKey);
-    res.render(indexHtml, { req, providers: [{ provide: APP_BASE_HREF, useValue: req.baseUrl }] }, () => {
-      console.log('# rendering done');
-      console.timeEnd(requestKey);
-    });
+    res.render(indexHtml, { req, providers: [{ provide: APP_BASE_HREF, useValue: req.baseUrl }] });
+  });
+
+  server.use(function (req, res) {
+    const time = Date.now() - (req as any).start;
+    console.log('time: ' + time);
   });
 
   return server;
