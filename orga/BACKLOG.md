@@ -92,3 +92,4 @@ The current implementation has some flaws and should be completely rewritten.
 * It does not use pouchdb's bulkDocs which is much faster
 * It could have been written without rxjs and with less code that is easier to understand
 * It does not migrate the revisions of documents which causes a problem when replication is used
+* It is not able to migrade attachments
