@@ -85,3 +85,10 @@ See [#1396](https://github.com/pubkey/rxdb/pull/1396#issuecomment-523014106)
 ## generate typings from schema
 [Writing typescript](https://rxdb.info/tutorials/typescript.html) defintions for rxdb documents and collections could be done by generating them from the schema. 
 
+### Refactor data-migrator
+
+The current implementation has some flaws and should be completely rewritten.
+
+* It does not use pouchdb's bulkDocs which is much faster
+* It could have been written without rxjs and with less code that is easier to understand
+* It does not migrate the revisions of documents which causes a problem when replication is used
