@@ -114,7 +114,7 @@
     "modifyjs": "0.3.1",
     "object-path": "0.11.5",
     "pouchdb-adapter-http": "7.2.2",
-    "pouchdb-all-dbs": "1.1.0",
+    "pouchdb-all-dbs": "1.1.1",
     "pouchdb-core": "7.2.2",
     "pouchdb-find": "7.2.2",
     "pouchdb-md5": "7.2.2",
