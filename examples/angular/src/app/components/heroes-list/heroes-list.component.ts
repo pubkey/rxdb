@@ -2,10 +2,11 @@ import {
     Component,
     Output,
     EventEmitter,
-    ChangeDetectionStrategy
+    ChangeDetectionStrategy,
+    NgZone
 } from '@angular/core';
 import type {
-    Observable,
+    Observable
 } from 'rxjs';
 import {
     tap
@@ -38,8 +39,21 @@ export class HeroesListComponent {
                 selector: {},
                 sort: [{ name: 'asc' }]
             })
-            .$.pipe(                // observable
-                tap(() => this.emittedFirst = true)          // hide loading-icon on first emit
+            .$                      // observable
+            .pipe(
+                tap(() => {
+                    /**
+                     * Ensure that this observable runs inside of angulars zone
+                     * otherwise there is a bug that needs to be fixed inside of RxDB
+                     * You do not need this check in your own app.
+                     */
+                    NgZone.assertInAngularZone();
+
+                    /**
+                     * hide loading icon on first emit
+                     */
+                    this.emittedFirst = true;
+                })
             );
     }
 
