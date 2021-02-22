@@ -8,7 +8,7 @@
 
 <mat-list class="hero-list-component">
   <mat-list-item
-    *ngFor="let hero of heroes$ | asyncNoZone as heroes; index as i"
+    *ngFor="let hero of heroes$ | async as heroes; index as i"
     class="listHero"
   >
     <div

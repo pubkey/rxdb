@@ -87,7 +87,7 @@ export class RxQueryBase<
         if (!this._$) {
             /**
              * We use _resultsDocs$ to emit new results
-             * This also ensure that there is a reemit on subscribe
+             * This also ensures that there is a reemit on subscribe
              */
             const results$ = (this._resultsDocs$ as any)
                 .pipe(
@@ -111,8 +111,7 @@ export class RxQueryBase<
                         const ret = Array.isArray(docs) ? docs.slice() : docs;
                         return ret;
                     })
-                )['asObservable']();
-
+                ).asObservable();
 
             /**
              * subscribe to the changeEvent-stream so it detects changes if it has subscribers
