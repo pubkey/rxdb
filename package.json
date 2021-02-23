@@ -87,7 +87,7 @@
     "rxjs": "^6.6.2"
   },
   "dependencies": {
-    "@babel/runtime": "7.13.4",
+    "@babel/runtime": "7.13.6",
     "@types/clone": "2.1.0",
     "@types/cors": "2.8.10",
     "@types/deep-equal": "1.0.1",
@@ -135,7 +135,7 @@
     "@babel/plugin-transform-member-expression-literals": "7.12.13",
     "@babel/plugin-transform-modules-commonjs": "7.13.0",
     "@babel/plugin-transform-property-literals": "7.12.13",
-    "@babel/plugin-transform-runtime": "7.13.5",
+    "@babel/plugin-transform-runtime": "7.13.6",
     "@babel/plugin-transform-spread": "7.13.0",
     "@babel/polyfill": "7.12.1",
     "@babel/preset-env": "7.13.5",
