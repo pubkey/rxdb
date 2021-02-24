@@ -323,6 +323,25 @@ export function getHeightOfRevision(revString) {
   var first = revString.split('-')[0];
   return parseInt(first, 10);
 }
+import { stringMd5 } from 'pouchdb-md5';
+import { rev as pouchUtilsRev } from 'pouchdb-utils';
+/**
+ * Creates a revision string that does NOT include the revision height
+ * Copied and adapted from pouchdb-utils/src/rev.js
+ * TODO not longer needed when this PR is merged: https://github.com/pouchdb/pouchdb/pull/8274
+ */
+
+export function createRevision(docData, deterministic_revs) {
+  if (!deterministic_revs) {
+    return pouchUtilsRev(docData, false);
+  }
+
+  var docWithoutRev = Object.assign({}, docData, {
+    _rev: undefined,
+    _rev_tree: undefined
+  });
+  return stringMd5(JSON.stringify(docWithoutRev));
+}
 /**
  * prefix of local pouchdb documents
  */

@@ -1,8 +1,8 @@
-import _regeneratorRuntime from "@babel/runtime/regenerator";
 import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
+import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { map } from 'rxjs/operators';
 import { createUpdateEvent } from './../rx-change-event';
-import { nextTick, isElectronRenderer, now } from './../util';
+import { nextTick, isElectronRenderer, now, flatClone } from './../util';
 import { newRxError } from '../rx-error';
 import { pouchAttachmentBinaryHash } from '../pouch-db';
 
@@ -304,9 +304,14 @@ export function postMigrateDocument(action) {
     }).then(function (data) {
       return blobBufferUtil.toString(data);
     }).then(function (data) {
-      return action.newestCollection.pouch.putAttachment(primary, id, action.res.rev, blobBufferUtil.createBlobBuffer(data, stubData.content_type), stubData.content_type);
+      return action.newestCollection.pouch.putAttachment(primary, id, action.res._rev, blobBufferUtil.createBlobBuffer(data, stubData.content_type), stubData.content_type);
     }).then(function (res) {
-      return action.res = res;
+      /**
+       * Update revision so the next run
+       * does not cause a 403 conflict
+       */
+      action.res = flatClone(action.res);
+      action.res._rev = res.rev;
     });
   });
   return currentPromise;

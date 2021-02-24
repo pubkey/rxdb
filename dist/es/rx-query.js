@@ -280,7 +280,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
       if (!this._$) {
         /**
          * We use _resultsDocs$ to emit new results
-         * This also ensure that there is a reemit on subscribe
+         * This also ensures that there is a reemit on subscribe
          */
         var results$ = this._resultsDocs$.pipe(mergeMap(function (docs) {
           return _ensureEqual(_this3).then(function (hasChanged) {
@@ -301,7 +301,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
           // copy the array so it wont matter if the user modifies it
           var ret = Array.isArray(docs) ? docs.slice() : docs;
           return ret;
-        }))['asObservable']();
+        })).asObservable();
         /**
          * subscribe to the changeEvent-stream so it detects changes if it has subscribers
          */

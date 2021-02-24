@@ -3,7 +3,14 @@
  * they can be grabbed by the observables of database, collection and document
  */
 export var RxChangeEvent = /*#__PURE__*/function () {
-  function RxChangeEvent(operation, documentId, documentData, databaseToken, collectionName, isLocal, startTime, endTime, previousData, rxDocument) {
+  function RxChangeEvent(operation, documentId, documentData, databaseToken, collectionName, isLocal,
+  /**
+   * timestam on when the operation was triggered
+   * and when it was finished
+   * This is optional because we do not have this time
+   * for events that come from pouchdbs changestream.
+   */
+  startTime, endTime, previousData, rxDocument) {
     this.operation = operation;
     this.documentId = documentId;
     this.documentData = documentData;

@@ -1420,9 +1420,14 @@ function postMigrateDocument(action) {
     }).then(function (data) {
       return blobBufferUtil.toString(data);
     }).then(function (data) {
-      return action.newestCollection.pouch.putAttachment(primary, id, action.res.rev, blobBufferUtil.createBlobBuffer(data, stubData.content_type), stubData.content_type);
+      return action.newestCollection.pouch.putAttachment(primary, id, action.res._rev, blobBufferUtil.createBlobBuffer(data, stubData.content_type), stubData.content_type);
     }).then(function (res) {
-      return action.res = res;
+      /**
+       * Update revision so the next run
+       * does not cause a 403 conflict
+       */
+      action.res = (0, _util.flatClone)(action.res);
+      action.res._rev = res.rev;
     });
   });
   return currentPromise;
@@ -3883,6 +3888,8 @@ exports.RxDBLocalDocumentsPlugin = RxDBLocalDocumentsPlugin;
 },{"../doc-cache":5,"../rx-change-event":38,"../rx-collection":40,"../rx-database":42,"../rx-document":44,"../rx-error":45,"../util":55,"@babel/runtime/helpers/asyncToGenerator":59,"@babel/runtime/helpers/inheritsLoose":63,"@babel/runtime/helpers/interopRequireDefault":64,"@babel/runtime/regenerator":71,"object-path":499,"rxjs/operators":731}],27:[function(require,module,exports){
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -3893,6 +3900,7 @@ exports.createDataMigrator = createDataMigrator;
 exports._runStrategyIfNotNull = _runStrategyIfNotNull;
 exports.getBatchOfOldCollection = getBatchOfOldCollection;
 exports.migrateDocumentData = migrateDocumentData;
+exports.isDocumentDataWithoutRevisionEqual = isDocumentDataWithoutRevisionEqual;
 exports._migrateDocument = _migrateDocument;
 exports.deleteOldCollection = deleteOldCollection;
 exports.migrateOldCollection = migrateOldCollection;
@@ -3900,6 +3908,8 @@ exports.migratePromise = migratePromise;
 exports.DataMigrator = void 0;
 
 var _rxjs = require("rxjs");
+
+var _deepEqual = _interopRequireDefault(require("deep-equal"));
 
 var _pouchDb = require("../../pouch-db");
 
@@ -4127,10 +4137,10 @@ function getBatchOfOldCollection(oldCollection, batchSize) {
 
 
 function migrateDocumentData(oldCollection, docData) {
-  docData = (0, _util.clone)(docData);
+  var mutateableDocData = (0, _util.clone)(docData);
   var nextVersion = oldCollection.version + 1; // run the document throught migrationStrategies
 
-  var currentPromise = Promise.resolve(docData);
+  var currentPromise = Promise.resolve(mutateableDocData);
 
   var _loop2 = function _loop2() {
     var version = nextVersion;
@@ -4149,16 +4159,35 @@ function migrateDocumentData(oldCollection, docData) {
 
     try {
       oldCollection.newestCollection.schema.validate(doc);
-    } catch (e) {
+    } catch (err) {
+      var asRxError = err;
       throw (0, _rxError.newRxError)('DM2', {
         fromVersion: oldCollection.version,
         toVersion: oldCollection.newestCollection.schema.version,
-        finalDoc: doc
+        originalDoc: docData,
+        finalDoc: doc,
+
+        /**
+         * pass down data from parent error,
+         * to make it better understandable what did not work
+         */
+        errors: asRxError.parameters.errors,
+        schema: asRxError.parameters.schema
       });
     }
 
     return doc;
   });
+}
+
+function isDocumentDataWithoutRevisionEqual(doc1, doc2) {
+  var doc1NoRev = Object.assign({}, doc1, {
+    _rev: undefined
+  });
+  var doc2NoRev = Object.assign({}, doc2, {
+    _rev: undefined
+  });
+  return (0, _deepEqual["default"])(doc1NoRev, doc2NoRev);
 }
 /**
  * transform docdata and save to new collection
@@ -4166,31 +4195,67 @@ function migrateDocumentData(oldCollection, docData) {
  */
 
 
-function _migrateDocument(oldCollection, doc) {
+function _migrateDocument(oldCollection, docData) {
   var action = {
     res: null,
     type: '',
     migrated: null,
-    doc: doc,
+    doc: docData,
     oldCollection: oldCollection,
     newestCollection: oldCollection.newestCollection
   };
-  return migrateDocumentData(oldCollection, doc).then(function (migrated) {
+  return migrateDocumentData(oldCollection, docData).then(function (migrated) {
+    /**
+     * Determiniticly handle the revision
+     * so migrating the same data on multiple instances
+     * will result in the same output.
+     */
+    if (isDocumentDataWithoutRevisionEqual(docData, migrated)) {
+      /**
+       * Data not changed by migration strategies, keep the same revision.
+       * This ensures that other replicated instances that did not migrate already
+       * will still have the same document.
+       */
+      migrated._rev = docData._rev;
+    } else if (migrated !== null) {
+      /**
+       * data changed, increase revision height
+       * so replicating instances use our new document data
+       */
+      var newHeight = (0, _util.getHeightOfRevision)(docData._rev) + 1;
+      var newRevision = newHeight + '-' + (0, _util.createRevision)(migrated, true);
+      migrated._rev = newRevision;
+    }
+
     action.migrated = migrated;
 
     if (migrated) {
       (0, _hooks.runPluginHooks)('preMigrateDocument', action); // save to newest collection
 
-      delete migrated._rev;
-      return oldCollection.newestCollection._pouchPut(migrated, true).then(function (res) {
-        action.res = res;
+      var saveData = oldCollection.newestCollection._handleToPouch(migrated);
+
+      return oldCollection.newestCollection.pouch.bulkDocs([saveData], {
+        /**
+         * We need new_edits: false
+         * because we provide the _rev by our own
+         */
+        new_edits: false
+      }).then(function () {
+        action.res = saveData;
         action.type = 'success';
         return (0, _hooks.runAsyncPluginHooks)('postMigrateDocument', action);
       });
-    } else action.type = 'deleted';
+    } else {
+      /**
+       * Migration strategy returned null
+       * which means we should not migrate this document,
+       * just drop it.
+       */
+      action.type = 'deleted';
+    }
   }).then(function () {
     // remove from old collection
-    return oldCollection.pouchdb.remove((0, _rxCollectionHelper._handleToPouch)(oldCollection, doc))["catch"](function () {});
+    return oldCollection.pouchdb.remove((0, _rxCollectionHelper._handleToPouch)(oldCollection, docData))["catch"](function () {});
   }).then(function () {
     return action;
   });
@@ -4275,7 +4340,7 @@ function migratePromise(oldCollection, batchSize) {
 }
 
 
-},{"../../crypter":4,"../../hooks":7,"../../overwritable":9,"../../pouch-db":36,"../../rx-collection-helper":39,"../../rx-error":45,"../../rx-schema":47,"../../util":55,"rxjs":532}],28:[function(require,module,exports){
+},{"../../crypter":4,"../../hooks":7,"../../overwritable":9,"../../pouch-db":36,"../../rx-collection-helper":39,"../../rx-error":45,"../../rx-schema":47,"../../util":55,"@babel/runtime/helpers/interopRequireDefault":64,"deep-equal":428,"rxjs":532}],28:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5911,7 +5976,14 @@ exports.RxChangeEvent = void 0;
  * they can be grabbed by the observables of database, collection and document
  */
 var RxChangeEvent = /*#__PURE__*/function () {
-  function RxChangeEvent(operation, documentId, documentData, databaseToken, collectionName, isLocal, startTime, endTime, previousData, rxDocument) {
+  function RxChangeEvent(operation, documentId, documentData, databaseToken, collectionName, isLocal,
+  /**
+   * timestam on when the operation was triggered
+   * and when it was finished
+   * This is optional because we do not have this time
+   * for events that come from pouchdbs changestream.
+   */
+  startTime, endTime, previousData, rxDocument) {
     this.operation = operation;
     this.documentId = documentId;
     this.documentData = documentData;
@@ -9181,7 +9253,7 @@ var RxQueryBase = /*#__PURE__*/function () {
       if (!this._$) {
         /**
          * We use _resultsDocs$ to emit new results
-         * This also ensure that there is a reemit on subscribe
+         * This also ensures that there is a reemit on subscribe
          */
         var results$ = this._resultsDocs$.pipe((0, _operators.mergeMap)(function (docs) {
           return _ensureEqual(_this3).then(function (hasChanged) {
@@ -9202,7 +9274,7 @@ var RxQueryBase = /*#__PURE__*/function () {
           // copy the array so it wont matter if the user modifies it
           var ret = Array.isArray(docs) ? docs.slice() : docs;
           return ret;
-        }))['asObservable']();
+        })).asObservable();
         /**
          * subscribe to the changeEvent-stream so it detects changes if it has subscribers
          */
@@ -10086,6 +10158,7 @@ exports.adapterObject = adapterObject;
 exports.flatClone = flatClone;
 exports.flattenObject = flattenObject;
 exports.getHeightOfRevision = getHeightOfRevision;
+exports.createRevision = createRevision;
 exports.overwriteGetterForCaching = overwriteGetterForCaching;
 exports.isFolderPath = isFolderPath;
 exports.LOCAL_PREFIX = exports.isElectronRenderer = exports.clone = exports.RXDB_HASH_SALT = void 0;
@@ -10097,6 +10170,10 @@ var _clone = _interopRequireDefault(require("clone"));
 var _sparkMd = _interopRequireDefault(require("spark-md5"));
 
 var _isElectron = _interopRequireDefault(require("is-electron"));
+
+var _pouchdbMd = require("pouchdb-md5");
+
+var _pouchdbUtils = require("pouchdb-utils");
 
 /**
  * this contains a mapping to basic dependencies
@@ -10446,6 +10523,23 @@ function getHeightOfRevision(revString) {
   var first = revString.split('-')[0];
   return parseInt(first, 10);
 }
+
+/**
+ * Creates a revision string that does NOT include the revision height
+ * Copied and adapted from pouchdb-utils/src/rev.js
+ * TODO not longer needed when this PR is merged: https://github.com/pouchdb/pouchdb/pull/8274
+ */
+function createRevision(docData, deterministic_revs) {
+  if (!deterministic_revs) {
+    return (0, _pouchdbUtils.rev)(docData, false);
+  }
+
+  var docWithoutRev = Object.assign({}, docData, {
+    _rev: undefined,
+    _rev_tree: undefined
+  });
+  return (0, _pouchdbMd.stringMd5)(JSON.stringify(docWithoutRev));
+}
 /**
  * prefix of local pouchdb documents
  */
@@ -10484,7 +10578,7 @@ function isFolderPath(name) {
 }
 
 
-},{"@babel/runtime/helpers/interopRequireDefault":64,"clone":112,"is-electron":466,"random-token":526,"spark-md5":733}],56:[function(require,module,exports){
+},{"@babel/runtime/helpers/interopRequireDefault":64,"clone":112,"is-electron":466,"pouchdb-md5":520,"pouchdb-utils":524,"random-token":526,"spark-md5":733}],56:[function(require,module,exports){
 "use strict";
 
 require("./noConflict");
@@ -10538,6 +10632,7 @@ function _assertThisInitialized(self) {
 }
 
 module.exports = _assertThisInitialized;
+module.exports["default"] = module.exports, module.exports.__esModule = true;
 },{}],59:[function(require,module,exports){
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
   try {
@@ -10576,14 +10671,16 @@ function _asyncToGenerator(fn) {
 }
 
 module.exports = _asyncToGenerator;
+module.exports["default"] = module.exports, module.exports.__esModule = true;
 },{}],60:[function(require,module,exports){
-var setPrototypeOf = require("./setPrototypeOf");
+var setPrototypeOf = require("@babel/runtime/helpers/setPrototypeOf");
 
-var isNativeReflectConstruct = require("./isNativeReflectConstruct");
+var isNativeReflectConstruct = require("@babel/runtime/helpers/isNativeReflectConstruct");
 
 function _construct(Parent, args, Class) {
   if (isNativeReflectConstruct()) {
     module.exports = _construct = Reflect.construct;
+    module.exports["default"] = module.exports, module.exports.__esModule = true;
   } else {
     module.exports = _construct = function _construct(Parent, args, Class) {
       var a = [null];
@@ -10593,13 +10690,16 @@ function _construct(Parent, args, Class) {
       if (Class) setPrototypeOf(instance, Class.prototype);
       return instance;
     };
+
+    module.exports["default"] = module.exports, module.exports.__esModule = true;
   }
 
   return _construct.apply(null, arguments);
 }
 
 module.exports = _construct;
-},{"./isNativeReflectConstruct":67,"./setPrototypeOf":68}],61:[function(require,module,exports){
+module.exports["default"] = module.exports, module.exports.__esModule = true;
+},{"@babel/runtime/helpers/isNativeReflectConstruct":67,"@babel/runtime/helpers/setPrototypeOf":68}],61:[function(require,module,exports){
 function _defineProperties(target, props) {
   for (var i = 0; i < props.length; i++) {
     var descriptor = props[i];
@@ -10617,17 +10717,20 @@ function _createClass(Constructor, protoProps, staticProps) {
 }
 
 module.exports = _createClass;
+module.exports["default"] = module.exports, module.exports.__esModule = true;
 },{}],62:[function(require,module,exports){
 function _getPrototypeOf(o) {
   module.exports = _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
     return o.__proto__ || Object.getPrototypeOf(o);
   };
+  module.exports["default"] = module.exports, module.exports.__esModule = true;
   return _getPrototypeOf(o);
 }
 
 module.exports = _getPrototypeOf;
+module.exports["default"] = module.exports, module.exports.__esModule = true;
 },{}],63:[function(require,module,exports){
-var setPrototypeOf = require("./setPrototypeOf");
+var setPrototypeOf = require("@babel/runtime/helpers/setPrototypeOf");
 
 function _inheritsLoose(subClass, superClass) {
   subClass.prototype = Object.create(superClass.prototype);
@@ -10636,7 +10739,8 @@ function _inheritsLoose(subClass, superClass) {
 }
 
 module.exports = _inheritsLoose;
-},{"./setPrototypeOf":68}],64:[function(require,module,exports){
+module.exports["default"] = module.exports, module.exports.__esModule = true;
+},{"@babel/runtime/helpers/setPrototypeOf":68}],64:[function(require,module,exports){
 function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : {
     "default": obj
@@ -10644,8 +10748,9 @@ function _interopRequireDefault(obj) {
 }
 
 module.exports = _interopRequireDefault;
+module.exports["default"] = module.exports, module.exports.__esModule = true;
 },{}],65:[function(require,module,exports){
-var _typeof = require("@babel/runtime/helpers/typeof");
+var _typeof = require("@babel/runtime/helpers/typeof")["default"];
 
 function _getRequireWildcardCache() {
   if (typeof WeakMap !== "function") return null;
@@ -10700,12 +10805,14 @@ function _interopRequireWildcard(obj) {
 }
 
 module.exports = _interopRequireWildcard;
+module.exports["default"] = module.exports, module.exports.__esModule = true;
 },{"@babel/runtime/helpers/typeof":69}],66:[function(require,module,exports){
 function _isNativeFunction(fn) {
   return Function.toString.call(fn).indexOf("[native code]") !== -1;
 }
 
 module.exports = _isNativeFunction;
+module.exports["default"] = module.exports, module.exports.__esModule = true;
 },{}],67:[function(require,module,exports){
 function _isNativeReflectConstruct() {
   if (typeof Reflect === "undefined" || !Reflect.construct) return false;
@@ -10713,7 +10820,7 @@ function _isNativeReflectConstruct() {
   if (typeof Proxy === "function") return true;
 
   try {
-    Date.prototype.toString.call(Reflect.construct(Date, [], function () {}));
+    Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {}));
     return true;
   } catch (e) {
     return false;
@@ -10721,6 +10828,7 @@ function _isNativeReflectConstruct() {
 }
 
 module.exports = _isNativeReflectConstruct;
+module.exports["default"] = module.exports, module.exports.__esModule = true;
 },{}],68:[function(require,module,exports){
 function _setPrototypeOf(o, p) {
   module.exports = _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
@@ -10728,10 +10836,12 @@ function _setPrototypeOf(o, p) {
     return o;
   };
 
+  module.exports["default"] = module.exports, module.exports.__esModule = true;
   return _setPrototypeOf(o, p);
 }
 
 module.exports = _setPrototypeOf;
+module.exports["default"] = module.exports, module.exports.__esModule = true;
 },{}],69:[function(require,module,exports){
 function _typeof(obj) {
   "@babel/helpers - typeof";
@@ -10740,24 +10850,29 @@ function _typeof(obj) {
     module.exports = _typeof = function _typeof(obj) {
       return typeof obj;
     };
+
+    module.exports["default"] = module.exports, module.exports.__esModule = true;
   } else {
     module.exports = _typeof = function _typeof(obj) {
       return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
     };
+
+    module.exports["default"] = module.exports, module.exports.__esModule = true;
   }
 
   return _typeof(obj);
 }
 
 module.exports = _typeof;
+module.exports["default"] = module.exports, module.exports.__esModule = true;
 },{}],70:[function(require,module,exports){
-var getPrototypeOf = require("./getPrototypeOf");
+var getPrototypeOf = require("@babel/runtime/helpers/getPrototypeOf");
 
-var setPrototypeOf = require("./setPrototypeOf");
+var setPrototypeOf = require("@babel/runtime/helpers/setPrototypeOf");
 
-var isNativeFunction = require("./isNativeFunction");
+var isNativeFunction = require("@babel/runtime/helpers/isNativeFunction");
 
-var construct = require("./construct");
+var construct = require("@babel/runtime/helpers/construct");
 
 function _wrapNativeSuper(Class) {
   var _cache = typeof Map === "function" ? new Map() : undefined;
@@ -10790,11 +10905,13 @@ function _wrapNativeSuper(Class) {
     return setPrototypeOf(Wrapper, Class);
   };
 
+  module.exports["default"] = module.exports, module.exports.__esModule = true;
   return _wrapNativeSuper(Class);
 }
 
 module.exports = _wrapNativeSuper;
-},{"./construct":60,"./getPrototypeOf":62,"./isNativeFunction":66,"./setPrototypeOf":68}],71:[function(require,module,exports){
+module.exports["default"] = module.exports, module.exports.__esModule = true;
+},{"@babel/runtime/helpers/construct":60,"@babel/runtime/helpers/getPrototypeOf":62,"@babel/runtime/helpers/isNativeFunction":66,"@babel/runtime/helpers/setPrototypeOf":68}],71:[function(require,module,exports){
 module.exports = require("regenerator-runtime");
 
 },{"regenerator-runtime":527}],72:[function(require,module,exports){

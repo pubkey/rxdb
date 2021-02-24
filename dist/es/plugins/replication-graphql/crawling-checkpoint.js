@@ -1,5 +1,5 @@
-import _regeneratorRuntime from "@babel/runtime/regenerator";
 import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
+import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { LOCAL_PREFIX } from '../../util';
 import { PLUGIN_IDENT, getDocFromPouchOrNull, wasRevisionfromPullReplication } from './helper';
 

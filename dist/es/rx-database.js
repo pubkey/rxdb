@@ -1,6 +1,6 @@
-import _regeneratorRuntime from "@babel/runtime/regenerator";
 import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _createClass from "@babel/runtime/helpers/createClass";
+import _regeneratorRuntime from "@babel/runtime/regenerator";
 import randomToken from 'random-token';
 import { IdleQueue } from 'custom-idle-queue';
 import { BroadcastChannel } from 'broadcast-channel';

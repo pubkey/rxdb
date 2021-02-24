@@ -56,11 +56,12 @@ export declare function getBatchOfOldCollection(oldCollection: OldCollection, ba
  * @return final object or null if migrationStrategy deleted it
  */
 export declare function migrateDocumentData(oldCollection: OldCollection, docData: any): Promise<any | null>;
+export declare function isDocumentDataWithoutRevisionEqual<T>(doc1: T, doc2: T): boolean;
 /**
  * transform docdata and save to new collection
  * @return status-action with status and migrated document
  */
-export declare function _migrateDocument(oldCollection: OldCollection, doc: any): Promise<{
+export declare function _migrateDocument(oldCollection: OldCollection, docData: any): Promise<{
     type: string;
     doc: {};
 }>;

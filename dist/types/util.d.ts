@@ -87,6 +87,12 @@ export declare const isElectronRenderer: boolean;
 export declare function flattenObject(ob: any): any;
 export declare function getHeightOfRevision(revString: string): number;
 /**
+ * Creates a revision string that does NOT include the revision height
+ * Copied and adapted from pouchdb-utils/src/rev.js
+ * TODO not longer needed when this PR is merged: https://github.com/pouchdb/pouchdb/pull/8274
+ */
+export declare function createRevision(docData: any, deterministic_revs: boolean): string;
+/**
  * prefix of local pouchdb documents
  */
 export declare const LOCAL_PREFIX: string;

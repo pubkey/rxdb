@@ -1,6 +1,6 @@
-import _regeneratorRuntime from "@babel/runtime/regenerator";
 import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
+import _regeneratorRuntime from "@babel/runtime/regenerator";
 
 /**
  * This plugin adds the local-documents-support

@@ -27,6 +27,7 @@ exports.adapterObject = adapterObject;
 exports.flatClone = flatClone;
 exports.flattenObject = flattenObject;
 exports.getHeightOfRevision = getHeightOfRevision;
+exports.createRevision = createRevision;
 exports.overwriteGetterForCaching = overwriteGetterForCaching;
 exports.isFolderPath = isFolderPath;
 exports.LOCAL_PREFIX = exports.isElectronRenderer = exports.clone = exports.RXDB_HASH_SALT = void 0;
@@ -38,6 +39,10 @@ var _clone = _interopRequireDefault(require("clone"));
 var _sparkMd = _interopRequireDefault(require("spark-md5"));
 
 var _isElectron = _interopRequireDefault(require("is-electron"));
+
+var _pouchdbMd = require("pouchdb-md5");
+
+var _pouchdbUtils = require("pouchdb-utils");
 
 /**
  * this contains a mapping to basic dependencies
@@ -386,6 +391,23 @@ function flattenObject(ob) {
 function getHeightOfRevision(revString) {
   var first = revString.split('-')[0];
   return parseInt(first, 10);
+}
+
+/**
+ * Creates a revision string that does NOT include the revision height
+ * Copied and adapted from pouchdb-utils/src/rev.js
+ * TODO not longer needed when this PR is merged: https://github.com/pouchdb/pouchdb/pull/8274
+ */
+function createRevision(docData, deterministic_revs) {
+  if (!deterministic_revs) {
+    return (0, _pouchdbUtils.rev)(docData, false);
+  }
+
+  var docWithoutRev = Object.assign({}, docData, {
+    _rev: undefined,
+    _rev_tree: undefined
+  });
+  return (0, _pouchdbMd.stringMd5)(JSON.stringify(docWithoutRev));
 }
 /**
  * prefix of local pouchdb documents

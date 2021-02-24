@@ -1,5 +1,5 @@
-import _regeneratorRuntime from "@babel/runtime/regenerator";
 import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
+import _regeneratorRuntime from "@babel/runtime/regenerator";
 import express from 'express';
 import corsFn from 'cors';
 import { PouchDB } from '../pouch-db';

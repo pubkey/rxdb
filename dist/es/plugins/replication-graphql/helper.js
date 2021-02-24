@@ -1,5 +1,5 @@
-import _regeneratorRuntime from "@babel/runtime/regenerator";
 import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
+import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { hash } from '../../util';
 export var PLUGIN_IDENT = 'rxdbreplicationgraphql'; // does nothing
 
