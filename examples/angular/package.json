@@ -40,7 +40,7 @@
     "@angular/platform-browser": "11.2.3",
     "@angular/platform-browser-dynamic": "11.2.3",
     "@angular/platform-server": "11.2.3",
-    "@angular/pwa": "0.1102.1",
+    "@angular/pwa": "0.1102.2",
     "@angular/router": "11.2.3",
     "@angular/service-worker": "11.2.3",
     "@nguniversal/express-engine": "11.2.0",
@@ -57,8 +57,8 @@
     "zone.js": "0.11.4"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "0.1102.1",
-    "@angular/cli": "11.2.1",
+    "@angular-devkit/build-angular": "0.1102.2",
+    "@angular/cli": "11.2.2",
     "@angular/compiler-cli": "11.2.3",
     "@angular/language-service": "11.2.3",
     "@nguniversal/builders": "11.2.0",
