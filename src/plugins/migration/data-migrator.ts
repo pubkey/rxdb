@@ -12,7 +12,7 @@ import {
     Subject,
     Observable
 } from 'rxjs';
-
+import deepEqual from 'deep-equal';
 import {
     countAllUndeleted,
     getBatch
@@ -20,7 +20,9 @@ import {
 import {
     clone,
     toPromise,
-    flatClone
+    flatClone,
+    getHeightOfRevision,
+    createRevision
 } from '../../util';
 import {
     createRxSchema
@@ -332,24 +334,54 @@ export function migrateDocumentData(
     });
 }
 
+
+export function isDocumentDataWithoutRevisionEqual<T>(doc1: T, doc2: T): boolean {
+    const doc1NoRev = Object.assign({}, doc1, { _rev: undefined });
+    const doc2NoRev = Object.assign({}, doc2, { _rev: undefined });
+    return deepEqual(doc1NoRev, doc2NoRev);
+}
+
 /**
  * transform docdata and save to new collection
  * @return status-action with status and migrated document
  */
 export function _migrateDocument(
     oldCollection: OldCollection,
-    doc: any
+    docData: any
 ): Promise<{ type: string, doc: {} }> {
     const action = {
-        res: null,
+        res: null as any,
         type: '',
         migrated: null,
-        doc,
+        doc: docData,
         oldCollection,
         newestCollection: oldCollection.newestCollection
     };
-    return migrateDocumentData(oldCollection, doc)
+    return migrateDocumentData(oldCollection, docData)
         .then(migrated => {
+
+            /**
+             * Determiniticly handle the revision
+             * so migrating the same data on multiple instances
+             * will result in the same output.
+             */
+            if (isDocumentDataWithoutRevisionEqual(docData, migrated)) {
+                /**
+                 * Data not changed by migration strategies, keep the same revision.
+                 * This ensures that other replicated instances that did not migrate already
+                 * will still have the same document.
+                 */
+                migrated._rev = docData._rev;
+            } else if (migrated !== null) {
+                /**
+                 * data changed, increase revision height
+                 * so replicating instances use our new document data
+                 */
+                const newHeight = getHeightOfRevision(docData._rev) + 1;
+                const newRevision = newHeight + '-' + createRevision(migrated, true);
+                migrated._rev = newRevision;
+            }
+
             action.migrated = migrated;
             if (migrated) {
                 runPluginHooks(
@@ -358,22 +390,36 @@ export function _migrateDocument(
                 );
 
                 // save to newest collection
-                delete migrated._rev;
-                return oldCollection.newestCollection._pouchPut(migrated, true)
-                    .then(res => {
-                        action.res = res;
+                const saveData = oldCollection.newestCollection._handleToPouch(migrated);
+                return oldCollection.newestCollection.pouch
+                    .bulkDocs([saveData], {
+                        /**
+                         * We need new_edits: false
+                         * because we provide the _rev by our own
+                         */
+                        new_edits: false
+                    })
+                    .then(() => {
+                        action.res = saveData;
                         action.type = 'success';
                         return runAsyncPluginHooks(
                             'postMigrateDocument',
                             action
                         );
                     });
-            } else action.type = 'deleted';
+            } else {
+                /**
+                 * Migration strategy returned null
+                 * which means we should not migrate this document,
+                 * just drop it.
+                 */
+                action.type = 'deleted';
+            }
         })
         .then(() => {
             // remove from old collection
             return oldCollection.pouchdb.remove(
-                _handleToPouch(oldCollection, doc)
+                _handleToPouch(oldCollection, docData)
             ).catch(() => { });
         })
         .then(() => action) as any;

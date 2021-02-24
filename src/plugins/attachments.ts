@@ -7,7 +7,8 @@ import {
 import {
     nextTick,
     isElectronRenderer,
-    now
+    now,
+    flatClone
 } from './../util';
 import {
     newRxError
@@ -310,11 +311,18 @@ export function postMigrateDocument(action: any): Promise<any> {
             .then(data => action.newestCollection.pouch.putAttachment(
                 primary,
                 id,
-                action.res.rev,
+                action.res._rev,
                 blobBufferUtil.createBlobBuffer(data, stubData.content_type),
                 stubData.content_type
             ))
-            .then(res => action.res = res);
+            .then(res => {
+                /**
+                 * Update revision so the next run
+                 * does not cause a 403 conflict
+                 */
+                action.res = flatClone(action.res);
+                action.res._rev = res.rev;
+            });
     });
 
     return currentPromise;

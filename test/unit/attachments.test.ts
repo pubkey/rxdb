@@ -13,7 +13,7 @@ import {
     blobBufferUtil
 } from '../../plugins/attachments';
 
-config.parallel('attachments.test.js', () => {
+config.parallel('attachments.test.ts', () => {
     describe('.putAttachment()', () => {
         it('should insert one attachment', async () => {
             const c = await humansCollection.createAttachments(1);

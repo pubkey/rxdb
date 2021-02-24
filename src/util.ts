@@ -338,6 +338,23 @@ export function getHeightOfRevision(revString: string): number {
     return parseInt(first, 10);
 }
 
+import { v4 as uuidV4 } from 'uuid';
+import { stringMd5 } from 'pouchdb-md5';
+/**
+ * Creates a revision string that does NOT include the revision height
+ * Copied and adapted from pouchdb-utils/src/rev.js
+ */
+export function createRevision(docData: any, deterministic_revs: boolean): string {
+    if (!deterministic_revs) {
+        return uuidV4().replace(/-/g, '').toLowerCase();
+    }
+
+    const docWithoutRev = Object.assign({}, docData, {
+        _rev: undefined,
+        _rev_tree: undefined
+    });
+    return stringMd5(JSON.stringify(docWithoutRev));
+}
 
 /**
  * prefix of local pouchdb documents

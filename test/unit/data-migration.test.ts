@@ -12,7 +12,9 @@ import {
     promiseWait,
     _collectionNamePrimary,
     countAllUndeleted,
-    RxError
+    RxError,
+    clone,
+    getHeightOfRevision
 } from '../../plugins/core';
 
 import {
@@ -24,7 +26,10 @@ import {
     migrateOldCollection,
     migratePromise
 } from '../../plugins/migration';
-import { SimpleHumanV3DocumentType } from '../helper/schema-objects';
+import {
+    SimpleHumanV3DocumentType,
+    HumanDocumentType
+} from '../helper/schema-objects';
 
 config.parallel('data-migration.test.js', () => {
     describe('.create() with migrationStrategies', () => {
@@ -625,6 +630,74 @@ config.parallel('data-migration.test.js', () => {
                 assert.strictEqual(docs.length, 10);
                 assert.strictEqual(typeof (docs.pop() as any).age, 'number');
                 col.database.destroy();
+            });
+            it('should increase revision height when the strategy changed the documents data', async () => {
+                const dbName = randomCouchString(10);
+
+                const nonChangedKey = 'not-changed-data';
+                const changedKey = 'changed-data';
+
+                const db = await createRxDatabase({
+                    name: dbName,
+                    adapter: 'memory'
+                });
+                const col = await db.collection<HumanDocumentType>({
+                    name: 'humans',
+                    schema: schemas.humanFinal
+                });
+                await col.bulkInsert([
+                    {
+                        passportId: changedKey,
+                        firstName: 'foo',
+                        lastName: 'bar',
+                        age: 20
+                    },
+                    {
+                        passportId: nonChangedKey,
+                        firstName: 'foo',
+                        lastName: 'bar',
+                        age: 21
+                    }
+                ]);
+
+                const revBeforeMigration = (await col.findOne(nonChangedKey).exec(true)).toJSON(true)._rev;
+                await db.destroy();
+
+                const db2 = await createRxDatabase({
+                    name: dbName,
+                    adapter: 'memory'
+                });
+                const schema2 = clone(schemas.humanFinal);
+                schema2.version = 1;
+
+                const col2 = await db2.collection<HumanDocumentType>({
+                    name: 'humans',
+                    schema: schema2,
+                    migrationStrategies: {
+                        1: function (docData: HumanDocumentType) {
+                            if (docData.passportId === changedKey) {
+                                docData.age = 100;
+                            }
+                            return docData;
+                        }
+                    }
+                });
+
+                /**
+                 * If document data was not changed by migration, it should have kept the same revision
+                 */
+                const revAfterMigration = (await col2.findOne(nonChangedKey).exec(true)).toJSON(true)._rev;
+                assert.strictEqual(revBeforeMigration, revAfterMigration);
+
+                /**
+                 * If document was changed, we should have an increased revision height
+                 * to ensure that replicated instances use our new data.
+                 */
+                const revChangedAfterMigration = (await col2.findOne(changedKey).exec(true)).toJSON(true)._rev;
+                const afterHeight = getHeightOfRevision(revChangedAfterMigration);
+                assert.strictEqual(afterHeight, 2);
+
+                db2.destroy();
             });
         });
 
