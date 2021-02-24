@@ -11,7 +11,8 @@ import {
     randomCouchString,
     promiseWait,
     _collectionNamePrimary,
-    countAllUndeleted
+    countAllUndeleted,
+    RxError
 } from '../../plugins/core';
 
 import {
@@ -23,6 +24,7 @@ import {
     migrateOldCollection,
     migratePromise
 } from '../../plugins/migration';
+import { SimpleHumanV3DocumentType } from '../helper/schema-objects';
 
 config.parallel('data-migration.test.js', () => {
     describe('.create() with migrationStrategies', () => {
@@ -522,7 +524,7 @@ config.parallel('data-migration.test.js', () => {
                     });
                     const pw8 = AsyncTestUtil.waitResolveable(5000); // higher than test-timeout
                     const state$ = col.migrate();
-                    state$['subscribe'](undefined, pw8.resolve as any, undefined);
+                    state$.subscribe(undefined, pw8.resolve as any, undefined);
 
                     await pw8.promise;
                     col.database.destroy();
@@ -558,6 +560,32 @@ config.parallel('data-migration.test.js', () => {
                     let failed = false;
                     await col.migratePromise().catch(() => failed = true);
                     assert.ok(failed);
+                    col.database.destroy();
+                });
+                it('should contain the schema validation error in the thrown object', async () => {
+                    const col = await humansCollection.createMigrationCollection(5, {
+                        3: (docData: SimpleHumanV3DocumentType) => {
+                            /**
+                             * Delete required age-field
+                             * to provoke schema validation error
+                             */
+                            delete docData.age;
+                            return docData;
+                        }
+                    });
+
+                    let hasThrown = false;
+                    try {
+                        await col.migratePromise();
+                    } catch (err) {
+                        hasThrown = true;
+                        /**
+                         * Should contain the validation errors
+                         */
+                        assert.ok(JSON.stringify((err as RxError).parameters.errors).includes('data.age'));
+                    }
+                    assert.ok(hasThrown);
+
                     col.database.destroy();
                 });
             });

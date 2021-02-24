@@ -26,6 +26,7 @@ import {
     createRxSchema
 } from '../../rx-schema';
 import {
+    RxError,
     newRxError
 } from '../../rx-error';
 import { overwritable } from '../../overwritable';
@@ -291,11 +292,11 @@ export function migrateDocumentData(
     oldCollection: OldCollection,
     docData: any
 ): Promise<any | null> {
-    docData = clone(docData);
+    const mutateableDocData = clone(docData);
     let nextVersion = oldCollection.version + 1;
 
     // run the document throught migrationStrategies
-    let currentPromise = Promise.resolve(docData);
+    let currentPromise = Promise.resolve(mutateableDocData);
     while (nextVersion <= oldCollection.newestCollection.schema.version) {
         const version = nextVersion;
         currentPromise = currentPromise.then(docOrNull => _runStrategyIfNotNull(
@@ -312,11 +313,19 @@ export function migrateDocumentData(
         // check final schema
         try {
             oldCollection.newestCollection.schema.validate(doc);
-        } catch (e) {
+        } catch (err) {
+            const asRxError: RxError = err;
             throw newRxError('DM2', {
                 fromVersion: oldCollection.version,
                 toVersion: oldCollection.newestCollection.schema.version,
-                finalDoc: doc
+                originalDoc: docData,
+                finalDoc: doc,
+                /**
+                 * pass down data from parent error,
+                 * to make it better understandable what did not work
+                 */
+                errors: asRxError.parameters.errors,
+                schema: asRxError.parameters.schema
             });
         }
         return doc;

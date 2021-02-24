@@ -5,6 +5,9 @@
 Bugfixes:
   - Updated `pouchdb-all-dbs` fixes [#2874](https://github.com/pubkey/rxdb/issues/2874)  Thanks [@openscript](https://github.com/openscript)
 
+Other:
+  - Added more information to `RxError` when data migration fails
+
 ### 9.14.0 (14 February 2021)
 
 Features:
