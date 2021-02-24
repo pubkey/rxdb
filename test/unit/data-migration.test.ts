@@ -574,7 +574,7 @@ config.parallel('data-migration.test.js', () => {
                              * Delete required age-field
                              * to provoke schema validation error
                              */
-                            delete docData.age;
+                            delete (docData as any).age;
                             return docData;
                         }
                     });
