@@ -343,6 +343,7 @@ import { stringMd5 } from 'pouchdb-md5';
 /**
  * Creates a revision string that does NOT include the revision height
  * Copied and adapted from pouchdb-utils/src/rev.js
+ * TODO not longer needed when this PR is merged: https://github.com/pouchdb/pouchdb/pull/8274
  */
 export function createRevision(docData: any, deterministic_revs: boolean): string {
     if (!deterministic_revs) {
