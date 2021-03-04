@@ -43,7 +43,7 @@
     "@angular/pwa": "0.1102.3",
     "@angular/router": "11.2.4",
     "@angular/service-worker": "11.2.4",
-    "@nguniversal/express-engine": "11.2.0",
+    "@nguniversal/express-engine": "11.2.1",
     "express": "4.17.1",
     "express-pouchdb": "4.2.0",
     "font-awesome": "4.7.0",
