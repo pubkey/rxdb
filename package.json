@@ -170,7 +170,7 @@
     "faker": "5.4.0",
     "gitbook-cli": "2.3.2",
     "graphql": "15.5.0",
-    "graphql-subscriptions": "1.2.0",
+    "graphql-subscriptions": "1.2.1",
     "gzip-size-cli": "4.0.0",
     "karma": "6.1.1",
     "karma-babel-preprocessor": "8.0.1",
