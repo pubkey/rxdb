@@ -398,7 +398,7 @@ export class RxDatabaseBase<
     /**
      * destroys the database-instance and all collections
      */
-    public destroy(): Promise<boolean> {
+    public async destroy(): Promise<boolean> {
         if (this.destroyed) return Promise.resolve(false);
         runPluginHooks('preDestroyRxDatabase', this);
         DB_COUNT--;
@@ -410,7 +410,7 @@ export class RxDatabaseBase<
              * to ensure that all pending change-events
              * get emitted
              */
-            setTimeout(() => (this.broadcastChannel as any).close(), 1000);
+            await new Promise(res => setTimeout(() => (this.broadcastChannel as any).close().then(res), 1000));
         }
 
         this._subs.map(sub => sub.unsubscribe());

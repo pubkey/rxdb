@@ -399,41 +399,71 @@ var RxDatabaseBase = /*#__PURE__*/function () {
    */
   ;
 
-  _proto.destroy = function destroy() {
-    var _this5 = this;
+  _proto.destroy =
+  /*#__PURE__*/
+  function () {
+    var _destroy = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2() {
+      var _this5 = this;
 
-    if (this.destroyed) return Promise.resolve(false);
-    (0, _hooks.runPluginHooks)('preDestroyRxDatabase', this);
-    DB_COUNT--;
-    this.destroyed = true;
+      return _regenerator["default"].wrap(function _callee2$(_context2) {
+        while (1) {
+          switch (_context2.prev = _context2.next) {
+            case 0:
+              if (!this.destroyed) {
+                _context2.next = 2;
+                break;
+              }
 
-    if (this.broadcastChannel) {
-      /**
-       * The broadcast-channel gets closed lazy
-       * to ensure that all pending change-events
-       * get emitted
-       */
-      setTimeout(function () {
-        return _this5.broadcastChannel.close();
-      }, 1000);
+              return _context2.abrupt("return", Promise.resolve(false));
+
+            case 2:
+              (0, _hooks.runPluginHooks)('preDestroyRxDatabase', this);
+              DB_COUNT--;
+              this.destroyed = true;
+
+              if (!this.broadcastChannel) {
+                _context2.next = 8;
+                break;
+              }
+
+              _context2.next = 8;
+              return new Promise(function (res) {
+                return setTimeout(function () {
+                  return _this5.broadcastChannel.close().then(res);
+                }, 1000);
+              });
+
+            case 8:
+              this._subs.map(function (sub) {
+                return sub.unsubscribe();
+              }); // destroy all collections
+
+
+              return _context2.abrupt("return", Promise.all(Object.keys(this.collections).map(function (key) {
+                return _this5.collections[key];
+              }).map(function (col) {
+                return col.destroy();
+              })) // remove combination from USED_COMBINATIONS-map
+              .then(function () {
+                return _removeUsedCombination(_this5.name, _this5.adapter);
+              }).then(function () {
+                return true;
+              }));
+
+            case 10:
+            case "end":
+              return _context2.stop();
+          }
+        }
+      }, _callee2, this);
+    }));
+
+    function destroy() {
+      return _destroy.apply(this, arguments);
     }
 
-    this._subs.map(function (sub) {
-      return sub.unsubscribe();
-    }); // destroy all collections
-
-
-    return Promise.all(Object.keys(this.collections).map(function (key) {
-      return _this5.collections[key];
-    }).map(function (col) {
-      return col.destroy();
-    })) // remove combination from USED_COMBINATIONS-map
-    .then(function () {
-      return _removeUsedCombination(_this5.name, _this5.adapter);
-    }).then(function () {
-      return true;
-    });
-  }
+    return destroy;
+  }()
   /**
    * deletes the database and its stored data
    */
