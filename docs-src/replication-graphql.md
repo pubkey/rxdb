@@ -7,13 +7,14 @@ When the user is offline, you still can use the data and later sync it with the 
 ## Comparison to Couchdb-Sync
 
 Pros:
- * The GraphQL-replication is faster and needs less resources
- * You do not need a couchdb-compliant endpoint, only a GraphQL-endpoint
+ * The GraphQL-replication is faster and needs less resources.
+ * You do not need a couchdb-compliant endpoint, only a GraphQL-endpoint.
 
 Cons:
- * You can not replicate multiple databases with each other
- * It is assumed that the GraphQL-server is the single source of truth
- * You have to setup things at the server side while with couchdb-sync you only have to start a server
+ * You can not replicate multiple databases with each other.
+ * It is assumed that the GraphQL-server is the single source of truth.
+ * You have to setup things at the server side while with couchdb-sync you only have to start a server.
+ * The GraphQL replication does not support the replication of attachments.
 
 **NOTICE:** To play around, check out the full example of the RxDB [GraphQL replication with server and client](https://github.com/pubkey/rxdb/tree/master/examples/graphql)
 
