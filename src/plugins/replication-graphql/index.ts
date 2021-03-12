@@ -131,9 +131,17 @@ export class RxGraphQLReplicationState {
     }
 
     isStopped(): boolean {
-        if (!this.live && this._subjects.initialReplicationComplete['_value']) return true;
-        if (this._subjects.canceled['_value']) return true;
-        else return false;
+        if (this.collection.destroyed) {
+            return true;
+        }
+        if (!this.live && this._subjects.initialReplicationComplete['_value']) {
+            return true;
+        }
+        if (this._subjects.canceled['_value']) {
+            return true;
+        }
+
+        return false;
     }
 
     awaitInitialReplication(): Promise<true> {
@@ -255,7 +263,7 @@ export class RxGraphQLReplicationState {
             this.collection,
             docIds
         );
-        if (this.collection.destroyed) {
+        if (this.isStopped()) {
             return true;
         }
         await this.handleDocumentsFromRemote(modified, docsWithRevisions as any);

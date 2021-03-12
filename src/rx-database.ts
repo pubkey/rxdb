@@ -406,11 +406,14 @@ export class RxDatabaseBase<
 
         this._subs.map(sub => sub.unsubscribe());
 
-        // destroy all collections
-        return Promise.all(Object.keys(this.collections)
-            .map(key => (this.collections as any)[key])
-            .map(col => col.destroy())
-        )
+        // first wait until db is idle
+        return this.requestIdlePromise()
+            // destroy all collections
+            .then(() => Promise.all(
+                Object.keys(this.collections)
+                    .map(key => (this.collections as any)[key])
+                    .map(col => col.destroy())
+            ))
             // close broadcastChannel if exists
             .then(() => this.broadcastChannel ? this.broadcastChannel.close() : Promise.resolve())
             // remove combination from USED_COMBINATIONS-map
