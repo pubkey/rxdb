@@ -418,6 +418,7 @@ describe('replication.test.js', () => {
                     return ret;
                 });
                 sub.unsubscribe();
+
                 c.database.destroy();
                 c2.database.destroy();
             });

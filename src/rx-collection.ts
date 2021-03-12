@@ -61,6 +61,7 @@ import {
 } from './change-event-buffer';
 import { overwritable } from './overwritable';
 import {
+    runAsyncPluginHooks,
     runPluginHooks
 } from './hooks';
 
@@ -879,15 +880,23 @@ export class RxCollectionBase<
         this._runHooksSync('post', 'create', docData, doc);
         return doc as any;
     }
+
     destroy(): Promise<boolean> {
-        if (this.destroyed) return Promise.resolve(false);
-        if (this._onDestroyCall) { this._onDestroyCall(); }
+        if (this.destroyed) {
+            return Promise.resolve(false);
+        }
+        if (this._onDestroyCall) {
+            this._onDestroyCall();
+        }
         this._subs.forEach(sub => sub.unsubscribe());
-        if (this._changeEventBuffer) { this._changeEventBuffer.destroy(); }
+        if (this._changeEventBuffer) {
+            this._changeEventBuffer.destroy();
+        }
         this._repStates.forEach(sync => sync.cancel());
         delete this.database.collections[this.name];
         this.destroyed = true;
-        return Promise.resolve(true);
+
+        return runAsyncPluginHooks('postDestroyRxCollection', this).then(() => true);
     }
 
     /**

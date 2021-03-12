@@ -76,6 +76,8 @@ export class RxReplicationStateBase {
         error: new Subject(),
     };
 
+    public canceled: boolean = false;
+
     constructor(
         public collection: RxCollection,
         private syncOptions: SyncOptions
@@ -112,8 +114,13 @@ export class RxReplicationStateBase {
     }
 
     cancel() {
-        if (this._pouchEventEmitterObject)
+        if (this.canceled) {
+            return;
+        }
+        this.canceled = true;
+        if (this._pouchEventEmitterObject) {
             this._pouchEventEmitterObject.cancel();
+        }
         this._subs.forEach(sub => sub.unsubscribe());
     }
 }
@@ -132,14 +139,17 @@ export function setPouchEventEmitter(
     rxRepState: RxReplicationState,
     evEmitter: PouchSyncHandler
 ) {
-    if (rxRepState._pouchEventEmitterObject)
+    if (rxRepState._pouchEventEmitterObject) {
         throw newRxError('RC1');
+    }
     rxRepState._pouchEventEmitterObject = evEmitter;
 
     // change
     rxRepState._subs.push(
         fromEvent(evEmitter as any, 'change')
-            .subscribe(ev => rxRepState._subjects.change.next(ev))
+            .subscribe(ev => {
+                rxRepState._subjects.change.next(ev);
+            })
     );
 
     // denied
@@ -278,7 +288,9 @@ export function sync(
     }
 
     const syncFun = pouchReplicationFunction(this.pouch, direction);
-    if (query) useOptions.selector = (query as any).keyCompress().selector;
+    if (query) {
+        useOptions.selector = (query as any).keyCompress().selector;
+    }
 
     const repState: any = createRxReplicationState(
         this,
@@ -297,8 +309,12 @@ export function sync(
         this.database.multiInstance // do not await leadership if not multiInstance
     ) ? this.database.waitForLeadership() : promiseWait(0);
     (waitTillRun as any).then(() => {
-        const pouchSync = syncFun(remote, useOptions);
+        if (this.destroyed || repState.canceled) {
+            return;
+        }
+
         this.watchForChanges();
+        const pouchSync = syncFun(remote, useOptions);
         setPouchEventEmitter(repState, pouchSync);
         this._repStates.push(repState);
     });

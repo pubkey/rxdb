@@ -37,7 +37,9 @@ export class LeaderElector {
     }
 
     destroy() {
-        if (this.destroyed) return;
+        if (this.destroyed) {
+            return;
+        }
         this.destroyed = true;
         this.isDead = true;
         return this.die();

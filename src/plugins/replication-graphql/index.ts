@@ -14,8 +14,6 @@ import {
     filter
 } from 'rxjs/operators';
 import GraphQLClient from 'graphql-client';
-
-
 import {
     promiseWait,
     flatClone,
@@ -450,7 +448,9 @@ export class RxGraphQLReplicationState {
     }
 
     cancel(): Promise<any> {
-        if (this.isStopped()) return Promise.resolve(false);
+        if (this.isStopped()) {
+            return Promise.resolve(false);
+        }
         this._subs.forEach(sub => sub.unsubscribe());
         this._subjects.canceled.next(true);
         return Promise.resolve(true);
@@ -508,7 +508,9 @@ export function syncGraphQL(
         syncRevisions
     );
 
-    if (!autoStart) return replicationState;
+    if (!autoStart) {
+        return replicationState;
+    }
 
     // run internal so .sync() does not have to be async
     const waitTillRun: any = (
@@ -516,6 +518,9 @@ export function syncGraphQL(
         this.database.multiInstance // do not await leadership if not multiInstance
     ) ? this.database.waitForLeadership() : promiseWait(0);
     waitTillRun.then(() => {
+        if (collection.destroyed) {
+            return;
+        }
 
         // trigger run once
         replicationState.run();

@@ -52,6 +52,7 @@ export interface RxPlugin {
         preDestroyRxDatabase?: Function,
         createRxCollection?: Function,
         preCreateRxCollection?: Function,
+        postDestroyRxCollection?: Function,
         preCreateRxSchema?: Function,
         createRxSchema?: Function,
         preCreateRxQuery?: (data: RxPluginPreCreateRxQueryArgs) => void,

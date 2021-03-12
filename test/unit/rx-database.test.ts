@@ -492,25 +492,27 @@ config.parallel('rx-database.test.js', () => {
                     name: randomCouchString(10),
                     adapter: 'memory'
                 });
-                await db.collection({
-                    name: 'foobar',
-                    schema: schemas.human
+                await db.addCollections({
+                    foobar: {
+                        schema: schemas.human
+                    }
                 });
-                db.destroy();
+                await db.destroy();
                 assert.strictEqual(db.destroyed, true);
-                db.destroy();
+                await db.destroy();
             });
             it('should not crash if destroy is called twice', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
                     adapter: 'memory'
                 });
-                await db.collection({
-                    name: 'foobar',
-                    schema: schemas.human
+                await db.addCollections({
+                    foobar: {
+                        schema: schemas.human
+                    }
                 });
-                db.destroy();
-                db.destroy();
+                await db.destroy();
+                await db.destroy();
                 assert.strictEqual(db.destroyed, true);
             });
         });

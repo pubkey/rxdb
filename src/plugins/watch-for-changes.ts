@@ -63,7 +63,10 @@ function _handleSingleChange(
     collection: RxCollection,
     change: any
 ): Promise<boolean> {
-    if (change.id.charAt(0) === '_') return Promise.resolve(false); // do not handle changes of internal docs
+    if (change.id.charAt(0) === '_') {
+        // do not handle changes of internal docs
+        return Promise.resolve(false);
+    }
 
     const startTime = now();
     const endTime = now();
@@ -90,6 +93,22 @@ function _handleSingleChange(
         });
 }
 
+/**
+ * After a collection is destroyed,
+ * we must await all promises of collection._watchForChangesUnhandled
+ * to ensure nothing is running anymore.
+ */
+function postDestroyRxCollection(collection: RxCollection): Promise<any> {
+    const unhandled: Set<Promise<any>> = collection._watchForChangesUnhandled;
+    if (!unhandled) {
+        return Promise.resolve();
+    }
+
+    return Promise.all(
+        Array.from(unhandled)
+    );
+}
+
 export const rxdb = true;
 export const prototypes = {
     RxCollection: (proto: any) => {
@@ -100,5 +119,8 @@ export const prototypes = {
 export const RxDBWatchForChangesPlugin: RxPlugin = {
     name: 'watch-for-changes',
     rxdb,
-    prototypes
+    prototypes,
+    hooks: {
+        postDestroyRxCollection
+    }
 };
