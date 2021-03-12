@@ -388,7 +388,7 @@ export class RxGraphQLReplicationState {
     }
 
     async handleDocumentsFromRemote(docs: any[], docsWithRevisions: any[]): Promise<boolean> {
-        const toPouchDocs = [];
+        const toPouchDocs: any[] = [];
         for (const doc of docs) {
             const deletedValue = doc[this.deletedFlag];
             const toPouch = this.collection._handleToPouch(doc);
@@ -426,12 +426,19 @@ export class RxGraphQLReplicationState {
                 deletedValue
             });
         }
-        const startTime = now();
 
-        await this.collection.pouch.bulkDocs(
-            toPouchDocs.map(tpd => tpd.doc), {
-            new_edits: false
-        });
+
+        const startTime = now();
+        await this.collection.database.lockedRun(
+            async () => {
+                await this.collection.pouch.bulkDocs(
+                    toPouchDocs.map(tpd => tpd.doc),
+                    {
+                        new_edits: false
+                    }
+                );
+            }
+        );
         const endTime = now();
 
         /**
