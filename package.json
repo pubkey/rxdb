@@ -187,7 +187,7 @@
     "leveldown": "5.6.0",
     "madge": "4.0.2",
     "memdown": "5.1.0",
-    "mocha": "8.3.1",
+    "mocha": "8.3.2",
     "mocha.parallel": "0.15.6",
     "nconf": "0.11.2",
     "pouchdb": "7.2.2",
