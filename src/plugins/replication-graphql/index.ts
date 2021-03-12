@@ -201,7 +201,9 @@ export class RxGraphQLReplicationState {
      */
     async runPull(): Promise<boolean> {
         // console.log('RxGraphQLReplicationState.runPull(): start');
-        if (this.isStopped()) return Promise.resolve(false);
+        if (this.isStopped()) {
+            return Promise.resolve(false);
+        }
 
         const latestDocument = await getLastPullDocument(this.collection, this.endpointHash);
         const latestDocumentData = latestDocument ? latestDocument : null;
@@ -253,6 +255,9 @@ export class RxGraphQLReplicationState {
             this.collection,
             docIds
         );
+        if (this.collection.destroyed) {
+            return true;
+        }
         await this.handleDocumentsFromRemote(modified, docsWithRevisions as any);
         modified.map((doc: any) => this._subjects.recieved.next(doc));
 
@@ -374,7 +379,7 @@ export class RxGraphQLReplicationState {
         return true;
     }
 
-    async handleDocumentsFromRemote(docs: any[], docsWithRevisions: any[]) {
+    async handleDocumentsFromRemote(docs: any[], docsWithRevisions: any[]): Promise<boolean> {
         const toPouchDocs = [];
         for (const doc of docs) {
             const deletedValue = doc[this.deletedFlag];
@@ -414,6 +419,7 @@ export class RxGraphQLReplicationState {
             });
         }
         const startTime = now();
+
         await this.collection.pouch.bulkDocs(
             toPouchDocs.map(tpd => tpd.doc), {
             new_edits: false
@@ -445,6 +451,8 @@ export class RxGraphQLReplicationState {
             );
             this.collection.$emit(cE);
         }
+
+        return true;
     }
 
     cancel(): Promise<any> {
