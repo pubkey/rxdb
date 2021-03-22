@@ -224,6 +224,8 @@ const docsMap = await myCollection.findByIds(ids);
 console.dir(docsMap); // Map(2)
 ```
 
+NOTICE: The `Map` returned by `findByIds` is not guaranteed to return elements in the same order as the list of ids passed to it.
+
 ### findByIds$()
 
 Same as `findByIds()` but returns and `Observable` that emits the `Map` each time a value of it has changed because of a database write.
