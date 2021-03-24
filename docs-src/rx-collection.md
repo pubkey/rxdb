@@ -228,7 +228,7 @@ NOTICE: The `Map` returned by `findByIds` is not guaranteed to return elements i
 
 ### findByIds$()
 
-Same as `findByIds()` but returns and `Observable` that emits the `Map` each time a value of it has changed because of a database write.
+Same as `findByIds()` but returns an `Observable` that emits the `Map` each time a value of it has changed because of a database write.
 
 
 ### dump()
