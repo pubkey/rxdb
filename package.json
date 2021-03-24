@@ -172,7 +172,7 @@
     "graphql": "15.5.0",
     "graphql-subscriptions": "1.2.1",
     "gzip-size-cli": "4.0.0",
-    "karma": "6.2.0",
+    "karma": "6.3.0",
     "karma-babel-preprocessor": "8.0.1",
     "karma-browserify": "8.0.0",
     "karma-chrome-launcher": "3.1.0",
