@@ -37,9 +37,15 @@ var HOOKS = {
   createRxCollection: [],
 
   /**
-   * functions that get the json-schema as input
-   * to do additionally checks/manipulation
-   */
+  * runs at the end of the destroy-process of a collection
+  * @async
+  */
+  postDestroyRxCollection: [],
+
+  /**
+    * functions that get the json-schema as input
+    * to do additionally checks/manipulation
+    */
   preCreateRxSchema: [],
 
   /**

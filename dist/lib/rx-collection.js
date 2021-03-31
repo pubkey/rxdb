@@ -848,7 +848,9 @@ var RxCollectionBase = /*#__PURE__*/function () {
   };
 
   _proto.destroy = function destroy() {
-    if (this.destroyed) return Promise.resolve(false);
+    if (this.destroyed) {
+      return Promise.resolve(false);
+    }
 
     if (this._onDestroyCall) {
       this._onDestroyCall();
@@ -868,7 +870,9 @@ var RxCollectionBase = /*#__PURE__*/function () {
 
     delete this.database.collections[this.name];
     this.destroyed = true;
-    return Promise.resolve(true);
+    return (0, _hooks.runAsyncPluginHooks)('postDestroyRxCollection', this).then(function () {
+      return true;
+    });
   }
   /**
    * remove all data of the collection

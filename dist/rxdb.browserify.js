@@ -693,9 +693,15 @@ var HOOKS = {
   createRxCollection: [],
 
   /**
-   * functions that get the json-schema as input
-   * to do additionally checks/manipulation
-   */
+  * runs at the end of the destroy-process of a collection
+  * @async
+  */
+  postDestroyRxCollection: [],
+
+  /**
+    * functions that get the json-schema as input
+    * to do additionally checks/manipulation
+    */
   preCreateRxSchema: [],
 
   /**
@@ -3301,7 +3307,10 @@ var LeaderElector = /*#__PURE__*/function () {
   };
 
   _proto.destroy = function destroy() {
-    if (this.destroyed) return;
+    if (this.destroyed) {
+      return;
+    }
+
     this.destroyed = true;
     this.isDead = true;
     return this.die();
@@ -5161,6 +5170,7 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
       alive: new _rxjs.BehaviorSubject(false),
       error: new _rxjs.Subject()
     };
+    this.canceled = false;
     this.collection = collection;
     this.syncOptions = syncOptions;
     // create getters
@@ -5197,7 +5207,15 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
   };
 
   _proto.cancel = function cancel() {
-    if (this._pouchEventEmitterObject) this._pouchEventEmitterObject.cancel();
+    if (this.canceled) {
+      return;
+    }
+
+    this.canceled = true;
+
+    if (this._pouchEventEmitterObject) {
+      this._pouchEventEmitterObject.cancel();
+    }
 
     this._subs.forEach(function (sub) {
       return sub.unsubscribe();
@@ -5210,11 +5228,14 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
 exports.RxReplicationStateBase = RxReplicationStateBase;
 
 function setPouchEventEmitter(rxRepState, evEmitter) {
-  if (rxRepState._pouchEventEmitterObject) throw (0, _rxError.newRxError)('RC1');
+  if (rxRepState._pouchEventEmitterObject) {
+    throw (0, _rxError.newRxError)('RC1');
+  }
+
   rxRepState._pouchEventEmitterObject = evEmitter; // change
 
   rxRepState._subs.push((0, _rxjs.fromEvent)(evEmitter, 'change').subscribe(function (ev) {
-    return rxRepState._subjects.change.next(ev);
+    rxRepState._subjects.change.next(ev);
   })); // denied
 
 
@@ -5337,7 +5358,11 @@ function sync(_ref) {
   }
 
   var syncFun = (0, _pouchDb.pouchReplicationFunction)(this.pouch, direction);
-  if (query) useOptions.selector = query.keyCompress().selector;
+
+  if (query) {
+    useOptions.selector = query.keyCompress().selector;
+  }
+
   var repState = createRxReplicationState(this, {
     remote: remote,
     waitForLeadership: waitForLeadership,
@@ -5349,10 +5374,13 @@ function sync(_ref) {
   var waitTillRun = waitForLeadership && this.database.multiInstance // do not await leadership if not multiInstance
   ? this.database.waitForLeadership() : (0, _util.promiseWait)(0);
   waitTillRun.then(function () {
-    var pouchSync = syncFun(remote, useOptions);
+    if (_this2.destroyed || repState.canceled) {
+      return;
+    }
 
     _this2.watchForChanges();
 
+    var pouchSync = syncFun(remote, useOptions);
     setPouchEventEmitter(repState, pouchSync);
 
     _this2._repStates.push(repState);
@@ -5600,7 +5628,10 @@ function watchForChanges() {
 
 
 function _handleSingleChange(collection, change) {
-  if (change.id.charAt(0) === '_') return Promise.resolve(false); // do not handle changes of internal docs
+  if (change.id.charAt(0) === '_') {
+    // do not handle changes of internal docs
+    return Promise.resolve(false);
+  }
 
   var startTime = (0, _util.now)();
   var endTime = (0, _util.now)(); // wait 2 ticks and 20 ms to give the internal event-handling time to run
@@ -5621,6 +5652,22 @@ function _handleSingleChange(collection, change) {
     return true;
   });
 }
+/**
+ * After a collection is destroyed,
+ * we must await all promises of collection._watchForChangesUnhandled
+ * to ensure nothing is running anymore.
+ */
+
+
+function postDestroyRxCollection(collection) {
+  var unhandled = collection._watchForChangesUnhandled;
+
+  if (!unhandled) {
+    return Promise.resolve();
+  }
+
+  return Promise.all(Array.from(unhandled));
+}
 
 var rxdb = true;
 exports.rxdb = rxdb;
@@ -5633,7 +5680,10 @@ exports.prototypes = prototypes;
 var RxDBWatchForChangesPlugin = {
   name: 'watch-for-changes',
   rxdb: rxdb,
-  prototypes: prototypes
+  prototypes: prototypes,
+  hooks: {
+    postDestroyRxCollection: postDestroyRxCollection
+  }
 };
 exports.RxDBWatchForChangesPlugin = RxDBWatchForChangesPlugin;
 
@@ -6996,7 +7046,9 @@ var RxCollectionBase = /*#__PURE__*/function () {
   };
 
   _proto.destroy = function destroy() {
-    if (this.destroyed) return Promise.resolve(false);
+    if (this.destroyed) {
+      return Promise.resolve(false);
+    }
 
     if (this._onDestroyCall) {
       this._onDestroyCall();
@@ -7016,7 +7068,9 @@ var RxCollectionBase = /*#__PURE__*/function () {
 
     delete this.database.collections[this.name];
     this.destroyed = true;
-    return Promise.resolve(true);
+    return (0, _hooks.runAsyncPluginHooks)('postDestroyRxCollection', this).then(function () {
+      return true;
+    });
   }
   /**
    * remove all data of the collection
@@ -7746,27 +7800,22 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     DB_COUNT--;
     this.destroyed = true;
 
-    if (this.broadcastChannel) {
-      /**
-       * The broadcast-channel gets closed lazy
-       * to ensure that all pending change-events
-       * get emitted
-       */
-      setTimeout(function () {
-        return _this5.broadcastChannel.close();
-      }, 1000);
-    }
-
     this._subs.map(function (sub) {
       return sub.unsubscribe();
-    }); // destroy all collections
+    }); // first wait until db is idle
 
 
-    return Promise.all(Object.keys(this.collections).map(function (key) {
-      return _this5.collections[key];
-    }).map(function (col) {
-      return col.destroy();
-    })) // remove combination from USED_COMBINATIONS-map
+    return this.requestIdlePromise() // destroy all collections
+    .then(function () {
+      return Promise.all(Object.keys(_this5.collections).map(function (key) {
+        return _this5.collections[key];
+      }).map(function (col) {
+        return col.destroy();
+      }));
+    }) // close broadcastChannel if exists
+    .then(function () {
+      return _this5.broadcastChannel ? _this5.broadcastChannel.close() : Promise.resolve();
+    }) // remove combination from USED_COMBINATIONS-map
     .then(function () {
       return _removeUsedCombination(_this5.name, _this5.adapter);
     }).then(function () {
@@ -10673,9 +10722,9 @@ function _asyncToGenerator(fn) {
 module.exports = _asyncToGenerator;
 module.exports["default"] = module.exports, module.exports.__esModule = true;
 },{}],60:[function(require,module,exports){
-var setPrototypeOf = require("@babel/runtime/helpers/setPrototypeOf");
+var setPrototypeOf = require("./setPrototypeOf.js");
 
-var isNativeReflectConstruct = require("@babel/runtime/helpers/isNativeReflectConstruct");
+var isNativeReflectConstruct = require("./isNativeReflectConstruct.js");
 
 function _construct(Parent, args, Class) {
   if (isNativeReflectConstruct()) {
@@ -10699,7 +10748,7 @@ function _construct(Parent, args, Class) {
 
 module.exports = _construct;
 module.exports["default"] = module.exports, module.exports.__esModule = true;
-},{"@babel/runtime/helpers/isNativeReflectConstruct":67,"@babel/runtime/helpers/setPrototypeOf":68}],61:[function(require,module,exports){
+},{"./isNativeReflectConstruct.js":67,"./setPrototypeOf.js":68}],61:[function(require,module,exports){
 function _defineProperties(target, props) {
   for (var i = 0; i < props.length; i++) {
     var descriptor = props[i];
@@ -10730,7 +10779,7 @@ function _getPrototypeOf(o) {
 module.exports = _getPrototypeOf;
 module.exports["default"] = module.exports, module.exports.__esModule = true;
 },{}],63:[function(require,module,exports){
-var setPrototypeOf = require("@babel/runtime/helpers/setPrototypeOf");
+var setPrototypeOf = require("./setPrototypeOf.js");
 
 function _inheritsLoose(subClass, superClass) {
   subClass.prototype = Object.create(superClass.prototype);
@@ -10740,7 +10789,7 @@ function _inheritsLoose(subClass, superClass) {
 
 module.exports = _inheritsLoose;
 module.exports["default"] = module.exports, module.exports.__esModule = true;
-},{"@babel/runtime/helpers/setPrototypeOf":68}],64:[function(require,module,exports){
+},{"./setPrototypeOf.js":68}],64:[function(require,module,exports){
 function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : {
     "default": obj
@@ -10866,13 +10915,13 @@ function _typeof(obj) {
 module.exports = _typeof;
 module.exports["default"] = module.exports, module.exports.__esModule = true;
 },{}],70:[function(require,module,exports){
-var getPrototypeOf = require("@babel/runtime/helpers/getPrototypeOf");
+var getPrototypeOf = require("./getPrototypeOf.js");
 
-var setPrototypeOf = require("@babel/runtime/helpers/setPrototypeOf");
+var setPrototypeOf = require("./setPrototypeOf.js");
 
-var isNativeFunction = require("@babel/runtime/helpers/isNativeFunction");
+var isNativeFunction = require("./isNativeFunction.js");
 
-var construct = require("@babel/runtime/helpers/construct");
+var construct = require("./construct.js");
 
 function _wrapNativeSuper(Class) {
   var _cache = typeof Map === "function" ? new Map() : undefined;
@@ -10911,7 +10960,7 @@ function _wrapNativeSuper(Class) {
 
 module.exports = _wrapNativeSuper;
 module.exports["default"] = module.exports, module.exports.__esModule = true;
-},{"@babel/runtime/helpers/construct":60,"@babel/runtime/helpers/getPrototypeOf":62,"@babel/runtime/helpers/isNativeFunction":66,"@babel/runtime/helpers/setPrototypeOf":68}],71:[function(require,module,exports){
+},{"./construct.js":60,"./getPrototypeOf.js":62,"./isNativeFunction.js":66,"./setPrototypeOf.js":68}],71:[function(require,module,exports){
 module.exports = require("regenerator-runtime");
 
 },{"regenerator-runtime":527}],72:[function(require,module,exports){
@@ -12736,6 +12785,13 @@ var BroadcastChannel = function BroadcastChannel(name, options) {
     internal: []
   };
   /**
+   * Unsend message promises
+   * where the sending is still in progress
+   * @type {Set<Promise>}
+   */
+
+  this._uMP = new Set();
+  /**
    * _beforeClose
    * array of promises that will be awaited
    * before the channel is closed
@@ -12839,16 +12895,24 @@ BroadcastChannel.prototype = {
   close: function close() {
     var _this = this;
 
-    if (this.closed) return;
+    if (this.closed) {
+      return;
+    }
+
     this.closed = true;
     var awaitPrepare = this._prepP ? this._prepP : Promise.resolve();
     this._onML = null;
     this._addEL.message = [];
-    return awaitPrepare.then(function () {
+    return awaitPrepare // wait until all current sending are processed
+    .then(function () {
+      return Promise.all(Array.from(_this._uMP));
+    }) // run before-close hooks
+    .then(function () {
       return Promise.all(_this._befC.map(function (fn) {
         return fn();
       }));
-    }).then(function () {
+    }) // close the channel
+    .then(function () {
       return _this.method.close(_this._state);
     });
   },
@@ -12858,6 +12922,10 @@ BroadcastChannel.prototype = {
   }
 
 };
+/**
+ * Post a message over the channel
+ * @returns {Promise} that resolved when the message sending is done
+ */
 
 function _post(broadcastChannel, type, msg) {
   var time = broadcastChannel.method.microSeconds();
@@ -12868,7 +12936,14 @@ function _post(broadcastChannel, type, msg) {
   };
   var awaitPrepare = broadcastChannel._prepP ? broadcastChannel._prepP : Promise.resolve();
   return awaitPrepare.then(function () {
-    return broadcastChannel.method.postMessage(broadcastChannel._state, msgObj);
+    var sendPromise = broadcastChannel.method.postMessage(broadcastChannel._state, msgObj); // add/remove to unsend messages list
+
+    broadcastChannel._uMP.add(sendPromise);
+
+    sendPromise["catch"]().then(function () {
+      return broadcastChannel._uMP["delete"](sendPromise);
+    });
+    return sendPromise;
   });
 }
 
@@ -12960,7 +13035,8 @@ module.exports = {
   BroadcastChannel: _index.BroadcastChannel,
   createLeaderElection: _index.createLeaderElection,
   clearNodeFolder: _index.clearNodeFolder,
-  enforceOptions: _index.enforceOptions
+  enforceOptions: _index.enforceOptions,
+  beLeader: _index.beLeader
 };
 },{"./index.js":98}],98:[function(require,module,exports){
 "use strict";
@@ -12992,6 +13068,12 @@ Object.defineProperty(exports, "createLeaderElection", {
     return _leaderElection.createLeaderElection;
   }
 });
+Object.defineProperty(exports, "beLeader", {
+  enumerable: true,
+  get: function get() {
+    return _leaderElection.beLeader;
+  }
+});
 
 var _broadcastChannel = require("./broadcast-channel");
 
@@ -13004,6 +13086,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.beLeader = beLeader;
 exports.createLeaderElection = createLeaderElection;
 
 var _util = require("./util.js");
@@ -13025,6 +13108,11 @@ var LeaderElection = function LeaderElection(channel, options) {
   this._lstns = []; // _listeners
 
   this._invs = []; // _intervals
+
+  this._dpL = function () {}; // onduplicate listener
+
+
+  this._dpLC = false; // true when onduplicate called
 };
 
 LeaderElection.prototype = {
@@ -13076,7 +13164,7 @@ LeaderElection.prototype = {
     .then(function () {
       if (stopCriteria) return Promise.reject(new Error());else return _sendMessage(_this);
     }).then(function () {
-      return _beLeader(_this);
+      return beLeader(_this);
     }) // no one disagreed -> this one is now leader
     .then(function () {
       return true;
@@ -13105,6 +13193,11 @@ LeaderElection.prototype = {
 
     return this._aLP;
   },
+
+  set onduplicate(fn) {
+    this._dpL = fn;
+  },
+
   die: function die() {
     var _this2 = this;
 
@@ -13132,24 +13225,31 @@ function _awaitLeadershipOnce(leaderElector) {
   return new Promise(function (res) {
     var resolved = false;
 
-    var finish = function finish() {
-      if (resolved) return;
+    function finish() {
+      if (resolved) {
+        return;
+      }
+
       resolved = true;
       clearInterval(interval);
 
       leaderElector._channel.removeEventListener('internal', whenDeathListener);
 
       res(true);
-    }; // try once now
+    } // try once now
 
 
     leaderElector.applyOnce().then(function () {
-      if (leaderElector.isLeader) finish();
+      if (leaderElector.isLeader) {
+        finish();
+      }
     }); // try on fallbackInterval
 
     var interval = setInterval(function () {
       leaderElector.applyOnce().then(function () {
-        if (leaderElector.isLeader) finish();
+        if (leaderElector.isLeader) {
+          finish();
+        }
       });
     }, leaderElector._options.fallbackInterval);
 
@@ -13183,7 +13283,7 @@ function _sendMessage(leaderElector, action) {
   return leaderElector._channel.postInternal(msgJson);
 }
 
-function _beLeader(leaderElector) {
+function beLeader(leaderElector) {
   leaderElector.isLeader = true;
 
   var unloadFn = _unload["default"].add(function () {
@@ -13195,6 +13295,24 @@ function _beLeader(leaderElector) {
   var isLeaderListener = function isLeaderListener(msg) {
     if (msg.context === 'leader' && msg.action === 'apply') {
       _sendMessage(leaderElector, 'tell');
+    }
+
+    if (msg.context === 'leader' && msg.action === 'tell' && !leaderElector._dpLC) {
+      /**
+       * another instance is also leader!
+       * This can happen on rare events
+       * like when the CPU is at 100% for long time
+       * or the tabs are open very long and the browser throttles them.
+       * @link https://github.com/pubkey/broadcast-channel/issues/414
+       * @link https://github.com/pubkey/broadcast-channel/issues/385
+       */
+      leaderElector._dpLC = true;
+
+      leaderElector._dpL(); // message the lib user so the app can handle the problem
+
+
+      _sendMessage(leaderElector, 'tell'); // ensure other leader also knows the problem
+
     }
   };
 
@@ -13913,7 +14031,12 @@ function close(channelState) {
 }
 
 function postMessage(channelState, messageJson) {
-  channelState.bc.postMessage(messageJson, false);
+  try {
+    channelState.bc.postMessage(messageJson, false);
+    return Promise.resolve();
+  } catch (err) {
+    return Promise.reject(err);
+  }
 }
 
 function onMessage(channelState, fn) {
@@ -27783,31 +27906,52 @@ function unwrapListeners(arr) {
 
 function once(emitter, name) {
   return new Promise(function (resolve, reject) {
-    function eventListener() {
-      if (errorListener !== undefined) {
+    function errorListener(err) {
+      emitter.removeListener(name, resolver);
+      reject(err);
+    }
+
+    function resolver() {
+      if (typeof emitter.removeListener === 'function') {
         emitter.removeListener('error', errorListener);
       }
       resolve([].slice.call(arguments));
     };
-    var errorListener;
 
-    // Adding an error listener is not optional because
-    // if an error is thrown on an event emitter we cannot
-    // guarantee that the actual event we are waiting will
-    // be fired. The result could be a silent way to create
-    // memory or file descriptor leaks, which is something
-    // we should avoid.
+    eventTargetAgnosticAddListener(emitter, name, resolver, { once: true });
     if (name !== 'error') {
-      errorListener = function errorListener(err) {
-        emitter.removeListener(name, eventListener);
-        reject(err);
-      };
-
-      emitter.once('error', errorListener);
+      addErrorHandlerIfEventEmitter(emitter, errorListener, { once: true });
     }
-
-    emitter.once(name, eventListener);
   });
+}
+
+function addErrorHandlerIfEventEmitter(emitter, handler, flags) {
+  if (typeof emitter.on === 'function') {
+    eventTargetAgnosticAddListener(emitter, 'error', handler, flags);
+  }
+}
+
+function eventTargetAgnosticAddListener(emitter, name, listener, flags) {
+  if (typeof emitter.on === 'function') {
+    if (flags.once) {
+      emitter.once(name, listener);
+    } else {
+      emitter.on(name, listener);
+    }
+  } else if (typeof emitter.addEventListener === 'function') {
+    // EventTarget does not have `error` event semantics like Node
+    // EventEmitters, we do not listen for `error` events here.
+    emitter.addEventListener(name, function wrapListener(arg) {
+      // IE does not have builtin `{ once: true }` support so we
+      // have to do it manually.
+      if (flags.once) {
+        emitter.removeEventListener(name, wrapListener);
+      }
+      listener(arg);
+    });
+  } else {
+    throw new TypeError('The "emitter" argument must be of type EventEmitter. Received type ' + typeof emitter);
+  }
 }
 
 },{}],445:[function(require,module,exports){
@@ -28425,10 +28569,9 @@ module.exports = function GetIntrinsic(name, allowMissing) {
 };
 
 },{"function-bind":447,"has":453,"has-symbols":451}],451:[function(require,module,exports){
-(function (global){(function (){
 'use strict';
 
-var origSymbol = global.Symbol;
+var origSymbol = typeof Symbol !== 'undefined' && Symbol;
 var hasSymbolSham = require('./shams');
 
 module.exports = function hasNativeSymbols() {
@@ -28440,7 +28583,6 @@ module.exports = function hasNativeSymbols() {
 	return hasSymbolSham();
 };
 
-}).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./shams":452}],452:[function(require,module,exports){
 'use strict';
 
@@ -28467,7 +28609,7 @@ module.exports = function hasSymbols() {
 
 	var symVal = 42;
 	obj[sym] = symVal;
-	for (sym in obj) { return false; } // eslint-disable-line no-restricted-syntax
+	for (sym in obj) { return false; } // eslint-disable-line no-restricted-syntax, no-unreachable-loop
 	if (typeof Object.keys === 'function' && Object.keys(obj).length !== 0) { return false; }
 
 	if (typeof Object.getOwnPropertyNames === 'function' && Object.getOwnPropertyNames(obj).length !== 0) { return false; }
@@ -46823,7 +46965,14 @@ function innerSubscribe(result, innerSubscriber) {
     if (result instanceof Observable_1.Observable) {
         return result.subscribe(innerSubscriber);
     }
-    return subscribeTo_1.subscribeTo(result)(innerSubscriber);
+    var subscription;
+    try {
+        subscription = subscribeTo_1.subscribeTo(result)(innerSubscriber);
+    }
+    catch (error) {
+        innerSubscriber.error(error);
+    }
+    return subscription;
 }
 exports.innerSubscribe = innerSubscribe;
 
@@ -52368,7 +52517,7 @@ function shareReplay(configOrBufferSize, windowTime, scheduler) {
             bufferSize: configOrBufferSize,
             windowTime: windowTime,
             refCount: false,
-            scheduler: scheduler
+            scheduler: scheduler,
         };
     }
     return function (source) { return source.lift(shareReplayOperator(config)); };
@@ -52389,7 +52538,9 @@ function shareReplayOperator(_a) {
             subject = new ReplaySubject_1.ReplaySubject(bufferSize, windowTime, scheduler);
             innerSub = subject.subscribe(this);
             subscription = source.subscribe({
-                next: function (value) { subject.next(value); },
+                next: function (value) {
+                    subject.next(value);
+                },
                 error: function (err) {
                     hasError = true;
                     subject.error(err);
@@ -52400,6 +52551,9 @@ function shareReplayOperator(_a) {
                     subject.complete();
                 },
             });
+            if (isComplete) {
+                subscription = undefined;
+            }
         }
         else {
             innerSub = subject.subscribe(this);
@@ -52407,6 +52561,7 @@ function shareReplayOperator(_a) {
         this.add(function () {
             refCount--;
             innerSub.unsubscribe();
+            innerSub = undefined;
             if (subscription && !isComplete && useRefCount && refCount === 0) {
                 subscription.unsubscribe();
                 subscription = undefined;

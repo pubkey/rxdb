@@ -30,6 +30,7 @@ export var RxReplicationStateBase = /*#__PURE__*/function () {
       alive: new BehaviorSubject(false),
       error: new Subject()
     };
+    this.canceled = false;
     this.collection = collection;
     this.syncOptions = syncOptions;
     // create getters
@@ -66,7 +67,15 @@ export var RxReplicationStateBase = /*#__PURE__*/function () {
   };
 
   _proto.cancel = function cancel() {
-    if (this._pouchEventEmitterObject) this._pouchEventEmitterObject.cancel();
+    if (this.canceled) {
+      return;
+    }
+
+    this.canceled = true;
+
+    if (this._pouchEventEmitterObject) {
+      this._pouchEventEmitterObject.cancel();
+    }
 
     this._subs.forEach(function (sub) {
       return sub.unsubscribe();
@@ -76,11 +85,14 @@ export var RxReplicationStateBase = /*#__PURE__*/function () {
   return RxReplicationStateBase;
 }();
 export function setPouchEventEmitter(rxRepState, evEmitter) {
-  if (rxRepState._pouchEventEmitterObject) throw newRxError('RC1');
+  if (rxRepState._pouchEventEmitterObject) {
+    throw newRxError('RC1');
+  }
+
   rxRepState._pouchEventEmitterObject = evEmitter; // change
 
   rxRepState._subs.push(fromEvent(evEmitter, 'change').subscribe(function (ev) {
-    return rxRepState._subjects.change.next(ev);
+    rxRepState._subjects.change.next(ev);
   })); // denied
 
 
@@ -201,7 +213,11 @@ export function sync(_ref) {
   }
 
   var syncFun = pouchReplicationFunction(this.pouch, direction);
-  if (query) useOptions.selector = query.keyCompress().selector;
+
+  if (query) {
+    useOptions.selector = query.keyCompress().selector;
+  }
+
   var repState = createRxReplicationState(this, {
     remote: remote,
     waitForLeadership: waitForLeadership,
@@ -213,10 +229,13 @@ export function sync(_ref) {
   var waitTillRun = waitForLeadership && this.database.multiInstance // do not await leadership if not multiInstance
   ? this.database.waitForLeadership() : promiseWait(0);
   waitTillRun.then(function () {
-    var pouchSync = syncFun(remote, useOptions);
+    if (_this2.destroyed || repState.canceled) {
+      return;
+    }
 
     _this2.watchForChanges();
 
+    var pouchSync = syncFun(remote, useOptions);
     setPouchEventEmitter(repState, pouchSync);
 
     _this2._repStates.push(repState);

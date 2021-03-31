@@ -28,6 +28,7 @@ export declare class RxReplicationStateBase {
         alive: BehaviorSubject<boolean>;
         error: Subject<unknown>;
     };
+    canceled: boolean;
     constructor(collection: RxCollection, syncOptions: SyncOptions);
     awaitInitialReplication(): Promise<void>;
     cancel(): void;

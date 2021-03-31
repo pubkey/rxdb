@@ -372,27 +372,22 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
     DB_COUNT--;
     this.destroyed = true;
 
-    if (this.broadcastChannel) {
-      /**
-       * The broadcast-channel gets closed lazy
-       * to ensure that all pending change-events
-       * get emitted
-       */
-      setTimeout(function () {
-        return _this5.broadcastChannel.close();
-      }, 1000);
-    }
-
     this._subs.map(function (sub) {
       return sub.unsubscribe();
-    }); // destroy all collections
+    }); // first wait until db is idle
 
 
-    return Promise.all(Object.keys(this.collections).map(function (key) {
-      return _this5.collections[key];
-    }).map(function (col) {
-      return col.destroy();
-    })) // remove combination from USED_COMBINATIONS-map
+    return this.requestIdlePromise() // destroy all collections
+    .then(function () {
+      return Promise.all(Object.keys(_this5.collections).map(function (key) {
+        return _this5.collections[key];
+      }).map(function (col) {
+        return col.destroy();
+      }));
+    }) // close broadcastChannel if exists
+    .then(function () {
+      return _this5.broadcastChannel ? _this5.broadcastChannel.close() : Promise.resolve();
+    }) // remove combination from USED_COMBINATIONS-map
     .then(function () {
       return _removeUsedCombination(_this5.name, _this5.adapter);
     }).then(function () {

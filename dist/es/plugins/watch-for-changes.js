@@ -45,7 +45,10 @@ export function watchForChanges() {
  */
 
 function _handleSingleChange(collection, change) {
-  if (change.id.charAt(0) === '_') return Promise.resolve(false); // do not handle changes of internal docs
+  if (change.id.charAt(0) === '_') {
+    // do not handle changes of internal docs
+    return Promise.resolve(false);
+  }
 
   var startTime = now();
   var endTime = now(); // wait 2 ticks and 20 ms to give the internal event-handling time to run
@@ -66,6 +69,22 @@ function _handleSingleChange(collection, change) {
     return true;
   });
 }
+/**
+ * After a collection is destroyed,
+ * we must await all promises of collection._watchForChangesUnhandled
+ * to ensure nothing is running anymore.
+ */
+
+
+function postDestroyRxCollection(collection) {
+  var unhandled = collection._watchForChangesUnhandled;
+
+  if (!unhandled) {
+    return Promise.resolve();
+  }
+
+  return Promise.all(Array.from(unhandled));
+}
 
 export var rxdb = true;
 export var prototypes = {
@@ -76,6 +95,9 @@ export var prototypes = {
 export var RxDBWatchForChangesPlugin = {
   name: 'watch-for-changes',
   rxdb: rxdb,
-  prototypes: prototypes
+  prototypes: prototypes,
+  hooks: {
+    postDestroyRxCollection: postDestroyRxCollection
+  }
 };
 //# sourceMappingURL=watch-for-changes.js.map

@@ -14,7 +14,7 @@ import { createDocCache } from './doc-cache';
 import { createQueryCache, defaultCacheReplacementPolicy } from './query-cache';
 import { createChangeEventBuffer } from './change-event-buffer';
 import { overwritable } from './overwritable';
-import { runPluginHooks } from './hooks';
+import { runAsyncPluginHooks, runPluginHooks } from './hooks';
 import { createWithConstructor as createRxDocumentWithConstructor, isInstanceOf as isRxDocument } from './rx-document';
 import { createRxDocument, getRxDocumentConstructor } from './rx-document-prototype-merge';
 var HOOKS_WHEN = ['pre', 'post'];
@@ -817,7 +817,9 @@ export var RxCollectionBase = /*#__PURE__*/function () {
   };
 
   _proto.destroy = function destroy() {
-    if (this.destroyed) return Promise.resolve(false);
+    if (this.destroyed) {
+      return Promise.resolve(false);
+    }
 
     if (this._onDestroyCall) {
       this._onDestroyCall();
@@ -837,7 +839,9 @@ export var RxCollectionBase = /*#__PURE__*/function () {
 
     delete this.database.collections[this.name];
     this.destroyed = true;
-    return Promise.resolve(true);
+    return runAsyncPluginHooks('postDestroyRxCollection', this).then(function () {
+      return true;
+    });
   }
   /**
    * remove all data of the collection
