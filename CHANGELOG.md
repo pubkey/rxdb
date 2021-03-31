@@ -5,6 +5,9 @@
 Bugfixes:
   - Ensure every background task is done when `RxDatabase.destroy()` resolves. [#2938](https://github.com/pubkey/rxdb/issues/2938)
 
+Other:
+  - Added analytics to docs page
+
 ### 9.15.0 (25 February 2021)
 
 Bugfixes:

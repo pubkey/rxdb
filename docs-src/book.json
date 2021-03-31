@@ -28,11 +28,13 @@
         "github": {
             "url": "https://github.com/pubkey/rxdb"
         },
-        "expandable-chapters":{},
+        "expandable-chapters": {},
         "scripts": {
-           "files": [
-               "./gitter.js"
-           ]
-       }
+            "files": [
+                "./gitter.js",
+                "https://www.googletagmanager.com/gtag/js?id=G-62D63SY3S0",
+                "./analytics.js"
+            ]
+        }
     }
 }
