@@ -36,6 +36,12 @@ You have to add them by your own, like we do [here](https://github.com/pubkey/rx
 };
 ```
 
+## Project Setup and Configuration
+
+In the [examples](/examples) folder you can find CI tested projects for different frameworks and use cases, while in the [/config](/config) folder base configuration files for Webpack, Rollup, Mocha, Karma, Typescript are exposed.
+
+Consult [package.json](/package.json) for the versions of the packages supported.
+
 ## Latest
 
 If you need the latest development state of RxDB, add it as git-dependency into your `package.json`.
