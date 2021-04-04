@@ -20,5 +20,5 @@
     "examples/electron-remote/package.json"
   ],
   "rebaseStalePrs": true,
-  "prHourlyLimit": 4
+  "prHourlyLimit": 2
 }
