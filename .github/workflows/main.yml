@@ -47,6 +47,119 @@ jobs:
         working-directory: ./examples/angular
         run: npm run test:ssr
 
+  electron:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: install dependencies
+        run: sudo apt-get update && sudo apt-get install -y chromium-browser
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.1.5
+        with:
+          node-version: 13.8.0
+      - name: prepare core
+        run: |
+          npm install
+          npm run build
+          rm -r node_modules
+      - name: electron install
+        run: cd ./examples/electron && npm install > "/dev/null" 2>&1
+
+      # TODO these tests randomly fail with a page crash, add a retry with timeout or sth
+      #- name: electron test
+      #  uses: GabrielBB/xvfb-action@v1.4
+      #  with:
+      #    working-directory: ./examples/electron
+      #    # retry 3 times
+      #    run: npm run test || npm run test || npm run test
+
+      - name: electron-remote install
+        run: cd ./examples/electron-remote && npm install > "/dev/null" 2>&1
+
+      # TODO these tests randomly fail with a page crash, add a retry with timeout or sth
+      #- name: electron-remote test
+      #  uses: GabrielBB/xvfb-action@v1.4
+      #  with:
+      #    working-directory: ./examples/electron-remote
+      #    # retry 3 times
+      #    run: npm run test || npm run test || npm run test
+
+  react:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: install dependencies
+        run: sudo apt-get update && sudo apt-get install -y chromium-browser
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.1.5
+        with:
+          node-version: 13.8.0
+      - name: prepare core
+        run: |
+          npm install
+          npm run build
+          rm -r node_modules
+      - name: react install
+        run: |
+          cd ./examples/react
+          npm install > "/dev/null" 2>&1
+          npm run build
+
+      - name: react test
+        uses: GabrielBB/xvfb-action@v1.4
+        with:
+          working-directory: ./examples/react
+          run: npm run test:build
+
+  react-native:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: install dependencies
+        run: sudo apt-get update && sudo apt-get install -y chromium-browser
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.1.5
+        with:
+          node-version: 13.8.0
+      - name: prepare core
+        run: |
+          npm install
+          npm run build
+          rm -r node_modules
+      - name: react-native
+        run: |
+          cd ./examples/react-native
+          npx yarn@1.13.0 install > "/dev/null" 2>&1
+          npm run test
+          echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
+          sudo sysctl -p
+          npm run test:bundle
+
+  vue:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: install dependencies
+        run: sudo apt-get update && sudo apt-get install -y chromium-browser
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.1.5
+        with:
+          node-version: 13.8.0
+      - name: prepare core
+        run: |
+          npm install
+          npm run build
+          rm -r node_modules
+      - name: vue build
+        run: |
+          cd ./examples/vue && npm install > "/dev/null" 2>&1
+          npm run lint && npm run build
+        
+      - name: vue test
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          working-directory: ./examples/vue
+          run: npm run test
 
 
   all:
@@ -121,60 +234,6 @@ jobs:
 
       - name: test tutorials
         run: npm run build && (cd ./test/tutorials/ && npm install && npm test)
-
-      - name: vue build
-        run: |
-          cd ./examples/vue && npm install > "/dev/null" 2>&1
-          npm run lint && npm run build
-        
-      - name: vue test
-        uses: GabrielBB/xvfb-action@v1
-        with:
-          working-directory: ./examples/vue
-          run: npm run test
-
-      - name: electron install
-        run: cd ./examples/electron && npm install > "/dev/null" 2>&1
-
-      # TODO these tests randomly fail with a page crash, add a retry with timeout or sth
-      #- name: electron test
-      #  uses: GabrielBB/xvfb-action@v1.4
-      #  with:
-      #    working-directory: ./examples/electron
-      #    # retry 3 times
-      #    run: npm run test || npm run test || npm run test
-
-      - name: electron-remote install
-        run: cd ./examples/electron-remote && npm install > "/dev/null" 2>&1
-
-      # TODO these tests randomly fail with a page crash, add a retry with timeout or sth
-      #- name: electron-remote test
-      #  uses: GabrielBB/xvfb-action@v1.4
-      #  with:
-      #    working-directory: ./examples/electron-remote
-      #    # retry 3 times
-      #    run: npm run test || npm run test || npm run test
-
-      - name: react install
-        run: |
-          cd ./examples/react
-          npm install > "/dev/null" 2>&1
-          npm run build
-
-      - name: react test
-        uses: GabrielBB/xvfb-action@v1.4
-        with:
-          working-directory: ./examples/react
-          run: npm run test:build
-
-      - name: react-native
-        run: |
-          cd ./examples/react-native
-          npx yarn@1.13.0 install > "/dev/null" 2>&1
-          npm run test
-          echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
-          sudo sysctl -p
-          npm run test:bundle
 
       - name: node example
         run: cd ./examples/node && npm install > "/dev/null" 2>&1 && npm run test
