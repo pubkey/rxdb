@@ -368,8 +368,8 @@ export interface PointDocumentType {
 }
 export function point(): PointDocumentType {
     return {
-        x: faker.random.number(),
-        y: faker.random.number()
+        x: faker.datatype.number(),
+        y: faker.datatype.number()
     };
 }
 
