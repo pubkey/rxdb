@@ -62,6 +62,21 @@ jobs:
         uses: actions/setup-node@v2.1.5
         with:
           node-version: 13.8.0
+
+      - name: Reuse npm cache folder
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+            ./node_modules
+            ./examples/angular/node_modules
+          # invalidate cache when any package-lock.json changes
+          key: ${{ runner.os }}-npm-angular-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-angular-
+
       - name: prepare core
         run: |
           npm install
