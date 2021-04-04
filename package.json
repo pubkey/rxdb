@@ -84,7 +84,7 @@
     "lint"
   ],
   "peerDependencies": {
-    "rxjs": "^6.6.2"
+    "rxjs": "^6.6.7"
   },
   "dependencies": {
     "@babel/runtime": "7.13.10",
