@@ -161,6 +161,53 @@ jobs:
           working-directory: ./examples/vue
           run: npm run test
 
+  test-tutorials:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: prepare core
+        run: |
+          npm install
+          npm run build
+      - name: test tutorials
+        working-directory: ./test/tutorials/
+        run: |
+          npm install
+          npm test
+
+  test-builds:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: prepare core
+        run: |
+          npm install
+          npm run build
+
+      - name: measure build size
+        run: npm run build:size
+        
+      - name: test rollup build
+        run: npm run build:rollup
+
+
+  test-code-style:
+      - uses: actions/checkout@v2
+      - name: prepare core
+        run: |
+          npm install
+          npm run build
+      - name: test:deps
+        run: npm run test:deps
+
+      - name: test:circular
+        run: npm run test:circular
+
+      - name: lint
+        run: npm run lint
+
+      - name: check types
+        run: npm run check-types
 
   all:
     # The type of runner that the job will run on
@@ -190,18 +237,6 @@ jobs:
       
       - name: test:typings
         run: npm run test:typings
-
-      - name: check types
-        run: npm run check-types
-
-      - name: test:deps
-        run: npm run test:deps
-
-      - name: test:circular
-        run: npm run test:circular
-
-      - name: lint
-        run: npm run lint
         
       - name: npm run test:node
         run: npm run test:node
@@ -225,15 +260,6 @@ jobs:
         
       - name: npm run test:performance
         run: npm run test:performance
-
-      - name: measure build size
-        run: npm run build:size
-        
-      - name: test rollup build
-        run: npm run build:rollup
-
-      - name: test tutorials
-        run: npm run build && (cd ./test/tutorials/ && npm install && npm test)
 
       - name: node example
         run: cd ./examples/node && npm install > "/dev/null" 2>&1 && npm run test
