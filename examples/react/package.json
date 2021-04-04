@@ -2,6 +2,7 @@
   "name": "rxdb-example-react",
   "version": "3.0.0",
   "dependencies": {
+    "async-test-util": "1.7.3",
     "babel-polyfill": "6.26.0",
     "concurrently": "6.0.0",
     "pouchdb-adapter-http": "7.2.2",
