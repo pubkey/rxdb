@@ -5,7 +5,7 @@
  * Run 'npm run couch:start' to spawn a docker-container
  */
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
+import { waitUntil } from 'async-test-util';
 
 import {
     addRxPlugin,
@@ -13,12 +13,33 @@ import {
 } from '../';
 addRxPlugin(require('pouchdb-adapter-memory'));
 addRxPlugin(require('pouchdb-adapter-http'));
+import request from 'request-promise-native';
 
 import * as humansCollection from './helper/humans-collection';
 import * as schemaObjects from './helper/schema-objects';
 
 describe('couchdb-db-integration.test.js', () => {
     const COUCHDB_URL = 'http://127.0.0.1:5984/';
+
+    it('reach couchdb server', async function () {
+        /**
+         * After the couchdb container is started,
+         * it can take some time until the replication endpoint is reachable
+         */
+        this.timeout(1000 * 60);
+
+        await waitUntil(async () => {
+            try {
+                const gotJson = await request(COUCHDB_URL);
+                // ensure json is parseable
+                JSON.parse(gotJson);
+                return true;
+            } catch (err) {
+                console.log('could not reach couchdb server at ' + COUCHDB_URL);
+                return false;
+            }
+        }, 1000 * 60, 1000);
+    });
 
     it('sync to couchdb', async () => {
         const col = await humansCollection.create(0);
@@ -38,8 +59,8 @@ describe('couchdb-db-integration.test.js', () => {
         // add 3 docs
         await Promise.all(
             new Array(3)
-            .fill(0)
-            .map(() => col.insert(schemaObjects.human()))
+                .fill(0)
+                .map(() => col.insert(schemaObjects.human()))
         );
         const docs1 = await col.find().exec();
         assert.strictEqual(docs1.length, 3);
@@ -56,7 +77,7 @@ describe('couchdb-db-integration.test.js', () => {
             }
         });
 
-        await AsyncTestUtil.waitUntil(async () => {
+        await waitUntil(async () => {
             const docs = await col2.find().exec();
             return docs.length === 3;
         });
