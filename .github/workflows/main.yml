@@ -161,6 +161,30 @@ jobs:
           working-directory: ./examples/vue
           run: npm run test
 
+  graphql:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: install dependencies
+        run: sudo apt-get update && sudo apt-get install -y chromium-browser
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.1.5
+        with:
+          node-version: 13.8.0
+      - name: prepare core
+        run: |
+          npm install
+          npm run build
+          rm -r node_modules
+      - name: graphql build
+        run: cd ./examples/graphql && npm install > "/dev/null" 2>&1 && npm run build
+
+      - name: graphql test
+        uses: GabrielBB/xvfb-action@v1.4
+        with:
+          working-directory: ./examples/graphql
+          run: npm run test:ci
+
   test-tutorials:
     runs-on: ubuntu-18.04
     steps:
@@ -211,6 +235,19 @@ jobs:
       - name: check types
         run: npm run check-types
 
+  test-multiple-times:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: prepare core
+        run: |
+          npm install
+          npm run build
+       # in the past we had tests that failed randomly
+       # to prevent this we run the tests in fast-mode 10 times
+      - name: unit tests 10 times
+        run: for i in `seq 10`; do npm run test:fast; done
+
   all:
     # The type of runner that the job will run on
     runs-on: ubuntu-18.04
@@ -246,11 +283,6 @@ jobs:
       - name: npm run test:fast
         run: npm run test:fast
 
-       # in the past we had tests that failed randomly
-       # to prevent this we run the tests in fast-mode 10 times
-      - name: unit tests 10 times
-        run: for i in `seq 10`; do npm run test:fast; done
-
       - name: npm run test:browser
         uses: GabrielBB/xvfb-action@v1
         with:
@@ -265,12 +297,3 @@ jobs:
 
       - name: node example
         run: cd ./examples/node && npm install > "/dev/null" 2>&1 && npm run test
-
-      - name: graphql build
-        run: cd ./examples/graphql && npm install > "/dev/null" 2>&1 && npm run build
-
-      - name: graphql test
-        uses: GabrielBB/xvfb-action@v1.4
-        with:
-          working-directory: ./examples/graphql
-          run: npm run test:ci
