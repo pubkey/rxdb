@@ -25,6 +25,7 @@
     "normalize.css": "8.0.1",
     "pouchdb-adapter-idb": "7.2.2",
     "rxdb": "../../",
+    "rxjs": "6.6.7",
     "subscriptions-transport-ws": "0.9.18"
   },
   "devDependencies": {
