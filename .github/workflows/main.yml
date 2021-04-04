@@ -13,8 +13,44 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+# For a lower total time
+# the jobs which take longes must come before the faster ones
+# because github will start them likely earlier
 jobs:
+
+  core:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-18.04
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.1.5
+        with:
+          node-version: 13.8.0
+
+      - name: install npm dependencies
+        run: npm install
+      
+      - name: build
+        run: npm run build
+      
+      - name: test:typings
+        run: npm run test:typings
+        
+      - name: npm run test:node
+        run: npm run test:node
+  
+      - name: npm run test:fast
+        run: npm run test:fast
+        
+      - name: npm run test:performance
+        run: npm run test:performance
+
+      - name: node example
+        run: cd ./examples/node && npm install > "/dev/null" 2>&1 && npm run test
+
 
   angular:
     runs-on: ubuntu-18.04
@@ -46,6 +82,42 @@ jobs:
       - name: angular test ssr
         working-directory: ./examples/angular
         run: npm run test:ssr
+
+  test-builds:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: prepare core
+        run: |
+          npm install
+          npm run build
+
+      - name: measure build size
+        run: npm run build:size
+        
+      - name: test rollup build
+        run: npm run build:rollup
+
+
+  test-code-style:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: prepare core
+        run: |
+          npm install
+          npm run build
+      - name: test:deps
+        run: npm run test:deps
+
+      - name: test:circular
+        run: npm run test:circular
+
+      - name: lint
+        run: npm run lint
+
+      - name: check types
+        run: npm run check-types
 
   electron:
     runs-on: ubuntu-18.04
@@ -186,6 +258,40 @@ jobs:
           working-directory: ./examples/graphql
           run: npm run test:ci
 
+
+  test-browser-couch:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-18.04
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: start couchdb container
+        run: docker run -d -p 5984:5984 --rm --name rxdb-couchdb couchdb:2.1.1
+
+      - name: install dependencies
+        run: sudo apt-get update && sudo apt-get install -y chromium-browser
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.1.5
+        with:
+          node-version: 13.8.0
+
+      - name: prepare core
+        run: |
+          npm install
+          npm run build
+
+      - name: npm run test:browser
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          working-directory: ./ #optional
+          run: npm run test:browser
+        
+      - name: npm run test:couchdb
+        run: npm run test:couchdb
+
   test-tutorials:
     runs-on: ubuntu-18.04
     steps:
@@ -200,42 +306,6 @@ jobs:
           npm install
           npm test
 
-  test-builds:
-    runs-on: ubuntu-18.04
-    steps:
-      - uses: actions/checkout@v2
-      - name: prepare core
-        run: |
-          npm install
-          npm run build
-
-      - name: measure build size
-        run: npm run build:size
-        
-      - name: test rollup build
-        run: npm run build:rollup
-
-
-  test-code-style:
-    runs-on: ubuntu-18.04
-    steps:
-      - uses: actions/checkout@v2
-      - name: prepare core
-        run: |
-          npm install
-          npm run build
-      - name: test:deps
-        run: npm run test:deps
-
-      - name: test:circular
-        run: npm run test:circular
-
-      - name: lint
-        run: npm run lint
-
-      - name: check types
-        run: npm run check-types
-
   test-multiple-times:
     runs-on: ubuntu-18.04
     steps:
@@ -248,53 +318,3 @@ jobs:
        # to prevent this we run the tests in fast-mode 10 times
       - name: unit tests 10 times
         run: for i in `seq 10`; do npm run test:fast; done
-
-  all:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-18.04
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-
-      - name: start couchdb container
-        run: docker run -d -p 5984:5984 --rm --name rxdb-couchdb couchdb:2.1.1
-
-      - name: install dependencies
-        run: sudo apt-get update && sudo apt-get install -y chromium-browser
-
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v2.1.5
-        with:
-          node-version: 13.8.0
-
-      - name: install npm dependencies
-        run: npm install
-      
-      - name: build
-        run: npm run build
-      
-      - name: test:typings
-        run: npm run test:typings
-        
-      - name: npm run test:node
-        run: npm run test:node
-  
-      - name: npm run test:fast
-        run: npm run test:fast
-
-      - name: npm run test:browser
-        uses: GabrielBB/xvfb-action@v1
-        with:
-          working-directory: ./ #optional
-          run: npm run test:browser
-        
-      - name: npm run test:couchdb
-        run: npm run test:couchdb
-        
-      - name: npm run test:performance
-        run: npm run test:performance
-
-      - name: node example
-        run: cd ./examples/node && npm install > "/dev/null" 2>&1 && npm run test
