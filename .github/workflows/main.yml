@@ -15,7 +15,40 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
+
+  angular:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: install dependencies
+        run: sudo apt-get update && sudo apt-get install -y chromium-browser
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.1.5
+        with:
+          node-version: 13.8.0
+      - name: prepare core
+        run: |
+          npm install
+          npm run build
+          rm -r node_modules
+      - name: angular build
+        working-directory: ./examples/angular
+        run: |
+          npm install > "/dev/null" 2>&1
+          npm run lint && npm run build
+
+      - name: angular test
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          working-directory: ./examples/angular #optional
+          run: npm run test:build
+
+      - name: angular test ssr
+        working-directory: ./examples/angular
+        run: npm run test:ssr
+
+
+
   all:
     # The type of runner that the job will run on
     runs-on: ubuntu-18.04
@@ -88,23 +121,6 @@ jobs:
 
       - name: test tutorials
         run: npm run build && (cd ./test/tutorials/ && npm install && npm test)
-      
-      - name: angular build
-        working-directory: ./examples/angular
-        run: |
-          npm install > "/dev/null" 2>&1
-          npm run lint && npm run build
-
-      - name: angular test
-        uses: GabrielBB/xvfb-action@v1
-        with:
-          working-directory: ./examples/angular #optional
-          run: npm run test:build
-
-      - name: angular test ssr
-        working-directory: ./examples/angular
-        run: npm run test:ssr
-
 
       - name: vue build
         run: |
