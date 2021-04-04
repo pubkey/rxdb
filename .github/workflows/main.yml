@@ -192,6 +192,8 @@ jobs:
 
 
   test-code-style:
+    runs-on: ubuntu-18.04
+    steps:
       - uses: actions/checkout@v2
       - name: prepare core
         run: |
