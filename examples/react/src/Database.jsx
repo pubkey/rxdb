@@ -59,8 +59,8 @@ const _create = async () => {
         return db.collections.heroes.findOne({
             selector: { color }
         }).exec().then(has => {
-            if (has != null) {
-                alert('another hero already has the color ' + color);
+            if (has !== null) {
+                console.error('another hero already has the color ' + color);
                 throw new Error('color already there');
             }
             return db;

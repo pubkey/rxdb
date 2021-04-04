@@ -9,13 +9,19 @@ class HeroInsert extends Component {
     subs = []
 
     addHero = async (event) => {
-        event.preventDefault()
+        event.preventDefault();
         const { name, color } = this.state;
         const db = await Database.get();
 
-        const addData = { name, color };
+        const addData = {
+            name,
+            color
+        };
         await db.heroes.insert(addData);
-        this.setState({ name: '', color: '' });
+        this.setState({
+            name: '',
+            color: ''
+        });
     }
     handleNameChange = (event) => {
         this.setState({ name: event.target.value });

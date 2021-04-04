@@ -23,7 +23,10 @@ class HeroList extends Component {
             }
             console.log('reload heroes-list ');
             console.dir(heroes);
-            this.setState({ heroes, loading: false });
+            this.setState({
+                heroes,
+                loading: false
+            });
         });
         this.subs.push(sub);
     }
@@ -44,7 +47,7 @@ class HeroList extends Component {
     }
 
     render() {
-        const { heroes, loading } = this.state
+        const { heroes, loading } = this.state;
         return (
             <div id="list-box" className="box">
                 <h3>Heroes</h3>

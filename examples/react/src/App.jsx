@@ -12,6 +12,6 @@ const App = () => {
             <HeroInsert/>
         </div>
     );
-}
+};
 
 export default App;
