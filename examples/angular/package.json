@@ -56,7 +56,7 @@
     "rxdb": "file:rxdb-local.tgz",
     "rxjs": "6.6.7",
     "stream": "0.0.2",
-    "tslib": "2.0.0",
+    "tslib": "2.2.0",
     "zone.js": "0.11.4"
   },
   "devDependencies": {
