@@ -766,7 +766,7 @@ config.parallel('data-migration.test.js', () => {
                 db.foobar2.migrate().toPromise()
             ]);
 
-            assert.strictEqual(emitted.length, 2);
+            assert.ok(emitted.length >= 2);
 
             const endStates = emitted.map(list => list.map((i: any) => i.state)).pop();
             if (!endStates) {
