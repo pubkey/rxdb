@@ -768,12 +768,12 @@ config.parallel('data-migration.test.js', () => {
 
             assert.strictEqual(emitted.length, 2);
 
-            const endStates = emitted.map(list => list.map(i => i.state)).pop();
+            const endStates = emitted.map(list => list.map((i: any) => i.state)).pop();
             if (!endStates) {
                 throw new Error('endStates missing');
             }
             assert.strictEqual(endStates.length, 2);
-            endStates.forEach(s => {
+            endStates.forEach((s: any) => {
                 assert.strictEqual(s.done, true);
             });
 
