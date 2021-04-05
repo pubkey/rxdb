@@ -393,6 +393,10 @@ var RxDatabaseBase = /*#__PURE__*/function () {
 
   _proto.waitForLeadership = function waitForLeadership() {
     throw (0, _util.pluginMissing)('leader-election');
+  };
+
+  _proto.migrationStates = function migrationStates() {
+    throw (0, _util.pluginMissing)('migration');
   }
   /**
    * destroys the database-instance and all collections

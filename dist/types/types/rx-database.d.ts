@@ -2,6 +2,7 @@ import {
     PouchSettings
 } from './pouch';
 import {
+    MigrationState,
     RxCollection,
     RxDumpCollection,
     RxDumpCollectionAsAny
@@ -60,6 +61,11 @@ export interface ServerOptions {
 export type CollectionsOfDatabase = { [key: string]: RxCollection };
 export type RxDatabase<Collections = CollectionsOfDatabase> = RxDatabaseBase<Collections> &
     Collections & RxDatabaseGenerated<Collections>;
+
+export type AllMigrationStates = {
+    collection: RxCollection;
+    state: MigrationState;
+}[];
 
 export interface RxLocalDocumentMutation<StorageType> {
     insertLocal<LocalDocType = any>(id: string, data: LocalDocType): Promise<

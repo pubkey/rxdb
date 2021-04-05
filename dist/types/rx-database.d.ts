@@ -1,7 +1,7 @@
 import { IdleQueue } from 'custom-idle-queue';
 import { BroadcastChannel } from 'broadcast-channel';
 import type { LeaderElector } from './plugins/leader-election';
-import type { CollectionsOfDatabase, PouchDBInstance, RxDatabase, RxCollectionCreator, RxJsonSchema, RxCollection, PouchSettings, ServerOptions, RxDatabaseCreator, RxDumpDatabase, RxDumpDatabaseAny, RxCollectionCreatorBase } from './types';
+import type { CollectionsOfDatabase, PouchDBInstance, RxDatabase, RxCollectionCreator, RxJsonSchema, RxCollection, PouchSettings, ServerOptions, RxDatabaseCreator, RxDumpDatabase, RxDumpDatabaseAny, RxCollectionCreatorBase, AllMigrationStates } from './types';
 import { Subject, Subscription, Observable } from 'rxjs';
 import { RxChangeEvent } from './rx-change-event';
 import { RxStorage } from './rx-storate.interface';
@@ -104,6 +104,7 @@ export declare class RxDatabaseBase<Collections = CollectionsOfDatabase, RxStora
      * returns a promise which resolves when the instance becomes leader
      */
     waitForLeadership(): Promise<boolean>;
+    migrationStates(): Observable<AllMigrationStates>;
     /**
      * destroys the database-instance and all collections
      */

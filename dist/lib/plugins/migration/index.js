@@ -53,14 +53,30 @@ Object.defineProperty(exports, "DataMigrator", {
 });
 exports.RxDBMigrationPlugin = exports.DATA_MIGRATOR_BY_COLLECTION = void 0;
 
+var _rxjs = require("rxjs");
+
+var _operators = require("rxjs/operators");
+
 var _dataMigrator = require("./data-migrator");
+
+var _migrationState = require("./migration-state");
 
 var DATA_MIGRATOR_BY_COLLECTION = new WeakMap();
 exports.DATA_MIGRATOR_BY_COLLECTION = DATA_MIGRATOR_BY_COLLECTION;
 var RxDBMigrationPlugin = {
   name: 'migration',
   rxdb: true,
+  hooks: {
+    preDestroyRxDatabase: _migrationState.onDatabaseDestroy
+  },
   prototypes: {
+    RxDatabase: function RxDatabase(proto) {
+      proto.migrationStates = function () {
+        return (0, _migrationState.getMigrationStateByDatabase)(this).pipe((0, _operators.switchMap)(function (list) {
+          return (0, _rxjs.combineLatest)(list);
+        }), (0, _operators.shareReplay)(1));
+      };
+    },
     RxCollection: function RxCollection(proto) {
       proto.getDataMigrator = function () {
         if (!DATA_MIGRATOR_BY_COLLECTION.has(this)) {

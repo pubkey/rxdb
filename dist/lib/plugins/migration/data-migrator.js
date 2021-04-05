@@ -39,6 +39,10 @@ var _crypter = require("../../crypter");
 
 var _rxCollectionHelper = require("../../rx-collection-helper");
 
+var _migrationState = require("./migration-state");
+
+var _operators = require("rxjs/operators");
+
 /**
  * The DataMigrator handles the documents from collections with older schemas
  * and transforms/saves them into the newest collection
@@ -66,7 +70,11 @@ var DataMigrator = /*#__PURE__*/function () {
     var _this = this;
 
     var batchSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
-    if (this._migrated) throw (0, _rxError.newRxError)('DM1');
+
+    if (this._migrated) {
+      throw (0, _rxError.newRxError)('DM1');
+    }
+
     this._migrated = true;
     var state = {
       done: false,
@@ -82,7 +90,15 @@ var DataMigrator = /*#__PURE__*/function () {
       percent: 0 // percentage
 
     };
-    var observer = new _rxjs.Subject();
+    var stateSubject = new _rxjs.Subject();
+    /**
+     * Add to output of RxDatabase.migrationStates
+     */
+
+    var allSubject = (0, _migrationState.getMigrationStateByDatabase)(this.newestCollection.database);
+    var allList = allSubject.getValue().slice(0);
+    allList.push(stateSubject.asObservable());
+    allSubject.next(allList);
     /**
      * TODO this is a side-effect which might throw
      * We did this because it is not possible to create new Observer(async(...))
@@ -102,7 +118,10 @@ var DataMigrator = /*#__PURE__*/function () {
           return prev = cur + prev;
         }, 0);
         state.total = totalCount;
-        observer.next((0, _util.flatClone)(state));
+        stateSubject.next({
+          collection: _this.newestCollection,
+          state: (0, _util.flatClone)(state)
+        });
         var currentCol = oldCols.shift();
         var currentPromise = Promise.resolve();
 
@@ -114,10 +133,13 @@ var DataMigrator = /*#__PURE__*/function () {
                 state.handled++;
                 state[subState.type] = state[subState.type] + 1;
                 state.percent = Math.round(state.handled / state.total * 100);
-                observer.next((0, _util.flatClone)(state));
+                stateSubject.next({
+                  collection: _this.newestCollection,
+                  state: (0, _util.flatClone)(state)
+                });
               }, function (e) {
                 sub.unsubscribe();
-                observer.error(e);
+                stateSubject.error(e);
               }, function () {
                 sub.unsubscribe();
                 res();
@@ -135,12 +157,17 @@ var DataMigrator = /*#__PURE__*/function () {
       }).then(function () {
         state.done = true;
         state.percent = 100;
-        observer.next((0, _util.flatClone)(state));
-        observer.complete();
+        stateSubject.next({
+          collection: _this.newestCollection,
+          state: (0, _util.flatClone)(state)
+        });
+        stateSubject.complete();
       });
     })();
 
-    return observer.asObservable();
+    return stateSubject.pipe((0, _operators.map)(function (withCollection) {
+      return withCollection.state;
+    }));
   };
 
   _proto.migratePromise = function migratePromise(batchSize) {
