@@ -149,7 +149,8 @@ jobs:
           npm install
           npm run build
       - name: electron install
-        run: cd ./examples/electron && npm install > "/dev/null" 2>&1
+        working-directory: ./examples/electron
+        run: npm install > "/dev/null" 2>&1
 
       - name: electron test
         uses: GabrielBB/xvfb-action@v1.4
@@ -158,7 +159,8 @@ jobs:
           run: bash retry-tests.bash
 
       - name: electron-remote install
-        run: cd ./examples/electron-remote && npm install > "/dev/null" 2>&1
+        working-directory: ./examples/electron-remote
+        run: npm install > "/dev/null" 2>&1
 
       - name: electron-remote test
         uses: GabrielBB/xvfb-action@v1.4
