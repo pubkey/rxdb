@@ -155,7 +155,6 @@ jobs:
       - name: electron test
         uses: GabrielBB/xvfb-action@v1.4
         with:
-          # bash retry-tests.bash
           working-directory: ./examples/electron
           run: npm run test
 
@@ -166,7 +165,6 @@ jobs:
       - name: electron-remote test
         uses: GabrielBB/xvfb-action@v1.4
         with:
-          # bash retry-tests.bash
           working-directory: ./examples/electron-remote
           run: npm run test
 

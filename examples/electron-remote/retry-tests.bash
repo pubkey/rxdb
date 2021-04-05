@@ -5,7 +5,7 @@
 n=0
 until [ "$n" -ge 3 ]
 do
-   npm run test && break && exit 0
+   npm run test && exit 0
    n=$((n+1)) 
    sleep 5
 done
