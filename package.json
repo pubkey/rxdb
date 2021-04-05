@@ -214,7 +214,7 @@
     "terser-webpack-plugin": "4.2.3",
     "ts-node": "9.1.1",
     "tslint": "6.1.3",
-    "typescript": "4.1.5",
+    "typescript": "4.2.3",
     "walk-sync": "2.2.0",
     "watch": "1.0.2",
     "watchify": "4.0.0",

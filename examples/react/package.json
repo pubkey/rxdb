@@ -14,7 +14,7 @@
     "rxdb": "file:rxdb-local.tgz"
   },
   "devDependencies": {
-    "react-scripts": "3.4.4",
+    "react-scripts": "4.0.3",
     "rimraf": "3.0.2",
     "testcafe": "1.13.0",
     "local-web-server": "4.2.1"
