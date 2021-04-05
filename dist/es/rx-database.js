@@ -358,6 +358,10 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
 
   _proto.waitForLeadership = function waitForLeadership() {
     throw pluginMissing('leader-election');
+  };
+
+  _proto.migrationStates = function migrationStates() {
+    throw pluginMissing('migration');
   }
   /**
    * destroys the database-instance and all collections

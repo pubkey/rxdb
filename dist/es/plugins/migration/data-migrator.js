@@ -20,6 +20,8 @@ import { runPluginHooks, runAsyncPluginHooks } from '../../hooks';
 import { getPreviousVersions } from '../../rx-schema';
 import { createCrypter } from '../../crypter';
 import { _handleToPouch, _handleFromPouch } from '../../rx-collection-helper';
+import { getMigrationStateByDatabase } from './migration-state';
+import { map } from 'rxjs/operators';
 export var DataMigrator = /*#__PURE__*/function () {
   function DataMigrator(newestCollection, migrationStrategies) {
     this._migrated = false;
@@ -36,7 +38,11 @@ export var DataMigrator = /*#__PURE__*/function () {
     var _this = this;
 
     var batchSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
-    if (this._migrated) throw newRxError('DM1');
+
+    if (this._migrated) {
+      throw newRxError('DM1');
+    }
+
     this._migrated = true;
     var state = {
       done: false,
@@ -52,7 +58,15 @@ export var DataMigrator = /*#__PURE__*/function () {
       percent: 0 // percentage
 
     };
-    var observer = new Subject();
+    var stateSubject = new Subject();
+    /**
+     * Add to output of RxDatabase.migrationStates
+     */
+
+    var allSubject = getMigrationStateByDatabase(this.newestCollection.database);
+    var allList = allSubject.getValue().slice(0);
+    allList.push(stateSubject.asObservable());
+    allSubject.next(allList);
     /**
      * TODO this is a side-effect which might throw
      * We did this because it is not possible to create new Observer(async(...))
@@ -72,7 +86,10 @@ export var DataMigrator = /*#__PURE__*/function () {
           return prev = cur + prev;
         }, 0);
         state.total = totalCount;
-        observer.next(flatClone(state));
+        stateSubject.next({
+          collection: _this.newestCollection,
+          state: flatClone(state)
+        });
         var currentCol = oldCols.shift();
         var currentPromise = Promise.resolve();
 
@@ -84,10 +101,13 @@ export var DataMigrator = /*#__PURE__*/function () {
                 state.handled++;
                 state[subState.type] = state[subState.type] + 1;
                 state.percent = Math.round(state.handled / state.total * 100);
-                observer.next(flatClone(state));
+                stateSubject.next({
+                  collection: _this.newestCollection,
+                  state: flatClone(state)
+                });
               }, function (e) {
                 sub.unsubscribe();
-                observer.error(e);
+                stateSubject.error(e);
               }, function () {
                 sub.unsubscribe();
                 res();
@@ -105,12 +125,17 @@ export var DataMigrator = /*#__PURE__*/function () {
       }).then(function () {
         state.done = true;
         state.percent = 100;
-        observer.next(flatClone(state));
-        observer.complete();
+        stateSubject.next({
+          collection: _this.newestCollection,
+          state: flatClone(state)
+        });
+        stateSubject.complete();
       });
     })();
 
-    return observer.asObservable();
+    return stateSubject.pipe(map(function (withCollection) {
+      return withCollection.state;
+    }));
   };
 
   _proto.migratePromise = function migratePromise(batchSize) {

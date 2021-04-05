@@ -1728,6 +1728,19 @@ migrationState$.subscribe(
 <pre><code class="lang-js">  <span class="hljs-keyword">const</span> migrationPromise = messageCol.migratePromise(<span class="hljs-number">10</span>);
   <span class="hljs-keyword">await</span> migratePromise;
 </code></pre>
+<h2 id="migrationstates">migrationStates()</h2>
+<p><code>RxDatabase.migrationStates()</code> returns an <code>Observable</code> that emits all events to the ongoing migrations of all <code>RxCollection</code>s. Use it to log the current state of the overall migration process or to show a loading state to your user.</p>
+<pre><code class="lang-js"><span class="hljs-keyword">const</span> allStatesObservable = myDatabase.migrationStates();
+allStatesObservable.subscribe(allStates =&gt; {
+  allStates.forEach(collectionState =&gt; {
+    <span class="hljs-built_in">console</span>.log(
+      <span class="hljs-string">&apos;migration state of &apos;</span> +
+      collectionState.collection.name + <span class="hljs-string">&apos;: &apos;</span> +
+      collectionState.done
+    );
+  });
+});
+</code></pre>
 <h2 id="hint">Hint</h2>
 <p>If your migration takes a long time, combine it with the leaderElection to make sure you don&apos;t waste your users&apos; resources by running it in 2 open tabs.</p>
 <hr>
@@ -1775,7 +1788,7 @@ migrationState$.subscribe(
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"DataMigration","level":"1.12","depth":1,"next":{"title":"LeaderElection","level":"1.13","depth":1,"path":"leader-election.md","ref":"./leader-election.md","articles":[]},"previous":{"title":"Population","level":"1.11","depth":1,"path":"population.md","ref":"./population.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"data-migration.md","mtime":"2021-03-31T16:23:29.111Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-03-31T16:26:56.897Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"DataMigration","level":"1.12","depth":1,"next":{"title":"LeaderElection","level":"1.13","depth":1,"path":"leader-election.md","ref":"./leader-election.md","articles":[]},"previous":{"title":"Population","level":"1.11","depth":1,"path":"population.md","ref":"./population.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"data-migration.md","mtime":"2021-04-05T02:29:13.172Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-04-05T02:32:38.717Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

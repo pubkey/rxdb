@@ -1,9 +1,22 @@
+import { combineLatest } from 'rxjs';
+import { shareReplay, switchMap } from 'rxjs/operators';
 import { mustMigrate, createDataMigrator } from './data-migrator';
+import { getMigrationStateByDatabase, onDatabaseDestroy } from './migration-state';
 export var DATA_MIGRATOR_BY_COLLECTION = new WeakMap();
 export var RxDBMigrationPlugin = {
   name: 'migration',
   rxdb: true,
+  hooks: {
+    preDestroyRxDatabase: onDatabaseDestroy
+  },
   prototypes: {
+    RxDatabase: function RxDatabase(proto) {
+      proto.migrationStates = function () {
+        return getMigrationStateByDatabase(this).pipe(switchMap(function (list) {
+          return combineLatest(list);
+        }), shareReplay(1));
+      };
+    },
     RxCollection: function RxCollection(proto) {
       proto.getDataMigrator = function () {
         if (!DATA_MIGRATOR_BY_COLLECTION.has(this)) {
