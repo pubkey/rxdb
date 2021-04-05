@@ -1,16 +1,38 @@
+import {
+    combineLatest,
+    Observable
+} from 'rxjs';
+import { shareReplay, switchMap } from 'rxjs/operators';
 import type {
     RxPlugin,
-    RxCollection
+    RxCollection,
+    RxDatabase,
+    AllMigrationStates
 } from '../../types';
-import { mustMigrate, DataMigrator, createDataMigrator } from './data-migrator';
-
+import {
+    mustMigrate,
+    DataMigrator,
+    createDataMigrator
+} from './data-migrator';
+import { getMigrationStateByDatabase, onDatabaseDestroy } from './migration-state';
 
 export const DATA_MIGRATOR_BY_COLLECTION: WeakMap<RxCollection, DataMigrator> = new WeakMap();
 
 export const RxDBMigrationPlugin: RxPlugin = {
     name: 'migration',
     rxdb: true,
+    hooks: {
+        preDestroyRxDatabase: onDatabaseDestroy
+    },
     prototypes: {
+        RxDatabase: (proto: any) => {
+            proto.migrationStates = function (this: RxDatabase): Observable<AllMigrationStates> {
+                return getMigrationStateByDatabase(this).pipe(
+                    switchMap(list => combineLatest(list)),
+                    shareReplay(1)
+                );
+            };
+        },
         RxCollection: (proto: any) => {
             proto.getDataMigrator = function (this: RxCollection): DataMigrator {
                 if (!DATA_MIGRATOR_BY_COLLECTION.has(this)) {

@@ -30,6 +30,7 @@ import {
     SimpleHumanV3DocumentType,
     HumanDocumentType
 } from '../helper/schema-objects';
+import { AllMigrationStates } from '../../src/types';
 
 config.parallel('data-migration.test.js', () => {
     describe('.create() with migrationStrategies', () => {
@@ -731,6 +732,53 @@ config.parallel('data-migration.test.js', () => {
                 assert.strictEqual(needed, true);
                 col.database.destroy();
             });
+        });
+    });
+    describe('RxDatabase.migrationStates()', () => {
+        it('should emit the ongoing migration state', async () => {
+            const db = await createRxDatabase({
+                name: randomCouchString(10),
+                adapter: 'memory'
+            });
+            const migrationStrategies = {
+                1: () => { },
+                2: () => { },
+                3: () => { }
+            };
+
+            const emitted: AllMigrationStates[] = [];
+            db.migrationStates().subscribe(x => emitted.push(x));
+
+            await db.addCollections({
+                foobar: {
+                    schema: schemas.simpleHumanV3,
+                    autoMigrate: false,
+                    migrationStrategies
+                },
+                foobar2: {
+                    schema: schemas.simpleHumanV3,
+                    autoMigrate: false,
+                    migrationStrategies
+                }
+            });
+
+            await Promise.all([
+                db.foobar.migrate().toPromise(),
+                db.foobar2.migrate().toPromise()
+            ]);
+
+            assert.strictEqual(emitted.length, 2);
+
+            const endStates = emitted.map(list => list.map(i => i.state)).pop();
+            if (!endStates) {
+                throw new Error('endStates missing');
+            }
+            assert.strictEqual(endStates.length, 2);
+            endStates.forEach(s => {
+                assert.strictEqual(s.done, true);
+            });
+
+            db.destroy();
         });
     });
     describe('issues', () => {

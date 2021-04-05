@@ -2,6 +2,9 @@
 
 ### X.X.X (coming soon)
 
+Features:
+  - Added `RxDatabase.migrationStates()` which returns an observable to observe the state of all ongoing migrations.
+
 Bugfixes:
   - Ensure every background task is done when `RxDatabase.destroy()` resolves. [#2938](https://github.com/pubkey/rxdb/issues/2938)
 

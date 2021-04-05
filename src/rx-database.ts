@@ -15,7 +15,8 @@ import type {
     RxDatabaseCreator,
     RxDumpDatabase,
     RxDumpDatabaseAny,
-    RxCollectionCreatorBase
+    RxCollectionCreatorBase,
+    AllMigrationStates
 } from './types';
 
 import {
@@ -393,6 +394,10 @@ export class RxDatabaseBase<
      */
     public waitForLeadership(): Promise<boolean> {
         throw pluginMissing('leader-election');
+    }
+
+    public migrationStates(): Observable<AllMigrationStates> {
+        throw pluginMissing('migration');
     }
 
     /**

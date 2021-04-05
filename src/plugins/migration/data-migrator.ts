@@ -58,6 +58,8 @@ import {
     _handleToPouch,
     _handleFromPouch
 } from '../../rx-collection-helper';
+import { getMigrationStateByDatabase, MigrationStateWithCollection } from './migration-state';
+import { map } from 'rxjs/operators';
 
 export class DataMigrator {
 
@@ -78,8 +80,9 @@ export class DataMigrator {
     private _migrated: boolean = false;
     private _migratePromise?: Promise<any>;
     migrate(batchSize: number = 10): Observable<MigrationState> {
-        if (this._migrated)
+        if (this._migrated) {
             throw newRxError('DM1');
+        }
         this._migrated = true;
 
         const state = {
@@ -91,7 +94,15 @@ export class DataMigrator {
             percent: 0 // percentage
         };
 
-        const observer: Subject<MigrationState> = new Subject();
+        const stateSubject: Subject<MigrationStateWithCollection> = new Subject();
+
+        /**
+         * Add to output of RxDatabase.migrationStates
+         */
+        const allSubject = getMigrationStateByDatabase(this.newestCollection.database);
+        const allList = allSubject.getValue().slice(0);
+        allList.push(stateSubject.asObservable());
+        allSubject.next(allList);
 
         /**
          * TODO this is a side-effect which might throw
@@ -112,7 +123,10 @@ export class DataMigrator {
                     const totalCount: number = countAll
                         .reduce((cur, prev) => prev = cur + prev, 0);
                     state.total = totalCount;
-                    observer.next(flatClone(state));
+                    stateSubject.next({
+                        collection: this.newestCollection,
+                        state: flatClone(state)
+                    });
                     let currentCol = oldCols.shift();
 
                     let currentPromise = Promise.resolve();
@@ -128,11 +142,14 @@ export class DataMigrator {
                                         state.handled++;
                                         (state as any)[subState.type] = (state as any)[subState.type] + 1;
                                         state.percent = Math.round(state.handled / state.total * 100);
-                                        observer.next(flatClone(state));
+                                        stateSubject.next({
+                                            collection: this.newestCollection,
+                                            state: flatClone(state)
+                                        });
                                     },
                                     (e: any) => {
                                         sub.unsubscribe();
-                                        observer.error(e);
+                                        stateSubject.error(e);
                                     }, () => {
                                         sub.unsubscribe();
                                         res();
@@ -146,13 +163,18 @@ export class DataMigrator {
                 .then(() => {
                     state.done = true;
                     state.percent = 100;
-                    observer.next(flatClone(state));
-                    observer.complete();
+                    stateSubject.next({
+                        collection: this.newestCollection,
+                        state: flatClone(state)
+                    });
+                    stateSubject.complete();
                 });
         })();
 
 
-        return observer.asObservable();
+        return stateSubject.pipe(
+            map(withCollection => withCollection.state)
+        );
     }
 
     migratePromise(batchSize: number): Promise<any> {

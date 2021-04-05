@@ -134,6 +134,25 @@ If you don't want to show the state to the user, you can also use `.migratePromi
 ```
 
 
+
+## migrationStates()
+
+`RxDatabase.migrationStates()` returns an `Observable` that emits all events to the ongoing migrations of all `RxCollection`s. Use it to log the current state of the overall migration process or to show a loading state to your user.
+
+```js
+const allStatesObservable = myDatabase.migrationStates();
+allStatesObservable.subscribe(allStates => {
+  allStates.forEach(collectionState => {
+    console.log(
+      'migration state of ' +
+      collectionState.collection.name + ': ' +
+      collectionState.done
+    );
+  });
+});
+```
+
+
 ## Hint
 If your migration takes a long time, combine it with the leaderElection to make sure you don't waste your users' resources by running it in 2 open tabs.
 
