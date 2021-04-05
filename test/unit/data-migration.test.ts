@@ -30,7 +30,6 @@ import {
     SimpleHumanV3DocumentType,
     HumanDocumentType
 } from '../helper/schema-objects';
-import { AllMigrationStates } from '../../src/types';
 
 config.parallel('data-migration.test.js', () => {
     describe('.create() with migrationStrategies', () => {
@@ -746,7 +745,7 @@ config.parallel('data-migration.test.js', () => {
                 3: () => { }
             };
 
-            const emitted: AllMigrationStates[] = [];
+            const emitted: any[] = [];
             db.migrationStates().subscribe(x => emitted.push(x));
 
             await db.addCollections({
