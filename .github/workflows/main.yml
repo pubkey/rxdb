@@ -135,7 +135,7 @@ jobs:
         run: npm run check-types
 
   electron:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: install dependencies
@@ -157,7 +157,7 @@ jobs:
         with:
           # bash retry-tests.bash
           working-directory: ./examples/electron
-          run: npm run  test
+          run: npm run test
 
       - name: electron-remote install
         working-directory: ./examples/electron-remote
