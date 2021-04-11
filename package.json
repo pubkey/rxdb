@@ -184,7 +184,7 @@
     "karma-mocha": "2.0.1",
     "karma-opera-launcher": "1.0.0",
     "karma-safari-launcher": "1.0.0",
-    "leveldown": "5.6.0",
+    "leveldown": "6.0.0",
     "madge": "4.0.2",
     "memdown": "5.1.0",
     "mocha": "8.3.2",
