@@ -147,4 +147,17 @@ Object.keys(_replicationGraphql).forEach(function (key) {
   });
 });
 
+var _server = require("./plugins/server");
+
+Object.keys(_server).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _server[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _server[key];
+    }
+  });
+});
+
 //# sourceMappingURL=index.d.js.map

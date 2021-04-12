@@ -1,7 +1,7 @@
 import { IdleQueue } from 'custom-idle-queue';
 import { BroadcastChannel } from 'broadcast-channel';
 import type { LeaderElector } from './plugins/leader-election';
-import type { CollectionsOfDatabase, PouchDBInstance, RxDatabase, RxCollectionCreator, RxJsonSchema, RxCollection, PouchSettings, ServerOptions, RxDatabaseCreator, RxDumpDatabase, RxDumpDatabaseAny, RxCollectionCreatorBase, AllMigrationStates } from './types';
+import type { CollectionsOfDatabase, PouchDBInstance, RxDatabase, RxCollectionCreator, RxJsonSchema, RxCollection, PouchSettings, ServerOptions, RxDatabaseCreator, RxDumpDatabase, RxDumpDatabaseAny, RxCollectionCreatorBase, AllMigrationStates, ServerResponse } from './types';
 import { Subject, Subscription, Observable } from 'rxjs';
 import { RxChangeEvent } from './rx-change-event';
 import { RxStorage } from './rx-storate.interface';
@@ -93,11 +93,7 @@ export declare class RxDatabaseBase<Collections = CollectionsOfDatabase, RxStora
     /**
      * spawn server
      */
-    server(_options?: ServerOptions): {
-        app: any;
-        pouchApp: any;
-        server: any;
-    };
+    server(_options?: ServerOptions): ServerResponse;
     leaderElector(): LeaderElector;
     isLeader(): boolean;
     /**
