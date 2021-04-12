@@ -146,7 +146,7 @@ allStatesObservable.subscribe(allStates => {
     console.log(
       'migration state of ' +
       collectionState.collection.name + ': ' +
-      collectionState.done
+      collectionState.state.done
     );
   });
 });
