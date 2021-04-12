@@ -18,7 +18,7 @@
   When you reproduce the bug in our bug-template
   you do not have to wait for the maintainers answer
   and very likely solve your problem in the next 15 minutes.
-  https://github.com/pubkey/rxdb/blob/master/test/unit/bug-report.test.js
+  https://github.com/pubkey/rxdb/blob/master/test/unit/bug-report.test.ts
 -->
 
 ## Case
@@ -45,5 +45,5 @@
   BUGS WONT BE TOUCHED BY THE MAINTAINER UNTIL THERE IS SOME CODE!
 
   OPTIMALLY YOU SHOULD ADD A PULL-REQUEST WHICH REPRODUCES THE BUG
-  BY MODIFYING THIS FILE: https://github.com/pubkey/rxdb/blob/master/test/unit/bug-report.test.js
+  BY MODIFYING THIS FILE: https://github.com/pubkey/rxdb/blob/master/test/unit/bug-report.test.ts
 -->

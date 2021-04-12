@@ -4,7 +4,7 @@
   "dependencies": {
     "async-test-util": "1.7.3",
     "babel-polyfill": "6.26.0",
-    "concurrently": "6.0.0",
+    "concurrently": "6.0.1",
     "pouchdb-adapter-http": "7.2.2",
     "pouchdb-adapter-idb": "7.2.2",
     "pouchdb-replication": "7.2.2",
@@ -16,7 +16,7 @@
   "devDependencies": {
     "react-scripts": "4.0.3",
     "rimraf": "3.0.2",
-    "testcafe": "1.13.0",
+    "testcafe": "1.14.0",
     "local-web-server": "4.2.1"
   },
   "scripts": {
