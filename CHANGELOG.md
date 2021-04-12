@@ -2,6 +2,8 @@
 
 ### X.X.X (coming soon)
 
+### 9.16.0 (12 April 2021)
+
 Features:
   - Added `RxDatabase.migrationStates()` which returns an observable to observe the state of all ongoing migrations.
   - Added `startupPromise` to the returned object of `RxDatabase().server()`
