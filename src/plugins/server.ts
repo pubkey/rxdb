@@ -8,7 +8,9 @@ import {
     newRxError
 } from '../rx-error';
 import type {
-    RxDatabase, RxPlugin
+    RxDatabase,
+    RxPlugin,
+    ServerResponse
 } from '../types';
 
 import {
@@ -93,7 +95,8 @@ export function spawnServer(
         cors = false,
         startServer = true,
         pouchdbExpressOptions = {}
-    }) {
+    }
+): ServerResponse {
     const db = this;
     const collectionsPath = startServer ? path : '/';
     if (!SERVERS_OF_DB.has(db))
@@ -129,15 +132,35 @@ export function spawnServer(
     app.use(collectionsPath, pouchApp);
 
     let server = null;
+    let startupPromise: Promise<void> = Promise.resolve();
     if (startServer) {
-        server = app.listen(port);
+        /**
+         * Listen for errors on server startup.
+         * TODO in the next major release we should make db.server() async
+         * and properly handle the error instead of returning a startupPromise
+         */
+        startupPromise = new Promise((res, rej) => {
+            let answered = false;
+            server = app.listen(port, () => {
+                if (!answered) {
+                    answered = true;
+                    res();
+                }
+            });
+            server.on('error', (err) => {
+                if (!answered) {
+                    answered = true;
+                    rej(err);
+                }
+            });
+        });
         SERVERS_OF_DB.get(db).push(server);
 
         /**
          * When the database has no documents, there is no db file
          * and so the replication would not work.
          * This is a hack which ensures that the couchdb instance exists
-         * and we can replicate even if there is no document.
+         * and we can replicate even if there is no document in the beginning.
          */
         Promise.all(
             Object.values(db.collections).map(async (collection) => {
@@ -151,11 +174,13 @@ export function spawnServer(
         );
     }
 
-    return {
+    const response: ServerResponse = {
         app,
         pouchApp,
-        server
+        server,
+        startupPromise
     };
+    return response;
 }
 
 /**
@@ -182,25 +207,17 @@ export function onDestroy(db: RxDatabase) {
     }
 }
 
-
-export const rxdb = true;
-export const prototypes = {
-    RxDatabase: (proto: any) => {
-        proto.server = spawnServer;
-    }
-};
-
-export const hooks = {
-    preDestroyRxDatabase: onDestroy,
-    preCreateRxCollection: ensureNoMoreCollections
-};
-
-export const overwritable = {};
-
 export const RxDBServerPlugin: RxPlugin = {
     name: 'server',
-    rxdb,
-    prototypes,
-    overwritable,
-    hooks
+    rxdb: true,
+    prototypes: {
+        RxDatabase: (proto: any) => {
+            proto.server = spawnServer;
+        }
+    },
+    overwritable: {},
+    hooks: {
+        preDestroyRxDatabase: onDestroy,
+        preCreateRxCollection: ensureNoMoreCollections
+    }
 };

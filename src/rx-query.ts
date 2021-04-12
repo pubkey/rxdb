@@ -54,6 +54,7 @@ const newQueryID = function (): number {
 
 export class RxQueryBase<
     RxDocumentType = any,
+    // TODO also pass DocMethods here
     RxQueryResult = RxDocument<RxDocumentType[]> | RxDocument<RxDocumentType>
     > {
 

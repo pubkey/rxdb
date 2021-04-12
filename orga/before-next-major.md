@@ -85,6 +85,11 @@ The words `dump()` and `importDump()` are confusing. Name it import/export or st
 
 This should be the default. `skipIfSame=true`
 
+## db.server() should be async
+
+`db.server()` should be async and reject the promise when the startup fails, for example because the port is already used.
+
+
 # Maybe
 
 ## Use Proxy instead of getters/setter on RxDocument

@@ -16,7 +16,8 @@ import type {
     RxDumpDatabase,
     RxDumpDatabaseAny,
     RxCollectionCreatorBase,
-    AllMigrationStates
+    AllMigrationStates,
+    ServerResponse
 } from './types';
 
 import {
@@ -374,11 +375,7 @@ export class RxDatabaseBase<
     /**
      * spawn server
      */
-    server(_options?: ServerOptions): {
-        app: any;
-        pouchApp: any;
-        server: any;
-    } {
+    server(_options?: ServerOptions): ServerResponse {
         throw pluginMissing('server');
     }
 

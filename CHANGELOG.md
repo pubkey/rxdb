@@ -4,6 +4,7 @@
 
 Features:
   - Added `RxDatabase.migrationStates()` which returns an observable to observe the state of all ongoing migrations.
+  - Added `startupPromise` to the returned object of `RxDatabase().server()`
 
 Bugfixes:
   - Ensure every background task is done when `RxDatabase.destroy()` resolves. [#2938](https://github.com/pubkey/rxdb/issues/2938)
