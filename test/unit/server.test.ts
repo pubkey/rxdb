@@ -1,6 +1,6 @@
 import assert from 'assert';
 import config from './config';
-import AsyncTestUtil, { wait } from 'async-test-util';
+import AsyncTestUtil from 'async-test-util';
 import request from 'request-promise-native';
 import requestR from 'request';
 
