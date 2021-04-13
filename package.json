@@ -156,7 +156,7 @@
     "brfs": "2.0.2",
     "browserify": "17.0.0",
     "child-process-promise": "2.2.1",
-    "concurrently": "6.0.1",
+    "concurrently": "6.0.2",
     "convert-hrtime": "3.0.0",
     "cross-env": "7.0.3",
     "delete": "1.1.0",
@@ -203,7 +203,7 @@
     "request-promise": "4.2.6",
     "request-promise-native": "1.0.9",
     "rimraf": "3.0.2",
-    "rollup": "2.45.1",
+    "rollup": "2.45.2",
     "rollup-plugin-commonjs": "10.1.0",
     "rollup-plugin-node-resolve": "5.2.0",
     "rxjs": "6.6.7",
@@ -219,7 +219,7 @@
     "watch": "1.0.2",
     "watchify": "4.0.0",
     "webpack": "4.44.1",
-    "webpack-bundle-analyzer": "4.4.0",
+    "webpack-bundle-analyzer": "4.4.1",
     "webpack-cli": "4.6.0"
   }
 }
