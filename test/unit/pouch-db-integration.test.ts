@@ -582,7 +582,7 @@ config.parallel('pouch-db-integration.test.js', () => {
 
             const text = 'lorem ipsum dolor';
             const mimeType = 'text/plain';
-            const blobBuffer = blobBufferUtil.createBlobBuffer([text], {
+            const blobBuffer = blobBufferUtil.createBlobBuffer(text, {
                 type: mimeType
             } as any);
 

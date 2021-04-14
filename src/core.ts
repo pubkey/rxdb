@@ -148,4 +148,6 @@ export type {
     ServerOptions,
     SyncOptions,
     SyncOptionsGraphQL,
+    MigrationStrategies,
+    WithAttachmentsData
 } from './types';

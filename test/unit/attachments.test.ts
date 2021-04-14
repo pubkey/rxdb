@@ -11,12 +11,10 @@ import {
     randomCouchString,
     RxDocument,
     RxJsonSchema,
-    blobBufferUtil
-} from '../../plugins/core';
-import {
+    blobBufferUtil,
     MigrationStrategies,
     WithAttachmentsData
-} from '../../src/types';
+} from '../../plugins/core';
 
 config.parallel('attachments.test.ts', () => {
     describe('.putAttachment()', () => {
