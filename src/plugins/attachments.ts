@@ -23,6 +23,7 @@ import type {
     PouchAttachmentMeta
 } from '../types';
 import { pouchAttachmentBinaryHash } from '../pouch-db';
+import { RxSchema } from '../rx-schema';
 
 function ensureSchemaSupportsAttachments(doc: any) {
     const schemaJson = doc.collection.schema.jsonSchema;
@@ -103,7 +104,7 @@ export class RxAttachment {
     getData(): Promise<BlobBuffer> {
         return this.doc.collection.pouch.getAttachment(this.doc.primary, this.id)
             .then((data: any) => {
-                if (shouldEncrypt(this.doc)) {
+                if (shouldEncrypt(this.doc.collection.schema)) {
                     return blobBufferUtil.toString(data)
                         .then(dataString => blobBufferUtil.createBlobBuffer(
                             this.doc.collection._crypter._decryptValue(dataString),
@@ -133,8 +134,8 @@ export function fromPouchDocument(
     });
 }
 
-function shouldEncrypt(doc: any) {
-    return !!doc.collection.schema.jsonSchema.attachments.encrypted;
+function shouldEncrypt(schema: RxSchema): boolean {
+    return !!(schema.jsonSchema.attachments && schema.jsonSchema.attachments.encrypted);
 }
 
 export async function putAttachment(
@@ -152,7 +153,7 @@ export async function putAttachment(
 ): Promise<RxAttachment> {
     ensureSchemaSupportsAttachments(this);
 
-    if (shouldEncrypt(this)) {
+    if (shouldEncrypt(this.collection.schema)) {
         data = (this.collection._crypter as any)._encryptValue(data);
     }
 
@@ -245,7 +246,7 @@ export async function preMigrateDocument(
 ): Promise<void> {
     const attachments = data.docData._attachments;
     if (attachments) {
-        const mustDecrypt = !!data.oldCollection.schema.jsonSchema.attachments?.encrypted;
+        const mustDecrypt = !!shouldEncrypt(data.oldCollection.schema);
         const newAttachments: { [attachmentId: string]: PouchAttachmentWithData } = {};
         await Promise.all(
             Object.keys(attachments).map(async (attachmentId) => {
