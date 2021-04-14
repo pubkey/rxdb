@@ -9,10 +9,8 @@
  *
  */
 import { Observable } from 'rxjs';
-import type { RxCollection, RxDatabase, MigrationState, PouchDBInstance, NumberFunctionMap } from '../../types';
+import type { RxCollection, RxDatabase, MigrationState, NumberFunctionMap, OldRxCollection } from '../../types';
 import { RxSchema } from '../../rx-schema';
-import type { KeyCompressor } from '../key-compression';
-import { Crypter } from '../../crypter';
 export declare class DataMigrator {
     newestCollection: RxCollection;
     migrationStrategies: NumberFunctionMap;
@@ -25,52 +23,40 @@ export declare class DataMigrator {
     migrate(batchSize?: number): Observable<MigrationState>;
     migratePromise(batchSize: number): Promise<any>;
 }
-export interface OldCollection {
-    version: number;
-    schema: RxSchema;
-    pouchdb: PouchDBInstance;
-    dataMigrator: DataMigrator;
-    _crypter: Crypter;
-    _keyCompressor?: KeyCompressor;
-    newestCollection: RxCollection;
-    database: RxDatabase;
-    _migrate?: boolean;
-    _migratePromise?: Promise<any>;
-}
-export declare function createOldCollection(version: number, schemaObj: any, dataMigrator: DataMigrator): OldCollection;
+export declare function createOldCollection(version: number, schemaObj: any, dataMigrator: DataMigrator): OldRxCollection;
 /**
  * get an array with OldCollection-instances from all existing old pouchdb-instance
  */
-export declare function _getOldCollections(dataMigrator: DataMigrator): Promise<OldCollection[]>;
+export declare function _getOldCollections(dataMigrator: DataMigrator): Promise<OldRxCollection[]>;
 /**
  * returns true if a migration is needed
  */
 export declare function mustMigrate(dataMigrator: DataMigrator): Promise<boolean>;
 export declare function createDataMigrator(newestCollection: RxCollection, migrationStrategies: NumberFunctionMap): DataMigrator;
-export declare function _runStrategyIfNotNull(oldCollection: OldCollection, version: number, docOrNull: any | null): Promise<object | null>;
-export declare function getBatchOfOldCollection(oldCollection: OldCollection, batchSize: number): Promise<any[]>;
+export declare function runStrategyIfNotNull(oldCollection: OldRxCollection, version: number, docOrNull: any | null): Promise<any | null>;
+export declare function getBatchOfOldCollection(oldCollection: OldRxCollection, batchSize: number): Promise<any[]>;
 /**
  * runs the doc-data through all following migrationStrategies
  * so it will match the newest schema.
  * @throws Error if final doc does not match final schema or migrationStrategy crashes
  * @return final object or null if migrationStrategy deleted it
  */
-export declare function migrateDocumentData(oldCollection: OldCollection, docData: any): Promise<any | null>;
+export declare function migrateDocumentData(oldCollection: OldRxCollection, docData: any): Promise<any | null>;
 export declare function isDocumentDataWithoutRevisionEqual<T>(doc1: T, doc2: T): boolean;
 /**
  * transform docdata and save to new collection
  * @return status-action with status and migrated document
  */
-export declare function _migrateDocument(oldCollection: OldCollection, docData: any): Promise<{
+export declare function _migrateDocument(oldCollection: OldRxCollection, docData: any): Promise<{
     type: string;
     doc: {};
 }>;
 /**
  * deletes this.pouchdb and removes it from the database.collectionsCollection
  */
-export declare function deleteOldCollection(oldCollection: OldCollection): Promise<void>;
+export declare function deleteOldCollection(oldCollection: OldRxCollection): Promise<void>;
 /**
  * runs the migration on all documents and deletes the pouchdb afterwards
  */
-export declare function migrateOldCollection(oldCollection: OldCollection, batchSize?: number): Observable<any>;
-export declare function migratePromise(oldCollection: OldCollection, batchSize?: number): Promise<any>;
+export declare function migrateOldCollection(oldCollection: OldRxCollection, batchSize?: number): Observable<any>;
+export declare function migratePromise(oldCollection: OldRxCollection, batchSize?: number): Promise<any>;

@@ -160,4 +160,17 @@ Object.keys(_server).forEach(function (key) {
   });
 });
 
+var _migration = require("./plugins/migration");
+
+Object.keys(_migration).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _migration[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _migration[key];
+    }
+  });
+});
+
 //# sourceMappingURL=index.d.js.map

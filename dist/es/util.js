@@ -374,4 +374,63 @@ export function isFolderPath(name) {
     return false;
   }
 }
+export var blobBufferUtil = {
+  /**
+   * depending if we are on node or browser,
+   * we have to use Buffer(node) or Blob(browser)
+   */
+  createBlobBuffer: function createBlobBuffer(data, type) {
+    var blobBuffer;
+
+    if (isElectronRenderer) {
+      // if we are inside of electron-renderer, always use the node-buffer
+      return Buffer.from(data, {
+        type: type
+      });
+    }
+
+    try {
+      // for browsers
+      blobBuffer = new Blob([data], {
+        type: type
+      });
+    } catch (e) {
+      // for node
+      blobBuffer = Buffer.from(data, {
+        type: type
+      });
+    }
+
+    return blobBuffer;
+  },
+  toString: function toString(blobBuffer) {
+    if (blobBuffer instanceof Buffer) {
+      // node
+      return nextTick().then(function () {
+        return blobBuffer.toString();
+      });
+    }
+
+    return new Promise(function (res) {
+      // browsers
+      var reader = new FileReader();
+      reader.addEventListener('loadend', function (e) {
+        var text = e.target.result;
+        res(text);
+      });
+      var blobBufferType = Object.prototype.toString.call(blobBuffer);
+      /**
+       * in the electron-renderer we have a typed array insteaf of a blob
+       * so we have to transform it.
+       * @link https://github.com/pubkey/rxdb/issues/1371
+       */
+
+      if (blobBufferType === '[object Uint8Array]') {
+        blobBuffer = new Blob([blobBuffer]);
+      }
+
+      reader.readAsText(blobBuffer);
+    });
+  }
+};
 //# sourceMappingURL=util.js.map

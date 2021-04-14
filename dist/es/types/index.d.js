@@ -11,4 +11,5 @@ export * from './rx-schema'; // plugins
 export * from './plugins/replication';
 export * from './plugins/replication-graphql';
 export * from './plugins/server';
+export * from './plugins/migration';
 //# sourceMappingURL=index.d.js.map

@@ -1,14 +1,4 @@
-/// <reference types="node" />
-/// <reference types="pouchdb-core" />
-import type { RxDocument, RxPlugin } from '../types';
-export declare const blobBufferUtil: {
-    /**
-     * depending if we are on node or browser,
-     * we have to use Buffer(node) or Blob(browser)
-     */
-    createBlobBuffer(data: string, type: string): Buffer;
-    toString(blobBuffer: any): Promise<any>;
-};
+import type { RxDocument, RxPlugin, BlobBuffer, WithAttachments, OldRxCollection } from '../types';
 /**
  * an RxAttachment is basically just the attachment-stub
  * wrapped so that you can access the attachment-data
@@ -25,8 +15,8 @@ export declare class RxAttachment {
     /**
      * returns the data for the attachment
      */
-    getData(): Promise<Buffer | Blob>;
-    getStringData(): Promise<any>;
+    getData(): Promise<BlobBuffer>;
+    getStringData(): Promise<string>;
 }
 export declare function fromPouchDocument(id: string, pouchDocAttachment: any, rxDocument: RxDocument): RxAttachment;
 export declare function putAttachment(this: RxDocument, { id, data, type }: any, 
@@ -43,8 +33,11 @@ export declare function getAttachment(this: RxDocument, id: string): RxAttachmen
  * returns all attachments of the document
  */
 export declare function allAttachments(this: RxDocument): RxAttachment[];
-export declare function preMigrateDocument(action: any): any;
-export declare function postMigrateDocument(action: any): Promise<any>;
+export declare function preMigrateDocument(data: {
+    docData: WithAttachments<any>;
+    oldCollection: OldRxCollection;
+}): Promise<void>;
+export declare function postMigrateDocument(action: any): Promise<void>;
 export declare const rxdb = true;
 export declare const prototypes: {
     RxDocument: (proto: any) => void;

@@ -756,6 +756,12 @@ function runPluginHooks(hookKey, obj) {
     return fun(obj);
   });
 }
+/**
+ * TODO
+ * we should not run the hooks in parallel
+ * this makes stuff unpredictable.
+ */
+
 
 function runAsyncPluginHooks(hookKey, obj) {
   return Promise.all(HOOKS[hookKey].map(function (fun) {
@@ -1090,7 +1096,6 @@ exports.RxDBAdapterCheckPlugin = RxDBAdapterCheckPlugin;
 
 
 },{"../pouch-db":37,"../util":56}],12:[function(require,module,exports){
-(function (Buffer){(function (){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
@@ -1104,7 +1109,7 @@ exports.getAttachment = getAttachment;
 exports.allAttachments = allAttachments;
 exports.preMigrateDocument = preMigrateDocument;
 exports.postMigrateDocument = postMigrateDocument;
-exports.RxDBAttachmentsPlugin = exports.hooks = exports.overwritable = exports.prototypes = exports.rxdb = exports.RxAttachment = exports.blobBufferUtil = void 0;
+exports.RxDBAttachmentsPlugin = exports.hooks = exports.overwritable = exports.prototypes = exports.rxdb = exports.RxAttachment = void 0;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
@@ -1140,67 +1145,6 @@ function resyncRxDocument(doc) {
     doc.$emit(changeEvent);
   });
 }
-
-var blobBufferUtil = {
-  /**
-   * depending if we are on node or browser,
-   * we have to use Buffer(node) or Blob(browser)
-   */
-  createBlobBuffer: function createBlobBuffer(data, type) {
-    var blobBuffer;
-
-    if (_util.isElectronRenderer) {
-      // if we are inside of electron-renderer, always use the node-buffer
-      return Buffer.from(data, {
-        type: type
-      });
-    }
-
-    try {
-      // for browsers
-      blobBuffer = new Blob([data], {
-        type: type
-      });
-    } catch (e) {
-      // for node
-      blobBuffer = Buffer.from(data, {
-        type: type
-      });
-    }
-
-    return blobBuffer;
-  },
-  toString: function toString(blobBuffer) {
-    if (blobBuffer instanceof Buffer) {
-      // node
-      return (0, _util.nextTick)().then(function () {
-        return blobBuffer.toString();
-      });
-    }
-
-    return new Promise(function (res) {
-      // browsers
-      var reader = new FileReader();
-      reader.addEventListener('loadend', function (e) {
-        var text = e.target.result;
-        res(text);
-      });
-      var blobBufferType = Object.prototype.toString.call(blobBuffer);
-      /**
-       * in the electron-renderer we have a typed array insteaf of a blob
-       * so we have to transform it.
-       * @link https://github.com/pubkey/rxdb/issues/1371
-       */
-
-      if (blobBufferType === '[object Uint8Array]') {
-        blobBuffer = new Blob([blobBuffer]);
-      }
-
-      reader.readAsText(blobBuffer);
-    });
-  }
-};
-exports.blobBufferUtil = blobBufferUtil;
 
 var _assignMethodsToAttachment = function _assignMethodsToAttachment(attachment) {
   Object.entries(attachment.doc.collection.attachments).forEach(function (_ref) {
@@ -1255,9 +1199,9 @@ var RxAttachment = /*#__PURE__*/function () {
     var _this2 = this;
 
     return this.doc.collection.pouch.getAttachment(this.doc.primary, this.id).then(function (data) {
-      if (shouldEncrypt(_this2.doc)) {
-        return blobBufferUtil.toString(data).then(function (dataString) {
-          return blobBufferUtil.createBlobBuffer(_this2.doc.collection._crypter._decryptValue(dataString), _this2.type);
+      if (shouldEncrypt(_this2.doc.collection.schema)) {
+        return _util.blobBufferUtil.toString(data).then(function (dataString) {
+          return _util.blobBufferUtil.createBlobBuffer(_this2.doc.collection._crypter._decryptValue(dataString), _this2.type);
         });
       } else return data;
     });
@@ -1265,7 +1209,7 @@ var RxAttachment = /*#__PURE__*/function () {
 
   _proto.getStringData = function getStringData() {
     return this.getData().then(function (bufferBlob) {
-      return blobBufferUtil.toString(bufferBlob);
+      return _util.blobBufferUtil.toString(bufferBlob);
     });
   };
 
@@ -1285,8 +1229,8 @@ function fromPouchDocument(id, pouchDocAttachment, rxDocument) {
   });
 }
 
-function shouldEncrypt(doc) {
-  return !!doc.collection.schema.jsonSchema.attachments.encrypted;
+function shouldEncrypt(schema) {
+  return !!(schema.jsonSchema.attachments && schema.jsonSchema.attachments.encrypted);
 }
 
 function putAttachment(_x) {
@@ -1317,11 +1261,11 @@ function _putAttachment() {
             skipIfSame = _args2.length > 1 && _args2[1] !== undefined ? _args2[1] : false;
             ensureSchemaSupportsAttachments(this);
 
-            if (shouldEncrypt(this)) {
+            if (shouldEncrypt(this.collection.schema)) {
               data = this.collection._crypter._encryptValue(data);
             }
 
-            blobBuffer = blobBufferUtil.createBlobBuffer(data, type);
+            blobBuffer = _util.blobBufferUtil.createBlobBuffer(data, type);
             this._atomicQueue = this._atomicQueue.then( /*#__PURE__*/(0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
               var currentMeta, newHash;
               return _regenerator["default"].wrap(function _callee$(_context) {
@@ -1408,35 +1352,116 @@ function allAttachments() {
   });
 }
 
-function preMigrateDocument(action) {
-  delete action.migrated._attachments;
-  return action;
+function preMigrateDocument(_x2) {
+  return _preMigrateDocument.apply(this, arguments);
 }
 
-function postMigrateDocument(action) {
-  var primaryPath = action.oldCollection.schema.primaryPath;
-  var attachments = action.doc._attachments;
-  if (!attachments) return Promise.resolve(action);
-  var currentPromise = Promise.resolve();
-  Object.keys(attachments).forEach(function (id) {
-    var stubData = attachments[id];
-    var primary = action.doc[primaryPath];
-    currentPromise = currentPromise.then(function () {
-      return action.oldCollection.pouchdb.getAttachment(primary, id);
-    }).then(function (data) {
-      return blobBufferUtil.toString(data);
-    }).then(function (data) {
-      return action.newestCollection.pouch.putAttachment(primary, id, action.res._rev, blobBufferUtil.createBlobBuffer(data, stubData.content_type), stubData.content_type);
-    }).then(function (res) {
-      /**
-       * Update revision so the next run
-       * does not cause a 403 conflict
-       */
-      action.res = (0, _util.flatClone)(action.res);
-      action.res._rev = res.rev;
-    });
-  });
-  return currentPromise;
+function _preMigrateDocument() {
+  _preMigrateDocument = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(data) {
+    var attachments, mustDecrypt, newAttachments;
+    return _regenerator["default"].wrap(function _callee4$(_context4) {
+      while (1) {
+        switch (_context4.prev = _context4.next) {
+          case 0:
+            attachments = data.docData._attachments;
+
+            if (!attachments) {
+              _context4.next = 7;
+              break;
+            }
+
+            mustDecrypt = !!shouldEncrypt(data.oldCollection.schema);
+            newAttachments = {};
+            _context4.next = 6;
+            return Promise.all(Object.keys(attachments).map( /*#__PURE__*/function () {
+              var _ref6 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(attachmentId) {
+                var attachment, docPrimary, rawAttachmentData;
+                return _regenerator["default"].wrap(function _callee3$(_context3) {
+                  while (1) {
+                    switch (_context3.prev = _context3.next) {
+                      case 0:
+                        attachment = attachments[attachmentId];
+                        docPrimary = data.docData[data.oldCollection.schema.primaryPath];
+                        _context3.next = 4;
+                        return data.oldCollection.pouchdb.getAttachment(docPrimary, attachmentId);
+
+                      case 4:
+                        rawAttachmentData = _context3.sent;
+
+                        if (!mustDecrypt) {
+                          _context3.next = 9;
+                          break;
+                        }
+
+                        _context3.next = 8;
+                        return _util.blobBufferUtil.toString(rawAttachmentData).then(function (dataString) {
+                          return _util.blobBufferUtil.createBlobBuffer(data.oldCollection._crypter._decryptValue(dataString), attachment.content_type);
+                        });
+
+                      case 8:
+                        rawAttachmentData = _context3.sent;
+
+                      case 9:
+                        newAttachments[attachmentId] = {
+                          digest: attachment.digest,
+                          length: attachment.length,
+                          revpos: attachment.revpos,
+                          content_type: attachment.content_type,
+                          stub: false,
+                          // set this to false because now we have the full data
+                          data: rawAttachmentData
+                        };
+
+                      case 10:
+                      case "end":
+                        return _context3.stop();
+                    }
+                  }
+                }, _callee3);
+              }));
+
+              return function (_x4) {
+                return _ref6.apply(this, arguments);
+              };
+            }()));
+
+          case 6:
+            /**
+             * Hooks mutate the input
+             * instead of returning stuff
+             */
+            data.docData._attachments = newAttachments;
+
+          case 7:
+          case "end":
+            return _context4.stop();
+        }
+      }
+    }, _callee4);
+  }));
+  return _preMigrateDocument.apply(this, arguments);
+}
+
+function postMigrateDocument(_x3) {
+  return _postMigrateDocument.apply(this, arguments);
+}
+
+function _postMigrateDocument() {
+  _postMigrateDocument = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee5(action) {
+    return _regenerator["default"].wrap(function _callee5$(_context5) {
+      while (1) {
+        switch (_context5.prev = _context5.next) {
+          case 0:
+            return _context5.abrupt("return");
+
+          case 1:
+          case "end":
+            return _context5.stop();
+        }
+      }
+    }, _callee5);
+  }));
+  return _postMigrateDocument.apply(this, arguments);
 }
 
 var rxdb = true;
@@ -1484,8 +1509,7 @@ var RxDBAttachmentsPlugin = {
 exports.RxDBAttachmentsPlugin = RxDBAttachmentsPlugin;
 
 
-}).call(this)}).call(this,require("buffer").Buffer)
-},{"../pouch-db":37,"../rx-error":46,"./../rx-change-event":39,"./../util":56,"@babel/runtime/helpers/asyncToGenerator":60,"@babel/runtime/helpers/interopRequireDefault":65,"@babel/runtime/regenerator":72,"buffer":110,"rxjs/operators":732}],13:[function(require,module,exports){
+},{"../pouch-db":37,"../rx-error":46,"./../rx-change-event":39,"./../util":56,"@babel/runtime/helpers/asyncToGenerator":60,"@babel/runtime/helpers/interopRequireDefault":65,"@babel/runtime/regenerator":72,"rxjs/operators":732}],13:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3906,7 +3930,7 @@ exports.createOldCollection = createOldCollection;
 exports._getOldCollections = _getOldCollections;
 exports.mustMigrate = mustMigrate;
 exports.createDataMigrator = createDataMigrator;
-exports._runStrategyIfNotNull = _runStrategyIfNotNull;
+exports.runStrategyIfNotNull = runStrategyIfNotNull;
 exports.getBatchOfOldCollection = getBatchOfOldCollection;
 exports.migrateDocumentData = migrateDocumentData;
 exports.isDocumentDataWithoutRevisionEqual = isDocumentDataWithoutRevisionEqual;
@@ -4147,11 +4171,11 @@ function createDataMigrator(newestCollection, migrationStrategies) {
   return new DataMigrator(newestCollection, migrationStrategies);
 }
 
-function _runStrategyIfNotNull(oldCollection, version, docOrNull) {
+function runStrategyIfNotNull(oldCollection, version, docOrNull) {
   if (docOrNull === null) {
     return Promise.resolve(null);
   } else {
-    var ret = oldCollection.dataMigrator.migrationStrategies[version](docOrNull);
+    var ret = oldCollection.dataMigrator.migrationStrategies[version](docOrNull, oldCollection);
     var retPromise = (0, _util.toPromise)(ret);
     return retPromise;
   }
@@ -4173,7 +4197,14 @@ function getBatchOfOldCollection(oldCollection, batchSize) {
 
 
 function migrateDocumentData(oldCollection, docData) {
+  /**
+   * We cannot deep-clone Blob or Buffer
+   * so we just flat clone it here
+   * and attach it to the deep cloned document data.
+   */
+  var attachmentsBefore = (0, _util.flatClone)(docData._attachments);
   var mutateableDocData = (0, _util.clone)(docData);
+  mutateableDocData._attachments = attachmentsBefore;
   var nextVersion = oldCollection.version + 1; // run the document throught migrationStrategies
 
   var currentPromise = Promise.resolve(mutateableDocData);
@@ -4181,7 +4212,7 @@ function migrateDocumentData(oldCollection, docData) {
   var _loop2 = function _loop2() {
     var version = nextVersion;
     currentPromise = currentPromise.then(function (docOrNull) {
-      return _runStrategyIfNotNull(oldCollection, version, docOrNull);
+      return runStrategyIfNotNull(oldCollection, version, docOrNull);
     });
     nextVersion++;
   };
@@ -4218,9 +4249,11 @@ function migrateDocumentData(oldCollection, docData) {
 
 function isDocumentDataWithoutRevisionEqual(doc1, doc2) {
   var doc1NoRev = Object.assign({}, doc1, {
+    _attachments: undefined,
     _rev: undefined
   });
   var doc2NoRev = Object.assign({}, doc2, {
+    _attachments: undefined,
     _rev: undefined
   });
   return (0, _deepEqual["default"])(doc1NoRev, doc2NoRev);
@@ -4240,7 +4273,12 @@ function _migrateDocument(oldCollection, docData) {
     oldCollection: oldCollection,
     newestCollection: oldCollection.newestCollection
   };
-  return migrateDocumentData(oldCollection, docData).then(function (migrated) {
+  return (0, _hooks.runAsyncPluginHooks)('preMigrateDocument', {
+    docData: docData,
+    oldCollection: oldCollection
+  }).then(function () {
+    return migrateDocumentData(oldCollection, docData);
+  }).then(function (migrated) {
     /**
      * Determiniticly handle the revision
      * so migrating the same data on multiple instances
@@ -4266,10 +4304,15 @@ function _migrateDocument(oldCollection, docData) {
     action.migrated = migrated;
 
     if (migrated) {
-      (0, _hooks.runPluginHooks)('preMigrateDocument', action); // save to newest collection
+      /**
+       * save to newest collection
+       * notice that this data also contains the attachments data
+       */
+      var attachmentsBefore = migrated._attachments;
 
       var saveData = oldCollection.newestCollection._handleToPouch(migrated);
 
+      saveData._attachments = attachmentsBefore;
       return oldCollection.newestCollection.pouch.bulkDocs([saveData], {
         /**
          * We need new_edits: false
@@ -6245,7 +6288,11 @@ var _rxError = require("./rx-error");
 function _handleToPouch(col, data) {
   data = col._crypter.encrypt(data);
   data = col.schema.swapPrimaryToId(data);
-  if (col.schema.doKeyCompression()) data = col._keyCompressor.compress(data);
+
+  if (col.schema.doKeyCompression()) {
+    data = col._keyCompressor.compress(data);
+  }
+
   return data;
 }
 
@@ -6253,7 +6300,11 @@ function _handleFromPouch(col, data) {
   var noDecrypt = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
   data = col.schema.swapIdToPrimary(data);
   if (col.schema.doKeyCompression()) data = col._keyCompressor.decompress(data);
-  if (noDecrypt) return data;
+
+  if (noDecrypt) {
+    return data;
+  }
+
   data = col._crypter.decrypt(data);
   return data;
 }
@@ -10269,6 +10320,7 @@ function getRxStoragePouchDb(adapter, pouchSettings) {
 
 
 },{}],56:[function(require,module,exports){
+(function (Buffer){(function (){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
@@ -10301,7 +10353,7 @@ exports.getHeightOfRevision = getHeightOfRevision;
 exports.createRevision = createRevision;
 exports.overwriteGetterForCaching = overwriteGetterForCaching;
 exports.isFolderPath = isFolderPath;
-exports.LOCAL_PREFIX = exports.isElectronRenderer = exports.clone = exports.RXDB_HASH_SALT = void 0;
+exports.blobBufferUtil = exports.LOCAL_PREFIX = exports.isElectronRenderer = exports.clone = exports.RXDB_HASH_SALT = void 0;
 
 var _randomToken = _interopRequireDefault(require("random-token"));
 
@@ -10717,8 +10769,70 @@ function isFolderPath(name) {
   }
 }
 
+var blobBufferUtil = {
+  /**
+   * depending if we are on node or browser,
+   * we have to use Buffer(node) or Blob(browser)
+   */
+  createBlobBuffer: function createBlobBuffer(data, type) {
+    var blobBuffer;
 
-},{"@babel/runtime/helpers/interopRequireDefault":65,"clone":113,"is-electron":467,"pouchdb-md5":521,"pouchdb-utils":525,"random-token":527,"spark-md5":734}],57:[function(require,module,exports){
+    if (isElectronRenderer) {
+      // if we are inside of electron-renderer, always use the node-buffer
+      return Buffer.from(data, {
+        type: type
+      });
+    }
+
+    try {
+      // for browsers
+      blobBuffer = new Blob([data], {
+        type: type
+      });
+    } catch (e) {
+      // for node
+      blobBuffer = Buffer.from(data, {
+        type: type
+      });
+    }
+
+    return blobBuffer;
+  },
+  toString: function toString(blobBuffer) {
+    if (blobBuffer instanceof Buffer) {
+      // node
+      return nextTick().then(function () {
+        return blobBuffer.toString();
+      });
+    }
+
+    return new Promise(function (res) {
+      // browsers
+      var reader = new FileReader();
+      reader.addEventListener('loadend', function (e) {
+        var text = e.target.result;
+        res(text);
+      });
+      var blobBufferType = Object.prototype.toString.call(blobBuffer);
+      /**
+       * in the electron-renderer we have a typed array insteaf of a blob
+       * so we have to transform it.
+       * @link https://github.com/pubkey/rxdb/issues/1371
+       */
+
+      if (blobBufferType === '[object Uint8Array]') {
+        blobBuffer = new Blob([blobBuffer]);
+      }
+
+      reader.readAsText(blobBuffer);
+    });
+  }
+};
+exports.blobBufferUtil = blobBufferUtil;
+
+
+}).call(this)}).call(this,require("buffer").Buffer)
+},{"@babel/runtime/helpers/interopRequireDefault":65,"buffer":110,"clone":113,"is-electron":467,"pouchdb-md5":521,"pouchdb-utils":525,"random-token":527,"spark-md5":734}],57:[function(require,module,exports){
 "use strict";
 
 require("./noConflict");

@@ -11,7 +11,7 @@ exports.getAttachment = getAttachment;
 exports.allAttachments = allAttachments;
 exports.preMigrateDocument = preMigrateDocument;
 exports.postMigrateDocument = postMigrateDocument;
-exports.RxDBAttachmentsPlugin = exports.hooks = exports.overwritable = exports.prototypes = exports.rxdb = exports.RxAttachment = exports.blobBufferUtil = void 0;
+exports.RxDBAttachmentsPlugin = exports.hooks = exports.overwritable = exports.prototypes = exports.rxdb = exports.RxAttachment = void 0;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
@@ -47,67 +47,6 @@ function resyncRxDocument(doc) {
     doc.$emit(changeEvent);
   });
 }
-
-var blobBufferUtil = {
-  /**
-   * depending if we are on node or browser,
-   * we have to use Buffer(node) or Blob(browser)
-   */
-  createBlobBuffer: function createBlobBuffer(data, type) {
-    var blobBuffer;
-
-    if (_util.isElectronRenderer) {
-      // if we are inside of electron-renderer, always use the node-buffer
-      return Buffer.from(data, {
-        type: type
-      });
-    }
-
-    try {
-      // for browsers
-      blobBuffer = new Blob([data], {
-        type: type
-      });
-    } catch (e) {
-      // for node
-      blobBuffer = Buffer.from(data, {
-        type: type
-      });
-    }
-
-    return blobBuffer;
-  },
-  toString: function toString(blobBuffer) {
-    if (blobBuffer instanceof Buffer) {
-      // node
-      return (0, _util.nextTick)().then(function () {
-        return blobBuffer.toString();
-      });
-    }
-
-    return new Promise(function (res) {
-      // browsers
-      var reader = new FileReader();
-      reader.addEventListener('loadend', function (e) {
-        var text = e.target.result;
-        res(text);
-      });
-      var blobBufferType = Object.prototype.toString.call(blobBuffer);
-      /**
-       * in the electron-renderer we have a typed array insteaf of a blob
-       * so we have to transform it.
-       * @link https://github.com/pubkey/rxdb/issues/1371
-       */
-
-      if (blobBufferType === '[object Uint8Array]') {
-        blobBuffer = new Blob([blobBuffer]);
-      }
-
-      reader.readAsText(blobBuffer);
-    });
-  }
-};
-exports.blobBufferUtil = blobBufferUtil;
 
 var _assignMethodsToAttachment = function _assignMethodsToAttachment(attachment) {
   Object.entries(attachment.doc.collection.attachments).forEach(function (_ref) {
@@ -162,9 +101,9 @@ var RxAttachment = /*#__PURE__*/function () {
     var _this2 = this;
 
     return this.doc.collection.pouch.getAttachment(this.doc.primary, this.id).then(function (data) {
-      if (shouldEncrypt(_this2.doc)) {
-        return blobBufferUtil.toString(data).then(function (dataString) {
-          return blobBufferUtil.createBlobBuffer(_this2.doc.collection._crypter._decryptValue(dataString), _this2.type);
+      if (shouldEncrypt(_this2.doc.collection.schema)) {
+        return _util.blobBufferUtil.toString(data).then(function (dataString) {
+          return _util.blobBufferUtil.createBlobBuffer(_this2.doc.collection._crypter._decryptValue(dataString), _this2.type);
         });
       } else return data;
     });
@@ -172,7 +111,7 @@ var RxAttachment = /*#__PURE__*/function () {
 
   _proto.getStringData = function getStringData() {
     return this.getData().then(function (bufferBlob) {
-      return blobBufferUtil.toString(bufferBlob);
+      return _util.blobBufferUtil.toString(bufferBlob);
     });
   };
 
@@ -192,8 +131,8 @@ function fromPouchDocument(id, pouchDocAttachment, rxDocument) {
   });
 }
 
-function shouldEncrypt(doc) {
-  return !!doc.collection.schema.jsonSchema.attachments.encrypted;
+function shouldEncrypt(schema) {
+  return !!(schema.jsonSchema.attachments && schema.jsonSchema.attachments.encrypted);
 }
 
 function putAttachment(_x) {
@@ -224,11 +163,11 @@ function _putAttachment() {
             skipIfSame = _args2.length > 1 && _args2[1] !== undefined ? _args2[1] : false;
             ensureSchemaSupportsAttachments(this);
 
-            if (shouldEncrypt(this)) {
+            if (shouldEncrypt(this.collection.schema)) {
               data = this.collection._crypter._encryptValue(data);
             }
 
-            blobBuffer = blobBufferUtil.createBlobBuffer(data, type);
+            blobBuffer = _util.blobBufferUtil.createBlobBuffer(data, type);
             this._atomicQueue = this._atomicQueue.then( /*#__PURE__*/(0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
               var currentMeta, newHash;
               return _regenerator["default"].wrap(function _callee$(_context) {
@@ -315,35 +254,116 @@ function allAttachments() {
   });
 }
 
-function preMigrateDocument(action) {
-  delete action.migrated._attachments;
-  return action;
+function preMigrateDocument(_x2) {
+  return _preMigrateDocument.apply(this, arguments);
 }
 
-function postMigrateDocument(action) {
-  var primaryPath = action.oldCollection.schema.primaryPath;
-  var attachments = action.doc._attachments;
-  if (!attachments) return Promise.resolve(action);
-  var currentPromise = Promise.resolve();
-  Object.keys(attachments).forEach(function (id) {
-    var stubData = attachments[id];
-    var primary = action.doc[primaryPath];
-    currentPromise = currentPromise.then(function () {
-      return action.oldCollection.pouchdb.getAttachment(primary, id);
-    }).then(function (data) {
-      return blobBufferUtil.toString(data);
-    }).then(function (data) {
-      return action.newestCollection.pouch.putAttachment(primary, id, action.res._rev, blobBufferUtil.createBlobBuffer(data, stubData.content_type), stubData.content_type);
-    }).then(function (res) {
-      /**
-       * Update revision so the next run
-       * does not cause a 403 conflict
-       */
-      action.res = (0, _util.flatClone)(action.res);
-      action.res._rev = res.rev;
-    });
-  });
-  return currentPromise;
+function _preMigrateDocument() {
+  _preMigrateDocument = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(data) {
+    var attachments, mustDecrypt, newAttachments;
+    return _regenerator["default"].wrap(function _callee4$(_context4) {
+      while (1) {
+        switch (_context4.prev = _context4.next) {
+          case 0:
+            attachments = data.docData._attachments;
+
+            if (!attachments) {
+              _context4.next = 7;
+              break;
+            }
+
+            mustDecrypt = !!shouldEncrypt(data.oldCollection.schema);
+            newAttachments = {};
+            _context4.next = 6;
+            return Promise.all(Object.keys(attachments).map( /*#__PURE__*/function () {
+              var _ref6 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(attachmentId) {
+                var attachment, docPrimary, rawAttachmentData;
+                return _regenerator["default"].wrap(function _callee3$(_context3) {
+                  while (1) {
+                    switch (_context3.prev = _context3.next) {
+                      case 0:
+                        attachment = attachments[attachmentId];
+                        docPrimary = data.docData[data.oldCollection.schema.primaryPath];
+                        _context3.next = 4;
+                        return data.oldCollection.pouchdb.getAttachment(docPrimary, attachmentId);
+
+                      case 4:
+                        rawAttachmentData = _context3.sent;
+
+                        if (!mustDecrypt) {
+                          _context3.next = 9;
+                          break;
+                        }
+
+                        _context3.next = 8;
+                        return _util.blobBufferUtil.toString(rawAttachmentData).then(function (dataString) {
+                          return _util.blobBufferUtil.createBlobBuffer(data.oldCollection._crypter._decryptValue(dataString), attachment.content_type);
+                        });
+
+                      case 8:
+                        rawAttachmentData = _context3.sent;
+
+                      case 9:
+                        newAttachments[attachmentId] = {
+                          digest: attachment.digest,
+                          length: attachment.length,
+                          revpos: attachment.revpos,
+                          content_type: attachment.content_type,
+                          stub: false,
+                          // set this to false because now we have the full data
+                          data: rawAttachmentData
+                        };
+
+                      case 10:
+                      case "end":
+                        return _context3.stop();
+                    }
+                  }
+                }, _callee3);
+              }));
+
+              return function (_x4) {
+                return _ref6.apply(this, arguments);
+              };
+            }()));
+
+          case 6:
+            /**
+             * Hooks mutate the input
+             * instead of returning stuff
+             */
+            data.docData._attachments = newAttachments;
+
+          case 7:
+          case "end":
+            return _context4.stop();
+        }
+      }
+    }, _callee4);
+  }));
+  return _preMigrateDocument.apply(this, arguments);
+}
+
+function postMigrateDocument(_x3) {
+  return _postMigrateDocument.apply(this, arguments);
+}
+
+function _postMigrateDocument() {
+  _postMigrateDocument = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee5(action) {
+    return _regenerator["default"].wrap(function _callee5$(_context5) {
+      while (1) {
+        switch (_context5.prev = _context5.next) {
+          case 0:
+            return _context5.abrupt("return");
+
+          case 1:
+          case "end":
+            return _context5.stop();
+        }
+      }
+    }, _callee5);
+  }));
+  return _postMigrateDocument.apply(this, arguments);
 }
 
 var rxdb = true;
