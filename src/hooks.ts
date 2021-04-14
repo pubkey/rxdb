@@ -23,15 +23,15 @@ export const HOOKS: { [k: string]: any[] } = {
     createRxDatabase: [],
     preCreateRxCollection: [],
     createRxCollection: [],
-     /**
-     * runs at the end of the destroy-process of a collection
-     * @async
-     */
+    /**
+    * runs at the end of the destroy-process of a collection
+    * @async
+    */
     postDestroyRxCollection: [],
-   /**
-     * functions that get the json-schema as input
-     * to do additionally checks/manipulation
-     */
+    /**
+      * functions that get the json-schema as input
+      * to do additionally checks/manipulation
+      */
     preCreateRxSchema: [],
     /**
      * functions that run after the RxSchema is created
@@ -78,6 +78,12 @@ export function runPluginHooks(hookKey: string, obj: any) {
     HOOKS[hookKey].forEach(fun => fun(obj));
 }
 
+
+/**
+ * TODO
+ * we should not run the hooks in parallel
+ * this makes stuff unpredictable.
+ */
 export function runAsyncPluginHooks(hookKey: string, obj: any): Promise<any> {
     return Promise.all(
         HOOKS[hookKey].map(fun => fun(obj))

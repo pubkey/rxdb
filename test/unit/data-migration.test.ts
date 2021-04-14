@@ -600,12 +600,13 @@ config.parallel('data-migration.test.js', () => {
         describe('run', () => {
             it('should auto-run on creation', async () => {
                 const col = await humansCollection.createMigrationCollection(
-                    10, {
-                    3: (doc: any) => {
-                        doc.age = parseInt(doc.age, 10);
-                        return doc;
-                    }
-                },
+                    10,
+                    {
+                        3: (doc: any) => {
+                            doc.age = parseInt(doc.age, 10);
+                            return doc;
+                        }
+                    },
                     randomCouchString(10),
                     true
                 );
@@ -762,7 +763,6 @@ config.parallel('data-migration.test.js', () => {
                 db2.destroy();
             });
         });
-
         describe('.migrationNeeded()', () => {
             it('return true if schema-version is 0', async () => {
                 const col = await humansCollection.create();

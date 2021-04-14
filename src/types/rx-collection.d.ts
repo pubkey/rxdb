@@ -2,7 +2,7 @@ import type {
     RxJsonSchema,
     PouchSettings,
     RxDocument,
-    RxLocalDocument
+    MigrationStrategies
 } from './';
 import type {
     RxCollectionBase
@@ -28,7 +28,7 @@ export interface RxCollectionCreator extends RxCollectionCreatorBase {
 export type RxCollectionCreatorBase = {
     schema: RxJsonSchema;
     pouchSettings?: PouchSettings;
-    migrationStrategies?: KeyFunctionMap;
+    migrationStrategies?: MigrationStrategies;
     autoMigrate?: boolean;
     statics?: KeyFunctionMap;
     methods?: KeyFunctionMap;

@@ -152,6 +152,33 @@ allStatesObservable.subscribe(allStates => {
 });
 ```
 
+## Migrating attachments
+
+When you store `RxAttachment`s together with your document, they can also be changed, added or removed while running the migration.
+You can do this by mutating the `oldDoc._attachments` property.
+
+```js
+import { blobBufferUtil } from 'rxdb/plugins/core';
+const migrationStrategies = {
+      1: async function(oldDoc){
+        // do nothing with _attachments to keep all attachments and have them in the new collection version.
+        return oldDoc;
+      },
+      2: async function(oldDoc){
+        // set _attachments to an empty object to delete all existing ones during the migration.
+        oldDoc._attachments = {};
+        return oldDoc;
+      }
+      3: async function(oldDoc){
+        // update the data field of a single attachment to change its data. 
+        oldDoc._attachments.myFile.data = await blobBufferUtil.createBlobBuffer(
+          'my new text',
+          oldDoc._attachments.myFile.content_type
+        );
+        return oldDoc;
+      }
+}
+```
 
 ## Hint
 If your migration takes a long time, combine it with the leaderElection to make sure you don't waste your users' resources by running it in 2 open tabs.

@@ -141,6 +141,21 @@ export type PouchAttachmentMeta = {
     stub: boolean;
 };
 
+export type BlobBuffer = Buffer | Blob;
+
+export type PouchAttachmentWithData = PouchAttachmentMeta & {
+    /**
+     * Base64 string with the data
+     * or directly a buffer
+     */
+    data: BlobBuffer;
+    /**
+     * If set, must be false
+     * because we have the full data and not only a stub.
+     */
+    stub?: false;
+}
+
 export type PouchChangeDoc = {
     _id: string;
     _rev: string;
@@ -148,6 +163,28 @@ export type PouchChangeDoc = {
         [attachmentId: string]: PouchAttachmentMeta
     };
 }
+
+export type WithAttachments<Data> = Data & {
+    /**
+     * Intentional optional,
+     * if the document has no attachments,
+     * we do NOT have an empty object.
+     */
+    _attachments?: {
+        [attachmentId: string]: PouchAttachmentMeta
+    };
+}
+export type WithAttachmentsData<Data> = Data & {
+    /**
+     * Intentional optional,
+     * if the document has no attachments,
+     * we do NOT have an empty object.
+     */
+    _attachments?: {
+        [attachmentId: string]: PouchAttachmentWithData
+    };
+}
+
 
 export type WithPouchMeta<Data> = Data & {
     _rev: string;

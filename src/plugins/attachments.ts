@@ -5,16 +5,22 @@ import {
     createUpdateEvent
 } from './../rx-change-event';
 import {
-    nextTick,
-    isElectronRenderer,
     now,
-    flatClone
+    flatClone,
+    blobBufferUtil
 } from './../util';
 import {
     newRxError
 } from '../rx-error';
 import type {
-    RxDocument, RxPlugin, RxDocumentTypeWithRev
+    RxDocument,
+    RxPlugin,
+    RxDocumentTypeWithRev,
+    PouchAttachmentWithData,
+    BlobBuffer,
+    WithAttachments,
+    OldRxCollection,
+    PouchAttachmentMeta
 } from '../types';
 import { pouchAttachmentBinaryHash } from '../pouch-db';
 
@@ -43,65 +49,6 @@ function resyncRxDocument<RxDocType>(doc: any) {
         doc.$emit(changeEvent);
     });
 }
-
-export const blobBufferUtil = {
-    /**
-     * depending if we are on node or browser,
-     * we have to use Buffer(node) or Blob(browser)
-     */
-    createBlobBuffer(data: string, type: string): Buffer {
-        let blobBuffer: any;
-
-        if (isElectronRenderer) {
-            // if we are inside of electron-renderer, always use the node-buffer
-            return Buffer.from(data, {
-                type
-            } as any);
-        }
-
-        try {
-            // for browsers
-            blobBuffer = new Blob([data], {
-                type
-            } as any);
-        } catch (e) {
-            // for node
-            blobBuffer = Buffer.from(data, {
-                type
-            } as any);
-        }
-        return blobBuffer;
-    },
-    toString(blobBuffer: any) {
-        if (blobBuffer instanceof Buffer) {
-            // node
-            return nextTick()
-                .then(() => blobBuffer.toString());
-        }
-        return new Promise(res => {
-            // browsers
-            const reader = new FileReader();
-            reader.addEventListener('loadend', e => {
-                const text = (e.target as any).result;
-                res(text);
-            });
-
-            const blobBufferType = Object.prototype.toString.call(blobBuffer);
-
-            /**
-             * in the electron-renderer we have a typed array insteaf of a blob
-             * so we have to transform it.
-             * @link https://github.com/pubkey/rxdb/issues/1371
-             */
-            if (blobBufferType === '[object Uint8Array]') {
-                blobBuffer = new Blob([blobBuffer]);
-            }
-
-            reader.readAsText(blobBuffer);
-        });
-    }
-};
-
 
 const _assignMethodsToAttachment = function (attachment: any) {
     Object
@@ -153,7 +100,7 @@ export class RxAttachment {
     /**
      * returns the data for the attachment
      */
-    getData(): Promise<Buffer | Blob> {
+    getData(): Promise<BlobBuffer> {
         return this.doc.collection.pouch.getAttachment(this.doc.primary, this.id)
             .then((data: any) => {
                 if (shouldEncrypt(this.doc)) {
@@ -166,7 +113,7 @@ export class RxAttachment {
             });
     }
 
-    getStringData() {
+    getStringData(): Promise<string> {
         return this.getData().then(bufferBlob => blobBufferUtil.toString(bufferBlob));
     }
 }
@@ -290,42 +237,73 @@ export function allAttachments(
         });
 }
 
-export function preMigrateDocument(action: any) {
-    delete action.migrated._attachments;
-    return action;
+export async function preMigrateDocument(
+    data: {
+        docData: WithAttachments<any>;
+        oldCollection: OldRxCollection
+    }
+): Promise<void> {
+    const attachments = data.docData._attachments;
+    if (attachments) {
+        const mustDecrypt = !!data.oldCollection.schema.jsonSchema.attachments?.encrypted;
+        const newAttachments: { [attachmentId: string]: PouchAttachmentWithData } = {};
+        await Promise.all(
+            Object.keys(attachments).map(async (attachmentId) => {
+                const attachment: PouchAttachmentMeta = attachments[attachmentId];
+                const docPrimary: string = data.docData[data.oldCollection.schema.primaryPath];
+                let rawAttachmentData = await data.oldCollection.pouchdb.getAttachment(docPrimary, attachmentId);
+                if (mustDecrypt) {
+                    rawAttachmentData = await blobBufferUtil.toString(rawAttachmentData)
+                        .then(dataString => blobBufferUtil.createBlobBuffer(
+                            data.oldCollection._crypter._decryptValue(dataString),
+                            (attachment as PouchAttachmentMeta).content_type as any
+                        ));
+                }
+                newAttachments[attachmentId] = {
+                    digest: attachment.digest,
+                    length: attachment.length,
+                    revpos: attachment.revpos,
+                    content_type: attachment.content_type,
+                    stub: false, // set this to false because now we have the full data
+                    data: rawAttachmentData
+                };
+            })
+        );
+
+        /**
+         * Hooks mutate the input
+         * instead of returning stuff
+         */
+        data.docData._attachments = newAttachments;
+    }
 }
 
-export function postMigrateDocument(action: any): Promise<any> {
+export async function postMigrateDocument(action: any): Promise<void> {
     const primaryPath = action.oldCollection.schema.primaryPath;
+    const documentPrimary = action.doc[primaryPath];
 
-    const attachments = action.doc._attachments;
-    if (!attachments) return Promise.resolve(action);
+    const attachments: { [attachmentId: string]: PouchAttachmentWithData } = action.migrated._attachments;
+    if (!attachments) {
+        return Promise.resolve(action);
+    }
 
-    let currentPromise = Promise.resolve();
-    Object.keys(attachments).forEach(id => {
-        const stubData = attachments[id];
-        const primary = action.doc[primaryPath];
-        currentPromise = currentPromise
-            .then(() => action.oldCollection.pouchdb.getAttachment(primary, id))
-            .then(data => blobBufferUtil.toString(data))
-            .then(data => action.newestCollection.pouch.putAttachment(
-                primary,
-                id,
-                action.res._rev,
-                blobBufferUtil.createBlobBuffer(data, stubData.content_type),
-                stubData.content_type
-            ))
-            .then(res => {
-                /**
-                 * Update revision so the next run
-                 * does not cause a 403 conflict
-                 */
-                action.res = flatClone(action.res);
-                action.res._rev = res.rev;
-            });
-    });
-
-    return currentPromise;
+    for (const entry of Object.entries(attachments)) {
+        const [attachmentId, attachmentData] = entry;
+        const res = await action.newestCollection.pouch.putAttachment(
+            documentPrimary,
+            attachmentId,
+            action.res._rev,
+            attachmentData.data,
+            attachmentData.content_type
+        );
+        /**
+                * Update revision so the next run
+                * does not cause a 403 conflict
+                */
+        action.res = flatClone(action.res);
+        action.res._rev = res.rev;
+    }
+    return;
 }
 
 export const rxdb = true;

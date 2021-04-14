@@ -1,3 +1,4 @@
+import { BlobBuffer } from './pouch';
 import {
     RxDocument
 } from './rx-document';
@@ -6,7 +7,7 @@ declare type Buffer = any;
 
 export type RxAttachmentCreator = {
     id: string,
-    data: string | Blob | Buffer,
+    data: string | BlobBuffer,
     type: string
 };
 
@@ -19,6 +20,6 @@ export declare class RxAttachment<RxDocumentType, OrmMethods = {}> {
     readonly rev: string;
 
     remove(): Promise<void>;
-    getData(): Promise<Blob>;
+    getData(): Promise<BlobBuffer>;
     getStringData(): Promise<string>;
 }

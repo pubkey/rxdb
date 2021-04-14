@@ -14,6 +14,7 @@ import {
 import {
     HumanDocumentType
 } from './schema-objects';
+import { MigrationStrategies } from '../../src/types';
 
 export async function create(
     size: number = 20,
@@ -427,7 +428,7 @@ export async function createHumanWithTimestamp(
 
 export async function createMigrationCollection(
     amount = 0,
-    addMigrationStrategies = {},
+    addMigrationStrategies: MigrationStrategies = {},
     name = randomCouchString(10),
     autoMigrate = false
 ): Promise<RxCollection<schemaObjects.SimpleHumanV3DocumentType>> {

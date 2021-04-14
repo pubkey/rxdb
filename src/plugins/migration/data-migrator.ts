@@ -33,25 +33,20 @@ import {
 } from '../../rx-error';
 import { overwritable } from '../../overwritable';
 import {
-    runPluginHooks,
     runAsyncPluginHooks
 } from '../../hooks';
 import type {
     RxCollection,
     RxDatabase,
     MigrationState,
-    PouchDBInstance,
-    NumberFunctionMap
+    NumberFunctionMap,
+    OldRxCollection
 } from '../../types';
 import {
     RxSchema,
     getPreviousVersions
 } from '../../rx-schema';
-import type {
-    KeyCompressor
-} from '../key-compression';
 import {
-    Crypter,
     createCrypter
 } from '../../crypter';
 import {
@@ -110,7 +105,7 @@ export class DataMigrator {
          * @link https://github.com/ReactiveX/rxjs/issues/4074
          */
         (() => {
-            let oldCols: OldCollection[];
+            let oldCols: OldRxCollection[];
             return _getOldCollections(this)
                 .then(ret => {
                     oldCols = ret;
@@ -192,27 +187,14 @@ export class DataMigrator {
     }
 }
 
-export interface OldCollection {
-    version: number;
-    schema: RxSchema;
-    pouchdb: PouchDBInstance;
-    dataMigrator: DataMigrator;
-    _crypter: Crypter;
-    _keyCompressor?: KeyCompressor;
-    newestCollection: RxCollection;
-    database: RxDatabase;
-    _migrate?: boolean;
-    _migratePromise?: Promise<any>;
-}
-
 export function createOldCollection(
     version: number,
     schemaObj: any,
     dataMigrator: DataMigrator
-): OldCollection {
+): OldRxCollection {
     const database = dataMigrator.newestCollection.database;
     const schema = createRxSchema(schemaObj, false);
-    const ret: OldCollection = {
+    const ret: OldRxCollection = {
         version,
         dataMigrator,
         newestCollection: dataMigrator.newestCollection,
@@ -241,7 +223,7 @@ export function createOldCollection(
  */
 export function _getOldCollections(
     dataMigrator: DataMigrator
-): Promise<OldCollection[]> {
+): Promise<OldRxCollection[]> {
     return Promise
         .all(
             getPreviousVersions(dataMigrator.currentSchema.jsonSchema)
@@ -282,25 +264,28 @@ export function createDataMigrator(
     return new DataMigrator(newestCollection, migrationStrategies);
 }
 
-export function _runStrategyIfNotNull(
-    oldCollection: OldCollection,
+export function runStrategyIfNotNull(
+    oldCollection: OldRxCollection,
     version: number,
     docOrNull: any | null
-): Promise<object | null> {
+): Promise<any | null> {
     if (docOrNull === null) {
         return Promise.resolve(null);
     } else {
-        const ret = oldCollection.dataMigrator.migrationStrategies[version](docOrNull);
+        const ret = oldCollection.dataMigrator.migrationStrategies[version](docOrNull, oldCollection);
         const retPromise = toPromise(ret);
         return retPromise;
     }
 }
 
 export function getBatchOfOldCollection(
-    oldCollection: OldCollection,
+    oldCollection: OldRxCollection,
     batchSize: number
 ): Promise<any[]> {
-    return getBatch(oldCollection.pouchdb, batchSize)
+    return getBatch(
+        oldCollection.pouchdb,
+        batchSize
+    )
         .then(docs => docs
             .map(doc => _handleFromPouch(oldCollection, doc))
         );
@@ -313,7 +298,7 @@ export function getBatchOfOldCollection(
  * @return final object or null if migrationStrategy deleted it
  */
 export function migrateDocumentData(
-    oldCollection: OldCollection,
+    oldCollection: OldRxCollection,
     docData: any
 ): Promise<any | null> {
     const mutateableDocData = clone(docData);
@@ -323,7 +308,7 @@ export function migrateDocumentData(
     let currentPromise = Promise.resolve(mutateableDocData);
     while (nextVersion <= oldCollection.newestCollection.schema.version) {
         const version = nextVersion;
-        currentPromise = currentPromise.then(docOrNull => _runStrategyIfNotNull(
+        currentPromise = currentPromise.then(docOrNull => runStrategyIfNotNull(
             oldCollection,
             version,
             docOrNull
@@ -368,7 +353,7 @@ export function isDocumentDataWithoutRevisionEqual<T>(doc1: T, doc2: T): boolean
  * @return status-action with status and migrated document
  */
 export function _migrateDocument(
-    oldCollection: OldCollection,
+    oldCollection: OldRxCollection,
     docData: any
 ): Promise<{ type: string, doc: {} }> {
     const action = {
@@ -379,9 +364,16 @@ export function _migrateDocument(
         oldCollection,
         newestCollection: oldCollection.newestCollection
     };
-    return migrateDocumentData(oldCollection, docData)
-        .then(migrated => {
 
+    return runAsyncPluginHooks(
+        'preMigrateDocument',
+        {
+            docData,
+            oldCollection
+        }
+    )
+        .then(() => migrateDocumentData(oldCollection, docData))
+        .then(migrated => {
             /**
              * Determiniticly handle the revision
              * so migrating the same data on multiple instances
@@ -406,11 +398,6 @@ export function _migrateDocument(
 
             action.migrated = migrated;
             if (migrated) {
-                runPluginHooks(
-                    'preMigrateDocument',
-                    action
-                );
-
                 // save to newest collection
                 const saveData = oldCollection.newestCollection._handleToPouch(migrated);
                 return oldCollection.newestCollection.pouch
@@ -452,7 +439,7 @@ export function _migrateDocument(
  * deletes this.pouchdb and removes it from the database.collectionsCollection
  */
 export function deleteOldCollection(
-    oldCollection: OldCollection
+    oldCollection: OldRxCollection
 ): Promise<void> {
     return oldCollection
         .pouchdb.destroy()
@@ -468,7 +455,7 @@ export function deleteOldCollection(
  * runs the migration on all documents and deletes the pouchdb afterwards
  */
 export function migrateOldCollection(
-    oldCollection: OldCollection,
+    oldCollection: OldRxCollection,
     batchSize = 10
 ): Observable<any> {
     if (oldCollection._migrate) {
@@ -518,7 +505,7 @@ export function migrateOldCollection(
 }
 
 export function migratePromise(
-    oldCollection: OldCollection,
+    oldCollection: OldRxCollection,
     batchSize?: number
 ): Promise<any> {
     if (!oldCollection._migratePromise) {

@@ -2,6 +2,9 @@
 
 ### X.X.X (coming soon)
 
+Features:
+  - Added possibility to change, update, remove and add `RxAttachment`s inside of a migration strategy.
+
 ### 9.16.0 (12 April 2021)
 
 Features:
