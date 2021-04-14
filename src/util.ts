@@ -3,6 +3,7 @@
  * which should be easy to change
  */
 import randomToken from 'random-token';
+import type { BlobBuffer } from './types';
 import {
     default as deepClone
 } from 'clone';
@@ -340,7 +341,6 @@ export function getHeightOfRevision(revString: string): number {
 
 import { stringMd5 } from 'pouchdb-md5';
 import { rev as pouchUtilsRev } from 'pouchdb-utils';
-import { BlobBuffer } from './types';
 
 /**
  * Creates a revision string that does NOT include the revision height

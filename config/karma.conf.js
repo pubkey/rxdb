@@ -35,7 +35,7 @@ const configuration = {
         usePhantomJS: false,
         postDetection: function (availableBrowser) {
             // return [];
-            // return ['Chrome']; // comment in to test specific browser
+            // return ['Chrome_travis_ci']; // comment in to test specific browser
             const browsers = availableBrowser
                 .filter(b => !['PhantomJS', 'FirefoxAurora', 'FirefoxNightly', 'ChromeCanary'].includes(b))
                 .map(b => {

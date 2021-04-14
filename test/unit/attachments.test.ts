@@ -403,7 +403,7 @@ config.parallel('attachments.test.ts', () => {
             db2.destroy();
         });
     });
-    describe('data-migration', () => {
+    describe('migration', () => {
         it('should keep the attachments during migration', async () => {
             const dbName = randomCouchString(10);
             type DocData = {
@@ -463,7 +463,7 @@ config.parallel('attachments.test.ts', () => {
             const doc2: RxDocument<DocData> = await col2.findOne().exec();
             assert.strictEqual(doc2.allAttachments().length, 1);
             const firstAttachment = doc2.allAttachments()[0];
-            const data = (await firstAttachment.getData()).toString();
+            const data = await firstAttachment.getStringData();
             assert.strictEqual(data, 'barfoo');
 
             db2.destroy();
@@ -559,7 +559,7 @@ config.parallel('attachments.test.ts', () => {
             });
             await doc.putAttachment({
                 id: 'foobar',
-                data: 'barfoo',
+                data: 'barfoo1',
                 type: 'text/plain'
             });
             await db.destroy();
@@ -594,7 +594,7 @@ config.parallel('attachments.test.ts', () => {
             const doc2: RxDocument<DocData> = await col2.findOne().exec();
             assert.strictEqual(doc2.allAttachments().length, 1);
             const firstAttachment = doc2.allAttachments()[0];
-            const data = (await firstAttachment.getData()).toString();
+            const data = await firstAttachment.getStringData();
             assert.strictEqual(data, 'barfoo2');
 
 

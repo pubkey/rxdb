@@ -6,7 +6,6 @@ import {
 } from './../rx-change-event';
 import {
     now,
-    flatClone,
     blobBufferUtil
 } from './../util';
 import {
@@ -252,6 +251,7 @@ export async function preMigrateDocument(
             Object.keys(attachments).map(async (attachmentId) => {
                 const attachment: PouchAttachmentMeta = attachments[attachmentId];
                 const docPrimary: string = data.docData[data.oldCollection.schema.primaryPath];
+
                 let rawAttachmentData = await data.oldCollection.pouchdb.getAttachment(docPrimary, attachmentId);
                 if (mustDecrypt) {
                     rawAttachmentData = await blobBufferUtil.toString(rawAttachmentData)
@@ -260,6 +260,7 @@ export async function preMigrateDocument(
                             (attachment as PouchAttachmentMeta).content_type as any
                         ));
                 }
+
                 newAttachments[attachmentId] = {
                     digest: attachment.digest,
                     length: attachment.length,
@@ -280,30 +281,10 @@ export async function preMigrateDocument(
 }
 
 export async function postMigrateDocument(action: any): Promise<void> {
-    const primaryPath = action.oldCollection.schema.primaryPath;
-    const documentPrimary = action.doc[primaryPath];
-
-    const attachments: { [attachmentId: string]: PouchAttachmentWithData } = action.migrated._attachments;
-    if (!attachments) {
-        return Promise.resolve(action);
-    }
-
-    for (const entry of Object.entries(attachments)) {
-        const [attachmentId, attachmentData] = entry;
-        const res = await action.newestCollection.pouch.putAttachment(
-            documentPrimary,
-            attachmentId,
-            action.res._rev,
-            attachmentData.data,
-            attachmentData.content_type
-        );
-        /**
-                * Update revision so the next run
-                * does not cause a 403 conflict
-                */
-        action.res = flatClone(action.res);
-        action.res._rev = res.rev;
-    }
+    /**
+     * No longer needed because
+     * we store the attachemnts data buffers directly in the document.
+     */
     return;
 }
 

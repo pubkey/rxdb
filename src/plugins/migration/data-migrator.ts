@@ -40,7 +40,8 @@ import type {
     RxDatabase,
     MigrationState,
     NumberFunctionMap,
-    OldRxCollection
+    OldRxCollection,
+    WithAttachmentsData
 } from '../../types';
 import {
     RxSchema,
@@ -301,7 +302,16 @@ export function migrateDocumentData(
     oldCollection: OldRxCollection,
     docData: any
 ): Promise<any | null> {
+
+    /**
+     * We cannot deep-clone Blob or Buffer
+     * so we just flat clone it here
+     * and attach it to the deep cloned document data.
+     */
+    const attachmentsBefore = flatClone(docData._attachments);
     const mutateableDocData = clone(docData);
+    mutateableDocData._attachments = attachmentsBefore;
+
     let nextVersion = oldCollection.version + 1;
 
     // run the document throught migrationStrategies
@@ -343,8 +353,14 @@ export function migrateDocumentData(
 
 
 export function isDocumentDataWithoutRevisionEqual<T>(doc1: T, doc2: T): boolean {
-    const doc1NoRev = Object.assign({}, doc1, { _rev: undefined });
-    const doc2NoRev = Object.assign({}, doc2, { _rev: undefined });
+    const doc1NoRev = Object.assign({}, doc1, {
+        _attachments: undefined,
+        _rev: undefined
+    });
+    const doc2NoRev = Object.assign({}, doc2, {
+        _attachments: undefined,
+        _rev: undefined
+    });
     return deepEqual(doc1NoRev, doc2NoRev);
 }
 
@@ -398,8 +414,15 @@ export function _migrateDocument(
 
             action.migrated = migrated;
             if (migrated) {
-                // save to newest collection
-                const saveData = oldCollection.newestCollection._handleToPouch(migrated);
+
+                /**
+                 * save to newest collection
+                 * notice that this data also contains the attachments data
+                 */
+                const attachmentsBefore = migrated._attachments;
+                const saveData: WithAttachmentsData<any> = oldCollection.newestCollection._handleToPouch(migrated);
+                saveData._attachments = attachmentsBefore;
+
                 return oldCollection.newestCollection.pouch
                     .bulkDocs([saveData], {
                         /**
