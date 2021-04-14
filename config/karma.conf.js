@@ -16,6 +16,9 @@ const configuration = {
         'browserify',
         'detectBrowsers'
     ],
+    browserify: {
+        debug: true
+    },
     files: [
         '../test_tmp/unit.test.js'
     ],
