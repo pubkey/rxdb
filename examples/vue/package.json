@@ -21,7 +21,7 @@
     "pouchdb-adapter-http": "7.2.2",
     "pouchdb-adapter-idb": "7.2.2",
     "pouchdb-server": "4.2.0",
-    "random-int": "2.0.1",
+    "random-int": "3.0.0",
     "register-service-worker": "1.7.2",
     "rxdb": "file:rxdb-local.tgz",
     "vue": "2.6.12",
