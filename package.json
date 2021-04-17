@@ -198,7 +198,7 @@
     "pouchdb-adapter-websql": "7.0.0",
     "pouchdb-debug": "7.2.1",
     "pre-commit": "1.2.2",
-    "random-int": "2.0.1",
+    "random-int": "3.0.0",
     "request": "2.88.2",
     "request-promise": "4.2.6",
     "request-promise-native": "1.0.9",
