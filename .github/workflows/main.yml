@@ -164,7 +164,7 @@ jobs:
         run: npm install > "/dev/null" 2>&1
 
       - name: electron-remote test
-        uses: GabrielBB/xvfb-action@v1.4
+        uses: GabrielBB/xvfb-action@v1.5
         with:
           working-directory: ./examples/electron-remote
           run: npm run test
@@ -191,7 +191,7 @@ jobs:
           npm run build
 
       - name: react test
-        uses: GabrielBB/xvfb-action@v1.4
+        uses: GabrielBB/xvfb-action@v1.5
         with:
           working-directory: ./examples/react
           run: npm run test:build
@@ -281,7 +281,7 @@ jobs:
         working-directory: ./examples/graphql
         run: npm run build
       - name: test
-        uses: GabrielBB/xvfb-action@v1.4
+        uses: GabrielBB/xvfb-action@v1.5
         with:
           working-directory: ./examples/graphql
           run: npm run test:ci
