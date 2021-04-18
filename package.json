@@ -104,7 +104,7 @@
     "crypto-js": "3.3.0",
     "custom-idle-queue": "3.0.1",
     "deep-equal": "^2.0.1",
-    "event-reduce-js": "1.1.0",
+    "event-reduce-js": "1.2.0",
     "express": "4.17.1",
     "get-graphql-from-jsonschema": "7.0.8",
     "graphql-client": "2.0.1",
