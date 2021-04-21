@@ -7,7 +7,6 @@
 | Announcement                                                        |
 | :--: |
 | Please take part in the [RxDB user survey 2021](https://forms.gle/aGPWdo2iELj4Ykkm9). This will help me to better plan the steps for the next major release. (takes about 2 minutes)
-|
 
 
 
