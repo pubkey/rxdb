@@ -2,6 +2,8 @@
 
 ### X.X.X (coming soon)
 
+### 9.17.1 (21 April 2020)
+
 Other:
   - Added hints abount 2021 user survey.
 
