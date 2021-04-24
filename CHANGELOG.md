@@ -2,6 +2,9 @@
 
 ### X.X.X (coming soon)
 
+Other:
+  - Added collection name when throwing errors in `RxQuery`
+
 ### 9.17.1 (21 April 2020)
 
 Other:

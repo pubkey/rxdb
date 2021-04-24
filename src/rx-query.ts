@@ -199,6 +199,7 @@ export class RxQueryBase<
                 break;
             default:
                 throw newRxError('QU1', {
+                    collection: this.collection.name,
                     op: this.op
                 });
         }
@@ -227,6 +228,7 @@ export class RxQueryBase<
         // TODO this should be ensured by typescript
         if (throwIfMissing && this.op !== 'findOne') {
             throw newRxError('QU9', {
+                collection: this.collection.name,
                 query: this.mangoQuery,
                 op: this.op
             });
@@ -245,6 +247,7 @@ export class RxQueryBase<
             .then(result => {
                 if (!result && throwIfMissing) {
                     throw newRxError('QU10', {
+                        collection: this.collection.name,
                         query: this.mangoQuery,
                         op: this.op
                     });
