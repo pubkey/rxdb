@@ -731,6 +731,8 @@ export class RxCollectionBase<
                 return currentValue as any;
             }),
             filter(x => !!x),
+            // TODO this does not unsubscribe from parent
+            // @link https://cartant.medium.com/rxjs-whats-changed-with-sharereplay-65c098843e95
             shareReplay(1)
         );
     }
