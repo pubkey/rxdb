@@ -2,6 +2,8 @@
 
 ### X.X.X (coming soon)
 
+### 9.18.0 (26 April 2020)
+
 Bugfixes:
   - Fixed memory leak in `RxCollection().findByIds$()`
 
