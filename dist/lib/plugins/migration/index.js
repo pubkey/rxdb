@@ -74,7 +74,10 @@ var RxDBMigrationPlugin = {
       proto.migrationStates = function () {
         return (0, _migrationState.getMigrationStateByDatabase)(this).pipe((0, _operators.switchMap)(function (list) {
           return (0, _rxjs.combineLatest)(list);
-        }), (0, _operators.shareReplay)(1));
+        }), (0, _operators.shareReplay)({
+          bufferSize: 1,
+          refCount: true
+        }));
       };
     },
     RxCollection: function RxCollection(proto) {

@@ -45,6 +45,7 @@ export declare function ucfirst(str: string): string;
  * removes trailing and ending dots from the string
  */
 export declare function trimDots(str: string): string;
+export declare function ensureNotFalsy<T>(obj: T | false | undefined | null): T;
 /**
  * deep-sort an object so its attributes are in lexical order.
  * Also sorts the arrays inside of the object if no-array-sort not set

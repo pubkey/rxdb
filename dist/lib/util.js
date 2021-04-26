@@ -18,6 +18,7 @@ exports.promiseSeries = promiseSeries;
 exports.requestIdleCallbackIfAvailable = requestIdleCallbackIfAvailable;
 exports.ucfirst = ucfirst;
 exports.trimDots = trimDots;
+exports.ensureNotFalsy = ensureNotFalsy;
 exports.sortObject = sortObject;
 exports.stringifyFilter = stringifyFilter;
 exports.randomCouchString = randomCouchString;
@@ -229,6 +230,14 @@ function trimDots(str) {
   }
 
   return str;
+}
+
+function ensureNotFalsy(obj) {
+  if (!obj) {
+    throw new Error('ensureNotFalsy() is falsy');
+  }
+
+  return obj;
 }
 /**
  * deep-sort an object so its attributes are in lexical order.

@@ -89,7 +89,12 @@ var ChangeEventBuffer = /*#__PURE__*/function () {
     while (true) {
       var nextEvent = this.buffer[currentIndex];
       currentIndex++;
-      if (!nextEvent) return ret;else ret.push(nextEvent);
+
+      if (!nextEvent) {
+        return ret;
+      } else {
+        ret.push(nextEvent);
+      }
     }
   };
 
@@ -4496,7 +4501,10 @@ var RxDBMigrationPlugin = {
       proto.migrationStates = function () {
         return (0, _migrationState.getMigrationStateByDatabase)(this).pipe((0, _operators.switchMap)(function (list) {
           return (0, _rxjs.combineLatest)(list);
-        }), (0, _operators.shareReplay)(1));
+        }), (0, _operators.shareReplay)({
+          bufferSize: 1,
+          refCount: true
+        }));
       };
     },
     RxCollection: function RxCollection(proto) {
@@ -4530,6 +4538,8 @@ exports.DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE = void 0;
 
 var _rxjs = require("rxjs");
 
+var _util = require("../../util");
+
 var DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE = new WeakMap();
 exports.DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE = DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE;
 
@@ -4539,13 +4549,7 @@ function getMigrationStateByDatabase(database) {
   }
 
   var subject = DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE.get(database);
-
-  if (!subject) {
-    // should never happen
-    throw new Error('never');
-  }
-
-  return subject;
+  return (0, _util.ensureNotFalsy)(subject);
 }
 /**
  * Complete on database destroy
@@ -4562,7 +4566,7 @@ function onDatabaseDestroy(database) {
 }
 
 
-},{"rxjs":532}],30:[function(require,module,exports){
+},{"../../util":56,"rxjs":532}],30:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5998,12 +6002,10 @@ exports.COLLECTIONS_WITH_RUNNING_CLEANUP = exports.defaultCacheReplacementPolicy
 
 var _util = require("./util");
 
-function _createForOfIteratorHelperLoose(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (it) return (it = it.call(o)).next.bind(it); if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; return function () { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
+/**
+ * the query-cache makes sure that on every query-state, exactly one instance can exist
+ * if you use the same mango-query more then once, it will reuse the first RxQuery
+ */
 var QueryCache = /*#__PURE__*/function () {
   function QueryCache() {
     this._map = new Map();
@@ -6066,9 +6068,10 @@ var defaultCacheReplacementPolicyMonad = function defaultCacheReplacementPolicyM
 
     var minUnExecutedLifetime = (0, _util.now)() - unExecutedLifetime;
     var maybeUncash = [];
+    var queriesInCache = Array.from(queryCache._map.values());
 
-    for (var _iterator = _createForOfIteratorHelperLoose(queryCache._map.values()), _step; !(_step = _iterator()).done;) {
-      var rxQuery = _step.value;
+    for (var _i = 0, _queriesInCache = queriesInCache; _i < _queriesInCache.length; _i++) {
+      var rxQuery = _queriesInCache[_i];
 
       // filter out queries with subscribers
       if (countRxQuerySubscribers(rxQuery) > 0) {
@@ -6991,38 +6994,84 @@ var RxCollectionBase = /*#__PURE__*/function () {
     var _this11 = this;
 
     var currentValue = null;
+    var lastChangeEvent = -1;
     var initialPromise = this.findByIds(ids).then(function (docsMap) {
+      lastChangeEvent = _this11._changeEventBuffer.counter;
       currentValue = docsMap;
     });
     return this.$.pipe((0, _operators.startWith)(null), (0, _operators.mergeMap)(function (ev) {
       return initialPromise.then(function () {
         return ev;
       });
-    }), (0, _operators.map)(function (ev) {
-      if (!currentValue) {
-        throw new Error('should not happen');
-      }
+    }),
+    /**
+     * Because shareReplay with refCount: true
+     * will often subscribe/unsusbscribe
+     * we always ensure that we handled all missed events
+     * since the last subscription.
+     */
+    (0, _operators.mergeMap)( /*#__PURE__*/function () {
+      var _ref3 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(ev) {
+        var resultMap, missedChangeEvents, newResult;
+        return _regenerator["default"].wrap(function _callee4$(_context4) {
+          while (1) {
+            switch (_context4.prev = _context4.next) {
+              case 0:
+                resultMap = (0, _util.ensureNotFalsy)(currentValue);
+                missedChangeEvents = _this11._changeEventBuffer.getFrom(lastChangeEvent + 1);
 
-      if (!ev) {
-        return currentValue;
-      }
+                if (!(missedChangeEvents === null)) {
+                  _context4.next = 10;
+                  break;
+                }
 
-      if (!ids.includes(ev.documentId)) {
-        return null;
-      }
+                _context4.next = 5;
+                return _this11.findByIds(ids);
 
-      var op = ev.operation;
+              case 5:
+                newResult = _context4.sent;
+                lastChangeEvent = _this11._changeEventBuffer.counter;
+                Array.from(newResult.entries()).forEach(function (_ref4) {
+                  var k = _ref4[0],
+                      v = _ref4[1];
+                  return resultMap.set(k, v);
+                });
+                _context4.next = 11;
+                break;
 
-      if (op === 'INSERT' || op === 'UPDATE') {
-        currentValue.set(ev.documentId, _this11._docCache.get(ev.documentId));
-      } else {
-        currentValue["delete"](ev.documentId);
-      }
+              case 10:
+                missedChangeEvents.filter(function (rxChangeEvent) {
+                  return ids.includes(rxChangeEvent.documentId);
+                }).forEach(function (rxChangeEvent) {
+                  var op = rxChangeEvent.operation;
 
-      return currentValue;
-    }), (0, _operators.filter)(function (x) {
+                  if (op === 'INSERT' || op === 'UPDATE') {
+                    resultMap.set(rxChangeEvent.documentId, _this11._docCache.get(rxChangeEvent.documentId));
+                  } else {
+                    resultMap["delete"](rxChangeEvent.documentId);
+                  }
+                });
+
+              case 11:
+                return _context4.abrupt("return", resultMap);
+
+              case 12:
+              case "end":
+                return _context4.stop();
+            }
+          }
+        }, _callee4);
+      }));
+
+      return function (_x3) {
+        return _ref3.apply(this, arguments);
+      };
+    }()), (0, _operators.filter)(function (x) {
       return !!x;
-    }), (0, _operators.shareReplay)(1));
+    }), (0, _operators.shareReplay)({
+      bufferSize: 1,
+      refCount: true
+    }));
   }
   /**
    * Export collection to a JSON friendly format.
@@ -7385,26 +7434,26 @@ function _prepareCreateIndexes(rxCollection, spawnedPouchPromise) {
  */
 
 
-function create(_ref3, wasCreatedBefore) {
-  var database = _ref3.database,
-      name = _ref3.name,
-      schema = _ref3.schema,
-      _ref3$pouchSettings = _ref3.pouchSettings,
-      pouchSettings = _ref3$pouchSettings === void 0 ? {} : _ref3$pouchSettings,
-      _ref3$migrationStrate = _ref3.migrationStrategies,
-      migrationStrategies = _ref3$migrationStrate === void 0 ? {} : _ref3$migrationStrate,
-      _ref3$autoMigrate = _ref3.autoMigrate,
-      autoMigrate = _ref3$autoMigrate === void 0 ? true : _ref3$autoMigrate,
-      _ref3$statics = _ref3.statics,
-      statics = _ref3$statics === void 0 ? {} : _ref3$statics,
-      _ref3$methods = _ref3.methods,
-      methods = _ref3$methods === void 0 ? {} : _ref3$methods,
-      _ref3$attachments = _ref3.attachments,
-      attachments = _ref3$attachments === void 0 ? {} : _ref3$attachments,
-      _ref3$options = _ref3.options,
-      options = _ref3$options === void 0 ? {} : _ref3$options,
-      _ref3$cacheReplacemen = _ref3.cacheReplacementPolicy,
-      cacheReplacementPolicy = _ref3$cacheReplacemen === void 0 ? _queryCache.defaultCacheReplacementPolicy : _ref3$cacheReplacemen;
+function create(_ref5, wasCreatedBefore) {
+  var database = _ref5.database,
+      name = _ref5.name,
+      schema = _ref5.schema,
+      _ref5$pouchSettings = _ref5.pouchSettings,
+      pouchSettings = _ref5$pouchSettings === void 0 ? {} : _ref5$pouchSettings,
+      _ref5$migrationStrate = _ref5.migrationStrategies,
+      migrationStrategies = _ref5$migrationStrate === void 0 ? {} : _ref5$migrationStrate,
+      _ref5$autoMigrate = _ref5.autoMigrate,
+      autoMigrate = _ref5$autoMigrate === void 0 ? true : _ref5$autoMigrate,
+      _ref5$statics = _ref5.statics,
+      statics = _ref5$statics === void 0 ? {} : _ref5$statics,
+      _ref5$methods = _ref5.methods,
+      methods = _ref5$methods === void 0 ? {} : _ref5$methods,
+      _ref5$attachments = _ref5.attachments,
+      attachments = _ref5$attachments === void 0 ? {} : _ref5$attachments,
+      _ref5$options = _ref5.options,
+      options = _ref5$options === void 0 ? {} : _ref5$options,
+      _ref5$cacheReplacemen = _ref5.cacheReplacementPolicy,
+      cacheReplacementPolicy = _ref5$cacheReplacemen === void 0 ? _queryCache.defaultCacheReplacementPolicy : _ref5$cacheReplacemen;
   (0, _pouchDb.validateCouchDBString)(name); // ensure it is a schema-object
 
   if (!(0, _rxSchema.isInstanceOf)(schema)) {
@@ -7421,9 +7470,9 @@ function create(_ref3, wasCreatedBefore) {
   var collection = new RxCollectionBase(database, name, schema, pouchSettings, migrationStrategies, methods, attachments, options, cacheReplacementPolicy, statics);
   return collection.prepare(wasCreatedBefore).then(function () {
     // ORM add statics
-    Object.entries(statics).forEach(function (_ref4) {
-      var funName = _ref4[0],
-          fun = _ref4[1];
+    Object.entries(statics).forEach(function (_ref6) {
+      var funName = _ref6[0],
+          fun = _ref6[1];
       Object.defineProperty(collection, funName, {
         get: function get() {
           return fun.bind(collection);
@@ -9251,6 +9300,7 @@ var RxQueryBase = /*#__PURE__*/function () {
 
       default:
         throw (0, _rxError.newRxError)('QU1', {
+          collection: this.collection.name,
           op: this.op
         });
     }
@@ -9280,6 +9330,7 @@ var RxQueryBase = /*#__PURE__*/function () {
     // TODO this should be ensured by typescript
     if (throwIfMissing && this.op !== 'findOne') {
       throw (0, _rxError.newRxError)('QU9', {
+        collection: this.collection.name,
         query: this.mangoQuery,
         op: this.op
       });
@@ -9296,6 +9347,7 @@ var RxQueryBase = /*#__PURE__*/function () {
     }).then(function (result) {
       if (!result && throwIfMissing) {
         throw (0, _rxError.newRxError)('QU10', {
+          collection: _this2.collection.name,
           query: _this2.mangoQuery,
           op: _this2.op
         });
@@ -9589,18 +9641,28 @@ function _ensureEqual(rxQuery) {
 
 function __ensureEqual(rxQuery) {
   rxQuery._lastEnsureEqual = (0, _util.now)();
-  if (rxQuery.collection.database.destroyed) return false; // db is closed
 
-  if (_isResultsInSync(rxQuery)) return false; // nothing happend
+  if (rxQuery.collection.database.destroyed) {
+    // db is closed
+    return false;
+  }
+
+  if (_isResultsInSync(rxQuery)) {
+    // nothing happend
+    return false;
+  }
 
   var ret = false;
   var mustReExec = false; // if this becomes true, a whole execution over the database is made
 
-  if (rxQuery._latestChangeEvent === -1) mustReExec = true; // have not executed yet -> must run
-
+  if (rxQuery._latestChangeEvent === -1) {
+    // have not executed yet -> must run
+    mustReExec = true;
+  }
   /**
    * try to use the queryChangeDetector to calculate the new results
    */
+
 
   if (!mustReExec) {
     var missedChangeEvents = rxQuery.collection._changeEventBuffer.getFrom(rxQuery._latestChangeEvent + 1);
@@ -10345,6 +10407,7 @@ exports.promiseSeries = promiseSeries;
 exports.requestIdleCallbackIfAvailable = requestIdleCallbackIfAvailable;
 exports.ucfirst = ucfirst;
 exports.trimDots = trimDots;
+exports.ensureNotFalsy = ensureNotFalsy;
 exports.sortObject = sortObject;
 exports.stringifyFilter = stringifyFilter;
 exports.randomCouchString = randomCouchString;
@@ -10556,6 +10619,14 @@ function trimDots(str) {
   }
 
   return str;
+}
+
+function ensureNotFalsy(obj) {
+  if (!obj) {
+    throw new Error('ensureNotFalsy() is falsy');
+  }
+
+  return obj;
 }
 /**
  * deep-sort an object so its attributes are in lexical order.

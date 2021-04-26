@@ -107,6 +107,7 @@ var RxQueryBase = /*#__PURE__*/function () {
 
       default:
         throw (0, _rxError.newRxError)('QU1', {
+          collection: this.collection.name,
           op: this.op
         });
     }
@@ -136,6 +137,7 @@ var RxQueryBase = /*#__PURE__*/function () {
     // TODO this should be ensured by typescript
     if (throwIfMissing && this.op !== 'findOne') {
       throw (0, _rxError.newRxError)('QU9', {
+        collection: this.collection.name,
         query: this.mangoQuery,
         op: this.op
       });
@@ -152,6 +154,7 @@ var RxQueryBase = /*#__PURE__*/function () {
     }).then(function (result) {
       if (!result && throwIfMissing) {
         throw (0, _rxError.newRxError)('QU10', {
+          collection: _this2.collection.name,
           query: _this2.mangoQuery,
           op: _this2.op
         });
@@ -445,18 +448,28 @@ function _ensureEqual(rxQuery) {
 
 function __ensureEqual(rxQuery) {
   rxQuery._lastEnsureEqual = (0, _util.now)();
-  if (rxQuery.collection.database.destroyed) return false; // db is closed
 
-  if (_isResultsInSync(rxQuery)) return false; // nothing happend
+  if (rxQuery.collection.database.destroyed) {
+    // db is closed
+    return false;
+  }
+
+  if (_isResultsInSync(rxQuery)) {
+    // nothing happend
+    return false;
+  }
 
   var ret = false;
   var mustReExec = false; // if this becomes true, a whole execution over the database is made
 
-  if (rxQuery._latestChangeEvent === -1) mustReExec = true; // have not executed yet -> must run
-
+  if (rxQuery._latestChangeEvent === -1) {
+    // have not executed yet -> must run
+    mustReExec = true;
+  }
   /**
    * try to use the queryChangeDetector to calculate the new results
    */
+
 
   if (!mustReExec) {
     var missedChangeEvents = rxQuery.collection._changeEventBuffer.getFrom(rxQuery._latestChangeEvent + 1);

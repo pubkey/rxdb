@@ -1,4 +1,5 @@
 import { BehaviorSubject } from 'rxjs';
+import { ensureNotFalsy } from '../../util';
 export var DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE = new WeakMap();
 export function getMigrationStateByDatabase(database) {
   if (!DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE.has(database)) {
@@ -6,13 +7,7 @@ export function getMigrationStateByDatabase(database) {
   }
 
   var subject = DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE.get(database);
-
-  if (!subject) {
-    // should never happen
-    throw new Error('never');
-  }
-
-  return subject;
+  return ensureNotFalsy(subject);
 }
 /**
  * Complete on database destroy

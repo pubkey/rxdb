@@ -1,8 +1,8 @@
 import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _createClass from "@babel/runtime/helpers/createClass";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
-import { filter, startWith, mergeMap, map, shareReplay } from 'rxjs/operators';
-import { ucfirst, nextTick, flatClone, promiseSeries, pluginMissing, now } from './util';
+import { filter, startWith, mergeMap, shareReplay } from 'rxjs/operators';
+import { ucfirst, nextTick, flatClone, promiseSeries, pluginMissing, now, ensureNotFalsy } from './util';
 import { validateCouchDBString } from './pouch-db';
 import { _handleToPouch as _handleToPouch2, _handleFromPouch as _handleFromPouch2, fillObjectDataBeforeInsert } from './rx-collection-helper';
 import { createRxQuery, _getDefaultQuery } from './rx-query';
@@ -624,38 +624,84 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     var _this11 = this;
 
     var currentValue = null;
+    var lastChangeEvent = -1;
     var initialPromise = this.findByIds(ids).then(function (docsMap) {
+      lastChangeEvent = _this11._changeEventBuffer.counter;
       currentValue = docsMap;
     });
     return this.$.pipe(startWith(null), mergeMap(function (ev) {
       return initialPromise.then(function () {
         return ev;
       });
-    }), map(function (ev) {
-      if (!currentValue) {
-        throw new Error('should not happen');
-      }
+    }),
+    /**
+     * Because shareReplay with refCount: true
+     * will often subscribe/unsusbscribe
+     * we always ensure that we handled all missed events
+     * since the last subscription.
+     */
+    mergeMap( /*#__PURE__*/function () {
+      var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4(ev) {
+        var resultMap, missedChangeEvents, newResult;
+        return _regeneratorRuntime.wrap(function _callee4$(_context4) {
+          while (1) {
+            switch (_context4.prev = _context4.next) {
+              case 0:
+                resultMap = ensureNotFalsy(currentValue);
+                missedChangeEvents = _this11._changeEventBuffer.getFrom(lastChangeEvent + 1);
 
-      if (!ev) {
-        return currentValue;
-      }
+                if (!(missedChangeEvents === null)) {
+                  _context4.next = 10;
+                  break;
+                }
 
-      if (!ids.includes(ev.documentId)) {
-        return null;
-      }
+                _context4.next = 5;
+                return _this11.findByIds(ids);
 
-      var op = ev.operation;
+              case 5:
+                newResult = _context4.sent;
+                lastChangeEvent = _this11._changeEventBuffer.counter;
+                Array.from(newResult.entries()).forEach(function (_ref4) {
+                  var k = _ref4[0],
+                      v = _ref4[1];
+                  return resultMap.set(k, v);
+                });
+                _context4.next = 11;
+                break;
 
-      if (op === 'INSERT' || op === 'UPDATE') {
-        currentValue.set(ev.documentId, _this11._docCache.get(ev.documentId));
-      } else {
-        currentValue["delete"](ev.documentId);
-      }
+              case 10:
+                missedChangeEvents.filter(function (rxChangeEvent) {
+                  return ids.includes(rxChangeEvent.documentId);
+                }).forEach(function (rxChangeEvent) {
+                  var op = rxChangeEvent.operation;
 
-      return currentValue;
-    }), filter(function (x) {
+                  if (op === 'INSERT' || op === 'UPDATE') {
+                    resultMap.set(rxChangeEvent.documentId, _this11._docCache.get(rxChangeEvent.documentId));
+                  } else {
+                    resultMap["delete"](rxChangeEvent.documentId);
+                  }
+                });
+
+              case 11:
+                return _context4.abrupt("return", resultMap);
+
+              case 12:
+              case "end":
+                return _context4.stop();
+            }
+          }
+        }, _callee4);
+      }));
+
+      return function (_x3) {
+        return _ref3.apply(this, arguments);
+      };
+    }()), filter(function (x) {
       return !!x;
-    }), shareReplay(1));
+    }), shareReplay({
+      bufferSize: 1,
+      refCount: true
+    }));
   }
   /**
    * Export collection to a JSON friendly format.
@@ -1016,26 +1062,26 @@ function _prepareCreateIndexes(rxCollection, spawnedPouchPromise) {
  */
 
 
-export function create(_ref3, wasCreatedBefore) {
-  var database = _ref3.database,
-      name = _ref3.name,
-      schema = _ref3.schema,
-      _ref3$pouchSettings = _ref3.pouchSettings,
-      pouchSettings = _ref3$pouchSettings === void 0 ? {} : _ref3$pouchSettings,
-      _ref3$migrationStrate = _ref3.migrationStrategies,
-      migrationStrategies = _ref3$migrationStrate === void 0 ? {} : _ref3$migrationStrate,
-      _ref3$autoMigrate = _ref3.autoMigrate,
-      autoMigrate = _ref3$autoMigrate === void 0 ? true : _ref3$autoMigrate,
-      _ref3$statics = _ref3.statics,
-      statics = _ref3$statics === void 0 ? {} : _ref3$statics,
-      _ref3$methods = _ref3.methods,
-      methods = _ref3$methods === void 0 ? {} : _ref3$methods,
-      _ref3$attachments = _ref3.attachments,
-      attachments = _ref3$attachments === void 0 ? {} : _ref3$attachments,
-      _ref3$options = _ref3.options,
-      options = _ref3$options === void 0 ? {} : _ref3$options,
-      _ref3$cacheReplacemen = _ref3.cacheReplacementPolicy,
-      cacheReplacementPolicy = _ref3$cacheReplacemen === void 0 ? defaultCacheReplacementPolicy : _ref3$cacheReplacemen;
+export function create(_ref5, wasCreatedBefore) {
+  var database = _ref5.database,
+      name = _ref5.name,
+      schema = _ref5.schema,
+      _ref5$pouchSettings = _ref5.pouchSettings,
+      pouchSettings = _ref5$pouchSettings === void 0 ? {} : _ref5$pouchSettings,
+      _ref5$migrationStrate = _ref5.migrationStrategies,
+      migrationStrategies = _ref5$migrationStrate === void 0 ? {} : _ref5$migrationStrate,
+      _ref5$autoMigrate = _ref5.autoMigrate,
+      autoMigrate = _ref5$autoMigrate === void 0 ? true : _ref5$autoMigrate,
+      _ref5$statics = _ref5.statics,
+      statics = _ref5$statics === void 0 ? {} : _ref5$statics,
+      _ref5$methods = _ref5.methods,
+      methods = _ref5$methods === void 0 ? {} : _ref5$methods,
+      _ref5$attachments = _ref5.attachments,
+      attachments = _ref5$attachments === void 0 ? {} : _ref5$attachments,
+      _ref5$options = _ref5.options,
+      options = _ref5$options === void 0 ? {} : _ref5$options,
+      _ref5$cacheReplacemen = _ref5.cacheReplacementPolicy,
+      cacheReplacementPolicy = _ref5$cacheReplacemen === void 0 ? defaultCacheReplacementPolicy : _ref5$cacheReplacemen;
   validateCouchDBString(name); // ensure it is a schema-object
 
   if (!isInstanceOfRxSchema(schema)) {
@@ -1052,9 +1098,9 @@ export function create(_ref3, wasCreatedBefore) {
   var collection = new RxCollectionBase(database, name, schema, pouchSettings, migrationStrategies, methods, attachments, options, cacheReplacementPolicy, statics);
   return collection.prepare(wasCreatedBefore).then(function () {
     // ORM add statics
-    Object.entries(statics).forEach(function (_ref4) {
-      var funName = _ref4[0],
-          fun = _ref4[1];
+    Object.entries(statics).forEach(function (_ref6) {
+      var funName = _ref6[0],
+          fun = _ref6[1];
       Object.defineProperty(collection, funName, {
         get: function get() {
           return fun.bind(collection);
