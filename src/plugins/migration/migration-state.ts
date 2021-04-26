@@ -7,6 +7,7 @@ import type {
     RxCollection,
     RxDatabase
 } from '../../types';
+import { ensureNotFalsy } from '../../util';
 
 export type MigrationStateWithCollection = {
     collection: RxCollection;
@@ -23,11 +24,7 @@ export function getMigrationStateByDatabase(database: RxDatabase): BehaviorSubje
         );
     }
     const subject = DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE.get(database);
-    if (!subject) {
-        // should never happen
-        throw new Error('never');
-    }
-    return subject;
+    return ensureNotFalsy(subject);
 }
 
 /**

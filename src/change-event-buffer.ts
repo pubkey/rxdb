@@ -72,8 +72,11 @@ export class ChangeEventBuffer {
         while (true) {
             const nextEvent = this.buffer[currentIndex];
             currentIndex++;
-            if (!nextEvent) return ret;
-            else ret.push(nextEvent);
+            if (!nextEvent) {
+                return ret;
+            } else {
+                ret.push(nextEvent);
+            }
         }
     }
 

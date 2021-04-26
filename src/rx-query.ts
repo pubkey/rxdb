@@ -481,12 +481,21 @@ function _ensureEqual(rxQuery: RxQueryBase): Promise<boolean> {
  */
 function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
     rxQuery._lastEnsureEqual = now();
-    if (rxQuery.collection.database.destroyed) return false; // db is closed
-    if (_isResultsInSync(rxQuery)) return false; // nothing happend
+    if (rxQuery.collection.database.destroyed) {
+        // db is closed
+        return false;
+    }
+    if (_isResultsInSync(rxQuery)) {
+        // nothing happend
+        return false;
+    }
 
     let ret = false;
     let mustReExec = false; // if this becomes true, a whole execution over the database is made
-    if (rxQuery._latestChangeEvent === -1) mustReExec = true; // have not executed yet -> must run
+    if (rxQuery._latestChangeEvent === -1) {
+        // have not executed yet -> must run
+        mustReExec = true;
+    }
 
     /**
      * try to use the queryChangeDetector to calculate the new results
@@ -510,7 +519,9 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
 
 
 
-            const runChangeEvents: RxChangeEvent[] = (rxQuery as any).collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
+            const runChangeEvents: RxChangeEvent[] = ((rxQuery as any).collection as RxCollection)
+                ._changeEventBuffer
+                .reduceByLastOfDoc(missedChangeEvents);
 
             /*
             console.log('calculateNewResults() ' + new Date().getTime());

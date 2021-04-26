@@ -2,6 +2,9 @@
 
 ### X.X.X (coming soon)
 
+Bugfixes:
+  - Fixed memory leak in `RxCollection().findByIds$()`
+
 Other:
   - Added collection name when throwing errors in `RxQuery`
 

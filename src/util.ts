@@ -186,6 +186,14 @@ export function trimDots(str: string): string {
     return str;
 }
 
+
+export function ensureNotFalsy<T>(obj: T | false | undefined | null): T {
+    if (!obj) {
+        throw new Error('ensureNotFalsy() is falsy');
+    }
+    return obj;
+}
+
 /**
  * deep-sort an object so its attributes are in lexical order.
  * Also sorts the arrays inside of the object if no-array-sort not set

@@ -133,17 +133,8 @@ config.parallel('cache-replacement-policy.test.js', () => {
                 throw new Error('query undefined');
             }
 
-            console.log('before unsub:');
-            console.dir((query as any).refCount$.observers);
-
             sub.unsubscribe();
-
-            console.log('after unsub:');
-            console.dir((query as any).refCount$.observers);
-
-
             assert.strictEqual(countRxQuerySubscribers(query), 0);
-
 
             col.database.destroy();
         });

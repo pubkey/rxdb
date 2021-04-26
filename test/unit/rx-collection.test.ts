@@ -1732,6 +1732,8 @@ config.parallel('rx-collection.test.js', () => {
             await c.insert(addData);
             // insert whose id is not in ids-list should not affect anything
             await c.insert(schemaObjects.human());
+
+
             const res2 = await obs.pipe(first()).toPromise();
             assert.strictEqual(res2.size, 6);
             assert.ok(res2.has('foobar'));

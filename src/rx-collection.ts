@@ -1,5 +1,8 @@
 import {
-    filter, startWith, mergeMap, map, shareReplay
+    filter,
+    startWith,
+    mergeMap,
+    shareReplay
 } from 'rxjs/operators';
 
 import {
@@ -8,7 +11,8 @@ import {
     flatClone,
     promiseSeries,
     pluginMissing,
-    now
+    now,
+    ensureNotFalsy
 } from './util';
 import {
     validateCouchDBString
@@ -706,34 +710,51 @@ export class RxCollectionBase<
         ids: string[]
     ): Observable<Map<string, RxDocument<RxDocumentType, OrmMethods>>> {
         let currentValue: Map<string, RxDocument<RxDocumentType, OrmMethods>> | null = null;
+        let lastChangeEvent: number = -1;
+
         const initialPromise = this.findByIds(ids).then(docsMap => {
+            lastChangeEvent = this._changeEventBuffer.counter;
             currentValue = docsMap;
         });
         return this.$.pipe(
             startWith(null),
             mergeMap(ev => initialPromise.then(() => ev)),
-            map(ev => {
-                if (!currentValue) {
-                    throw new Error('should not happen');
-                }
-                if (!ev) {
-                    return currentValue;
-                }
-                if (!ids.includes(ev.documentId)) {
-                    return null;
-                }
-                const op = ev.operation;
-                if (op === 'INSERT' || op === 'UPDATE') {
-                    currentValue.set(ev.documentId, this._docCache.get(ev.documentId) as any);
+            /**
+             * Because shareReplay with refCount: true
+             * will often subscribe/unsusbscribe
+             * we always ensure that we handled all missed events
+             * since the last subscription.
+             */
+            mergeMap(async (ev) => {
+                const resultMap = ensureNotFalsy(currentValue);
+                const missedChangeEvents = this._changeEventBuffer.getFrom(lastChangeEvent + 1);
+                if (missedChangeEvents === null) {
+                    /**
+                     * changeEventBuffer is of bounds -> we must re-execute over the database
+                     * because we cannot calculate the new results just from the events.
+                     */
+                    const newResult = await this.findByIds(ids);
+                    lastChangeEvent = this._changeEventBuffer.counter;
+                    Array.from(newResult.entries()).forEach(([k, v]) => resultMap.set(k, v));
                 } else {
-                    currentValue.delete(ev.documentId);
+                    missedChangeEvents
+                        .filter(rxChangeEvent => ids.includes(rxChangeEvent.documentId))
+                        .forEach(rxChangeEvent => {
+                            const op = rxChangeEvent.operation;
+                            if (op === 'INSERT' || op === 'UPDATE') {
+                                resultMap.set(rxChangeEvent.documentId, this._docCache.get(rxChangeEvent.documentId) as any);
+                            } else {
+                                resultMap.delete(rxChangeEvent.documentId);
+                            }
+                        });
                 }
-                return currentValue as any;
+                return resultMap;
             }),
             filter(x => !!x),
-            // TODO this does not unsubscribe from parent
-            // @link https://cartant.medium.com/rxjs-whats-changed-with-sharereplay-65c098843e95
-            shareReplay(1)
+            shareReplay({
+                bufferSize: 1,
+                refCount: true
+            })
         );
     }
 
