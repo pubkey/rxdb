@@ -75,4 +75,20 @@ describe('Application launch', function() {
         });
         await AsyncTestUtil.wait(100);
     });
+
+    it('#3022 blob attachments not working', async () => {
+        await AsyncTestUtil.wait(100);
+        await AsyncTestUtil.waitUntil(async () => {
+            const window = app.client.windowByIndex(0);
+            const foundElement = await window.element('.attachments-count[value="2"]');
+            return foundElement.value;
+        });
+
+        await AsyncTestUtil.waitUntil(async () => {
+            const window = app.client.windowByIndex(1);
+            const foundElement = await window.element('.attachments-count[value="2"]');
+            return foundElement.value;
+        });
+        await AsyncTestUtil.wait(100);
+    });
 });

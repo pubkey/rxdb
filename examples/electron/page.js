@@ -11,6 +11,7 @@ const syncURL = 'http://localhost:10102/db/heroes';
 const {
     addRxPlugin
 } = require('rxdb');
+
 addRxPlugin(require('pouchdb-adapter-idb'));
 
 async function run() {
@@ -21,10 +22,14 @@ async function run() {
     await renderTest();
 
     const currentWindow = electron.remote.getCurrentWindow();
+    const adapter = 'idb'
     const db = await database.getDatabase(
         'heroesdb' + currentWindow.custom.dbSuffix, // we add a random timestamp in dev-mode to reset the database on each start
-        'idb'
+        adapter
     );
+
+    window.db = db;
+
     console.log('starting sync with ' + syncURL);
     const syncState = await db.heroes.sync({
         remote: syncURL,
@@ -52,24 +57,29 @@ async function run() {
 
             heroesList.innerHTML = heroes
                 .map(hero => {
-                    return '<li>' +
-                        '<div class="color-box" style="background:' + hero.color + '"></div>' +
-                        '<div class="name" name="' + hero.name + '">' + hero.name + '</div>' +
-                        '</li>';
+                    const attachments = hero.allAttachments()
+                    const attachmentsBlock = attachments.map(one => {
+                        return `
+                            <li>
+                              <p>${one.id.substr(0, 8)}… – ${one.type}</p>
+                            </li>
+                        `
+                    }).join('');
+
+                    return `
+                    <div>
+                        <div class="color-box" style="background:${hero.color}" />
+                        <div class="name" name="${hero.name}">${hero.name}</div>
+                        <div class="attachments-count" value="${attachments.length}">
+                            <ul>
+                                ${attachmentsBlock.length ? attachmentsBlock : 'No attachments'}
+                            </ul>
+                        </div>
+                    </div>
+                    `
                 })
                 .reduce((pre, cur) => pre += cur, '');
         });
-
-    window.addHero = async function () {
-        const name = document.querySelector('input[name="name"]').value;
-        const color = document.querySelector('input[name="color"]').value;
-        const obj = {
-            name: name,
-            color: color
-        };
-        console.log('inserting hero:');
-        console.dir(obj);
-        db.heroes.insert(obj);
-    };
 }
+
 run();
