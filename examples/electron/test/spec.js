@@ -79,4 +79,4 @@ describe('Application launch', function() {
 
         await AsyncTestUtil.wait(100);
     });
-);
+});
