@@ -36,7 +36,7 @@
     "@vue/cli-plugin-pwa": "4.5.13",
     "@vue/cli-plugin-typescript": "4.5.13",
     "@vue/cli-service": "4.5.13",
-    "concurrently": "6.0.2",
+    "concurrently": "6.1.0",
     "less": "4.1.1",
     "less-loader": "7.3.0",
     "local-web-server": "4.2.1",
