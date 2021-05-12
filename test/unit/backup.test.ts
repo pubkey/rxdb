@@ -11,12 +11,11 @@ import {
 } from '../../plugins/core';
 import { createAttachments } from '../helper/humans-collection';
 import {
-    BackupMetaFileContent,
     backupSingleDocument,
     clearFolder,
     getMeta
 } from '../../plugins/backup';
-import { RxBackupWriteEvent } from '../../src/types';
+import { BackupMetaFileContent, RxBackupWriteEvent } from '../../src/types';
 
 describe('backup.test.js', () => {
 
