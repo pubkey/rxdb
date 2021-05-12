@@ -1,6 +1,7 @@
 import * as path from 'path';
 import {
     BehaviorSubject,
+    firstValueFrom,
     fromEvent,
     Observable,
     Subject,
@@ -8,7 +9,6 @@ import {
 } from 'rxjs';
 import {
     filter,
-    first,
     map
 } from 'rxjs/operators';
 import { getNewestSequence } from '../../pouch-db';
@@ -242,11 +242,12 @@ export class RxBackupState {
      * and the filesystem is in sync with the database state
      */
     public awaitInitialBackup(): Promise<boolean> {
-        return this.initialReplicationDone$.pipe(
-            filter(v => !!v),
-            first(),
-            map(() => true)
-        ).toPromise();
+        return firstValueFrom(
+            this.initialReplicationDone$.pipe(
+                filter(v => !!v),
+                map(() => true)
+            )
+        );
     }
 
     cancel(): Promise<boolean> {

@@ -8,14 +8,14 @@
 import {
     Subject,
     fromEvent as ObservableFromEvent,
-    Observable
+    Observable,
+    firstValueFrom
 } from 'rxjs';
 
 import {
     filter,
     map,
     mergeMap,
-    first,
     delay
 } from 'rxjs/operators';
 
@@ -188,10 +188,11 @@ export
      */
     awaitPersistence(): Promise<any> {
         if (this._nonPersistentRevisions.size === 0) return Promise.resolve();
-        return this._nonPersistentRevisionsSubject.pipe(
-            filter(() => this._nonPersistentRevisions.size === 0),
-            first()
-        ).toPromise();
+        return firstValueFrom(
+            this._nonPersistentRevisionsSubject.pipe(
+                filter(() => this._nonPersistentRevisions.size === 0),
+            )
+        );
     }
 
     /**

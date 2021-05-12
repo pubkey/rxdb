@@ -1,13 +1,13 @@
 import deepEqual from 'deep-equal';
 import {
     merge,
-    BehaviorSubject
+    BehaviorSubject,
+    firstValueFrom
 } from 'rxjs';
 import {
     mergeMap,
     filter,
     map,
-    first,
     tap
 } from 'rxjs/operators';
 import {
@@ -240,10 +240,7 @@ export class RxQueryBase<
          * will be thrown at this execution context
          */
         return _ensureEqual(this)
-            .then(() => this.$
-                .pipe(
-                    first()
-                ).toPromise())
+            .then(() => firstValueFrom(this.$))
             .then(result => {
                 if (!result && throwIfMissing) {
                     throw newRxError('QU10', {

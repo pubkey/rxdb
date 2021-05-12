@@ -9,9 +9,13 @@ import {
     Subject,
     fromEvent,
     Subscription,
-    Observable
+    Observable,
+    firstValueFrom
 } from 'rxjs';
-import { skipUntil, filter, first } from 'rxjs/operators';
+import {
+    skipUntil,
+    filter
+} from 'rxjs/operators';
 
 import {
     promiseWait,
@@ -107,10 +111,11 @@ export class RxReplicationStateBase {
         }
 
         const that: RxReplicationState = this as any;
-        return that.complete$.pipe(
-            filter(x => !!x),
-            first()
-        ).toPromise();
+        return firstValueFrom(
+            that.complete$.pipe(
+                filter(x => !!x)
+            )
+        );
     }
 
     cancel() {

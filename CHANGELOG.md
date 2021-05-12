@@ -5,6 +5,9 @@
 Features:
   - Added the [backup-plugin](https://rxdb.info/backup.html)
 
+Other:
+  - Updated `rxjs` to version `7.0.1`
+
 ### 9.18.0 (26 April 2020)
 
 Bugfixes:
