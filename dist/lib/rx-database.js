@@ -383,6 +383,10 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     throw (0, _util.pluginMissing)('server');
   };
 
+  _proto.backup = function backup(_options) {
+    throw (0, _util.pluginMissing)('backup');
+  };
+
   _proto.leaderElector = function leaderElector() {
     throw (0, _util.pluginMissing)('leader-election');
   };

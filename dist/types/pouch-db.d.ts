@@ -30,5 +30,6 @@ export declare function pouchReplicationFunction(pouch: PouchDBInstance, { pull,
  * would have
  */
 export declare function pouchAttachmentBinaryHash(data: any): Promise<string>;
+export declare function getNewestSequence(pouch: PouchDBInstance): Promise<number>;
 export declare function isInstanceOf(obj: any): boolean;
 export declare const PouchDB: any;
