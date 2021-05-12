@@ -17,7 +17,8 @@ import type {
     RxDumpDatabaseAny,
     RxCollectionCreatorBase,
     AllMigrationStates,
-    ServerResponse
+    ServerResponse,
+    BackupOptions
 } from './types';
 
 import {
@@ -63,6 +64,7 @@ import {
 import { RxStorage } from './rx-storate.interface';
 import { getRxStoragePouchDb } from './rx-storage-pouchdb';
 import { getAllDocuments, deleteStorageInstance } from './rx-database-internal-store';
+import type { RxBackupState } from './plugins/backup';
 
 /**
  * stores the combinations
@@ -377,6 +379,10 @@ export class RxDatabaseBase<
      */
     server(_options?: ServerOptions): ServerResponse {
         throw pluginMissing('server');
+    }
+
+    backup(_options: BackupOptions): RxBackupState {
+        throw pluginMissing('backup');
     }
 
     public leaderElector(): LeaderElector {

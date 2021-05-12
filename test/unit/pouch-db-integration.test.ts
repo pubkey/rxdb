@@ -18,6 +18,7 @@ import {
     PouchDB,
     isRxDatabase,
     PouchDBInstance,
+    getNewestSequence,
     blobBufferUtil
 } from '../../plugins/core';
 import * as schemaObjects from './../helper/schema-objects';
@@ -263,6 +264,26 @@ config.parallel('pouch-db-integration.test.js', () => {
                 docs.forEach(doc => {
                     assert.strictEqual(doc.x, 1);
                 });
+            });
+        });
+        describe('.getNewestSequence()', () => {
+            it('should get the latest sequence', async () => {
+                const pouchdb = new PouchDB(
+                    randomCouchString(10),
+                    {
+                        adapter: 'memory'
+                    }
+                );
+
+                const latestBefore = await getNewestSequence(pouchdb);
+                await pouchdb.put({
+                    _id: 'foobar'
+                });
+                await pouchdb.put({
+                    _id: 'foobar2'
+                });
+                const latestAfter = await getNewestSequence(pouchdb);
+                assert.ok(latestAfter > latestBefore);
             });
         });
     });

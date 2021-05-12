@@ -113,6 +113,8 @@
 
 * [InMemory](./in-memory.md)
 
+* [Backup](./backup.md)
+
 * [QueryCache](./query-cache.md)
 
 * [LocalDocuments](./rx-local-document.md)

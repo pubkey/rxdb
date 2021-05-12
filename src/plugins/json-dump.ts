@@ -2,10 +2,12 @@
  * this plugin adds the json export/import capabilities to RxDB
  */
 import {
-    hash, now
+    hash,
+    now
 } from '../util';
 import {
-    createRxQuery, _getDefaultQuery
+    createRxQuery,
+    _getDefaultQuery
 } from '../rx-query';
 import {
     newRxError
