@@ -1,7 +1,7 @@
 import _createClass from "@babel/runtime/helpers/createClass";
 import deepEqual from 'deep-equal';
-import { merge, BehaviorSubject } from 'rxjs';
-import { mergeMap, filter, map, first, tap } from 'rxjs/operators';
+import { merge, BehaviorSubject, firstValueFrom } from 'rxjs';
+import { mergeMap, filter, map, tap } from 'rxjs/operators';
 import { massageSelector, filterInMemoryFields } from 'pouchdb-selector-core';
 import { sortObject, stringifyFilter, pluginMissing, clone, overwriteGetterForCaching, now } from './util';
 import { newRxError, newRxTypeError } from './rx-error';
@@ -126,7 +126,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
 
 
     return _ensureEqual(this).then(function () {
-      return _this2.$.pipe(first()).toPromise();
+      return firstValueFrom(_this2.$);
     }).then(function (result) {
       if (!result && throwIfMissing) {
         throw newRxError('QU10', {

@@ -7,8 +7,8 @@ import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
  * So you can do faster queries and also query over encrypted fields.
  * Writes will still run on the original collection
  */
-import { Subject, fromEvent as ObservableFromEvent } from 'rxjs';
-import { filter, map, mergeMap, first, delay } from 'rxjs/operators';
+import { Subject, fromEvent as ObservableFromEvent, firstValueFrom } from 'rxjs';
+import { filter, map, mergeMap, delay } from 'rxjs/operators';
 import { RxCollectionBase } from '../rx-collection';
 import { clone, randomCouchString } from '../util';
 import { addRxPlugin } from '../core';
@@ -142,9 +142,9 @@ export var InMemoryRxCollection = /*#__PURE__*/function (_RxCollectionBase) {
     var _this3 = this;
 
     if (this._nonPersistentRevisions.size === 0) return Promise.resolve();
-    return this._nonPersistentRevisionsSubject.pipe(filter(function () {
+    return firstValueFrom(this._nonPersistentRevisionsSubject.pipe(filter(function () {
       return _this3._nonPersistentRevisions.size === 0;
-    }), first()).toPromise();
+    })));
   }
   /**
    * To know which events are replicated and which are not,

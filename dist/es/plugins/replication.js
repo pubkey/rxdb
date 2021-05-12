@@ -3,8 +3,8 @@
  * you can use it to sync collections with remote or local couchdb-instances
  */
 import PouchReplicationPlugin from 'pouchdb-replication';
-import { BehaviorSubject, Subject, fromEvent } from 'rxjs';
-import { skipUntil, filter, first } from 'rxjs/operators';
+import { BehaviorSubject, Subject, fromEvent, firstValueFrom } from 'rxjs';
+import { skipUntil, filter } from 'rxjs/operators';
 import { promiseWait, flatClone } from '../util';
 import { addRxPlugin } from '../core';
 import { newRxError } from '../rx-error';
@@ -61,9 +61,9 @@ export var RxReplicationStateBase = /*#__PURE__*/function () {
     }
 
     var that = this;
-    return that.complete$.pipe(filter(function (x) {
+    return firstValueFrom(that.complete$.pipe(filter(function (x) {
       return !!x;
-    }), first()).toPromise();
+    })));
   };
 
   _proto.cancel = function cancel() {

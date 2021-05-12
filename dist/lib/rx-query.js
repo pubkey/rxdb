@@ -150,7 +150,7 @@ var RxQueryBase = /*#__PURE__*/function () {
 
 
     return _ensureEqual(this).then(function () {
-      return _this2.$.pipe((0, _operators.first)()).toPromise();
+      return (0, _rxjs.firstValueFrom)(_this2.$);
     }).then(function (result) {
       if (!result && throwIfMissing) {
         throw (0, _rxError.newRxError)('QU10', {

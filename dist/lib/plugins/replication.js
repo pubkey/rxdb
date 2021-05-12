@@ -83,9 +83,9 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
     }
 
     var that = this;
-    return that.complete$.pipe((0, _operators.filter)(function (x) {
+    return (0, _rxjs.firstValueFrom)(that.complete$.pipe((0, _operators.filter)(function (x) {
       return !!x;
-    }), (0, _operators.first)()).toPromise();
+    })));
   };
 
   _proto.cancel = function cancel() {

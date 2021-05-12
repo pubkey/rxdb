@@ -463,11 +463,11 @@ var RxBackupState = /*#__PURE__*/function () {
   ;
 
   _proto.awaitInitialBackup = function awaitInitialBackup() {
-    return this.initialReplicationDone$.pipe((0, _operators.filter)(function (v) {
+    return (0, _rxjs.firstValueFrom)(this.initialReplicationDone$.pipe((0, _operators.filter)(function (v) {
       return !!v;
-    }), (0, _operators.first)(), (0, _operators.map)(function () {
+    }), (0, _operators.map)(function () {
       return true;
-    })).toPromise();
+    })));
   };
 
   _proto.cancel = function cancel() {

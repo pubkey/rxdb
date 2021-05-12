@@ -12,8 +12,8 @@ import _regeneratorRuntime from "@babel/runtime/regenerator";
  * this plugin adds the RxCollection.syncGraphQl()-function to rxdb
  * you can use it to sync collections with remote graphql endpoint
  */
-import { BehaviorSubject, Subject } from 'rxjs';
-import { first, filter } from 'rxjs/operators';
+import { BehaviorSubject, Subject, firstValueFrom } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import GraphQLClient from 'graphql-client';
 import { promiseWait, flatClone, now } from '../../util';
 import { addRxPlugin } from '../../core';
@@ -116,9 +116,9 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
   };
 
   _proto.awaitInitialReplication = function awaitInitialReplication() {
-    return this.initialReplicationComplete$.pipe(filter(function (v) {
+    return firstValueFrom(this.initialReplicationComplete$.pipe(filter(function (v) {
       return v === true;
-    }), first()).toPromise();
+    })));
   } // ensures this._run() does not run in parallel
   ;
 

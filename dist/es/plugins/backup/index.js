@@ -1,8 +1,8 @@
 import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
 import * as path from 'path';
-import { BehaviorSubject, fromEvent, Subject } from 'rxjs';
-import { filter, first, map } from 'rxjs/operators';
+import { BehaviorSubject, firstValueFrom, fromEvent, Subject } from 'rxjs';
+import { filter, map } from 'rxjs/operators';
 import { getNewestSequence } from '../../pouch-db';
 import { clearFolder, deleteFolder, documentFolder, ensureFolderExists, getMeta, prepareFolders, setMeta, writeJsonToFile, writeToFile } from './file-util';
 /**
@@ -424,11 +424,11 @@ export var RxBackupState = /*#__PURE__*/function () {
   ;
 
   _proto.awaitInitialBackup = function awaitInitialBackup() {
-    return this.initialReplicationDone$.pipe(filter(function (v) {
+    return firstValueFrom(this.initialReplicationDone$.pipe(filter(function (v) {
       return !!v;
-    }), first(), map(function () {
+    }), map(function () {
       return true;
-    })).toPromise();
+    })));
   };
 
   _proto.cancel = function cancel() {
