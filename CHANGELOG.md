@@ -2,13 +2,15 @@
 
 ### X.X.X (coming soon)
 
+### 9.19.0 (12 May 2021)
+
 Features:
   - Added the [backup-plugin](https://rxdb.info/backup.html)
 
 Other:
   - Updated `rxjs` to version `7.0.1`
 
-### 9.18.0 (26 April 2020)
+### 9.18.0 (26 April 2021)
 
 Bugfixes:
   - Fixed memory leak in `RxCollection().findByIds$()`
@@ -16,12 +18,12 @@ Bugfixes:
 Other:
   - Added collection name when throwing errors in `RxQuery`
 
-### 9.17.1 (21 April 2020)
+### 9.17.1 (21 April 2021)
 
 Other:
   - Added hints abount 2021 user survey.
 
-### 9.17.0 (14 April 2020)
+### 9.17.0 (14 April 2021)
 
 Features:
   - Added possibility to change, update, remove and add `RxAttachment`s inside of a migration strategy.
