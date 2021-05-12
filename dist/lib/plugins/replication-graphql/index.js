@@ -192,9 +192,9 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
   };
 
   _proto.awaitInitialReplication = function awaitInitialReplication() {
-    return this.initialReplicationComplete$.pipe((0, _operators.filter)(function (v) {
+    return (0, _rxjs.firstValueFrom)(this.initialReplicationComplete$.pipe((0, _operators.filter)(function (v) {
       return v === true;
-    }), (0, _operators.first)()).toPromise();
+    })));
   } // ensures this._run() does not run in parallel
   ;
 
