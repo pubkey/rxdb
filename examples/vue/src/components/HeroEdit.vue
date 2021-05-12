@@ -5,7 +5,8 @@
       <h4>Warning:</h4>
       <p>
         Someone else has
-        <b>changed</b> this document. If you click save, you will overwrite the changes.
+        <b>changed</b> this document. If you click save, you will overwrite the
+        changes.
       </p>
       <button v-on:click="resync()">resync</button>
     </div>
@@ -17,9 +18,13 @@
       </p>
     </div>
     <h5>
-      <div class="color-box" v-bind:style="{ backgroundColor: hero.color }"></div>
-      {{hero.name}}
-    </h5>HP:
+      <div
+        class="color-box"
+        v-bind:style="{ backgroundColor: hero.color }"
+      ></div>
+      {{ hero.name }}
+    </h5>
+    HP:
     <input
       id="hp-edit-input"
       type="number"
@@ -27,18 +32,23 @@
       min="0"
       v-bind:max="hero.maxHP"
       name="hp"
-    >
-    <br>
+    />
+    <br />
     <button v-on:click="cancel()">cancel</button>
-    <button id="edit-submit-button" v-on:click="submit()" v-if="!hero.deleted">submit</button>
+    <button id="edit-submit-button" v-on:click="submit()" v-if="!hero.deleted">
+      submit
+    </button>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator';
-import DatabaseService from '../services/Database.service';
-import { RxHeroDocument, RxHeroesDatabase } from '../RxDB';
-import { skip, map, first } from 'rxjs/operators';
+import { Component, Prop, Vue } from "vue-property-decorator";
+import DatabaseService from "../services/Database.service";
+import { RxHeroDocument, RxHeroesDatabase } from "../RxDB";
+import {
+    firstValueFrom
+} from 'rxjs';
+import { skip, map, first } from "rxjs/operators";
 
 @Component({})
 export default class HeroEdit extends Vue {
@@ -49,37 +59,33 @@ export default class HeroEdit extends Vue {
   private formData: number = 0;
 
   public async mounted() {
-    console.log('HeroEdit.mounted()');
+    console.log("HeroEdit.mounted()");
     console.dir(this.hero);
     console.log(this.hero.hp);
     this.formData = this.hero.hp;
-    this.hero.$.pipe(
-      skip(1),
-      first(),
-      map(() => false)
-    )
-      .toPromise()
-      .then((v) => (this.synced = v));
+    firstValueFrom(
+      this.hero.$.pipe(
+        skip(1),
+        map(() => false)
+      )
+    ).then((v: boolean) => (this.synced = v));
 
-    this.hero.deleted$
-      .pipe(first())
-      .toPromise()
-      .then(() => (this.deleted = true));
+    firstValueFrom(this.hero.deleted$).then(() => (this.deleted = true));
   }
 
   public async submit() {
-    console.log('heroEdit.submit()');
-    await this.hero.atomicSet('hp', this.formData);
-    this.$emit('submit');
+    console.log("heroEdit.submit()");
+    await this.hero.atomicSet("hp", this.formData);
+    this.$emit("submit");
   }
   public resync() {
-    console.log('heroEdit.resync()');
+    console.log("heroEdit.resync()");
     this.formData = this.hero.hp;
     this.synced = true;
   }
   public cancel() {
-    console.log('heroEdit.cancel()');
-    this.$emit('cancel');
+    console.log("heroEdit.cancel()");
+    this.$emit("cancel");
   }
 }
 </script>
