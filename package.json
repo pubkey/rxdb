@@ -218,7 +218,7 @@
     "walk-sync": "2.2.0",
     "watch": "1.0.2",
     "watchify": "4.0.0",
-    "webpack": "4.44.1",
+    "webpack": "4.46.0",
     "webpack-bundle-analyzer": "4.4.1",
     "webpack-cli": "4.7.0"
   }
