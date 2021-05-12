@@ -173,4 +173,17 @@ Object.keys(_migration).forEach(function (key) {
   });
 });
 
+var _backup = require("./plugins/backup");
+
+Object.keys(_backup).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _backup[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _backup[key];
+    }
+  });
+});
+
 //# sourceMappingURL=index.d.js.map

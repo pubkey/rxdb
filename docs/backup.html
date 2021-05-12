@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>Introduction · RxDB - Documentation</title>
+        <title>Backup · RxDB - Documentation</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -63,8 +63,10 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="install.html" />
+    <link rel="next" href="query-cache.html" />
     
+    
+    <link rel="prev" href="in-memory.html" />
     
 
     </head>
@@ -117,7 +119,7 @@
         
         
     
-        <li class="chapter active" data-level="1.1" data-path="./">
+        <li class="chapter " data-level="1.1" data-path="./">
             
                 <a href="./">
             
@@ -1431,7 +1433,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.17" data-path="backup.html">
+        <li class="chapter active" data-level="1.17" data-path="backup.html">
             
                 <a href="backup.html">
             
@@ -1610,7 +1612,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >Introduction</a>
+        <a href="." >Backup</a>
     </h1>
 </div>
 
@@ -1625,132 +1627,78 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <p align="center">
-  <a href="https://github.com/pubkey/rxdb" target="_blank">
-    <img src="https://cdn.rawgit.com/pubkey/rxdb/ba7c9b80/docs/files/logo/logo_text.svg" width="400px">
-  </a>
-</p>
-
-<p></p><h1 align="center" id="
---a-realtime-database-for-javascript-applications
-">
-  <strong>A realtime Database for JavaScript Applications</strong>
-</h1><p></p>
-<p align="justify">
-  RxDB (short for <b>R</b>eactive <b>D</b>ata<b>b</b>ase) is a NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and NodeJs.
-  Reactive means that you can not only query the current state, but <b>subscribe</b> to all state changes like the result of a query or even a single field of a document.
-  This is great for UI-based <b>realtime</b> applications in way that makes it easy to develop and also has great performance benefits. To replicate data between your clients and server, RxDB provides modules for realtime replication with any <b>CouchDB</b> compliant endpoint and also with custom <b>GraphQL</b> endpoints.
-</p>
-
-<p align="center">
-  <a href="https://gitter.im/pubkey/rxdb" target="_blank">
-    <img src="https://cdn.rawgit.com/pubkey/rxdb/master/docs-src/files/gitter.svg">
-  </a>
-  <a href="https://twitter.com/rxdbjs" target="_blank">
-    <img src="https://cdn.rawgit.com/pubkey/rxdb/4e7dd18f/docs/files/twitter_follow.png" width="111px">
-  </a>
-<!--  <a href="https://www.patreon.com/rxdb">
-    <img src="https://cdn.rawgit.com/pubkey/rxdb/4e7dd18f/docs/files/icons/patreon.png" width="111px" />
-  </a> -->
-</p>
-
-
-<h2 align="center" id="
---core-features
-">
-  <strong>Core features</strong>
-</h2>
-
-
-<h3 id="
---realtime-queries
-">
-  <strong>Realtime Queries</strong>
-</h3>
-
-<p align="justify">
-In addition to normal pull-based queries, RxDB is capable of having so called <b>realtime queries</b>. These do not only give you the results once but instead emit the new query results each time the state of your database changes.
-The stream comes as simple <a href="https://github.com/ReactiveX/rxjs" target="_blank">RxJS</a> Observable and works flawless together with your frontend framework.
-</p>
-
-<pre><code class="lang-javascript">db.heroes
-  .find({
-    sort: [<span class="hljs-string">&apos;name&apos;</span>]
-  })
-  .$ <span class="hljs-comment">// &lt;- returns observable of query</span>
-  .subscribe( docs =&gt; {
-    myDomElement.innerHTML = docs
-      .map(doc =&gt; <span class="hljs-string">&apos;&lt;li&gt;&apos;</span> + doc.name + <span class="hljs-string">&apos;&lt;/li&gt;&apos;</span>)
-      .join();
-  });
+                                <h1 id="backup">Backup</h1>
+<p><strong>(beta)</strong></p>
+<p>With the backup plugin you can write the current database state and ongoing changes into folders on the filesystem.
+The files are written in plain json together with their attachments.</p>
+<p>This is useful to:</p>
+<ul>
+<li>Consume the database content with other software that cannot replicate with RxDB</li>
+<li>Write a backup of the database to a remote server by mounting the backup folder on the other server.</li>
+</ul>
+<h2 id="import">import</h2>
+<p>The backup plugin works only in node.js, not in browser.
+This means we have to import it to RxDB before it can be used.</p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">import</span> { addRxPlugin } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/core&apos;</span>;
+<span class="hljs-keyword">import</span> { RxDBBackupPlugin } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/backup&apos;</span>;
+addRxPlugin(RxDBBackupPlugin);
 </code></pre>
-<p><img src="files/reactive.gif" alt="reactive.gif"></p>
-<h3 id="
---replication
-">
-  <strong>Replication</strong>
-</h3>
+<h2 id="one-time-backup">one-time backup</h2>
+<p>Write the whole database to the filesystem <strong>once</strong>.
+When called multiple times, it will continue from the last checkpoint and not start all over again.</p>
+<pre><code class="lang-javascript">const backupOptions = {
+    // if false, a one-time backup will be written
+    live: false,
+    // the folder where the backup will be stored
+    directory: &apos;/my-backup-folder/,
+    // if true, attachments will also be saved
+    attachments: true
+}
+const backupState = myDatabase.backup(backupOptions);
+await backupState.awaitInitialBackup();
 
-<p align="justify">
-  To synchronize data between your clients and your server, RxDB provides replication modules for <b>CouchDB</b> and <b>GraphQL</b>. So when your server changes data, your application will automatically stream that change to the client and updates its visual representation.
-</p>
+// call again to run from the last checkpoint
+const backupState2 = myDatabase.backup(backupOptions);
+await backupState2.awaitInitialBackup();
+</code></pre>
+<h2 id="live-backup">live backup</h2>
+<p>When <code>live: true</code> is set, the backup will write all ongoing changes to the backup directory.</p>
+<pre><code class="lang-javascript">const backupOptions = {
+    // set live: true to have an ongoing backup
+    live: true,
+    directory: &apos;/my-backup-folder/,
+    attachments: true
+}
+const backupState = myDatabase.backup(backupOptions);
 
-<p><img src="files/sync.gif"></p>
-<h3 id="
---multi-window--tab-support
-">
-  <strong>Multi-Window / Tab Support</strong>
-</h3>
+// you can still await the initial backup write, but further changes will still be processed.
+await backupState.awaitInitialBackup();
+</code></pre>
+<h2 id="writeevents">writeEvents$</h2>
+<p>You can listen to the <code>writeEvents$</code> Observable to get notified about written backup files.</p>
+<pre><code class="lang-javascript">const backupOptions = {
+    live: false,
+    directory: &apos;/my-backup-folder/,
+    attachments: true
+}
+const backupState = myDatabase.backup(backupOptions);
 
-<p align="justify">
-  When your application is opened in multiple windows or tabs at the same time, it can be tricky to synchronize actions between the open states. RxDB automatically broadcasts all changes between these tabs so you do not have to take any care of it.
-</p>
-
-<center>
-  <img src="files/multiwindow.gif">
-</center>
-
-
-<h2 id="
---other-features
-">
-  <strong>Other features</strong>
-</h2>
-
-<h4 id="
---schema
-">
-  <strong>Schema</strong>
-</h4>
-
-<p align="justify">
-  RxDB is based on <a href="https://json-schema.org/" target="_blank">json-schema</a> where the structure of documents is defined for each collection. This is useful when you develope in a team with multiple developers. It also provides information for RxDB to do performance optimizations. Also the schema is versionized and you can provide migration strategies to migrate the data which is already stored on the clients.
-</p>
-
-<h4 id="
---encryption
-">
-  <strong>Encryption</strong>
-</h4>
-
-<p align="justify">
-  RxDB comes with an encryption module where specific fields of a document can be stored encrypted. So when your clients device is stolen or hacked, you can be sure that sensitive data is not readable by third parties.
-</p>
-
-<p></p><h4 id="
---key-compression
-">
-  <strong>Key Compression</strong>
-</h4><p></p>
-<p align="justify">
-  Saving data on a client can be tricky because you cannot predict how much storage capacity will be available. RxDB provides a key-compression module that compresses the stored json documents which saves about 40% of storage space.
-</p>
-
-
-<p><br><br><br></p>
-<p align="center">
-    <b>If you are new to RxDB, you should continue reading the documentation <a href="install.html">here.</a></b>
-</p>
+const subscription = backupState.writeEvents$.subscribe(writeEvent =&gt; console.dir(writeEvent));
+/*
+&gt; {
+    collectionName: &apos;humans&apos;,
+    documentId: &apos;foobar&apos;,
+    files: [
+        &apos;/my-backup-folder/foobar/document.json&apos;
+    ],
+    deleted: false
+}
+*/
+</code></pre>
+<h2 id="import-backup">Import backup</h2>
+<p>It is currently not possible to import from a written backup. If you need this funcitionality, please make a pull request.</p>
+<hr>
+<p>If you are new to RxDB, you should continue <a href="query-cache.html">here</a></p>
 
                                 
                                 </section>
@@ -1778,8 +1726,12 @@ The stream comes as simple <a href="https://github.com/ReactiveX/rxjs" target="_
 
             
                 
+                <a href="in-memory.html" class="navigation navigation-prev " aria-label="Previous page: InMemory">
+                    <i class="fa fa-angle-left"></i>
+                </a>
                 
-                <a href="install.html" class="navigation navigation-next navigation-unique" aria-label="Next page: Install">
+                
+                <a href="query-cache.html" class="navigation navigation-next " aria-label="Next page: QueryCache">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -1790,7 +1742,7 @@ The stream comes as simple <a href="https://github.com/ReactiveX/rxjs" target="_
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Introduction","level":"1.1","depth":1,"next":{"title":"Install","level":"1.2","depth":1,"path":"install.md","ref":"./install.md","articles":[{"title":"npm","level":"1.2.1","depth":2,"anchor":"#npm","path":"install.md","ref":"./install.md#npm","articles":[]},{"title":"import","level":"1.2.2","depth":2,"anchor":"#import","path":"install.md","ref":"./install.md#import","articles":[]}]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"README.md","mtime":"2021-05-12T11:46:55.679Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-05-12T11:50:49.085Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Backup","level":"1.17","depth":1,"next":{"title":"QueryCache","level":"1.18","depth":1,"path":"query-cache.md","ref":"./query-cache.md","articles":[]},"previous":{"title":"InMemory","level":"1.16","depth":1,"path":"in-memory.md","ref":"./in-memory.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"backup.md","mtime":"2021-05-12T11:46:55.679Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-05-12T11:50:49.085Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

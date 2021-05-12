@@ -32,7 +32,7 @@ export interface PouchChangesOptionsBase {
     conflicts?: boolean;
     attachments?: boolean;
     binary?: boolean;
-    descending?: string;
+    descending?: boolean;
     since?: any;
     limit?: number;
     timeout?: any;

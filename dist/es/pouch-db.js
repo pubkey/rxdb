@@ -1,3 +1,6 @@
+import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
+import _regeneratorRuntime from "@babel/runtime/regenerator";
+
 /**
  * this handles the pouchdb-instance
  * to easy add modules and manipulate things
@@ -128,6 +131,40 @@ export function pouchAttachmentBinaryHash(data) {
     });
   });
 }
+export function getNewestSequence(_x) {
+  return _getNewestSequence.apply(this, arguments);
+}
+
+function _getNewestSequence() {
+  _getNewestSequence = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(pouch) {
+    var pouchChanges;
+    return _regeneratorRuntime.wrap(function _callee$(_context) {
+      while (1) {
+        switch (_context.prev = _context.next) {
+          case 0:
+            _context.next = 2;
+            return pouch.changes({
+              live: false,
+              since: 0,
+              limit: 1,
+              descending: true,
+              include_docs: false
+            });
+
+          case 2:
+            pouchChanges = _context.sent;
+            return _context.abrupt("return", pouchChanges.last_seq);
+
+          case 4:
+          case "end":
+            return _context.stop();
+        }
+      }
+    }, _callee);
+  }));
+  return _getNewestSequence.apply(this, arguments);
+}
+
 export function isInstanceOf(obj) {
   return obj instanceof PouchDBCore;
 }

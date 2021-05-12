@@ -9,7 +9,7 @@ import './types/modules/modifiyjs.d';
 import './types/modules/pouchdb-selector-core.d';
 import './types/modules/random-token.d';
 export { addRxPlugin } from './plugin';
-export { PouchDB, validateCouchDBString, getBatch, countAllUndeleted } from './pouch-db';
+export { PouchDB, validateCouchDBString, getBatch, countAllUndeleted, getNewestSequence } from './pouch-db';
 export { createRxDatabase, removeRxDatabase, checkAdapter, isInstanceOf as isRxDatabase, dbCount, _collectionNamePrimary // used in tests
 } from './rx-database';
 export { isInstanceOf as isRxCollection, create as _createRxCollection // used in tests

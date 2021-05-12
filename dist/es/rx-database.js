@@ -17,12 +17,12 @@ import { create as createRxCollection } from './rx-collection';
 import { RxChangeEvent } from './rx-change-event';
 import { getRxStoragePouchDb } from './rx-storage-pouchdb';
 import { getAllDocuments, deleteStorageInstance } from './rx-database-internal-store';
+
 /**
  * stores the combinations
  * of used database-names with their adapters
  * so we can throw when the same database is created more then once
  */
-
 var USED_COMBINATIONS = {};
 var DB_COUNT = 0;
 export var RxDatabaseBase = /*#__PURE__*/function () {
@@ -346,6 +346,10 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
 
   _proto.server = function server(_options) {
     throw pluginMissing('server');
+  };
+
+  _proto.backup = function backup(_options) {
+    throw pluginMissing('backup');
   };
 
   _proto.leaderElector = function leaderElector() {

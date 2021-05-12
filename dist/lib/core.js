@@ -9,6 +9,7 @@ var _exportNames = {
   validateCouchDBString: true,
   getBatch: true,
   countAllUndeleted: true,
+  getNewestSequence: true,
   createRxDatabase: true,
   removeRxDatabase: true,
   checkAdapter: true,
@@ -62,6 +63,12 @@ Object.defineProperty(exports, "countAllUndeleted", {
   enumerable: true,
   get: function get() {
     return _pouchDb.countAllUndeleted;
+  }
+});
+Object.defineProperty(exports, "getNewestSequence", {
+  enumerable: true,
+  get: function get() {
+    return _pouchDb.getNewestSequence;
   }
 });
 Object.defineProperty(exports, "createRxDatabase", {
