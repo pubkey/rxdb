@@ -10,18 +10,6 @@ import type {
 } from '../pouch';
 import type { RxReplicationStateBase } from '../../plugins/replication';
 
-export interface SyncOptions {
-    remote: string | any;
-    waitForLeadership?: boolean;
-    direction?: {
-        push?: boolean,
-        pull?: boolean
-    };
-    // for options see https://pouchdb.com/api.html#replication
-    options?: PouchReplicationOptions;
-    query?: RxQuery;
-}
-
 export declare class RxReplicationState extends RxReplicationStateBase {
     collection: RxCollection;
 
@@ -47,7 +35,7 @@ export declare class RxReplicationState extends RxReplicationStateBase {
     setPouchEventEmitter(pouchSyncState: any): void;
 }
 
-export interface SyncOptions {
+export type SyncOptions = {
     remote: string | any;
     waitForLeadership?: boolean;
     direction?: {

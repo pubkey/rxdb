@@ -17,7 +17,8 @@ import {
     promiseWait,
     randomCouchString,
     isRxCollection,
-    RxReplicationState
+    RxReplicationState,
+    SyncOptions
 } from '../../plugins/core';
 
 import {
@@ -28,7 +29,6 @@ import {
     filter,
     first
 } from 'rxjs/operators';
-import { SyncOptions } from '../../plugins/replication';
 
 let request: any;
 let SpawnServer: any;
