@@ -2,6 +2,9 @@
 
 ### X.X.X (coming soon)
 
+Bugfixes:
+  - Auto-cancel one time couchdb replications to not cause a memory leak
+
 ### 9.19.0 (12 May 2021)
 
 Features:

@@ -5,7 +5,7 @@
  */
 
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
+import AsyncTestUtil, { waitUntil } from 'async-test-util';
 import config from './config';
 
 import * as schemaObjects from '../helper/schema-objects';
@@ -28,6 +28,7 @@ import {
     filter,
     first
 } from 'rxjs/operators';
+import { SyncOptions } from '../../plugins/replication';
 
 let request: any;
 let SpawnServer: any;
@@ -701,6 +702,51 @@ describe('replication.test.js', () => {
 
             colA.database.destroy();
             colB.database.destroy();
+        });
+        it('should auto-cancel non-live replications when done to not cause memory leak', async () => {
+            const collection = await humansCollection.create(10, randomCouchString(10), false);
+            const syncCollection = await humansCollection.create(0, randomCouchString(10), false);
+
+            const syncOptions: SyncOptions = {
+                remote: syncCollection,
+                direction: {
+                    pull: true,
+                    push: true
+                },
+                options: {
+                    live: false
+                }
+            };
+
+            const syncState = collection.sync(syncOptions);
+            await syncState.awaitInitialReplication();
+
+            await waitUntil(() => syncState.canceled === true);
+
+            collection.database.destroy();
+            syncCollection.database.destroy();
+
+            /*
+            global.gc();
+            const usedBefore = process.memoryUsage().heapUsed / 1024 / 1024;
+
+            await Promise.all(
+                new Array(1000).fill(0).map(async () => {
+                    const syncState = collection.sync(syncOptions);
+                    await syncState.awaitInitialReplication();
+                    await syncState.cancel();
+                })
+            );
+
+
+            global.gc();
+            const usedAfter = process.memoryUsage().heapUsed / 1024 / 1024;
+
+            console.log('usedBefore: ' + usedBefore);
+            console.log('usedAfter: ' + usedAfter);
+
+            process.exit();
+            */
         });
     });
 });

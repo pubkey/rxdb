@@ -1,12 +1,28 @@
 import { Observable } from 'rxjs';
 
-import type { RxQuery, RxCollection } from '../../types';
-import {
+import type {
+    RxQuery,
+    RxCollection
+} from '../../types';
+import type {
     PouchReplicationOptions,
     PouchSyncHandler
 } from '../pouch';
+import type { RxReplicationStateBase } from '../../plugins/replication';
 
-export declare class RxReplicationState {
+export interface SyncOptions {
+    remote: string | any;
+    waitForLeadership?: boolean;
+    direction?: {
+        push?: boolean,
+        pull?: boolean
+    };
+    // for options see https://pouchdb.com/api.html#replication
+    options?: PouchReplicationOptions;
+    query?: RxQuery;
+}
+
+export declare class RxReplicationState extends RxReplicationStateBase {
     collection: RxCollection;
 
     change$: Observable<any>;
@@ -26,7 +42,6 @@ export declare class RxReplicationState {
     // can be used for debuging or custom event-handling
     // will be set some time after sync() is called
     _pouchEventEmitterObject: PouchSyncHandler | null;
-    cancel(): Promise<any>;
 
     // if you do a custom sync, put the thing you get back from pouch here
     setPouchEventEmitter(pouchSyncState: any): void;
