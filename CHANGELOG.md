@@ -2,6 +2,8 @@
 
 ### X.X.X (coming soon)
 
+### 9.20.0 (15 May 2021)
+
 Bugfixes:
   - Auto-cancel one time couchdb replications to not cause a memory leak
   - Fixed another memory leak when calling the couchdb replication many times.
