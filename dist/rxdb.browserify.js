@@ -5299,6 +5299,12 @@ var _watchForChanges = require("./watch-for-changes");
 (0, _core.addRxPlugin)(_pouchdbReplication["default"]); // add the watch-for-changes-plugin
 
 (0, _core.addRxPlugin)(_watchForChanges.RxDBWatchForChangesPlugin);
+/**
+ * Contains all pouchdb instances that
+ * are used inside of RxDB by collections or databases.
+ * Used to ensure the remote of a replication cannot be an internal pouchdb.
+ */
+
 var INTERNAL_POUCHDBS = new WeakSet();
 
 var RxReplicationStateBase = /*#__PURE__*/function () {
@@ -5349,14 +5355,20 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
     return (0, _rxjs.firstValueFrom)(that.complete$.pipe((0, _operators.filter)(function (x) {
       return !!x;
     })));
-  };
+  }
+  /**
+   * Returns false when the replication has already been canceled
+   */
+  ;
 
   _proto.cancel = function cancel() {
     if (this.canceled) {
-      return;
+      return Promise.resolve(false);
     }
 
     this.canceled = true;
+
+    this.collection._repStates["delete"](this);
 
     if (this._pouchEventEmitterObject) {
       this._pouchEventEmitterObject.cancel();
@@ -5365,6 +5377,8 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
     this._subs.forEach(function (sub) {
       return sub.unsubscribe();
     });
+
+    return Promise.resolve(true);
   };
 
   return RxReplicationStateBase;
@@ -5427,7 +5441,18 @@ function setPouchEventEmitter(rxRepState, evEmitter) {
     Promise.all(unhandledEvents).then(function () {
       return rxRepState._subjects.complete.next(info);
     });
-  }));
+  })); // auto-cancel one-time replications on complelete to not cause memory leak
+
+
+  if (!rxRepState.syncOptions.options || !rxRepState.syncOptions.options.live) {
+    rxRepState._subs.push(rxRepState.complete$.pipe((0, _operators.filter)(function (x) {
+      return !!x;
+    }), (0, _operators.first)(), (0, _operators.mergeMap)(function () {
+      return rxRepState.collection.database.requestIdlePromise().then(function () {
+        return rxRepState.cancel();
+      });
+    })).subscribe());
+  }
 
   function getIsAlive(emitter) {
     // "state" will live in emitter.state if single direction replication
@@ -5528,7 +5553,7 @@ function sync(_ref) {
     var pouchSync = syncFun(remote, useOptions);
     setPouchEventEmitter(repState, pouchSync);
 
-    _this2._repStates.push(repState);
+    _this2._repStates.add(repState);
   });
   return repState;
 }
@@ -6455,7 +6480,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
     this.synced = false;
     this.hooks = {};
     this._subs = [];
-    this._repStates = [];
+    this._repStates = new Set();
     this.pouch = {};
     this._docCache = (0, _docCache.createDocCache)();
     this._queryCache = (0, _queryCache.createQueryCache)();
@@ -7299,10 +7324,9 @@ var RxCollectionBase = /*#__PURE__*/function () {
       this._changeEventBuffer.destroy();
     }
 
-    this._repStates.forEach(function (sync) {
-      return sync.cancel();
+    Array.from(this._repStates).forEach(function (replicationState) {
+      return replicationState.cancel();
     });
-
     delete this.database.collections[this.name];
     this.destroyed = true;
     return (0, _hooks.runAsyncPluginHooks)('postDestroyRxCollection', this).then(function () {

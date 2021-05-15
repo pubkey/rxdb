@@ -3,20 +3,10 @@
  * you can use it to sync collections with remote or local couchdb-instances
  */
 import { BehaviorSubject, Subject, Subscription, Observable } from 'rxjs';
-import type { RxQuery, RxCollection, PouchSyncHandler, PouchReplicationOptions, RxPlugin } from '../types';
-export interface SyncOptions {
-    remote: string | any;
-    waitForLeadership?: boolean;
-    direction?: {
-        push?: boolean;
-        pull?: boolean;
-    };
-    options?: PouchReplicationOptions;
-    query?: RxQuery;
-}
+import type { RxCollection, PouchSyncHandler, RxPlugin, SyncOptions } from '../types';
 export declare class RxReplicationStateBase {
-    collection: RxCollection;
-    private syncOptions;
+    readonly collection: RxCollection;
+    readonly syncOptions: SyncOptions;
     _subs: Subscription[];
     _pouchEventEmitterObject?: PouchSyncHandler | null;
     _subjects: {
@@ -31,7 +21,10 @@ export declare class RxReplicationStateBase {
     canceled: boolean;
     constructor(collection: RxCollection, syncOptions: SyncOptions);
     awaitInitialReplication(): Promise<void>;
-    cancel(): void;
+    /**
+     * Returns false when the replication has already been canceled
+     */
+    cancel(): Promise<boolean>;
 }
 export declare type RxReplicationState = RxReplicationStateBase & {
     change$: Observable<any>;

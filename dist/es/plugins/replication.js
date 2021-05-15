@@ -4,7 +4,7 @@
  */
 import PouchReplicationPlugin from 'pouchdb-replication';
 import { BehaviorSubject, Subject, fromEvent, firstValueFrom } from 'rxjs';
-import { skipUntil, filter } from 'rxjs/operators';
+import { skipUntil, filter, first, mergeMap } from 'rxjs/operators';
 import { promiseWait, flatClone } from '../util';
 import { addRxPlugin } from '../core';
 import { newRxError } from '../rx-error';
@@ -15,6 +15,12 @@ import { RxDBWatchForChangesPlugin } from './watch-for-changes'; // add pouchdb-
 addRxPlugin(PouchReplicationPlugin); // add the watch-for-changes-plugin
 
 addRxPlugin(RxDBWatchForChangesPlugin);
+/**
+ * Contains all pouchdb instances that
+ * are used inside of RxDB by collections or databases.
+ * Used to ensure the remote of a replication cannot be an internal pouchdb.
+ */
+
 var INTERNAL_POUCHDBS = new WeakSet();
 export var RxReplicationStateBase = /*#__PURE__*/function () {
   function RxReplicationStateBase(collection, syncOptions) {
@@ -64,14 +70,20 @@ export var RxReplicationStateBase = /*#__PURE__*/function () {
     return firstValueFrom(that.complete$.pipe(filter(function (x) {
       return !!x;
     })));
-  };
+  }
+  /**
+   * Returns false when the replication has already been canceled
+   */
+  ;
 
   _proto.cancel = function cancel() {
     if (this.canceled) {
-      return;
+      return Promise.resolve(false);
     }
 
     this.canceled = true;
+
+    this.collection._repStates["delete"](this);
 
     if (this._pouchEventEmitterObject) {
       this._pouchEventEmitterObject.cancel();
@@ -80,6 +92,8 @@ export var RxReplicationStateBase = /*#__PURE__*/function () {
     this._subs.forEach(function (sub) {
       return sub.unsubscribe();
     });
+
+    return Promise.resolve(true);
   };
 
   return RxReplicationStateBase;
@@ -139,7 +153,18 @@ export function setPouchEventEmitter(rxRepState, evEmitter) {
     Promise.all(unhandledEvents).then(function () {
       return rxRepState._subjects.complete.next(info);
     });
-  }));
+  })); // auto-cancel one-time replications on complelete to not cause memory leak
+
+
+  if (!rxRepState.syncOptions.options || !rxRepState.syncOptions.options.live) {
+    rxRepState._subs.push(rxRepState.complete$.pipe(filter(function (x) {
+      return !!x;
+    }), first(), mergeMap(function () {
+      return rxRepState.collection.database.requestIdlePromise().then(function () {
+        return rxRepState.cancel();
+      });
+    })).subscribe());
+  }
 
   function getIsAlive(emitter) {
     // "state" will live in emitter.state if single direction replication
@@ -238,7 +263,7 @@ export function sync(_ref) {
     var pouchSync = syncFun(remote, useOptions);
     setPouchEventEmitter(repState, pouchSync);
 
-    _this2._repStates.push(repState);
+    _this2._repStates.add(repState);
   });
   return repState;
 }

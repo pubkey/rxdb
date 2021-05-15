@@ -35,7 +35,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     this.synced = false;
     this.hooks = {};
     this._subs = [];
-    this._repStates = [];
+    this._repStates = new Set();
     this.pouch = {};
     this._docCache = createDocCache();
     this._queryCache = createQueryCache();
@@ -879,10 +879,9 @@ export var RxCollectionBase = /*#__PURE__*/function () {
       this._changeEventBuffer.destroy();
     }
 
-    this._repStates.forEach(function (sync) {
-      return sync.cancel();
+    Array.from(this._repStates).forEach(function (replicationState) {
+      return replicationState.cancel();
     });
-
     delete this.database.collections[this.name];
     this.destroyed = true;
     return runAsyncPluginHooks('postDestroyRxCollection', this).then(function () {

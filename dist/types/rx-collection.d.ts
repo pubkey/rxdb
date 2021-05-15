@@ -39,7 +39,7 @@ export declare class RxCollectionBase<RxDocumentType = {
     synced: boolean;
     hooks: any;
     _subs: Subscription[];
-    _repStates: RxReplicationState[];
+    _repStates: Set<RxReplicationState>;
     pouch: PouchDBInstance;
     _docCache: DocCache<RxDocument<RxDocumentType, OrmMethods>>;
     _queryCache: QueryCache;
