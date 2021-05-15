@@ -703,7 +703,7 @@ describe('replication.test.js', () => {
             colA.database.destroy();
             colB.database.destroy();
         });
-        it('should auto-cancel non-live replications when done to not cause memory leak', async () => {
+        it('should auto-cancel non-live replications when completed to not cause memory leak', async () => {
             const collection = await humansCollection.create(10, randomCouchString(10), false);
             const syncCollection = await humansCollection.create(0, randomCouchString(10), false);
 
@@ -722,6 +722,9 @@ describe('replication.test.js', () => {
             await syncState.awaitInitialReplication();
 
             await waitUntil(() => syncState.canceled === true);
+
+            // should have cleaned up itself from the replication state set
+            assert.strictEqual(collection._repStates.size, 0);
 
             collection.database.destroy();
             syncCollection.database.destroy();

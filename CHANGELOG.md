@@ -4,6 +4,7 @@
 
 Bugfixes:
   - Auto-cancel one time couchdb replications to not cause a memory leak
+  - Fixed another memory leak when calling the couchdb replication many times.
 
 ### 9.19.0 (12 May 2021)
 

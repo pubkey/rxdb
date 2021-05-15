@@ -121,6 +121,7 @@ export class RxReplicationStateBase {
             return Promise.resolve(false);
         }
         this.canceled = true;
+        this.collection._repStates.delete(this as any);
         if (this._pouchEventEmitterObject) {
             this._pouchEventEmitterObject.cancel();
         }
@@ -337,7 +338,7 @@ export function sync(
         this.watchForChanges();
         const pouchSync = syncFun(remote, useOptions);
         setPouchEventEmitter(repState, pouchSync);
-        this._repStates.push(repState);
+        this._repStates.add(repState);
     });
 
     return repState;

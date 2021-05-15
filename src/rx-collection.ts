@@ -172,7 +172,7 @@ export class RxCollectionBase<
     public synced: boolean = false;
     public hooks: any = {};
     public _subs: Subscription[] = [];
-    public _repStates: RxReplicationState[] = [];
+    public _repStates: Set<RxReplicationState> = new Set();
     public pouch: PouchDBInstance = {} as PouchDBInstance; // this is needed to preserve this name
 
     public _docCache: DocCache<
@@ -915,7 +915,7 @@ export class RxCollectionBase<
         if (this._changeEventBuffer) {
             this._changeEventBuffer.destroy();
         }
-        this._repStates.forEach(sync => sync.cancel());
+        Array.from(this._repStates).forEach(replicationState => replicationState.cancel());
         delete this.database.collections[this.name];
         this.destroyed = true;
 
