@@ -130,7 +130,6 @@
   "devDependencies": {
     "@babel/cli": "7.14.3",
     "@babel/core": "7.14.3",
-    "@babel/plugin-check-constants": "7.0.0-beta.38",
     "@babel/plugin-proposal-class-properties": "7.13.0",
     "@babel/plugin-proposal-object-rest-spread": "7.14.2",
     "@babel/plugin-transform-member-expression-literals": "7.12.13",
@@ -217,7 +216,6 @@
     "typescript": "4.2.4",
     "walk-sync": "2.2.0",
     "watch": "1.0.2",
-    "watchify": "4.0.0",
     "webpack": "4.46.0",
     "webpack-bundle-analyzer": "4.4.2",
     "webpack-cli": "4.7.0"
