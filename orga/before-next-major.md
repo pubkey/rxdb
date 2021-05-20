@@ -89,6 +89,12 @@ This should be the default. `skipIfSame=true`
 
 `db.server()` should be async and reject the promise when the startup fails, for example because the port is already used.
 
+## make primary key required
+
+The primary key in a schema must be required which makes it less complex to implement other `RxStorage` modules.
+Also the primary key must be set in the top level of the schema as string instead of the `primary: true` in the property.
+This makes it faster to read out the primary key of the schema and also better ensures the required-ness via typescript.
+
 
 # Maybe
 
