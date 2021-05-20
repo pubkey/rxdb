@@ -98,7 +98,7 @@
     "@types/pouchdb-find": "6.3.6",
     "@types/pouchdb-replication": "6.4.2",
     "@types/spark-md5": "3.0.2",
-    "broadcast-channel": "3.5.3",
+    "broadcast-channel": "3.6.0",
     "clone": "^2.1.2",
     "cors": "2.8.5",
     "crypto-js": "4.0.0",
