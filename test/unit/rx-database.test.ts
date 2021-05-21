@@ -196,7 +196,7 @@ config.parallel('rx-database.test.js', () => {
                     password,
                     ignoreDuplicate: true
                 });
-                const doc = await db.internalStore.get('_local/pwHash');
+                const doc = await db.internalStore.internals.pouch.get('_local/pwHash');
                 assert.strictEqual(typeof doc.value, 'string');
                 const db2 = await createRxDatabase({
                     name,
@@ -204,7 +204,7 @@ config.parallel('rx-database.test.js', () => {
                     password,
                     ignoreDuplicate: true
                 });
-                const doc2 = await db.internalStore.get('_local/pwHash');
+                const doc2 = await db.internalStore.internals.pouch.get('_local/pwHash');
                 assert.ok(doc2);
                 assert.strictEqual(typeof doc.value, 'string');
 
@@ -273,7 +273,7 @@ config.parallel('rx-database.test.js', () => {
                     name: 'human0',
                     schema: schemas.human
                 });
-                const colDoc = await db.internalStore.get('human0-' + schemas.human.version);
+                const colDoc = await db.internalStore.internals.pouch.get('human0-' + schemas.human.version);
                 const compareSchema = createRxSchema(schemas.human);
                 assert.deepStrictEqual(compareSchema.normalized, colDoc.schema);
                 db.destroy();
@@ -302,7 +302,7 @@ config.parallel('rx-database.test.js', () => {
                 });
                 const version = collection.schema.version;
                 assert.deepStrictEqual(version, 0);
-                const internalDoc = await db.internalStore.get('human-' + version);
+                const internalDoc = await db.internalStore.internals.pouch.get('human-' + version);
                 assert.deepStrictEqual(internalDoc.version, version);
                 db.destroy();
             });

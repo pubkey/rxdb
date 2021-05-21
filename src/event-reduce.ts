@@ -36,16 +36,16 @@ export function getQueryParams<RxDocType>(
     rxQuery: RxQuery<RxDocType>
 ): QueryParams<RxDocType> {
     if (!RXQUERY_QUERY_PARAMS_CACHE.has(rxQuery)) {
-        const storage = rxQuery.collection.database.storage;
+        const collection = rxQuery.collection;
         const queryJson: MangoQuery<RxDocType> = rxQuery.toJSON();
-        const primaryKey = rxQuery.collection.schema.primaryPath;
+        const primaryKey = collection.schema.primaryPath;
         const ret = {
             primaryKey: rxQuery.collection.schema.primaryPath,
             skip: queryJson.skip,
             limit: queryJson.limit,
             sortFields: getSortFieldsOfQuery(primaryKey, queryJson),
-            sortComparator: storage.getSortComparator(primaryKey, queryJson),
-            queryMatcher: storage.getQueryMatcher(primaryKey, queryJson)
+            sortComparator: collection.storageInstance.getSortComparator(queryJson),
+            queryMatcher: collection.storageInstance.getQueryMatcher(queryJson)
         };
         RXQUERY_QUERY_PARAMS_CACHE.set(rxQuery, ret);
         return ret;

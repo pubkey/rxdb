@@ -24,14 +24,13 @@ import type {
 import {
     promiseWait,
     pluginMissing,
-    LOCAL_PREFIX,
     flatClone
 } from './util';
 import {
     newRxError
 } from './rx-error';
 import {
-    createRxSchema
+    createRxSchema, getPseudoSchemaForVersion
 } from './rx-schema';
 import {
     isInstanceOf as isInstanceOfRxChangeEvent,
@@ -61,10 +60,15 @@ import {
 import {
     RxChangeEvent
 } from './rx-change-event';
-import { RxStorage } from './rx-storate.interface';
-import { getRxStoragePouchDb } from './rx-storage-pouchdb';
+import {
+    getRxStoragePouch,
+    POUCHDB_LOCAL_PREFIX,
+    RxStorageInstancePouch,
+    RxStoragePouch
+} from './rx-storage-pouchdb';
 import { getAllDocuments, deleteStorageInstance } from './rx-database-internal-store';
 import type { RxBackupState } from './plugins/backup';
+import { RxStorage } from './rx-storate.interface';
 
 /**
  * stores the combinations
@@ -80,8 +84,9 @@ export class RxDatabaseBase<
     RxStorageInstance = PouchDBInstance
     > {
 
-    public storage: RxStorage;
-    public internalStore: RxStorageInstance = {} as RxStorageInstance;
+    // TODO use type RxStorage when rx-storage finished implemented
+    public storage: RxStoragePouch;
+    public internalStore: RxStorageInstancePouch = {} as RxStorageInstancePouch;
 
     constructor(
         public name: string,
@@ -92,9 +97,9 @@ export class RxDatabaseBase<
         public options: any = {},
         public pouchSettings: PouchSettings,
     ) {
-        this.storage = getRxStoragePouchDb(adapter, pouchSettings);
-        this.collections = {} as any;
+        this.storage = getRxStoragePouch(adapter, pouchSettings);
 
+        this.collections = {} as any;
         DB_COUNT++;
     }
 
@@ -130,7 +135,7 @@ export class RxDatabaseBase<
                             _id: row.key,
                             _rev: row.value.rev
                         }))
-                        .map((doc: any) => (this.internalStore as any).remove(doc._id, doc._rev))
+                        .map((doc: any) => this.internalStore.internals.pouch.remove(doc._id, doc._rev))
                 );
             }) as any;
     }
@@ -138,19 +143,18 @@ export class RxDatabaseBase<
     /**
      * spawns a new pouch-instance
      */
-    _spawnPouchDB(
+    public async _spawnStorageInstance(
         collectionName: string,
-        schemaVersion: number,
+        schema: RxJsonSchema,
         pouchSettings: PouchSettings = {}
-    ): PouchDBInstance {
-        return this.storage.createStorageInstance(
+    ): Promise<PouchDBInstance> {
+        const instance = await this.storage.createStorageInstance(
             this.name,
             collectionName,
-            schemaVersion,
-            {
-                pouchSettings
-            }
+            schema,
+            pouchSettings
         );
+        return instance.internals.pouch;
     }
 
     /**
@@ -177,10 +181,10 @@ export class RxDatabaseBase<
      */
     removeCollectionDoc(name: string, schema: any): Promise<void> {
         const docId = _collectionNamePrimary(name, schema);
-        return (this.internalStore as any)
+        return this.internalStore.internals.pouch
             .get(docId)
             .then((doc: any) => this.lockedRun(
-                () => (this.internalStore as any).remove(doc)
+                () => this.internalStore.internals.pouch.remove(doc)
             ));
     }
 
@@ -194,7 +198,7 @@ export class RxDatabaseBase<
         // TODO instead of [name: string] only allow keyof Collections
         [name: string]: RxCollectionCreatorBase
     }): Promise<{ [key: string]: RxCollection }> {
-        const pouch: PouchDBInstance = this.internalStore as any;
+        const pouch: PouchDBInstance = this.internalStore.internals.pouch;
 
         // get local management docs in bulk request
         const result = await pouch.allDocs({
@@ -321,14 +325,19 @@ export class RxDatabaseBase<
      * delete all data of the collection and its previous versions
      */
     removeCollection(collectionName: string): Promise<void> {
-        if ((this.collections as any)[collectionName])
+        if ((this.collections as any)[collectionName]) {
             (this.collections as any)[collectionName].destroy();
+        }
 
         // remove schemas from internal db
         return _removeAllOfCollection(this as any, collectionName)
             // get all relevant pouchdb-instances
-            .then(knownVersions => knownVersions
-                .map(v => this._spawnPouchDB(collectionName, v)))
+            .then(knownVersions => {
+                return Promise.all(
+                    knownVersions
+                        .map(v => this._spawnStorageInstance(collectionName, getPseudoSchemaForVersion(v)))
+                );
+            })
             // remove documents
             .then(pouches => {
                 return Promise.all(
@@ -477,18 +486,18 @@ function _removeUsedCombination(name: string, adapter: any) {
  * name and adapter, but do not share state with this one (for example in-memory-instances),
  * we set a storage-token and use it in the broadcast-channel
  */
-export function _ensureStorageTokenExists(rxDatabase: RxDatabase): Promise<string> {
-    return rxDatabase.internalStore.get(LOCAL_PREFIX + 'storageToken')
+export function _ensureStorageTokenExists<Collections = any>(rxDatabase: RxDatabase<Collections>): Promise<string> {
+    return rxDatabase.internalStore.internals.pouch.get(POUCHDB_LOCAL_PREFIX + 'storageToken')
         .catch(() => {
             // no doc exists -> insert
-            return rxDatabase.internalStore.put({
-                _id: LOCAL_PREFIX + 'storageToken',
+            return rxDatabase.internalStore.internals.pouch.put({
+                _id: POUCHDB_LOCAL_PREFIX + 'storageToken',
                 value: randomToken(10)
             })
                 .catch(() => { })
                 .then(() => promiseWait(0));
         })
-        .then(() => rxDatabase.internalStore.get(LOCAL_PREFIX + 'storageToken'))
+        .then(() => rxDatabase.internalStore.internals.pouch.get(POUCHDB_LOCAL_PREFIX + 'storageToken'))
         .then((storageTokenDoc2: any) => storageTokenDoc2.value);
 }
 
@@ -542,14 +551,16 @@ export function _removeAllOfCollection(
             });
         return Promise.all(
             relevantDocs
-                .map((doc: any) => rxDatabase.lockedRun(
-                    () => (rxDatabase.internalStore as any).remove(doc)
-                ))
+                .map(
+                    (doc: any) => rxDatabase.lockedRun(
+                        () => rxDatabase.internalStore.internals.pouch.remove(doc)
+                    )
+                )
         ).then(() => relevantDocs.map((doc: any) => doc.version));
     });
 }
 
-function _prepareBroadcastChannel(rxDatabase: RxDatabase): void {
+function _prepareBroadcastChannel<Collections>(rxDatabase: RxDatabase<Collections>): void {
     // broadcastChannel
     rxDatabase.broadcastChannel = new BroadcastChannel(
         'RxDB:' +
@@ -583,24 +594,35 @@ function _prepareBroadcastChannel(rxDatabase: RxDatabase): void {
     );
 }
 
+
+async function createInternalStorageInstance(
+    storage: RxStorage<any, any>,
+    databaseName: string,
+    pouchSettings: PouchSettings
+): Promise<RxStorageInstancePouch> {
+    const internalStore = await storage.createStorageInstance(
+        databaseName,
+        '_rxdb_internal',
+        getPseudoSchemaForVersion(0),
+        pouchSettings
+    );
+    return internalStore as any;
+}
+
 /**
  * do the async things for this database
  */
-function prepare(rxDatabase: RxDatabase<any>): Promise<void> {
-    return rxDatabase.storage
-        .createInternalStorageInstance(
-            rxDatabase.name
-        )
-        .then((internalStore: any) => {
-            rxDatabase.internalStore = internalStore;
-            return _ensureStorageTokenExists(rxDatabase);
-        })
-        .then((storageToken: string) => {
-            rxDatabase.storageToken = storageToken;
-            if (rxDatabase.multiInstance) {
-                _prepareBroadcastChannel(rxDatabase);
-            }
-        });
+async function prepare<Collections>(rxDatabase: RxDatabase<Collections>): Promise<void> {
+    rxDatabase.internalStore = await createInternalStorageInstance(
+        rxDatabase.storage,
+        rxDatabase.name,
+        rxDatabase.pouchSettings
+    );
+
+    rxDatabase.storageToken = await _ensureStorageTokenExists<Collections>(rxDatabase);
+    if (rxDatabase.multiInstance) {
+        _prepareBroadcastChannel<Collections>(rxDatabase);
+    }
 }
 
 export function createRxDatabase<Collections = { [key: string]: RxCollection }>({
@@ -675,38 +697,36 @@ export function createRxDatabase<Collections = { [key: string]: RxCollection }>(
 /**
  * removes the database and all its known data
  */
-export function removeRxDatabase(
+export async function removeRxDatabase(
     databaseName: string,
     adapter: any
 ): Promise<any> {
-    const storage = getRxStoragePouchDb(adapter);
+    const storage = getRxStoragePouch(adapter);
 
-    return storage.createInternalStorageInstance(
-        databaseName
-    ).then(internalStore => {
+    const internalStore = await createInternalStorageInstance(
+        storage,
+        databaseName,
+        {}
+    );
 
-        return getAllDocuments(internalStore)
-            .then(docs => {
-                // remove collections storages
-                return Promise.all(
-                    docs
-                        .map((colDoc: any) => colDoc.id)
-                        .map((id: string) => {
-                            const split = id.split('-');
-                            const name = split[0];
-                            const version = parseInt(split[1], 10);
-                            const instance = storage.createStorageInstance(
-                                databaseName,
-                                name,
-                                version
-                            );
-                            return instance.destroy();
-                        })
+    const docs = await getAllDocuments(internalStore);
+    await Promise.all(
+        docs
+            .map((colDoc: any) => colDoc.id)
+            .map(async (id: string) => {
+                const split = id.split('-');
+                const name = split[0];
+                const version = parseInt(split[1], 10);
+                const instance = await storage.createStorageInstance(
+                    databaseName,
+                    name,
+                    getPseudoSchemaForVersion(version),
+                    {}
                 );
+                return instance.internals.pouch.destroy();
             })
-            // remove internals
-            .then(() => deleteStorageInstance(internalStore));
-    });
+    );
+    return deleteStorageInstance(internalStore);
 }
 
 /**

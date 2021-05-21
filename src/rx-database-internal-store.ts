@@ -5,13 +5,10 @@
  * it should work by using the storage.interface
  */
 
+import { POUCHDB_LOCAL_PREFIX, RxStorageInstancePouch } from './rx-storage-pouchdb';
 import type {
-    PouchDBInstance,
     RxDocumentTypeWithRev
 } from './types';
-import { LOCAL_PREFIX } from './util';
-
-declare type RxStorageInstance = PouchDBInstance; // will be typed when we have more then one
 
 export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
 
@@ -20,20 +17,20 @@ export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
  * or null if not exists
  */
 export function getLocalDocument(
-    storageInstance: RxStorageInstance,
+    storageInstance: RxStorageInstancePouch,
     id: string
 ): Promise<any | null> {
-    return storageInstance.get(
-        LOCAL_PREFIX + id
+    return storageInstance.internals.pouch.get(
+        POUCHDB_LOCAL_PREFIX + id
     ).catch(() => null);
 }
 
 export function setLocalDocument(
-    storageInstance: RxStorageInstance,
+    storageInstance: RxStorageInstancePouch,
     id: string,
     value: any
 ): Promise<void> {
-    return storageInstance.put({
+    return storageInstance.internals.pouch.put({
         _id: id,
         value
     }).then(() => { });
@@ -41,10 +38,10 @@ export function setLocalDocument(
 
 
 export function putDocument<DocData>(
-    storageInstance: RxStorageInstance,
+    storageInstance: RxStorageInstancePouch,
     doc: DocData | RxDocumentTypeWithRev<DocData>
 ): Promise<RxDocumentTypeWithRev<DocData>> {
-    return storageInstance
+    return storageInstance.internals.pouch
         .put(doc)
         .then(putResult => {
             return Object.assign({
@@ -58,23 +55,24 @@ export function putDocument<DocData>(
  * returns all NON-LOCAL documents
  */
 export function getAllDocuments(
-    storageInstance: RxStorageInstance
+    storageInstance: RxStorageInstancePouch
 ): Promise<{
     id: string;
     key: string;
     value: any;
     doc: any;
 }[]> {
-    return storageInstance.allDocs({
+    return storageInstance.internals.pouch.allDocs({
         include_docs: true
     }).then(result => result.rows);
 }
 
 /**
  * deletes the storage instance and all of it's data
+ * TODO must be imlemented in RxStorageInstnace
  */
 export function deleteStorageInstance(
-    storageInstance: RxStorageInstance
+    storageInstance: RxStorageInstancePouch
 ): Promise<void> {
-    return storageInstance.destroy();
+    return storageInstance.internals.pouch.destroy();
 }

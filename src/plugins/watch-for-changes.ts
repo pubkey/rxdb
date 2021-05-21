@@ -22,9 +22,11 @@ import type {
  * listens to changes of the internal pouchdb
  * and ensures they are emitted to the internal RxChangeEvent-Stream
  */
-export function watchForChanges(this: RxCollection) {
+export function watchForChanges(this: RxCollection<{}>) {
     // do not call twice on same collection
-    if (this.synced) return;
+    if (this.synced) {
+        return;
+    }
     this.synced = true;
 
     this._watchForChangesUnhandled = new Set();
@@ -35,7 +37,7 @@ export function watchForChanges(this: RxCollection) {
      */
     const pouch$ =
         fromEvent(
-            this.pouch.changes({
+            this.storageInstance.internals.pouch.changes({
                 since: 'now',
                 live: true,
                 include_docs: true

@@ -55,7 +55,8 @@ export {
     getIndexes,
     normalize,
     getFinalFields,
-    getPreviousVersions
+    getPreviousVersions,
+    getPseudoSchemaForVersion
 } from './rx-schema';
 
 export {
@@ -63,8 +64,11 @@ export {
 } from './rx-change-event';
 
 export {
-    getRxStoragePouchDb,
-    getPouchLocation
+    getRxStoragePouch,
+    getPouchLocation,
+    RxStoragePouch,
+    RxStorageInstancePouch,
+    RxStorageKeyObjectInstancePouch
 } from './rx-storage-pouchdb';
 
 export {

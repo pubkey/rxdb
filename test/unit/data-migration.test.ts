@@ -294,7 +294,10 @@ config.parallel('data-migration.test.js', () => {
                     const dbName = randomCouchString(10);
                     const col = await humansCollection.createMigrationCollection(10, {}, dbName);
                     const olds = await _getOldCollections(col.getDataMigrator());
-                    const old: any = olds.pop();
+                    const old = olds.pop();
+                    if (!old) {
+                        throw new Error('this should never happen');
+                    }
 
                     const amount = await countAllUndeleted(old.pouchdb);
                     assert.strictEqual(amount, 10);
@@ -308,7 +311,7 @@ config.parallel('data-migration.test.js', () => {
 
                     // check that internal doc exists
                     let docId = _collectionNamePrimary(col.name, old.schema.jsonSchema);
-                    let iDoc = await old.database.internalStore.get(docId);
+                    let iDoc = await old.database.internalStore.internals.pouch.get(docId);
                     assert.strictEqual(typeof iDoc.schemaHash, 'string');
 
 
@@ -325,7 +328,7 @@ config.parallel('data-migration.test.js', () => {
                     let has = true;
                     docId = _collectionNamePrimary(col.name, old.schema.jsonSchema);
                     try {
-                        iDoc = await (old as any).database.internalStore.get(docId);
+                        iDoc = await old.database.internalStore.internals.pouch.get(docId);
                     } catch (e) {
                         has = false;
                     }

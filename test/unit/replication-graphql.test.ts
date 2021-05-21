@@ -20,7 +20,6 @@ import {
     createRxDatabase,
     RxJsonSchema,
     hash,
-    LOCAL_PREFIX,
     randomCouchString,
     PouchDB
 } from '../../plugins/core';
@@ -54,6 +53,8 @@ import {
     buildSchema,
     parse as parseQuery
 } from 'graphql';
+
+const POUCHDB_LOCAL_PREFIX = '_local/'
 
 declare type WithDeleted<T> = T & { deleted: boolean };
 
@@ -503,7 +504,7 @@ describe('replication-graphql.test.js', () => {
                         getEndpointHash(),
                         1
                     );
-                    assert.ok(ret.id.startsWith(LOCAL_PREFIX));
+                    assert.ok(ret.id.startsWith(POUCHDB_LOCAL_PREFIX));
                     c.database.destroy();
                 });
                 it('should be able to run multiple times', async () => {
@@ -745,7 +746,7 @@ describe('replication-graphql.test.js', () => {
                         endpointHash,
                         docData
                     );
-                    assert.ok(ret.id.startsWith(LOCAL_PREFIX));
+                    assert.ok(ret.id.startsWith(POUCHDB_LOCAL_PREFIX));
                     c.database.destroy();
                 });
                 it('should be able to run multiple times', async () => {
@@ -762,7 +763,7 @@ describe('replication-graphql.test.js', () => {
                         endpointHash,
                         docData
                     );
-                    assert.ok(ret.id.startsWith(LOCAL_PREFIX));
+                    assert.ok(ret.id.startsWith(POUCHDB_LOCAL_PREFIX));
                     c.database.destroy();
                 });
             });

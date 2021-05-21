@@ -1,8 +1,4 @@
 import {
-    LOCAL_PREFIX
-} from '../../util';
-
-import {
     PLUGIN_IDENT,
     getDocFromPouchOrNull,
     wasRevisionfromPullReplication
@@ -10,6 +6,7 @@ import {
 import type {
     RxCollection, PouchChangeRow, PouchChangeDoc, PouchdbChangesResult
 } from '../../types';
+import { POUCHDB_LOCAL_PREFIX } from '../../rx-storage-pouchdb';
 
 /**
  * when the replication starts,
@@ -30,7 +27,7 @@ import type {
 // things for the push-checkpoint
 //
 
-const pushSequenceId = (endpointHash: string) => LOCAL_PREFIX + PLUGIN_IDENT + '-push-checkpoint-' + endpointHash;
+const pushSequenceId = (endpointHash: string) => POUCHDB_LOCAL_PREFIX + PLUGIN_IDENT + '-push-checkpoint-' + endpointHash;
 
 /**
  * @return last sequence checkpoint
@@ -170,7 +167,7 @@ export async function getChangesSinceLastPushSequence(
 //
 
 
-const pullLastDocumentId = (endpointHash: string) => LOCAL_PREFIX + PLUGIN_IDENT + '-pull-checkpoint-' + endpointHash;
+const pullLastDocumentId = (endpointHash: string) => POUCHDB_LOCAL_PREFIX + PLUGIN_IDENT + '-pull-checkpoint-' + endpointHash;
 
 export async function getLastPullDocument(
     collection: RxCollection,

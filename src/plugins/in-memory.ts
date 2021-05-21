@@ -33,7 +33,7 @@ import {
     randomCouchString
 } from '../util';
 import {
-    addRxPlugin,
+    addRxPlugin, getRxStoragePouch,
 } from '../core';
 import {
     createCrypter
@@ -54,9 +54,6 @@ import {
 import {
     newRxError
 } from '../rx-error';
-import {
-    getRxStoragePouchDb
-} from '../rx-storage-pouchdb';
 
 // add the watch-for-changes-plugin
 import { RxDBWatchForChangesPlugin } from '../plugins/watch-for-changes';
@@ -110,13 +107,6 @@ export
                     get: () => (fun as any).bind(this)
                 });
             });
-
-        const storage = getRxStoragePouchDb('memory');
-        this.pouch = storage.createStorageInstance(
-            'rxdb-in-memory',
-            randomCouchString(10),
-            0
-        );
 
         this._observable$ = new Subject();
         this._changeEventBuffer = createChangeEventBuffer(this as any);
@@ -318,14 +308,19 @@ export function streamChangedDocuments(
     rxCollection: RxCollection,
     prevFilter = (_i: any) => true
 ): Observable<any> {
-    if (!rxCollection._doNotEmitSet) rxCollection._doNotEmitSet = new Set();
+    if (!rxCollection._doNotEmitSet) {
+        rxCollection._doNotEmitSet = new Set();
+    }
 
-    const observable = ObservableFromEvent(rxCollection.pouch
-        .changes({
-            since: 'now',
-            live: true,
-            include_docs: true
-        }), 'change')
+    const observable = ObservableFromEvent(
+        rxCollection.storageInstance.internals.pouch
+            .changes({
+                since: 'now',
+                live: true,
+                include_docs: true
+            }),
+        'change'
+    )
         .pipe(
             /**
              * we need this delay because with pouchdb 7.2.2
@@ -386,14 +381,15 @@ let INIT_DONE = false;
 /**
  * called in the proto of RxCollection
  */
-export function spawnInMemory(
+export async function inMemory(
     this: RxCollection
 ): Promise<RxCollection> {
     if (!INIT_DONE) {
         INIT_DONE = true;
         // ensure memory-adapter is added
-        if (!(PouchDB as any).adapters || !(PouchDB as any).adapters.memory)
+        if (!(PouchDB as any).adapters || !(PouchDB as any).adapters.memory) {
             throw newRxError('IM1');
+        }
     }
 
     if (collectionCacheMap.has(this)) {
@@ -403,6 +399,8 @@ export function spawnInMemory(
     }
 
     const col = new InMemoryRxCollection(this);
+    await prepareInMemoryRxCollection(col);
+
     const preparePromise = col.prepareChild();
     collectionCacheMap.set(this, col);
     collectionPromiseCacheMap.set(this, preparePromise);
@@ -410,11 +408,22 @@ export function spawnInMemory(
     return preparePromise.then(() => col) as any;
 }
 
+export async function prepareInMemoryRxCollection(instance: InMemoryRxCollection<any, {}>): Promise<void> {
+    const memoryStorage = getRxStoragePouch('memory', {});
+    instance.storageInstance = await memoryStorage.createStorageInstance(
+        'rxdb-in-memory',
+        randomCouchString(10),
+        instance.schema.jsonSchema,
+        instance.pouchSettings
+    );
+    instance.pouch = instance.storageInstance.internals.pouch;
+}
+
 
 export const rxdb = true;
 export const prototypes = {
     RxCollection: (proto: any) => {
-        proto.inMemory = spawnInMemory;
+        proto.inMemory = inMemory;
     }
 };
 

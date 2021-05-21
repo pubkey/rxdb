@@ -368,11 +368,6 @@ export function createRevision(docData: any, deterministic_revs: boolean): strin
 }
 
 /**
- * prefix of local pouchdb documents
- */
-export const LOCAL_PREFIX: string = '_local/';
-
-/**
  * overwrites the getter with the actual value
  * Mostly used for caching stuff on the first run
  */

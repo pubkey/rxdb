@@ -22,11 +22,11 @@ import {
 } from '../rx-error';
 import {
     clone,
-    now,
-    LOCAL_PREFIX
+    now
 } from '../util';
 
 import type {
+    PouchDBInstance,
     RxCollection,
     RxDatabase,
     RxDocument,
@@ -48,6 +48,7 @@ import {
     mergeMap
 } from 'rxjs/operators';
 import { Observable } from 'rxjs';
+import { POUCHDB_LOCAL_PREFIX } from '../rx-storage-pouchdb';
 
 const DOC_CACHE_BY_PARENT = new WeakMap();
 const _getDocCache = (parent: any) => {
@@ -91,10 +92,12 @@ export class RxLocalDocument extends RxDocumentParent {
     }
 }
 
-const _getPouchByParent = (parent: any) => {
-    if (isRxDatabase(parent))
-        return (parent as RxDatabase<{}>).internalStore; // database
-    else return parent.pouch; // collection
+function _getPouchByParent(parent: any): PouchDBInstance {
+    if (isRxDatabase(parent)) {
+        return (parent as RxDatabase<{}>).internalStore.internals.pouch; // database
+    } else {
+        return (parent as RxCollection).storageInstance.internals.pouch; // collection
+    }
 };
 
 const RxLocalDocumentPrototype: any = {
@@ -102,7 +105,7 @@ const RxLocalDocumentPrototype: any = {
         this: any
     ) {
         const data = clone(this._data);
-        data._id = LOCAL_PREFIX + this.id;
+        data._id = POUCHDB_LOCAL_PREFIX + this.id;
     },
     get isLocal() {
         return true;
@@ -202,7 +205,7 @@ const RxLocalDocumentPrototype: any = {
     _saveData(this: any, newData: any) {
         const oldData = this._dataSync$.getValue();
         newData = clone(newData);
-        newData._id = LOCAL_PREFIX + this.id;
+        newData._id = POUCHDB_LOCAL_PREFIX + this.id;
 
         const startTime = now();
         return this.parentPouch.put(newData)
@@ -226,7 +229,7 @@ const RxLocalDocumentPrototype: any = {
     },
 
     remove(this: any): Promise<void> {
-        const removeId = LOCAL_PREFIX + this.id;
+        const removeId = POUCHDB_LOCAL_PREFIX + this.id;
         const startTime = now();
         return this.parentPouch.remove(removeId, this._data._rev)
             .then(() => {
@@ -317,7 +320,7 @@ function insertLocal(this: RxDatabase | RxCollection, id: string, data: any): Pr
             // create new one
             const pouch = _getPouchByParent(this);
             const saveData = clone(data);
-            saveData._id = LOCAL_PREFIX + id;
+            saveData._id = POUCHDB_LOCAL_PREFIX + id;
 
             const startTime = now();
             return pouch.put(saveData).then((res: any) => {
@@ -374,10 +377,12 @@ function getLocal(this: any, id: string): Promise<RxLocalDocument> {
 
     // check in doc-cache
     const found = docCache.get(id);
-    if (found) return Promise.resolve(found);
+    if (found) {
+        return Promise.resolve(found);
+    }
 
     // if not found, check in pouch
-    return pouch.get(LOCAL_PREFIX + id)
+    return pouch.get(POUCHDB_LOCAL_PREFIX + id)
         .then((docData: any) => {
             if (!docData) return null;
             const doc = RxLocalDocument.create(id, docData, this);

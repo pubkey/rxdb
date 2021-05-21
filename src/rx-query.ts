@@ -288,7 +288,7 @@ export class RxQueryBase<
      * @overwrites itself with the actual value
      */
     toJSON(): PreparedQuery<RxDocumentType> {
-        const value = this.collection.database.storage.prepareQuery(
+        const value = this.collection.storageInstance.prepareQuery(
             this.asRxQuery,
             clone(this.mangoQuery)
         );

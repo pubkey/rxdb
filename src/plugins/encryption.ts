@@ -16,7 +16,8 @@ import {
     Crypter
 } from '../crypter';
 import type { RxPlugin, RxDatabase } from '../types';
-import { hash, LOCAL_PREFIX } from '../util';
+import { hash } from '../util';
+import { POUCHDB_LOCAL_PREFIX } from '../rx-storage-pouchdb';
 
 const minPassLength = 8;
 
@@ -57,7 +58,7 @@ export function storePasswordHashIntoDatabase(
         return Promise.resolve(false);
     }
     const pwHash = hash(rxDatabase.password);
-    return rxDatabase.internalStore.get(LOCAL_PREFIX + 'pwHash')
+    return rxDatabase.internalStore.internals.pouch.get(POUCHDB_LOCAL_PREFIX + 'pwHash')
         .catch(() => null)
         .then((pwHashDoc: PasswordHashDocument | null) => {
             /**
@@ -65,8 +66,8 @@ export function storePasswordHashIntoDatabase(
              * this operation might throw because another instance runs save at the same time,
              */
             if (!pwHashDoc) {
-                return rxDatabase.internalStore.put({
-                    _id: LOCAL_PREFIX + 'pwHash',
+                return rxDatabase.internalStore.internals.pouch.put({
+                    _id: POUCHDB_LOCAL_PREFIX + 'pwHash',
                     value: pwHash
                 }).catch(() => null)
                     .then(() => true);

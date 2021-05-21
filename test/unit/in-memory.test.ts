@@ -21,7 +21,8 @@ import {
     setIndexes,
     replicateExistingDocuments,
     streamChangedDocuments,
-    applyChangedDocumentToPouch
+    applyChangedDocumentToPouch,
+    prepareInMemoryRxCollection
 } from '../../plugins/in-memory';
 addRxPlugin(RxDBInMemoryPlugin);
 
@@ -30,7 +31,8 @@ config.parallel('in-memory.test.js', () => {
         describe('.setIndexes()', () => {
             it('should have set all indexes', async () => {
                 const col = await humansCollection.create(0);
-                const inMem = new (InMemoryRxCollection as any)(col);
+                const inMem = new InMemoryRxCollection(col);
+                await prepareInMemoryRxCollection(inMem);
                 await setIndexes(inMem.schema, inMem.pouch);
 
                 const hasIndexes = await inMem.pouch.getIndexes();
@@ -43,8 +45,9 @@ config.parallel('in-memory.test.js', () => {
         describe('.replicateExistingDocuments()', () => {
             it('should have replicated all documents', async () => {
                 const col = await humansCollection.create(5);
-                const inMem = new (InMemoryRxCollection as any)(col);
-                await replicateExistingDocuments(col, inMem);
+                const inMem = new InMemoryRxCollection(col);
+                await prepareInMemoryRxCollection(inMem);
+                await replicateExistingDocuments(col, inMem as any);
 
                 const foundAfter = await inMem.pouch.find({
                     selector: {}
@@ -60,8 +63,10 @@ config.parallel('in-memory.test.js', () => {
                     firstName: 'steve',
                     secret: 'foobar'
                 });
-                const inMem = new (InMemoryRxCollection as any)(col);
-                await replicateExistingDocuments(col, inMem);
+                const inMem = new InMemoryRxCollection(col);
+                await prepareInMemoryRxCollection(inMem);
+
+                await replicateExistingDocuments(col, inMem as any);
 
                 const foundAfter = await inMem.pouch.find({
                     selector: {}
@@ -87,8 +92,9 @@ config.parallel('in-memory.test.js', () => {
             });
             it('should stream a doc-change of an inMemory collection', async () => {
                 const col = await humansCollection.create(0);
-                const inMem = new (InMemoryRxCollection as any)(col);
-                const obs = streamChangedDocuments(inMem);
+                const inMem = new InMemoryRxCollection(col);
+                await prepareInMemoryRxCollection(inMem);
+                const obs = streamChangedDocuments(inMem as any);
                 const emitted: any[] = [];
                 const sub = obs.subscribe(d => emitted.push(d));
 

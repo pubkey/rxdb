@@ -23,6 +23,7 @@ import type {
     RxJsonSchema,
     JsonSchema
 } from './types';
+import { pouchSwapIdToPrimary, pouchSwapPrimaryToId } from './rx-storage-pouchdb';
 
 export class RxSchema<T = any> {
     public indexes: string[][];
@@ -168,26 +169,24 @@ export class RxSchema<T = any> {
         return obj;
     }
 
+    /**
+     * TODO remove this function because it is pouch specific
+     */
     swapIdToPrimary(obj: any): any {
-        if (this.primaryPath === '_id' || obj[this.primaryPath]) {
-            return obj;
-        }
-        obj[this.primaryPath] = obj._id;
-        delete obj._id;
-        return obj;
+        return pouchSwapIdToPrimary(
+            this.primaryPath,
+            obj
+        );
     }
+
+    /**
+     * TODO remove this function because it is pouch specific
+     */
     swapPrimaryToId(obj: any): any {
-        if (this.primaryPath === '_id') {
-            return obj;
-        }
-        const ret: any = {};
-        Object
-            .entries(obj)
-            .forEach(entry => {
-                const newKey = entry[0] === this.primaryPath ? '_id' : entry[0];
-                ret[newKey] = entry[1];
-            });
-        return ret;
+        return pouchSwapPrimaryToId(
+            this.primaryPath,
+            obj
+        );
     }
 
     /**
@@ -326,4 +325,18 @@ export function createRxSchema<T = any>(
 
 export function isInstanceOf(obj: any): boolean {
     return obj instanceof RxSchema;
+}
+
+
+/**
+ * Helper function to create a valid RxJsonSchema
+ * with a given version.
+ */
+export function getPseudoSchemaForVersion(version: number): RxJsonSchema {
+    const pseudoSchema: RxJsonSchema = {
+        version,
+        type: 'object',
+        properties: {}
+    };
+    return pseudoSchema;
 }

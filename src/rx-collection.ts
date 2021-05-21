@@ -110,6 +110,7 @@ import {
     createRxDocument,
     getRxDocumentConstructor
 } from './rx-document-prototype-merge';
+import { RxStorageInstancePouch } from './rx-storage-pouchdb';
 
 const HOOKS_WHEN = ['pre', 'post'];
 const HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
@@ -172,7 +173,13 @@ export class RxCollectionBase<
     public synced: boolean = false;
     public hooks: any = {};
     public _subs: Subscription[] = [];
+
+    // TODO move _repStates into migration plugin
     public _repStates: Set<RxReplicationState> = new Set();
+
+    // TODO use type RxStorageInstance when rx-storage is implemented
+    public storageInstance: RxStorageInstancePouch = {} as any;
+    // TODO remove this.pouch when rx-storage is implemented
     public pouch: PouchDBInstance = {} as PouchDBInstance; // this is needed to preserve this name
 
     public _docCache: DocCache<
@@ -192,17 +199,19 @@ export class RxCollectionBase<
     private _onDestroy?: Promise<void>;
 
     private _onDestroyCall?: () => void;
-    prepare(
+    public async prepare(
         /**
          * set to true if the collection data already exists on this storage adapter
          */
         wasCreatedBefore: boolean
-    ) {
-        this.pouch = this.database._spawnPouchDB(
+    ): Promise<any> {
+        this.storageInstance = await this.database.storage.createStorageInstance(
+            this.database.name,
             this.name,
-            this.schema.version,
+            this.schema.jsonSchema,
             this.pouchSettings
         );
+        this.pouch = this.storageInstance.internals.pouch;
 
         if (this.schema.doKeyCompression()) {
             this._keyCompressor = overwritable.createKeyCompressor(this.schema);

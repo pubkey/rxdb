@@ -25,7 +25,7 @@ import {
     createRevision
 } from '../../util';
 import {
-    createRxSchema
+    createRxSchema, getPseudoSchemaForVersion
 } from '../../rx-schema';
 import {
     RxError,
@@ -188,24 +188,27 @@ export class DataMigrator {
     }
 }
 
-export function createOldCollection(
+export async function createOldCollection(
     version: number,
     schemaObj: any,
     dataMigrator: DataMigrator
-): OldRxCollection {
+): Promise<OldRxCollection> {
     const database = dataMigrator.newestCollection.database;
     const schema = createRxSchema(schemaObj, false);
+    const storageInstance = await database.storage.createStorageInstance(
+        database.name,
+        dataMigrator.newestCollection.name,
+        getPseudoSchemaForVersion(version),
+        dataMigrator.newestCollection.pouchSettings
+    );
+    const pouchdb = storageInstance.internals.pouch;
     const ret: OldRxCollection = {
         version,
         dataMigrator,
         newestCollection: dataMigrator.newestCollection,
         database,
         schema: createRxSchema(schemaObj, false),
-        pouchdb: database._spawnPouchDB(
-            dataMigrator.newestCollection.name,
-            version,
-            dataMigrator.newestCollection.pouchSettings
-        ),
+        pouchdb,
         _crypter: createCrypter(
             database.password,
             schema
@@ -222,16 +225,17 @@ export function createOldCollection(
 /**
  * get an array with OldCollection-instances from all existing old pouchdb-instance
  */
-export function _getOldCollections(
+export async function _getOldCollections(
     dataMigrator: DataMigrator
 ): Promise<OldRxCollection[]> {
-    return Promise
-        .all(
-            getPreviousVersions(dataMigrator.currentSchema.jsonSchema)
-                .map(v => (dataMigrator.database.internalStore as any).get(dataMigrator.name + '-' + v))
-                .map(fun => fun.catch(() => null)) // auto-catch so Promise.all continues
-        )
-        .then(oldColDocs => oldColDocs
+    const oldColDocs = await Promise.all(
+        getPreviousVersions(dataMigrator.currentSchema.jsonSchema)
+            .map(v => dataMigrator.database.internalStore.internals.pouch.get(dataMigrator.name + '-' + v))
+            .map(fun => fun.catch(() => null)) // auto-catch so Promise.all continues
+    );
+
+    return Promise.all(
+        oldColDocs
             .filter(colDoc => colDoc !== null)
             .map(colDoc => {
                 return createOldCollection(
@@ -240,7 +244,7 @@ export function _getOldCollections(
                     dataMigrator
                 );
             })
-        );
+    );
 }
 
 
