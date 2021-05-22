@@ -13,45 +13,6 @@ import type {
 export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
 
 /**
- * returns to local document with the given id
- * or null if not exists
- */
-export function getLocalDocument(
-    storageInstance: RxStorageInstancePouch,
-    id: string
-): Promise<any | null> {
-    return storageInstance.internals.pouch.get(
-        POUCHDB_LOCAL_PREFIX + id
-    ).catch(() => null);
-}
-
-export function setLocalDocument(
-    storageInstance: RxStorageInstancePouch,
-    id: string,
-    value: any
-): Promise<void> {
-    return storageInstance.internals.pouch.put({
-        _id: id,
-        value
-    }).then(() => { });
-}
-
-
-export function putDocument<DocData>(
-    storageInstance: RxStorageInstancePouch,
-    doc: DocData | RxDocumentTypeWithRev<DocData>
-): Promise<RxDocumentTypeWithRev<DocData>> {
-    return storageInstance.internals.pouch
-        .put(doc)
-        .then(putResult => {
-            return Object.assign({
-                _id: putResult.id,
-                _rev: putResult.rev
-            }, doc);
-        });
-}
-
-/**
  * returns all NON-LOCAL documents
  */
 export function getAllDocuments(
@@ -65,14 +26,4 @@ export function getAllDocuments(
     return storageInstance.internals.pouch.allDocs({
         include_docs: true
     }).then(result => result.rows);
-}
-
-/**
- * deletes the storage instance and all of it's data
- * TODO must be imlemented in RxStorageInstnace
- */
-export function deleteStorageInstance(
-    storageInstance: RxStorageInstancePouch
-): Promise<void> {
-    return storageInstance.internals.pouch.destroy();
 }

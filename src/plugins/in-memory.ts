@@ -23,7 +23,8 @@ import type {
     RxCollection,
     RxReplicationState,
     PouchDBInstance,
-    RxPlugin
+    RxPlugin,
+    PouchBulkDocResultRow
 } from '../types';
 import {
     RxCollectionBase
@@ -95,6 +96,7 @@ export
          */
         this.onDestroy.then(() => {
             this._changeStreams.forEach((stream: any) => stream.cancel());
+            // delete all data
             this.pouch.destroy();
         });
 
@@ -363,11 +365,11 @@ export function applyChangedDocumentToPouch(
             docs: [transformedDoc]
         }, BULK_DOC_OPTIONS))
         .then(bulkRet => {
-            if (bulkRet.length > 0 && !bulkRet[0].ok) {
+            if (bulkRet.length > 0 && !(bulkRet[0] as PouchBulkDocResultRow).ok) {
                 throw new Error(JSON.stringify(bulkRet[0]));
             }
             // set the flag so this does not appear in the own event-stream again
-            const emitFlag = transformedDoc._id + ':' + bulkRet[0].rev;
+            const emitFlag = transformedDoc._id + ':' + (bulkRet[0] as PouchBulkDocResultRow).rev;
             rxCollection._doNotEmitSet.add(emitFlag);
 
             // remove from the list later to not have a memory-leak

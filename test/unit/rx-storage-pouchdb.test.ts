@@ -5,11 +5,11 @@ import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import {
     getRxStoragePouch,
-    RxStorage,
     addRxPlugin,
     RxStoragePouch,
     randomCouchString,
-    getPseudoSchemaForVersion
+    getPseudoSchemaForVersion,
+    getFromMapOrThrow
 } from '../../plugins/core';
 
 import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
@@ -78,22 +78,115 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
             col.database.destroy();
         });
     });
-    describe('.bulkWrite()', () => {
-        it('should write the documents', async () => {
-            const col = await humansCollection.create(1);
-            const storageInstance = await storage.createStorageInstance(
-                randomCouchString(12),
-                'my-collection',
-                getPseudoSchemaForVersion(1),
-                {}
-            );
+    describe('RxStorageInstance', () => {
+        describe('RxStorageInstance.bulkWrite()', () => {
+            it('should write the documents', async () => {
+                const storageInstance = await storage.createStorageInstance(
+                    randomCouchString(12),
+                    randomCouchString(12),
+                    getPseudoSchemaForVersion(0, 'key'),
+                    {}
+                );
 
-            await storageInstance.bulkWrite(
-                false,
-                []
-            );
+                const writeResponse = await storageInstance.bulkWrite(
+                    false,
+                    [{
+                        key: 'foobar',
+                        value: 'barfoo'
+                    }]
+                );
 
-            col.database.destroy();
+                assert.strictEqual(writeResponse.error.size, 0);
+                const first = getFromMapOrThrow(writeResponse.success, 'foobar');
+                assert.strictEqual(first.key, 'foobar');
+                assert.strictEqual(first.value, 'barfoo');
+                assert.ok(first._rev);
+
+                storageInstance.close();
+            });
+            it('should error on conflict', async () => {
+                const storageInstance = await storage.createStorageInstance(
+                    randomCouchString(12),
+                    randomCouchString(12),
+                    getPseudoSchemaForVersion(0, 'key'),
+                    {}
+                );
+
+                const writeData = [{
+                    key: 'foobar',
+                    value: 'barfoo'
+                }];
+
+                await storageInstance.bulkWrite(
+                    false,
+                    writeData
+                );
+                const writeResponse = await storageInstance.bulkWrite(
+                    false,
+                    writeData
+                );
+
+                assert.strictEqual(writeResponse.success.size, 0);
+                const first = getFromMapOrThrow(writeResponse.error, 'foobar');
+                assert.strictEqual(first.status, 409);
+                assert.strictEqual(first.documentId, 'foobar');
+                assert.ok(first.document);
+
+                storageInstance.close();
+            });
+        });
+    });
+    describe('RxStorageKeyObjectInstance', () => {
+        describe('RxStorageKeyObjectInstance.bulkWrite()', () => {
+            it('should write the documents', async () => {
+                const storageInstance = await storage.createKeyObjectStorageInstance(
+                    randomCouchString(12),
+                    {}
+                );
+
+                const writeResponse = await storageInstance.bulkWrite(
+                    false,
+                    [{
+                        _id: 'foobar',
+                        value: 'barfoo'
+                    }]
+                );
+
+                assert.strictEqual(writeResponse.error.size, 0);
+                const first = getFromMapOrThrow(writeResponse.success, 'foobar');
+                assert.strictEqual(first._id, 'foobar');
+                assert.strictEqual(first.value, 'barfoo');
+
+                storageInstance.close();
+            });
+            it('should error on conflict', async () => {
+                const storageInstance = await storage.createKeyObjectStorageInstance(
+                    randomCouchString(12),
+                    {}
+                );
+
+                const writeData = [{
+                    _id: 'foobar',
+                    value: 'barfoo'
+                }];
+
+                await storageInstance.bulkWrite(
+                    false,
+                    writeData
+                );
+                const writeResponse = await storageInstance.bulkWrite(
+                    false,
+                    writeData
+                );
+
+                assert.strictEqual(writeResponse.success.size, 0);
+                const first = getFromMapOrThrow(writeResponse.error, 'foobar');
+                assert.strictEqual(first.status, 409);
+                assert.strictEqual(first.documentId, 'foobar');
+                assert.ok(first.document);
+
+                storageInstance.close();
+            });
         });
     });
 });

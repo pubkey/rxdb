@@ -92,7 +92,8 @@ import type {
     MangoQueryNoLimit,
     RxCacheReplacementPolicy,
     WithPouchMeta,
-    PouchWriteError
+    PouchWriteError,
+    PouchBulkDocResultRow
 } from './types';
 import type {
     RxGraphQLReplicationState
@@ -436,12 +437,12 @@ export class RxCollectionBase<
                     const startTime = now();
                     return this.pouch.bulkDocs(insertDocs)
                         .then(results => {
-                            const okResults = results.filter(r => r.ok);
+                            const okResults = results.filter(r => (r as PouchBulkDocResultRow).ok);
 
                             // create documents
                             const rxDocuments: any[] = okResults.map(r => {
                                 const docData: any = docsMap.get(r.id);
-                                docData._rev = r.rev;
+                                docData._rev = (r as PouchBulkDocResultRow).rev;
                                 const doc = createRxDocument(this as any, docData);
                                 return doc;
                             });
@@ -456,7 +457,7 @@ export class RxCollectionBase<
                                     );
                                 })
                             ).then(() => {
-                                const errorResults: PouchWriteError[] = results.filter(r => !r.ok) as any;
+                                const errorResults: PouchWriteError[] = results.filter(r => !(r as PouchBulkDocResultRow).ok) as any;
                                 return {
                                     rxDocuments,
                                     errorResults
@@ -522,7 +523,7 @@ export class RxCollectionBase<
         );
 
         const endTime = now();
-        const okResults = results.filter(r => r.ok);
+        const okResults = results.filter(r => (r as PouchBulkDocResultRow).ok);
         await Promise.all(
             okResults.map(r => {
                 return this._runHooks(
@@ -553,7 +554,7 @@ export class RxCollectionBase<
 
         return {
             success: rxDocuments,
-            error: okResults.filter(r => !r.ok)
+            error: okResults.filter(r => !(r as PouchBulkDocResultRow).ok)
         };
     }
 
@@ -925,10 +926,13 @@ export class RxCollectionBase<
             this._changeEventBuffer.destroy();
         }
         Array.from(this._repStates).forEach(replicationState => replicationState.cancel());
-        delete this.database.collections[this.name];
-        this.destroyed = true;
 
-        return runAsyncPluginHooks('postDestroyRxCollection', this).then(() => true);
+        return this.storageInstance.close().then(() => {
+            delete this.database.collections[this.name];
+            this.destroyed = true;
+
+            return runAsyncPluginHooks('postDestroyRxCollection', this).then(() => true);
+        });
     }
 
     /**

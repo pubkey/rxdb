@@ -68,7 +68,8 @@ export {
     getPouchLocation,
     RxStoragePouch,
     RxStorageInstancePouch,
-    RxStorageKeyObjectInstancePouch
+    RxStorageKeyObjectInstancePouch,
+    OPEN_POUCHDB_STORAGE_INSTANCES
 } from './rx-storage-pouchdb';
 
 export {

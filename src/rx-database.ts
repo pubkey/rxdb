@@ -30,7 +30,8 @@ import {
     newRxError
 } from './rx-error';
 import {
-    createRxSchema, getPseudoSchemaForVersion
+    createRxSchema,
+    getPseudoSchemaForVersion
 } from './rx-schema';
 import {
     isInstanceOf as isInstanceOfRxChangeEvent,
@@ -38,7 +39,8 @@ import {
 } from './rx-change-event';
 import { overwritable } from './overwritable';
 import {
-    runPluginHooks, runAsyncPluginHooks
+    runPluginHooks,
+    runAsyncPluginHooks
 } from './hooks';
 import {
     Subject,
@@ -66,7 +68,10 @@ import {
     RxStorageInstancePouch,
     RxStoragePouch
 } from './rx-storage-pouchdb';
-import { getAllDocuments, deleteStorageInstance } from './rx-database-internal-store';
+import {
+    getAllDocuments,
+    INTERNAL_STORAGE_NAME
+} from './rx-database-internal-store';
 import type { RxBackupState } from './plugins/backup';
 import { RxStorage } from './rx-storate.interface';
 
@@ -335,15 +340,22 @@ export class RxDatabaseBase<
             .then(knownVersions => {
                 return Promise.all(
                     knownVersions
-                        .map(v => this._spawnStorageInstance(collectionName, getPseudoSchemaForVersion(v)))
+                        .map(v => {
+                            return this.storage.createStorageInstance(
+                                this.name,
+                                collectionName,
+                                getPseudoSchemaForVersion(v),
+                                {}
+                            );
+                        })
                 );
             })
             // remove documents
-            .then(pouches => {
+            .then(storageInstance => {
                 return Promise.all(
-                    pouches.map(
-                        pouch => this.lockedRun(
-                            () => pouch.destroy()
+                    storageInstance.map(
+                        instance => this.lockedRun(
+                            () => instance.remove()
                         )
                     )
                 );
@@ -431,6 +443,8 @@ export class RxDatabaseBase<
                     .map(key => (this.collections as any)[key])
                     .map(col => col.destroy())
             ))
+            // destroy internal storage instances
+            .then(() => this.internalStore.close ? this.internalStore.close() : null)
             // close broadcastChannel if exists
             .then(() => this.broadcastChannel ? this.broadcastChannel.close() : Promise.resolve())
             // remove combination from USED_COMBINATIONS-map
@@ -602,7 +616,7 @@ async function createInternalStorageInstance(
 ): Promise<RxStorageInstancePouch> {
     const internalStore = await storage.createStorageInstance(
         databaseName,
-        '_rxdb_internal',
+        INTERNAL_STORAGE_NAME,
         getPseudoSchemaForVersion(0),
         pouchSettings
     );
@@ -723,10 +737,10 @@ export async function removeRxDatabase(
                     getPseudoSchemaForVersion(version),
                     {}
                 );
-                return instance.internals.pouch.destroy();
+                return instance.remove();
             })
     );
-    return deleteStorageInstance(internalStore);
+    return internalStore.remove();
 }
 
 /**

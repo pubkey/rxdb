@@ -3,7 +3,12 @@ import {
     massageSelector
 } from 'pouchdb-selector-core';
 
-import { RxStorage, PreparedQuery, RxStorageInstance, RxStorageKeyObjectInstance } from './rx-storate.interface';
+import {
+    RxStorage,
+    PreparedQuery,
+    RxStorageInstance,
+    RxStorageKeyObjectInstance
+} from './rx-storate.interface';
 import type {
     MangoQuery,
     MangoQuerySortPart,
@@ -11,12 +16,17 @@ import type {
     PouchSettings,
     RxQuery,
     MangoQuerySortDirection,
-    RxStorageBulkWriteDocument,
     RxStorageBulkWriteResponse,
-    RxJsonSchema
+    RxJsonSchema,
+    RxLocalDocumentData,
+    WithWriteRevision,
+    WithRevision,
+    RxStorageBulkWriteError,
+    PouchWriteError,
+    PouchBulkDocResultRow
 } from './types';
 import { CompareFunction } from 'array-push-at-sort-position';
-import { flatClone, adapterObject } from './util';
+import { flatClone, adapterObject, ensureNotFalsy, getFromMapOrThrow } from './util';
 import { SortComparator, QueryMatcher } from 'event-reduce-js';
 import { runPluginHooks } from './hooks';
 import {
@@ -33,65 +43,87 @@ export const POUCHDB_LOCAL_PREFIX: '_local/' = '_local/';
 
 export type PouchStorageInternals = {
     pouch: PouchDBInstance;
-}
+};
+
+/**
+ * Used to check in tests if all instances have been cleaned up.
+ */
+export const OPEN_POUCHDB_STORAGE_INSTANCES: Set<RxStorageKeyObjectInstancePouch | RxStorageInstancePouch> = new Set();
 
 export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstance<PouchStorageInternals, PouchSettings> {
-    public isKeyObjectInstance = true;
-
     constructor(
         public readonly databaseName: string,
         public readonly internals: Readonly<PouchStorageInternals>,
         public readonly options: Readonly<PouchSettings>
-    ) { }
+    ) {
+        OPEN_POUCHDB_STORAGE_INSTANCES.add(this);
+    }
 
-    public async bulkWrite<RxDocType>(
+    close(): Promise<void> {
+        OPEN_POUCHDB_STORAGE_INSTANCES.delete(this);
+        // TODO this did not work because a closed pouchdb cannot be recreated in the same process run
+        // await this.internals.pouch.close();
+        return Promise.resolve();
+    }
+
+    async remove() {
+        await this.internals.pouch.destroy();
+    }
+
+    public async bulkWrite(
         overwrite: boolean,
-        documents: RxStorageBulkWriteDocument<RxDocType>[]
-    ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
-        const insertDocs: (RxDocType & { _id: string; _rev: string })[] = [];
-        documents.forEach(item => {
-            let storeDocumentData: any = flatClone(item.document);
+        documents: WithWriteRevision<RxLocalDocumentData>[]
+    ): Promise<RxStorageBulkWriteResponse<RxLocalDocumentData>> {
+
+        const insertDataById: Map<string, WithWriteRevision<RxLocalDocumentData>> = new Map();
+
+        const insertDocs: RxLocalDocumentData[] = documents.map(docData => {
+            insertDataById.set(docData._id, docData);
+            const storeDocumentData = flatClone(docData);
 
             /**
              * add local prefix
              * Local documents always have _id as primary
              */
-            if (item.isLocal) {
-                storeDocumentData._id = POUCHDB_LOCAL_PREFIX + storeDocumentData._id;
-            } else {
-                const primaryKey = getPrimary<any>(this.asRxStorageInstancePouch().schema);
-                storeDocumentData = pouchSwapPrimaryToId(primaryKey, storeDocumentData);
-            }
+            storeDocumentData._id = POUCHDB_LOCAL_PREFIX + storeDocumentData._id;
 
+            // swap out _revision with pouchdbs _rev key
             const revision = storeDocumentData._revision;
             delete storeDocumentData._revision;
             storeDocumentData._rev = revision;
 
-            insertDocs.push(storeDocumentData);
+            return storeDocumentData;
         });
+
         const pouchResult = await this.internals.pouch.bulkDocs(insertDocs);
-
-        console.log('pouchResult:');
-        console.dir(pouchResult);
-
-        return {
+        const ret: RxStorageBulkWriteResponse<RxLocalDocumentData> = {
             success: new Map(),
             error: new Map()
-        }
-    }
+        };
 
-    private asRxStorageInstancePouch(): RxStorageInstancePouch {
-        if (this.isKeyObjectInstance) {
-            throw new Error('should never happen');
-        }
-        return this as any;
-    }
+        pouchResult.forEach(resultRow => {
+            resultRow.id = pouchStripLocalFlagFromPrimary(resultRow.id);
+            if ((resultRow as PouchWriteError).error) {
+                const writeData = getFromMapOrThrow(insertDataById, resultRow.id);
+                const err: RxStorageBulkWriteError<RxLocalDocumentData> = {
+                    isError: true,
+                    status: 409,
+                    documentId: resultRow.id,
+                    document: writeData
+                };
+                ret.error.set(resultRow.id, err);
+            } else {
+                const pushObj: WithRevision<RxLocalDocumentData> = flatClone(insertDataById.get(resultRow.id)) as any;
+                pushObj._rev = (resultRow as PouchBulkDocResultRow).rev;
+                ret.success.set(resultRow.id, pushObj);
+            }
+        });
 
+        return ret;
+    }
 }
 
-export class RxStorageInstancePouch extends RxStorageKeyObjectInstancePouch implements RxStorageInstance<PouchStorageInternals, PouchSettings> {
-    public readonly isKeyObjectInstance = false;
-
+export class RxStorageInstancePouch implements RxStorageInstance<PouchStorageInternals, PouchSettings> {
     constructor(
         public readonly databaseName: string,
         public readonly collectionName: string,
@@ -99,7 +131,19 @@ export class RxStorageInstancePouch extends RxStorageKeyObjectInstancePouch impl
         public readonly internals: Readonly<PouchStorageInternals>,
         public readonly options: Readonly<PouchSettings>
     ) {
-        super(databaseName, internals, options);
+        OPEN_POUCHDB_STORAGE_INSTANCES.add(this);
+    }
+
+    close() {
+        OPEN_POUCHDB_STORAGE_INSTANCES.delete(this);
+
+        // TODO this did not work because a closed pouchdb cannot be recreated in the same process run
+        // await this.internals.pouch.close();
+        return Promise.resolve();
+    }
+
+    async remove() {
+        await this.internals.pouch.destroy();
     }
 
     getSortComparator<RxDocType>(
@@ -267,6 +311,52 @@ export class RxStorageInstancePouch extends RxStorageKeyObjectInstancePouch impl
 
         return query;
     }
+
+    public async bulkWrite<RxDocType>(
+        overwrite: boolean,
+        documents: WithWriteRevision<RxDocType>[]
+    ): Promise<
+        RxStorageBulkWriteResponse<RxDocType>
+    > {
+        const primaryKey = getPrimary<any>(this.schema);
+        const insertDataById: Map<string, WithWriteRevision<RxDocType>> = new Map();
+
+        const insertDocs: (RxDocType & { _id: string; _rev: string })[] = documents.map(doc => {
+            const primary: string = (doc as any)[primaryKey];
+            insertDataById.set(primary, doc);
+
+            let storeDocumentData: any = flatClone(doc);
+            storeDocumentData = pouchSwapPrimaryToId(primaryKey, storeDocumentData);
+
+            return storeDocumentData;
+        });
+
+        const pouchResult = await this.internals.pouch.bulkDocs(insertDocs);
+        const ret: RxStorageBulkWriteResponse<RxDocType> = {
+            success: new Map(),
+            error: new Map()
+        };
+
+        pouchResult.forEach(resultRow => {
+            if ((resultRow as PouchWriteError).error) {
+                const writeData = getFromMapOrThrow(insertDataById, resultRow.id);
+                const err: RxStorageBulkWriteError<RxDocType> = {
+                    isError: true,
+                    status: 409,
+                    documentId: resultRow.id,
+                    document: writeData
+                };
+                ret.error.set(resultRow.id, err);
+            } else {
+                let pushObj: WithRevision<RxDocType> = flatClone(insertDataById.get(resultRow.id)) as any;
+                pushObj = pouchSwapIdToPrimary(primaryKey, pushObj);
+                pushObj._rev = (resultRow as PouchBulkDocResultRow).rev;
+                ret.success.set(resultRow.id, pushObj);
+            }
+        });
+
+        return ret;
+    }
 }
 
 export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSettings> {
@@ -277,19 +367,12 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
         public pouchSettings: PouchSettings = {}
     ) { }
 
-    public async createStorageInstance(
-        databaseName: string,
-        collectionName: string,
-        schema: RxJsonSchema,
+    private async createPouch(
+        location: string,
         options: PouchSettings
-    ): Promise<RxStorageInstancePouch> {
-        const pouchLocation = getPouchLocation(
-            databaseName,
-            collectionName,
-            schema.version
-        );
+    ): Promise<PouchDBInstance> {
         const pouchDbParameters = {
-            location: pouchLocation,
+            location: location,
             adapter: adapterObject(this.adapter),
             settings: options
         };
@@ -308,6 +391,25 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
         // TODO only run this if the pouchdb instance was not created before
         await pouch.info();
 
+        return pouch;
+    }
+
+    public async createStorageInstance(
+        databaseName: string,
+        collectionName: string,
+        schema: RxJsonSchema,
+        options: PouchSettings
+    ): Promise<RxStorageInstancePouch> {
+        const pouchLocation = getPouchLocation(
+            databaseName,
+            collectionName,
+            schema.version
+        );
+        const pouch = await this.createPouch(
+            pouchLocation,
+            options
+        );
+
         // TODO create indexes here
 
         return new RxStorageInstancePouch(
@@ -325,20 +427,23 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
         databaseName: string,
         options: PouchSettings
     ): Promise<RxStorageKeyObjectInstancePouch> {
-        const pseudoSchema = getPseudoSchemaForVersion(0);
-
         const useOptions = flatClone(options);
         // no compaction because this only stores local documents
         useOptions.auto_compaction = false;
         useOptions.revs_limit = 1;
 
-        const storageInstance = this.createStorageInstance(
+        const pouch = await this.createPouch(
             databaseName,
-            '_rxdb_internal',
-            pseudoSchema,
-            useOptions
+            options
         );
-        return storageInstance;
+
+        return new RxStorageKeyObjectInstancePouch(
+            databaseName,
+            {
+                pouch
+            },
+            options
+        );
     }
 
 
@@ -373,6 +478,14 @@ export function pouchSwapPrimaryToId(
             ret[newKey] = entry[1];
         });
     return ret;
+}
+
+/**
+ * in:  '_local/foobar'
+ * out: 'foobar'
+ */
+export function pouchStripLocalFlagFromPrimary(str: string): string {
+    return str.substring(POUCHDB_LOCAL_PREFIX.length);
 }
 
 

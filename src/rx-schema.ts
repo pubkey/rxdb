@@ -226,8 +226,11 @@ export function getPrimary<T = any>(jsonSchema: RxJsonSchema<T>): string {
     const ret = Object.keys(jsonSchema.properties)
         .filter(key => (jsonSchema as any).properties[key].primary)
         .shift();
-    if (!ret) return '_id';
-    else return ret;
+    if (!ret) {
+        return '_id';
+    } else {
+        return ret;
+    }
 }
 
 /**
@@ -332,11 +335,19 @@ export function isInstanceOf(obj: any): boolean {
  * Helper function to create a valid RxJsonSchema
  * with a given version.
  */
-export function getPseudoSchemaForVersion(version: number): RxJsonSchema {
+export function getPseudoSchemaForVersion(
+    version: number,
+    primaryKey: string = '_id'
+): RxJsonSchema {
     const pseudoSchema: RxJsonSchema = {
         version,
         type: 'object',
-        properties: {}
+        properties: {
+            [primaryKey]: {
+                type: 'string',
+                primary: true
+            }
+        }
     };
     return pseudoSchema;
 }

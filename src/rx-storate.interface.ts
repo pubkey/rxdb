@@ -3,9 +3,10 @@ import {
     QueryMatcher
 } from 'event-reduce-js';
 import {
-    RxStorageBulkWriteDocument,
-    RxStorageBulkWriteDocumentLocal,
-    RxStorageBulkWriteResponse
+    RxLocalDocumentData,
+    RxStorageBulkWriteResponse,
+    WithRevision,
+    WithWriteRevision
 } from './types/rx-storage';
 import type {
     MangoQuery,
@@ -36,7 +37,7 @@ export type PreparedQuery<DocType> = MangoQuery<DocType> | any;
  */
 export interface RxStorage<Internals, InstanceCreationOptions> {
     /**
-     * name of the storage engine 
+     * name of the storage engine
      * used to detect if plugins do not work so we can throw propper errors.
      */
     readonly name: string;
@@ -64,13 +65,7 @@ export interface RxStorage<Internals, InstanceCreationOptions> {
 }
 
 
-/**
- * A StorateInstance that is only capable of saving key-object relations,
- * cannot be queried and has no schema.
- */
-export interface RxStorageKeyObjectInstance<Internals, InstanceCreationOptions> {
-    readonly isKeyObjectInstance: boolean;
-
+export interface RxStorageInstanceBase<Internals, InstanceCreationOptions> {
     readonly databaseName: string;
     /**
      * Returns the internal data that is used by the storage engine.
@@ -80,14 +75,39 @@ export interface RxStorageKeyObjectInstance<Internals, InstanceCreationOptions> 
     readonly options: Readonly<InstanceCreationOptions>;
 
     /**
-     * Writes multiple documents to the storage instance.
+     * Closes the storage instance so it cannot be used
+     * anymore and should clear all memory.
+     * The returned promise must resolve when everything is cleaned up.
+     */
+    close(): Promise<void>;
+
+    /**
+     * Remove the database and
+     * deletes all of its data.
+     */
+    remove(): Promise<void>;
+}
+
+/**
+ * A StorateInstance that is only capable of saving key-object relations,
+ * cannot be queried and has no schema.
+ */
+export interface RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>
+    extends RxStorageInstanceBase<Internals, InstanceCreationOptions> {
+
+    /**
+     * Writes multiple local documents to the storage instance.
      * The write for each single document is atomic, there
      * is not transaction arround all documents.
      * It must be possible that some document writes succeed
      * and others error.
      * We need this to have a similar behavior as most NoSQL databases.
+     * Local documents always have _id as primary
+     * Local documetns are saved besides the 'normal' documents,
+     * but are not returned in any non-local queries.
+     * They can only be queried directly by their primary _id.
      */
-    bulkWrite<RxDocType>(
+    bulkWrite(
         /**
          * If overwrite is set to true,
          * the storage instance must ignore
@@ -98,26 +118,23 @@ export interface RxStorageKeyObjectInstance<Internals, InstanceCreationOptions> 
          * the storage instance must throw a 409 conflict
          * error if there is a newer/equal revision of the document
          * already stored.
-         * 
+         *
          * If it is a RxStorageKeyObjectInstance, the call must
          * throw on non-local documents.
          */
         overwrite: boolean,
-        documents: RxStorageBulkWriteDocument<RxDocType>[]
+        documents: WithWriteRevision<RxLocalDocumentData>[]
     ): Promise<
         /**
          * returns the response, splitted into success and error lists.
          */
-        RxStorageBulkWriteResponse<RxDocType>
+        RxStorageBulkWriteResponse<RxLocalDocumentData>
     >;
-
 }
 
-export interface RxStorageInstance<
-    Internals,
-    InstanceCreationOptions
-    > extends RxStorageKeyObjectInstance<Internals, InstanceCreationOptions> {
-    readonly isKeyObjectInstance: false;
+export interface RxStorageInstance<Internals, InstanceCreationOptions>
+    extends RxStorageInstanceBase<Internals, InstanceCreationOptions> {
+
     readonly schema: Readonly<RxJsonSchema>;
     readonly collectionName: string;
 
@@ -159,4 +176,37 @@ export interface RxStorageInstance<
     getQueryMatcher<RxDocType>(
         query: MangoQuery<RxDocType>
     ): QueryMatcher<RxDocType>;
+
+
+    /**
+     * Writes multiple non-local documents to the storage instance.
+     * The write for each single document is atomic, there
+     * is not transaction arround all documents.
+     * It must be possible that some document writes succeed
+     * and others error.
+     * We need this to have a similar behavior as most NoSQL databases.
+     */
+    bulkWrite<RxDocType>(
+        /**
+         * If overwrite is set to true,
+         * the storage instance must ignore
+         * if the document has already a newer revision,
+         * instead save the written data either to the revisions
+         * or as newest revision.
+         * If overwrite is set to false,
+         * the storage instance must throw a 409 conflict
+         * error if there is a newer/equal revision of the document
+         * already stored.
+         *
+         * If it is a RxStorageKeyObjectInstance, the call must
+         * throw on non-local documents.
+         */
+        overwrite: boolean,
+        documents: WithWriteRevision<RxDocType>[]
+    ): Promise<
+        /**
+         * returns the response, splitted into success and error lists.
+         */
+        RxStorageBulkWriteResponse<RxDocType>
+    >;
 }

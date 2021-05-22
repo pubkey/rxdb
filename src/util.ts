@@ -397,6 +397,14 @@ export function isFolderPath(name: string) {
     }
 }
 
+export function getFromMapOrThrow<K, V>(map: Map<K, V>, key: K): V {
+    const val = map.get(key);
+    if (!val) {
+        throw new Error('this should never happen ' + key);
+    }
+    return val;
+}
+
 
 
 

@@ -212,6 +212,12 @@ export type PouchdbQuery = MangoQuery & {
     sort?: PouchDbSorting
 };
 
+export type PouchBulkDocResultRow = {
+    ok: boolean;
+    id: string;
+    rev: string;
+}
+
 export declare class PouchDBInstance {
     constructor(
         name: string,
@@ -245,11 +251,7 @@ export declare class PouchDBInstance {
         options?: {
             new_edits?: boolean;
         }
-    ): Promise<{
-        ok: boolean;
-        id: string;
-        rev: string;
-    }[]>;
+    ): Promise<(PouchBulkDocResultRow | PouchWriteError)[]>;
 
     find(mangoQuery: PouchdbQuery): Promise<{
         docs: any[]
@@ -265,11 +267,7 @@ export declare class PouchDBInstance {
     put(
         doc: any,
         options?: any,
-    ): Promise<{
-        ok: boolean;
-        id: string;
-        rev: string;
-    }>;
+    ): Promise<PouchBulkDocResultRow>;
     remove(
         doc: any | string,
         options?: any,
