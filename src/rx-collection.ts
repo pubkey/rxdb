@@ -12,7 +12,8 @@ import {
     promiseSeries,
     pluginMissing,
     now,
-    ensureNotFalsy
+    ensureNotFalsy,
+    getFromMapOrThrow
 } from './util';
 import {
     validateCouchDBString
@@ -93,7 +94,11 @@ import type {
     RxCacheReplacementPolicy,
     WithPouchMeta,
     PouchWriteError,
-    PouchBulkDocResultRow
+    PouchBulkDocResultRow,
+    RxStorageBulkWriteError,
+    RxStorageBulkWriteResponse,
+    WithRevision,
+    WithWriteRevision
 } from './types';
 import type {
     RxGraphQLReplicationState
@@ -112,6 +117,7 @@ import {
     getRxDocumentConstructor
 } from './rx-document-prototype-merge';
 import { RxStorageInstancePouch } from './rx-storage-pouchdb';
+import { writeSingle } from './rx-storage-helper';
 
 const HOOKS_WHEN = ['pre', 'post'];
 const HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
@@ -179,7 +185,7 @@ export class RxCollectionBase<
     public _repStates: Set<RxReplicationState> = new Set();
 
     // TODO use type RxStorageInstance when rx-storage is implemented
-    public storageInstance: RxStorageInstancePouch = {} as any;
+    public storageInstance: RxStorageInstancePouch<RxDocumentType> = {} as any;
     // TODO remove this.pouch when rx-storage is implemented
     public pouch: PouchDBInstance = {} as PouchDBInstance; // this is needed to preserve this name
 
@@ -250,7 +256,9 @@ export class RxCollectionBase<
                 .subscribe(cE => {
                     // when data changes, send it to RxDocument in docCache
                     const doc = this._docCache.get(cE.documentId);
-                    if (doc) doc._handleChangeEvent(cE);
+                    if (doc) {
+                        doc._handleChangeEvent(cE);
+                    }
                 })
         );
 
@@ -299,28 +307,46 @@ export class RxCollectionBase<
      * every write on the pouchdb
      * is tunneld throught this function
      */
-    _pouchPut(obj: any, overwrite: boolean = false): Promise<any> {
+    async _pouchPut(obj: WithWriteRevision<RxDocumentType>, overwrite: boolean = false): Promise<
+        WithRevision<RxDocumentType>
+    > {
+        obj = flatClone(obj);
         obj = this._handleToPouch(obj);
-        return this.database.lockedRun(
-            () => this.pouch.put(obj)
-        ).catch((err: PouchWriteError) => {
-            if (overwrite && err.status === 409) {
-                return this.database.lockedRun(
-                    () => this.pouch.get(obj._id)
-                ).then((exist: any) => {
-                    obj._rev = exist._rev;
-                    return this.database.lockedRun(
-                        () => this.pouch.put(obj)
+
+        while (true) {
+            try {
+                const writeResult = await this.database.lockedRun(
+                    () => writeSingle(
+                        this.storageInstance,
+                        false,
+                        obj
+                    )
+                );
+                // on success, just return the result
+                return writeResult;
+            } catch (err: any) {
+                const useErr: RxStorageBulkWriteError<RxDocumentType> = err as any;
+                const primary = useErr.documentId;
+                if (overwrite && useErr.status === 409) {
+                    // we have a conflict but must overwrite
+                    // so get the new revision
+                    const singleRes = await this.database.lockedRun(
+                        () => this.pouch.get(primary)
                     );
-                });
-            } else if (err.status === 409) {
-                throw newRxError('COL19', {
-                    id: obj._id,
-                    pouchDbError: err,
-                    data: obj
-                });
-            } else throw err;
-        });
+                    obj._rev = singleRes._rev;
+                    // now we can retry
+                } else if (useErr.status === 409) {
+                    throw newRxError('COL19', {
+                        id: primary,
+                        pouchDbError: useErr,
+                        data: obj
+                    });
+                } else {
+                    throw useErr;
+                }
+            }
+
+        }
     }
 
     /**
@@ -336,7 +362,7 @@ export class RxCollectionBase<
     /**
      * wrapps pouch-find
      */
-    _pouchFind(
+    async _pouchFind(
         rxQuery: RxQuery | RxQueryBase,
         limit?: number,
         noDecrypt: boolean = false
@@ -345,20 +371,26 @@ export class RxCollectionBase<
         if (limit) {
             compressedQueryJSON['limit'] = limit;
         }
-        return this.database.lockedRun(
-            () => this.pouch.find(compressedQueryJSON)
-        ).then((docsCompressed: any) => {
-            const docs = docsCompressed.docs
-                .map((doc: any) => this._handleFromPouch(doc, noDecrypt));
-            return docs;
-        });
+
+        const queryResult = await this.database.lockedRun(
+            () => this.storageInstance.query(compressedQueryJSON)
+            //  () => this.pouch.find(compressedQueryJSON)
+        );
+        const docs = queryResult.documents
+            .map((doc: any) => this._handleFromPouch(doc, noDecrypt));
+        return docs;
     }
 
     $emit(changeEvent: RxChangeEvent) {
         return this.database.$emit(changeEvent);
     }
 
-    insert(
+
+    /**
+     * TODO internally call bulkInsert
+     * to not have duplicated code.
+     */
+    async insert(
         json: RxDocumentType | RxDocument
     ): Promise<RxDocument<RxDocumentType, OrmMethods>> {
         // inserting a temporary-document
@@ -378,112 +410,113 @@ export class RxCollectionBase<
 
         let startTime: number;
         let endTime: number;
-        return this._runHooks('pre', 'insert', useJson)
-            .then(() => {
-                this.schema.validate(useJson);
-                startTime = now();
-                return this._pouchPut(useJson);
-            }).then(insertResult => {
-                endTime = now();
-                useJson[this.schema.primaryPath as string] = insertResult.id;
-                useJson._rev = insertResult.rev;
 
-                if (tempDoc) {
-                    tempDoc._dataSync$.next(useJson);
-                } else newDoc = createRxDocument(this as any, useJson);
+        await this._runHooks('pre', 'insert', useJson);
+        this.schema.validate(useJson);
+        startTime = now();
+        const insertResult = await this._pouchPut(useJson);
+        console.log('insertResult:');
+        console.dir(insertResult);
+        endTime = now();
+        const primary = (insertResult as any)[this.schema.primaryPath as string];
+        useJson[this.schema.primaryPath as string] = primary;
+        useJson._rev = insertResult._rev;
 
-                return this._runHooks('post', 'insert', useJson, newDoc);
-            }).then(() => {
-                // event
-                const emitEvent = createInsertEvent(
-                    this as any,
-                    useJson,
-                    startTime,
-                    endTime,
-                    newDoc as any
-                );
-                this.$emit(emitEvent);
-                return newDoc as any;
-            });
+        if (tempDoc) {
+            tempDoc._dataSync$.next(useJson);
+        } else {
+            newDoc = createRxDocument(this as any, useJson);
+        }
+
+        await this._runHooks('post', 'insert', useJson, newDoc);
+
+        // event
+        const emitEvent = createInsertEvent(
+            this as any,
+            useJson,
+            startTime,
+            endTime,
+            newDoc as any
+        );
+        this.$emit(emitEvent);
+        return newDoc as any;
     }
 
-    bulkInsert(
+    async bulkInsert(
         docsData: RxDocumentType[]
     ): Promise<{
         success: RxDocument<RxDocumentType, OrmMethods>[],
-        error: PouchWriteError[]
+        error: RxStorageBulkWriteError<RxDocumentType>[]
     }> {
         const useDocs: RxDocumentType[] = docsData.map(docData => {
             const useDocData = fillObjectDataBeforeInsert(this, docData);
             return useDocData;
         });
 
-        return Promise.all(
+        const docs = await Promise.all(
             useDocs.map(doc => {
                 return this._runHooks('pre', 'insert', doc).then(() => {
                     this.schema.validate(doc);
                     return doc;
                 });
             })
-        ).then(docs => {
-            const insertDocs: RxDocumentType[] = docs.map(d => this._handleToPouch(d));
-            const docsMap: Map<string, RxDocumentType> = new Map();
-            docs.forEach(d => {
-                docsMap.set((d as any)[this.schema.primaryPath] as any, d);
+        );
+
+        const insertDocs: RxDocumentType[] = docs.map(d => this._handleToPouch(d));
+        const docsMap: Map<string, RxDocumentType> = new Map();
+        docs.forEach(d => {
+            docsMap.set((d as any)[this.schema.primaryPath] as any, d);
+        });
+
+        console.log('mmmmmmmmmmm:');
+        console.dir(insertDocs);
+
+        const startTime = now();
+        const results = await this.database.lockedRun(
+            () => this.storageInstance.bulkWrite(false, insertDocs)
+            // () => this.pouch.bulkDocs(insertDocs)
+        );
+
+        console.log('results:');
+        console.dir(results);
+
+        // create documents
+        const rxDocuments: any[] = Array.from(results.success.entries())
+            .map(([key, writtenDocData]) => {
+                const docData: WithRevision<RxDocumentType> = getFromMapOrThrow(docsMap, key) as any;
+                docData._rev = writtenDocData._rev;
+                const doc = createRxDocument(this as any, docData);
+                return doc;
             });
 
-            return this.database.lockedRun(
-                () => {
-                    const startTime = now();
-                    return this.pouch.bulkDocs(insertDocs)
-                        .then(results => {
-                            const okResults = results.filter(r => (r as PouchBulkDocResultRow).ok);
 
-                            // create documents
-                            const rxDocuments: any[] = okResults.map(r => {
-                                const docData: any = docsMap.get(r.id);
-                                docData._rev = (r as PouchBulkDocResultRow).rev;
-                                const doc = createRxDocument(this as any, docData);
-                                return doc;
-                            });
+        const hooksResult = await Promise.all(
+            rxDocuments.map(doc => {
+                return this._runHooks(
+                    'post',
+                    'insert',
+                    docsMap.get(doc.primary),
+                    doc
+                );
+            })
+        );
 
-                            return Promise.all(
-                                rxDocuments.map(doc => {
-                                    return this._runHooks(
-                                        'post',
-                                        'insert',
-                                        docsMap.get(doc.primary),
-                                        doc
-                                    );
-                                })
-                            ).then(() => {
-                                const errorResults: PouchWriteError[] = results.filter(r => !(r as PouchBulkDocResultRow).ok) as any;
-                                return {
-                                    rxDocuments,
-                                    errorResults
-                                };
-                            });
-                        }).then(({ rxDocuments, errorResults }) => {
-                            const endTime = now();
-                            // emit events
-                            rxDocuments.forEach(doc => {
-                                const emitEvent = createInsertEvent(
-                                    this as any,
-                                    doc.toJSON(true),
-                                    startTime,
-                                    endTime,
-                                    doc
-                                );
-                                this.$emit(emitEvent);
-                            });
-                            return {
-                                success: rxDocuments,
-                                error: errorResults
-                            };
-                        });
-                }
+        const endTime = now();
+        // emit events
+        rxDocuments.forEach(doc => {
+            const emitEvent = createInsertEvent(
+                this as any,
+                doc.toJSON(true),
+                startTime,
+                endTime,
+                doc
             );
+            this.$emit(emitEvent);
         });
+        return {
+            success: rxDocuments,
+            error: Array.from(results.error.values())
+        };
     }
 
     async bulkRemove(

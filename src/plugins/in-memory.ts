@@ -34,7 +34,7 @@ import {
     randomCouchString
 } from '../util';
 import {
-    addRxPlugin, getRxStoragePouch,
+    addRxPlugin, getRxStoragePouch, pouchSwapIdToPrimary, pouchSwapPrimaryToId,
 } from '../core';
 import {
     createCrypter
@@ -179,7 +179,9 @@ export
      * in the parent collection
      */
     awaitPersistence(): Promise<any> {
-        if (this._nonPersistentRevisions.size === 0) return Promise.resolve();
+        if (this._nonPersistentRevisions.size === 0) {
+            return Promise.resolve();
+        }
         return firstValueFrom(
             this._nonPersistentRevisionsSubject.pipe(
                 filter(() => this._nonPersistentRevisions.size === 0),
@@ -339,7 +341,8 @@ export function streamChangedDocuments(
                 else return true;
             }),
             filter(change => prevFilter(change)),
-            map(change => rxCollection._handleFromPouch(change.doc))
+            map(change => rxCollection._handleFromPouch(change.doc)),
+            map(d => pouchSwapIdToPrimary(rxCollection.schema.primaryPath, d))
         );
     return observable;
 }
@@ -352,9 +355,18 @@ export function applyChangedDocumentToPouch(
     rxCollection: RxCollection,
     docData: any
 ): Promise<any> {
-    if (!rxCollection._doNotEmitSet) rxCollection._doNotEmitSet = new Set();
+    if (!rxCollection._doNotEmitSet) {
+        rxCollection._doNotEmitSet = new Set();
+    }
 
-    const transformedDoc = rxCollection._handleToPouch(docData);
+    let transformedDoc = rxCollection._handleToPouch(docData);
+    transformedDoc = pouchSwapPrimaryToId(
+        rxCollection.schema.primaryPath,
+        transformedDoc
+    );
+
+    console.log('applyChangedDocumentToPouch:');
+    console.dir(transformedDoc);
 
     return rxCollection.pouch.get(transformedDoc._id)
         .then(oldDoc => transformedDoc._rev = oldDoc._rev)

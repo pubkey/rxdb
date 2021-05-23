@@ -14,10 +14,9 @@ import {
     RxAttachmentCreator
 } from './rx-attachment';
 import { WithPouchMeta } from './pouch';
+import { WithRevision } from './rx-storage';
 
 export type RxDocument<RxDocumentType = {}, OrmMethods = {}> = RxDocumentBase<RxDocumentType, OrmMethods> & RxDocumentType & OrmMethods;
-
-export type RxDocumentTypeWithRev<RxDocumentType> = RxDocumentType & { _rev: string };
 
 declare type AtomicUpdateFunction<RxDocumentType> = (doc: RxDocumentType) => RxDocumentType | Promise<RxDocumentType>;
 
@@ -88,7 +87,7 @@ export declare interface RxDocumentBase<RxDocumentType, OrmMethods = {}> {
     allAttachments(): RxAttachment<RxDocumentType, OrmMethods>[];
 
     toJSON(): RxDocumentType;
-    toJSON(withRevAndAttachments: true): RxDocumentTypeWithRev<RxDocumentType>;
+    toJSON(withRevAndAttachments: true): WithRevision<RxDocumentType>;
     toJSON(withRevAndAttachments: false): RxDocumentType;
 
     destroy(): void;

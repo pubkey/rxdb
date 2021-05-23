@@ -668,12 +668,20 @@ config.parallel('data-migration.test.js', () => {
                     migrationStrategies: {
                         1: (oldDoc: any) => {
                             oldDoc.name = (oldDoc.id as string).toUpperCase();
+
+                            console.log('oldDoc:');
+                            console.dir(oldDoc);
+
                             return oldDoc;
                         }
                     }
                 });
 
                 const doc = await col2.findOne().exec();
+
+                console.log('aaaaa');
+                console.dir(doc.toJSON());
+
                 assert.ok(doc);
                 assert.strictEqual(doc.id, 'niven');
                 assert.strictEqual(doc.name, 'NIVEN');

@@ -1,4 +1,5 @@
 import { MangoQuery } from './rx-query';
+import { WithRevision } from './rx-storage';
 
 /**
  * this file contains types that are pouchdb-specific
@@ -253,8 +254,8 @@ export declare class PouchDBInstance {
         }
     ): Promise<(PouchBulkDocResultRow | PouchWriteError)[]>;
 
-    find(mangoQuery: PouchdbQuery): Promise<{
-        docs: any[]
+    find<DocumentData>(mangoQuery: PouchdbQuery): Promise<{
+        docs: WithRevision<DocumentData>[]
     }>;
     compact(options?: any): Promise<any>;
     destroy(options?: any): Promise<void>;

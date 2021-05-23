@@ -721,6 +721,8 @@ config.parallel('rx-collection.test.js', () => {
                     const selector = {
                         $or: firstFive.map(doc => ({ passportId: doc.passportId }))
                     };
+                    console.log('selector:');
+                    console.dir(selector);
                     const found = await c.find({
                         selector
                     }).exec();

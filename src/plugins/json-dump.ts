@@ -2,6 +2,7 @@
  * this plugin adds the json export/import capabilities to RxDB
  */
 import {
+    getFromMapOrThrow,
     hash,
     now
 } from '../util';
@@ -15,9 +16,12 @@ import {
 import type {
     RxDatabase,
     RxCollection,
-    RxPlugin
+    RxPlugin,
+    PouchWriteError,
+    PouchBulkDocResultRow
 } from '../types';
 import { createInsertEvent } from '../rx-change-event';
+import { pouchSwapIdToPrimary, pouchSwapPrimaryToId } from '../rx-storage-pouchdb';
 
 function dumpRxDatabase(
     this: RxDatabase,
@@ -135,7 +139,13 @@ function importDumpRxCollection(
         // validate schema
         .map((doc: any) => this.schema.validate(doc))
         // transform
-        .map((doc: any) => this._handleToPouch(doc));
+        .map((doc: any) => {
+            doc = this._handleToPouch(doc);
+
+            // TODO this should no longer be needed when rx-storage migration is done
+            doc = pouchSwapPrimaryToId(this.schema.primaryPath, doc);
+            return doc;
+        });
 
     let startTime: number;
     return this.database.lockedRun(
@@ -144,9 +154,30 @@ function importDumpRxCollection(
             startTime = now();
             return this.pouch.bulkDocs(docs);
         }
-    ).then(() => {
+    ).then((saveResult) => {
         const endTime = now();
+
+        const revisionsByDocumentId: Map<string, string> = new Map();
+        saveResult
+            .filter(r => !(r as PouchWriteError).error)
+            .forEach(r => {
+                revisionsByDocumentId.set(
+                    r.id,
+                    (r as PouchBulkDocResultRow).rev
+                );
+            });
+
         docs.forEach((doc: any) => {
+            console.log('create insert event doc data:');
+            console.dir(doc);
+            console.dir(saveResult);
+
+            doc._rev = getFromMapOrThrow(revisionsByDocumentId, doc._id);
+            doc = pouchSwapIdToPrimary(
+                this.schema.primaryPath,
+                doc
+            );
+
             // emit change events
             const emitEvent = createInsertEvent(
                 this,

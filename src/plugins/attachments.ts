@@ -14,12 +14,12 @@ import {
 import type {
     RxDocument,
     RxPlugin,
-    RxDocumentTypeWithRev,
     PouchAttachmentWithData,
     BlobBuffer,
     WithAttachments,
     OldRxCollection,
-    PouchAttachmentMeta
+    PouchAttachmentMeta,
+    WithRevision
 } from '../types';
 import { pouchAttachmentBinaryHash } from '../pouch-db';
 import { RxSchema } from '../rx-schema';
@@ -36,7 +36,7 @@ function ensureSchemaSupportsAttachments(doc: any) {
 function resyncRxDocument<RxDocType>(doc: any) {
     const startTime = now();
     return doc.collection.pouch.get(doc.primary).then((docDataFromPouch: any) => {
-        const data: RxDocumentTypeWithRev<RxDocType> = doc.collection._handleFromPouch(docDataFromPouch);
+        const data: WithRevision<RxDocType> = doc.collection._handleFromPouch(docDataFromPouch);
         const endTime = now();
         const changeEvent = createUpdateEvent(
             doc.collection,

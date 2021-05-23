@@ -17,7 +17,9 @@ import {
     nextTick
 } from './util';
 import {
-    RxChangeEvent, createUpdateEvent, createDeleteEvent
+    RxChangeEvent,
+    createUpdateEvent,
+    createDeleteEvent
 } from './rx-change-event';
 import {
     newRxError,
@@ -97,8 +99,12 @@ export const basePrototype = {
     },
 
     _handleChangeEvent(this: RxDocument, changeEvent: RxChangeEvent) {
-        if (changeEvent.documentId !== this.primary)
+        if (changeEvent.documentId !== this.primary) {
             return;
+        }
+
+        console.log('_handleChangeEvent:');
+        console.dir(changeEvent.documentData);
 
         // ensure that new _rev is higher then current
         const newRevNr = getHeightOfRevision(changeEvent.documentData._rev);
@@ -371,7 +377,7 @@ export const basePrototype = {
      * saves the new document-data
      * and handles the events
      */
-    _saveData(this: RxDocument, newData: any, oldData: any): Promise<void> {
+    async _saveData(this: RxDocument, newData: any, oldData: any): Promise<void> {
         newData = newData;
 
         // deleted documents cannot be changed
@@ -386,35 +392,29 @@ export const basePrototype = {
         this.collection.schema.validateChange(oldData, newData);
 
         let startTime: number;
-        return this.collection._runHooks('pre', 'save', newData, this)
-            .then(() => {
-                this.collection.schema.validate(newData);
-                startTime = now();
-                return this.collection._pouchPut(newData);
-            })
-            .then(ret => {
-                const endTime = now();
-                if (!ret.ok) {
-                    throw newRxError('DOC12', {
-                        data: ret
-                    });
-                }
-                newData._rev = ret.rev;
+        await this.collection._runHooks('pre', 'save', newData, this);
 
-                // emit event
-                const changeEvent = createUpdateEvent(
-                    this.collection,
-                    newData,
-                    oldData,
-                    startTime,
-                    endTime,
-                    this
-                );
+        this.collection.schema.validate(newData);
+        startTime = now();
+        const ret = await this.collection._pouchPut(newData);
 
-                this.$emit(changeEvent);
+        const endTime = now();
 
-                return this.collection._runHooks('post', 'save', newData, this);
-            });
+        newData._rev = ret._rev;
+
+        // emit event
+        const changeEvent = createUpdateEvent(
+            this.collection,
+            newData,
+            oldData,
+            startTime,
+            endTime,
+            this
+        );
+
+        this.$emit(changeEvent);
+
+        return this.collection._runHooks('post', 'save', newData, this);
     },
 
     /**

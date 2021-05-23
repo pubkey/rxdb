@@ -21,7 +21,8 @@ import {
     RxJsonSchema,
     hash,
     randomCouchString,
-    PouchDB
+    PouchDB,
+    pouchSwapPrimaryToId
 } from '../../plugins/core';
 import {
     RxDBReplicationGraphQLPlugin,
@@ -54,7 +55,7 @@ import {
     parse as parseQuery
 } from 'graphql';
 
-const POUCHDB_LOCAL_PREFIX = '_local/'
+const POUCHDB_LOCAL_PREFIX = '_local/';
 
 declare type WithDeleted<T> = T & { deleted: boolean };
 
@@ -648,11 +649,16 @@ describe('replication-graphql.test.js', () => {
                 it('should have filtered out replicated docs from the endpoint', async () => {
                     const amount = 5;
                     const c = await humansCollection.createHumanWithTimestamp(amount);
-                    const toPouch: any = schemaObjects.humanWithTimestamp();
+                    let toPouch: any = schemaObjects.humanWithTimestamp();
                     toPouch['_rev'] = '1-' + createRevisionForPulledDocument(
                         endpointHash,
                         toPouch
                     );
+                    toPouch = pouchSwapPrimaryToId(
+                        c.schema.primaryPath,
+                        toPouch
+                    );
+
 
                     await c.pouch.bulkDocs([c._handleToPouch(toPouch)], {
                         new_edits: false
@@ -677,9 +683,13 @@ describe('replication-graphql.test.js', () => {
                 it('should have filtered out docs with last_pulled_rev set', async () => {
                     const amount = 5;
                     const c = await humansCollection.createHumanWithTimestamp(amount);
-                    const toPouch: any = schemaObjects.humanWithTimestamp();
+                    let toPouch: any = schemaObjects.humanWithTimestamp();
                     toPouch._rev = `1-${hash(toPouch)}`;
                     toPouch.last_pulled_rev = toPouch._rev;
+                    toPouch = pouchSwapPrimaryToId(
+                        c.schema.primaryPath,
+                        toPouch
+                    );
 
                     await c.pouch.bulkDocs([c._handleToPouch(toPouch)], {
                         new_edits: false
@@ -782,6 +792,7 @@ describe('replication-graphql.test.js', () => {
                     const doc = await c.findOne().exec(true);
                     const docData = doc.toJSON(true);
                     docData.name = 'foobar';
+
                     await setLastPullDocument(
                         c,
                         endpointHash,

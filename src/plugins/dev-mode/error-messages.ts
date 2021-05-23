@@ -86,7 +86,7 @@ export const ERROR_MESSAGES: { [k: string]: string } = {
     DOC9: 'final fields cannot be modified',
     DOC10: 'RxDocument.set(): cannot set childpath when rootPath not selected',
     DOC11: 'RxDocument.save(): cant save deleted document',
-    DOC12: 'RxDocument.save(): error',
+    // removed in 10.0.0 DOC12: 'RxDocument.save(): error',
     DOC13: 'RxDocument.remove(): Document is already deleted',
     DOC14: 'RxDocument.destroy() does not exist',
     DOC15: 'query cannot be an array',

@@ -7,17 +7,18 @@ import {
     WriteOperation,
     ChangeEvent as EventReduceChangeEvent
 } from 'event-reduce-js';
+import { pouchSwapIdToPrimary } from './rx-storage-pouchdb';
 
 import type {
     RxCollection,
     RxDocument,
-    RxDocumentTypeWithRev
+    WithRevision
 } from './types';
 
 export type RxChangeEventJson<DocType = any> = {
     operation: WriteOperation;
     documentId: string;
-    documentData: RxDocumentTypeWithRev<DocType>;
+    documentData: WithRevision<DocType>;
     previousData?: DocType;
     databaseToken: string;
     collectionName: string;
@@ -36,7 +37,7 @@ export class RxChangeEvent<DocType = any> {
     constructor(
         public readonly operation: WriteOperation,
         public readonly documentId: string,
-        public readonly documentData: RxDocumentTypeWithRev<DocType>,
+        public readonly documentData: WithRevision<DocType>,
         public readonly databaseToken: string,
         public readonly collectionName: string,
         public readonly isLocal: boolean,
@@ -122,16 +123,22 @@ export function changeEventfromPouchChange<DocType>(
     startTime: number, // time when the event was streamed out of pouchdb
     endTime: number, // time when the event was streamed out of pouchdb
 ): RxChangeEvent<DocType> {
+
+    console.log('changeEventfromPouchChange:');
+    console.dir(changeDoc);
+
     let operation: WriteOperation = changeDoc._rev.startsWith('1-') ? 'INSERT' : 'UPDATE';
     if (changeDoc._deleted) {
         operation = 'DELETE';
     }
 
     // decompress / primarySwap
-    const doc: RxDocumentTypeWithRev<DocType> = collection._handleFromPouch(changeDoc);
+    let doc: WithRevision<DocType> = collection._handleFromPouch(changeDoc);
+    doc = pouchSwapIdToPrimary(collection.schema.primaryPath, doc);
+
     const documentId: string = (doc as any)[collection.schema.primaryPath] as string;
 
-    const cE = new RxChangeEvent<DocType>(
+    const changeEvent = new RxChangeEvent<DocType>(
         operation,
         documentId,
         doc,
@@ -141,17 +148,30 @@ export function changeEventfromPouchChange<DocType>(
         startTime,
         endTime
     );
-    return cE;
+
+    console.log('change event from pouch change:');
+    console.dir(changeEvent);
+
+    return changeEvent;
 }
 
 
 export function createInsertEvent<RxDocumentType>(
     collection: RxCollection<RxDocumentType>,
-    docData: RxDocumentTypeWithRev<RxDocumentType>,
+    docData: WithRevision<RxDocumentType>,
     startTime: number,
     endTime: number,
     doc?: RxDocument<RxDocumentType>
 ): RxChangeEvent<RxDocumentType> {
+    // TODO remove this checks after rx-storage is migrated
+    if (!docData._rev) {
+        throw new Error('_rev missing');
+    }
+    const primary = (docData as any)[collection.schema.primaryPath];
+    if (!primary) {
+        throw new Error('primary missing ' + collection.schema.primaryPath);
+    }
+
     const ret = new RxChangeEvent<RxDocumentType>(
         'INSERT',
         (docData as any)[collection.schema.primaryPath],
@@ -170,7 +190,7 @@ export function createInsertEvent<RxDocumentType>(
 
 export function createUpdateEvent<RxDocumentType>(
     collection: RxCollection<RxDocumentType>,
-    docData: RxDocumentTypeWithRev<RxDocumentType>,
+    docData: WithRevision<RxDocumentType>,
     previous: RxDocumentType,
     startTime: number,
     endTime: number,
@@ -192,7 +212,7 @@ export function createUpdateEvent<RxDocumentType>(
 
 export function createDeleteEvent<RxDocumentType>(
     collection: RxCollection<RxDocumentType>,
-    docData: RxDocumentTypeWithRev<RxDocumentType>,
+    docData: WithRevision<RxDocumentType>,
     previous: RxDocumentType,
     startTime: number,
     endTime: number,

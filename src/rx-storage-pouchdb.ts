@@ -8,7 +8,7 @@ import {
     PreparedQuery,
     RxStorageInstance,
     RxStorageKeyObjectInstance
-} from './rx-storate.interface';
+} from './rx-storage.interface';
 import type {
     MangoQuery,
     MangoQuerySortPart,
@@ -23,10 +23,11 @@ import type {
     WithRevision,
     RxStorageBulkWriteError,
     PouchWriteError,
-    PouchBulkDocResultRow
+    PouchBulkDocResultRow,
+    RxStorageQueryResult
 } from './types';
 import { CompareFunction } from 'array-push-at-sort-position';
-import { flatClone, adapterObject, ensureNotFalsy, getFromMapOrThrow } from './util';
+import { flatClone, adapterObject, ensureNotFalsy, getFromMapOrThrow, generateId } from './util';
 import { SortComparator, QueryMatcher } from 'event-reduce-js';
 import { runPluginHooks } from './hooks';
 import {
@@ -48,7 +49,7 @@ export type PouchStorageInternals = {
 /**
  * Used to check in tests if all instances have been cleaned up.
  */
-export const OPEN_POUCHDB_STORAGE_INSTANCES: Set<RxStorageKeyObjectInstancePouch | RxStorageInstancePouch> = new Set();
+export const OPEN_POUCHDB_STORAGE_INSTANCES: Set<RxStorageKeyObjectInstancePouch | RxStorageInstancePouch<any>> = new Set();
 
 export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstance<PouchStorageInternals, PouchSettings> {
     constructor(
@@ -123,7 +124,11 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
     }
 }
 
-export class RxStorageInstancePouch implements RxStorageInstance<PouchStorageInternals, PouchSettings> {
+export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
+    RxDocType,
+    PouchStorageInternals,
+    PouchSettings
+> {
     constructor(
         public readonly databaseName: string,
         public readonly collectionName: string,
@@ -146,7 +151,7 @@ export class RxStorageInstancePouch implements RxStorageInstance<PouchStorageInt
         await this.internals.pouch.destroy();
     }
 
-    getSortComparator<RxDocType>(
+    getSortComparator(
         query: MangoQuery<RxDocType>
     ): SortComparator<RxDocType> {
         const primaryKey = getPrimary<any>(this.schema);
@@ -189,7 +194,7 @@ export class RxStorageInstancePouch implements RxStorageInstance<PouchStorageInt
     /**
      * @link https://github.com/pouchdb/pouchdb/blob/master/packages/node_modules/pouchdb-selector-core/src/matches-selector.js
      */
-    getQueryMatcher<RxDocType>(
+    getQueryMatcher(
         query: MangoQuery<RxDocType>
     ): QueryMatcher<RxDocType> {
         const primaryKey = getPrimary<any>(this.schema);
@@ -219,7 +224,7 @@ export class RxStorageInstancePouch implements RxStorageInstance<PouchStorageInt
      * this functions takes a normal mango query
      * and transforms it to one that fits for pouchdb
      */
-    prepareQuery<RxDocType>(
+    prepareQuery(
         rxQuery: RxQuery<RxDocType>,
         mutateableQuery: MangoQuery<RxDocType>
     ): PreparedQuery<RxDocType> {
@@ -312,7 +317,7 @@ export class RxStorageInstancePouch implements RxStorageInstance<PouchStorageInt
         return query;
     }
 
-    public async bulkWrite<RxDocType>(
+    public async bulkWrite(
         overwrite: boolean,
         documents: WithWriteRevision<RxDocType>[]
     ): Promise<
@@ -323,6 +328,12 @@ export class RxStorageInstancePouch implements RxStorageInstance<PouchStorageInt
 
         const insertDocs: (RxDocType & { _id: string; _rev: string })[] = documents.map(doc => {
             const primary: string = (doc as any)[primaryKey];
+
+            // TODO remove this check when primary key was made required
+            if (!primary) {
+                console.dir(doc);
+                throw new Error('primary missing ' + primaryKey);
+            }
             insertDataById.set(primary, doc);
 
             let storeDocumentData: any = flatClone(doc);
@@ -332,6 +343,7 @@ export class RxStorageInstancePouch implements RxStorageInstance<PouchStorageInt
         });
 
         const pouchResult = await this.internals.pouch.bulkDocs(insertDocs);
+
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
             success: new Map(),
             error: new Map()
@@ -355,6 +367,21 @@ export class RxStorageInstancePouch implements RxStorageInstance<PouchStorageInt
             }
         });
 
+        return ret;
+    }
+
+    public async query(
+        preparedQuery: PreparedQuery<RxDocType>
+    ): Promise<RxStorageQueryResult<RxDocType>> {
+        const primaryKey = getPrimary<any>(this.schema);
+        const findResult = await this.internals.pouch.find<RxDocType>(preparedQuery);
+
+        const ret: RxStorageQueryResult<RxDocType> = {
+            documents: findResult.docs.map(doc => {
+                doc = pouchSwapIdToPrimary(primaryKey, doc);
+                return doc;
+            })
+        };
         return ret;
     }
 }
@@ -394,12 +421,12 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
         return pouch;
     }
 
-    public async createStorageInstance(
+    public async createStorageInstance<RxDocType>(
         databaseName: string,
         collectionName: string,
         schema: RxJsonSchema,
         options: PouchSettings
-    ): Promise<RxStorageInstancePouch> {
+    ): Promise<RxStorageInstancePouch<RxDocType>> {
         const pouchLocation = getPouchLocation(
             databaseName,
             collectionName,
@@ -445,23 +472,22 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
             options
         );
     }
-
-
 }
 
 export function pouchSwapIdToPrimary(
     primaryKey: string,
     docData: any
 ): any {
+
     if (primaryKey === '_id' || docData[primaryKey]) {
         return docData;
     }
     docData = flatClone(docData);
     docData[primaryKey] = docData._id;
     delete docData._id;
+
     return docData;
 }
-
 
 export function pouchSwapPrimaryToId(
     primaryKey: string,

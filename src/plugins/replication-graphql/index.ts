@@ -54,6 +54,7 @@ import type {
     GraphQLSyncPushOptions,
     RxPlugin
 } from '../../types';
+import { pouchSwapPrimaryToId } from '../../rx-storage-pouchdb';
 
 addRxPlugin(RxDBLeaderElectionPlugin);
 
@@ -392,7 +393,11 @@ export class RxGraphQLReplicationState {
         const toPouchDocs: any[] = [];
         for (const doc of docs) {
             const deletedValue = doc[this.deletedFlag];
-            const toPouch = this.collection._handleToPouch(doc);
+            let toPouch = this.collection._handleToPouch(doc);
+
+            // TODO this should not be needed when rx-storage migration is done
+            toPouch = pouchSwapPrimaryToId(this.collection.schema.primaryPath, toPouch);
+
             toPouch._deleted = deletedValue;
             delete toPouch[this.deletedFlag];
 
@@ -430,6 +435,10 @@ export class RxGraphQLReplicationState {
 
 
         const startTime = now();
+
+        console.log('toPouchDocs:');
+        console.dir(toPouchDocs);
+
         await this.collection.database.lockedRun(
             async () => {
                 await this.collection.pouch.bulkDocs(

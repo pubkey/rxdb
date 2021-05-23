@@ -56,6 +56,7 @@ import {
 } from '../../rx-collection-helper';
 import { getMigrationStateByDatabase, MigrationStateWithCollection } from './migration-state';
 import { map } from 'rxjs/operators';
+import { pouchSwapIdToPrimary, pouchSwapPrimaryToId } from '../../rx-storage-pouchdb';
 
 export class DataMigrator {
 
@@ -292,7 +293,13 @@ export function getBatchOfOldCollection(
         batchSize
     )
         .then(docs => docs
-            .map(doc => _handleFromPouch(oldCollection, doc))
+            .map(doc => {
+                doc = flatClone(doc);
+                doc = _handleFromPouch(oldCollection, doc)
+                // TODO primary resolution should happen inside of the rx-storage-pouch
+                doc = pouchSwapIdToPrimary(oldCollection.schema.primaryPath, doc);
+                return doc;
+            })
         );
 }
 
@@ -306,7 +313,6 @@ export function migrateDocumentData(
     oldCollection: OldRxCollection,
     docData: any
 ): Promise<any | null> {
-
     /**
      * We cannot deep-clone Blob or Buffer
      * so we just flat clone it here
@@ -331,7 +337,9 @@ export function migrateDocumentData(
     }
 
     return currentPromise.then(doc => {
-        if (doc === null) return Promise.resolve(null);
+        if (doc === null) {
+            return Promise.resolve(null);
+        }
 
         // check final schema
         try {
@@ -424,8 +432,18 @@ export function _migrateDocument(
                  * notice that this data also contains the attachments data
                  */
                 const attachmentsBefore = migrated._attachments;
-                const saveData: WithAttachmentsData<any> = oldCollection.newestCollection._handleToPouch(migrated);
+                let saveData: WithAttachmentsData<any> = oldCollection.newestCollection._handleToPouch(migrated);
+
+                // TODO this should not be needed when rx-storage migration is done
+                saveData = pouchSwapPrimaryToId(
+                    oldCollection.newestCollection.schema.primaryPath,
+                    saveData
+                );
+
                 saveData._attachments = attachmentsBefore;
+
+                console.log('save migrated data:');
+                console.dir(saveData);
 
                 return oldCollection.newestCollection.pouch
                     .bulkDocs([saveData], {
@@ -452,10 +470,16 @@ export function _migrateDocument(
                 action.type = 'deleted';
             }
         })
+        // remove the migrated document from the old collection
         .then(() => {
-            // remove from old collection
+            // TODO this should not be needed when rx-storage migration is done
+            const removeData = pouchSwapPrimaryToId(
+                oldCollection.schema.primaryPath,
+                docData
+            );
+
             return oldCollection.pouchdb.remove(
-                _handleToPouch(oldCollection, docData)
+                _handleToPouch(oldCollection, removeData)
             ).catch(() => { });
         })
         .then(() => action) as any;

@@ -69,7 +69,9 @@ export {
     RxStoragePouch,
     RxStorageInstancePouch,
     RxStorageKeyObjectInstancePouch,
-    OPEN_POUCHDB_STORAGE_INSTANCES
+    OPEN_POUCHDB_STORAGE_INSTANCES,
+    pouchSwapPrimaryToId,
+    pouchSwapIdToPrimary
 } from './rx-storage-pouchdb';
 
 export {
@@ -84,7 +86,7 @@ export * from './query-cache';
 
 export type {
     RxStorage
-} from './rx-storate.interface';
+} from './rx-storage.interface';
 
 
 export * from './util';
@@ -124,7 +126,6 @@ export type {
     RxDatabase,
     RxDatabaseCreator,
     RxDocument,
-    RxDocumentTypeWithRev,
     RxDumpCollection,
     RxDumpCollectionAny,
     RxDumpCollectionAsAny,

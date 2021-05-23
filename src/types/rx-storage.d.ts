@@ -74,5 +74,13 @@ export type RxStorageBulkWriteResponse<DocData> = {
      * contains all errored writes.
      */
     error: Map<string, RxStorageBulkWriteError<DocData>>;
+}
 
+/**
+ * We return a complex object instead of a single array
+ * so we are able to add additional fields in the future.
+ */
+export type RxStorageQueryResult<RxDocType> = {
+    // the found documents, sort order is important.
+    documents: WithRevision<RxDocType>[];
 }

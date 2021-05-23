@@ -6,7 +6,7 @@ import {
 import type {
     RxCollection, PouchChangeRow, PouchChangeDoc, PouchdbChangesResult
 } from '../../types';
-import { POUCHDB_LOCAL_PREFIX } from '../../rx-storage-pouchdb';
+import { POUCHDB_LOCAL_PREFIX, pouchSwapIdToPrimary } from '../../rx-storage-pouchdb';
 
 /**
  * when the replication starts,
@@ -156,6 +156,9 @@ export async function getChangesSinceLastPushSequence(
 
     (changes as PouchdbChangesResult).results.forEach((change: any) => {
         change.doc = collection._handleFromPouch(change.doc);
+
+        // TODO primary resolution should happen inside of the rx-storage-pouch
+        change.doc = pouchSwapIdToPrimary(collection.schema.primaryPath, change.doc);
     });
 
     return changes as any;

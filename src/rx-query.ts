@@ -44,7 +44,7 @@ import {
 } from './rx-document-prototype-merge';
 import type { RxChangeEvent } from './rx-change-event';
 import { calculateNewResults } from './event-reduce';
-import { PreparedQuery } from './rx-storate.interface';
+import { PreparedQuery } from './rx-storage.interface';
 import { triggerCacheReplacement } from './query-cache';
 
 let _queryCount = 0;
@@ -172,6 +172,8 @@ export class RxQueryBase<
      * @param newResultData json-docs that were recieved from pouchdb
      */
     _setResultData(newResultData: any[]): RxDocument[] {
+        console.log('RxQuery._setResultData():');
+        console.dir(newResultData);
         this._resultsData = newResultData;
         const docs = createRxDocuments(
             this.collection,
@@ -289,7 +291,7 @@ export class RxQueryBase<
      */
     toJSON(): PreparedQuery<RxDocumentType> {
         const value = this.collection.storageInstance.prepareQuery(
-            this.asRxQuery,
+            this as any,
             clone(this.mangoQuery)
         );
         this.toJSON = () => value;

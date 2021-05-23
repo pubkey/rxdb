@@ -5,6 +5,7 @@ import {
 import {
     RxLocalDocumentData,
     RxStorageBulkWriteResponse,
+    RxStorageQueryResult,
     WithRevision,
     WithWriteRevision
 } from './types/rx-storage';
@@ -47,12 +48,12 @@ export interface RxStorage<Internals, InstanceCreationOptions> {
      * that can contain the internal database
      * For example the PouchDB instance
      */
-    createStorageInstance(
+    createStorageInstance<DocumentData>(
         databaseName: string,
         collectionName: string,
         schema: RxJsonSchema,
         options: InstanceCreationOptions
-    ): Promise<RxStorageInstance<Internals, InstanceCreationOptions>>;
+    ): Promise<RxStorageInstance<DocumentData, Internals, InstanceCreationOptions>>;
 
     /**
      * Creates the internal storage instance
@@ -132,7 +133,15 @@ export interface RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>
     >;
 }
 
-export interface RxStorageInstance<Internals, InstanceCreationOptions>
+export interface RxStorageInstance<
+    /**
+     * The type of the documents that can be stored in this instance.
+     * All documents in an instance must comply to the same schema.
+     */
+    DocumentData,
+    Internals,
+    InstanceCreationOptions
+    >
     extends RxStorageInstanceBase<Internals, InstanceCreationOptions> {
 
     readonly schema: Readonly<RxJsonSchema>;
@@ -148,35 +157,37 @@ export interface RxStorageInstance<Internals, InstanceCreationOptions>
      *
      * @returns a format of the query than can be used with the storage
      */
-    prepareQuery<RxDocType>(
+    prepareQuery(
         /**
          * The RxQuery Object that you can use
          * to obtain additional information about the query.
+         * 
+         * TODO everything should work without dedicated RxDB classes.
+         * So do not add the rxQuery here, we already have the json-schema in the instance.
          */
-        rxQuery: RxQuery<RxDocType, any>,
+        rxQuery: RxQuery<DocumentData, any>,
         /**
          * a query that can be mutated by the function without side effects.
          */
-        mutateableQuery: MangoQuery<RxDocType>
-    ): PreparedQuery<RxDocType>;
+        mutateableQuery: MangoQuery<DocumentData>
+    ): PreparedQuery<DocumentData>;
 
     /**
      * returns the sort-comparator,
      * which results in the equal sorting that a query over the db would do
      */
-    getSortComparator<RxDocType>(
-        query: MangoQuery<RxDocType>
-    ): SortComparator<RxDocType>;
+    getSortComparator(
+        query: MangoQuery<DocumentData>
+    ): SortComparator<DocumentData>;
 
     /**
      * returns a function
      * that can be used to check if a document
      * matches the query
      */
-    getQueryMatcher<RxDocType>(
-        query: MangoQuery<RxDocType>
-    ): QueryMatcher<RxDocType>;
-
+    getQueryMatcher(
+        query: MangoQuery<DocumentData>
+    ): QueryMatcher<DocumentData>;
 
     /**
      * Writes multiple non-local documents to the storage instance.
@@ -186,7 +197,7 @@ export interface RxStorageInstance<Internals, InstanceCreationOptions>
      * and others error.
      * We need this to have a similar behavior as most NoSQL databases.
      */
-    bulkWrite<RxDocType>(
+    bulkWrite(
         /**
          * If overwrite is set to true,
          * the storage instance must ignore
@@ -202,11 +213,34 @@ export interface RxStorageInstance<Internals, InstanceCreationOptions>
          * throw on non-local documents.
          */
         overwrite: boolean,
-        documents: WithWriteRevision<RxDocType>[]
+        documents: WithWriteRevision<DocumentData>[]
     ): Promise<
         /**
          * returns the response, splitted into success and error lists.
          */
-        RxStorageBulkWriteResponse<RxDocType>
+        RxStorageBulkWriteResponse<DocumentData>
     >;
+
+    /**
+     * Runs a NoSQL 'mango' query over the storage
+     * and returns the found documents data.
+     * Having all storage instances behave similar
+     * is likely the most difficult thing when creating a new
+     * rx-storage implementation. Atm we use the pouchdb-find plugin
+     * as reference to how NoSQL-queries must work.
+     * But the past has shown that pouchdb find can behave wrong,
+     * which must be fixed or at least documented.
+     *
+     * TODO should we have a way for streamed results
+     * or a way to cancel a running query?
+     */
+    query(
+        /**
+         * Here we get the result of this.prepareQuery()
+         * instead of the plain mango query.
+         * This makes it easier to have good performance
+         * when transformations of the query must be done.
+         */
+        preparedQuery: PreparedQuery<DocumentData>
+    ): Promise<RxStorageQueryResult<DocumentData>>;
 }

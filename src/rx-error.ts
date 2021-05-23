@@ -4,7 +4,8 @@
 
 import { overwritable } from './overwritable';
 import type {
-    RxErrorParameters, PouchWriteError
+    RxErrorParameters,
+    PouchWriteError
 } from './types';
 
 /**

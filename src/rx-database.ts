@@ -71,9 +71,9 @@ import {
 import {
     getAllDocuments,
     INTERNAL_STORAGE_NAME
-} from './rx-database-internal-store';
+} from './rx-storage-helper';
 import type { RxBackupState } from './plugins/backup';
-import { RxStorage } from './rx-storate.interface';
+import { RxStorage } from './rx-storage.interface';
 
 /**
  * stores the combinations
@@ -91,7 +91,7 @@ export class RxDatabaseBase<
 
     // TODO use type RxStorage when rx-storage finished implemented
     public storage: RxStoragePouch;
-    public internalStore: RxStorageInstancePouch = {} as RxStorageInstancePouch;
+    public internalStore: RxStorageInstancePouch<any> = {} as RxStorageInstancePouch<any>;
 
     constructor(
         public name: string,
@@ -613,7 +613,7 @@ async function createInternalStorageInstance(
     storage: RxStorage<any, any>,
     databaseName: string,
     pouchSettings: PouchSettings
-): Promise<RxStorageInstancePouch> {
+): Promise<RxStorageInstancePouch<any>> {
     const internalStore = await storage.createStorageInstance(
         databaseName,
         INTERNAL_STORAGE_NAME,
