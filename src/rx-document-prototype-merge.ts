@@ -107,9 +107,6 @@ export function createRxDocument<DT, OM>(
         throw new Error('createRxDocument() missing primary ' + rxCollection.schema.primaryPath);
     }
 
-    console.log('createDocument(' + primary + '):');
-    console.dir(docData);
-
     // return from cache if exsists
     const cacheDoc = rxCollection._docCache.get(primary);
     if (cacheDoc) {

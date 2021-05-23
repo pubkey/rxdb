@@ -131,6 +131,17 @@ export interface RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>
          */
         RxStorageBulkWriteResponse<RxLocalDocumentData>
     >;
+
+    /**
+     * Get Multiple local documents by their primary value.
+     */
+    findLocalDocumentsById(
+        /**
+         * List of primary values
+         * of the documents to find.
+         */
+        ids: string[]
+    ): Promise<Map<string, WithRevision<RxLocalDocumentData>>>;
 }
 
 export interface RxStorageInstance<
@@ -161,7 +172,7 @@ export interface RxStorageInstance<
         /**
          * The RxQuery Object that you can use
          * to obtain additional information about the query.
-         * 
+         *
          * TODO everything should work without dedicated RxDB classes.
          * So do not add the rxQuery here, we already have the json-schema in the instance.
          */
@@ -220,6 +231,17 @@ export interface RxStorageInstance<
          */
         RxStorageBulkWriteResponse<DocumentData>
     >;
+
+    /**
+     * Get Multiple documents by their primary value.
+     */
+    findDocumentsById(
+        /**
+         * List of primary values
+         * of the documents to find.
+         */
+        ids: string[]
+    ): Promise<Map<string, WithRevision<DocumentData>>>;
 
     /**
      * Runs a NoSQL 'mango' query over the storage

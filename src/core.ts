@@ -73,6 +73,9 @@ export {
     pouchSwapPrimaryToId,
     pouchSwapIdToPrimary
 } from './rx-storage-pouchdb';
+export {
+    findLocalDocument
+} from './rx-storage-helper';
 
 export {
     _clearHook // used in tests

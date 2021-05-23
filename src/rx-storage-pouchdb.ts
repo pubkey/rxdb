@@ -9,6 +9,7 @@ import {
     RxStorageInstance,
     RxStorageKeyObjectInstance
 } from './rx-storage.interface';
+
 import type {
     MangoQuery,
     MangoQuerySortPart,
@@ -26,16 +27,23 @@ import type {
     PouchBulkDocResultRow,
     RxStorageQueryResult
 } from './types';
+
 import { CompareFunction } from 'array-push-at-sort-position';
-import { flatClone, adapterObject, ensureNotFalsy, getFromMapOrThrow, generateId } from './util';
-import { SortComparator, QueryMatcher } from 'event-reduce-js';
+import {
+    flatClone,
+    adapterObject,
+    getFromMapOrThrow
+} from './util';
+import {
+    SortComparator,
+    QueryMatcher
+} from 'event-reduce-js';
 import { runPluginHooks } from './hooks';
 import {
     PouchDB
 } from './pouch-db';
 import { newRxError } from './rx-error';
-import { getPrimary, getPseudoSchemaForVersion } from './rx-schema';
-
+import { getPrimary } from './rx-schema';
 
 /**
  * prefix of local pouchdb documents
@@ -96,7 +104,13 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
             return storeDocumentData;
         });
 
+        console.log('bulk write local:');
+        console.dir(insertDocs);
+
         const pouchResult = await this.internals.pouch.bulkDocs(insertDocs);
+
+        console.dir(pouchResult);
+
         const ret: RxStorageBulkWriteResponse<RxLocalDocumentData> = {
             success: new Map(),
             error: new Map()
@@ -120,6 +134,30 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
             }
         });
 
+        return ret;
+    }
+
+    async findLocalDocumentsById(ids: string[]): Promise<Map<string, WithRevision<RxLocalDocumentData>>> {
+        const ret = new Map();
+
+        /**
+         * Pouchdb is not able to bulk-request local documents
+         * with the pouch.allDocs() method.
+         * so we need to get each by a single call.
+         * TODO create an issue at the pouchdb repo
+         */
+        await Promise.all(
+            ids.map(async (id) => {
+                const prefixedId = POUCHDB_LOCAL_PREFIX + id;
+                try {
+                    const docData = await this.internals.pouch.get(prefixedId);
+                    docData._id = id;
+                    ret.set(id, docData);
+                } catch (err) {
+                    // do not add to result list on error
+                }
+            })
+        );
         return ret;
     }
 }
@@ -382,6 +420,27 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                 return doc;
             })
         };
+        return ret;
+    }
+
+    async findDocumentsById(ids: string[]): Promise<Map<string, WithRevision<RxDocType>>> {
+        const primaryKey = getPrimary<any>(this.schema);
+        const pouchResult = await this.internals.pouch.allDocs({
+            include_docs: true,
+            keys: ids
+        });
+
+        const ret = new Map();
+        pouchResult.rows
+            .filter(row => !!row.doc)
+            .forEach(row => {
+                let docData = row.doc;
+                docData = pouchSwapIdToPrimary(
+                    primaryKey,
+                    docData
+                );
+                ret.set(row.id, docData);
+            });
         return ret;
     }
 }

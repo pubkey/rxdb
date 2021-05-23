@@ -123,10 +123,6 @@ export function changeEventfromPouchChange<DocType>(
     startTime: number, // time when the event was streamed out of pouchdb
     endTime: number, // time when the event was streamed out of pouchdb
 ): RxChangeEvent<DocType> {
-
-    console.log('changeEventfromPouchChange:');
-    console.dir(changeDoc);
-
     let operation: WriteOperation = changeDoc._rev.startsWith('1-') ? 'INSERT' : 'UPDATE';
     if (changeDoc._deleted) {
         operation = 'DELETE';
@@ -148,9 +144,6 @@ export function changeEventfromPouchChange<DocType>(
         startTime,
         endTime
     );
-
-    console.log('change event from pouch change:');
-    console.dir(changeEvent);
 
     return changeEvent;
 }

@@ -9,7 +9,7 @@ import {
 } from './rx-error';
 
 /**
- * wrappers for Pouch.put/get to handle keycompression etc
+ * wrappers for Pouch put/get to handle keycompression etc
  */
 export function _handleToPouch(
     col: RxCollection | any,

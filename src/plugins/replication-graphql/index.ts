@@ -433,12 +433,7 @@ export class RxGraphQLReplicationState {
             });
         }
 
-
         const startTime = now();
-
-        console.log('toPouchDocs:');
-        console.dir(toPouchDocs);
-
         await this.collection.database.lockedRun(
             async () => {
                 await this.collection.pouch.bulkDocs(

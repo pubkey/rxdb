@@ -15,9 +15,13 @@ import {
 import {
     Crypter
 } from '../crypter';
-import type { RxPlugin, RxDatabase } from '../types';
+import type {
+    RxPlugin,
+    RxDatabase,
+    RxLocalDocumentData
+} from '../types';
 import { hash } from '../util';
-import { POUCHDB_LOCAL_PREFIX } from '../rx-storage-pouchdb';
+import { findLocalDocument } from '../rx-storage-helper';
 
 const minPassLength = 8;
 
@@ -51,37 +55,36 @@ export type PasswordHashDocument = {
  * to ensure there is/was no other instance with a different password
  * which would cause strange side effects when both instances save into the same db
  */
-export function storePasswordHashIntoDatabase(
+export async function storePasswordHashIntoDatabase(
     rxDatabase: RxDatabase
 ): Promise<boolean> {
     if (!rxDatabase.password) {
         return Promise.resolve(false);
     }
     const pwHash = hash(rxDatabase.password);
-    return rxDatabase.internalStore.internals.pouch.get(POUCHDB_LOCAL_PREFIX + 'pwHash')
-        .catch(() => null)
-        .then((pwHashDoc: PasswordHashDocument | null) => {
-            /**
-             * if pwHash was not saved, we save it,
-             * this operation might throw because another instance runs save at the same time,
-             */
-            if (!pwHashDoc) {
-                return rxDatabase.internalStore.internals.pouch.put({
-                    _id: POUCHDB_LOCAL_PREFIX + 'pwHash',
-                    value: pwHash
-                }).catch(() => null)
-                    .then(() => true);
-            } else if (pwHash !== pwHashDoc.value) {
-                // different hash was already set by other instance
-                return rxDatabase.destroy().then(() => {
-                    throw newRxError('DB1', {
-                        passwordHash: hash(rxDatabase.password),
-                        existingPasswordHash: pwHashDoc.value
-                    });
-                });
-            }
-            return true;
+    const pwHashDocumentId = 'pwHash';
+
+    const pwHashDoc = await findLocalDocument(
+        rxDatabase.localDocumentsStore,
+        pwHashDocumentId
+    );
+    if (!pwHashDoc) {
+        const docData: RxLocalDocumentData = {
+            _id: pwHashDocumentId,
+            value: pwHash
+        };
+        await rxDatabase.localDocumentsStore.bulkWrite(false, [docData]);
+        return true;
+    } else if (pwHash !== pwHashDoc.value) {
+        // different hash was already set by other instance
+        await rxDatabase.destroy();
+        throw newRxError('DB1', {
+            passwordHash: hash(rxDatabase.password),
+            existingPasswordHash: pwHashDoc.value
         });
+    } else {
+        return true;
+    }
 }
 
 

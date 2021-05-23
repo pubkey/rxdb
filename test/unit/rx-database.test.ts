@@ -15,7 +15,8 @@ import {
     createRxSchema,
     getPouchLocation,
     randomCouchString,
-    addRxPlugin
+    addRxPlugin,
+    findLocalDocument
 } from '../../plugins/core';
 import AsyncTestUtil from 'async-test-util';
 import * as schemas from '../helper/schemas';
@@ -196,7 +197,10 @@ config.parallel('rx-database.test.js', () => {
                     password,
                     ignoreDuplicate: true
                 });
-                const doc = await db.internalStore.internals.pouch.get('_local/pwHash');
+                const doc = await findLocalDocument(db.localDocumentsStore, 'pwHash');
+                if (!doc) {
+                    throw new Error('error in test this should never happen ' + doc);
+                }
                 assert.strictEqual(typeof doc.value, 'string');
                 const db2 = await createRxDatabase({
                     name,
@@ -204,9 +208,9 @@ config.parallel('rx-database.test.js', () => {
                     password,
                     ignoreDuplicate: true
                 });
-                const doc2 = await db.internalStore.internals.pouch.get('_local/pwHash');
+                const doc2 = await findLocalDocument(db.localDocumentsStore, 'pwHash');
                 assert.ok(doc2);
-                assert.strictEqual(typeof doc.value, 'string');
+                assert.strictEqual(typeof doc2.value, 'string');
 
                 db.destroy();
                 db2.destroy();

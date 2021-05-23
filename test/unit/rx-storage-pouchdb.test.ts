@@ -9,7 +9,7 @@ import {
     RxStoragePouch,
     randomCouchString,
     getPseudoSchemaForVersion,
-    getFromMapOrThrow
+    getFromMapOrThrow,
 } from '../../plugins/core';
 
 import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
@@ -188,5 +188,32 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 storageInstance.close();
             });
         });
+        describe('.findLocalDocumentsById()', () => {
+            it('should find the documents', async () => {
+                const storageInstance = await storage.createKeyObjectStorageInstance(
+                    randomCouchString(12),
+                    {}
+                );
+
+                const writeData = {
+                    _id: 'foobar',
+                    value: 'barfoo'
+                };
+
+                await storageInstance.bulkWrite(
+                    false,
+                    [writeData]
+                );
+
+                const found = await storageInstance.findLocalDocumentsById([writeData._id]);
+                const doc = getFromMapOrThrow(found, writeData._id);
+                assert.strictEqual(
+                    doc.value,
+                    writeData.value
+                );
+
+                storageInstance.close();
+            });
+        })
     });
 });

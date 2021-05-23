@@ -287,7 +287,7 @@ export class RxCollectionBase<
     }
 
     /**
-     * wrappers for Pouch.put/get to handle keycompression etc
+     * wrappers for Pouch put/get to handle keycompression etc
      */
     _handleToPouch(docData: any): any {
         return _handleToPouch(
@@ -415,8 +415,6 @@ export class RxCollectionBase<
         this.schema.validate(useJson);
         startTime = now();
         const insertResult = await this._pouchPut(useJson);
-        console.log('insertResult:');
-        console.dir(insertResult);
         endTime = now();
         const primary = (insertResult as any)[this.schema.primaryPath as string];
         useJson[this.schema.primaryPath as string] = primary;
@@ -468,17 +466,10 @@ export class RxCollectionBase<
             docsMap.set((d as any)[this.schema.primaryPath] as any, d);
         });
 
-        console.log('mmmmmmmmmmm:');
-        console.dir(insertDocs);
-
         const startTime = now();
         const results = await this.database.lockedRun(
             () => this.storageInstance.bulkWrite(false, insertDocs)
-            // () => this.pouch.bulkDocs(insertDocs)
         );
-
-        console.log('results:');
-        console.dir(results);
 
         // create documents
         const rxDocuments: any[] = Array.from(results.success.entries())
@@ -728,17 +719,10 @@ export class RxCollectionBase<
 
         // find everything which was not in docCache
         if (mustBeQueried.length > 0) {
-            const result = await this.pouch.allDocs({
-                include_docs: true,
-                keys: mustBeQueried
-            });
-            result.rows.forEach(row => {
-                if (!row.doc) {
-                    // not found
-                    return;
-                }
-                const plainData = this._handleFromPouch(row.doc);
-                const doc = createRxDocument(this as any, plainData);
+            const docs = await this.storageInstance.findDocumentsById(mustBeQueried);
+            Array.from(docs.values()).forEach(docData => {
+                docData = this._handleFromPouch(docData);
+                const doc = createRxDocument<RxDocumentType, OrmMethods>(this as any, docData);
                 ret.set(doc.primary, doc);
             });
         }

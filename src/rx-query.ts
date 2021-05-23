@@ -172,8 +172,6 @@ export class RxQueryBase<
      * @param newResultData json-docs that were recieved from pouchdb
      */
     _setResultData(newResultData: any[]): RxDocument[] {
-        console.log('RxQuery._setResultData():');
-        console.dir(newResultData);
         this._resultsData = newResultData;
         const docs = createRxDocuments(
             this.collection,

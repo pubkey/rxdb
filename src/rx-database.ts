@@ -66,14 +66,16 @@ import {
     getRxStoragePouch,
     POUCHDB_LOCAL_PREFIX,
     RxStorageInstancePouch,
+    RxStorageKeyObjectInstancePouch,
     RxStoragePouch
 } from './rx-storage-pouchdb';
 import {
+    findLocalDocument,
     getAllDocuments,
     INTERNAL_STORAGE_NAME
 } from './rx-storage-helper';
 import type { RxBackupState } from './plugins/backup';
-import { RxStorage } from './rx-storage.interface';
+import { RxStorage, RxStorageKeyObjectInstance } from './rx-storage.interface';
 
 /**
  * stores the combinations
@@ -91,7 +93,14 @@ export class RxDatabaseBase<
 
     // TODO use type RxStorage when rx-storage finished implemented
     public storage: RxStoragePouch;
+    /**
+     * Stores information documents about the collections of the database
+     */
     public internalStore: RxStorageInstancePouch<any> = {} as RxStorageInstancePouch<any>;
+    /**
+     * Stores the local documents which are attached to this database.
+     */
+    public localDocumentsStore: RxStorageKeyObjectInstancePouch = {} as RxStorageKeyObjectInstancePouch;
 
     constructor(
         public name: string,
@@ -500,19 +509,19 @@ function _removeUsedCombination(name: string, adapter: any) {
  * name and adapter, but do not share state with this one (for example in-memory-instances),
  * we set a storage-token and use it in the broadcast-channel
  */
-export function _ensureStorageTokenExists<Collections = any>(rxDatabase: RxDatabase<Collections>): Promise<string> {
-    return rxDatabase.internalStore.internals.pouch.get(POUCHDB_LOCAL_PREFIX + 'storageToken')
-        .catch(() => {
-            // no doc exists -> insert
-            return rxDatabase.internalStore.internals.pouch.put({
-                _id: POUCHDB_LOCAL_PREFIX + 'storageToken',
-                value: randomToken(10)
-            })
-                .catch(() => { })
-                .then(() => promiseWait(0));
-        })
-        .then(() => rxDatabase.internalStore.internals.pouch.get(POUCHDB_LOCAL_PREFIX + 'storageToken'))
-        .then((storageTokenDoc2: any) => storageTokenDoc2.value);
+export async function _ensureStorageTokenExists<Collections = any>(rxDatabase: RxDatabase<Collections>): Promise<string> {
+    const storageTokenDocumentId = 'storageToken';
+    const storageTokenDoc = await findLocalDocument(rxDatabase.localDocumentsStore, storageTokenDocumentId);
+    if (!storageTokenDoc) {
+        const storageToken = randomToken(10);
+        await rxDatabase.localDocumentsStore.bulkWrite(false, [{
+            _id: storageTokenDocumentId,
+            value: storageToken
+        }]);
+        return storageToken;
+    } else {
+        return storageTokenDoc.value;
+    }
 }
 
 /**
@@ -609,29 +618,44 @@ function _prepareBroadcastChannel<Collections>(rxDatabase: RxDatabase<Collection
 }
 
 
-async function createInternalStorageInstance(
+async function createRxDatabaseStorageInstances(
     storage: RxStorage<any, any>,
     databaseName: string,
     pouchSettings: PouchSettings
-): Promise<RxStorageInstancePouch<any>> {
+): Promise<{
+    internalStore: RxStorageInstancePouch<any>,
+    localDocumentsStore: RxStorageKeyObjectInstancePouch
+}> {
     const internalStore = await storage.createStorageInstance(
         databaseName,
         INTERNAL_STORAGE_NAME,
         getPseudoSchemaForVersion(0),
         pouchSettings
     );
-    return internalStore as any;
+
+    const localDocumentsStore = await storage.createKeyObjectStorageInstance(
+        databaseName,
+        pouchSettings
+    );
+
+    return {
+        internalStore,
+        localDocumentsStore
+    };
 }
 
 /**
  * do the async things for this database
  */
 async function prepare<Collections>(rxDatabase: RxDatabase<Collections>): Promise<void> {
-    rxDatabase.internalStore = await createInternalStorageInstance(
+    const storageInstances = await createRxDatabaseStorageInstances(
         rxDatabase.storage,
         rxDatabase.name,
         rxDatabase.pouchSettings
     );
+
+    rxDatabase.internalStore = storageInstances.internalStore;
+    rxDatabase.localDocumentsStore = storageInstances.localDocumentsStore;
 
     rxDatabase.storageToken = await _ensureStorageTokenExists<Collections>(rxDatabase);
     if (rxDatabase.multiInstance) {
@@ -717,13 +741,13 @@ export async function removeRxDatabase(
 ): Promise<any> {
     const storage = getRxStoragePouch(adapter);
 
-    const internalStore = await createInternalStorageInstance(
+    const storageInstance = await createRxDatabaseStorageInstances(
         storage,
         databaseName,
         {}
     );
 
-    const docs = await getAllDocuments(internalStore);
+    const docs = await getAllDocuments(storageInstance.internalStore);
     await Promise.all(
         docs
             .map((colDoc: any) => colDoc.id)
@@ -740,7 +764,11 @@ export async function removeRxDatabase(
                 return instance.remove();
             })
     );
-    return internalStore.remove();
+
+    return Promise.all([
+        storageInstance.internalStore.remove(),
+        storageInstance.localDocumentsStore.remove()
+    ]);
 }
 
 /**

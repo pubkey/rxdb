@@ -3,13 +3,14 @@
  */
 
 import { RxStorageInstancePouch } from './rx-storage-pouchdb';
-import { RxStorageInstance } from './rx-storage.interface';
-import { WithRevision, WithWriteRevision } from './types';
+import { RxStorageInstance, RxStorageKeyObjectInstance } from './rx-storage.interface';
+import { RxLocalDocumentData, WithRevision, WithWriteRevision } from './types';
 
 export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
 
 /**
  * returns all NON-LOCAL documents
+ * TODO this is pouchdb specific should not be needed
  */
 export function getAllDocuments<RxDocType>(
     storageInstance: RxStorageInstancePouch<RxDocType>
@@ -23,6 +24,7 @@ export function getAllDocuments<RxDocType>(
         include_docs: true
     }).then(result => result.rows);
 }
+
 
 
 /**
@@ -39,16 +41,24 @@ export async function writeSingle<RxDocType>(
         [document]
     );
 
-        console.log('write result:');
-        console.dir(writeResult);
-
     if (writeResult.error.size > 0) {
         const error = writeResult.error.values().next().value;
         throw error;
     } else {
         const ret = writeResult.success.values().next().value;
-        console.log('Ret:');
-        console.dir(ret);
         return ret;
+    }
+}
+
+export async function findLocalDocument(
+    instance: RxStorageKeyObjectInstance<any, any>,
+    id: string
+): Promise<WithRevision<RxLocalDocumentData> | null> {
+    const docList = await instance.findLocalDocumentsById([id]);
+    const doc = docList.get(id);
+    if (!doc) {
+        return null;
+    } else {
+        return doc;
     }
 }

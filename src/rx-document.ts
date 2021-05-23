@@ -103,9 +103,6 @@ export const basePrototype = {
             return;
         }
 
-        console.log('_handleChangeEvent:');
-        console.dir(changeEvent.documentData);
-
         // ensure that new _rev is higher then current
         const newRevNr = getHeightOfRevision(changeEvent.documentData._rev);
         const currentRevNr = getHeightOfRevision(this._data._rev);
