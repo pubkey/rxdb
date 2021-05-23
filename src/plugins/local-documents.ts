@@ -22,6 +22,8 @@ import {
 } from '../rx-error';
 import {
     clone,
+    flatClone,
+    getFromMapOrThrow,
     now
 } from '../util';
 
@@ -30,6 +32,7 @@ import type {
     RxCollection,
     RxDatabase,
     RxDocument,
+    RxLocalDocumentData,
     RxPlugin
 } from '../types';
 
@@ -49,6 +52,8 @@ import {
 } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { POUCHDB_LOCAL_PREFIX } from '../rx-storage-pouchdb';
+import { RxStorageKeyObjectInstance } from '../rx-storage.interface';
+import { findLocalDocument, writeSingleLocal } from '../rx-storage-helper';
 
 const DOC_CACHE_BY_PARENT = new WeakMap();
 const _getDocCache = (parent: any) => {
@@ -83,22 +88,22 @@ const _getChangeSub = (parent: any) => {
 
 const RxDocumentParent = createRxDocumentConstructor() as any;
 export class RxLocalDocument extends RxDocumentParent {
-    public id: string;
-    public parent: RxCollection | RxDatabase;
-    constructor(id: string, jsonData: any, parent: RxCollection | RxDatabase) {
+    constructor(
+        public readonly id: string,
+        jsonData: any,
+        public readonly parent: RxCollection | RxDatabase
+    ) {
         super(null, jsonData);
-        this.id = id;
-        this.parent = parent;
     }
 }
 
-function _getPouchByParent(parent: any): PouchDBInstance {
+function _getKeyObjectStorageInstanceByParent(parent: any): RxStorageKeyObjectInstance<any, any> {
     if (isRxDatabase(parent)) {
-        return (parent as RxDatabase<{}>).internalStore.internals.pouch; // database
+        return (parent as RxDatabase<{}>).localDocumentsStore; // database
     } else {
-        return (parent as RxCollection).storageInstance.internals.pouch; // collection
+        return (parent as RxCollection).localDocumentsStore; // collection
     }
-};
+}
 
 const RxLocalDocumentPrototype: any = {
     toPouchJson(
@@ -109,9 +114,6 @@ const RxLocalDocumentPrototype: any = {
     },
     get isLocal() {
         return true;
-    },
-    get parentPouch() {
-        return _getPouchByParent(this.parent);
     },
 
     //
@@ -202,22 +204,30 @@ const RxLocalDocumentPrototype: any = {
         objectPath.set(this._data, objPath, value);
         return this;
     },
-    _saveData(this: any, newData: any) {
+    _saveData(this: RxLocalDocument, newData: RxLocalDocumentData) {
         const oldData = this._dataSync$.getValue();
-        newData = clone(newData);
-        newData._id = POUCHDB_LOCAL_PREFIX + this.id;
 
+        const storageInstance = _getKeyObjectStorageInstanceByParent(this.parent);
         const startTime = now();
-        return this.parentPouch.put(newData)
-            .then((res: any) => {
+
+        console.log('_saveData');
+        console.dir(newData);
+        newData._id = this.id;
+
+        return storageInstance.bulkWrite(false, [newData])
+            .then((res) => {
                 const endTime = now();
-                newData._rev = res.rev;
+                const docResult = res.success.get(newData._id);
+                if (!docResult) {
+                    throw getFromMapOrThrow(res.error, newData._id);
+                }
+                newData._rev = docResult._rev;
                 const changeEvent = new RxChangeEvent(
                     'UPDATE',
                     this.id,
                     clone(newData),
                     isRxDatabase(this.parent) ? this.parent.token : this.parent.database.token,
-                    isRxCollection(this.parent) ? this.parent.name : null,
+                    isRxCollection(this.parent) ? this.parent.name : null as any,
                     true,
                     startTime,
                     endTime,
@@ -229,9 +239,14 @@ const RxLocalDocumentPrototype: any = {
     },
 
     remove(this: any): Promise<void> {
-        const removeId = POUCHDB_LOCAL_PREFIX + this.id;
         const startTime = now();
-        return this.parentPouch.remove(removeId, this._data._rev)
+        const storageInstance = _getKeyObjectStorageInstanceByParent(this.parent);
+        const writeData = {
+            _id: this.id,
+            _deleted: true,
+            _rev: this._data._rev
+        };
+        return writeSingleLocal(storageInstance, false, writeData)
             .then(() => {
                 _getDocCache(this.parent).delete(this.id);
                 const endTime = now();
@@ -301,36 +316,49 @@ RxLocalDocument.create = (id: string, data: any, parent: any) => {
  * save the local-document-data
  * throws if already exists
  */
-function insertLocal(this: RxDatabase | RxCollection, id: string, data: any): Promise<RxLocalDocument> {
+function insertLocal(
+    this: RxDatabase | RxCollection,
+    // TODO insertLocal should assume the _id is inside of the doc data
+    id: string,
+    docData: RxLocalDocumentData
+): Promise<RxLocalDocument> {
     if (isRxCollection(this) && this._isInMemory) {
-        return this._parentCollection.insertLocal(id, data);
+        return this._parentCollection.insertLocal(id, docData);
     }
 
-    data = clone(data);
+    console.log('insert local: ' + id);
+    console.dir(docData);
 
     return (this as any).getLocal(id)
         .then((existing: any) => {
+
+            console.log('existing:');
+            console.dir(existing);
             if (existing) {
                 throw newRxError('LD7', {
                     id,
-                    data
+                    data: docData
                 });
             }
 
             // create new one
-            const pouch = _getPouchByParent(this);
-            const saveData = clone(data);
-            saveData._id = POUCHDB_LOCAL_PREFIX + id;
+            docData = flatClone(docData);
+            docData._id = id;
 
             const startTime = now();
-            return pouch.put(saveData).then((res: any) => {
-                data._rev = res.rev;
-                const newDoc = RxLocalDocument.create(id, data, this);
+
+            return writeSingleLocal(
+                _getKeyObjectStorageInstanceByParent(this),
+                false,
+                docData
+            ).then(res => {
+                docData._rev = res._rev;
+                const newDoc = RxLocalDocument.create(id, docData, this);
                 const endTime = now();
                 const changeEvent = new RxChangeEvent(
                     'INSERT',
                     id,
-                    clone(data),
+                    clone(docData),
                     isRxDatabase(this) ? this.token : this.database.token,
                     isRxCollection(this) ? this.name : '',
                     true,
@@ -356,6 +384,9 @@ function upsertLocal(this: any, id: string, data: any): Promise<RxLocalDocument>
 
     return this.getLocal(id)
         .then((existing: RxDocument) => {
+            console.dir(existing);
+            console.log('is existing: ' + !!existing);
+
             if (!existing) {
                 // create new one
                 const docPromise = this.insertLocal(id, data);
@@ -363,16 +394,19 @@ function upsertLocal(this: any, id: string, data: any): Promise<RxLocalDocument>
             } else {
                 // update existing
                 data._rev = existing._data._rev;
+                console.log('atopmic udapte this:');
+                console.dir(data);
                 return existing.atomicUpdate(() => data).then(() => existing);
             }
         });
 }
 
-function getLocal(this: any, id: string): Promise<RxLocalDocument> {
-    if (isRxCollection(this) && this._isInMemory)
+function getLocal(this: any, id: string): Promise<RxLocalDocument | null> {
+    if (isRxCollection(this) && this._isInMemory) {
         return this._parentCollection.getLocal(id);
+    }
 
-    const pouch = _getPouchByParent(this);
+    const storageInstance = _getKeyObjectStorageInstanceByParent(this);
     const docCache = _getDocCache(this);
 
     // check in doc-cache
@@ -382,9 +416,11 @@ function getLocal(this: any, id: string): Promise<RxLocalDocument> {
     }
 
     // if not found, check in pouch
-    return pouch.get(POUCHDB_LOCAL_PREFIX + id)
-        .then((docData: any) => {
-            if (!docData) return null;
+    return findLocalDocument(storageInstance, id)
+        .then((docData) => {
+            if (!docData) {
+                return null;
+            }
             const doc = RxLocalDocument.create(id, docData, this);
             return doc;
         })

@@ -114,6 +114,7 @@ config.parallel('local-documents.test.js', () => {
         });
         it('should emit the document when exists', async () => {
             const c = await humansCollection.create();
+
             await c.insertLocal(id, {
                 foo: 'bar'
             });
@@ -142,13 +143,16 @@ config.parallel('local-documents.test.js', () => {
             assert.strictEqual(cEmits[0], null);
 
             // insert
+            console.log('----1');
             await c.insertLocal(id, { foo: 'bar' });
             await waitUntil(() => cEmits.length === 2);
             assert.strictEqual(cEmits[1].foo, 'bar');
+            console.log('----2');
 
             // update
             await c.upsertLocal(id, { foo: 'bar2' });
             await waitUntil(() => cEmits.length === 3);
+            console.log('----3');
             assert.strictEqual(cEmits[2].foo, 'bar2');
 
             sub.unsubscribe();

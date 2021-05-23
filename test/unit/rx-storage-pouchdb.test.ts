@@ -81,7 +81,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
     describe('RxStorageInstance', () => {
         describe('RxStorageInstance.bulkWrite()', () => {
             it('should write the documents', async () => {
-                const storageInstance = await storage.createStorageInstance(
+                const storageInstance = await storage.createStorageInstance<{ key: string; value: string; }>(
                     randomCouchString(12),
                     randomCouchString(12),
                     getPseudoSchemaForVersion(0, 'key'),
@@ -105,7 +105,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 storageInstance.close();
             });
             it('should error on conflict', async () => {
-                const storageInstance = await storage.createStorageInstance(
+                const storageInstance = await storage.createStorageInstance<{ key: string; value: string; }>(
                     randomCouchString(12),
                     randomCouchString(12),
                     getPseudoSchemaForVersion(0, 'key'),
@@ -141,6 +141,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
             it('should write the documents', async () => {
                 const storageInstance = await storage.createKeyObjectStorageInstance(
                     randomCouchString(12),
+                    randomCouchString(12),
                     {}
                 );
 
@@ -161,6 +162,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
             });
             it('should error on conflict', async () => {
                 const storageInstance = await storage.createKeyObjectStorageInstance(
+                    randomCouchString(12),
                     randomCouchString(12),
                     {}
                 );
@@ -187,10 +189,43 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
 
                 storageInstance.close();
             });
+            it('should be able to delete', async () => {
+                const storageInstance = await storage.createKeyObjectStorageInstance(
+                    randomCouchString(12),
+                    randomCouchString(12),
+                    {}
+                );
+
+                const writeDoc = {
+                    _id: 'foobar',
+                    value: 'barfoo',
+                    _deleted: false,
+                    _rev: undefined as any
+                };
+
+                const firstWriteResult = await storageInstance.bulkWrite(
+                    false,
+                    [writeDoc]
+                );
+                const writeDocResult = getFromMapOrThrow(firstWriteResult.success, writeDoc._id);
+                writeDoc._rev = writeDocResult._rev;
+                writeDoc._deleted = true;
+                await storageInstance.bulkWrite(
+                    false,
+                    [writeDoc]
+                );
+
+                // should not find the document
+                const res = await storageInstance.findLocalDocumentsById([writeDoc._id]);
+                assert.strictEqual(res.has(writeDoc._id), false);
+
+                storageInstance.close();
+            });
         });
         describe('.findLocalDocumentsById()', () => {
             it('should find the documents', async () => {
                 const storageInstance = await storage.createKeyObjectStorageInstance(
+                    randomCouchString(12),
                     randomCouchString(12),
                     {}
                 );
@@ -214,6 +249,6 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
 
                 storageInstance.close();
             });
-        })
+        });
     });
 });

@@ -4,7 +4,7 @@
 
 import { RxStorageInstancePouch } from './rx-storage-pouchdb';
 import { RxStorageInstance, RxStorageKeyObjectInstance } from './rx-storage.interface';
-import { RxLocalDocumentData, WithRevision, WithWriteRevision } from './types';
+import { RxLocalDocumentData, WithDeleted, WithRevision, WithWriteRevision } from './types';
 
 export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
 
@@ -25,6 +25,18 @@ export function getAllDocuments<RxDocType>(
     }).then(result => result.rows);
 }
 
+export async function getSingleDocument<RxDocType>(
+    storageInstance: RxStorageInstance<RxDocType, any, any>,
+    documentId: string
+): Promise<WithRevision<RxDocType> | null> {
+    const results = await storageInstance.findDocumentsById([documentId]);
+    const doc = results.get(documentId);
+    if (doc) {
+        return doc;
+    } else {
+        return null;
+    }
+}
 
 
 /**
@@ -34,8 +46,33 @@ export function getAllDocuments<RxDocType>(
 export async function writeSingle<RxDocType>(
     instance: RxStorageInstance<RxDocType, any, any>,
     overwrite: boolean,
-    document: WithWriteRevision<RxDocType>
+    document: WithDeleted<WithWriteRevision<RxDocType>>
 ): Promise<WithRevision<RxDocType>> {
+    const writeResult = await instance.bulkWrite(
+        overwrite,
+        [document]
+    );
+
+    if (writeResult.error.size > 0) {
+        const error = writeResult.error.values().next().value;
+        throw error;
+    } else {
+        const ret = writeResult.success.values().next().value;
+        return ret;
+    }
+}
+
+/**
+ * Writes a single local document,
+ * throws RxStorageBulkWriteError on failure
+ */
+export async function writeSingleLocal(
+    instance: RxStorageKeyObjectInstance<any, any>,
+    overwrite: boolean,
+    document: WithDeleted<WithWriteRevision<RxLocalDocumentData>>
+): Promise<WithRevision<RxLocalDocumentData>> {
+    console.log('writeSingleLocal:');
+    console.dir(document);
     const writeResult = await instance.bulkWrite(
         overwrite,
         [document]

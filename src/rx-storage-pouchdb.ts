@@ -25,7 +25,8 @@ import type {
     RxStorageBulkWriteError,
     PouchWriteError,
     PouchBulkDocResultRow,
-    RxStorageQueryResult
+    RxStorageQueryResult,
+    WithDeleted
 } from './types';
 
 import { CompareFunction } from 'array-push-at-sort-position';
@@ -62,6 +63,7 @@ export const OPEN_POUCHDB_STORAGE_INSTANCES: Set<RxStorageKeyObjectInstancePouch
 export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstance<PouchStorageInternals, PouchSettings> {
     constructor(
         public readonly databaseName: string,
+        public readonly collectionName: string,
         public readonly internals: Readonly<PouchStorageInternals>,
         public readonly options: Readonly<PouchSettings>
     ) {
@@ -83,6 +85,8 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
         overwrite: boolean,
         documents: WithWriteRevision<RxLocalDocumentData>[]
     ): Promise<RxStorageBulkWriteResponse<RxLocalDocumentData>> {
+        console.log('RxStorageKeyObjectInstancePouch.bulkWrite()');
+        console.dir(documents);
 
         const insertDataById: Map<string, WithWriteRevision<RxLocalDocumentData>> = new Map();
 
@@ -90,16 +94,17 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
             insertDataById.set(docData._id, docData);
             const storeDocumentData = flatClone(docData);
 
+            // TODO remove this check, this must be ensured via typings
+            if (!storeDocumentData._id) {
+                console.dir(docData);
+                throw new Error('_id missing');
+            }
+
             /**
              * add local prefix
              * Local documents always have _id as primary
              */
             storeDocumentData._id = POUCHDB_LOCAL_PREFIX + storeDocumentData._id;
-
-            // swap out _revision with pouchdbs _rev key
-            const revision = storeDocumentData._revision;
-            delete storeDocumentData._revision;
-            storeDocumentData._rev = revision;
 
             return storeDocumentData;
         });
@@ -357,7 +362,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
 
     public async bulkWrite(
         overwrite: boolean,
-        documents: WithWriteRevision<RxDocType>[]
+        documents: WithDeleted<WithWriteRevision<RxDocType>>[]
     ): Promise<
         RxStorageBulkWriteResponse<RxDocType>
     > {
@@ -511,6 +516,7 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
 
     public async createKeyObjectStorageInstance(
         databaseName: string,
+        collectionName: string,
         options: PouchSettings
     ): Promise<RxStorageKeyObjectInstancePouch> {
         const useOptions = flatClone(options);
@@ -518,13 +524,19 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
         useOptions.auto_compaction = false;
         useOptions.revs_limit = 1;
 
-        const pouch = await this.createPouch(
+        const pouchLocation = getPouchLocation(
             databaseName,
+            collectionName,
+            0
+        );
+        const pouch = await this.createPouch(
+            pouchLocation,
             options
         );
 
         return new RxStorageKeyObjectInstancePouch(
             databaseName,
+            collectionName,
             {
                 pouch
             },

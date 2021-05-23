@@ -459,10 +459,6 @@ export const basePrototype = {
             .then(() => {
                 deletedData._deleted = true;
                 startTime = now();
-                /**
-                 * because pouch.remove will also empty the object,
-                 * we set _deleted: true and use pouch.put
-                 */
                 return this.collection._pouchPut(deletedData);
             })
             .then(() => {

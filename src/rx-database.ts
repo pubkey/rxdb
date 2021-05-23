@@ -635,6 +635,9 @@ async function createRxDatabaseStorageInstances(
 
     const localDocumentsStore = await storage.createKeyObjectStorageInstance(
         databaseName,
+        // TODO having to set an empty string here is ugly.
+        // we should change the rx-storage interface to account for non-collection storage instances.
+        '',
         pouchSettings
     );
 

@@ -30,6 +30,17 @@ export type WithWriteRevision<T> = T & {
 // non-optional version of WithWriteRevision
 export type WithRevision<T> = T & { _rev: string; }
 
+/**
+ * As other NoSQL databases,
+ * RxDB also assumes that no data is finally deleted.
+ * Instead the documents are stored with _deleted: true
+ * which means they will not be returned at queries.
+ */
+export type WithDeleted<T> = T & {
+    // deleted is optional. If not set, we assume _deleted: false
+    _deleted?: boolean
+}
+
 export type RxLocalDocumentData = {
     // Local documents always have _id as primary
     _id: string

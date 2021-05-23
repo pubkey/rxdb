@@ -6,6 +6,7 @@ import {
     RxLocalDocumentData,
     RxStorageBulkWriteResponse,
     RxStorageQueryResult,
+    WithDeleted,
     WithRevision,
     WithWriteRevision
 } from './types/rx-storage';
@@ -61,6 +62,7 @@ export interface RxStorage<Internals, InstanceCreationOptions> {
      */
     createKeyObjectStorageInstance(
         databaseName: string,
+        collectionName: string,
         options: InstanceCreationOptions
     ): Promise<RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>>;
 }
@@ -124,7 +126,7 @@ export interface RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>
          * throw on non-local documents.
          */
         overwrite: boolean,
-        documents: WithWriteRevision<RxLocalDocumentData>[]
+        documents: WithDeleted<WithWriteRevision<RxLocalDocumentData>>[]
     ): Promise<
         /**
          * returns the response, splitted into success and error lists.
@@ -224,7 +226,7 @@ export interface RxStorageInstance<
          * throw on non-local documents.
          */
         overwrite: boolean,
-        documents: WithWriteRevision<DocumentData>[]
+        documents: WithDeleted<WithWriteRevision<DocumentData>>[]
     ): Promise<
         /**
          * returns the response, splitted into success and error lists.

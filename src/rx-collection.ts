@@ -116,8 +116,9 @@ import {
     createRxDocument,
     getRxDocumentConstructor
 } from './rx-document-prototype-merge';
-import { RxStorageInstancePouch } from './rx-storage-pouchdb';
-import { writeSingle } from './rx-storage-helper';
+import { RxStorageInstancePouch, RxStorageKeyObjectInstancePouch } from './rx-storage-pouchdb';
+import { getSingleDocument, writeSingle } from './rx-storage-helper';
+import { RxStorageKeyObjectInstance } from './rx-storage.interface';
 
 const HOOKS_WHEN = ['pre', 'post'];
 const HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
@@ -188,6 +189,12 @@ export class RxCollectionBase<
     public storageInstance: RxStorageInstancePouch<RxDocumentType> = {} as any;
     // TODO remove this.pouch when rx-storage is implemented
     public pouch: PouchDBInstance = {} as PouchDBInstance; // this is needed to preserve this name
+    /**
+     * Stores the local documents so that they are not deleted
+     * when a migration runs.
+     */
+    public localDocumentsStore: RxStorageKeyObjectInstance<any, any> = {} as any;
+
 
     public _docCache: DocCache<
         RxDocument<RxDocumentType, OrmMethods>
@@ -212,13 +219,27 @@ export class RxCollectionBase<
          */
         wasCreatedBefore: boolean
     ): Promise<any> {
-        this.storageInstance = await this.database.storage.createStorageInstance(
-            this.database.name,
-            this.name,
-            this.schema.jsonSchema,
-            this.pouchSettings
-        );
+
+        const [
+            storageInstance,
+            localDocumentsStore
+        ] = await Promise.all([
+            this.database.storage.createStorageInstance<RxDocumentType>(
+                this.database.name,
+                this.name,
+                this.schema.jsonSchema,
+                this.pouchSettings
+            ),
+            this.database.storage.createKeyObjectStorageInstance(
+                this.database.name,
+                this.name,
+                this.pouchSettings
+            )
+        ]);
+        this.storageInstance = storageInstance;
+        this.localDocumentsStore = localDocumentsStore;
         this.pouch = this.storageInstance.internals.pouch;
+
 
         if (this.schema.doKeyCompression()) {
             this._keyCompressor = overwritable.createKeyCompressor(this.schema);
@@ -331,8 +352,11 @@ export class RxCollectionBase<
                     // we have a conflict but must overwrite
                     // so get the new revision
                     const singleRes = await this.database.lockedRun(
-                        () => this.pouch.get(primary)
+                        () => getSingleDocument(this.storageInstance, primary)
                     );
+                    if (!singleRes) {
+                        throw new Error('this should never happen');
+                    }
                     obj._rev = singleRes._rev;
                     // now we can retry
                 } else if (useErr.status === 409) {
