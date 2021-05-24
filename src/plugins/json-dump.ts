@@ -114,6 +114,8 @@ function importDumpRxCollection(
     this: RxCollection,
     exportedJSON: any
 ): Promise<any> {
+    const primaryPath = this.schema.primaryPath;
+
     // check schemaHash
     if (exportedJSON.schemaHash !== this.schema.hash) {
         throw newRxError('JD2', {
@@ -143,7 +145,7 @@ function importDumpRxCollection(
             doc = this._handleToPouch(doc);
 
             // TODO this should no longer be needed when rx-storage migration is done
-            doc = pouchSwapPrimaryToId(this.schema.primaryPath, doc);
+            // doc = pouchSwapPrimaryToId(this.schema.primaryPath, doc);
             return doc;
         });
 
@@ -152,31 +154,12 @@ function importDumpRxCollection(
         // write to disc
         () => {
             startTime = now();
-            return this.pouch.bulkDocs(docs);
+            return this.storageInstance.bulkWrite(false, docs);
         }
     ).then((saveResult) => {
         const endTime = now();
-
-        const revisionsByDocumentId: Map<string, string> = new Map();
-        saveResult
-            .filter(r => !(r as PouchWriteError).error)
-            .forEach(r => {
-                revisionsByDocumentId.set(
-                    r.id,
-                    (r as PouchBulkDocResultRow).rev
-                );
-            });
-
         docs.forEach((doc: any) => {
-            console.log('create insert event doc data:');
-            console.dir(doc);
-            console.dir(saveResult);
-
-            doc._rev = getFromMapOrThrow(revisionsByDocumentId, doc._id);
-            doc = pouchSwapIdToPrimary(
-                this.schema.primaryPath,
-                doc
-            );
+            doc._rev = getFromMapOrThrow(saveResult.success, doc[primaryPath])._rev;
 
             // emit change events
             const emitEvent = createInsertEvent(
