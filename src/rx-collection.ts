@@ -248,18 +248,11 @@ export class RxCollectionBase<
         // we trigger the non-blocking things first and await them later so we can do stuff in the mean time
 
         /**
-         * Sometimes pouchdb emits before the instance is useable.
-         * To prevent random errors, we wait until the .info() call resolved
-         */
-        const spawnedPouchPromise = wasCreatedBefore ? Promise.resolve() : this.pouch.info();
-
-        /**
          * if wasCreatedBefore we can assume that the indexes already exist
          * because changing them anyway requires a schema-version change
          */
         const createIndexesPromise: Promise<any> = wasCreatedBefore ? Promise.resolve() : _prepareCreateIndexes(
-            this.asRxCollection,
-            spawnedPouchPromise
+            this.asRxCollection
         );
 
         this._crypter = createCrypter(this.database.password, this.schema);
@@ -284,7 +277,6 @@ export class RxCollectionBase<
         );
 
         return Promise.all([
-            spawnedPouchPromise,
             createIndexesPromise
         ]);
     }
@@ -1045,8 +1037,7 @@ function _atomicUpsertEnsureRxDocumentExists(
  * creates the indexes in the pouchdb
  */
 function _prepareCreateIndexes(
-    rxCollection: RxCollection,
-    spawnedPouchPromise: Promise<void>
+    rxCollection: RxCollection
 ): Promise<any> {
 
     /**
@@ -1054,8 +1045,7 @@ function _prepareCreateIndexes(
      * which makes collection re-creation really slow on page reloads
      * So we have to manually check if the index already exists
      */
-    return spawnedPouchPromise
-        .then(() => rxCollection.pouch.getIndexes())
+    return rxCollection.pouch.getIndexes()
         .then(indexResult => {
             const existingIndexes: Set<string> = new Set();
             indexResult.indexes.forEach(idx => existingIndexes.add(idx.name));
@@ -1087,15 +1077,13 @@ function _prepareCreateIndexes(
                          * we might have even better performance by doing a bulkDocs
                          * on index creation
                          */
-                        return spawnedPouchPromise.then(
-                            () => rxCollection.pouch.createIndex({
-                                name: indexName,
-                                ddoc: indexName,
-                                index: {
-                                    fields: compressedIdx
-                                }
-                            })
-                        );
+                        return rxCollection.pouch.createIndex({
+                            name: indexName,
+                            ddoc: indexName,
+                            index: {
+                                fields: compressedIdx
+                            }
+                        });
                     })
             );
         });
