@@ -34,6 +34,7 @@ import type {
     RxDocument,
     RxCollection
 } from './types';
+import { getSchemaByObjectPath } from './rx-schema';
 
 export const basePrototype = {
 
@@ -150,7 +151,10 @@ export const basePrototype = {
             });
         }
 
-        const schemaObj = this.collection.schema.getSchemaByObjectPath(path);
+        const schemaObj = getSchemaByObjectPath(
+            this.collection.schema.jsonSchema,
+            path
+        );
         if (!schemaObj) {
             throw newRxError('DOC4', {
                 path
@@ -168,7 +172,10 @@ export const basePrototype = {
      * populate the given path
      */
     populate(this: RxDocument, path: string): Promise<RxDocument | null> {
-        const schemaObj = this.collection.schema.getSchemaByObjectPath(path);
+        const schemaObj = getSchemaByObjectPath(
+            this.collection.schema.jsonSchema,
+            path
+        );
         const value = this.get(path);
         if (!value) {
             return Promise.resolve(null);
@@ -519,7 +526,11 @@ export function defineGetterSetter(
     if (valueObj === null) return;
 
 
-    let pathProperties = schema.getSchemaByObjectPath(objPath);
+    let pathProperties = getSchemaByObjectPath(
+        schema.jsonSchema,
+        objPath
+    );
+
     if (typeof pathProperties === 'undefined') return;
     if (pathProperties.properties) pathProperties = pathProperties.properties;
 

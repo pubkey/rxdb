@@ -2,9 +2,16 @@
  * Helper functions for accessing the RxStorage instances.
  */
 
-import { RxStorageInstancePouch } from './rx-storage-pouchdb';
-import { RxStorageInstance, RxStorageKeyObjectInstance } from './rx-storage.interface';
-import { RxLocalDocumentData, WithDeleted, WithRevision, WithWriteRevision } from './types';
+import type {
+    RxStorageInstance,
+    RxStorageKeyObjectInstance
+} from './rx-storage.interface';
+import type {
+    RxLocalDocumentData,
+    WithDeleted,
+    WithRevision,
+    WithWriteRevision
+} from './types';
 
 export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
 
@@ -12,17 +19,18 @@ export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
  * returns all NON-LOCAL documents
  * TODO this is pouchdb specific should not be needed
  */
-export function getAllDocuments<RxDocType>(
-    storageInstance: RxStorageInstancePouch<RxDocType>
-): Promise<{
-    id: string;
-    key: string;
-    value: any;
-    doc: any;
-}[]> {
-    return storageInstance.internals.pouch.allDocs({
-        include_docs: true
-    }).then(result => result.rows);
+export async function getAllDocuments<RxDocType>(
+    storageInstance: RxStorageInstance<RxDocType, any, any>
+): Promise<WithRevision<RxDocType>[]> {
+
+    const getAllQueryPrepared = storageInstance.prepareQuery(
+        {
+            selector: {}
+        }
+    );
+    const queryResult = await storageInstance.query(getAllQueryPrepared);
+    const allDocs = queryResult.documents;
+    return allDocs;
 }
 
 export async function getSingleDocument<RxDocType>(

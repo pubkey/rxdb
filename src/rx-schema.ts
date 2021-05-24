@@ -117,16 +117,6 @@ export class RxSchema<T = any> {
         );
     }
 
-    public getSchemaByObjectPath(path: string): JsonSchema {
-        let usePath: string = path as string;
-        usePath = usePath.replace(/\./g, '.properties.');
-        usePath = 'properties.' + usePath;
-        usePath = trimDots(usePath);
-
-        const ret = objectPath.get(this.jsonSchema, usePath);
-        return ret;
-    }
-
     /**
      * checks if a given change on a document is allowed
      * Ensures that:
@@ -350,4 +340,20 @@ export function getPseudoSchemaForVersion(
         }
     };
     return pseudoSchema;
+}
+
+/**
+ * Returns the sub-schema for a given path
+ */
+export function getSchemaByObjectPath(
+    rxJsonSchema: RxJsonSchema,
+    path: string
+): JsonSchema {
+    let usePath: string = path as string;
+    usePath = usePath.replace(/\./g, '.properties.');
+    usePath = 'properties.' + usePath;
+    usePath = trimDots(usePath);
+
+    const ret = objectPath.get(rxJsonSchema, usePath);
+    return ret;
 }

@@ -18,7 +18,8 @@ import {
     getIndexes,
     normalize,
     getFinalFields,
-    getPreviousVersions
+    getPreviousVersions,
+    getSchemaByObjectPath
 } from '../../plugins/core';
 
 config.parallel('rx-schema.test.js', () => {
@@ -717,17 +718,17 @@ config.parallel('rx-schema.test.js', () => {
             describe('positive', () => {
                 it('get firstLevel', () => {
                     const schema = createRxSchema(schemas.human);
-                    const schemaObj = schema.getSchemaByObjectPath('passportId');
+                    const schemaObj = getSchemaByObjectPath(schema.jsonSchema, 'passportId');
                     assert.strictEqual(schemaObj.type, 'string');
                 });
                 it('get deeper', () => {
                     const schema = createRxSchema(schemas.nestedHuman);
-                    const schemaObj = schema.getSchemaByObjectPath('mainSkill');
+                    const schemaObj = getSchemaByObjectPath(schema.jsonSchema, 'mainSkill');
                     assert.ok(schemaObj.properties);
                 });
                 it('get nested', () => {
                     const schema = createRxSchema(schemas.nestedHuman);
-                    const schemaObj = schema.getSchemaByObjectPath('mainSkill.name');
+                    const schemaObj = getSchemaByObjectPath(schema.jsonSchema, 'mainSkill.name');
                     assert.strictEqual(schemaObj.type, 'string');
                 });
             });

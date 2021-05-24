@@ -96,11 +96,11 @@ export class RxDatabaseBase<
     /**
      * Stores information documents about the collections of the database
      */
-    public internalStore: RxStorageInstancePouch<any> = {} as RxStorageInstancePouch<any>;
+    public internalStore: RxStorageInstancePouch<{ _id: string }> = {} as any;
     /**
      * Stores the local documents which are attached to this database.
      */
-    public localDocumentsStore: RxStorageKeyObjectInstancePouch = {} as RxStorageKeyObjectInstancePouch;
+    public localDocumentsStore: RxStorageKeyObjectInstancePouch = {} as any;
 
     constructor(
         public name: string,
@@ -141,13 +141,13 @@ export class RxDatabaseBase<
      * do NEVER use this to change the schema of a collection
      */
     dangerousRemoveCollectionInfo(): Promise<void> {
-        return getAllDocuments(this.internalStore as any)
-            .then((docsRes: any) => {
+        return getAllDocuments(this.internalStore)
+            .then(docsRes => {
                 return Promise.all(
                     docsRes
                         .map((row: any) => ({
-                            _id: row.key,
-                            _rev: row.value.rev
+                            _id: row._id,
+                            _rev: row._rev
                         }))
                         .map((doc: any) => this.internalStore.internals.pouch.remove(doc._id, doc._rev))
                 );
@@ -565,10 +565,9 @@ export function _removeAllOfCollection(
 ): Promise<number[]> {
     return rxDatabase.lockedRun(
         () => getAllDocuments(rxDatabase.internalStore)
-    ).then((data: any) => {
+    ).then((data) => {
         const relevantDocs = data
-            .map((row: any) => row.doc)
-            .filter((doc: any) => {
+            .filter((doc) => {
                 const name = doc._id.split('-')[0];
                 return name === collectionName;
             });
@@ -618,15 +617,15 @@ function _prepareBroadcastChannel<Collections>(rxDatabase: RxDatabase<Collection
 }
 
 
-async function createRxDatabaseStorageInstances(
+async function createRxDatabaseStorageInstances<RxDocType>(
     storage: RxStorage<any, any>,
     databaseName: string,
     pouchSettings: PouchSettings
 ): Promise<{
-    internalStore: RxStorageInstancePouch<any>,
+    internalStore: RxStorageInstancePouch<RxDocType>,
     localDocumentsStore: RxStorageKeyObjectInstancePouch
 }> {
-    const internalStore = await storage.createStorageInstance(
+    const internalStore = await storage.createStorageInstance<RxDocType>(
         databaseName,
         INTERNAL_STORAGE_NAME,
         getPseudoSchemaForVersion(0),
@@ -651,7 +650,7 @@ async function createRxDatabaseStorageInstances(
  * do the async things for this database
  */
 async function prepare<Collections>(rxDatabase: RxDatabase<Collections>): Promise<void> {
-    const storageInstances = await createRxDatabaseStorageInstances(
+    const storageInstances = await createRxDatabaseStorageInstances<{ _id: string }>(
         rxDatabase.storage,
         rxDatabase.name,
         rxDatabase.pouchSettings
@@ -753,7 +752,7 @@ export async function removeRxDatabase(
     const docs = await getAllDocuments(storageInstance.internalStore);
     await Promise.all(
         docs
-            .map((colDoc: any) => colDoc.id)
+            .map((colDoc) => colDoc._id)
             .map(async (id: string) => {
                 const split = id.split('-');
                 const name = split[0];

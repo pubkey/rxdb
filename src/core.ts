@@ -56,7 +56,8 @@ export {
     normalize,
     getFinalFields,
     getPreviousVersions,
-    getPseudoSchemaForVersion
+    getPseudoSchemaForVersion,
+    getSchemaByObjectPath
 } from './rx-schema';
 
 export {

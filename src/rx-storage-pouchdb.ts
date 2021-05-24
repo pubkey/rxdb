@@ -44,7 +44,7 @@ import {
     PouchDB
 } from './pouch-db';
 import { newRxError } from './rx-error';
-import { getPrimary } from './rx-schema';
+import { getPrimary, getSchemaByObjectPath } from './rx-schema';
 
 /**
  * prefix of local pouchdb documents
@@ -268,7 +268,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
      * and transforms it to one that fits for pouchdb
      */
     prepareQuery(
-        rxQuery: RxQuery<RxDocType>,
         mutateableQuery: MangoQuery<RxDocType>
     ): PreparedQuery<RxDocType> {
         const primaryKey = getPrimary<any>(this.schema);
@@ -280,12 +279,15 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
          * @link https://github.com/nolanlawson/pouchdb-find/issues/204
          */
         if (query.sort) {
+
+            console.log('query:');
+            console.dir(query);
             query.sort.forEach(sortPart => {
                 const key = Object.keys(sortPart)[0];
                 const comparisonOperators = ['$gt', '$gte', '$lt', '$lte'];
                 const keyUsed = query.selector[key] && Object.keys(query.selector[key]).some(op => comparisonOperators.includes(op)) || false;
                 if (!keyUsed) {
-                    const schemaObj = rxQuery.collection.schema.getSchemaByObjectPath(key);
+                    const schemaObj = getSchemaByObjectPath(this.schema, key);
                     if (!schemaObj) {
                         throw newRxError('QU5', {
                             key
@@ -324,7 +326,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         if (query.selector[primaryKey] && query.selector[primaryKey].$regex) {
             throw newRxError('QU4', {
                 path: primaryKey,
-                query: rxQuery.mangoQuery
+                query: mutateableQuery
             });
         }
 

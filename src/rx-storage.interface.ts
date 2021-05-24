@@ -172,14 +172,6 @@ export interface RxStorageInstance<
      */
     prepareQuery(
         /**
-         * The RxQuery Object that you can use
-         * to obtain additional information about the query.
-         *
-         * TODO everything should work without dedicated RxDB classes.
-         * So do not add the rxQuery here, we already have the json-schema in the instance.
-         */
-        rxQuery: RxQuery<DocumentData, any>,
-        /**
          * a query that can be mutated by the function without side effects.
          */
         mutateableQuery: MangoQuery<DocumentData>

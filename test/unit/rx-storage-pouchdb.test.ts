@@ -22,62 +22,6 @@ addRxPlugin(RxDBQueryBuilderPlugin);
 
 config.parallel('rx-storage-pouchdb.test.js', () => {
     const storage: RxStoragePouch = getRxStoragePouch('memory');
-
-    describe('.getSortComparator()', () => {
-        it('should sort in the correct order', async () => {
-            const col = await humansCollection.create(1);
-
-            const query = col
-                .find()
-                .limit(1000)
-                .sort('age')
-                .toJSON();
-            const comparator = col.storageInstance.getSortComparator(
-                query
-            );
-            const doc1: any = schemaObjects.human();
-            doc1._id = 'aa';
-            doc1.age = 1;
-            const doc2: any = schemaObjects.human();
-            doc2._id = 'bb';
-            doc2.age = 100;
-
-            // should sort in the correct order
-            assert.deepStrictEqual(
-                [doc1, doc2],
-                [doc1, doc2].sort(comparator)
-            );
-            col.database.destroy();
-        });
-    });
-    describe('.getQueryMatcher()', () => {
-        it('should match the right docs', async () => {
-            const col = await humansCollection.create(1);
-
-            const queryMatcher = col.storageInstance.getQueryMatcher(
-                col.find({
-                    selector: {
-                        age: {
-                            $gt: 10,
-                            $ne: 50
-                        }
-                    }
-                }).toJSON()
-            );
-
-            const doc1: any = schemaObjects.human();
-            doc1._id = 'aa';
-            doc1.age = 1;
-            const doc2: any = schemaObjects.human();
-            doc2._id = 'bb';
-            doc2.age = 100;
-
-            assert.strictEqual(queryMatcher(doc1), false);
-            assert.strictEqual(queryMatcher(doc2), true);
-
-            col.database.destroy();
-        });
-    });
     describe('RxStorageInstance', () => {
         describe('RxStorageInstance.bulkWrite()', () => {
             it('should write the documents', async () => {
@@ -131,6 +75,92 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 assert.strictEqual(first.status, 409);
                 assert.strictEqual(first.documentId, 'foobar');
                 assert.ok(first.document);
+
+                storageInstance.close();
+            });
+        });
+        describe('.getSortComparator()', () => {
+            it('should sort in the correct order', async () => {
+                const col = await humansCollection.create(1);
+
+                const query = col
+                    .find()
+                    .limit(1000)
+                    .sort('age')
+                    .toJSON();
+                const comparator = col.storageInstance.getSortComparator(
+                    query
+                );
+                const doc1: any = schemaObjects.human();
+                doc1._id = 'aa';
+                doc1.age = 1;
+                const doc2: any = schemaObjects.human();
+                doc2._id = 'bb';
+                doc2.age = 100;
+
+                // should sort in the correct order
+                assert.deepStrictEqual(
+                    [doc1, doc2],
+                    [doc1, doc2].sort(comparator)
+                );
+                col.database.destroy();
+            });
+        });
+        describe('.getQueryMatcher()', () => {
+            it('should match the right docs', async () => {
+                const col = await humansCollection.create(1);
+
+                const queryMatcher = col.storageInstance.getQueryMatcher(
+                    col.find({
+                        selector: {
+                            age: {
+                                $gt: 10,
+                                $ne: 50
+                            }
+                        }
+                    }).toJSON()
+                );
+
+                const doc1: any = schemaObjects.human();
+                doc1._id = 'aa';
+                doc1.age = 1;
+                const doc2: any = schemaObjects.human();
+                doc2._id = 'bb';
+                doc2.age = 100;
+
+                assert.strictEqual(queryMatcher(doc1), false);
+                assert.strictEqual(queryMatcher(doc2), true);
+
+                col.database.destroy();
+            });
+        });
+        describe('.query()', () => {
+            it('should find all documents', async () => {
+                const storageInstance = await storage.createStorageInstance<{ key: string; value: string; }>(
+                    randomCouchString(12),
+                    randomCouchString(12),
+                    getPseudoSchemaForVersion(0, 'key'),
+                    {}
+                );
+
+                const writeData = [{
+                    key: 'foobar',
+                    value: 'barfoo'
+                }];
+
+                await storageInstance.bulkWrite(
+                    false,
+                    writeData
+                );
+
+
+                const preparedQuery = storageInstance.prepareQuery({
+                    selector: {}
+                });
+                const allDocs = await storageInstance.query(preparedQuery);
+                const first = allDocs.documents[0];
+                assert.ok(first);
+                assert.strictEqual(first.value, 'barfoo');
 
                 storageInstance.close();
             });
