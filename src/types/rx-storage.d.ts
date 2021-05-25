@@ -1,3 +1,4 @@
+import { RxJsonSchema } from './rx-schema';
 
 
 /**
@@ -94,4 +95,12 @@ export type RxStorageBulkWriteResponse<DocData> = {
 export type RxStorageQueryResult<RxDocType> = {
     // the found documents, sort order is important.
     documents: WithRevision<RxDocType>[];
+}
+
+
+export type RxStorageInstanceCreationParams<DocumentData, InstanceCreationOptions> = {
+    databaseName: string;
+    collectionName: string;
+    schema: RxJsonSchema<DocumentData>;
+    options: InstanceCreationOptions;
 }

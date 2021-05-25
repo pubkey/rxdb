@@ -110,7 +110,7 @@ config.parallel('rx-collection.test.js', () => {
                     );
                     db.destroy();
                 });
-                it('should create compound-indexes', async () => {
+                it('should create compound-indexes (keyCompression: true)', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
                         adapter: 'memory'
@@ -818,7 +818,7 @@ config.parallel('rx-collection.test.js', () => {
                         });
                         db.destroy();
                     });
-                    it('sort by non-top-level-key as index', async () => {
+                    it('sort by non-top-level-key as index (with keycompression)', async () => {
                         const db = await createRxDatabase({
                             name: randomCouchString(10),
                             adapter: 'memory'

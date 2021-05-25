@@ -16,10 +16,48 @@ import {
 } from 'jsonschema-key-compression';
 
 import {
-    RxSchema
+    RxSchema,
+    getPrimary
 } from '../rx-schema';
-import type { RxPlugin } from '../types';
-import { overwriteGetterForCaching } from '../util';
+import type {
+    RxPlugin,
+    MangoQuery,
+    RxQuery,
+    RxJsonSchema,
+    RxCollection
+} from '../types';
+import {
+    overwriteGetterForCaching,
+    flatClone
+} from '../util';
+
+/**
+ * Cache the compression table by the storage instance
+ * for better performance.
+ */
+const COMPRESSION_TABLE_BY_COLLECTION: WeakMap<
+    RxCollection,
+    CompressionTable
+> = new WeakMap();
+
+export function getCompressionTableByStorageInstance(
+    collection: RxCollection
+): CompressionTable {
+    let table = COMPRESSION_TABLE_BY_COLLECTION.get(collection);
+    if (!table) {
+        table = createCompressionTable(
+            collection.schema.jsonSchema as KeyCompressionJsonSchema,
+            DEFAULT_COMPRESSION_FLAG,
+            [
+                collection.schema.primaryPath,
+                '_rev',
+                '_attachments'
+            ]
+        );
+        COMPRESSION_TABLE_BY_COLLECTION.set(collection, table);
+    }
+    return table;
+}
 
 export class KeyCompressor {
 
@@ -73,34 +111,6 @@ export class KeyCompressor {
             );
         }
     }
-
-    /**
-     * get the full compressed-key-path of a object-path
-     */
-    transformKey(
-        objectPath: string
-    ): string {
-        return compressedPath(
-            this.table,
-            objectPath
-        ); // > '|a.|b'
-    }
-
-
-    /**
-     * replace the keys of a query-obj with the compressed keys
-     * @return compressed queryJSON
-     */
-    compressQuery(queryJSON: any): any {
-        if (!this.schema.doKeyCompression()) {
-            return queryJSON;
-        } else {
-            return compressQuery(
-                this.table,
-                queryJSON
-            );
-        }
-    }
 }
 
 export function create(schema: RxSchema) {
@@ -118,5 +128,58 @@ export const RxDBKeyCompressionPlugin: RxPlugin = {
     name: 'key-compression',
     rxdb,
     prototypes,
-    overwritable
+    overwritable,
+    hooks: {
+        /**
+         * replace the keys of a query-obj with the compressed keys
+         * because the storage instance only know the compressed schema
+         * @return compressed queryJSON
+         */
+        prePrepareQuery(
+            input
+        ) {
+            const rxQuery = input.rxQuery;
+            const mangoQuery = input.mangoQuery;
+            if (!rxQuery.collection.schema.jsonSchema.keyCompression) {
+                return;
+            }
+            const compressionTable = getCompressionTableByStorageInstance(
+                rxQuery.collection
+            );
+            const compressedQuery = compressQuery(
+                compressionTable,
+                mangoQuery as any
+            );
+            input.mangoQuery = compressedQuery as any;
+        },
+        preCreateRxStorageInstance(params) {
+            /**
+             * We have to run key compression on the indexes
+             * otherwise the storage instance would create non-compressed
+             * index field.
+             */
+            if (params.schema.indexes && params.schema.keyCompression) {
+                const newSchema = flatClone(params.schema);
+                const primaryPath = getPrimary(newSchema);
+                const table = createCompressionTable(
+                    newSchema as KeyCompressionJsonSchema,
+                    DEFAULT_COMPRESSION_FLAG,
+                    [
+                        primaryPath,
+                        '_rev',
+                        '_attachments'
+                    ]
+                );
+                newSchema.indexes = params.schema.indexes.map(idx => {
+                    if (Array.isArray(idx)) {
+                        return idx.map(subIdx => compressedPath(table, subIdx));
+                    } else {
+                        return compressedPath(table, idx);
+                    }
+                });
+                params.schema = newSchema;
+            }
+            console.log(JSON.stringify(params.schema, null, 4));
+        }
+    }
 };

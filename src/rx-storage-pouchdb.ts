@@ -26,7 +26,8 @@ import type {
     PouchWriteError,
     PouchBulkDocResultRow,
     RxStorageQueryResult,
-    WithDeleted
+    WithDeleted,
+    RxStorageInstanceCreationParams
 } from './types';
 
 import { CompareFunction } from 'array-push-at-sort-position';
@@ -171,7 +172,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     RxDocType,
     PouchStorageInternals,
     PouchSettings
-> {
+    > {
     constructor(
         public readonly databaseName: string,
         public readonly collectionName: string,
@@ -279,7 +280,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
          * @link https://github.com/nolanlawson/pouchdb-find/issues/204
          */
         if (query.sort) {
-
             console.log('query:');
             console.dir(query);
             query.sort.forEach(sortPart => {
@@ -287,6 +287,9 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                 const comparisonOperators = ['$gt', '$gte', '$lt', '$lte'];
                 const keyUsed = query.selector[key] && Object.keys(query.selector[key]).some(op => comparisonOperators.includes(op)) || false;
                 if (!keyUsed) {
+
+                    console.log('------- get schema object by path ' + key);
+                    console.dir(this.schema);
                     const schemaObj = getSchemaByObjectPath(this.schema, key);
                     if (!schemaObj) {
                         throw newRxError('QU5', {
@@ -419,6 +422,10 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         preparedQuery: PreparedQuery<RxDocType>
     ): Promise<RxStorageQueryResult<RxDocType>> {
         const primaryKey = getPrimary<any>(this.schema);
+
+        console.log('pouch run query:');
+        console.dir(preparedQuery);
+
         const findResult = await this.internals.pouch.find<RxDocType>(preparedQuery);
 
         const ret: RxStorageQueryResult<RxDocType> = {
@@ -488,31 +495,28 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
     }
 
     public async createStorageInstance<RxDocType>(
-        databaseName: string,
-        collectionName: string,
-        schema: RxJsonSchema,
-        options: PouchSettings
+        params: RxStorageInstanceCreationParams<RxDocType, PouchSettings>
     ): Promise<RxStorageInstancePouch<RxDocType>> {
         const pouchLocation = getPouchLocation(
-            databaseName,
-            collectionName,
-            schema.version
+            params.databaseName,
+            params.collectionName,
+            params.schema.version
         );
         const pouch = await this.createPouch(
             pouchLocation,
-            options
+            params.options
         );
 
-        // TODO create indexes here
+        await createIndexesOnPouch(pouch, params.schema);
 
         return new RxStorageInstancePouch(
-            databaseName,
-            collectionName,
-            schema,
+            params.databaseName,
+            params.collectionName,
+            params.schema,
             {
                 pouch
             },
-            options
+            params.options
         );
     }
 
@@ -613,6 +617,48 @@ export function primarySwapPouchDbQuerySelector(selector: any, primaryKey: strin
     } else {
         return selector;
     }
+}
+
+
+/**
+ * Creates the indexes of the schema inside of the pouchdb instance.
+ * Will skip indexes that already exist.
+ */
+export async function createIndexesOnPouch(
+    pouch: PouchDBInstance,
+    schema: RxJsonSchema
+): Promise<void> {
+    if (!schema.indexes) {
+        return;
+    }
+    const before = await pouch.getIndexes();
+    const existingIndexes: Set<string> = new Set(
+        before.indexes.map(idx => idx.name)
+    );
+
+    await Promise.all(
+        schema.indexes.map(async (indexMaybeArray) => {
+            const indexArray: string[] = Array.isArray(indexMaybeArray) ? indexMaybeArray : [indexMaybeArray];
+            const indexName = 'idx-rxdb-index-' + indexArray.join(',');
+            if (existingIndexes.has(indexName)) {
+                // index already exists
+                return;
+            }
+            /**
+             * TODO
+             * we might have even better performance by doing a bulkDocs
+             * on index creation
+             */
+            console.log('pouch create index: ' + indexName);
+            return pouch.createIndex({
+                name: indexName,
+                ddoc: indexName,
+                index: {
+                    fields: indexArray
+                }
+            });
+        })
+    );
 }
 
 /**

@@ -5,6 +5,7 @@ import {
 import {
     RxLocalDocumentData,
     RxStorageBulkWriteResponse,
+    RxStorageInstanceCreationParams,
     RxStorageQueryResult,
     WithDeleted,
     WithRevision,
@@ -50,10 +51,7 @@ export interface RxStorage<Internals, InstanceCreationOptions> {
      * For example the PouchDB instance
      */
     createStorageInstance<DocumentData>(
-        databaseName: string,
-        collectionName: string,
-        schema: RxJsonSchema,
-        options: InstanceCreationOptions
+        params: RxStorageInstanceCreationParams<DocumentData, InstanceCreationOptions>
     ): Promise<RxStorageInstance<DocumentData, Internals, InstanceCreationOptions>>;
 
     /**

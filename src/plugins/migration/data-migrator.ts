@@ -196,11 +196,15 @@ export async function createOldCollection(
 ): Promise<OldRxCollection> {
     const database = dataMigrator.newestCollection.database;
     const schema = createRxSchema(schemaObj, false);
+
+    const storageInstanceCreationParams = {
+        databaseName: database.name,
+        collectionName: dataMigrator.newestCollection.name,
+        schema: getPseudoSchemaForVersion(version),
+        options: dataMigrator.newestCollection.pouchSettings
+    };
     const storageInstance = await database.storage.createStorageInstance(
-        database.name,
-        dataMigrator.newestCollection.name,
-        getPseudoSchemaForVersion(version),
-        dataMigrator.newestCollection.pouchSettings
+        storageInstanceCreationParams
     );
     const pouchdb = storageInstance.internals.pouch;
     const ret: OldRxCollection = {

@@ -424,12 +424,12 @@ export async function inMemory(
 
 export async function prepareInMemoryRxCollection(instance: InMemoryRxCollection<any, {}>): Promise<void> {
     const memoryStorage = getRxStoragePouch('memory', {});
-    instance.storageInstance = await memoryStorage.createStorageInstance(
-        'rxdb-in-memory',
-        randomCouchString(10),
-        instance.schema.jsonSchema,
-        instance.pouchSettings
-    );
+    instance.storageInstance = await memoryStorage.createStorageInstance({
+        databaseName: 'rxdb-in-memory',
+        collectionName: randomCouchString(10),
+        schema: instance.schema.jsonSchema,
+        options: instance.pouchSettings
+    });
     instance.pouch = instance.storageInstance.internals.pouch;
 }
 

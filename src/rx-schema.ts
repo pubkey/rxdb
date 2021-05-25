@@ -211,6 +211,7 @@ export function getIndexes<T = any>(
 /**
  * returns the primary path of a jsonschema
  * @return primaryPath which is _id if none defined
+ * // TODO primary path should be set on top level of the schema so we do not have to itterate.
  */
 export function getPrimary<T = any>(jsonSchema: RxJsonSchema<T>): string {
     const ret = Object.keys(jsonSchema.properties)
@@ -274,8 +275,9 @@ export const fillWithDefaultSettings = function (
     schemaObj.additionalProperties = false;
 
     // fill with key-compression-state ()
-    if (!schemaObj.hasOwnProperty('keyCompression'))
+    if (!schemaObj.hasOwnProperty('keyCompression')) {
         schemaObj.keyCompression = false;
+    }
 
     // indexes must be array
     schemaObj.indexes = schemaObj.indexes || [];
@@ -305,7 +307,7 @@ export const fillWithDefaultSettings = function (
 };
 
 export function createRxSchema<T = any>(
-    jsonSchema: RxJsonSchema,
+    jsonSchema: RxJsonSchema<T>,
     runPreCreateHooks = true
 ): RxSchema<T> {
     if (runPreCreateHooks) {

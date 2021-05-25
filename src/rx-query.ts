@@ -285,31 +285,23 @@ export class RxQueryBase<
 
     /**
      * returns the prepared query
+     * which can be send to the storage instance to query for documents.
      * @overwrites itself with the actual value
+     * TODO rename this function, toJSON is missleading
+     * because we do not return the plain mango query object.
      */
     toJSON(): PreparedQuery<RxDocumentType> {
+        const hookInput = {
+            rxQuery: this,
+            // can be mutated by the hooks
+            mangoQuery: clone(this.mangoQuery)
+        };
+        runPluginHooks('prePrepareQuery', hookInput);
+
         const value = this.collection.storageInstance.prepareQuery(
-            clone(this.mangoQuery)
+            hookInput.mangoQuery
         );
         this.toJSON = () => value;
-        return value;
-    }
-
-    /**
-     * returns the key-compressed version of the query
-     * @overwrites itself with the actual value
-     */
-    keyCompress(): MangoQuery<any> {
-        let value: MangoQuery<any>;
-        if (!this.collection.schema.doKeyCompression()) {
-            value = this.toJSON();
-        } else {
-            value = this
-                .collection
-                ._keyCompressor
-                .compressQuery(this.toJSON());
-        }
-        this.keyCompress = () => value;
         return value;
     }
 
@@ -320,7 +312,9 @@ export class RxQueryBase<
      */
     doesDocumentDataMatch(docData: RxDocumentType | any): boolean {
         // if doc is deleted, it cannot match
-        if (docData._deleted) return false;
+        if (docData._deleted) {
+            return false;
+        }
         docData = this.collection.schema.swapPrimaryToId(docData);
 
         // return matchesSelector(docData, selector);

@@ -1,5 +1,6 @@
 import { RxQuery, RxQueryOP, MangoQuery } from './rx-query';
 import { RxCollection } from './rx-collection';
+import { RxStorageInstanceCreationParams } from './rx-storage';
 
 export type RxPluginPreCreateRxQueryArgs = {
     op: RxQueryOP;
@@ -56,10 +57,12 @@ export interface RxPlugin {
         preCreateRxSchema?: Function,
         createRxSchema?: Function,
         preCreateRxQuery?: (data: RxPluginPreCreateRxQueryArgs) => void,
+        prePrepareQuery: (i: { rxQuery: RxQuery<any>; mangoQuery: MangoQuery<any> }) => void,
         createRxQuery?: (query: RxQuery) => void,
         createRxDocument?: Function,
         postCreateRxDocument?: Function,
         preCreatePouchDb?: Function,
+        preCreateRxStorageInstance?: (params: RxStorageInstanceCreationParams<any, any>) => void,
         preMigrateDocument?: Function,
         postMigrateDocument?: Function
     };

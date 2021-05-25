@@ -98,7 +98,8 @@ import type {
     RxStorageBulkWriteError,
     RxStorageBulkWriteResponse,
     WithRevision,
-    WithWriteRevision
+    WithWriteRevision,
+    RxStorageInstanceCreationParams
 } from './types';
 import type {
     RxGraphQLReplicationState
@@ -220,15 +221,23 @@ export class RxCollectionBase<
         wasCreatedBefore: boolean
     ): Promise<any> {
 
+
+        const storageInstanceCreationParams: RxStorageInstanceCreationParams<RxDocumentType, any> = {
+            databaseName: this.database.name,
+            collectionName: this.name,
+            schema: this.schema.jsonSchema,
+            options: this.pouchSettings
+        };
+        runPluginHooks(
+            'preCreateRxStorageInstance',
+            storageInstanceCreationParams
+        );
         const [
             storageInstance,
             localDocumentsStore
         ] = await Promise.all([
             this.database.storage.createStorageInstance<RxDocumentType>(
-                this.database.name,
-                this.name,
-                this.schema.jsonSchema,
-                this.pouchSettings
+                storageInstanceCreationParams
             ),
             this.database.storage.createKeyObjectStorageInstance(
                 this.database.name,
@@ -246,14 +255,6 @@ export class RxCollectionBase<
         }
 
         // we trigger the non-blocking things first and await them later so we can do stuff in the mean time
-
-        /**
-         * if wasCreatedBefore we can assume that the indexes already exist
-         * because changing them anyway requires a schema-version change
-         */
-        const createIndexesPromise: Promise<any> = wasCreatedBefore ? Promise.resolve() : _prepareCreateIndexes(
-            this.asRxCollection
-        );
 
         this._crypter = createCrypter(this.database.password, this.schema);
 
@@ -275,10 +276,6 @@ export class RxCollectionBase<
                     }
                 })
         );
-
-        return Promise.all([
-            createIndexesPromise
-        ]);
     }
 
 
@@ -383,14 +380,16 @@ export class RxCollectionBase<
         limit?: number,
         noDecrypt: boolean = false
     ): Promise<any[]> {
-        const compressedQueryJSON: any = rxQuery.keyCompress();
+        const preparedQuery = rxQuery.toJSON();
         if (limit) {
-            compressedQueryJSON['limit'] = limit;
+            preparedQuery['limit'] = limit;
         }
 
+        console.log('_pouchFind with query:');
+        console.dir(preparedQuery);
+
         const queryResult = await this.database.lockedRun(
-            () => this.storageInstance.query(compressedQueryJSON)
-            //  () => this.pouch.find(compressedQueryJSON)
+            () => this.storageInstance.query(preparedQuery)
         );
         const docs = queryResult.documents
             .map((doc: any) => this._handleFromPouch(doc, noDecrypt));
@@ -530,7 +529,7 @@ export class RxCollectionBase<
         ids: string[]
     ): Promise<{
         success: RxDocument<RxDocumentType, OrmMethods>[],
-        error: any[]
+        error: RxStorageBulkWriteError<RxDocumentType>[]
     }> {
         const rxDocumentMap = await this.findByIds(ids);
         const docsData: WithPouchMeta<RxDocumentType>[] = [];
@@ -553,33 +552,34 @@ export class RxCollectionBase<
         const removeDocs = docsData.map(doc => this._handleToPouch(doc));
 
         let startTime: number;
-
         const results = await this.database.lockedRun(
             async () => {
                 startTime = now();
-                const bulkResults = await this.pouch.bulkDocs(removeDocs);
-                return bulkResults;
+                return this.storageInstance.bulkWrite(false, removeDocs);
             }
         );
-
         const endTime = now();
-        const okResults = results.filter(r => (r as PouchBulkDocResultRow).ok);
+
+        const successIds = Array.from(results.success.keys());
+
+        // run hooks
         await Promise.all(
-            okResults.map(r => {
+            successIds.map(id => {
                 return this._runHooks(
                     'post',
                     'remove',
-                    docsMap.get(r.id),
-                    rxDocumentMap.get(r.id)
+                    docsMap.get(id),
+                    rxDocumentMap.get(id)
                 );
             })
         );
 
-        okResults.forEach(r => {
-            const rxDocument = rxDocumentMap.get(r.id) as RxDocument<RxDocumentType, OrmMethods>;
+        // emit change events
+        successIds.forEach(id => {
+            const rxDocument = rxDocumentMap.get(id) as RxDocument<RxDocumentType, OrmMethods>;
             const emitEvent = createDeleteEvent(
                 this as any,
-                docsMap.get(r.id) as any,
+                docsMap.get(id) as any,
                 rxDocument._data,
                 startTime,
                 endTime,
@@ -588,13 +588,13 @@ export class RxCollectionBase<
             this.$emit(emitEvent);
         });
 
-        const rxDocuments: any[] = okResults.map(r => {
-            return rxDocumentMap.get(r.id);
+        const rxDocuments: any[] = successIds.map(id => {
+            return rxDocumentMap.get(id);
         });
 
         return {
             success: rxDocuments,
-            error: okResults.filter(r => !(r as PouchBulkDocResultRow).ok)
+            error: Array.from(results.error.values())
         };
     }
 
@@ -1030,62 +1030,6 @@ function _atomicUpsertEnsureRxDocumentExists(
                     inserted: false
                 };
             }
-        });
-}
-
-/**
- * creates the indexes in the pouchdb
- */
-function _prepareCreateIndexes(
-    rxCollection: RxCollection
-): Promise<any> {
-
-    /**
-     * pouchdb does no check on already existing indexes
-     * which makes collection re-creation really slow on page reloads
-     * So we have to manually check if the index already exists
-     */
-    return rxCollection.pouch.getIndexes()
-        .then(indexResult => {
-            const existingIndexes: Set<string> = new Set();
-            indexResult.indexes.forEach(idx => existingIndexes.add(idx.name));
-            return existingIndexes;
-        }).then(existingIndexes => {
-            return Promise.all(
-                rxCollection.schema.indexes
-                    .map(indexAr => {
-                        const compressedIdx: string[] = indexAr
-                            .map(key => {
-                                const primPath = rxCollection.schema.primaryPath;
-                                const useKey = key === primPath ? '_id' : key;
-                                if (!rxCollection.schema.doKeyCompression()) {
-                                    return useKey;
-                                } else {
-                                    const indexKey = rxCollection._keyCompressor.transformKey(useKey);
-                                    return indexKey;
-                                }
-                            });
-
-                        const indexName = 'idx-rxdb-index-' + compressedIdx.join(',');
-                        if (existingIndexes.has(indexName)) {
-                            // index already exists
-                            return;
-                        }
-
-                        /**
-                         * TODO
-                         * we might have even better performance by doing a bulkDocs
-                         * on index creation
-                         */
-                        return rxCollection.pouch.createIndex({
-                            name: indexName,
-                            ddoc: indexName,
-                            index: {
-                                fields: compressedIdx
-                            }
-                        });
-                    })
-            );
         });
 }
 

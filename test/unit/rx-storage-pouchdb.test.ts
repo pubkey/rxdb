@@ -25,12 +25,12 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
     describe('RxStorageInstance', () => {
         describe('RxStorageInstance.bulkWrite()', () => {
             it('should write the documents', async () => {
-                const storageInstance = await storage.createStorageInstance<{ key: string; value: string; }>(
-                    randomCouchString(12),
-                    randomCouchString(12),
-                    getPseudoSchemaForVersion(0, 'key'),
-                    {}
-                );
+                const storageInstance = await storage.createStorageInstance<{ key: string; value: string; }>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    options: {}
+                });
 
                 const writeResponse = await storageInstance.bulkWrite(
                     false,
@@ -49,12 +49,12 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 storageInstance.close();
             });
             it('should error on conflict', async () => {
-                const storageInstance = await storage.createStorageInstance<{ key: string; value: string; }>(
-                    randomCouchString(12),
-                    randomCouchString(12),
-                    getPseudoSchemaForVersion(0, 'key'),
-                    {}
-                );
+                const storageInstance = await storage.createStorageInstance<{ key: string; value: string; }>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    options: {}
+                });
 
                 const writeData = [{
                     key: 'foobar',
@@ -136,12 +136,12 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
         });
         describe('.query()', () => {
             it('should find all documents', async () => {
-                const storageInstance = await storage.createStorageInstance<{ key: string; value: string; }>(
-                    randomCouchString(12),
-                    randomCouchString(12),
-                    getPseudoSchemaForVersion(0, 'key'),
-                    {}
-                );
+                const storageInstance = await storage.createStorageInstance<{ key: string; value: string; }>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    options: {}
+                });
 
                 const writeData = [{
                     key: 'foobar',

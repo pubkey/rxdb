@@ -206,7 +206,7 @@ config.parallel('key-compression.test.js', () => {
             const c = await humansCollection.create(0);
             const query: any = c.find()
                 .where('firstName').eq('myFirstName')
-                .keyCompress();
+                .toJSON();
             const jsonString = JSON.stringify(query);
             assert.ok(!jsonString.includes('firstName'));
             assert.ok(jsonString.includes('myFirstName'));
@@ -216,7 +216,7 @@ config.parallel('key-compression.test.js', () => {
             const c = await humansCollection.createPrimary(0);
             const query: any = c.find()
                 .where('passportId').eq('myPassportId')
-                .keyCompress();
+                .toJSON();
             const jsonString = JSON.stringify(query);
             assert.ok(!jsonString.includes('passportId'));
             assert.ok(jsonString.includes('myPassportId'));
@@ -227,7 +227,7 @@ config.parallel('key-compression.test.js', () => {
             const c = await humansCollection.create(0);
             const query: any = c.find()
                 .where('foobar').eq(5)
-                .keyCompress();
+                .toJSON();
 
             assert.strictEqual(query.selector.foobar, 5);
             c.database.destroy();

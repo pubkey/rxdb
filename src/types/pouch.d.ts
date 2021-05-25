@@ -347,7 +347,17 @@ export declare class PouchDBInstance {
     explain(query: any): Promise<any>;
 
     getIndexes(): Promise<{
-        indexes: any[];
+        indexes: {
+            ddoc: any | null;
+            name: string;
+            type: string;
+            def: {
+                fields: {
+                    [key: string]: 'asc' | 'desc'
+                }[];
+            }
+        }[];
+        total_rows: number;
     }>;
 
     createIndex(opts: {

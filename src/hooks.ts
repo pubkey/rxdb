@@ -40,22 +40,26 @@ export const HOOKS: { [k: string]: any[] } = {
     createRxSchema: [],
     preCreateRxQuery: [],
     createRxQuery: [],
+    /**
+     * Runs before a query is send to the
+     * prepareQuery function of the storage engine.
+     */
+    prePrepareQuery: [],
     createRxDocument: [],
     /**
      * runs after a RxDocument is created,
      * cannot be async
      */
     postCreateRxDocument: [],
-    /**
-     * runs before a pouchdb-instance is created
-     * gets pouchParameters as attribute so you can manipulate them
-     * {
-     *   location: string,
-     *   adapter: any,
-     *   settings: object
-     * }
-     */
+    // TODO this should not be inside of rxdb core but in the pouchdb plugin
     preCreatePouchDb: [],
+    /**
+     * Runs before a RxStorageInstance is created
+     * gets the params of createStorageInstance()
+     * as attribute so you can manipulate them.
+     * Notice that you have to clone stuff before mutating the inputs.
+     */
+    preCreateRxStorageInstance: [],
     /**
      * runs on the document-data before the document is migrated
      * {
