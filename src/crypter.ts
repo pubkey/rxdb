@@ -1,5 +1,8 @@
 /**
  * handle the en/decryption of documents-data
+ * TODO atm we have the crypter inside of rxdb core.
+ * Instead all should be moved to the encryption plugin
+ * and work via plugin hooks.
  */
 
 import objectPath from 'object-path';
