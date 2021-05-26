@@ -205,9 +205,6 @@ export class RxCollectionBase<
     public _observable$?: Observable<any>; // TODO type
     public _changeEventBuffer: ChangeEventBuffer = {} as ChangeEventBuffer;
 
-    // other
-    public _keyCompressor?: any;
-
     /**
      * returns a promise that is resolved when the collection gets destroyed
      */
@@ -228,10 +225,12 @@ export class RxCollectionBase<
             schema: this.schema.jsonSchema,
             options: this.pouchSettings
         };
+
         runPluginHooks(
             'preCreateRxStorageInstance',
             storageInstanceCreationParams
         );
+
         const [
             storageInstance,
             localDocumentsStore
@@ -249,20 +248,22 @@ export class RxCollectionBase<
         this.localDocumentsStore = localDocumentsStore;
         this.pouch = this.storageInstance.internals.pouch;
 
-
-        if (this.schema.doKeyCompression()) {
-            this._keyCompressor = overwritable.createKeyCompressor(this.schema);
-        }
-
         // we trigger the non-blocking things first and await them later so we can do stuff in the mean time
 
         this._crypter = createCrypter(this.database.password, this.schema);
 
         this._observable$ = this.database.$.pipe(
-            filter(event => (event as any).collectionName === this.name)
+            filter(event => {
+                return (event as any).collectionName === this.name;
+            })
         );
         this._changeEventBuffer = createChangeEventBuffer(this.asRxCollection);
 
+        /**
+         * When a write happens to the collection
+         * we find the changed document in the docCache
+         * and tell it that it has to change its data.
+         */
         this._subs.push(
             this._observable$
                 .pipe(
@@ -384,9 +385,6 @@ export class RxCollectionBase<
         if (limit) {
             preparedQuery['limit'] = limit;
         }
-
-        console.log('_pouchFind with query:');
-        console.dir(preparedQuery);
 
         const queryResult = await this.database.lockedRun(
             () => this.storageInstance.query(preparedQuery)

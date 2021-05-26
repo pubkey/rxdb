@@ -311,7 +311,7 @@ export function sync(
 
     const syncFun = pouchReplicationFunction(this.pouch, direction);
     if (query) {
-        useOptions.selector = (query as any).keyCompress().selector;
+        useOptions.selector = (query as any).toJSON().selector;
     }
 
     const repState: any = createRxReplicationState(

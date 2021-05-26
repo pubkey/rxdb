@@ -210,8 +210,6 @@ const RxLocalDocumentPrototype: any = {
         const storageInstance = _getKeyObjectStorageInstanceByParent(this.parent);
         const startTime = now();
 
-        console.log('_saveData');
-        console.dir(newData);
         newData._id = this.id;
 
         return storageInstance.bulkWrite(false, [newData])
@@ -326,14 +324,9 @@ function insertLocal(
         return this._parentCollection.insertLocal(id, docData);
     }
 
-    console.log('insert local: ' + id);
-    console.dir(docData);
-
     return (this as any).getLocal(id)
         .then((existing: any) => {
 
-            console.log('existing:');
-            console.dir(existing);
             if (existing) {
                 throw newRxError('LD7', {
                     id,
@@ -384,9 +377,6 @@ function upsertLocal(this: any, id: string, data: any): Promise<RxLocalDocument>
 
     return this.getLocal(id)
         .then((existing: RxDocument) => {
-            console.dir(existing);
-            console.log('is existing: ' + !!existing);
-
             if (!existing) {
                 // create new one
                 const docPromise = this.insertLocal(id, data);
@@ -394,8 +384,6 @@ function upsertLocal(this: any, id: string, data: any): Promise<RxLocalDocument>
             } else {
                 // update existing
                 data._rev = existing._data._rev;
-                console.log('atopmic udapte this:');
-                console.dir(data);
                 return existing.atomicUpdate(() => data).then(() => existing);
             }
         });

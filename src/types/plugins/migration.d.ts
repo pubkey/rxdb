@@ -1,8 +1,10 @@
 import { Crypter } from '../../crypter';
-import { KeyCompressor } from '../../plugins/key-compression';
 import { DataMigrator } from '../../plugins/migration';
 import { RxSchema } from '../../rx-schema';
-import { PouchDBInstance, WithAttachments } from '../pouch';
+import {
+    PouchDBInstance,
+    WithAttachments
+} from '../pouch';
 import { RxCollection } from '../rx-collection';
 import { RxDatabase } from '../rx-database';
 import { MaybePromise } from '../util';
@@ -22,7 +24,6 @@ export interface OldRxCollection {
     pouchdb: PouchDBInstance;
     dataMigrator: DataMigrator;
     _crypter: Crypter;
-    _keyCompressor?: KeyCompressor;
     newestCollection: RxCollection;
     database: RxDatabase;
     _migrate?: boolean;

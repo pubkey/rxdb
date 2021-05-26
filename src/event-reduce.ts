@@ -2,10 +2,13 @@ import {
     ActionName,
     calculateActionName,
     runAction,
-    QueryParams
+    QueryParams,
+    QueryMatcher,
+    SortComparator
 } from 'event-reduce-js';
 import type { RxQuery, MangoQuery } from './types';
 import { RxChangeEvent } from './rx-change-event';
+import { runPluginHooks } from './hooks';
 
 export type EventReduceResultNeg = {
     runFullQueryAgain: true,
@@ -39,13 +42,49 @@ export function getQueryParams<RxDocType>(
         const collection = rxQuery.collection;
         const queryJson: MangoQuery<RxDocType> = rxQuery.toJSON();
         const primaryKey = collection.schema.primaryPath;
+
+
+        /**
+         * Create a custom sort comparator
+         * that uses the hooks to ensure
+         * we send for example compressed documents to be sorted by compressed queries.
+         */
+        const sortComparator = collection.storageInstance.getSortComparator(queryJson);
+        const useSortComparator: SortComparator<RxDocType> = (docA: RxDocType, docB: RxDocType) => {
+            const sortComparatorData = {
+                docA,
+                docB,
+                rxQuery
+            };
+            runPluginHooks('preSortComparator', sortComparatorData);
+            return sortComparator(sortComparatorData.docA, sortComparatorData.docB);
+        };
+
+
+        /**
+         * Create a custom query matcher
+         * that uses the hooks to ensure
+         * we send for example compressed documents to match compressed queries.
+         */
+        const queryMatcher = collection.storageInstance.getQueryMatcher(queryJson);
+        const useQueryMatcher: QueryMatcher<RxDocType> = (doc: RxDocType) => {
+
+            const queryMatcherData = {
+                doc,
+                rxQuery
+            };
+            runPluginHooks('preQueryMatcher', queryMatcherData);
+
+            return queryMatcher(queryMatcherData.doc);
+        };
+
         const ret = {
             primaryKey: rxQuery.collection.schema.primaryPath,
             skip: queryJson.skip,
             limit: queryJson.limit,
             sortFields: getSortFieldsOfQuery(primaryKey, queryJson),
-            sortComparator: collection.storageInstance.getSortComparator(queryJson),
-            queryMatcher: collection.storageInstance.getQueryMatcher(queryJson)
+            sortComparator: useSortComparator,
+            queryMatcher: useQueryMatcher
         };
         RXQUERY_QUERY_PARAMS_CACHE.set(rxQuery, ret);
         return ret;

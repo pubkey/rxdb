@@ -112,11 +112,23 @@ config.parallel('import-export.test.js', () => {
         describe('.importDump()', () => {
             describe('positive', () => {
                 it('import json', async () => {
+
+                    console.log('XXX 1');
+
                     const col = await humansCollection.createMultiInstance(
                         randomCouchString(10),
                         5
                     );
+
+                    console.log('XXX 2');
+
                     const json = await col.dump();
+
+                    console.log('XXX 3');
+
+
+                    console.log(JSON.stringify(json, null, 4));
+
                     const emptyCol = await humansCollection.createMultiInstance(
                         randomCouchString(10),
                         0

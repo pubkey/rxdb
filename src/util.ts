@@ -239,8 +239,9 @@ export function sortObject(obj: any, noArraySort = false): any {
  * @link https://stackoverflow.com/a/33416684 thank you Fabian Jakobs!
  */
 export function stringifyFilter(key: string, value: any) {
-    if (value instanceof RegExp)
+    if (value instanceof RegExp) {
         return value.toString();
+    }
     return value;
 }
 

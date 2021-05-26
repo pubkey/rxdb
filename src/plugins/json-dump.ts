@@ -135,26 +135,18 @@ function importDumpRxCollection(
         });
     }
 
-    const docs = exportedJSON.docs
+    const docs: any[] = exportedJSON.docs
         // decrypt
         .map((doc: any) => this._crypter.decrypt(doc))
         // validate schema
-        .map((doc: any) => this.schema.validate(doc))
-        // transform
-        .map((doc: any) => {
-            doc = this._handleToPouch(doc);
-
-            // TODO this should no longer be needed when rx-storage migration is done
-            // doc = pouchSwapPrimaryToId(this.schema.primaryPath, doc);
-            return doc;
-        });
+        .map((doc: any) => this.schema.validate(doc));
 
     let startTime: number;
     return this.database.lockedRun(
         // write to disc
         () => {
             startTime = now();
-            return this.storageInstance.bulkWrite(false, docs);
+            return this.storageInstance.bulkWrite(false, docs.map(doc => this._handleToPouch(doc)));
         }
     ).then((saveResult) => {
         const endTime = now();

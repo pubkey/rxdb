@@ -343,6 +343,13 @@ config.parallel('rx-query.test.js', () => {
             col.database.destroy();
         });
         it('should execOverDatabase when still subscribed and changeEvent comes in', async () => {
+
+
+            console.log('############################');
+            console.log('############################');
+            console.log('############################');
+            console.log('############################');
+
             const col = await humansCollection.create(2);
 
             // it is assumed that this query can never handled by event-reduce
@@ -350,10 +357,13 @@ config.parallel('rx-query.test.js', () => {
 
             const fired: any[] = [];
             const sub1 = query.$.subscribe(res => {
+                console.log('fired:');
+                console.dir(res.map(x => x.toJSON()));
                 fired.push(res);
             });
 
             await AsyncTestUtil.waitUntil(() => fired.length === 1);
+
             assert.strictEqual(query._execOverDatabaseCount, 1);
             assert.strictEqual(query._latestChangeEvent, 2);
 
@@ -362,10 +372,14 @@ config.parallel('rx-query.test.js', () => {
             await col.insert(addObj);
             assert.strictEqual(query.collection._changeEventBuffer.counter, 3);
 
+            console.log('---- 1');
             await AsyncTestUtil.waitUntil(() => query._latestChangeEvent === 3);
+            console.log('---- 2');
             assert.strictEqual(query._latestChangeEvent, 3);
 
+            console.log('---- 3');
             await AsyncTestUtil.waitUntil(() => fired.length === 2);
+            console.log('---- 4');
             assert.strictEqual(fired[1].pop().passportId, addObj.passportId);
             sub1.unsubscribe();
             col.database.destroy();

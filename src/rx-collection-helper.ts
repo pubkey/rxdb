@@ -7,6 +7,7 @@ import {
 import {
     newRxError
 } from './rx-error';
+import { runPluginHooks } from './hooks';
 
 /**
  * wrappers for Pouch put/get to handle keycompression etc
@@ -16,24 +17,32 @@ export function _handleToPouch(
     data: any
 ) {
     data = (col._crypter as any).encrypt(data);
-    if (col.schema.doKeyCompression()) {
-        data = col._keyCompressor.compress(data);
-    }
-    return data;
+
+    const hookParams = {
+        collection: col,
+        doc: data
+    };
+    runPluginHooks('preWriteToStorageInstance', hookParams);
+    return hookParams.doc;
 }
+
 export function _handleFromPouch(
     col: RxCollection | any,
     data: any,
     noDecrypt = false
 ) {
-    if (col.schema.doKeyCompression())
-        data = col._keyCompressor.decompress(data);
+
+    const hookParams = {
+        collection: col,
+        doc: data
+    };
+    runPluginHooks('postReadFromInstance', hookParams);
+
     if (noDecrypt) {
-        return data;
+        return hookParams.doc;
     }
 
-    data = (col._crypter as any).decrypt(data);
-    return data;
+    return (col._crypter as any).decrypt(hookParams.doc);
 }
 
 /**

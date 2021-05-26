@@ -12,7 +12,8 @@ import {
     decompressObject,
     compressedPath,
     compressQuery,
-    DEFAULT_COMPRESSION_FLAG
+    DEFAULT_COMPRESSION_FLAG,
+    createCompressedJsonSchema
 } from 'jsonschema-key-compression';
 
 import {
@@ -21,108 +22,86 @@ import {
 } from '../rx-schema';
 import type {
     RxPlugin,
-    MangoQuery,
-    RxQuery,
     RxJsonSchema,
     RxCollection
 } from '../types';
 import {
-    overwriteGetterForCaching,
-    flatClone
+    overwriteGetterForCaching
 } from '../util';
 
+
+declare type CompressionState = {
+    table: CompressionTable;
+    // the compressed schema
+    schema: RxJsonSchema;
+}
+
 /**
- * Cache the compression table by the storage instance
- * for better performance.
+ * Cache the compression table and the compressed schema
+ * by the storage instance for better performance.
  */
-const COMPRESSION_TABLE_BY_COLLECTION: WeakMap<
+const COMPRESSION_STATE_BY_COLLECTION: WeakMap<
     RxCollection,
-    CompressionTable
+    CompressionState
 > = new WeakMap();
 
-export function getCompressionTableByStorageInstance(
+export function createCompressionState(
+    schema: RxJsonSchema
+): CompressionState {
+    const primaryPath = getPrimary(schema);
+    const table = createCompressionTable(
+        schema as KeyCompressionJsonSchema,
+        DEFAULT_COMPRESSION_FLAG,
+        [
+            /**
+             * Do not compress the primary path
+             * to make it easier to debug errors.
+             */
+            primaryPath,
+            '_rev',
+            '_attachments'
+        ]
+    );
+    const compressedSchema: RxJsonSchema = createCompressedJsonSchema(
+        table,
+        schema as KeyCompressionJsonSchema
+    ) as RxJsonSchema;
+
+    /**
+     * the key compression module does not know about indexes
+     * in the schema, so we have to also compress them here.
+     */
+    if (schema.indexes) {
+        const newIndexes = schema.indexes.map(idx => {
+            if (Array.isArray(idx)) {
+                return idx.map(subIdx => compressedPath(table, subIdx));
+            } else {
+                return compressedPath(table, idx);
+            }
+        });
+        compressedSchema.indexes = newIndexes;
+    }
+
+    return {
+        table,
+        schema: compressedSchema
+    }
+}
+
+export function getCompressionStateByStorageInstance(
     collection: RxCollection
-): CompressionTable {
-    let table = COMPRESSION_TABLE_BY_COLLECTION.get(collection);
-    if (!table) {
-        table = createCompressionTable(
-            collection.schema.jsonSchema as KeyCompressionJsonSchema,
-            DEFAULT_COMPRESSION_FLAG,
-            [
-                collection.schema.primaryPath,
-                '_rev',
-                '_attachments'
-            ]
-        );
-        COMPRESSION_TABLE_BY_COLLECTION.set(collection, table);
+): CompressionState {
+    let state = COMPRESSION_STATE_BY_COLLECTION.get(collection);
+    if (!state) {
+        state = createCompressionState(collection.schema.jsonSchema);
+        COMPRESSION_STATE_BY_COLLECTION.set(collection, state);
     }
-    return table;
+    return state;
 }
-
-export class KeyCompressor {
-
-    constructor(
-        public schema: RxSchema
-    ) { }
-
-    /**
-     * @overwrites itself on the first call
-     */
-    get table(): CompressionTable {
-        const jsonSchema = this.schema.normalized;
-        const table = createCompressionTable(
-            jsonSchema as KeyCompressionJsonSchema,
-            DEFAULT_COMPRESSION_FLAG,
-            [
-                this.schema.primaryPath,
-                '_rev',
-                '_attachments'
-            ]
-        );
-        return overwriteGetterForCaching(
-            this,
-            'table',
-            table
-        );
-    }
-
-    /**
-     * compress the keys of an object via the compression-table
-     */
-    compress(obj: any): PlainJsonObject {
-        if (!this.schema.doKeyCompression()) {
-            return obj;
-        } else {
-            return compressObject(
-                this.table,
-                obj
-            );
-
-        }
-    }
-
-    decompress(compressedObject: any): any {
-        if (!this.schema.doKeyCompression()) {
-            return compressedObject;
-        } else {
-            return decompressObject(
-                this.table,
-                compressedObject
-            );
-        }
-    }
-}
-
-export function create(schema: RxSchema) {
-    return new KeyCompressor(schema);
-}
-
 
 export const rxdb = true;
 export const prototypes = {};
-export const overwritable = {
-    createKeyCompressor: create
-};
+export const overwritable = {};
 
 export const RxDBKeyCompressionPlugin: RxPlugin = {
     name: 'key-compression',
@@ -140,46 +119,75 @@ export const RxDBKeyCompressionPlugin: RxPlugin = {
         ) {
             const rxQuery = input.rxQuery;
             const mangoQuery = input.mangoQuery;
+
             if (!rxQuery.collection.schema.jsonSchema.keyCompression) {
                 return;
             }
-            const compressionTable = getCompressionTableByStorageInstance(
+            const compressionState = getCompressionStateByStorageInstance(
                 rxQuery.collection
             );
+
             const compressedQuery = compressQuery(
-                compressionTable,
+                compressionState.table,
                 mangoQuery as any
             );
             input.mangoQuery = compressedQuery as any;
         },
         preCreateRxStorageInstance(params) {
             /**
-             * We have to run key compression on the indexes
-             * otherwise the storage instance would create non-compressed
-             * index field.
+             * When key compression is used,
+             * the storage instance only knows about the compressed schema
              */
-            if (params.schema.indexes && params.schema.keyCompression) {
-                const newSchema = flatClone(params.schema);
-                const primaryPath = getPrimary(newSchema);
-                const table = createCompressionTable(
-                    newSchema as KeyCompressionJsonSchema,
-                    DEFAULT_COMPRESSION_FLAG,
-                    [
-                        primaryPath,
-                        '_rev',
-                        '_attachments'
-                    ]
-                );
-                newSchema.indexes = params.schema.indexes.map(idx => {
-                    if (Array.isArray(idx)) {
-                        return idx.map(subIdx => compressedPath(table, subIdx));
-                    } else {
-                        return compressedPath(table, idx);
-                    }
-                });
-                params.schema = newSchema;
+            if (params.schema.keyCompression) {
+                const compressionState = createCompressionState(params.schema);
+                params.schema = compressionState.schema;
             }
-            console.log(JSON.stringify(params.schema, null, 4));
+        },
+        preQueryMatcher(params) {
+            if (!params.rxQuery.collection.schema.jsonSchema.keyCompression) {
+                return;
+            }
+            const state = getCompressionStateByStorageInstance(params.rxQuery.collection);
+            console.log('preQueryMatcher:');
+            console.dir(params.doc);
+            params.doc = compressObject(
+                state.table,
+                params.doc
+            );
+        },
+        preSortComparator(params) {
+            if (!params.rxQuery.collection.schema.jsonSchema.keyCompression) {
+                return;
+            }
+            const state = getCompressionStateByStorageInstance(params.rxQuery.collection);
+            params.docA = compressObject(
+                state.table,
+                params.docA
+            );
+            params.docB = compressObject(
+                state.table,
+                params.docB
+            );
+        },
+        preWriteToStorageInstance(params) {
+            if (!params.collection.schema.jsonSchema.keyCompression) {
+                return;
+            }
+            const state = getCompressionStateByStorageInstance(params.collection);
+            params.doc = compressObject(
+                state.table,
+                params.doc
+            );
+        },
+        postReadFromInstance(params) {
+            if (!params.collection.schema.jsonSchema.keyCompression) {
+                return;
+            }
+            const state = getCompressionStateByStorageInstance(params.collection);
+            params.doc = decompressObject(
+                state.table,
+                params.doc
+            );
         }
     }
 };

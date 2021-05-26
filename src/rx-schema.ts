@@ -180,13 +180,6 @@ export class RxSchema<T = any> {
     }
 
     /**
-     * returns true if key-compression should be done
-     */
-    doKeyCompression(): boolean {
-        return this.jsonSchema.keyCompression as boolean;
-    }
-
-    /**
      * creates the schema-based document-prototype,
      * see RxCollection.getDocumentPrototype()
      */

@@ -79,8 +79,6 @@ export async function writeSingleLocal(
     overwrite: boolean,
     document: WithDeleted<WithWriteRevision<RxLocalDocumentData>>
 ): Promise<WithRevision<RxLocalDocumentData>> {
-    console.log('writeSingleLocal:');
-    console.dir(document);
     const writeResult = await instance.bulkWrite(
         overwrite,
         [document]

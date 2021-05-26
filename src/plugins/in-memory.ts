@@ -365,9 +365,6 @@ export function applyChangedDocumentToPouch(
         transformedDoc
     );
 
-    console.log('applyChangedDocumentToPouch:');
-    console.dir(transformedDoc);
-
     return rxCollection.pouch.get(transformedDoc._id)
         .then(oldDoc => transformedDoc._rev = oldDoc._rev)
         .catch(() => {

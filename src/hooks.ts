@@ -41,10 +41,31 @@ export const HOOKS: { [k: string]: any[] } = {
     preCreateRxQuery: [],
     createRxQuery: [],
     /**
+     * Runs before a document is send to the query matcher.
+     */
+    preQueryMatcher: [],
+    /**
+     * Runs before a document is send to the sortComparator.
+     */
+    preSortComparator: [],
+    /**
      * Runs before a query is send to the
      * prepareQuery function of the storage engine.
      */
     prePrepareQuery: [],
+
+    /**
+     * Runs before the document data is send to the
+     * bulkWrite of the storage instance
+     */
+    preWriteToStorageInstance: [],
+
+    /**
+     * Runs after the document data is ready from
+     * the storage instance.
+     */
+    postReadFromInstance: [],
+
     createRxDocument: [],
     /**
      * runs after a RxDocument is created,

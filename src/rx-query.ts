@@ -20,7 +20,8 @@ import {
     pluginMissing,
     clone,
     overwriteGetterForCaching,
-    now
+    now,
+    promiseWait
 } from './util';
 import {
     newRxError,
@@ -95,17 +96,24 @@ export class RxQueryBase<
                     mergeMap((docs: any[]) => {
                         return _ensureEqual(this as any)
                             .then((hasChanged: any) => {
-                                if (hasChanged) return false; // wait for next emit
-                                else return docs;
+                                if (hasChanged) {
+                                    // wait for next emit
+                                    return false;
+                                } else {
+                                    return docs;
+                                }
                             });
                     }),
                     filter((docs: any[]) => !!docs), // not if previous returned false
                     map((docs: any[]) => {
-                        // findOne()-queries emit document or null
                         if (this.op === 'findOne') {
+                            // findOne()-queries emit document or null
                             const doc = docs.length === 0 ? null : docs[0];
                             return doc;
-                        } else return docs; // find()-queries emit RxDocument[]
+                        } else {
+                            // find()-queries emit RxDocument[]
+                            return docs;
+                        }
                     }),
                     map(docs => {
                         // copy the array so it wont matter if the user modifies it
@@ -455,12 +463,12 @@ function _isResultsInSync(rxQuery: RxQueryBase): boolean {
  * @return true if has changed, false if not
  */
 function _ensureEqual(rxQuery: RxQueryBase): Promise<boolean> {
+    console.log('_ensureEqual');
     rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue
-        .then(() => new Promise(res => setTimeout(res, 0)))
+        .then(() => promiseWait(0))
         .then(() => __ensureEqual(rxQuery))
         .then(ret => {
-            return new Promise(res => setTimeout(res, 0))
-                .then(() => ret);
+            return promiseWait(0).then(() => ret);
         });
     return rxQuery._ensureEqualQueue;
 }
@@ -470,6 +478,7 @@ function _ensureEqual(rxQuery: RxQueryBase): Promise<boolean> {
  * @return true if results have changed
  */
 function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
+    console.log('__ensureEqual');
     rxQuery._lastEnsureEqual = now();
     if (rxQuery.collection.database.destroyed) {
         // db is closed
@@ -507,8 +516,6 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
                 return !cE.startTime || cE.startTime > rxQuery._lastExecStart;
             });
 
-
-
             const runChangeEvents: RxChangeEvent[] = ((rxQuery as any).collection as RxCollection)
                 ._changeEventBuffer
                 .reduceByLastOfDoc(missedChangeEvents);
@@ -524,6 +531,7 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
                 rxQuery as any,
                 runChangeEvents
             );
+
             if (eventReduceResult.runFullQueryAgain) {
                 // could not calculate the new results, execute must be done
                 mustReExec = true;

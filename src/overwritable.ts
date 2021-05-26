@@ -23,12 +23,6 @@ export const overwritable = {
     validatePassword(_password: string | any): void {
         throw pluginMissing('encryption');
     },
-    /**
-     * creates a key-compressor for the given schema
-     */
-    createKeyCompressor(_rxSchema: any): any {
-        throw pluginMissing('key-compression');
-    },
 
     /**
      * checks if the given adapter can be used

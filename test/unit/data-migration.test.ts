@@ -249,7 +249,6 @@ config.parallel('data-migration.test.js', () => {
                     assert.strictEqual(oldCol.schema.constructor.name, 'RxSchema');
                     assert.strictEqual(oldCol.version, 0);
                     assert.strictEqual(oldCol._crypter.constructor.name, 'Crypter');
-                    assert.strictEqual(oldCol._keyCompressor.constructor.name, 'KeyCompressor');
                     assert.ok(oldCol.pouchdb.constructor.name.includes('PouchDB'));
                     col.database.destroy();
                 });

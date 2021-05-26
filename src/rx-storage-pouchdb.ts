@@ -86,8 +86,6 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
         overwrite: boolean,
         documents: WithWriteRevision<RxLocalDocumentData>[]
     ): Promise<RxStorageBulkWriteResponse<RxLocalDocumentData>> {
-        console.log('RxStorageKeyObjectInstancePouch.bulkWrite()');
-        console.dir(documents);
 
         const insertDataById: Map<string, WithWriteRevision<RxLocalDocumentData>> = new Map();
 
@@ -244,6 +242,11 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         const primaryKey = getPrimary<any>(this.schema);
         const massagedSelector = massageSelector(query.selector);
         const fun: QueryMatcher<RxDocType> = (doc: RxDocType) => {
+
+            console.log('pouch getQueryMatcher()');
+            console.dir(query);
+            console.dir(doc);
+
             // swap primary to _id
             const cloned: any = flatClone(doc);
             const primaryValue = cloned[primaryKey];
@@ -257,7 +260,9 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                 { selector: massagedSelector },
                 Object.keys(query.selector)
             );
-            return rowsMatched && rowsMatched.length === 1;
+            const ret = rowsMatched && rowsMatched.length === 1;
+            console.log('ret: ' + ret);
+            return ret;
         };
         return fun;
     }
@@ -280,16 +285,11 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
          * @link https://github.com/nolanlawson/pouchdb-find/issues/204
          */
         if (query.sort) {
-            console.log('query:');
-            console.dir(query);
             query.sort.forEach(sortPart => {
                 const key = Object.keys(sortPart)[0];
                 const comparisonOperators = ['$gt', '$gte', '$lt', '$lte'];
                 const keyUsed = query.selector[key] && Object.keys(query.selector[key]).some(op => comparisonOperators.includes(op)) || false;
                 if (!keyUsed) {
-
-                    console.log('------- get schema object by path ' + key);
-                    console.dir(this.schema);
                     const schemaObj = getSchemaByObjectPath(this.schema, key);
                     if (!schemaObj) {
                         throw newRxError('QU5', {
@@ -357,10 +357,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             }
         });
 
-
-        if (primaryKey !== '_id') {
-            query.selector = primarySwapPouchDbQuerySelector(query.selector, primaryKey);
-        }
+        query.selector = primarySwapPouchDbQuerySelector(query.selector, primaryKey);
 
         return query;
     }
@@ -598,6 +595,9 @@ export function pouchStripLocalFlagFromPrimary(str: string): string {
  * @recursive
  */
 export function primarySwapPouchDbQuerySelector(selector: any, primaryKey: string): any {
+    if (primaryKey === '_id') {
+        return selector;
+    }
     if (Array.isArray(selector)) {
         return selector.map(item => primarySwapPouchDbQuerySelector(item, primaryKey));
     } else if (typeof selector === 'object') {
@@ -631,6 +631,9 @@ export async function createIndexesOnPouch(
     if (!schema.indexes) {
         return;
     }
+
+    const primaryKey = getPrimary<any>(schema);
+
     const before = await pouch.getIndexes();
     const existingIndexes: Set<string> = new Set(
         before.indexes.map(idx => idx.name)
@@ -638,18 +641,29 @@ export async function createIndexesOnPouch(
 
     await Promise.all(
         schema.indexes.map(async (indexMaybeArray) => {
-            const indexArray: string[] = Array.isArray(indexMaybeArray) ? indexMaybeArray : [indexMaybeArray];
+            let indexArray: string[] = Array.isArray(indexMaybeArray) ? indexMaybeArray : [indexMaybeArray];
+
+            /**
+             * replace primary key with _id
+             * because that is the enforced primary key on pouchdb.
+             */
+            indexArray = indexArray.map(key => {
+                if (key === primaryKey) {
+                    return '_id';
+                } else {
+                    return key;
+                }
+            })
+
             const indexName = 'idx-rxdb-index-' + indexArray.join(',');
             if (existingIndexes.has(indexName)) {
                 // index already exists
                 return;
             }
             /**
-             * TODO
-             * we might have even better performance by doing a bulkDocs
+             * TODO we might have even better performance by doing a bulkDocs
              * on index creation
              */
-            console.log('pouch create index: ' + indexName);
             return pouch.createIndex({
                 name: indexName,
                 ddoc: indexName,

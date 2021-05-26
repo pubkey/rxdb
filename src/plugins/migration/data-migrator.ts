@@ -220,10 +220,6 @@ export async function createOldCollection(
         )
     };
 
-    if (schema.doKeyCompression()) {
-        ret._keyCompressor = overwritable.createKeyCompressor(schema);
-    }
-
     return ret;
 }
 
@@ -445,9 +441,6 @@ export function _migrateDocument(
                 );
 
                 saveData._attachments = attachmentsBefore;
-
-                console.log('save migrated data:');
-                console.dir(saveData);
 
                 return oldCollection.newestCollection.pouch
                     .bulkDocs([saveData], {

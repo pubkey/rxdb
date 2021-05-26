@@ -103,7 +103,6 @@ export function createRxDocument<DT, OM>(
 
     // TODO remove this check when rx-storage is migrated
     if (!primary) {
-        console.dir(docData);
         throw new Error('createRxDocument() missing primary ' + rxCollection.schema.primaryPath);
     }
 
