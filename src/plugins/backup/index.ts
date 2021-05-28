@@ -20,6 +20,7 @@ import type {
     RxDocument,
     RxPlugin
 } from '../../types';
+import { lastOfArray } from '../../util';
 import {
     clearFolder,
     deleteFolder,
@@ -145,29 +146,32 @@ export class RxBackupState {
                     let hasMore = true;
                     while (hasMore && !this.isStopped) {
                         await this.database.requestIdlePromise();
-                        const pouchChanges: PouchdbChangesResult = await collection.pouch.changes({
-                            live: false,
-                            since: lastSequence,
+
+                        const changes = await collection.storageInstance.getChanges({
+                            startSequence: lastSequence,
                             limit: this.options.batchSize,
-                            include_docs: false
+                            order: 'asc'
                         });
-                        lastSequence = pouchChanges.last_seq;
+
+                        const lastChange = lastOfArray(changes);
+                        if (lastChange) {
+                            lastSequence = lastChange.sequence;
+                        }
                         meta.collectionStates[collectionName].lastSequence = lastSequence;
 
-                        const docIds: string[] = pouchChanges.results
-                            .filter(doc => {
+                        const docIds: string[] = changes
+                            .filter(change => {
                                 if (
-                                    processedDocuments.has(doc.id) &&
-                                    doc.seq < newestSeq
+                                    processedDocuments.has(change.id) &&
+                                    change.sequence < newestSeq
                                 ) {
                                     return false;
                                 } else {
-                                    processedDocuments.add(doc.id);
+                                    processedDocuments.add(change.id);
                                     return true;
                                 }
                             })
                             .map(r => r.id)
-                            .filter(id => !id.startsWith('_design/'))
                             // unique
                             .filter((elem, pos, arr) => arr.indexOf(elem) === pos);
                         await this.database.requestIdlePromise();
