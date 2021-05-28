@@ -4,6 +4,7 @@
 
 Features:
   - Added `RxDatabase.migrationStates()` which returns an observable to observe the state of all ongoing migrations.
+  - Added `dataPath` property to GraphQL replication pull options to allow the document JSON lookup path to configured instead of assuming the document data is always the first child of the response [#2606](https://github.com/pubkey/rxdb/issues/2606)
 
 Bugfixes:
   - Ensure every background task is done when `RxDatabase.destroy()` resolves. [#2938](https://github.com/pubkey/rxdb/issues/2938)

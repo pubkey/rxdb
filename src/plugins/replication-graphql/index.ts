@@ -14,6 +14,7 @@ import {
     filter
 } from 'rxjs/operators';
 import GraphQLClient from 'graphql-client';
+import objectPath from 'object-path';
 import {
     promiseWait,
     flatClone,
@@ -234,9 +235,8 @@ export class RxGraphQLReplicationState {
             return false;
         }
 
-        // this assumes that there will be always only one property in the response
-        // is this correct?
-        const data: any[] = result.data[Object.keys(result.data)[0]];
+        const dataPath = (this.pull as any).dataPath || ['data', Object.keys(result.data)[0]];
+        const data: any[] = objectPath.get(result, dataPath);
         const modified: any[] = (await Promise.all(data
             .map(async (doc: any) => await (this.pull as any).modifier(doc))
         )).filter(doc => !!doc);
