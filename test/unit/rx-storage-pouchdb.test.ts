@@ -10,6 +10,7 @@ import {
     randomCouchString,
     getPseudoSchemaForVersion,
     getFromMapOrThrow,
+    getNewestSequence
 } from '../../plugins/core';
 
 import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
@@ -344,6 +345,34 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     doc.value,
                     writeData.value
                 );
+
+                storageInstance.close();
+            });
+        });
+    });
+    describe('helper', () => {
+        describe('.getNewestSequence()', () => {
+            it('should get the latest sequence', async () => {
+                const storageInstance = await storage.createStorageInstance<{ key: string }>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    options: {
+                        auto_compaction: false
+                    }
+                });
+
+                const latestBefore = await getNewestSequence(storageInstance);
+                await storageInstance.bulkWrite(false, [
+                    {
+                        key: 'foobar'
+                    },
+                    {
+                        key: 'foobar2'
+                    }
+                ]);
+                const latestAfter = await getNewestSequence(storageInstance);
+                assert.ok(latestAfter > latestBefore);
 
                 storageInstance.close();
             });

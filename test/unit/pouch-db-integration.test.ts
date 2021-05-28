@@ -266,26 +266,6 @@ config.parallel('pouch-db-integration.test.js', () => {
                 });
             });
         });
-        describe('.getNewestSequence()', () => {
-            it('should get the latest sequence', async () => {
-                const pouchdb = new PouchDB(
-                    randomCouchString(10),
-                    {
-                        adapter: 'memory'
-                    }
-                );
-
-                const latestBefore = await getNewestSequence(pouchdb);
-                await pouchdb.put({
-                    _id: 'foobar'
-                });
-                await pouchdb.put({
-                    _id: 'foobar2'
-                });
-                const latestAfter = await getNewestSequence(pouchdb);
-                assert.ok(latestAfter > latestBefore);
-            });
-        });
     });
     describe('BUGS: pouchdb', () => {
         it('_local documents should not be cached by pouchdb', async () => {

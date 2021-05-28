@@ -17,8 +17,7 @@ export {
     PouchDB,
     validateCouchDBString,
     getBatch,
-    countAllUndeleted,
-    getNewestSequence
+    countAllUndeleted
 } from './pouch-db';
 
 export {
@@ -75,7 +74,12 @@ export {
     pouchSwapIdToPrimary
 } from './rx-storage-pouchdb';
 export {
-    findLocalDocument
+    findLocalDocument,
+    getSingleDocument,
+    getNewestSequence,
+    getAllDocuments,
+    writeSingleLocal,
+    writeSingle
 } from './rx-storage-helper';
 
 export {

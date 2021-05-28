@@ -24,9 +24,9 @@ import {
     newRxTypeError
 } from './rx-error';
 import type {
-    PouchDBInstance
+    PouchDBInstance, RxCollection
 } from './types';
-import { isFolderPath } from './util';
+import { isFolderPath, lastOfArray } from './util';
 
 /**
  * get the number of all undeleted documents
@@ -151,20 +151,6 @@ export function pouchAttachmentBinaryHash(data: any): Promise<string> {
             res('md5-' + d);
         });
     });
-}
-
-export async function getNewestSequence(
-    pouch: PouchDBInstance
-): Promise<number> {
-    const pouchChanges = await pouch.changes({
-        live: false,
-        since: 0,
-        limit: 1,
-        descending: true,
-        include_docs: false
-    });
-
-    return pouchChanges.last_seq;
 }
 
 export function isInstanceOf(obj: any) {

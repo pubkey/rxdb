@@ -11,7 +11,7 @@ import {
     filter,
     map
 } from 'rxjs/operators';
-import { getNewestSequence } from '../../pouch-db';
+import { getNewestSequence } from '../../rx-storage-helper';
 import type {
     BackupOptions,
     PouchdbChangesResult,
@@ -132,7 +132,7 @@ export class RxBackupState {
                     const collection = this.database.collections[collectionName];
 
                     await this.database.requestIdlePromise();
-                    const newestSeq = await getNewestSequence(collection.pouch);
+                    const newestSeq = await getNewestSequence(collection.storageInstance);
 
                     if (!meta.collectionStates[collectionName]) {
                         meta.collectionStates[collectionName] = {

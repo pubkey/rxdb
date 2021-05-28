@@ -12,6 +12,7 @@ import type {
     WithRevision,
     WithWriteRevision
 } from './types';
+import { lastOfArray } from './util';
 
 export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
 
@@ -103,5 +104,21 @@ export async function findLocalDocument(
         return null;
     } else {
         return doc;
+    }
+}
+
+export async function getNewestSequence(
+    storageInstance: RxStorageInstance<any, any, any>
+): Promise<number> {
+    const changes = await storageInstance.getChanges({
+        order: 'desc',
+        limit: 1,
+        startSequence: 0
+    });
+    const last = lastOfArray(changes);
+    if (last) {
+        return last.sequence;
+    } else {
+        return 0;
     }
 }
