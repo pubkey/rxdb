@@ -160,6 +160,10 @@ export type PouchAttachmentWithData = PouchAttachmentMeta & {
 export type PouchChangeDoc = {
     _id: string;
     _rev: string;
+    /**
+     * True if the document is deleted.
+     */
+    _deleted?: boolean;
     _attachments: {
         [attachmentId: string]: PouchAttachmentMeta
     };

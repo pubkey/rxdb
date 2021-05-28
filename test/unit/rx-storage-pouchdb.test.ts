@@ -165,6 +165,74 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 storageInstance.close();
             });
         });
+        describe('.getChanges()', () => {
+            it('should get the correct changes', async () => {
+
+                const storageInstance = await storage.createStorageInstance<{ key: string; value: string; }>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    options: {
+                        auto_compaction: false
+                    }
+                });
+                const writeData = {
+                    key: 'foobar',
+                    value: 'one',
+                    _rev: undefined as any,
+                    _deleted: false
+                };
+
+                // insert
+                const firstWriteResult = await storageInstance.bulkWrite(false, [writeData]);
+                const writeDocResult = getFromMapOrThrow(firstWriteResult.success, writeData.key);
+
+                const changesAfterWrite = await storageInstance.getChanges({
+                    order: 'asc',
+                    startSequence: 0
+                });
+                const firstChangeAfterWrite = changesAfterWrite[0];
+                if (!firstChangeAfterWrite || !firstChangeAfterWrite.doc) {
+                    throw new Error('missing change');
+                }
+                assert.ok(firstChangeAfterWrite.operation === 'INSERT');
+                assert.strictEqual(firstChangeAfterWrite.sequence, 1);
+
+
+                // update
+                writeData._rev = writeDocResult._rev;
+                const updateResult = await storageInstance.bulkWrite(false, [writeData]);
+                const updateDocResult = getFromMapOrThrow(updateResult.success, writeData.key);
+                const changesAfterUpdate = await storageInstance.getChanges({
+                    order: 'asc',
+                    startSequence: 0
+                });
+                const firstChangeAfterUpdate = changesAfterUpdate[0];
+                if (!firstChangeAfterUpdate || !firstChangeAfterUpdate.doc) {
+                    throw new Error('missing change');
+                }
+
+                assert.ok(firstChangeAfterUpdate.operation === 'UPDATE');
+                assert.strictEqual(firstChangeAfterUpdate.sequence, 2);
+
+                // delete
+                writeData._rev = updateDocResult._rev;
+                writeData._deleted = true;
+                await storageInstance.bulkWrite(false, [writeData]);
+                const changesAfterDelete = await storageInstance.getChanges({
+                    order: 'asc',
+                    startSequence: 0
+                });
+                const firstChangeAfterDelete = changesAfterDelete[0];
+                if (!firstChangeAfterDelete || !firstChangeAfterDelete.previous) {
+                    throw new Error('missing change');
+                }
+                assert.ok(firstChangeAfterDelete.operation === 'DELETE');
+                assert.strictEqual(firstChangeAfterDelete.sequence, 3);
+
+                storageInstance.close();
+            });
+        });
     });
     describe('RxStorageKeyObjectInstance', () => {
         describe('RxStorageKeyObjectInstance.bulkWrite()', () => {

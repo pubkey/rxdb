@@ -259,6 +259,10 @@ export function randomCouchString(length: number = 10): string {
     return text;
 }
 
+export function lastOfArray<T>(ar: T[]): T {
+    return ar[ar.length - 1];
+}
+
 /**
  * shuffle the given array
  */

@@ -1,8 +1,10 @@
-import {
+import type {
     SortComparator,
     QueryMatcher
 } from 'event-reduce-js';
-import {
+import type {
+    ChangeStreamEvent,
+    ChangeStreamOnceOptions,
     RxLocalDocumentData,
     RxStorageBulkWriteResponse,
     RxStorageInstanceCreationParams,
@@ -13,9 +15,11 @@ import {
 } from './types/rx-storage';
 import type {
     MangoQuery,
-    RxQuery,
     RxJsonSchema
 } from './types';
+import type {
+    Observable
+} from 'rxjs';
 
 
 export type PreparedQuery<DocType> = MangoQuery<DocType> | any;
@@ -257,4 +261,32 @@ export interface RxStorageInstance<
          */
         preparedQuery: PreparedQuery<DocumentData>
     ): Promise<RxStorageQueryResult<DocumentData>>;
+
+
+    /**
+     * Returns the changes once,
+     * depending on the given options.
+     * 
+     * IMPORTANT: When multiple changes have happened
+     * to the same document, only return the newest change
+     * of each document. We do this because atm it is not possible
+     * to get all changes out of pouchdb.
+     * @link https://stackoverflow.com/questions/33474864/is-there-a-way-to-get-all-revisions-of-a-document-in-pouchdb-when-using-the-chan
+     * TODO this must be fixed to return all changes event of the same document.
+     */
+    getChanges(
+        options: ChangeStreamOnceOptions
+    ): Promise<ChangeStreamEvent<DocumentData>[]>;
+
+    /**
+     * Returns an ongoing stream
+     * of all changes that happen to the
+     * storage instance.
+     * Do not forget to unsubscribe.
+     */
+    /*
+     changeStream(
+        options: ChangeStreamOptions
+    ): Observable<ChangeStreamEvent<DocumentData>>;
+    */
 }

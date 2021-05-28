@@ -1,3 +1,4 @@
+import type { ChangeEvent } from 'event-reduce-js';
 import { RxJsonSchema } from './rx-schema';
 
 
@@ -104,3 +105,41 @@ export type RxStorageInstanceCreationParams<DocumentData, InstanceCreationOption
     schema: RxJsonSchema<DocumentData>;
     options: InstanceCreationOptions;
 }
+
+export type ChangeStreamOptions = {
+
+    /**
+     * Sequence number of the first event to start with.
+     * If you want to get all ongoing events,
+     * first get the latest sequence number and input it here.
+     */
+    startSequence: number;
+    /**
+     * limits the amount of results
+     */
+    limit?: number;
+}
+
+export type ChangeStreamOnceOptions = ChangeStreamOptions & {
+    /**
+     * On one-time change stream results,
+     * we can define the sort order
+     * to either get the newest or the oldest events.
+     */
+    order: 'asc' | 'desc';
+};
+
+export type ChangeStreamEvent<DocumentData> = ChangeEvent<WithRevision<DocumentData>> & {
+    /**
+     * An integer that is increasing
+     * and unique per event.
+     * Can be used to sort events or get information
+     * about how many events there are.
+     */
+    sequence: number;
+    /**
+     * The value of the primary key
+     * of the changed document
+     */
+    id: string;
+};

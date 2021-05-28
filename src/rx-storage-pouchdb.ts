@@ -27,14 +27,17 @@ import type {
     PouchBulkDocResultRow,
     RxStorageQueryResult,
     WithDeleted,
-    RxStorageInstanceCreationParams
+    RxStorageInstanceCreationParams,
+    ChangeStreamEvent,
+    ChangeStreamOnceOptions
 } from './types';
 
 import { CompareFunction } from 'array-push-at-sort-position';
 import {
     flatClone,
     adapterObject,
-    getFromMapOrThrow
+    getFromMapOrThrow,
+    getHeightOfRevision
 } from './util';
 import {
     SortComparator,
@@ -47,10 +50,20 @@ import {
 import { newRxError } from './rx-error';
 import { getPrimary, getSchemaByObjectPath } from './rx-schema';
 
+import {
+    from
+} from 'rxjs';
+
 /**
  * prefix of local pouchdb documents
  */
 export const POUCHDB_LOCAL_PREFIX: '_local/' = '_local/';
+/**
+ * Pouchdb stores indexes as design documents,
+ * we have to filter them out and not return the
+ * design documents to the outside.
+ */
+export const POUCHDB_DESIGN_PREFIX: '_design/' = '_design/';
 
 export type PouchStorageInternals = {
     pouch: PouchDBInstance;
@@ -133,10 +146,16 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
                 ret.error.set(resultRow.id, err);
             } else {
                 const pushObj: WithRevision<RxLocalDocumentData> = flatClone(insertDataById.get(resultRow.id)) as any;
+                console.log('----');
+                console.dir(pushObj);
                 pushObj._rev = (resultRow as PouchBulkDocResultRow).rev;
+                console.dir(pushObj);
                 ret.success.set(resultRow.id, pushObj);
             }
         });
+
+        console.log('ASDFASDFASDF');
+        console.dir(ret);
 
         return ret;
     }
@@ -170,7 +189,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     RxDocType,
     PouchStorageInternals,
     PouchSettings
-    > {
+> {
     constructor(
         public readonly databaseName: string,
         public readonly collectionName: string,
@@ -454,6 +473,83 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             });
         return ret;
     }
+
+    changeStream() {
+        return from([]);
+    }
+
+    async getChanges(
+        options: ChangeStreamOnceOptions
+    ): Promise<ChangeStreamEvent<WithRevision<RxDocType>>[]> {
+        const primaryKey = getPrimary<any>(this.schema);
+
+        const pouchResults = await this.internals.pouch.changes({
+            live: false,
+            limit: options.limit,
+            include_docs: true,
+            attachments: true,
+            descending: options.order === 'asc' ? false : true,
+            since: options.startSequence
+        });
+
+        console.log('pouch changes result');
+        console.dir(pouchResults);
+
+        const changes: ChangeStreamEvent<WithRevision<RxDocType>>[] = pouchResults.results
+            .filter(pouchRow => !pouchRow.id.startsWith(POUCHDB_DESIGN_PREFIX))
+            .map(pouchRow => {
+                const doc = pouchRow.doc;
+                if (!doc) {
+                    console.dir(pouchRow);
+                    throw new Error('doc missing');
+                }
+
+                const revHeight = getHeightOfRevision(doc._rev);
+
+                if (pouchRow.deleted) {
+                    const previousDoc = flatClone(
+                        pouchSwapIdToPrimary(
+                            primaryKey,
+                            pouchRow.doc
+                        )
+                    );
+                    delete previousDoc._deleted;
+                    const ev: ChangeStreamEvent<WithRevision<RxDocType>> = {
+                        sequence: pouchRow.seq,
+                        id: pouchRow.id,
+                        operation: 'DELETE',
+                        doc: null,
+                        previous: previousDoc
+                    };
+                    return ev;
+                } else if (revHeight === 1) {
+                    const ev: ChangeStreamEvent<WithRevision<RxDocType>> = {
+                        sequence: pouchRow.seq,
+                        id: pouchRow.id,
+                        operation: 'INSERT',
+                        doc: pouchSwapIdToPrimary(
+                            primaryKey,
+                            pouchRow.doc
+                        ),
+                        previous: null
+                    };
+                    return ev;
+                } else {
+                    const ev: ChangeStreamEvent<WithRevision<RxDocType>> = {
+                        sequence: pouchRow.seq,
+                        id: pouchRow.id,
+                        operation: 'UPDATE',
+                        doc: pouchSwapIdToPrimary(
+                            primaryKey,
+                            pouchRow.doc
+                        ),
+                        previous: 'UNKNOWN'
+                    };
+                    return ev;
+                }
+            });
+        return changes;
+    }
 }
 
 export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSettings> {
@@ -585,6 +681,10 @@ export function pouchSwapPrimaryToId(
  * out: 'foobar'
  */
 export function pouchStripLocalFlagFromPrimary(str: string): string {
+    // TODO remove this check once the migration is done
+    if (!str.startsWith(POUCHDB_LOCAL_PREFIX)) {
+        throw new Error('does not start with local prefix');
+    }
     return str.substring(POUCHDB_LOCAL_PREFIX.length);
 }
 
