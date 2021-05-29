@@ -161,7 +161,7 @@ const replicationState = myCollection.syncGraphQL({
     pull: {
         queryBuilder: pullQueryBuilder, // the queryBuilder from above
         modifier: doc => doc // (optional) modifies all pulled documents before they are handeled by RxDB. Returning null will skip the document.
-        dataPath: null // (optional) specifies the object path to access the document(s). Otherwise, the first result of the response data is used.
+        dataPath: undefined // (optional) specifies the object path to access the document(s). Otherwise, the first result of the response data is used.
     },
     deletedFlag: 'deleted', // the flag which indicates if a pulled document is deleted
     live: true // if this is true, rxdb will watch for ongoing changes and sync them, when false, a one-time-replication will be done
