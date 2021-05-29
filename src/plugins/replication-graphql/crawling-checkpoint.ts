@@ -1,7 +1,7 @@
 import {
-    PLUGIN_IDENT,
     getDocFromPouchOrNull,
-    wasRevisionfromPullReplication
+    wasRevisionfromPullReplication,
+    GRAPHQL_REPLICATION_PLUGIN_IDENT
 } from './helper';
 import type {
     RxCollection,
@@ -13,6 +13,7 @@ import {
     POUCHDB_LOCAL_PREFIX,
     pouchSwapIdToPrimary
 } from '../../rx-storage-pouchdb';
+import { findLocalDocument, writeSingleLocal } from '../../rx-storage-helper';
 
 /**
  * when the replication starts,
@@ -33,7 +34,7 @@ import {
 // things for the push-checkpoint
 //
 
-const pushSequenceId = (endpointHash: string) => POUCHDB_LOCAL_PREFIX + PLUGIN_IDENT + '-push-checkpoint-' + endpointHash;
+const pushSequenceId = (endpointHash: string) => GRAPHQL_REPLICATION_PLUGIN_IDENT + '-push-checkpoint-' + endpointHash;
 
 /**
  * @return last sequence checkpoint
@@ -42,22 +43,27 @@ export async function getLastPushSequence(
     collection: RxCollection,
     endpointHash: string
 ): Promise<number> {
-    const doc = await getDocFromPouchOrNull(
-        collection,
+
+    const doc = await findLocalDocument(
+        collection.localDocumentsStore,
         pushSequenceId(endpointHash)
     );
-    if (!doc) return 0;
-    else return doc.value;
+    if (!doc) {
+        return 0;
+    } else {
+        return doc.value;
+    }
 }
 
 export async function setLastPushSequence(
     collection: RxCollection,
     endpointHash: string,
     seq: any
-) {
+): Promise<{ _id: string; value: number; _rev: string }> {
     const _id = pushSequenceId(endpointHash);
-    let doc = await getDocFromPouchOrNull(
-        collection,
+
+    let doc: any = await findLocalDocument(
+        collection.localDocumentsStore,
         _id
     );
     if (!doc) {
@@ -69,8 +75,12 @@ export async function setLastPushSequence(
         doc.value = seq;
     }
 
-    const res = await collection.pouch.put(doc);
-    return res;
+    const res = await writeSingleLocal(
+        collection.localDocumentsStore,
+        false,
+        doc
+    );
+    return res as any;
 }
 
 
@@ -176,7 +186,7 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
 //
 
 
-const pullLastDocumentId = (endpointHash: string) => POUCHDB_LOCAL_PREFIX + PLUGIN_IDENT + '-pull-checkpoint-' + endpointHash;
+const pullLastDocumentId = (endpointHash: string) => POUCHDB_LOCAL_PREFIX + GRAPHQL_REPLICATION_PLUGIN_IDENT + '-pull-checkpoint-' + endpointHash;
 
 export async function getLastPullDocument(
     collection: RxCollection,

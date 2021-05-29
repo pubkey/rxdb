@@ -5,7 +5,7 @@ import type {
     RxCollection
 } from '../../types';
 
-export const PLUGIN_IDENT = 'rxdbreplicationgraphql';
+export const GRAPHQL_REPLICATION_PLUGIN_IDENT = 'rxdbreplicationgraphql';
 
 // does nothing
 export const DEFAULT_MODIFIER = (d: any) => Promise.resolve(d);
@@ -90,7 +90,7 @@ export function createRevisionForPulledDocument(
     const ret =
         dataHash.substring(0, 8) +
         endpointHash.substring(0, 8) +
-        PLUGIN_IDENT;
+        GRAPHQL_REPLICATION_PLUGIN_IDENT;
 
     return ret;
 }
@@ -99,7 +99,7 @@ export function wasRevisionfromPullReplication(
     endpointHash: string,
     revision: string
 ) {
-    const ending = endpointHash.substring(0, 8) + PLUGIN_IDENT;
+    const ending = endpointHash.substring(0, 8) + GRAPHQL_REPLICATION_PLUGIN_IDENT;
     const ret = revision.endsWith(ending);
     return ret;
 }

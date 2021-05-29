@@ -36,7 +36,8 @@ import {
     setLastPullDocument,
     graphQLSchemaFromRxSchema,
     pullQueryBuilderFromRxSchema,
-    pushQueryBuilderFromRxSchema
+    pushQueryBuilderFromRxSchema,
+    GRAPHQL_REPLICATION_PLUGIN_IDENT
 } from '../../plugins/replication-graphql';
 import * as schemas from '../helper/schemas';
 import {
@@ -505,7 +506,8 @@ describe('replication-graphql.test.js', () => {
                         getEndpointHash(),
                         1
                     );
-                    assert.ok(ret.id.startsWith(POUCHDB_LOCAL_PREFIX));
+
+                    assert.ok(ret._id.startsWith(GRAPHQL_REPLICATION_PLUGIN_IDENT));
                     c.database.destroy();
                 });
                 it('should be able to run multiple times', async () => {
