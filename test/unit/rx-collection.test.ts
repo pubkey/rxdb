@@ -29,7 +29,7 @@ import { RxDBMigrationPlugin } from '../../plugins/migration';
 addRxPlugin(RxDBMigrationPlugin);
 
 import { HumanDocumentType } from '../helper/schema-objects';
-import { first } from 'rxjs/operators';
+import { firstValueFrom } from 'rxjs';
 
 config.parallel('rx-collection.test.js', () => {
     async function getDb(): Promise<RxDatabase> {
@@ -1699,7 +1699,7 @@ config.parallel('rx-collection.test.js', () => {
             const c = await humansCollection.create(5);
             const docs = await c.find().exec();
             const ids = docs.map(d => d.primary);
-            const res = await c.findByIds$(ids).pipe(first()).toPromise();
+            const res = await firstValueFrom(c.findByIds$(ids));
 
             assert.ok(res);
             assert.ok(res instanceof Map);
@@ -1711,7 +1711,7 @@ config.parallel('rx-collection.test.js', () => {
 
             const docs = await c.find().exec();
             const ids = docs.map(d => d.primary);
-            const res = await c.findByIds$(ids).pipe(first()).toPromise();
+            const res = await firstValueFrom(c.findByIds$(ids));
 
             assert.ok(res.has(docs[0].primary));
             assert.strictEqual(res.size, 5);
@@ -1724,7 +1724,7 @@ config.parallel('rx-collection.test.js', () => {
             const ids = docs.map(d => d.primary);
             ids.push('foobar');
             const obs = c.findByIds$(ids);
-            await obs.pipe(first()).toPromise();
+            await firstValueFrom(obs);
 
             // check insert
             const addData = schemaObjects.human();
@@ -1732,21 +1732,23 @@ config.parallel('rx-collection.test.js', () => {
             await c.insert(addData);
             // insert whose id is not in ids-list should not affect anything
             await c.insert(schemaObjects.human());
-            const res2 = await obs.pipe(first()).toPromise();
+
+
+            const res2 = await firstValueFrom(obs);
             assert.strictEqual(res2.size, 6);
             assert.ok(res2.has('foobar'));
 
             // check update
             addData.firstName = 'barfoo';
             await c.upsert(addData);
-            const res3 = await obs.pipe(first()).toPromise();
+            const res3 = await firstValueFrom(obs);
             const getDoc = res3.get('foobar');
             assert.ok(getDoc);
             assert.strictEqual(getDoc.firstName, 'barfoo');
 
             // check delete
             await getDoc.remove();
-            const res4 = await obs.pipe(first()).toPromise();
+            const res4 = await firstValueFrom(obs);
             assert.strictEqual(false, res4.has('foobar'));
 
             c.database.destroy();

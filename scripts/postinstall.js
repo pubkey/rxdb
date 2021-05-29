@@ -14,6 +14,7 @@ const CI = is(env.CI);
 const COLOR = is(env.npm_config_color);
 const DISABLE_OPENCOLLECTIVE = is(env.DISABLE_OPENCOLLECTIVE);
 const SILENT = !!~['silent', 'error', 'warn'].indexOf(env.npm_config_loglevel);
+const SHOW = false;
 
 function is(it) {
     return !!it && it !== '0' && it !== 'false';
@@ -24,8 +25,9 @@ function log(it) {
     console.log(COLOR ? it : it.replace(/\u001B\[\d+m/g, ''));
 }
 
-if (!ADBLOCK && !CI && !DISABLE_OPENCOLLECTIVE && !SILENT) {
-//    log('\u001b[96m\u001b[1mThank you for using RxDB ( https://github.com/pubkey/rxdb ) \u001b[96m\u001b[1m \n');
-//    log('\u001B[96mHelp me to improve RxDB by answering a few questions ( < 1 minute): \u001B[0m');
-//    log('\u001B[96m>\u001B[94m Open the survey under https://forms.gle/y9d73Npyu8h84Ep29 \u001B[0m');
+if (SHOW && !ADBLOCK && !CI && !DISABLE_OPENCOLLECTIVE && !SILENT) {
+    log('\u001b[96m\u001b[1mThank you for using RxDB ( https://github.com/pubkey/rxdb ) \u001b[96m\u001b[1m \n');
+    log('\u001B[96mHelp me to improve RxDB by answering a few questions ( < 2 minutes): \u001B[0m');
+    log('\u001B[96m>\u001B[94m Open the survey at https://forms.gle/aGPWdo2iELj4Ykkm9 \u001B[0m');
+    log('\u001b[96m\u001b[1mThank you \u001b[96m\u001b[1m \n');
 }

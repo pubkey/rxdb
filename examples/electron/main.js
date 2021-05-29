@@ -5,7 +5,7 @@ const url = require('url');
 const database = require('./database');
 
 const { addRxPlugin } = require('rxdb');
-addRxPlugin(require('rxdb/plugins/server'));
+addRxPlugin(require('rxdb/plugins/server').RxDBServerPlugin);
 addRxPlugin(require('pouchdb-adapter-memory'));
 
 const app = electron.app;

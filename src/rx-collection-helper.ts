@@ -17,8 +17,9 @@ export function _handleToPouch(
 ) {
     data = (col._crypter as any).encrypt(data);
     data = col.schema.swapPrimaryToId(data);
-    if (col.schema.doKeyCompression())
+    if (col.schema.doKeyCompression()) {
         data = col._keyCompressor.compress(data);
+    }
     return data;
 }
 export function _handleFromPouch(
@@ -29,8 +30,9 @@ export function _handleFromPouch(
     data = col.schema.swapIdToPrimary(data);
     if (col.schema.doKeyCompression())
         data = col._keyCompressor.decompress(data);
-    if (noDecrypt) return data;
-
+    if (noDecrypt) {
+        return data;
+    }
 
     data = (col._crypter as any).decrypt(data);
     return data;

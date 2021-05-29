@@ -85,6 +85,23 @@ The words `dump()` and `importDump()` are confusing. Name it import/export or st
 
 This should be the default. `skipIfSame=true`
 
+## db.server() should be async
+
+`db.server()` should be async and reject the promise when the startup fails, for example because the port is already used.
+
+## make primary key required
+
+The primary key in a schema must be required which makes it less complex to implement other `RxStorage` modules.
+Also the primary key must be set in the top level of the schema as string instead of the `primary: true` in the property.
+This makes it faster to read out the primary key of the schema and also better ensures the required-ness via typescript.
+
+## composite primary keys
+
+https://github.com/pubkey/rxdb/issues/3168#issuecomment-845366925
+
+## Indexes should use desc/asc like in the RxQuery sort oder
+Atm indexes are defined as `myKey` or `-myKey`. Instead we should use `{myKey: 'asc'}` and `{myKey: 'desc'}` like we do in the sort order of `RxQuery`.
+
 # Maybe
 
 ## Use Proxy instead of getters/setter on RxDocument

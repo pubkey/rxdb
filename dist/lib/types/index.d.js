@@ -147,4 +147,43 @@ Object.keys(_replicationGraphql).forEach(function (key) {
   });
 });
 
+var _server = require("./plugins/server");
+
+Object.keys(_server).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _server[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _server[key];
+    }
+  });
+});
+
+var _migration = require("./plugins/migration");
+
+Object.keys(_migration).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _migration[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _migration[key];
+    }
+  });
+});
+
+var _backup = require("./plugins/backup");
+
+Object.keys(_backup).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _backup[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _backup[key];
+    }
+  });
+});
+
 //# sourceMappingURL=index.d.js.map

@@ -3,10 +3,6 @@ import AsyncTestUtil from 'async-test-util';
 import config from './config';
 import clone from 'clone';
 
-import {
-    first
-} from 'rxjs/operators';
-
 import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from './../helper/schemas';
@@ -18,6 +14,7 @@ import {
     promiseWait,
     randomCouchString
 } from '../../plugins/core';
+import { firstValueFrom } from 'rxjs';
 
 config.parallel('rx-query.test.js', () => {
     describe('.constructor', () => {
@@ -1183,17 +1180,11 @@ config.parallel('rx-query.test.js', () => {
             // subscriptions
             const c2 = await humansCollection.create(2);
             const query2 = c2.find();
-            const res1: any = await query2.$
-                .pipe(
-                    first()
-                ).toPromise();
+            const res1: any = await firstValueFrom(query2.$);
             res1.push({
                 foo: 'bar'
             });
-            const res2 = await query2.$
-                .pipe(
-                    first()
-                ).toPromise();
+            const res2 = await firstValueFrom(query2.$);
             assert.strictEqual(res2.length, 2);
 
             c2.database.destroy();

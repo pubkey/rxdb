@@ -17,12 +17,12 @@ import { create as createRxCollection } from './rx-collection';
 import { RxChangeEvent } from './rx-change-event';
 import { getRxStoragePouchDb } from './rx-storage-pouchdb';
 import { getAllDocuments, deleteStorageInstance } from './rx-database-internal-store';
+
 /**
  * stores the combinations
  * of used database-names with their adapters
  * so we can throw when the same database is created more then once
  */
-
 var USED_COMBINATIONS = {};
 var DB_COUNT = 0;
 export var RxDatabaseBase = /*#__PURE__*/function () {
@@ -170,6 +170,8 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
                 useArgs.database = _this3; // TODO check if already exists and schema hash has changed
                 // collection already exists
 
+                // TODO check if already exists and schema hash has changed
+                // collection already exists
                 if (_this3.collections[name]) {
                   throw newRxError('DB3', {
                     name: name
@@ -177,6 +179,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
                 } // collection already exists but has different schema
 
 
+                // collection already exists but has different schema
                 if (internalDoc && internalDoc.schemaHash !== schemaHashByName[name]) {
                   throw newRxError('DB6', {
                     name: name,
@@ -186,6 +189,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
                 } // run hooks
 
 
+                // run hooks
                 var hookData = flatClone(args);
                 hookData.database = _this3;
                 hookData.name = name;
@@ -342,6 +346,10 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
 
   _proto.server = function server(_options) {
     throw pluginMissing('server');
+  };
+
+  _proto.backup = function backup(_options) {
+    throw pluginMissing('backup');
   };
 
   _proto.leaderElector = function leaderElector() {

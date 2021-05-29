@@ -170,9 +170,9 @@ var InMemoryRxCollection = /*#__PURE__*/function (_RxCollectionBase) {
     var _this3 = this;
 
     if (this._nonPersistentRevisions.size === 0) return Promise.resolve();
-    return this._nonPersistentRevisionsSubject.pipe((0, _operators.filter)(function () {
+    return (0, _rxjs.firstValueFrom)(this._nonPersistentRevisionsSubject.pipe((0, _operators.filter)(function () {
       return _this3._nonPersistentRevisions.size === 0;
-    }), (0, _operators.first)()).toPromise();
+    })));
   }
   /**
    * To know which events are replicated and which are not,

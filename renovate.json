@@ -4,8 +4,6 @@
   ],
   "statusCheckVerify": true,
   "ignoreDeps": [
-    "node",
-    "webpack"
   ],
   "automerge": true,
   "major": {

@@ -3,8 +3,45 @@
 ### X.X.X (coming soon)
 
 Features:
-  - Added `RxDatabase.migrationStates()` which returns an observable to observe the state of all ongoing migrations.
   - Added `dataPath` property to GraphQL replication pull options to allow the document JSON lookup path to configured instead of assuming the document data is always the first child of the response [#2606](https://github.com/pubkey/rxdb/issues/2606)
+
+### 9.20.0 (15 May 2021)
+
+Bugfixes:
+  - Auto-cancel one time couchdb replications to not cause a memory leak
+  - Fixed another memory leak when calling the couchdb replication many times.
+
+### 9.19.0 (12 May 2021)
+
+Features:
+  - Added the [backup-plugin](https://rxdb.info/backup.html)
+
+Other:
+  - Updated `rxjs` to version `7.0.1`
+
+### 9.18.0 (26 April 2021)
+
+Bugfixes:
+  - Fixed memory leak in `RxCollection().findByIds$()`
+
+Other:
+  - Added collection name when throwing errors in `RxQuery`
+
+### 9.17.1 (21 April 2021)
+
+Other:
+  - Added hints abount 2021 user survey.
+
+### 9.17.0 (14 April 2021)
+
+Features:
+  - Added possibility to change, update, remove and add `RxAttachment`s inside of a migration strategy.
+
+### 9.16.0 (12 April 2021)
+
+Features:
+  - Added `RxDatabase.migrationStates()` which returns an observable to observe the state of all ongoing migrations.
+  - Added `startupPromise` to the returned object of `RxDatabase().server()`
 
 Bugfixes:
   - Ensure every background task is done when `RxDatabase.destroy()` resolves. [#2938](https://github.com/pubkey/rxdb/issues/2938)
@@ -35,7 +72,7 @@ Other:
 
 ### 9.13.0 (10 February 2021)
 
-Features: 
+Features:
 
   - Added `RxCollection().bulkRemove()` [#2845](https://github.com/pubkey/rxdb/pull/2845) Thanks [@qinyang912](https://github.com/qinyang912)
 
@@ -106,7 +143,7 @@ Features:
   - Added [RxDocument.atomicPatch()](https://rxdb.info/rx-document.html#atomicpatch)
 
 Bugfixes:
-  - (types) Returned values of `syncGraphQL()` did not type-match with `RxGraphQLReplicationState` 
+  - (types) Returned values of `syncGraphQL()` did not type-match with `RxGraphQLReplicationState`
   - `RxDocument.atomicUpdate()` now does a retry on 409 write conflicts
 
 Other:
@@ -133,7 +170,7 @@ Features:
 Other:
   - Refactored GraphQL replication to run faster [#2524](https://github.com/pubkey/rxdb/pull/2524/) Thanks [@corinv](https://github.com/corinv)
 
-### 9.6.0 (7 September 2020) 
+### 9.6.0 (7 September 2020)
 
 Features:
   - Add `RxReplicationState.setHeaders()` [#2399](https://github.com/pubkey/rxdb/pull/2399/) Thanks [@DDoerner](https://github.com/DDoerner)
@@ -659,7 +696,7 @@ Other:
 
 ## 6.0.0 (September 19, 2017) BREAKING
 
-Breaking:    
+Breaking:
   - Filenames are now kebab-case
   - `pouchdb-replication`-plugin is now imported by default, do not import it by your own.
   - `RxDB.create()` throws if you create the same database twice. (You can use [ignoreDuplicate](https://pubkey.github.io/rxdb/rx-database.html#ignoreduplicate))

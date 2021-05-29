@@ -9,9 +9,15 @@ import {
     Subject,
     fromEvent,
     Subscription,
-    Observable
+    Observable,
+    firstValueFrom
 } from 'rxjs';
-import { skipUntil, filter, first } from 'rxjs/operators';
+import {
+    skipUntil,
+    filter,
+    first,
+    mergeMap
+} from 'rxjs/operators';
 
 import {
     promiseWait,
@@ -32,11 +38,11 @@ import {
     isInstanceOf as isRxCollection
 } from '../rx-collection';
 import type {
-    RxQuery,
     RxCollection,
     PouchSyncHandler,
     PouchReplicationOptions,
-    RxPlugin
+    RxPlugin,
+    SyncOptions
 } from '../types';
 import { RxDBWatchForChangesPlugin } from './watch-for-changes';
 
@@ -46,20 +52,13 @@ addRxPlugin(PouchReplicationPlugin);
 // add the watch-for-changes-plugin
 addRxPlugin(RxDBWatchForChangesPlugin);
 
+/**
+ * Contains all pouchdb instances that
+ * are used inside of RxDB by collections or databases.
+ * Used to ensure the remote of a replication cannot be an internal pouchdb.
+ */
 const INTERNAL_POUCHDBS = new WeakSet();
 
-
-export interface SyncOptions {
-    remote: string | any;
-    waitForLeadership?: boolean;
-    direction?: {
-        push?: boolean,
-        pull?: boolean
-    };
-    // for options see https://pouchdb.com/api.html#replication
-    options?: PouchReplicationOptions;
-    query?: RxQuery;
-}
 export class RxReplicationStateBase {
     public _subs: Subscription[] = [];
 
@@ -79,8 +78,8 @@ export class RxReplicationStateBase {
     public canceled: boolean = false;
 
     constructor(
-        public collection: RxCollection,
-        private syncOptions: SyncOptions
+        public readonly collection: RxCollection,
+        public readonly syncOptions: SyncOptions
     ) {
         // create getters
         Object.keys(this._subjects).forEach(key => {
@@ -107,21 +106,28 @@ export class RxReplicationStateBase {
         }
 
         const that: RxReplicationState = this as any;
-        return that.complete$.pipe(
-            filter(x => !!x),
-            first()
-        ).toPromise();
+        return firstValueFrom(
+            that.complete$.pipe(
+                filter(x => !!x)
+            )
+        );
     }
 
-    cancel() {
+    /**
+     * Returns false when the replication has already been canceled
+     */
+    cancel(): Promise<boolean> {
         if (this.canceled) {
-            return;
+            return Promise.resolve(false);
         }
         this.canceled = true;
+        this.collection._repStates.delete(this as any);
         if (this._pouchEventEmitterObject) {
             this._pouchEventEmitterObject.cancel();
         }
         this._subs.forEach(sub => sub.unsubscribe());
+
+        return Promise.resolve(true);
     }
 }
 
@@ -202,7 +208,23 @@ export function setPouchEventEmitter(
                 Promise.all(unhandledEvents).then(() => rxRepState._subjects.complete.next(info));
             })
     );
-
+    // auto-cancel one-time replications on complelete to not cause memory leak
+    if (
+        !rxRepState.syncOptions.options ||
+        !rxRepState.syncOptions.options.live
+    ) {
+        rxRepState._subs.push(
+            rxRepState.complete$.pipe(
+                filter(x => !!x),
+                first(),
+                mergeMap(() => {
+                    return rxRepState.collection.database
+                        .requestIdlePromise()
+                        .then(() => rxRepState.cancel());
+                })
+            ).subscribe()
+        );
+    }
 
     function getIsAlive(emitter: any): Promise<boolean> {
         // "state" will live in emitter.state if single direction replication
@@ -316,7 +338,7 @@ export function sync(
         this.watchForChanges();
         const pouchSync = syncFun(remote, useOptions);
         setPouchEventEmitter(repState, pouchSync);
-        this._repStates.push(repState);
+        this._repStates.add(repState);
     });
 
     return repState;

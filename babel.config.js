@@ -21,7 +21,7 @@ const plugins = [
     }],
     '@babel/transform-sticky-regex',
     '@babel/transform-unicode-regex',
-    '@babel/check-constants', ['@babel/transform-spread', {
+    ['@babel/transform-spread', {
         'loose': true
     }],
     '@babel/transform-parameters', ['@babel/transform-destructuring', {

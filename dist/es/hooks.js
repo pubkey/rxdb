@@ -88,6 +88,12 @@ export function runPluginHooks(hookKey, obj) {
     return fun(obj);
   });
 }
+/**
+ * TODO
+ * we should not run the hooks in parallel
+ * this makes stuff unpredictable.
+ */
+
 export function runAsyncPluginHooks(hookKey, obj) {
   return Promise.all(HOOKS[hookKey].map(function (fun) {
     return fun(obj);

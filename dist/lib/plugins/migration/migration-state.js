@@ -9,6 +9,8 @@ exports.DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE = void 0;
 
 var _rxjs = require("rxjs");
 
+var _util = require("../../util");
+
 var DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE = new WeakMap();
 exports.DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE = DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE;
 
@@ -18,13 +20,7 @@ function getMigrationStateByDatabase(database) {
   }
 
   var subject = DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE.get(database);
-
-  if (!subject) {
-    // should never happen
-    throw new Error('never');
-  }
-
-  return subject;
+  return (0, _util.ensureNotFalsy)(subject);
 }
 /**
  * Complete on database destroy

@@ -1,4 +1,4 @@
-import { getGraphqlFromJsonSchema } from 'get-graphql-from-jsonschema';
+import { getGraphqlSchemaFromJsonSchema } from 'get-graphql-from-jsonschema';
 
 import { scalarTypes } from 'get-graphql-from-jsonschema/build/lib/scalarTypes';
 
@@ -74,7 +74,7 @@ export function graphQLSchemaFromRxSchema(
 
         // input
         const inputSchema = stripKeysFromSchema(schema, collectionSettings.ignoreInputKeys as string[]);
-        const inputGraphQL = getGraphqlFromJsonSchema({
+        const inputGraphQL = getGraphqlSchemaFromJsonSchema({
             rootName: collectionNameInput,
             schema: inputSchema as any,
             direction: 'input'
@@ -87,7 +87,7 @@ export function graphQLSchemaFromRxSchema(
 
         // output
         const outputSchema = stripKeysFromSchema(schema, collectionSettings.ignoreOutputKeys as string[]);
-        const outputGraphQL = getGraphqlFromJsonSchema({
+        const outputGraphQL = getGraphqlSchemaFromJsonSchema({
             rootName: collectionName,
             schema: outputSchema as any,
             direction: 'output'
@@ -101,7 +101,7 @@ export function graphQLSchemaFromRxSchema(
         const queryName = prefixes.feed + ucCollectionName;
         const queryKeys = collectionSettings.feedKeys.map(key => {
             const subSchema: any = schema.properties[key];
-            const graphqlType = scalarTypes[subSchema.type];
+            const graphqlType = (scalarTypes as any)[subSchema.type];
             const keyString = key + ': ' + graphqlType + '';
             return keyString;
         });

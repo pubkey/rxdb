@@ -1,3 +1,4 @@
+import type { BlobBuffer } from './types';
 /**
  * Returns an error that indicates that a plugin is missing
  * We do not throw a RxError because this should not be handled
@@ -44,6 +45,7 @@ export declare function ucfirst(str: string): string;
  * removes trailing and ending dots from the string
  */
 export declare function trimDots(str: string): string;
+export declare function ensureNotFalsy<T>(obj: T | false | undefined | null): T;
 /**
  * deep-sort an object so its attributes are in lexical order.
  * Also sorts the arrays inside of the object if no-array-sort not set
@@ -105,4 +107,12 @@ export declare function overwriteGetterForCaching<ValueType = any>(obj: any, get
  * returns true if the given name is likely a folder path
  */
 export declare function isFolderPath(name: string): boolean;
+export declare const blobBufferUtil: {
+    /**
+     * depending if we are on node or browser,
+     * we have to use Buffer(node) or Blob(browser)
+     */
+    createBlobBuffer(data: string, type: string): BlobBuffer;
+    toString(blobBuffer: BlobBuffer): Promise<string>;
+};
 export {};

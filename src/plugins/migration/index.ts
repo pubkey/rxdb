@@ -29,7 +29,10 @@ export const RxDBMigrationPlugin: RxPlugin = {
             proto.migrationStates = function (this: RxDatabase): Observable<AllMigrationStates> {
                 return getMigrationStateByDatabase(this).pipe(
                     switchMap(list => combineLatest(list)),
-                    shareReplay(1)
+                    shareReplay({
+                        bufferSize: 1,
+                        refCount: true
+                    })
                 );
             };
         },

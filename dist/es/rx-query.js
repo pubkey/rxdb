@@ -1,7 +1,7 @@
 import _createClass from "@babel/runtime/helpers/createClass";
 import deepEqual from 'deep-equal';
-import { merge, BehaviorSubject } from 'rxjs';
-import { mergeMap, filter, map, first, tap } from 'rxjs/operators';
+import { merge, BehaviorSubject, firstValueFrom } from 'rxjs';
+import { mergeMap, filter, map, tap } from 'rxjs/operators';
 import { massageSelector, filterInMemoryFields } from 'pouchdb-selector-core';
 import { sortObject, stringifyFilter, pluginMissing, clone, overwriteGetterForCaching, now } from './util';
 import { newRxError, newRxTypeError } from './rx-error';
@@ -83,6 +83,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
 
       default:
         throw newRxError('QU1', {
+          collection: this.collection.name,
           op: this.op
         });
     }
@@ -112,6 +113,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
     // TODO this should be ensured by typescript
     if (throwIfMissing && this.op !== 'findOne') {
       throw newRxError('QU9', {
+        collection: this.collection.name,
         query: this.mangoQuery,
         op: this.op
       });
@@ -124,10 +126,11 @@ export var RxQueryBase = /*#__PURE__*/function () {
 
 
     return _ensureEqual(this).then(function () {
-      return _this2.$.pipe(first()).toPromise();
+      return firstValueFrom(_this2.$);
     }).then(function (result) {
       if (!result && throwIfMissing) {
         throw newRxError('QU10', {
+          collection: _this2.collection.name,
           query: _this2.mangoQuery,
           op: _this2.op
         });
@@ -416,18 +419,28 @@ function _ensureEqual(rxQuery) {
 
 function __ensureEqual(rxQuery) {
   rxQuery._lastEnsureEqual = now();
-  if (rxQuery.collection.database.destroyed) return false; // db is closed
 
-  if (_isResultsInSync(rxQuery)) return false; // nothing happend
+  if (rxQuery.collection.database.destroyed) {
+    // db is closed
+    return false;
+  }
+
+  if (_isResultsInSync(rxQuery)) {
+    // nothing happend
+    return false;
+  }
 
   var ret = false;
   var mustReExec = false; // if this becomes true, a whole execution over the database is made
 
-  if (rxQuery._latestChangeEvent === -1) mustReExec = true; // have not executed yet -> must run
-
+  if (rxQuery._latestChangeEvent === -1) {
+    // have not executed yet -> must run
+    mustReExec = true;
+  }
   /**
    * try to use the queryChangeDetector to calculate the new results
    */
+
 
   if (!mustReExec) {
     var missedChangeEvents = rxQuery.collection._changeEventBuffer.getFrom(rxQuery._latestChangeEvent + 1);

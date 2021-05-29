@@ -205,6 +205,8 @@ var RxDatabaseBase = /*#__PURE__*/function () {
                 useArgs.database = _this3; // TODO check if already exists and schema hash has changed
                 // collection already exists
 
+                // TODO check if already exists and schema hash has changed
+                // collection already exists
                 if (_this3.collections[name]) {
                   throw (0, _rxError.newRxError)('DB3', {
                     name: name
@@ -212,6 +214,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
                 } // collection already exists but has different schema
 
 
+                // collection already exists but has different schema
                 if (internalDoc && internalDoc.schemaHash !== schemaHashByName[name]) {
                   throw (0, _rxError.newRxError)('DB6', {
                     name: name,
@@ -221,6 +224,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
                 } // run hooks
 
 
+                // run hooks
                 var hookData = (0, _util.flatClone)(args);
                 hookData.database = _this3;
                 hookData.name = name;
@@ -377,6 +381,10 @@ var RxDatabaseBase = /*#__PURE__*/function () {
 
   _proto.server = function server(_options) {
     throw (0, _util.pluginMissing)('server');
+  };
+
+  _proto.backup = function backup(_options) {
+    throw (0, _util.pluginMissing)('backup');
   };
 
   _proto.leaderElector = function leaderElector() {

@@ -600,12 +600,13 @@ config.parallel('data-migration.test.js', () => {
         describe('run', () => {
             it('should auto-run on creation', async () => {
                 const col = await humansCollection.createMigrationCollection(
-                    10, {
-                    3: (doc: any) => {
-                        doc.age = parseInt(doc.age, 10);
-                        return doc;
-                    }
-                },
+                    10,
+                    {
+                        3: (doc: any) => {
+                            doc.age = parseInt(doc.age, 10);
+                            return doc;
+                        }
+                    },
                     randomCouchString(10),
                     true
                 );
@@ -614,6 +615,68 @@ config.parallel('data-migration.test.js', () => {
                 assert.strictEqual(typeof (docs.pop() as any).age, 'number');
                 col.database.destroy();
             });
+            it('should be able to change the primary key during migration', async () => {
+                const dbName = randomCouchString(10);
+                const schema0 = {
+                    version: 0,
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            primary: true
+                        }
+                    },
+                    required: ['id']
+                };
+                const schema1 = {
+                    version: 1,
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string'
+                        },
+                        name: {
+                            type: 'string',
+                            primary: true
+                        }
+                    },
+                    required: ['id', 'name']
+                };
+                const db = await createRxDatabase({
+                    name: dbName,
+                    adapter: 'memory'
+                });
+                const col = await db.collection({
+                    name: 'heroes',
+                    schema: schema0
+                });
+                await col.insert({
+                    id: 'niven'
+                });
+                await db.destroy();
+
+                const db2 = await createRxDatabase({
+                    name: dbName,
+                    adapter: 'memory'
+                });
+                const col2 = await db2.collection({
+                    name: 'heroes',
+                    schema: schema1,
+                    migrationStrategies: {
+                        1: (oldDoc: any) => {
+                            oldDoc.name = (oldDoc.id as string).toUpperCase();
+                            return oldDoc;
+                        }
+                    }
+                });
+
+                const doc = await col2.findOne().exec();
+                assert.ok(doc);
+                assert.strictEqual(doc.id, 'niven');
+                assert.strictEqual(doc.name, 'NIVEN');
+                db2.destroy();
+            });
+
             it('should auto-run on creation (async)', async () => {
                 const col = await humansCollection.createMigrationCollection(
                     10, {
@@ -700,7 +763,6 @@ config.parallel('data-migration.test.js', () => {
                 db2.destroy();
             });
         });
-
         describe('.migrationNeeded()', () => {
             it('return true if schema-version is 0', async () => {
                 const col = await humansCollection.create();

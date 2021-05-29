@@ -17,7 +17,9 @@ import {
     getBatch,
     PouchDB,
     isRxDatabase,
-    PouchDBInstance
+    PouchDBInstance,
+    getNewestSequence,
+    blobBufferUtil
 } from '../../plugins/core';
 import * as schemaObjects from './../helper/schema-objects';
 
@@ -264,6 +266,26 @@ config.parallel('pouch-db-integration.test.js', () => {
                 });
             });
         });
+        describe('.getNewestSequence()', () => {
+            it('should get the latest sequence', async () => {
+                const pouchdb = new PouchDB(
+                    randomCouchString(10),
+                    {
+                        adapter: 'memory'
+                    }
+                );
+
+                const latestBefore = await getNewestSequence(pouchdb);
+                await pouchdb.put({
+                    _id: 'foobar'
+                });
+                await pouchdb.put({
+                    _id: 'foobar2'
+                });
+                const latestAfter = await getNewestSequence(pouchdb);
+                assert.ok(latestAfter > latestBefore);
+            });
+        });
     });
     describe('BUGS: pouchdb', () => {
         it('_local documents should not be cached by pouchdb', async () => {
@@ -464,9 +486,10 @@ config.parallel('pouch-db-integration.test.js', () => {
         });
         it('put->delete-put will find the previous document', async () => {
             const pouch: PouchDBInstance = new PouchDB(
-                randomCouchString(10), {
-                adapter: 'memory'
-            }
+                randomCouchString(10),
+                {
+                    adapter: 'memory'
+                }
             ) as any;
             const BULK_DOC_OPTIONS = {
                 new_edits: false
@@ -503,7 +526,6 @@ config.parallel('pouch-db-integration.test.js', () => {
                 'AssertionError'
             );
 
-            // process.exit();
             pouch.destroy();
         });
         it('should handle writes before reads (first insert then find)', async () => {
@@ -570,6 +592,59 @@ config.parallel('pouch-db-integration.test.js', () => {
                 assert.strictEqual(res.docs.length, 1);
             });
             pouches.forEach(pouch => pouch.destroy());
+        });
+        it('re-saving an attachment fails in browsers', async () => {
+            const pouch1: PouchDBInstance = new PouchDB(
+                randomCouchString(10),
+                {
+                    adapter: 'memory'
+                }
+            );
+
+            const text = 'lorem ipsum dolor';
+            const mimeType = 'text/plain';
+            const blobBuffer = blobBufferUtil.createBlobBuffer(text, {
+                type: mimeType
+            } as any);
+
+            // insert a document with attachment
+            const docId = 'foobar';
+            const attachmentId = 'myattachment';
+            const putRes = await pouch1.put({ _id: docId });
+            await pouch1.putAttachment(
+                docId,
+                attachmentId,
+                putRes.rev,
+                blobBuffer,
+                mimeType
+            );
+
+
+            const rawAttachmentData = await pouch1.getAttachment(docId, attachmentId);
+
+            const pouch2: PouchDBInstance = new PouchDB(
+                randomCouchString(10),
+                {
+                    adapter: 'memory'
+                }
+            );
+            await pouch2.bulkDocs([
+                {
+                    _attachments: {
+                        [attachmentId]: {
+                            content_type: 'text/plain',
+                            data: rawAttachmentData
+                        }
+                    },
+                    _rev: '2-7a51240884063593468f396a29db001f',
+                    _id: 'foobar2',
+                }
+            ], {
+                new_edits: false
+            });
+
+            pouch1.destroy();
+            pouch2.destroy();
         });
     });
 });

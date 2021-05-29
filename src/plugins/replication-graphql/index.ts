@@ -7,10 +7,10 @@ import {
     BehaviorSubject,
     Subject,
     Subscription,
-    Observable
+    Observable,
+    firstValueFrom
 } from 'rxjs';
 import {
-    first,
     filter
 } from 'rxjs/operators';
 import GraphQLClient from 'graphql-client';
@@ -146,10 +146,11 @@ export class RxGraphQLReplicationState {
     }
 
     awaitInitialReplication(): Promise<true> {
-        return this.initialReplicationComplete$.pipe(
-            filter(v => v === true),
-            first()
-        ).toPromise();
+        return firstValueFrom(
+            this.initialReplicationComplete$.pipe(
+                filter(v => v === true),
+            )
+        );
     }
 
     // ensures this._run() does not run in parallel

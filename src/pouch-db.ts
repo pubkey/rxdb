@@ -153,6 +153,20 @@ export function pouchAttachmentBinaryHash(data: any): Promise<string> {
     });
 }
 
+export async function getNewestSequence(
+    pouch: PouchDBInstance
+): Promise<number> {
+    const pouchChanges = await pouch.changes({
+        live: false,
+        since: 0,
+        limit: 1,
+        descending: true,
+        include_docs: false
+    });
+
+    return pouchChanges.last_seq;
+}
+
 export function isInstanceOf(obj: any) {
     return obj instanceof PouchDBCore;
 }

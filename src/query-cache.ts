@@ -70,7 +70,8 @@ export const defaultCacheReplacementPolicyMonad: (
             const minUnExecutedLifetime = now() - unExecutedLifetime;
             const maybeUncash: RxQuery[] = [];
 
-            for (const rxQuery of queryCache._map.values()) {
+            const queriesInCache = Array.from(queryCache._map.values());
+            for (const rxQuery of queriesInCache) {
                 // filter out queries with subscribers
                 if (countRxQuerySubscribers(rxQuery) > 0) {
                     continue;

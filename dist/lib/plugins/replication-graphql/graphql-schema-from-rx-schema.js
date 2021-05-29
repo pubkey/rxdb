@@ -44,7 +44,7 @@ function graphQLSchemaFromRxSchema(input) {
     var collectionNameInput = (0, _util.ucfirst)(collectionName) + 'Input'; // input
 
     var inputSchema = stripKeysFromSchema(schema, collectionSettings.ignoreInputKeys);
-    var inputGraphQL = (0, _getGraphqlFromJsonschema.getGraphqlFromJsonSchema)({
+    var inputGraphQL = (0, _getGraphqlFromJsonschema.getGraphqlSchemaFromJsonSchema)({
       rootName: collectionNameInput,
       schema: inputSchema,
       direction: 'input'
@@ -54,7 +54,7 @@ function graphQLSchemaFromRxSchema(input) {
     })); // output
 
     var outputSchema = stripKeysFromSchema(schema, collectionSettings.ignoreOutputKeys);
-    var outputGraphQL = (0, _getGraphqlFromJsonschema.getGraphqlFromJsonSchema)({
+    var outputGraphQL = (0, _getGraphqlFromJsonschema.getGraphqlSchemaFromJsonSchema)({
       rootName: collectionName,
       schema: outputSchema,
       direction: 'output'

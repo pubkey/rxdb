@@ -1,4 +1,4 @@
-import { getGraphqlFromJsonSchema } from 'get-graphql-from-jsonschema';
+import { getGraphqlSchemaFromJsonSchema } from 'get-graphql-from-jsonschema';
 import { scalarTypes } from 'get-graphql-from-jsonschema/build/lib/scalarTypes';
 import { fillWithDefaultSettings } from '../../rx-schema';
 import { clone, ucfirst } from '../../util';
@@ -29,7 +29,7 @@ export function graphQLSchemaFromRxSchema(input) {
     var collectionNameInput = ucfirst(collectionName) + 'Input'; // input
 
     var inputSchema = stripKeysFromSchema(schema, collectionSettings.ignoreInputKeys);
-    var inputGraphQL = getGraphqlFromJsonSchema({
+    var inputGraphQL = getGraphqlSchemaFromJsonSchema({
       rootName: collectionNameInput,
       schema: inputSchema,
       direction: 'input'
@@ -39,7 +39,7 @@ export function graphQLSchemaFromRxSchema(input) {
     })); // output
 
     var outputSchema = stripKeysFromSchema(schema, collectionSettings.ignoreOutputKeys);
-    var outputGraphQL = getGraphqlFromJsonSchema({
+    var outputGraphQL = getGraphqlSchemaFromJsonSchema({
       rootName: collectionName,
       schema: outputSchema,
       direction: 'output'

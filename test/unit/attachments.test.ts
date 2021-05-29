@@ -6,12 +6,15 @@ import * as humansCollection from '../helper/humans-collection';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import {
+    clone,
     createRxDatabase,
-    randomCouchString
+    randomCouchString,
+    RxDocument,
+    RxJsonSchema,
+    blobBufferUtil,
+    MigrationStrategies,
+    WithAttachmentsData
 } from '../../plugins/core';
-import {
-    blobBufferUtil
-} from '../../plugins/attachments';
 
 config.parallel('attachments.test.ts', () => {
     describe('.putAttachment()', () => {
@@ -398,64 +401,200 @@ config.parallel('attachments.test.ts', () => {
             db2.destroy();
         });
     });
-    describe('data-migration', () => {
-        it('should also migrate the attachments', async () => {
-            const name = randomCouchString(10);
+    describe('migration', () => {
+        it('should keep the attachments during migration', async () => {
+            const dbName = randomCouchString(10);
+            type DocData = {
+                id: string;
+            };
+            const schema0: RxJsonSchema<DocData> = {
+                version: 0,
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        primary: true
+                    }
+                },
+                attachments: {},
+                required: ['id']
+            };
+            const schema1: RxJsonSchema = clone(schema0);
+            schema1.version = 1;
+
             const db = await createRxDatabase({
-                name,
-                adapter: 'memory',
-                multiInstance: false,
-                ignoreDuplicate: true
+                name: dbName,
+                adapter: 'memory'
             });
-            const schemaJson = AsyncTestUtil.clone(schemas.human);
-            schemaJson.attachments = {};
-            const c = await db.collection({
-                name: 'humans',
-                schema: schemaJson
+            const col = await db.collection({
+                name: 'heroes',
+                schema: schema0
             });
-            await c.insert(schemaObjects.human());
-            const doc = await c.findOne().exec();
-            await doc.putAttachment({
-                id: 'cat.txt',
-                data: 'meow I am a kitty',
-                type: 'text/plain'
+            const doc: RxDocument<DocData> = await col.insert({
+                id: 'alice'
             });
             await doc.putAttachment({
-                id: 'cat2.txt',
-                data: 'meow I am a kitty2',
+                id: 'foobar',
+                data: 'barfoo',
                 type: 'text/plain'
             });
+            await db.destroy();
 
-            db.destroy();
-
-            const schemaJsonV2 = AsyncTestUtil.clone(schemaJson);
-            schemaJsonV2.version = 1;
             const db2 = await createRxDatabase({
-                name,
-                adapter: 'memory',
-                multiInstance: false,
-                ignoreDuplicate: true
+                name: dbName,
+                adapter: 'memory'
             });
-            const c2 = await db2.collection({
-                name: 'humans',
-                schema: schemaJsonV2,
-                autoMigrate: true,
-                migrationStrategies: {
-                    1: (docData: any) => docData
+
+            const migrationStrategies: MigrationStrategies = {
+                1: (oldDoc: WithAttachmentsData<DocData>) => {
+                    const attachmentData = oldDoc._attachments;
+                    assert.ok(attachmentData);
+                    return oldDoc;
                 }
+            };
+            const col2 = await db2.collection({
+                name: 'heroes',
+                schema: schema1,
+                migrationStrategies
             });
 
-            const doc2 = await c2.findOne().exec();
-            assert.ok(doc2);
-            const attachment = doc2.getAttachment('cat.txt');
-            const data = await attachment.getStringData();
-            assert.strictEqual(data, 'meow I am a kitty');
-            assert.ok(attachment);
+            const doc2: RxDocument<DocData> = await col2.findOne().exec();
+            assert.strictEqual(doc2.allAttachments().length, 1);
+            const firstAttachment = doc2.allAttachments()[0];
+            const data = await firstAttachment.getStringData();
+            assert.strictEqual(data, 'barfoo');
 
-            const attachment2 = doc2.getAttachment('cat2.txt');
-            assert.ok(attachment2);
-            const data2 = await attachment2.getStringData();
-            assert.strictEqual(data2, 'meow I am a kitty2');
+            db2.destroy();
+        });
+        it('should delete the attachment during migration', async () => {
+            const dbName = randomCouchString(10);
+            type DocData = {
+                id: string;
+            };
+            const schema0: RxJsonSchema<DocData> = {
+                version: 0,
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        primary: true
+                    }
+                },
+                attachments: {},
+                required: ['id']
+            };
+            const schema1: RxJsonSchema = clone(schema0);
+            schema1.version = 1;
+
+            const db = await createRxDatabase({
+                name: dbName,
+                adapter: 'memory'
+            });
+            const col = await db.collection({
+                name: 'heroes',
+                schema: schema0
+            });
+            const doc: RxDocument<DocData> = await col.insert({
+                id: 'alice'
+            });
+            await doc.putAttachment({
+                id: 'foobar',
+                data: 'barfoo',
+                type: 'text/plain'
+            });
+            await db.destroy();
+
+            const db2 = await createRxDatabase({
+                name: dbName,
+                adapter: 'memory'
+            });
+            const migrationStrategies: MigrationStrategies = {
+                1: (oldDoc: WithAttachmentsData<DocData>) => {
+                    oldDoc._attachments = {};
+                    return oldDoc;
+                }
+            };
+            const col2 = await db2.collection({
+                name: 'heroes',
+                schema: schema1,
+                migrationStrategies
+            });
+            const doc2: RxDocument<DocData> = await col2.findOne().exec();
+            assert.strictEqual(doc2.allAttachments().length, 0);
+
+            db2.destroy();
+        });
+        it('should be able to change the attachment data during migration', async () => {
+            const dbName = randomCouchString(10);
+            type DocData = {
+                id: string;
+            };
+            const schema0: RxJsonSchema<DocData> = {
+                version: 0,
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        primary: true
+                    }
+                },
+                attachments: {},
+                required: ['id']
+            };
+            const schema1: RxJsonSchema = clone(schema0);
+            schema1.version = 1;
+
+            const db = await createRxDatabase({
+                name: dbName,
+                adapter: 'memory'
+            });
+            const col = await db.collection({
+                name: 'heroes',
+                schema: schema0
+            });
+            const doc: RxDocument<DocData> = await col.insert({
+                id: 'alice'
+            });
+            await doc.putAttachment({
+                id: 'foobar',
+                data: 'barfoo1',
+                type: 'text/plain'
+            });
+            await db.destroy();
+
+            const db2 = await createRxDatabase({
+                name: dbName,
+                adapter: 'memory'
+            });
+            const migrationStrategies: MigrationStrategies = {
+                1: async (oldDoc: WithAttachmentsData<DocData>) => {
+                    if (!oldDoc._attachments) {
+                        throw new Error('oldDoc._attachments missing');
+                    }
+                    const myAttachment = oldDoc._attachments.foobar;
+                    myAttachment.data = await blobBufferUtil.createBlobBuffer(
+                        'barfoo2',
+                        myAttachment.content_type
+                    );
+                    oldDoc._attachments = {
+                        foobar: myAttachment
+                    };
+
+                    return oldDoc;
+                }
+            };
+            const col2 = await db2.collection({
+                name: 'heroes',
+                schema: schema1,
+                migrationStrategies
+            });
+
+            const doc2: RxDocument<DocData> = await col2.findOne().exec();
+            assert.strictEqual(doc2.allAttachments().length, 1);
+            const firstAttachment = doc2.allAttachments()[0];
+            const data = await firstAttachment.getStringData();
+            assert.strictEqual(data, 'barfoo2');
+
 
             db2.destroy();
         });

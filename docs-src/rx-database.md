@@ -108,6 +108,10 @@ emptyDatabase.importDump(json)
   .then(() => console.log('done'));
 ```
 
+### backup()
+
+Writes the current (or ongoing) database state to the filesystem. [Read more](./backup.md)
+
 ### server()
 Spawns a couchdb-compatible server from the database. [Read more](./custom-build.md#server)
 

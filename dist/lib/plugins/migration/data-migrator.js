@@ -9,7 +9,7 @@ exports.createOldCollection = createOldCollection;
 exports._getOldCollections = _getOldCollections;
 exports.mustMigrate = mustMigrate;
 exports.createDataMigrator = createDataMigrator;
-exports._runStrategyIfNotNull = _runStrategyIfNotNull;
+exports.runStrategyIfNotNull = runStrategyIfNotNull;
 exports.getBatchOfOldCollection = getBatchOfOldCollection;
 exports.migrateDocumentData = migrateDocumentData;
 exports.isDocumentDataWithoutRevisionEqual = isDocumentDataWithoutRevisionEqual;
@@ -250,11 +250,11 @@ function createDataMigrator(newestCollection, migrationStrategies) {
   return new DataMigrator(newestCollection, migrationStrategies);
 }
 
-function _runStrategyIfNotNull(oldCollection, version, docOrNull) {
+function runStrategyIfNotNull(oldCollection, version, docOrNull) {
   if (docOrNull === null) {
     return Promise.resolve(null);
   } else {
-    var ret = oldCollection.dataMigrator.migrationStrategies[version](docOrNull);
+    var ret = oldCollection.dataMigrator.migrationStrategies[version](docOrNull, oldCollection);
     var retPromise = (0, _util.toPromise)(ret);
     return retPromise;
   }
@@ -276,7 +276,14 @@ function getBatchOfOldCollection(oldCollection, batchSize) {
 
 
 function migrateDocumentData(oldCollection, docData) {
+  /**
+   * We cannot deep-clone Blob or Buffer
+   * so we just flat clone it here
+   * and attach it to the deep cloned document data.
+   */
+  var attachmentsBefore = (0, _util.flatClone)(docData._attachments);
   var mutateableDocData = (0, _util.clone)(docData);
+  mutateableDocData._attachments = attachmentsBefore;
   var nextVersion = oldCollection.version + 1; // run the document throught migrationStrategies
 
   var currentPromise = Promise.resolve(mutateableDocData);
@@ -284,7 +291,7 @@ function migrateDocumentData(oldCollection, docData) {
   var _loop2 = function _loop2() {
     var version = nextVersion;
     currentPromise = currentPromise.then(function (docOrNull) {
-      return _runStrategyIfNotNull(oldCollection, version, docOrNull);
+      return runStrategyIfNotNull(oldCollection, version, docOrNull);
     });
     nextVersion++;
   };
@@ -321,9 +328,11 @@ function migrateDocumentData(oldCollection, docData) {
 
 function isDocumentDataWithoutRevisionEqual(doc1, doc2) {
   var doc1NoRev = Object.assign({}, doc1, {
+    _attachments: undefined,
     _rev: undefined
   });
   var doc2NoRev = Object.assign({}, doc2, {
+    _attachments: undefined,
     _rev: undefined
   });
   return (0, _deepEqual["default"])(doc1NoRev, doc2NoRev);
@@ -343,7 +352,12 @@ function _migrateDocument(oldCollection, docData) {
     oldCollection: oldCollection,
     newestCollection: oldCollection.newestCollection
   };
-  return migrateDocumentData(oldCollection, docData).then(function (migrated) {
+  return (0, _hooks.runAsyncPluginHooks)('preMigrateDocument', {
+    docData: docData,
+    oldCollection: oldCollection
+  }).then(function () {
+    return migrateDocumentData(oldCollection, docData);
+  }).then(function (migrated) {
     /**
      * Determiniticly handle the revision
      * so migrating the same data on multiple instances
@@ -369,10 +383,15 @@ function _migrateDocument(oldCollection, docData) {
     action.migrated = migrated;
 
     if (migrated) {
-      (0, _hooks.runPluginHooks)('preMigrateDocument', action); // save to newest collection
+      /**
+       * save to newest collection
+       * notice that this data also contains the attachments data
+       */
+      var attachmentsBefore = migrated._attachments;
 
       var saveData = oldCollection.newestCollection._handleToPouch(migrated);
 
+      saveData._attachments = attachmentsBefore;
       return oldCollection.newestCollection.pouch.bulkDocs([saveData], {
         /**
          * We need new_edits: false

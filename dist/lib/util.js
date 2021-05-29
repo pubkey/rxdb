@@ -18,6 +18,7 @@ exports.promiseSeries = promiseSeries;
 exports.requestIdleCallbackIfAvailable = requestIdleCallbackIfAvailable;
 exports.ucfirst = ucfirst;
 exports.trimDots = trimDots;
+exports.ensureNotFalsy = ensureNotFalsy;
 exports.sortObject = sortObject;
 exports.stringifyFilter = stringifyFilter;
 exports.randomCouchString = randomCouchString;
@@ -30,7 +31,7 @@ exports.getHeightOfRevision = getHeightOfRevision;
 exports.createRevision = createRevision;
 exports.overwriteGetterForCaching = overwriteGetterForCaching;
 exports.isFolderPath = isFolderPath;
-exports.LOCAL_PREFIX = exports.isElectronRenderer = exports.clone = exports.RXDB_HASH_SALT = void 0;
+exports.blobBufferUtil = exports.LOCAL_PREFIX = exports.isElectronRenderer = exports.clone = exports.RXDB_HASH_SALT = void 0;
 
 var _randomToken = _interopRequireDefault(require("random-token"));
 
@@ -229,6 +230,14 @@ function trimDots(str) {
   }
 
   return str;
+}
+
+function ensureNotFalsy(obj) {
+  if (!obj) {
+    throw new Error('ensureNotFalsy() is falsy');
+  }
+
+  return obj;
 }
 /**
  * deep-sort an object so its attributes are in lexical order.
@@ -445,5 +454,66 @@ function isFolderPath(name) {
     return false;
   }
 }
+
+var blobBufferUtil = {
+  /**
+   * depending if we are on node or browser,
+   * we have to use Buffer(node) or Blob(browser)
+   */
+  createBlobBuffer: function createBlobBuffer(data, type) {
+    var blobBuffer;
+
+    if (isElectronRenderer) {
+      // if we are inside of electron-renderer, always use the node-buffer
+      return Buffer.from(data, {
+        type: type
+      });
+    }
+
+    try {
+      // for browsers
+      blobBuffer = new Blob([data], {
+        type: type
+      });
+    } catch (e) {
+      // for node
+      blobBuffer = Buffer.from(data, {
+        type: type
+      });
+    }
+
+    return blobBuffer;
+  },
+  toString: function toString(blobBuffer) {
+    if (blobBuffer instanceof Buffer) {
+      // node
+      return nextTick().then(function () {
+        return blobBuffer.toString();
+      });
+    }
+
+    return new Promise(function (res) {
+      // browsers
+      var reader = new FileReader();
+      reader.addEventListener('loadend', function (e) {
+        var text = e.target.result;
+        res(text);
+      });
+      var blobBufferType = Object.prototype.toString.call(blobBuffer);
+      /**
+       * in the electron-renderer we have a typed array insteaf of a blob
+       * so we have to transform it.
+       * @link https://github.com/pubkey/rxdb/issues/1371
+       */
+
+      if (blobBufferType === '[object Uint8Array]') {
+        blobBuffer = new Blob([blobBuffer]);
+      }
+
+      reader.readAsText(blobBuffer);
+    });
+  }
+};
+exports.blobBufferUtil = blobBufferUtil;
 
 //# sourceMappingURL=util.js.map

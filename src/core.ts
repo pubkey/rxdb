@@ -17,7 +17,8 @@ export {
     PouchDB,
     validateCouchDBString,
     getBatch,
-    countAllUndeleted
+    countAllUndeleted,
+    getNewestSequence
 } from './pouch-db';
 
 export {
@@ -148,4 +149,6 @@ export type {
     ServerOptions,
     SyncOptions,
     SyncOptionsGraphQL,
+    MigrationStrategies,
+    WithAttachmentsData
 } from './types';

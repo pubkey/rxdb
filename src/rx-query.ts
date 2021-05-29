@@ -1,13 +1,13 @@
 import deepEqual from 'deep-equal';
 import {
     merge,
-    BehaviorSubject
+    BehaviorSubject,
+    firstValueFrom
 } from 'rxjs';
 import {
     mergeMap,
     filter,
     map,
-    first,
     tap
 } from 'rxjs/operators';
 import {
@@ -54,6 +54,7 @@ const newQueryID = function (): number {
 
 export class RxQueryBase<
     RxDocumentType = any,
+    // TODO also pass DocMethods here
     RxQueryResult = RxDocument<RxDocumentType[]> | RxDocument<RxDocumentType>
     > {
 
@@ -198,6 +199,7 @@ export class RxQueryBase<
                 break;
             default:
                 throw newRxError('QU1', {
+                    collection: this.collection.name,
                     op: this.op
                 });
         }
@@ -226,6 +228,7 @@ export class RxQueryBase<
         // TODO this should be ensured by typescript
         if (throwIfMissing && this.op !== 'findOne') {
             throw newRxError('QU9', {
+                collection: this.collection.name,
                 query: this.mangoQuery,
                 op: this.op
             });
@@ -237,13 +240,11 @@ export class RxQueryBase<
          * will be thrown at this execution context
          */
         return _ensureEqual(this)
-            .then(() => this.$
-                .pipe(
-                    first()
-                ).toPromise())
+            .then(() => firstValueFrom(this.$))
             .then(result => {
                 if (!result && throwIfMissing) {
                     throw newRxError('QU10', {
+                        collection: this.collection.name,
                         query: this.mangoQuery,
                         op: this.op
                     });
@@ -477,12 +478,21 @@ function _ensureEqual(rxQuery: RxQueryBase): Promise<boolean> {
  */
 function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
     rxQuery._lastEnsureEqual = now();
-    if (rxQuery.collection.database.destroyed) return false; // db is closed
-    if (_isResultsInSync(rxQuery)) return false; // nothing happend
+    if (rxQuery.collection.database.destroyed) {
+        // db is closed
+        return false;
+    }
+    if (_isResultsInSync(rxQuery)) {
+        // nothing happend
+        return false;
+    }
 
     let ret = false;
     let mustReExec = false; // if this becomes true, a whole execution over the database is made
-    if (rxQuery._latestChangeEvent === -1) mustReExec = true; // have not executed yet -> must run
+    if (rxQuery._latestChangeEvent === -1) {
+        // have not executed yet -> must run
+        mustReExec = true;
+    }
 
     /**
      * try to use the queryChangeDetector to calculate the new results
@@ -506,7 +516,9 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
 
 
 
-            const runChangeEvents: RxChangeEvent[] = (rxQuery as any).collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
+            const runChangeEvents: RxChangeEvent[] = ((rxQuery as any).collection as RxCollection)
+                ._changeEventBuffer
+                .reduceByLastOfDoc(missedChangeEvents);
 
             /*
             console.log('calculateNewResults() ' + new Date().getTime());

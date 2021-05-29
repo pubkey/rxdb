@@ -147,6 +147,15 @@ import { RxDBJsonDumpPlugin } from 'rxdb/plugins/json-dump';
 addRxPlugin(RxDBJsonDumpPlugin);
 ```
 
+### backup
+
+Adds the [filesystem backup](./backup.md)-functionality to RxDB.
+
+```javascript
+import { RxDBBackupPlugin } from 'rxdb/plugins/backup';
+addRxPlugin(RxDBBackupPlugin);
+```
+
 ### key-compression
 
 The keycompressor-module is needed when you have keyCompression enabled. This is done by default so make sure that you set [disableKeyCompression](./rx-schema.md#disablekeycompression) to `true` when you do not have this module.

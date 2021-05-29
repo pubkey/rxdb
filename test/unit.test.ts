@@ -25,6 +25,7 @@ import './unit/hooks.test.js';
 import './unit/orm.test.js';
 import './unit/population.test.js';
 import './unit/data-migration.test.js';
+import './unit/backup.test.js';
 import './unit/leader-election.test.js';
 import './unit/replication.test.js';
 import './unit/replication-graphql.test.js';
