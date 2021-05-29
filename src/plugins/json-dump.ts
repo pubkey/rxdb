@@ -16,12 +16,9 @@ import {
 import type {
     RxDatabase,
     RxCollection,
-    RxPlugin,
-    PouchWriteError,
-    PouchBulkDocResultRow
+    RxPlugin
 } from '../types';
 import { createInsertEvent } from '../rx-change-event';
-import { pouchSwapIdToPrimary, pouchSwapPrimaryToId } from '../rx-storage-pouchdb';
 
 function dumpRxDatabase(
     this: RxDatabase,

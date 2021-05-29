@@ -18,7 +18,6 @@ import {
     PouchDB,
     isRxDatabase,
     PouchDBInstance,
-    getNewestSequence,
     blobBufferUtil
 } from '../../plugins/core';
 import * as schemaObjects from './../helper/schema-objects';
@@ -432,7 +431,7 @@ config.parallel('pouch-db-integration.test.js', () => {
                 docs
             }, bulkOptions);
 
-            let foundAfter = await pouch.find({
+            let foundAfter = await pouch.find<{ firstName: string, _deleted: boolean }>({
                 selector: {}
             });
             assert.strictEqual(foundAfter.docs.length, 1);

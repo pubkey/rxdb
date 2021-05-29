@@ -2,7 +2,6 @@ import * as path from 'path';
 import {
     BehaviorSubject,
     firstValueFrom,
-    fromEvent,
     Observable,
     Subject,
     Subscription
@@ -14,7 +13,6 @@ import {
 import { getNewestSequence } from '../../rx-storage-helper';
 import type {
     BackupOptions,
-    PouchdbChangesResult,
     RxBackupWriteEvent,
     RxDatabase,
     RxDocument,

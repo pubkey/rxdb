@@ -28,7 +28,6 @@ import {
 } from '../util';
 
 import type {
-    PouchDBInstance,
     RxCollection,
     RxDatabase,
     RxDocument,

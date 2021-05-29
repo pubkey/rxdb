@@ -267,7 +267,7 @@ export interface RxStorageInstance<
     /**
      * Returns the changes once,
      * depending on the given options.
-     * 
+     *
      * IMPORTANT: When multiple changes have happened
      * to the same document, only return the newest change
      * of each document. We do this because atm it is not possible

@@ -20,7 +20,7 @@ import { RxDBValidatePlugin } from '../../plugins/validate';
 addRxPlugin(RxDBValidatePlugin);
 
 import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder';
-import { wait, waitUntil } from 'async-test-util';
+import { waitUntil } from 'async-test-util';
 import { ChangeStreamEvent } from '../../src/types';
 addRxPlugin(RxDBQueryBuilderPlugin);
 

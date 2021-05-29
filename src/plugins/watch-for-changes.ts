@@ -1,11 +1,4 @@
 import {
-    fromEvent
-} from 'rxjs';
-import {
-    map,
-} from 'rxjs/operators';
-
-import {
     promiseWait,
     nextTick,
     now

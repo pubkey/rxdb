@@ -2,17 +2,13 @@
  * this test is for the keycompression-capabilities of rxdb
  */
 import assert from 'assert';
-import clone from 'clone';
 import config from './config';
 
-import * as schemas from './../helper/schemas';
 import * as schemaObjects from './../helper/schema-objects';
 import * as humansCollection from './../helper/humans-collection';
 
 import {
-    createRxSchema,
     createRxDatabase,
-    RxSchema,
     randomCouchString,
     isRxDocument
 } from '../../plugins/core';

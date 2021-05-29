@@ -25,13 +25,13 @@ import {
     createRevision
 } from '../../util';
 import {
-    createRxSchema, getPseudoSchemaForVersion
+    createRxSchema,
+    getPseudoSchemaForVersion
 } from '../../rx-schema';
 import {
     RxError,
     newRxError
 } from '../../rx-error';
-import { overwritable } from '../../overwritable';
 import {
     runAsyncPluginHooks
 } from '../../hooks';
@@ -54,9 +54,15 @@ import {
     _handleToPouch,
     _handleFromPouch
 } from '../../rx-collection-helper';
-import { getMigrationStateByDatabase, MigrationStateWithCollection } from './migration-state';
+import {
+    getMigrationStateByDatabase,
+    MigrationStateWithCollection
+} from './migration-state';
 import { map } from 'rxjs/operators';
-import { pouchSwapIdToPrimary, pouchSwapPrimaryToId } from '../../rx-storage-pouchdb';
+import {
+    pouchSwapIdToPrimary,
+    pouchSwapPrimaryToId
+} from '../../rx-storage-pouchdb';
 
 export class DataMigrator {
 
@@ -295,7 +301,7 @@ export function getBatchOfOldCollection(
         .then(docs => docs
             .map(doc => {
                 doc = flatClone(doc);
-                doc = _handleFromPouch(oldCollection, doc)
+                doc = _handleFromPouch(oldCollection, doc);
                 // TODO primary resolution should happen inside of the rx-storage-pouch
                 doc = pouchSwapIdToPrimary(oldCollection.schema.primaryPath, doc);
                 return doc;

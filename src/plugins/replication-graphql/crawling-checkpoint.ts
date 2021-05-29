@@ -4,9 +4,15 @@ import {
     wasRevisionfromPullReplication
 } from './helper';
 import type {
-    RxCollection, PouchChangeRow, PouchChangeDoc, PouchdbChangesResult, ChangeStreamEvent
+    RxCollection,
+    PouchChangeRow,
+    PouchChangeDoc,
+    PouchdbChangesResult
 } from '../../types';
-import { POUCHDB_LOCAL_PREFIX, pouchSwapIdToPrimary } from '../../rx-storage-pouchdb';
+import {
+    POUCHDB_LOCAL_PREFIX,
+    pouchSwapIdToPrimary
+} from '../../rx-storage-pouchdb';
 
 /**
  * when the replication starts,

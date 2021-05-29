@@ -22,7 +22,6 @@ import type {
 } from './types';
 
 import {
-    promiseWait,
     pluginMissing,
     flatClone
 } from './util';
@@ -74,7 +73,11 @@ import {
     INTERNAL_STORAGE_NAME
 } from './rx-storage-helper';
 import type { RxBackupState } from './plugins/backup';
-import { RxStorage, RxStorageKeyObjectInstance, RxStorageInstance } from './rx-storage.interface';
+import {
+    RxStorage,
+    RxStorageKeyObjectInstance,
+    RxStorageInstance
+} from './rx-storage.interface';
 
 /**
  * stores the combinations
@@ -86,8 +89,7 @@ const USED_COMBINATIONS: { [k: string]: any[] } = {};
 let DB_COUNT = 0;
 
 export class RxDatabaseBase<
-    Collections = CollectionsOfDatabase,
-    RxStorageInstance = PouchDBInstance
+    Collections = CollectionsOfDatabase
     > {
 
     // TODO use type RxStorage when rx-storage finished implemented

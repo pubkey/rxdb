@@ -3,7 +3,7 @@ import {
     massageSelector
 } from 'pouchdb-selector-core';
 
-import {
+import type {
     RxStorage,
     PreparedQuery,
     RxStorageInstance,
@@ -15,7 +15,6 @@ import type {
     MangoQuerySortPart,
     PouchDBInstance,
     PouchSettings,
-    RxQuery,
     MangoQuerySortDirection,
     RxStorageBulkWriteResponse,
     RxJsonSchema,
@@ -34,7 +33,9 @@ import type {
     PouchChangeRow
 } from './types';
 
-import { CompareFunction } from 'array-push-at-sort-position';
+import type {
+    CompareFunction
+} from 'array-push-at-sort-position';
 import {
     flatClone,
     adapterObject,
@@ -42,7 +43,7 @@ import {
     getHeightOfRevision,
     promiseWait
 } from './util';
-import {
+import type {
     SortComparator,
     QueryMatcher
 } from 'event-reduce-js';
@@ -51,10 +52,14 @@ import {
     PouchDB
 } from './pouch-db';
 import { newRxError } from './rx-error';
-import { getPrimary, getSchemaByObjectPath } from './rx-schema';
+import {
+    getPrimary,
+    getSchemaByObjectPath
+} from './rx-schema';
 
 import {
-    from, fromEvent, Observable
+    fromEvent,
+    Observable
 } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -774,7 +779,7 @@ export async function createIndexesOnPouch(
                 } else {
                     return key;
                 }
-            })
+            });
 
             const indexName = 'idx-rxdb-index-' + indexArray.join(',');
             if (existingIndexes.has(indexName)) {

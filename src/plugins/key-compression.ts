@@ -8,7 +8,6 @@ import {
     CompressionTable,
     JsonSchema as KeyCompressionJsonSchema,
     compressObject,
-    PlainJsonObject,
     decompressObject,
     compressedPath,
     compressQuery,
@@ -17,7 +16,6 @@ import {
 } from 'jsonschema-key-compression';
 
 import {
-    RxSchema,
     getPrimary
 } from '../rx-schema';
 import type {
@@ -25,16 +23,12 @@ import type {
     RxJsonSchema,
     RxCollection
 } from '../types';
-import {
-    overwriteGetterForCaching
-} from '../util';
-
 
 declare type CompressionState = {
     table: CompressionTable;
     // the compressed schema
     schema: RxJsonSchema;
-}
+};
 
 /**
  * Cache the compression table and the compressed schema
@@ -85,7 +79,7 @@ export function createCompressionState(
     return {
         table,
         schema: compressedSchema
-    }
+    };
 }
 
 export function getCompressionStateByStorageInstance(

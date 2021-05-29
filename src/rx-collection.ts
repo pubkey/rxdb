@@ -64,7 +64,6 @@ import {
     ChangeEventBuffer,
     createChangeEventBuffer
 } from './change-event-buffer';
-import { overwritable } from './overwritable';
 import {
     runAsyncPluginHooks,
     runPluginHooks
@@ -93,10 +92,7 @@ import type {
     MangoQueryNoLimit,
     RxCacheReplacementPolicy,
     WithPouchMeta,
-    PouchWriteError,
-    PouchBulkDocResultRow,
     RxStorageBulkWriteError,
-    RxStorageBulkWriteResponse,
     WithRevision,
     WithWriteRevision,
     RxStorageInstanceCreationParams
@@ -117,7 +113,7 @@ import {
     createRxDocument,
     getRxDocumentConstructor
 } from './rx-document-prototype-merge';
-import { RxStorageInstancePouch, RxStorageKeyObjectInstancePouch } from './rx-storage-pouchdb';
+import { RxStorageInstancePouch } from './rx-storage-pouchdb';
 import { getSingleDocument, writeSingle } from './rx-storage-helper';
 import { RxStorageKeyObjectInstance } from './rx-storage.interface';
 
@@ -494,7 +490,7 @@ export class RxCollectionBase<
             });
 
 
-        const hooksResult = await Promise.all(
+        await Promise.all(
             rxDocuments.map(doc => {
                 return this._runHooks(
                     'post',

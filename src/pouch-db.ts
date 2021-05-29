@@ -24,9 +24,9 @@ import {
     newRxTypeError
 } from './rx-error';
 import type {
-    PouchDBInstance, RxCollection
+    PouchDBInstance
 } from './types';
-import { isFolderPath, lastOfArray } from './util';
+import { isFolderPath } from './util';
 
 /**
  * get the number of all undeleted documents
