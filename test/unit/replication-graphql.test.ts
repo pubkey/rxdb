@@ -758,7 +758,7 @@ describe('replication-graphql.test.js', () => {
                         endpointHash,
                         docData
                     );
-                    assert.ok(ret.id.startsWith(POUCHDB_LOCAL_PREFIX));
+                    assert.ok(ret._id.startsWith(GRAPHQL_REPLICATION_PLUGIN_IDENT));
                     c.database.destroy();
                 });
                 it('should be able to run multiple times', async () => {
@@ -775,7 +775,7 @@ describe('replication-graphql.test.js', () => {
                         endpointHash,
                         docData
                     );
-                    assert.ok(ret.id.startsWith(POUCHDB_LOCAL_PREFIX));
+                    assert.ok(ret._id.startsWith(GRAPHQL_REPLICATION_PLUGIN_IDENT));
                     c.database.destroy();
                 });
             });

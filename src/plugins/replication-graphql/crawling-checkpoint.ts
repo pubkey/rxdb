@@ -186,15 +186,19 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
 //
 
 
-const pullLastDocumentId = (endpointHash: string) => POUCHDB_LOCAL_PREFIX + GRAPHQL_REPLICATION_PLUGIN_IDENT + '-pull-checkpoint-' + endpointHash;
+const pullLastDocumentId = (endpointHash: string) => GRAPHQL_REPLICATION_PLUGIN_IDENT + '-pull-checkpoint-' + endpointHash;
 
 export async function getLastPullDocument(
     collection: RxCollection,
     endpointHash: string
 ) {
-    const localDoc = await getDocFromPouchOrNull(collection, pullLastDocumentId(endpointHash));
-    if (!localDoc) return null;
-    else {
+    const localDoc = await findLocalDocument(
+        collection.localDocumentsStore,
+        pullLastDocumentId(endpointHash)
+    );
+    if (!localDoc) {
+        return null;
+    } else {
         return localDoc.doc;
     }
 }
@@ -203,20 +207,29 @@ export async function setLastPullDocument(
     collection: RxCollection,
     endpointHash: string,
     doc: any
-) {
+): Promise<{ _id: string }> {
     const _id = pullLastDocumentId(endpointHash);
-    let localDoc = await getDocFromPouchOrNull(
-        collection,
+
+    const localDoc = await findLocalDocument(
+        collection.localDocumentsStore,
         _id
     );
+
     if (!localDoc) {
-        localDoc = {
-            _id,
-            doc
-        };
+        return writeSingleLocal(
+            collection.localDocumentsStore,
+            false,
+            {
+                _id,
+                doc
+            }
+        );
     } else {
         localDoc.doc = doc;
+        return writeSingleLocal(
+            collection.localDocumentsStore,
+            false,
+            localDoc as any
+        );
     }
-
-    return collection.pouch.put(localDoc);
 }
