@@ -499,28 +499,22 @@ config.parallel('rx-document.test.js', () => {
                     adapter: 'memory'
                 });
 
-                console.log('--1');
                 const c = await db.collection({
                     name: 'humans',
                     schema: schemas.primaryHuman
                 });
-                console.log('--2');
                 const doc = await c.insert(schemaObjects.simpleHuman());
-                console.log('--3');
                 const db2 = await createRxDatabase({
                     name: dbName,
                     adapter: 'memory',
                     ignoreDuplicate: true
                 });
-                console.log('--4');
                 const c2 = await db2.collection({
                     name: 'humans',
                     schema: schemas.primaryHuman
                 });
-                console.log('--5');
                 const doc2 = await c2.findOne().exec(true);
 
-                console.log('--6');
                 await Promise.all([
                     doc.atomicUpdate((d: any) => {
                         d.firstName = 'foobar1';
@@ -532,7 +526,6 @@ config.parallel('rx-document.test.js', () => {
                     })
                 ]);
 
-                console.log('--7');
                 db.destroy();
                 db2.destroy();
             });

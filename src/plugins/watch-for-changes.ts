@@ -15,14 +15,16 @@ import {
 } from '../rx-change-event';
 import type {
     RxPlugin,
-    RxCollection
+    RxCollection,
+    ChangeStreamEvent,
+    WithRevision
 } from '../types';
 
 /**
  * listens to changes of the internal pouchdb
  * and ensures they are emitted to the internal RxChangeEvent-Stream
  */
-export function watchForChanges(this: RxCollection<{}>) {
+export function watchForChanges<RxDocType>(this: RxCollection<RxDocType>) {
     // do not call twice on same collection
     if (this.synced) {
         return;
@@ -35,17 +37,8 @@ export function watchForChanges(this: RxCollection<{}>) {
      * this will grap the changes and publish them to the rx-stream
      * this is to ensure that changes from 'synced' dbs will be published
      */
-    const pouch$ =
-        fromEvent(
-            this.storageInstance.internals.pouch.changes({
-                since: 'now',
-                live: true,
-                include_docs: true
-            }),
-            'change'
-        ).pipe(
-            map((ar: any) => ar[0]), // rxjs6.x fires an array for whatever reason
-        ).subscribe(change => {
+    const pouchSub = this.storageInstance.changeStream({})
+        .subscribe(change => {
             const resPromise = _handleSingleChange(this, change);
 
             // add and remove to the Set so RxReplicationState.complete$ can know when all events where handled
@@ -54,16 +47,17 @@ export function watchForChanges(this: RxCollection<{}>) {
                 this._watchForChangesUnhandled.delete(resPromise);
             });
         });
-    this._subs.push(pouch$);
+
+    this._subs.push(pouchSub);
 }
 
 /**
  * handles a single change-event
  * and ensures that it is not already handled
  */
-function _handleSingleChange(
-    collection: RxCollection,
-    change: any
+function _handleSingleChange<RxDocType>(
+    collection: RxCollection<RxDocType>,
+    change: ChangeStreamEvent<RxDocType>
 ): Promise<boolean> {
     if (change.id.charAt(0) === '_') {
         // do not handle changes of internal docs
@@ -77,7 +71,10 @@ function _handleSingleChange(
         .then(() => nextTick())
         .then(() => nextTick())
         .then(() => {
-            const docData = change.doc;
+            let docData: WithRevision<any> = change.doc;
+            if (!docData) {
+                docData = change.previous;
+            }
             // already handled by internal event-stream
             if ((collection._changeEventBuffer as any).hasChangeWithRevision(docData._rev)) {
                 return false;

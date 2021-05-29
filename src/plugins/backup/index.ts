@@ -224,16 +224,7 @@ export class RxBackupState {
     public watchForChanges() {
         const collections = Object.values(this.database.collections);
         collections.forEach(collection => {
-            const changes$: Observable<any> =
-                fromEvent(
-                    collection.pouch.changes({
-                        since: 'now',
-                        live: true,
-                        include_docs: false
-                    }),
-                    'change'
-                );
-
+            const changes$ = collection.storageInstance.changeStream({});
             const sub = changes$.subscribe(() => {
                 this.persistOnce();
             });

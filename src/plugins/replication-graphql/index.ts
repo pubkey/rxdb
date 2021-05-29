@@ -210,7 +210,6 @@ export class RxGraphQLReplicationState {
      * @return true if sucessfull
      */
     async runPull(): Promise<boolean> {
-        // console.log('RxGraphQLReplicationState.runPull(): start');
         if (this.isStopped()) {
             return Promise.resolve(false);
         }

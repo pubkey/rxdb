@@ -148,8 +148,6 @@ export const RxDBKeyCompressionPlugin: RxPlugin = {
                 return;
             }
             const state = getCompressionStateByStorageInstance(params.rxQuery.collection);
-            console.log('preQueryMatcher:');
-            console.dir(params.doc);
             params.doc = compressObject(
                 state.table,
                 params.doc

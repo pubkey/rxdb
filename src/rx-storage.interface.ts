@@ -5,6 +5,7 @@ import type {
 import type {
     ChangeStreamEvent,
     ChangeStreamOnceOptions,
+    ChangeStreamOptions,
     RxLocalDocumentData,
     RxStorageBulkWriteResponse,
     RxStorageInstanceCreationParams,
@@ -284,9 +285,7 @@ export interface RxStorageInstance<
      * storage instance.
      * Do not forget to unsubscribe.
      */
-    /*
      changeStream(
         options: ChangeStreamOptions
     ): Observable<ChangeStreamEvent<DocumentData>>;
-    */
 }

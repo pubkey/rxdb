@@ -50,8 +50,6 @@ export async function getDocsWithRevisionsFromPouch(
         revs: true,
         deleted: 'ok'
     });
-    // console.log('allDocs:');
-    // console.log(JSON.stringify(allDocs, null, 2));
 
     const docsSearch = allDocs.rows
         .filter((row: any) => !row.error)
@@ -68,8 +66,6 @@ export async function getDocsWithRevisionsFromPouch(
         revs: true,
         latest: true
     });
-    // console.log('bulkGetDocs:');
-    // console.log(JSON.stringify(bulkGetDocs, null, 2));
 
     const ret: any = {};
     bulkGetDocs.results.forEach((result: any) => {

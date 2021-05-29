@@ -4,7 +4,7 @@ import {
     wasRevisionfromPullReplication
 } from './helper';
 import type {
-    RxCollection, PouchChangeRow, PouchChangeDoc, PouchdbChangesResult
+    RxCollection, PouchChangeRow, PouchChangeDoc, PouchdbChangesResult, ChangeStreamEvent
 } from '../../types';
 import { POUCHDB_LOCAL_PREFIX, pouchSwapIdToPrimary } from '../../rx-storage-pouchdb';
 
@@ -68,8 +68,8 @@ export async function setLastPushSequence(
 }
 
 
-export async function getChangesSinceLastPushSequence(
-    collection: RxCollection,
+export async function getChangesSinceLastPushSequence<RxDocType>(
+    collection: RxCollection<RxDocType>,
     endpointHash: string,
     lastPulledRevField: string,
     batchSize = 10,

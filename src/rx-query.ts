@@ -463,7 +463,6 @@ function _isResultsInSync(rxQuery: RxQueryBase): boolean {
  * @return true if has changed, false if not
  */
 function _ensureEqual(rxQuery: RxQueryBase): Promise<boolean> {
-    console.log('_ensureEqual');
     rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue
         .then(() => promiseWait(0))
         .then(() => __ensureEqual(rxQuery))
@@ -478,7 +477,6 @@ function _ensureEqual(rxQuery: RxQueryBase): Promise<boolean> {
  * @return true if results have changed
  */
 function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
-    console.log('__ensureEqual');
     rxQuery._lastEnsureEqual = now();
     if (rxQuery.collection.database.destroyed) {
         // db is closed

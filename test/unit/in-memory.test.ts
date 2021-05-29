@@ -482,27 +482,17 @@ config.parallel('in-memory.test.js', () => {
         it('should resolve the promise after some time', async () => {
             const col = await humansCollection.create(0);
             const memCol = await col.inMemory();
-
-            console.log('---1');
-
             await memCol.awaitPersistence();
 
-            console.log('---2');
             await memCol.insert(schemaObjects.simpleHuman() as any);
-            console.log('---3');
             await memCol.awaitPersistence();
-            console.log('---4');
 
             const doc: any = await memCol.findOne().exec();
             await doc.atomicSet('age', 6);
-            console.log('---5');
             await memCol.awaitPersistence();
-            console.log('---6');
 
             await doc.remove();
-            console.log('---7');
             await memCol.awaitPersistence();
-            console.log('---8');
 
             col.database.destroy();
         });

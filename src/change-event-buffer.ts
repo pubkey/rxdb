@@ -34,7 +34,6 @@ export class ChangeEventBuffer {
     }
 
     _handleChangeEvent(changeEvent: RxChangeEvent) {
-        // console.log('changeEventBuffer()._handleChangeEvent()');
         this.counter++;
         this.buffer.push(changeEvent);
         this.eventCounterMap.set(changeEvent, this.counter);

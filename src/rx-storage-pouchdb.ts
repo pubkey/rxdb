@@ -29,7 +29,9 @@ import type {
     WithDeleted,
     RxStorageInstanceCreationParams,
     ChangeStreamEvent,
-    ChangeStreamOnceOptions
+    ChangeStreamOnceOptions,
+    ChangeStreamOptions,
+    PouchChangeRow
 } from './types';
 
 import { CompareFunction } from 'array-push-at-sort-position';
@@ -37,7 +39,8 @@ import {
     flatClone,
     adapterObject,
     getFromMapOrThrow,
-    getHeightOfRevision
+    getHeightOfRevision,
+    promiseWait
 } from './util';
 import {
     SortComparator,
@@ -51,8 +54,9 @@ import { newRxError } from './rx-error';
 import { getPrimary, getSchemaByObjectPath } from './rx-schema';
 
 import {
-    from
+    from, fromEvent, Observable
 } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 /**
  * prefix of local pouchdb documents
@@ -121,12 +125,7 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
             return storeDocumentData;
         });
 
-        console.log('bulk write local:');
-        console.dir(insertDocs);
-
         const pouchResult = await this.internals.pouch.bulkDocs(insertDocs);
-
-        console.dir(pouchResult);
 
         const ret: RxStorageBulkWriteResponse<RxLocalDocumentData> = {
             success: new Map(),
@@ -146,16 +145,10 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
                 ret.error.set(resultRow.id, err);
             } else {
                 const pushObj: WithRevision<RxLocalDocumentData> = flatClone(insertDataById.get(resultRow.id)) as any;
-                console.log('----');
-                console.dir(pushObj);
                 pushObj._rev = (resultRow as PouchBulkDocResultRow).rev;
-                console.dir(pushObj);
                 ret.success.set(resultRow.id, pushObj);
             }
         });
-
-        console.log('ASDFASDFASDF');
-        console.dir(ret);
 
         return ret;
     }
@@ -262,10 +255,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         const massagedSelector = massageSelector(query.selector);
         const fun: QueryMatcher<RxDocType> = (doc: RxDocType) => {
 
-            console.log('pouch getQueryMatcher()');
-            console.dir(query);
-            console.dir(doc);
-
             // swap primary to _id
             const cloned: any = flatClone(doc);
             const primaryValue = cloned[primaryKey];
@@ -280,7 +269,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                 Object.keys(query.selector)
             );
             const ret = rowsMatched && rowsMatched.length === 1;
-            console.log('ret: ' + ret);
             return ret;
         };
         return fun;
@@ -431,6 +419,13 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             }
         });
 
+        /**
+         * We have to always await two ticks
+         * to ensure pouchdb fires the write to the event stream
+         * and does not miss out when multiple writes happen to the same document.
+         */
+        await promiseWait(0).then(() => promiseWait(0));
+
         return ret;
     }
 
@@ -439,11 +434,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     ): Promise<RxStorageQueryResult<RxDocType>> {
         const primaryKey = getPrimary<any>(this.schema);
 
-        console.log('pouch run query:');
-        console.dir(preparedQuery);
-
         const findResult = await this.internals.pouch.find<RxDocType>(preparedQuery);
-
         const ret: RxStorageQueryResult<RxDocType> = {
             documents: findResult.docs.map(doc => {
                 doc = pouchSwapIdToPrimary(primaryKey, doc);
@@ -474,13 +465,36 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         return ret;
     }
 
-    changeStream() {
-        return from([]);
+    changeStream(
+        options: ChangeStreamOptions
+    ): Observable<ChangeStreamEvent<RxDocType>> {
+        const primaryKey = getPrimary<any>(this.schema);
+        const obs = fromEvent(
+            this.internals.pouch
+                .changes({
+                    since: options.startSequence,
+                    limit: options.limit,
+                    live: true,
+                    include_docs: true,
+                    attachments: true,
+                }),
+            'change'
+        ).pipe(
+            map((ar: any) => ar[0]), // rxjs6.x fires an array for whatever reason
+            map((pouchRow: PouchChangeRow) => {
+                return pouchChangeRowToChangeStreamEvent<RxDocType>(
+                    primaryKey,
+                    pouchRow
+                );
+            })
+        );
+
+        return obs;
     }
 
     async getChanges(
         options: ChangeStreamOnceOptions
-    ): Promise<ChangeStreamEvent<WithRevision<RxDocType>>[]> {
+    ): Promise<ChangeStreamEvent<RxDocType>[]> {
         const primaryKey = getPrimary<any>(this.schema);
 
         const pouchResults = await this.internals.pouch.changes({
@@ -492,61 +506,13 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             since: options.startSequence
         });
 
-        console.log('pouch changes result');
-        console.dir(pouchResults);
-
         const changes: ChangeStreamEvent<WithRevision<RxDocType>>[] = pouchResults.results
             .filter(pouchRow => !pouchRow.id.startsWith(POUCHDB_DESIGN_PREFIX))
             .map(pouchRow => {
-                const doc = pouchRow.doc;
-                if (!doc) {
-                    console.dir(pouchRow);
-                    throw new Error('doc missing');
-                }
-
-                const revHeight = getHeightOfRevision(doc._rev);
-
-                if (pouchRow.deleted) {
-                    const previousDoc = flatClone(
-                        pouchSwapIdToPrimary(
-                            primaryKey,
-                            pouchRow.doc
-                        )
-                    );
-                    delete previousDoc._deleted;
-                    const ev: ChangeStreamEvent<WithRevision<RxDocType>> = {
-                        sequence: pouchRow.seq,
-                        id: pouchRow.id,
-                        operation: 'DELETE',
-                        doc: null,
-                        previous: previousDoc
-                    };
-                    return ev;
-                } else if (revHeight === 1) {
-                    const ev: ChangeStreamEvent<WithRevision<RxDocType>> = {
-                        sequence: pouchRow.seq,
-                        id: pouchRow.id,
-                        operation: 'INSERT',
-                        doc: pouchSwapIdToPrimary(
-                            primaryKey,
-                            pouchRow.doc
-                        ),
-                        previous: null
-                    };
-                    return ev;
-                } else {
-                    const ev: ChangeStreamEvent<WithRevision<RxDocType>> = {
-                        sequence: pouchRow.seq,
-                        id: pouchRow.id,
-                        operation: 'UPDATE',
-                        doc: pouchSwapIdToPrimary(
-                            primaryKey,
-                            pouchRow.doc
-                        ),
-                        previous: 'UNKNOWN'
-                    };
-                    return ev;
-                }
+                return pouchChangeRowToChangeStreamEvent(
+                    primaryKey,
+                    pouchRow
+                );
             });
         return changes;
     }
@@ -686,6 +652,61 @@ export function pouchStripLocalFlagFromPrimary(str: string): string {
         throw new Error('does not start with local prefix');
     }
     return str.substring(POUCHDB_LOCAL_PREFIX.length);
+}
+
+
+export function pouchChangeRowToChangeStreamEvent<DocumentData>(
+    primaryKey: string,
+    pouchRow: PouchChangeRow
+): ChangeStreamEvent<WithRevision<DocumentData>> {
+    const doc = pouchRow.doc;
+    if (!doc) {
+        console.dir(pouchRow);
+        throw new Error('doc missing');
+    }
+    const revHeight = getHeightOfRevision(doc._rev);
+
+    if (pouchRow.deleted) {
+        const previousDoc = flatClone(
+            pouchSwapIdToPrimary(
+                primaryKey,
+                pouchRow.doc
+            )
+        );
+        delete previousDoc._deleted;
+        const ev: ChangeStreamEvent<WithRevision<DocumentData>> = {
+            sequence: pouchRow.seq,
+            id: pouchRow.id,
+            operation: 'DELETE',
+            doc: null,
+            previous: previousDoc
+        };
+        return ev;
+    } else if (revHeight === 1) {
+        const ev: ChangeStreamEvent<WithRevision<DocumentData>> = {
+            sequence: pouchRow.seq,
+            id: pouchRow.id,
+            operation: 'INSERT',
+            doc: pouchSwapIdToPrimary(
+                primaryKey,
+                pouchRow.doc
+            ),
+            previous: null
+        };
+        return ev;
+    } else {
+        const ev: ChangeStreamEvent<WithRevision<DocumentData>> = {
+            sequence: pouchRow.seq,
+            id: pouchRow.id,
+            operation: 'UPDATE',
+            doc: pouchSwapIdToPrimary(
+                primaryKey,
+                pouchRow.doc
+            ),
+            previous: 'UNKNOWN'
+        };
+        return ev;
+    }
 }
 
 

@@ -10,7 +10,8 @@ import {
     randomCouchString,
     getPseudoSchemaForVersion,
     getFromMapOrThrow,
-    getNewestSequence
+    getNewestSequence,
+    lastOfArray
 } from '../../plugins/core';
 
 import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
@@ -19,6 +20,8 @@ import { RxDBValidatePlugin } from '../../plugins/validate';
 addRxPlugin(RxDBValidatePlugin);
 
 import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder';
+import { wait, waitUntil } from 'async-test-util';
+import { ChangeStreamEvent } from '../../src/types';
 addRxPlugin(RxDBQueryBuilderPlugin);
 
 config.parallel('rx-storage-pouchdb.test.js', () => {
@@ -231,6 +234,59 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 assert.ok(firstChangeAfterDelete.operation === 'DELETE');
                 assert.strictEqual(firstChangeAfterDelete.sequence, 3);
 
+                storageInstance.close();
+            });
+        });
+        describe('.changeStream()', () => {
+            it('should emit all events', async () => {
+                const storageInstance = await storage.createStorageInstance<{ key: string; value: string; }>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    options: {
+                        auto_compaction: false
+                    }
+                });
+
+                const emitted: ChangeStreamEvent<any>[] = [];
+                const sub = storageInstance.changeStream({
+                    startSequence: 0
+                }).subscribe(x => emitted.push(x));
+
+                const writeData = {
+                    key: 'foobar',
+                    value: 'one',
+                    _rev: undefined as any,
+                    _deleted: false
+                };
+
+                // insert
+                const firstWriteResult = await storageInstance.bulkWrite(false, [writeData]);
+                const writeDocResult = getFromMapOrThrow(firstWriteResult.success, writeData.key);
+                writeData._rev = writeDocResult._rev;
+
+
+                // update
+                writeData._rev = writeDocResult._rev;
+                const updateResult = await storageInstance.bulkWrite(false, [writeData]);
+                const updateDocResult = getFromMapOrThrow(updateResult.success, writeData.key);
+                writeData._rev = updateDocResult._rev;
+
+                // delete
+                writeData._rev = updateDocResult._rev;
+                writeData._deleted = true;
+                await storageInstance.bulkWrite(false, [writeData]);
+
+                await waitUntil(() => emitted.length === 3);
+
+                const last = lastOfArray(emitted);
+                if (!last) {
+                    throw new Error('missing last event');
+                }
+                assert.strictEqual(last.operation, 'DELETE');
+                assert.ok(last.previous);
+
+                sub.unsubscribe();
                 storageInstance.close();
             });
         });
