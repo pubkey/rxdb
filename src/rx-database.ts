@@ -70,7 +70,9 @@ import {
 import {
     findLocalDocument,
     getAllDocuments,
-    INTERNAL_STORAGE_NAME
+    getSingleDocument,
+    INTERNAL_STORAGE_NAME,
+    writeSingle
 } from './rx-storage-helper';
 import type { RxBackupState } from './plugins/backup';
 import {
@@ -191,13 +193,16 @@ export class RxDatabaseBase<
     /**
      * removes the collection-doc from this._collectionsPouch
      */
-    removeCollectionDoc(name: string, schema: any): Promise<void> {
+    async removeCollectionDoc(name: string, schema: any): Promise<void> {
         const docId = _collectionNamePrimary(name, schema);
-        return this.internalStore.internals.pouch
-            .get(docId)
-            .then((doc: any) => this.lockedRun(
-                () => this.internalStore.internals.pouch.remove(doc)
-            ));
+        const doc = await getSingleDocument(
+            this.internalStore,
+            docId
+        );
+        (doc as any)._deleted = true;
+        await this.lockedRun(
+            () => this.internalStore.bulkWrite(false, [doc as any])
+        );
     }
 
     /**
@@ -210,18 +215,15 @@ export class RxDatabaseBase<
         // TODO instead of [name: string] only allow keyof Collections
         [name: string]: RxCollectionCreatorBase
     }): Promise<{ [key: string]: RxCollection }> {
-        const pouch: PouchDBInstance = this.internalStore.internals.pouch;
-
         // get local management docs in bulk request
-        const result = await pouch.allDocs({
-            include_docs: true,
-            keys: Object.keys(collectionCreators).map(name => _collectionNamePrimary(name, collectionCreators[name].schema))
-        });
+        const collectionDocs = await this.internalStore.findDocumentsById(
+            Object.keys(collectionCreators)
+                .map(name => _collectionNamePrimary(name, collectionCreators[name].schema))
+        );
+
         const internalDocByCollectionName: any = {};
-        result.rows.forEach(row => {
-            if (!row.error) {
-                internalDocByCollectionName[row.key] = row.doc;
-            }
+        Array.from(collectionDocs.entries()).forEach(([key, doc]) => {
+            internalDocByCollectionName[key] = doc;
         });
 
         const schemaHashByName: { [k: string]: string } = {};
@@ -298,9 +300,7 @@ export class RxDatabaseBase<
 
         // make a single call to the pouchdb instance
         if (bulkPutDocs.length > 0) {
-            await pouch.bulkDocs({
-                docs: bulkPutDocs,
-            });
+            await this.internalStore.bulkWrite(false, bulkPutDocs);
         }
 
         return ret;
@@ -574,9 +574,16 @@ export function _removeAllOfCollection(
         return Promise.all(
             relevantDocs
                 .map(
-                    (doc: any) => rxDatabase.lockedRun(
-                        () => rxDatabase.internalStore.internals.pouch.remove(doc)
-                    )
+                    (doc: any) => {
+                        doc._deleted = true;
+                        return rxDatabase.lockedRun(
+                            () => writeSingle(
+                                rxDatabase.internalStore,
+                                false,
+                                doc
+                            )
+                        );
+                    }
                 )
         ).then(() => relevantDocs.map((doc: any) => doc.version));
     });

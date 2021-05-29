@@ -10,7 +10,6 @@ import type {
     PouchdbChangesResult
 } from '../../types';
 import {
-    POUCHDB_LOCAL_PREFIX,
     pouchSwapIdToPrimary
 } from '../../rx-storage-pouchdb';
 import { findLocalDocument, writeSingleLocal } from '../../rx-storage-helper';
