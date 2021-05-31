@@ -101,7 +101,8 @@ export type RxAttachmentData = {
      */
     type: string;
     /**
-     * md5 hash of the data
+     * The digest which is the output of the hash function
+     * from storage.hash(attachment.data)
      */
     digest: string;
     /**

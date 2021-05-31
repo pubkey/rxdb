@@ -690,12 +690,16 @@ config.parallel('rx-document.test.js', () => {
                 name: 'humans',
                 schema: schemaJson
             });
+
+            console.log('X--1');
             const doc = await c.insert(schemaObjects.human());
+            console.log('X--2');
             await doc.putAttachment({
                 id: 'sampledata',
                 data: 'foo bar',
                 type: 'application/octet-stream'
             });
+            console.log('X--3');
 
             const withMeta = doc.toJSON(true);
             assert.ok(withMeta._rev);

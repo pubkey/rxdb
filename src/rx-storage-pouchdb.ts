@@ -2,6 +2,7 @@ import {
     filterInMemoryFields,
     massageSelector
 } from 'pouchdb-selector-core';
+import { binaryMd5 } from 'pouchdb-md5';
 
 import type {
     RxStorage,
@@ -155,6 +156,8 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
             } else {
                 const pushObj: RxLocalDocumentData<D> = flatClone(insertDataById.get(resultRow.id)) as any;
                 pushObj._rev = (resultRow as PouchBulkDocResultRow).rev;
+                // local document cannot have attachments
+                pushObj._attachments = {};
                 ret.success.set(resultRow.id, pushObj as any);
             }
         });
@@ -405,29 +408,67 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             return storeDocumentData;
         });
 
+        console.log('pouch bulk docs');
+        console.dir(insertDocs[0]._attachments);
         const pouchResult = await this.internals.pouch.bulkDocs(insertDocs);
+        console.log('pouch bulk docs DONE');
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
             success: new Map(),
             error: new Map()
         };
 
-        pouchResult.forEach(resultRow => {
-            if ((resultRow as PouchWriteError).error) {
-                const writeData = getFromMapOrThrow(insertDataById, resultRow.id);
-                const err: RxStorageBulkWriteError<RxDocType> = {
-                    isError: true,
-                    status: 409,
-                    documentId: resultRow.id,
-                    document: writeData
-                };
-                ret.error.set(resultRow.id, err);
-            } else {
-                let pushObj: RxDocumentData<RxDocType> = flatClone(insertDataById.get(resultRow.id)) as any;
-                pushObj = pouchSwapIdToPrimary(primaryKey, pushObj);
-                pushObj._rev = (resultRow as PouchBulkDocResultRow).rev;
-                ret.success.set(resultRow.id, pushObj);
-            }
-        });
+        await Promise.all(
+            pouchResult.map(async (resultRow) => {
+                if ((resultRow as PouchWriteError).error) {
+                    const writeData = getFromMapOrThrow(insertDataById, resultRow.id);
+                    const err: RxStorageBulkWriteError<RxDocType> = {
+                        isError: true,
+                        status: 409,
+                        documentId: resultRow.id,
+                        document: writeData
+                    };
+                    ret.error.set(resultRow.id, err);
+                } else {
+                    console.dir(resultRow);
+                    const insertDoc = getFromMapOrThrow(insertDataById, resultRow.id);
+                    let pushObj: RxDocumentData<RxDocType> = flatClone(insertDoc) as any;
+                    pushObj = pouchSwapIdToPrimary(primaryKey, pushObj);
+                    pushObj._rev = (resultRow as PouchBulkDocResultRow).rev;
+                    const newRevHeight = getHeightOfRevision(pushObj._rev);
+
+                    // replace the inserted attachments with their diggest
+                    pushObj._attachments = {};
+                    console.log('aaaaaaaaaa');
+                    console.dir(insertDoc);
+                    if (!insertDoc._attachments) {
+                        insertDoc._attachments = {};
+                    }
+                    await Promise.all(
+                        Object.entries(insertDoc._attachments).map(async ([key, obj]) => {
+                            if ((obj as RxAttachmentWriteData).data) {
+                                const asWrite = (obj as RxAttachmentWriteData);
+
+                                console.log('hash!!');
+                                console.dir(asWrite);
+
+                                const hash = await pouchHash(asWrite.data);
+                                const length = Buffer.from(asWrite.data as any).length;
+                                pushObj._attachments[key] = {
+                                    digest: hash,
+                                    length,
+                                    type: asWrite.type,
+                                    revPos: newRevHeight
+                                };
+                            } else {
+                                pushObj._attachments[key] = obj as RxAttachmentData;
+                            }
+                        })
+                    );
+
+                    ret.success.set(resultRow.id, pushObj);
+                }
+            })
+        );
 
         /**
          * We have to always await two ticks
@@ -537,6 +578,14 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
         public pouchSettings: PouchSettings = {}
     ) { }
 
+    /**
+     * create the same diggest as an attachment with that data
+     * would have created by pouchdb internally.
+     */
+    public hash(data: Buffer | Blob | string): Promise<string> {
+        return pouchHash(data);
+    }
+
     private async createPouch(
         location: string,
         options: PouchSettings
@@ -621,6 +670,16 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
     }
 }
 
+export function pouchHash(data: Buffer | Blob | string): Promise<string> {
+    console.log('pouchHash()');
+    console.dir(data);
+    return new Promise(res => {
+        binaryMd5(data, (digest: string) => {
+            res('md5-' + digest);
+        });
+    });
+}
+
 export function pouchSwapIdToPrimary(
     primaryKey: string,
     docData: any
@@ -686,12 +745,19 @@ export function rxDocumentDataToPouchDocumentData<T>(
             console.log('-- 1 ' + key);
             console.dir(value);
             const useValue: RxAttachmentWriteData & RxAttachmentData = value as any;
-            (pouchDoc as any)._attachments[key] = {
-                data: useValue.data,
-                digest: useValue.digest,
-                content_type: useValue.type,
-                length: useValue.length
-            };
+            if (useValue.data) {
+                (pouchDoc as any)._attachments[key] = {
+                    data: useValue.data,
+                    content_type: useValue.type
+                };
+            } else {
+                (pouchDoc as any)._attachments[key] = {
+                    digest: useValue.digest,
+                    content_type: useValue.type,
+                    length: useValue.length,
+                    stub: true
+                };
+            }
         });
     }
 

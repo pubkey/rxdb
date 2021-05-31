@@ -132,7 +132,6 @@ config.parallel('attachments.test.ts', () => {
             });
             const attachment: any = doc.getAttachment('cat.txt');
             assert.ok(attachment);
-            assert.strictEqual(attachment.rev, 2);
             c.database.destroy();
         });
         it('should find the attachment after another doc-update', async () => {

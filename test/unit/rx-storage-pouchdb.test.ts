@@ -317,6 +317,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 }).subscribe(x => emitted.push(x));
 
                 const attachmentData = randomString(20);
+                const attachmentHash = await storage.hash(Buffer.from(attachmentData));
 
                 const writeData: RxDocumentWriteData<TestDocType> = {
                     key: 'foobar',
@@ -337,9 +338,14 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     false,
                     writeData
                 );
+
+
+                console.dir(writeResult);
+
                 await waitUntil(() => emitted.length === 1);
 
                 assert.strictEqual(writeResult._attachments.foo.type, 'text/plain');
+                assert.strictEqual(writeResult._attachments.foo.digest, attachmentHash);
 
                 const queryResult = await storageInstance.query(
                     storageInstance.prepareQuery({
@@ -376,7 +382,50 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 sub.unsubscribe();
                 storageInstance.close();
             });
+            it('should be able to add multiple attachments, one each write', async () => {
+                const storageInstance = await storage.createStorageInstance<TestDocType>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    options: {
+                        auto_compaction: false
+                    }
+                });
 
+                const writeData: RxDocumentWriteData<TestDocType> = {
+                    key: 'foobar',
+                    value: 'one',
+                    _rev: undefined as any,
+                    _deleted: false,
+                    _attachments: {
+                        foo: {
+                            data: Buffer.from(randomString(20)),
+                            type: 'text/plain'
+                        }
+                    }
+                };
+                let writeResult = await writeSingle(
+                    storageInstance,
+                    false,
+                    writeData
+                );
+
+                writeData._rev = writeResult._rev;
+                writeData._attachments = writeResult._attachments as any;
+                writeData._attachments.bar = {
+                    data: Buffer.from(randomString(20)),
+                    type: 'text/plain'
+                };
+                writeResult = await writeSingle(
+                    storageInstance,
+                    false,
+                    writeData
+                );
+
+                assert.strictEqual(Object.keys(writeResult._attachments).length, 2);
+
+                storageInstance.close();
+            });
         });
     });
     describe('RxStorageKeyObjectInstance', () => {
@@ -413,7 +462,8 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
 
                 const writeData = [{
                     _id: 'foobar',
-                    value: 'barfoo'
+                    value: 'barfoo',
+                    _attachments: {}
                 }];
 
                 await storageInstance.bulkWrite(
@@ -444,7 +494,8 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     _id: 'foobar',
                     value: 'barfoo',
                     _deleted: false,
-                    _rev: undefined as any
+                    _rev: undefined as any,
+                    _attachments: {}
                 };
 
                 const firstWriteResult = await storageInstance.bulkWrite(
@@ -476,7 +527,8 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
 
                 const writeData = {
                     _id: 'foobar',
-                    value: 'barfoo'
+                    value: 'barfoo',
+                    _attachments: {}
                 };
 
                 await storageInstance.bulkWrite(
@@ -510,10 +562,12 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 const latestBefore = await getNewestSequence(storageInstance);
                 await storageInstance.bulkWrite(false, [
                     {
-                        key: 'foobar'
+                        key: 'foobar',
+                        _attachments: {}
                     },
                     {
-                        key: 'foobar2'
+                        key: 'foobar2',
+                        _attachments: {}
                     }
                 ]);
                 const latestAfter = await getNewestSequence(storageInstance);

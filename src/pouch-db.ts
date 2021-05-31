@@ -140,19 +140,6 @@ export function pouchReplicationFunction(
     }
 }
 
-
-/**
- * create the same diggest as an attachment with that data
- * would have
- */
-export function pouchAttachmentBinaryHash(data: any): Promise<string> {
-    return new Promise(res => {
-        binaryMd5(data, (d: any) => {
-            res('md5-' + d);
-        });
-    });
-}
-
 export function isInstanceOf(obj: any) {
     return obj instanceof PouchDBCore;
 }

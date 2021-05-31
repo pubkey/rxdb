@@ -9,6 +9,7 @@ import './unit/key-compression.test.js';
 import './unit/bug-report.test.js';
 import './unit/rx-database.test.js';
 import './unit/cache-replacement-policy.test';
+import './unit/attachments.test.js'; // TODO move down under plugin
 import './unit/rx-collection.test.js';
 import './unit/rx-document.test.js';
 import './unit/temporary-document.test.js';
@@ -37,5 +38,4 @@ import './unit/local-documents.test.js';
 import './unit/in-memory.test.js';
 import './unit/server.test.js';
 import './unit/plugin.test.js';
-import './unit/attachments.test.js';
 import './unit/last.test.js';

@@ -51,6 +51,14 @@ export interface RxStorage<Internals, InstanceCreationOptions> {
     readonly name: string;
 
     /**
+     * Returns a hash of the given value.
+     * Used to check equalness of attachments data and other stuff.
+     * Pouchdb uses md5 but we can use whatever we want as long as each
+     * storage class returns the same hash each time.
+     */
+    hash(data: Buffer | Blob | string): Promise<string>;
+
+    /**
      * creates a storage instance
      * that can contain the internal database
      * For example the PouchDB instance

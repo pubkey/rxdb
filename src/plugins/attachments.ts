@@ -6,7 +6,9 @@ import {
 } from './../rx-change-event';
 import {
     now,
-    blobBufferUtil
+    blobBufferUtil,
+    flatClone,
+    getFromMapOrThrow
 } from './../util';
 import {
     newRxError
@@ -19,10 +21,13 @@ import type {
     WithAttachments,
     OldRxCollection,
     PouchAttachmentMeta,
-    RxDocumentData
+    RxDocumentData,
+    RxDocumentWriteData,
+    RxAttachmentWriteData,
+    RxAttachmentData
 } from '../types';
-import { pouchAttachmentBinaryHash } from '../pouch-db';
 import { RxSchema } from '../rx-schema';
+import { writeSingle } from '../rx-storage-helper';
 
 function ensureSchemaSupportsAttachments(doc: any) {
     const schemaJson = doc.collection.schema.jsonSchema;
@@ -33,6 +38,10 @@ function ensureSchemaSupportsAttachments(doc: any) {
     }
 }
 
+
+/**
+ * TODO we should never need this function
+ */
 function resyncRxDocument<RxDocType>(doc: any) {
     const startTime = now();
     return doc.collection.pouch.get(doc.primary).then((docDataFromPouch: any) => {
@@ -70,21 +79,18 @@ export class RxAttachment {
     public type: string;
     public length: number;
     public digest: string;
-    public rev: string;
     constructor({
         doc,
         id,
         type,
         length,
-        digest,
-        rev
+        digest
     }: any) {
         this.doc = doc;
         this.id = id;
         this.type = type;
         this.length = length;
         this.digest = digest;
-        this.rev = rev;
 
         _assignMethodsToAttachment(this);
     }
@@ -118,18 +124,21 @@ export class RxAttachment {
     }
 }
 
-export function fromPouchDocument(
+export function fromStorageInstanceResult(
     id: string,
-    pouchDocAttachment: any,
+    attachmentData: RxAttachmentData,
     rxDocument: RxDocument
 ) {
+
+    console.log('fromStorageInstanceResult:');
+    console.dir(attachmentData);
+
     return new RxAttachment({
         doc: rxDocument,
         id,
-        type: pouchDocAttachment.type,
-        length: pouchDocAttachment.length,
-        digest: pouchDocAttachment.digest,
-        rev: pouchDocAttachment.revpos
+        type: attachmentData.type,
+        length: attachmentData.length,
+        digest: attachmentData.digest
     });
 }
 
@@ -163,33 +172,67 @@ export async function putAttachment(
             if (skipIfSame && this._data._attachments && this._data._attachments[id]) {
                 const currentMeta = this._data._attachments[id];
 
-                const newHash: string = await pouchAttachmentBinaryHash(data);
+                const newHash = await this.collection.database.storage.hash(data);
+
+                console.log('new hash ' + newHash);
+                console.dir(currentMeta);
 
                 if (currentMeta.type === type && currentMeta.digest === newHash) {
                     // skip because same data and same type
                     return this.getAttachment(id);
                 }
             }
-            return this.collection.pouch.putAttachment(
-                this.primary,
-                id,
-                this._data._rev,
-                blobBuffer,
-                type
-            ).then(() => this.collection.pouch.get(this.primary))
-                .then(docData => {
-                    const attachmentData = docData._attachments[id];
-                    const attachment = fromPouchDocument(
-                        id,
-                        attachmentData,
-                        this
-                    );
 
-                    this._data._rev = docData._rev;
-                    this._data._attachments = docData._attachments;
-                    return resyncRxDocument(this)
-                        .then(() => attachment);
-                });
+            const docWriteData: RxDocumentWriteData<{}> = flatClone(this._data);
+            docWriteData._attachments = flatClone(docWriteData._attachments);
+            const useData = typeof data === 'string' ? Buffer.from(data) : data;
+            docWriteData._attachments[id] = {
+                type,
+                data: useData
+            };
+
+
+            console.log('docWriteData:');
+            console.dir(docWriteData);
+
+            const startTime = now();
+            const writeResult = await writeSingle(
+                this.collection.storageInstance,
+                false,
+                docWriteData
+            );
+           
+            console.log('Xwrite result:');
+            console.dir(writeResult);
+
+            // we need to get the document again from the written data
+
+
+            console.dir(writeResult);
+
+
+            const attachmentData = writeResult._attachments[id];
+            const attachment = fromStorageInstanceResult(
+                id,
+                attachmentData,
+                this
+            );
+
+            this._data._rev = writeResult._rev;
+            this._data._attachments = writeResult._attachments;
+
+            const endTime = now();
+            const changeEvent = createUpdateEvent(
+                this.collection as any,
+                writeResult,
+                null,
+                startTime,
+                endTime,
+                this as any
+            );
+            this.$emit(changeEvent);
+
+            return attachment;
         });
     return this._atomicQueue;
 }
@@ -207,7 +250,7 @@ export function getAttachment(
         return null;
 
     const attachmentData = docData._attachments[id];
-    const attachment = fromPouchDocument(
+    const attachment = fromStorageInstanceResult(
         id,
         attachmentData,
         this
@@ -230,7 +273,7 @@ export function allAttachments(
     }
     return Object.keys(docData._attachments)
         .map(id => {
-            return fromPouchDocument(
+            return fromStorageInstanceResult(
                 id,
                 docData._attachments[id],
                 this
@@ -310,7 +353,7 @@ export const prototypes = {
                         map(entries => {
                             return (entries as any)
                                 .map(([id, attachmentData]: any) => {
-                                    return fromPouchDocument(
+                                    return fromStorageInstanceResult(
                                         id,
                                         attachmentData,
                                         this
