@@ -35,7 +35,8 @@ import type {
     RxDocumentWriteData,
     PouchAttachmentWithData,
     RxAttachmentWriteData,
-    RxAttachmentData
+    RxAttachmentData,
+    BlobBuffer
 } from './types';
 
 import type {
@@ -408,10 +409,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             return storeDocumentData;
         });
 
-        console.log('pouch bulk docs');
-        console.dir(insertDocs[0]._attachments);
         const pouchResult = await this.internals.pouch.bulkDocs(insertDocs);
-        console.log('pouch bulk docs DONE');
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
             success: new Map(),
             error: new Map()
@@ -429,7 +427,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                     };
                     ret.error.set(resultRow.id, err);
                 } else {
-                    console.dir(resultRow);
                     const insertDoc = getFromMapOrThrow(insertDataById, resultRow.id);
                     let pushObj: RxDocumentData<RxDocType> = flatClone(insertDoc) as any;
                     pushObj = pouchSwapIdToPrimary(primaryKey, pushObj);
@@ -438,8 +435,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
 
                     // replace the inserted attachments with their diggest
                     pushObj._attachments = {};
-                    console.log('aaaaaaaaaa');
-                    console.dir(insertDoc);
                     if (!insertDoc._attachments) {
                         insertDoc._attachments = {};
                     }
@@ -447,9 +442,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                         Object.entries(insertDoc._attachments).map(async ([key, obj]) => {
                             if ((obj as RxAttachmentWriteData).data) {
                                 const asWrite = (obj as RxAttachmentWriteData);
-
-                                console.log('hash!!');
-                                console.dir(asWrite);
 
                                 const hash = await pouchHash(asWrite.data);
                                 const length = Buffer.from(asWrite.data as any).length;
@@ -496,6 +488,17 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             })
         };
         return ret;
+    }
+
+    async getAttachmentData(
+        documentId: string,
+        attachmentId: string
+    ): Promise<BlobBuffer> {
+        const attachmentData = await this.internals.pouch.getAttachment(
+            documentId,
+            attachmentId
+        );
+        return attachmentData;
     }
 
     async findDocumentsById(ids: string[]): Promise<Map<string, RxDocumentData<RxDocType>>> {
@@ -671,8 +674,6 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
 }
 
 export function pouchHash(data: Buffer | Blob | string): Promise<string> {
-    console.log('pouchHash()');
-    console.dir(data);
     return new Promise(res => {
         binaryMd5(data, (digest: string) => {
             res('md5-' + digest);
@@ -699,8 +700,6 @@ export function pouchDocumentDataToRxDocumentData<T>(
     primaryKey: string,
     pouchDoc: WithAttachments<T>
 ): RxDocumentData<T> {
-    console.log('pouchDocumentDataToRxDocumentData:');
-    console.dir(pouchDoc);
     let useDoc: RxDocumentData<T> = pouchSwapIdToPrimary(primaryKey, pouchDoc);
 
     // always flat clone becaues we mutate the _attachments property.
@@ -708,11 +707,7 @@ export function pouchDocumentDataToRxDocumentData<T>(
 
     useDoc._attachments = {};
     if (pouchDoc._attachments) {
-        console.log('-- 1');
-        console.dir(pouchDoc._attachments);
         Object.entries(pouchDoc._attachments).forEach(([key, value]) => {
-            console.log('-- 1 ' + key);
-            console.dir(value);
             useDoc._attachments[key] = {
                 digest: value.digest,
                 type: value.content_type,
@@ -721,8 +716,6 @@ export function pouchDocumentDataToRxDocumentData<T>(
         });
     }
 
-    console.dir(useDoc);
-
     return useDoc;
 }
 
@@ -730,8 +723,6 @@ export function rxDocumentDataToPouchDocumentData<T>(
     primaryKey: string,
     doc: RxDocumentData<T>
 ): WithAttachments<T> {
-    console.log('rxDocumentDataToPouchDocumentData:');
-    console.dir(doc);
     let pouchDoc: WithAttachments<T> = pouchSwapPrimaryToId(primaryKey, doc);
 
     // always flat clone becaues we mutate the _attachments property.
@@ -739,11 +730,7 @@ export function rxDocumentDataToPouchDocumentData<T>(
 
     pouchDoc._attachments = {};
     if (doc._attachments) {
-        console.log('-- 1');
-        console.dir(doc._attachments);
         Object.entries(doc._attachments).forEach(([key, value]) => {
-            console.log('-- 1 ' + key);
-            console.dir(value);
             const useValue: RxAttachmentWriteData & RxAttachmentData = value as any;
             if (useValue.data) {
                 (pouchDoc as any)._attachments[key] = {
@@ -760,8 +747,6 @@ export function rxDocumentDataToPouchDocumentData<T>(
             }
         });
     }
-
-    console.dir(pouchDoc);
 
     return pouchDoc;
 }

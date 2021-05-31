@@ -338,10 +338,6 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     false,
                     writeData
                 );
-
-
-                console.dir(writeResult);
-
                 await waitUntil(() => emitted.length === 1);
 
                 assert.strictEqual(writeResult._attachments.foo.type, 'text/plain');

@@ -7,8 +7,7 @@ import {
 import {
     now,
     blobBufferUtil,
-    flatClone,
-    getFromMapOrThrow
+    flatClone
 } from './../util';
 import {
     newRxError
@@ -21,12 +20,10 @@ import type {
     WithAttachments,
     OldRxCollection,
     PouchAttachmentMeta,
-    RxDocumentData,
     RxDocumentWriteData,
-    RxAttachmentWriteData,
     RxAttachmentData
 } from '../types';
-import { RxSchema } from '../rx-schema';
+import type { RxSchema } from '../rx-schema';
 import { writeSingle } from '../rx-storage-helper';
 
 function ensureSchemaSupportsAttachments(doc: any) {
@@ -36,27 +33,6 @@ function ensureSchemaSupportsAttachments(doc: any) {
             link: 'https://pubkey.github.io/rxdb/rx-attachment.html'
         });
     }
-}
-
-
-/**
- * TODO we should never need this function
- */
-function resyncRxDocument<RxDocType>(doc: any) {
-    const startTime = now();
-    return doc.collection.pouch.get(doc.primary).then((docDataFromPouch: any) => {
-        const data: RxDocumentData<RxDocType> = doc.collection._handleFromPouch(docDataFromPouch);
-        const endTime = now();
-        const changeEvent = createUpdateEvent(
-            doc.collection,
-            data,
-            null,
-            startTime,
-            endTime,
-            doc
-        );
-        doc.$emit(changeEvent);
-    });
 }
 
 const _assignMethodsToAttachment = function (attachment: any) {
@@ -74,7 +50,7 @@ const _assignMethodsToAttachment = function (attachment: any) {
  * wrapped so that you can access the attachment-data
  */
 export class RxAttachment {
-    public doc: any;
+    public doc: RxDocument;
     public id: string;
     public type: string;
     public length: number;
@@ -95,28 +71,54 @@ export class RxAttachment {
         _assignMethodsToAttachment(this);
     }
 
-    remove(): Promise<any> {
-        return this.doc.collection.pouch.removeAttachment(
-            this.doc.primary,
-            this.id,
-            this.doc._data._rev
-        ).then(() => resyncRxDocument(this.doc));
+    async remove(): Promise<void> {
+        this.doc._atomicQueue = this.doc._atomicQueue
+            .then(async () => {
+                const docWriteData: RxDocumentWriteData<{}> = flatClone(this.doc._data);
+                docWriteData._attachments = flatClone(docWriteData._attachments);
+                delete docWriteData._attachments[this.id];
+
+                const startTime = now();
+                const writeResult = await writeSingle(
+                    this.doc.collection.storageInstance,
+                    false,
+                    docWriteData
+                );
+
+                this.doc._data._rev = writeResult._rev;
+                this.doc._data._attachments = writeResult._attachments;
+
+                const endTime = now();
+                const changeEvent = createUpdateEvent(
+                    this.doc.collection as any,
+                    writeResult,
+                    null,
+                    startTime,
+                    endTime,
+                    this as any
+                );
+                this.doc.$emit(changeEvent);
+            });
+        return this.doc._atomicQueue;
     }
 
     /**
      * returns the data for the attachment
      */
-    getData(): Promise<BlobBuffer> {
-        return this.doc.collection.pouch.getAttachment(this.doc.primary, this.id)
-            .then((data: any) => {
-                if (shouldEncrypt(this.doc.collection.schema)) {
-                    return blobBufferUtil.toString(data)
-                        .then(dataString => blobBufferUtil.createBlobBuffer(
-                            this.doc.collection._crypter._decryptValue(dataString),
-                            this.type as any
-                        ));
-                } else return data;
-            });
+    async getData(): Promise<BlobBuffer> {
+        const plainData = await this.doc.collection.storageInstance.getAttachmentData(
+            this.doc.primary,
+            this.id
+        );
+        if (shouldEncrypt(this.doc.collection.schema)) {
+            return blobBufferUtil.toString(plainData)
+                .then(dataString => blobBufferUtil.createBlobBuffer(
+                    this.doc.collection._crypter._decryptValue(dataString),
+                    this.type as any
+                ));
+        } else {
+            return plainData;
+        }
     }
 
     getStringData(): Promise<string> {
@@ -129,10 +131,6 @@ export function fromStorageInstanceResult(
     attachmentData: RxAttachmentData,
     rxDocument: RxDocument
 ) {
-
-    console.log('fromStorageInstanceResult:');
-    console.dir(attachmentData);
-
     return new RxAttachment({
         doc: rxDocument,
         id,
@@ -165,18 +163,11 @@ export async function putAttachment(
         data = (this.collection._crypter as any)._encryptValue(data);
     }
 
-    const blobBuffer = blobBufferUtil.createBlobBuffer(data, type);
-
     this._atomicQueue = this._atomicQueue
         .then(async () => {
             if (skipIfSame && this._data._attachments && this._data._attachments[id]) {
                 const currentMeta = this._data._attachments[id];
-
                 const newHash = await this.collection.database.storage.hash(data);
-
-                console.log('new hash ' + newHash);
-                console.dir(currentMeta);
-
                 if (currentMeta.type === type && currentMeta.digest === newHash) {
                     // skip because same data and same type
                     return this.getAttachment(id);
@@ -191,25 +182,12 @@ export async function putAttachment(
                 data: useData
             };
 
-
-            console.log('docWriteData:');
-            console.dir(docWriteData);
-
             const startTime = now();
             const writeResult = await writeSingle(
                 this.collection.storageInstance,
                 false,
                 docWriteData
             );
-           
-            console.log('Xwrite result:');
-            console.dir(writeResult);
-
-            // we need to get the document again from the written data
-
-
-            console.dir(writeResult);
-
 
             const attachmentData = writeResult._attachments[id];
             const attachment = fromStorageInstanceResult(

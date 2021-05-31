@@ -15,6 +15,7 @@ import type {
     RxStorageQueryResult
 } from './types/rx-storage';
 import type {
+    BlobBuffer,
     MangoQuery,
     RxJsonSchema
 } from './types';
@@ -276,6 +277,14 @@ export interface RxStorageInstance<
         preparedQuery: PreparedQuery<DocumentData>
     ): Promise<RxStorageQueryResult<DocumentData>>;
 
+
+    /**
+     * Returns the plain data of a single attachment.
+     */
+    getAttachmentData(
+        documentId: string,
+        attachmentId: string
+    ): Promise<BlobBuffer>;
 
     /**
      * Returns the changes once,
