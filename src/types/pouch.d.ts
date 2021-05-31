@@ -1,5 +1,4 @@
 import { MangoQuery } from './rx-query';
-import { WithRevision } from './rx-storage';
 
 /**
  * this file contains types that are pouchdb-specific
@@ -137,9 +136,14 @@ export type PouchChangeRow = {
 export type PouchAttachmentMeta = {
     digest: string;
     content_type: string;
-    revpos: number;
     length: number;
     stub: boolean;
+
+    /**
+     * 'revpos indicates the generation number (numeric prefix in the revID) at which the attachment was last altered'
+     *  @link https://github.com/couchbase/couchbase-lite-ios/issues/1200#issuecomment-206444554
+     */
+    revpos: number;
 };
 
 export type BlobBuffer = Buffer | Blob;
@@ -259,7 +263,7 @@ export declare class PouchDBInstance {
     ): Promise<(PouchBulkDocResultRow | PouchWriteError)[]>;
 
     find<DocumentData>(mangoQuery: PouchdbQuery): Promise<{
-        docs: WithRevision<DocumentData>[]
+        docs: WithPouchMeta<DocumentData>[]
     }>;
     compact(options?: any): Promise<any>;
     destroy(options?: any): Promise<void>;

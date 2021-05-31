@@ -516,7 +516,8 @@ export async function _ensureStorageTokenExists<Collections = any>(rxDatabase: R
         const storageToken = randomToken(10);
         await rxDatabase.localDocumentsStore.bulkWrite(false, [{
             _id: storageTokenDocumentId,
-            value: storageToken
+            value: storageToken,
+            _attachments: {}
         }]);
         return storageToken;
     } else {

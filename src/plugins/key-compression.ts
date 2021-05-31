@@ -53,7 +53,8 @@ export function createCompressionState(
              */
             primaryPath,
             '_rev',
-            '_attachments'
+            '_attachments',
+            '_deleted'
         ]
     );
     const compressedSchema: RxJsonSchema = createCompressedJsonSchema(

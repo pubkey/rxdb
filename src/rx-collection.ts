@@ -93,8 +93,8 @@ import type {
     RxCacheReplacementPolicy,
     WithPouchMeta,
     RxStorageBulkWriteError,
-    WithRevision,
-    WithWriteRevision,
+    RxDocumentData,
+    RxDocumentWriteData,
     RxStorageInstanceCreationParams
 } from './types';
 import type {
@@ -314,8 +314,8 @@ export class RxCollectionBase<
      * every write on the pouchdb
      * is tunneld throught this function
      */
-    async _pouchPut(obj: WithWriteRevision<RxDocumentType>, overwrite: boolean = false): Promise<
-        WithRevision<RxDocumentType>
+    async _pouchPut(obj: RxDocumentWriteData<RxDocumentType>, overwrite: boolean = false): Promise<
+        RxDocumentData<RxDocumentType>
     > {
         obj = flatClone(obj);
         obj = this._handleToPouch(obj);
@@ -469,7 +469,7 @@ export class RxCollectionBase<
             })
         );
 
-        const insertDocs: RxDocumentType[] = docs.map(d => this._handleToPouch(d));
+        const insertDocs: RxDocumentWriteData<RxDocumentType>[] = docs.map(d => this._handleToPouch(d));
         const docsMap: Map<string, RxDocumentType> = new Map();
         docs.forEach(d => {
             docsMap.set((d as any)[this.schema.primaryPath] as any, d);
@@ -483,7 +483,7 @@ export class RxCollectionBase<
         // create documents
         const rxDocuments: any[] = Array.from(results.success.entries())
             .map(([key, writtenDocData]) => {
-                const docData: WithRevision<RxDocumentType> = getFromMapOrThrow(docsMap, key) as any;
+                const docData: RxDocumentData<RxDocumentType> = getFromMapOrThrow(docsMap, key) as any;
                 docData._rev = writtenDocData._rev;
                 const doc = createRxDocument(this as any, docData);
                 return doc;
@@ -526,8 +526,8 @@ export class RxCollectionBase<
         error: RxStorageBulkWriteError<RxDocumentType>[]
     }> {
         const rxDocumentMap = await this.findByIds(ids);
-        const docsData: WithPouchMeta<RxDocumentType>[] = [];
-        const docsMap: Map<string, WithPouchMeta<RxDocumentType>> = new Map();
+        const docsData: RxDocumentData<RxDocumentType>[] = [];
+        const docsMap: Map<string, RxDocumentData<RxDocumentType>> = new Map();
         Array.from(rxDocumentMap.values()).forEach(rxDocument => {
             const data = rxDocument.toJSON(true);
             docsData.push(data);

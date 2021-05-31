@@ -10,7 +10,7 @@ import type {
     RxPlugin,
     RxCollection,
     ChangeStreamEvent,
-    WithRevision
+    RxDocumentData
 } from '../types';
 
 /**
@@ -64,7 +64,7 @@ function _handleSingleChange<RxDocType>(
         .then(() => nextTick())
         .then(() => nextTick())
         .then(() => {
-            let docData: WithRevision<any> = change.doc;
+            let docData: RxDocumentData<any> = change.doc;
             if (!docData) {
                 docData = change.previous;
             }

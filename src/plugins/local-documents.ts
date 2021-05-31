@@ -31,6 +31,7 @@ import type {
     RxCollection,
     RxDatabase,
     RxDocument,
+    RxDocumentWriteData,
     RxLocalDocumentData,
     RxPlugin
 } from '../types';
@@ -238,10 +239,11 @@ const RxLocalDocumentPrototype: any = {
     remove(this: any): Promise<void> {
         const startTime = now();
         const storageInstance = _getKeyObjectStorageInstanceByParent(this.parent);
-        const writeData = {
+        const writeData: RxDocumentWriteData<{ _id: string }> = {
             _id: this.id,
             _deleted: true,
-            _rev: this._data._rev
+            _rev: this._data._rev,
+            _attachments: {}
         };
         return writeSingleLocal(storageInstance, false, writeData)
             .then(() => {

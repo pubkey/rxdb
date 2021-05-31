@@ -238,7 +238,7 @@ export const basePrototype = {
         const data = clone(this._data);
         if (!withRevAndAttachments) {
             delete (data as any)._rev;
-            delete data._attachments;
+            delete (data as any)._attachments;
         }
         return data;
     },

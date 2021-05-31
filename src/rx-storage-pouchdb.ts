@@ -19,18 +19,22 @@ import type {
     RxStorageBulkWriteResponse,
     RxJsonSchema,
     RxLocalDocumentData,
-    WithWriteRevision,
-    WithRevision,
     RxStorageBulkWriteError,
     PouchWriteError,
     PouchBulkDocResultRow,
     RxStorageQueryResult,
-    WithDeleted,
     RxStorageInstanceCreationParams,
     ChangeStreamEvent,
     ChangeStreamOnceOptions,
     ChangeStreamOptions,
-    PouchChangeRow
+    PouchChangeRow,
+    RxLocalStorageBulkWriteResponse,
+    RxDocumentData,
+    WithAttachments,
+    RxDocumentWriteData,
+    PouchAttachmentWithData,
+    RxAttachmentWriteData,
+    RxAttachmentData
 } from './types';
 
 import type {
@@ -104,14 +108,14 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
         await this.internals.pouch.destroy();
     }
 
-    public async bulkWrite(
+    public async bulkWrite<D>(
         overwrite: boolean,
-        documents: WithWriteRevision<RxLocalDocumentData>[]
-    ): Promise<RxStorageBulkWriteResponse<RxLocalDocumentData>> {
+        documents: RxLocalDocumentData<D>[]
+    ): Promise<RxLocalStorageBulkWriteResponse<RxLocalDocumentData<D>>> {
 
-        const insertDataById: Map<string, WithWriteRevision<RxLocalDocumentData>> = new Map();
+        const insertDataById: Map<string, RxLocalDocumentData<D>> = new Map();
 
-        const insertDocs: RxLocalDocumentData[] = documents.map(docData => {
+        const insertDocs: RxLocalDocumentData<D>[] = documents.map(docData => {
             insertDataById.set(docData._id, docData);
             const storeDocumentData = flatClone(docData);
 
@@ -132,7 +136,7 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
 
         const pouchResult = await this.internals.pouch.bulkDocs(insertDocs);
 
-        const ret: RxStorageBulkWriteResponse<RxLocalDocumentData> = {
+        const ret: RxLocalStorageBulkWriteResponse<RxLocalDocumentData<D>> = {
             success: new Map(),
             error: new Map()
         };
@@ -141,24 +145,24 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
             resultRow.id = pouchStripLocalFlagFromPrimary(resultRow.id);
             if ((resultRow as PouchWriteError).error) {
                 const writeData = getFromMapOrThrow(insertDataById, resultRow.id);
-                const err: RxStorageBulkWriteError<RxLocalDocumentData> = {
+                const err: RxStorageBulkWriteError<RxLocalDocumentData<D>> = {
                     isError: true,
                     status: 409,
                     documentId: resultRow.id,
-                    document: writeData
+                    document: writeData as any
                 };
                 ret.error.set(resultRow.id, err);
             } else {
-                const pushObj: WithRevision<RxLocalDocumentData> = flatClone(insertDataById.get(resultRow.id)) as any;
+                const pushObj: RxLocalDocumentData<D> = flatClone(insertDataById.get(resultRow.id)) as any;
                 pushObj._rev = (resultRow as PouchBulkDocResultRow).rev;
-                ret.success.set(resultRow.id, pushObj);
+                ret.success.set(resultRow.id, pushObj as any);
             }
         });
 
         return ret;
     }
 
-    async findLocalDocumentsById(ids: string[]): Promise<Map<string, WithRevision<RxLocalDocumentData>>> {
+    async findLocalDocumentsById<D>(ids: string[]): Promise<Map<string, RxLocalDocumentData<D>>> {
         const ret = new Map();
 
         /**
@@ -376,12 +380,12 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
 
     public async bulkWrite(
         overwrite: boolean,
-        documents: WithDeleted<WithWriteRevision<RxDocType>>[]
+        documents: RxDocumentWriteData<RxDocType>[]
     ): Promise<
         RxStorageBulkWriteResponse<RxDocType>
     > {
         const primaryKey = getPrimary<any>(this.schema);
-        const insertDataById: Map<string, WithWriteRevision<RxDocType>> = new Map();
+        const insertDataById: Map<string, RxDocumentWriteData<RxDocType>> = new Map();
 
         const insertDocs: (RxDocType & { _id: string; _rev: string })[] = documents.map(doc => {
             const primary: string = (doc as any)[primaryKey];
@@ -393,14 +397,15 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             }
             insertDataById.set(primary, doc);
 
-            let storeDocumentData: any = flatClone(doc);
-            storeDocumentData = pouchSwapPrimaryToId(primaryKey, storeDocumentData);
+            const storeDocumentData = rxDocumentDataToPouchDocumentData(
+                primaryKey,
+                doc as any
+            );
 
             return storeDocumentData;
         });
 
         const pouchResult = await this.internals.pouch.bulkDocs(insertDocs);
-
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
             success: new Map(),
             error: new Map()
@@ -417,7 +422,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                 };
                 ret.error.set(resultRow.id, err);
             } else {
-                let pushObj: WithRevision<RxDocType> = flatClone(insertDataById.get(resultRow.id)) as any;
+                let pushObj: RxDocumentData<RxDocType> = flatClone(insertDataById.get(resultRow.id)) as any;
                 pushObj = pouchSwapIdToPrimary(primaryKey, pushObj);
                 pushObj._rev = (resultRow as PouchBulkDocResultRow).rev;
                 ret.success.set(resultRow.id, pushObj);
@@ -441,15 +446,18 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
 
         const findResult = await this.internals.pouch.find<RxDocType>(preparedQuery);
         const ret: RxStorageQueryResult<RxDocType> = {
-            documents: findResult.docs.map(doc => {
-                doc = pouchSwapIdToPrimary(primaryKey, doc);
-                return doc;
+            documents: findResult.docs.map(pouchDoc => {
+                const useDoc = pouchDocumentDataToRxDocumentData(
+                    primaryKey,
+                    pouchDoc
+                );
+                return useDoc;
             })
         };
         return ret;
     }
 
-    async findDocumentsById(ids: string[]): Promise<Map<string, WithRevision<RxDocType>>> {
+    async findDocumentsById(ids: string[]): Promise<Map<string, RxDocumentData<RxDocType>>> {
         const primaryKey = getPrimary<any>(this.schema);
         const pouchResult = await this.internals.pouch.allDocs({
             include_docs: true,
@@ -461,7 +469,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             .filter(row => !!row.doc)
             .forEach(row => {
                 let docData = row.doc;
-                docData = pouchSwapIdToPrimary(
+                docData = pouchDocumentDataToRxDocumentData(
                     primaryKey,
                     docData
                 );
@@ -480,8 +488,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                     since: options.startSequence,
                     limit: options.limit,
                     live: true,
-                    include_docs: true,
-                    attachments: true,
+                    include_docs: true
                 }),
             'change'
         ).pipe(
@@ -506,12 +513,11 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             live: false,
             limit: options.limit,
             include_docs: true,
-            attachments: true,
             descending: options.order === 'asc' ? false : true,
             since: options.startSequence
         });
 
-        const changes: ChangeStreamEvent<WithRevision<RxDocType>>[] = pouchResults.results
+        const changes: ChangeStreamEvent<RxDocType>[] = pouchResults.results
             .filter(pouchRow => !pouchRow.id.startsWith(POUCHDB_DESIGN_PREFIX))
             .map(pouchRow => {
                 return pouchChangeRowToChangeStreamEvent(
@@ -630,6 +636,71 @@ export function pouchSwapIdToPrimary(
     return docData;
 }
 
+export function pouchDocumentDataToRxDocumentData<T>(
+    primaryKey: string,
+    pouchDoc: WithAttachments<T>
+): RxDocumentData<T> {
+    console.log('pouchDocumentDataToRxDocumentData:');
+    console.dir(pouchDoc);
+    let useDoc: RxDocumentData<T> = pouchSwapIdToPrimary(primaryKey, pouchDoc);
+
+    // always flat clone becaues we mutate the _attachments property.
+    useDoc = flatClone(useDoc);
+
+    useDoc._attachments = {};
+    if (pouchDoc._attachments) {
+        console.log('-- 1');
+        console.dir(pouchDoc._attachments);
+        Object.entries(pouchDoc._attachments).forEach(([key, value]) => {
+            console.log('-- 1 ' + key);
+            console.dir(value);
+            useDoc._attachments[key] = {
+                digest: value.digest,
+                type: value.content_type,
+                length: value.length
+            };
+        });
+    }
+
+    console.dir(useDoc);
+
+    return useDoc;
+}
+
+export function rxDocumentDataToPouchDocumentData<T>(
+    primaryKey: string,
+    doc: RxDocumentData<T>
+): WithAttachments<T> {
+    console.log('rxDocumentDataToPouchDocumentData:');
+    console.dir(doc);
+    let pouchDoc: WithAttachments<T> = pouchSwapPrimaryToId(primaryKey, doc);
+
+    // always flat clone becaues we mutate the _attachments property.
+    pouchDoc = flatClone(pouchDoc);
+
+    pouchDoc._attachments = {};
+    if (doc._attachments) {
+        console.log('-- 1');
+        console.dir(doc._attachments);
+        Object.entries(doc._attachments).forEach(([key, value]) => {
+            console.log('-- 1 ' + key);
+            console.dir(value);
+            const useValue: RxAttachmentWriteData & RxAttachmentData = value as any;
+            (pouchDoc as any)._attachments[key] = {
+                data: useValue.data,
+                digest: useValue.digest,
+                content_type: useValue.type,
+                length: useValue.length
+            };
+        });
+    }
+
+    console.dir(pouchDoc);
+
+    return pouchDoc;
+}
+
+
 export function pouchSwapPrimaryToId(
     primaryKey: string,
     docData: any
@@ -663,7 +734,7 @@ export function pouchStripLocalFlagFromPrimary(str: string): string {
 export function pouchChangeRowToChangeStreamEvent<DocumentData>(
     primaryKey: string,
     pouchRow: PouchChangeRow
-): ChangeStreamEvent<WithRevision<DocumentData>> {
+): ChangeStreamEvent<DocumentData> {
     const doc = pouchRow.doc;
     if (!doc) {
         console.dir(pouchRow);
@@ -673,13 +744,13 @@ export function pouchChangeRowToChangeStreamEvent<DocumentData>(
 
     if (pouchRow.deleted) {
         const previousDoc = flatClone(
-            pouchSwapIdToPrimary(
+            pouchDocumentDataToRxDocumentData(
                 primaryKey,
-                pouchRow.doc
+                pouchRow.doc as any
             )
         );
         delete previousDoc._deleted;
-        const ev: ChangeStreamEvent<WithRevision<DocumentData>> = {
+        const ev: ChangeStreamEvent<DocumentData> = {
             sequence: pouchRow.seq,
             id: pouchRow.id,
             operation: 'DELETE',
@@ -688,25 +759,25 @@ export function pouchChangeRowToChangeStreamEvent<DocumentData>(
         };
         return ev;
     } else if (revHeight === 1) {
-        const ev: ChangeStreamEvent<WithRevision<DocumentData>> = {
+        const ev: ChangeStreamEvent<DocumentData> = {
             sequence: pouchRow.seq,
             id: pouchRow.id,
             operation: 'INSERT',
-            doc: pouchSwapIdToPrimary(
+            doc: pouchDocumentDataToRxDocumentData(
                 primaryKey,
-                pouchRow.doc
+                pouchRow.doc as any
             ),
             previous: null
         };
         return ev;
     } else {
-        const ev: ChangeStreamEvent<WithRevision<DocumentData>> = {
+        const ev: ChangeStreamEvent<DocumentData> = {
             sequence: pouchRow.seq,
             id: pouchRow.id,
             operation: 'UPDATE',
-            doc: pouchSwapIdToPrimary(
+            doc: pouchDocumentDataToRxDocumentData(
                 primaryKey,
-                pouchRow.doc
+                pouchRow.doc as any
             ),
             previous: 'UNKNOWN'
         };

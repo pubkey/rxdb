@@ -220,7 +220,8 @@ export async function setLastPullDocument(
             false,
             {
                 _id,
-                doc
+                doc,
+                _attachments: {}
             }
         );
     } else {

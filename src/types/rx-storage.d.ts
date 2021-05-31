@@ -1,18 +1,66 @@
 import type { ChangeEvent } from 'event-reduce-js';
+import { BlobBuffer } from './pouch';
 import { RxJsonSchema } from './rx-schema';
 
 
 /**
- * Contains a revision which is concated with a [height: number]-[identifier: string]
- * like: '1-3hl4kj3l4kgj34g34glk'.
- * The revision is used to detect write conflicts and have a document history.
- * Revisions behave similar to couchdb revisions:
- * @link https://docs.couchdb.org/en/stable/replication/conflicts.html#revision-tree
- * When you create a new document, do not send a revision,
- * When you update an existing document, send the previous revision.
- * When you insert via overwrite: true, send the new revision you want to save the document with.
+ * The document data how it comes out of the storage instance.
+ * Contains all meta data like revision, attachments and deleted-flag.
  */
-export type WithWriteRevision<T> = T & {
+export type RxDocumentData<T> = T & {
+
+    /**
+     * As other NoSQL databases,
+     * RxDB also assumes that no data is finally deleted.
+     * Instead the documents are stored with _deleted: true
+     * which means they will not be returned at queries.
+     */
+    // deleted is optional. If not set, we assume _deleted: false
+    // TODO make it required to ensure we have to correct value and type everywhere.
+    _deleted?: boolean;
+
+    /**
+     * The attachments meta data is stored besides to document.
+     */
+    _attachments: {
+        [attachmentId: string]: RxAttachmentData;
+    }
+
+    /**
+     * Contains a revision which is concated with a [height: number]-[identifier: string]
+     * like: '1-3hl4kj3l4kgj34g34glk'.
+     * The revision is used to detect write conflicts and have a document history.
+     * Revisions behave similar to couchdb revisions:
+     * @link https://docs.couchdb.org/en/stable/replication/conflicts.html#revision-tree
+
+     * When you create a new document, do not send a revision,
+     * When you update an existing document, send the previous revision.
+     * When you insert via overwrite: true, send the new revision you want to save the document with.
+     */
+    _rev: string;
+}
+
+/**
+ * The document data how it is send to the
+ * storage instance to save it.
+ */
+export type RxDocumentWriteData<T> = T & {
+
+    // deleted is optional. If not set, we assume _deleted: false
+    // TODO make it required to ensure we have to correct value and type everywhere.
+    _deleted?: boolean;
+
+    _attachments: {
+        /**
+         * To create a new attachment, set the write data
+         * To delete an attachment, leave it out on the _attachments property.
+         * To change an attachment, set the new write data.
+         * To not touch an attachment, just send the stub again
+         * which came out of the storage instance.
+         */
+        [attachmentId: string]: RxAttachmentData | RxAttachmentWriteData;
+    }
+
     /**
      * When overwrite: false
      * The previous revision only exists if the document already existed.
@@ -27,29 +75,58 @@ export type WithWriteRevision<T> = T & {
      * The [height] of the new revision must be heigher then the [height] of the old revision.
      */
     _rev?: string;
-}
+};
 
-// non-optional version of WithWriteRevision
-export type WithRevision<T> = T & { _rev: string; }
 
 /**
- * As other NoSQL databases,
- * RxDB also assumes that no data is finally deleted.
- * Instead the documents are stored with _deleted: true
- * which means they will not be returned at queries.
+ * Data which is needed for new attachments
  */
-export type WithDeleted<T> = T & {
-    // deleted is optional. If not set, we assume _deleted: false
-    _deleted?: boolean
+export type RxAttachmentWriteData = {
+    /**
+     * Content type like 'plain/text'
+     */
+    type: string;
+    /**
+     * The data of the attachment.
+     */
+    data: BlobBuffer;
 }
 
-export type RxLocalDocumentData = {
-    // Local documents always have _id as primary
-    _id: string
-} & {
-    // local documents are schemaless and contain any data
-    [key: string]: any
-};
+/**
+ * Meta data of the attachment how it comes out of the storage engine.
+ */
+export type RxAttachmentData = {
+    /**
+     * Content type like 'plain/text'
+     */
+    type: string;
+    /**
+     * md5 hash of the data
+     */
+    digest: string;
+    /**
+     * Size of the attachments data
+     */
+    length: number;
+}
+
+
+export type RxLocalDocumentData<
+    Data = {
+        // local documents are schemaless and contain any data
+        [key: string]: any
+    }
+    > = {
+        // Local documents always have _id as primary
+        _id: string;
+
+        // local documents cannot have attachments,
+        // so this must always be an empty object.
+        _attachments: {};
+
+        _deleted?: boolean;
+        _rev?: string;
+    } & Data;
 
 /**
  * Error that can happer per document when
@@ -72,7 +149,7 @@ export type RxStorageBulkWriteError<RxDocType> = {
     documentId: string;
 
     // the original document data that should have been written.
-    document: WithWriteRevision<RxDocType>;
+    document: RxDocumentWriteData<RxDocType>;
 }
 
 export type RxStorageBulkWriteResponse<DocData> = {
@@ -80,7 +157,21 @@ export type RxStorageBulkWriteResponse<DocData> = {
      * A map that is indexed by the documentId
      * contains all succeded writes.
      */
-    success: Map<string, WithRevision<DocData>>;
+    success: Map<string, RxDocumentData<DocData>>;
+
+    /**
+     * A map that is indexed by the documentId
+     * contains all errored writes.
+     */
+    error: Map<string, RxStorageBulkWriteError<DocData>>;
+}
+
+export type RxLocalStorageBulkWriteResponse<DocData> = {
+    /**
+     * A map that is indexed by the documentId
+     * contains all succeded writes.
+     */
+    success: Map<string, RxDocumentData<DocData>>;
 
     /**
      * A map that is indexed by the documentId
@@ -95,7 +186,7 @@ export type RxStorageBulkWriteResponse<DocData> = {
  */
 export type RxStorageQueryResult<RxDocType> = {
     // the found documents, sort order is important.
-    documents: WithRevision<RxDocType>[];
+    documents: RxDocumentData<RxDocType>[];
 }
 
 
@@ -138,7 +229,7 @@ export type ChangeStreamOnceOptions = ChangeStreamOptions & {
     order: 'asc' | 'desc';
 };
 
-export type ChangeStreamEvent<DocumentData> = ChangeEvent<WithRevision<DocumentData>> & {
+export type ChangeStreamEvent<DocumentData> = ChangeEvent<RxDocumentData<DocumentData>> & {
     /**
      * An integer that is increasing
      * and unique per event.

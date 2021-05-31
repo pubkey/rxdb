@@ -19,7 +19,7 @@ import type {
     WithAttachments,
     OldRxCollection,
     PouchAttachmentMeta,
-    WithRevision
+    RxDocumentData
 } from '../types';
 import { pouchAttachmentBinaryHash } from '../pouch-db';
 import { RxSchema } from '../rx-schema';
@@ -36,7 +36,7 @@ function ensureSchemaSupportsAttachments(doc: any) {
 function resyncRxDocument<RxDocType>(doc: any) {
     const startTime = now();
     return doc.collection.pouch.get(doc.primary).then((docDataFromPouch: any) => {
-        const data: WithRevision<RxDocType> = doc.collection._handleFromPouch(docDataFromPouch);
+        const data: RxDocumentData<RxDocType> = doc.collection._handleFromPouch(docDataFromPouch);
         const endTime = now();
         const changeEvent = createUpdateEvent(
             doc.collection,
@@ -126,7 +126,7 @@ export function fromPouchDocument(
     return new RxAttachment({
         doc: rxDocument,
         id,
-        type: pouchDocAttachment.content_type,
+        type: pouchDocAttachment.type,
         length: pouchDocAttachment.length,
         digest: pouchDocAttachment.digest,
         rev: pouchDocAttachment.revpos
@@ -165,7 +165,7 @@ export async function putAttachment(
 
                 const newHash: string = await pouchAttachmentBinaryHash(data);
 
-                if (currentMeta.content_type === type && currentMeta.digest === newHash) {
+                if (currentMeta.type === type && currentMeta.digest === newHash) {
                     // skip because same data and same type
                     return this.getAttachment(id);
                 }
@@ -225,8 +225,9 @@ export function allAttachments(
     const docData: any = this._dataSync$.getValue();
 
     // if there are no attachments, the field is missing
-    if (!docData._attachments) return [];
-
+    if (!docData._attachments) {
+        return [];
+    }
     return Object.keys(docData._attachments)
         .map(id => {
             return fromPouchDocument(

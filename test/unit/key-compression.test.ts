@@ -53,10 +53,12 @@ config.parallel('key-compression.test.js', () => {
             await c.insert(docData);
             const doc = await c.pouch.get(docData.passportId);
 
-            Object.keys(doc).forEach(key => {
-                assert.ok(key.length <= 4);
-                assert.strictEqual(typeof doc[key], 'string');
-            });
+            Object.keys(doc)
+                .filter(key => !key.startsWith('_'))
+                .forEach(key => {
+                    assert.ok(key.length <= 4);
+                    assert.strictEqual(typeof doc[key], 'string');
+                });
             assert.strictEqual(doc._id, docData.passportId);
             assert.strictEqual(doc['|a'], docData.firstName);
             c.database.destroy();

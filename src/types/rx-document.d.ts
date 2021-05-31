@@ -13,8 +13,7 @@ import {
     RxAttachment,
     RxAttachmentCreator
 } from './rx-attachment';
-import { WithPouchMeta } from './pouch';
-import { WithRevision } from './rx-storage';
+import { RxDocumentData } from './rx-storage';
 
 export type RxDocument<RxDocumentType = {}, OrmMethods = {}> = RxDocumentBase<RxDocumentType, OrmMethods> & RxDocumentType & OrmMethods;
 
@@ -34,7 +33,7 @@ export declare interface RxDocumentBase<RxDocumentType, OrmMethods = {}> {
     // internal things
     _isTemporary: boolean;
     _dataSync$: BehaviorSubject<RxDocumentType>;
-    _data: WithPouchMeta<RxDocumentType>;
+    _data: RxDocumentData<RxDocumentType>;
     _deleted$: BehaviorSubject<boolean>;
     primaryPath: string;
     revision: string;
@@ -87,7 +86,7 @@ export declare interface RxDocumentBase<RxDocumentType, OrmMethods = {}> {
     allAttachments(): RxAttachment<RxDocumentType, OrmMethods>[];
 
     toJSON(): RxDocumentType;
-    toJSON(withRevAndAttachments: true): WithRevision<RxDocumentType>;
+    toJSON(withRevAndAttachments: true): RxDocumentData<RxDocumentType>;
     toJSON(withRevAndAttachments: false): RxDocumentType;
 
     destroy(): void;

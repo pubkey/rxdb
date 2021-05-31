@@ -11,7 +11,8 @@ import {
     getPseudoSchemaForVersion,
     getFromMapOrThrow,
     getNewestSequence,
-    lastOfArray
+    lastOfArray,
+    writeSingle
 } from '../../plugins/core';
 
 import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
@@ -20,16 +21,20 @@ import { RxDBValidatePlugin } from '../../plugins/validate';
 addRxPlugin(RxDBValidatePlugin);
 
 import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder';
-import { waitUntil } from 'async-test-util';
-import { ChangeStreamEvent } from '../../src/types';
+import { randomString, waitUntil } from 'async-test-util';
+import { ChangeStreamEvent, RxDocumentData, RxDocumentWriteData } from '../../src/types';
 addRxPlugin(RxDBQueryBuilderPlugin);
+
+declare type TestDocType = { key: string; value: string; };
 
 config.parallel('rx-storage-pouchdb.test.js', () => {
     const storage: RxStoragePouch = getRxStoragePouch('memory');
+
+
     describe('RxStorageInstance', () => {
-        describe('RxStorageInstance.bulkWrite()', () => {
+        describe('.bulkWrite()', () => {
             it('should write the documents', async () => {
-                const storageInstance = await storage.createStorageInstance<{ key: string; value: string; }>({
+                const storageInstance = await storage.createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
@@ -40,7 +45,8 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     false,
                     [{
                         key: 'foobar',
-                        value: 'barfoo'
+                        value: 'barfoo',
+                        _attachments: {}
                     }]
                 );
 
@@ -53,7 +59,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 storageInstance.close();
             });
             it('should error on conflict', async () => {
-                const storageInstance = await storage.createStorageInstance<{ key: string; value: string; }>({
+                const storageInstance = await storage.createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
@@ -62,7 +68,8 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
 
                 const writeData = [{
                     key: 'foobar',
-                    value: 'barfoo'
+                    value: 'barfoo',
+                    _attachments: {}
                 }];
 
                 await storageInstance.bulkWrite(
@@ -149,7 +156,8 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
 
                 const writeData = [{
                     key: 'foobar',
-                    value: 'barfoo'
+                    value: 'barfoo',
+                    _attachments: {}
                 }];
 
                 await storageInstance.bulkWrite(
@@ -183,6 +191,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 const writeData = {
                     key: 'foobar',
                     value: 'one',
+                    _attachments: {},
                     _rev: undefined as any,
                     _deleted: false
                 };
@@ -239,7 +248,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
         });
         describe('.changeStream()', () => {
             it('should emit all events', async () => {
-                const storageInstance = await storage.createStorageInstance<{ key: string; value: string; }>({
+                const storageInstance = await storage.createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
@@ -257,7 +266,8 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     key: 'foobar',
                     value: 'one',
                     _rev: undefined as any,
-                    _deleted: false
+                    _deleted: false,
+                    _attachments: {}
                 };
 
                 // insert
@@ -290,6 +300,84 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 storageInstance.close();
             });
         });
+        describe('attachments', () => {
+            it('should returns the correct attachment object on all document fetch methods', async () => {
+                const storageInstance = await storage.createStorageInstance<TestDocType>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    options: {
+                        auto_compaction: false
+                    }
+                });
+
+                const emitted: ChangeStreamEvent<any>[] = [];
+                const sub = storageInstance.changeStream({
+                    startSequence: 0
+                }).subscribe(x => emitted.push(x));
+
+                const attachmentData = randomString(20);
+
+                const writeData: RxDocumentWriteData<TestDocType> = {
+                    key: 'foobar',
+                    value: 'one',
+                    _rev: undefined as any,
+                    _deleted: false,
+                    _attachments: {
+                        foo: {
+                            data: Buffer.from(attachmentData),
+                            type: 'text/plain'
+                        }
+
+                    }
+                };
+
+                const writeResult = await writeSingle(
+                    storageInstance,
+                    false,
+                    writeData
+                );
+                await waitUntil(() => emitted.length === 1);
+
+                assert.strictEqual(writeResult._attachments.foo.type, 'text/plain');
+
+                const queryResult = await storageInstance.query(
+                    storageInstance.prepareQuery({
+                        selector: {}
+                    })
+                );
+                assert.strictEqual(queryResult.documents[0]._attachments.foo.type, 'text/plain');
+                assert.strictEqual(queryResult.documents[0]._attachments.foo.length, attachmentData.length);
+
+
+                const byId = await storageInstance.findDocumentsById([writeData.key]);
+                const byIdDoc = getFromMapOrThrow(byId, writeData.key);
+                assert.strictEqual(byIdDoc._attachments.foo.type, 'text/plain');
+                assert.strictEqual(byIdDoc._attachments.foo.length, attachmentData.length);
+
+
+
+                // test emitted
+                assert.strictEqual(emitted[0].doc._attachments.foo.type, 'text/plain');
+                assert.strictEqual(emitted[0].doc._attachments.foo.length, attachmentData.length);
+
+
+                const changes = await storageInstance.getChanges({
+                    startSequence: 0,
+                    order: 'asc'
+                });
+                const firstChange = changes[0].doc;
+                if (!firstChange) {
+                    throw new Error('first change missing');
+                }
+                assert.strictEqual(firstChange._attachments.foo.type, 'text/plain');
+                assert.strictEqual(firstChange._attachments.foo.length, attachmentData.length);
+
+                sub.unsubscribe();
+                storageInstance.close();
+            });
+
+        });
     });
     describe('RxStorageKeyObjectInstance', () => {
         describe('RxStorageKeyObjectInstance.bulkWrite()', () => {
@@ -304,7 +392,8 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     false,
                     [{
                         _id: 'foobar',
-                        value: 'barfoo'
+                        value: 'barfoo',
+                        _attachments: {}
                     }]
                 );
 

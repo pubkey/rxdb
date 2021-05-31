@@ -12,13 +12,13 @@ import { pouchSwapIdToPrimary } from './rx-storage-pouchdb';
 import type {
     RxCollection,
     RxDocument,
-    WithRevision
+    RxDocumentData
 } from './types';
 
 export type RxChangeEventJson<DocType = any> = {
     operation: WriteOperation;
     documentId: string;
-    documentData: WithRevision<DocType>;
+    documentData: RxDocumentData<DocType>;
     previousData?: DocType;
     databaseToken: string;
     collectionName: string;
@@ -37,7 +37,7 @@ export class RxChangeEvent<DocType = any> {
     constructor(
         public readonly operation: WriteOperation,
         public readonly documentId: string,
-        public readonly documentData: WithRevision<DocType>,
+        public readonly documentData: RxDocumentData<DocType>,
         public readonly databaseToken: string,
         public readonly collectionName: string,
         public readonly isLocal: boolean,
@@ -129,7 +129,7 @@ export function changeEventfromPouchChange<DocType>(
     }
 
     // decompress / primarySwap
-    let doc: WithRevision<DocType> = collection._handleFromPouch(changeDoc);
+    let doc: RxDocumentData<DocType> = collection._handleFromPouch(changeDoc);
     doc = pouchSwapIdToPrimary(collection.schema.primaryPath, doc);
 
     const documentId: string = (doc as any)[collection.schema.primaryPath] as string;
@@ -151,7 +151,7 @@ export function changeEventfromPouchChange<DocType>(
 
 export function createInsertEvent<RxDocumentType>(
     collection: RxCollection<RxDocumentType>,
-    docData: WithRevision<RxDocumentType>,
+    docData: RxDocumentData<RxDocumentType>,
     startTime: number,
     endTime: number,
     doc?: RxDocument<RxDocumentType>
@@ -183,7 +183,7 @@ export function createInsertEvent<RxDocumentType>(
 
 export function createUpdateEvent<RxDocumentType>(
     collection: RxCollection<RxDocumentType>,
-    docData: WithRevision<RxDocumentType>,
+    docData: RxDocumentData<RxDocumentType>,
     previous: RxDocumentType,
     startTime: number,
     endTime: number,
@@ -205,7 +205,7 @@ export function createUpdateEvent<RxDocumentType>(
 
 export function createDeleteEvent<RxDocumentType>(
     collection: RxCollection<RxDocumentType>,
-    docData: WithRevision<RxDocumentType>,
+    docData: RxDocumentData<RxDocumentType>,
     previous: RxDocumentType,
     startTime: number,
     endTime: number,

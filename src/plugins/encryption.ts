@@ -71,7 +71,8 @@ export async function storePasswordHashIntoDatabase(
     if (!pwHashDoc) {
         const docData: RxLocalDocumentData = {
             _id: pwHashDocumentId,
-            value: pwHash
+            value: pwHash,
+            _attachments: {}
         };
         await rxDatabase.localDocumentsStore.bulkWrite(false, [docData]);
         return true;

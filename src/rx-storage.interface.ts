@@ -6,13 +6,13 @@ import type {
     ChangeStreamEvent,
     ChangeStreamOnceOptions,
     ChangeStreamOptions,
+    RxDocumentData,
+    RxDocumentWriteData,
     RxLocalDocumentData,
+    RxLocalStorageBulkWriteResponse,
     RxStorageBulkWriteResponse,
     RxStorageInstanceCreationParams,
-    RxStorageQueryResult,
-    WithDeleted,
-    WithRevision,
-    WithWriteRevision
+    RxStorageQueryResult
 } from './types/rx-storage';
 import type {
     MangoQuery,
@@ -97,6 +97,11 @@ export interface RxStorageInstanceBase<Internals, InstanceCreationOptions> {
 /**
  * A StorateInstance that is only capable of saving key-object relations,
  * cannot be queried and has no schema.
+ * In the past we saved normal and local documents into the same instance of pouchdb.
+ * This was bad because it means that on migration or deletion, we always
+ * will remove the local documents. Now this is splitted into
+ * as separate RxStorageKeyObjectInstance that only stores the local documents
+ * aka key->object sets.
  */
 export interface RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>
     extends RxStorageInstanceBase<Internals, InstanceCreationOptions> {
@@ -113,7 +118,7 @@ export interface RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>
      * but are not returned in any non-local queries.
      * They can only be queried directly by their primary _id.
      */
-    bulkWrite(
+    bulkWrite<D = any>(
         /**
          * If overwrite is set to true,
          * the storage instance must ignore
@@ -129,24 +134,24 @@ export interface RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>
          * throw on non-local documents.
          */
         overwrite: boolean,
-        documents: WithDeleted<WithWriteRevision<RxLocalDocumentData>>[]
+        documents: RxLocalDocumentData<D>[]
     ): Promise<
         /**
          * returns the response, splitted into success and error lists.
          */
-        RxStorageBulkWriteResponse<RxLocalDocumentData>
+        RxLocalStorageBulkWriteResponse<RxLocalDocumentData<D>>
     >;
 
     /**
      * Get Multiple local documents by their primary value.
      */
-    findLocalDocumentsById(
+    findLocalDocumentsById<D = any>(
         /**
          * List of primary values
          * of the documents to find.
          */
         ids: string[]
-    ): Promise<Map<string, WithRevision<RxLocalDocumentData>>>;
+    ): Promise<Map<string, RxLocalDocumentData<D>>>;
 }
 
 export interface RxStorageInstance<
@@ -221,7 +226,7 @@ export interface RxStorageInstance<
          * throw on non-local documents.
          */
         overwrite: boolean,
-        documents: WithDeleted<WithWriteRevision<DocumentData>>[]
+        documents: RxDocumentWriteData<DocumentData>[]
     ): Promise<
         /**
          * returns the response, splitted into success and error lists.
@@ -238,7 +243,7 @@ export interface RxStorageInstance<
          * of the documents to find.
          */
         ids: string[]
-    ): Promise<Map<string, WithRevision<DocumentData>>>;
+    ): Promise<Map<string, RxDocumentData<DocumentData>>>;
 
     /**
      * Runs a NoSQL 'mango' query over the storage
@@ -285,7 +290,7 @@ export interface RxStorageInstance<
      * storage instance.
      * Do not forget to unsubscribe.
      */
-     changeStream(
+    changeStream(
         options: ChangeStreamOptions
     ): Observable<ChangeStreamEvent<DocumentData>>;
 }

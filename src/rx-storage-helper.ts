@@ -7,10 +7,9 @@ import type {
     RxStorageKeyObjectInstance
 } from './rx-storage.interface';
 import type {
-    RxLocalDocumentData,
-    WithDeleted,
-    WithRevision,
-    WithWriteRevision
+    RxDocumentData,
+    RxDocumentWriteData,
+    RxLocalDocumentData
 } from './types';
 import { lastOfArray } from './util';
 
@@ -22,7 +21,7 @@ export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
  */
 export async function getAllDocuments<RxDocType>(
     storageInstance: RxStorageInstance<RxDocType, any, any>
-): Promise<WithRevision<RxDocType>[]> {
+): Promise<RxDocumentData<RxDocType>[]> {
 
     const getAllQueryPrepared = storageInstance.prepareQuery(
         {
@@ -37,7 +36,7 @@ export async function getAllDocuments<RxDocType>(
 export async function getSingleDocument<RxDocType>(
     storageInstance: RxStorageInstance<RxDocType, any, any>,
     documentId: string
-): Promise<WithRevision<RxDocType> | null> {
+): Promise<RxDocumentData<RxDocType> | null> {
     const results = await storageInstance.findDocumentsById([documentId]);
     const doc = results.get(documentId);
     if (doc) {
@@ -55,8 +54,8 @@ export async function getSingleDocument<RxDocType>(
 export async function writeSingle<RxDocType>(
     instance: RxStorageInstance<RxDocType, any, any>,
     overwrite: boolean,
-    document: WithDeleted<WithWriteRevision<RxDocType>>
-): Promise<WithRevision<RxDocType>> {
+    document: RxDocumentWriteData<RxDocType>
+): Promise<RxDocumentData<RxDocType>> {
     const writeResult = await instance.bulkWrite(
         overwrite,
         [document]
@@ -78,8 +77,8 @@ export async function writeSingle<RxDocType>(
 export async function writeSingleLocal(
     instance: RxStorageKeyObjectInstance<any, any>,
     overwrite: boolean,
-    document: WithDeleted<WithWriteRevision<RxLocalDocumentData>>
-): Promise<WithRevision<RxLocalDocumentData>> {
+    document: RxDocumentWriteData<RxLocalDocumentData>
+): Promise<RxDocumentData<RxLocalDocumentData>> {
     const writeResult = await instance.bulkWrite(
         overwrite,
         [document]
@@ -97,7 +96,7 @@ export async function writeSingleLocal(
 export async function findLocalDocument(
     instance: RxStorageKeyObjectInstance<any, any>,
     id: string
-): Promise<WithRevision<RxLocalDocumentData> | null> {
+): Promise<RxDocumentData<RxLocalDocumentData> | null> {
     const docList = await instance.findLocalDocumentsById([id]);
     const doc = docList.get(id);
     if (!doc) {
