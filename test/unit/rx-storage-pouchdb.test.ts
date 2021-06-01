@@ -234,7 +234,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     order: 'asc',
                     startSequence: 0
                 });
-                const firstChangeAfterWrite = changesAfterWrite[0];
+                const firstChangeAfterWrite = changesAfterWrite.changes[0];
                 if (!firstChangeAfterWrite || !firstChangeAfterWrite.doc) {
                     throw new Error('missing change');
                 }
@@ -250,7 +250,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     order: 'asc',
                     startSequence: 0
                 });
-                const firstChangeAfterUpdate = changesAfterUpdate[0];
+                const firstChangeAfterUpdate = changesAfterUpdate.changes[0];
                 if (!firstChangeAfterUpdate || !firstChangeAfterUpdate.doc) {
                     throw new Error('missing change');
                 }
@@ -266,12 +266,15 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     order: 'asc',
                     startSequence: 0
                 });
-                const firstChangeAfterDelete = changesAfterDelete[0];
+                const firstChangeAfterDelete = changesAfterDelete.changes[0];
                 if (!firstChangeAfterDelete || !firstChangeAfterDelete.previous) {
                     throw new Error('missing change');
                 }
                 assert.ok(firstChangeAfterDelete.operation === 'DELETE');
                 assert.strictEqual(firstChangeAfterDelete.sequence, 3);
+
+                assert.strictEqual(changesAfterDelete.lastSequence, 3);
+
 
                 storageInstance.close();
             });
@@ -394,11 +397,11 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 assert.strictEqual(emitted[0].doc._attachments.foo.length, attachmentData.length);
 
 
-                const changes = await storageInstance.getChanges({
+                const changesResult = await storageInstance.getChanges({
                     startSequence: 0,
                     order: 'asc'
                 });
-                const firstChange = changes[0].doc;
+                const firstChange = changesResult.changes[0].doc;
                 if (!firstChange) {
                     throw new Error('first change missing');
                 }

@@ -21,7 +21,8 @@ import type {
     OldRxCollection,
     PouchAttachmentMeta,
     RxDocumentWriteData,
-    RxAttachmentData
+    RxAttachmentData,
+    RxDocumentData
 } from '../types';
 import type { RxSchema } from '../rx-schema';
 import { writeSingle } from '../rx-storage-helper';
@@ -79,7 +80,7 @@ export class RxAttachment {
                 delete docWriteData._attachments[this.id];
 
                 const startTime = now();
-                const writeResult = await writeSingle(
+                const writeResult: RxDocumentData<any> = await writeSingle(
                     this.doc.collection.storageInstance,
                     false,
                     docWriteData
@@ -89,7 +90,7 @@ export class RxAttachment {
                 this.doc._data._attachments = writeResult._attachments;
 
                 const endTime = now();
-                const changeEvent = createUpdateEvent(
+                const changeEvent = createUpdateEvent<any>(
                     this.doc.collection as any,
                     writeResult,
                     null,
@@ -200,7 +201,7 @@ export async function putAttachment(
             this._data._attachments = writeResult._attachments;
 
             const endTime = now();
-            const changeEvent = createUpdateEvent(
+            const changeEvent = createUpdateEvent<any>(
                 this.collection as any,
                 writeResult,
                 null,

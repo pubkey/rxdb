@@ -452,8 +452,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                                 pushObj._attachments[key] = {
                                     digest: hash,
                                     length,
-                                    type: asWrite.type,
-                                    revPos: newRevHeight
+                                    type: asWrite.type
                                 };
                             } else {
                                 pushObj._attachments[key] = obj as RxAttachmentData;
@@ -554,7 +553,10 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
 
     async getChanges(
         options: ChangeStreamOnceOptions
-    ): Promise<ChangeStreamEvent<RxDocType>[]> {
+    ): Promise<{
+        changes: ChangeStreamEvent<RxDocType>[];
+        lastSequence: number;
+    }> {
         const primaryKey = getPrimary<any>(this.schema);
 
         const pouchResults = await this.internals.pouch.changes({
@@ -564,6 +566,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             descending: options.order === 'asc' ? false : true,
             since: options.startSequence
         });
+        const lastSequence = pouchResults.last_seq;
 
         const changes: ChangeStreamEvent<RxDocType>[] = pouchResults.results
             .filter(pouchRow => !pouchRow.id.startsWith(POUCHDB_DESIGN_PREFIX))
@@ -573,7 +576,11 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                     pouchRow
                 );
             });
-        return changes;
+
+        return {
+            changes,
+            lastSequence
+        };
     }
 }
 

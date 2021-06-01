@@ -299,7 +299,16 @@ export interface RxStorageInstance<
      */
     getChanges(
         options: ChangeStreamOnceOptions
-    ): Promise<ChangeStreamEvent<DocumentData>[]>;
+    ): Promise<{
+        changes: ChangeStreamEvent<DocumentData>[];
+        /**
+         * Bhe last sequence number is returned in a separate field
+         * because the storage instance might have left out some events
+         * that it does not want to send out to the user.
+         * But still we need to know that they are there for a gapless pagination.
+         */
+        lastSequence: number;
+    }>;
 
     /**
      * Returns an ongoing stream

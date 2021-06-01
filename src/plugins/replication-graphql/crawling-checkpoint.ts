@@ -4,13 +4,8 @@ import {
 } from './helper';
 import type {
     RxCollection,
-    PouchChangeRow,
-    PouchChangeDoc,
-    PouchdbChangesResult
+    ChangeStreamEvent
 } from '../../types';
-import {
-    pouchSwapIdToPrimary
-} from '../../rx-storage-pouchdb';
 import {
     findLocalDocument,
     writeSingleLocal
@@ -20,7 +15,7 @@ import {
  * when the replication starts,
  * we need a way to find out where it ended the last time.
  *
- * For push-replication, we use the pouchdb-sequence:
+ * For push-replication, we use the storageInstance-sequence:
  * We get the documents newer then the last sequence-id
  * and push them to the server.
  *
@@ -89,8 +84,8 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
     endpointHash: string,
     batchSize = 10
 ): Promise<{
-    results: (PouchChangeRow & PouchChangeDoc)[];
-    last_seq: number;
+    changes: ChangeStreamEvent<RxDocType>[];
+    lastSequence: number;
 }> {
     let lastPushSequence = await getLastPushSequence(
         collection,
@@ -98,7 +93,8 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
     );
 
     let retry = true;
-    let changes;
+    let lastSequence: number = lastPushSequence;
+    let changes: ChangeStreamEvent<RxDocType>[] = [];
 
     /**
      * it can happen that all docs in the batch
@@ -107,26 +103,29 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
      * until we reach the end of it
      */
     while (retry) {
-        changes = await collection.pouch.changes({
-            since: lastPushSequence,
+
+        const changesResult = await collection.storageInstance.getChanges({
+            startSequence: lastPushSequence,
             limit: batchSize,
-            include_docs: true
-        } as any);
-        const filteredResults = changes.results.filter((change: any) => {
+            order: 'asc'
+        });
+        changes = changesResult.changes;
+        lastSequence = changesResult.lastSequence;
+
+        const filteredResults = changes.filter((change) => {
+            const changeDoc = change.doc ? change.doc : change.previous;
+            if (!changeDoc || changeDoc === 'UNKNOWN') {
+                throw new Error('this should never happen');
+            }
+
             /**
              * filter out changes with revisions resulting from the pull-stream
              * so that they will not be upstreamed again
              */
             if (wasRevisionfromPullReplication(
                 endpointHash,
-                change.doc._rev
+                changeDoc._rev
             )) return false;
-
-            /**
-             * filter out internal docs
-             * that are used for views or indexes in pouchdb
-             */
-            if (change.id.startsWith('_design/')) return false;
 
             return true;
         });
@@ -134,25 +133,20 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
         const useResults = filteredResults;
 
 
-
-        if (useResults.length === 0 && changes.results.length === batchSize) {
+        if (useResults.length === 0 && changes.length === batchSize) {
             // no pushable docs found but also not reached the end -> re-run
-            lastPushSequence = changes.last_seq;
+            lastPushSequence = lastSequence;
             retry = true;
         } else {
-            changes.results = useResults;
+            changes = useResults;
             retry = false;
         }
     }
 
-    (changes as PouchdbChangesResult).results.forEach((change: any) => {
-        change.doc = collection._handleFromPouch(change.doc);
-
-        // TODO primary resolution should happen inside of the rx-storage-pouch
-        change.doc = pouchSwapIdToPrimary(collection.schema.primaryPath, change.doc);
-    });
-
-    return changes as any;
+    return {
+        changes,
+        lastSequence
+    };
 }
 
 

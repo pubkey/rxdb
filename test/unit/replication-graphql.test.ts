@@ -219,7 +219,7 @@ describe('replication-graphql.test.js', () => {
                 const docData = doc.toJSON();
                 const customRev = '2-fadae8ee3847d0748381f13988e95502-rxdb-from-graphql';
                 (docData as any)._id = docData.id;
-                docData._rev = customRev;
+                (docData as any)._rev = customRev;
                 docData.name = 'Alice';
 
                 await pouch.bulkDocs(
@@ -564,13 +564,13 @@ describe('replication-graphql.test.js', () => {
                 it('should get all changes', async () => {
                     const amount = 5;
                     const c = await humansCollection.createHumanWithTimestamp(amount);
-                    const changes = await getChangesSinceLastPushSequence(
+                    const changesResult = await getChangesSinceLastPushSequence(
                         c,
                         endpointHash,
                         10
                     );
-                    assert.strictEqual(changes.results.length, amount);
-                    assert.ok((changes.results[0] as any).doc.name);
+                    assert.strictEqual(changesResult.changes.length, amount);
+                    assert.ok((changesResult.changes[0] as any).doc.name);
                     c.database.destroy();
                 });
                 it('should get only the newest update to documents', async () => {
@@ -578,23 +578,23 @@ describe('replication-graphql.test.js', () => {
                     const c = await humansCollection.createHumanWithTimestamp(amount);
                     const oneDoc = await c.findOne().exec(true);
                     await oneDoc.atomicSet('age', 1);
-                    const changes = await getChangesSinceLastPushSequence(
+                    const changesResult = await getChangesSinceLastPushSequence(
                         c,
                         endpointHash,
                         10
                     );
-                    assert.strictEqual(changes.results.length, amount);
+                    assert.strictEqual(changesResult.changes.length, amount);
                     c.database.destroy();
                 });
                 it('should not get more changes then the limit', async () => {
                     const amount = 30;
                     const c = await humansCollection.createHumanWithTimestamp(amount);
-                    const changes = await getChangesSinceLastPushSequence(
+                    const changesResult = await getChangesSinceLastPushSequence(
                         c,
                         endpointHash,
                         10
                     );
-                    assert.strictEqual(changes.results.length, 10);
+                    assert.strictEqual(changesResult.changes.length, 10);
                     c.database.destroy();
                 });
                 it('should get deletions', async () => {
@@ -602,25 +602,27 @@ describe('replication-graphql.test.js', () => {
                     const c = await humansCollection.createHumanWithTimestamp(amount);
                     const oneDoc = await c.findOne().exec(true);
                     await oneDoc.remove();
-                    const changes = await getChangesSinceLastPushSequence(
+                    const changesResult = await getChangesSinceLastPushSequence(
                         c,
                         endpointHash,
                         10
                     );
-                    assert.strictEqual(changes.results.length, amount);
-                    const deleted = changes.results.find((change: any) => change.doc._deleted === true);
+                    assert.strictEqual(changesResult.changes.length, amount);
+                    const deleted = changesResult.changes.find(change => {
+                        return change.operation === 'DELETE';
+                    });
                     assert.ok(deleted);
                     c.database.destroy();
                 });
                 it('should have resolved the primary', async () => {
                     const amount = 5;
                     const c = await humansCollection.createHumanWithTimestamp(amount);
-                    const changes = await getChangesSinceLastPushSequence(
+                    const changesResult = await getChangesSinceLastPushSequence(
                         c,
                         endpointHash,
                         10
                     );
-                    const firstDoc = changes.results[0];
+                    const firstDoc = changesResult.changes[0];
                     assert.ok((firstDoc as any).doc.id);
                     c.database.destroy();
                 });
@@ -645,16 +647,16 @@ describe('replication-graphql.test.js', () => {
                     const allDocs = await c.find().exec();
                     assert.strictEqual(allDocs.length, amount + 1);
 
-                    const changes = await getChangesSinceLastPushSequence(
+                    const changesResult = await getChangesSinceLastPushSequence(
                         c,
                         endpointHash,
                         10
                     );
 
-                    assert.strictEqual(changes.results.length, amount);
-                    const shouldNotBeFound = changes.results.find((change: any) => change.id === toPouch.id);
+                    assert.strictEqual(changesResult.changes.length, amount);
+                    const shouldNotBeFound = changesResult.changes.find((change: any) => change.id === toPouch.id);
                     assert.ok(!shouldNotBeFound);
-                    assert.strictEqual(changes.last_seq, amount + 1);
+                    assert.strictEqual(changesResult.lastSequence, amount + 1);
                     c.database.destroy();
                 });
             });
@@ -753,8 +755,7 @@ describe('replication-graphql.test.js', () => {
                         queryBuilder
                     },
                     deletedFlag: 'deleted',
-                    live: false,
-                    syncRevisions: false,
+                    live: false
                 });
                 await replicationState.awaitInitialReplication();
 

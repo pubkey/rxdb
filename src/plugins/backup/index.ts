@@ -145,19 +145,16 @@ export class RxBackupState {
                     while (hasMore && !this.isStopped) {
                         await this.database.requestIdlePromise();
 
-                        const changes = await collection.storageInstance.getChanges({
+                        const changesResult = await collection.storageInstance.getChanges({
                             startSequence: lastSequence,
                             limit: this.options.batchSize,
                             order: 'asc'
                         });
+                        lastSequence = changesResult.lastSequence;
 
-                        const lastChange = lastOfArray(changes);
-                        if (lastChange) {
-                            lastSequence = lastChange.sequence;
-                        }
                         meta.collectionStates[collectionName].lastSequence = lastSequence;
 
-                        const docIds: string[] = changes
+                        const docIds: string[] = changesResult.changes
                             .filter(change => {
                                 if (
                                     processedDocuments.has(change.id) &&

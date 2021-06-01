@@ -24,7 +24,12 @@ export async function getDocsWithRevisionsFromPouch(
         doc: any
     }
 }> {
-    if (docIds.length === 0) return {}; // optimisation shortcut
+    if (docIds.length === 0) {
+        return {}; // optimisation shortcut
+    }
+
+
+
     const pouch = collection.pouch;
     const allDocs = await pouch.allDocs({
         keys: docIds,

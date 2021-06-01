@@ -148,15 +148,10 @@ export async function findLocalDocument(
 export async function getNewestSequence(
     storageInstance: RxStorageInstance<any, any, any>
 ): Promise<number> {
-    const changes = await storageInstance.getChanges({
+    const changesResult = await storageInstance.getChanges({
         order: 'desc',
         limit: 1,
         startSequence: 0
     });
-    const last = lastOfArray(changes);
-    if (last) {
-        return last.sequence;
-    } else {
-        return 0;
-    }
+    return changesResult.lastSequence;
 }

@@ -295,31 +295,34 @@ export class RxGraphQLReplicationState {
     async runPush(): Promise<boolean> {
         // console.log('RxGraphQLReplicationState.runPush(): start');
 
-        const changes = await getChangesSinceLastPushSequence(
+        const changesResult = await getChangesSinceLastPushSequence(
             this.collection,
             this.endpointHash,
             this.push.batchSize,
         );
 
-        const changesWithDocs: any = (await Promise.all(changes.results.map(async (change: any) => {
-            let doc = change['doc'];
+        const changesWithDocs: any = (
+            await Promise.all(
+                changesResult.changes.map(async (change) => {
+                    let doc = change.doc ? change.doc : change.previous;
+                    doc[this.deletedFlag] = change.operation === 'DELETE';
+                    delete doc._rev;
+                    delete doc._deleted;
+                    delete doc._attachments;
 
-            doc[this.deletedFlag] = !!change['deleted'];
-            delete doc._rev;
-            delete doc._deleted;
-            delete doc._attachments;
+                    doc = await (this.push as any).modifier(doc);
+                    if (!doc) {
+                        return null;
+                    }
 
-            doc = await (this.push as any).modifier(doc);
-            if (!doc) {
-                return null;
-            }
-
-            const seq = change.seq;
-            return {
-                doc,
-                seq
-            };
-        }))).filter(doc => doc);
+                    const seq = change.sequence;
+                    return {
+                        doc,
+                        seq
+                    };
+                })
+            )
+        ).filter(doc => doc);
 
         let lastSuccessfullChange = null;
         try {
@@ -363,10 +366,10 @@ export class RxGraphQLReplicationState {
         await setLastPushSequence(
             this.collection,
             this.endpointHash,
-            changes.last_seq
+            changesResult.lastSequence
         );
 
-        if (changes.results.length === 0) {
+        if (changesResult.changes.length === 0) {
             if (this.live) {
                 // console.log('no more docs to push, wait for ping');
             } else {
@@ -410,7 +413,6 @@ export class RxGraphQLReplicationState {
                 toPouch._revisions.ids.unshift(revisionId);
             } else {
                 newRevision = '1-' + newRevision;
-
             }
             toPouch._rev = newRevision;
 
