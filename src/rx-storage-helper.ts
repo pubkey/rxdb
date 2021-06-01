@@ -2,6 +2,7 @@
  * Helper functions for accessing the RxStorage instances.
  */
 
+import { newRxError } from './rx-error';
 import type {
     RxStorageInstance,
     RxStorageKeyObjectInstance
@@ -46,6 +47,41 @@ export async function getSingleDocument<RxDocType>(
     }
 }
 
+
+/**
+ * get the number of all undeleted documents
+ */
+export async function countAllUndeleted<DocType>(
+    storageInstance: RxStorageInstance<DocType, any, any>
+): Promise<number> {
+    const docs = await getAllDocuments(
+        storageInstance
+    );
+    return docs.length;
+}
+
+/**
+ * get a batch of documents from the storage-instance
+ */
+export async function getBatch<DocType>(
+    storageInstance: RxStorageInstance<DocType, any, any>,
+    limit: number
+): Promise<any[]> {
+    if (limit <= 1) {
+        throw newRxError('P1', {
+            limit
+        });
+    }
+
+    const preparedQuery = storageInstance.prepareQuery(
+        {
+            selector: {},
+            limit
+        }
+    );
+    const result = await storageInstance.query(preparedQuery);
+    return result.documents;
+}
 
 /**
  * Writes a single document,

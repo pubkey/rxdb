@@ -99,7 +99,7 @@ export class RxDatabaseBase<
     /**
      * Stores information documents about the collections of the database
      */
-    public internalStore: RxStorageInstancePouch<{ _id: string }> = {} as any;
+    public internalStore: RxStorageInstancePouch<{ _id: string; schema: RxJsonSchema }> = {} as any;
     /**
      * Stores the local documents which are attached to this database.
      */

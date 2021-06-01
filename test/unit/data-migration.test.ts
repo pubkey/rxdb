@@ -7,14 +7,15 @@ import * as humansCollection from '../helper/humans-collection';
 
 import {
     createRxDatabase,
-    PouchDB,
     randomCouchString,
     promiseWait,
     _collectionNamePrimary,
     countAllUndeleted,
     RxError,
     clone,
-    getHeightOfRevision
+    getHeightOfRevision,
+    pouchCountAllUndeleted,
+    PouchDB
 } from '../../plugins/core';
 
 import {
@@ -249,7 +250,6 @@ config.parallel('data-migration.test.js', () => {
                     assert.strictEqual(oldCol.schema.constructor.name, 'RxSchema');
                     assert.strictEqual(oldCol.version, 0);
                     assert.strictEqual(oldCol._crypter.constructor.name, 'Crypter');
-                    assert.ok(oldCol.pouchdb.constructor.name.includes('PouchDB'));
                     col.database.destroy();
                 });
             });
@@ -298,14 +298,14 @@ config.parallel('data-migration.test.js', () => {
                         throw new Error('this should never happen');
                     }
 
-                    const amount = await countAllUndeleted(old.pouchdb);
+                    const amount = await countAllUndeleted(old.storageInstance);
                     assert.strictEqual(amount, 10);
 
-                    const pouchLocation = old.pouchdb.name;
+                    const pouchLocation = old.storageInstance.internals.pouch.name;
                     const checkPouch = new PouchDB(pouchLocation, {
                         adapter: 'memory'
                     });
-                    const amountPlain = await countAllUndeleted(checkPouch as any);
+                    const amountPlain = await pouchCountAllUndeleted(checkPouch as any);
                     assert.strictEqual(amountPlain, 10);
 
                     // check that internal doc exists
@@ -320,7 +320,7 @@ config.parallel('data-migration.test.js', () => {
                     const checkPouch2 = new PouchDB(pouchLocation, {
                         adapter: 'memory'
                     });
-                    const amountPlain2 = await countAllUndeleted(checkPouch2 as any);
+                    const amountPlain2 = await pouchCountAllUndeleted(checkPouch2 as any);
                     assert.strictEqual(amountPlain2, 0);
 
                     // check that internal doc deleted

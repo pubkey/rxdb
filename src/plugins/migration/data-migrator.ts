@@ -14,10 +14,6 @@ import {
 } from 'rxjs';
 import deepEqual from 'deep-equal';
 import {
-    countAllUndeleted,
-    getBatch
-} from '../../pouch-db';
-import {
     clone,
     toPromise,
     flatClone,
@@ -63,6 +59,7 @@ import {
     pouchSwapIdToPrimary,
     pouchSwapPrimaryToId
 } from '../../rx-storage-pouchdb';
+import { countAllUndeleted, getBatch, getSingleDocument } from '../../rx-storage-helper';
 
 export class DataMigrator {
 
@@ -118,7 +115,7 @@ export class DataMigrator {
                 .then(ret => {
                     oldCols = ret;
                     const countAll: Promise<number[]> = Promise.all(
-                        oldCols.map(oldCol => countAllUndeleted(oldCol.pouchdb))
+                        oldCols.map(oldCol => countAllUndeleted(oldCol.storageInstance))
                     );
                     return countAll;
                 })
@@ -212,14 +209,13 @@ export async function createOldCollection(
     const storageInstance = await database.storage.createStorageInstance(
         storageInstanceCreationParams
     );
-    const pouchdb = storageInstance.internals.pouch;
     const ret: OldRxCollection = {
         version,
         dataMigrator,
         newestCollection: dataMigrator.newestCollection,
         database,
         schema: createRxSchema(schemaObj, false),
-        pouchdb,
+        storageInstance,
         _crypter: createCrypter(
             database.password,
             schema
@@ -237,20 +233,23 @@ export async function _getOldCollections(
 ): Promise<OldRxCollection[]> {
     const oldColDocs = await Promise.all(
         getPreviousVersions(dataMigrator.currentSchema.jsonSchema)
-            .map(v => dataMigrator.database.internalStore.internals.pouch.get(dataMigrator.name + '-' + v))
+            .map(v => getSingleDocument(dataMigrator.database.internalStore, dataMigrator.name + '-' + v))
             .map(fun => fun.catch(() => null)) // auto-catch so Promise.all continues
     );
 
     return Promise.all(
         oldColDocs
-            .filter(colDoc => colDoc !== null)
             .map(colDoc => {
+                if (!colDoc) {
+                    return null as any;
+                }
                 return createOldCollection(
                     colDoc.schema.version,
                     colDoc.schema,
                     dataMigrator
                 );
             })
+            .filter(colDoc => colDoc !== null)
     );
 }
 
@@ -295,7 +294,7 @@ export function getBatchOfOldCollection(
     batchSize: number
 ): Promise<any[]> {
     return getBatch(
-        oldCollection.pouchdb,
+        oldCollection.storageInstance,
         batchSize
     )
         .then(docs => docs
@@ -475,15 +474,20 @@ export function _migrateDocument(
         })
         // remove the migrated document from the old collection
         .then(() => {
+
+            let writeDeleted = flatClone(docData);
+            writeDeleted._deleted = true;
+
             // TODO this should not be needed when rx-storage migration is done
-            const removeData = pouchSwapPrimaryToId(
+            writeDeleted = pouchSwapPrimaryToId(
                 oldCollection.schema.primaryPath,
-                docData
+                writeDeleted
             );
 
-            return oldCollection.pouchdb.remove(
-                _handleToPouch(oldCollection, removeData)
-            ).catch(() => { });
+            return oldCollection.storageInstance.bulkWrite(
+                false,
+                [writeDeleted]
+            );
         })
         .then(() => action) as any;
 }
@@ -495,8 +499,7 @@ export function _migrateDocument(
 export function deleteOldCollection(
     oldCollection: OldRxCollection
 ): Promise<void> {
-    return oldCollection
-        .pouchdb.destroy()
+    return oldCollection.storageInstance.remove()
         .then(
             () => oldCollection.database.removeCollectionDoc(
                 oldCollection.dataMigrator.name,

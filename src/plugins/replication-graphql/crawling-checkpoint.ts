@@ -1,5 +1,4 @@
 import {
-    getDocFromPouchOrNull,
     wasRevisionfromPullReplication,
     GRAPHQL_REPLICATION_PLUGIN_IDENT
 } from './helper';

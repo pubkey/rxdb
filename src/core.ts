@@ -16,8 +16,8 @@ export { addRxPlugin } from './plugin';
 export {
     PouchDB,
     validateCouchDBString,
-    getBatch,
-    countAllUndeleted
+    pouchGetBatch,
+    pouchCountAllUndeleted
 } from './pouch-db';
 
 export {
@@ -79,7 +79,9 @@ export {
     getNewestSequence,
     getAllDocuments,
     writeSingleLocal,
-    writeSingle
+    writeSingle,
+    countAllUndeleted,
+    getBatch
 } from './rx-storage-helper';
 
 export {

@@ -1,8 +1,8 @@
 import { Crypter } from '../../crypter';
 import { DataMigrator } from '../../plugins/migration';
 import { RxSchema } from '../../rx-schema';
+import { RxStorageInstance } from '../../rx-storage.interface';
 import {
-    PouchDBInstance,
     WithAttachments
 } from '../pouch';
 import { RxCollection } from '../rx-collection';
@@ -21,7 +21,7 @@ export type MigrationStrategies = {
 export interface OldRxCollection {
     version: number;
     schema: RxSchema;
-    pouchdb: PouchDBInstance;
+    storageInstance: RxStorageInstance<any, any, any>,
     dataMigrator: DataMigrator;
     _crypter: Crypter;
     newestCollection: RxCollection;

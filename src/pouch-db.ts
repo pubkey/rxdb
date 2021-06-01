@@ -31,7 +31,7 @@ import { isFolderPath } from './util';
 /**
  * get the number of all undeleted documents
  */
-export function countAllUndeleted(
+export function pouchCountAllUndeleted(
     pouchdb: PouchDBInstance
 ): Promise<number> {
     return pouchdb
@@ -48,7 +48,7 @@ export function countAllUndeleted(
 /**
  * get a batch of documents from the pouch-instance
  */
-export function getBatch(
+export function pouchGetBatch(
     pouchdb: PouchDBInstance,
     limit: number
 ): Promise<any[]> {

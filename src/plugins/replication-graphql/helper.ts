@@ -11,25 +11,6 @@ export const GRAPHQL_REPLICATION_PLUGIN_IDENT = 'rxdbreplicationgraphql';
 export const DEFAULT_MODIFIER = (d: any) => Promise.resolve(d);
 
 /**
- * pouchdb will throw if a document is not found
- * this instead return null
- */
-export function getDocFromPouchOrNull(
-    collection: RxCollection,
-    id: string
-) {
-    return collection.pouch.get(id, {
-        open_revs: true
-    })
-        .then(docData => {
-            return docData;
-        })
-        .catch(() => null);
-}
-
-
-
-/**
  *
  * @return  revisions and docs, indexed by id
  */

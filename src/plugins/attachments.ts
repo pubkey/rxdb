@@ -274,7 +274,7 @@ export async function preMigrateDocument(
                 const attachment: PouchAttachmentMeta = attachments[attachmentId];
                 const docPrimary: string = data.docData[data.oldCollection.schema.primaryPath];
 
-                let rawAttachmentData = await data.oldCollection.pouchdb.getAttachment(docPrimary, attachmentId);
+                let rawAttachmentData = await data.oldCollection.storageInstance.getAttachmentData(docPrimary, attachmentId);
                 if (mustDecrypt) {
                     rawAttachmentData = await blobBufferUtil.toString(rawAttachmentData)
                         .then(dataString => blobBufferUtil.createBlobBuffer(
