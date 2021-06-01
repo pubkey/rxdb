@@ -11,7 +11,10 @@ import type {
 import {
     pouchSwapIdToPrimary
 } from '../../rx-storage-pouchdb';
-import { findLocalDocument, writeSingleLocal } from '../../rx-storage-helper';
+import {
+    findLocalDocument,
+    writeSingleLocal
+} from '../../rx-storage-helper';
 
 /**
  * when the replication starts,
@@ -41,7 +44,6 @@ export async function getLastPushSequence(
     collection: RxCollection,
     endpointHash: string
 ): Promise<number> {
-
     const doc = await findLocalDocument(
         collection.localDocumentsStore,
         pushSequenceId(endpointHash)
@@ -85,9 +87,7 @@ export async function setLastPushSequence(
 export async function getChangesSinceLastPushSequence<RxDocType>(
     collection: RxCollection<RxDocType>,
     endpointHash: string,
-    lastPulledRevField: string,
-    batchSize = 10,
-    syncRevisions: boolean = false,
+    batchSize = 10
 ): Promise<{
     results: (PouchChangeRow & PouchChangeDoc)[];
     last_seq: number;
@@ -111,7 +111,6 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
             since: lastPushSequence,
             limit: batchSize,
             include_docs: true
-            // style: 'all_docs'
         } as any);
         const filteredResults = changes.results.filter((change: any) => {
             /**
@@ -123,7 +122,6 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
                 change.doc._rev
             )) return false;
 
-            if (change.doc[lastPulledRevField] === change.doc._rev) return false;
             /**
              * filter out internal docs
              * that are used for views or indexes in pouchdb
@@ -133,30 +131,9 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
             return true;
         });
 
-        let useResults = filteredResults;
+        const useResults = filteredResults;
 
-        if (filteredResults.length > 0 && syncRevisions) {
-            const docsSearch = filteredResults.map((result: any) => {
-                return {
-                    id: result.id,
-                    rev: result.doc._rev
-                };
-            });
 
-            const bulkGetDocs = await collection.pouch.bulkGet({
-                docs: docsSearch,
-                revs: true,
-                latest: true
-            });
-
-            useResults = bulkGetDocs.results.map((result: any) => {
-                return {
-                    id: result.id,
-                    doc: result.docs[0]['ok'],
-                    deleted: result.docs[0]['ok']._deleted
-                };
-            }) as any;
-        }
 
         if (useResults.length === 0 && changes.results.length === batchSize) {
             // no pushable docs found but also not reached the end -> re-run

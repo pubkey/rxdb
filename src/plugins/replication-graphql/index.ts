@@ -74,11 +74,9 @@ export class RxGraphQLReplicationState {
         public readonly pull: GraphQLSyncPullOptions,
         public readonly push: GraphQLSyncPushOptions,
         public readonly deletedFlag: string,
-        public readonly lastPulledRevField: string,
         public readonly live: boolean,
         public liveInterval: number,
-        public retryTime: number,
-        public readonly syncRevisions: boolean
+        public retryTime: number
     ) {
         this.client = GraphQLClient({
             url,
@@ -300,22 +298,16 @@ export class RxGraphQLReplicationState {
         const changes = await getChangesSinceLastPushSequence(
             this.collection,
             this.endpointHash,
-            this.lastPulledRevField,
             this.push.batchSize,
-            this.syncRevisions
         );
 
         const changesWithDocs: any = (await Promise.all(changes.results.map(async (change: any) => {
             let doc = change['doc'];
 
             doc[this.deletedFlag] = !!change['deleted'];
+            delete doc._rev;
             delete doc._deleted;
             delete doc._attachments;
-            delete doc[this.lastPulledRevField];
-
-            if (!this.syncRevisions) {
-                delete doc._rev;
-            }
 
             doc = await (this.push as any).modifier(doc);
             if (!doc) {
@@ -399,78 +391,83 @@ export class RxGraphQLReplicationState {
 
             toPouch._deleted = deletedValue;
             delete toPouch[this.deletedFlag];
+            const primaryValue = toPouch._id;
 
-            if (!this.syncRevisions) {
-                const primaryValue = toPouch._id;
 
-                const pouchState = docsWithRevisions[primaryValue];
-                let newRevision = createRevisionForPulledDocument(
-                    this.endpointHash,
-                    toPouch
-                );
-                if (pouchState) {
-                    const newRevisionHeight = pouchState.revisions.start + 1;
-                    const revisionId = newRevision;
-                    newRevision = newRevisionHeight + '-' + newRevision;
-                    toPouch._revisions = {
-                        start: newRevisionHeight,
-                        ids: pouchState.revisions.ids
-                    };
-                    toPouch._revisions.ids.unshift(revisionId);
-                } else {
-                    newRevision = '1-' + newRevision;
-                }
-
-                toPouch._rev = newRevision;
+            const pouchState = docsWithRevisions[primaryValue];
+            let newRevision = createRevisionForPulledDocument(
+                this.endpointHash,
+                toPouch
+            );
+            if (pouchState) {
+                const newRevisionHeight = pouchState.revisions.start + 1;
+                const revisionId = newRevision;
+                newRevision = newRevisionHeight + '-' + newRevision;
+                toPouch._revisions = {
+                    start: newRevisionHeight,
+                    ids: pouchState.revisions.ids
+                };
+                toPouch._revisions.ids.unshift(revisionId);
             } else {
-                toPouch[this.lastPulledRevField] = toPouch._rev;
+                newRevision = '1-' + newRevision;
+
             }
+            toPouch._rev = newRevision;
+
+            await this.collection.pouch.bulkDocs(
+                [
+                    toPouch
+                ],
+                {
+                    new_edits: false
+                }
+            );
 
             toPouchDocs.push({
                 doc: toPouch,
                 deletedValue
             });
-        }
 
-        const startTime = now();
-        await this.collection.database.lockedRun(
-            async () => {
-                await this.collection.pouch.bulkDocs(
-                    toPouchDocs.map(tpd => tpd.doc),
-                    {
-                        new_edits: false
-                    }
-                );
-            }
-        );
-        const endTime = now();
-
-        /**
-         * because bulkDocs with new_edits: false
-         * does not stream changes to the pouchdb,
-         * we create the event and emit it,
-         * so other instances get informed about it
-         */
-        for (const tpd of toPouchDocs) {
-            const originalDoc = flatClone(tpd.doc);
-
-            if (tpd.deletedValue) {
-                originalDoc._deleted = tpd.deletedValue;
-            } else {
-                delete originalDoc._deleted;
-            }
-            delete originalDoc[this.deletedFlag];
-            delete originalDoc._revisions;
-
-            const cE = changeEventfromPouchChange(
-                originalDoc,
-                this.collection,
-                startTime,
-                endTime
+            const startTime = now();
+            await this.collection.database.lockedRun(
+                async () => {
+                    await this.collection.pouch.bulkDocs(
+                        toPouchDocs.map(tpd => tpd.doc),
+                        {
+                            new_edits: false
+                        }
+                    );
+                }
             );
-            this.collection.$emit(cE);
-        }
+            const endTime = now();
 
+            /**
+             * because bulkDocs with new_edits: false
+             * does not stream changes to the pouchdb,
+             * we create the event and emit it,
+             * so other instances get informed about it
+             */
+            for (const tpd of toPouchDocs) {
+                const originalDoc = flatClone(tpd.doc);
+
+                if (tpd.deletedValue) {
+                    originalDoc._deleted = tpd.deletedValue;
+                } else {
+                    delete originalDoc._deleted;
+                }
+                delete originalDoc[this.deletedFlag];
+                delete originalDoc._revisions;
+                originalDoc._rev = newRevision;
+
+                const cE = changeEventfromPouchChange(
+                    originalDoc,
+                    this.collection,
+                    startTime,
+                    endTime
+                );
+                this.collection.$emit(cE);
+            }
+        }
         return true;
     }
 
@@ -500,12 +497,10 @@ export function syncGraphQL(
         pull,
         push,
         deletedFlag,
-        lastPulledRevField = 'last_pulled_rev',
         live = false,
         liveInterval = 1000 * 10, // in ms
         retryTime = 1000 * 5, // in ms
-        autoStart = true, // if this is false, the replication does nothing at start
-        syncRevisions = false,
+        autoStart = true // if this is false, the replication does nothing at start
     }: any
 ) {
     const collection = this;
@@ -528,11 +523,9 @@ export function syncGraphQL(
         pull,
         push,
         deletedFlag,
-        lastPulledRevField,
         live,
         liveInterval,
-        retryTime,
-        syncRevisions
+        retryTime
     );
 
     if (!autoStart) {
