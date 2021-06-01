@@ -92,10 +92,13 @@ export async function writeSingle<RxDocType>(
     overwrite: boolean,
     document: RxDocumentWriteData<RxDocType>
 ): Promise<RxDocumentData<RxDocType>> {
+    console.log('writeSingle()');
     const writeResult = await instance.bulkWrite(
         overwrite,
         [document]
     );
+    console.log('writeSingle() DONE');
+    console.dir(writeResult);
 
     if (writeResult.error.size > 0) {
         const error = writeResult.error.values().next().value;

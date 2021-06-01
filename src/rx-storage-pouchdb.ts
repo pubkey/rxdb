@@ -33,7 +33,6 @@ import type {
     RxDocumentData,
     WithAttachments,
     RxDocumentWriteData,
-    PouchAttachmentWithData,
     RxAttachmentWriteData,
     RxAttachmentData,
     BlobBuffer
@@ -114,7 +113,6 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
         overwrite: boolean,
         documents: RxLocalDocumentData<D>[]
     ): Promise<RxLocalStorageBulkWriteResponse<RxLocalDocumentData<D>>> {
-
         const insertDataById: Map<string, RxLocalDocumentData<D>> = new Map();
 
         const insertDocs: RxLocalDocumentData<D>[] = documents.map(docData => {
@@ -136,7 +134,10 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
             return storeDocumentData;
         });
 
-        const pouchResult = await this.internals.pouch.bulkDocs(insertDocs);
+        const pouchWriteOptions = {
+            new_edits: !overwrite
+        };
+        const pouchResult = await this.internals.pouch.bulkDocs(insertDocs, pouchWriteOptions);
 
         const ret: RxLocalStorageBulkWriteResponse<RxLocalDocumentData<D>> = {
             success: new Map(),
@@ -409,7 +410,10 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             return storeDocumentData;
         });
 
-        const pouchResult = await this.internals.pouch.bulkDocs(insertDocs);
+        const pouchWriteOptions = {
+            new_edits: !overwrite
+        };
+        const pouchResult = await this.internals.pouch.bulkDocs(insertDocs, pouchWriteOptions);
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
             success: new Map(),
             error: new Map()

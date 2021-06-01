@@ -89,6 +89,36 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
 
                 storageInstance.close();
             });
+            it('should work with overwrite=true', async () => {
+                const storageInstance = await storage.createStorageInstance<TestDocType>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    options: {}
+                });
+
+                const writeData: RxDocumentWriteData<TestDocType> = {
+                    key: 'foobar',
+                    value: 'barfoo',
+                    _attachments: {},
+                    _rev: '1-a723631364fbfa906c5ffa8203ac9725'
+                };
+
+                await writeSingle(
+                    storageInstance,
+                    true,
+                    writeData
+                );
+
+                const found = await storageInstance.findDocumentsById([writeData.key]);
+                const doc = getFromMapOrThrow(found, writeData.key);
+                assert.ok(doc);
+                assert.strictEqual(doc.value, writeData.value);
+                // because overwrite=true, the _rev from the input data must be used.
+                assert.strictEqual(doc._rev, writeData._rev);
+
+                storageInstance.close();
+            });
         });
         describe('.getSortComparator()', () => {
             it('should sort in the correct order', async () => {
