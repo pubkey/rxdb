@@ -451,6 +451,11 @@ export class RxGraphQLReplicationState<RxDocType> {
                 delete originalDoc._deleted;
             }
 
+
+            console.log('XXXXXXXXXXXXXXXXX');
+            console.dir(originalDoc);
+
+
             const cE = changeEventfromPouchChange(
                 originalDoc,
                 this.collection,

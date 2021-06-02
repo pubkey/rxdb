@@ -1,5 +1,6 @@
 import type { ChangeEvent } from 'event-reduce-js';
 import { BlobBuffer } from './pouch';
+import { MangoQuery } from './rx-query';
 import { RxJsonSchema } from './rx-schema';
 
 
@@ -181,6 +182,9 @@ export type RxLocalStorageBulkWriteResponse<DocData> = {
     error: Map<string, RxStorageBulkWriteError<DocData>>;
 }
 
+
+export type PreparedQuery<DocType> = MangoQuery<DocType> | any;
+
 /**
  * We return a complex object instead of a single array
  * so we are able to add additional fields in the future.
@@ -189,6 +193,7 @@ export type RxStorageQueryResult<RxDocType> = {
     // the found documents, sort order is important.
     documents: RxDocumentData<RxDocType>[];
 }
+
 
 
 export type RxStorageInstanceCreationParams<DocumentData, InstanceCreationOptions> = {

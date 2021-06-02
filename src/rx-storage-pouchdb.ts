@@ -6,7 +6,6 @@ import { binaryMd5 } from 'pouchdb-md5';
 
 import type {
     RxStorage,
-    PreparedQuery,
     RxStorageInstance,
     RxStorageKeyObjectInstance
 } from './rx-storage.interface';
@@ -35,7 +34,8 @@ import type {
     RxDocumentWriteData,
     RxAttachmentWriteData,
     RxAttachmentData,
-    BlobBuffer
+    BlobBuffer,
+    PreparedQuery
 } from './types';
 
 import type {
@@ -109,7 +109,7 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
         await this.internals.pouch.destroy();
     }
 
-    public async bulkWrite<D>(
+    public async bulkWrite<D = any>(
         overwrite: boolean,
         documents: RxLocalDocumentData<D>[]
     ): Promise<RxLocalStorageBulkWriteResponse<RxLocalDocumentData<D>>> {
@@ -167,7 +167,7 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
         return ret;
     }
 
-    async findLocalDocumentsById<D>(ids: string[]): Promise<Map<string, RxLocalDocumentData<D>>> {
+    async findLocalDocumentsById<D = any>(ids: string[]): Promise<Map<string, RxLocalDocumentData<D>>> {
         const ret = new Map();
 
         /**

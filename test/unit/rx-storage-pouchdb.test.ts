@@ -290,7 +290,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     }
                 });
 
-                const emitted: ChangeStreamEvent<any>[] = [];
+                const emitted: ChangeStreamEvent<TestDocType>[] = [];
                 const sub = storageInstance.changeStream({
                     startSequence: 0
                 }).subscribe(x => emitted.push(x));
@@ -331,6 +331,59 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
 
                 sub.unsubscribe();
                 storageInstance.close();
+            });
+            it('should emit changes accross different instances of the same name', async () => {
+                const sameName = randomCouchString(12);
+                const storageInstance1 = await storage.createStorageInstance<TestDocType>({
+                    databaseName: sameName,
+                    collectionName: sameName,
+                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    options: {}
+                });
+                const storageInstance2 = await storage.createStorageInstance<TestDocType>({
+                    databaseName: sameName,
+                    collectionName: sameName,
+                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    options: {}
+                });
+
+                // listen to instance 1
+                const emitted: ChangeStreamEvent<TestDocType>[] = [];
+                const sub = storageInstance1.changeStream({
+                    startSequence: 0
+                }).subscribe(x => emitted.push(x));
+
+                // make writes to instance 2
+                const writeData: RxDocumentWriteData<TestDocType> = {
+                    key: 'foobar',
+                    value: 'one',
+                    _deleted: false,
+                    _attachments: {}
+                };
+
+                // overwrite = false
+                await writeSingle(
+                    storageInstance2,
+                    false,
+                    writeData
+                );
+                await waitUntil(() => emitted.length === 1);
+                assert.strictEqual(emitted[0].id, writeData.key);
+
+                // overwrite = true
+                writeData.key = 'barfoo';
+                writeData._rev = '1-a723631364fbfa906c5ffa8203ac9725';
+                await writeSingle(
+                    storageInstance2,
+                    true,
+                    writeData
+                );
+                await waitUntil(() => emitted.length === 2);
+                assert.strictEqual(emitted[1].id, writeData.key);
+
+                sub.unsubscribe();
+                storageInstance1.close();
+                storageInstance2.close();
             });
         });
         describe('attachments', () => {

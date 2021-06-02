@@ -6,6 +6,7 @@ import type {
     ChangeStreamEvent,
     ChangeStreamOnceOptions,
     ChangeStreamOptions,
+    PreparedQuery,
     RxDocumentData,
     RxDocumentWriteData,
     RxLocalDocumentData,
@@ -22,9 +23,6 @@ import type {
 import type {
     Observable
 } from 'rxjs';
-
-
-export type PreparedQuery<DocType> = MangoQuery<DocType> | any;
 
 /**
  * TODO WORK IN PROGRESS!
