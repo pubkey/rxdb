@@ -17,7 +17,8 @@ import GraphQLClient from 'graphql-client';
 import {
     promiseWait,
     flatClone,
-    now
+    now,
+    getHeightOfRevision
 } from '../../util';
 
 import {
@@ -30,8 +31,7 @@ import {
 import {
     DEFAULT_MODIFIER,
     wasRevisionfromPullReplication,
-    createRevisionForPulledDocument,
-    getDocsWithRevisionsFromPouch
+    createRevisionForPulledDocument
 } from './helper';
 import {
     setLastPushSequence,
@@ -52,9 +52,9 @@ import type {
     RxCollection,
     GraphQLSyncPullOptions,
     GraphQLSyncPushOptions,
-    RxPlugin
+    RxPlugin,
+    RxDocumentData
 } from '../../types';
-import { pouchSwapPrimaryToId } from '../../rx-storage-pouchdb';
 
 addRxPlugin(RxDBLeaderElectionPlugin);
 
@@ -65,10 +65,10 @@ addRxPlugin(RxDBLeaderElectionPlugin);
 addRxPlugin(RxDBWatchForChangesPlugin);
 
 
-export class RxGraphQLReplicationState {
+export class RxGraphQLReplicationState<RxDocType> {
 
     constructor(
-        public readonly collection: RxCollection,
+        public readonly collection: RxCollection<RxDocType>,
         public readonly url: string,
         public headers: { [k: string]: string },
         public readonly pull: GraphQLSyncPullOptions,
@@ -103,7 +103,7 @@ export class RxGraphQLReplicationState {
 
     public initialReplicationComplete$: Observable<any> = undefined as any;
 
-    public recieved$: Observable<any> = undefined as any;
+    public recieved$: Observable<RxDocumentData<RxDocType>> = undefined as any;
     public send$: Observable<any> = undefined as any;
     public error$: Observable<any> = undefined as any;
     public canceled$: Observable<any> = undefined as any;
@@ -257,15 +257,10 @@ export class RxGraphQLReplicationState {
             }
         }
 
-        const docIds = modified.map((doc: any) => doc[this.collection.schema.primaryPath]);
-        const docsWithRevisions = await getDocsWithRevisionsFromPouch(
-            this.collection,
-            docIds
-        );
         if (this.isStopped()) {
             return true;
         }
-        await this.handleDocumentsFromRemote(modified, docsWithRevisions as any);
+        await this.handleDocumentsFromRemote(modified);
         modified.map((doc: any) => this._subjects.recieved.next(doc));
 
         if (modified.length === 0) {
@@ -293,9 +288,7 @@ export class RxGraphQLReplicationState {
      * @return true if successfull, false if not
      */
     async runPush(): Promise<boolean> {
-        // console.log('RxGraphQLReplicationState.runPush(): start');
-
-        const changesResult = await getChangesSinceLastPushSequence(
+        const changesResult = await getChangesSinceLastPushSequence<RxDocType>(
             this.collection,
             this.endpointHash,
             this.push.batchSize,
@@ -304,11 +297,13 @@ export class RxGraphQLReplicationState {
         const changesWithDocs: any = (
             await Promise.all(
                 changesResult.changes.map(async (change) => {
-                    let doc = change.doc ? change.doc : change.previous;
+                    let doc: any = change.doc ? change.doc : change.previous;
                     doc[this.deletedFlag] = change.operation === 'DELETE';
                     delete doc._rev;
                     delete doc._deleted;
                     delete doc._attachments;
+
+                    doc = this.collection._handleFromPouch(doc);
 
                     doc = await (this.push as any).modifier(doc);
                     if (!doc) {
@@ -334,8 +329,10 @@ export class RxGraphQLReplicationState {
              */
             for (let i = 0; i < changesWithDocs.length; i++) {
                 const changeWithDoc = changesWithDocs[i];
+
                 const pushObj = await this.push.queryBuilder(changeWithDoc.doc);
                 const result = await this.client.query(pushObj.query, pushObj.variables);
+
                 if (result.errors) {
                     if (typeof result.errors === 'string') {
                         throw new Error(result.errors);
@@ -350,7 +347,6 @@ export class RxGraphQLReplicationState {
                 }
             }
         } catch (err) {
-
             if (lastSuccessfullChange) {
                 await setLastPushSequence(
                     this.collection,
@@ -383,93 +379,88 @@ export class RxGraphQLReplicationState {
         return true;
     }
 
-    async handleDocumentsFromRemote(docs: any[], docsWithRevisions: any[]): Promise<boolean> {
-        const toPouchDocs: any[] = [];
+    async handleDocumentsFromRemote(docs: any[]): Promise<boolean> {
+        const toPouchDocs: {
+            doc: RxDocumentData<RxDocType>;
+            deletedValue: boolean;
+        }[] = [];
+
+
+        const docIds: string[] = docs.map(doc => doc[this.collection.schema.primaryPath]);
+        const docsFromLocal = await this.collection.storageInstance.findDocumentsById(docIds);
+
         for (const doc of docs) {
+            const documentId = doc[this.collection.schema.primaryPath];
             const deletedValue = doc[this.deletedFlag];
-            let toPouch = this.collection._handleToPouch(doc);
 
             // TODO this should not be needed when rx-storage migration is done
-            toPouch = pouchSwapPrimaryToId(this.collection.schema.primaryPath, toPouch);
+            // toPouch = pouchSwapPrimaryToId(this.collection.schema.primaryPath, toPouch);
 
-            toPouch._deleted = deletedValue;
-            delete toPouch[this.deletedFlag];
-            const primaryValue = toPouch._id;
+            doc._deleted = deletedValue;
+            delete doc[this.deletedFlag];
 
-
-            const pouchState = docsWithRevisions[primaryValue];
+            const docStateInLocalStorageInstance = docsFromLocal.get(documentId);
             let newRevision = createRevisionForPulledDocument(
                 this.endpointHash,
-                toPouch
+                doc
             );
-            if (pouchState) {
-                const newRevisionHeight = pouchState.revisions.start + 1;
-                const revisionId = newRevision;
+            if (docStateInLocalStorageInstance) {
+                const hasHeight = getHeightOfRevision(docStateInLocalStorageInstance._rev);
+                const newRevisionHeight = hasHeight + 1;
                 newRevision = newRevisionHeight + '-' + newRevision;
-                toPouch._revisions = {
-                    start: newRevisionHeight,
-                    ids: pouchState.revisions.ids
-                };
-                toPouch._revisions.ids.unshift(revisionId);
             } else {
                 newRevision = '1-' + newRevision;
             }
-            toPouch._rev = newRevision;
+            doc._rev = newRevision;
 
-            await this.collection.pouch.bulkDocs(
-                [
-                    toPouch
-                ],
-                {
-                    new_edits: false
-                }
-            );
+            // await this.collection.storageInstance.bulkWrite(true, toPouch);
 
             toPouchDocs.push({
-                doc: toPouch,
+                doc: doc,
                 deletedValue
             });
-
-            const startTime = now();
-            await this.collection.database.lockedRun(
-                async () => {
-                    await this.collection.pouch.bulkDocs(
-                        toPouchDocs.map(tpd => tpd.doc),
-                        {
-                            new_edits: false
-                        }
-                    );
-                }
-            );
-            const endTime = now();
-
-            /**
-             * because bulkDocs with new_edits: false
-             * does not stream changes to the pouchdb,
-             * we create the event and emit it,
-             * so other instances get informed about it
-             */
-            for (const tpd of toPouchDocs) {
-                const originalDoc = flatClone(tpd.doc);
-
-                if (tpd.deletedValue) {
-                    originalDoc._deleted = tpd.deletedValue;
-                } else {
-                    delete originalDoc._deleted;
-                }
-                delete originalDoc[this.deletedFlag];
-                delete originalDoc._revisions;
-                originalDoc._rev = newRevision;
-
-                const cE = changeEventfromPouchChange(
-                    originalDoc,
-                    this.collection,
-                    startTime,
-                    endTime
-                );
-                this.collection.$emit(cE);
-            }
         }
+
+        const startTime = now();
+        await this.collection.database.lockedRun(
+            async () => {
+                const writeData = toPouchDocs
+                    .map(tpd => tpd.doc)
+                    .map(doc => this.collection._handleToPouch(doc));
+
+                await this.collection.storageInstance.bulkWrite(
+                    true,
+                    writeData
+                );
+            }
+        );
+        const endTime = now();
+
+        /**
+         * because bulkDocs with new_edits: false
+         * does not stream changes to the pouchdb,
+         * we create the event and emit it,
+         * so other instances get informed about it
+         */
+        for (const tpd of toPouchDocs) {
+            const originalDoc = flatClone(tpd.doc);
+
+            if (tpd.deletedValue) {
+                originalDoc._deleted = tpd.deletedValue;
+            } else {
+                delete originalDoc._deleted;
+            }
+
+            const cE = changeEventfromPouchChange(
+                originalDoc,
+                this.collection,
+                startTime,
+                endTime,
+                false
+            );
+            this.collection.$emit(cE);
+        }
+
         return true;
     }
 

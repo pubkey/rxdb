@@ -53,7 +53,7 @@ export async function getLastPushSequence(
 export async function setLastPushSequence(
     collection: RxCollection,
     endpointHash: string,
-    seq: any
+    sequence: number
 ): Promise<{ _id: string; value: number; _rev: string }> {
     const _id = pushSequenceId(endpointHash);
 
@@ -64,10 +64,10 @@ export async function setLastPushSequence(
     if (!doc) {
         doc = {
             _id,
-            value: seq
+            value: sequence
         };
     } else {
-        doc.value = seq;
+        doc.value = sequence;
     }
 
     const res = await writeSingleLocal(

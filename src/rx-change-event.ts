@@ -14,6 +14,7 @@ import type {
     RxDocument,
     RxDocumentData
 } from './types';
+import { flatClone } from './util';
 
 export type RxChangeEventJson<DocType = any> = {
     operation: WriteOperation;
@@ -122,6 +123,7 @@ export function changeEventfromPouchChange<DocType>(
     collection: RxCollection,
     startTime: number, // time when the event was streamed out of pouchdb
     endTime: number, // time when the event was streamed out of pouchdb
+    handleFromPouch = true
 ): RxChangeEvent<DocType> {
     let operation: WriteOperation = changeDoc._rev.startsWith('1-') ? 'INSERT' : 'UPDATE';
     if (changeDoc._deleted) {
@@ -129,11 +131,10 @@ export function changeEventfromPouchChange<DocType>(
     }
 
     // decompress / primarySwap
-    let doc: RxDocumentData<DocType> = collection._handleFromPouch(changeDoc);
+    let doc: RxDocumentData<DocType> = handleFromPouch ? collection._handleFromPouch(changeDoc) : flatClone(changeDoc);
     doc = pouchSwapIdToPrimary(collection.schema.primaryPath, doc);
 
     const documentId: string = (doc as any)[collection.schema.primaryPath] as string;
-
     const changeEvent = new RxChangeEvent<DocType>(
         operation,
         documentId,

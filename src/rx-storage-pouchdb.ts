@@ -800,7 +800,7 @@ export function pouchChangeRowToChangeStreamEvent<DocumentData>(
     const doc = pouchRow.doc;
     if (!doc) {
         console.dir(pouchRow);
-        throw new Error('doc missing');
+        throw new Error('this should never happen');
     }
     const revHeight = getHeightOfRevision(doc._rev);
 

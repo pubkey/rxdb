@@ -28,7 +28,6 @@ import {
     RxDBReplicationGraphQLPlugin,
     createRevisionForPulledDocument,
     wasRevisionfromPullReplication,
-    getDocsWithRevisionsFromPouch,
     getLastPushSequence,
     setLastPushSequence,
     getChangesSinceLastPushSequence,
@@ -55,8 +54,7 @@ import {
     buildSchema,
     parse as parseQuery
 } from 'graphql';
-
-const POUCHDB_LOCAL_PREFIX = '_local/';
+import { RxDocumentData } from '../../src/types';
 
 declare type WithDeleted<T> = T & { deleted: boolean };
 
@@ -121,7 +119,7 @@ describe('replication-graphql.test.js', () => {
         const getEndpointHash = () => hash(AsyncTestUtil.randomString(10));
         const getTimestamp = () => Math.round(new Date().getTime() / 1000);
         const endpointHash = getEndpointHash(); // used when we not care about it's value
-        const getTestData = (amount: any) => {
+        function getTestData(amount: number): WithDeleted<HumanWithTimestampDocumentType>[] {
             return new Array(amount).fill(0)
                 .map(() => schemaObjects.humanWithTimestamp())
                 .map((doc: any) => {
@@ -398,83 +396,6 @@ describe('replication-graphql.test.js', () => {
                     );
 
                     assert.strictEqual(ok, false);
-                });
-            });
-            describe('.getDocsWithRevisionsFromPouch()', () => {
-                it('should get all old revisions', async () => {
-                    const c = await humansCollection.createHumanWithTimestamp(3);
-
-                    const docs = await c.find().exec();
-                    const docIds = docs.map(d => d.primary);
-
-                    // edit and remove one
-                    const doc1 = docs[0];
-                    await doc1.atomicSet('age', 99);
-                    await doc1.remove();
-
-                    // edit one twice
-                    const doc2 = docs[1];
-                    await doc2.atomicSet('age', 66);
-                    await doc2.atomicSet('age', 67);
-
-                    //  not edited
-                    const doc3 = docs[2];
-
-
-                    const result = await getDocsWithRevisionsFromPouch(
-                        c,
-                        docIds
-                    );
-
-                    assert.strictEqual(Object.keys(result).length, 3);
-
-                    const notEdited = result[doc3.primary];
-                    assert.strictEqual(notEdited.revisions.start, 1);
-                    assert.strictEqual(notEdited.revisions.ids.length, 1);
-
-                    const editedAndRemoved = result[doc1.primary];
-                    assert.strictEqual(editedAndRemoved.revisions.start, 3);
-                    assert.strictEqual(editedAndRemoved.revisions.ids.length, 3);
-                    assert.strictEqual(editedAndRemoved.deleted, true);
-
-                    const editedTwice = result[doc2.primary];
-                    assert.strictEqual(editedTwice.revisions.start, 3);
-                    assert.strictEqual(editedTwice.revisions.ids.length, 3);
-                    assert.strictEqual(editedTwice.deleted, false);
-
-                    c.database.destroy();
-                });
-                it('should be able to find data for documents that have been set via bulkDocs', async () => {
-                    const c = await humansCollection.createHumanWithTimestamp(0);
-
-                    const id = 'foobarid';
-                    const docData: any = {
-                        _id: id,
-                        name: 'Jermain',
-                        age: 67,
-                        updatedAt: 1563897269,
-                    };
-                    // 1-b6986d59-46373946-rxdb-replication-graphql
-                    const rev = '1-' + createRevisionForPulledDocument(
-                        endpointHash,
-                        docData
-                    );
-                    docData['_rev'] = rev;
-
-                    await c.pouch.bulkDocs(
-                        [
-                            docData
-                        ], {
-                        new_edits: false
-                    }
-                    );
-
-                    const result = await getDocsWithRevisionsFromPouch(
-                        c,
-                        [id]
-                    );
-                    assert.ok(result[id].doc);
-                    c.database.destroy();
                 });
             });
         });
@@ -1671,12 +1592,17 @@ describe('replication-graphql.test.js', () => {
                     deletedFlag: 'deleted'
                 });
 
-                const emitted: any[] = [];
+                const emitted: RxDocumentData<HumanWithTimestampDocumentType>[] = [];
                 const sub = replicationState.recieved$.subscribe(doc => emitted.push(doc));
 
                 await replicationState.awaitInitialReplication();
                 assert.strictEqual(emitted.length, batchSize);
-                assert.deepStrictEqual(testData, emitted);
+
+                testData.forEach((testDoc, idx) => {
+                    const isDoc = emitted[idx];
+                    assert.deepStrictEqual(testDoc.id, isDoc.id);
+                    assert.deepStrictEqual(testDoc.deleted, isDoc._deleted);
+                });
 
                 sub.unsubscribe();
                 server.close();
@@ -2213,7 +2139,6 @@ describe('replication-graphql.test.js', () => {
                     password: randomCouchString(10)
                 });
                 const schema: RxJsonSchema = clone(schemas.humanWithTimestampAllIndex);
-                schema.encrypted = ['name'];
                 const collection = await db.collection({
                     name: 'humans',
                     schema
@@ -2221,6 +2146,7 @@ describe('replication-graphql.test.js', () => {
                 const server = await SpawnServer.spawn();
                 assert.strictEqual(server.getDocuments().length, 0);
 
+                // start live replication
                 const replicationState = collection.syncGraphQL({
                     url: server.url,
                     push: {
@@ -2234,15 +2160,18 @@ describe('replication-graphql.test.js', () => {
                     deletedFlag: 'deleted'
                 });
 
+                // ensure we are in sync even when there are no doc in the db at this moment
                 await replicationState.awaitInitialReplication();
 
-                // add one doc
+                // add one doc to the client database
                 const testData = getTestData(1).pop();
-                delete testData.deleted;
+                delete (testData as any).deleted;
                 await collection.insert(testData);
 
                 // sync
                 await replicationState.run();
+
+
                 assert.strictEqual(server.getDocuments().length, 1);
 
                 // update document
@@ -2262,14 +2191,6 @@ describe('replication-graphql.test.js', () => {
                     return !notUpdated;
                 });
 
-                // also delete to ensure nothing broke
-                await doc.remove();
-                await replicationState.run();
-
-                await AsyncTestUtil.waitUntil(() => {
-                    const d = server.getDocuments().pop();
-                    return (d as any).deleted;
-                });
                 server.close();
                 db.destroy();
             });
