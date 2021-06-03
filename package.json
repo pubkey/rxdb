@@ -178,7 +178,7 @@
     "karma-coverage": "2.0.3",
     "karma-detect-browsers": "2.3.3",
     "karma-edge-launcher": "0.4.2",
-    "karma-firefox-launcher": "2.1.0",
+    "karma-firefox-launcher": "2.1.1",
     "karma-ie-launcher": "1.0.0",
     "karma-mocha": "2.0.1",
     "karma-opera-launcher": "1.0.0",
