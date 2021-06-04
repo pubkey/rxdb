@@ -7,7 +7,7 @@ declare type Buffer = any;
 
 export type RxAttachmentCreator = {
     id: string,
-    data: string | BlobBuffer,
+    data: BlobBuffer,
     type: string
 };
 

@@ -21,46 +21,24 @@ config.parallel('encryption.test.js', () => {
             const c = createCrypter('foobar', schema);
             assert.strictEqual(c.constructor.name, 'Crypter');
         });
-        describe('._encryptValue()', () => {
+        describe('._encryptString()', () => {
             it('string', () => {
                 const schema = createRxSchema(schemas.human);
                 const c = createCrypter('mypw', schema);
                 const value = 'foobar';
-                const encrypted = c._encryptValue(value);
+                const encrypted = c._encryptString(value);
                 assert.strictEqual(typeof encrypted, 'string');
                 assert.ok(!encrypted.includes(value));
                 assert.ok(encrypted.length > value.length);
             });
-            it('object', () => {
-                const schema = createRxSchema(schemas.human);
-                const c = createCrypter('mypw', schema);
-                const value = {
-                    foo: 'bar'
-                };
-                const encrypted = c._encryptValue(value);
-                assert.strictEqual(typeof encrypted, 'string');
-
-                assert.ok(!encrypted.includes(value.foo));
-                assert.ok(encrypted.length > 5);
-            });
         });
-        describe('._decryptValue()', () => {
+        describe('._decryptString()', () => {
             it('string', () => {
                 const schema = createRxSchema(schemas.human);
                 const c = createCrypter('mypw', schema);
                 const value = 'foobar';
-                const encrypted = c._encryptValue(value);
-                const decrypted = c._decryptValue(encrypted);
-                assert.deepStrictEqual(decrypted, value);
-            });
-            it('object', () => {
-                const schema = createRxSchema(schemas.human);
-                const c = createCrypter('mypw', schema);
-                const value = {
-                    foo: 'bar'
-                };
-                const encrypted = c._encryptValue(value);
-                const decrypted = c._decryptValue(encrypted);
+                const encrypted = c._encryptString(value);
+                const decrypted = c._decryptString(encrypted);
                 assert.deepStrictEqual(decrypted, value);
             });
         });

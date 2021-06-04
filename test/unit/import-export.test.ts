@@ -10,7 +10,8 @@ import * as humansCollection from './../helper/humans-collection';
 import {
     createRxDatabase,
     RxCollection,
-    randomCouchString
+    randomCouchString,
+    blobBufferUtil
 } from '../../plugins/core';
 import AsyncTestUtil from 'async-test-util';
 import config from './config';
@@ -101,7 +102,8 @@ config.parallel('import-export.test.js', () => {
                 const json = await col.dump(false);
 
                 const firstDoc = json.docs.pop() as any;
-                const decrypted: any = col._crypter._decryptValue(firstDoc.secret);
+                const decryptedString = col._crypter._decryptString(firstDoc.secret);
+                const decrypted = JSON.parse(decryptedString);
                 assert.strictEqual(typeof decrypted, 'object');
                 assert.strictEqual(typeof decrypted['name'], 'string');
                 assert.strictEqual(typeof decrypted['subname'], 'string');
@@ -162,7 +164,8 @@ config.parallel('import-export.test.js', () => {
 
                     // try to decrypt first
                     const firstDoc = json.docs[0];
-                    const decrypted: any = emptyCol._crypter._decryptValue(firstDoc.secret);
+                    const decryptedString = emptyCol._crypter._decryptString(firstDoc.secret);
+                    const decrypted = JSON.parse(decryptedString);
                     assert.strictEqual(typeof decrypted, 'object');
                     assert.strictEqual(typeof decrypted['name'], 'string');
                     assert.strictEqual(typeof decrypted['subname'], 'string');
@@ -631,7 +634,7 @@ config.parallel('import-export.test.js', () => {
             const doc = await sourceCol.findOne().exec(true);
             await doc.putAttachment({
                 id: 'cat.txt',
-                data: 'meow',
+                data: blobBufferUtil.createBlobBuffer('meow', 'text/plain'),
                 type: 'text/plain'
             });
             const json = await sourceCol.dump();

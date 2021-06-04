@@ -22,18 +22,18 @@ export class Crypter {
     ) { }
 
     /**
-     * encrypt and stringify data
+     * encrypt a given string.
      * @overwritten by plugin (optional)
      */
-    public _encryptValue(_value: any): string {
+    public _encryptString(_value: string): string {
         throw pluginMissing('encryption');
     }
 
     /**
-     * decrypt and json-parse an encrypted value
+     * decrypt a given string.
      * @overwritten by plugin (optional)
      */
-    public _decryptValue(_value: any): string {
+    public _decryptString(_value: string): string {
         throw pluginMissing('encryption');
     }
 
@@ -43,8 +43,12 @@ export class Crypter {
         this.schema.encryptedPaths
             .forEach(path => {
                 const value = objectPath.get(obj, path);
-                if (typeof value === 'undefined') return;
-                const encrypted = this._encryptValue(value);
+                if (typeof value === 'undefined') {
+                    return;
+                }
+
+                const stringValue = JSON.stringify(value);
+                const encrypted = this._encryptString(stringValue);
                 objectPath.set(obj, path, encrypted);
             });
         return obj;
@@ -56,9 +60,12 @@ export class Crypter {
         this.schema.encryptedPaths
             .forEach(path => {
                 const value = objectPath.get(obj, path);
-                if (typeof value === 'undefined') return;
-                const decrypted = this._decryptValue(value);
-                objectPath.set(obj, path, decrypted);
+                if (typeof value === 'undefined') {
+                    return;
+                }
+                const decrypted = this._decryptString(value);
+                const decryptedParsed = JSON.parse(decrypted);
+                objectPath.set(obj, path, decryptedParsed);
             });
         return obj;
     }

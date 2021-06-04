@@ -46,7 +46,8 @@ import {
     adapterObject,
     getFromMapOrThrow,
     getHeightOfRevision,
-    promiseWait
+    promiseWait,
+    blobBufferUtil
 } from './util';
 import type {
     SortComparator,
@@ -137,8 +138,8 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
         const pouchWriteOptions = {
             new_edits: !overwrite
         };
-        const pouchResult = await this.internals.pouch.bulkDocs(insertDocs, pouchWriteOptions);
 
+        const pouchResult = await this.internals.pouch.bulkDocs(insertDocs, pouchWriteOptions);
         const ret: RxLocalStorageBulkWriteResponse<RxLocalDocumentData<D>> = {
             success: new Map(),
             error: new Map()
@@ -435,7 +436,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                     let pushObj: RxDocumentData<RxDocType> = flatClone(insertDoc) as any;
                     pushObj = pouchSwapIdToPrimary(primaryKey, pushObj);
                     pushObj._rev = (resultRow as PouchBulkDocResultRow).rev;
-                    const newRevHeight = getHeightOfRevision(pushObj._rev);
 
                     // replace the inserted attachments with their diggest
                     pushObj._attachments = {};
@@ -448,7 +448,8 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                                 const asWrite = (obj as RxAttachmentWriteData);
 
                                 const hash = await pouchHash(asWrite.data);
-                                const length = Buffer.from(asWrite.data as any).length;
+                                const asString = await blobBufferUtil.toString(asWrite.data);
+                                const length = asString.length;
                                 pushObj._attachments[key] = {
                                     digest: hash,
                                     length,

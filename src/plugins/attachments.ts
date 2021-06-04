@@ -22,7 +22,8 @@ import type {
     PouchAttachmentMeta,
     RxDocumentWriteData,
     RxAttachmentData,
-    RxDocumentData
+    RxDocumentData,
+    RxAttachmentCreator
 } from '../types';
 import type { RxSchema } from '../rx-schema';
 import { writeSingle } from '../rx-storage-helper';
@@ -112,11 +113,12 @@ export class RxAttachment {
             this.id
         );
         if (shouldEncrypt(this.doc.collection.schema)) {
-            return blobBufferUtil.toString(plainData)
-                .then(dataString => blobBufferUtil.createBlobBuffer(
-                    this.doc.collection._crypter._decryptValue(dataString),
-                    this.type as any
-                ));
+            const dataString = await blobBufferUtil.toString(plainData);
+            const ret = blobBufferUtil.createBlobBuffer(
+                this.doc.collection._crypter._decryptString(dataString),
+                this.type as any
+            );
+            return ret;
         } else {
             return plainData;
         }
@@ -151,7 +153,7 @@ export async function putAttachment(
         id,
         data,
         type = 'text/plain'
-    }: any,
+    }: RxAttachmentCreator,
     /**
      * TODO set to default=true
      * in next major release
@@ -160,8 +162,17 @@ export async function putAttachment(
 ): Promise<RxAttachment> {
     ensureSchemaSupportsAttachments(this);
 
+
+
+
+    /**
+     * Then encryption plugin is only able to encrypt strings,
+     * so unpack as string first.
+     */
     if (shouldEncrypt(this.collection.schema)) {
-        data = (this.collection._crypter as any)._encryptValue(data);
+        const dataString = await blobBufferUtil.toString(data);
+        const encrypted = this.collection._crypter._encryptString(dataString);
+        data = blobBufferUtil.createBlobBuffer(encrypted, 'text/plain');
     }
 
     this._atomicQueue = this._atomicQueue
@@ -279,7 +290,7 @@ export async function preMigrateDocument(
                 if (mustDecrypt) {
                     rawAttachmentData = await blobBufferUtil.toString(rawAttachmentData)
                         .then(dataString => blobBufferUtil.createBlobBuffer(
-                            data.oldCollection._crypter._decryptValue(dataString),
+                            data.oldCollection._crypter._decryptString(dataString),
                             (attachment as PouchAttachmentMeta).content_type as any
                         ));
                 }
@@ -303,7 +314,7 @@ export async function preMigrateDocument(
     }
 }
 
-export async function postMigrateDocument(action: any): Promise<void> {
+export async function postMigrateDocument(_action: any): Promise<void> {
     /**
      * No longer needed because
      * we store the attachemnts data buffers directly in the document.
@@ -322,8 +333,9 @@ export const prototypes = {
                 return this._dataSync$
                     .pipe(
                         map((data: any) => {
-                            if (!data['_attachments'])
+                            if (!data['_attachments']) {
                                 return {};
+                            }
                             return data['_attachments'];
                         }),
                         map((attachmentsData: any) => Object.entries(

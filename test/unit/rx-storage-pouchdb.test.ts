@@ -12,7 +12,8 @@ import {
     getFromMapOrThrow,
     getNewestSequence,
     lastOfArray,
-    writeSingle
+    writeSingle,
+    blobBufferUtil
 } from '../../plugins/core';
 
 import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
@@ -387,7 +388,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
             });
         });
         describe('attachments', () => {
-            it('should returns the correct attachment object on all document fetch methods', async () => {
+            it('should return the correct attachment object on all document fetch methods', async () => {
                 const storageInstance = await storage.createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
@@ -403,7 +404,11 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 }).subscribe(x => emitted.push(x));
 
                 const attachmentData = randomString(20);
-                const attachmentHash = await storage.hash(Buffer.from(attachmentData));
+                const dataBlobBuffer = blobBufferUtil.createBlobBuffer(
+                    attachmentData,
+                    'text/plain'
+                );
+                const attachmentHash = await storage.hash(dataBlobBuffer);
 
                 const writeData: RxDocumentWriteData<TestDocType> = {
                     key: 'foobar',
@@ -412,7 +417,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     _deleted: false,
                     _attachments: {
                         foo: {
-                            data: Buffer.from(attachmentData),
+                            data: dataBlobBuffer,
                             type: 'text/plain'
                         }
 
@@ -424,6 +429,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     false,
                     writeData
                 );
+
                 await waitUntil(() => emitted.length === 1);
 
                 assert.strictEqual(writeResult._attachments.foo.type, 'text/plain');
@@ -481,7 +487,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     _deleted: false,
                     _attachments: {
                         foo: {
-                            data: Buffer.from(randomString(20)),
+                            data: blobBufferUtil.createBlobBuffer(randomString(20), 'text/plain'),
                             type: 'text/plain'
                         }
                     }
@@ -495,7 +501,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 writeData._rev = writeResult._rev;
                 writeData._attachments = writeResult._attachments as any;
                 writeData._attachments.bar = {
-                    data: Buffer.from(randomString(20)),
+                    data: blobBufferUtil.createBlobBuffer(randomString(20), 'text/plain'),
                     type: 'text/plain'
                 };
                 writeResult = await writeSingle(

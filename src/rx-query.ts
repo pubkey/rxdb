@@ -37,7 +37,8 @@ import type {
     RxQuery,
     MangoQuery,
     MangoQuerySortPart,
-    MangoQuerySelector
+    MangoQuerySelector,
+    PreparedQuery
 } from './types';
 
 import {
@@ -45,7 +46,6 @@ import {
 } from './rx-document-prototype-merge';
 import type { RxChangeEvent } from './rx-change-event';
 import { calculateNewResults } from './event-reduce';
-import { PreparedQuery } from './rx-storage.interface';
 import { triggerCacheReplacement } from './query-cache';
 
 let _queryCount = 0;

@@ -444,6 +444,13 @@ export const blobBufferUtil = {
         }
         return blobBuffer;
     },
+    isBlobBuffer(data: any): boolean {
+        if (data instanceof Blob || Buffer.isBuffer(data)) {
+            return true;
+        } else {
+            return false;
+        }
+    },
     toString(blobBuffer: BlobBuffer): Promise<string> {
         if (blobBuffer instanceof Buffer) {
             // node

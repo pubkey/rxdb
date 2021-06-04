@@ -25,23 +25,23 @@ import { findLocalDocument } from '../rx-storage-helper';
 
 const minPassLength = 8;
 
-export function encrypt(value: any, password: any) {
+export function encrypt(value: string, password: any): string {
     const encrypted = AES.encrypt(value, password);
     return encrypted.toString();
 }
 
-export function decrypt(cipherText: string, password: any) {
+export function decrypt(cipherText: string, password: any): string {
     const decrypted = AES.decrypt(cipherText, password);
     return decrypted.toString(cryptoEnc);
 }
 
-const _encryptValue = function (this: Crypter, value: any) {
-    return encrypt(JSON.stringify(value), this.password);
+const _encryptString = function (this: Crypter, value: string) {
+    return encrypt(value, this.password);
 };
 
-const _decryptValue = function (this: Crypter, encryptedValue: any) {
+const _decryptString = function (this: Crypter, encryptedValue: string): string {
     const decrypted = decrypt(encryptedValue, this.password);
-    return JSON.parse(decrypted);
+    return decrypted;
 };
 
 
@@ -97,8 +97,8 @@ export const prototypes = {
      * set crypto-functions for the Crypter.prototype
      */
     Crypter: (proto: any) => {
-        proto._encryptValue = _encryptValue;
-        proto._decryptValue = _decryptValue;
+        proto._encryptString = _encryptString;
+        proto._decryptString = _decryptString;
     }
 };
 export const overwritable = {

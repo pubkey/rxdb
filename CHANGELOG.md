@@ -2,6 +2,9 @@
 
 ### X.X.X (coming soon)
 
+Breaking:
+  - `RxDocument.putAttachment()` no longer supports string as data, only `Blob` or `Buffer`
+
 ### 9.20.0 (15 May 2021)
 
 Bugfixes:

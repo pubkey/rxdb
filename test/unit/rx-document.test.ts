@@ -14,7 +14,8 @@ import {
     promiseWait,
     getDocumentOrmPrototype,
     getDocumentPrototype,
-    addRxPlugin
+    addRxPlugin,
+    blobBufferUtil
 } from '../../plugins/core';
 import { RxDBAttachmentsPlugin } from '../../plugins/attachments';
 addRxPlugin(RxDBAttachmentsPlugin);
@@ -694,7 +695,7 @@ config.parallel('rx-document.test.js', () => {
             const doc = await c.insert(schemaObjects.human());
             await doc.putAttachment({
                 id: 'sampledata',
-                data: 'foo bar',
+                data: blobBufferUtil.createBlobBuffer('foo bar', 'application/octet-stream'),
                 type: 'application/octet-stream'
             });
 
