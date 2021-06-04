@@ -72,8 +72,6 @@ export const HOOKS: { [k: string]: any[] } = {
      * cannot be async
      */
     postCreateRxDocument: [],
-    // TODO this should not be inside of rxdb core but in the pouchdb plugin
-    preCreatePouchDb: [],
     /**
      * Runs before a RxStorageInstance is created
      * gets the params of createStorageInstance()

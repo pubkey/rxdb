@@ -64,7 +64,6 @@ export interface RxPlugin {
         createRxQuery?: (query: RxQuery) => void,
         createRxDocument?: Function,
         postCreateRxDocument?: Function,
-        preCreatePouchDb?: Function,
         preCreateRxStorageInstance?: (params: RxStorageInstanceCreationParams<any, any>) => void,
         preMigrateDocument?: Function,
         postMigrateDocument?: Function

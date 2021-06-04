@@ -337,30 +337,5 @@ config.parallel('plugin.test.js', () => {
             col.database.destroy();
             _clearHook('postCreateRxDocument', postCreateRxDocument);
         });
-        it('preCreatePouchDb', async () => {
-            const collectionName = randomCouchString(10);
-            const preCreatePouchDb = (pouchDbParameters: any) => {
-                if (pouchDbParameters.location.includes(collectionName)) {
-                    // only do sth at this specific collection-pouch
-                    pouchDbParameters.location = pouchDbParameters.location + 'foobar';
-                }
-            };
-            const plugin: RxPlugin = {
-                rxdb: true,
-                name: randomCouchString(12),
-                hooks: {
-                    preCreatePouchDb
-                }
-            };
-            addRxPlugin(plugin);
-            const col = await humansCollection.create(0, collectionName);
-            const pouchInstance = col.pouch;
-            assert.ok(pouchInstance);
-
-            const info = await pouchInstance.info();
-            assert.ok(info.db_name.includes('foobar'));
-            col.database.destroy();
-            _clearHook('preCreatePouchDb', preCreatePouchDb);
-        });
     });
 });

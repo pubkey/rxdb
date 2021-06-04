@@ -21,9 +21,6 @@ import {
 import {
     RxDatabaseBase
 } from './rx-database';
-import {
-    PouchDB
-} from './pouch-db';
 import type {
     RxPlugin
 } from './types';

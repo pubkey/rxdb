@@ -8,7 +8,6 @@ import assert from 'assert';
 import { waitUntil } from 'async-test-util';
 
 import {
-    addRxPlugin,
     addPouchPlugin,
     randomCouchString
 } from '../';

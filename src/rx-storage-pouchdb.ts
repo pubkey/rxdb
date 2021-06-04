@@ -616,7 +616,6 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
             this.pouchSettings,
             pouchDbParameters.settings
         );
-        runPluginHooks('preCreatePouchDb', pouchDbParameters);
         const pouch = new PouchDB(
             pouchDbParameters.location,
             pouchDBOptions
