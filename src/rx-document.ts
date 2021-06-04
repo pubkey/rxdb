@@ -7,7 +7,6 @@ import {
     distinctUntilChanged,
     map
 } from 'rxjs/operators';
-
 import {
     clone,
     trimDots,
@@ -32,7 +31,9 @@ import {
 
 import type {
     RxDocument,
-    RxCollection
+    RxCollection,
+    RxDocumentData,
+    RxDocumentWriteData
 } from './types';
 import { getSchemaByObjectPath } from './rx-schema';
 
@@ -381,7 +382,11 @@ export const basePrototype = {
      * saves the new document-data
      * and handles the events
      */
-    async _saveData(this: RxDocument, newData: any, oldData: any): Promise<void> {
+    async _saveData<RxDocumentType>(
+        this: RxDocument<RxDocumentType>,
+        newData: RxDocumentWriteData<RxDocumentType>,
+        oldData: RxDocumentData<RxDocumentType>
+    ): Promise<void> {
         newData = newData;
 
         // deleted documents cannot be changed
@@ -400,16 +405,18 @@ export const basePrototype = {
 
         this.collection.schema.validate(newData);
         startTime = now();
-        const ret = await this.collection._pouchPut(newData);
+        const writeResult = await this.collection._pouchPut({
+            previous: oldData,
+            document: newData
+        });
 
         const endTime = now();
 
-        newData._rev = ret._rev;
 
         // emit event
         const changeEvent = createUpdateEvent(
             this.collection,
-            newData,
+            writeResult,
             oldData,
             startTime,
             endTime,
@@ -466,7 +473,10 @@ export const basePrototype = {
             .then(() => {
                 deletedData._deleted = true;
                 startTime = now();
-                return this.collection._pouchPut(deletedData);
+                return this.collection._pouchPut({
+                    previous: this._data,
+                    document: deletedData
+                });
             })
             .then(() => {
                 const endTime = now();

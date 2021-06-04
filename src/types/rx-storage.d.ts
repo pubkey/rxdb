@@ -35,7 +35,7 @@ export type RxDocumentData<T> = T & {
      * @link https://docs.couchdb.org/en/stable/replication/conflicts.html#revision-tree
 
      * When you create a new document, do not send a revision,
-     * When you update an existing document, send the previous revision.
+     * When you update an existing document, do not send a revision.
      * When you insert via overwrite: true, send the new revision you want to save the document with.
      */
     _rev: string;
@@ -63,19 +63,37 @@ export type RxDocumentWriteData<T> = T & {
     }
 
     /**
-     * When overwrite: false
-     * The previous revision only exists if the document already existed.
-     * If the previous revision is not the same as the documents revision stored in the database,
-     * we have a write conflict that must be resolved.
-     * When we insert a new document, use '1-new' as revision.
-     *
-     * When overwrite: true
+     * Only set when overwrite: true
      * The new revision is stored with the document
      * so that other write processes can know that they provoked a conflict
      * because the current revision is not the same as before.
      * The [height] of the new revision must be heigher then the [height] of the old revision.
+     * When overwrite: false, the revision is taken from
+     * the previous document of the BulkWriteRow
      */
     _rev?: string;
+};
+
+/**
+ * Send to the bulkWrite() method of a storage instance.
+ */
+export type BulkWriteRow<DocumentData> = {
+    /**
+     * The current document state in the storage engine,
+     * assumed by the application.
+     * Undefined if the document is a new insert.
+     * While with pouchdb we have to practically only provide the previous revision
+     * we here have to send the full previous document data.
+     * The reason is that to get the previous revision you anyway have to get the full
+     * previous document and so it is easier to just send it all to the storage instance.
+     * This will later allow us to use something different then the _rev key for conflict detection
+     * when we implement other storage instances.
+     */
+    previous?: RxDocumentData<DocumentData>,
+    /**
+     * The new document data to be stored in the storage instance.
+     */
+    document: RxDocumentWriteData<DocumentData>
 };
 
 

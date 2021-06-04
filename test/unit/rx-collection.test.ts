@@ -1555,6 +1555,7 @@ config.parallel('rx-collection.test.js', () => {
                         name: 'human',
                         schema: schemas.primaryHuman
                     });
+
                     await collection.remove();
                     const otherSchema: any = clone(schemas.primaryHuman);
                     otherSchema.properties['foobar'] = {

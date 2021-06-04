@@ -21,7 +21,8 @@ import type {
     BackupOptions,
     RxStorage,
     RxStorageKeyObjectInstance,
-    RxStorageInstance
+    RxStorageInstance,
+    BulkWriteRow
 } from './types';
 
 import {
@@ -88,6 +89,14 @@ const USED_COMBINATIONS: { [k: string]: any[] } = {};
 
 let DB_COUNT = 0;
 
+// stores information about the collections
+declare type InternalStoreDocumentData = {
+    _id: string;
+    schema: RxJsonSchema;
+    schemaHash: string;
+    version: number;
+};
+
 export class RxDatabaseBase<
     Collections = CollectionsOfDatabase
     > {
@@ -97,7 +106,7 @@ export class RxDatabaseBase<
     /**
      * Stores information documents about the collections of the database
      */
-    public internalStore: RxStorageInstancePouch<{ _id: string; schema: RxJsonSchema }> = {} as any;
+    public internalStore: RxStorageInstancePouch<InternalStoreDocumentData> = {} as any;
     /**
      * Stores the local documents which are attached to this database.
      */
@@ -143,9 +152,13 @@ export class RxDatabaseBase<
      */
     async dangerousRemoveCollectionInfo(): Promise<void> {
         const allDocs = await getAllDocuments(this.internalStore);
-        const writeData = allDocs.map(doc => {
-            (doc as any)._deleted = true;
-            return doc;
+        const writeData: BulkWriteRow<InternalStoreDocumentData>[] = allDocs.map(doc => {
+            const deletedDoc = flatClone(doc);
+            deletedDoc._deleted = true;
+            return {
+                previous: doc,
+                document: deletedDoc
+            }
         });
         await this.internalStore.bulkWrite(false, writeData);
     }
@@ -197,9 +210,16 @@ export class RxDatabaseBase<
             this.internalStore,
             docId
         );
-        (doc as any)._deleted = true;
+        if (!doc) {
+            throw new Error('this should never happen');
+        }
+        const writeDoc = flatClone(doc);
+        writeDoc._deleted = true;
         await this.lockedRun(
-            () => this.internalStore.bulkWrite(false, [doc as any])
+            () => this.internalStore.bulkWrite(false, [{
+                document: writeDoc,
+                previous: doc
+            }])
         );
     }
 
@@ -263,7 +283,7 @@ export class RxDatabaseBase<
             })
         );
 
-        const bulkPutDocs: any[] = [];
+        const bulkPutDocs: BulkWriteRow<InternalStoreDocumentData>[] = [];
         const ret: { [key: string]: RxCollection } = {};
         collections.forEach(collection => {
             const name = collection.name;
@@ -280,10 +300,13 @@ export class RxDatabaseBase<
             // add to bulk-docs list
             if (!internalDocByCollectionName[name]) {
                 bulkPutDocs.push({
-                    _id: _collectionNamePrimary(name, collectionCreators[name].schema),
-                    schemaHash: schemaHashByName[name],
-                    schema: collection.schema.normalized,
-                    version: collection.schema.version
+                    document: {
+                        _id: _collectionNamePrimary(name, collectionCreators[name].schema),
+                        schemaHash: schemaHashByName[name],
+                        schema: collection.schema.normalized,
+                        version: collection.schema.version,
+                        _attachments: {}
+                    }
                 });
             }
 
@@ -573,13 +596,17 @@ export function _removeAllOfCollection(
         return Promise.all(
             relevantDocs
                 .map(
-                    (doc: any) => {
-                        doc._deleted = true;
+                    doc => {
+                        const writeDoc = flatClone(doc);
+                        writeDoc._deleted = true;
                         return rxDatabase.lockedRun(
                             () => writeSingle(
                                 rxDatabase.internalStore,
                                 false,
-                                doc
+                                {
+                                    previous: doc,
+                                    document: writeDoc
+                                }
                             )
                         );
                     }

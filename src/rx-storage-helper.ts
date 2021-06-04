@@ -4,6 +4,7 @@
 
 import { newRxError } from './rx-error';
 import type {
+    BulkWriteRow,
     RxDocumentData,
     RxDocumentWriteData,
     RxLocalDocumentData,
@@ -87,11 +88,11 @@ export async function getBatch<DocType>(
 export async function writeSingle<RxDocType>(
     instance: RxStorageInstance<RxDocType, any, any>,
     overwrite: boolean,
-    document: RxDocumentWriteData<RxDocType>
+    writeRow: BulkWriteRow<RxDocType>
 ): Promise<RxDocumentData<RxDocType>> {
     const writeResult = await instance.bulkWrite(
         overwrite,
-        [document]
+        [writeRow]
     );
 
     if (writeResult.error.size > 0) {

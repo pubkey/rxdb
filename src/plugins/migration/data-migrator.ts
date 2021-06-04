@@ -448,7 +448,9 @@ export function _migrateDocument(
                      * runs on multiple nodes.
                      */
                     true,
-                    saveData
+                    {
+                        document: saveData
+                    }
                 ).then(() => {
                     action.res = saveData;
                     action.type = 'success';
@@ -473,7 +475,10 @@ export function _migrateDocument(
 
             return oldCollection.storageInstance.bulkWrite(
                 false,
-                [writeDeleted]
+                [{
+                    previous: _handleToPouch(oldCollection, docData),
+                    document: _handleToPouch(oldCollection, writeDeleted)
+                }]
             );
         })
         .then(() => action) as any;

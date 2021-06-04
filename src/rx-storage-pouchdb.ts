@@ -32,7 +32,8 @@ import type {
     PreparedQuery,
     RxStorage,
     RxStorageInstance,
-    RxStorageKeyObjectInstance
+    RxStorageKeyObjectInstance,
+    BulkWriteRow
 } from './types';
 
 import type {
@@ -50,7 +51,6 @@ import type {
     SortComparator,
     QueryMatcher
 } from 'event-reduce-js';
-import { runPluginHooks } from './hooks';
 import {
     PouchDB
 } from './pouch-db';
@@ -383,27 +383,32 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
 
     public async bulkWrite(
         overwrite: boolean,
-        documents: RxDocumentWriteData<RxDocType>[]
+        documentWrites: BulkWriteRow<RxDocType>[]
     ): Promise<
         RxStorageBulkWriteResponse<RxDocType>
     > {
         const primaryKey = getPrimary<any>(this.schema);
         const insertDataById: Map<string, RxDocumentWriteData<RxDocType>> = new Map();
 
-        const insertDocs: (RxDocType & { _id: string; _rev: string })[] = documents.map(doc => {
-            const primary: string = (doc as any)[primaryKey];
+        const insertDocs: (RxDocType & { _id: string; _rev: string })[] = documentWrites.map(writeData => {
+            const primary: string = (writeData.document as any)[primaryKey];
 
             // TODO remove this check when primary key was made required
             if (!primary) {
-                console.dir(doc);
+                console.dir(writeData.document);
                 throw new Error('primary missing ' + primaryKey);
             }
-            insertDataById.set(primary, doc);
+            insertDataById.set(primary, writeData.document);
 
-            const storeDocumentData = rxDocumentDataToPouchDocumentData(
+            const storeDocumentData: any = rxDocumentDataToPouchDocumentData<RxDocType>(
                 primaryKey,
-                doc as any
+                writeData.document
             );
+
+            // if overwrite=false, we have to send the previous revision to pouchdb.
+            if (writeData.previous && !overwrite) {
+                storeDocumentData._rev = writeData.previous._rev;
+            }
 
             return storeDocumentData;
         });
@@ -729,8 +734,8 @@ export function pouchDocumentDataToRxDocumentData<T>(
 
 export function rxDocumentDataToPouchDocumentData<T>(
     primaryKey: string,
-    doc: RxDocumentData<T>
-): WithAttachments<T> {
+    doc: RxDocumentData<T> | RxDocumentWriteData<T>
+): WithAttachments<T & { _id: string; }> {
     let pouchDoc: WithAttachments<T> = pouchSwapPrimaryToId(primaryKey, doc);
 
     // always flat clone becaues we mutate the _attachments property.
@@ -756,7 +761,7 @@ export function rxDocumentDataToPouchDocumentData<T>(
         });
     }
 
-    return pouchDoc;
+    return pouchDoc as any;
 }
 
 

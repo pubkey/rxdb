@@ -16,7 +16,9 @@ import {
 import type {
     RxDatabase,
     RxCollection,
-    RxPlugin
+    RxPlugin,
+    RxDocumentData,
+    BulkWriteRow
 } from '../types';
 import { createInsertEvent } from '../rx-change-event';
 
@@ -107,8 +109,8 @@ const dumpRxCollection = function (
         });
 };
 
-function importDumpRxCollection(
-    this: RxCollection,
+function importDumpRxCollection<RxDocType>(
+    this: RxCollection<RxDocType>,
     exportedJSON: any
 ): Promise<any> {
     const primaryPath = this.schema.primaryPath;
@@ -132,7 +134,7 @@ function importDumpRxCollection(
         });
     }
 
-    const docs: any[] = exportedJSON.docs
+    const docs: RxDocumentData<RxDocType>[] = exportedJSON.docs
         // decrypt
         .map((doc: any) => this._crypter.decrypt(doc))
         // validate schema
@@ -143,7 +145,10 @@ function importDumpRxCollection(
         // write to disc
         () => {
             startTime = now();
-            return this.storageInstance.bulkWrite(false, docs.map(doc => this._handleToPouch(doc)));
+            const writeMe: BulkWriteRow<RxDocType>[] = docs.map(doc => ({
+                document: this._handleToPouch(doc)
+            }));
+            return this.storageInstance.bulkWrite(false, writeMe);
         }
     ).then((saveResult) => {
         const endTime = now();

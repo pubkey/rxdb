@@ -13,7 +13,8 @@ import {
     getNewestSequence,
     lastOfArray,
     writeSingle,
-    blobBufferUtil
+    blobBufferUtil,
+    flatClone
 } from '../../plugins/core';
 
 import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
@@ -45,9 +46,11 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 const writeResponse = await storageInstance.bulkWrite(
                     false,
                     [{
-                        key: 'foobar',
-                        value: 'barfoo',
-                        _attachments: {}
+                        document: {
+                            key: 'foobar',
+                            value: 'barfoo',
+                            _attachments: {}
+                        }
                     }]
                 );
 
@@ -67,19 +70,23 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     options: {}
                 });
 
-                const writeData = [{
+                const writeData: RxDocumentWriteData<TestDocType> = {
                     key: 'foobar',
                     value: 'barfoo',
                     _attachments: {}
-                }];
+                };
 
                 await storageInstance.bulkWrite(
                     false,
-                    writeData
+                    [{
+                        document: writeData
+                    }]
                 );
                 const writeResponse = await storageInstance.bulkWrite(
                     false,
-                    writeData
+                    [{
+                        document: writeData
+                    }]
                 );
 
                 assert.strictEqual(writeResponse.success.size, 0);
@@ -108,7 +115,9 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 await writeSingle(
                     storageInstance,
                     true,
-                    writeData
+                    {
+                        document: writeData
+                    }
                 );
 
                 const found = await storageInstance.findDocumentsById([writeData.key]);
@@ -185,15 +194,17 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     options: {}
                 });
 
-                const writeData = [{
+                const writeData = {
                     key: 'foobar',
                     value: 'barfoo',
                     _attachments: {}
-                }];
+                };
 
                 await storageInstance.bulkWrite(
                     false,
-                    writeData
+                    [{
+                        document: writeData
+                    }]
                 );
 
 
@@ -211,7 +222,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
         describe('.getChanges()', () => {
             it('should get the correct changes', async () => {
 
-                const storageInstance = await storage.createStorageInstance<{ key: string; value: string; }>({
+                const storageInstance = await storage.createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
@@ -219,6 +230,8 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                         auto_compaction: false
                     }
                 });
+
+                let previous: RxDocumentData<TestDocType> | undefined;
                 const writeData = {
                     key: 'foobar',
                     value: 'one',
@@ -228,8 +241,11 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 };
 
                 // insert
-                const firstWriteResult = await storageInstance.bulkWrite(false, [writeData]);
-                const writeDocResult = getFromMapOrThrow(firstWriteResult.success, writeData.key);
+                const firstWriteResult = await storageInstance.bulkWrite(false, [{
+                    previous,
+                    document: writeData
+                }]);
+                previous = getFromMapOrThrow(firstWriteResult.success, writeData.key);
 
                 const changesAfterWrite = await storageInstance.getChanges({
                     order: 'asc',
@@ -244,9 +260,12 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
 
 
                 // update
-                writeData._rev = writeDocResult._rev;
-                const updateResult = await storageInstance.bulkWrite(false, [writeData]);
-                const updateDocResult = getFromMapOrThrow(updateResult.success, writeData.key);
+                writeData.value = 'two';
+                const updateResult = await storageInstance.bulkWrite(false, [{
+                    previous,
+                    document: writeData
+                }]);
+                previous = getFromMapOrThrow(updateResult.success, writeData.key);
                 const changesAfterUpdate = await storageInstance.getChanges({
                     order: 'asc',
                     startSequence: 0
@@ -260,9 +279,11 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 assert.strictEqual(firstChangeAfterUpdate.sequence, 2);
 
                 // delete
-                writeData._rev = updateDocResult._rev;
                 writeData._deleted = true;
-                await storageInstance.bulkWrite(false, [writeData]);
+                await storageInstance.bulkWrite(false, [{
+                    previous,
+                    document: writeData
+                }]);
                 const changesAfterDelete = await storageInstance.getChanges({
                     order: 'asc',
                     startSequence: 0
@@ -296,6 +317,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     startSequence: 0
                 }).subscribe(x => emitted.push(x));
 
+                let previous: RxDocumentData<TestDocType> | undefined;
                 const writeData = {
                     key: 'foobar',
                     value: 'one',
@@ -305,21 +327,25 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 };
 
                 // insert
-                const firstWriteResult = await storageInstance.bulkWrite(false, [writeData]);
-                const writeDocResult = getFromMapOrThrow(firstWriteResult.success, writeData.key);
-                writeData._rev = writeDocResult._rev;
-
+                const firstWriteResult = await storageInstance.bulkWrite(false, [{
+                    previous,
+                    document: writeData
+                }]);
+                previous = getFromMapOrThrow(firstWriteResult.success, writeData.key);
 
                 // update
-                writeData._rev = writeDocResult._rev;
-                const updateResult = await storageInstance.bulkWrite(false, [writeData]);
-                const updateDocResult = getFromMapOrThrow(updateResult.success, writeData.key);
-                writeData._rev = updateDocResult._rev;
+                const updateResult = await storageInstance.bulkWrite(false, [{
+                    previous,
+                    document: writeData
+                }]);
+                previous = getFromMapOrThrow(updateResult.success, writeData.key);
 
                 // delete
-                writeData._rev = updateDocResult._rev;
                 writeData._deleted = true;
-                await storageInstance.bulkWrite(false, [writeData]);
+                await storageInstance.bulkWrite(false, [{
+                    previous,
+                    document: writeData
+                }]);
 
                 await waitUntil(() => emitted.length === 3);
 
@@ -355,6 +381,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 }).subscribe(x => emitted.push(x));
 
                 // make writes to instance 2
+                let previous: RxDocumentData<TestDocType> | undefined;
                 const writeData: RxDocumentWriteData<TestDocType> = {
                     key: 'foobar',
                     value: 'one',
@@ -366,7 +393,10 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 await writeSingle(
                     storageInstance2,
                     false,
-                    writeData
+                    {
+                        previous,
+                        document: writeData
+                    }
                 );
                 await waitUntil(() => emitted.length === 1);
                 assert.strictEqual(emitted[0].id, writeData.key);
@@ -377,7 +407,9 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 await writeSingle(
                     storageInstance2,
                     true,
-                    writeData
+                    {
+                        document: writeData
+                    }
                 );
                 await waitUntil(() => emitted.length === 2);
                 assert.strictEqual(emitted[1].id, writeData.key);
@@ -427,7 +459,9 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 const writeResult = await writeSingle(
                     storageInstance,
                     false,
-                    writeData
+                    {
+                        document: writeData
+                    }
                 );
 
                 await waitUntil(() => emitted.length === 1);
@@ -480,6 +514,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     }
                 });
 
+                let previous: RxDocumentData<TestDocType> | undefined;
                 const writeData: RxDocumentWriteData<TestDocType> = {
                     key: 'foobar',
                     value: 'one',
@@ -492,25 +527,30 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                         }
                     }
                 };
-                let writeResult = await writeSingle(
+                previous = await writeSingle(
                     storageInstance,
                     false,
-                    writeData
+                    {
+                        previous,
+                        document: writeData
+                    }
                 );
 
-                writeData._rev = writeResult._rev;
-                writeData._attachments = writeResult._attachments as any;
+                writeData._attachments = flatClone(previous._attachments) as any;
                 writeData._attachments.bar = {
                     data: blobBufferUtil.createBlobBuffer(randomString(20), 'text/plain'),
                     type: 'text/plain'
                 };
-                writeResult = await writeSingle(
+                previous = await writeSingle(
                     storageInstance,
                     false,
-                    writeData
+                    {
+                        previous,
+                        document: writeData
+                    }
                 );
 
-                assert.strictEqual(Object.keys(writeResult._attachments).length, 2);
+                assert.strictEqual(Object.keys(previous._attachments).length, 2);
 
                 storageInstance.close();
             });
@@ -650,12 +690,16 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 const latestBefore = await getNewestSequence(storageInstance);
                 await storageInstance.bulkWrite(false, [
                     {
-                        key: 'foobar',
-                        _attachments: {}
+                        document: {
+                            key: 'foobar',
+                            _attachments: {}
+                        }
                     },
                     {
-                        key: 'foobar2',
-                        _attachments: {}
+                        document: {
+                            key: 'foobar2',
+                            _attachments: {}
+                        }
                     }
                 ]);
                 const latestAfter = await getNewestSequence(storageInstance);

@@ -53,7 +53,8 @@ import type {
     GraphQLSyncPullOptions,
     GraphQLSyncPushOptions,
     RxPlugin,
-    RxDocumentData
+    RxDocumentData,
+    BulkWriteRow
 } from '../../types';
 
 addRxPlugin(RxDBLeaderElectionPlugin);
@@ -424,9 +425,11 @@ export class RxGraphQLReplicationState<RxDocType> {
         const startTime = now();
         await this.collection.database.lockedRun(
             async () => {
-                const writeData = toPouchDocs
+                const writeData: BulkWriteRow<RxDocType>[] = toPouchDocs
                     .map(tpd => tpd.doc)
-                    .map(doc => this.collection._handleToPouch(doc));
+                    .map(doc => ({
+                        document: this.collection._handleToPouch(doc)
+                    }));
 
                 await this.collection.storageInstance.bulkWrite(
                     true,

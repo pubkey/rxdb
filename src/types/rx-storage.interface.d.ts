@@ -3,6 +3,7 @@ import type {
     QueryMatcher
 } from 'event-reduce-js';
 import type {
+    BulkWriteRow,
     ChangeStreamEvent,
     ChangeStreamOnceOptions,
     ChangeStreamOptions,
@@ -224,16 +225,14 @@ export interface RxStorageInstance<
          * if the document has already a newer revision,
          * instead save the written data either to the revisions
          * or as newest revision.
-         * If overwrite is set to false,
-         * the storage instance must throw a 409 conflict
          * error if there is a newer/equal revision of the document
-         * already stored.
-         *
-         * If it is a RxStorageKeyObjectInstance, the call must
-         * throw on non-local documents.
+         * already stored. For that we send the previous document data
+         * which is assumed to be the current state by the application.
+         * If that is not true and there is another current state, 
+         * the storage instance must throw a 409 conflict error.
          */
         overwrite: boolean,
-        documents: RxDocumentWriteData<DocumentData>[]
+        documentWrites: BulkWriteRow<DocumentData>[]
     ): Promise<
         /**
          * returns the response, splitted into success and error lists.

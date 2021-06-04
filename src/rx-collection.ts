@@ -95,7 +95,8 @@ import type {
     RxDocumentData,
     RxDocumentWriteData,
     RxStorageInstanceCreationParams,
-    RxStorageKeyObjectInstance
+    RxStorageKeyObjectInstance,
+    BulkWriteRow
 } from './types';
 import type {
     RxGraphQLReplicationState
@@ -310,14 +311,20 @@ export class RxCollectionBase<
     }
 
     /**
-     * every write on the pouchdb
+     * every write on the storage engine,
+     * so we can run hooks and resolve stuff etc.
      * is tunneld throught this function
      */
-    async _pouchPut(obj: RxDocumentWriteData<RxDocumentType>, overwrite: boolean = false): Promise<
+    async _pouchPut(
+        writeRow: BulkWriteRow<RxDocumentType>,
+        overwrite: boolean = false
+    ): Promise<
         RxDocumentData<RxDocumentType>
     > {
-        obj = flatClone(obj);
-        obj = this._handleToPouch(obj);
+        const toStorageInstance: BulkWriteRow<any> = {
+            previous: this._handleToPouch(flatClone(writeRow.previous)),
+            document: this._handleToPouch(flatClone(writeRow.document))
+        };
 
         while (true) {
             try {
@@ -325,11 +332,13 @@ export class RxCollectionBase<
                     () => writeSingle(
                         this.storageInstance,
                         false,
-                        obj
+                        toStorageInstance
                     )
                 );
                 // on success, just return the result
-                return writeResult;
+
+                const ret = this._handleFromPouch(writeResult);
+                return ret;
             } catch (err: any) {
                 const useErr: RxStorageBulkWriteError<RxDocumentType> = err as any;
                 const primary = useErr.documentId;
@@ -342,13 +351,13 @@ export class RxCollectionBase<
                     if (!singleRes) {
                         throw new Error('this should never happen');
                     }
-                    obj._rev = singleRes._rev;
+                    toStorageInstance.previous = singleRes;
                     // now we can retry
                 } else if (useErr.status === 409) {
                     throw newRxError('COL19', {
                         id: primary,
                         pouchDbError: useErr,
-                        data: obj
+                        data: writeRow
                     });
                 } else {
                     throw useErr;
@@ -413,7 +422,7 @@ export class RxCollectionBase<
             json = tempDoc.toJSON() as any;
         }
 
-        const useJson = fillObjectDataBeforeInsert(this, json);
+        const useJson: RxDocumentWriteData<RxDocumentType> = fillObjectDataBeforeInsert(this, json);
         let newDoc = tempDoc;
 
         let startTime: number;
@@ -422,16 +431,15 @@ export class RxCollectionBase<
         await this._runHooks('pre', 'insert', useJson);
         this.schema.validate(useJson);
         startTime = now();
-        const insertResult = await this._pouchPut(useJson);
+        const insertResult = await this._pouchPut({
+            document: useJson
+        });
         endTime = now();
-        const primary = (insertResult as any)[this.schema.primaryPath as string];
-        useJson[this.schema.primaryPath as string] = primary;
-        useJson._rev = insertResult._rev;
 
         if (tempDoc) {
-            tempDoc._dataSync$.next(useJson);
+            tempDoc._dataSync$.next(insertResult);
         } else {
-            newDoc = createRxDocument(this as any, useJson);
+            newDoc = createRxDocument(this as any, insertResult);
         }
 
         await this._runHooks('post', 'insert', useJson, newDoc);
@@ -439,7 +447,7 @@ export class RxCollectionBase<
         // event
         const emitEvent = createInsertEvent(
             this as any,
-            useJson,
+            insertResult,
             startTime,
             endTime,
             newDoc as any
@@ -468,7 +476,9 @@ export class RxCollectionBase<
             })
         );
 
-        const insertDocs: RxDocumentWriteData<RxDocumentType>[] = docs.map(d => this._handleToPouch(d));
+        const insertDocs: BulkWriteRow<RxDocumentType>[] = docs.map(d => ({
+            document: this._handleToPouch(d)
+        }));
         const docsMap: Map<string, RxDocumentType> = new Map();
         docs.forEach(d => {
             docsMap.set((d as any)[this.schema.primaryPath] as any, d);
@@ -540,9 +550,15 @@ export class RxCollectionBase<
             })
         );
 
-        docsData.forEach(doc => doc._deleted = true);
 
-        const removeDocs = docsData.map(doc => this._handleToPouch(doc));
+        const removeDocs: BulkWriteRow<RxDocumentType>[] = docsData.map(doc => {
+            const writeDoc = flatClone(doc);
+            writeDoc._deleted = true;
+            return {
+                previous: this._handleToPouch(doc),
+                document: this._handleToPouch(writeDoc)
+            };
+        });
 
         let startTime: number;
         const results = await this.database.lockedRun(
