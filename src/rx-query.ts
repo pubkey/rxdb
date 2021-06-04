@@ -47,6 +47,7 @@ import {
 import type { RxChangeEvent } from './rx-change-event';
 import { calculateNewResults } from './event-reduce';
 import { triggerCacheReplacement } from './query-cache';
+import type { QueryMatcher } from 'event-reduce-js';
 
 let _queryCount = 0;
 const newQueryID = function (): number {
@@ -265,14 +266,16 @@ export class RxQueryBase<
 
 
     /**
-     * cached call to get the massageSelector
+     * cached call to get the queryMatcher
      * @overwrites itself with the actual value
      */
-    get massageSelector(): any {
+    get queryMatcher(): QueryMatcher<RxDocumentType> {
         return overwriteGetterForCaching(
             this,
-            'massageSelector',
-            massageSelector(this.mangoQuery.selector)
+            'queryMatcher',
+            this.collection.storageInstance.getQueryMatcher(
+                this.toJSON()
+            )
         );
     }
 
@@ -323,26 +326,10 @@ export class RxQueryBase<
         if (docData._deleted) {
             return false;
         }
-        docData = this.collection.schema.swapPrimaryToId(docData);
 
-        // return matchesSelector(docData, selector);
-
-        /**
-         * the following is equal to the implementation of pouchdb
-         * we do not use matchesSelector() directly so we can cache the
-         * result of massageSelector
-         * @link https://github.com/pouchdb/pouchdb/blob/master/packages/node_modules/pouchdb-selector-core/src/matches-selector.js
-         */
-        const selector = this.massageSelector;
-        const row = {
-            doc: docData
-        };
-        const rowsMatched = filterInMemoryFields(
-            [row],
-            { selector: selector },
-            Object.keys(selector)
+        return this.queryMatcher(
+            this.collection._handleToPouch(docData)
         );
-        return rowsMatched && rowsMatched.length === 1;
     }
 
     /**
@@ -355,8 +342,11 @@ export class RxQueryBase<
             .exec()
             .then(docs => {
                 ret = docs;
-                if (Array.isArray(docs)) return Promise.all(docs.map(doc => doc.remove()));
-                else return (docs as any).remove();
+                if (Array.isArray(docs)) {
+                    return Promise.all(docs.map(doc => doc.remove()));
+                } else {
+                    return (docs as any).remove();
+                }
             })
             .then(() => ret);
     }

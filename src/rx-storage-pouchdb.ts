@@ -265,13 +265,9 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     ): QueryMatcher<RxDocType> {
         const primaryKey = getPrimary<any>(this.schema);
         const massagedSelector = massageSelector(query.selector);
-        const fun: QueryMatcher<RxDocType> = (doc: RxDocType) => {
 
-            // swap primary to _id
-            const cloned: any = flatClone(doc);
-            const primaryValue = cloned[primaryKey];
-            delete cloned[primaryKey];
-            cloned._id = primaryValue;
+        const fun: QueryMatcher<RxDocType> = (doc: RxDocType) => {
+            const cloned = pouchSwapPrimaryToId(primaryKey, doc);
             const row = {
                 doc: cloned
             };
