@@ -20,12 +20,13 @@ describe('typings.test.js', function () {
             RxError,
             RxAttachment,
             RxPlugin,
-            addRxPlugin
+            addRxPlugin,
+            addPouchPlugin
         } from '${config.rootPath}';
         import * as PouchMemAdapter from 'pouchdb-adapter-memory';
-        addRxPlugin(PouchMemAdapter);
+        addPouchPlugin(PouchMemAdapter);
         const PouchHttpAdapter = require('pouchdb-adapter-http');
-        addRxPlugin(PouchHttpAdapter);
+        addPouchPlugin(PouchHttpAdapter);
 
         type DefaultDocType = {
             passportId: string;
@@ -99,7 +100,7 @@ describe('typings.test.js', function () {
             const code = `
                 import * as rxdb from '${config.rootPath}';
                 import * as PouchMemAdapter from 'pouchdb-adapter-memory';
-                rxdb.addRxPlugin(PouchMemAdapter);
+                rxdb.addPouchPlugin(PouchMemAdapter);
             `;
             await transpileCode(code);
         });

@@ -7,7 +7,8 @@ import requestR from 'request';
 import {
     createRxDatabase,
     addRxPlugin,
-    randomCouchString
+    randomCouchString,
+    addPouchPlugin
 } from '../../plugins/core';
 import * as humansCollection from '../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
@@ -219,7 +220,7 @@ config.parallel('server.test.js', () => {
         col2.database.destroy();
     });
     it('using node-websql with an absoulte path should work', async () => {
-        addRxPlugin(NodeWebsqlAdapter);
+        addPouchPlugin(NodeWebsqlAdapter);
         const dbName = config.rootPath + 'test_tmp/' + randomCouchString(10);
         const db1 = await createRxDatabase({
             name: dbName,
@@ -242,7 +243,7 @@ config.parallel('server.test.js', () => {
         db1.destroy();
     });
     it('should work on filesystem-storage', async () => {
-        addRxPlugin(NodeWebsqlAdapter);
+        addPouchPlugin(NodeWebsqlAdapter);
 
         const port = nexPort();
 

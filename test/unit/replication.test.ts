@@ -18,7 +18,8 @@ import {
     randomCouchString,
     isRxCollection,
     RxReplicationState,
-    SyncOptions
+    SyncOptions,
+    addPouchPlugin
 } from '../../plugins/core';
 
 import {
@@ -35,7 +36,7 @@ let SpawnServer: any;
 if (config.platform.isNode()) {
     SpawnServer = require('../helper/spawn-server');
     request = require('request-promise');
-    addRxPlugin(require('pouchdb-adapter-http'));
+    addPouchPlugin(require('pouchdb-adapter-http'));
 }
 
 describe('replication.test.js', () => {

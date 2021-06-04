@@ -8,7 +8,8 @@ import * as schemas from '../helper/schemas';
 import {
     addRxPlugin,
     createRxDatabase,
-    randomCouchString
+    randomCouchString,
+    addPouchPlugin
 } from '../../plugins/core';
 
 import { RxDBAjvValidatePlugin } from '../../plugins/ajv-validate';
@@ -20,7 +21,7 @@ addRxPlugin(RxDBKeyCompressionPlugin);
 import { RxDBDevModePlugin } from '../../plugins/dev-mode';
 addRxPlugin(RxDBDevModePlugin);
 
-addRxPlugin(require('pouchdb-adapter-memory'));
+addPouchPlugin(require('pouchdb-adapter-memory'));
 
 config.parallel('ajv-validate.node.js', () => {
     describe('validation', () => {

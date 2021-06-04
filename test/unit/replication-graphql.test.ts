@@ -22,7 +22,8 @@ import {
     hash,
     randomCouchString,
     PouchDB,
-    pouchSwapPrimaryToId
+    pouchSwapPrimaryToId,
+    addPouchPlugin
 } from '../../plugins/core';
 import {
     RxDBReplicationGraphQLPlugin,
@@ -111,7 +112,7 @@ describe('replication-graphql.test.js', () => {
     describe('node', () => {
         if (!config.platform.isNode()) return;
         const REQUIRE_FUN = require;
-        addRxPlugin(REQUIRE_FUN('pouchdb-adapter-http'));
+        addPouchPlugin(REQUIRE_FUN('pouchdb-adapter-http'));
         const SpawnServer: GraphQLServerModule = REQUIRE_FUN('../helper/graphql-server');
         const ws = REQUIRE_FUN('ws');
         const { SubscriptionClient } = REQUIRE_FUN('subscriptions-transport-ws');

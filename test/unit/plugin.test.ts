@@ -4,13 +4,14 @@
  */
 
 import assert from 'assert';
-import PouchReplicationPlugin from 'pouchdb-replication';
 
 import config from './config';
 import {
     addRxPlugin,
     randomCouchString,
-    _clearHook
+    _clearHook,
+    addPouchPlugin,
+    RxPlugin
 } from '../../plugins/core';
 
 import * as humansCollection from '../helper/humans-collection';
@@ -24,10 +25,11 @@ config.parallel('plugin.test.js', () => {
     if (!config.platform.isNode()) return;
     describe('.addRxPlugin()', () => {
         describe('positive', () => {
-            it('should not crash when the same plugin is added multiple times', () => {
-                addRxPlugin(PouchReplicationPlugin);
-                addRxPlugin(PouchReplicationPlugin);
-                addRxPlugin(PouchReplicationPlugin);
+            it('should not crash when a new plugin is added', () => {
+                addRxPlugin({
+                    rxdb: true,
+                    name: randomCouchString(12)
+                });
             });
         });
         describe('positive', () => {
@@ -42,6 +44,18 @@ config.parallel('plugin.test.js', () => {
                     'DEV1'
                 );
             });
+        });
+    });
+    describe('.addPouchPlugin()', () => {
+        it('should not crash when pouch plugin is added', () => {
+            addPouchPlugin(require('pouchdb-adapter-memory'));
+        });
+        it('should crash when rxdb plugin is added via addPouchPlugin', async () => {
+            await assertThrows(
+                () => addPouchPlugin(RxDBDevModePlugin),
+                'RxTypeError',
+                'PL2'
+            );
         });
     });
     describe('core.node.js', () => {
@@ -221,8 +235,9 @@ config.parallel('plugin.test.js', () => {
             const createRxDatabase = (db: any) => {
                 db.foo = 'bar_createRxDatabase';
             };
-            const plugin = {
+            const plugin: RxPlugin = {
                 rxdb: true,
+                name: randomCouchString(12),
                 hooks: {
                     createRxDatabase
                 }
@@ -238,8 +253,9 @@ config.parallel('plugin.test.js', () => {
             const createRxCollection = (c: any) => {
                 c.foo = 'bar_createRxCollection';
             };
-            const plugin = {
+            const plugin: RxPlugin = {
                 rxdb: true,
+                name: randomCouchString(12),
                 hooks: {
                     createRxCollection
                 }
@@ -254,8 +270,9 @@ config.parallel('plugin.test.js', () => {
             const createRxSchema = (c: any) => {
                 c.foo = 'bar_createRxSchema';
             };
-            const plugin = {
+            const plugin: RxPlugin = {
                 rxdb: true,
+                name: randomCouchString(12),
                 hooks: {
                     createRxSchema
                 }
@@ -270,8 +287,9 @@ config.parallel('plugin.test.js', () => {
             const createRxQuery = (c: any) => {
                 c.foo = 'bar_createRxQuery';
             };
-            const plugin = {
+            const plugin: RxPlugin = {
                 rxdb: true,
+                name: randomCouchString(12),
                 hooks: {
                     createRxQuery
                 }
@@ -287,8 +305,9 @@ config.parallel('plugin.test.js', () => {
             const createRxDocument = (c: any) => {
                 c.foo = 'bar_createRxDocument';
             };
-            const plugin = {
+            const plugin: RxPlugin = {
                 rxdb: true,
+                name: randomCouchString(12),
                 hooks: {
                     createRxDocument
                 }
@@ -304,8 +323,9 @@ config.parallel('plugin.test.js', () => {
             const postCreateRxDocument = (c: any) => {
                 c.fooPostCreate = 'bar_postCreateRxDocument';
             };
-            const plugin = {
+            const plugin: RxPlugin = {
                 rxdb: true,
+                name: randomCouchString(12),
                 hooks: {
                     postCreateRxDocument
                 }
@@ -325,8 +345,9 @@ config.parallel('plugin.test.js', () => {
                     pouchDbParameters.location = pouchDbParameters.location + 'foobar';
                 }
             };
-            const plugin = {
+            const plugin: RxPlugin = {
                 rxdb: true,
+                name: randomCouchString(12),
                 hooks: {
                     preCreatePouchDb
                 }

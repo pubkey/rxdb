@@ -31,7 +31,8 @@ import {
 } from '../rx-error';
 import {
     pouchReplicationFunction,
-    isInstanceOf as isInstanceOfPouchDB
+    isInstanceOf as isInstanceOfPouchDB,
+    addPouchPlugin
 } from '../pouch-db';
 
 import {
@@ -47,7 +48,7 @@ import type {
 import { RxDBWatchForChangesPlugin } from './watch-for-changes';
 
 // add pouchdb-replication-plugin
-addRxPlugin(PouchReplicationPlugin);
+addPouchPlugin(PouchReplicationPlugin);
 
 // add the watch-for-changes-plugin
 addRxPlugin(RxDBWatchForChangesPlugin);

@@ -13,6 +13,10 @@ export const ERROR_MESSAGES: { [k: string]: string } = {
     UT3: 'replication-direction must either be push or pull or both. But not none',
     UT4: 'given leveldown is no valid adapter',
 
+    // plugins
+    PL1: 'Given plugin is not RxDB plugin. Pouchdb plugins must be added via addPouchPlugin()',
+    PL2: 'You tried importy a RxDB plugin to pouchdb. Use addRxPlugin() instead.',
+
     // pouch-db.js
     P1: 'PouchDB.getBatch: limit must be > 2',
 

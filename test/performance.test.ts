@@ -15,9 +15,10 @@ import {
     addRxPlugin,
     randomCouchString,
     dbCount,
-    RxDatabase
+    RxDatabase,
+    addPouchPlugin
 } from '../plugins/core';
-addRxPlugin(require('pouchdb-adapter-memory'));
+addPouchPlugin(require('pouchdb-adapter-memory'));
 import { RxDBNoValidatePlugin } from '../plugins/no-validate';
 addRxPlugin(RxDBNoValidatePlugin);
 import { RxDBKeyCompressionPlugin } from '../plugins/key-compression';

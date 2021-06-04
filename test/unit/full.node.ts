@@ -9,9 +9,10 @@ const {
     addRxPlugin,
     createRxDatabase,
     isRxDocument,
-    randomCouchString
+    randomCouchString,
+    addPouchPlugin
 } = require('../../');
-addRxPlugin(require('pouchdb-adapter-memory'));
+addPouchPlugin(require('pouchdb-adapter-memory'));
 
 const schema = {
     title: 'human schema',

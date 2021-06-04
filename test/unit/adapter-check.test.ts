@@ -4,7 +4,8 @@ import * as RxDB from '../../plugins/core';
 import {
     PouchDB,
     addRxPlugin,
-    adapterObject
+    adapterObject,
+    addPouchPlugin
 } from '../../plugins/core';
 import {
     RxDBAdapterCheckPlugin,
@@ -14,7 +15,7 @@ addRxPlugin(RxDBAdapterCheckPlugin);
 
 import memdown from 'memdown';
 if (!config.platform.isNode()) {
-    addRxPlugin(require('pouchdb-adapter-idb'));
+    addPouchPlugin(require('pouchdb-adapter-idb'));
 }
 
 config.parallel('adapter-check.test.js', () => {

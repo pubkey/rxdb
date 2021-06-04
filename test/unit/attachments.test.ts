@@ -307,9 +307,6 @@ config.parallel('attachments.test.ts', () => {
 
             const encryptedData = await doc.collection.pouch.getAttachment(doc.primary, 'cat.txt');
 
-            console.log('enc data:');
-            console.dir(encryptedData);
-
             const dataString = await blobBufferUtil.toString(encryptedData);
             assert.notStrictEqual(dataString, 'foo bar');
 

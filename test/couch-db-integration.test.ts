@@ -9,10 +9,11 @@ import { waitUntil } from 'async-test-util';
 
 import {
     addRxPlugin,
+    addPouchPlugin,
     randomCouchString
 } from '../';
-addRxPlugin(require('pouchdb-adapter-memory'));
-addRxPlugin(require('pouchdb-adapter-http'));
+addPouchPlugin(require('pouchdb-adapter-memory'));
+addPouchPlugin(require('pouchdb-adapter-http'));
 import request from 'request-promise-native';
 
 import * as humansCollection from './helper/humans-collection';

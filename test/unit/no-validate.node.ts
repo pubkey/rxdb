@@ -4,10 +4,11 @@ import config from './config';
 import {
     addRxPlugin,
     createRxDatabase,
-    randomCouchString
+    randomCouchString,
+    addPouchPlugin
 } from '../../plugins/core';
 addRxPlugin(require('../../plugins/no-validate'));
-addRxPlugin(require('pouchdb-adapter-memory'));
+addPouchPlugin(require('pouchdb-adapter-memory'));
 
 const schema = {
     title: 'human schema',

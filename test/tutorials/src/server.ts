@@ -6,16 +6,17 @@
 
 import {
     addRxPlugin,
-    createRxDatabase
+    createRxDatabase,
+    addPouchPlugin
 } from 'rxdb';
 import * as MemoryAdapter from 'pouchdb-adapter-memory';
-addRxPlugin(MemoryAdapter);
+addPouchPlugin(MemoryAdapter);
 
 import { RxDBServerPlugin } from 'rxdb/plugins/server';
 addRxPlugin(RxDBServerPlugin);
 
 import * as PouchHttpPlugin from 'pouchdb-adapter-http';
-addRxPlugin(PouchHttpPlugin);
+addPouchPlugin(PouchHttpPlugin);
 
 import AsyncTestUtil from 'async-test-util';
 import * as request from 'request-promise-native';

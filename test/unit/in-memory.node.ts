@@ -14,7 +14,8 @@ import config from './config';
 const {
     addRxPlugin,
     createRxDatabase,
-    randomCouchString
+    randomCouchString,
+    addPouchPlugin
 } = require('../../plugins/core/');
 
 import {RxDBInMemoryPlugin} from '../../plugins/in-memory';
@@ -26,7 +27,7 @@ addRxPlugin(RxDBDevModePlugin);
 import {RxDBWatchForChangesPlugin} from '../../plugins/watch-for-changes';
 addRxPlugin(RxDBWatchForChangesPlugin);
 
-addRxPlugin(require('pouchdb-adapter-leveldb'));
+addPouchPlugin(require('pouchdb-adapter-leveldb'));
 
 const schema: RxJsonSchema = {
     title: 'human schema',
@@ -69,7 +70,7 @@ describe('in-memory.node.js', () => {
         db.destroy();
     });
     it('should work again when memory-adapter was added', async () => {
-        addRxPlugin(PouchAdapterMemory);
+        addPouchPlugin(PouchAdapterMemory);
         const db = await createRxDatabase({
             name: (config as any).rootPath + 'test_tmp/' + randomCouchString(10),
             adapter: leveldown

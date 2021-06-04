@@ -15,7 +15,7 @@ import {
 } from 'rxdb';
 
 import * as MemoryAdapter from 'pouchdb-adapter-memory';
-addRxPlugin(MemoryAdapter);
+addPouchPlugin(MemoryAdapter);
 
 /**
  * declare types

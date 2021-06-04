@@ -2,6 +2,7 @@ import express from 'express';
 import corsFn from 'cors';
 
 import {
+    addPouchPlugin,
     PouchDB
 } from '../pouch-db';
 import {
@@ -23,7 +24,7 @@ import { RxDBWatchForChangesPlugin } from './watch-for-changes';
 addRxPlugin(RxDBWatchForChangesPlugin);
 
 import PouchAdapterHttp from 'pouchdb-adapter-http';
-addRxPlugin(PouchAdapterHttp);
+addPouchPlugin(PouchAdapterHttp);
 
 let ExpressPouchDB: any;
 try {

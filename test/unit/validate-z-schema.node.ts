@@ -8,7 +8,8 @@ import * as schemas from '../helper/schemas';
 import {
     randomCouchString,
     addRxPlugin,
-    createRxDatabase
+    createRxDatabase,
+    addPouchPlugin
 } from '../../plugins/core';
 
 import { RxDBValidateZSchemaPlugin } from '../../plugins/validate-z-schema';
@@ -20,7 +21,7 @@ addRxPlugin(RxDBKeyCompressionPlugin);
 import { RxDBDevModePlugin } from '../../plugins/dev-mode';
 addRxPlugin(RxDBDevModePlugin);
 
-addRxPlugin(require('pouchdb-adapter-memory'));
+addPouchPlugin(require('pouchdb-adapter-memory'));
 
 config.parallel('validate-z-schema.node.js', () => {
     describe('validation', () => {

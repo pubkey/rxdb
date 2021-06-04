@@ -17,7 +17,8 @@ export {
     PouchDB,
     validateCouchDBString,
     pouchGetBatch,
-    pouchCountAllUndeleted
+    pouchCountAllUndeleted,
+    addPouchPlugin
 } from './pouch-db';
 
 export {

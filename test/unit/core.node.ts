@@ -12,11 +12,12 @@ import {
     createRxDatabase,
     isRxDocument,
     randomCouchString,
-    RxJsonSchema
+    RxJsonSchema,
+    addPouchPlugin
 } from '../../plugins/core';
 
 addRxPlugin(require('../../plugins/validate'));
-addRxPlugin(require('pouchdb-adapter-memory'));
+addPouchPlugin(require('pouchdb-adapter-memory'));
 
 const schema: RxJsonSchema = {
     title: 'human schema',

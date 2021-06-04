@@ -8,7 +8,6 @@ import PouchDBCore from 'pouchdb-core';
 
 // pouchdb-find
 import PouchDBFind from 'pouchdb-find';
-import { binaryMd5 } from 'pouchdb-md5';
 
 PouchDBCore.plugin(PouchDBFind);
 
@@ -143,5 +142,27 @@ export function pouchReplicationFunction(
 export function isInstanceOf(obj: any) {
     return obj instanceof PouchDBCore;
 }
+
+
+/**
+ * Add a pouchdb plugin to the pouchdb library.
+ */
+export function addPouchPlugin(plugin: any) {
+    if (plugin.rxdb) {
+        throw newRxTypeError('PL2', {
+            plugin
+        });
+    }
+    /**
+     * Pouchdb has confusing typings and modules.
+     * So we monkeypatch the plugin to use the default property
+     * when it was imported or packaged this way.
+     */
+    if (typeof plugin === 'object' && plugin.default) {
+        plugin = plugin.default;
+    }
+    PouchDBCore.plugin(plugin);
+}
+
 
 export const PouchDB: any = PouchDBCore as any;

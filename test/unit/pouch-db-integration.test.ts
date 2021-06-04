@@ -18,7 +18,8 @@ import {
     PouchDB,
     isRxDatabase,
     PouchDBInstance,
-    blobBufferUtil
+    blobBufferUtil,
+    addPouchPlugin
 } from '../../plugins/core';
 import * as schemaObjects from './../helper/schema-objects';
 
@@ -62,7 +63,7 @@ config.parallel('pouch-db-integration.test.js', () => {
             );
         });
         it('should work when adapter was added', async () => {
-            addRxPlugin(require('pouchdb-adapter-memory'));
+            addPouchPlugin(require('pouchdb-adapter-memory'));
             const db = await createRxDatabase({
                 name: randomCouchString(10),
                 adapter: 'memory'
@@ -103,7 +104,7 @@ config.parallel('pouch-db-integration.test.js', () => {
                 // test websql on chrome only
                 if (config.platform.name !== 'chrome') return;
 
-                addRxPlugin(require('pouchdb-adapter-websql'));
+                addPouchPlugin(require('pouchdb-adapter-websql'));
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
                     adapter: 'websql'
