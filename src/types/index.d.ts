@@ -8,6 +8,7 @@ export * from './rx-plugin';
 export * from './rx-query';
 export * from './rx-schema';
 export * from './rx-storage';
+export * from './rx-storage.interface';
 
 // plugins
 export * from './plugins/replication';

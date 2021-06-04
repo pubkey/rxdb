@@ -1,7 +1,7 @@
 import { Crypter } from '../../crypter';
 import { DataMigrator } from '../../plugins/migration';
 import { RxSchema } from '../../rx-schema';
-import { RxStorageInstance } from '../../rx-storage.interface';
+import { RxStorageInstance } from '../rx-storage.interface';
 import {
     WithAttachments
 } from '../pouch';

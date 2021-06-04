@@ -5,12 +5,6 @@ import {
 import { binaryMd5 } from 'pouchdb-md5';
 
 import type {
-    RxStorage,
-    RxStorageInstance,
-    RxStorageKeyObjectInstance
-} from './rx-storage.interface';
-
-import type {
     MangoQuery,
     MangoQuerySortPart,
     PouchDBInstance,
@@ -35,7 +29,10 @@ import type {
     RxAttachmentWriteData,
     RxAttachmentData,
     BlobBuffer,
-    PreparedQuery
+    PreparedQuery,
+    RxStorage,
+    RxStorageInstance,
+    RxStorageKeyObjectInstance
 } from './types';
 
 import type {

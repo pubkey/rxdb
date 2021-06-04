@@ -14,12 +14,12 @@ import type {
     RxStorageBulkWriteResponse,
     RxStorageInstanceCreationParams,
     RxStorageQueryResult
-} from './types/rx-storage';
+} from './rx-storage';
 import type {
     BlobBuffer,
     MangoQuery,
     RxJsonSchema
-} from './types';
+} from './';
 import type {
     Observable
 } from 'rxjs';

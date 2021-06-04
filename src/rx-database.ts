@@ -18,7 +18,10 @@ import type {
     RxCollectionCreatorBase,
     AllMigrationStates,
     ServerResponse,
-    BackupOptions
+    BackupOptions,
+    RxStorage,
+    RxStorageKeyObjectInstance,
+    RxStorageInstance
 } from './types';
 
 import {
@@ -75,11 +78,6 @@ import {
     writeSingle
 } from './rx-storage-helper';
 import type { RxBackupState } from './plugins/backup';
-import {
-    RxStorage,
-    RxStorageKeyObjectInstance,
-    RxStorageInstance
-} from './rx-storage.interface';
 
 /**
  * stores the combinations

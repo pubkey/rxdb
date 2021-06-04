@@ -4,15 +4,12 @@
 
 import { newRxError } from './rx-error';
 import type {
-    RxStorageInstance,
-    RxStorageKeyObjectInstance
-} from './rx-storage.interface';
-import type {
     RxDocumentData,
     RxDocumentWriteData,
-    RxLocalDocumentData
+    RxLocalDocumentData,
+    RxStorageInstance,
+    RxStorageKeyObjectInstance
 } from './types';
-import { lastOfArray } from './util';
 
 export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
 

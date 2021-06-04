@@ -95,11 +95,6 @@ export {
 
 export * from './query-cache';
 
-export type {
-    RxStorage
-} from './rx-storage.interface';
-
-
 export * from './util';
 
 // TODO how to do 'export type * ..' ?
@@ -167,5 +162,6 @@ export type {
     SyncOptions,
     SyncOptionsGraphQL,
     MigrationStrategies,
-    WithAttachmentsData
+    WithAttachmentsData,
+    RxStorage
 } from './types';

@@ -91,11 +91,11 @@ import type {
     MangoQuery,
     MangoQueryNoLimit,
     RxCacheReplacementPolicy,
-    WithPouchMeta,
     RxStorageBulkWriteError,
     RxDocumentData,
     RxDocumentWriteData,
-    RxStorageInstanceCreationParams
+    RxStorageInstanceCreationParams,
+    RxStorageKeyObjectInstance
 } from './types';
 import type {
     RxGraphQLReplicationState
@@ -115,7 +115,6 @@ import {
 } from './rx-document-prototype-merge';
 import { RxStorageInstancePouch } from './rx-storage-pouchdb';
 import { getSingleDocument, writeSingle } from './rx-storage-helper';
-import { RxStorageKeyObjectInstance } from './rx-storage.interface';
 
 const HOOKS_WHEN = ['pre', 'post'];
 const HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];

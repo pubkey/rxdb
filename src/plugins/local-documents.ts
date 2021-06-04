@@ -33,7 +33,8 @@ import type {
     RxDocument,
     RxDocumentWriteData,
     RxLocalDocumentData,
-    RxPlugin
+    RxPlugin,
+    RxStorageKeyObjectInstance
 } from '../types';
 
 import {
@@ -52,8 +53,10 @@ import {
 } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { POUCHDB_LOCAL_PREFIX } from '../rx-storage-pouchdb';
-import { RxStorageKeyObjectInstance } from '../rx-storage.interface';
-import { findLocalDocument, writeSingleLocal } from '../rx-storage-helper';
+import {
+    findLocalDocument,
+    writeSingleLocal
+} from '../rx-storage-helper';
 
 const DOC_CACHE_BY_PARENT = new WeakMap();
 const _getDocCache = (parent: any) => {
