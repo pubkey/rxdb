@@ -36,7 +36,7 @@ import {
 } from '../pouch-db';
 
 import {
-    isInstanceOf as isRxCollection
+    isRxCollection
 } from '../rx-collection';
 import type {
     RxCollection,

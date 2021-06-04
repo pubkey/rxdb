@@ -25,18 +25,19 @@ export {
     createRxDatabase,
     removeRxDatabase,
     checkAdapter,
-    isInstanceOf as isRxDatabase,
+    isRxDatabase,
     dbCount,
     _collectionNamePrimary // used in tests
 } from './rx-database';
 
 export {
-    isInstanceOf as isRxCollection,
-    create as _createRxCollection // used in tests
+    isRxCollection,
+    RxCollectionBase,
+    createRxCollection // used in tests
 } from './rx-collection';
 
 export {
-    isInstanceOf as isRxDocument
+    isRxDocument
 } from './rx-document';
 
 export {

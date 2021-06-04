@@ -60,7 +60,7 @@ import {
 } from './pouch-db';
 
 import {
-    create as createRxCollection
+    createRxCollection
 } from './rx-collection';
 import {
     RxChangeEvent
@@ -823,19 +823,10 @@ export function checkAdapter(adapter: any): Promise<boolean> {
     return overwritable.checkAdapter(adapter);
 }
 
-export function isInstanceOf(obj: any) {
+export function isRxDatabase(obj: any) {
     return obj instanceof RxDatabaseBase;
 }
 
 export function dbCount(): number {
     return DB_COUNT;
 }
-
-export default {
-    createRxDatabase,
-    removeRxDatabase,
-    checkAdapter,
-    isInstanceOf,
-    RxDatabaseBase,
-    dbCount
-};

@@ -609,7 +609,7 @@ export function createWithConstructor(
     return doc;
 }
 
-export function isInstanceOf(obj: any): boolean {
+export function isRxDocument(obj: any): boolean {
     if (typeof obj === 'undefined') return false;
     return !!obj.isInstanceOfRxDocument;
 }

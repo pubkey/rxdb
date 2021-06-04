@@ -17,7 +17,7 @@ import {
     RxError,
     randomCouchString,
     shuffleArray,
-    _createRxCollection,
+    createRxCollection,
     RxJsonSchema,
     PrimaryProperty,
     RxDatabase,
@@ -63,7 +63,7 @@ config.parallel('rx-collection.test.js', () => {
                         adapter: 'memory'
                     });
                     const schema = createRxSchema(schemas.human);
-                    const collection = await _createRxCollection({
+                    const collection = await createRxCollection({
                         database: db,
                         name: 'humanx',
                         schema
@@ -77,7 +77,7 @@ config.parallel('rx-collection.test.js', () => {
                         adapter: 'memory'
                     });
                     const schema = createRxSchema(schemas.human);
-                    const collection = await _createRxCollection({
+                    const collection = await createRxCollection({
                         database: db,
                         name: 'human',
                         schema
@@ -93,7 +93,7 @@ config.parallel('rx-collection.test.js', () => {
                     const schemaJSON = clone(schemas.compoundIndex);
                     schemaJSON.keyCompression = false;
                     const schema = createRxSchema(schemaJSON);
-                    const col = await _createRxCollection({
+                    const col = await createRxCollection({
                         database: db,
                         name: 'human',
                         schema
@@ -116,7 +116,7 @@ config.parallel('rx-collection.test.js', () => {
                         adapter: 'memory'
                     });
                     const schema = createRxSchema(schemas.compoundIndex);
-                    const col = await _createRxCollection({
+                    const col = await createRxCollection({
                         database: db,
                         name: 'human',
                         schema
@@ -139,7 +139,7 @@ config.parallel('rx-collection.test.js', () => {
                         adapter: 'memory'
                     });
                     const schema = createRxSchema(schemas.human);
-                    const collection = await _createRxCollection({
+                    const collection = await createRxCollection({
                         database: db,
                         name: 'human',
                         schema
@@ -169,7 +169,7 @@ config.parallel('rx-collection.test.js', () => {
                     const db = {};
                     const schema = createRxSchema(schemas.human);
                     await AsyncTestUtil.assertThrows(
-                        () => _createRxCollection({
+                        () => createRxCollection({
                             database: db,
                             name: 'human',
                             schema
@@ -184,7 +184,7 @@ config.parallel('rx-collection.test.js', () => {
                     });
                     const schema = createRxSchema(schemas.human);
                     await AsyncTestUtil.assertThrows(
-                        () => _createRxCollection({
+                        () => createRxCollection({
                             database: db,
                             name: null,
                             schema
@@ -206,7 +206,7 @@ config.parallel('rx-collection.test.js', () => {
                     const schema = createRxSchema(schemas.human);
 
                     await AsyncTestUtil.assertThrows(
-                        () => _createRxCollection({
+                        () => createRxCollection({
                             database: db,
                             name: '_foobar',
                             schema
@@ -222,13 +222,13 @@ config.parallel('rx-collection.test.js', () => {
                         adapter: 'memory'
                     });
                     const schema = createRxSchema(schemas.human);
-                    const collection1 = await _createRxCollection({
+                    const collection1 = await createRxCollection({
                         database: db,
                         name: 'fooba4r',
                         schema
                     }, false);
                     assert.ok(isRxCollection(collection1));
-                    const collection2 = await _createRxCollection({
+                    const collection2 = await createRxCollection({
                         database: db,
                         name: 'foobar4',
                         schema
@@ -245,7 +245,7 @@ config.parallel('rx-collection.test.js', () => {
                     });
                     const schema = createRxSchema(schemas.human);
                     await AsyncTestUtil.assertThrows(
-                        () => _createRxCollection({
+                        () => createRxCollection({
                             database: db,
                             name: '0foobar',
                             schema
@@ -261,7 +261,7 @@ config.parallel('rx-collection.test.js', () => {
                     });
                     const schema = createRxSchema(schemas.human);
                     await AsyncTestUtil.assertThrows(
-                        () => _createRxCollection({
+                        () => createRxCollection({
                             database: db,
                             name: 'Foobar',
                             schema
@@ -269,7 +269,7 @@ config.parallel('rx-collection.test.js', () => {
                         'RxError'
                     );
                     await AsyncTestUtil.assertThrows(
-                        () => _createRxCollection({
+                        () => createRxCollection({
                             database: db,
                             name: 'fooBar',
                             schema
@@ -587,7 +587,7 @@ config.parallel('rx-collection.test.js', () => {
                             adapter: 'memory'
                         });
                         const schema = createRxSchema(schemas.human);
-                        const collection = await _createRxCollection({
+                        const collection = await createRxCollection({
                             database: db,
                             name: 'humanx',
                             schema
@@ -777,7 +777,7 @@ config.parallel('rx-collection.test.js', () => {
                         const schemaObj = clone(schemas.humanSubIndex);
                         schemaObj.keyCompression = false;
                         const schema = createRxSchema(schemaObj);
-                        const collection = await _createRxCollection({
+                        const collection = await createRxCollection({
                             database: db,
                             name: 'human',
                             schema
@@ -824,7 +824,7 @@ config.parallel('rx-collection.test.js', () => {
                             adapter: 'memory'
                         });
                         const schema = createRxSchema(schemas.humanSubIndex);
-                        const collection = await _createRxCollection({
+                        const collection = await createRxCollection({
                             database: db,
                             name: 'human',
                             schema

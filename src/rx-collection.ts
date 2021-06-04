@@ -107,7 +107,7 @@ import {
 } from './rx-schema';
 import {
     createWithConstructor as createRxDocumentWithConstructor,
-    isInstanceOf as isRxDocument
+    isRxDocument
 } from './rx-document';
 
 import {
@@ -365,16 +365,6 @@ export class RxCollectionBase<
             }
 
         }
-    }
-
-    /**
-     * get document from pouchdb by its _id
-     */
-    _pouchGet(key: string): Promise<any> {
-        return this
-            .pouch
-            .get(key)
-            .then(doc => this._handleFromPouch(doc));
     }
 
     /**
@@ -1045,7 +1035,7 @@ function _atomicUpsertEnsureRxDocumentExists(
 /**
  * creates and prepares a new collection
  */
-export function create(
+export function createRxCollection(
     {
         database,
         name,
@@ -1113,12 +1103,6 @@ export function create(
         });
 }
 
-export function isInstanceOf(obj: any): boolean {
+export function isRxCollection(obj: any): boolean {
     return obj instanceof RxCollectionBase;
 }
-
-export default {
-    create,
-    isInstanceOf,
-    RxCollectionBase
-};

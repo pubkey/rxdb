@@ -38,10 +38,10 @@ import type {
 } from '../types';
 
 import {
-    isInstanceOf as isRxDatabase
+    isRxDatabase
 } from '../rx-database';
 import {
-    isInstanceOf as isRxCollection
+    isRxCollection
 } from '../rx-collection';
 
 import {
