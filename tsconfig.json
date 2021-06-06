@@ -14,6 +14,7 @@
         "isolatedModules": false,
         // Import non-ES modules as default imports.
         "esModuleInterop": true,
+        "noUncheckedIndexedAccess": true,
 
         "outDir": "./dist/typings",
         "noEmit": true,
