@@ -161,10 +161,15 @@ export interface RxStorageInstance<
     /**
      * pouchdb and others have some bugs
      * and behaviors that must be worked arround
-     * before querying the collection.
+     * before querying the db.
      * For performance reason this preparation
      * runs in a single step so it can be cached
-     * when the query is used multiple times
+     * when the query is used multiple times.
+     * 
+     * If your custom storage engine is capable of running
+     * all valid mango queries properly, just return the
+     * mutateableQuery here.
+     * 
      *
      * @returns a format of the query than can be used with the storage
      */
@@ -176,17 +181,19 @@ export interface RxStorageInstance<
     ): PreparedQuery<DocumentData>;
 
     /**
-     * returns the sort-comparator,
-     * which results in the equal sorting that a query over the db would do
+     * Returns the sort-comparator,
+     * which is able to sort documents in the same way
+     * a query over the db would do.
      */
     getSortComparator(
         query: MangoQuery<DocumentData>
     ): SortComparator<DocumentData>;
 
     /**
-     * returns a function
+     * Returns a function
      * that can be used to check if a document
-     * matches the query
+     * matches the query.
+     *  
      */
     getQueryMatcher(
         query: MangoQuery<DocumentData>

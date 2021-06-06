@@ -104,7 +104,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     options: {}
                 });
 
-                const writeData: RxDocumentWriteData<TestDocType> = {
+                const writeData: RxDocumentData<TestDocType> = {
                     key: 'foobar',
                     value: 'barfoo',
                     _attachments: {},
@@ -377,7 +377,6 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 }).subscribe(x => emitted.push(x));
 
                 // make writes to instance 2
-                let previous: RxDocumentData<TestDocType> | undefined;
                 const writeData: RxDocumentWriteData<TestDocType> = {
                     key: 'foobar',
                     value: 'one',
@@ -389,7 +388,6 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 await writeSingle(
                     storageInstance2,
                     {
-                        previous,
                         document: writeData
                     }
                 );
@@ -400,7 +398,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 writeData.key = 'barfoo';
                 writeData._rev = '1-a723631364fbfa906c5ffa8203ac9725';
                 await storageInstance2.bulkAddRevisions(
-                    [writeData]
+                    [writeData as any]
                 );
                 await waitUntil(() => emitted.length === 2);
                 assert.strictEqual(emitted[1].id, writeData.key);
