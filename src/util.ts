@@ -273,7 +273,8 @@ export function removeOneFromArrayIfMatches<T>(ar: T[], condition: (x: T) => boo
     let i = ar.length;
     let done = false;
     while (i-- && !done) {
-        if (condition(ar[i])) {
+        const item = ar[i];
+        if (item && condition(item)) {
             done = true;
             ar.splice(i, 1);
         }
@@ -343,7 +344,8 @@ export function flattenObject(ob: any) {
 }
 
 export function getHeightOfRevision(revString: string): number {
-    const first = revString.split('-')[0];
+    // tslint:disable-next-line: no-non-null-assertion
+    const first = revString.split('-')[0]!;
     return parseInt(first, 10);
 }
 

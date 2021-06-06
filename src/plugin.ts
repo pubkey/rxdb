@@ -86,6 +86,6 @@ export function addRxPlugin(plugin: RxPlugin | any) {
     if (rxPlugin.hooks) {
         Object
             .entries(plugin.hooks)
-            .forEach(([name, fun]) => HOOKS[name].push(fun));
+            .forEach(([name, fun]) => HOOKS[name]?.push(fun));
     }
 }

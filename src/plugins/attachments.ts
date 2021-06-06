@@ -165,7 +165,7 @@ export async function putAttachment(
 
                 const newHash: string = await pouchAttachmentBinaryHash(data);
 
-                if (currentMeta.content_type === type && currentMeta.digest === newHash) {
+                if (currentMeta && currentMeta.content_type === type && currentMeta.digest === newHash) {
                     // skip because same data and same type
                     return this.getAttachment(id);
                 }

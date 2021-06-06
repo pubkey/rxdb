@@ -59,7 +59,7 @@ export class RxStoragePouchDbClass implements RxStorage<PouchDBInstance> {
                 },
                 inMemoryFields
             );
-            if (sortedRows[0].doc._id === rows[0].doc._id) {
+            if (sortedRows[0]?.doc._id === rows[0]?.doc._id) {
                 return -1;
             } else {
                 return 1;
@@ -167,6 +167,7 @@ export class RxStoragePouchDbClass implements RxStorage<PouchDBInstance> {
         if (query.sort) {
             query.sort.forEach(sortPart => {
                 const key = Object.keys(sortPart)[0];
+                if (!key) throw new Error('first key of sortPart is undefined.');
                 const comparisonOperators = ['$gt', '$gte', '$lt', '$lte'];
                 const keyUsed = query.selector[key] && Object.keys(query.selector[key]).some(op => comparisonOperators.includes(op)) || false;
                 if (!keyUsed) {
@@ -216,8 +217,10 @@ export class RxStoragePouchDbClass implements RxStorage<PouchDBInstance> {
         // primary-swap sorting
         if (query.sort) {
             const sortArray: MangoQuerySortPart<RxDocType>[] = query.sort.map(part => {
-                const key = Object.keys(part)[0];
-                const direction: MangoQuerySortDirection = Object.values(part)[0];
+                // tslint:disable-next-line: no-non-null-assertion
+                const key = Object.keys(part)[0]!;
+                // tslint:disable-next-line: no-non-null-assertion
+                const direction: MangoQuerySortDirection = Object.values(part)[0]!;
                 const useKey = key === primPath ? '_id' : key;
                 const newPart = { [useKey]: direction };
                 return newPart as any;

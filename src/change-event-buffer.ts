@@ -48,6 +48,9 @@ export class ChangeEventBuffer {
      */
     getArrayIndexByPointer(pointer: number): number | null {
         const oldestEvent = this.buffer[0];
+
+        if (!oldestEvent) throw new Error(`oldestEvent is undefined.`);
+
         const oldestCounter = this.eventCounterMap.get(
             oldestEvent
         ) as number;
@@ -117,7 +120,7 @@ export class ChangeEventBuffer {
         while (t > 0) {
             t--;
             const cE = this.buffer[t];
-            if (cE.documentData && cE.documentData._rev === revision) return true;
+            if (cE && cE.documentData && cE.documentData._rev === revision) return true;
         }
         return false;
     }

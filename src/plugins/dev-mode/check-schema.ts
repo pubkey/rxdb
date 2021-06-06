@@ -159,9 +159,9 @@ export function validateFieldsDeep(jsonSchema: any): true {
 function getSchemaPropertyRealPath(shortPath: string) {
     const pathParts = shortPath.split('.');
     let realPath = '';
-    for (let i = 0; i < pathParts.length; i += 1) {
-        if (pathParts[i] !== '[]') {
-            realPath = realPath.concat('.properties.'.concat(pathParts[i]));
+    for (const pathPart of pathParts) {
+        if (pathPart !== '[]') {
+            realPath = realPath.concat('.properties.'.concat(pathPart));
         } else {
             realPath = realPath.concat('.items');
         }

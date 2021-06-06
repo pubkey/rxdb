@@ -199,7 +199,7 @@ export class RxDatabaseBase<
         // get local management docs in bulk request
         const result = await pouch.allDocs({
             include_docs: true,
-            keys: Object.keys(collectionCreators).map(name => _collectionNamePrimary(name, collectionCreators[name].schema))
+            keys: Object.entries(collectionCreators).map(([name, creator]) => _collectionNamePrimary(name, creator.schema))
         });
         const internalDocByCollectionName: any = {};
         result.rows.forEach(row => {
@@ -211,7 +211,7 @@ export class RxDatabaseBase<
         const schemaHashByName: { [k: string]: string } = {};
         const collections = await Promise.all(
             Object.entries(collectionCreators).map(([name, args]) => {
-                const internalDoc = internalDocByCollectionName[_collectionNamePrimary(name, collectionCreators[name].schema)];
+                const internalDoc = internalDocByCollectionName[_collectionNamePrimary(name, args.schema)];
                 const useArgs: RxCollectionCreator = flatClone(args) as any;
                 useArgs.name = name;
                 const schema = createRxSchema(args.schema);
@@ -262,9 +262,10 @@ export class RxDatabaseBase<
             }
 
             // add to bulk-docs list
-            if (!internalDocByCollectionName[name]) {
+            const creator = collectionCreators[name];
+            if (!internalDocByCollectionName[name] && creator) {
                 bulkPutDocs.push({
-                    _id: _collectionNamePrimary(name, collectionCreators[name].schema),
+                    _id: _collectionNamePrimary(name, creator.schema),
                     schemaHash: schemaHashByName[name],
                     schema: collection.schema.normalized,
                     version: collection.schema.version
@@ -447,11 +448,12 @@ function _isNameAdapterUsed(
     name: string,
     adapter: any
 ) {
-    if (!USED_COMBINATIONS[name])
+    const usedCombination = USED_COMBINATIONS[name];
+    if (!usedCombination)
         return false;
 
     let used = false;
-    USED_COMBINATIONS[name].forEach(ad => {
+    usedCombination.forEach(ad => {
         if (ad === adapter)
             used = true;
     });
@@ -465,11 +467,12 @@ function _isNameAdapterUsed(
 }
 
 function _removeUsedCombination(name: string, adapter: any) {
-    if (!USED_COMBINATIONS[name])
+    const usedCombination = USED_COMBINATIONS[name];
+    if (!usedCombination)
         return;
 
-    const index = USED_COMBINATIONS[name].indexOf(adapter);
-    USED_COMBINATIONS[name].splice(index, 1);
+    const index = usedCombination.indexOf(adapter);
+    usedCombination.splice(index, 1);
 }
 
 /**
@@ -655,7 +658,8 @@ export function createRxDatabase<Collections = { [key: string]: RxCollection }>(
     if (!USED_COMBINATIONS[name]) {
         USED_COMBINATIONS[name] = [];
     }
-    USED_COMBINATIONS[name].push(adapter);
+    // tslint:disable-next-line: no-non-null-assertion
+    USED_COMBINATIONS[name]!.push(adapter);
 
     const rxDatabase: RxDatabase<Collections> = new RxDatabaseBase(
         name,
@@ -693,8 +697,10 @@ export function removeRxDatabase(
                         .map((colDoc: any) => colDoc.id)
                         .map((id: string) => {
                             const split = id.split('-');
-                            const name = split[0];
-                            const version = parseInt(split[1], 10);
+                            // tslint:disable-next-line: no-non-null-assertion
+                            const name = split[0]!;
+                            // tslint:disable-next-line: no-non-null-assertion
+                            const version = parseInt(split[1]!, 10);
                             const instance = storage.createStorageInstance(
                                 databaseName,
                                 name,

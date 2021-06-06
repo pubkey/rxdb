@@ -130,6 +130,7 @@ export class RxBackupState {
                 .map(async (collectionName) => {
                     const processedDocuments: Set<string> = new Set();
                     const collection = this.database.collections[collectionName];
+                    if (!collection) throw new Error('collection is undefined.');
 
                     await this.database.requestIdlePromise();
                     const newestSeq = await getNewestSequence(collection.pouch);
@@ -140,7 +141,8 @@ export class RxBackupState {
                             lastSequence: 0
                         };
                     }
-                    let lastSequence = meta.collectionStates[collectionName].lastSequence;
+                    // tslint:disable-next-line: no-non-null-assertion
+                    let lastSequence = meta.collectionStates[collectionName]!.lastSequence;
 
                     let hasMore = true;
                     while (hasMore && !this.isStopped) {
@@ -152,7 +154,8 @@ export class RxBackupState {
                             include_docs: false
                         });
                         lastSequence = pouchChanges.last_seq;
-                        meta.collectionStates[collectionName].lastSequence = lastSequence;
+                        // tslint:disable-next-line: no-non-null-assertion
+                        meta.collectionStates[collectionName]!.lastSequence = lastSequence;
 
                         const docIds: string[] = pouchChanges.results
                             .filter(doc => {
@@ -207,7 +210,8 @@ export class RxBackupState {
 
                     }
 
-                    meta.collectionStates[collectionName].lastSequence = lastSequence;
+                    // tslint:disable-next-line: no-non-null-assertion
+                    meta.collectionStates[collectionName]!.lastSequence = lastSequence;
                     await setMeta(this.options, meta);
                 })
         );

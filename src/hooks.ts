@@ -75,7 +75,9 @@ export const HOOKS: { [k: string]: any[] } = {
 };
 
 export function runPluginHooks(hookKey: string, obj: any) {
-    HOOKS[hookKey].forEach(fun => fun(obj));
+    const hook = HOOKS[hookKey];
+    if (!hook) throw new Error(`hook is undefined.`);
+    hook.forEach(fun => fun(obj));
 }
 
 
@@ -85,8 +87,10 @@ export function runPluginHooks(hookKey: string, obj: any) {
  * this makes stuff unpredictable.
  */
 export function runAsyncPluginHooks(hookKey: string, obj: any): Promise<any> {
+    const hook = HOOKS[hookKey];
+    if (!hook) throw new Error(`hook is undefined.`);
     return Promise.all(
-        HOOKS[hookKey].map(fun => fun(obj))
+        hook.map(fun => fun(obj))
     );
 }
 
@@ -94,5 +98,7 @@ export function runAsyncPluginHooks(hookKey: string, obj: any): Promise<any> {
  * used in tests to remove hooks
  */
 export function _clearHook(type: string, fun: Function) {
-    HOOKS[type] = HOOKS[type].filter(h => h !== fun);
+    const hook = HOOKS[type];
+    if (!hook) throw new Error(`hook is undefined.`);
+    HOOKS[type] = hook.filter(h => h !== fun);
 }

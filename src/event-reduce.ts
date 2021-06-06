@@ -6,6 +6,7 @@ import {
 } from 'event-reduce-js';
 import type { RxQuery, MangoQuery } from './types';
 import { RxChangeEvent } from './rx-change-event';
+import { newRxTypeError } from './rx-error';
 
 export type EventReduceResultNeg = {
     runFullQueryAgain: true,
@@ -25,7 +26,11 @@ export function getSortFieldsOfQuery<RxDocType>(
     if (!query.sort || query.sort.length === 0) {
         return [primaryKey];
     } else {
-        return query.sort.map(part => Object.keys(part)[0]);
+        return query.sort.map(part => {
+            const field = Object.keys(part)[0];
+            if (field) return field;
+            throw new Error(`A query field is undefined.`);
+        });
     }
 }
 

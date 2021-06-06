@@ -237,7 +237,9 @@ export class RxGraphQLReplicationState {
 
         // this assumes that there will be always only one property in the response
         // is this correct?
-        const data: any[] = result.data[Object.keys(result.data)[0]];
+        const firstKey = Object.keys(result.data)[0];
+        if (!firstKey) throw new Error('result.data does not have any property.');
+        const data: any[] = result.data[firstKey];
         const modified: any[] = (await Promise.all(data
             .map(async (doc: any) => await (this.pull as any).modifier(doc))
         )).filter(doc => !!doc);

@@ -273,7 +273,9 @@ export function runStrategyIfNotNull(
     if (docOrNull === null) {
         return Promise.resolve(null);
     } else {
-        const ret = oldCollection.dataMigrator.migrationStrategies[version](docOrNull, oldCollection);
+        const migrationStrategy = oldCollection.dataMigrator.migrationStrategies[version];
+        if (!migrationStrategy) return Promise.resolve(null);
+        const ret = migrationStrategy(docOrNull, oldCollection);
         const retPromise = toPromise(ret);
         return retPromise;
     }
