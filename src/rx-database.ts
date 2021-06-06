@@ -535,7 +535,7 @@ export async function _ensureStorageTokenExists<Collections = any>(rxDatabase: R
     const storageTokenDoc = await findLocalDocument(rxDatabase.localDocumentsStore, storageTokenDocumentId);
     if (!storageTokenDoc) {
         const storageToken = randomToken(10);
-        await rxDatabase.localDocumentsStore.bulkWrite(false, [{
+        await rxDatabase.localDocumentsStore.bulkWrite([{
             _id: storageTokenDocumentId,
             value: storageToken,
             _attachments: {}

@@ -9,7 +9,6 @@ import type {
     ChangeStreamOptions,
     PreparedQuery,
     RxDocumentData,
-    RxDocumentWriteData,
     RxLocalDocumentData,
     RxLocalStorageBulkWriteResponse,
     RxStorageBulkWriteResponse,
@@ -121,27 +120,10 @@ export interface RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>
      * It must be possible that some document writes succeed
      * and others error.
      * We need this to have a similar behavior as most NoSQL databases.
-     * Local documents always have _id as primary
-     * Local documetns are saved besides the 'normal' documents,
-     * but are not returned in any non-local queries.
+     * Local documents always have _id as primary and cannot have attachments.
      * They can only be queried directly by their primary _id.
      */
     bulkWrite<D = any>(
-        /**
-         * If overwrite is set to true,
-         * the storage instance must ignore
-         * if the document has already a newer revision,
-         * instead save the written data either to the revisions
-         * or as newest revision.
-         * If overwrite is set to false,
-         * the storage instance must throw a 409 conflict
-         * error if there is a newer/equal revision of the document
-         * already stored.
-         *
-         * If it is a RxStorageKeyObjectInstance, the call must
-         * throw on non-local documents.
-         */
-        overwrite: boolean,
         documents: RxLocalDocumentData<D>[]
     ): Promise<
         /**
@@ -159,7 +141,7 @@ export interface RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>
          * of the documents to find.
          */
         ids: string[]
-    ): Promise<Map<string, RxLocalDocumentData<D>>>;
+    ): Promise<Map<string, RxLocalDocumentData<D>>>;    
 }
 
 export interface RxStorageInstance<
@@ -241,7 +223,7 @@ export interface RxStorageInstance<
      */
     bulkAddRevisions(
         documents: RxDocumentData<DocumentData>[]
-    ): Map<string, RxDocumentData<DocumentData>>;
+    ): Promise<void>;
 
     /**
      * Get Multiple documents by their primary value.

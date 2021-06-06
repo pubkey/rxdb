@@ -108,7 +108,6 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
     }
 
     public async bulkWrite<D = any>(
-        overwrite: boolean,
         documents: RxLocalDocumentData<D>[]
     ): Promise<RxLocalStorageBulkWriteResponse<RxLocalDocumentData<D>>> {
         const insertDataById: Map<string, RxLocalDocumentData<D>> = new Map();
@@ -132,11 +131,7 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
             return storeDocumentData;
         });
 
-        const pouchWriteOptions = {
-            new_edits: !overwrite
-        };
-
-        const pouchResult = await this.internals.pouch.bulkDocs(insertDocs, pouchWriteOptions);
+        const pouchResult = await this.internals.pouch.bulkDocs(insertDocs);
         const ret: RxLocalStorageBulkWriteResponse<RxLocalDocumentData<D>> = {
             success: new Map(),
             error: new Map()
@@ -379,7 +374,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
 
     public async bulkAddRevisions(
         documents: RxDocumentData<RxDocType>[]
-    ): Promise<Map<string, RxDocumentData<RxDocType>>> {
+    ): Promise<void> {
         const primaryKey = getPrimary<any>(this.schema);
 
 
@@ -389,16 +384,12 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                 doc
             );
         });
-        console.dir(writeData);
         const pouchResult = await this.internals.pouch.bulkDocs(
             writeData,
             {
                 new_edits: false
             }
         );
-
-        // TODO
-        return new Map() as any;
     }
 
     public async bulkWrite(

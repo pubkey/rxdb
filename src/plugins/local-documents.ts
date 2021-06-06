@@ -215,7 +215,7 @@ const RxLocalDocumentPrototype: any = {
 
         newData._id = this.id;
 
-        return storageInstance.bulkWrite(false, [newData])
+        return storageInstance.bulkWrite([newData])
             .then((res) => {
                 const endTime = now();
                 const docResult = res.success.get(newData._id);
@@ -248,7 +248,7 @@ const RxLocalDocumentPrototype: any = {
             _rev: this._data._rev,
             _attachments: {}
         };
-        return writeSingleLocal(storageInstance, false, writeData)
+        return writeSingleLocal(storageInstance, writeData)
             .then(() => {
                 _getDocCache(this.parent).delete(this.id);
                 const endTime = now();
@@ -346,7 +346,6 @@ function insertLocal(
 
             return writeSingleLocal(
                 _getKeyObjectStorageInstanceByParent(this),
-                false,
                 docData
             ).then(res => {
                 docData._rev = res._rev;

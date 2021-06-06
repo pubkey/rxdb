@@ -108,11 +108,9 @@ export async function writeSingle<RxDocType>(
  */
 export async function writeSingleLocal(
     instance: RxStorageKeyObjectInstance<any, any>,
-    overwrite: boolean,
     document: RxDocumentWriteData<RxLocalDocumentData>
 ): Promise<RxDocumentData<RxLocalDocumentData>> {
     const writeResult = await instance.bulkWrite(
-        overwrite,
         [document]
     );
 

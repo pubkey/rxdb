@@ -72,7 +72,6 @@ export async function setLastPushSequence(
 
     const res = await writeSingleLocal(
         collection.localDocumentsStore,
-        false,
         doc
     );
     return res as any;
@@ -187,7 +186,6 @@ export async function setLastPullDocument(
     if (!localDoc) {
         return writeSingleLocal(
             collection.localDocumentsStore,
-            false,
             {
                 _id,
                 doc,
@@ -198,7 +196,6 @@ export async function setLastPullDocument(
         localDoc.doc = doc;
         return writeSingleLocal(
             collection.localDocumentsStore,
-            false,
             localDoc as any
         );
     }

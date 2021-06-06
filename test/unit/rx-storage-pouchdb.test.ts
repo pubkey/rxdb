@@ -554,7 +554,6 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 );
 
                 const writeResponse = await storageInstance.bulkWrite(
-                    false,
                     [{
                         _id: 'foobar',
                         value: 'barfoo',
@@ -583,11 +582,9 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 }];
 
                 await storageInstance.bulkWrite(
-                    false,
                     writeData
                 );
                 const writeResponse = await storageInstance.bulkWrite(
-                    false,
                     writeData
                 );
 
@@ -615,14 +612,12 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 };
 
                 const firstWriteResult = await storageInstance.bulkWrite(
-                    false,
                     [writeDoc]
                 );
                 const writeDocResult = getFromMapOrThrow(firstWriteResult.success, writeDoc._id);
                 writeDoc._rev = writeDocResult._rev;
                 writeDoc._deleted = true;
                 await storageInstance.bulkWrite(
-                    false,
                     [writeDoc]
                 );
 
@@ -648,7 +643,6 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 };
 
                 await storageInstance.bulkWrite(
-                    false,
                     [writeData]
                 );
 
