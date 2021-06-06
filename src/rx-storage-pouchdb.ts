@@ -377,12 +377,40 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         return query;
     }
 
+    public async bulkAddRevisions(
+        documents: RxDocumentData<RxDocType>[]
+    ): Promise<Map<string, RxDocumentData<RxDocType>>> {
+        const primaryKey = getPrimary<any>(this.schema);
+
+
+        const writeData = documents.map(doc => {
+            return pouchSwapPrimaryToId(
+                primaryKey,
+                doc
+            );
+        });
+        console.dir(writeData);
+        const pouchResult = await this.internals.pouch.bulkDocs(
+            writeData,
+            {
+                new_edits: false
+            }
+        );
+
+        // TODO
+        return new Map() as any;
+    }
+
     public async bulkWrite(
-        overwrite: boolean,
         documentWrites: BulkWriteRow<RxDocType>[]
     ): Promise<
         RxStorageBulkWriteResponse<RxDocType>
     > {
+        // TODO remove this check when rx-storage mirgration is done
+        if (!Array.isArray(documentWrites)) {
+            throw new Error('non an array');
+        }
+
         const primaryKey = getPrimary<any>(this.schema);
         const insertDataById: Map<string, RxDocumentWriteData<RxDocType>> = new Map();
 
@@ -401,18 +429,15 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                 writeData.document
             );
 
-            // if overwrite=false, we have to send the previous revision to pouchdb.
-            if (writeData.previous && !overwrite) {
+            // if previous document exists, we have to send the previous revision to pouchdb.
+            if (writeData.previous) {
                 storeDocumentData._rev = writeData.previous._rev;
             }
 
             return storeDocumentData;
         });
 
-        const pouchWriteOptions = {
-            new_edits: !overwrite
-        };
-        const pouchResult = await this.internals.pouch.bulkDocs(insertDocs, pouchWriteOptions);
+        const pouchResult = await this.internals.pouch.bulkDocs(insertDocs);
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
             success: new Map(),
             error: new Map()

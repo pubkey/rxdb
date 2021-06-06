@@ -83,7 +83,6 @@ export class RxAttachment {
                 const startTime = now();
                 const writeResult: RxDocumentData<any> = await writeSingle(
                     this.doc.collection.storageInstance,
-                    false,
                     {
                         previous: this.doc._data,
                         document: docWriteData
@@ -200,7 +199,6 @@ export async function putAttachment(
             const startTime = now();
             const writeResult = await writeSingle(
                 this.collection.storageInstance,
-                false,
                 {
                     previous: this._data,
                     document: docWriteData

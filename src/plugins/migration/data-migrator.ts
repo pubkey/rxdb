@@ -58,8 +58,7 @@ import { map } from 'rxjs/operators';
 import {
     countAllUndeleted,
     getBatch,
-    getSingleDocument,
-    writeSingle
+    getSingleDocument
 } from '../../rx-storage-helper';
 
 export class DataMigrator {
@@ -439,19 +438,15 @@ export function _migrateDocument(
                 const saveData: WithAttachmentsData<any> = oldCollection.newestCollection._handleToPouch(migrated);
                 saveData._attachments = attachmentsBefore;
 
-                return writeSingle(
-                    oldCollection.newestCollection.storageInstance,
-                    /**
-                     * We need overwrite: true
-                     * because we provide the _rev by our own
-                     * to have deterministic revisions incase the migration
-                     * runs on multiple nodes.
-                     */
-                    true,
-                    {
-                        document: saveData
-                    }
-                ).then(() => {
+                /**
+                 * We need to add as revision
+                 * because we provide the _rev by our own
+                 * to have deterministic revisions incase the migration
+                 * runs on multiple nodes.
+                 */
+                return oldCollection.newestCollection.storageInstance.bulkAddRevisions([
+                    saveData
+                ]).then(() => {
                     action.res = saveData;
                     action.type = 'success';
                     return runAsyncPluginHooks(
@@ -474,7 +469,6 @@ export function _migrateDocument(
             writeDeleted._deleted = true;
 
             return oldCollection.storageInstance.bulkWrite(
-                false,
                 [{
                     previous: _handleToPouch(oldCollection, docData),
                     document: _handleToPouch(oldCollection, writeDeleted)

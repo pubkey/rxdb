@@ -87,11 +87,9 @@ export async function getBatch<DocType>(
  */
 export async function writeSingle<RxDocType>(
     instance: RxStorageInstance<RxDocType, any, any>,
-    overwrite: boolean,
     writeRow: BulkWriteRow<RxDocType>
 ): Promise<RxDocumentData<RxDocType>> {
     const writeResult = await instance.bulkWrite(
-        overwrite,
         [writeRow]
     );
 

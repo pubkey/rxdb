@@ -213,25 +213,14 @@ export interface RxStorageInstance<
     /**
      * Writes multiple non-local documents to the storage instance.
      * The write for each single document is atomic, there
-     * is not transaction arround all documents.
+     * is no transaction arround all documents.
+     * The written documents must be the newest revision of that documents data.
+     * If the previous document is not the current newest revision, a conflict error
+     * must be returned.
      * It must be possible that some document writes succeed
-     * and others error.
-     * We need this to have a similar behavior as most NoSQL databases.
+     * and others error. We need this to have a similar behavior as most NoSQL databases.
      */
     bulkWrite(
-        /**
-         * If overwrite is set to true,
-         * the storage instance must ignore
-         * if the document has already a newer revision,
-         * instead save the written data either to the revisions
-         * or as newest revision.
-         * error if there is a newer/equal revision of the document
-         * already stored. For that we send the previous document data
-         * which is assumed to be the current state by the application.
-         * If that is not true and there is another current state, 
-         * the storage instance must throw a 409 conflict error.
-         */
-        overwrite: boolean,
         documentWrites: BulkWriteRow<DocumentData>[]
     ): Promise<
         /**
@@ -239,6 +228,20 @@ export interface RxStorageInstance<
          */
         RxStorageBulkWriteResponse<DocumentData>
     >;
+
+    /**
+     * Adds revisions of documents to the storage instance.
+     * The revisions do not have to be the newest ones but can also be past
+     * states of the documents.
+     * Adding revisions can never cause conflicts.
+     * 
+     * Notice: When a revisions of a document is added and the storage instance
+     * decides that this is now the newest revision, the changeStream() must emit an event
+     * based on what the previous newest revision of the document was.
+     */
+    bulkAddRevisions(
+        documents: RxDocumentData<DocumentData>[]
+    ): Map<string, RxDocumentData<DocumentData>>;
 
     /**
      * Get Multiple documents by their primary value.

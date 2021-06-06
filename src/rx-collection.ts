@@ -331,7 +331,6 @@ export class RxCollectionBase<
                 const writeResult = await this.database.lockedRun(
                     () => writeSingle(
                         this.storageInstance,
-                        false,
                         toStorageInstance
                     )
                 );
@@ -476,7 +475,7 @@ export class RxCollectionBase<
 
         const startTime = now();
         const results = await this.database.lockedRun(
-            () => this.storageInstance.bulkWrite(false, insertDocs)
+            () => this.storageInstance.bulkWrite(insertDocs)
         );
 
         // create documents
@@ -554,7 +553,7 @@ export class RxCollectionBase<
         const results = await this.database.lockedRun(
             async () => {
                 startTime = now();
-                return this.storageInstance.bulkWrite(false, removeDocs);
+                return this.storageInstance.bulkWrite(removeDocs);
             }
         );
         const endTime = now();

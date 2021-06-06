@@ -148,7 +148,7 @@ function importDumpRxCollection<RxDocType>(
             const writeMe: BulkWriteRow<RxDocType>[] = docs.map(doc => ({
                 document: this._handleToPouch(doc)
             }));
-            return this.storageInstance.bulkWrite(false, writeMe);
+            return this.storageInstance.bulkWrite(writeMe);
         }
     ).then((saveResult) => {
         const endTime = now();

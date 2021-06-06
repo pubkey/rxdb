@@ -160,7 +160,7 @@ export class RxDatabaseBase<
                 document: deletedDoc
             }
         });
-        await this.internalStore.bulkWrite(false, writeData);
+        await this.internalStore.bulkWrite(writeData);
     }
 
     /**
@@ -216,7 +216,7 @@ export class RxDatabaseBase<
         const writeDoc = flatClone(doc);
         writeDoc._deleted = true;
         await this.lockedRun(
-            () => this.internalStore.bulkWrite(false, [{
+            () => this.internalStore.bulkWrite([{
                 document: writeDoc,
                 previous: doc
             }])
@@ -321,7 +321,7 @@ export class RxDatabaseBase<
 
         // make a single call to the pouchdb instance
         if (bulkPutDocs.length > 0) {
-            await this.internalStore.bulkWrite(false, bulkPutDocs);
+            await this.internalStore.bulkWrite(bulkPutDocs);
         }
 
         return ret;
@@ -602,7 +602,6 @@ export function _removeAllOfCollection(
                         return rxDatabase.lockedRun(
                             () => writeSingle(
                                 rxDatabase.internalStore,
-                                false,
                                 {
                                     previous: doc,
                                     document: writeDoc

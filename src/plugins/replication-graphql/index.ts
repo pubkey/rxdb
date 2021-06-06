@@ -414,8 +414,6 @@ export class RxGraphQLReplicationState<RxDocType> {
             }
             doc._rev = newRevision;
 
-            // await this.collection.storageInstance.bulkWrite(true, toPouch);
-
             toPouchDocs.push({
                 doc: doc,
                 deletedValue
@@ -425,15 +423,8 @@ export class RxGraphQLReplicationState<RxDocType> {
         const startTime = now();
         await this.collection.database.lockedRun(
             async () => {
-                const writeData: BulkWriteRow<RxDocType>[] = toPouchDocs
-                    .map(tpd => tpd.doc)
-                    .map(doc => ({
-                        document: this.collection._handleToPouch(doc)
-                    }));
-
-                await this.collection.storageInstance.bulkWrite(
-                    true,
-                    writeData
+                await this.collection.storageInstance.bulkAddRevisions(
+                    toPouchDocs.map(row => this.collection._handleToPouch(row.doc))
                 );
             }
         );
