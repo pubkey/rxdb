@@ -138,7 +138,7 @@ describe('typings.test.js', function () {
                 const code = codeBase + `
                     (async() => {
                         const db: RxDatabase = {} as RxDatabase;
-                        const col: RxCollection = db.foobar;
+                        const col: RxCollection | undefined = db.foobar;
                     })();
                 `;
                 await transpileCode(code);
@@ -147,7 +147,7 @@ describe('typings.test.js', function () {
                 const code = codeBase + `
                     (async() => {
                         const db: RxDatabase = {} as RxDatabase;
-                        const col: RxCollection = db.foobar;
+                        const col: RxCollection | undefined = db.foobar;
                     })();
                 `;
                 await transpileCode(code);
