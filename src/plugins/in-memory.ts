@@ -368,11 +368,14 @@ export function applyChangedDocumentToPouch(
             docs: [transformedDoc]
         }, BULK_DOC_OPTIONS))
         .then(bulkRet => {
-            if (bulkRet[0] && !bulkRet[0].ok) {
-                throw new Error(JSON.stringify(bulkRet[0]));
+            const firstRet = bulkRet[0];
+            if (!firstRet) throw new Error('firstRet is undefined.');
+
+            if (!firstRet.ok) {
+                throw new Error(JSON.stringify(firstRet));
             }
             // set the flag so this does not appear in the own event-stream again
-            const emitFlag = transformedDoc._id + ':' + bulkRet[0]?.rev;
+            const emitFlag = transformedDoc._id + ':' + firstRet.rev;
             rxCollection._doNotEmitSet.add(emitFlag);
 
             // remove from the list later to not have a memory-leak

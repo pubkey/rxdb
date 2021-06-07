@@ -59,7 +59,7 @@ export class RxStoragePouchDbClass implements RxStorage<PouchDBInstance> {
                 },
                 inMemoryFields
             );
-            if (sortedRows[0]?.doc._id === rows[0]?.doc._id) {
+            if (sortedRows[0] && rows[0] && sortedRows[0].doc._id === rows[0].doc._id) {
                 return -1;
             } else {
                 return 1;

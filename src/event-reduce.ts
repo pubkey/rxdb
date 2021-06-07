@@ -6,7 +6,6 @@ import {
 } from 'event-reduce-js';
 import type { RxQuery, MangoQuery } from './types';
 import { RxChangeEvent } from './rx-change-event';
-import { newRxTypeError } from './rx-error';
 
 export type EventReduceResultNeg = {
     runFullQueryAgain: true,
