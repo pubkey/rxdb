@@ -658,8 +658,9 @@ export function createRxDatabase<Collections = { [key: string]: RxCollection }>(
     if (!USED_COMBINATIONS[name]) {
         USED_COMBINATIONS[name] = [];
     }
-    // tslint:disable-next-line: no-non-null-assertion
-    USED_COMBINATIONS[name]!.push(adapter);
+
+    const combination = USED_COMBINATIONS[name];
+    if (combination) combination.push(adapter);
 
     const rxDatabase: RxDatabase<Collections> = new RxDatabaseBase(
         name,

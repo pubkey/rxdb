@@ -141,8 +141,11 @@ export class RxBackupState {
                             lastSequence: 0
                         };
                     }
-                    // tslint:disable-next-line: no-non-null-assertion
-                    let lastSequence = meta.collectionStates[collectionName]!.lastSequence;
+
+                    const state = meta.collectionStates[collectionName];
+
+                    if (!state) throw new Error('state is undefined.');
+                    let lastSequence = state.lastSequence;
 
                     let hasMore = true;
                     while (hasMore && !this.isStopped) {
@@ -154,8 +157,10 @@ export class RxBackupState {
                             include_docs: false
                         });
                         lastSequence = pouchChanges.last_seq;
-                        // tslint:disable-next-line: no-non-null-assertion
-                        meta.collectionStates[collectionName]!.lastSequence = lastSequence;
+
+                        const collectionState = meta.collectionStates[collectionName];
+                        if (!collectionState) throw new Error('collectionState is undefined');
+                        collectionState.lastSequence = lastSequence;
 
                         const docIds: string[] = pouchChanges.results
                             .filter(doc => {
@@ -210,8 +215,9 @@ export class RxBackupState {
 
                     }
 
-                    // tslint:disable-next-line: no-non-null-assertion
-                    meta.collectionStates[collectionName]!.lastSequence = lastSequence;
+                    const targetState = meta.collectionStates[collectionName];
+                    if (!targetState) throw new Error('targetState is undefined');
+                    targetState.lastSequence = lastSequence;
                     await setMeta(this.options, meta);
                 })
         );
