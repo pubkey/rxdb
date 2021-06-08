@@ -191,9 +191,9 @@ config.parallel('leader-election.test.js', () => {
             await AsyncTestUtil.waitUntil(() => count === 1);
 
             // let leader die
-            await dbs
-                .filter(db => db.isLeader())[0]
-                .leaderElector().die();
+            const leader = dbs.filter(db => db.isLeader())[0];
+            assert.ok(leader);
+            await leader.leaderElector().die();
 
             await AsyncTestUtil.waitUntil(() => count === 2);
             await Promise.all(dbs.map(db => db.destroy()));

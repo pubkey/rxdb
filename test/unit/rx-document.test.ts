@@ -165,6 +165,7 @@ config.parallel('rx-document.test.js', () => {
                 const docs = await c.find().exec();
                 assert.ok(docs.length > 1);
                 const first = docs[0];
+                assert.ok(first);
                 await first.remove();
                 const docsAfter = await c.find().exec();
                 docsAfter.map(doc => {
@@ -215,6 +216,7 @@ config.parallel('rx-document.test.js', () => {
                 const docs = await c.find().exec();
                 assert.ok(docs.length > 1);
                 const first = docs[0];
+                assert.ok(first);
 
                 await first.atomicSet('firstName', 'foobar');
 

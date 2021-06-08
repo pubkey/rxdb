@@ -103,6 +103,7 @@ describe('replication.test.js', () => {
                 const docs = await c2.find().exec();
                 assert.strictEqual(docs.length, 1);
 
+                assert.ok(docs[0]);
                 assert.strictEqual(docs[0].get('firstName'), obj.firstName);
 
                 c.database.destroy();
@@ -251,6 +252,7 @@ describe('replication.test.js', () => {
                 const docs = await c.find().exec();
 
                 assert.strictEqual(docs.length, 1);
+                assert.ok(docs[0]);
                 assert.strictEqual(docs[0].firstName, 'foobar');
 
                 c.database.destroy();

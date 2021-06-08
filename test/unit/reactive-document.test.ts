@@ -40,7 +40,8 @@ config.parallel('reactive-document.test.js', () => {
                 const docDataAfter = await doc.$.pipe(first()).toPromise();
 
 
-                const changeEvent: RxChangeEvent = emittedCollection[0];
+                const changeEvent = emittedCollection[0];
+                assert.ok(changeEvent);
                 assert.strictEqual(changeEvent.documentData.firstName, newName);
                 assert.strictEqual(changeEvent.previousData.firstName, oldName);
 

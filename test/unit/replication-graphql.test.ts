@@ -425,16 +425,19 @@ describe('replication-graphql.test.js', () => {
 
                     // edit and remove one
                     const doc1 = docs[0];
+                    assert.ok(doc1);
                     await doc1.atomicSet('age', 99);
                     await doc1.remove();
 
                     // edit one twice
                     const doc2 = docs[1];
+                    assert.ok(doc2);
                     await doc2.atomicSet('age', 66);
                     await doc2.atomicSet('age', 67);
 
                     //  not edited
                     const doc3 = docs[2];
+                    assert.ok(doc3);
 
 
                     const result = await getDocsWithRevisionsFromPouch(
@@ -445,15 +448,18 @@ describe('replication-graphql.test.js', () => {
                     assert.strictEqual(Object.keys(result).length, 3);
 
                     const notEdited = result[doc3.primary];
+                    assert.ok(notEdited);
                     assert.strictEqual(notEdited.revisions.start, 1);
                     assert.strictEqual(notEdited.revisions.ids.length, 1);
 
                     const editedAndRemoved = result[doc1.primary];
+                    assert.ok(editedAndRemoved);
                     assert.strictEqual(editedAndRemoved.revisions.start, 3);
                     assert.strictEqual(editedAndRemoved.revisions.ids.length, 3);
                     assert.strictEqual(editedAndRemoved.deleted, true);
 
                     const editedTwice = result[doc2.primary];
+                    assert.ok(editedTwice);
                     assert.strictEqual(editedTwice.revisions.start, 3);
                     assert.strictEqual(editedTwice.revisions.ids.length, 3);
                     assert.strictEqual(editedTwice.deleted, false);
@@ -489,7 +495,8 @@ describe('replication-graphql.test.js', () => {
                         c,
                         [id]
                     );
-                    assert.ok(result[id].doc);
+                    const r = result[id];
+                    assert.ok(r && r.doc);
                     c.database.destroy();
                 });
             });
@@ -2201,7 +2208,8 @@ describe('replication-graphql.test.js', () => {
                 });
 
                 // first key must be compressed
-                assert.ok(Object.keys(pouchDocs.docs[0])[0].startsWith('|'));
+                const keys = Object.keys(pouchDocs.docs[0]);
+                assert.ok(keys[0] && keys[0].startsWith('|'));
 
                 db.destroy();
             });

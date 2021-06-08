@@ -309,6 +309,7 @@ config.parallel('reactive-query.test.js', () => {
             });
 
             const emitted: any[] = [];
+            assert.ok(db.crawlstate);
             const sub = db.crawlstate
                 .findOne('registry').$
                 .pipe(
@@ -317,6 +318,7 @@ config.parallel('reactive-query.test.js', () => {
                 ).subscribe(data => emitted.push(data));
 
             const emittedOwn = [];
+            assert.ok(db2.crawlstate);
             const sub2 = db2.crawlstate
                 .findOne('registry').$
                 .pipe(
@@ -346,6 +348,7 @@ config.parallel('reactive-query.test.js', () => {
                         state: getData()
                     }))
                     .map(data => {
+                        assert.ok(db2.crawlstate);
                         return db2.crawlstate.atomicUpsert(data);
                     })
             );
@@ -363,7 +366,10 @@ config.parallel('reactive-query.test.js', () => {
                         key: 'registry',
                         state: getData()
                     }))
-                    .map(data => db2.crawlstate.atomicUpsert(data))
+                    .map(data => {
+                        assert.ok(db2.crawlstate);
+                        return db2.crawlstate.atomicUpsert(data);
+                    })
             );
             await AsyncTestUtil.waitUntil(() => {
                 if (!emitted.length) return false;

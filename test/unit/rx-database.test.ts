@@ -442,6 +442,7 @@ config.parallel('rx-database.test.js', () => {
                 let t = 0;
                 while (t < forbidden.length) {
                     const colName = forbidden[t];
+                    assert.ok(colName);
                     await AsyncTestUtil.assertThrows(
                         () => db.collection({
                             name: colName,

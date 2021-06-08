@@ -59,7 +59,7 @@ config.parallel('attachments.test.ts', () => {
                     }))
             );
             assert.strictEqual(attachments.length, 4);
-            assert.ok(attachments[1].id);
+            assert.ok(attachments[1] && attachments[1].id);
             c.database.destroy();
         });
         it('should insert an attachment with a big content', async () => {
@@ -274,6 +274,8 @@ config.parallel('attachments.test.ts', () => {
             const attachments = doc.allAttachments();
             const attachment = attachments[0];
 
+            assert.ok(attachment);
+
             const data = await attachment.getData();
             const dataString = await blobBufferUtil.toString(data);
             assert.deepStrictEqual(dataString, 'foo bar');
@@ -461,6 +463,7 @@ config.parallel('attachments.test.ts', () => {
             const doc2: RxDocument<DocData> = await col2.findOne().exec();
             assert.strictEqual(doc2.allAttachments().length, 1);
             const firstAttachment = doc2.allAttachments()[0];
+            assert.ok(firstAttachment);
             const data = await firstAttachment.getStringData();
             assert.strictEqual(data, 'barfoo');
 
@@ -572,6 +575,7 @@ config.parallel('attachments.test.ts', () => {
                         throw new Error('oldDoc._attachments missing');
                     }
                     const myAttachment = oldDoc._attachments.foobar;
+                    assert.ok(myAttachment);
                     myAttachment.data = await blobBufferUtil.createBlobBuffer(
                         'barfoo2',
                         myAttachment.content_type
@@ -592,6 +596,7 @@ config.parallel('attachments.test.ts', () => {
             const doc2: RxDocument<DocData> = await col2.findOne().exec();
             assert.strictEqual(doc2.allAttachments().length, 1);
             const firstAttachment = doc2.allAttachments()[0];
+            assert.ok(firstAttachment);
             const data = await firstAttachment.getStringData();
             assert.strictEqual(data, 'barfoo2');
 

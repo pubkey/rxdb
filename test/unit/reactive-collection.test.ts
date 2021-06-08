@@ -86,6 +86,8 @@ config.parallel('reactive-collection.test.js', () => {
                 await collection.bulkInsert(docs);
 
                 const changeEvent = emittedCollection[0];
+                assert.ok(changeEvent);
+                assert.ok(docs[0]);
                 assert.strictEqual(changeEvent.operation, 'INSERT');
                 assert.strictEqual(changeEvent.collectionName, 'human');
                 assert.strictEqual(changeEvent.documentId, docs[0].passportId);
@@ -114,6 +116,8 @@ config.parallel('reactive-collection.test.js', () => {
 
                 const changeEvent = emittedCollection[0];
 
+                assert.ok(changeEvent);
+                assert.ok(docList[0]);
                 assert.strictEqual(changeEvent.operation, 'DELETE');
                 assert.strictEqual(changeEvent.collectionName, 'human');
                 assert.strictEqual(changeEvent.documentId, docList[0].primary);

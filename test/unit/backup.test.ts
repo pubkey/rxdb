@@ -98,7 +98,7 @@ describe('backup.test.js', () => {
             );
 
             const meta: BackupMetaFileContent = await getMeta(options);
-            assert.ok(meta.collectionStates.human.lastSequence > 0);
+            assert.ok(meta.collectionStates.human && meta.collectionStates.human.lastSequence > 0);
 
             collection.database.destroy();
         });
@@ -116,6 +116,7 @@ describe('backup.test.js', () => {
             await backupState.awaitInitialBackup();
 
             await waitUntil(() => emitted.length > 0);
+            assert.ok(emitted[0]);
             assert.strictEqual(emitted[0].deleted, false);
 
             collection.database.destroy();

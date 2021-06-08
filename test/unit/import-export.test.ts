@@ -162,6 +162,7 @@ config.parallel('import-export.test.js', () => {
 
                     // try to decrypt first
                     const firstDoc = json.docs[0];
+                    assert.ok(firstDoc);
                     const decrypted: any = emptyCol._crypter._decryptValue(firstDoc.secret);
                     assert.strictEqual(typeof decrypted, 'object');
                     assert.strictEqual(typeof decrypted['name'], 'string');
@@ -172,6 +173,7 @@ config.parallel('import-export.test.js', () => {
                     assert.strictEqual(docs.length, 10);
 
                     const firstDocAfter = docs[0];
+                    assert.ok(firstDocAfter);
                     assert.strictEqual(typeof firstDocAfter.get('secret'), 'object');
                     assert.strictEqual(typeof firstDocAfter.get('secret').name, 'string');
                     assert.strictEqual(typeof firstDocAfter.get('secret').subname, 'string');
@@ -280,6 +282,7 @@ config.parallel('import-export.test.js', () => {
                 assert.strictEqual(json.collections.length, 1);
 
                 const colDump = json.collections[0];
+                assert.ok(colDump);
                 assert.strictEqual(colDump.name, 'human');
                 assert.strictEqual(typeof colDump.schemaHash, 'string');
                 assert.strictEqual(colDump.encrypted, false);
@@ -303,6 +306,7 @@ config.parallel('import-export.test.js', () => {
                     fns.push(col.insert(schemaObjects.encryptedObjectHuman()));
                 await Promise.all(fns);
                 const json = await db.dump();
+                assert.ok(json.collections[0]);
                 assert.strictEqual(json.encrypted, true);
                 assert.strictEqual(typeof json.passwordHash, 'string');
                 assert.strictEqual(json.collections[0].encrypted, true);
@@ -327,6 +331,7 @@ config.parallel('import-export.test.js', () => {
                 );
                 const json = await db.dump(true);
 
+                assert.ok(json.collections[0]);
                 assert.strictEqual(json.encrypted, false);
                 assert.strictEqual(typeof json.passwordHash, 'string');
                 assert.strictEqual(json.collections[0].encrypted, false);
@@ -552,6 +557,7 @@ config.parallel('import-export.test.js', () => {
                     await Promise.all(fns);
 
                     const json = await db.dump();
+                    assert.ok(json.collections[0]);
 
                     // add one with broken schema
                     json.collections[0].docs.push({

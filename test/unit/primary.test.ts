@@ -112,6 +112,7 @@ config.parallel('primary.test.js', () => {
                     const all = await c.pouch.allDocs({
                         include_docs: true
                     });
+                    assert.ok(all.rows[0]);
                     const first = all.rows[0].doc;
                     assert.strictEqual(obj.passportId, first._id);
                     c.database.destroy();
@@ -176,6 +177,7 @@ config.parallel('primary.test.js', () => {
                     }).exec();
                     assert.strictEqual(docsASC.length, 5);
                     assert.strictEqual(docsDESC.length, 5);
+                    assert.ok(docsASC[0]);
                     assert.strictEqual(
                         docsASC[0].firstName,
                         (docsDESC.pop() as any).firstName

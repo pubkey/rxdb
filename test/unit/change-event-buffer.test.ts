@@ -38,6 +38,7 @@ config.parallel('change-event-buffer.test.js', () => {
             const last = schemaObjects.human();
             await col.insert(last);
             const lastBufferEvent = col._changeEventBuffer.buffer[col._changeEventBuffer.buffer.length - 1];
+            assert.ok(lastBufferEvent);
             assert.strictEqual(last.passportId, lastBufferEvent.documentData.passportId);
 
             col.database.destroy();
@@ -101,7 +102,9 @@ config.parallel('change-event-buffer.test.js', () => {
             await col.insert(lastDoc);
 
             const gotIndex: any = col._changeEventBuffer.getArrayIndexByPointer(col._changeEventBuffer.counter);
-            assert.strictEqual(col._changeEventBuffer.buffer[gotIndex].documentData.firstName, lastDoc.firstName);
+            const buffer = col._changeEventBuffer.buffer[gotIndex];
+            assert.ok(buffer);
+            assert.strictEqual(buffer.documentData.firstName, lastDoc.firstName);
 
             col.database.destroy();
         });

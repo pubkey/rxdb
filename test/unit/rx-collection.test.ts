@@ -726,6 +726,7 @@ config.parallel('rx-collection.test.js', () => {
                     }).exec();
 
                     assert.strictEqual(firstFive.length, found.length);
+                    assert.ok(firstFive[0]);
                     const firstId = firstFive[0].passportId;
                     assert.ok(
                         found.map(d => d.passportId).includes(firstId)
@@ -748,6 +749,7 @@ config.parallel('rx-collection.test.js', () => {
                         assert.ok(isRxQuery(query));
                         const docs = await query.exec();
                         assert.strictEqual(docs.length, 20);
+                        assert.ok(docs[0] && docs[1]);
                         assert.ok(docs[0]._data.age >= docs[1]._data.age);
                         c.database.destroy();
                     });
@@ -757,6 +759,7 @@ config.parallel('rx-collection.test.js', () => {
                             age: 'desc'
                         }).exec();
                         assert.strictEqual(docs.length, 20);
+                        assert.ok(docs[0] && docs[1]);
                         assert.ok(docs[0]._data.age >= docs[1]._data.age);
                         c.database.destroy();
                     });
@@ -766,6 +769,7 @@ config.parallel('rx-collection.test.js', () => {
                             age: 'asc'
                         }).exec();
                         assert.strictEqual(docs.length, 20);
+                        assert.ok(docs[0] && docs[1]);
                         assert.ok(docs[0]._data.age <= docs[1]._data.age);
                         c.database.destroy();
                     });
@@ -862,6 +866,7 @@ config.parallel('rx-collection.test.js', () => {
                             age: 'asc'
                         }).exec();
                         const lastDesc = desc[desc.length - 1];
+                        assert.ok(lastDesc && asc[0]);
                         assert.strictEqual(lastDesc._data.passportId, asc[0]._data.passportId);
                         c.database.destroy();
                     });
@@ -893,6 +898,7 @@ config.parallel('rx-collection.test.js', () => {
                         const docs = await query.exec();
 
                         assert.strictEqual(docs.length, 20);
+                        assert.ok(docs[0] && docs[1]);
                         assert.ok(
                             docs[0]._data.age > docs[1]._data.age ||
                             (
@@ -967,7 +973,9 @@ config.parallel('rx-collection.test.js', () => {
                             passportId: 'desc'
                         }).limit(1).exec();
                         last = last[0];
-                        assert.strictEqual(last['_data'].passportId, docs[(docs.length - 1)]._data.passportId);
+                        const lastDoc = docs[(docs.length - 1)];
+                        assert.ok(lastDoc);
+                        assert.strictEqual(last['_data'].passportId, lastDoc._data.passportId);
                         assert.notStrictEqual(firstDoc['_data'].passportId, last['_data'].passportId);
                         c.database.destroy();
                     });
@@ -992,6 +1000,7 @@ config.parallel('rx-collection.test.js', () => {
                         };
                         const docs = await c.find(query).exec();
                         const noFirst = await c.find(query).skip(1).exec();
+                        assert.ok(noFirst[0] && docs[1]);
                         assert.strictEqual(noFirst[0]._data.passportId, docs[1]._data.passportId);
                         c.database.destroy();
                     });
@@ -1003,6 +1012,7 @@ config.parallel('rx-collection.test.js', () => {
                         const noFirst = await c.find().sort({
                             passportId: 'asc'
                         }).skip(1).exec();
+                        assert.ok(noFirst[0] && docs[1]);
                         assert.strictEqual(noFirst[0]._data.passportId, docs[1]._data.passportId);
                         c.database.destroy();
                     });
@@ -1017,6 +1027,7 @@ config.parallel('rx-collection.test.js', () => {
                         const c = await humansCollection.create();
                         const docs = await c.find().exec();
                         const noFirst = await c.find().skip(1).skip(null).exec();
+                        assert.ok(noFirst[0] && docs[1]);
                         assert.notStrictEqual(noFirst[0]._data.passportId, docs[1]._data.passportId);
                         c.database.destroy();
                     });
@@ -1034,6 +1045,7 @@ config.parallel('rx-collection.test.js', () => {
                             .exec();
                         assert.strictEqual(docs.length, 1);
                         const firstDoc = docs[0];
+                        assert.ok(firstDoc);
                         assert.strictEqual(firstDoc.get('firstName'), matchHuman.firstName);
                         c.database.destroy();
                     });
@@ -1048,6 +1060,7 @@ config.parallel('rx-collection.test.js', () => {
 
                         assert.strictEqual(docs.length, 1);
                         const firstDoc = docs[0];
+                        assert.ok(firstDoc);
                         assert.strictEqual(firstDoc.get('firstName'), matchHuman.firstName);
                         c.database.destroy();
                     });
@@ -1062,6 +1075,7 @@ config.parallel('rx-collection.test.js', () => {
 
                         assert.strictEqual(docs.length, 1);
                         const firstDoc = docs[0];
+                        assert.ok(firstDoc);
                         assert.strictEqual(firstDoc.get('passportId'), matchHuman.passportId);
                         c.database.destroy();
                     });
@@ -1675,7 +1689,7 @@ config.parallel('rx-collection.test.js', () => {
                 const ids = docs.map(d => d.primary);
                 const res = await c.findByIds(ids);
 
-                assert.ok(res.has(docs[0].primary));
+                assert.ok(docs[0] && res.has(docs[0].primary));
                 assert.strictEqual(res.size, 5);
 
                 c.database.destroy();
@@ -1713,7 +1727,7 @@ config.parallel('rx-collection.test.js', () => {
             const ids = docs.map(d => d.primary);
             const res = await firstValueFrom(c.findByIds$(ids));
 
-            assert.ok(res.has(docs[0].primary));
+            assert.ok(docs[0] && res.has(docs[0].primary));
             assert.strictEqual(res.size, 5);
 
             c.database.destroy();

@@ -64,10 +64,9 @@ config.parallel('orm.test.js', () => {
                         'insert',
                         'preInsert'
                     ];
-                    let t = 0;
-                    while (t < reserved.length) {
+                    for (const reservedItem of reserved) {
                         const statics: any = {};
-                        statics[reserved[t]] = function () { };
+                        statics[reservedItem] = function () { };
                         await AsyncTestUtil.assertThrows(
                             () => db.collection({
                                 name: 'humans',
@@ -75,9 +74,8 @@ config.parallel('orm.test.js', () => {
                                 statics
                             }),
                             'RxError',
-                            reserved[t]
+                            reservedItem
                         );
-                        t++;
                     }
                     db.destroy();
                 });
@@ -130,6 +128,7 @@ config.parallel('orm.test.js', () => {
                     schema: schemas.human,
                     statics: {
                         foobar: function (obj: any) {
+                            assert.ok(this.insert);
                             return this.insert(obj);
                         }
                     }
@@ -221,10 +220,9 @@ config.parallel('orm.test.js', () => {
                         'get',
                         'toJSON',
                     ];
-                    let t = 0;
-                    while (t < reserved.length) {
+                    for (const reservedItem of reserved) {
                         const methods: any = {};
-                        methods[reserved[t]] = function () { };
+                        methods[reservedItem] = function () { };
                         await AsyncTestUtil.assertThrows(
                             () => db.collection({
                                 name: 'humans',
@@ -232,9 +230,8 @@ config.parallel('orm.test.js', () => {
                                 methods
                             }),
                             'RxError',
-                            reserved[t]
+                            reservedItem
                         );
-                        t++;
                     }
                     db.destroy();
                 });
@@ -249,10 +246,9 @@ config.parallel('orm.test.js', () => {
                         'lastName',
                         'age',
                     ];
-                    let t = 0;
-                    while (t < reserved.length) {
+                    for (const reservedItem of reserved) {
                         const methods: any = {};
-                        methods[reserved[t]] = function () { };
+                        methods[reservedItem] = function () { };
                         await AsyncTestUtil.assertThrows(
                             () => db.collection({
                                 name: 'humans',
@@ -260,9 +256,8 @@ config.parallel('orm.test.js', () => {
                                 methods
                             }),
                             'RxError',
-                            reserved[t]
+                            reservedItem
                         );
-                        t++;
                     }
                     db.destroy();
                 });

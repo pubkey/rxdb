@@ -81,6 +81,7 @@ config.parallel('core.node.js', () => {
                 name: 'humans',
                 schema
             });
+            assert.ok(db.humans);
 
             await db.humans.insert({
                 passportId: 'mypw',

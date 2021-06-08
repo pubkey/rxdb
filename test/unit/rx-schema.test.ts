@@ -431,6 +431,7 @@ config.parallel('rx-schema.test.js', () => {
                 });
                 it('should have indexes human', () => {
                     const schema = createRxSchema(schemas.human);
+                    assert.ok(schema.indexes[0]);
                     assert.strictEqual(schema.indexes[0][0], 'passportId');
                 });
             });

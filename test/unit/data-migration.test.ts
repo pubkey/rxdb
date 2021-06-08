@@ -232,7 +232,7 @@ config.parallel('data-migration.test.js', () => {
                 assert.strictEqual(old.length, 1);
 
                 // ensure it is an OldCollection
-                assert.ok(old[0].newestCollection);
+                assert.ok(old[0] && old[0].newestCollection);
 
                 db.destroy();
                 db2.destroy();
@@ -822,6 +822,7 @@ config.parallel('data-migration.test.js', () => {
                     migrationStrategies
                 }
             });
+            assert.ok(db.foobar && db.foobar2);
 
             await Promise.all([
                 db.foobar.migrate().toPromise(),
