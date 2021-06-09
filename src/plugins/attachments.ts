@@ -2,9 +2,6 @@ import {
     map
 } from 'rxjs/operators';
 import {
-    createUpdateEvent
-} from './../rx-change-event';
-import {
     now,
     blobBufferUtil,
     flatClone
@@ -80,7 +77,6 @@ export class RxAttachment {
                 docWriteData._attachments = flatClone(docWriteData._attachments);
                 delete docWriteData._attachments[this.id];
 
-                const startTime = now();
                 const writeResult: RxDocumentData<any> = await writeSingle(
                     this.doc.collection.storageInstance,
                     {
@@ -91,17 +87,6 @@ export class RxAttachment {
 
                 this.doc._data._rev = writeResult._rev;
                 this.doc._data._attachments = writeResult._attachments;
-
-                const endTime = now();
-                const changeEvent = createUpdateEvent<any>(
-                    this.doc.collection as any,
-                    writeResult,
-                    null,
-                    startTime,
-                    endTime,
-                    this as any
-                );
-                this.doc.$emit(changeEvent);
             });
         return this.doc._atomicQueue;
     }
@@ -196,7 +181,6 @@ export async function putAttachment(
                 data: useData
             };
 
-            const startTime = now();
             const writeResult = await writeSingle(
                 this.collection.storageInstance,
                 {
@@ -214,17 +198,6 @@ export async function putAttachment(
 
             this._data._rev = writeResult._rev;
             this._data._attachments = writeResult._attachments;
-
-            const endTime = now();
-            const changeEvent = createUpdateEvent<any>(
-                this.collection as any,
-                writeResult,
-                null,
-                startTime,
-                endTime,
-                this as any
-            );
-            this.$emit(changeEvent);
 
             return attachment;
         });

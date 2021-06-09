@@ -6,13 +6,14 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
 import {
-    createRxDatabase, randomCouchString, isRxDocument
+    createRxDatabase,
+    randomCouchString,
+    RxChangeEvent
 } from '../../plugins/core';
 import AsyncTestUtil from 'async-test-util';
 import {
     first
 } from 'rxjs/operators';
-import { RxChangeEvent, RxChangeEventDelete } from '../../src/rx-change-event';
 
 config.parallel('reactive-collection.test.js', () => {
     describe('.insert()', () => {
@@ -30,7 +31,6 @@ config.parallel('reactive-collection.test.js', () => {
 
                 c.insert(schemaObjects.human());
                 const changeEvent: RxChangeEvent = await c.$.pipe(first()).toPromise() as any;
-                assert.strictEqual(changeEvent.constructor.name, 'RxChangeEvent');
                 assert.strictEqual(changeEvent.collectionName, colName);
                 assert.strictEqual(typeof changeEvent.documentId, 'string');
                 assert.ok(changeEvent.documentData);
@@ -89,7 +89,6 @@ config.parallel('reactive-collection.test.js', () => {
                 assert.strictEqual(changeEvent.operation, 'INSERT');
                 assert.strictEqual(changeEvent.collectionName, 'human');
                 assert.strictEqual(changeEvent.documentId, docs[0].passportId);
-                assert.ok(isRxDocument(changeEvent.rxDocument));
                 assert.ok(changeEvent.documentData);
 
                 colSub.unsubscribe();
@@ -102,7 +101,7 @@ config.parallel('reactive-collection.test.js', () => {
             it('should fire on bulk remove', async () => {
                 const c = await humansCollection.create(10);
 
-                const emittedCollection: RxChangeEventDelete[] = [];
+                const emittedCollection: RxChangeEvent[] = [];
                 const colSub = c.remove$.subscribe((ce) => {
                     emittedCollection.push(ce);
                 });
@@ -117,9 +116,8 @@ config.parallel('reactive-collection.test.js', () => {
                 assert.strictEqual(changeEvent.operation, 'DELETE');
                 assert.strictEqual(changeEvent.collectionName, 'human');
                 assert.strictEqual(changeEvent.documentId, docList[0].primary);
-                assert.ok(isRxDocument(changeEvent.rxDocument));
-                assert.ok(changeEvent.documentData);
-                assert.ok(changeEvent.previousData);
+                assert.ok(!changeEvent.documentData);
+                assert.ok(changeEvent.previousDocumentData);
 
                 colSub.unsubscribe();
                 c.database.destroy();
@@ -159,6 +157,13 @@ config.parallel('reactive-collection.test.js', () => {
     });
     describe('.insert$', () => {
         it('should only emit inserts', async () => {
+
+
+            console.log('##############');
+            console.log('##############');
+            console.log('##############');
+            console.log('##############');
+
             const c = await humansCollection.create(0);
 
             const emitted: RxChangeEvent[] = [];
@@ -171,7 +176,10 @@ config.parallel('reactive-collection.test.js', () => {
 
             await c.insert(schemaObjects.human());
 
-            await AsyncTestUtil.waitUntil(() => emitted.length === 4);
+            await AsyncTestUtil.waitUntil(() => {
+                console.log('emitted.length: ' + emitted.length);
+                return emitted.length === 4;
+            });
             emitted.forEach(cE => assert.strictEqual(cE.operation, 'INSERT'));
             c.database.destroy();
         });

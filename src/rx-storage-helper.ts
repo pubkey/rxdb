@@ -2,12 +2,18 @@
  * Helper functions for accessing the RxStorage instances.
  */
 
+import { runPluginHooks } from './hooks';
 import { newRxError } from './rx-error';
 import type {
+    BulkWriteLocalRow,
     BulkWriteRow,
+    RxChangeEvent,
+    RxCollection,
+    RxDatabase,
     RxDocumentData,
     RxDocumentWriteData,
     RxLocalDocumentData,
+    RxStorageChangeEvent,
     RxStorageInstance,
     RxStorageKeyObjectInstance
 } from './types';
@@ -106,12 +112,12 @@ export async function writeSingle<RxDocType>(
  * Writes a single local document,
  * throws RxStorageBulkWriteError on failure
  */
-export async function writeSingleLocal(
+export async function writeSingleLocal<DocumentData>(
     instance: RxStorageKeyObjectInstance<any, any>,
-    document: RxDocumentWriteData<RxLocalDocumentData>
+    writeRow: BulkWriteLocalRow<DocumentData>
 ): Promise<RxDocumentData<RxLocalDocumentData>> {
     const writeResult = await instance.bulkWrite(
-        [document]
+        [writeRow]
     );
 
     if (writeResult.error.size > 0) {
@@ -123,10 +129,10 @@ export async function writeSingleLocal(
     }
 }
 
-export async function findLocalDocument(
+export async function findLocalDocument<DocType>(
     instance: RxStorageKeyObjectInstance<any, any>,
     id: string
-): Promise<RxDocumentData<RxLocalDocumentData> | null> {
+): Promise<RxDocumentData<RxLocalDocumentData<DocType>> | null> {
     const docList = await instance.findLocalDocumentsById([id]);
     const doc = docList.get(id);
     if (!doc) {
@@ -145,4 +151,49 @@ export async function getNewestSequence(
         startSequence: 0
     });
     return changesResult.lastSequence;
+}
+
+export function storageChangeEventToRxChangeEvent<DocType>(
+    rxDatabase: RxDatabase,
+    rxCollection: RxCollection,
+    rxStorageChangeEvent: RxStorageChangeEvent<DocType>,
+    isLocal: boolean
+): RxChangeEvent<DocType> {
+
+    let documentData;
+    if (rxStorageChangeEvent.change.operation !== 'DELETE') {
+        const hookParams = {
+            collection: rxCollection,
+            doc: rxStorageChangeEvent.change.doc as any
+        };
+        runPluginHooks('postReadFromInstance', hookParams);
+        documentData = hookParams.doc;
+        documentData = rxCollection._crypter.decrypt(documentData);
+    }
+    let previousDocumentData;
+    if (rxStorageChangeEvent.change.operation !== 'INSERT') {
+        const hookParams = {
+            collection: rxCollection,
+            doc: rxStorageChangeEvent.change.previous as any
+        };
+        runPluginHooks('postReadFromInstance', hookParams);
+        previousDocumentData = hookParams.doc;
+        previousDocumentData = rxCollection._crypter.decrypt(previousDocumentData);
+    }
+
+
+    const ret: RxChangeEvent<DocType> = {
+        documentId: rxStorageChangeEvent.documentId,
+        databaseToken: rxDatabase.token,
+        collectionName: rxCollection.name,
+        startTime: rxStorageChangeEvent.startTime,
+        endTime: rxStorageChangeEvent.endTime,
+        isLocal,
+
+        operation: rxStorageChangeEvent.change.operation,
+        documentData,
+        previousDocumentData
+    };
+
+    return ret;
 }

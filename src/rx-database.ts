@@ -22,7 +22,8 @@ import type {
     RxStorage,
     RxStorageKeyObjectInstance,
     RxStorageInstance,
-    BulkWriteRow
+    BulkWriteRow,
+    RxChangeEvent
 } from './types';
 
 import {
@@ -37,7 +38,7 @@ import {
     getPseudoSchemaForVersion
 } from './rx-schema';
 import {
-    isInstanceOf as isInstanceOfRxChangeEvent,
+    isRxChangeEventIntern,
     RxChangeEventBroadcastChannelData
 } from './rx-change-event';
 import { overwritable } from './overwritable';
@@ -62,9 +63,6 @@ import {
 import {
     createRxCollection
 } from './rx-collection';
-import {
-    RxChangeEvent
-} from './rx-change-event';
 import {
     getRxStoragePouch,
     RxStorageInstancePouch,
@@ -137,10 +135,7 @@ export class RxDatabaseBase<
     public destroyed: boolean = false;
     public collections: Collections;
     private subject: Subject<RxChangeEvent> = new Subject();
-    private observable$: Observable<RxChangeEvent> = this.subject.asObservable()
-        .pipe(
-            filter(cEvent => isInstanceOfRxChangeEvent(cEvent))
-        );
+    private observable$: Observable<RxChangeEvent> = this.subject.asObservable();
     public broadcastChannel?: BroadcastChannel;
     public storageToken?: string;
     public broadcastChannel$?: Subject<RxChangeEvent>;
@@ -190,12 +185,16 @@ export class RxDatabaseBase<
      * MultiInstance -> RxDatabase.$emit -> RxCollection -> RxDatabase
      */
     $emit(changeEvent: RxChangeEvent) {
-        if (!changeEvent) return;
+        console.log('RxDatabase(' + this.token + ').$emit:');
+        console.dir(changeEvent);
 
         // emit into own stream
         this.subject.next(changeEvent);
 
         // write to socket if event was created by this instance
+
+
+
         if (changeEvent.databaseToken === this.token) {
             writeToSocket(this as any, changeEvent);
         }
@@ -532,13 +531,16 @@ function _removeUsedCombination(name: string, adapter: any) {
  */
 export async function _ensureStorageTokenExists<Collections = any>(rxDatabase: RxDatabase<Collections>): Promise<string> {
     const storageTokenDocumentId = 'storageToken';
-    const storageTokenDoc = await findLocalDocument(rxDatabase.localDocumentsStore, storageTokenDocumentId);
+    const storageTokenDoc = await findLocalDocument<{ value: string }>(rxDatabase.localDocumentsStore, storageTokenDocumentId);
     if (!storageTokenDoc) {
         const storageToken = randomToken(10);
         await rxDatabase.localDocumentsStore.bulkWrite([{
-            _id: storageTokenDocumentId,
-            value: storageToken,
-            _attachments: {}
+            document: {
+                _id: storageTokenDocumentId,
+                value: storageToken,
+                _attachments: {}
+
+            }
         }]);
         return storageToken;
     } else {
@@ -553,15 +555,21 @@ export function writeToSocket(
     rxDatabase: RxDatabase,
     changeEvent: RxChangeEvent
 ): Promise<boolean> {
+
+    console.log('write event to socket:');
+    console.dir(changeEvent);
+
     if (
         rxDatabase.multiInstance &&
-        !changeEvent.isIntern() &&
+        !isRxChangeEventIntern(changeEvent) &&
         rxDatabase.broadcastChannel
     ) {
         const sendOverChannel: RxChangeEventBroadcastChannelData = {
-            cE: changeEvent.toJSON(),
+            cE: changeEvent,
             storageToken: rxDatabase.storageToken as string
         };
+        console.log(':sendOverChannel:');
+        console.dir(sendOverChannel);
         return rxDatabase.broadcastChannel
             .postMessage(sendOverChannel)
             .then(() => true);
@@ -623,19 +631,15 @@ function _prepareBroadcastChannel<Collections>(rxDatabase: RxDatabase<Collection
     );
     rxDatabase.broadcastChannel$ = new Subject();
     rxDatabase.broadcastChannel.onmessage = (msg: RxChangeEventBroadcastChannelData) => {
+
+
         if (msg.storageToken !== rxDatabase.storageToken) return; // not same storage-state
         if (msg.cE.databaseToken === rxDatabase.token) return; // same db
-        const changeEvent = new RxChangeEvent(
-            msg.cE.operation,
-            msg.cE.documentId,
-            msg.cE.documentData,
-            msg.cE.databaseToken,
-            msg.cE.collectionName,
-            msg.cE.isLocal,
-            msg.cE.startTime,
-            msg.cE.endTime,
-            msg.cE.previousData
-        );
+        const changeEvent = msg.cE;
+
+        console.log('broadcastChannel(' + rxDatabase.token + ') onmessage:');
+        console.dir(msg);
+
         (rxDatabase.broadcastChannel$ as any).next(changeEvent);
     };
 

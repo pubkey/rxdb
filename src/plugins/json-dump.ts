@@ -20,7 +20,6 @@ import type {
     RxDocumentData,
     BulkWriteRow
 } from '../types';
-import { createInsertEvent } from '../rx-change-event';
 
 function dumpRxDatabase(
     this: RxDatabase,
@@ -113,8 +112,6 @@ function importDumpRxCollection<RxDocType>(
     this: RxCollection<RxDocType>,
     exportedJSON: any
 ): Promise<any> {
-    const primaryPath = this.schema.primaryPath;
-
     // check schemaHash
     if (exportedJSON.schemaHash !== this.schema.hash) {
         throw newRxError('JD2', {
@@ -150,21 +147,7 @@ function importDumpRxCollection<RxDocType>(
             }));
             return this.storageInstance.bulkWrite(writeMe);
         }
-    ).then((saveResult) => {
-        const endTime = now();
-        docs.forEach((doc: any) => {
-            doc._rev = getFromMapOrThrow(saveResult.success, doc[primaryPath])._rev;
-
-            // emit change events
-            const emitEvent = createInsertEvent(
-                this,
-                doc,
-                startTime,
-                endTime
-            );
-            this.$emit(emitEvent);
-        });
-    });
+    );
 }
 
 export const rxdb = true;

@@ -6,9 +6,9 @@ import {
     QueryMatcher,
     SortComparator
 } from 'event-reduce-js';
-import type { RxQuery, MangoQuery } from './types';
-import { RxChangeEvent } from './rx-change-event';
+import type { RxQuery, MangoQuery, RxChangeEvent } from './types';
 import { runPluginHooks } from './hooks';
+import { rxChangeEventToEventReduceChangeEvent } from './rx-change-event';
 
 export type EventReduceResultNeg = {
     runFullQueryAgain: true,
@@ -109,7 +109,7 @@ export function calculateNewResults<RxDocumentType>(
     let changed: boolean = false;
 
     const foundNonOptimizeable = rxChangeEvents.find(cE => {
-        const eventReduceEvent = cE.toEventReduceChangeEvent();
+        const eventReduceEvent = rxChangeEventToEventReduceChangeEvent(cE);
         const actionName: ActionName = calculateActionName({
             queryParams,
             changeEvent: eventReduceEvent,

@@ -2,7 +2,8 @@ import {
     filter,
     startWith,
     mergeMap,
-    shareReplay
+    shareReplay,
+    map
 } from 'rxjs/operators';
 
 import {
@@ -32,14 +33,6 @@ import {
     isInstanceOf as isInstanceOfRxSchema,
     createRxSchema
 } from './rx-schema';
-import {
-    RxChangeEvent,
-    createInsertEvent,
-    RxChangeEventInsert,
-    RxChangeEventUpdate,
-    RxChangeEventDelete,
-    createDeleteEvent
-} from './rx-change-event';
 import {
     newRxError,
     newRxTypeError
@@ -96,7 +89,11 @@ import type {
     RxDocumentWriteData,
     RxStorageInstanceCreationParams,
     RxStorageKeyObjectInstance,
-    BulkWriteRow
+    BulkWriteRow,
+    RxChangeEvent,
+    RxChangeEventInsert,
+    RxChangeEventUpdate,
+    RxChangeEventDelete
 } from './types';
 import type {
     RxGraphQLReplicationState
@@ -115,7 +112,7 @@ import {
     getRxDocumentConstructor
 } from './rx-document-prototype-merge';
 import { RxStorageInstancePouch } from './rx-storage-pouchdb';
-import { getSingleDocument, writeSingle } from './rx-storage-helper';
+import { getSingleDocument, storageChangeEventToRxChangeEvent, writeSingle } from './rx-storage-helper';
 
 const HOOKS_WHEN = ['pre', 'post'];
 const HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
@@ -145,7 +142,7 @@ export class RxCollectionBase<
     /**
      * returns observable
      */
-    get $(): Observable<RxChangeEvent> {
+    get $(): Observable<RxChangeEvent<any>> {
         return this._observable$ as any;
     }
     get insert$(): Observable<RxChangeEventInsert<RxDocumentType>> {
@@ -196,6 +193,7 @@ export class RxCollectionBase<
     public _docCache: DocCache<
         RxDocument<RxDocumentType, OrmMethods>
     > = createDocCache();
+
     public _queryCache: QueryCache = createQueryCache();
     public _crypter: Crypter = {} as Crypter;
     public _observable$?: Observable<any>; // TODO type
@@ -254,6 +252,29 @@ export class RxCollectionBase<
             })
         );
         this._changeEventBuffer = createChangeEventBuffer(this.asRxCollection);
+
+
+        const subDocs = storageInstance.changeStream().pipe(
+            map(storageEvent => storageChangeEventToRxChangeEvent(
+                this.database,
+                this as any,
+                storageEvent,
+                false
+            ))
+        ).subscribe(cE => {
+            this.$emit(cE);
+        });
+        this._subs.push(subDocs);
+        const subLocalDocs = localDocumentsStore.changeStream().pipe(
+            map(storageEvent => storageChangeEventToRxChangeEvent(
+                this.database,
+                this as any,
+                storageEvent,
+                true
+            ))
+        ).subscribe(cE => this.$emit(cE));
+        this._subs.push(subLocalDocs);
+
 
         /**
          * When a write happens to the collection
@@ -322,7 +343,7 @@ export class RxCollectionBase<
         RxDocumentData<RxDocumentType>
     > {
         const toStorageInstance: BulkWriteRow<any> = {
-            previous: this._handleToPouch(flatClone(writeRow.previous)),
+            previous: writeRow.previous ? this._handleToPouch(flatClone(writeRow.previous)) : undefined,
             document: this._handleToPouch(flatClone(writeRow.document))
         };
 
@@ -387,7 +408,7 @@ export class RxCollectionBase<
         return docs;
     }
 
-    $emit(changeEvent: RxChangeEvent) {
+    $emit(changeEvent: RxChangeEvent<any>) {
         return this.database.$emit(changeEvent);
     }
 
@@ -433,15 +454,6 @@ export class RxCollectionBase<
 
         await this._runHooks('post', 'insert', useJson, newDoc);
 
-        // event
-        const emitEvent = createInsertEvent(
-            this as any,
-            insertResult,
-            startTime,
-            endTime,
-            newDoc as any
-        );
-        this.$emit(emitEvent);
         return newDoc as any;
     }
 
@@ -473,7 +485,6 @@ export class RxCollectionBase<
             docsMap.set((d as any)[this.schema.primaryPath] as any, d);
         });
 
-        const startTime = now();
         const results = await this.database.lockedRun(
             () => this.storageInstance.bulkWrite(insertDocs)
         );
@@ -499,18 +510,6 @@ export class RxCollectionBase<
             })
         );
 
-        const endTime = now();
-        // emit events
-        rxDocuments.forEach(doc => {
-            const emitEvent = createInsertEvent(
-                this as any,
-                doc.toJSON(true),
-                startTime,
-                endTime,
-                doc
-            );
-            this.$emit(emitEvent);
-        });
         return {
             success: rxDocuments,
             error: Array.from(results.error.values())
@@ -556,7 +555,6 @@ export class RxCollectionBase<
                 return this.storageInstance.bulkWrite(removeDocs);
             }
         );
-        const endTime = now();
 
         const successIds = Array.from(results.success.keys());
 
@@ -571,20 +569,6 @@ export class RxCollectionBase<
                 );
             })
         );
-
-        // emit change events
-        successIds.forEach(id => {
-            const rxDocument = rxDocumentMap.get(id) as RxDocument<RxDocumentType, OrmMethods>;
-            const emitEvent = createDeleteEvent(
-                this as any,
-                docsMap.get(id) as any,
-                rxDocument._data,
-                startTime,
-                endTime,
-                rxDocument as any,
-            );
-            this.$emit(emitEvent);
-        });
 
         const rxDocuments: any[] = successIds.map(id => {
             return rxDocumentMap.get(id);
@@ -818,15 +802,6 @@ export class RxCollectionBase<
      */
     importDump(_exportedJSON: RxDumpCollectionAny<RxDocumentType>): Promise<void> {
         throw pluginMissing('json-dump');
-    }
-
-    /**
-     * waits for external changes to the database
-     * and ensures they are emitted to the internal RxChangeEvent-Stream
-     * TODO this can be removed by listening to the pull-change-events of the RxReplicationState
-     */
-    watchForChanges() {
-        throw pluginMissing('watch-for-changes');
     }
 
     /**

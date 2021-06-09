@@ -219,7 +219,7 @@ export class RxBackupState {
     public watchForChanges() {
         const collections = Object.values(this.database.collections);
         collections.forEach(collection => {
-            const changes$ = collection.storageInstance.changeStream({});
+            const changes$ = collection.storageInstance.changeStream();
             const sub = changes$.subscribe(() => {
                 this.persistOnce();
             });

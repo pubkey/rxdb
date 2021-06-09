@@ -120,7 +120,7 @@ config.parallel('change-event-buffer.test.js', () => {
                 evs.push(cE);
             });
             assert.strictEqual(evs.length, 10);
-            evs.forEach(cE => assert.strictEqual(cE.constructor.name, 'RxChangeEvent'));
+            evs.forEach(cE => assert.ok(cE.documentId));
 
 
             col.database.destroy();
@@ -152,7 +152,7 @@ config.parallel('change-event-buffer.test.js', () => {
 
             const evs: any[] = col._changeEventBuffer.getFrom(1) as any;
             assert.strictEqual(evs.length, 10);
-            evs.forEach((cE: any) => assert.strictEqual(cE.constructor.name, 'RxChangeEvent'));
+            evs.forEach((cE: any) => assert.ok(cE.documentId));
 
 
             col.database.destroy();

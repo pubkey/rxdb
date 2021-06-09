@@ -23,8 +23,13 @@ import { RxDBValidatePlugin } from '../../plugins/validate';
 addRxPlugin(RxDBValidatePlugin);
 
 import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder';
-import { randomString, waitUntil } from 'async-test-util';
-import { ChangeStreamEvent, RxDocumentData, RxDocumentWriteData } from '../../src/types';
+import { randomString, wait, waitUntil } from 'async-test-util';
+import {
+    RxDocumentData,
+    RxDocumentWriteData,
+    RxLocalDocumentData,
+    RxStorageChangeEvent
+} from '../../src/types';
 addRxPlugin(RxDBQueryBuilderPlugin);
 
 declare type TestDocType = { key: string; value: string; };
@@ -90,7 +95,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 const first = getFromMapOrThrow(writeResponse.error, 'foobar');
                 assert.strictEqual(first.status, 409);
                 assert.strictEqual(first.documentId, 'foobar');
-                assert.ok(first.document);
+                assert.ok(first.writeRow);
 
                 storageInstance.close();
             });
@@ -298,6 +303,42 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
             });
         });
         describe('.changeStream()', () => {
+            it('should emit exactly one event on write', async () => {
+                const storageInstance = await storage.createStorageInstance<TestDocType>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    options: {
+                        auto_compaction: false
+                    }
+                });
+
+                const emitted: RxStorageChangeEvent<TestDocType>[] = [];
+                const sub = storageInstance.changeStream().subscribe(x => {
+                    console.log('emit event:');
+                    console.dir(x);
+                    emitted.push(x);
+                });
+
+                const writeData = {
+                    key: 'foobar',
+                    value: 'one',
+                    _rev: undefined as any,
+                    _deleted: false,
+                    _attachments: {}
+                };
+
+                // insert
+                await storageInstance.bulkWrite([{
+                    document: writeData
+                }]);
+
+                await wait(100);
+                assert.strictEqual(emitted.length, 1);
+
+                sub.unsubscribe();
+                storageInstance.close();
+            });
             it('should emit all events', async () => {
                 const storageInstance = await storage.createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
@@ -308,10 +349,12 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     }
                 });
 
-                const emitted: ChangeStreamEvent<TestDocType>[] = [];
-                const sub = storageInstance.changeStream({
-                    startSequence: 0
-                }).subscribe(x => emitted.push(x));
+                const emitted: RxStorageChangeEvent<TestDocType>[] = [];
+                const sub = storageInstance.changeStream().subscribe(x => {
+                    console.log('emit event:');
+                    console.dir(x);
+                    emitted.push(x);
+                });
 
                 let previous: RxDocumentData<TestDocType> | undefined;
                 const writeData = {
@@ -349,8 +392,11 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 if (!last) {
                     throw new Error('missing last event');
                 }
-                assert.strictEqual(last.operation, 'DELETE');
-                assert.ok(last.previous);
+
+                console.dir(emitted);
+
+                assert.strictEqual(last.change.operation, 'DELETE');
+                assert.ok(last.change.previous);
 
                 sub.unsubscribe();
                 storageInstance.close();
@@ -371,10 +417,8 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 });
 
                 // listen to instance 1
-                const emitted: ChangeStreamEvent<TestDocType>[] = [];
-                const sub = storageInstance1.changeStream({
-                    startSequence: 0
-                }).subscribe(x => emitted.push(x));
+                const emitted: RxStorageChangeEvent<TestDocType>[] = [];
+                const sub = storageInstance1.changeStream().subscribe(x => emitted.push(x));
 
                 // make writes to instance 2
                 const writeData: RxDocumentWriteData<TestDocType> = {
@@ -392,7 +436,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     }
                 );
                 await waitUntil(() => emitted.length === 1);
-                assert.strictEqual(emitted[0].id, writeData.key);
+                assert.strictEqual(emitted[0].change.id, writeData.key);
 
                 // overwrite = true
                 writeData.key = 'barfoo';
@@ -401,11 +445,77 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     [writeData as any]
                 );
                 await waitUntil(() => emitted.length === 2);
-                assert.strictEqual(emitted[1].id, writeData.key);
+                assert.strictEqual(emitted[1].change.id, writeData.key);
 
                 sub.unsubscribe();
                 storageInstance1.close();
                 storageInstance2.close();
+            });
+            it('should emit changes when bulkAddRevisions() is used to set the newest revision', async () => {
+                const storageInstance = await storage.createStorageInstance<TestDocType>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    options: {
+                        auto_compaction: false
+                    }
+                });
+
+                const emitted: RxStorageChangeEvent<TestDocType>[] = [];
+                const sub = storageInstance.changeStream().subscribe(x => emitted.push(x));
+
+
+                const writeData: RxDocumentWriteData<TestDocType> = {
+                    key: 'foobar',
+                    value: 'one',
+                    _deleted: false,
+                    _attachments: {}
+                };
+
+
+                // make normal insert
+                const writeResult = await writeSingle(
+                    storageInstance,
+                    {
+                        document: writeData
+                    }
+                );
+
+                // insert via addRevision
+                await storageInstance.bulkAddRevisions(
+                    [{
+                        key: 'foobar',
+                        value: 'two',
+                        /**
+                         * TODO when _deleted:false,
+                         * pouchdb will emit an event directly from the changes stream,
+                         * but when deleted: true, it does not and we must emit and event by our own.
+                         * This must be reported to the pouchdb repo.
+                         */
+                        _deleted: true,
+                        _rev: '2-a723631364fbfa906c5ffa8203ac9725',
+                        _attachments: {}
+                    }]
+                );
+
+
+                await waitUntil(() => emitted.length === 2);
+
+                console.log(JSON.stringify(emitted, null, 4));
+
+
+                const lastEvent = emitted.pop();
+                if (!lastEvent) {
+                    throw new Error('last event missing');
+                }
+                assert.strictEqual(
+                    lastEvent.change.operation,
+                    'DELETE'
+                );
+
+
+                sub.unsubscribe();
+                storageInstance.close();
             });
         });
         describe('attachments', () => {
@@ -419,10 +529,12 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     }
                 });
 
-                const emitted: ChangeStreamEvent<any>[] = [];
-                const sub = storageInstance.changeStream({
-                    startSequence: 0
-                }).subscribe(x => emitted.push(x));
+                const emitted: RxStorageChangeEvent<any>[] = [];
+                const sub = storageInstance.changeStream().subscribe(x => {
+                    console.log('emitted event:');
+                    console.dir(x);
+                    emitted.push(x);
+                });
 
                 const attachmentData = randomString(20);
                 const dataBlobBuffer = blobBufferUtil.createBlobBuffer(
@@ -474,8 +586,8 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
 
 
                 // test emitted
-                assert.strictEqual(emitted[0].doc._attachments.foo.type, 'text/plain');
-                assert.strictEqual(emitted[0].doc._attachments.foo.length, attachmentData.length);
+                assert.strictEqual(emitted[0].change.doc._attachments.foo.type, 'text/plain');
+                assert.strictEqual(emitted[0].change.doc._attachments.foo.length, attachmentData.length);
 
 
                 const changesResult = await storageInstance.getChanges({
@@ -515,6 +627,25 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                         }
                     }
                 };
+
+                console.log('---- 1');
+                previous = await writeSingle(
+                    storageInstance,
+                    {
+                        previous,
+                        document: writeData
+                    }
+                );
+                console.log('---- 2');
+
+                writeData._attachments = flatClone(previous._attachments) as any;
+                writeData._attachments.bar = {
+                    data: blobBufferUtil.createBlobBuffer(randomString(20), 'text/plain'),
+                    type: 'text/plain'
+                };
+
+                console.log('---- 3');
+
                 previous = await writeSingle(
                     storageInstance,
                     {
@@ -523,18 +654,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     }
                 );
 
-                writeData._attachments = flatClone(previous._attachments) as any;
-                writeData._attachments.bar = {
-                    data: blobBufferUtil.createBlobBuffer(randomString(20), 'text/plain'),
-                    type: 'text/plain'
-                };
-                previous = await writeSingle(
-                    storageInstance,
-                    {
-                        previous,
-                        document: writeData
-                    }
-                );
+                console.log('---- 4');
 
                 assert.strictEqual(Object.keys(previous._attachments).length, 2);
 
@@ -553,9 +673,11 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
 
                 const writeResponse = await storageInstance.bulkWrite(
                     [{
-                        _id: 'foobar',
-                        value: 'barfoo',
-                        _attachments: {}
+                        document: {
+                            _id: 'foobar',
+                            value: 'barfoo',
+                            _attachments: {}
+                        }
                     }]
                 );
 
@@ -574,9 +696,11 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 );
 
                 const writeData = [{
-                    _id: 'foobar',
-                    value: 'barfoo',
-                    _attachments: {}
+                    document: {
+                        _id: 'foobar',
+                        value: 'barfoo',
+                        _attachments: {}
+                    }
                 }];
 
                 await storageInstance.bulkWrite(
@@ -590,7 +714,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 const first = getFromMapOrThrow(writeResponse.error, 'foobar');
                 assert.strictEqual(first.status, 409);
                 assert.strictEqual(first.documentId, 'foobar');
-                assert.ok(first.document);
+                assert.ok(first.writeRow.document);
 
                 storageInstance.close();
             });
@@ -610,13 +734,17 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 };
 
                 const firstWriteResult = await storageInstance.bulkWrite(
-                    [writeDoc]
+                    [{
+                        document: writeDoc
+                    }]
                 );
                 const writeDocResult = getFromMapOrThrow(firstWriteResult.success, writeDoc._id);
                 writeDoc._rev = writeDocResult._rev;
                 writeDoc._deleted = true;
                 await storageInstance.bulkWrite(
-                    [writeDoc]
+                    [{
+                        document: writeDoc
+                    }]
                 );
 
                 // should not find the document
@@ -641,7 +769,9 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 };
 
                 await storageInstance.bulkWrite(
-                    [writeData]
+                    [{
+                        document: writeData
+                    }]
                 );
 
                 const found = await storageInstance.findLocalDocumentsById([writeData._id]);
@@ -651,6 +781,100 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     writeData.value
                 );
 
+                storageInstance.close();
+            });
+        });
+        describe('.changeStream()', () => {
+            it('should emit exactly one event on write', async () => {
+                const storageInstance = await storage.createKeyObjectStorageInstance(
+                    randomCouchString(12),
+                    randomCouchString(12),
+                    {}
+                );
+
+                const emitted: RxStorageChangeEvent<RxLocalDocumentData>[] = [];
+                const sub = storageInstance.changeStream().subscribe(x => {
+                    console.log('emit event:');
+                    console.dir(x);
+                    emitted.push(x);
+                });
+
+                const writeData = {
+                    _id: 'foobar',
+                    value: 'one',
+                    _rev: undefined as any,
+                    _deleted: false,
+                    _attachments: {}
+                };
+
+                // insert
+                await storageInstance.bulkWrite([{
+                    document: writeData
+                }]);
+
+                await wait(100);
+                assert.strictEqual(emitted.length, 1);
+
+                sub.unsubscribe();
+                storageInstance.close();
+            });
+            it('should emit all events', async () => {
+                const storageInstance = await storage.createKeyObjectStorageInstance(
+                    randomCouchString(12),
+                    randomCouchString(12),
+                    {}
+                );
+
+                const emitted: RxStorageChangeEvent<RxLocalDocumentData>[] = [];
+                const sub = storageInstance.changeStream().subscribe(x => {
+                    console.log('emit event:');
+                    console.dir(x);
+                    emitted.push(x);
+                });
+
+                let previous: RxLocalDocumentData | undefined;
+                const writeData = {
+                    _id: 'foobar',
+                    value: 'one',
+                    _rev: undefined as any,
+                    _deleted: false,
+                    _attachments: {}
+                };
+
+                // insert
+                const firstWriteResult = await storageInstance.bulkWrite([{
+                    previous,
+                    document: writeData
+                }]);
+                previous = getFromMapOrThrow(firstWriteResult.success, writeData._id);
+
+                // update
+                const updateResult = await storageInstance.bulkWrite([{
+                    previous,
+                    document: writeData
+                }]);
+                previous = getFromMapOrThrow(updateResult.success, writeData._id);
+
+                // delete
+                writeData._deleted = true;
+                await storageInstance.bulkWrite([{
+                    previous,
+                    document: writeData
+                }]);
+
+                await waitUntil(() => emitted.length === 3);
+
+                const last = lastOfArray(emitted);
+                if (!last) {
+                    throw new Error('missing last event');
+                }
+
+                console.dir(emitted);
+
+                assert.strictEqual(last.change.operation, 'DELETE');
+                assert.ok(last.change.previous);
+
+                sub.unsubscribe();
                 storageInstance.close();
             });
         });

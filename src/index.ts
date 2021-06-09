@@ -30,9 +30,6 @@ addRxPlugin(RxDBEncryptionPlugin);
 import { RxDBUpdatePlugin } from './plugins/update';
 addRxPlugin(RxDBUpdatePlugin);
 
-import { RxDBWatchForChangesPlugin } from './plugins/watch-for-changes';
-addRxPlugin(RxDBWatchForChangesPlugin);
-
 import { RxDBReplicationPlugin } from './plugins/replication';
 addRxPlugin(RxDBReplicationPlugin);
 

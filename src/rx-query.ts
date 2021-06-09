@@ -11,10 +11,6 @@ import {
     tap
 } from 'rxjs/operators';
 import {
-    massageSelector,
-    filterInMemoryFields
-} from 'pouchdb-selector-core';
-import {
     sortObject,
     stringifyFilter,
     pluginMissing,
@@ -38,13 +34,13 @@ import type {
     MangoQuery,
     MangoQuerySortPart,
     MangoQuerySelector,
-    PreparedQuery
+    PreparedQuery,
+    RxChangeEvent
 } from './types';
 
 import {
     createRxDocuments
 } from './rx-document-prototype-merge';
-import type { RxChangeEvent } from './rx-change-event';
 import { calculateNewResults } from './event-reduce';
 import { triggerCacheReplacement } from './query-cache';
 import type { QueryMatcher } from 'event-reduce-js';
@@ -182,6 +178,11 @@ export class RxQueryBase<
      */
     _setResultData(newResultData: any[]): RxDocument[] {
         this._resultsData = newResultData;
+
+
+        console.log('RxQuery: new results data:');
+        console.dir(newResultData);
+
         const docs = createRxDocuments(
             this.collection,
             this._resultsData
@@ -500,11 +501,11 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
              * we have to filter out the events that happend before the read has started
              * so that we do not fill event-reduce with the wrong data
              */
-            missedChangeEvents = missedChangeEvents.filter((cE: RxChangeEvent) => {
+            missedChangeEvents = missedChangeEvents.filter((cE: RxChangeEvent<any>) => {
                 return !cE.startTime || cE.startTime > rxQuery._lastExecStart;
             });
 
-            const runChangeEvents: RxChangeEvent[] = ((rxQuery as any).collection as RxCollection)
+            const runChangeEvents: RxChangeEvent<any>[] = ((rxQuery as any).collection as RxCollection)
                 ._changeEventBuffer
                 .reduceByLastOfDoc(missedChangeEvents);
 

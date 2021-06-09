@@ -1,17 +1,19 @@
 import type {
     SortComparator,
-    QueryMatcher
+    QueryMatcher,
+    ChangeEvent
 } from 'event-reduce-js';
 import type {
+    BulkWriteLocalRow,
     BulkWriteRow,
     ChangeStreamEvent,
     ChangeStreamOnceOptions,
-    ChangeStreamOptions,
     PreparedQuery,
     RxDocumentData,
     RxLocalDocumentData,
     RxLocalStorageBulkWriteResponse,
     RxStorageBulkWriteResponse,
+    RxStorageChangeEvent,
     RxStorageInstanceCreationParams,
     RxStorageQueryResult
 } from './rx-storage';
@@ -124,12 +126,12 @@ export interface RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>
      * They can only be queried directly by their primary _id.
      */
     bulkWrite<D = any>(
-        documents: RxLocalDocumentData<D>[]
+        documentWrites: BulkWriteLocalRow<D>[]
     ): Promise<
         /**
          * returns the response, splitted into success and error lists.
          */
-        RxLocalStorageBulkWriteResponse<RxLocalDocumentData<D>>
+        RxLocalStorageBulkWriteResponse<D>
     >;
 
     /**
@@ -141,7 +143,12 @@ export interface RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>
          * of the documents to find.
          */
         ids: string[]
-    ): Promise<Map<string, RxLocalDocumentData<D>>>;    
+    ): Promise<Map<string, RxLocalDocumentData<D>>>;
+
+    /**
+     * Emits all changes to the local documents.
+     */
+    changeStream(): Observable<RxStorageChangeEvent<RxLocalDocumentData>>;
 }
 
 export interface RxStorageInstance<
@@ -289,7 +296,7 @@ export interface RxStorageInstance<
     getChanges(
         options: ChangeStreamOnceOptions
     ): Promise<{
-        changes: ChangeStreamEvent<DocumentData>[];
+        changes: ChangeStreamEvent<RxDocumentData<DocumentData>>[];
         /**
          * Bhe last sequence number is returned in a separate field
          * because the storage instance might have left out some events
@@ -305,7 +312,5 @@ export interface RxStorageInstance<
      * storage instance.
      * Do not forget to unsubscribe.
      */
-    changeStream(
-        options: ChangeStreamOptions
-    ): Observable<ChangeStreamEvent<DocumentData>>;
+    changeStream(): Observable<RxStorageChangeEvent<RxDocumentData<DocumentData>>>;
 }

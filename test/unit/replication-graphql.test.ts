@@ -138,8 +138,11 @@ describe('replication-graphql.test.js', () => {
                 server.close();
             });
             it('server.setDocument()', async () => {
-                const server = await SpawnServer.spawn();
+                const server = await SpawnServer.spawn<WithDeleted<HumanWithTimestampDocumentType>>();
                 const doc = getTestData(1).pop();
+                if (!doc) {
+                    throw new Error('missing doc');
+                }
                 const res = await server.setDocument(doc);
                 assert.strictEqual(res.data.setHuman.id, doc.id);
                 server.close();
@@ -872,6 +875,9 @@ describe('replication-graphql.test.js', () => {
 
                 // add document & trigger pull
                 const doc = getTestData(1).pop();
+                if (!doc) {
+                    throw new Error('doc missing');
+                }
                 await server.setDocument(doc);
                 await replicationState.run();
 
@@ -903,6 +909,9 @@ describe('replication-graphql.test.js', () => {
 
                 // add document & trigger pull
                 const doc = getTestData(1).pop();
+                if (!doc) {
+                    throw new Error('doc missing');
+                }
                 await server.setDocument(doc);
 
                 await AsyncTestUtil.waitUntil(async () => {
@@ -914,7 +923,9 @@ describe('replication-graphql.test.js', () => {
                 c.database.destroy();
             });
             it('should overwrite the local doc if the remote gets deleted', async () => {
-                const testData = getTestData(batchSize);
+                const amount = 3;
+
+                const testData = getTestData(amount);
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(0),
                     SpawnServer.spawn(testData)
@@ -931,25 +942,43 @@ describe('replication-graphql.test.js', () => {
                 await replicationState.awaitInitialReplication();
 
                 const docs = await c.find().exec();
-                assert.strictEqual(docs.length, batchSize);
+                assert.strictEqual(docs.length, amount);
+                await wait(250);
 
                 const firstDoc = AsyncTestUtil.clone(testData[0]);
                 firstDoc.deleted = true;
 
+                console.log('# set doc to deleted:');
+                console.dir(firstDoc);
                 await server.setDocument(firstDoc);
+                console.log('### run replication once');
                 await replicationState.run();
 
                 const docs2 = await c.find().exec();
-                assert.strictEqual(docs2.length, batchSize - 1);
+
+                console.dir(docs2.map(d => d.toJSON()));
+
+                assert.strictEqual(docs2.length, amount - 1);
 
                 server.close();
                 c.database.destroy();
             });
-            it('should overwrite the local doc if it was deleted locally', async () => {
+            it('should overwrite the local doc if it was deleted locally before synced from the server', async () => {
+
+                console.log('##################');
+                console.log('##################');
+                console.log('##################');
+                console.log('##################');
+                console.log('##################');
+
+
                 const c = await humansCollection.createHumanWithTimestamp(0);
                 const localDoc: any = schemaObjects.humanWithTimestamp();
                 const rxDoc = await c.insert(localDoc);
                 await rxDoc.remove();
+
+
+
 
                 const docs = await c.find().exec();
                 assert.strictEqual(docs.length, 0);
@@ -965,6 +994,11 @@ describe('replication-graphql.test.js', () => {
                 });
                 localDoc['deleted'] = false;
                 await server.setDocument(localDoc);
+
+                console.log('-----');
+                console.log('-----');
+                console.log('-----');
+                console.log('-----');
                 await replicationState.run();
 
                 const docsAfter = await c.find().exec();
@@ -2132,6 +2166,12 @@ describe('replication-graphql.test.js', () => {
                 db.destroy();
             });
             it('#1812 updates fail when graphql is enabled', async () => {
+
+                console.log('#####################');
+                console.log('#####################');
+                console.log('#####################');
+                console.log('#####################');
+
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
                     adapter: 'memory',
@@ -2144,8 +2184,13 @@ describe('replication-graphql.test.js', () => {
                     name: 'humans',
                     schema
                 });
+                console.log('---- 0');
+
                 const server = await SpawnServer.spawn();
                 assert.strictEqual(server.getDocuments().length, 0);
+
+
+                console.log('---- 1');
 
                 // start live replication
                 const replicationState = collection.syncGraphQL({

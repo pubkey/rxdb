@@ -410,9 +410,6 @@ export function getFromMapOrThrow<K, V>(map: Map<K, V>, key: K): V {
     return val;
 }
 
-
-
-
 export const blobBufferUtil = {
     /**
      * depending if we are on node or browser,

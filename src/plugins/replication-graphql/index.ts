@@ -40,11 +40,7 @@ import {
     getChangesSinceLastPushSequence
 } from './crawling-checkpoint';
 
-import { RxDBWatchForChangesPlugin } from '../watch-for-changes';
 import { RxDBLeaderElectionPlugin } from '../leader-election';
-import {
-    changeEventfromPouchChange
-} from '../../rx-change-event';
 import {
     overwritable
 } from '../../overwritable';
@@ -56,14 +52,9 @@ import type {
     RxDocumentData,
     BulkWriteRow
 } from '../../types';
+import { getDocumentDataOfRxChangeEvent } from '../../rx-change-event';
 
 addRxPlugin(RxDBLeaderElectionPlugin);
-
-/**
- * add the watch-for-changes-plugin
- * so pouchdb will emit events when something gets written to it
- */
-addRxPlugin(RxDBWatchForChangesPlugin);
 
 
 export class RxGraphQLReplicationState<RxDocType> {
@@ -215,6 +206,10 @@ export class RxGraphQLReplicationState<RxDocType> {
 
         const latestDocument = await getLastPullDocument(this.collection, this.endpointHash);
         const latestDocumentData = latestDocument ? latestDocument : null;
+
+        console.log('runPull from latest doc:');
+        console.dir(latestDocument);
+
         const pullGraphQL = await this.pull.queryBuilder(latestDocumentData);
 
         let result;
@@ -420,7 +415,6 @@ export class RxGraphQLReplicationState<RxDocType> {
             });
         }
 
-        const startTime = now();
         await this.collection.database.lockedRun(
             async () => {
                 await this.collection.storageInstance.bulkAddRevisions(
@@ -428,32 +422,6 @@ export class RxGraphQLReplicationState<RxDocType> {
                 );
             }
         );
-        const endTime = now();
-
-        /**
-         * because bulkDocs with new_edits: false
-         * does not stream changes to the pouchdb,
-         * we create the event and emit it,
-         * so other instances get informed about it
-         */
-        for (const tpd of toPouchDocs) {
-            const originalDoc = flatClone(tpd.doc);
-
-            if (tpd.deletedValue) {
-                originalDoc._deleted = tpd.deletedValue;
-            } else {
-                delete originalDoc._deleted;
-            }
-
-            const cE = changeEventfromPouchChange(
-                originalDoc,
-                this.collection,
-                startTime,
-                endTime,
-                false
-            );
-            this.collection.$emit(cE);
-        }
 
         return true;
     }
@@ -499,9 +467,6 @@ export function syncGraphQL(
     if (push) {
         if (!push.modifier) push.modifier = DEFAULT_MODIFIER;
     }
-
-    // ensure the collection is listening to plain-pouchdb writes
-    collection.watchForChanges();
 
     const replicationState = new RxGraphQLReplicationState(
         collection,
@@ -556,8 +521,11 @@ export function syncGraphQL(
                  * does not emit events or stucks
                  */
                 const changeEventsSub = collection.$.subscribe(changeEvent => {
-                    if (replicationState.isStopped()) return;
-                    const rev = changeEvent.documentData._rev;
+                    if (replicationState.isStopped()) {
+                        return;
+                    }
+                    const doc = getDocumentDataOfRxChangeEvent(changeEvent);
+                    const rev = doc._rev;
                     if (
                         rev &&
                         !wasRevisionfromPullReplication(

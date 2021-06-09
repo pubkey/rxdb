@@ -62,10 +62,6 @@ export {
 } from './rx-schema';
 
 export {
-    RxChangeEvent
-} from './rx-change-event';
-
-export {
     getRxStoragePouch,
     getPouchLocation,
     RxStoragePouch,

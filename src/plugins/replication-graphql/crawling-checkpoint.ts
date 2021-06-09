@@ -4,12 +4,14 @@ import {
 } from './helper';
 import type {
     RxCollection,
-    ChangeStreamEvent
+    ChangeStreamEvent,
+    RxLocalDocumentData
 } from '../../types';
 import {
     findLocalDocument,
     writeSingleLocal
 } from '../../rx-storage-helper';
+import { flatClone } from '../../util';
 
 /**
  * when the replication starts,
@@ -39,7 +41,7 @@ export async function getLastPushSequence(
     collection: RxCollection,
     endpointHash: string
 ): Promise<number> {
-    const doc = await findLocalDocument(
+    const doc = await findLocalDocument<CheckpointDoc>(
         collection.localDocumentsStore,
         pushSequenceId(endpointHash)
     );
@@ -50,31 +52,47 @@ export async function getLastPushSequence(
     }
 }
 
+declare type CheckpointDoc = { _id: string; value: number; };
+
 export async function setLastPushSequence(
     collection: RxCollection,
     endpointHash: string,
     sequence: number
-): Promise<{ _id: string; value: number; _rev: string }> {
+): Promise<CheckpointDoc> {
     const _id = pushSequenceId(endpointHash);
 
-    let doc: any = await findLocalDocument(
+    const doc = await findLocalDocument<CheckpointDoc>(
         collection.localDocumentsStore,
         _id
     );
     if (!doc) {
-        doc = {
-            _id,
-            value: sequence
-        };
+        const res = await writeSingleLocal<CheckpointDoc>(
+            collection.localDocumentsStore,
+            {
+                document: {
+                    _id,
+                    value: sequence,
+                    _attachments: {}
+                }
+            }
+        );
+        return res as any;
     } else {
-        doc.value = sequence;
+        const newDoc = flatClone(doc);
+        newDoc.value = sequence;
+        const res = await writeSingleLocal<CheckpointDoc>(
+            collection.localDocumentsStore,
+            {
+                previous: doc,
+                document: {
+                    _id,
+                    value: sequence,
+                    _attachments: {}
+                }
+            }
+        );
+        return res as any;
     }
-
-    const res = await writeSingleLocal(
-        collection.localDocumentsStore,
-        doc
-    );
-    return res as any;
 }
 
 
@@ -160,7 +178,7 @@ export async function getLastPullDocument(
     collection: RxCollection,
     endpointHash: string
 ) {
-    const localDoc = await findLocalDocument(
+    const localDoc = await findLocalDocument<any>(
         collection.localDocumentsStore,
         pullLastDocumentId(endpointHash)
     );
@@ -178,7 +196,7 @@ export async function setLastPullDocument(
 ): Promise<{ _id: string }> {
     const _id = pullLastDocumentId(endpointHash);
 
-    const localDoc = await findLocalDocument(
+    const localDoc: RxLocalDocumentData = await findLocalDocument<any>(
         collection.localDocumentsStore,
         _id
     );
@@ -187,16 +205,22 @@ export async function setLastPullDocument(
         return writeSingleLocal(
             collection.localDocumentsStore,
             {
-                _id,
-                doc,
-                _attachments: {}
+                document: {
+                    _id,
+                    doc,
+                    _attachments: {}
+                }
             }
         );
     } else {
-        localDoc.doc = doc;
+        const newDoc = flatClone(localDoc);
+        newDoc.doc = doc;
         return writeSingleLocal(
             collection.localDocumentsStore,
-            localDoc as any
+            {
+                previous: localDoc,
+                document: newDoc
+            }
         );
     }
 }

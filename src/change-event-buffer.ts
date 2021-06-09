@@ -4,36 +4,37 @@
 import {
     Subscription
 } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import type {
+    RxChangeEvent,
     RxCollection
 } from './types';
-import {
-    RxChangeEvent
-} from './rx-change-event';
 
 export class ChangeEventBuffer {
     private subs: Subscription[] = [];
     public limit: number = 100;
     public counter: number = 0;
     private eventCounterMap: WeakMap<
-        RxChangeEvent, number
+        RxChangeEvent<any>, number
     > = new WeakMap();
 
     /**
      * array with changeEvents
      * starts with oldest known event, ends with newest
      */
-    public buffer: RxChangeEvent[] = [];
+    public buffer: RxChangeEvent<any>[] = [];
 
     constructor(
         public collection: RxCollection
     ) {
         this.subs.push(
-            this.collection.$.subscribe((cE: any) => this._handleChangeEvent(cE))
+            this.collection.$.pipe(
+                filter(cE => !cE.isLocal)
+            ).subscribe((cE: any) => this._handleChangeEvent(cE))
         );
     }
 
-    _handleChangeEvent(changeEvent: RxChangeEvent) {
+    _handleChangeEvent(changeEvent: RxChangeEvent<any>) {
         this.counter++;
         this.buffer.push(changeEvent);
         this.eventCounterMap.set(changeEvent, this.counter);
@@ -62,7 +63,7 @@ export class ChangeEventBuffer {
      * get all changeEvents which came in later than the pointer-event
      * @return array with change-events. Iif null, pointer out of bounds
      */
-    getFrom(pointer: number): RxChangeEvent[] | null {
+    getFrom(pointer: number): RxChangeEvent<any>[] | null {
         const ret = [];
         let currentIndex = this.getArrayIndexByPointer(pointer);
         if (currentIndex === null) // out of bounds
@@ -93,7 +94,7 @@ export class ChangeEventBuffer {
      * only the last operation has to be checked to calculate the new state
      * this function reduces the events to the last ChangeEvent of each doc
      */
-    reduceByLastOfDoc(changeEvents: RxChangeEvent[]): RxChangeEvent[] {
+    reduceByLastOfDoc(changeEvents: RxChangeEvent<any>[]): RxChangeEvent<any>[] {
         return changeEvents.slice(0);
         // TODO the old implementation was wrong
         // because it did not correctly reassigned the previousData of the changeevents
@@ -108,6 +109,7 @@ export class ChangeEventBuffer {
     /**
      * use this to check if a change has already been handled
      * @returns true if change with revision exists
+     * TODO only used in the in-memory plugin, we should move it there.
      *
      */
     hasChangeWithRevision(revision: string): boolean {
@@ -115,8 +117,10 @@ export class ChangeEventBuffer {
         let t = this.buffer.length;
         while (t > 0) {
             t--;
-            const cE = this.buffer[t];
-            if (cE.documentData && cE.documentData._rev === revision) return true;
+            const cE: any = this.buffer[t];
+            if (cE.documentData && cE.documentData._rev === revision) {
+                return true;
+            }
         }
         return false;
     }

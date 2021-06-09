@@ -6,6 +6,7 @@ Breaking:
   - `RxDocument.putAttachment()` no longer supports string as data, only `Blob` or `Buffer`
   - Pouchdb plugins are not longer added via `addRxPlugin()` but `addPouchPlugin()`. (RxDB plugins are still added via `addRxPlugin`)
   - Removed plugin hook `preCreatePouchDb`
+  - Removed the `watch-for-changes` plugin, this is now directly integrated into the pouchdb `RxStorage`
 
 ### 9.20.0 (15 May 2021)
 

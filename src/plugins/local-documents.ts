@@ -11,9 +11,6 @@ import {
     basePrototype
 } from '../rx-document';
 import {
-    RxChangeEvent
-} from '../rx-change-event';
-import {
     createDocCache
 } from '../doc-cache';
 import {
@@ -28,6 +25,7 @@ import {
 } from '../util';
 
 import type {
+    RxChangeEvent,
     RxCollection,
     RxDatabase,
     RxDocument,
@@ -52,7 +50,6 @@ import {
     mergeMap
 } from 'rxjs/operators';
 import { Observable } from 'rxjs';
-import { POUCHDB_LOCAL_PREFIX } from '../rx-storage-pouchdb';
 import {
     findLocalDocument,
     writeSingleLocal
@@ -73,12 +70,18 @@ const _getChangeSub = (parent: any) => {
     if (!CHANGE_SUB_BY_PARENT.has(parent)) {
         const sub = parent.$
             .pipe(
-                filter(cE => (cE as RxChangeEvent).isLocal)
+                filter(cE => (cE as RxChangeEvent<any>).isLocal)
             )
-            .subscribe((cE: RxChangeEvent) => {
+            .subscribe((cE: RxChangeEvent<any>) => {
                 const docCache = _getDocCache(parent);
                 const doc = docCache.get(cE.documentId);
-                if (doc) doc._handleChangeEvent(cE);
+
+                console.log('process local change:');
+                console.dir(cE);
+
+                if (doc) {
+                    doc._handleChangeEvent(cE);
+                }
             });
         parent._subs.push(sub);
         CHANGE_SUB_BY_PARENT.set(
@@ -109,12 +112,6 @@ function _getKeyObjectStorageInstanceByParent(parent: any): RxStorageKeyObjectIn
 }
 
 const RxLocalDocumentPrototype: any = {
-    toPouchJson(
-        this: any
-    ) {
-        const data = clone(this._data);
-        data._id = POUCHDB_LOCAL_PREFIX + this.id;
-    },
     get isLocal() {
         return true;
     },
@@ -209,62 +206,35 @@ const RxLocalDocumentPrototype: any = {
     },
     _saveData(this: RxLocalDocument, newData: RxLocalDocumentData) {
         const oldData = this._dataSync$.getValue();
-
         const storageInstance = _getKeyObjectStorageInstanceByParent(this.parent);
-        const startTime = now();
-
         newData._id = this.id;
 
-        return storageInstance.bulkWrite([newData])
+        return storageInstance.bulkWrite([{
+            previous: oldData,
+            document: newData
+        }])
             .then((res) => {
-                const endTime = now();
                 const docResult = res.success.get(newData._id);
                 if (!docResult) {
                     throw getFromMapOrThrow(res.error, newData._id);
                 }
                 newData._rev = docResult._rev;
-                const changeEvent = new RxChangeEvent(
-                    'UPDATE',
-                    this.id,
-                    clone(newData),
-                    isRxDatabase(this.parent) ? this.parent.token : this.parent.database.token,
-                    isRxCollection(this.parent) ? this.parent.name : null as any,
-                    true,
-                    startTime,
-                    endTime,
-                    oldData,
-                    this
-                );
-                this.$emit(changeEvent);
             });
     },
 
     remove(this: any): Promise<void> {
-        const startTime = now();
         const storageInstance = _getKeyObjectStorageInstanceByParent(this.parent);
         const writeData: RxDocumentWriteData<{ _id: string }> = {
             _id: this.id,
             _deleted: true,
-            _rev: this._data._rev,
             _attachments: {}
         };
-        return writeSingleLocal(storageInstance, writeData)
+        return writeSingleLocal(storageInstance, {
+            previous: this._data,
+            document: writeData
+        })
             .then(() => {
                 _getDocCache(this.parent).delete(this.id);
-                const endTime = now();
-                const changeEvent = new RxChangeEvent(
-                    'DELETE',
-                    this.id,
-                    clone(this._data),
-                    isRxDatabase(this.parent) ? this.parent.token : this.parent.database.token,
-                    isRxCollection(this.parent) ? this.parent.name : null,
-                    true,
-                    startTime,
-                    endTime,
-                    null,
-                    this
-                );
-                this.$emit(changeEvent);
             });
     }
 };
@@ -346,24 +316,12 @@ function insertLocal(
 
             return writeSingleLocal(
                 _getKeyObjectStorageInstanceByParent(this),
-                docData
+                {
+                    document: docData
+                }
             ).then(res => {
                 docData._rev = res._rev;
                 const newDoc = RxLocalDocument.create(id, docData, this);
-                const endTime = now();
-                const changeEvent = new RxChangeEvent(
-                    'INSERT',
-                    id,
-                    clone(docData),
-                    isRxDatabase(this) ? this.token : this.database.token,
-                    isRxCollection(this) ? this.name : '',
-                    true,
-                    startTime,
-                    endTime,
-                    undefined,
-                    newDoc
-                );
-                this.$emit(changeEvent);
                 return newDoc;
             });
         });
@@ -441,7 +399,7 @@ function getLocal$(this: RxCollection, id: string): Observable<RxLocalDocument |
                         use: false
                     };
                 } else {
-                    const doc = cE.rxDocument ? cE.rxDocument : await this.getLocal(id);
+                    const doc = await this.getLocal(id);
                     return {
                         use: true,
                         doc: doc

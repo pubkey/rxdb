@@ -6,7 +6,7 @@
  */
 
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
+import AsyncTestUtil, { wait } from 'async-test-util';
 
 import config from './config';
 import {
@@ -62,7 +62,7 @@ config.parallel('cross-instance.test.js', () => {
                 let recieved = 0;
                 db2.$.subscribe(cEvent => {
                     recieved++;
-                    assert.strictEqual(cEvent.constructor.name, 'RxChangeEvent');
+                    assert.ok(cEvent.operation);
                 });
                 await c1.insert(schemaObjects.human());
                 await AsyncTestUtil.waitUntil(async () => {
@@ -75,6 +75,11 @@ config.parallel('cross-instance.test.js', () => {
         });
         describe('negative', () => {
             it('should not get the same events twice', async () => {
+
+                console.log('########################');
+                console.log('########################');
+                console.log('########################');
+
                 const name = randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);
@@ -83,11 +88,15 @@ config.parallel('cross-instance.test.js', () => {
                 let recieved = 0;
                 db2.$.subscribe(cEvent => {
                     recieved++;
-                    assert.strictEqual(cEvent.constructor.name, 'RxChangeEvent');
+                    assert.ok(cEvent.operation);
                 });
                 await c1.insert(schemaObjects.human());
+                await wait(100);
 
                 await AsyncTestUtil.waitUntil(async () => {
+                    if (recieved > 1) {
+                        throw new Error('got too many events ' + recieved);
+                    }
                     return recieved === 1;
                 });
 
@@ -104,7 +113,7 @@ config.parallel('cross-instance.test.js', () => {
             let recieved = 0;
             c2.$.subscribe(cEvent => {
                 recieved++;
-                assert.strictEqual(cEvent.constructor.name, 'RxChangeEvent');
+                assert.ok(cEvent.operation);
             });
             await c1.insert(schemaObjects.human());
 
@@ -289,7 +298,7 @@ config.parallel('cross-instance.test.js', () => {
                 let recieved = 0;
                 c2.$.subscribe(cEvent => {
                     recieved++;
-                    assert.strictEqual(cEvent.constructor.name, 'RxChangeEvent');
+                    assert.ok(cEvent.operation);
                     waitPromise.resolve();
                 });
                 await c1.insert(schemaObjects.human());
@@ -300,13 +309,23 @@ config.parallel('cross-instance.test.js', () => {
                 c2.database.destroy();
             });
             it('should recieve 2 events', async () => {
+                console.log('###############');
+                console.log('###############');
+                console.log('###############');
+                console.log('###############');
+
                 const name = randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);
+
+                console.log('c2 token is ' + c2.database.token);
+
                 let recieved = 0;
                 c2.$.subscribe(cEvent => {
+                    console.log('received event:');
+                    console.dir(cEvent);
                     recieved++;
-                    assert.strictEqual(cEvent.constructor.name, 'RxChangeEvent');
+                    assert.ok(cEvent.operation);
                 });
 
                 await c1.insert(schemaObjects.human());

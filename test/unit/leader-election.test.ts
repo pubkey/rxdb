@@ -7,10 +7,16 @@ import * as humansCollection from '../helper/humans-collection';
 
 import {
     createRxDatabase,
-    randomCouchString
+    randomCouchString,
+    addRxPlugin
 } from '../../plugins/core';
 
+import {
+    RxDBLeaderElectionPlugin
+} from '../../plugins/leader-election';
+
 config.parallel('leader-election.test.js', () => {
+    addRxPlugin(RxDBLeaderElectionPlugin);
     describe('.die()', () => {
         it('other instance applies on death of leader', async () => {
             const name = randomCouchString(10);

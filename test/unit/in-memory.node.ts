@@ -24,9 +24,6 @@ addRxPlugin(RxDBInMemoryPlugin);
 import {RxDBDevModePlugin} from '../../plugins/dev-mode';
 addRxPlugin(RxDBDevModePlugin);
 
-import {RxDBWatchForChangesPlugin} from '../../plugins/watch-for-changes';
-addRxPlugin(RxDBWatchForChangesPlugin);
-
 addPouchPlugin(require('pouchdb-adapter-leveldb'));
 
 const schema: RxJsonSchema = {

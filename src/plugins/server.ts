@@ -20,9 +20,6 @@ import {
 import { RxDBReplicationPlugin } from './replication';
 addRxPlugin(RxDBReplicationPlugin);
 
-import { RxDBWatchForChangesPlugin } from './watch-for-changes';
-addRxPlugin(RxDBWatchForChangesPlugin);
-
 import PouchAdapterHttp from 'pouchdb-adapter-http';
 addPouchPlugin(PouchAdapterHttp);
 
@@ -69,7 +66,6 @@ function tunnelCollectionPath(
     app: any,
     colName: string
 ) {
-    db[colName].watchForChanges();
     const pathWithSlash = path.endsWith('/') ? path : path + '/';
     const collectionPath = pathWithSlash + colName;
     app.use(collectionPath, async function (req: any, res: any, next: any) {

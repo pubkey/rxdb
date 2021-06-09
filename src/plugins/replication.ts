@@ -45,13 +45,9 @@ import type {
     RxPlugin,
     SyncOptions
 } from '../types';
-import { RxDBWatchForChangesPlugin } from './watch-for-changes';
 
 // add pouchdb-replication-plugin
 addPouchPlugin(PouchReplicationPlugin);
-
-// add the watch-for-changes-plugin
-addRxPlugin(RxDBWatchForChangesPlugin);
 
 /**
  * Contains all pouchdb instances that
@@ -199,14 +195,14 @@ export function setPouchEventEmitter(
     // complete
     rxRepState._subs.push(
         fromEvent(evEmitter as any, 'complete')
-            .subscribe((info: any) => {
+            .subscribe(async (info: any) => {
                 /**
                  * when complete fires, it might be that not all changeEvents
                  * have passed throught, because of the delay of .wachtForChanges()
                  * Therefore we have to first ensure that all previous changeEvents have been handled
                  */
-                const unhandledEvents = Array.from(rxRepState.collection._watchForChangesUnhandled);
-                Promise.all(unhandledEvents).then(() => rxRepState._subjects.complete.next(info));
+                await promiseWait(100);
+                rxRepState._subjects.complete.next(info);
             })
     );
     // auto-cancel one-time replications on complelete to not cause memory leak
@@ -300,7 +296,6 @@ export function sync(
 
     // if remote is RxCollection, get internal pouchdb
     if (isRxCollection(remote)) {
-        remote.watchForChanges();
         remote = remote.pouch;
     }
 
@@ -335,8 +330,6 @@ export function sync(
         if (this.destroyed || repState.canceled) {
             return;
         }
-
-        this.watchForChanges();
         const pouchSync = syncFun(remote, useOptions);
         setPouchEventEmitter(repState, pouchSync);
         this._repStates.add(repState);

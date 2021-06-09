@@ -24,7 +24,8 @@ import type {
     RxReplicationState,
     PouchDBInstance,
     RxPlugin,
-    PouchBulkDocResultRow
+    PouchBulkDocResultRow,
+    RxChangeEvent
 } from '../types';
 import {
     RxCollectionBase
@@ -34,7 +35,9 @@ import {
     randomCouchString
 } from '../util';
 import {
-    addRxPlugin, getRxStoragePouch, pouchSwapIdToPrimary, pouchSwapPrimaryToId,
+    getRxStoragePouch,
+    pouchSwapIdToPrimary,
+    pouchSwapPrimaryToId,
 } from '../core';
 import {
     createCrypter
@@ -50,15 +53,9 @@ import {
     PouchDB
 } from '../pouch-db';
 import {
-    RxChangeEvent
-} from '../rx-change-event';
-import {
     newRxError
 } from '../rx-error';
-
-// add the watch-for-changes-plugin
-import { RxDBWatchForChangesPlugin } from '../plugins/watch-for-changes';
-addRxPlugin(RxDBWatchForChangesPlugin);
+import { getDocumentDataOfRxChangeEvent } from '../rx-change-event';
 
 const collectionCacheMap = new WeakMap();
 const collectionPromiseCacheMap = new WeakMap();
@@ -146,14 +143,6 @@ export
             .then(() => replicateExistingDocuments(this._parentCollection, this as any))
             .then(() => {
                 /**
-                 * call watchForChanges() on both sides,
-                 * to ensure none-rxdb-changes like replication
-                 * will fire into the change-event-stream
-                 */
-                this._parentCollection.watchForChanges();
-                this.watchForChanges();
-
-                /**
                  * create an ongoing replications between both sides
                  */
                 const thisToParentSub = streamChangedDocuments(this as any)
@@ -201,7 +190,8 @@ export
         });
     }
     $emit(changeEvent: RxChangeEvent) {
-        if ((this._changeEventBuffer as any).hasChangeWithRevision(changeEvent.documentData && changeEvent.documentData._rev)) {
+        const doc = getDocumentDataOfRxChangeEvent(changeEvent);
+        if ((this._changeEventBuffer as any).hasChangeWithRevision(doc && doc._rev)) {
             return;
         }
 

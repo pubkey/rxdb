@@ -281,6 +281,12 @@ export const fillWithDefaultSettings = function (
     // encrypted must be array
     schemaObj.encrypted = schemaObj.encrypted || [];
 
+
+
+    /**
+     * TODO we should not need to added the internal fields to the schema.
+     * Better remove the before validation.
+     */
     // add _rev
     schemaObj.properties._rev = {
         type: 'string',
@@ -290,6 +296,11 @@ export const fillWithDefaultSettings = function (
     // add attachments
     schemaObj.properties._attachments = {
         type: 'object'
+    };
+
+    // add deleted flag
+    schemaObj.properties._deleted = {
+        type: 'boolean'
     };
 
 

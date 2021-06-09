@@ -16,11 +16,6 @@ import {
     nextTick
 } from './util';
 import {
-    RxChangeEvent,
-    createUpdateEvent,
-    createDeleteEvent
-} from './rx-change-event';
-import {
     newRxError,
     newRxTypeError,
     isPouchdbConflictError
@@ -33,9 +28,11 @@ import type {
     RxDocument,
     RxCollection,
     RxDocumentData,
-    RxDocumentWriteData
+    RxDocumentWriteData,
+    RxChangeEvent
 } from './types';
 import { getSchemaByObjectPath } from './rx-schema';
+import { getDocumentDataOfRxChangeEvent } from './rx-change-event';
 
 export const basePrototype = {
 
@@ -82,14 +79,14 @@ export const basePrototype = {
         if (!_this.isInstanceOfRxDocument) {
             return undefined;
         }
-        return _this._deleted$.asObservable();
+        return _this._isDeleted$.asObservable();
     },
     get deleted() {
         const _this: RxDocument = this as any;
         if (!_this.isInstanceOfRxDocument) {
             return undefined;
         }
-        return _this._deleted$.getValue();
+        return _this._isDeleted$.getValue();
     },
 
     /**
@@ -100,13 +97,14 @@ export const basePrototype = {
         return _this._dataSync$.asObservable();
     },
 
-    _handleChangeEvent(this: RxDocument, changeEvent: RxChangeEvent) {
+    _handleChangeEvent(this: RxDocument, changeEvent: RxChangeEvent<any>) {
         if (changeEvent.documentId !== this.primary) {
             return;
         }
 
         // ensure that new _rev is higher then current
-        const newRevNr = getHeightOfRevision(changeEvent.documentData._rev);
+        const docData = getDocumentDataOfRxChangeEvent(changeEvent);
+        const newRevNr = getHeightOfRevision(docData._rev);
         const currentRevNr = getHeightOfRevision(this._data._rev);
         if (currentRevNr > newRevNr) return;
 
@@ -120,7 +118,7 @@ export const basePrototype = {
             case 'DELETE':
                 // remove from docCache to assure new upserted RxDocuments will be a new instance
                 this.collection._docCache.delete(this.primary);
-                this._deleted$.next(true);
+                this._isDeleted$.next(true);
                 break;
         }
     },
@@ -128,7 +126,7 @@ export const basePrototype = {
     /**
      * emits the changeEvent to the upper instance (RxCollection)
      */
-    $emit(this: RxDocument, changeEvent: RxChangeEvent) {
+    $emit(this: RxDocument, changeEvent: RxChangeEvent<any>) {
         return this.collection.$emit(changeEvent);
     },
 
@@ -390,7 +388,7 @@ export const basePrototype = {
         newData = newData;
 
         // deleted documents cannot be changed
-        if (this._deleted$.getValue()) {
+        if (this._isDeleted$.getValue()) {
             throw newRxError('DOC11', {
                 id: this.primary,
                 document: this
@@ -400,30 +398,13 @@ export const basePrototype = {
         // ensure modifications are ok
         this.collection.schema.validateChange(oldData, newData);
 
-        let startTime: number;
         await this.collection._runHooks('pre', 'save', newData, this);
 
         this.collection.schema.validate(newData);
-        startTime = now();
         const writeResult = await this.collection._pouchPut({
             previous: oldData,
             document: newData
         });
-
-        const endTime = now();
-
-
-        // emit event
-        const changeEvent = createUpdateEvent(
-            this.collection,
-            writeResult,
-            oldData,
-            startTime,
-            endTime,
-            this
-        );
-
-        this.$emit(changeEvent);
 
         return this.collection._runHooks('post', 'save', newData, this);
     },
@@ -479,18 +460,6 @@ export const basePrototype = {
                 });
             })
             .then(() => {
-                const endTime = now();
-                this.$emit(
-                    createDeleteEvent(
-                        this.collection,
-                        deletedData,
-                        this._data,
-                        startTime,
-                        endTime,
-                        this
-                    )
-                );
-
                 return this.collection._runHooks('post', 'remove', deletedData, this);
             })
             .then(() => this);
@@ -513,7 +482,7 @@ export function createRxDocumentConstructor(proto = basePrototype) {
 
         // assume that this is always equal to the doc-data in the database
         this._dataSync$ = new BehaviorSubject(jsonData);
-        this._deleted$ = new BehaviorSubject(false) as any;
+        this._isDeleted$ = new BehaviorSubject(false) as any;
 
         this._atomicQueue = Promise.resolve();
 

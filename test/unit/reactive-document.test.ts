@@ -42,7 +42,7 @@ config.parallel('reactive-document.test.js', () => {
 
                 const changeEvent: RxChangeEvent = emittedCollection[0];
                 assert.strictEqual(changeEvent.documentData.firstName, newName);
-                assert.strictEqual(changeEvent.previousData.firstName, oldName);
+                assert.strictEqual(changeEvent.previousDocumentData.firstName, oldName);
 
 
                 assert.strictEqual(docDataAfter._id, doc.primary);

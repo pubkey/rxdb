@@ -96,6 +96,10 @@ export type BulkWriteRow<DocumentData> = {
     document: RxDocumentWriteData<DocumentData>
 };
 
+export type BulkWriteLocalRow<DocumentData> = {
+    previous?: RxLocalDocumentData<DocumentData>,
+    document: RxLocalDocumentData<DocumentData>
+}
 
 /**
  * Data which is needed for new attachments
@@ -169,7 +173,26 @@ export type RxStorageBulkWriteError<RxDocType> = {
     documentId: string;
 
     // the original document data that should have been written.
-    document: RxDocumentWriteData<RxDocType>;
+    writeRow: BulkWriteRow<RxDocType>;
+}
+
+export type RxStorageBulkWriteLocalError<D> = {
+    status: number |
+    409 // conflict
+    // TODO add other status codes from pouchdb
+    ;
+
+    /**
+     * set this property to make it easy
+     * to detect if the object is a RxStorageBulkWriteError
+     */
+    isError: true;
+
+    // primary key of the document
+    documentId: string;
+
+    // the original document data that should have been written.
+    writeRow: BulkWriteLocalRow<D>;
 }
 
 export type RxStorageBulkWriteResponse<DocData> = {
@@ -191,13 +214,13 @@ export type RxLocalStorageBulkWriteResponse<DocData> = {
      * A map that is indexed by the documentId
      * contains all succeded writes.
      */
-    success: Map<string, RxDocumentData<DocData>>;
+    success: Map<string, RxLocalDocumentData<DocData>>;
 
     /**
      * A map that is indexed by the documentId
      * contains all errored writes.
      */
-    error: Map<string, RxStorageBulkWriteError<DocData>>;
+    error: Map<string, RxStorageBulkWriteLocalError<DocData>>;
 }
 
 
@@ -267,3 +290,19 @@ export type ChangeStreamEvent<DocumentData> = ChangeEvent<RxDocumentData<Documen
      */
     id: string;
 };
+
+
+
+export type RxStorageChangeEvent<DocType> = {
+    documentId: string;
+    change:  ChangeEvent<DocType>;
+
+    /**
+     * Unix time in milliseconds of when the operation was triggered
+     * and when it was finished.
+     * This is optional because we do not have this time
+     * for events that come from inside of the storage instance.
+     */
+    startTime?: number;
+    endTime?: number;
+}

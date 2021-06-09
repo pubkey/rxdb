@@ -64,7 +64,7 @@ export async function storePasswordHashIntoDatabase(
     const pwHash = hash(rxDatabase.password);
     const pwHashDocumentId = 'pwHash';
 
-    const pwHashDoc = await findLocalDocument(
+    const pwHashDoc = await findLocalDocument<PasswordHashDocument>(
         rxDatabase.localDocumentsStore,
         pwHashDocumentId
     );
@@ -74,7 +74,9 @@ export async function storePasswordHashIntoDatabase(
             value: pwHash,
             _attachments: {}
         };
-        await rxDatabase.localDocumentsStore.bulkWrite([docData]);
+        await rxDatabase.localDocumentsStore.bulkWrite([{
+            document: docData
+        }]);
         return true;
     } else if (pwHash !== pwHashDoc.value) {
         // different hash was already set by other instance

@@ -7,13 +7,11 @@ import {
     RxCollection,
 } from './rx-collection';
 import {
-    RxChangeEvent
-} from '../rx-change-event';
-import {
     RxAttachment,
     RxAttachmentCreator
 } from './rx-attachment';
 import { RxDocumentData } from './rx-storage';
+import { RxChangeEvent } from './rx-change-event';
 
 export type RxDocument<RxDocumentType = {}, OrmMethods = {}> = RxDocumentBase<RxDocumentType, OrmMethods> & RxDocumentType & OrmMethods;
 
@@ -34,11 +32,11 @@ export declare interface RxDocumentBase<RxDocumentType, OrmMethods = {}> {
     _isTemporary: boolean;
     _dataSync$: BehaviorSubject<RxDocumentType>;
     _data: RxDocumentData<RxDocumentType>;
-    _deleted$: BehaviorSubject<boolean>;
+    _isDeleted$: BehaviorSubject<boolean>;
     primaryPath: string;
     revision: string;
     _atomicQueue: Promise<any>;
-    $emit(cE: RxChangeEvent): void;
+    $emit(cE: RxChangeEvent<RxDocumentType>): void;
     _saveData(newData: any, oldData: any): Promise<void>;
     // /internal things
 

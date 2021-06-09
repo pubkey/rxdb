@@ -507,7 +507,7 @@ describe('replication.test.js', () => {
                 await c.insert(obj);
                 await pw8.promise;
                 await AsyncTestUtil.waitUntil(() => events.length === 1);
-                assert.strictEqual(events[0].constructor.name, 'RxChangeEvent');
+                assert.ok(events[0]);
 
                 syncC.database.destroy();
                 c.database.destroy();
