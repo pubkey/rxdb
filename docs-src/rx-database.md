@@ -161,8 +161,10 @@ removeRxDatabase('mydatabasename', 'localstorage');
 Checks if the given adapter can be used with RxDB in the current environment.
 
 ```js
-import { checkAdapter, addRxPlugin } from 'rxdb';
-addRxPlugin(require('pouchdb-adapter-localstorage')); // adapter must be added before
+// must be imported from the pouchdb plugin
+import { 
+    checkAdapter
+} from 'rxdb/plugins/pouchdb';
 
 const ok = await checkAdapter('localstorage');
 console.dir(ok); // true on most browsers, false on nodejs

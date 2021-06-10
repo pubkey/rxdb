@@ -7,6 +7,9 @@ Breaking:
   - Pouchdb plugins are not longer added via `addRxPlugin()` but `addPouchPlugin()`. (RxDB plugins are still added via `addRxPlugin`)
   - Removed plugin hook `preCreatePouchDb`
   - Removed the `watch-for-changes` plugin, this is now directly integrated into the pouchdb `RxStorage`
+  - Removed the `adapter-check` plugin. (The function `adapterCheck` is move to the pouchdb plugin).
+  - Moved everything pouchdb related to the `pouchdb` plugin.
+
 
 ### 9.20.0 (15 May 2021)
 

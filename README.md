@@ -108,15 +108,30 @@ npm install rxjs --save
 ### Import:
 
 ```javascript
-import { createRxDatabase } from 'rxdb';
-const db = await createRxDatabase({
-    name: 'heroesdb',
-    adapter: 'indexeddb',
-    password: 'myLongAndStupidPassword' // optional
-  });                                                       // create database
+import { 
+  addPouchPlugin.
+  createRxDatabase,
+  getRxStoragePouch
+} from 'rxdb';
 
-await db.collection({name: 'heroes', schema: mySchema});    // create collection
-db.heroes.insert({ name: 'Bob' });                          // insert document
+// add the pouchdb indexeddb adapter
+addPouchPlugin(require('pouchdb-adapter-idb'));
+
+// create a database
+const db = await createRxDatabase({
+    // the name of the database
+    name: 'heroesdb',
+    // use pouchdb with the indexeddb-adapter as storage engine.
+    storage: getRxStoragePouch('idb'),
+    // optional password, used to encrypt fields when defined in the schema
+    password: 'myLongAndStupidPassword'
+});
+
+// create a collection
+await db.collection({name: 'heroes', schema: mySchema});    
+
+// insert a document
+db.heroes.insert({ name: 'Bob' });                          
 ```
 
 ## Feature-Showroom (click to toggle)
