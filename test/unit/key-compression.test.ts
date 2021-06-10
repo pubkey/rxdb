@@ -10,7 +10,8 @@ import * as humansCollection from './../helper/humans-collection';
 import {
     createRxDatabase,
     randomCouchString,
-    isRxDocument
+    isRxDocument,
+    getRxStoragePouch
 } from '../../plugins/core';
 
 config.parallel('key-compression.test.js', () => {
@@ -83,7 +84,7 @@ config.parallel('key-compression.test.js', () => {
 
             const db = await createRxDatabase({
                 name: 'heroesdb',
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory')
             });
             const collection = await db.collection({
                 name: 'mycollection',
@@ -117,7 +118,7 @@ config.parallel('key-compression.test.js', () => {
 
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory')
             });
             const collection = await db.collection({
                 name: 'mycollection',

@@ -8,7 +8,7 @@ import AsyncTestUtil from 'async-test-util';
 import PouchAdapterMemory from 'pouchdb-adapter-memory';
 const leveldown = require('leveldown');
 
-import type { RxJsonSchema } from '../../plugins/core';
+import { getRxStoragePouch, RxJsonSchema } from '../../plugins/core';
 import config from './config';
 
 const {
@@ -51,7 +51,7 @@ describe('in-memory.node.js', () => {
     it('should throw when used without memory-adapter', async () => {
         const db = await createRxDatabase({
             name: (config as any).rootPath + 'test_tmp/' + randomCouchString(10),
-            adapter: leveldown
+            storage: getRxStoragePouch(leveldown)
         });
         const col = await db.collection({
             name: 'humans',
@@ -70,7 +70,7 @@ describe('in-memory.node.js', () => {
         addPouchPlugin(PouchAdapterMemory);
         const db = await createRxDatabase({
             name: (config as any).rootPath + 'test_tmp/' + randomCouchString(10),
-            adapter: leveldown
+            storage: getRxStoragePouch(leveldown)
         });
         const col = await db.collection({
             name: 'humans',

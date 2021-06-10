@@ -19,7 +19,8 @@ import {
     normalize,
     getFinalFields,
     getPreviousVersions,
-    getSchemaByObjectPath
+    getSchemaByObjectPath,
+    getRxStoragePouch
 } from '../../plugins/core';
 
 config.parallel('rx-schema.test.js', () => {
@@ -792,7 +793,7 @@ config.parallel('rx-schema.test.js', () => {
             };
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory')
             });
             const col = await db.collection({
                 name: 'items',
@@ -844,7 +845,7 @@ config.parallel('rx-schema.test.js', () => {
             // create a database
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory')
             });
             const collection = await db.collection({
                 name: 'test',
@@ -880,7 +881,7 @@ config.parallel('rx-schema.test.js', () => {
             // create a database
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory')
             });
             const collection = await db.collection({
                 name: 'test',
@@ -919,7 +920,7 @@ config.parallel('rx-schema.test.js', () => {
             // create a database
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory')
             });
             const collection = await db.collection({
                 name: 'test',

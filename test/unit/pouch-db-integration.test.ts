@@ -9,17 +9,15 @@ if (config.platform.isNode())
 
 import {
     createRxDatabase,
-    addRxPlugin,
     randomCouchString,
     promiseWait,
     clone,
-    countAllUndeleted,
-    getBatch,
     PouchDB,
     isRxDatabase,
     PouchDBInstance,
     blobBufferUtil,
-    addPouchPlugin
+    addPouchPlugin,
+    getRxStoragePouch
 } from '../../plugins/core';
 import * as schemaObjects from './../helper/schema-objects';
 
@@ -34,18 +32,20 @@ config.parallel('pouch-db-integration.test.js', () => {
             await AsyncTestUtil.assertThrows(
                 () => createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: memdown
+                    storage: getRxStoragePouch(memdown)
                 }),
                 'RxError',
                 'leveldb-plugin'
             );
         });
         it('should work after adding the leveldb-plugin', async () => {
-            if (!config.platform.isNode()) return;
+            if (!config.platform.isNode()) {
+                return;
+            }
             PouchDB.plugin(leveldb);
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: memdown
+                storage: getRxStoragePouch(memdown)
             });
             assert.ok(isRxDatabase(db));
             db.destroy();
@@ -56,7 +56,7 @@ config.parallel('pouch-db-integration.test.js', () => {
             await AsyncTestUtil.assertThrows(
                 () => createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory')
                 }),
                 'RxError',
                 'Adapter'
@@ -66,7 +66,7 @@ config.parallel('pouch-db-integration.test.js', () => {
             addPouchPlugin(require('pouchdb-adapter-memory'));
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory')
             });
             assert.ok(isRxDatabase(db));
             db.destroy();
@@ -79,7 +79,7 @@ config.parallel('pouch-db-integration.test.js', () => {
             await AsyncTestUtil.assertThrows(
                 () => createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'localstorage'
+                    storage: getRxStoragePouch('localstorage')
                 }),
                 'RxError',
                 'Adapter'
@@ -92,7 +92,7 @@ config.parallel('pouch-db-integration.test.js', () => {
                 await AsyncTestUtil.assertThrows(
                     () => createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'websql'
+                        storage: getRxStoragePouch('websql')
                     }),
                     'RxError',
                     'Adapter'
@@ -107,7 +107,7 @@ config.parallel('pouch-db-integration.test.js', () => {
                 addPouchPlugin(require('pouchdb-adapter-websql'));
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'websql'
+                    storage: getRxStoragePouch('websql')
                 });
                 assert.ok(isRxDatabase(db));
                 await promiseWait(10);

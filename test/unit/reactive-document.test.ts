@@ -13,11 +13,12 @@ import {
     createRxDatabase,
     randomCouchString,
     promiseWait,
-    RxChangeEvent
+    getRxStoragePouch
 } from '../../plugins/core';
 import {
     first
 } from 'rxjs/operators';
+import type { RxChangeEvent } from '../../src/types';
 
 config.parallel('reactive-document.test.js', () => {
     describe('.save()', () => {
@@ -40,7 +41,7 @@ config.parallel('reactive-document.test.js', () => {
                 const docDataAfter = await doc.$.pipe(first()).toPromise();
 
 
-                const changeEvent: RxChangeEvent = emittedCollection[0];
+                const changeEvent: any = emittedCollection[0];
                 assert.strictEqual(changeEvent.documentData.firstName, newName);
                 assert.strictEqual(changeEvent.previousDocumentData.firstName, oldName);
 
@@ -146,7 +147,7 @@ config.parallel('reactive-document.test.js', () => {
             it('final fields cannot be observed', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
                 const col = await db.collection({
                     name: 'humans',

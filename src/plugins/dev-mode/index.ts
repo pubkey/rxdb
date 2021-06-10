@@ -51,7 +51,7 @@ export const RxDBDevModePlugin: RxPlugin = {
             }
         },
         preCreateRxSchema: checkSchema,
-        preCreateRxDatabase: (args: RxDatabaseCreator) => {
+        preCreateRxDatabase: (args: RxDatabaseCreator<any, any>) => {
             ensureDatabaseNameIsValid(args);
         },
         preCreateRxCollection: (args: RxCollectionCreator) => {

@@ -15,7 +15,8 @@ import {
     getDocumentOrmPrototype,
     getDocumentPrototype,
     addRxPlugin,
-    blobBufferUtil
+    blobBufferUtil,
+    getRxStoragePouch
 } from '../../plugins/core';
 import { RxDBAttachmentsPlugin } from '../../plugins/attachments';
 addRxPlugin(RxDBAttachmentsPlugin);
@@ -66,7 +67,7 @@ config.parallel('rx-document.test.js', () => {
             it('should get a prototype with all orm-methods', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
                 const col = await db.collection({
                     name: 'humans',
@@ -93,7 +94,7 @@ config.parallel('rx-document.test.js', () => {
             it('should get a valid prototype', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
                 const col = await db.collection({
                     name: 'humans',
@@ -303,7 +304,7 @@ config.parallel('rx-document.test.js', () => {
                 };
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
                 const col = await db.collection({
                     name: 'humans',
@@ -328,7 +329,7 @@ config.parallel('rx-document.test.js', () => {
             it('should throw when final field is modified', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
                 const col = await db.collection({
                     name: 'humans',
@@ -427,7 +428,7 @@ config.parallel('rx-document.test.js', () => {
                 const leveldown = require('leveldown');
                 const db = await createRxDatabase({
                     name: config.rootPath + 'test_tmp/' + randomCouchString(10),
-                    adapter: leveldown
+                    storage: getRxStoragePouch(leveldown),
                 });
                 const c = await db.collection({
                     name: 'humans',
@@ -460,7 +461,7 @@ config.parallel('rx-document.test.js', () => {
                 const dbName = config.rootPath + 'test_tmp/' + randomCouchString(10);
                 const db = await createRxDatabase({
                     name: dbName,
-                    adapter: leveldown
+                    storage: getRxStoragePouch(leveldown),
                 });
                 const c = await db.collection({
                     name: 'humans',
@@ -480,7 +481,7 @@ config.parallel('rx-document.test.js', () => {
                 // same again
                 const db2 = await createRxDatabase({
                     name: dbName,
-                    adapter: leveldown
+                    storage: getRxStoragePouch(leveldown),
                 });
                 const c2 = await db2.collection({
                     name: 'humans',
@@ -497,7 +498,7 @@ config.parallel('rx-document.test.js', () => {
                 const dbName = randomCouchString(10);
                 const db = await createRxDatabase({
                     name: dbName,
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
 
                 const c = await db.collection({
@@ -507,7 +508,7 @@ config.parallel('rx-document.test.js', () => {
                 const doc = await c.insert(schemaObjects.simpleHuman());
                 const db2 = await createRxDatabase({
                     name: dbName,
-                    adapter: 'memory',
+                    storage: getRxStoragePouch('memory'),
                     ignoreDuplicate: true
                 });
                 const c2 = await db2.collection({
@@ -553,7 +554,7 @@ config.parallel('rx-document.test.js', () => {
             it('should throw when final field is modified', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
                 const col = await db.collection({
                     name: 'humans',
@@ -681,7 +682,7 @@ config.parallel('rx-document.test.js', () => {
         it('should not return _attachments if not wanted', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 multiInstance: false,
                 ignoreDuplicate: true
             });
@@ -857,7 +858,7 @@ config.parallel('rx-document.test.js', () => {
         it('#76 - deepEqual does not work correctly for Arrays', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
             const col = await await db.collection({
                 name: 'heroes',
@@ -887,7 +888,7 @@ config.parallel('rx-document.test.js', () => {
         it('#646 Skip defining getter and setter when property not defined in schema', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
             const schema = {
                 version: 0,
@@ -952,7 +953,7 @@ config.parallel('rx-document.test.js', () => {
             // create a database
             const db = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 ignoreDuplicate: true
             });
             // create a collection

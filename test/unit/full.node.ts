@@ -10,7 +10,8 @@ const {
     createRxDatabase,
     isRxDocument,
     randomCouchString,
-    addPouchPlugin
+    addPouchPlugin,
+    getRxStoragePouch
 } = require('../../');
 addPouchPlugin(require('pouchdb-adapter-memory'));
 
@@ -39,7 +40,7 @@ const run = async function () {
     // create database
     const db = await createRxDatabase({
         name: randomCouchString(10),
-        adapter: 'memory',
+        storage: getRxStoragePouch('memory'),
         ignoreDuplicate: true
     });
 

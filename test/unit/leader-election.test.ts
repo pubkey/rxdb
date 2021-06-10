@@ -8,7 +8,8 @@ import * as humansCollection from '../helper/humans-collection';
 import {
     createRxDatabase,
     randomCouchString,
-    addRxPlugin
+    addRxPlugin,
+    getRxStoragePouch
 } from '../../plugins/core';
 
 import {
@@ -164,7 +165,7 @@ config.parallel('leader-election.test.js', () => {
         it('non-multiInstance should always be leader', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 multiInstance: false
             });
             // setTimeout(() => db.destroy(), dbLifetime);

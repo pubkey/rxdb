@@ -21,7 +21,8 @@ import {
     RxJsonSchema,
     PrimaryProperty,
     RxDatabase,
-    addRxPlugin
+    addRxPlugin,
+    getRxStoragePouch
 } from '../../plugins/core';
 import { RxDBUpdatePlugin } from '../../plugins/update';
 addRxPlugin(RxDBUpdatePlugin);
@@ -35,7 +36,7 @@ config.parallel('rx-collection.test.js', () => {
     async function getDb(): Promise<RxDatabase> {
         return await createRxDatabase({
             name: randomCouchString(10),
-            adapter: 'memory'
+            storage: getRxStoragePouch('memory'),
         });
     }
     describe('static', () => {
@@ -60,7 +61,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('human', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const schema = createRxSchema(schemas.human);
                     const collection = await createRxCollection({
@@ -74,7 +75,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('use Schema-Object', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const schema = createRxSchema(schemas.human);
                     const collection = await createRxCollection({
@@ -88,7 +89,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('should create compound-indexes (keyCompression: false)', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const schemaJSON = clone(schemas.compoundIndex);
                     schemaJSON.keyCompression = false;
@@ -113,7 +114,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('should create compound-indexes (keyCompression: true)', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const schema = createRxSchema(schemas.compoundIndex);
                     const col = await createRxCollection({
@@ -136,7 +137,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('should have the version-number in the pouchdb-prefix', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const schema = createRxSchema(schemas.human);
                     const collection = await createRxCollection({
@@ -151,7 +152,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('should not forget the options', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const collection = await db.collection({
                         name: 'human',
@@ -180,7 +181,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('crash if no name-object', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const schema = createRxSchema(schemas.human);
                     await AsyncTestUtil.assertThrows(
@@ -201,7 +202,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('allow not allow lodash', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const schema = createRxSchema(schemas.human);
 
@@ -219,7 +220,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('allow numbers', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const schema = createRxSchema(schemas.human);
                     const collection1 = await createRxCollection({
@@ -241,7 +242,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('not allow starting numbers', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const schema = createRxSchema(schemas.human);
                     await AsyncTestUtil.assertThrows(
@@ -257,7 +258,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('not allow uppercase-letters', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const schema = createRxSchema(schemas.human);
                     await AsyncTestUtil.assertThrows(
@@ -287,7 +288,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('should insert a human', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const collection = await db.collection({
                         name: 'human',
@@ -299,7 +300,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('should insert an object with _id set', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const collection = await db.collection({
                         name: 'idprimary',
@@ -311,7 +312,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('should insert human (_id given)', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const collection = await db.collection({
                         name: 'human',
@@ -325,7 +326,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('should insert nested human', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const collection = await db.collection({
                         name: 'nestedhuman',
@@ -337,7 +338,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('should insert more than once', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const collection = await db.collection({
                         name: 'nestedhuman',
@@ -350,7 +351,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('should set default values', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const collection = await db.collection({
                         name: 'nestedhuman',
@@ -371,7 +372,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('should not insert broken human (required missing)', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const collection = await db.collection({
                         name: 'human',
@@ -389,7 +390,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('should not insert when _id given but _id is not primary', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const collection = await db.collection({
                         name: 'humanfinal',
@@ -407,7 +408,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('should not insert a non-json object', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const collection = await db.collection({
                         name: 'human',
@@ -422,7 +423,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('should not insert human with additional prop', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const collection = await db.collection({
                         name: 'human',
@@ -440,7 +441,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('should not insert when primary is missing', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const collection = await db.collection({
                         name: 'human',
@@ -460,7 +461,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('should throw a conflict-error', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const collection = await db.collection({
                         name: 'human',
@@ -485,7 +486,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('should insert some humans', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const collection = await db.collection({
                         name: 'human',
@@ -502,7 +503,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('should throw if one already exists', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const collection = await db.collection({
                         name: 'human',
@@ -584,7 +585,7 @@ config.parallel('rx-collection.test.js', () => {
                     it('find nothing with empty collection', async () => {
                         const db = await createRxDatabase({
                             name: randomCouchString(10),
-                            adapter: 'memory'
+                            storage: getRxStoragePouch('memory'),
                         });
                         const schema = createRxSchema(schemas.human);
                         const collection = await createRxCollection({
@@ -601,7 +602,7 @@ config.parallel('rx-collection.test.js', () => {
                         for (let i = 0; i < amount; i++) {
                             const db = await createRxDatabase({
                                 name: randomCouchString(10),
-                                adapter: 'memory'
+                                storage: getRxStoragePouch('memory'),
                             });
                             const collection = await db.collection({
                                 name: 'human',
@@ -772,7 +773,7 @@ config.parallel('rx-collection.test.js', () => {
                     it('sort by non-top-level-key as index (no keycompression)', async () => {
                         const db = await createRxDatabase({
                             name: randomCouchString(10),
-                            adapter: 'memory'
+                            storage: getRxStoragePouch('memory'),
                         });
                         const schemaObj = clone(schemas.humanSubIndex);
                         schemaObj.keyCompression = false;
@@ -821,7 +822,7 @@ config.parallel('rx-collection.test.js', () => {
                     it('sort by non-top-level-key as index (with keycompression)', async () => {
                         const db = await createRxDatabase({
                             name: randomCouchString(10),
-                            adapter: 'memory'
+                            storage: getRxStoragePouch('memory'),
                         });
                         const schema = createRxSchema(schemas.humanSubIndex);
                         const collection = await createRxCollection({
@@ -1219,7 +1220,7 @@ config.parallel('rx-collection.test.js', () => {
                     for (let i = 0; i < amount; i++) {
                         const db = await createRxDatabase({
                             name: randomCouchString(10),
-                            adapter: 'memory'
+                            storage: getRxStoragePouch('memory'),
                         });
                         const collection = await db.collection({
                             name: 'human',
@@ -1258,7 +1259,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('insert when not exists', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const collection = await db.collection({
                         name: 'human',
@@ -1274,7 +1275,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('overwrite exisiting document', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const collection = await db.collection({
                         name: 'human',
@@ -1291,7 +1292,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('overwrite twice', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const collection = await db.collection({
                         name: 'human',
@@ -1314,7 +1315,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('throw when primary missing', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const collection = await db.collection({
                         name: 'human',
@@ -1336,7 +1337,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('throw when schema not matching', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const collection = await db.collection({
                         name: 'human',
@@ -1441,7 +1442,7 @@ config.parallel('rx-collection.test.js', () => {
                     const leveldown = require('leveldown');
                     const db = await createRxDatabase({
                         name: config.rootPath + 'test_tmp/' + randomCouchString(10),
-                        adapter: leveldown
+                        storage: getRxStoragePouch(leveldown),
                     });
                     const c = await db.collection({
                         name: 'humans',
@@ -1464,7 +1465,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('should set correct default values', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
 
                     const schema: RxJsonSchema<HumanDocumentType> = clone(schemas.humanDefault);
@@ -1495,7 +1496,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('should completely remove fields that are unset', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const schema: RxJsonSchema<HumanDocumentType> = clone(schemas.humanDefault);
                     (schema.properties.passportId as PrimaryProperty).primary = true;
@@ -1549,7 +1550,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('should be possible to re-create the collection with different schema', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const collection = await db.collection({
                         name: 'human',
@@ -1570,7 +1571,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('should not contain document when re-creating', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const collection = await db.collection({
                         name: 'human',
@@ -1595,7 +1596,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('should delete when older versions exist', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'memory'
+                        storage: getRxStoragePouch('memory'),
                     });
                     const collection = await db.collection({
                         name: 'human',
@@ -1774,7 +1775,7 @@ config.parallel('rx-collection.test.js', () => {
             };
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
             const collection = await db.collection({
                 name: 'humanx',
@@ -1814,7 +1815,7 @@ config.parallel('rx-collection.test.js', () => {
             };
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
             const collection = await db.collection({
                 name: 'humanx',
@@ -1839,7 +1840,7 @@ config.parallel('rx-collection.test.js', () => {
         it('auto_compaction not works on collection-level https://gitter.im/pubkey/rxdb?at=5c42f3dd0721b912a5a4366b', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
 
             // test with auto_compaction
@@ -1870,7 +1871,7 @@ config.parallel('rx-collection.test.js', () => {
             };
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
 
             const collectionParams = {
@@ -1899,7 +1900,7 @@ config.parallel('rx-collection.test.js', () => {
             // recreating with the same params-object should work
             const db2 = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
             await db2.collection(
                 collectionParams

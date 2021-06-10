@@ -93,7 +93,9 @@ import type {
     RxChangeEvent,
     RxChangeEventInsert,
     RxChangeEventUpdate,
-    RxChangeEventDelete
+    RxChangeEventDelete,
+    RxStorage,
+    RxStorageInstance
 } from './types';
 import type {
     RxGraphQLReplicationState
@@ -111,7 +113,6 @@ import {
     createRxDocument,
     getRxDocumentConstructor
 } from './rx-document-prototype-merge';
-import { RxStorageInstancePouch } from './rx-storage-pouchdb';
 import { getSingleDocument, storageChangeEventToRxChangeEvent, writeSingle } from './rx-storage-helper';
 
 const HOOKS_WHEN = ['pre', 'post'];
@@ -125,7 +126,7 @@ export class RxCollectionBase<
     > {
 
     constructor(
-        public database: RxDatabase,
+        public database: RxDatabase<any>,
         public name: string,
         public schema: RxSchema<RxDocumentType>,
         public pouchSettings: PouchSettings = {},
@@ -180,7 +181,7 @@ export class RxCollectionBase<
     public _repStates: Set<RxReplicationState> = new Set();
 
     // TODO use type RxStorageInstance when rx-storage is implemented
-    public storageInstance: RxStorageInstancePouch<RxDocumentType> = {} as any;
+    public storageInstance: RxStorageInstance<RxDocumentType, any, any> = {} as any;
     // TODO remove this.pouch when rx-storage is implemented
     public pouch: PouchDBInstance = {} as PouchDBInstance; // this is needed to preserve this name
     /**
@@ -196,7 +197,7 @@ export class RxCollectionBase<
 
     public _queryCache: QueryCache = createQueryCache();
     public _crypter: Crypter = {} as Crypter;
-    public _observable$?: Observable<any>; // TODO type
+    public _observable$: Observable<RxChangeEvent<RxDocumentType>> = {} as any;
     public _changeEventBuffer: ChangeEventBuffer = {} as ChangeEventBuffer;
 
     /**
@@ -229,7 +230,7 @@ export class RxCollectionBase<
             storageInstance,
             localDocumentsStore
         ] = await Promise.all([
-            this.database.storage.createStorageInstance<RxDocumentType>(
+            (this.database.storage as RxStorage<any, any>).createStorageInstance<RxDocumentType>(
                 storageInstanceCreationParams
             ),
             this.database.storage.createKeyObjectStorageInstance(
@@ -247,8 +248,8 @@ export class RxCollectionBase<
         this._crypter = createCrypter(this.database.password, this.schema);
 
         this._observable$ = this.database.$.pipe(
-            filter(event => {
-                return (event as any).collectionName === this.name;
+            filter((event: RxChangeEvent<any>) => {
+                return event.collectionName === this.name;
             })
         );
         this._changeEventBuffer = createChangeEventBuffer(this.asRxCollection);
@@ -265,7 +266,7 @@ export class RxCollectionBase<
             this.$emit(cE);
         });
         this._subs.push(subDocs);
-        const subLocalDocs = localDocumentsStore.changeStream().pipe(
+        const subLocalDocs = this.localDocumentsStore.changeStream().pipe(
             map(storageEvent => storageChangeEventToRxChangeEvent(
                 true,
                 storageEvent,
@@ -490,7 +491,8 @@ export class RxCollectionBase<
         );
 
         // create documents
-        const rxDocuments: any[] = Array.from(results.success.entries())
+        const successEntries: [string, RxDocumentData<RxDocumentType>][] = Array.from(results.success.entries());
+        const rxDocuments: any[] = successEntries
             .map(([key, writtenDocData]) => {
                 const docData: RxDocumentData<RxDocumentType> = getFromMapOrThrow(docsMap, key) as any;
                 docData._rev = writtenDocData._rev;
@@ -556,7 +558,7 @@ export class RxCollectionBase<
             }
         );
 
-        const successIds = Array.from(results.success.keys());
+        const successIds: string[] = Array.from(results.success.keys());
 
         // run hooks
         await Promise.all(

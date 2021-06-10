@@ -9,7 +9,8 @@ import {
     isRxDocument,
     randomCouchString,
     createRxSchema,
-    RxJsonSchema
+    RxJsonSchema,
+    getRxStoragePouch
 } from '../../plugins/core';
 
 config.parallel('population.test.js', () => {
@@ -153,7 +154,7 @@ config.parallel('population.test.js', () => {
             it('populate string-array', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
                 const col = await db.collection({
                     name: 'human',
@@ -199,7 +200,7 @@ config.parallel('population.test.js', () => {
             it('populate with primary as ref', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
                 const schema: RxJsonSchema = {
                     version: 0,
@@ -258,7 +259,7 @@ config.parallel('population.test.js', () => {
         it('#222 population not working when multiInstance: false', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 multiInstance: false // this must be false here
             });
             const colA = await db.collection({

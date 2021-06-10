@@ -19,7 +19,8 @@ import {
     isRxCollection,
     RxReplicationState,
     SyncOptions,
-    addPouchPlugin
+    addPouchPlugin,
+    getRxStoragePouch
 } from '../../plugins/core';
 
 import {
@@ -623,7 +624,7 @@ describe('replication.test.js', () => {
             // create a database
             const db1 = await createRxDatabase({
                 name: randomCouchString(12),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
             // create a collection
             const collection1 = await db1.collection({
@@ -642,7 +643,7 @@ describe('replication.test.js', () => {
             // create another database
             const db2 = await createRxDatabase({
                 name: randomCouchString(12),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
             // create a collection
             const collection2 = await db2.collection({

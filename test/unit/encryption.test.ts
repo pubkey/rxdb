@@ -11,7 +11,8 @@ import {
     createRxDatabase,
     RxJsonSchema,
     randomCouchString,
-    createCrypter
+    createCrypter,
+    getRxStoragePouch
 } from '../../plugins/core';
 
 config.parallel('encryption.test.js', () => {
@@ -96,7 +97,7 @@ config.parallel('encryption.test.js', () => {
             it('should insert one encrypted value (object)', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory',
+                    storage: getRxStoragePouch('memory'),
                     password: randomCouchString(10)
                 });
                 const c = await db.collection({
@@ -132,7 +133,7 @@ config.parallel('encryption.test.js', () => {
             it('should save one encrypted value (object)', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory',
+                    storage: getRxStoragePouch('memory'),
                     password: randomCouchString(10)
                 });
                 const c = await db.collection({
@@ -170,7 +171,7 @@ config.parallel('encryption.test.js', () => {
             // 1. create and destroy encrypted db
             const db1 = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 password
             });
             await db1.destroy();
@@ -179,7 +180,7 @@ config.parallel('encryption.test.js', () => {
             await AsyncTestUtil.assertThrows(
                 () => createRxDatabase({
                     name,
-                    adapter: 'memory',
+                    storage: getRxStoragePouch('memory'),
                     password: 'foobarfoobar'
                 }),
                 'RxError',
@@ -189,7 +190,7 @@ config.parallel('encryption.test.js', () => {
             // 3. reopen with correct password
             const db2 = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 password
             });
             assert.ok(db2);
@@ -223,7 +224,7 @@ config.parallel('encryption.test.js', () => {
 
             const db = await createRxDatabase({
                 name: dbName,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 password: 'myLongAndStupidPassword'
             });
 

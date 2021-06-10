@@ -14,7 +14,9 @@ import {
     lastOfArray,
     writeSingle,
     blobBufferUtil,
-    flatClone
+    flatClone,
+    addPouchPlugin,
+    MangoQuery
 } from '../../plugins/core';
 
 import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
@@ -30,18 +32,16 @@ import {
     RxLocalDocumentData,
     RxStorageChangeEvent
 } from '../../src/types';
+
 addRxPlugin(RxDBQueryBuilderPlugin);
 
 declare type TestDocType = { key: string; value: string; };
 
 config.parallel('rx-storage-pouchdb.test.js', () => {
-    const storage: RxStoragePouch = getRxStoragePouch('memory');
-
-
     describe('RxStorageInstance', () => {
         describe('.bulkWrite()', () => {
             it('should write the documents', async () => {
-                const storageInstance = await storage.createStorageInstance<TestDocType>({
+                const storageInstance = await getRxStoragePouch('memory').createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
@@ -67,7 +67,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 storageInstance.close();
             });
             it('should error on conflict', async () => {
-                const storageInstance = await storage.createStorageInstance<TestDocType>({
+                const storageInstance = await getRxStoragePouch('memory').createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
@@ -102,7 +102,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
         });
         describe('.bulkAddRevisions()', () => {
             it('should add the revisions for new documents', async () => {
-                const storageInstance = await storage.createStorageInstance<TestDocType>({
+                const storageInstance = await getRxStoragePouch('memory').createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
@@ -134,16 +134,25 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
         });
         describe('.getSortComparator()', () => {
             it('should sort in the correct order', async () => {
-                const col = await humansCollection.create(1);
+                const storageInstance = await getRxStoragePouch('memory').createStorageInstance<TestDocType>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion(0, '_id'),
+                    options: {}
+                });
 
-                const query = col
-                    .find()
-                    .limit(1000)
-                    .sort('age')
-                    .toJSON();
-                const comparator = col.storageInstance.getSortComparator(
+                const query: MangoQuery = {
+                    selector: {},
+                    limit: 1000,
+                    sort: [
+                        { age: 'asc' }
+                    ]
+                };
+
+                const comparator = storageInstance.getSortComparator(
                     query
                 );
+
                 const doc1: any = schemaObjects.human();
                 doc1._id = 'aa';
                 doc1.age = 1;
@@ -156,22 +165,31 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     [doc1, doc2],
                     [doc1, doc2].sort(comparator)
                 );
-                col.database.destroy();
+
+                storageInstance.close();
             });
         });
         describe('.getQueryMatcher()', () => {
             it('should match the right docs', async () => {
-                const col = await humansCollection.create(1);
+                const storageInstance = await getRxStoragePouch('memory').createStorageInstance<TestDocType>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion(0, '_id'),
+                    options: {}
+                });
 
-                const queryMatcher = col.storageInstance.getQueryMatcher(
-                    col.find({
-                        selector: {
-                            age: {
-                                $gt: 10,
-                                $ne: 50
-                            }
+                const query: MangoQuery = {
+                    selector: {
+                        age: {
+                            $gt: 10,
+                            $ne: 50
                         }
-                    }).toJSON()
+                    }
+                };
+
+
+                const queryMatcher = storageInstance.getQueryMatcher(
+                    query
                 );
 
                 const doc1: any = schemaObjects.human();
@@ -184,12 +202,12 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 assert.strictEqual(queryMatcher(doc1), false);
                 assert.strictEqual(queryMatcher(doc2), true);
 
-                col.database.destroy();
+                storageInstance.close();
             });
         });
         describe('.query()', () => {
             it('should find all documents', async () => {
-                const storageInstance = await storage.createStorageInstance<{ key: string; value: string; }>({
+                const storageInstance = await getRxStoragePouch('memory').createStorageInstance<{ key: string; value: string; }>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
@@ -223,7 +241,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
         describe('.getChanges()', () => {
             it('should get the correct changes', async () => {
 
-                const storageInstance = await storage.createStorageInstance<TestDocType>({
+                const storageInstance = await getRxStoragePouch('memory').createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
@@ -304,7 +322,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
         });
         describe('.changeStream()', () => {
             it('should emit exactly one event on write', async () => {
-                const storageInstance = await storage.createStorageInstance<TestDocType>({
+                const storageInstance = await getRxStoragePouch('memory').createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
@@ -315,8 +333,6 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
 
                 const emitted: RxStorageChangeEvent<TestDocType>[] = [];
                 const sub = storageInstance.changeStream().subscribe(x => {
-                    console.log('emit event:');
-                    console.dir(x);
                     emitted.push(x);
                 });
 
@@ -340,7 +356,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 storageInstance.close();
             });
             it('should emit all events', async () => {
-                const storageInstance = await storage.createStorageInstance<TestDocType>({
+                const storageInstance = await getRxStoragePouch('memory').createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
@@ -351,8 +367,6 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
 
                 const emitted: RxStorageChangeEvent<TestDocType>[] = [];
                 const sub = storageInstance.changeStream().subscribe(x => {
-                    console.log('emit event:');
-                    console.dir(x);
                     emitted.push(x);
                 });
 
@@ -403,13 +417,13 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
             });
             it('should emit changes accross different instances of the same name', async () => {
                 const sameName = randomCouchString(12);
-                const storageInstance1 = await storage.createStorageInstance<TestDocType>({
+                const storageInstance1 = await getRxStoragePouch('memory').createStorageInstance<TestDocType>({
                     databaseName: sameName,
                     collectionName: sameName,
                     schema: getPseudoSchemaForVersion(0, 'key'),
                     options: {}
                 });
-                const storageInstance2 = await storage.createStorageInstance<TestDocType>({
+                const storageInstance2 = await getRxStoragePouch('memory').createStorageInstance<TestDocType>({
                     databaseName: sameName,
                     collectionName: sameName,
                     schema: getPseudoSchemaForVersion(0, 'key'),
@@ -452,7 +466,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 storageInstance2.close();
             });
             it('should emit changes when bulkAddRevisions() is used to set the newest revision', async () => {
-                const storageInstance = await storage.createStorageInstance<TestDocType>({
+                const storageInstance = await getRxStoragePouch('memory').createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
@@ -520,7 +534,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
         });
         describe('attachments', () => {
             it('should return the correct attachment object on all document fetch methods', async () => {
-                const storageInstance = await storage.createStorageInstance<TestDocType>({
+                const storageInstance = await getRxStoragePouch('memory').createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
@@ -531,8 +545,6 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
 
                 const emitted: RxStorageChangeEvent<any>[] = [];
                 const sub = storageInstance.changeStream().subscribe(x => {
-                    console.log('emitted event:');
-                    console.dir(x);
                     emitted.push(x);
                 });
 
@@ -541,7 +553,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     attachmentData,
                     'text/plain'
                 );
-                const attachmentHash = await storage.hash(dataBlobBuffer);
+                const attachmentHash = await getRxStoragePouch('memory').hash(dataBlobBuffer);
 
                 const writeData: RxDocumentWriteData<TestDocType> = {
                     key: 'foobar',
@@ -605,7 +617,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 storageInstance.close();
             });
             it('should be able to add multiple attachments, one each write', async () => {
-                const storageInstance = await storage.createStorageInstance<TestDocType>({
+                const storageInstance = await getRxStoragePouch('memory').createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
@@ -658,7 +670,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
     describe('RxStorageKeyObjectInstance', () => {
         describe('RxStorageKeyObjectInstance.bulkWrite()', () => {
             it('should write the documents', async () => {
-                const storageInstance = await storage.createKeyObjectStorageInstance(
+                const storageInstance = await getRxStoragePouch('memory').createKeyObjectStorageInstance(
                     randomCouchString(12),
                     randomCouchString(12),
                     {}
@@ -682,7 +694,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 storageInstance.close();
             });
             it('should error on conflict', async () => {
-                const storageInstance = await storage.createKeyObjectStorageInstance(
+                const storageInstance = await getRxStoragePouch('memory').createKeyObjectStorageInstance(
                     randomCouchString(12),
                     randomCouchString(12),
                     {}
@@ -712,7 +724,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 storageInstance.close();
             });
             it('should be able to delete', async () => {
-                const storageInstance = await storage.createKeyObjectStorageInstance(
+                const storageInstance = await getRxStoragePouch('memory').createKeyObjectStorageInstance(
                     randomCouchString(12),
                     randomCouchString(12),
                     {}
@@ -749,7 +761,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
         });
         describe('.findLocalDocumentsById()', () => {
             it('should find the documents', async () => {
-                const storageInstance = await storage.createKeyObjectStorageInstance(
+                const storageInstance = await getRxStoragePouch('memory').createKeyObjectStorageInstance(
                     randomCouchString(12),
                     randomCouchString(12),
                     {}
@@ -779,7 +791,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
         });
         describe('.changeStream()', () => {
             it('should emit exactly one event on write', async () => {
-                const storageInstance = await storage.createKeyObjectStorageInstance(
+                const storageInstance = await getRxStoragePouch('memory').createKeyObjectStorageInstance(
                     randomCouchString(12),
                     randomCouchString(12),
                     {}
@@ -787,8 +799,6 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
 
                 const emitted: RxStorageChangeEvent<RxLocalDocumentData>[] = [];
                 const sub = storageInstance.changeStream().subscribe(x => {
-                    console.log('emit event:');
-                    console.dir(x);
                     emitted.push(x);
                 });
 
@@ -812,7 +822,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 storageInstance.close();
             });
             it('should emit all events', async () => {
-                const storageInstance = await storage.createKeyObjectStorageInstance(
+                const storageInstance = await getRxStoragePouch('memory').createKeyObjectStorageInstance(
                     randomCouchString(12),
                     randomCouchString(12),
                     {}
@@ -820,8 +830,6 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
 
                 const emitted: RxStorageChangeEvent<RxLocalDocumentData>[] = [];
                 const sub = storageInstance.changeStream().subscribe(x => {
-                    console.log('emit event:');
-                    console.dir(x);
                     emitted.push(x);
                 });
 
@@ -875,7 +883,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
     describe('helper', () => {
         describe('.getNewestSequence()', () => {
             it('should get the latest sequence', async () => {
-                const storageInstance = await storage.createStorageInstance<{ key: string }>({
+                const storageInstance = await getRxStoragePouch('memory').createStorageInstance<{ key: string }>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),

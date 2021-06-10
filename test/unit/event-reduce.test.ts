@@ -8,14 +8,15 @@ import {
     randomCouchString,
     RxCollection,
     RxDocument,
-    MangoQuery
+    MangoQuery,
+    getRxStoragePouch
 } from '../../plugins/core';
 
 describe('event-reduce.test.js', () => {
     async function createCollection(eventReduce: boolean): Promise<RxCollection> {
         const db = await createRxDatabase({
             name: randomCouchString(10),
-            adapter: 'memory',
+            storage: getRxStoragePouch('memory'),
             eventReduce
         });
         const schema = clone(schemas.primaryHuman);

@@ -20,7 +20,7 @@ export function ensureCollectionNameValid(
     }
 }
 
-export function ensureDatabaseNameIsValid(args: RxDatabaseCreator) {
+export function ensureDatabaseNameIsValid(args: RxDatabaseCreator<any, any>) {
 
     /**
      * Not all strings can be used as couchdb collection name

@@ -4,6 +4,7 @@ import config from './config';
 
 import {
     createRxDatabase,
+    getRxStoragePouch,
     randomCouchString
 } from '../../plugins/core';
 
@@ -46,7 +47,7 @@ config.parallel('temporary-document.test.js', () => {
         it('should have default-values', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
             const c = await db.collection({
                 name: 'nestedhuman',
@@ -105,7 +106,7 @@ config.parallel('temporary-document.test.js', () => {
         it('should be able to use ORM-functions', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
             const c = await db.collection({
                 name: 'humans',

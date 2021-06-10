@@ -9,7 +9,8 @@ import {
     addRxPlugin,
     createRxDatabase,
     randomCouchString,
-    addPouchPlugin
+    addPouchPlugin,
+    getRxStoragePouch
 } from '../../plugins/core';
 
 import { RxDBAjvValidatePlugin } from '../../plugins/ajv-validate';
@@ -29,7 +30,7 @@ config.parallel('ajv-validate.node.js', () => {
             it('should not throw', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
                 const col = await db.collection({
                     name: 'humans',
@@ -46,7 +47,7 @@ config.parallel('ajv-validate.node.js', () => {
             it('should not validate wrong data', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
                 const col = await db.collection({
                     name: 'humans',
@@ -65,7 +66,7 @@ config.parallel('ajv-validate.node.js', () => {
             it('should have the correct params in error', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
                 const col = await db.collection({
                     name: 'humans',

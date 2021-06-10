@@ -13,7 +13,8 @@ import {
     RxDocument,
     isRxDocument,
     promiseWait,
-    randomCouchString
+    randomCouchString,
+    getRxStoragePouch
 } from '../../plugins/core';
 
 import {
@@ -291,7 +292,7 @@ config.parallel('reactive-query.test.js', () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 ignoreDuplicate: true
             });
             await db.collection({
@@ -300,7 +301,7 @@ config.parallel('reactive-query.test.js', () => {
             });
             const db2 = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 ignoreDuplicate: true
             });
             await db2.collection({
@@ -392,7 +393,7 @@ config.parallel('reactive-query.test.js', () => {
                 const name = randomCouchString(10);
                 const db = await createRxDatabase({
                     name,
-                    adapter: 'memory',
+                    storage: getRxStoragePouch('memory'),
                     ignoreDuplicate: true
                 });
                 const collection = await db.collection({

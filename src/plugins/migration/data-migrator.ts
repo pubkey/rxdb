@@ -37,7 +37,8 @@ import type {
     NumberFunctionMap,
     OldRxCollection,
     WithAttachmentsData,
-    RxJsonSchema
+    RxJsonSchema,
+    RxDocumentData
 } from '../../types';
 import {
     RxSchema,
@@ -60,6 +61,7 @@ import {
     getBatch,
     getSingleDocument
 } from '../../rx-storage-helper';
+import { InternalStoreDocumentData } from '../../rx-database';
 
 export class DataMigrator {
 
@@ -231,9 +233,9 @@ export async function createOldCollection(
 export async function _getOldCollections(
     dataMigrator: DataMigrator
 ): Promise<OldRxCollection[]> {
-    const oldColDocs = await Promise.all(
+    const oldColDocs: (RxDocumentData<InternalStoreDocumentData> | null)[] = await Promise.all(
         getPreviousVersions(dataMigrator.currentSchema.jsonSchema)
-            .map(v => getSingleDocument(dataMigrator.database.internalStore, dataMigrator.name + '-' + v))
+            .map(v => getSingleDocument<InternalStoreDocumentData>(dataMigrator.database.internalStore, dataMigrator.name + '-' + v))
             .map(fun => fun.catch(() => null)) // auto-catch so Promise.all continues
     );
 

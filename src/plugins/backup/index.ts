@@ -14,6 +14,7 @@ import { getNewestSequence } from '../../rx-storage-helper';
 import type {
     BackupOptions,
     RxBackupWriteEvent,
+    RxCollection,
     RxDatabase,
     RxDocument,
     RxPlugin
@@ -128,7 +129,7 @@ export class RxBackupState {
                 .keys(this.database.collections)
                 .map(async (collectionName) => {
                     const processedDocuments: Set<string> = new Set();
-                    const collection = this.database.collections[collectionName];
+                    const collection: RxCollection = this.database.collections[collectionName];
 
                     await this.database.requestIdlePromise();
                     const newestSeq = await getNewestSequence(collection.storageInstance);
@@ -217,7 +218,7 @@ export class RxBackupState {
     }
 
     public watchForChanges() {
-        const collections = Object.values(this.database.collections);
+        const collections: RxCollection[] = Object.values(this.database.collections);
         collections.forEach(collection => {
             const changes$ = collection.storageInstance.changeStream();
             const sub = changes$.subscribe(() => {

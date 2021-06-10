@@ -7,6 +7,7 @@ import * as humansCollection from '../helper/humans-collection';
 
 import {
     createRxDatabase,
+    getRxStoragePouch,
     randomCouchString,
     RxChangeEvent
 } from '../../plugins/core';
@@ -21,7 +22,7 @@ config.parallel('reactive-collection.test.js', () => {
             it('should get a valid event on insert', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
                 const colName = 'foobar';
                 const c = await db.collection({
@@ -41,7 +42,7 @@ config.parallel('reactive-collection.test.js', () => {
             it('should get no event on non-succes-insert', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
                 const c = await db.collection({
                     name: 'foobar',
@@ -69,7 +70,7 @@ config.parallel('reactive-collection.test.js', () => {
             it('should fire on bulk insert', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
                 const collection = await db.collection({
                     name: 'human',

@@ -58,6 +58,7 @@ import type {
     ChangeEvent
 } from 'event-reduce-js';
 import {
+    isLevelDown,
     PouchDB
 } from './pouch-db';
 import { newRxError } from './rx-error';
@@ -903,7 +904,9 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
     constructor(
         public adapter: any,
         public pouchSettings: PouchSettings = {}
-    ) { }
+    ) {
+        checkPouchAdapter(adapter);
+    }
 
     /**
      * create the same diggest as an attachment with that data
@@ -917,6 +920,8 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
         location: string,
         options: PouchSettings
     ): Promise<PouchDBInstance> {
+
+
         const pouchDbParameters = {
             location: location,
             adapter: adapterObject(this.adapter),
@@ -928,13 +933,15 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
             this.pouchSettings,
             pouchDbParameters.settings
         );
+
         const pouch = new PouchDB(
             pouchDbParameters.location,
             pouchDBOptions
         ) as PouchDBInstance;
 
         // TODO only run this if the pouchdb instance was not created before
-        await pouch.info();
+        const info = await pouch.info();
+        // console.dir(pouch);
 
         return pouch;
     }
@@ -993,6 +1000,29 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
             },
             options
         );
+    }
+}
+
+
+/**
+ * Checks if all is ok with the given adapter,
+ * else throws an error.
+ */
+export function checkPouchAdapter(adapter: string | any) {
+    if (typeof adapter === 'string') {
+        // TODO make a function hasAdapter()
+        if (!(PouchDB as any).adapters || !(PouchDB as any).adapters[adapter]) {
+            throw newRxError('DB9', {
+                adapter
+            });
+        }
+    } else {
+        isLevelDown(adapter);
+        if (!(PouchDB as any).adapters || !(PouchDB as any).adapters.leveldb) {
+            throw newRxError('DB10', {
+                adapter
+            });
+        }
     }
 }
 

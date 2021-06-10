@@ -13,7 +13,8 @@ import {
     createRxDatabase,
     clone,
     randomCouchString,
-    addRxPlugin
+    addRxPlugin,
+    getRxStoragePouch
 } from '../../plugins/core';
 import {
     RxDBInMemoryPlugin,
@@ -382,13 +383,13 @@ config.parallel('in-memory.test.js', () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 multiInstance: true,
                 ignoreDuplicate: true
             });
             const db2 = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 multiInstance: true,
                 ignoreDuplicate: true
             });
@@ -542,7 +543,7 @@ config.parallel('in-memory.test.js', () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 multiInstance: true,
                 ignoreDuplicate: true
             });
@@ -564,7 +565,7 @@ config.parallel('in-memory.test.js', () => {
 
             const db2 = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 multiInstance: true,
                 ignoreDuplicate: true
             });
@@ -605,7 +606,7 @@ config.parallel('in-memory.test.js', () => {
         it('#744 inMemory collections don\'t implement static methods and options', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 multiInstance: true,
                 ignoreDuplicate: true
             });

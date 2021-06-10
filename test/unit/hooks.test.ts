@@ -11,6 +11,7 @@ import * as humansCollection from '../helper/humans-collection';
 
 import {
     createRxDatabase,
+    getRxStoragePouch,
     isRxDocument,
     promiseWait,
     randomCouchString
@@ -458,7 +459,7 @@ config.parallel('hooks.test.js', () => {
             it('should define a getter', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory',
+                    storage: getRxStoragePouch('memory'),
                     multiInstance: true
                 });
                 const collection = await db.collection({
@@ -484,7 +485,7 @@ config.parallel('hooks.test.js', () => {
             it('should throw when adding an async-hook', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory',
+                    storage: getRxStoragePouch('memory'),
                     multiInstance: true
                 });
                 const collection = await db.collection({

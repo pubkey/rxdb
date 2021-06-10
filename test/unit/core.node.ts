@@ -13,7 +13,8 @@ import {
     isRxDocument,
     randomCouchString,
     RxJsonSchema,
-    addPouchPlugin
+    addPouchPlugin,
+    getRxStoragePouch
 } from '../../plugins/core';
 
 addRxPlugin(require('../../plugins/validate'));
@@ -45,7 +46,7 @@ config.parallel('core.node.js', () => {
         it('create database', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
             db.destroy();
         });
@@ -53,7 +54,7 @@ config.parallel('core.node.js', () => {
             await AsyncTestUtil.assertThrows(
                 () => createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory',
+                    storage: getRxStoragePouch('memory'),
                     password: 'myLongAndStupidPassword'
                 }),
                 Error,
@@ -63,7 +64,7 @@ config.parallel('core.node.js', () => {
         it('create collection', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
             await db.collection({
                 name: 'humans',
@@ -76,7 +77,7 @@ config.parallel('core.node.js', () => {
         it('insert and find a document', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
             await db.collection({
                 name: 'humans',
@@ -105,7 +106,7 @@ config.parallel('core.node.js', () => {
         it('should throw error-codes instead of messages', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
             const col = await db.collection({
                 name: 'humans',

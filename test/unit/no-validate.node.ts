@@ -5,7 +5,8 @@ import {
     addRxPlugin,
     createRxDatabase,
     randomCouchString,
-    addPouchPlugin
+    addPouchPlugin,
+    getRxStoragePouch
 } from '../../plugins/core';
 addRxPlugin(require('../../plugins/no-validate'));
 addPouchPlugin(require('pouchdb-adapter-memory'));
@@ -35,7 +36,7 @@ config.parallel('no-validate.node.js', () => {
     it('should allow to insert everything', async () => {
         const db = await createRxDatabase({
             name: randomCouchString(10),
-            adapter: 'memory'
+            storage: getRxStoragePouch('memory'),
         });
         const col = await db.collection({
             name: 'humans',
@@ -49,7 +50,7 @@ config.parallel('no-validate.node.js', () => {
     it('should allow to save everything', async () => {
         const db = await createRxDatabase({
             name: randomCouchString(10),
-            adapter: 'memory'
+            storage: getRxStoragePouch('memory'),
         });
         const col = await db.collection({
             name: 'humans',

@@ -8,7 +8,8 @@ import {
     createRxDatabase,
     addRxPlugin,
     randomCouchString,
-    addPouchPlugin
+    addPouchPlugin,
+    getRxStoragePouch
 } from '../../plugins/core';
 import * as humansCollection from '../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
@@ -33,6 +34,7 @@ config.parallel('server.test.js', () => {
         this.timeout(12 * 1000);
         const port = nexPort();
         const serverCollection = await humansCollection.create(0);
+
         await serverCollection.database.server({
             path: '/db',
             port
@@ -42,6 +44,7 @@ config.parallel('server.test.js', () => {
         const colUrl = 'http://localhost:' + port + '/db/human';
         const gotJson = await request(colUrl);
         const got = JSON.parse(gotJson);
+
         assert.strictEqual(got.doc_count, 1);
 
         const clientCollection = await humansCollection.create(0);
@@ -224,7 +227,7 @@ config.parallel('server.test.js', () => {
         const dbName = config.rootPath + 'test_tmp/' + randomCouchString(10);
         const db1 = await createRxDatabase({
             name: dbName,
-            adapter: 'leveldb',
+            storage: getRxStoragePouch('leveldb'),
             multiInstance: false
         });
         const col1 = await db1.collection({
@@ -254,7 +257,7 @@ config.parallel('server.test.js', () => {
 
         const db1 = await createRxDatabase({
             name: db1Name,
-            adapter: 'leveldb',
+            storage: getRxStoragePouch('leveldb'),
             multiInstance: false
         });
         const col1 = await db1.collection({
@@ -264,7 +267,7 @@ config.parallel('server.test.js', () => {
 
         const db2 = await createRxDatabase({
             name: db2Name,
-            adapter: 'leveldb',
+            storage: getRxStoragePouch('leveldb'),
             multiInstance: false
         });
         const col2 = await db2.collection({
@@ -365,7 +368,7 @@ config.parallel('server.test.js', () => {
         const port = nexPort();
         const db1 = await createRxDatabase({
             name: randomCouchString(10),
-            adapter: 'memory',
+            storage: getRxStoragePouch('memory'),
             multiInstance: false
         });
         const res = db1.server({
@@ -387,7 +390,7 @@ config.parallel('server.test.js', () => {
         const port = nexPort();
         const db1 = await createRxDatabase({
             name: randomCouchString(10),
-            adapter: 'memory',
+            storage: getRxStoragePouch('memory'),
             multiInstance: false
         });
         const res1 = db1.server({
@@ -408,7 +411,7 @@ config.parallel('server.test.js', () => {
 
         const db2 = await createRxDatabase({
             name: randomCouchString(10),
-            adapter: 'memory',
+            storage: getRxStoragePouch('memory'),
             multiInstance: false
         });
         const res2 = db2.server({ port });
@@ -481,7 +484,7 @@ config.parallel('server.test.js', () => {
                 const dbName = config.rootPath + 'test_tmp/' + randomCouchString(10);
                 const db = await createRxDatabase({
                     name: dbName,
-                    adapter: 'leveldb',
+                    storage: getRxStoragePouch('leveldb'),
                     multiInstance: false
                 });
                 const col = await db.collection({

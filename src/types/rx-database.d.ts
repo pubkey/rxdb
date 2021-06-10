@@ -1,7 +1,4 @@
 import {
-    PouchSettings
-} from './pouch';
-import {
     MigrationState,
     RxCollection,
     RxDumpCollection,
@@ -14,18 +11,18 @@ import {
     RxDatabaseBase
 } from '../rx-database';
 import { Observable } from 'rxjs';
+import { RxStorage } from './rx-storage.interface';
 
-export interface RxDatabaseCreator {
+export interface RxDatabaseCreator<Internals, InstanceCreationOptions> {
+    storage: RxStorage<Internals, InstanceCreationOptions>,
+    instanceCreationOptions?: InstanceCreationOptions;
     name: string;
-    adapter: any;
     password?: string | any;
     multiInstance?: boolean;
     eventReduce?: boolean;
     ignoreDuplicate?: boolean;
     options?: any;
-    pouchSettings?: PouchSettings;
 }
-
 
 /**
  * Options that can be passed to express-pouchdb
@@ -59,7 +56,15 @@ export interface ServerOptions {
 }
 
 export type CollectionsOfDatabase = { [key: string]: RxCollection };
-export type RxDatabase<Collections = CollectionsOfDatabase> = RxDatabaseBase<Collections> &
+export type RxDatabase<
+    Internals = any,
+    InstanceCreationOptions = any,
+    Collections = CollectionsOfDatabase
+    > = RxDatabaseBase<
+        Internals,
+        InstanceCreationOptions,
+        Collections
+    > &
     Collections & RxDatabaseGenerated<Collections>;
 
 export type AllMigrationStates = {

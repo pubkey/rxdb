@@ -23,7 +23,8 @@ import {
     randomCouchString,
     PouchDB,
     pouchSwapPrimaryToId,
-    addPouchPlugin
+    addPouchPlugin,
+    getRxStoragePouch
 } from '../../plugins/core';
 import {
     RxDBReplicationGraphQLPlugin,
@@ -948,15 +949,10 @@ describe('replication-graphql.test.js', () => {
                 const firstDoc = AsyncTestUtil.clone(testData[0]);
                 firstDoc.deleted = true;
 
-                console.log('# set doc to deleted:');
-                console.dir(firstDoc);
                 await server.setDocument(firstDoc);
-                console.log('### run replication once');
                 await replicationState.run();
 
                 const docs2 = await c.find().exec();
-
-                console.dir(docs2.map(d => d.toJSON()));
 
                 assert.strictEqual(docs2.length, amount - 1);
 
@@ -1159,7 +1155,7 @@ describe('replication-graphql.test.js', () => {
                 const server = await SpawnServer.spawn();
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory',
+                    storage: getRxStoragePouch('memory'),
                     ignoreDuplicate: true
                 });
 
@@ -1467,12 +1463,12 @@ describe('replication-graphql.test.js', () => {
 
                 const db1 = await createRxDatabase({
                     name,
-                    adapter: 'memory',
+                    storage: getRxStoragePouch('memory'),
                     ignoreDuplicate: true
                 });
                 const db2 = await createRxDatabase({
                     name,
-                    adapter: 'memory',
+                    storage: getRxStoragePouch('memory'),
                     ignoreDuplicate: true
                 });
 
@@ -1540,7 +1536,7 @@ describe('replication-graphql.test.js', () => {
                 const name = randomCouchString(10);
                 const db = await createRxDatabase({
                     name,
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
                 const collection = await db.collection({
                     name: 'humans',
@@ -1881,7 +1877,7 @@ describe('replication-graphql.test.js', () => {
             it('should work with encryption', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory',
+                    storage: getRxStoragePouch('memory'),
                     multiInstance: true,
                     eventReduce: true,
                     ignoreDuplicate: true,
@@ -1921,7 +1917,7 @@ describe('replication-graphql.test.js', () => {
             it('should work with keyCompression', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory',
+                    storage: getRxStoragePouch('memory'),
                     multiInstance: true,
                     eventReduce: true,
                     ignoreDuplicate: true,
@@ -2054,7 +2050,7 @@ describe('replication-graphql.test.js', () => {
             it('push not working on slow db', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory',
+                    storage: getRxStoragePouch('memory'),
                     multiInstance: true,
                     eventReduce: true,
                     ignoreDuplicate: true,
@@ -2105,7 +2101,7 @@ describe('replication-graphql.test.js', () => {
             it('push not working when big amount of docs is pulled before', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory',
+                    storage: getRxStoragePouch('memory'),
                     multiInstance: true,
                     eventReduce: true,
                     ignoreDuplicate: true,
@@ -2153,7 +2149,7 @@ describe('replication-graphql.test.js', () => {
             it('#1812 updates fail when graphql is enabled', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory',
+                    storage: getRxStoragePouch('memory'),
                     multiInstance: false,
                     eventReduce: true,
                     password: randomCouchString(10)

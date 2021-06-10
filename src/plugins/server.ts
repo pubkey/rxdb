@@ -15,7 +15,8 @@ import type {
 } from '../types';
 
 import {
-    addRxPlugin
+    addRxPlugin,
+    RxStoragePouch
 } from '../core';
 import { RxDBReplicationPlugin } from './replication';
 addRxPlugin(RxDBReplicationPlugin);
@@ -96,11 +97,18 @@ export function spawnServer(
 ): ServerResponse {
     const db = this;
     const collectionsPath = startServer ? path : '/';
-    if (!SERVERS_OF_DB.has(db))
+    if (!SERVERS_OF_DB.has(db)) {
         SERVERS_OF_DB.set(db, []);
+    }
+
+    const storage: RxStoragePouch = db.storage as any;
+    if (!storage.adapter) {
+        throw new Error('The RxDB server plugin only works with pouchdb storage.');
+    }
+
 
     const pseudo = PouchDB.defaults({
-        adapter: db.adapter,
+        adapter: storage.adapter,
         prefix: getPrefix(db),
         log: false
     });

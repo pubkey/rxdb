@@ -5,12 +5,10 @@ import { BroadcastChannel } from 'broadcast-channel';
 import type { LeaderElector } from './plugins/leader-election';
 import type {
     CollectionsOfDatabase,
-    PouchDBInstance,
     RxDatabase,
     RxCollectionCreator,
     RxJsonSchema,
     RxCollection,
-    PouchSettings,
     ServerOptions,
     RxDatabaseCreator,
     RxDumpDatabase,
@@ -52,23 +50,8 @@ import {
     Observable
 } from 'rxjs';
 import {
-    filter
-} from 'rxjs/operators';
-
-import {
-    PouchDB,
-    isLevelDown
-} from './pouch-db';
-
-import {
     createRxCollection
 } from './rx-collection';
-import {
-    getRxStoragePouch,
-    RxStorageInstancePouch,
-    RxStorageKeyObjectInstancePouch,
-    RxStoragePouch
-} from './rx-storage-pouchdb';
 import {
     findLocalDocument,
     getAllDocuments,
@@ -80,16 +63,15 @@ import {
 import type { RxBackupState } from './plugins/backup';
 
 /**
- * stores the combinations
- * of used database-names with their adapters
- * so we can throw when the same database is created more then once
+ * stores the used database names
+ * so we can throw when the same database is created more then once.
  */
-const USED_COMBINATIONS: { [k: string]: any[] } = {};
+const USED_DATABASE_NAMES: Set<string> = new Set();
 
 let DB_COUNT = 0;
 
 // stores information about the collections
-declare type InternalStoreDocumentData = {
+export type InternalStoreDocumentData = {
     _id: string;
     schema: RxJsonSchema;
     schemaHash: string;
@@ -97,31 +79,28 @@ declare type InternalStoreDocumentData = {
 };
 
 export class RxDatabaseBase<
-    Collections = CollectionsOfDatabase
+    Internals, InstanceCreationOptions,
+    Collections = CollectionsOfDatabase,
     > {
 
-    // TODO use type RxStorage when rx-storage finished implemented
-    public storage: RxStoragePouch;
     /**
      * Stores information documents about the collections of the database
      */
-    public internalStore: RxStorageInstancePouch<InternalStoreDocumentData> = {} as any;
+    public internalStore: RxStorageInstance<InternalStoreDocumentData, Internals, InstanceCreationOptions> = {} as any;
     /**
      * Stores the local documents which are attached to this database.
      */
-    public localDocumentsStore: RxStorageKeyObjectInstancePouch = {} as any;
+    public localDocumentsStore: RxStorageKeyObjectInstance<Internals, InstanceCreationOptions> = {} as any;
 
     constructor(
         public name: string,
-        public adapter: any,
+        public storage: RxStorage<Internals, InstanceCreationOptions>,
+        public instanceCreationOptions: InstanceCreationOptions,
         public password: any,
         public multiInstance: boolean,
         public eventReduce: boolean = false,
         public options: any = {},
-        public pouchSettings: PouchSettings,
     ) {
-        this.storage = getRxStoragePouch(adapter, pouchSettings);
-
         this.collections = {} as any;
         DB_COUNT++;
     }
@@ -157,25 +136,6 @@ export class RxDatabaseBase<
             }
         });
         await this.internalStore.bulkWrite(writeData);
-    }
-
-    /**
-     * spawns a new pouch-instance
-     */
-    public async _spawnStorageInstance(
-        collectionName: string,
-        schema: RxJsonSchema,
-        pouchSettings: PouchSettings = {}
-    ): Promise<PouchDBInstance> {
-        const instance = await this.storage.createStorageInstance(
-            {
-                databaseName: this.name,
-                collectionName,
-                schema,
-                options: pouchSettings
-            }
-        );
-        return instance.internals.pouch;
     }
 
     /**
@@ -369,7 +329,7 @@ export class RxDatabaseBase<
                                     databaseName: this.name,
                                     collectionName,
                                     schema: getPseudoSchemaForVersion(v),
-                                    options: {}
+                                    options: this.instanceCreationOptions
                                 }
                             );
                         })
@@ -473,7 +433,7 @@ export class RxDatabaseBase<
             // close broadcastChannel if exists
             .then(() => this.broadcastChannel ? this.broadcastChannel.close() : Promise.resolve())
             // remove combination from USED_COMBINATIONS-map
-            .then(() => _removeUsedCombination(this.name, this.adapter))
+            .then(() => USED_DATABASE_NAMES.delete(this.name))
             .then(() => true);
     }
 
@@ -483,7 +443,7 @@ export class RxDatabaseBase<
     remove(): Promise<void> {
         return this
             .destroy()
-            .then(() => removeRxDatabase(this.name, this.adapter));
+            .then(() => removeRxDatabase(this.name, this.storage));
     }
 }
 
@@ -491,33 +451,17 @@ export class RxDatabaseBase<
  * checks if an instance with same name and adapter already exists
  * @throws {RxError} if used
  */
-function _isNameAdapterUsed(
-    name: string,
-    adapter: any
+function throwIfDatabaseNameUsed(
+    name: string
 ) {
-    if (!USED_COMBINATIONS[name])
-        return false;
-
-    let used = false;
-    USED_COMBINATIONS[name].forEach(ad => {
-        if (ad === adapter)
-            used = true;
-    });
-    if (used) {
+    if (!USED_DATABASE_NAMES.has(name)) {
+        return;
+    } else {
         throw newRxError('DB8', {
             name,
-            adapter,
             link: 'https://pubkey.github.io/rxdb/rx-database.html#ignoreduplicate'
         });
     }
-}
-
-function _removeUsedCombination(name: string, adapter: any) {
-    if (!USED_COMBINATIONS[name])
-        return;
-
-    const index = USED_COMBINATIONS[name].indexOf(adapter);
-    USED_COMBINATIONS[name].splice(index, 1);
 }
 
 /**
@@ -583,37 +527,36 @@ export function _collectionNamePrimary(name: string, schema: RxJsonSchema) {
  * removes all internal docs of a given collection
  * @return resolves all known collection-versions
  */
-export function _removeAllOfCollection(
-    rxDatabase: RxDatabase,
+export async function _removeAllOfCollection(
+    rxDatabase: RxDatabaseBase<any, any, any>,
     collectionName: string
 ): Promise<number[]> {
-    return rxDatabase.lockedRun(
+    const docs = await rxDatabase.lockedRun(
         () => getAllDocuments(rxDatabase.internalStore)
-    ).then((data) => {
-        const relevantDocs = data
-            .filter((doc) => {
-                const name = doc._id.split('-')[0];
-                return name === collectionName;
-            });
-        return Promise.all(
-            relevantDocs
-                .map(
-                    doc => {
-                        const writeDoc = flatClone(doc);
-                        writeDoc._deleted = true;
-                        return rxDatabase.lockedRun(
-                            () => writeSingle(
-                                rxDatabase.internalStore,
-                                {
-                                    previous: doc,
-                                    document: writeDoc
-                                }
-                            )
-                        );
-                    }
-                )
-        ).then(() => relevantDocs.map((doc: any) => doc.version));
-    });
+    );
+    const relevantDocs = docs
+        .filter((doc) => {
+            const name = doc._id.split('-')[0];
+            return name === collectionName;
+        });
+    return Promise.all(
+        relevantDocs
+            .map(
+                doc => {
+                    const writeDoc = flatClone(doc);
+                    writeDoc._deleted = true;
+                    return rxDatabase.lockedRun(
+                        () => writeSingle(
+                            rxDatabase.internalStore,
+                            {
+                                previous: doc,
+                                document: writeDoc
+                            }
+                        )
+                    );
+                }
+            )
+    ).then(() => relevantDocs.map((doc: any) => doc.version));
 }
 
 function _prepareBroadcastChannel<Collections>(rxDatabase: RxDatabase<Collections>): void {
@@ -632,8 +575,6 @@ function _prepareBroadcastChannel<Collections>(rxDatabase: RxDatabase<Collection
         (rxDatabase.broadcastChannel$ as any).next(changeEvent);
     };
 
-
-    // TODO only subscribe when something is listening to the event-chain
     rxDatabase._subs.push(
         rxDatabase.broadcastChannel$.subscribe((cE: RxChangeEvent) => {
             rxDatabase.$emit(cE);
@@ -676,17 +617,17 @@ async function createRxDatabaseStorageInstances<RxDocType, Internals, InstanceCr
 /**
  * do the async things for this database
  */
-async function prepare<Collections, Internals, InstanceCreationOptions>(
-    rxDatabase: RxDatabase<Collections>
+async function prepare<Internals, InstanceCreationOptions, Collections>(
+    rxDatabase: RxDatabaseBase<Internals, InstanceCreationOptions, Collections>
 ): Promise<void> {
     const storageInstances = await createRxDatabaseStorageInstances<
         { _id: string },
         Internals,
         InstanceCreationOptions
     >(
-        rxDatabase.storage as any,
+        rxDatabase.storage,
         rxDatabase.name,
-        rxDatabase.pouchSettings as any
+        rxDatabase.instanceCreationOptions
     );
 
     rxDatabase.internalStore = storageInstances.internalStore as any;
@@ -705,50 +646,37 @@ async function prepare<Collections, Internals, InstanceCreationOptions>(
     );
     rxDatabase._subs.push(localDocsSub);
 
-    rxDatabase.storageToken = await _ensureStorageTokenExists<Collections>(rxDatabase);
+    rxDatabase.storageToken = await _ensureStorageTokenExists<Collections>(rxDatabase as any);
     if (rxDatabase.multiInstance) {
-        _prepareBroadcastChannel<Collections>(rxDatabase);
+        _prepareBroadcastChannel<Collections>(rxDatabase as any);
     }
 }
 
-export function createRxDatabase<Collections = { [key: string]: RxCollection }>({
-    name,
-    adapter,
-    password,
-    multiInstance = true,
-    eventReduce = false,
-    ignoreDuplicate = false,
-    options = {},
-    pouchSettings = {}
-}: RxDatabaseCreator): Promise<RxDatabase<Collections>> {
+export function createRxDatabase<
+    Internals,
+    InstanceCreationOptions,
+    Collections = { [key: string]: RxCollection },
+    >({
+        storage,
+        instanceCreationOptions,
+        name,
+        password,
+        multiInstance = true,
+        eventReduce = false,
+        ignoreDuplicate = false,
+        options = {}
+    }: RxDatabaseCreator<Internals, InstanceCreationOptions>): Promise<RxDatabase<Collections>> {
 
     runPluginHooks('preCreateRxDatabase', {
+        storage,
+        instanceCreationOptions,
         name,
-        adapter,
         password,
         multiInstance,
         eventReduce,
         ignoreDuplicate,
-        options,
-        pouchSettings
+        options
     });
-
-    // check if pouchdb-adapter
-    if (typeof adapter === 'string') {
-        // TODO make a function hasAdapter()
-        if (!(PouchDB as any).adapters || !(PouchDB as any).adapters[adapter]) {
-            throw newRxError('DB9', {
-                adapter
-            });
-        }
-    } else {
-        isLevelDown(adapter);
-        if (!(PouchDB as any).adapters || !(PouchDB as any).adapters.leveldb) {
-            throw newRxError('DB10', {
-                adapter
-            });
-        }
-    }
 
     if (password) {
         overwritable.validatePassword(password);
@@ -756,23 +684,18 @@ export function createRxDatabase<Collections = { [key: string]: RxCollection }>(
 
     // check if combination already used
     if (!ignoreDuplicate) {
-        _isNameAdapterUsed(name, adapter);
+        throwIfDatabaseNameUsed(name);
     }
-
-    // add to used_map
-    if (!USED_COMBINATIONS[name]) {
-        USED_COMBINATIONS[name] = [];
-    }
-    USED_COMBINATIONS[name].push(adapter);
+    USED_DATABASE_NAMES.add(name);
 
     const rxDatabase: RxDatabase<Collections> = new RxDatabaseBase(
         name,
-        adapter,
+        storage,
+        instanceCreationOptions,
         password,
         multiInstance,
         eventReduce,
         options,
-        pouchSettings
     ) as any;
 
     return prepare(rxDatabase)
@@ -785,9 +708,8 @@ export function createRxDatabase<Collections = { [key: string]: RxCollection }>(
  */
 export async function removeRxDatabase(
     databaseName: string,
-    adapter: any
+    storage: RxStorage<any, any>
 ): Promise<any> {
-    const storage = getRxStoragePouch(adapter);
 
     const storageInstance = await createRxDatabaseStorageInstances(
         storage,

@@ -191,7 +191,7 @@ export const basePrototype = {
             });
         }
 
-        const refCollection = this.collection.database.collections[schemaObj.ref];
+        const refCollection: RxCollection = this.collection.database.collections[schemaObj.ref];
         if (!refCollection) {
             throw newRxError('DOC7', {
                 ref: schemaObj.ref,

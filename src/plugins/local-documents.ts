@@ -76,9 +76,6 @@ const _getChangeSub = (parent: any) => {
                 const docCache = _getDocCache(parent);
                 const doc = docCache.get(cE.documentId);
 
-                console.log('process local change:');
-                console.dir(cE);
-
                 if (doc) {
                     doc._handleChangeEvent(cE);
                 }
