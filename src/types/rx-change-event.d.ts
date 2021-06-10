@@ -1,7 +1,10 @@
 export type RxChangeEventBase = {
+    readonly eventId: string;
     readonly documentId: string;
     readonly databaseToken: string;
-    readonly collectionName: string;
+
+    // optional does not exist on changes to localdocs of the database
+    readonly collectionName?: string;
 
     // true if the event is about a local document, false if not.
     readonly isLocal: boolean;

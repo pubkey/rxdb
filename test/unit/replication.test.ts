@@ -5,7 +5,7 @@
  */
 
 import assert from 'assert';
-import AsyncTestUtil, { waitUntil } from 'async-test-util';
+import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
 import config from './config';
 
 import * as schemaObjects from '../helper/schema-objects';
@@ -672,11 +672,14 @@ describe('replication.test.js', () => {
                     first()
                 ).toPromise();
 
-            // query for all documents on db2-collection2 again (result is read from cache which doesnt contain replicated doc)
-            // collection2._queryCache.destroy();
-            documents = await collection2.find().exec();
 
-            assert.strictEqual(documents.length, 1);
+
+            await waitUntil(async () => {
+                // query for all documents on db2-collection2 again (result is read from cache which doesnt contain replicated doc)
+                // collection2._queryCache.destroy();
+                const newDocs = await collection2.find().exec();
+                return newDocs.length === 1;
+            });
 
             // clean up afterwards
             db1.destroy();

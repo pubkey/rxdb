@@ -227,7 +227,11 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
                      */
                 } else {
 
+                    const doc: RxLocalDocumentData<D> = event.operation === 'DELETE' ? event.previous as any : event.doc as any;
+                    const eventId = getEventKey(true, doc._id, doc._rev ? doc._rev : '');
+
                     const storageChangeEvent: RxStorageChangeEvent<RxLocalDocumentData<D>> = {
+                        eventId,
                         documentId: resultRow.id,
                         change: event,
                         startTime,
@@ -309,6 +313,11 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
          * changes data.
          * Therefore we have to listen to these changes
          * and add them to the changeStream().
+         * 
+         * TODO instead of listening to pouch.changes,
+         * we should overwrite pouchdbs bulkDocs()
+         * and create our own event stream, this will work more relyable
+         * and does not mix up with write events from other sources.
          */
         const pouchChangesSub = fromEvent(
             this.internals.pouch
@@ -323,14 +332,14 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             filter((pouchRow: PouchChangeRow) => !pouchRow.id.startsWith(POUCHDB_DESIGN_PREFIX) && !pouchRow.id.startsWith(POUCHDB_LOCAL_PREFIX)),
             /**
              * Pouchdb directly emits the events on the write access,
-             * but we want to emit our own events first so we wait 20ms and two ticks
+             * but we want to emit our own events first so we wait Xms and two ticks
              * and then process the pouch events.
              * Own events must have priority before pouch events because in our own events
              * we have access to the previous document while on pouch changes we have to set it to 'UNKNOWN'
              */
             mergeMap(async (pouchRow) => {
-                await promiseWait(200);
                 await nextTick();
+                await promiseWait(200);
                 await nextTick();
                 return pouchRow;
             }),
@@ -339,7 +348,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                 if (!doc) {
                     throw new Error('this should never happen');
                 }
-                const eventKey = getEventKey(doc._id, doc._rev);
+                const eventKey = getEventKey(false, doc._id, doc._rev);
                 if (this.processesEventsSet.has(eventKey)) {
                     return false;
                 } else {
@@ -370,16 +379,17 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         const doc: RxDocumentData<RxDocType> = change.operation === 'DELETE' ? change.previous as any : change.doc as any;
         const primaryKey = getPrimary<any>(this.schema);
         const primary: string = (doc as any)[primaryKey];
-        const eventKey = getEventKey(primary, doc._rev);
+        const eventId = getEventKey(false, primary, doc._rev);
 
         const storageChangeEvent: RxStorageChangeEvent<RxDocumentData<RxDocType>> = {
+            eventId,
             documentId: primary,
             change,
             startTime,
             endTime
         };
 
-        this.processesEventsSet.add(eventKey);
+        this.processesEventsSet.add(eventId);
         this.changes$.next(storageChangeEvent);
     }
 
@@ -1103,8 +1113,9 @@ export function pouchStripLocalFlagFromPrimary(str: string): string {
     return str.substring(POUCHDB_LOCAL_PREFIX.length);
 }
 
-export function getEventKey(primary: string, revision: string): string {
-    const eventKey = primary + '|' + revision;
+export function getEventKey(isLocal: boolean, primary: string, revision: string): string {
+    const prefix = isLocal ? 'local' : 'non-local';
+    const eventKey = prefix + '|' + primary + '|' + revision;
     return eventKey;
 }
 

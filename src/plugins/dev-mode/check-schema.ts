@@ -25,6 +25,7 @@ import { rxDocumentProperties } from './entity-properties';
 export function checkFieldNameRegex(fieldName: string) {
     if (fieldName === '') return;
     if (fieldName === '_id') return;
+    if (fieldName === '_deleted') return;
 
     if (['properties', 'language'].includes(fieldName)) {
         throw newRxError('SC23', {
@@ -125,6 +126,9 @@ export function validateFieldsDeep(jsonSchema: any): true {
             // check underscore fields
             if (fieldName.charAt(0) === '_') {
                 if (fieldName === '_id' && schemaObj.primary) {
+                    return;
+                }
+                if (fieldName === '_deleted') {
                     return;
                 }
                 throw newRxError('SC8', {

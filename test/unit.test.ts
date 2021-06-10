@@ -13,7 +13,6 @@ import './unit/rx-document.test.js';
 import './unit/temporary-document.test.js';
 import './unit/change-event-buffer.test.js';
 import './unit/cache-replacement-policy.test';
-import './unit/cross-instance.test.js'; // TODO move down under import export
 import './unit/rx-query.test.js';
 import './unit/query-builder.test.js';
 import './unit/idle-queue.test.js';
@@ -32,6 +31,7 @@ import './unit/replication.test.js';
 import './unit/replication-graphql.test.js';
 import './unit/encryption.test.js';
 import './unit/import-export.test.js';
+import './unit/cross-instance.test.js';
 import './unit/mod-encryption.test.js';
 import './unit/local-documents.test.js';
 import './unit/in-memory.test.js';

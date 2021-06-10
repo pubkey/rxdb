@@ -154,38 +154,49 @@ export async function getNewestSequence(
 }
 
 export function storageChangeEventToRxChangeEvent<DocType>(
-    rxDatabase: RxDatabase,
-    rxCollection: RxCollection,
+    isLocal: boolean,
     rxStorageChangeEvent: RxStorageChangeEvent<DocType>,
-    isLocal: boolean
+    rxDatabase: RxDatabase,
+    rxCollection?: RxCollection,
 ): RxChangeEvent<DocType> {
 
     let documentData;
     if (rxStorageChangeEvent.change.operation !== 'DELETE') {
-        const hookParams = {
-            collection: rxCollection,
-            doc: rxStorageChangeEvent.change.doc as any
-        };
-        runPluginHooks('postReadFromInstance', hookParams);
-        documentData = hookParams.doc;
-        documentData = rxCollection._crypter.decrypt(documentData);
+        if (!rxCollection) {
+            documentData = rxStorageChangeEvent.change.doc;
+        } else {
+
+            const hookParams = {
+                collection: rxCollection,
+                doc: rxStorageChangeEvent.change.doc as any
+            };
+            runPluginHooks('postReadFromInstance', hookParams);
+            documentData = hookParams.doc;
+            documentData = rxCollection._crypter.decrypt(documentData);
+        }
     }
     let previousDocumentData;
     if (rxStorageChangeEvent.change.operation !== 'INSERT') {
-        const hookParams = {
-            collection: rxCollection,
-            doc: rxStorageChangeEvent.change.previous as any
-        };
-        runPluginHooks('postReadFromInstance', hookParams);
-        previousDocumentData = hookParams.doc;
-        previousDocumentData = rxCollection._crypter.decrypt(previousDocumentData);
+        if (!rxCollection) {
+            previousDocumentData = rxStorageChangeEvent.change.previous;
+        } else {
+
+            const hookParams = {
+                collection: rxCollection,
+                doc: rxStorageChangeEvent.change.previous as any
+            };
+            runPluginHooks('postReadFromInstance', hookParams);
+            previousDocumentData = hookParams.doc;
+            previousDocumentData = rxCollection._crypter.decrypt(previousDocumentData);
+        }
     }
 
 
     const ret: RxChangeEvent<DocType> = {
+        eventId: rxStorageChangeEvent.eventId,
         documentId: rxStorageChangeEvent.documentId,
         databaseToken: rxDatabase.token,
-        collectionName: rxCollection.name,
+        collectionName: rxCollection ? rxCollection.name : undefined,
         startTime: rxStorageChangeEvent.startTime,
         endTime: rxStorageChangeEvent.endTime,
         isLocal,

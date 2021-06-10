@@ -136,7 +136,7 @@ const RxLocalDocumentPrototype: any = {
                 // remove from docCache to assure new upserted RxDocuments will be a new instance
                 const docCache = _getDocCache(this.parent);
                 docCache.delete(this.primary);
-                this._deleted$.next(true);
+                this._isDeleted$.next(true);
                 break;
         }
     },

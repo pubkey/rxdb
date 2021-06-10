@@ -131,7 +131,8 @@ config.parallel('local-documents.test.js', () => {
             c.database.destroy();
         });
         it('collection: should emit again when state changed', async () => {
-            const c = await humansCollection.create();
+
+            const c = await humansCollection.create(0);
 
             const cEmits: any[] = [];
 
@@ -156,7 +157,14 @@ config.parallel('local-documents.test.js', () => {
             c.database.destroy();
         });
         it('database: should emit again when state changed', async () => {
-            const c = await humansCollection.create();
+
+            console.log('########################');
+            console.log('########################');
+            console.log('########################');
+            console.log('########################');
+
+
+            const c = await humansCollection.create(0);
             const db = c.database;
 
             const cEmits: any[] = [];

@@ -256,10 +256,10 @@ export class RxCollectionBase<
 
         const subDocs = storageInstance.changeStream().pipe(
             map(storageEvent => storageChangeEventToRxChangeEvent(
-                this.database,
-                this as any,
+                false,
                 storageEvent,
-                false
+                this.database,
+                this as any
             ))
         ).subscribe(cE => {
             this.$emit(cE);
@@ -267,10 +267,10 @@ export class RxCollectionBase<
         this._subs.push(subDocs);
         const subLocalDocs = localDocumentsStore.changeStream().pipe(
             map(storageEvent => storageChangeEventToRxChangeEvent(
-                this.database,
-                this as any,
+                true,
                 storageEvent,
-                true
+                this.database,
+                this as any
             ))
         ).subscribe(cE => this.$emit(cE));
         this._subs.push(subLocalDocs);

@@ -294,6 +294,11 @@ export type ChangeStreamEvent<DocumentData> = ChangeEvent<RxDocumentData<Documen
 
 
 export type RxStorageChangeEvent<DocType> = {
+    /**
+     * Unique identifier for the event.
+     * When another event with the same id appears, it will be skipped.
+     */
+    eventId: string;
     documentId: string;
     change:  ChangeEvent<DocType>;
 

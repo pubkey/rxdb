@@ -74,6 +74,7 @@ import {
     getAllDocuments,
     getSingleDocument,
     INTERNAL_STORAGE_NAME,
+    storageChangeEventToRxChangeEvent,
     writeSingle
 } from './rx-storage-helper';
 import type { RxBackupState } from './plugins/backup';
@@ -555,6 +556,9 @@ export function writeToSocket(
     rxDatabase: RxDatabase,
     changeEvent: RxChangeEvent
 ): Promise<boolean> {
+    if (rxDatabase.destroyed) {
+        return Promise.resolve(false);
+    }
 
     console.log('write event to socket:');
     console.dir(changeEvent);
@@ -702,6 +706,19 @@ async function prepare<Collections, Internals, InstanceCreationOptions>(
 
     rxDatabase.internalStore = storageInstances.internalStore as any;
     rxDatabase.localDocumentsStore = storageInstances.localDocumentsStore as any;
+
+    const localDocsSub = rxDatabase.localDocumentsStore.changeStream().subscribe(
+        rxStorageChangeEvent => {
+            rxDatabase.$emit(
+                storageChangeEventToRxChangeEvent(
+                    true,
+                    rxStorageChangeEvent,
+                    rxDatabase as any
+                )
+            );
+        }
+    );
+    rxDatabase._subs.push(localDocsSub);
 
     rxDatabase.storageToken = await _ensureStorageTokenExists<Collections>(rxDatabase);
     if (rxDatabase.multiInstance) {
