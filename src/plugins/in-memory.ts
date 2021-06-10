@@ -35,10 +35,11 @@ import {
     randomCouchString
 } from '../util';
 import {
+    PouchDB,
     getRxStoragePouch,
     pouchSwapIdToPrimary,
     pouchSwapPrimaryToId,
-} from '../core';
+} from '../plugins/pouchdb';
 import {
     createCrypter
 } from '../crypter';
@@ -49,9 +50,6 @@ import {
     createRxSchema,
     RxSchema
 } from '../rx-schema';
-import {
-    PouchDB
-} from '../pouch-db';
 import {
     newRxError
 } from '../rx-error';

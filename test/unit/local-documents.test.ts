@@ -9,8 +9,13 @@ import {
     randomCouchString,
     RxLocalDocument,
     addRxPlugin,
-    getRxStoragePouch
 } from '../../plugins/core';
+
+import {
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
+
+
 import { RxDBLocalDocumentsPlugin } from '../../plugins/local-documents';
 addRxPlugin(RxDBLocalDocumentsPlugin);
 import config from './config';

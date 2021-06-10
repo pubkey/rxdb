@@ -22,8 +22,13 @@ import {
     PrimaryProperty,
     RxDatabase,
     addRxPlugin,
-    getRxStoragePouch
 } from '../../plugins/core';
+
+import {
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
+
+
 import { RxDBUpdatePlugin } from '../../plugins/update';
 addRxPlugin(RxDBUpdatePlugin);
 import { RxDBMigrationPlugin } from '../../plugins/migration';

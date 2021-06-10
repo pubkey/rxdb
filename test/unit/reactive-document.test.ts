@@ -12,9 +12,13 @@ import * as schemaObjects from '../helper/schema-objects';
 import {
     createRxDatabase,
     randomCouchString,
-    promiseWait,
-    getRxStoragePouch
+    promiseWait
 } from '../../plugins/core';
+
+import {
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
+
 import {
     first
 } from 'rxjs/operators';

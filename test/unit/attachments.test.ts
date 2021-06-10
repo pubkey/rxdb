@@ -14,8 +14,12 @@ import {
     blobBufferUtil,
     MigrationStrategies,
     WithAttachmentsData,
-    getRxStoragePouch
 } from '../../plugins/core';
+
+import {
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
+
 
 config.parallel('attachments.test.ts', () => {
     describe('.putAttachment()', () => {

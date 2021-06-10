@@ -12,8 +12,12 @@ import {
     RxJsonSchema,
     randomCouchString,
     createCrypter,
-    getRxStoragePouch
 } from '../../plugins/core';
+
+import {
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
+
 
 config.parallel('encryption.test.js', () => {
     describe('Crypter.js', () => {

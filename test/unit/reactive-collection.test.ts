@@ -7,10 +7,15 @@ import * as humansCollection from '../helper/humans-collection';
 
 import {
     createRxDatabase,
-    getRxStoragePouch,
     randomCouchString,
     RxChangeEvent
 } from '../../plugins/core';
+
+import {
+    getRxStoragePouch,
+} from '../../plugins/pouchdb';
+
+
 import AsyncTestUtil from 'async-test-util';
 import {
     first
@@ -171,7 +176,6 @@ config.parallel('reactive-collection.test.js', () => {
             await c.insert(schemaObjects.human());
 
             await AsyncTestUtil.waitUntil(() => {
-                console.log('emitted.length: ' + emitted.length);
                 return emitted.length === 4;
             });
             emitted.forEach(cE => assert.strictEqual(cE.operation, 'INSERT'));

@@ -10,8 +10,12 @@ import {
     randomCouchString,
     createRxSchema,
     RxJsonSchema,
-    getRxStoragePouch
 } from '../../plugins/core';
+
+import {
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
+
 
 config.parallel('population.test.js', () => {
     describe('createRxSchema', () => {

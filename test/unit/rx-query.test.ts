@@ -13,8 +13,12 @@ import {
     RxJsonSchema,
     promiseWait,
     randomCouchString,
-    getRxStoragePouch
 } from '../../plugins/core';
+import {
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
+
+
 import { firstValueFrom } from 'rxjs';
 
 config.parallel('rx-query.test.js', () => {

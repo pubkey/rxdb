@@ -13,9 +13,13 @@ import {
     isRxDocument,
     randomCouchString,
     RxJsonSchema,
+} from '../../plugins/core';
+
+import {
     addPouchPlugin,
     getRxStoragePouch
-} from '../../plugins/core';
+} from '../../plugins/pouchdb';
+
 
 addRxPlugin(require('../../plugins/validate'));
 addPouchPlugin(require('pouchdb-adapter-memory'));

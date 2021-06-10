@@ -4,14 +4,14 @@
  */
 import {
     PouchDB
-} from '../pouch-db';
+} from './pouch-db';
 import {
     generateId,
     adapterObject
-} from '../util';
+} from '../../util';
 import type {
-    PouchDBInstance, RxPlugin
-} from '../types';
+    PouchDBInstance
+} from '../../types';
 
 /**
  * The same pouchdb-location is used on each run
@@ -70,16 +70,3 @@ export function checkAdapter(adapter: any): Promise<any> {
      * calling destroy would possibly crash the other call
      */
 }
-
-export const rxdb = true;
-export const prototypes = {};
-export const overwritable = {
-    checkAdapter
-};
-
-export const RxDBAdapterCheckPlugin: RxPlugin = {
-    name: 'adapter-check',
-    rxdb,
-    prototypes,
-    overwritable
-};

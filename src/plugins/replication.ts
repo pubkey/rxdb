@@ -24,16 +24,13 @@ import {
     flatClone
 } from '../util';
 import {
-    addRxPlugin
-} from '../core';
-import {
     newRxError
 } from '../rx-error';
 import {
     pouchReplicationFunction,
     isInstanceOf as isInstanceOfPouchDB,
     addPouchPlugin
-} from '../pouch-db';
+} from '../plugins/pouchdb';
 
 import {
     isRxCollection

@@ -5,23 +5,25 @@
  */
 
 import assert from 'assert';
-import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
+import AsyncTestUtil, { waitUntil } from 'async-test-util';
 import config from './config';
 
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
 import {
-    addRxPlugin,
     createRxDatabase,
     promiseWait,
     randomCouchString,
     isRxCollection,
     RxReplicationState,
-    SyncOptions,
+    SyncOptions
+} from '../../plugins/core';
+
+import {
     addPouchPlugin,
     getRxStoragePouch
-} from '../../plugins/core';
+} from '../../plugins/pouchdb';
 
 import {
     fromEvent

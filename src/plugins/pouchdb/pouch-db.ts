@@ -18,14 +18,17 @@ PouchDB.plugin(pouchdbDebug);
 PouchDB.debug.enable('*');
 */
 
+
+// TODO we can delete most of these functions in the file because it was migrated to rx-storage-pouchdb
+
 import {
     newRxError,
     newRxTypeError
-} from './rx-error';
+} from '../../rx-error';
 import type {
     PouchDBInstance
-} from './types';
-import { isFolderPath } from './util';
+} from '../../types';
+import { isFolderPath } from '../../util';
 
 /**
  * get the number of all undeleted documents
@@ -80,42 +83,6 @@ export function isLevelDown(adapter: any) {
             adapter
         });
     }
-}
-
-
-const validCouchDBStringRegexStr = '^[a-z][_$a-z0-9]*$';
-const validCouchDBStringRegex = new RegExp(validCouchDBStringRegexStr);
-
-/**
- * validates that a given string is ok to be used with couchdb-collection-names
- * @link https://wiki.apache.org/couchdb/HTTP_database_API
- * @throws  {Error}
- */
-export function validateCouchDBString(name: string): true {
-    if (
-        typeof name !== 'string' ||
-        name.length === 0
-    ) {
-        throw newRxTypeError('UT1', {
-            name
-        });
-    }
-
-
-    // do not check, if foldername is given
-    if (isFolderPath(name)) {
-        return true;
-    }
-
-
-    if (!name.match(validCouchDBStringRegex)) {
-        throw newRxError('UT2', {
-            regex: validCouchDBStringRegexStr,
-            givenName: name,
-        });
-    }
-
-    return true;
 }
 
 /**

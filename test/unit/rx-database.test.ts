@@ -13,12 +13,17 @@ import {
     isRxDatabase,
     createRxDatabase,
     createRxSchema,
-    getPouchLocation,
     randomCouchString,
     addRxPlugin,
     findLocalDocument,
-    getRxStoragePouch
 } from '../../plugins/core';
+
+
+import {
+    getPouchLocation,
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
+
 import AsyncTestUtil from 'async-test-util';
 import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';

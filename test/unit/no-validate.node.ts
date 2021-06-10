@@ -5,9 +5,14 @@ import {
     addRxPlugin,
     createRxDatabase,
     randomCouchString,
+} from '../../plugins/core';
+
+import {
     addPouchPlugin,
     getRxStoragePouch
-} from '../../plugins/core';
+} from '../../plugins/pouchdb';
+
+
 addRxPlugin(require('../../plugins/no-validate'));
 addPouchPlugin(require('pouchdb-adapter-memory'));
 

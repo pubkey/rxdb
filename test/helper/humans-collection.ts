@@ -6,11 +6,15 @@ import {
     createRxDatabase,
     RxJsonSchema,
     RxCollection,
-    PouchDB,
     RxDatabase,
-    randomCouchString,
-    getRxStoragePouch
+    randomCouchString
 } from '../../plugins/core';
+
+import {
+    PouchDB,
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
+
 
 import {
     HumanDocumentType

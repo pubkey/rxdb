@@ -9,9 +9,13 @@ import {
     randomCouchString,
     addRxPlugin,
     createRxDatabase,
+} from '../../plugins/core';
+
+import {
     addPouchPlugin,
     getRxStoragePouch
-} from '../../plugins/core';
+} from '../../plugins/pouchdb';
+
 
 import { RxDBValidateZSchemaPlugin } from '../../plugins/validate-z-schema';
 addRxPlugin(RxDBValidateZSchemaPlugin);

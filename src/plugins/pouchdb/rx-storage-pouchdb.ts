@@ -37,7 +37,7 @@ import type {
     BulkWriteLocalRow,
     RxStorageBulkWriteLocalError,
     RxStorageChangeEvent,
-} from './types';
+} from '../../types';
 
 import type {
     CompareFunction
@@ -51,7 +51,7 @@ import {
     blobBufferUtil,
     nextTick,
     now
-} from './util';
+} from '../../util';
 import type {
     SortComparator,
     QueryMatcher,
@@ -61,11 +61,11 @@ import {
     isLevelDown,
     PouchDB
 } from './pouch-db';
-import { newRxError } from './rx-error';
+import { newRxError } from '../../rx-error';
 import {
     getPrimary,
     getSchemaByObjectPath
-} from './rx-schema';
+} from '../../rx-schema';
 
 import {
     fromEvent,

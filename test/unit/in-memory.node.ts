@@ -8,20 +8,27 @@ import AsyncTestUtil from 'async-test-util';
 import PouchAdapterMemory from 'pouchdb-adapter-memory';
 const leveldown = require('leveldown');
 
-import { getRxStoragePouch, RxJsonSchema } from '../../plugins/core';
+import {
+    RxJsonSchema
+} from '../../plugins/core';
+
+import {
+    getRxStoragePouch,
+    addPouchPlugin
+} from '../../plugins/pouchdb';
+
 import config from './config';
 
 const {
     addRxPlugin,
     createRxDatabase,
-    randomCouchString,
-    addPouchPlugin
+    randomCouchString
 } = require('../../plugins/core/');
 
-import {RxDBInMemoryPlugin} from '../../plugins/in-memory';
+import { RxDBInMemoryPlugin } from '../../plugins/in-memory';
 addRxPlugin(RxDBInMemoryPlugin);
 
-import {RxDBDevModePlugin} from '../../plugins/dev-mode';
+import { RxDBDevModePlugin } from '../../plugins/dev-mode';
 addRxPlugin(RxDBDevModePlugin);
 
 addPouchPlugin(require('pouchdb-adapter-leveldb'));

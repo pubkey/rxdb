@@ -10,9 +10,12 @@ import {
     addRxPlugin,
     randomCouchString,
     _clearHook,
-    addPouchPlugin,
     RxPlugin
 } from '../../plugins/core';
+
+import {
+    addPouchPlugin
+} from '../../plugins/pouchdb';
 
 import * as humansCollection from '../helper/humans-collection';
 import { assertThrows } from 'async-test-util';

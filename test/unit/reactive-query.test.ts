@@ -13,9 +13,12 @@ import {
     RxDocument,
     isRxDocument,
     promiseWait,
-    randomCouchString,
-    getRxStoragePouch
+    randomCouchString
 } from '../../plugins/core';
+
+import {
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
 
 import {
     filter,

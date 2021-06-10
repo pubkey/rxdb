@@ -743,13 +743,6 @@ export async function removeRxDatabase(
     ]);
 }
 
-/**
- * check if the given adapter can be used
- */
-export function checkAdapter(adapter: any): Promise<boolean> {
-    return overwritable.checkAdapter(adapter);
-}
-
 export function isRxDatabase(obj: any) {
     return obj instanceof RxDatabaseBase;
 }

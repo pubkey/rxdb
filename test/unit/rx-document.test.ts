@@ -16,8 +16,13 @@ import {
     getDocumentPrototype,
     addRxPlugin,
     blobBufferUtil,
-    getRxStoragePouch
 } from '../../plugins/core';
+
+import {
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
+
+
 import { RxDBAttachmentsPlugin } from '../../plugins/attachments';
 addRxPlugin(RxDBAttachmentsPlugin);
 import { RxDBJsonDumpPlugin } from '../../plugins/json-dump';

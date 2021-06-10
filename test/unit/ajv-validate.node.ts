@@ -9,9 +9,12 @@ import {
     addRxPlugin,
     createRxDatabase,
     randomCouchString,
+} from '../../plugins/core';
+
+import {
     addPouchPlugin,
     getRxStoragePouch
-} from '../../plugins/core';
+} from '../../plugins/pouchdb';
 
 import { RxDBAjvValidatePlugin } from '../../plugins/ajv-validate';
 addRxPlugin(RxDBAjvValidatePlugin);

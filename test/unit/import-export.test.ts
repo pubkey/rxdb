@@ -12,8 +12,13 @@ import {
     RxCollection,
     randomCouchString,
     blobBufferUtil,
-    getRxStoragePouch
 } from '../../plugins/core';
+
+import {
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
+
+
 import AsyncTestUtil from 'async-test-util';
 import config from './config';
 

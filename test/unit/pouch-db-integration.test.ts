@@ -12,13 +12,18 @@ import {
     randomCouchString,
     promiseWait,
     clone,
-    PouchDB,
     isRxDatabase,
     PouchDBInstance,
     blobBufferUtil,
+} from '../../plugins/core';
+
+import {
+    PouchDB,
     addPouchPlugin,
     getRxStoragePouch
-} from '../../plugins/core';
+} from '../../plugins/pouchdb';
+
+
 import * as schemaObjects from './../helper/schema-objects';
 
 config.parallel('pouch-db-integration.test.js', () => {

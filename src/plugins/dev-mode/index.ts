@@ -21,6 +21,8 @@ import { checkQuery } from './check-query';
 import { newRxError } from '../../rx-error';
 
 export * from './check-schema';
+export * from './check-names';
+
 const DEV_MODE_PLUGIN_NAME = 'dev-mode';
 export const RxDBDevModePlugin: RxPlugin = {
     name: DEV_MODE_PLUGIN_NAME,

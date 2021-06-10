@@ -20,8 +20,12 @@ import {
     getFinalFields,
     getPreviousVersions,
     getSchemaByObjectPath,
-    getRxStoragePouch
 } from '../../plugins/core';
+
+import {
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
+
 
 config.parallel('rx-schema.test.js', () => {
     describe('static', () => {

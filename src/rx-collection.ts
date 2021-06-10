@@ -17,9 +17,6 @@ import {
     getFromMapOrThrow
 } from './util';
 import {
-    validateCouchDBString
-} from './pouch-db';
-import {
     _handleToPouch,
     _handleFromPouch,
     fillObjectDataBeforeInsert
@@ -114,6 +111,7 @@ import {
     getRxDocumentConstructor
 } from './rx-document-prototype-merge';
 import { getSingleDocument, storageChangeEventToRxChangeEvent, writeSingle } from './rx-storage-helper';
+import { validateDatabaseName } from './plugins/dev-mode/check-names';
 
 const HOOKS_WHEN = ['pre', 'post'];
 const HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
@@ -1027,7 +1025,7 @@ export function createRxCollection(
     }: any,
     wasCreatedBefore: boolean
 ): Promise<RxCollection> {
-    validateCouchDBString(name);
+    validateDatabaseName(name);
 
     // ensure it is a schema-object
     if (!isInstanceOfRxSchema(schema)) {

@@ -11,11 +11,15 @@ import * as humansCollection from '../helper/humans-collection';
 
 import {
     createRxDatabase,
-    getRxStoragePouch,
     isRxDocument,
     promiseWait,
     randomCouchString
 } from '../../plugins/core';
+
+import {
+    getRxStoragePouch,
+} from '../../plugins/pouchdb';
+
 
 config.parallel('hooks.test.js', () => {
     describe('get/set', () => {

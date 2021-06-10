@@ -23,7 +23,9 @@ import type {
     RxJsonSchema,
     JsonSchema
 } from './types';
-import { pouchSwapIdToPrimary, pouchSwapPrimaryToId } from './rx-storage-pouchdb';
+
+// TODO we should not need this here
+import { pouchSwapIdToPrimary, pouchSwapPrimaryToId } from './plugins/pouchdb';
 
 export class RxSchema<T = any> {
     public indexes: string[][];

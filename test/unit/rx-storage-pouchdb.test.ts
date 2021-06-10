@@ -1,12 +1,9 @@
 import assert from 'assert';
 
 import config from './config';
-import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import {
-    getRxStoragePouch,
     addRxPlugin,
-    RxStoragePouch,
     randomCouchString,
     getPseudoSchemaForVersion,
     getFromMapOrThrow,
@@ -15,9 +12,13 @@ import {
     writeSingle,
     blobBufferUtil,
     flatClone,
-    addPouchPlugin,
     MangoQuery
 } from '../../plugins/core';
+
+import {
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
+
 
 import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
 addRxPlugin(RxDBKeyCompressionPlugin);

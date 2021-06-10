@@ -11,8 +11,12 @@ import {
     createRxDatabase,
     randomCouchString,
     isRxDocument,
-    getRxStoragePouch
 } from '../../plugins/core';
+
+import {
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
+
 
 config.parallel('key-compression.test.js', () => {
     describe('RxQuery().keyCompress()', () => {

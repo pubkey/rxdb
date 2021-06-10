@@ -4,9 +4,14 @@ import AsyncTestUtil from 'async-test-util';
 import config from './config';
 import {
     createRxDatabase,
-    getRxStoragePouch,
     randomCouchString
 } from '../../plugins/core';
+
+import {
+    getRxStoragePouch,
+} from '../../plugins/pouchdb';
+
+
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 

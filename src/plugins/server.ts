@@ -3,8 +3,9 @@ import corsFn from 'cors';
 
 import {
     addPouchPlugin,
-    PouchDB
-} from '../pouch-db';
+    PouchDB,
+    RxStoragePouch
+} from '../plugins/pouchdb';
 import {
     newRxError
 } from '../rx-error';
@@ -15,8 +16,7 @@ import type {
 } from '../types';
 
 import {
-    addRxPlugin,
-    RxStoragePouch
+    addRxPlugin
 } from '../core';
 import { RxDBReplicationPlugin } from './replication';
 addRxPlugin(RxDBReplicationPlugin);

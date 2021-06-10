@@ -13,18 +13,10 @@ import './types/modules/random-token.d';
 
 
 export { addRxPlugin } from './plugin';
-export {
-    PouchDB,
-    validateCouchDBString,
-    pouchGetBatch,
-    pouchCountAllUndeleted,
-    addPouchPlugin
-} from './pouch-db';
 
 export {
     createRxDatabase,
     removeRxDatabase,
-    checkAdapter,
     isRxDatabase,
     dbCount,
     _collectionNamePrimary // used in tests
@@ -61,16 +53,6 @@ export {
     getSchemaByObjectPath
 } from './rx-schema';
 
-export {
-    getRxStoragePouch,
-    getPouchLocation,
-    RxStoragePouch,
-    RxStorageInstancePouch,
-    RxStorageKeyObjectInstancePouch,
-    OPEN_POUCHDB_STORAGE_INSTANCES,
-    pouchSwapPrimaryToId,
-    pouchSwapIdToPrimary
-} from './rx-storage-pouchdb';
 export {
     findLocalDocument,
     getSingleDocument,

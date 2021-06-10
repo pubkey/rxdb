@@ -14,10 +14,14 @@ import {
     RxError,
     clone,
     getHeightOfRevision,
+} from '../../plugins/core';
+
+import {
     pouchCountAllUndeleted,
     PouchDB,
     getRxStoragePouch
-} from '../../plugins/core';
+} from '../../plugins/pouchdb';
+
 
 import {
     _getOldCollections,

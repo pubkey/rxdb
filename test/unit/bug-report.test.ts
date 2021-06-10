@@ -12,8 +12,14 @@ import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
 
 import {
-    createRxDatabase, getRxStoragePouch, randomCouchString
+    createRxDatabase,
+    randomCouchString
 } from '../../plugins/core';
+
+import {
+    getRxStoragePouch,
+} from '../../plugins/pouchdb';
+
 
 describe('bug-report.test.js', () => {
     it('should fail because it reproduces the bug', async () => {

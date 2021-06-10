@@ -25,12 +25,6 @@ export const overwritable = {
     },
 
     /**
-     * checks if the given adapter can be used
-     */
-    checkAdapter(_adapter: any): Promise<boolean> {
-        throw pluginMissing('adapter-check');
-    },
-    /**
      * overwritte to map error-codes to text-messages
      */
     tunnelErrorMessage(message: string): string {

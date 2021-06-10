@@ -21,11 +21,16 @@ import {
     RxJsonSchema,
     hash,
     randomCouchString,
-    PouchDB,
-    pouchSwapPrimaryToId,
-    addPouchPlugin,
-    getRxStoragePouch
 } from '../../plugins/core';
+
+import {
+    addPouchPlugin,
+    pouchSwapPrimaryToId,
+    PouchDB,
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
+
+
 import {
     RxDBReplicationGraphQLPlugin,
     createRevisionForPulledDocument,
