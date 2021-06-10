@@ -207,9 +207,6 @@ export class RxGraphQLReplicationState<RxDocType> {
         const latestDocument = await getLastPullDocument(this.collection, this.endpointHash);
         const latestDocumentData = latestDocument ? latestDocument : null;
 
-        console.log('runPull from latest doc:');
-        console.dir(latestDocument);
-
         const pullGraphQL = await this.pull.queryBuilder(latestDocumentData);
 
         let result;

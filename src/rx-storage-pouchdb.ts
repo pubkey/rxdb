@@ -356,10 +356,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                 }
             })
         ).subscribe((pouchRow: PouchChangeRow) => {
-
-            console.log('emit event from internal pouch:');
-            console.dir(pouchRow);
-
             const primaryKey = getPrimary<any>(this.schema);
             const event = pouchChangeRowToChangeEvent<RxDocType>(
                 primaryKey,
@@ -602,16 +598,12 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         );
 
         const endTime = now();
-
-        console.log('aaa');
-
         documents.forEach(writeDoc => {
             const id: string = (writeDoc as any)[primaryKey];
             const previousDoc = previousDocs.get(id);
 
             let event: ChangeEvent<RxDocumentData<RxDocType>>;
             if (!previousDoc) {
-                console.log('- no previous doc');
                 if (writeDoc._deleted) {
                     return;
                 }
@@ -622,7 +614,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                     previous: null
                 };
             } else {
-                console.log('--- ad event');
                 const previousRevisionHeight = getHeightOfRevision(previousDoc._rev);
                 const newRevisonHeight = getHeightOfRevision(writeDoc._rev);
 

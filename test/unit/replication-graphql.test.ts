@@ -964,21 +964,10 @@ describe('replication-graphql.test.js', () => {
                 c.database.destroy();
             });
             it('should overwrite the local doc if it was deleted locally before synced from the server', async () => {
-
-                console.log('##################');
-                console.log('##################');
-                console.log('##################');
-                console.log('##################');
-                console.log('##################');
-
-
                 const c = await humansCollection.createHumanWithTimestamp(0);
                 const localDoc: any = schemaObjects.humanWithTimestamp();
                 const rxDoc = await c.insert(localDoc);
                 await rxDoc.remove();
-
-
-
 
                 const docs = await c.find().exec();
                 assert.strictEqual(docs.length, 0);
@@ -995,10 +984,6 @@ describe('replication-graphql.test.js', () => {
                 localDoc['deleted'] = false;
                 await server.setDocument(localDoc);
 
-                console.log('-----');
-                console.log('-----');
-                console.log('-----');
-                console.log('-----');
                 await replicationState.run();
 
                 const docsAfter = await c.find().exec();
@@ -2166,12 +2151,6 @@ describe('replication-graphql.test.js', () => {
                 db.destroy();
             });
             it('#1812 updates fail when graphql is enabled', async () => {
-
-                console.log('#####################');
-                console.log('#####################');
-                console.log('#####################');
-                console.log('#####################');
-
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
                     adapter: 'memory',
@@ -2184,13 +2163,9 @@ describe('replication-graphql.test.js', () => {
                     name: 'humans',
                     schema
                 });
-                console.log('---- 0');
 
                 const server = await SpawnServer.spawn();
                 assert.strictEqual(server.getDocuments().length, 0);
-
-
-                console.log('---- 1');
 
                 // start live replication
                 const replicationState = collection.syncGraphQL({

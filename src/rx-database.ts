@@ -186,16 +186,11 @@ export class RxDatabaseBase<
      * MultiInstance -> RxDatabase.$emit -> RxCollection -> RxDatabase
      */
     $emit(changeEvent: RxChangeEvent) {
-        console.log('RxDatabase(' + this.token + ').$emit:');
-        console.dir(changeEvent);
 
         // emit into own stream
         this.subject.next(changeEvent);
 
         // write to socket if event was created by this instance
-
-
-
         if (changeEvent.databaseToken === this.token) {
             writeToSocket(this as any, changeEvent);
         }
@@ -560,9 +555,6 @@ export function writeToSocket(
         return Promise.resolve(false);
     }
 
-    console.log('write event to socket:');
-    console.dir(changeEvent);
-
     if (
         rxDatabase.multiInstance &&
         !isRxChangeEventIntern(changeEvent) &&
@@ -572,8 +564,6 @@ export function writeToSocket(
             cE: changeEvent,
             storageToken: rxDatabase.storageToken as string
         };
-        console.log(':sendOverChannel:');
-        console.dir(sendOverChannel);
         return rxDatabase.broadcastChannel
             .postMessage(sendOverChannel)
             .then(() => true);
@@ -635,14 +625,9 @@ function _prepareBroadcastChannel<Collections>(rxDatabase: RxDatabase<Collection
     );
     rxDatabase.broadcastChannel$ = new Subject();
     rxDatabase.broadcastChannel.onmessage = (msg: RxChangeEventBroadcastChannelData) => {
-
-
         if (msg.storageToken !== rxDatabase.storageToken) return; // not same storage-state
         if (msg.cE.databaseToken === rxDatabase.token) return; // same db
         const changeEvent = msg.cE;
-
-        console.log('broadcastChannel(' + rxDatabase.token + ') onmessage:');
-        console.dir(msg);
 
         (rxDatabase.broadcastChannel$ as any).next(changeEvent);
     };

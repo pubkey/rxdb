@@ -75,11 +75,6 @@ config.parallel('cross-instance.test.js', () => {
         });
         describe('negative', () => {
             it('should not get the same events twice', async () => {
-
-                console.log('########################');
-                console.log('########################');
-                console.log('########################');
-
                 const name = randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);
@@ -309,21 +304,12 @@ config.parallel('cross-instance.test.js', () => {
                 c2.database.destroy();
             });
             it('should recieve 2 events', async () => {
-                console.log('###############');
-                console.log('###############');
-                console.log('###############');
-                console.log('###############');
-
                 const name = randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);
 
-                console.log('c2 token is ' + c2.database.token);
-
                 let recieved = 0;
                 c2.$.subscribe(cEvent => {
-                    console.log('received event:');
-                    console.dir(cEvent);
                     recieved++;
                     assert.ok(cEvent.operation);
                 });

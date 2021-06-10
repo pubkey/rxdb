@@ -179,10 +179,6 @@ export class RxQueryBase<
     _setResultData(newResultData: any[]): RxDocument[] {
         this._resultsData = newResultData;
 
-
-        console.log('RxQuery: new results data:');
-        console.dir(newResultData);
-
         const docs = createRxDocuments(
             this.collection,
             this._resultsData

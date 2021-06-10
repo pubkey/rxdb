@@ -628,7 +628,6 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     }
                 };
 
-                console.log('---- 1');
                 previous = await writeSingle(
                     storageInstance,
                     {
@@ -636,7 +635,6 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                         document: writeData
                     }
                 );
-                console.log('---- 2');
 
                 writeData._attachments = flatClone(previous._attachments) as any;
                 writeData._attachments.bar = {
@@ -644,8 +642,6 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     type: 'text/plain'
                 };
 
-                console.log('---- 3');
-
                 previous = await writeSingle(
                     storageInstance,
                     {
@@ -654,10 +650,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     }
                 );
 
-                console.log('---- 4');
-
                 assert.strictEqual(Object.keys(previous._attachments).length, 2);
-
                 storageInstance.close();
             });
         });

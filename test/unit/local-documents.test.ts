@@ -157,13 +157,6 @@ config.parallel('local-documents.test.js', () => {
             c.database.destroy();
         });
         it('database: should emit again when state changed', async () => {
-
-            console.log('########################');
-            console.log('########################');
-            console.log('########################');
-            console.log('########################');
-
-
             const c = await humansCollection.create(0);
             const db = c.database;
 

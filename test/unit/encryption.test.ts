@@ -117,12 +117,6 @@ config.parallel('encryption.test.js', () => {
     describe('RxDocument.save()', () => {
         describe('positive', () => {
             it('should save one encrypted value (string)', async () => {
-
-                console.log('###############');
-                console.log('###############');
-                console.log('###############');
-                console.log('###############');
-
                 const c = await humansCollection.createEncrypted(0);
                 const agent = schemaObjects.encryptedHuman();
                 await c.insert(agent);

@@ -157,13 +157,6 @@ config.parallel('reactive-collection.test.js', () => {
     });
     describe('.insert$', () => {
         it('should only emit inserts', async () => {
-
-
-            console.log('##############');
-            console.log('##############');
-            console.log('##############');
-            console.log('##############');
-
             const c = await humansCollection.create(0);
 
             const emitted: RxChangeEvent[] = [];
