@@ -54,6 +54,7 @@ import {
     newRxError
 } from '../rx-error';
 import { getDocumentDataOfRxChangeEvent } from '../rx-change-event';
+import { _handleFromStorageInstance, _handleToStorageInstance } from '../rx-collection-helper';
 
 const collectionCacheMap = new WeakMap();
 const collectionPromiseCacheMap = new WeakMap();
@@ -253,7 +254,7 @@ export function replicateExistingDocuments(
             .rows
             .map((row: any) => row.doc)
             .filter((doc: any) => !doc.language) // do not replicate design-docs
-            .map((doc: any) => fromCollection._handleFromPouch(doc))
+            .map((doc: any) => _handleFromStorageInstance(fromCollection, doc))
             // swap back primary because keyCompression:false
             .map((doc: any) => fromCollection.schema.swapPrimaryToId(doc));
 
@@ -329,7 +330,7 @@ export function streamChangedDocuments(
                 else return true;
             }),
             filter(change => prevFilter(change)),
-            map(change => rxCollection._handleFromPouch(change.doc)),
+            map(change => _handleFromStorageInstance(rxCollection, change.doc)),
             map(d => pouchSwapIdToPrimary(rxCollection.schema.primaryPath, d))
         );
     return observable;
@@ -347,7 +348,7 @@ export function applyChangedDocumentToPouch(
         rxCollection._doNotEmitSet = new Set();
     }
 
-    let transformedDoc = rxCollection._handleToPouch(docData);
+    let transformedDoc = _handleToStorageInstance(rxCollection, docData);
     transformedDoc = pouchSwapPrimaryToId(
         rxCollection.schema.primaryPath,
         transformedDoc

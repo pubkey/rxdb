@@ -4,7 +4,7 @@
  */
 /**
  * TODO this should be completely rewritten because:
- * - The current implemetation does not use pouchdb's bulkDocs which is much faster
+ * - The current implemetation does not use bulkDocs which is much faster
  * - This could have been done in much less code which would be easier to uderstand
  *
  */
@@ -48,10 +48,6 @@ import {
     createCrypter
 } from '../../crypter';
 import {
-    _handleToPouch,
-    _handleFromPouch
-} from '../../rx-collection-helper';
-import {
     getMigrationStateByDatabase,
     MigrationStateWithCollection
 } from './migration-state';
@@ -62,6 +58,7 @@ import {
     getSingleDocument
 } from '../../rx-storage-helper';
 import { InternalStoreDocumentData } from '../../rx-database';
+import { _handleFromStorageInstance, _handleToStorageInstance } from '../../rx-collection-helper';
 
 export class DataMigrator {
 
@@ -302,7 +299,7 @@ export function getBatchOfOldCollection(
         .then(docs => docs
             .map(doc => {
                 doc = flatClone(doc);
-                doc = _handleFromPouch(oldCollection, doc);
+                doc = _handleFromStorageInstance(oldCollection, doc);
                 return doc;
             })
         );
@@ -437,7 +434,7 @@ export function _migrateDocument(
                  * notice that this data also contains the attachments data
                  */
                 const attachmentsBefore = migrated._attachments;
-                const saveData: WithAttachmentsData<any> = oldCollection.newestCollection._handleToPouch(migrated);
+                const saveData: WithAttachmentsData<any> = _handleToStorageInstance(oldCollection.newestCollection, migrated);
                 saveData._attachments = attachmentsBefore;
 
                 /**
@@ -472,8 +469,8 @@ export function _migrateDocument(
 
             return oldCollection.storageInstance.bulkWrite(
                 [{
-                    previous: _handleToPouch(oldCollection, docData),
-                    document: _handleToPouch(oldCollection, writeDeleted)
+                    previous: _handleToStorageInstance(oldCollection, docData),
+                    document: _handleToStorageInstance(oldCollection, writeDeleted)
                 }]
             );
         })

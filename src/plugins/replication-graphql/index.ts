@@ -53,6 +53,7 @@ import type {
     BulkWriteRow
 } from '../../types';
 import { getDocumentDataOfRxChangeEvent } from '../../rx-change-event';
+import { _handleFromStorageInstance, _handleToStorageInstance } from '../../rx-collection-helper';
 
 addRxPlugin(RxDBLeaderElectionPlugin);
 
@@ -296,7 +297,7 @@ export class RxGraphQLReplicationState<RxDocType> {
                     delete doc._deleted;
                     delete doc._attachments;
 
-                    doc = this.collection._handleFromPouch(doc);
+                    doc = _handleFromStorageInstance(this.collection, doc);
 
                     doc = await (this.push as any).modifier(doc);
                     if (!doc) {
@@ -373,7 +374,7 @@ export class RxGraphQLReplicationState<RxDocType> {
     }
 
     async handleDocumentsFromRemote(docs: any[]): Promise<boolean> {
-        const toPouchDocs: {
+        const toStorageDocs: {
             doc: RxDocumentData<RxDocType>;
             deletedValue: boolean;
         }[] = [];
@@ -385,9 +386,6 @@ export class RxGraphQLReplicationState<RxDocType> {
         for (const doc of docs) {
             const documentId = doc[this.collection.schema.primaryPath];
             const deletedValue = doc[this.deletedFlag];
-
-            // TODO this should not be needed when rx-storage migration is done
-            // toPouch = pouchSwapPrimaryToId(this.collection.schema.primaryPath, toPouch);
 
             doc._deleted = deletedValue;
             delete doc[this.deletedFlag];
@@ -406,7 +404,7 @@ export class RxGraphQLReplicationState<RxDocType> {
             }
             doc._rev = newRevision;
 
-            toPouchDocs.push({
+            toStorageDocs.push({
                 doc: doc,
                 deletedValue
             });
@@ -415,7 +413,7 @@ export class RxGraphQLReplicationState<RxDocType> {
         await this.collection.database.lockedRun(
             async () => {
                 await this.collection.storageInstance.bulkAddRevisions(
-                    toPouchDocs.map(row => this.collection._handleToPouch(row.doc))
+                    toStorageDocs.map(row => _handleToStorageInstance(this.collection, row.doc))
                 );
             }
         );
@@ -512,11 +510,6 @@ export function syncGraphQL(
             }
 
             if (push) {
-                /**
-                 * we have to use the rxdb changestream
-                 * because the pouchdb.changes stream sometimes
-                 * does not emit events or stucks
-                 */
                 const changeEventsSub = collection.$.subscribe(changeEvent => {
                     if (replicationState.isStopped()) {
                         return;

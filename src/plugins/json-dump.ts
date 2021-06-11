@@ -20,6 +20,7 @@ import type {
     RxDocumentData,
     BulkWriteRow
 } from '../types';
+import { _handleToStorageInstance } from '../rx-collection-helper';
 
 function dumpRxDatabase(
     this: RxDatabase,
@@ -97,7 +98,7 @@ const dumpRxCollection = function (
     }
 
     const query = createRxQuery('find', _getDefaultQuery(this), this);
-    return this._pouchFind(query, undefined, encrypted)
+    return this._queryStorageInstance(query, undefined, encrypted)
         .then((docs: any) => {
             json.docs = docs.map((docData: any) => {
                 delete docData._rev;
@@ -143,7 +144,7 @@ function importDumpRxCollection<RxDocType>(
         () => {
             startTime = now();
             const writeMe: BulkWriteRow<RxDocType>[] = docs.map(doc => ({
-                document: this._handleToPouch(doc)
+                document: _handleToStorageInstance(this, doc)
             }));
             return this.storageInstance.bulkWrite(writeMe);
         }

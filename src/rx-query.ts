@@ -44,6 +44,7 @@ import {
 import { calculateNewResults } from './event-reduce';
 import { triggerCacheReplacement } from './query-cache';
 import type { QueryMatcher } from 'event-reduce-js';
+import { _handleToStorageInstance } from './rx-collection-helper';
 
 let _queryCount = 0;
 const newQueryID = function (): number {
@@ -198,10 +199,10 @@ export class RxQueryBase<
         let docsPromise;
         switch (this.op) {
             case 'find':
-                docsPromise = this.collection._pouchFind(this as any);
+                docsPromise = this.collection._queryStorageInstance(this as any);
                 break;
             case 'findOne':
-                docsPromise = this.collection._pouchFind(this as any, 1);
+                docsPromise = this.collection._queryStorageInstance(this as any, 1);
                 break;
             default:
                 throw newRxError('QU1', {
@@ -325,7 +326,7 @@ export class RxQueryBase<
         }
 
         return this.queryMatcher(
-            this.collection._handleToPouch(docData)
+            _handleToStorageInstance(this.collection, docData)
         );
     }
 

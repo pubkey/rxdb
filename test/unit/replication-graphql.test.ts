@@ -21,6 +21,7 @@ import {
     RxJsonSchema,
     hash,
     randomCouchString,
+    _handleToStorageInstance,
 } from '../../plugins/core';
 
 import {
@@ -571,7 +572,7 @@ describe('replication-graphql.test.js', () => {
                     );
 
 
-                    await c.pouch.bulkDocs([c._handleToPouch(toPouch)], {
+                    await c.pouch.bulkDocs([_handleToStorageInstance(c, toPouch)], {
                         new_edits: false
                     });
 
@@ -2323,7 +2324,7 @@ describe('replication-graphql.test.js', () => {
                 const dbName = randomCouchString(10);
                 const db = await createRxDatabase({
                     name: dbName,
-                    adapter: 'idb',
+                    storage: getRxStoragePouch('idb'),
                     multiInstance: true,
                     eventReduce: true,
                     ignoreDuplicate: true
@@ -2363,7 +2364,7 @@ describe('replication-graphql.test.js', () => {
                 // which will trigger an auto push
                 const db2 = await createRxDatabase({
                     name: dbName,
-                    adapter: 'idb',
+                    storage: getRxStoragePouch('idb'),
                     multiInstance: true,
                     eventReduce: true,
                     ignoreDuplicate: true

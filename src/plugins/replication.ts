@@ -42,6 +42,7 @@ import type {
     RxPlugin,
     SyncOptions
 } from '../types';
+import { _handleFromStorageInstance } from '../rx-collection-helper';
 
 // add pouchdb-replication-plugin
 addPouchPlugin(PouchReplicationPlugin);
@@ -169,7 +170,7 @@ export function setPouchEventEmitter(
 
                 (ev as any).change.docs
                     .filter((doc: any) => doc.language !== 'query') // remove internal docs
-                    .map((doc: any) => rxRepState.collection._handleFromPouch(doc)) // do primary-swap and keycompression
+                    .map((doc: any) => _handleFromStorageInstance(rxRepState.collection, doc)) // do primary-swap and keycompression
                     .forEach((doc: any) => rxRepState._subjects.docs.next(doc));
             }));
 

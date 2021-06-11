@@ -12,7 +12,7 @@ import { runPluginHooks } from './hooks';
 /**
  * wrappers for Pouch put/get to handle keycompression etc
  */
-export function _handleToPouch(
+export function _handleToStorageInstance(
     col: RxCollection | any,
     data: any
 ) {
@@ -26,7 +26,7 @@ export function _handleToPouch(
     return hookParams.doc;
 }
 
-export function _handleFromPouch(
+export function _handleFromStorageInstance(
     col: RxCollection | any,
     data: any,
     noDecrypt = false

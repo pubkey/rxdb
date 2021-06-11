@@ -2,7 +2,6 @@ import {
     map
 } from 'rxjs/operators';
 import {
-    now,
     blobBufferUtil,
     flatClone
 } from './../util';
@@ -12,15 +11,13 @@ import {
 import type {
     RxDocument,
     RxPlugin,
-    PouchAttachmentWithData,
     BlobBuffer,
-    WithAttachments,
     OldRxCollection,
-    PouchAttachmentMeta,
     RxDocumentWriteData,
     RxAttachmentData,
     RxDocumentData,
-    RxAttachmentCreator
+    RxAttachmentCreator,
+    RxAttachmentWriteData
 } from '../types';
 import type { RxSchema } from '../rx-schema';
 import { writeSingle } from '../rx-storage-helper';
@@ -248,36 +245,32 @@ export function allAttachments(
         });
 }
 
-export async function preMigrateDocument(
+export async function preMigrateDocument<RxDocType>(
     data: {
-        docData: WithAttachments<any>;
+        docData: RxDocumentData<RxDocType>;
         oldCollection: OldRxCollection
     }
 ): Promise<void> {
     const attachments = data.docData._attachments;
     if (attachments) {
         const mustDecrypt = !!shouldEncrypt(data.oldCollection.schema);
-        const newAttachments: { [attachmentId: string]: PouchAttachmentWithData } = {};
+        const newAttachments: { [attachmentId: string]: RxAttachmentWriteData } = {};
         await Promise.all(
             Object.keys(attachments).map(async (attachmentId) => {
-                const attachment: PouchAttachmentMeta = attachments[attachmentId];
-                const docPrimary: string = data.docData[data.oldCollection.schema.primaryPath];
+                const attachment: RxAttachmentData = attachments[attachmentId];
+                const docPrimary: string = (data.docData as any)[data.oldCollection.schema.primaryPath];
 
                 let rawAttachmentData = await data.oldCollection.storageInstance.getAttachmentData(docPrimary, attachmentId);
                 if (mustDecrypt) {
                     rawAttachmentData = await blobBufferUtil.toString(rawAttachmentData)
                         .then(dataString => blobBufferUtil.createBlobBuffer(
                             data.oldCollection._crypter._decryptString(dataString),
-                            (attachment as PouchAttachmentMeta).content_type as any
+                            (attachment as RxAttachmentData).type as any
                         ));
                 }
 
                 newAttachments[attachmentId] = {
-                    digest: attachment.digest,
-                    length: attachment.length,
-                    revpos: attachment.revpos,
-                    content_type: attachment.content_type,
-                    stub: false, // set this to false because now we have the full data
+                    type: attachment.type,
                     data: rawAttachmentData
                 };
             })
@@ -287,7 +280,7 @@ export async function preMigrateDocument(
          * Hooks mutate the input
          * instead of returning stuff
          */
-        data.docData._attachments = newAttachments;
+        (data.docData as RxDocumentWriteData<RxDocType>)._attachments = newAttachments;
     }
 }
 

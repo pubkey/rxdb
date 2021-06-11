@@ -29,6 +29,12 @@ export {
 } from './rx-collection';
 
 export {
+    _handleFromStorageInstance,
+    _handleToStorageInstance,
+    fillObjectDataBeforeInsert
+} from './rx-collection-helper';
+
+export {
     isRxDocument
 } from './rx-document';
 

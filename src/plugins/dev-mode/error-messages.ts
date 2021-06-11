@@ -170,7 +170,7 @@ export const ERROR_MESSAGES: { [k: string]: string } = {
     VD2: 'object does not match schema',
 
     // plugins/in-memory.js
-    IM1: 'InMemory: Memory-Adapter must be added. Use RxDB.plugin(require(\'pouchdb-adapter-memory\'));',
+    IM1: 'InMemory: Memory-Adapter must be added. Use addPouchPlugin(require(\'pouchdb-adapter-memory\'));',
     IM2: 'inMemoryCollection.sync(): Do not replicate with the in-memory instance. Replicate with the parent instead',
 
     // plugins/server.js

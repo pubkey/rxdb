@@ -17,8 +17,8 @@ import {
     getFromMapOrThrow
 } from './util';
 import {
-    _handleToPouch,
-    _handleFromPouch,
+    _handleToStorageInstance,
+    _handleFromStorageInstance,
     fillObjectDataBeforeInsert
 } from './rx-collection-helper';
 import {
@@ -314,23 +314,6 @@ export class RxCollectionBase<
     }
 
     /**
-     * wrappers for Pouch put/get to handle keycompression etc
-     */
-    _handleToPouch(docData: any): any {
-        return _handleToPouch(
-            this,
-            docData
-        );
-    }
-    _handleFromPouch(docData: any, noDecrypt = false) {
-        return _handleFromPouch(
-            this,
-            docData,
-            noDecrypt
-        );
-    }
-
-    /**
      * every write on the storage engine,
      * so we can run hooks and resolve stuff etc.
      * is tunneld throught this function
@@ -342,8 +325,8 @@ export class RxCollectionBase<
         RxDocumentData<RxDocumentType>
     > {
         const toStorageInstance: BulkWriteRow<any> = {
-            previous: writeRow.previous ? this._handleToPouch(flatClone(writeRow.previous)) : undefined,
-            document: this._handleToPouch(flatClone(writeRow.document))
+            previous: writeRow.previous ? _handleToStorageInstance(this, flatClone(writeRow.previous)) : undefined,
+            document: _handleToStorageInstance(this, flatClone(writeRow.document))
         };
 
         while (true) {
@@ -356,7 +339,7 @@ export class RxCollectionBase<
                 );
                 // on success, just return the result
 
-                const ret = this._handleFromPouch(writeResult);
+                const ret = _handleFromStorageInstance(this, writeResult);
                 return ret;
             } catch (err: any) {
                 const useErr: RxStorageBulkWriteError<RxDocumentType> = err as any;
@@ -389,7 +372,7 @@ export class RxCollectionBase<
     /**
      * wrapps pouch-find
      */
-    async _pouchFind(
+    async _queryStorageInstance(
         rxQuery: RxQuery | RxQueryBase,
         limit?: number,
         noDecrypt: boolean = false
@@ -403,7 +386,7 @@ export class RxCollectionBase<
             () => this.storageInstance.query(preparedQuery)
         );
         const docs = queryResult.documents
-            .map((doc: any) => this._handleFromPouch(doc, noDecrypt));
+            .map((doc: any) => _handleFromStorageInstance(this, doc, noDecrypt));
         return docs;
     }
 
@@ -477,7 +460,7 @@ export class RxCollectionBase<
         );
 
         const insertDocs: BulkWriteRow<RxDocumentType>[] = docs.map(d => ({
-            document: this._handleToPouch(d)
+            document: _handleToStorageInstance(this, d)
         }));
         const docsMap: Map<string, RxDocumentType> = new Map();
         docs.forEach(d => {
@@ -543,8 +526,8 @@ export class RxCollectionBase<
             const writeDoc = flatClone(doc);
             writeDoc._deleted = true;
             return {
-                previous: this._handleToPouch(doc),
-                document: this._handleToPouch(writeDoc)
+                previous: _handleToStorageInstance(this, doc),
+                document: _handleToStorageInstance(this, writeDoc)
             };
         });
 
@@ -719,7 +702,7 @@ export class RxCollectionBase<
         if (mustBeQueried.length > 0) {
             const docs = await this.storageInstance.findDocumentsById(mustBeQueried);
             Array.from(docs.values()).forEach(docData => {
-                docData = this._handleFromPouch(docData);
+                docData = _handleFromStorageInstance(this, docData);
                 const doc = createRxDocument<RxDocumentType, OrmMethods>(this as any, docData);
                 ret.set(doc.primary, doc);
             });

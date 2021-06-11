@@ -1,9 +1,3 @@
-/**
- * This plugin adds the local-documents-support
- * Local documents behave equal then with pouchdb
- * @link https://pouchdb.com/guides/local-documents.html
- */
-
 import objectPath from 'object-path';
 
 import {
@@ -361,7 +355,7 @@ function getLocal(this: any, id: string): Promise<RxLocalDocument | null> {
         return Promise.resolve(found);
     }
 
-    // if not found, check in pouch
+    // if not found, check in storage instance
     return findLocalDocument(storageInstance, id)
         .then((docData) => {
             if (!docData) {

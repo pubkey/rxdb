@@ -14,10 +14,10 @@ import {
     RxError,
     clone,
     getHeightOfRevision,
+    PouchDBInstance,
 } from '../../plugins/core';
 
 import {
-    pouchCountAllUndeleted,
     PouchDB,
     getRxStoragePouch
 } from '../../plugins/pouchdb';
@@ -301,6 +301,20 @@ config.parallel('data-migration.test.js', () => {
                     const old = olds.pop();
                     if (!old) {
                         throw new Error('this should never happen');
+                    }
+
+                    function pouchCountAllUndeleted(
+                        pouchdb: PouchDBInstance
+                    ): Promise<number> {
+                        return pouchdb
+                            .allDocs({
+                                include_docs: false,
+                                attachments: false
+                            })
+                            .then(docs => (docs.rows as any[])
+                                .filter(row => !row.id.startsWith('_design/'))
+                                .length
+                            );
                     }
 
                     const amount = await countAllUndeleted(old.storageInstance);
