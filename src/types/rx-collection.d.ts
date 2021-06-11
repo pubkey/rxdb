@@ -27,7 +27,7 @@ export interface RxCollectionCreator extends RxCollectionCreatorBase {
  */
 export type RxCollectionCreatorBase = {
     schema: RxJsonSchema;
-    pouchSettings?: PouchSettings;
+    instanceCreationOptions?: any;
     migrationStrategies?: MigrationStrategies;
     autoMigrate?: boolean;
     statics?: KeyFunctionMap;
@@ -72,7 +72,7 @@ export type RxCollectionHookNoInstanceCallback<
 export type RxCollection<
     RxDocumentType = any,
     OrmMethods = {},
-    StaticMethods = { [key: string]: any }
+    StaticMethods = {}
     > = RxCollectionBase<RxDocumentType, OrmMethods> &
     RxCollectionGenerated<RxDocumentType, OrmMethods> &
     StaticMethods;

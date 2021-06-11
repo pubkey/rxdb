@@ -999,14 +999,14 @@ config.parallel('rx-query.test.js', () => {
                 schema
             });
 
-            await col.pouch.createIndex({
+            await col.storageInstance.internals.pouch.createIndex({
                 name: 'idx-rxdb-info',
                 ddoc: 'idx-rxdb-info',
                 index: {
                     fields: ['info']
                 }
             });
-            await col.pouch.createIndex({
+            await col.storageInstance.internals.pouch.createIndex({
                 name: 'idx-rxdb-info.title',
                 ddoc: 'idx-rxdb-info.title',
                 index: {
@@ -1077,7 +1077,7 @@ config.parallel('rx-query.test.js', () => {
                     passportId: 'foofbar'
                 }
             });
-            const explained1 = await collection.pouch.explain(q1.toJSON());
+            const explained1 = await collection.storageInstance.internals.pouch.explain(q1.toJSON());
             assert.ok(explained1.index.ddoc);
             assert.ok(explained1.index.ddoc.startsWith('_design/idx-'));
 
@@ -1087,7 +1087,7 @@ config.parallel('rx-query.test.js', () => {
                     passportId: 'foofbar'
                 }
             }).sort('passportId');
-            const explained2 = await collection.pouch.explain(q2.toJSON());
+            const explained2 = await collection.storageInstance.internals.pouch.explain(q2.toJSON());
             assert.ok(explained2.index.ddoc);
             assert.ok(explained2.index.ddoc.startsWith('_design/idx-'));
 
@@ -1322,7 +1322,7 @@ config.parallel('rx-query.test.js', () => {
                 lastName: null
             };
 
-            const pouchResult = await collection.pouch.find({
+            const pouchResult = await collection.storageInstance.internals.pouch.find({
                 selector
             });
             const pouchDocs = pouchResult.docs;

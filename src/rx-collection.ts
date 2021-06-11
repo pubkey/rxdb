@@ -118,16 +118,17 @@ const HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
 let hooksApplied = false;
 
 export class RxCollectionBase<
+    InstanceCreationOptions,
     RxDocumentType = { [prop: string]: any },
     OrmMethods = {},
     StaticMethods = { [key: string]: any }
     > {
 
     constructor(
-        public database: RxDatabase<any>,
+        public database: RxDatabase<any, InstanceCreationOptions>,
         public name: string,
         public schema: RxSchema<RxDocumentType>,
-        public pouchSettings: PouchSettings = {},
+        public instanceCreationOptions: InstanceCreationOptions = {} as any,
         public migrationStrategies: KeyFunctionMap = {},
         public methods: KeyFunctionMap = {},
         public attachments: KeyFunctionMap = {},
@@ -212,11 +213,11 @@ export class RxCollectionBase<
     ): Promise<any> {
 
 
-        const storageInstanceCreationParams: RxStorageInstanceCreationParams<RxDocumentType, any> = {
+        const storageInstanceCreationParams: RxStorageInstanceCreationParams<RxDocumentType, InstanceCreationOptions> = {
             databaseName: this.database.name,
             collectionName: this.name,
             schema: this.schema.jsonSchema,
-            options: this.pouchSettings
+            options: this.instanceCreationOptions
         };
 
         runPluginHooks(
@@ -234,12 +235,11 @@ export class RxCollectionBase<
             this.database.storage.createKeyObjectStorageInstance(
                 this.database.name,
                 this.name,
-                this.pouchSettings
+                this.instanceCreationOptions
             )
         ]);
         this.storageInstance = storageInstance;
         this.localDocumentsStore = localDocumentsStore;
-        this.pouch = this.storageInstance.internals.pouch;
 
         // we trigger the non-blocking things first and await them later so we can do stuff in the mean time
 

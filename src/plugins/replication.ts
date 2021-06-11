@@ -40,7 +40,8 @@ import type {
     PouchSyncHandler,
     PouchReplicationOptions,
     RxPlugin,
-    SyncOptions
+    SyncOptions,
+    PouchDBInstance
 } from '../types';
 import { _handleFromStorageInstance } from '../rx-collection-helper';
 
@@ -294,7 +295,7 @@ export function sync(
 
     // if remote is RxCollection, get internal pouchdb
     if (isRxCollection(remote)) {
-        remote = remote.pouch;
+        remote = (remote as RxCollection).storageInstance.internals.pouch;
     }
 
     if (query && this !== query.collection) {
@@ -303,7 +304,7 @@ export function sync(
         });
     }
 
-    const syncFun = pouchReplicationFunction(this.pouch, direction);
+    const syncFun = pouchReplicationFunction(this.storageInstance.internals.pouch, direction);
     if (query) {
         useOptions.selector = (query as any).toJSON().selector;
     }
@@ -347,7 +348,10 @@ export const hooks = {
     createRxCollection: function (
         collection: RxCollection
     ) {
-        INTERNAL_POUCHDBS.add(collection.pouch);
+        const pouch: PouchDBInstance | undefined = collection.storageInstance.internals.pouch;
+        if (pouch) {
+            INTERNAL_POUCHDBS.add(collection.storageInstance.internals.pouch);
+        }
     }
 };
 

@@ -380,11 +380,11 @@ describe('typings.test.js', function () {
                                 foo2: 'bar2'
                             }
                         });
-                        const result = await myCollection.pouch.put({
+                        const result = await myCollection.storageInstance.internals.pouch.put({
                             _id: 'foobar',
                             foo: 'bar'
                         });
-                        const docs = await myCollection.pouch.allDocs();
+                        const docs = await myCollection.storageInstance.internals.pouch.allDocs();
                     })();
                 `;
                 await transpileCode(code);

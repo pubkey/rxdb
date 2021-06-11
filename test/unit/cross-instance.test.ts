@@ -129,7 +129,7 @@ config.parallel('cross-instance.test.js', () => {
             const c1 = await humansCollection.create(0);
             const c2 = await humansCollection.create(0);
             let got;
-            c2.pouch.changes({
+            c2.storageInstance.internals.pouch.changes({
                 since: 'now',
                 live: true,
                 include_docs: true

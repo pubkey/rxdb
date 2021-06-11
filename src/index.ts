@@ -50,4 +50,5 @@ addRxPlugin(RxDBQueryBuilderPlugin);
 
 // re-export things from core
 export * from './core';
+
 export * from './plugins/pouchdb';

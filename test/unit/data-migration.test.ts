@@ -403,7 +403,7 @@ config.parallel('data-migration.test.js', () => {
                     const olds = await _getOldCollections(col.getDataMigrator());
                     const oldCol = olds.pop();
 
-                    const docsPrev = await col.pouch.allDocs({
+                    const docsPrev = await col.storageInstance.internals.pouch.allDocs({
                         include_docs: false,
                         attachments: false
                     });

@@ -10,7 +10,8 @@ import {
 import { runPluginHooks } from './hooks';
 
 /**
- * wrappers for Pouch put/get to handle keycompression etc
+ * wrappers to process document data beofre/after it goes to the storage instnace.
+ * Used to handle keycompression, encryption etc
  */
 export function _handleToStorageInstance(
     col: RxCollection | any,

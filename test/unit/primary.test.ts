@@ -109,7 +109,7 @@ config.parallel('primary.test.js', () => {
                     const c = await humansCollection.createPrimary(0);
                     const obj = schemaObjects.simpleHuman();
                     await c.insert(obj);
-                    const all = await c.pouch.allDocs({
+                    const all = await c.storageInstance.internals.pouch.allDocs({
                         include_docs: true
                     });
                     const first = all.rows[0].doc;

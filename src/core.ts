@@ -7,9 +7,7 @@ import './types/modules/crypto-js.d';
 import './types/modules/graphql-client.d';
 import './types/modules/mocha.parallel.d';
 import './types/modules/modifiyjs.d';
-import './types/modules/pouchdb-selector-core.d';
 import './types/modules/random-token.d';
-
 
 
 export { addRxPlugin } from './plugin';
@@ -98,11 +96,15 @@ export type {
     MangoQuerySortPart,
     MigrationState,
     NumberFunctionMap,
+
+    // pouchdb stuff
     PouchDBInstance,
     PouchReplicationOptions,
     PouchSettings,
     PouchSyncHandler,
     PouchSyncHandlerEvents,
+    PouchdbQuery,
+
     RxAttachment,
     RxAttachmentCreator,
     RxCollection,
@@ -124,7 +126,6 @@ export type {
     Buffer,
     Debug,
     ExtractDTcol,
-    PouchdbQuery,
     RxDatabaseGenerated,
     RxDocumentBase,
     RxDumpCollectionBase,

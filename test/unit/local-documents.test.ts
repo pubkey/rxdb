@@ -552,7 +552,7 @@ config.parallel('local-documents.test.js', () => {
     describe('issues', () => {
         it('PouchDB: Create and remove local doc', async () => {
             const c = await humansCollection.create();
-            const pouch = c.pouch;
+            const pouch = c.storageInstance.internals.pouch;
 
             // create
             await pouch.put({

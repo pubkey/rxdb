@@ -246,7 +246,7 @@ export function replicateExistingDocuments(
     fromCollection: RxCollection,
     toCollection: RxCollection
 ): Promise<any[]> {
-    return fromCollection.pouch.allDocs({
+    return fromCollection.storageInstance.internals.pouch.allDocs({
         attachments: false,
         include_docs: true
     }).then(allRows => {

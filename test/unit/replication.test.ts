@@ -76,18 +76,18 @@ describe('replication.test.js', () => {
                 const c2 = await humansCollection.create(0);
 
                 const pw8 = AsyncTestUtil.waitResolveable(1000);
-                c.pouch.sync(server.url, {
+                c.storageInstance.internals.pouch.sync(server.url, {
                     live: true
                 }).on('error', function (err) {
                     console.log('error:');
                     console.log(JSON.stringify(err));
                     throw new Error(err);
                 });
-                c2.pouch.sync(server.url, {
+                c2.storageInstance.internals.pouch.sync(server.url, {
                     live: true
                 });
                 let count = 0;
-                c2.pouch.changes({
+                c2.storageInstance.internals.pouch.changes({
                     since: 'now',
                     live: true,
                     include_docs: true
@@ -117,17 +117,17 @@ describe('replication.test.js', () => {
                 const server = await SpawnServer.spawn();
                 const c = await humansCollection.create(0, undefined, false);
                 const c2 = await humansCollection.create(0, undefined, false);
-                c.pouch.sync(server.url, {
+                c.storageInstance.internals.pouch.sync(server.url, {
                     live: true
                 });
-                c2.pouch.sync(server.url, {
+                c2.storageInstance.internals.pouch.sync(server.url, {
                     live: true
                 });
 
                 const e1 = [];
                 const pouch$ =
                     fromEvent(
-                        c.pouch.changes({
+                        c.storageInstance.internals.pouch.changes({
                             since: 'now',
                             live: true,
                             include_docs: true
@@ -138,7 +138,7 @@ describe('replication.test.js', () => {
                         ).subscribe(e => e1.push(e));
                 const e2 = [];
                 const pouch2$ =
-                    fromEvent(c2.pouch.changes({
+                    fromEvent(c2.storageInstance.internals.pouch.changes({
                         since: 'now',
                         live: true,
                         include_docs: true
@@ -694,7 +694,7 @@ describe('replication.test.js', () => {
 
             await AsyncTestUtil.assertThrows(
                 () => colA.sync({
-                    remote: colB.pouch,
+                    remote: colB.storageInstance.internals.pouch,
                     direction: {
                         pull: true,
                         push: false

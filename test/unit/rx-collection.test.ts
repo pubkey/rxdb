@@ -104,7 +104,7 @@ config.parallel('rx-collection.test.js', () => {
                         name: 'human',
                         schema
                     }, false);
-                    const indexes = await col.pouch.getIndexes();
+                    const indexes = await col.storageInstance.internals.pouch.getIndexes();
                     assert.strictEqual(indexes.indexes.length, 2);
                     const lastIndexDefFields = indexes.indexes[1].def.fields;
                     assert.deepStrictEqual(
@@ -127,7 +127,7 @@ config.parallel('rx-collection.test.js', () => {
                         name: 'human',
                         schema
                     }, false);
-                    const indexes = await col.pouch.getIndexes();
+                    const indexes = await col.storageInstance.internals.pouch.getIndexes();
                     assert.strictEqual(indexes.indexes.length, 2);
                     const lastIndexDefFields = indexes.indexes[1].def.fields;
                     assert.deepStrictEqual(
@@ -151,7 +151,7 @@ config.parallel('rx-collection.test.js', () => {
                         schema
                     }, false);
                     assert.deepStrictEqual(schema.version, 0);
-                    assert.ok(collection.pouch.name.includes('-' + schema.version + '-'));
+                    assert.ok(collection.storageInstance.internals.pouch.name.includes('-' + schema.version + '-'));
                     db.destroy();
                 });
                 it('should not forget the options', async () => {
@@ -799,7 +799,7 @@ config.parallel('rx-collection.test.js', () => {
                         await Promise.all(objects.map(o => collection.insert(o)));
 
                         // do it manually
-                        const all = await collection.pouch.find({
+                        const all = await collection.storageInstance.internals.pouch.find({
                             selector: {
                                 'other.age': {
                                     '$gt': 0
@@ -1856,7 +1856,7 @@ config.parallel('rx-collection.test.js', () => {
                     auto_compaction: true
                 }
             });
-            assert.ok(collection.pouch.auto_compaction);
+            assert.ok(collection.storageInstance.internals.pouch.auto_compaction);
             db.destroy();
         });
         it('#939 creating a collection mutates the given parameters-object', async () => {

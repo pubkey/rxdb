@@ -204,7 +204,7 @@ describe('replication-graphql.test.js', () => {
         config.parallel('assumptions', () => {
             it('should be possible to retrieve deleted documents in pouchdb', async () => {
                 const c = await humansCollection.createHumanWithTimestamp(2);
-                const pouch = c.pouch;
+                const pouch = c.storageInstance.internals.pouch;
                 const doc = await c.findOne().exec(true);
                 await doc.remove();
 
@@ -223,7 +223,7 @@ describe('replication-graphql.test.js', () => {
             });
             it('should be possible to set a custom _rev', async () => {
                 const c = await humansCollection.createHumanWithTimestamp(1);
-                const pouch = c.pouch;
+                const pouch = c.storageInstance.internals.pouch;
                 const doc = await c.findOne().exec(true);
                 const docData = doc.toJSON();
                 const customRev = '2-fadae8ee3847d0748381f13988e95502-rxdb-from-graphql';
@@ -572,7 +572,7 @@ describe('replication-graphql.test.js', () => {
                     );
 
 
-                    await c.pouch.bulkDocs([_handleToStorageInstance(c, toPouch)], {
+                    await c.storageInstance.internals.pouch.bulkDocs([_handleToStorageInstance(c, toPouch)], {
                         new_edits: false
                     });
 
@@ -1913,7 +1913,7 @@ describe('replication-graphql.test.js', () => {
                 assert.strictEqual(docs.length, 1);
                 assert.strictEqual(docs[0].name, 'Alice');
 
-                const pouchDocs = await collection.pouch.find({
+                const pouchDocs = await collection.storageInstance.internals.pouch.find({
                     selector: {}
                 });
                 assert.ok(pouchDocs.docs[0].name !== 'Alice');
@@ -1953,7 +1953,7 @@ describe('replication-graphql.test.js', () => {
                 assert.strictEqual(docs.length, 1);
                 assert.strictEqual(docs[0].name, 'Alice');
 
-                const pouchDocs = await collection.pouch.find({
+                const pouchDocs = await collection.storageInstance.internals.pouch.find({
                     selector: {}
                 });
 

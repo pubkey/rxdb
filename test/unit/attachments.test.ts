@@ -310,7 +310,7 @@ config.parallel('attachments.test.ts', () => {
                 type: 'text/plain'
             });
 
-            const encryptedData = await doc.collection.pouch.getAttachment(doc.primary, 'cat.txt');
+            const encryptedData = await doc.collection.storageInstance.internals.pouch.getAttachment(doc.primary, 'cat.txt');
 
             const dataString = await blobBufferUtil.toString(encryptedData);
             assert.notStrictEqual(dataString, 'foo bar');
