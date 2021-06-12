@@ -941,7 +941,7 @@ export class RxCollectionBase<
  * this runs only once
  */
 function _applyHookFunctions(
-    collection: RxCollection
+    collection: RxCollection<any, any>
 ) {
     if (hooksApplied) return; // already run
     hooksApplied = true;

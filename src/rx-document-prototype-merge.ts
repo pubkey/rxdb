@@ -109,12 +109,12 @@ export function createRxDocument<DT, OM>(
     // return from cache if exsists
     const cacheDoc = rxCollection._docCache.get(primary);
     if (cacheDoc) {
-        return cacheDoc;
+        return cacheDoc as any;
     }
 
     const doc = createRxDocumentWithConstructor(
-        getRxDocumentConstructor(rxCollection),
-        rxCollection,
+        getRxDocumentConstructor(rxCollection as any),
+        rxCollection as any,
         docData
     );
 
@@ -132,7 +132,7 @@ export function createRxDocuments<DT, OM>(
     docsJSON: any[]
 ): RxDocument<DT, OM>[] {
     return docsJSON.map(
-        json => createRxDocument<DT, OM>(rxCollection, json)
+        json => createRxDocument<DT, OM>(rxCollection as any, json)
     );
 }
 

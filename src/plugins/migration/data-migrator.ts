@@ -203,7 +203,7 @@ export async function createOldCollection(
         databaseName: database.name,
         collectionName: dataMigrator.newestCollection.name,
         schema: schemaObj,
-        options: dataMigrator.newestCollection.pouchSettings
+        options: dataMigrator.newestCollection.instanceCreationOptions
     };
     const storageInstance = await database.storage.createStorageInstance(
         storageInstanceCreationParams

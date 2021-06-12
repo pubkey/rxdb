@@ -97,7 +97,7 @@ export async function setLastPushSequence(
 
 
 export async function getChangesSinceLastPushSequence<RxDocType>(
-    collection: RxCollection<RxDocType>,
+    collection: RxCollection<RxDocType, any>,
     endpointHash: string,
     batchSize = 10
 ): Promise<{

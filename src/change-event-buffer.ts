@@ -131,7 +131,7 @@ export class ChangeEventBuffer {
 }
 
 export function createChangeEventBuffer(
-    collection: RxCollection
+    collection: RxCollection<any, any>
 ) {
     return new ChangeEventBuffer(collection);
 }

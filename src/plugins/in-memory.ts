@@ -70,8 +70,8 @@ export
     extends RxCollectionBase<RxDocumentType, OrmMethods> {
 
     constructor(
-        parentCollection: RxCollection,
-        pouchSettings = {}
+        public readonly parentCollection: RxCollection<RxDocumentType, OrmMethods>,
+        public readonly pouchSettings?: any
     ) {
         super(
             parentCollection.database,
@@ -79,10 +79,10 @@ export
             toCleanSchema(parentCollection.schema),
             pouchSettings, // pouchSettings
             {},
-            parentCollection._methods);
+            (parentCollection as any)._methods);
         this._isInMemory = true;
-        this._parentCollection = parentCollection;
-        this._parentCollection.onDestroy.then(() => this.destroy());
+
+        parentCollection.onDestroy.then(() => this.destroy());
         this._crypter = createCrypter(this.database.password, this.schema);
         this._changeStreams = [];
 
@@ -115,7 +115,6 @@ export
         this._nonPersistentRevisions = new Set();
         this._nonPersistentRevisionsSubject = new Subject(); // emits Set.size() when Set is changed
     }
-    private _parentCollection: RxCollection<RxDocumentType, OrmMethods>;
     public _changeStreams: any;
     public _oldPouchPut: Function;
     public _nonPersistentRevisions: any;
@@ -139,14 +138,14 @@ export
                 );
             })
             // initial sync parent's docs to own
-            .then(() => replicateExistingDocuments(this._parentCollection, this as any))
+            .then(() => replicateExistingDocuments(this.parentCollection as any, this as any))
             .then(() => {
                 /**
                  * create an ongoing replications between both sides
                  */
                 const thisToParentSub = streamChangedDocuments(this as any)
                     .pipe(
-                        mergeMap(doc => applyChangedDocumentToPouch(this._parentCollection, doc)
+                        mergeMap(doc => applyChangedDocumentToPouch(this.parentCollection, doc)
                             .then(() => doc['_rev'])
                         )
                     )
@@ -156,7 +155,7 @@ export
                     });
                 this._subs.push(thisToParentSub);
 
-                const parentToThisSub = streamChangedDocuments(this._parentCollection)
+                const parentToThisSub = streamChangedDocuments(this.parentCollection)
                     .subscribe(doc => applyChangedDocumentToPouch(this as any, doc));
                 this._subs.push(parentToThisSub);
             });
@@ -246,7 +245,8 @@ export function replicateExistingDocuments(
     fromCollection: RxCollection,
     toCollection: RxCollection
 ): Promise<any[]> {
-    return fromCollection.storageInstance.internals.pouch.allDocs({
+    const pouch: PouchDBInstance = fromCollection.storageInstance.internals.pouch;
+    return pouch.allDocs({
         attachments: false,
         include_docs: true
     }).then(allRows => {
@@ -298,11 +298,11 @@ export function setIndexes(
  * @return observable that emits document-data
  */
 export function streamChangedDocuments(
-    rxCollection: RxCollection,
+    rxCollection: RxCollection<any, any>,
     prevFilter = (_i: any) => true
 ): Observable<any> {
-    if (!rxCollection._doNotEmitSet) {
-        rxCollection._doNotEmitSet = new Set();
+    if (!(rxCollection as any)._doNotEmitSet) {
+        (rxCollection as any)._doNotEmitSet = new Set();
     }
 
     const observable = ObservableFromEvent(
@@ -326,8 +326,11 @@ export function streamChangedDocuments(
             filter(change => {
                 // changes on the doNotEmit-list shell not be fired
                 const emitFlag = change.id + ':' + change.doc._rev;
-                if (rxCollection._doNotEmitSet.has(emitFlag)) return false;
-                else return true;
+                if ((rxCollection as any)._doNotEmitSet.has(emitFlag)) {
+                    return false;
+                } else {
+                    return true;
+                }
             }),
             filter(change => prevFilter(change)),
             map(change => _handleFromStorageInstance(rxCollection, change.doc)),
@@ -341,11 +344,11 @@ export function streamChangedDocuments(
  * without changeing the revision
  */
 export function applyChangedDocumentToPouch(
-    rxCollection: RxCollection,
+    rxCollection: RxCollection<any, any>,
     docData: any
 ): Promise<any> {
-    if (!rxCollection._doNotEmitSet) {
-        rxCollection._doNotEmitSet = new Set();
+    if (!(rxCollection as any)._doNotEmitSet) {
+        (rxCollection as any)._doNotEmitSet = new Set();
     }
 
     let transformedDoc = _handleToStorageInstance(rxCollection, docData);
@@ -368,10 +371,10 @@ export function applyChangedDocumentToPouch(
             }
             // set the flag so this does not appear in the own event-stream again
             const emitFlag = transformedDoc._id + ':' + (bulkRet[0] as PouchBulkDocResultRow).rev;
-            rxCollection._doNotEmitSet.add(emitFlag);
+            (rxCollection as any)._doNotEmitSet.add(emitFlag);
 
             // remove from the list later to not have a memory-leak
-            setTimeout(() => rxCollection._doNotEmitSet.delete(emitFlag), 30 * 1000);
+            setTimeout(() => (rxCollection as any)._doNotEmitSet.delete(emitFlag), 30 * 1000);
 
             return transformedDoc;
         });

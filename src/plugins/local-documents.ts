@@ -286,7 +286,7 @@ function insertLocal(
     docData: RxLocalDocumentData
 ): Promise<RxLocalDocument> {
     if (isRxCollection(this) && this._isInMemory) {
-        return this._parentCollection.insertLocal(id, docData);
+        return (this as any).parentCollection.insertLocal(id, docData);
     }
 
     return (this as any).getLocal(id)
@@ -343,7 +343,7 @@ function upsertLocal(this: any, id: string, data: any): Promise<RxLocalDocument>
 
 function getLocal(this: any, id: string): Promise<RxLocalDocument | null> {
     if (isRxCollection(this) && this._isInMemory) {
-        return this._parentCollection.getLocal(id);
+        return this.parentCollection.getLocal(id);
     }
 
     const storageInstance = _getKeyObjectStorageInstanceByParent(this);
