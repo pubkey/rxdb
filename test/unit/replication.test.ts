@@ -78,10 +78,10 @@ describe('replication.test.js', () => {
                 const pw8 = AsyncTestUtil.waitResolveable(1000);
                 c.storageInstance.internals.pouch.sync(server.url, {
                     live: true
-                }).on('error', function (err) {
+                }).on('error', function (err: Error) {
                     console.log('error:');
                     console.log(JSON.stringify(err));
-                    throw new Error(err);
+                    throw err;
                 });
                 c2.storageInstance.internals.pouch.sync(server.url, {
                     live: true

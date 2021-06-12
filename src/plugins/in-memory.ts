@@ -74,7 +74,7 @@ export
         public readonly pouchSettings?: any
     ) {
         super(
-            parentCollection.database,
+            parentCollection.database as any,
             parentCollection.name,
             toCleanSchema(parentCollection.schema),
             pouchSettings, // pouchSettings

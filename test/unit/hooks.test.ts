@@ -127,7 +127,7 @@ config.parallel('hooks.test.js', () => {
                 });
                 it('should have the collection bound to the this-scope', async () => {
                     const c = await humansCollection.createPrimary(0);
-                    c.foo = 'bar';
+                    (c as any).foo = 'bar';
                     let hasRun = false;
                     c.preInsert(function (this: any) {
                         hasRun = true;
@@ -424,7 +424,7 @@ config.parallel('hooks.test.js', () => {
                 });
                 it('should have the collection bound to the this-scope', async () => {
                     const c = await humansCollection.createPrimary(1);
-                    c.foo2 = 'bar2';
+                    (c as any).foo2 = 'bar2';
                     let hasRun = false;
 
                     c.postRemove(function (this: any) {

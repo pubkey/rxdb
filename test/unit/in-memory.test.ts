@@ -13,9 +13,11 @@ import {
     createRxDatabase,
     clone,
     randomCouchString,
-    addRxPlugin,
-    getRxStoragePouch
+    addRxPlugin
 } from '../../plugins/core';
+import {
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
 import {
     RxDBInMemoryPlugin,
     InMemoryRxCollection,
@@ -83,7 +85,7 @@ config.parallel('in-memory.test.js', () => {
                 const foundAfter = await inMem.pouch.find({
                     selector: {}
                 });
-                assert.strictEqual(foundAfter.docs[0].secret, 'foobar');
+                assert.strictEqual((foundAfter.docs[0] as any).secret, 'foobar');
                 inMem.destroy();
                 col.database.destroy();
             });
@@ -147,7 +149,7 @@ config.parallel('in-memory.test.js', () => {
                     selector: {}
                 });
                 assert.strictEqual(foundAfter.docs.length, 1);
-                assert.strictEqual(foundAfter.docs[0]._id, 'foobar1');
+                assert.strictEqual((foundAfter.docs[0] as any)._id, 'foobar1');
 
                 col.database.destroy();
             });
@@ -625,7 +627,7 @@ config.parallel('in-memory.test.js', () => {
             const memCol = await col.inMemory();
 
             // check method
-            assert.strictEqual(memCol.foo(), 'bar');
+            assert.strictEqual((memCol as any).foo(), 'bar');
 
             // check options
             assert.strictEqual(memCol.options.foobar, 'foobar');

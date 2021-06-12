@@ -72,8 +72,9 @@ export type RxCollectionHookNoInstanceCallback<
 export type RxCollection<
     RxDocumentType = any,
     OrmMethods = {},
-    StaticMethods = {}
-    > = RxCollectionBase<RxDocumentType, OrmMethods> &
+    StaticMethods = {},
+    InstanceCreationOptions = {}
+    > = RxCollectionBase<InstanceCreationOptions, RxDocumentType, OrmMethods> &
     RxCollectionGenerated<RxDocumentType, OrmMethods> &
     StaticMethods;
 

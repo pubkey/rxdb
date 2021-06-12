@@ -367,8 +367,8 @@ config.parallel('rx-collection.test.js', () => {
                         passportId: 'foobar',
                     };
                     await collection.insert(data);
-                    const doc = await collection.findOne().exec();
-                    assert.strictEqual(doc.age, 20);
+                    const doc = await collection.findOne().exec(true);
+                    assert.strictEqual((doc as any).age, 20);
 
                     db.destroy();
                 });
@@ -618,7 +618,7 @@ config.parallel('rx-collection.test.js', () => {
                             await collection.insert(human);
                             const docs = await collection.find().exec();
                             const doc = docs[0];
-                            assert.strictEqual(passportId, doc._data.passportId);
+                            assert.strictEqual(passportId, (doc as any)._data.passportId);
                             db.destroy();
                         }
                     });
@@ -1852,7 +1852,7 @@ config.parallel('rx-collection.test.js', () => {
             const collection: any = await db.collection({
                 name: 'human_compact',
                 schema: schemas.primaryHuman,
-                pouchSettings: {
+                instanceCreationOptions: {
                     auto_compaction: true
                 }
             });

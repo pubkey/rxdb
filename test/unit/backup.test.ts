@@ -7,7 +7,7 @@ import config from './config';
 
 import * as schemaObjects from '../helper/schema-objects';
 import {
-    addRxPlugin
+    addRxPlugin, blobBufferUtil
 } from '../../plugins/core';
 import { createAttachments } from '../helper/humans-collection';
 import {
@@ -45,7 +45,7 @@ describe('backup.test.js', () => {
             const firstDoc = await collection.findOne().exec(true);
             await firstDoc.putAttachment({
                 id: 'cat.txt',
-                data: 'lol',
+                data: blobBufferUtil.createBlobBuffer('lol', 'text/plain'),
                 type: 'text/plain'
             });
 
@@ -77,7 +77,7 @@ describe('backup.test.js', () => {
             const firstDoc = await collection.findOne().exec(true);
             await firstDoc.putAttachment({
                 id: 'cat.txt',
-                data: 'lol',
+                data: blobBufferUtil.createBlobBuffer('lol', 'text/plain'),
                 type: 'text/plain'
             });
             const directory = getBackupDir();
@@ -128,7 +128,7 @@ describe('backup.test.js', () => {
             const firstDoc = await collection.findOne().exec(true);
             await firstDoc.putAttachment({
                 id: 'cat.txt',
-                data: 'lol',
+                data: blobBufferUtil.createBlobBuffer('lol', 'text/plain'),
                 type: 'text/plain'
             });
             const directory = getBackupDir();

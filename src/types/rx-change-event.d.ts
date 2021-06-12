@@ -22,6 +22,7 @@ export type RxChangeEventBase = {
 export type RxChangeEventInsert<DocType> = RxChangeEventBase & {
     operation: 'INSERT';
     documentData: DocType;
+    previousDocumentData: null;
 }
 
 export type RxChangeEventUpdate<DocType> = RxChangeEventBase & {
@@ -32,6 +33,7 @@ export type RxChangeEventUpdate<DocType> = RxChangeEventBase & {
 
 export type RxChangeEventDelete<DocType> = RxChangeEventBase & {
     operation: 'DELETE';
+    documentData: null;
     previousDocumentData: DocType | 'UNKNOWN';
 }
 

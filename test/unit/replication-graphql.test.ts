@@ -2010,6 +2010,9 @@ describe('replication-graphql.test.js', () => {
 
                 server.requireHeader('Authorization', '1234');
                 const doc = getTestData(1).pop();
+                if (!doc) {
+                    throw new Error('missing doc');
+                }
                 await server.setDocument(doc);
 
                 replicationState.setHeaders({

@@ -15,9 +15,12 @@ import {
     addRxPlugin,
     randomCouchString,
     dbCount,
-    RxDatabase,
-    addPouchPlugin
+    RxDatabase
 } from '../plugins/core';
+import {
+    addPouchPlugin, getRxStoragePouch
+} from '../plugins/pouchdb';
+
 addPouchPlugin(require('pouchdb-adapter-memory'));
 import { RxDBNoValidatePlugin } from '../plugins/no-validate';
 addRxPlugin(RxDBNoValidatePlugin);
@@ -119,7 +122,7 @@ for (let r = 0; r < runs; r++) {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
                     eventReduce: true,
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory')
                 });
                 dbs.push(db);
 
@@ -146,7 +149,7 @@ for (let r = 0; r < runs; r++) {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
                 eventReduce: true,
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory')
             });
             const col = await db.collection({
                 name: 'human',
@@ -185,7 +188,7 @@ for (let r = 0; r < runs; r++) {
             const db = await createRxDatabase({
                 name: dbName,
                 eventReduce: true,
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory')
             });
             const col = await db.collection({
                 name: 'human',
@@ -203,7 +206,7 @@ for (let r = 0; r < runs; r++) {
 
             const db2 = await createRxDatabase({
                 name: dbName,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 eventReduce: true,
                 ignoreDuplicate: true
             });
@@ -231,7 +234,7 @@ for (let r = 0; r < runs; r++) {
             const db = await createRxDatabase({
                 name,
                 eventReduce: true,
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory')
             });
             const col = await db.collection({
                 name: 'human',
@@ -249,7 +252,7 @@ for (let r = 0; r < runs; r++) {
             const db2 = await createRxDatabase({
                 name,
                 eventReduce: true,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 ignoreDuplicate: true
             });
             const newSchema = schemas.averageSchema();
@@ -282,7 +285,7 @@ for (let r = 0; r < runs; r++) {
             const db = await createRxDatabase({
                 name,
                 eventReduce: true,
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory')
             });
             const col = await db.collection({
                 name: 'human',

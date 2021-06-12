@@ -110,6 +110,7 @@ export type {
     RxCollection,
     RxCacheReplacementPolicy,
     PrimaryProperty,
+    RxChangeEvent,
     RxCollectionCreator,
     RxCollectionGenerated,
     RxCollectionHookCallback,
