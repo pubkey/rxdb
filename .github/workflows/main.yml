@@ -90,8 +90,8 @@ jobs:
           npm run lint && npm run build
 
       - name: angular test
-        uses: DevExpress/testcafe-action@latest
-        # uses: GabrielBB/xvfb-action@v1
+        # uses: DevExpress/testcafe-action@latest
+        uses: GabrielBB/xvfb-action@v1
         with:
           working-directory: ./examples/angular #optional
           run: npm run test:build
