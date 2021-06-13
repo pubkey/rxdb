@@ -93,7 +93,7 @@ export
         this.onDestroy.then(() => {
             this._changeStreams.forEach((stream: any) => stream.cancel());
             // delete all data
-            this.pouch.destroy();
+            this.storageInstance.internals.pouch.destroy();
         });
 
         // add orm functions and options from parent
@@ -110,7 +110,7 @@ export
         this._changeEventBuffer = createChangeEventBuffer(this as any);
 
         const parentProto = Object.getPrototypeOf(parentCollection);
-        this._oldPouchPut = parentProto._pouchPut.bind(this);
+        this._oldPouchPut = (parentProto as any)._pouchPut.bind(this);
 
         this._nonPersistentRevisions = new Set();
         this._nonPersistentRevisionsSubject = new Subject(); // emits Set.size() when Set is changed
@@ -127,7 +127,7 @@ export
     public _eventCounter: number = 0;
 
     prepareChild() {
-        return setIndexes(this.schema, this.pouch)
+        return setIndexes(this.schema, this.storageInstance.internals.pouch)
             .then(() => {
                 this._subs.push(
                     (this._observable$ as any).subscribe((cE: RxChangeEvent) => {
@@ -199,7 +199,7 @@ export
         this._eventCounter++;
         if (this._eventCounter === 10) {
             this._eventCounter = 0;
-            this.pouch.compact();
+            this.storageInstance.internals.pouch.compact();
         }
     }
 
@@ -260,7 +260,7 @@ export function replicateExistingDocuments(
 
         if (docs.length === 0) return Promise.resolve([]); // nothing to replicate
         else {
-            return toCollection.pouch.bulkDocs({
+            return toCollection.storageInstance.internals.pouch.bulkDocs({
                 docs
             }, BULK_DOC_OPTIONS_FALSE)
                 .then(() => docs);
@@ -357,15 +357,15 @@ export function applyChangedDocumentToPouch(
         transformedDoc
     );
 
-    return rxCollection.pouch.get(transformedDoc._id)
-        .then(oldDoc => transformedDoc._rev = oldDoc._rev)
+    return rxCollection.storageInstance.internals.pouch.get(transformedDoc._id)
+        .then((oldDoc: any) => transformedDoc._rev = oldDoc._rev)
         .catch(() => {
             // doc not found, do not use a revision
             delete transformedDoc._rev;
-        }).then(() => rxCollection.pouch.bulkDocs({
+        }).then(() => rxCollection.storageInstance.internals.pouch.bulkDocs({
             docs: [transformedDoc]
         }, BULK_DOC_OPTIONS))
-        .then(bulkRet => {
+        .then((bulkRet: any) => {
             if (bulkRet.length > 0 && !(bulkRet[0] as PouchBulkDocResultRow).ok) {
                 throw new Error(JSON.stringify(bulkRet[0]));
             }
@@ -419,7 +419,7 @@ export async function prepareInMemoryRxCollection(instance: InMemoryRxCollection
         schema: instance.schema.jsonSchema,
         options: instance.pouchSettings
     });
-    instance.pouch = instance.storageInstance.internals.pouch;
+    (instance as any).pouch = instance.storageInstance.internals.pouch;
 }
 
 

@@ -19,7 +19,8 @@ import {
 import {
     _handleToStorageInstance,
     _handleFromStorageInstance,
-    fillObjectDataBeforeInsert
+    fillObjectDataBeforeInsert,
+    writeToStorageInstance
 } from './rx-collection-helper';
 import {
     createRxQuery,
@@ -65,10 +66,8 @@ import type {
 } from 'rxjs';
 
 import type {
-    PouchSettings,
     KeyFunctionMap,
     RxReplicationState,
-    PouchDBInstance,
     MigrationState,
     SyncOptions,
     RxCollection,
@@ -181,8 +180,7 @@ export class RxCollectionBase<
 
     // TODO use type RxStorageInstance when rx-storage is implemented
     public storageInstance: RxStorageInstance<RxDocumentType, any, any> = {} as any;
-    // TODO remove this.pouch when rx-storage is implemented
-    public pouch: PouchDBInstance = {} as PouchDBInstance; // this is needed to preserve this name
+
     /**
      * Stores the local documents so that they are not deleted
      * when a migration runs.
@@ -314,62 +312,6 @@ export class RxCollectionBase<
     }
 
     /**
-     * every write on the storage engine,
-     * so we can run hooks and resolve stuff etc.
-     * is tunneld throught this function
-     */
-    async _pouchPut(
-        writeRow: BulkWriteRow<RxDocumentType>,
-        overwrite: boolean = false
-    ): Promise<
-        RxDocumentData<RxDocumentType>
-    > {
-        const toStorageInstance: BulkWriteRow<any> = {
-            previous: writeRow.previous ? _handleToStorageInstance(this, flatClone(writeRow.previous)) : undefined,
-            document: _handleToStorageInstance(this, flatClone(writeRow.document))
-        };
-
-        while (true) {
-            try {
-                const writeResult = await this.database.lockedRun(
-                    () => writeSingle(
-                        this.storageInstance,
-                        toStorageInstance
-                    )
-                );
-                // on success, just return the result
-
-                const ret = _handleFromStorageInstance(this, writeResult);
-                return ret;
-            } catch (err: any) {
-                const useErr: RxStorageBulkWriteError<RxDocumentType> = err as any;
-                const primary = useErr.documentId;
-                if (overwrite && useErr.status === 409) {
-                    // we have a conflict but must overwrite
-                    // so get the new revision
-                    const singleRes = await this.database.lockedRun(
-                        () => getSingleDocument(this.storageInstance, primary)
-                    );
-                    if (!singleRes) {
-                        throw new Error('this should never happen');
-                    }
-                    toStorageInstance.previous = singleRes;
-                    // now we can retry
-                } else if (useErr.status === 409) {
-                    throw newRxError('COL19', {
-                        id: primary,
-                        pouchDbError: useErr,
-                        data: writeRow
-                    });
-                } else {
-                    throw useErr;
-                }
-            }
-
-        }
-    }
-
-    /**
      * wrapps pouch-find
      */
     async _queryStorageInstance(
@@ -423,9 +365,12 @@ export class RxCollectionBase<
         await this._runHooks('pre', 'insert', useJson);
         this.schema.validate(useJson);
         startTime = now();
-        const insertResult = await this._pouchPut({
-            document: useJson
-        });
+        const insertResult = await writeToStorageInstance(
+            this,
+            {
+                document: useJson
+            }
+        );
         endTime = now();
 
         if (tempDoc) {

@@ -1,7 +1,6 @@
 import type {
     SortComparator,
-    QueryMatcher,
-    ChangeEvent
+    QueryMatcher
 } from 'event-reduce-js';
 import type {
     BulkWriteLocalRow,

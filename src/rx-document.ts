@@ -33,6 +33,7 @@ import type {
 } from './types';
 import { getSchemaByObjectPath } from './rx-schema';
 import { getDocumentDataOfRxChangeEvent } from './rx-change-event';
+import { writeToStorageInstance } from './rx-collection-helper';
 
 export const basePrototype = {
 
@@ -401,10 +402,13 @@ export const basePrototype = {
         await this.collection._runHooks('pre', 'save', newData, this);
 
         this.collection.schema.validate(newData);
-        const writeResult = await this.collection._pouchPut({
-            previous: oldData,
-            document: newData
-        });
+        const writeResult = await writeToStorageInstance(
+            this.collection,
+            {
+                previous: oldData,
+                document: newData
+            }
+        );
 
         return this.collection._runHooks('post', 'save', newData, this);
     },
@@ -454,10 +458,13 @@ export const basePrototype = {
             .then(() => {
                 deletedData._deleted = true;
                 startTime = now();
-                return this.collection._pouchPut({
-                    previous: this._data,
-                    document: deletedData
-                });
+                return writeToStorageInstance(
+                    this.collection,
+                    {
+                        previous: this._data,
+                        document: deletedData
+                    }
+                );
             })
             .then(() => {
                 return this.collection._runHooks('post', 'remove', deletedData, this);

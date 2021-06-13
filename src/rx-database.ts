@@ -157,7 +157,7 @@ export class RxDatabaseBase<
     }
 
     /**
-     * removes the collection-doc from this._collectionsPouch
+     * removes the collection-doc from the internalStore
      */
     async removeCollectionDoc(name: string, schema: any): Promise<void> {
         const docId = _collectionNamePrimary(name, schema);

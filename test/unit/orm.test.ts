@@ -63,7 +63,6 @@ config.parallel('orm.test.js', () => {
                         storage: getRxStoragePouch('memory'),
                     });
                     const reserved = [
-                        'pouch',
                         'synced',
                         'migrate',
                         '$emit',

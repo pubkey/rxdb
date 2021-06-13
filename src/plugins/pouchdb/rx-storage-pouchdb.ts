@@ -319,6 +319,8 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
          * we should overwrite pouchdbs bulkDocs()
          * and create our own event stream, this will work more relyable
          * and does not mix up with write events from other sources.
+         * @link http://jsbin.com/pagebi/1/edit?js,output
+         * @link https://github.com/pubkey/rxdb/blob/1f4115b69bdacbb853af9c637d70f5f184d4e474/src/rx-storage-pouchdb.ts#L273
          */
         const pouchChangesSub = fromEvent(
             this.internals.pouch

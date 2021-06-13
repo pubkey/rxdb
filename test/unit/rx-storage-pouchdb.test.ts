@@ -408,8 +408,6 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     throw new Error('missing last event');
                 }
 
-                console.dir(emitted);
-
                 assert.strictEqual(last.change.operation, 'DELETE');
                 assert.ok(last.change.previous);
 
@@ -513,12 +511,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     }]
                 );
 
-
                 await waitUntil(() => emitted.length === 2);
-
-                console.log(JSON.stringify(emitted, null, 4));
-
-
                 const lastEvent = emitted.pop();
                 if (!lastEvent) {
                     throw new Error('last event missing');
@@ -870,8 +863,6 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 if (!last) {
                     throw new Error('missing last event');
                 }
-
-                console.dir(emitted);
 
                 assert.strictEqual(last.change.operation, 'DELETE');
                 assert.ok(last.change.previous);
