@@ -28,7 +28,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v2.1.5
         with:
-          node-version: 13.8.0
+          node-version: 14.17.0
 
       - name: install npm dependencies
         run: npm install
@@ -53,7 +53,7 @@ jobs:
 
 
   angular:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: install dependencies
@@ -61,7 +61,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v2.1.5
         with:
-          node-version: 13.8.0
+          node-version: 14.17.0
 
       - name: Reuse npm cache folder
         uses: actions/cache@v2
@@ -82,6 +82,7 @@ jobs:
           npm install
           npm run build
           rm -r node_modules
+
       - name: angular build
         working-directory: ./examples/angular
         run: |
@@ -89,7 +90,8 @@ jobs:
           npm run lint && npm run build
 
       - name: angular test
-        uses: GabrielBB/xvfb-action@v1
+        uses: DevExpress/testcafe-action@latest
+        # uses: GabrielBB/xvfb-action@v1
         with:
           working-directory: ./examples/angular #optional
           run: npm run test:build
@@ -143,7 +145,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v2.1.5
         with:
-          node-version: 13.8.0
+          node-version: 14.17.0
       - name: prepare core
         run: |
           npm install
@@ -178,7 +180,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v2.1.5
         with:
-          node-version: 13.8.0
+          node-version: 14.17.0
       - name: prepare core
         run: |
           npm install
@@ -203,7 +205,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v2.1.5
         with:
-          node-version: 13.8.0
+          node-version: 14.17.0
 
       - name: Reuse npm cache folder
         uses: actions/cache@v2
@@ -242,7 +244,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v2.1.5
         with:
-          node-version: 13.8.0
+          node-version: 14.17.0
       - name: prepare core
         run: |
           npm install
@@ -268,7 +270,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v2.1.5
         with:
-          node-version: 13.8.0
+          node-version: 14.17.0
       - name: prepare core
         run: |
           npm install
@@ -314,7 +316,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v2.1.5
         with:
-          node-version: 13.8.0
+          node-version: 14.17.0
 
       - name: prepare core
         run: |
