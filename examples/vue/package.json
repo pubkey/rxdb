@@ -13,7 +13,7 @@
     "postbuild": "cp test/multitab.html ./dist/multitab.html",
     "build:serve": "ws -p 8888 -d dist/",
     "lint": "vue-cli-service lint",
-    "test:run": "testcafe chromium test/ --selector-timeout 30000",
+    "test:run": "testcafe chrome -e test/ --hostname localhost --selector-timeout 30000",
     "test": "concurrently \"npm run build:serve \" \"npm run test:run\" --kill-others --success first"
   },
   "dependencies": {
@@ -24,25 +24,25 @@
     "random-int": "3.0.0",
     "register-service-worker": "1.7.2",
     "rxdb": "file:rxdb-local.tgz",
-    "vue": "2.6.12",
+    "vue": "2.6.14",
     "vue-class-component": "7.2.6",
     "vue-property-decorator": "9.1.2",
     "vue-router": "3.5.1",
-    "rxjs": "7.0.1"
+    "rxjs": "7.1.0"
   },
   "devDependencies": {
-    "@types/node": "13.13.52",
+    "@types/node": "14.17.3",
     "@types/pouchdb-adapter-http": "6.1.3",
     "@types/pouchdb-adapter-idb": "6.1.3",
     "@vue/cli-plugin-pwa": "4.5.13",
     "@vue/cli-plugin-typescript": "4.5.13",
     "@vue/cli-service": "4.5.13",
-    "concurrently": "6.1.0",
+    "concurrently": "6.2.0",
     "less": "4.1.1",
     "less-loader": "7.3.0",
     "local-web-server": "4.2.1",
     "testcafe": "1.14.2",
-    "typescript": "4.2.4",
-    "vue-template-compiler": "2.6.12"
+    "typescript": "4.3.2",
+    "vue-template-compiler": "2.6.14"
   }
 }

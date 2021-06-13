@@ -3,11 +3,13 @@ import {
 } from 'testcafe';
 import AsyncTestUtil from 'async-test-util';
 
+console.log('open page');
+
 fixture `Example page`
     .page `http://0.0.0.0:8888/`;
 
 
-test('insert/edit/remove a hero', async t => {
+test.page('http://0.0.0.0:8888/')('insert/edit/remove a hero', async t => {
     // clear previous heroes
     const heroElements = Selector('.hero-list-component .mat-list-item');
     const amount = heroElements.count;

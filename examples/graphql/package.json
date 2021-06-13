@@ -7,15 +7,15 @@
     "refresh": "rimraf -r node_modules/rxdb/ && npm i ",
     "build": "webpack",
     "build:serve": "ws -p 8888 -d dist/",
-    "test:e2e": " testcafe -b && testcafe chrome test/",
-    "test:e2e:travis": " testcafe -b && testcafe chrome:headless test/",
+    "test:e2e": " testcafe -b && testcafe chrome -e test/ --hostname localhost",
+    "test:e2e:travis": " testcafe -b && testcafe chrome:headless -e test/ --hostname localhost",
     "test": "concurrently \"npm run server\" \"npm run build:serve\" \"sleep 10 && npm run test:e2e\" --kill-others --success first",
     "test:ci": "concurrently \"npm run server\" \"npm run build:serve\" \"sleep 10 && npm run test:e2e\" --kill-others --success first"
   },
   "author": "pubkey",
   "dependencies": {
-    "apollo-server-express": "2.24.1",
-    "concurrently": "6.1.0",
+    "apollo-server-express": "2.25.1",
+    "concurrently": "6.2.0",
     "cors": "2.8.5",
     "express-graphql": "0.12.0",
     "graphql": "15.5.0",
@@ -25,13 +25,13 @@
     "normalize.css": "8.0.1",
     "pouchdb-adapter-idb": "7.2.2",
     "rxdb": "../../",
-    "rxjs": "7.0.1",
-    "subscriptions-transport-ws": "0.9.18"
+    "rxjs": "7.1.0",
+    "subscriptions-transport-ws": "0.9.19"
   },
   "devDependencies": {
     "async-test-util": "1.7.3",
-    "css-loader": "5.2.4",
-    "eslint": "7.26.0",
+    "css-loader": "5.2.6",
+    "eslint": "7.28.0",
     "esm": "3.2.25",
     "file-loader": "6.2.0",
     "html-webpack-plugin": "4.5.2",
@@ -42,7 +42,7 @@
     "testcafe": "1.14.2",
     "testcafe-hammerhead": "24.2.2",
     "webpack": "4.46.0",
-    "webpack-cli": "4.7.0",
+    "webpack-cli": "4.7.2",
     "webpack-dev-server": "3.11.2"
   }
 }
