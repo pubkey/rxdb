@@ -487,7 +487,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
 
 
                 // make normal insert
-                const writeResult = await writeSingle(
+                await writeSingle(
                     storageInstance,
                     {
                         document: writeData

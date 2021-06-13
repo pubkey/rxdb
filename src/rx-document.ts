@@ -402,7 +402,7 @@ export const basePrototype = {
         await this.collection._runHooks('pre', 'save', newData, this);
 
         this.collection.schema.validate(newData);
-        const writeResult = await writeToStorageInstance(
+        await writeToStorageInstance(
             this.collection,
             {
                 previous: oldData,

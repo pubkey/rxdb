@@ -133,7 +133,7 @@ export class RxDatabaseBase<
             return {
                 previous: doc,
                 document: deletedDoc
-            }
+            };
         });
         await this.internalStore.bulkWrite(writeData);
     }

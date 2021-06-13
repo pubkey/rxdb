@@ -98,7 +98,6 @@ export const OPEN_POUCHDB_STORAGE_INSTANCES: Set<RxStorageKeyObjectInstancePouch
 export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstance<PouchStorageInternals, PouchSettings> {
 
     private changes$: Subject<RxStorageChangeEvent<RxLocalDocumentData>> = new Subject();
-    private subs: Subscription[] = [];
 
     constructor(
         public readonly databaseName: string,
@@ -314,7 +313,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
          * changes data.
          * Therefore we have to listen to these changes
          * and add them to the changeStream().
-         * 
+         *
          * TODO instead of listening to pouch.changes,
          * we should overwrite pouchdbs bulkDocs()
          * and create our own event stream, this will work more relyable
@@ -942,7 +941,7 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
         ) as PouchDBInstance;
 
         // TODO only run this if the pouchdb instance was not created before
-        const info = await pouch.info();
+        await pouch.info();
         // console.dir(pouch);
 
         return pouch;

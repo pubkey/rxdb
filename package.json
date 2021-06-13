@@ -60,7 +60,7 @@
     "lint": "npm run lint:js && npm run lint:ts",
     "lint:js": "eslint config",
     "lint:ts": "tslint --project ./",
-    "lint:ts:fix": "tslint --project ./ --fix",
+    "lint:fix": "tslint --project ./ --fix",
     "check-types": "tsc",
     "transpile": "node scripts/transpile.js",
     "build:es": "rimraf -rf dist/es && cross-env NODE_ENV=es6 babel src --out-dir dist/es --source-maps --extensions \".ts,.js\"",

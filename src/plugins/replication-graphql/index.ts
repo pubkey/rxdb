@@ -16,8 +16,6 @@ import {
 import GraphQLClient from 'graphql-client';
 import {
     promiseWait,
-    flatClone,
-    now,
     getHeightOfRevision
 } from '../../util';
 
@@ -49,8 +47,7 @@ import type {
     GraphQLSyncPullOptions,
     GraphQLSyncPushOptions,
     RxPlugin,
-    RxDocumentData,
-    BulkWriteRow
+    RxDocumentData
 } from '../../types';
 import { getDocumentDataOfRxChangeEvent } from '../../rx-change-event';
 import { _handleFromStorageInstance, _handleToStorageInstance } from '../../rx-collection-helper';

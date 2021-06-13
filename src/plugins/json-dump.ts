@@ -2,7 +2,6 @@
  * this plugin adds the json export/import capabilities to RxDB
  */
 import {
-    getFromMapOrThrow,
     hash,
     now
 } from '../util';

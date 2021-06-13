@@ -14,8 +14,7 @@ import {
 import {
     clone,
     flatClone,
-    getFromMapOrThrow,
-    now
+    getFromMapOrThrow
 } from '../util';
 
 import type {
@@ -302,8 +301,6 @@ function insertLocal(
             // create new one
             docData = flatClone(docData);
             docData._id = id;
-
-            const startTime = now();
 
             return writeSingleLocal(
                 _getKeyObjectStorageInstanceByParent(this),

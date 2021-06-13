@@ -109,7 +109,7 @@ import {
     createRxDocument,
     getRxDocumentConstructor
 } from './rx-document-prototype-merge';
-import { getSingleDocument, storageChangeEventToRxChangeEvent, writeSingle } from './rx-storage-helper';
+import { storageChangeEventToRxChangeEvent } from './rx-storage-helper';
 import { validateDatabaseName } from './plugins/dev-mode/check-names';
 
 const HOOKS_WHEN = ['pre', 'post'];

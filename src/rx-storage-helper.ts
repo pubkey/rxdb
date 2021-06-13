@@ -11,7 +11,6 @@ import type {
     RxCollection,
     RxDatabase,
     RxDocumentData,
-    RxDocumentWriteData,
     RxLocalDocumentData,
     RxStorageChangeEvent,
     RxStorageInstance,

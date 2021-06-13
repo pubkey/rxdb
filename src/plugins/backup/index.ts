@@ -19,7 +19,6 @@ import type {
     RxDocument,
     RxPlugin
 } from '../../types';
-import { lastOfArray } from '../../util';
 import {
     clearFolder,
     deleteFolder,

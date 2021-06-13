@@ -134,7 +134,7 @@ describe('replication-graphql.test.js', () => {
                     doc['deleted'] = false;
                     return doc;
                 });
-        };
+        }
         config.parallel('graphql-server.js', () => {
             it('spawn, reach and close a server', async () => {
                 const server = await SpawnServer.spawn();

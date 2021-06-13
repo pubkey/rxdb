@@ -6,7 +6,6 @@
 import assert from 'assert';
 
 const {
-    addRxPlugin,
     createRxDatabase,
     isRxDocument,
     randomCouchString,
