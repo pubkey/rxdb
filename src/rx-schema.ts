@@ -276,7 +276,7 @@ export function fillWithDefaultSettings<T = any>(
     schemaObj.version = schemaObj.version || 0;
 
     return schemaObj;
-};
+}
 
 export function createRxSchema<T>(
     jsonSchema: RxJsonSchema<T>,
@@ -303,12 +303,6 @@ export function getPseudoSchemaForVersion<T = any>(
     version: number,
     primaryKey: keyof T
 ): RxJsonSchema<T> {
-
-    // TODO remove this check
-    if (!primaryKey) {
-        throw new Error('aAAAAAAAAAAAAAAAa');
-    }
-
     const pseudoSchema: RxJsonSchema<T> = {
         version,
         type: 'object',

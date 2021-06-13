@@ -1,8 +1,3 @@
-/**
- * this contains a mapping to basic dependencies
- * which should be easy to change
- */
-import randomToken from 'random-token';
 import type { BlobBuffer } from './types';
 import {
     default as deepClone

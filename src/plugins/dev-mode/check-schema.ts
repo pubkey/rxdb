@@ -175,7 +175,7 @@ function getSchemaPropertyRealPath(shortPath: string) {
  */
 export function checkSchema(jsonSchema: RxJsonSchema<any>) {
 
-    if(!jsonSchema.primaryKey){
+    if (!jsonSchema.primaryKey) {
         throw newRxError('SC30', {
             schema: jsonSchema
         });
