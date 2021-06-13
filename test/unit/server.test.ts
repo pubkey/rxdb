@@ -307,10 +307,11 @@ config.parallel('server.test.js', () => {
         this.timeout(12 * 1000);
         const port = nexPort();
         const serverCollection = await humansCollection.createMigrationCollection(0);
-        await serverCollection.database.server({
+        const serverResponse = await serverCollection.database.server({
             path: '/db',
             port
         });
+        await serverResponse.startupPromise;
 
 
         // check access to path

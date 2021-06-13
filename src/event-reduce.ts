@@ -22,11 +22,11 @@ export type EventReduceResult<RxDocumentType> = EventReduceResultNeg | EventRedu
 
 
 export function getSortFieldsOfQuery<RxDocType>(
-    primaryKey: string,
+    primaryKey: keyof RxDocType,
     query: MangoQuery<RxDocType>
 ): string[] {
     if (!query.sort || query.sort.length === 0) {
-        return [primaryKey];
+        return [primaryKey as any];
     } else {
         return query.sort.map(part => Object.keys(part)[0]);
     }

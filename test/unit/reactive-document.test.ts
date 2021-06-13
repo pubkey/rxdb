@@ -50,8 +50,8 @@ config.parallel('reactive-document.test.js', () => {
                 assert.strictEqual(changeEvent.previousDocumentData.firstName, oldName);
 
 
-                assert.strictEqual(docDataAfter._id, doc.primary);
-                assert.strictEqual(docDataAfter._id, doc.primary);
+                assert.strictEqual(docDataAfter.passportId, doc.primary);
+                assert.strictEqual(docDataAfter.passportId, doc.primary);
                 colSub.unsubscribe();
                 c.database.destroy();
             });

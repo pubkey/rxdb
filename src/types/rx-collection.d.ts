@@ -26,7 +26,7 @@ export interface RxCollectionCreator extends RxCollectionCreatorBase {
  * and rename this one in the next release
  */
 export type RxCollectionCreatorBase = {
-    schema: RxJsonSchema;
+    schema: RxJsonSchema<any>;
     instanceCreationOptions?: any;
     migrationStrategies?: MigrationStrategies;
     autoMigrate?: boolean;
@@ -74,9 +74,9 @@ export type RxCollection<
     OrmMethods = {},
     StaticMethods = {},
     InstanceCreationOptions = {}
-    > = RxCollectionBase<InstanceCreationOptions, RxDocumentType, OrmMethods> &
-    RxCollectionGenerated<RxDocumentType, OrmMethods> &
-    StaticMethods;
+    > = StaticMethods &
+    RxCollectionBase<InstanceCreationOptions, RxDocumentType, OrmMethods> &
+    RxCollectionGenerated<RxDocumentType, OrmMethods>;
 
 export interface RxCollectionGenerated<RxDocumentType = any, OrmMethods = {}> extends RxLocalDocumentMutation<RxCollection<RxDocumentType, OrmMethods>> {
 

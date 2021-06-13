@@ -26,7 +26,9 @@ export async function create(
     name: string = 'human',
     multiInstance: boolean = true
 ): Promise<RxCollection<HumanDocumentType, {}, {}>> {
-    if (!name) name = 'human';
+    if (!name) {
+        name = 'human';
+    }
     PouchDB.plugin(require('pouchdb-adapter-memory'));
     const db = await createRxDatabase<any, any, { human: RxCollection<schemaObjects.HumanDocumentType> }>({
         name: randomCouchString(10),
@@ -52,7 +54,7 @@ export async function create(
 }
 
 export async function createBySchema<RxDocumentType = {}>(
-    schema: RxJsonSchema,
+    schema: RxJsonSchema<RxDocumentType>,
     name = 'human'
 ): Promise<RxCollection<RxDocumentType, {}, {}>> {
     PouchDB.plugin(require('pouchdb-adapter-memory'));

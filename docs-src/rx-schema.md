@@ -7,7 +7,7 @@ Schemas define how your data looks. Which field should be used as primary, which
 In this example-schema we define a hero-collection with the following settings:
 
 - the version-number of the schema is 0
-- the name-property is the **primary**. This means its an unique, indexed, required string which can be used to definitely find a single document.
+- the name-property is the **primaryKey**. This means its an unique, indexed, required `string` which can be used to definitely find a single document.
 - the color-field is required for every document
 - the healthpoints-field must be a number between 0 and 100
 - the secret-field stores an encrypted value
@@ -20,11 +20,11 @@ In this example-schema we define a hero-collection with the following settings:
     "title": "hero schema",
     "version": 0,
     "description": "describes a simple hero",
+    "primaryKey": "name",
     "type": "object",
     "properties": {
         "name": {
-            "type": "string",
-            "primary": true
+            "type": "string"
         },
         "color": {
             "type": "string"
@@ -99,8 +99,12 @@ const mySchema = {
   keyCompression: true, // set this to true, to enable the keyCompression
   version: 0,
   title: 'human schema no compression',
+  primaryKey: 'id',
   type: 'object',
   properties: {
+      id: {
+          type: 'string'
+      },
       firstName: {
           type: 'string'
       },
@@ -125,8 +129,12 @@ const schemaWithIndexes = {
   version: 0,
   title: 'human schema no compression',
   keyCompression: true,
+  primaryKey: 'id',
   type: 'object',
   properties: {
+      id: {
+          type: 'string'
+      },
       firstName: {
           type: 'string'
       },
@@ -166,8 +174,12 @@ Whenever you insert a document or create a temporary-document, unset fields will
 ```js
 const schemaWithDefaultAge = {
   version: 0,
+  primaryKey: 'id',
   type: 'object',
   properties: {
+      id: {
+          type: 'string'
+      },
       firstName: {
           type: 'string'
       },
@@ -194,8 +206,12 @@ Advantages:
 ```js
 const schemaWithFinalAge = {
   version: 0,
+  primaryKey: 'id',
   type: 'object',
   properties: {
+      id: {
+          type: 'string'
+      },
       firstName: {
           type: 'string'
       },
@@ -220,8 +236,12 @@ The password used for encryption is set during database creation. [See RxDatabas
 ```js
 const schemaWithDefaultAge = {
   version: 0,
+  primaryKey: 'id',
   type: 'object',
   properties: {
+      id: {
+          type: 'string'
+      },
       secret: {
           type: 'string'
       },

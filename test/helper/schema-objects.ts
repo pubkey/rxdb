@@ -18,6 +18,7 @@ export interface SimpleHumanDocumentType {
     lastName: string;
 }
 export interface AgeHumanDocumentType {
+    passportId: string;
     age: number;
 }
 export interface HumanDocumentType extends SimpleHumanDocumentType, AgeHumanDocumentType { }
@@ -357,24 +358,15 @@ export function averageSchema(): AverageSchemaDocumentType {
 }
 
 export interface PointDocumentType {
+    id: string;
     x: number;
     y: number;
 }
 export function point(): PointDocumentType {
     return {
+        id: randomToken(12),
         x: faker.datatype.number(),
         y: faker.datatype.number()
-    };
-}
-
-export interface IdPrimaryDocumentType {
-    _id: string;
-    firstName: string;
-}
-export function _idPrimary(): IdPrimaryDocumentType {
-    return {
-        _id: randomToken(12),
-        firstName: faker.name.firstName()
     };
 }
 

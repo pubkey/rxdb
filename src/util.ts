@@ -71,14 +71,6 @@ export function hash(msg: string | any): string {
 }
 
 /**
- * generate a new _id as db-primary-key
- */
-export function generateId(): string {
-    return randomToken(10) + ':' + now();
-}
-
-
-/**
  * Returns the current unix time in milliseconds
  * Because the accuracy of getTime() in javascript is bad,
  * and we cannot rely on performance.now() on all plattforms,

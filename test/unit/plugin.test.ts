@@ -61,8 +61,8 @@ config.parallel('plugin.test.js', () => {
             );
         });
     });
-    describe('core.node.js', () => {
-        it('should run without errors', async function () {
+    describe('core.node.ts', () => {
+        it('core.node.ts: should run without errors', async function () {
             this.timeout(10000);
             if (!config.platform.isNode())
                 return;
@@ -91,8 +91,8 @@ config.parallel('plugin.test.js', () => {
             }
         });
     });
-    describe('full.node.js', () => {
-        it('should run without errors', async () => {
+    describe('full.node.ts', () => {
+        it('full.node.ts should run without errors', async () => {
             if (!config.platform.isNode())
                 return;
 
@@ -116,7 +116,7 @@ config.parallel('plugin.test.js', () => {
             }
         });
     });
-    describe('in-memory.node.js', () => {
+    describe('in-memory.node.ts', () => {
         return; // TODO commented out while in-memory plugin not rewritten
         it('in-memory should run without errors', async () => {
             if (!config.platform.isNode())
@@ -146,8 +146,8 @@ config.parallel('plugin.test.js', () => {
             }
         });
     });
-    describe('ajv-validate.node.js', () => {
-        it('should allow everything', async () => {
+    describe('ajv-validate.node.ts', () => {
+        it('ajv-validate.node.ts: should allow everything', async () => {
             if (!config.platform.isNode())
                 return;
 
@@ -175,8 +175,8 @@ config.parallel('plugin.test.js', () => {
             }
         });
     });
-    describe('validate-z-schema.node.js', () => {
-        it('should allow everything', async () => {
+    describe('validate-z-schema.node.tes', () => {
+        it('validate-z-schema.node.ts: should allow everything', async () => {
             if (!config.platform.isNode())
                 return;
 
@@ -204,8 +204,8 @@ config.parallel('plugin.test.js', () => {
             }
         });
     });
-    describe('no-validate.node.js', () => {
-        it('should allow everything', async () => {
+    describe('no-validate.node.ts', () => {
+        it('no-validate.node.ts: should allow everything', async () => {
             if (!config.platform.isNode())
                 return;
 

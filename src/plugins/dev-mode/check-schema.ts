@@ -23,8 +23,7 @@ import { rxDocumentProperties } from './entity-properties';
  * @throws {Error}
  */
 export function checkFieldNameRegex(fieldName: string) {
-    if (fieldName === '') return;
-    if (fieldName === '_id') return;
+    if (fieldName === '') return; // TODO why is the fieldname allowed to be empty string?
     if (fieldName === '_deleted') return;
 
     if (['properties', 'language'].includes(fieldName)) {
@@ -125,9 +124,6 @@ export function validateFieldsDeep(jsonSchema: any): true {
         if (!isNested) {
             // check underscore fields
             if (fieldName.charAt(0) === '_') {
-                if (fieldName === '_id' && schemaObj.primary) {
-                    return;
-                }
                 if (fieldName === '_deleted') {
                     return;
                 }
@@ -177,7 +173,13 @@ function getSchemaPropertyRealPath(shortPath: string) {
  * does the checking
  * @throws {Error} if something is not ok
  */
-export function checkSchema(jsonSchema: RxJsonSchema) {
+export function checkSchema(jsonSchema: RxJsonSchema<any>) {
+
+    if(!jsonSchema.primaryKey){
+        throw newRxError('SC30', {
+            schema: jsonSchema
+        });
+    }
 
     if (!jsonSchema.hasOwnProperty('properties')) {
         throw newRxError('SC29', {
@@ -204,20 +206,11 @@ export function checkSchema(jsonSchema: RxJsonSchema) {
 
     validateFieldsDeep(jsonSchema);
 
-    let primaryPath: string;
     Object.keys(jsonSchema.properties).forEach(key => {
         const value: any = jsonSchema.properties[key];
         // check primary
-        if (value.primary) {
-            if (primaryPath) {
-                throw newRxError('SC12', {
-                    value
-                });
-            }
-
-            primaryPath = key;
-
-            if (value.index) {
+        if (key === jsonSchema.primaryKey) {
+            if (jsonSchema.indexes && jsonSchema.indexes.includes(key)) {
                 throw newRxError('SC13', {
                     value
                 });
@@ -227,7 +220,7 @@ export function checkSchema(jsonSchema: RxJsonSchema) {
                     value
                 });
             }
-            if (value.encrypted) {
+            if (jsonSchema.encrypted && jsonSchema.encrypted.includes(key)) {
                 throw newRxError('SC15', {
                     value
                 });

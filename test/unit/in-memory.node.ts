@@ -33,10 +33,11 @@ addRxPlugin(RxDBDevModePlugin);
 
 addPouchPlugin(require('pouchdb-adapter-leveldb'));
 
-const schema: RxJsonSchema = {
+const schema: RxJsonSchema<{ passportId: string; firstName: string; lastName: string; }> = {
     title: 'human schema',
     description: 'describes a human being',
     version: 0,
+    primaryKey: 'passportId',
     keyCompression: false,
     type: 'object',
     properties: {
@@ -50,7 +51,7 @@ const schema: RxJsonSchema = {
             type: 'string'
         }
     },
-    indexes: ['passportId'],
+    indexes: [],
     required: ['firstName', 'lastName']
 };
 

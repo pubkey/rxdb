@@ -193,7 +193,7 @@ export class DataMigrator {
 
 export async function createOldCollection(
     version: number,
-    schemaObj: RxJsonSchema,
+    schemaObj: RxJsonSchema<any>,
     dataMigrator: DataMigrator
 ): Promise<OldRxCollection> {
     const database = dataMigrator.newestCollection.database;

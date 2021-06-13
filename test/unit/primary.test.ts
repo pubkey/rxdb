@@ -36,7 +36,9 @@ config.parallel('primary.test.js', () => {
             describe('negative', () => {
                 it('throw if primary is also index', () => {
                     const schemaObj = clone(schemas.primaryHuman);
-                    (schemaObj.properties.passportId as any).index = true;
+                    schemaObj.indexes = [
+                        'passportId'
+                    ];
                     assert.throws(() => createRxSchema(schemaObj), Error);
                 });
                 it('throw if primary is also unique', () => {
@@ -47,14 +49,6 @@ config.parallel('primary.test.js', () => {
                 it('throw if primary is no string', () => {
                     const schemaObj = clone(schemas.primaryHuman);
                     schemaObj.properties.passportId.type = 'integer';
-                    assert.throws(() => createRxSchema(schemaObj), Error);
-                });
-                it('throw if primary is defined twice', () => {
-                    const schemaObj = clone(schemas.primaryHuman);
-                    (schemaObj.properties as any).passportId2 = {
-                        type: 'string',
-                        primary: true
-                    };
                     assert.throws(() => createRxSchema(schemaObj), Error);
                 });
                 it('throw if primary is encrypted', () => {
@@ -69,14 +63,6 @@ config.parallel('primary.test.js', () => {
                 it('should validate the human', () => {
                     const schema = createRxSchema(schemas.primaryHuman);
                     const obj = schemaObjects.simpleHuman();
-                    assert.ok(schema.validate(obj));
-                });
-            });
-
-            describe('positive', () => {
-                it('should validate when primary key is _id', () => {
-                    const schema = createRxSchema(schemas._idPrimary);
-                    const obj = schemaObjects._idPrimary();
                     assert.ok(schema.validate(obj));
                 });
             });

@@ -415,10 +415,10 @@ config.parallel('attachments.test.ts', () => {
             const schema0: RxJsonSchema<DocData> = {
                 version: 0,
                 type: 'object',
+                primaryKey: 'id',
                 properties: {
                     id: {
-                        type: 'string',
-                        primary: true
+                        type: 'string'
                     }
                 },
                 attachments: {},
@@ -478,11 +478,11 @@ config.parallel('attachments.test.ts', () => {
             };
             const schema0: RxJsonSchema<DocData> = {
                 version: 0,
+                primaryKey: 'id',
                 type: 'object',
                 properties: {
                     id: {
-                        type: 'string',
-                        primary: true
+                        type: 'string'
                     }
                 },
                 attachments: {},
@@ -536,11 +536,11 @@ config.parallel('attachments.test.ts', () => {
             };
             const schema0: RxJsonSchema<DocData> = {
                 version: 0,
+                primaryKey: 'id',
                 type: 'object',
                 properties: {
                     id: {
-                        type: 'string',
-                        primary: true
+                        type: 'string'
                     }
                 },
                 attachments: {},
@@ -639,11 +639,11 @@ config.parallel('attachments.test.ts', () => {
         it('#455 attachments not working', async () => {
             const myschema = {
                 version: 0,
+                primaryKey: 'name',
                 type: 'object',
                 properties: {
                     name: {
-                        type: 'string',
-                        primary: true,
+                        type: 'string'
                     },
                 },
                 attachments: {

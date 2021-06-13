@@ -300,7 +300,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     constructor(
         public readonly databaseName: string,
         public readonly collectionName: string,
-        public readonly schema: Readonly<RxJsonSchema<any>>,
+        public readonly schema: Readonly<RxJsonSchema<RxDocType>>,
         public readonly internals: Readonly<PouchStorageInternals>,
         public readonly options: Readonly<PouchSettings>
     ) {
@@ -358,7 +358,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                 }
             })
         ).subscribe((pouchRow: PouchChangeRow) => {
-            const primaryKey = getPrimary<any>(this.schema);
+            const primaryKey = getPrimary<RxDocType>(this.schema);
             const event = pouchChangeRowToChangeEvent<RxDocType>(
                 primaryKey,
                 pouchRow
@@ -450,7 +450,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     getQueryMatcher(
         query: MangoQuery<RxDocType>
     ): QueryMatcher<RxDocType> {
-        const primaryKey = getPrimary<any>(this.schema);
+        const primaryKey = getPrimary<RxDocType>(this.schema);
         const massagedSelector = massageSelector(query.selector);
 
         const fun: QueryMatcher<RxDocType> = (doc: RxDocType) => {
@@ -478,7 +478,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     prepareQuery(
         mutateableQuery: MangoQuery<RxDocType>
     ): PreparedQuery<RxDocType> {
-        const primaryKey = getPrimary<any>(this.schema);
+        const primaryKey = getPrimary<RxDocType>(this.schema);
         const query = mutateableQuery;
 
         /**
@@ -528,9 +528,9 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
 
         // regex does not work over the primary key
         // TODO move this to dev mode
-        if (query.selector[primaryKey] && query.selector[primaryKey].$regex) {
+        if (query.selector[primaryKey as any] && query.selector[primaryKey as any].$regex) {
             throw newRxError('QU4', {
-                path: primaryKey,
+                path: primaryKey as any,
                 query: mutateableQuery
             });
         }
@@ -567,7 +567,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     public async bulkAddRevisions(
         documents: RxDocumentData<RxDocType>[]
     ): Promise<void> {
-        const primaryKey = getPrimary<any>(this.schema);
+        const primaryKey = getPrimary(this.schema);
 
 
         /**
@@ -663,7 +663,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             throw new Error('non an array');
         }
 
-        const primaryKey = getPrimary<any>(this.schema);
+        const primaryKey = getPrimary(this.schema);
         const writeRowById: Map<string, BulkWriteRow<RxDocType>> = new Map();
 
         const insertDocs: (RxDocType & { _id: string; _rev: string })[] = documentWrites.map(writeData => {
@@ -672,6 +672,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             // TODO remove this check when primary key was made required
             if (!primary) {
                 console.dir(writeData.document);
+                console.dir(this.schema);
                 throw new Error('primary missing ' + primaryKey);
             }
             writeRowById.set(primary, writeData);
@@ -815,7 +816,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     public async query(
         preparedQuery: PreparedQuery<RxDocType>
     ): Promise<RxStorageQueryResult<RxDocType>> {
-        const primaryKey = getPrimary<any>(this.schema);
+        const primaryKey = getPrimary(this.schema);
 
         const findResult = await this.internals.pouch.find<RxDocType>(preparedQuery);
         const ret: RxStorageQueryResult<RxDocType> = {
@@ -872,7 +873,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         changes: ChangeStreamEvent<RxDocType>[];
         lastSequence: number;
     }> {
-        const primaryKey = getPrimary<any>(this.schema);
+        const primaryKey = getPrimary(this.schema);
 
         const pouchResults = await this.internals.pouch.changes({
             live: false,
@@ -1035,8 +1036,8 @@ export function pouchHash(data: Buffer | Blob | string): Promise<string> {
     });
 }
 
-export function pouchSwapIdToPrimary(
-    primaryKey: string,
+export function pouchSwapIdToPrimary<T>(
+    primaryKey: keyof T,
     docData: any
 ): any {
 
@@ -1051,7 +1052,7 @@ export function pouchSwapIdToPrimary(
 }
 
 export function pouchDocumentDataToRxDocumentData<T>(
-    primaryKey: string,
+    primaryKey: keyof T,
     pouchDoc: WithAttachments<T>
 ): RxDocumentData<T> {
     let useDoc: RxDocumentData<T> = pouchSwapIdToPrimary(primaryKey, pouchDoc);
@@ -1074,7 +1075,7 @@ export function pouchDocumentDataToRxDocumentData<T>(
 }
 
 export function rxDocumentDataToPouchDocumentData<T>(
-    primaryKey: string,
+    primaryKey: keyof T,
     doc: RxDocumentData<T> | RxDocumentWriteData<T>
 ): WithAttachments<T & { _id: string; }> {
     let pouchDoc: WithAttachments<T> = pouchSwapPrimaryToId(primaryKey, doc);
@@ -1106,8 +1107,8 @@ export function rxDocumentDataToPouchDocumentData<T>(
 }
 
 
-export function pouchSwapPrimaryToId(
-    primaryKey: string,
+export function pouchSwapPrimaryToId<RxDocType>(
+    primaryKey: keyof RxDocType,
     docData: any
 ): any {
     if (primaryKey === '_id') {
@@ -1142,7 +1143,7 @@ export function getEventKey(isLocal: boolean, primary: string, revision: string)
 }
 
 export function pouchChangeRowToChangeEvent<DocumentData>(
-    primaryKey: string,
+    primaryKey: keyof DocumentData,
     pouchRow: PouchChangeRow
 ): ChangeEvent<RxDocumentData<DocumentData>> {
     const pouchDoc = pouchRow.doc;
@@ -1184,7 +1185,7 @@ export function pouchChangeRowToChangeEvent<DocumentData>(
 }
 
 export function pouchChangeRowToChangeStreamEvent<DocumentData>(
-    primaryKey: string,
+    primaryKey: keyof DocumentData,
     pouchRow: PouchChangeRow
 ): ChangeStreamEvent<DocumentData> {
     const doc = pouchRow.doc;
@@ -1243,7 +1244,7 @@ export function pouchChangeRowToChangeStreamEvent<DocumentData>(
  * into '_id'
  * @recursive
  */
-export function primarySwapPouchDbQuerySelector(selector: any, primaryKey: string): any {
+export function primarySwapPouchDbQuerySelector<RxDocType>(selector: any, primaryKey: keyof RxDocType): any {
     if (primaryKey === '_id') {
         return selector;
     }
@@ -1275,7 +1276,7 @@ export function primarySwapPouchDbQuerySelector(selector: any, primaryKey: strin
  */
 export async function createIndexesOnPouch(
     pouch: PouchDBInstance,
-    schema: RxJsonSchema
+    schema: RxJsonSchema<any>
 ): Promise<void> {
     if (!schema.indexes) {
         return;

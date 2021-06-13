@@ -603,11 +603,11 @@ describe('replication.test.js', () => {
             // create a schema
             const mySchema = {
                 version: 0,
+                primaryKey: 'passportId',
                 type: 'object',
                 properties: {
                     passportId: {
-                        type: 'string',
-                        primary: true
+                        type: 'string'
                     },
                     firstName: {
                         type: 'string'

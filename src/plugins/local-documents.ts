@@ -190,7 +190,9 @@ const RxLocalDocumentPrototype: any = {
                 value
             });
         }
-        if (Object.is(this.get(objPath), value)) return;
+        if (Object.is(this.get(objPath), value)) {
+            return;
+        }
         objectPath.set(this._data, objPath, value);
         return this;
     },

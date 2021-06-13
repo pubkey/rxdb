@@ -222,7 +222,6 @@ export
 function toCleanSchema(rxSchema: RxSchema): RxSchema {
     const newSchemaJson = clone(rxSchema.jsonSchema);
     newSchemaJson.keyCompression = false;
-    delete newSchemaJson.properties._id;
     delete newSchemaJson.properties._rev;
     delete newSchemaJson.properties._attachments;
 
@@ -256,7 +255,10 @@ export function replicateExistingDocuments(
             .filter((doc: any) => !doc.language) // do not replicate design-docs
             .map((doc: any) => _handleFromStorageInstance(fromCollection, doc))
             // swap back primary because keyCompression:false
-            .map((doc: any) => fromCollection.schema.swapPrimaryToId(doc));
+            .map((doc: any) => {
+                const primaryKey: string = fromCollection.schema.primaryPath as any;
+                return pouchSwapPrimaryToId(primaryKey, doc);
+            });
 
         if (docs.length === 0) return Promise.resolve([]); // nothing to replicate
         else {
@@ -334,7 +336,10 @@ export function streamChangedDocuments(
             }),
             filter(change => prevFilter(change)),
             map(change => _handleFromStorageInstance(rxCollection, change.doc)),
-            map(d => pouchSwapIdToPrimary(rxCollection.schema.primaryPath, d))
+            map(d => {
+                const primaryKey: string = rxCollection.schema.primaryPath as any;
+                return pouchSwapIdToPrimary(primaryKey, d);
+            })
         );
     return observable;
 }
@@ -351,9 +356,11 @@ export function applyChangedDocumentToPouch(
         (rxCollection as any)._doNotEmitSet = new Set();
     }
 
+    const primaryKey: string = rxCollection.schema.primaryPath as any;
+
     let transformedDoc = _handleToStorageInstance(rxCollection, docData);
     transformedDoc = pouchSwapPrimaryToId(
-        rxCollection.schema.primaryPath,
+        primaryKey,
         transformedDoc
     );
 

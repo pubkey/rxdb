@@ -23,6 +23,7 @@ config.parallel('population.test.js', () => {
             it('should allow to create a schema with a relation', () => {
                 const schema = createRxSchema({
                     version: 0,
+                    primaryKey: 'bestFriend',
                     type: 'object',
                     properties: {
                         bestFriend: {
@@ -41,12 +42,12 @@ config.parallel('population.test.js', () => {
             it('should allow primary as relation key', () => {
                 const schema = createRxSchema({
                     version: 0,
+                    primaryKey: 'bestFriend',
                     type: 'object',
                     properties: {
                         bestFriend: {
                             ref: 'human',
-                            type: 'string',
-                            primary: true
+                            type: 'string'
                         }
                     }
                 });
@@ -55,8 +56,12 @@ config.parallel('population.test.js', () => {
             it('should allow to create a schema with a relation in nested', () => {
                 const schema = createRxSchema({
                     version: 0,
+                    primaryKey: 'id',
                     type: 'object',
                     properties: {
+                        id: {
+                            type: 'string',
+                        },
                         foo: {
                             type: 'object',
                             properties: {
@@ -73,8 +78,12 @@ config.parallel('population.test.js', () => {
             it('should allow to create relation of array', () => {
                 const schema = createRxSchema({
                     version: 0,
+                    primaryKey: 'id',
                     type: 'object',
                     properties: {
+                        id: {
+                            type: 'string'
+                        },
                         friends: {
                             type: 'array',
                             items: {
@@ -89,8 +98,12 @@ config.parallel('population.test.js', () => {
             it('should allow to create relation with nullable string', () => {
                 const schema = createRxSchema({
                     version: 0,
+                    primaryKey: 'id',
                     type: 'object',
                     properties: {
+                        id: {
+                            type: 'string'
+                        },
                         friends: {
                             type: 'array',
                             items: {
@@ -108,8 +121,12 @@ config.parallel('population.test.js', () => {
                 assert.throws(
                     () => createRxSchema({
                         version: 0,
+                        primaryKey: 'id',
                         type: 'object',
                         properties: {
+                            id: {
+                                type: 'string'
+                            },
                             bestFriend: {
                                 ref: 'human'
                             }
@@ -122,8 +139,12 @@ config.parallel('population.test.js', () => {
                 assert.throws(
                     () => createRxSchema({
                         version: 0,
+                        primaryKey: 'id',
                         type: 'object',
                         properties: {
+                            id: {
+                                type: 'string'
+                            },
                             friends: {
                                 type: 'array',
                                 items: {
@@ -164,11 +185,11 @@ config.parallel('population.test.js', () => {
                     name: 'human',
                     schema: {
                         version: 0,
+                        primaryKey: 'name',
                         type: 'object',
                         properties: {
                             name: {
-                                type: 'string',
-                                primary: true
+                                type: 'string'
                             },
                             friends: {
                                 type: 'array',
@@ -206,13 +227,13 @@ config.parallel('population.test.js', () => {
                     name: randomCouchString(10),
                     storage: getRxStoragePouch('memory'),
                 });
-                const schema: RxJsonSchema = {
+                const schema: RxJsonSchema<{ name: string; }> = {
                     version: 0,
+                    primaryKey: 'name',
                     type: 'object',
                     properties: {
                         name: {
                             type: 'string',
-                            primary: true,
                             ref: 'human2'
                         }
                     }
@@ -270,10 +291,10 @@ config.parallel('population.test.js', () => {
                 name: 'doca',
                 schema: {
                     type: 'object',
+                    primaryKey: 'name',
                     version: 0,
                     properties: {
                         name: {
-                            primary: true,
                             type: 'string'
                         },
                         refB: {
@@ -287,10 +308,10 @@ config.parallel('population.test.js', () => {
                 name: 'docb',
                 schema: {
                     version: 0,
+                    primaryKey: 'name',
                     type: 'object',
                     properties: {
                         name: {
-                            primary: true,
                             type: 'string'
                         },
                         somevalue: {

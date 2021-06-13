@@ -525,11 +525,11 @@ config.parallel('in-memory.test.js', () => {
         it('#401 error: _id is required for puts', async () => {
             const schema = {
                 version: 0,
+                primaryKey: 'name',
                 type: 'object',
                 properties: {
                     name: {
-                        type: 'string',
-                        primary: true
+                        type: 'string'
                     },
                     color: {
                         type: 'string'

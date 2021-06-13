@@ -6,8 +6,8 @@ import {
     PouchDB
 } from './pouch-db';
 import {
-    generateId,
-    adapterObject
+    adapterObject,
+    randomCouchString
 } from '../../util';
 import type {
     PouchDBInstance
@@ -22,7 +22,7 @@ export const POUCHDB_LOCATION = 'rxdb-adapter-check';
 
 export function checkAdapter(adapter: any): Promise<any> {
     // id of the document which is stored and removed to ensure everything works
-    const _id = POUCHDB_LOCATION + '-' + generateId();
+    const _id = POUCHDB_LOCATION + '-' + randomCouchString(12);
 
     let pouch: PouchDBInstance;
     try {

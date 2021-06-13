@@ -161,7 +161,7 @@ export interface RxStorageInstance<
     >
     extends RxStorageInstanceBase<Internals, InstanceCreationOptions> {
 
-    readonly schema: Readonly<RxJsonSchema>;
+    readonly schema: Readonly<RxJsonSchema<DocumentData>>;
     readonly collectionName: string;
 
     /**

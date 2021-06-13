@@ -12,12 +12,17 @@ const {
     addPouchPlugin,
     getRxStoragePouch
 } = require('../../');
+import {
+    RxJsonSchema,
+} from '../../plugins/core';
+
 addPouchPlugin(require('pouchdb-adapter-memory'));
 
-const schema = {
+const schema: RxJsonSchema<{ passportId: string; firstName: string; lastName: string; }> = {
     title: 'human schema',
     description: 'describes a human being',
     version: 0,
+    primaryKey: 'passportId',
     keyCompression: false,
     type: 'object',
     properties: {
@@ -31,7 +36,7 @@ const schema = {
             type: 'string'
         }
     },
-    indexes: ['passportId'],
+    indexes: [],
     required: ['firstName', 'lastName']
 };
 

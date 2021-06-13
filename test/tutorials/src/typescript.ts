@@ -10,7 +10,6 @@ import {
     RxCollection,
     RxJsonSchema,
     RxDocument,
-    addRxPlugin,
     createRxDatabase
 } from 'rxdb';
 
@@ -42,7 +41,7 @@ type HeroCollection = RxCollection<HeroDocType, HeroDocMethods, HeroCollectionMe
 
 type MyDatabaseCollections = {
     heroes: HeroCollection
-}
+};
 
 type MyDatabase = RxDatabase<MyDatabaseCollections>;
 
@@ -55,16 +54,16 @@ async function run() {
         adapter: 'memory'
     });
 
-    const heroSchema: RxJsonSchema = {
+    const heroSchema: RxJsonSchema<HeroDocType> = {
         title: 'human schema',
         description: 'describes a human being',
         version: 0,
         keyCompression: true,
+        primaryKey: 'passportId',
         type: 'object',
         properties: {
             passportId: {
-                type: 'string',
-                primary: true
+                type: 'string'
             },
             firstName: {
                 type: 'string'

@@ -9,7 +9,8 @@ Breaking:
   - Removed the `watch-for-changes` plugin, this is now directly integrated into the pouchdb `RxStorage`
   - Removed the `adapter-check` plugin. (The function `adapterCheck` is move to the pouchdb plugin).
   - Moved everything pouchdb related to the `pouchdb` plugin.
-
+  - Setting a `primaryKey` for a schema is now required.
+  - When using the type `RxJsonSchema<DocType>` the `DocType` is now required.
 
 ### 9.20.0 (15 May 2021)
 

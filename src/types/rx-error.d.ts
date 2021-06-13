@@ -30,7 +30,7 @@ export interface RxErrorParameters {
     readonly childpath?: string;
     readonly obj?: any;
     readonly document?: any;
-    readonly schema?: Readonly<RxJsonSchema | RxSchema>;
+    readonly schema?: Readonly<RxJsonSchema<any> | RxSchema>;
     readonly schemaObj?: any;
     readonly pluginKey?: string;
     readonly originalDoc?: Readonly<any>;

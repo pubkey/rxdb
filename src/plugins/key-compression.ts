@@ -27,7 +27,7 @@ import type {
 declare type CompressionState = {
     table: CompressionTable;
     // the compressed schema
-    schema: RxJsonSchema;
+    schema: RxJsonSchema<any>;
 };
 
 /**
@@ -40,7 +40,7 @@ const COMPRESSION_STATE_BY_COLLECTION: WeakMap<
 > = new WeakMap();
 
 export function createCompressionState(
-    schema: RxJsonSchema
+    schema: RxJsonSchema<any>
 ): CompressionState {
     const primaryPath = getPrimary(schema);
     const table = createCompressionTable(
@@ -51,16 +51,16 @@ export function createCompressionState(
              * Do not compress the primary path
              * to make it easier to debug errors.
              */
-            primaryPath,
+            primaryPath as any,
             '_rev',
             '_attachments',
             '_deleted'
         ]
     );
-    const compressedSchema: RxJsonSchema = createCompressedJsonSchema(
+    const compressedSchema: RxJsonSchema<any> = createCompressedJsonSchema(
         table,
         schema as KeyCompressionJsonSchema
-    ) as RxJsonSchema;
+    ) as RxJsonSchema<any>;
 
     /**
      * the key compression module does not know about indexes

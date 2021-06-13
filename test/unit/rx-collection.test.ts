@@ -14,13 +14,12 @@ import {
     isRxDocument,
     createRxDatabase,
     createRxSchema,
-    RxError,
     randomCouchString,
     shuffleArray,
     createRxCollection,
     RxJsonSchema,
-    PrimaryProperty,
     RxDatabase,
+    RxError,
     addRxPlugin,
 } from '../../plugins/core';
 
@@ -109,7 +108,7 @@ config.parallel('rx-collection.test.js', () => {
                     const lastIndexDefFields = indexes.indexes[1].def.fields;
                     assert.deepStrictEqual(
                         lastIndexDefFields, [{
-                            'passportId': 'asc'
+                            'age': 'asc'
                         }, {
                             'passportCountry': 'asc'
                         }]
@@ -132,7 +131,7 @@ config.parallel('rx-collection.test.js', () => {
                     const lastIndexDefFields = indexes.indexes[1].def.fields;
                     assert.deepStrictEqual(
                         lastIndexDefFields, [{
-                            '|b': 'asc'
+                            'age': 'asc'
                         }, {
                             '|a': 'asc'
                         }]
@@ -302,32 +301,6 @@ config.parallel('rx-collection.test.js', () => {
                     await collection.insert(schemaObjects.human());
                     db.destroy();
                 });
-                it('should insert an object with _id set', async () => {
-                    const db = await createRxDatabase({
-                        name: randomCouchString(10),
-                        storage: getRxStoragePouch('memory'),
-                    });
-                    const collection = await db.collection({
-                        name: 'idprimary',
-                        schema: schemas._idPrimary
-                    });
-                    await collection.insert(schemaObjects._idPrimary());
-                    db.destroy();
-                });
-                it('should insert human (_id given)', async () => {
-                    const db = await createRxDatabase({
-                        name: randomCouchString(10),
-                        storage: getRxStoragePouch('memory'),
-                    });
-                    const collection = await db.collection({
-                        name: 'human',
-                        schema: schemas.human
-                    });
-                    const human = schemaObjects.human();
-                    human.passportId = randomCouchString(20);
-                    await collection.insert(human);
-                    db.destroy();
-                });
                 it('should insert nested human', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
@@ -392,24 +365,6 @@ config.parallel('rx-collection.test.js', () => {
                     );
                     db.destroy();
                 });
-                it('should not insert when _id given but _id is not primary', async () => {
-                    const db = await createRxDatabase({
-                        name: randomCouchString(10),
-                        storage: getRxStoragePouch('memory'),
-                    });
-                    const collection = await db.collection({
-                        name: 'humanfinal',
-                        schema: schemas.humanFinal
-                    });
-                    const human: any = schemaObjects.human();
-                    human['_id'] = randomCouchString(20);
-                    await AsyncTestUtil.assertThrows(
-                        () => collection.insert(human),
-                        'RxError',
-                        'not provide'
-                    );
-                    db.destroy();
-                });
                 it('should not insert a non-json object', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
@@ -421,7 +376,8 @@ config.parallel('rx-collection.test.js', () => {
                     });
                     await AsyncTestUtil.assertThrows(
                         () => collection.insert('collection'),
-                        TypeError
+                        'RxError',
+                        'is the wrong type'
                     );
                     db.destroy();
                 });
@@ -1060,15 +1016,15 @@ config.parallel('rx-collection.test.js', () => {
                     it('regex on index', async () => {
                         const c = await humansCollection.create(10);
                         const matchHuman = schemaObjects.human();
-                        matchHuman.passportId = 'FooMatchBar';
+                        matchHuman.firstName = 'FooMatchBar';
                         await c.insert(matchHuman);
                         const docs = await c.find()
-                            .where('passportId').regex(/Match/)
+                            .where('firstName').regex(/Match/)
                             .exec();
 
                         assert.strictEqual(docs.length, 1);
                         const firstDoc = docs[0];
-                        assert.strictEqual(firstDoc.get('passportId'), matchHuman.passportId);
+                        assert.strictEqual(firstDoc.get('firstName'), matchHuman.firstName);
                         c.database.destroy();
                     });
                 });
@@ -1474,7 +1430,6 @@ config.parallel('rx-collection.test.js', () => {
                     });
 
                     const schema: RxJsonSchema<HumanDocumentType> = clone(schemas.humanDefault);
-                    (schema.properties.passportId as PrimaryProperty).primary = true;
 
                     const defaultValue = schema.properties.age.default;
                     const collection = await db.collection({
@@ -1504,7 +1459,6 @@ config.parallel('rx-collection.test.js', () => {
                         storage: getRxStoragePouch('memory'),
                     });
                     const schema: RxJsonSchema<HumanDocumentType> = clone(schemas.humanDefault);
-                    (schema.properties.passportId as PrimaryProperty).primary = true;
 
                     const collection = await db.collection({
                         name: 'nestedhuman',
@@ -1766,11 +1720,11 @@ config.parallel('rx-collection.test.js', () => {
         it('#528  default value ignored when 0', async () => {
             const schema = {
                 version: 0,
+                primaryKey: 'passportId',
                 type: 'object',
                 properties: {
                     passportId: {
-                        type: 'string',
-                        primary: true
+                        type: 'string'
                     },
                     weight: {
                         type: 'number',
@@ -1795,11 +1749,11 @@ config.parallel('rx-collection.test.js', () => {
         it('#596 Default value not applied when value is undefined', async () => {
             const schema = {
                 version: 0,
+                primaryKey: 'passportId',
                 type: 'object',
                 properties: {
                     passportId: {
-                        type: 'string',
-                        primary: true
+                        type: 'string'
                     },
                     firstName: {
                         type: 'string'
@@ -1862,11 +1816,11 @@ config.parallel('rx-collection.test.js', () => {
         it('#939 creating a collection mutates the given parameters-object', async () => {
             const schema = {
                 version: 0,
+                primaryKey: 'passportId',
                 type: 'object',
                 properties: {
                     passportId: {
-                        type: 'string',
-                        primary: true
+                        type: 'string'
                     },
                     weight: {
                         type: 'number',

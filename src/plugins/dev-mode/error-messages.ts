@@ -59,7 +59,7 @@ export const ERROR_MESSAGES: { [k: string]: string } = {
 
     // rx-collection
     COL1: 'RxDocument.insert() You cannot insert an existing document',
-    COL2: 'RxCollection.insert() do not provide ._id when it is not the primary key',
+    // removed in 10.0.0 - COL2: 'RxCollection.insert() do not provide ._id when it is not the primary key',
     COL3: 'RxCollection.upsert() does not work without primary',
     COL4: 'RxCollection.atomicUpsert() does not work without primary',
     COL5: 'RxCollection.find() if you want to search by _id, use .findOne(_id)',
@@ -142,7 +142,7 @@ export const ERROR_MESSAGES: { [k: string]: string } = {
     SC8: 'SchemaCheck: first level-fields cannot start with underscore _',
     SC10: 'SchemaCheck: schema defines ._rev, this will be done automatically',
     SC11: 'SchemaCheck: schema needs a number >=0 as version',
-    SC12: 'SchemaCheck: primary can only be defined once',
+    // removed in 10.0.0 - SC12: 'SchemaCheck: primary can only be defined once',
     SC13: 'SchemaCheck: primary is always index, do not declare it as index',
     SC14: 'SchemaCheck: primary is always unique, do not declare it as index',
     SC15: 'SchemaCheck: primary cannot be encrypted',
@@ -160,6 +160,7 @@ export const ERROR_MESSAGES: { [k: string]: string } = {
     SC27: 'SchemaCheck: encrypted fields need to be specified at collection schema level',
     SC28: 'SchemaCheck: encrypted fields is not defined in the schema',
     SC29: 'SchemaCheck: missing object key \'properties\'',
+    SC30: 'SchemaCheck: primaryKey is required',
 
     // plugins/dev-mode
     DEV1: 'dev-mode added multiple times, ' +

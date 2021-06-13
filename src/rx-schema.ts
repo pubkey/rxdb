@@ -24,12 +24,9 @@ import type {
     JsonSchema
 } from './types';
 
-// TODO we should not need this here
-import { pouchSwapIdToPrimary, pouchSwapPrimaryToId } from './plugins/pouchdb';
-
 export class RxSchema<T = any> {
     public indexes: string[][];
-    public primaryPath: string;
+    public primaryPath: keyof T;
     public finalFields: string[];
 
     constructor(
@@ -48,14 +45,6 @@ export class RxSchema<T = any> {
         this.jsonSchema.required = (this.jsonSchema as any).required
             .concat(this.finalFields)
             .filter((elem: any, pos: any, arr: any) => arr.indexOf(elem) === pos); // unique;
-
-        // add primary to schema if not there (if _id)
-        if (!(this.jsonSchema.properties as any)[this.primaryPath]) {
-            (this.jsonSchema.properties as any)[this.primaryPath] = {
-                type: 'string',
-                minLength: 1
-            };
-        }
     }
 
     public get version(): number {
@@ -162,26 +151,6 @@ export class RxSchema<T = any> {
     }
 
     /**
-     * TODO remove this function because it is pouch specific
-     */
-    swapIdToPrimary(obj: any): any {
-        return pouchSwapIdToPrimary(
-            this.primaryPath,
-            obj
-        );
-    }
-
-    /**
-     * TODO remove this function because it is pouch specific
-     */
-    swapPrimaryToId(obj: any): any {
-        return pouchSwapPrimaryToId(
-            this.primaryPath,
-            obj
-        );
-    }
-
-    /**
      * creates the schema-based document-prototype,
      * see RxCollection.getDocumentPrototype()
      */
@@ -205,24 +174,16 @@ export function getIndexes<T = any>(
 
 /**
  * returns the primary path of a jsonschema
- * @return primaryPath which is _id if none defined
- * // TODO primary path should be set on top level of the schema so we do not have to itterate.
+ * @return primaryPath on the top level of the schema
  */
-export function getPrimary<T = any>(jsonSchema: RxJsonSchema<T>): string {
-    const ret = Object.keys(jsonSchema.properties)
-        .filter(key => (jsonSchema as any).properties[key].primary)
-        .shift();
-    if (!ret) {
-        return '_id';
-    } else {
-        return ret;
-    }
+export function getPrimary<DocType>(jsonSchema: RxJsonSchema<DocType>): keyof DocType {
+    return jsonSchema.primaryKey;
 }
 
 /**
  * array with previous version-numbers
  */
-export function getPreviousVersions(schema: RxJsonSchema): number[] {
+export function getPreviousVersions(schema: RxJsonSchema<any>): number[] {
     const version = schema.version ? schema.version : 0;
     let c = 0;
     return new Array(version)
@@ -249,10 +210,15 @@ export function getFinalFields<T = any>(
  * orders the schemas attributes by alphabetical order
  * @return jsonSchema - ordered
  */
-export function normalize(jsonSchema: RxJsonSchema): RxJsonSchema {
-    const normalizedSchema: RxJsonSchema = sortObject(clone(jsonSchema));
+export function normalize<T>(jsonSchema: RxJsonSchema<T>): RxJsonSchema<T> {
+    const normalizedSchema: RxJsonSchema<T> = sortObject(clone(jsonSchema));
     if (jsonSchema.indexes) {
         normalizedSchema.indexes = Array.from(jsonSchema.indexes); // indexes should remain unsorted
+    }
+    if (!jsonSchema.required) {
+        jsonSchema.required = [jsonSchema.primaryKey];
+    } else if (!jsonSchema.required.includes(jsonSchema.primaryKey)) {
+        jsonSchema.required.push(jsonSchema.primaryKey);
     }
     return normalizedSchema;
 }
@@ -261,9 +227,9 @@ export function normalize(jsonSchema: RxJsonSchema): RxJsonSchema {
  * fills the schema-json with default-settings
  * @return cloned schemaObj
  */
-export const fillWithDefaultSettings = function (
-    schemaObj: RxJsonSchema
-): RxJsonSchema {
+export function fillWithDefaultSettings<T = any>(
+    schemaObj: RxJsonSchema<T>
+): RxJsonSchema<T> {
     schemaObj = clone(schemaObj);
 
     // additionalProperties is always false
@@ -290,18 +256,18 @@ export const fillWithDefaultSettings = function (
      * Better remove the before validation.
      */
     // add _rev
-    schemaObj.properties._rev = {
+    (schemaObj.properties as any)._rev = {
         type: 'string',
         minLength: 1
     };
 
     // add attachments
-    schemaObj.properties._attachments = {
+    (schemaObj.properties as any)._attachments = {
         type: 'object'
     };
 
     // add deleted flag
-    schemaObj.properties._deleted = {
+    (schemaObj.properties as any)._deleted = {
         type: 'boolean'
     };
 
@@ -312,7 +278,7 @@ export const fillWithDefaultSettings = function (
     return schemaObj;
 };
 
-export function createRxSchema<T = any>(
+export function createRxSchema<T>(
     jsonSchema: RxJsonSchema<T>,
     runPreCreateHooks = true
 ): RxSchema<T> {
@@ -333,19 +299,25 @@ export function isInstanceOf(obj: any): boolean {
  * Helper function to create a valid RxJsonSchema
  * with a given version.
  */
-export function getPseudoSchemaForVersion(
+export function getPseudoSchemaForVersion<T = any>(
     version: number,
-    primaryKey: string = '_id'
-): RxJsonSchema {
-    const pseudoSchema: RxJsonSchema = {
+    primaryKey: keyof T
+): RxJsonSchema<T> {
+
+    // TODO remove this check
+    if (!primaryKey) {
+        throw new Error('aAAAAAAAAAAAAAAAa');
+    }
+
+    const pseudoSchema: RxJsonSchema<T> = {
         version,
         type: 'object',
+        primaryKey: primaryKey as any,
         properties: {
             [primaryKey]: {
-                type: 'string',
-                primary: true
+                type: 'string'
             }
-        }
+        } as any
     };
     return pseudoSchema;
 }
@@ -353,8 +325,8 @@ export function getPseudoSchemaForVersion(
 /**
  * Returns the sub-schema for a given path
  */
-export function getSchemaByObjectPath(
-    rxJsonSchema: RxJsonSchema,
+export function getSchemaByObjectPath<T = any>(
+    rxJsonSchema: RxJsonSchema<T>,
     path: string
 ): JsonSchema {
     let usePath: string = path as string;

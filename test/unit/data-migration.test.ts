@@ -435,7 +435,7 @@ config.parallel('data-migration.test.js', () => {
                     const states = [];
                     state$.subscribe((state: any) => {
                         assert.strictEqual(state.type, 'success');
-                        assert.ok(state.doc._id);
+                        assert.ok(state.doc.passportId);
                         states.push(state);
                     }, () => {
                         throw new Error('this test should not call error');
@@ -640,25 +640,25 @@ config.parallel('data-migration.test.js', () => {
                 const dbName = randomCouchString(10);
                 const schema0 = {
                     version: 0,
+                    primaryKey: 'id',
                     type: 'object',
                     properties: {
                         id: {
-                            type: 'string',
-                            primary: true
+                            type: 'string'
                         }
                     },
                     required: ['id']
                 };
                 const schema1 = {
                     version: 1,
+                    primaryKey: 'id',
                     type: 'object',
                     properties: {
                         id: {
                             type: 'string'
                         },
                         name: {
-                            type: 'string',
-                            primary: true
+                            type: 'string'
                         }
                     },
                     required: ['id', 'name']
@@ -872,11 +872,11 @@ config.parallel('data-migration.test.js', () => {
                     title: 'hero schema',
                     description: 'describes a simple hero',
                     version: 0,
+                    primaryKey: 'name',
                     type: 'object',
                     properties: {
                         name: {
-                            type: 'string',
-                            primary: true
+                            type: 'string'
                         },
                         color: {
                             type: 'string'
@@ -888,11 +888,11 @@ config.parallel('data-migration.test.js', () => {
                     title: 'hero schema',
                     description: 'describes a simple hero',
                     version: 1,
+                    primaryKey: 'name',
                     type: 'object',
                     properties: {
                         name: {
-                            type: 'string',
-                            primary: true
+                            type: 'string'
                         },
                         color: {
                             type: 'string'

@@ -4,7 +4,8 @@ import AsyncTestUtil from 'async-test-util';
 import config from './config';
 import {
     createRxDatabase,
-    randomCouchString
+    randomCouchString,
+    RxJsonSchema
 } from '../../plugins/core';
 
 import {
@@ -355,10 +356,10 @@ config.parallel('orm.test.js', () => {
                 multiInstance: false
             });
 
-            const schema = {
+            const schema: RxJsonSchema<{ name: string; nested: { foo: string }; }> = {
                 version: 0,
                 type: 'object',
-                primaryPath: '_id',
+                primaryKey: 'name',
                 properties: {
                     name: {
                         type: 'string'

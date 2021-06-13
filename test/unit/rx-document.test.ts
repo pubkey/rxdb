@@ -16,6 +16,7 @@ import {
     getDocumentPrototype,
     addRxPlugin,
     blobBufferUtil,
+    RxJsonSchema,
 } from '../../plugins/core';
 
 import {
@@ -296,11 +297,14 @@ config.parallel('rx-document.test.js', () => {
         });
         describe('negative', () => {
             it('should throw if schema does not match', async () => {
-                const schema = {
-                    $id: '#child-def',
+                const schema: RxJsonSchema<{ id: string; childProperty: 'A' | 'B' | 'C' }> = {
                     version: 0,
                     type: 'object',
+                    primaryKey: 'id',
                     properties: {
+                        id: {
+                            type: 'string'
+                        },
                         childProperty: {
                             type: 'string',
                             enum: ['A', 'B', 'C']
@@ -318,6 +322,7 @@ config.parallel('rx-document.test.js', () => {
 
                 // on doc
                 const doc = await col.insert({
+                    id: randomCouchString(12),
                     childProperty: 'A'
                 });
                 await AsyncTestUtil.assertThrows(
@@ -660,8 +665,7 @@ config.parallel('rx-document.test.js', () => {
 
             assert.ok(json.passportId);
             assert.ok(json.firstName);
-            assert.ok(json._id);
-            assert.ok(json._rev); // per default ._rev is also returned
+            assert.ok(json._rev); // when toJSON(true), the _rev field is also returned
             c.database.destroy();
         });
         it('should get a fresh object each time', async () => {
@@ -680,7 +684,6 @@ config.parallel('rx-document.test.js', () => {
             );
             assert.ok(json.passportId);
             assert.ok(json.firstName);
-            assert.ok(json._id);
             assert.strictEqual(typeof json._rev, 'undefined');
             c.database.destroy();
         });
@@ -897,11 +900,11 @@ config.parallel('rx-document.test.js', () => {
             });
             const schema = {
                 version: 0,
+                primaryKey: 'key',
                 type: 'object',
                 properties: {
                     key: {
-                        type: 'string',
-                        primary: true
+                        type: 'string'
                     },
                     value: {
                         type: 'object'
@@ -930,10 +933,14 @@ config.parallel('rx-document.test.js', () => {
         it('#734 Invalid value persists in document after failed update', async () => {
             // create a schema
             const schemaEnum = ['A', 'B'];
-            const mySchema = {
+            const mySchema: RxJsonSchema<{ id: string, children: any[] }> = {
                 version: 0,
+                primaryKey: 'id',
                 type: 'object',
                 properties: {
+                    id: {
+                        type: 'string'
+                    },
                     children: {
                         type: 'array',
                         items: {
@@ -977,6 +984,7 @@ config.parallel('rx-document.test.js', () => {
                 abLetter: 'B'
             };
             const doc = await collection.insert({
+                id: randomCouchString(12),
                 children: [
                     child1,
                     child2
@@ -985,7 +993,7 @@ config.parallel('rx-document.test.js', () => {
 
             const colDoc = await collection.findOne({
                 selector: {
-                    _id: doc._id
+                    id: doc.id
                 }
             }).exec();
 

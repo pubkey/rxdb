@@ -5,8 +5,7 @@ import type {
     RxStorageBulkWriteError
 } from './types';
 import {
-    flatClone,
-    generateId
+    flatClone
 } from './util';
 import {
     newRxError
@@ -110,28 +109,13 @@ export function _handleFromStorageInstance(
 }
 
 /**
- * fills in the _id and the
- * default data.
- * This also clones the data
+ * fills in the default data.
+ * This also clones the data.
  */
 export function fillObjectDataBeforeInsert(
-    collection: RxCollection | any,
+    collection: RxCollection | RxCollectionBase<any>,
     data: any
 ): any {
     const useJson = collection.schema.fillObjectWithDefaults(data);
-    if (useJson._id && collection.schema.primaryPath !== '_id') {
-        throw newRxError('COL2', {
-            data: data
-        });
-    }
-
-    // fill _id
-    if (
-        collection.schema.primaryPath === '_id' &&
-        !useJson._id
-    ) {
-        useJson._id = generateId();
-    }
-
     return useJson;
 }

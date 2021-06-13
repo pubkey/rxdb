@@ -47,10 +47,10 @@ const db = await createRxDatabase({
 const mySchema = {
     version: 0,
     type: 'object',
+    primaryKey: 'key',
     properties: {
         key: {
-            type: 'string',
-            primary: true
+            type: 'string'
         },
         value: {
             type: 'string'

@@ -281,10 +281,10 @@ config.parallel('reactive-query.test.js', () => {
             const crawlStateSchema = {
                 version: 0,
                 type: 'object',
+                primaryKey: 'key',
                 properties: {
                     key: {
-                        type: 'string',
-                        primary: true
+                        type: 'string'
                     },
                     state: {
                         type: 'object'
@@ -421,7 +421,7 @@ config.parallel('reactive-query.test.js', () => {
                 // Let's try with a different query
                 collection
                     .find()
-                    .sort('_id')
+                    .sort('passportId')
                     .exec()
                     .then((x) => {
                         results.push(x);
@@ -429,7 +429,7 @@ config.parallel('reactive-query.test.js', () => {
 
                 const subs3 = collection
                     .find()
-                    .sort('_id')
+                    .sort('passportId')
                     .$.subscribe(x => {
                         results.push(x);
                         subs3.unsubscribe();

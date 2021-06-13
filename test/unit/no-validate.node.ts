@@ -5,6 +5,7 @@ import {
     addRxPlugin,
     createRxDatabase,
     randomCouchString,
+    RxJsonSchema,
 } from '../../plugins/core';
 
 import {
@@ -16,10 +17,11 @@ import {
 addRxPlugin(require('../../plugins/no-validate'));
 addPouchPlugin(require('pouchdb-adapter-memory'));
 
-const schema = {
+const schema: RxJsonSchema<{ passportId: string; firstName: string; lastName: string; }> = {
     title: 'human schema',
     description: 'describes a human being',
     version: 0,
+    primaryKey: 'passportId',
     keyCompression: false,
     type: 'object',
     properties: {
@@ -33,7 +35,7 @@ const schema = {
             type: 'string'
         }
     },
-    indexes: ['passportId'],
+    indexes: [],
     required: ['firstName', 'lastName']
 };
 
@@ -48,6 +50,7 @@ config.parallel('no-validate.node.js', () => {
             schema
         });
         await col.insert({
+            passportId: randomCouchString(12),
             foo: 'bar'
         });
         db.destroy();
@@ -62,6 +65,7 @@ config.parallel('no-validate.node.js', () => {
             schema
         });
         await col.insert({
+            passportId: randomCouchString(12),
             foo: 'bar'
         });
         const doc = await col.findOne().exec();

@@ -9,6 +9,7 @@ import {
     randomCouchString,
     RxLocalDocument,
     addRxPlugin,
+    RxJsonSchema,
 } from '../../plugins/core';
 
 import {
@@ -601,20 +602,26 @@ config.parallel('local-documents.test.js', () => {
 
             myCollection.database.destroy();
         });
-        it('#663', async () => {
+        it('#663 Document conflicts with LocalDocument in the same Collection', async () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
                 storage: getRxStoragePouch('memory'),
             });
-            const boundaryMgmtSchema = {
+
+            type DocData = { id: string; boudariesGrp: { bndrPlnId: string; bndrPlnNm: string; }[] };
+            const boundaryMgmtSchema: RxJsonSchema<DocData> = {
                 version: 0,
                 type: 'object',
+                primaryKey: 'id',
                 properties: {
+                    id: {
+                        type: 'string'
+                    },
                     boudariesGrp: {
                         type: 'array',
                         uniqueItems: false,
-                        item: {
+                        items: {
                             type: 'object',
                             properties: {
                                 bndrPlnId: {
@@ -629,17 +636,20 @@ config.parallel('local-documents.test.js', () => {
                     },
                 }
             };
-            const boundaryMgmtCol = await db.collection({
+            const boundaryMgmtCol = await db.collection<DocData>({
                 name: 'human',
                 schema: boundaryMgmtSchema
             });
 
+            const groups = {
+                bndrPlnId: 'mygroup',
+                bndrPlnNm: 'other'
+            };
 
             // insert non-local
             await boundaryMgmtCol.insert({
-                boudariesGrp: [
-                    'mygroup'
-                ]
+                id: randomCouchString(12),
+                boudariesGrp: [groups]
             });
 
             await boundaryMgmtCol.insertLocal('metadata', {
@@ -656,10 +666,10 @@ config.parallel('local-documents.test.js', () => {
 
             await metadata.atomicSet('selectedBndrPlnId', grpId);
 
-            const data = await boundaryMgmtCol.findOne().exec();
+            const data = await boundaryMgmtCol.findOne().exec(true);
             const json = data.toJSON();
 
-            assert.strictEqual(json.boudariesGrp[0], 'mygroup');
+            assert.deepStrictEqual(json.boudariesGrp[0], groups);
 
             db.destroy();
         });

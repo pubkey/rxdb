@@ -12,7 +12,7 @@ import {
     newRxError
 } from '../rx-error';
 
-import {
+import type {
     Crypter
 } from '../crypter';
 import type {
@@ -45,10 +45,9 @@ const _decryptString = function (this: Crypter, encryptedValue: string): string 
 };
 
 
-export type PasswordHashDocument = {
-    _id: string;
+export type PasswordHashDocument = RxLocalDocumentData<{
     value: string;
-};
+}>;
 
 /**
  * validates and inserts the password hash into the internal collection
@@ -69,7 +68,7 @@ export async function storePasswordHashIntoDatabase(
         pwHashDocumentId
     );
     if (!pwHashDoc) {
-        const docData: RxLocalDocumentData = {
+        const docData: PasswordHashDocument = {
             _id: pwHashDocumentId,
             value: pwHash,
             _attachments: {}

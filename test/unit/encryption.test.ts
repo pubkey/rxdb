@@ -205,11 +205,11 @@ config.parallel('encryption.test.js', () => {
                 title: 'hero schema',
                 description: 'describes a simple hero',
                 version: 0,
+                primaryKey: 'name',
                 type: 'object',
                 properties: {
                     name: {
-                        type: 'string',
-                        primary: true
+                        type: 'string'
                     },
                     color: {
                         type: 'string'

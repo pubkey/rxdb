@@ -71,7 +71,7 @@ config.parallel('rx-query.test.js', () => {
                 .limit(10)
                 .sort('-age');
             const str = q.toString();
-            const mustString = '{"op":"find","other":{"queryBuilderPath":"age"},"query":{"limit":10,"selector":{"_id":{},"age":{"$gt":18,"$lt":67},"name":{"$ne":"Alice"}},"sort":[{"age":"desc"}]}}';
+            const mustString = '{"op":"find","other":{"queryBuilderPath":"age"},"query":{"limit":10,"selector":{"age":{"$gt":18,"$lt":67},"name":{"$ne":"Alice"},"passportId":{}},"sort":[{"age":"desc"}]}}';
             assert.strictEqual(str, mustString);
             const str2 = q.toString();
             assert.strictEqual(str2, mustString);
@@ -84,7 +84,7 @@ config.parallel('rx-query.test.js', () => {
                 passportId: 'desc', age: 'desc'
             });
             const str = q.toString();
-            const mustString = '{"op":"find","other":{},"query":{"selector":{"_id":{}},"sort":[{"passportId":"desc"},{"age":"desc"}]}}';
+            const mustString = '{"op":"find","other":{},"query":{"selector":{"passportId":{}},"sort":[{"passportId":"desc"},{"age":"desc"}]}}';
             assert.strictEqual(str, mustString);
             const str2 = q.toString();
             assert.strictEqual(str2, mustString);
@@ -396,7 +396,7 @@ config.parallel('rx-query.test.js', () => {
             // it is assumed that this query can never handled by event-reduce
             const q = col.find()
                 .where('firstName').ne('AliceFoobar')
-                .sort('_id')
+                .sort('passportId')
                 .skip(1);
 
             let results = await q.exec();
@@ -407,7 +407,7 @@ config.parallel('rx-query.test.js', () => {
             const addDoc = schemaObjects.human();
 
             // set _id to first value to force a re-exec-over database
-            (addDoc as any)._id = '1-aaaaaaaaaaaaaaaaaaaaaaaaaaa';
+            addDoc.passportId = '1-aaaaaaaaaaaaaaaaaaaaaaaaaaa';
             addDoc.firstName = 'NotAliceFoobar';
 
             await col.insert(addDoc);
@@ -626,11 +626,14 @@ config.parallel('rx-query.test.js', () => {
         });
         describe('negative', () => {
             it('should throw if schema does not match', async () => {
-                const schema = {
-                    $id: '#child-def',
+                const schema: RxJsonSchema<{ id: string; childProperty: 'A' | 'B' | 'C' }> = {
                     version: 0,
+                    primaryKey: 'id',
                     type: 'object',
                     properties: {
+                        id: {
+                            type: 'string'
+                        },
                         childProperty: {
                             type: 'string',
                             enum: ['A', 'B', 'C']
@@ -646,6 +649,7 @@ config.parallel('rx-query.test.js', () => {
                     schema
                 });
                 await col.insert({
+                    id: randomCouchString(12),
                     childProperty: 'A'
                 });
                 await AsyncTestUtil.assertThrows(
@@ -664,14 +668,14 @@ config.parallel('rx-query.test.js', () => {
     describe('issues', () => {
         describe('#157 Cannot sort on field(s) "XXX" when using the default index', () => {
             it('schema example 1', async () => {
-                const schema: RxJsonSchema = {
+                const schema: RxJsonSchema<{ user_id: string; user_pwd: string; last_login: number; status: string; }> = {
                     keyCompression: false,
                     version: 0,
+                    primaryKey: 'user_id',
                     type: 'object',
                     properties: {
                         user_id: {
-                            type: 'string',
-                            primary: true
+                            type: 'string'
                         },
                         user_pwd: {
                             type: 'string',
@@ -716,11 +720,15 @@ config.parallel('rx-query.test.js', () => {
                 db.destroy();
             });
             it('schema example 2', async () => {
-                const schema: RxJsonSchema = {
+                const schema: RxJsonSchema<{ id: string; value: number; }> = {
                     keyCompression: false,
                     version: 0,
+                    primaryKey: 'id',
                     type: 'object',
                     properties: {
+                        id: {
+                            type: 'string'
+                        },
                         value: {
                             type: 'number'
                         }
@@ -811,173 +819,15 @@ config.parallel('rx-query.test.js', () => {
 
             c.database.destroy();
         });
-        it('#393 Deleting all items with a sorted subscribe throws error', async () => {
-            // TODO it seams like this fails randomly
-            // further investigation needed
-            return;
-            /*
-            const schema = {
-                primaryPath: '_id',
-                keyCompression: false,
-                properties: {
-                    id: {
-                        primary: true,
-                        type: 'string'
-                    },
-                    title: {
-                        index: true,
-                        type: 'string'
-                    },
-                    integration: {
-                        type: 'string'
-                    },
-                    type: {
-                        index: true,
-                        type: 'string'
-                    },
-                    bodyTEMP: {
-                        type: 'string'
-                    },
-                    data: {
-                        type: 'object'
-                    },
-                    parentId: {
-                        type: 'string'
-                    },
-                    author: {
-                        type: 'string'
-                    },
-                    created: {
-                        index: true,
-                        type: 'string'
-                    },
-                    updated: {
-                        index: true,
-                        type: 'string'
-                    },
-                    orgName: {
-                        type: 'string'
-                    },
-                    bucket: {
-                        type: 'string'
-                    },
-                    url: {
-                        unique: true,
-                        type: 'string'
-                    },
-                    createdAt: {
-                        format: 'date-time',
-                        type: 'string',
-                        index: true
-                    },
-                    updatedAt: {
-                        format: 'date-time',
-                        type: 'string',
-                        index: true
-                    }
-                },
-                type: 'object',
-                required: [
-                    'title',
-                    'integration',
-                    'type',
-                    'created',
-                    'updated'
-                ],
-                title: 'things',
-                version: 0
-            };
-
-            const name = util.randomCouchString(10);
-            const db = await RxDB.create({
-                name,
-                adapter: 'memory',
-                ignoreDuplicate: true
-            });
-            const col = await db.collection({
-                name: 'humans',
-                schema
-            });
-            const db2 = await RxDB.create({
-                name,
-                adapter: 'memory',
-                ignoreDuplicate: true
-            });
-            const col2 = await db2.collection({
-                name: 'humans',
-                schema
-            });
-
-            const destroyAll = async function(collection) {
-                const remove = async item => {
-                    try {
-                        await item.remove();
-                    } catch (e) {
-                        // loop on document conflicts to delete all revisions
-                        await remove(item);
-                    }
-                    return true;
-                };
-                const all = await collection.find().exec();
-                if (!all) return;
-
-                return await Promise.all(all.map(remove));
-            };
-
-            const generateDocData = () => {
-                return {
-                    id: AsyncTestUtil.randomString(10),
-                    title: AsyncTestUtil.randomString(10),
-                    integration: AsyncTestUtil.randomString(10),
-                    type: AsyncTestUtil.randomString(10),
-                    created: AsyncTestUtil.randomString(10),
-                    updated: AsyncTestUtil.randomString(10),
-                    bucket: 'foobar',
-                    createdAt: '2002-10-02T10:00:00-05:00',
-                    updatedAt: '2002-10-02T10:00:00-05:00'
-                };
-            };
-
-            await Promise.all(
-                new Array(10)
-                .fill(0)
-                .map(() => generateDocData())
-                .map(data => col.insert(data))
-            );
-
-            const emitted = [];
-            const sub = col2.find()
-                .limit(8)
-                .where('bucket').eq('foobar')
-                .sort({
-                    updatedAt: 'desc'
-                })
-                .$.subscribe(res => {
-                    emitted.push(res);
-                });
-
-            await destroyAll(col);
-
-            // w8 until empty array on other tab
-            await AsyncTestUtil.waitUntil(() => {
-                const last = emitted[emitted.length - 1];
-                return last && last.length === 0;
-            });
-
-            sub.unsubscribe();
-            db.destroy();
-            db2.destroy();
-            */
-        });
         it('#585 sort by sub-path not working', async () => {
             const schema = {
                 version: 0,
                 type: 'object',
+                primaryKey: 'id',
                 keyCompression: false,
                 properties: {
                     id: {
-                        type: 'string',
-                        primary: true
+                        type: 'string'
                     },
                     info: {
                         type: 'object',
@@ -1049,10 +899,11 @@ config.parallel('rx-query.test.js', () => {
 
             db.destroy();
         });
-        it('#609 default index on _id when better possible', async () => {
-            const mySchema: RxJsonSchema = {
+        it('#609 default index on primaryKey when better possible', async () => {
+            const mySchema: RxJsonSchema<{ name: string; passportId: string; }> = {
                 version: 0,
                 keyCompression: false,
+                primaryKey: 'name',
                 type: 'object',
                 properties: {
                     name: {
@@ -1094,11 +945,15 @@ config.parallel('rx-query.test.js', () => {
             collection.database.destroy();
         });
         it('#698 Same query producing a different result', async () => {
-            const mySchema: RxJsonSchema = {
+            const mySchema: RxJsonSchema<{ id: string; event_id: number; user_id: string; created_at: number }> = {
                 version: 0,
                 keyCompression: false,
+                primaryKey: 'id',
                 type: 'object',
                 properties: {
+                    id: {
+                        type: 'string'
+                    },
                     event_id: {
                         type: 'number'
                     },
@@ -1114,11 +969,13 @@ config.parallel('rx-query.test.js', () => {
             const collection = await humansCollection.createBySchema(mySchema);
 
             await collection.insert({
+                id: randomCouchString(12),
                 event_id: 1,
                 user_id: '6',
                 created_at: 1337
             });
             await collection.insert({
+                id: randomCouchString(12),
                 event_id: 2,
                 user_id: '6',
                 created_at: 1337
@@ -1214,8 +1071,9 @@ config.parallel('rx-query.test.js', () => {
                 name: randomCouchString(10),
                 storage: getRxStoragePouch('memory'),
             });
-            const schema = {
+            const schema: RxJsonSchema<{ roomId: string; sessionId: string }> = {
                 version: 0,
+                primaryKey: 'roomId',
                 type: 'object',
                 properties: {
                     roomId: {
@@ -1265,11 +1123,11 @@ config.parallel('rx-query.test.js', () => {
             // create a schema
             const mySchema = {
                 version: 0,
+                primaryKey: 'passportId',
                 type: 'object',
                 properties: {
                     passportId: {
-                        type: 'string',
-                        primary: true
+                        type: 'string'
                     },
                     firstName: {
                         type: 'string'
@@ -1343,11 +1201,11 @@ config.parallel('rx-query.test.js', () => {
             // create a schema
             const mySchema = {
                 version: 0,
+                primaryKey: 'passportId',
                 type: 'object',
                 properties: {
                     passportId: {
-                        type: 'string',
-                        primary: true
+                        type: 'string'
                     },
                     firstName: {
                         type: 'string'

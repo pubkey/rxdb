@@ -356,7 +356,7 @@ export class RxCollectionBase<
             json = tempDoc.toJSON() as any;
         }
 
-        const useJson: RxDocumentWriteData<RxDocumentType> = fillObjectDataBeforeInsert(this, json);
+        const useJson: RxDocumentWriteData<RxDocumentType> = fillObjectDataBeforeInsert(this as any, json);
         let newDoc = tempDoc;
 
         let startTime: number;
@@ -391,7 +391,7 @@ export class RxCollectionBase<
         error: RxStorageBulkWriteError<RxDocumentType>[]
     }> {
         const useDocs: RxDocumentType[] = docsData.map(docData => {
-            const useDocData = fillObjectDataBeforeInsert(this, docData);
+            const useDocData = fillObjectDataBeforeInsert(this as any, docData);
             return useDocData;
         });
 
@@ -594,7 +594,7 @@ export class RxCollectionBase<
         if (typeof queryObj === 'string') {
             query = createRxQuery('findOne', {
                 selector: {
-                    _id: queryObj
+                    [this.schema.primaryPath]: queryObj
                 }
             }, this as any);
         } else {

@@ -587,10 +587,10 @@ config.parallel('import-export.test.js', () => {
             const docSchema = {
                 name: 'demo',
                 version: 0,
+                primaryKey: 'firstName',
                 type: 'object',
                 properties: {
                     firstName: {
-                        primary: true,
                         type: 'string'
                     },
                     time: {

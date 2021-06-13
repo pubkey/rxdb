@@ -7,7 +7,8 @@
 import {
     addRxPlugin,
     createRxDatabase,
-    addPouchPlugin
+    addPouchPlugin,
+    RxJsonSchema
 } from 'rxdb';
 import * as MemoryAdapter from 'pouchdb-adapter-memory';
 addPouchPlugin(MemoryAdapter);
@@ -25,6 +26,12 @@ import * as assert from 'assert';
 import * as os from 'os';
 import * as path from 'path';
 
+
+declare type ItemDocumentData = {
+    key: string;
+    value: string;
+};
+
 async function run() {
 
 
@@ -35,13 +42,13 @@ async function run() {
     });
 
     // create a collection
-    const mySchema = {
+    const mySchema: RxJsonSchema<ItemDocumentData> = {
         version: 0,
         type: 'object',
+        primaryKey: 'key',
         properties: {
             key: {
-                type: 'string',
-                primary: true
+                type: 'string'
             },
             value: {
                 type: 'string'

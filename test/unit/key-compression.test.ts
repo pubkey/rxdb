@@ -11,6 +11,7 @@ import {
     createRxDatabase,
     randomCouchString,
     isRxDocument,
+    RxJsonSchema,
 } from '../../plugins/core';
 
 import {
@@ -71,12 +72,16 @@ config.parallel('key-compression.test.js', () => {
     });
     describe('issues', () => {
         it('#50 compress string array properly', async () => {
-            const mySchema = {
+            const mySchema: RxJsonSchema<{ likes: any[], id: string }> = {
                 title: 'hero schema',
                 version: 0,
                 description: 'describes a simple hero',
+                primaryKey: 'id',
                 type: 'object',
                 properties: {
+                    id: {
+                        type: 'string'
+                    },
                     likes: {
                         type: 'array',
                         items: {
@@ -95,6 +100,7 @@ config.parallel('key-compression.test.js', () => {
                 schema: mySchema
             });
             const docData = {
+                id: randomCouchString(12),
                 likes: ['abc', '8']
             };
             await collection.insert(docData);
@@ -108,11 +114,11 @@ config.parallel('key-compression.test.js', () => {
                 title: 'hero schema',
                 version: 0,
                 description: 'describes a simple hero',
+                primaryKey: 'key',
                 type: 'object',
                 properties: {
                     key: {
-                        type: 'string',
-                        primary: true
+                        type: 'string'
                     },
                     nested: {
                         type: 'object'

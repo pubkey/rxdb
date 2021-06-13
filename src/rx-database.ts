@@ -72,8 +72,9 @@ let DB_COUNT = 0;
 
 // stores information about the collections
 export type InternalStoreDocumentData = {
-    _id: string;
-    schema: RxJsonSchema;
+    // primary
+    collectionName: string;
+    schema: RxJsonSchema<any>;
     schemaHash: string;
     version: number;
 };
@@ -256,7 +257,7 @@ export class RxDatabaseBase<
             if (!internalDocByCollectionName[name]) {
                 bulkPutDocs.push({
                     document: {
-                        _id: _collectionNamePrimary(name, collectionCreators[name].schema),
+                        collectionName: _collectionNamePrimary(name, collectionCreators[name].schema),
                         schemaHash: schemaHashByName[name],
                         schema: collection.schema.normalized,
                         version: collection.schema.version,
@@ -328,7 +329,7 @@ export class RxDatabaseBase<
                                 {
                                     databaseName: this.name,
                                     collectionName,
-                                    schema: getPseudoSchemaForVersion(v),
+                                    schema: getPseudoSchemaForVersion<InternalStoreDocumentData>(v, 'collectionName'),
                                     options: this.instanceCreationOptions
                                 }
                             );
@@ -519,7 +520,7 @@ export function writeToSocket(
  * returns the primary for a given collection-data
  * used in the internal pouchdb-instances
  */
-export function _collectionNamePrimary(name: string, schema: RxJsonSchema) {
+export function _collectionNamePrimary(name: string, schema: RxJsonSchema<any>) {
     return name + '-' + schema.version;
 }
 
@@ -536,7 +537,7 @@ export async function _removeAllOfCollection(
     );
     const relevantDocs = docs
         .filter((doc) => {
-            const name = doc._id.split('-')[0];
+            const name = doc.collectionName.split('-')[0];
             return name === collectionName;
         });
     return Promise.all(
@@ -583,19 +584,23 @@ function _prepareBroadcastChannel<Collections>(rxDatabase: RxDatabase<Collection
 }
 
 
-async function createRxDatabaseStorageInstances<RxDocType, Internals, InstanceCreationOptions>(
+/**
+ * Creates the storage instances that are used internally in the database
+ * to store schemas and other configuration stuff.
+ */
+async function createRxDatabaseStorageInstances<Internals, InstanceCreationOptions>(
     storage: RxStorage<Internals, InstanceCreationOptions>,
     databaseName: string,
     options: InstanceCreationOptions
 ): Promise<{
-    internalStore: RxStorageInstance<RxDocType, Internals, InstanceCreationOptions>,
+    internalStore: RxStorageInstance<InternalStoreDocumentData, Internals, InstanceCreationOptions>,
     localDocumentsStore: RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>
 }> {
-    const internalStore = await storage.createStorageInstance<RxDocType>(
+    const internalStore = await storage.createStorageInstance<InternalStoreDocumentData>(
         {
             databaseName,
             collectionName: INTERNAL_STORAGE_NAME,
-            schema: getPseudoSchemaForVersion(0),
+            schema: getPseudoSchemaForVersion(0, 'collectionName'),
             options
         }
     );
@@ -621,7 +626,6 @@ async function prepare<Internals, InstanceCreationOptions, Collections>(
     rxDatabase: RxDatabaseBase<Internals, InstanceCreationOptions, Collections>
 ): Promise<void> {
     const storageInstances = await createRxDatabaseStorageInstances<
-        { _id: string },
         Internals,
         InstanceCreationOptions
     >(
@@ -717,19 +721,19 @@ export async function removeRxDatabase(
         {}
     );
 
-    const docs = await getAllDocuments<{ _id: string }>(storageInstance.internalStore as any);
+    const docs = await getAllDocuments(storageInstance.internalStore);
     await Promise.all(
         docs
-            .map((colDoc) => colDoc._id)
+            .map(colDoc => colDoc.collectionName)
             .map(async (id: string) => {
                 const split = id.split('-');
                 const name = split[0];
                 const version = parseInt(split[1], 10);
-                const instance = await storage.createStorageInstance(
+                const instance = await storage.createStorageInstance<InternalStoreDocumentData>(
                     {
                         databaseName,
                         collectionName: name,
-                        schema: getPseudoSchemaForVersion(version),
+                        schema: getPseudoSchemaForVersion(version, 'collectionName'),
                         options: {}
                     }
                 );

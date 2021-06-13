@@ -109,7 +109,6 @@ export type {
     RxAttachmentCreator,
     RxCollection,
     RxCacheReplacementPolicy,
-    PrimaryProperty,
     RxChangeEvent,
     RxCollectionCreator,
     RxCollectionGenerated,
