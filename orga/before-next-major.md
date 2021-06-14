@@ -67,10 +67,10 @@ If the users wants to modify that data, it has be be deep-cloned by the user.
 To ensure immutability, RxDB will use [deep-freeze](https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze) in the dev-mode (about same expensive as deep clone). Also typescript will throw a build-time error because we will use `ReadonlyArray` and `readonly` to define outgoing data immutable.
 In production-mode, there will be nothing that ensures immutability.
 
-## DONE server-plugin: overwrite defaults of pouchdbExpressOptions
+## server-plugin: overwrite defaults of pouchdbExpressOptions
 The defaults of `pouchdbExpressOptions` from `RxDatabase.server()` require the user to configure stuff to not polute the projects folder with config and log files. We should overwrite the defaults to use `inMemoryConfig: true` and store the logs in the tmp folder.
 
-## remove deprecated RxDocument.atomicSet()
+## DONE remove deprecated RxDocument.atomicSet()
 `atomicSet` is deprecated in favor of `atomicPatch`. Remove the function in the next major release.
 
 ## remove RxDatabase.collection()
