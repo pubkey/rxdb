@@ -75,7 +75,6 @@
         * [update()](./rx-document.md#update)
         * [atomicUpdate()](./rx-document.md#atomicupdate)
         * [atomicPatch()](./rx-document.md#atomicpatch)
-        * [atomicSet()](./rx-document.md#atomicset)
         * [$](./rx-document.md#observe-)
         * [remove()](./rx-document.md#remove)
         * [deleted$](./rx-document.md#deleted$)

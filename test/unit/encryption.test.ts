@@ -129,7 +129,7 @@ config.parallel('encryption.test.js', () => {
                 const secret = doc.get('secret');
                 assert.strictEqual(agent.secret, secret);
                 const newSecret = randomCouchString(10);
-                await doc.atomicSet('secret', newSecret);
+                await doc.atomicPatch({ secret: newSecret });
                 const docNew = await c.findOne().exec(true);
                 assert.strictEqual(newSecret, docNew.get('secret'));
                 c.database.destroy();
@@ -156,7 +156,7 @@ config.parallel('encryption.test.js', () => {
                 assert.strictEqual(agent.secret.name, secret.name);
                 assert.strictEqual(agent.secret.subname, secret.subname);
 
-                await doc.atomicSet('secret', newSecret);
+                await doc.atomicPatch({ secret: newSecret });
                 const docNew = await c.findOne().exec(true);
 
                 assert.strictEqual(newSecret.name, docNew.get('secret.name'));
@@ -201,7 +201,7 @@ config.parallel('encryption.test.js', () => {
             await db2.destroy();
         });
         it('#917 Unexpected end of JSON input', async () => {
-            const schema: RxJsonSchema = {
+            const schema: RxJsonSchema<{ name: string; color: string; happy: boolean; }> = {
                 title: 'hero schema',
                 description: 'describes a simple hero',
                 version: 0,

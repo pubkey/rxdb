@@ -84,7 +84,7 @@ config.parallel('temporary-document.test.js', () => {
                 const newDoc = c.newDocument(schemaObjects.human());
                 await newDoc.save();
 
-                await newDoc.atomicSet('firstName', 'foobar');
+                await newDoc.atomicPatch({ firstName: 'foobar' });
                 assert.strictEqual('foobar', newDoc.firstName);
                 const allDocs = await c.find().exec();
                 assert.strictEqual(allDocs.length, 1);
@@ -134,8 +134,8 @@ config.parallel('temporary-document.test.js', () => {
             const emitted: any[] = [];
             const sub = newDoc.firstName$.subscribe((val: any) => emitted.push(val));
 
-            await newDoc.atomicSet('firstName', 'foobar1');
-            await newDoc.atomicSet('firstName', 'foobar2');
+            await newDoc.atomicPatch({ firstName: 'foobar1' });
+            await newDoc.atomicPatch({ firstName: 'foobar2' });
 
             await AsyncTestUtil.waitUntil(() => emitted.length === 3);
             assert.strictEqual('foobar2', emitted.pop());

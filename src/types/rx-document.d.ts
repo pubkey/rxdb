@@ -53,14 +53,6 @@ export declare interface RxDocumentBase<RxDocumentType, OrmMethods = {}> {
      */
     atomicPatch(patch: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>>;
 
-    /**
-     * @deprecated use atomicPatch or atomicUpdate instead
-     * because it is better works with typescript
-     */
-    atomicSet(objPath: string, value: any): Promise<RxDocument<RxDocumentType, OrmMethods>>;
-
-
-
     update(updateObj: any): Promise<any>;
     remove(): Promise<boolean>;
     _handleChangeEvent(cE: any): void;

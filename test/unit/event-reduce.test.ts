@@ -104,7 +104,7 @@ describe('event-reduce.test.js', () => {
                     .findOne()
                     .sort('lastName')
                     .exec(true);
-                await docToUpdate.atomicSet('age', 50);
+                await docToUpdate.atomicPatch({ age: 50 });
             })
         );
 

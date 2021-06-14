@@ -509,7 +509,7 @@ describe('replication-graphql.test.js', () => {
                     const amount = 5;
                     const c = await humansCollection.createHumanWithTimestamp(amount);
                     const oneDoc = await c.findOne().exec(true);
-                    await oneDoc.atomicSet('age', 1);
+                    await oneDoc.atomicPatch({ age: 1 });
                     const changesResult = await getChangesSinceLastPushSequence(
                         c,
                         endpointHash,
@@ -2203,7 +2203,7 @@ describe('replication-graphql.test.js', () => {
                 // update document
                 const newAge = 1111;
                 const doc = await collection.findOne().exec(true);
-                await doc.atomicSet('age', newAge);
+                await doc.atomicPatch({ age: newAge });
 
                 const docAfter = await collection.findOne().exec(true);
                 assert.strictEqual(docAfter.age, newAge);

@@ -11,6 +11,7 @@ Breaking:
   - Moved everything pouchdb related to the `pouchdb` plugin.
   - Setting a `primaryKey` for a schema is now required.
   - When using the type `RxJsonSchema<DocType>` the `DocType` is now required.
+  - Removed the deprecated `atomicSet()`, use `atomicPatch()` instead.
 
 ### 9.20.0 (15 May 2021)
 

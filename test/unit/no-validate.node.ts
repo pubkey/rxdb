@@ -71,7 +71,7 @@ config.parallel('no-validate.node.js', () => {
         const doc = await col.findOne().exec();
         assert.strictEqual(doc.get('foo'), 'bar');
 
-        await doc.atomicSet('bar', 'foo');
+        await doc.atomicPatch({ bar: 'foo' });
         db.destroy();
     });
 });

@@ -586,7 +586,7 @@ describe('replication.test.js', () => {
                         lastValue = newValue;
                         if (lastValue === 'foobar') newPromiseWait.resolve();
                     });
-                await doc.atomicSet('firstName', 'foobar');
+                await doc.atomicPatch({ firstName: 'foobar' });
 
                 await newPromiseWait.promise;
                 assert.strictEqual(lastValue, 'foobar');

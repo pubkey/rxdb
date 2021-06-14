@@ -101,18 +101,6 @@ console.log(myDocument.name); // 'Steve'
 ```
 
 
-### atomicSet()
-Works like `atomicUpdate` but only sets the value for a single attribute.
-
-## NOTICE: atomicSet is deprecated, use atomicPatch instead
-
-
-```js
-await myDocument.atomicSet('nested.attribute', 'foobar');
-console.log(myDocument.nested.attribute); // 'foobar'
-```
-
-
 ### Observe $
 Calling this will return an [rxjs-Observable](http://reactivex.io/rxjs/manual/overview.html#observable) which emits all change-Events belonging to this document.
 

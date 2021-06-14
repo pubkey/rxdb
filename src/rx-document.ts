@@ -367,17 +367,6 @@ export const basePrototype = {
     },
 
     /**
-     * @deprecated use atomicPatch instead because it is better typed
-     * and does not allow any keys and values
-     */
-    atomicSet(this: RxDocument, key: string, value: any) {
-        return this.atomicUpdate(docData => {
-            objectPath.set(docData, key, value);
-            return docData;
-        });
-    },
-
-    /**
      * saves the new document-data
      * and handles the events
      */

@@ -148,7 +148,9 @@ config.parallel('attachments.test.ts', () => {
                 type: 'text/plain'
             });
 
-            await doc.atomicSet('age', 7);
+            await doc.atomicPatch({
+                age: 7
+            });
 
             const attachment: any = doc.getAttachment('cat.txt');
             assert.ok(attachment);

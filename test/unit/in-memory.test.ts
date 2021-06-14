@@ -239,7 +239,7 @@ config.parallel('in-memory.test.js', () => {
             const memCol = await col.inMemory();
             const memDoc: any = await memCol.findOne().exec();
 
-            await memDoc.atomicSet('firstName', 'foobar');
+            await memDoc.atomicPatch({ firstName: 'foobar' });
 
             await AsyncTestUtil.waitUntil(async () => {
                 const doc = await col.findOne()
@@ -256,7 +256,7 @@ config.parallel('in-memory.test.js', () => {
 
             const doc: any = await col.findOne().exec();
 
-            await doc.atomicSet('firstName', 'foobar');
+            await doc.atomicPatch({ firstName: 'foobar' });
 
             await AsyncTestUtil.waitUntil(async () => {
                 const memDoc = await memCol.findOne()
@@ -279,7 +279,7 @@ config.parallel('in-memory.test.js', () => {
             await AsyncTestUtil.wait(100);
             assert.strictEqual(emitted.length, 1);
 
-            await doc.atomicSet('firstName', 'foobar');
+            await doc.atomicPatch({ firstName: 'foobar' });
             await AsyncTestUtil.wait(100);
             assert.strictEqual(emitted.length, 2);
 
@@ -316,7 +316,7 @@ config.parallel('in-memory.test.js', () => {
             assert.strictEqual(foundMem.length, 1);
 
             // update event
-            await doc.atomicSet('firstName', 'foobar');
+            await doc.atomicPatch({ firstName: 'foobar' });
             await AsyncTestUtil.wait(100);
             assert.strictEqual(emitted.length, 2);
             foundCol = await col.find().where('firstName').ne('foobar2').exec();
@@ -491,7 +491,7 @@ config.parallel('in-memory.test.js', () => {
             await memCol.awaitPersistence();
 
             const doc: any = await memCol.findOne().exec();
-            await doc.atomicSet('age', 6);
+            await doc.atomicPatch({ age: 6 });
             await memCol.awaitPersistence();
 
             await doc.remove();
@@ -593,7 +593,7 @@ config.parallel('in-memory.test.js', () => {
             assert.strictEqual(alice.maxHp, 101);
 
             // check if it works from mem to parent
-            await alice.atomicSet('maxHp', 103);
+            await alice.atomicPatch({maxHp: 103});
 
             await AsyncTestUtil.waitUntil(async () => {
                 const aliceDoc = await col2

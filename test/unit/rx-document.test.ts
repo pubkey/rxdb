@@ -224,7 +224,7 @@ config.parallel('rx-document.test.js', () => {
                 assert.ok(docs.length > 1);
                 const first = docs[0];
 
-                await first.atomicSet('firstName', 'foobar');
+                await first.atomicPatch({ firstName: 'foobar' });
 
                 await first.remove();
                 const docsAfter = await c.find().exec();
@@ -762,7 +762,7 @@ config.parallel('rx-document.test.js', () => {
                     value = newVal;
                 });
 
-                await doc.atomicSet('firstName', 'foobar');
+                await doc.atomicPatch({ firstName: 'foobar' });
 
                 await promiseWait(5);
                 assert.strictEqual(value, 'foobar');
@@ -787,22 +787,36 @@ config.parallel('rx-document.test.js', () => {
                     value = newVal;
                 });
 
-                await doc.atomicSet('mainSkill.level', 10);
+                await doc.atomicPatch({
+                    mainSkill: {
+                        name: randomCouchString(5),
+                        level: 10
+                    }
+                });
                 await promiseWait(5);
                 assert.strictEqual(value, 10);
                 c.database.destroy();
             });
             it('deep-nested-value-observable', async () => {
                 const c = await humansCollection.createDeepNested(1);
-                const doc: any = await c.findOne().exec();
-                const obs = doc.mainSkill.attack.good$;
+                const doc = await c.findOne().exec(true);
+                const obs = (doc.mainSkill.attack as any).good$;
                 assert.ok(obs.subscribe);
 
                 let value = null;
-                doc.mainSkill.attack.good$.subscribe((newVal: any) => {
+                (doc.mainSkill.attack as any).good$.subscribe((newVal: any) => {
                     value = newVal;
                 });
-                await doc.atomicSet('mainSkill.attack.good', true);
+                await doc.atomicPatch({
+                    mainSkill: {
+                        name: 'foobar',
+                        attack: {
+                            good: true,
+                            count: 100
+                        }
+
+                    }
+                });
                 await promiseWait(5);
                 assert.strictEqual(value, true);
                 c.database.destroy();
@@ -885,7 +899,7 @@ config.parallel('rx-document.test.js', () => {
             assert.strictEqual(doc.skills.length, 3);
 
             const newSkill = 'newSikSkill';
-            await doc.atomicSet('skills', doc.skills.concat(newSkill));
+            await doc.atomicPatch({ skills: doc.skills.concat(newSkill) });
 
             const colDump = await col.dump(true);
             const afterSkills = colDump.docs[0].skills;

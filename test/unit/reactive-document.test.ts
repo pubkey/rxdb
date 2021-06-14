@@ -39,7 +39,7 @@ config.parallel('reactive-document.test.js', () => {
                     emittedCollection.push(cE);
                 });
 
-                await doc.atomicSet('firstName', newName);
+                await doc.atomicPatch({ firstName: newName });
 
                 await AsyncTestUtil.waitUntil(() => emittedCollection.length === 1);
                 const docDataAfter = await doc.$.pipe(first()).toPromise();
@@ -65,7 +65,7 @@ config.parallel('reactive-document.test.js', () => {
                     valueObj.v = newVal;
                 });
                 const setName = randomCouchString(10);
-                await doc.atomicSet('firstName', setName);
+                await doc.atomicPatch({ firstName: setName });
                 await promiseWait(5);
                 assert.strictEqual(valueObj.v, setName);
                 c.database.destroy();
@@ -80,7 +80,12 @@ config.parallel('reactive-document.test.js', () => {
                     valueObj.v = newVal;
                 });
                 const setName = randomCouchString(10);
-                await doc.atomicSet('mainSkill.name', setName);
+                await doc.atomicPatch({
+                    mainSkill: {
+                        name: setName,
+                        level: 10
+                    }
+                });
                 promiseWait(5);
                 assert.strictEqual(valueObj.v, setName);
                 c.database.destroy();
@@ -92,7 +97,7 @@ config.parallel('reactive-document.test.js', () => {
                 const sub = doc.get$('firstName').subscribe((newVal: any) => v1 = newVal);
                 await promiseWait(5);
 
-                await doc.atomicSet('firstName', 'foobar');
+                await doc.atomicPatch({ firstName: 'foobar' });
 
                 let v2;
                 doc.get$('firstName').subscribe((newVal: any) => v2 = newVal);

@@ -1164,7 +1164,7 @@ config.parallel('rx-collection.test.js', () => {
 
                     assert.ok(results[0] === results[1]);
 
-                    await results[0].atomicSet('firstName', 'foobar');
+                    await results[0].atomicPatch({ firstName: 'foobar' });
 
                     const results2 = await Promise.all([
                         c.findOne(primary).exec(),

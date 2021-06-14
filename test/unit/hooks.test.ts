@@ -214,7 +214,7 @@ config.parallel('hooks.test.js', () => {
                         assert.ok(isRxDocument(instance));
                         count++;
                     }, false);
-                    await doc.atomicSet('firstName', 'foobar');
+                    await doc.atomicPatch({ firstName: 'foobar' });
                     assert.strictEqual(count, 1);
                     c.database.destroy();
                 });
@@ -228,7 +228,7 @@ config.parallel('hooks.test.js', () => {
                         assert.ok(isRxDocument(instance));
                         count++;
                     }, true);
-                    await doc.atomicSet('firstName', 'foobar');
+                    await doc.atomicPatch({ firstName: 'foobar' });
                     assert.strictEqual(count, 1);
                     c.database.destroy();
                 });
@@ -243,7 +243,7 @@ config.parallel('hooks.test.js', () => {
                         hasRun = true;
                     }, false);
 
-                    await doc.atomicSet('firstName', 'foobar');
+                    await doc.atomicPatch({ firstName: 'foobar' });
                     assert.ok(hasRun);
                     c.database.destroy();
                 });
@@ -258,7 +258,7 @@ config.parallel('hooks.test.js', () => {
                         await promiseWait(10);
                         hasRun = true;
                     }, false);
-                    await doc.atomicSet('firstName', 'foobar');
+                    await doc.atomicPatch({ firstName: 'foobar' });
                     assert.ok(hasRun);
                     c.database.destroy();
                 });
@@ -275,7 +275,7 @@ config.parallel('hooks.test.js', () => {
 
                     let failC = 0;
                     try {
-                        await doc.atomicSet('firstName', 'foobar');
+                        await doc.atomicPatch({ firstName: 'foobar' });
                     } catch (e) {
                         failC++;
                     }
@@ -298,7 +298,7 @@ config.parallel('hooks.test.js', () => {
                         assert.ok(isRxDocument(instance));
                         count++;
                     }, false);
-                    await doc.atomicSet('firstName', 'foobar');
+                    await doc.atomicPatch({ firstName: 'foobar' });
                     assert.strictEqual(count, 1);
                     c.database.destroy();
                 });
@@ -312,7 +312,7 @@ config.parallel('hooks.test.js', () => {
                         assert.ok(isRxDocument(instance));
                         count++;
                     }, true);
-                    await doc.atomicSet('firstName', 'foobar');
+                    await doc.atomicPatch({ firstName: 'foobar' });
                     assert.strictEqual(count, 1);
                     c.database.destroy();
                 });

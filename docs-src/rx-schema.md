@@ -85,20 +85,26 @@ console.dir(myDatabase.heroes.name);
 The `version` field is a number, starting with `0`.
 When the version is greater than 0, you have to provide the migrationStrategies to create a collection with this schema.
 
+## primaryKey
+
+The `primaryKey` field contains the fieldname of the property that will be used as primary key for the whole collection.
+The value of the primary key of the document must be a `string`, unique and is required.
+
 ## keyCompression
 
-Since version `8.0.0`, the keyCompression is disabled by default. If you have a huge amount of documents it makes sense to enable the keyCompression and save disk-space.
-`keyCompression` can only be used on the **top-level** of a schema.
+If set to true (disabled by default), the documents will be stored in a compressed formant which saves up to 40% disc space.
+For compression the npm module [jsonschema-key-compression](https://github.com/pubkey/jsonschema-key-compression) is used.
+
+`keyCompression` can only be set on the **top-level** of a schema.
 
 **Notice:** When you use `keyCompression` together with the graphql replication, you must ensure that direct non-RxDB writes to the remote database must also write compressed documents. Therefore it is not recommended to enable `keyCompression` for that use case.
-
 
 
 ```javascript
 const mySchema = {
   keyCompression: true, // set this to true, to enable the keyCompression
   version: 0,
-  title: 'human schema no compression',
+  title: 'human schema with compression',
   primaryKey: 'id',
   type: 'object',
   properties: {
@@ -127,7 +133,7 @@ Index is only allowed on field types `string`, `integer` and `number`
 ```js
 const schemaWithIndexes = {
   version: 0,
-  title: 'human schema no compression',
+  title: 'human schema with indexes',
   keyCompression: true,
   primaryKey: 'id',
   type: 'object',
