@@ -98,7 +98,7 @@ This makes it faster to read out the primary key of the schema and also better e
 https://github.com/pubkey/rxdb/issues/3168#issuecomment-845366925
 
 ## ~~Indexes should use desc/asc like in the RxQuery sort oder~~
-DROPPED: There is no way to define descending indexes in pouchdb, couchdb and most other databases. So I am no longer shure that this is a good way to change the schema. So dropped for now to not cause unnecessary migration.
+DROPPED: There is no way to define descending indexes in pouchdb, couchdb and most other databases. So I am no longer sure that this is a good way to change the schema. So dropped for now to not cause unnecessary migration.
 
 ~~Atm indexes are defined as `myKey` or `-myKey`. Instead we should use `{myKey: 'asc'}` and `{myKey: 'desc'}` like we do in the sort order of `RxQuery`.~~
 
