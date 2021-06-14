@@ -13,6 +13,7 @@ Breaking:
   - When using the type `RxJsonSchema<DocType>` the `DocType` is now required.
   - Removed the deprecated `atomicSet()`, use `atomicPatch()` instead.
   - Changed the default of `putAttachment` to `skipIfSame=true`.
+  - Calling `RxDatabase.server()` now returns a promise that resolves when the server is started up.
 
 ### 9.20.0 (15 May 2021)
 

@@ -67,7 +67,7 @@ async function run() {
     });
 
     // spawn the server
-    const serverState = db.server({
+    const serverState = await db.server({
         path: '/db',
         port: 3000,
         cors: true,

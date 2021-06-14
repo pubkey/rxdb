@@ -279,7 +279,7 @@ config.parallel('server.test.js', () => {
             schema: schemas.human
         });
 
-        db1.server({
+        await db1.server({
             port
         });
 
@@ -311,7 +311,6 @@ config.parallel('server.test.js', () => {
             path: '/db',
             port
         });
-        await serverResponse.startupPromise;
 
 
         // check access to path
@@ -376,10 +375,9 @@ config.parallel('server.test.js', () => {
             storage: getRxStoragePouch('memory'),
             multiInstance: false
         });
-        const res = db1.server({
+        const res = await db1.server({
             port
         });
-        await res.startupPromise;
         await AsyncTestUtil.assertThrows(
             () => db1.collection({
                 name: 'human',
@@ -391,17 +389,16 @@ config.parallel('server.test.js', () => {
 
         db1.destroy();
     });
-    it('should reject startupPromise when port is already used', async () => {
+    it('should throw on startup when port is already used', async () => {
         const port = nexPort();
         const db1 = await createRxDatabase({
             name: randomCouchString(10),
             storage: getRxStoragePouch('memory'),
             multiInstance: false
         });
-        const res1 = db1.server({
+        const res1 = await db1.server({
             port
         });
-        await res1.startupPromise;
 
         // wait until started up
         await AsyncTestUtil.waitUntil(async () => {
@@ -419,11 +416,10 @@ config.parallel('server.test.js', () => {
             storage: getRxStoragePouch('memory'),
             multiInstance: false
         });
-        const res2 = db2.server({ port });
 
         let hasThrown = false;
         try {
-            await res2.startupPromise;
+            await db2.server({ port });
         } catch (err) {
             hasThrown = true;
         }

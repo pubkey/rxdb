@@ -384,7 +384,7 @@ export class RxDatabaseBase<
     /**
      * spawn server
      */
-    server(_options?: ServerOptions): ServerResponse {
+    server(_options?: ServerOptions): Promise<ServerResponse> {
         throw pluginMissing('server');
     }
 

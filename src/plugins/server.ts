@@ -85,7 +85,7 @@ function tunnelCollectionPath(
     });
 }
 
-export function spawnServer(
+export async function spawnServer(
     this: RxDatabase,
     {
         path = '/db',
@@ -94,7 +94,7 @@ export function spawnServer(
         startServer = true,
         pouchdbExpressOptions = {}
     }
-): ServerResponse {
+): Promise<ServerResponse> {
     const db = this;
     const collectionsPath = startServer ? path : '/';
     if (!SERVERS_OF_DB.has(db)) {
@@ -141,7 +141,6 @@ export function spawnServer(
     if (startServer) {
         /**
          * Listen for errors on server startup.
-         * TODO in the next major release we should make db.server() async
          * and properly handle the error instead of returning a startupPromise
          */
         startupPromise = new Promise((res, rej) => {
@@ -179,11 +178,12 @@ export function spawnServer(
         );
     }
 
+
+    await startupPromise;
     const response: ServerResponse = {
         app,
         pouchApp,
-        server,
-        startupPromise
+        server
     };
     return response;
 }

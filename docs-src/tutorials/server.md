@@ -73,7 +73,11 @@ await db.items.insert({
 Now we can spawn the server. Besides the RxDB specific options, you can set `pouchdbExpressOptions` which are [defined by the express-pouchdb module](https://github.com/pouchdb/pouchdb-server#api).
 
 ```typescript
-const {app, server, startupPromise} = db.server({
+
+/**
+ * Start the server.
+ */
+const {app, server} = await db.server({
     path: '/db', // (optional)
     port: 3000,  // (optional)
     cors: true,   // (optional), enable CORS-headers
@@ -84,13 +88,6 @@ const {app, server, startupPromise} = db.server({
         logPath: '/tmp/rxdb-server-log.txt' // save logs in tmp folder
     }
 });
-
-/**
- * You can await the startupPromise
- * so you know when the server has sucessfully started up.
- * In the future, db.server() will return a Promise directly instead.
- */
-await startupPromise;
 
 ```
 
@@ -103,7 +100,7 @@ To ensure that everything is ok,
 You can create server without starting it. It allows to use server as a part of bigger Express app.
 
 ```typescript
-const {app, server} = db.server({
+const {app, server} = await db.server({
     path: '/', // omitted when startServer is false and force set to /
     port: 3000,  // omitted when startServer is false
     cors: false,  // disable CORS-headers (default) - you probably want to configure CORS in your main app
@@ -114,7 +111,7 @@ const {app, server} = db.server({
 Then you can mount rxdb server express app in your express app
 
 ```typescript
-const { app, server } = db.server({
+const { app, server } = await db.server({
     startServer: false
 });
 const mainApp = express();
