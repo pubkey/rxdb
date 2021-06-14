@@ -232,7 +232,12 @@ export class RxCollectionBase<
             ),
             this.database.storage.createKeyObjectStorageInstance(
                 this.database.name,
-                this.name,
+                /**
+                 * Use a different collection name for the local documents instance
+                 * so that the local docs can be kept while deleting the normal instance
+                 * after migration.
+                 */
+                this.name + '-local',
                 this.instanceCreationOptions
             )
         ]);

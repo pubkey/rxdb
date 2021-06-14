@@ -3,15 +3,16 @@
 ### X.X.X (coming soon)
 
 Breaking:
-  - `RxDocument.putAttachment()` no longer supports string as data, only `Blob` or `Buffer`
-  - Pouchdb plugins are not longer added via `addRxPlugin()` but `addPouchPlugin()`. (RxDB plugins are still added via `addRxPlugin`)
-  - Removed plugin hook `preCreatePouchDb`
-  - Removed the `watch-for-changes` plugin, this is now directly integrated into the pouchdb `RxStorage`
+  - `RxDocument.putAttachment()` no longer supports string as data, only `Blob` or `Buffer`.
+  - Pouchdb plugins are not longer added via `addRxPlugin()` but `addPouchPlugin()`. (RxDB plugins are still added via `addRxPlugin`).
+  - Removed plugin hook `preCreatePouchDb`.
+  - Removed the `watch-for-changes` plugin, this is now directly integrated into the pouchdb `RxStorage`.
   - Removed the `adapter-check` plugin. (The function `adapterCheck` is move to the pouchdb plugin).
   - Moved everything pouchdb related to the `pouchdb` plugin.
   - Setting a `primaryKey` for a schema is now required.
   - When using the type `RxJsonSchema<DocType>` the `DocType` is now required.
   - Removed the deprecated `atomicSet()`, use `atomicPatch()` instead.
+  - Changed the default of `putAttachment` to `skipIfSame=true`.
 
 ### 9.20.0 (15 May 2021)
 

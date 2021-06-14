@@ -89,7 +89,7 @@ config.parallel('attachments.test.ts', () => {
                 id: 'cat.txt',
                 data,
                 type: 'text/plain'
-            });
+            }, true);
             const revBefore = doc.revision;
             await doc.putAttachment({
                 id: 'cat.txt',
@@ -111,7 +111,7 @@ config.parallel('attachments.test.ts', () => {
                 id: 'cat.txt',
                 data: blobBufferUtil.createBlobBuffer(AsyncTestUtil.randomString(100), 'text/plain'),
                 type: 'text/plain'
-            });
+            }, true);
             const revBefore = doc.revision;
             await doc.putAttachment({
                 id: 'cat.txt',

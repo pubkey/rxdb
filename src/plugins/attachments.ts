@@ -139,10 +139,10 @@ export async function putAttachment(
         type = 'text/plain'
     }: RxAttachmentCreator,
     /**
-     * TODO set to default=true
-     * in next major release
+     * If set to true, the write will be skipped
+     * when the attachment already contains the same data.
      */
-    skipIfSame: boolean = false
+    skipIfSame: boolean = true
 ): Promise<RxAttachment> {
     ensureSchemaSupportsAttachments(this);
 

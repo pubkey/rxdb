@@ -69,6 +69,7 @@ export declare interface RxDocumentBase<RxDocumentType, OrmMethods = {}> {
          * operation will be skipped.
          * This prevents us from upgrading the revision
          * and causing events in the change stream.
+         * (default = true)
          */
         skipIfSame?: boolean
     ): Promise<RxAttachment<RxDocumentType, OrmMethods>>;
