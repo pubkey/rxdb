@@ -59,7 +59,7 @@ Also, to not confuse with fast changes that happen directly after each other, th
 
 The change would make all RxDocuments immutable. When you subscribe to a query and the same document is returned in the results, this will always be a new javascript object.
 
-## Use immutable objects instead of deep-cloning stuff
+## DONE Use immutable objects instead of deep-cloning stuff
 RxDB often uses outgoing data also in the internals. For example the result of a query is not only send to the user, but also used inside of RxDB's query-change-detection. To ensure that mutation of the outgoing data is not changing internal stuff, which would cause strange bugs, outgoing data is always deep-cloned before. This is a common practice on many javascript libraries.
 The problem is that deep-cloning big objects can be very CPU expensive.
 So instead of doing a deep-clone, RxDB will assume that outgoing data is immutable.
