@@ -285,9 +285,8 @@ RxLocalDocument.create = (id: string, data: any, parent: any) => {
  */
 function insertLocal(
     this: RxDatabase | RxCollection,
-    // TODO insertLocal should assume the _id is inside of the doc data
     id: string,
-    docData: RxLocalDocumentData
+    docData: any
 ): Promise<RxLocalDocument> {
     if (isRxCollection(this) && this._isInMemory) {
         return (this as any).parentCollection.insertLocal(id, docData);

@@ -26,7 +26,7 @@ import type {
 } from 'rxjs';
 
 /**
- * TODO WORK IN PROGRESS!
+ * TODO WORK IN PROGRESS! Might change without breaking change.
  * This is an interface that abstracts the storage engine.
  * At the moment we only have PouchDB as storage but
  * in the future we want to create many more of them.

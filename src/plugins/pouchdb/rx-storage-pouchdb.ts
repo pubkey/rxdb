@@ -911,9 +911,13 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
             pouchDBOptions
         ) as PouchDBInstance;
 
-        // TODO only run this if the pouchdb instance was not created before
-        await pouch.info();
-        // console.dir(pouch);
+        /**
+         * In the past we found some errors where the PouchDB is not directly useable
+         * so we we had to call .info() first to ensure it can be used.
+         * I commented this out for now to get faster database/collection creation.
+         * We might have to add this again if something fails.
+         */
+        // await pouch.info();
 
         return pouch;
     }

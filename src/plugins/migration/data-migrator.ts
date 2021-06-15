@@ -107,6 +107,8 @@ export class DataMigrator {
          * TODO this is a side-effect which might throw
          * We did this because it is not possible to create new Observer(async(...))
          * @link https://github.com/ReactiveX/rxjs/issues/4074
+         * In the future the whole migration plugin should be rewritten without rxjs
+         * so we do not have this problem.
          */
         (() => {
             let oldCols: OldRxCollection[];
