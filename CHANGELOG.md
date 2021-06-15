@@ -14,6 +14,7 @@ Breaking:
   - Removed the deprecated `atomicSet()`, use `atomicPatch()` instead.
   - Changed the default of `putAttachment` to `skipIfSame=true`.
   - Calling `RxDatabase.server()` now returns a promise that resolves when the server is started up.
+  - Changed the defaults of `PouchDBExpressServerOptions` from the `server()` method, by default we now store logs in the tmp folder and the config is in memory.
   - Renamed `replication`-plugin to `replication-couchdb` to be more consistend in naming like with `replication-graphql`
     - Renamed `RxCollection().sync()` to `RxCollection().syncCouchDB()`
   - Removed the deprecated `RxDatabase.collection()` use `RxDatabase().addCollections()` instead.

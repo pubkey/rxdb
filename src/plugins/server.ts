@@ -1,3 +1,6 @@
+import * as os from 'os';
+import * as nodePath from 'path';
+
 import express from 'express';
 import corsFn from 'cors';
 
@@ -10,13 +13,14 @@ import {
     newRxError
 } from '../rx-error';
 import type {
+    PouchDBExpressServerOptions,
     RxDatabase,
     RxPlugin,
     ServerResponse
 } from '../types';
 
 import {
-    addRxPlugin
+    addRxPlugin, flatClone
 } from '../core';
 import { RxDBReplicationCouchDBPlugin } from './replication-couchdb';
 addRxPlugin(RxDBReplicationCouchDBPlugin);
@@ -133,7 +137,23 @@ export async function spawnServer(
         }));
     }
 
-    const pouchApp = ExpressPouchDB(pseudo, pouchdbExpressOptions);
+    /**
+     * Overwrite the defaults of PouchDBExpressServerOptions.
+     * In RxDB the defaults should not polute anything with folders so we store the config in memory
+     * and the logs in the tmp folder of the os.
+     */
+    const usePouchExpressOptions: PouchDBExpressServerOptions = flatClone(pouchdbExpressOptions);
+    if (typeof usePouchExpressOptions.inMemoryConfig === 'undefined') {
+        usePouchExpressOptions.inMemoryConfig = true;
+    }
+    if (typeof usePouchExpressOptions.logPath === 'undefined') {
+        usePouchExpressOptions.logPath = nodePath.join(
+            os.tmpdir(),
+            'rxdb-server-log.txt'
+        );
+    }
+
+    const pouchApp = ExpressPouchDB(pseudo, usePouchExpressOptions);
     app.use(collectionsPath, pouchApp);
 
     let server = null;
