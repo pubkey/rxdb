@@ -18,6 +18,7 @@ Breaking:
   - Renamed `replication`-plugin to `replication-couchdb` to be more consistend in naming like with `replication-graphql`
     - Renamed `RxCollection().sync()` to `RxCollection().syncCouchDB()`
   - Removed the deprecated `RxDatabase.collection()` use `RxDatabase().addCollections()` instead.
+  - Outgoing data is not `Readonly` typed and [deep-frozen](https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze) in dev mode
 
 ### 9.20.0 (15 May 2021)
 

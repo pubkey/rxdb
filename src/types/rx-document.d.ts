@@ -12,6 +12,7 @@ import {
 } from './rx-attachment';
 import { RxDocumentData } from './rx-storage';
 import { RxChangeEvent } from './rx-change-event';
+import { DeepReadonly } from './util';
 
 export type RxDocument<RxDocumentType = {}, OrmMethods = {}> = RxDocumentBase<RxDocumentType, OrmMethods> & RxDocumentType & OrmMethods;
 
@@ -41,7 +42,7 @@ export declare interface RxDocumentBase<RxDocumentType, OrmMethods = {}> {
     // /internal things
 
     get$(path: string): Observable<any>;
-    get(objPath: string): any;
+    get(objPath: string): DeepReadonly<any>;
     populate(objPath: string): Promise<RxDocument<RxDocumentType, OrmMethods> | any | null>;
 
     /**
@@ -76,9 +77,9 @@ export declare interface RxDocumentBase<RxDocumentType, OrmMethods = {}> {
     getAttachment(id: string): RxAttachment<RxDocumentType, OrmMethods> | null;
     allAttachments(): RxAttachment<RxDocumentType, OrmMethods>[];
 
-    toJSON(): RxDocumentType;
-    toJSON(withRevAndAttachments: true): RxDocumentData<RxDocumentType>;
-    toJSON(withRevAndAttachments: false): RxDocumentType;
+    toJSON(): DeepReadonly<RxDocumentType>;
+    toJSON(withRevAndAttachments: true): DeepReadonly<RxDocumentData<RxDocumentType>>;
+    toJSON(withRevAndAttachments: false): DeepReadonly<RxDocumentType>;
 
     destroy(): void;
 }

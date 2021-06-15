@@ -38,7 +38,9 @@ export class Crypter {
     }
 
     encrypt(obj: any) {
-        if (!this.password) return obj;
+        if (!this.password) {
+            return obj;
+        }
         obj = clone(obj);
         this.schema.encryptedPaths
             .forEach(path => {

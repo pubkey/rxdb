@@ -225,7 +225,7 @@ export async function createOldCollection(
 }
 
 /**
- * get an array with OldCollection-instances from all existing old pouchdb-instance
+ * get an array with OldCollection-instances from all existing old storage-instances
  */
 export async function _getOldCollections(
     dataMigrator: DataMigrator

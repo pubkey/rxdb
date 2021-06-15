@@ -13,7 +13,9 @@ import {
     getHeightOfRevision,
     pluginMissing,
     now,
-    nextTick
+    nextTick,
+    deepFreezeWhenDevMode,
+    flatClone
 } from './util';
 import {
     newRxError,
@@ -217,14 +219,16 @@ export const basePrototype = {
     get(this: RxDocument, objPath: string): any | null {
         if (!this._data) return undefined;
         let valueObj = objectPath.get(this._data, objPath);
-        valueObj = clone(valueObj);
 
         // direct return if array or non-object
         if (
             typeof valueObj !== 'object' ||
             Array.isArray(valueObj)
-        ) return valueObj;
+        ) {
+            return deepFreezeWhenDevMode(valueObj);
+        }
 
+        valueObj = clone(valueObj);
         defineGetterSetter(
             this.collection.schema,
             valueObj,
@@ -235,12 +239,14 @@ export const basePrototype = {
     },
 
     toJSON(this: RxDocument, withRevAndAttachments = false) {
-        const data = clone(this._data);
         if (!withRevAndAttachments) {
+            const data = flatClone(this._data);
             delete (data as any)._rev;
             delete (data as any)._attachments;
+            return deepFreezeWhenDevMode(data);
+        } else {
+            return deepFreezeWhenDevMode(this._data);
         }
-        return data;
     },
 
     /**

@@ -379,6 +379,24 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         const primary: string = (doc as any)[primaryKey];
         const eventId = getEventKey(false, primary, doc._rev);
 
+
+        // TODO remove this check when migration is done
+        function ensureNoAttachmentData(data: any) {
+            if (!data || !data._attachments) {
+                return;
+            }
+            Object.values(data._attachments).forEach((obj: any) => {
+                if (obj.data) {
+                    console.dir(change);
+                    console.dir(obj);
+                    throw new Error('event data cannot contain attachment buffer!!');
+                }
+            });
+        }
+        ensureNoAttachmentData(change.doc);
+        ensureNoAttachmentData(change.previous);
+
+
         const storageChangeEvent: RxStorageChangeEvent<RxDocumentData<RxDocType>> = {
             eventId,
             documentId: primary,
@@ -600,56 +618,61 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         );
 
         const endTime = now();
-        documents.forEach(writeDoc => {
-            const id: string = (writeDoc as any)[primaryKey];
-            const previousDoc = previousDocs.get(id);
+        await Promise.all(
+            documents.map(async (writeDoc) => {
+                const id: string = (writeDoc as any)[primaryKey];
+                const previousDoc = previousDocs.get(id);
 
-            let event: ChangeEvent<RxDocumentData<RxDocType>>;
-            if (!previousDoc) {
-                if (writeDoc._deleted) {
-                    return;
-                }
-                event = {
-                    operation: 'INSERT',
-                    doc: writeDoc,
-                    id,
-                    previous: null
-                };
-            } else {
-                const previousRevisionHeight = getHeightOfRevision(previousDoc._rev);
-                const newRevisonHeight = getHeightOfRevision(writeDoc._rev);
+                writeDoc._attachments = await writeAttachmentsToAttachments(writeDoc._attachments);
 
-                if (newRevisonHeight >= previousRevisionHeight) {
-                    if (writeDoc._deleted && previousDoc._deleted) {
+
+                let event: ChangeEvent<RxDocumentData<RxDocType>>;
+                if (!previousDoc) {
+                    if (writeDoc._deleted) {
                         return;
                     }
-                    if (writeDoc._deleted) {
-                        event = {
-                            operation: 'DELETE',
-                            doc: null,
-                            id,
-                            previous: previousDoc
-                        };
-                    } else {
-                        event = {
-                            operation: 'UPDATE',
-                            doc: writeDoc,
-                            id,
-                            previous: previousDoc
-                        };
-                    }
+                    event = {
+                        operation: 'INSERT',
+                        doc: writeDoc,
+                        id,
+                        previous: null
+                    };
                 } else {
-                    return;
+                    const previousRevisionHeight = getHeightOfRevision(previousDoc._rev);
+                    const newRevisonHeight = getHeightOfRevision(writeDoc._rev);
+
+                    if (newRevisonHeight >= previousRevisionHeight) {
+                        if (writeDoc._deleted && previousDoc._deleted) {
+                            return;
+                        }
+                        if (writeDoc._deleted) {
+                            event = {
+                                operation: 'DELETE',
+                                doc: null,
+                                id,
+                                previous: previousDoc
+                            };
+                        } else {
+                            event = {
+                                operation: 'UPDATE',
+                                doc: writeDoc,
+                                id,
+                                previous: previousDoc
+                            };
+                        }
+                    } else {
+                        return;
+                    }
                 }
-            }
-            if (event) {
-                this.addEventToChangeStream(
-                    event,
-                    startTime,
-                    endTime
-                );
-            }
-        });
+                if (event) {
+                    this.addEventToChangeStream(
+                        event,
+                        startTime,
+                        endTime
+                    );
+                }
+            })
+        );
     }
 
     public async bulkWrite(
@@ -657,7 +680,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     ): Promise<
         RxStorageBulkWriteResponse<RxDocType>
     > {
-
         // TODO remove this check when rx-storage mirgration is done
         if (!Array.isArray(documentWrites)) {
             throw new Error('non an array');
@@ -718,26 +740,9 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                     pushObj._attachments = {};
                     if (!writeRow.document._attachments) {
                         writeRow.document._attachments = {};
+                    } else {
+                        pushObj._attachments = await writeAttachmentsToAttachments(writeRow.document._attachments);
                     }
-                    await Promise.all(
-                        Object.entries(writeRow.document._attachments).map(async ([key, obj]) => {
-                            if ((obj as RxAttachmentWriteData).data) {
-                                const asWrite = (obj as RxAttachmentWriteData);
-
-                                const hash = await pouchHash(asWrite.data);
-                                const asString = await blobBufferUtil.toString(asWrite.data);
-                                const length = asString.length;
-                                pushObj._attachments[key] = {
-                                    digest: hash,
-                                    length,
-                                    type: asWrite.type
-                                };
-                            } else {
-                                pushObj._attachments[key] = obj as RxAttachmentData;
-                            }
-                        })
-                    );
-
 
                     /**
                      * Emit a write event to the changestream.
@@ -761,6 +766,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                         // so that the eventkey is calculated correctly.
                         // Is this a hack? idk.
                         const previousDoc = flatClone(writeRow.previous);
+                        previousDoc._attachments = await writeAttachmentsToAttachments(previousDoc._attachments);
                         previousDoc._rev = (resultRow as PouchBulkDocResultRow).rev;
 
                         event = {
@@ -1003,6 +1009,35 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
             options
         );
     }
+}
+
+
+export async function writeAttachmentsToAttachments(
+    attachments: { [attachmentId: string]: RxAttachmentData | RxAttachmentWriteData; }
+): Promise<{ [attachmentId: string]: RxAttachmentData; }> {
+    if (!attachments) {
+        return {};
+    }
+    const ret: { [attachmentId: string]: RxAttachmentData; } = {};
+    await Promise.all(
+        Object.entries(attachments).map(async ([key, obj]) => {
+            if ((obj as RxAttachmentWriteData).data) {
+                const asWrite = (obj as RxAttachmentWriteData);
+
+                const hash = await pouchHash(asWrite.data);
+                const asString = await blobBufferUtil.toString(asWrite.data);
+                const length = asString.length;
+                ret[key] = {
+                    digest: hash,
+                    length,
+                    type: asWrite.type
+                };
+            } else {
+                ret[key] = obj as RxAttachmentData;
+            }
+        })
+    );
+    return ret;
 }
 
 

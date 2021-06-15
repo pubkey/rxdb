@@ -10,6 +10,7 @@ import {
 import type {
     RxChangeEvent
 } from './types';
+import { deepFreezeWhenDevMode } from './util';
 
 export type RxChangeEventBroadcastChannelData = {
     cE: RxChangeEvent<any>,
@@ -46,15 +47,15 @@ export function rxChangeEventToEventReduceChangeEvent<DocType>(
             return {
                 operation: rxChangeEvent.operation,
                 id: rxChangeEvent.documentId,
-                doc: rxChangeEvent.documentData,
+                doc: rxChangeEvent.documentData as any,
                 previous: null
             };
         case 'UPDATE':
             return {
                 operation: rxChangeEvent.operation,
                 id: rxChangeEvent.documentId,
-                doc: rxChangeEvent.documentData,
-                previous: rxChangeEvent.previousDocumentData ? rxChangeEvent.previousDocumentData : 'UNKNOWN'
+                doc: deepFreezeWhenDevMode(rxChangeEvent.documentData) as any,
+                previous: rxChangeEvent.previousDocumentData ? rxChangeEvent.previousDocumentData as any : 'UNKNOWN'
             };
         case 'DELETE':
             return {

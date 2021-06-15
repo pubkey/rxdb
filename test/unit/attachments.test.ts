@@ -465,6 +465,7 @@ config.parallel('attachments.test.ts', () => {
                     return oldDoc;
                 }
             };
+
             const col2 = await db2.addCollections({
                 heroes: {
                     schema: schema1,
@@ -473,6 +474,7 @@ config.parallel('attachments.test.ts', () => {
             });
 
             const doc2: RxDocument<DocData> = await col2.heroes.findOne().exec();
+
             assert.strictEqual(doc2.allAttachments().length, 1);
             const firstAttachment = doc2.allAttachments()[0];
             const data = await firstAttachment.getStringData();

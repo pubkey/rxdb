@@ -82,8 +82,11 @@ export class RxAttachment {
                     }
                 );
 
-                this.doc._data._rev = writeResult._rev;
-                this.doc._data._attachments = writeResult._attachments;
+                const newData = flatClone(this.doc._data);
+                newData._rev = writeResult._rev;
+                newData._attachments = writeResult._attachments;
+                this.doc._dataSync$.next(newData);
+
             });
         return this.doc._atomicQueue;
     }
@@ -193,8 +196,10 @@ export async function putAttachment(
                 this
             );
 
-            this._data._rev = writeResult._rev;
-            this._data._attachments = writeResult._attachments;
+            const newData = flatClone(this._data);
+            newData._rev = writeResult._rev;
+            newData._attachments = writeResult._attachments;
+            this._dataSync$.next(newData);
 
             return attachment;
         });

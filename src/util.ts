@@ -296,6 +296,28 @@ function recursiveDeepCopy<T>(o: T): T {
 }
 export const clone = recursiveDeepCopy;
 
+
+const deepFreeze = require('deep-freeze');
+/**
+ * Deep freezes and object when in dev-mode.
+ * Deep-Freezing has the same performaance as deep-cloning, so we only do that in dev-mode.
+ * Also we can ensure the readonly state via typescript
+ * @link https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
+ */
+export function deepFreezeWhenDevMode<T>(obj: T): DeepReadonly<T> {
+    // direct return if not devMod3
+    if (!overwritable.isDevMode()) {
+        return obj as any;
+    }
+
+    // direct return if falsy
+    if (!obj) {
+        return obj as any;
+    }
+
+    return deepFreeze(obj);
+}
+
 /**
  * does a flat copy on the objects,
  * is about 3 times faster then using deepClone
@@ -341,6 +363,8 @@ export function getHeightOfRevision(revString: string): number {
 
 import { stringMd5 } from 'pouchdb-md5';
 import { rev as pouchUtilsRev } from 'pouchdb-utils';
+import { overwritable } from './overwritable';
+import { DeepReadonly } from './types/util';
 
 /**
  * Creates a revision string that does NOT include the revision height

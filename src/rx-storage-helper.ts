@@ -16,6 +16,7 @@ import type {
     RxStorageInstance,
     RxStorageKeyObjectInstance
 } from './types';
+import { deepFreezeWhenDevMode } from './util';
 
 export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
 
@@ -201,8 +202,8 @@ export function storageChangeEventToRxChangeEvent<DocType>(
         isLocal,
 
         operation: rxStorageChangeEvent.change.operation,
-        documentData,
-        previousDocumentData
+        documentData: deepFreezeWhenDevMode(documentData),
+        previousDocumentData: deepFreezeWhenDevMode(previousDocumentData)
     };
 
     return ret;

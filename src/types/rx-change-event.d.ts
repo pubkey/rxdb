@@ -1,3 +1,5 @@
+import { DeepReadonly } from './util';
+
 export type RxChangeEventBase = {
     readonly eventId: string;
     readonly documentId: string;
@@ -15,26 +17,26 @@ export type RxChangeEventBase = {
      * This is optional because we do not have this time
      * for events that come from the internal storage instance changestream.
      */
-    startTime?: number;
-    endTime?: number;
+    readonly startTime?: number;
+    readonly endTime?: number;
 }
 
 export type RxChangeEventInsert<DocType> = RxChangeEventBase & {
     operation: 'INSERT';
-    documentData: DocType;
+    documentData: DeepReadonly<DocType>;
     previousDocumentData: null;
 }
 
 export type RxChangeEventUpdate<DocType> = RxChangeEventBase & {
     operation: 'UPDATE';
-    documentData: DocType;
-    previousDocumentData: DocType | 'UNKNOWN';
+    documentData: DeepReadonly<DocType>;
+    previousDocumentData: DeepReadonly<DocType> | 'UNKNOWN';
 }
 
 export type RxChangeEventDelete<DocType> = RxChangeEventBase & {
     operation: 'DELETE';
     documentData: null;
-    previousDocumentData: DocType | 'UNKNOWN';
+    previousDocumentData: DeepReadonly<DocType> | 'UNKNOWN';
 }
 
 // TODO remove =any

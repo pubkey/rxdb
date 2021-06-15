@@ -225,7 +225,7 @@ describe('replication-graphql.test.js', () => {
                 const c = await humansCollection.createHumanWithTimestamp(1);
                 const pouch = c.storageInstance.internals.pouch;
                 const doc = await c.findOne().exec(true);
-                const docData = doc.toJSON();
+                const docData = clone(doc.toJSON());
                 const customRev = '2-fadae8ee3847d0748381f13988e95502-rxdb-from-graphql';
                 (docData as any)._id = docData.id;
                 (docData as any)._rev = customRev;
@@ -636,7 +636,8 @@ describe('replication-graphql.test.js', () => {
                 it('should return the doc if it was set', async () => {
                     const c = await humansCollection.createHumanWithTimestamp(1);
                     const doc = await c.findOne().exec(true);
-                    const docData = doc.toJSON(true);
+                    let docData = doc.toJSON(true);
+                    docData = clone(docData); // clone to make it mutateable
                     docData.name = 'foobar';
 
                     await setLastPullDocument(
