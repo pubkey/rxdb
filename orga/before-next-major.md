@@ -93,9 +93,11 @@ The primary key in a schema must be required which makes it less complex to impl
 Also the primary key must be set in the top level of the schema as string instead of the `primary: true` in the property.
 This makes it faster to read out the primary key of the schema and also better ensures the required-ness via typescript.
 
-## composite primary keys
+## ~~composite primary keys~~
 
-https://github.com/pubkey/rxdb/issues/3168#issuecomment-845366925
+**MOVED** to backlog because it can be implemented later without breaking change.
+
+~~https://github.com/pubkey/rxdb/issues/3168#issuecomment-845366925~~
 
 ## ~~Indexes should use desc/asc like in the RxQuery sort oder~~
 DROPPED: There is no way to define descending indexes in pouchdb, couchdb and most other databases. So I am no longer sure that this is a good way to change the schema. So dropped for now to not cause unnecessary migration.
