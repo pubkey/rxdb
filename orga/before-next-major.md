@@ -73,7 +73,7 @@ The defaults of `pouchdbExpressOptions` from `RxDatabase.server()` require the u
 ## DONE remove deprecated RxDocument.atomicSet()
 `atomicSet` is deprecated in favor of `atomicPatch`. Remove the function in the next major release.
 
-## remove RxDatabase.collection()
+## DONE remove RxDatabase.collection()
 It was replaced by `RxDatabase.addCollections()` which is faster and better typed.
 
 ## rename wording of the json dump plugin
