@@ -7,7 +7,8 @@ import {
     sortObject,
     trimDots,
     pluginMissing,
-    overwriteGetterForCaching
+    overwriteGetterForCaching,
+    flatClone
 } from './util';
 import {
     newRxError,

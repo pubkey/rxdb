@@ -228,6 +228,10 @@ export const basePrototype = {
             return deepFreezeWhenDevMode(valueObj);
         }
 
+        /**
+         * TODO find a way to deep-freeze together with defineGetterSetter
+         * so we do not have to do a deep clone here.
+         */
         valueObj = clone(valueObj);
         defineGetterSetter(
             this.collection.schema,
@@ -447,7 +451,7 @@ export const basePrototype = {
             }));
         }
 
-        const deletedData = clone(this._data);
+        const deletedData = flatClone(this._data);
         let startTime: number;
         return this.collection._runHooks('pre', 'remove', deletedData, this)
             .then(() => {

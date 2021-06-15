@@ -302,7 +302,7 @@ export class RxQueryBase<
     toJSON(): PreparedQuery<RxDocumentType> {
         const hookInput = {
             rxQuery: this,
-            // can be mutated by the hooks
+            // can be mutated by the hooks so we have to deep clone first.
             mangoQuery: clone(this.mangoQuery)
         };
         runPluginHooks('prePrepareQuery', hookInput);

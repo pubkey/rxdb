@@ -13,6 +13,7 @@ import {
 } from '../rx-error';
 import {
     clone,
+    deepFreezeWhenDevMode,
     flatClone,
     getFromMapOrThrow
 } from '../util';
@@ -119,8 +120,8 @@ const RxLocalDocumentPrototype: any = {
         }
         switch (changeEvent.operation) {
             case 'UPDATE':
-                const newData = clone(changeEvent.documentData);
-                this._dataSync$.next(clone(newData));
+                const newData = changeEvent.documentData;
+                this._dataSync$.next(newData);
                 break;
             case 'DELETE':
                 // remove from docCache to assure new upserted RxDocuments will be a new instance
@@ -150,7 +151,9 @@ const RxLocalDocumentPrototype: any = {
         return this.parent.$emit(changeEvent);
     },
     get(this: RxDocument, objPath: string) {
-        if (!this._data) return undefined;
+        if (!this._data) {
+            return undefined;
+        }
         if (typeof objPath !== 'string') {
             throw newRxTypeError('LD2', {
                 objPath
@@ -158,7 +161,7 @@ const RxLocalDocumentPrototype: any = {
         }
 
         let valueObj = objectPath.get(this._data, objPath);
-        valueObj = clone(valueObj);
+        valueObj = deepFreezeWhenDevMode(valueObj);
         return valueObj;
     },
     get$(this: RxDocument, path: string) {
@@ -179,7 +182,7 @@ const RxLocalDocumentPrototype: any = {
     set(this: RxDocument, objPath: string, value: any) {
         if (!value) {
             // object path not set, overwrite whole data
-            const data: any = clone(objPath);
+            const data: any = flatClone(objPath);
             data._rev = this._data._rev;
             this._data = data;
             return this;
