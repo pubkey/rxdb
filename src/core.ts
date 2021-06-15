@@ -142,7 +142,7 @@ export type {
     RxQueryOP,
     RxQueryObject,
     RxQueryOptions,
-    RxReplicationState,
+    RxCouchDBReplicationState,
     RxTypeError,
     ServerOptions,
     SyncOptions,

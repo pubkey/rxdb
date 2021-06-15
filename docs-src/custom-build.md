@@ -121,13 +121,13 @@ import { RxDBMigrationPlugin } from 'rxdb/plugins/migration';
 addRxPlugin(RxDBMigrationPlugin);
 ```
 
-### replication
+### replication-couchdb
 
-Adds the [replication](./replication.md)-functionality to RxDB which allows you to replicate the database with a CouchDB compliant endpoint.
+Adds the [CouchDB replication](./replication-couchdb.md)-functionality to RxDB which allows you to replicate the database with a CouchDB compliant endpoint.
 
 ```javascript
-import { RxDBReplicationPlugin } from 'rxdb/plugins/replication';
-addRxPlugin(RxDBReplicationPlugin);
+import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication';
+addRxPlugin(RxDBReplicationCouchDBPlugin);
 ```
 
 ### replication-graphql

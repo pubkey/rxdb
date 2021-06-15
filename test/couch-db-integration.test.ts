@@ -46,7 +46,7 @@ describe('couchdb-db-integration.test.js', () => {
 
         const couchName = COUCHDB_URL + randomCouchString(12);
         console.log(couchName);
-        const replicationState = await col.sync({
+        const replicationState = await col.syncCouchDB({
             remote: couchName,
             waitForLeadership: false,
             direction: {
@@ -68,7 +68,7 @@ describe('couchdb-db-integration.test.js', () => {
 
         // create a new collection
         const col2 = await humansCollection.create(0);
-        await col2.sync({
+        await col2.syncCouchDB({
             remote: couchName,
             waitForLeadership: false,
             direction: {

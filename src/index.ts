@@ -30,8 +30,8 @@ addRxPlugin(RxDBEncryptionPlugin);
 import { RxDBUpdatePlugin } from './plugins/update';
 addRxPlugin(RxDBUpdatePlugin);
 
-import { RxDBReplicationPlugin } from './plugins/replication';
-addRxPlugin(RxDBReplicationPlugin);
+import { RxDBReplicationCouchDBPlugin } from './plugins/replication-couchdb';
+addRxPlugin(RxDBReplicationCouchDBPlugin);
 
 import { RxDBJsonDumpPlugin } from './plugins/json-dump';
 addRxPlugin(RxDBJsonDumpPlugin);

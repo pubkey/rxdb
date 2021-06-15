@@ -250,9 +250,14 @@ myCollection.importDump(json)
   .then(() => console.log('done'));
 ```
 
-### sync()
+### syncCouchDB()
 This method allows you to replicate data between other RxCollections, pouchdb instances or remote servers which support the couchdb-sync-protocol.
-Full documentation on how to use replication is [here](./replication.md).
+Full documentation on how to use replication is [here](./replication-couchdb.md).
+
+### syncGraphQL()
+This method allows you to replicate data between a `RxCollection` and a GraphQL endpoint.
+Full documentation on how to use replication is [here](./replication-graphql.md).
+
 
 ### remove()
 

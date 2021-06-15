@@ -157,7 +157,7 @@ await clientDB.addCollections({
 Now you replicate the client collection with the server.
 
 ```typescript
-clientDB.items.sync({
+clientDB.items.syncCouchDB({
     remote: 'http://localhost:3000/db/items'
 });
 ```

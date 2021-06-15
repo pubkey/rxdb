@@ -509,12 +509,12 @@ config.parallel('in-memory.test.js', () => {
             assert.strictEqual(docs.length, amount);
             col.database.destroy();
         });
-        it('should not allow to use .sync() on inMemory', async () => {
+        it('should not allow to use .syncCouchDB() on inMemory', async () => {
             const col = await humansCollection.create(5);
             const memCol = await col.inMemory();
 
             await AsyncTestUtil.assertThrows(
-                () => memCol.sync({} as any),
+                () => memCol.syncCouchDB({} as any),
                 'RxError',
                 'not replicate'
             );

@@ -18,8 +18,8 @@ import type {
 import {
     addRxPlugin
 } from '../core';
-import { RxDBReplicationPlugin } from './replication';
-addRxPlugin(RxDBReplicationPlugin);
+import { RxDBReplicationCouchDBPlugin } from './replication-couchdb';
+addRxPlugin(RxDBReplicationCouchDBPlugin);
 
 import PouchAdapterHttp from 'pouchdb-adapter-http';
 addPouchPlugin(PouchAdapterHttp);

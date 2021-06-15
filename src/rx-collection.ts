@@ -67,7 +67,7 @@ import type {
 
 import type {
     KeyFunctionMap,
-    RxReplicationState,
+    RxCouchDBReplicationState,
     MigrationState,
     SyncOptions,
     RxCollection,
@@ -176,7 +176,7 @@ export class RxCollectionBase<
     public _subs: Subscription[] = [];
 
     // TODO move _repStates into migration plugin
-    public _repStates: Set<RxReplicationState> = new Set();
+    public _repStates: Set<RxCouchDBReplicationState> = new Set();
 
     // TODO use type RxStorageInstance when rx-storage is implemented
     public storageInstance: RxStorageInstance<RxDocumentType, any, any> = {} as any;
@@ -738,9 +738,9 @@ export class RxCollectionBase<
     }
 
     /**
-     * sync with another database
+     * sync with a CouchDB endpoint
      */
-    sync(_syncOptions: SyncOptions): RxReplicationState {
+    syncCouchDB(_syncOptions: SyncOptions): RxCouchDBReplicationState {
         throw pluginMissing('replication');
     }
 

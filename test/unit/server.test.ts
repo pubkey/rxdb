@@ -54,7 +54,7 @@ config.parallel('server.test.js', () => {
         const clientCollection = await humansCollection.create(0);
 
         // sync
-        clientCollection.sync({
+        clientCollection.syncCouchDB({
             remote: colUrl
         });
 
@@ -105,7 +105,7 @@ config.parallel('server.test.js', () => {
         const clientCollection = await humansCollection.create(0);
 
         // sync
-        clientCollection.sync({
+        clientCollection.syncCouchDB({
             remote: colUrl
         });
 
@@ -283,7 +283,7 @@ config.parallel('server.test.js', () => {
             port
         });
 
-        await col2.sync({
+        await col2.syncCouchDB({
             remote: 'http://localhost:' + port + '/db/human'
         });
 
@@ -322,7 +322,7 @@ config.parallel('server.test.js', () => {
         const clientCollection = await humansCollection.createMigrationCollection(0);
 
         // sync
-        clientCollection.sync({
+        clientCollection.syncCouchDB({
             remote: colUrl
         });
 
@@ -350,7 +350,7 @@ config.parallel('server.test.js', () => {
         const clientCollection = await humansCollection.create(0, name);
 
         // sync
-        clientCollection.sync({
+        clientCollection.syncCouchDB({
             remote: 'http://localhost:' + port + '/db/' + name
         });
 

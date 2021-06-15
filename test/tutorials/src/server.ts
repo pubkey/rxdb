@@ -104,7 +104,7 @@ async function run() {
     });
 
     // replicate with server
-    clientDB.items.sync({
+    clientDB.items.syncCouchDB({
         remote: 'http://localhost:3000/db/items'
     });
 

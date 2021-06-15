@@ -21,7 +21,7 @@ import {
 
 import type {
     RxCollection,
-    RxReplicationState,
+    RxCouchDBReplicationState,
     PouchDBInstance,
     RxPlugin,
     PouchBulkDocResultRow,
@@ -208,7 +208,7 @@ export
      * Replication on the inMemory is dangerous,
      * replicate with it's parent instead
      */
-    sync(): RxReplicationState {
+    syncCouchDB(): RxCouchDBReplicationState {
         throw newRxError('IM2');
     }
 }

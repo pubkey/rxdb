@@ -1,11 +1,11 @@
-# Replication
+# CouchDB Replication
 
-One of the most powerful features with CouchDB, PouchDB and RxDB is **sync**.
-You can sync every RxCollection with another RxCollection, a PouchDB-instance or a remote pouch/couch-DB.
+With the CouchDB replication you can replicate data in both directions with any CouchDB- or PouchDB compliant endpoint.
+It works with remote endpoints and also with local pouchdb instances or `RxCollection` that is created with the pouchdb storage.
 
 
-## Rx.Collection.sync()
-To replicate the collection with another instance, use `RxCollection.sync()`.
+## Rx.Collection.syncCouchDB()
+To replicate the collection with another instance, use `RxCollection.syncCouchDB()`.
 It basically does the same as [pouchdb-sync](https://pouchdb.com/guides/replication.html) but also adds event-handlers to make sure that change-events will be recognized in the internal event-stream.
 
 ```js
@@ -13,7 +13,7 @@ It basically does the same as [pouchdb-sync](https://pouchdb.com/guides/replicat
 // you need these plugins to sync
 addRxPlugin(require('pouchdb-adapter-http')); // enable syncing over http (remote database)
 
-const replicationState = myCollection.sync({
+const replicationState = myCollection.syncCouchDB({
     remote: 'http://localhost:10102/db/', // remote database. This can be the serverURL, another RxCollection or a PouchDB-instance
     waitForLeadership: true,              // (optional) [default=true] to save performance, the sync starts on leader-instance only
     direction: {                          // direction (optional) to specify sync-directions
@@ -37,7 +37,7 @@ Since this limitation is at the **browser** level there are several solutions:
  3. Create multiple subdomains for CouchDB and use a max of 6 active synchronizations (or less) for each
 
 ## RxReplicationState
-The method `RxCollection.sync()` returns a RxReplicationState which can be used to observe events via rxjs-observables and to cancel the replication.
+The method `RxCollection.syncCouchDB()` returns a RxReplicationState which can be used to observe events via rxjs-observables and to cancel the replication.
 
 ### change$
 Emits the change-events every time some documents get replicated.
@@ -96,7 +96,7 @@ Returns a `Promise` that resolves when the initial replication is done and the d
 This only works on non-live replications and when `waitForLeadership: false`
 
 ```js
-const repState = await myCollection.sync({
+const repState = await myCollection.syncCouchDB({
   remote: 'http://localhost:8080/db',
   waitForLeadership: false,
   options: {
@@ -120,7 +120,7 @@ require('http').globalAgent.maxSockets = 10;
 ```  
   - Especially when you replicate big attachments, you might get a stuck or slow replication. [See](https://pouchdb.com/errors.html#replicating_attachments_slow). You can solve this be changing the batches configuration.
 ```js
-const replicationState = await myCollection.sync({
+const replicationState = await myCollection.syncCouchDB({
     remote: 'http://...',
     options: {
         retry: true,

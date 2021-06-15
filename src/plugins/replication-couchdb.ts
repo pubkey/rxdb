@@ -55,7 +55,7 @@ addPouchPlugin(PouchReplicationPlugin);
  */
 const INTERNAL_POUCHDBS = new WeakSet();
 
-export class RxReplicationStateBase {
+export class RxCouchDBReplicationStateBase {
     public _subs: Subscription[] = [];
 
     // can be used for debuging or custom event-handling
@@ -101,7 +101,7 @@ export class RxReplicationStateBase {
             });
         }
 
-        const that: RxReplicationState = this as any;
+        const that: RxCouchDBReplicationState = this as any;
         return firstValueFrom(
             that.complete$.pipe(
                 filter(x => !!x)
@@ -127,7 +127,7 @@ export class RxReplicationStateBase {
     }
 }
 
-export type RxReplicationState = RxReplicationStateBase & {
+export type RxCouchDBReplicationState = RxCouchDBReplicationStateBase & {
     change$: Observable<any>;
     docs$: Observable<any>;
     denied$: Observable<any>;
@@ -138,7 +138,7 @@ export type RxReplicationState = RxReplicationStateBase & {
 };
 
 export function setPouchEventEmitter(
-    rxRepState: RxReplicationState,
+    rxRepState: RxCouchDBReplicationState,
     evEmitter: PouchSyncHandler
 ) {
     if (rxRepState._pouchEventEmitterObject) {
@@ -255,17 +255,17 @@ export function setPouchEventEmitter(
     );
 }
 
-export function createRxReplicationState(
+export function createRxCouchDBReplicationState(
     collection: RxCollection,
     syncOptions: SyncOptions
-): RxReplicationState {
-    return new RxReplicationStateBase(
+): RxCouchDBReplicationState {
+    return new RxCouchDBReplicationStateBase(
         collection,
         syncOptions
-    ) as RxReplicationState;
+    ) as RxCouchDBReplicationState;
 }
 
-export function sync(
+export function syncCouchDB(
     this: RxCollection,
     {
         remote,
@@ -309,7 +309,7 @@ export function sync(
         useOptions.selector = (query as any).toJSON().selector;
     }
 
-    const repState: any = createRxReplicationState(
+    const repState: any = createRxCouchDBReplicationState(
         this,
         {
             remote,
@@ -340,7 +340,7 @@ export function sync(
 export const rxdb = true;
 export const prototypes = {
     RxCollection: (proto: any) => {
-        proto.sync = sync;
+        proto.syncCouchDB = syncCouchDB;
     }
 };
 
@@ -355,8 +355,8 @@ export const hooks = {
     }
 };
 
-export const RxDBReplicationPlugin: RxPlugin = {
-    name: 'replication',
+export const RxDBReplicationCouchDBPlugin: RxPlugin = {
+    name: 'replication-couchdb',
     rxdb,
     prototypes,
     hooks

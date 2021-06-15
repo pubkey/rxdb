@@ -409,7 +409,7 @@ describe('typings.test.js', function () {
                             name: 'humans',
                             schema: mySchema
                         });
-                        const replicationState = myCollection.sync({
+                        const replicationState = myCollection.syncCouchDB({
                             remote: 'http://localhost:9090/'
                         });
                         const syncHandler = replicationState._pouchEventEmitterObject;

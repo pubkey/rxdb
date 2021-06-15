@@ -106,7 +106,7 @@
 
 * [LeaderElection](./leader-election.md)
 
-* [Replication CouchDB](./replication.md)
+* [Replication CouchDB](./replication-couchdb.md)
 
 * [Replication GraphQL](./replication-graphql.md)
 

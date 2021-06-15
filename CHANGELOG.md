@@ -14,6 +14,8 @@ Breaking:
   - Removed the deprecated `atomicSet()`, use `atomicPatch()` instead.
   - Changed the default of `putAttachment` to `skipIfSame=true`.
   - Calling `RxDatabase.server()` now returns a promise that resolves when the server is started up.
+  - Renamed `replication`-plugin to `replication-couchdb` to be more consistend in naming like with `replication-graphql`
+    - Renamed `RxCollection().sync()` to `RxCollection().syncCouchDB()`
 
 ### 9.20.0 (15 May 2021)
 
