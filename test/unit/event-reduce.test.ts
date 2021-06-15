@@ -26,11 +26,12 @@ describe('event-reduce.test.js', () => {
         const schema = clone(schemas.primaryHuman);
         schema.keyCompression = false;
         schema.indexes = ['age', 'lastName'];
-        const collection = await db.collection({
-            name: 'items',
-            schema
+        const collections = await db.addCollections({
+            items: {
+                schema
+            }
         });
-        return collection;
+        return collections.items;
     }
     function ensureResultsEqual(res1: RxDocument[], res2: RxDocument[]) {
         assert.deepStrictEqual(

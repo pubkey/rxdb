@@ -55,9 +55,10 @@ async function run() {
             }
         }
     };
-    await db.collection({
-        name: 'items',
-        schema: mySchema
+    await db.addCollections({
+        items: {
+            schema: mySchema
+        }
     });
 
     // insert one document
@@ -98,9 +99,10 @@ async function run() {
     });
 
     // create a collection
-    await clientDB.collection({
-        name: 'items',
-        schema: mySchema
+    await clientDB.addCollections({
+        items: {
+            schema: mySchema
+        }
     });
 
     // replicate with server

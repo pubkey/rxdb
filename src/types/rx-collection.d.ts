@@ -17,15 +17,13 @@ export interface NumberFunctionMap {
     [key: number]: Function;
 }
 
-export interface RxCollectionCreator extends RxCollectionCreatorBase {
-    name: string;
-}
 
 /**
- * TODO remove RxCollectionCreator
- * and rename this one in the next release
+ * Params to create a new collection.
+ * Notice the name of the collection is set onle level higher
+ * when calling addCollections()
  */
-export type RxCollectionCreatorBase = {
+export type RxCollectionCreator = {
     schema: RxJsonSchema<any>;
     instanceCreationOptions?: any;
     migrationStrategies?: MigrationStrategies;

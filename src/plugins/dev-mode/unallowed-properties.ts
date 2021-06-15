@@ -11,7 +11,7 @@ import { validateDatabaseName } from './check-names';
  * we get problems so this function prohibits this
  */
 export function ensureCollectionNameValid(
-    args: RxCollectionCreator
+    args: RxCollectionCreator & { name: string; }
 ) {
     if (rxDatabaseProperties().includes(args.name)) {
         throw newRxError('DB5', {

@@ -35,12 +35,13 @@ config.parallel('ajv-validate.node.js', () => {
                     name: randomCouchString(10),
                     storage: getRxStoragePouch('memory'),
                 });
-                const col = await db.collection({
-                    name: 'humans',
-                    schema: schemas.human
+                const cols = await db.addCollections({
+                    humans: {
+                        schema: schemas.human
+                    }
                 });
 
-                const doc = await col.insert(schemaObjects.human());
+                const doc = await cols.humans.insert(schemaObjects.human());
                 assert.ok(doc);
 
                 db.destroy();
@@ -52,13 +53,14 @@ config.parallel('ajv-validate.node.js', () => {
                     name: randomCouchString(10),
                     storage: getRxStoragePouch('memory'),
                 });
-                const col = await db.collection({
-                    name: 'humans',
-                    schema: schemas.human
+                const cols = await db.addCollections({
+                    humans: {
+                        schema: schemas.human
+                    }
                 });
 
                 await AsyncTestUtil.assertThrows(
-                    () => col.insert({
+                    () => cols.humans.insert({
                         foo: 'bar'
                     }),
                     'RxError'
@@ -71,14 +73,15 @@ config.parallel('ajv-validate.node.js', () => {
                     name: randomCouchString(10),
                     storage: getRxStoragePouch('memory'),
                 });
-                const col = await db.collection({
-                    name: 'humans',
-                    schema: schemas.human
+                const cols = await db.addCollections({
+                    humans: {
+                        schema: schemas.human
+                    }
                 });
 
                 let error = null;
                 try {
-                    await col.insert({
+                    await cols.humans.insert({
                         foo: 'bar'
                     });
                 } catch (e) {

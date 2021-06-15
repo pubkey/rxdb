@@ -95,10 +95,12 @@ config.parallel('key-compression.test.js', () => {
                 name: 'heroesdb',
                 storage: getRxStoragePouch('memory')
             });
-            const collection = await db.collection({
-                name: 'mycollection',
-                schema: mySchema
+            const collections = await db.addCollections({
+                mycollection: {
+                    schema: mySchema
+                }
             });
+            const collection = collections.mycollection;
             const docData = {
                 id: randomCouchString(12),
                 likes: ['abc', '8']
@@ -130,10 +132,12 @@ config.parallel('key-compression.test.js', () => {
                 name: randomCouchString(10),
                 storage: getRxStoragePouch('memory')
             });
-            const collection = await db.collection({
-                name: 'mycollection',
-                schema: mySchema
+            const collections = await db.addCollections({
+                mycollection: {
+                    schema: mySchema
+                }
             });
+            const collection = collections.mycollection;
 
             const docData = {
                 key: 'foobar',

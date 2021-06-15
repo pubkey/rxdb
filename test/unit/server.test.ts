@@ -234,10 +234,12 @@ config.parallel('server.test.js', () => {
             storage: getRxStoragePouch('leveldb'),
             multiInstance: false
         });
-        const col1 = await db1.collection({
-            name: 'human',
-            schema: schemas.human
+        const cols1 = await db1.addCollections({
+            human: {
+                schema: schemas.human
+            }
         });
+        const col1 = cols1.human;
 
         await col1.insert(schemaObjects.human());
 
@@ -264,20 +266,24 @@ config.parallel('server.test.js', () => {
             storage: getRxStoragePouch('leveldb'),
             multiInstance: false
         });
-        const col1 = await db1.collection({
-            name: 'human',
-            schema: schemas.human
+        const cols1 = await db1.addCollections({
+            human: {
+                schema: schemas.human
+            }
         });
+        const col1 = cols1.human;
 
         const db2 = await createRxDatabase({
             name: db2Name,
             storage: getRxStoragePouch('leveldb'),
             multiInstance: false
         });
-        const col2 = await db2.collection({
-            name: 'human',
-            schema: schemas.human
+        const cols2 = await db2.addCollections({
+            human: {
+                schema: schemas.human
+            }
         });
+        const col2 = cols2.human;
 
         await db1.server({
             port
@@ -379,9 +385,10 @@ config.parallel('server.test.js', () => {
             port
         });
         await AsyncTestUtil.assertThrows(
-            () => db1.collection({
-                name: 'human',
-                schema: schemas.human
+            () => db1.addCollections({
+                human: {
+                    schema: schemas.human
+                }
             }),
             'RxError',
             'after'
@@ -488,10 +495,13 @@ config.parallel('server.test.js', () => {
                     storage: getRxStoragePouch('leveldb'),
                     multiInstance: false
                 });
-                const col = await db.collection({
-                    name: 'human',
-                    schema: schemas.human
+                const cols = await db.addCollections({
+                    human: {
+                        schema: schemas.human
+                    }
                 });
+                const col = cols.human;
+
                 const port = nexPort();
                 await db.server({
                     port

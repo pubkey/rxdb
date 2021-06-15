@@ -16,7 +16,7 @@ import {
     promiseWait,
     randomCouchString,
     isRxCollection,
-    RxReplicationState,
+    RxCouchDBReplicationState,
     SyncOptions
 } from '../../plugins/core';
 
@@ -629,10 +629,12 @@ describe('replication.test.js', () => {
                 storage: getRxStoragePouch('memory'),
             });
             // create a collection
-            const collection1 = await db1.collection({
-                name: 'crawlstate',
-                schema: mySchema
+            const collections1 = await db1.addCollections({
+                crawlstate: {
+                    schema: mySchema
+                }
             });
+            const collection1 = collections1.crawlstate;
 
             // insert a document
             await collection1.insert({
@@ -648,17 +650,19 @@ describe('replication.test.js', () => {
                 storage: getRxStoragePouch('memory'),
             });
             // create a collection
-            const collection2 = await db2.collection({
-                name: 'crawlstate',
-                schema: mySchema
+            const collections2 = await db2.addCollections({
+                crawlstate: {
+                    schema: mySchema
+                }
             });
+            const collection2 = collections2.crawlstate;
 
             // query for all documents on db2-collection2 (query will be cached)
             const documents = await collection2.find().exec();
             assert.ok(documents);
 
             // Replicate from db1-collection1 to db2-collection2
-            const pullstate: RxReplicationState = collection2.syncCouchDB({
+            const pullstate: RxCouchDBReplicationState = collection2.syncCouchDB({
                 remote: collection1,
                 direction: {
                     pull: true,

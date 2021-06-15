@@ -466,10 +466,12 @@ config.parallel('hooks.test.js', () => {
                     storage: getRxStoragePouch('memory'),
                     multiInstance: true
                 });
-                const collection = await db.collection({
-                    name: 'myhumans',
-                    schema: schemas.primaryHuman
+                const collections = await db.addCollections({
+                    myhumans: {
+                        schema: schemas.primaryHuman
+                    }
                 });
+                const collection = collections.myhumans;
                 collection.postCreate(function (_data, instance) {
                     assert.ok(isRxDocument(instance));
                     Object.defineProperty(instance, 'myField', {
@@ -492,10 +494,12 @@ config.parallel('hooks.test.js', () => {
                     storage: getRxStoragePouch('memory'),
                     multiInstance: true
                 });
-                const collection = await db.collection({
-                    name: 'myhumans',
-                    schema: schemas.primaryHuman
+                const collections = await db.addCollections({
+                    myhumans: {
+                        schema: schemas.primaryHuman
+                    }
                 });
+                const collection = collections.myhumans;
 
                 const hookFun = function (doc: any) {
                     Object.defineProperty(doc, 'myField', {

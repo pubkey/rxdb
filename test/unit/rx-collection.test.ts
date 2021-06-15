@@ -158,14 +158,15 @@ config.parallel('rx-collection.test.js', () => {
                         name: randomCouchString(10),
                         storage: getRxStoragePouch('memory'),
                     });
-                    const collection = await db.collection({
-                        name: 'human',
-                        schema: schemas.human,
-                        options: {
-                            foo: 'bar'
+                    const collections = await db.addCollections({
+                        human: {
+                            schema: schemas.human,
+                            options: {
+                                foo: 'bar'
+                            }
                         }
                     });
-                    assert.strictEqual(collection.options.foo, 'bar');
+                    assert.strictEqual(collections.human.options.foo, 'bar');
                     db.destroy();
                 });
             });
@@ -294,11 +295,12 @@ config.parallel('rx-collection.test.js', () => {
                         name: randomCouchString(10),
                         storage: getRxStoragePouch('memory'),
                     });
-                    const collection = await db.collection({
-                        name: 'human',
-                        schema: schemas.human
+                    const collections = await db.addCollections({
+                        human: {
+                            schema: schemas.human
+                        }
                     });
-                    await collection.insert(schemaObjects.human());
+                    await collections.human.insert(schemaObjects.human());
                     db.destroy();
                 });
                 it('should insert nested human', async () => {
@@ -306,11 +308,12 @@ config.parallel('rx-collection.test.js', () => {
                         name: randomCouchString(10),
                         storage: getRxStoragePouch('memory'),
                     });
-                    const collection = await db.collection({
-                        name: 'nestedhuman',
-                        schema: schemas.nestedHuman
+                    const collections = await db.addCollections({
+                        nestedhuman: {
+                            schema: schemas.nestedHuman
+                        }
                     });
-                    await collection.insert(schemaObjects.nestedHuman());
+                    await collections.nestedhuman.insert(schemaObjects.nestedHuman());
                     db.destroy();
                 });
                 it('should insert more than once', async () => {
@@ -318,12 +321,14 @@ config.parallel('rx-collection.test.js', () => {
                         name: randomCouchString(10),
                         storage: getRxStoragePouch('memory'),
                     });
-                    const collection = await db.collection({
-                        name: 'nestedhuman',
-                        schema: schemas.nestedHuman
+                    const collections = await db.addCollections({
+                        nestedhuman: {
+                            schema: schemas.nestedHuman
+                        }
                     });
-                    for (let i = 0; i < 10; i++)
-                        await collection.insert(schemaObjects.nestedHuman());
+                    for (let i = 0; i < 10; i++) {
+                        await collections.nestedhuman.insert(schemaObjects.nestedHuman());
+                    }
                     db.destroy();
                 });
                 it('should set default values', async () => {
@@ -331,16 +336,17 @@ config.parallel('rx-collection.test.js', () => {
                         name: randomCouchString(10),
                         storage: getRxStoragePouch('memory'),
                     });
-                    const collection = await db.collection({
-                        name: 'nestedhuman',
-                        schema: schemas.humanDefault
+                    const collections = await db.addCollections({
+                        nestedhuman: {
+                            schema: schemas.humanDefault
+                        }
                     });
 
                     const data = {
                         passportId: 'foobar',
                     };
-                    await collection.insert(data);
-                    const doc = await collection.findOne().exec(true);
+                    await collections.nestedhuman.insert(data);
+                    const doc = await collections.nestedhuman.findOne().exec(true);
                     assert.strictEqual((doc as any).age, 20);
 
                     db.destroy();
@@ -352,14 +358,15 @@ config.parallel('rx-collection.test.js', () => {
                         name: randomCouchString(10),
                         storage: getRxStoragePouch('memory'),
                     });
-                    const collection = await db.collection({
-                        name: 'human',
-                        schema: schemas.human
+                    const collections = await db.addCollections({
+                        human: {
+                            schema: schemas.human
+                        }
                     });
                     const human: any = schemaObjects.human();
                     delete human.firstName;
                     await AsyncTestUtil.assertThrows(
-                        () => collection.insert(human),
+                        () => collections.human.insert(human),
                         'RxError',
                         'not match schema'
                     );
@@ -370,12 +377,13 @@ config.parallel('rx-collection.test.js', () => {
                         name: randomCouchString(10),
                         storage: getRxStoragePouch('memory'),
                     });
-                    const collection = await db.collection({
-                        name: 'human',
-                        schema: schemas.human
+                    const collections = await db.addCollections({
+                        human: {
+                            schema: schemas.human
+                        }
                     });
                     await AsyncTestUtil.assertThrows(
-                        () => collection.insert('collection'),
+                        () => collections.human.insert('collection'),
                         'RxError',
                         'is the wrong type'
                     );
@@ -386,14 +394,15 @@ config.parallel('rx-collection.test.js', () => {
                         name: randomCouchString(10),
                         storage: getRxStoragePouch('memory'),
                     });
-                    const collection = await db.collection({
-                        name: 'human',
-                        schema: schemas.human
+                    const collections = await db.addCollections({
+                        human: {
+                            schema: schemas.human
+                        }
                     });
                     const human: any = schemaObjects.human();
                     human['any'] = randomCouchString(20);
                     await AsyncTestUtil.assertThrows(
-                        () => collection.insert(human),
+                        () => collections.human.insert(human),
                         'RxError',
                         'not match schema'
                     );
@@ -404,12 +413,13 @@ config.parallel('rx-collection.test.js', () => {
                         name: randomCouchString(10),
                         storage: getRxStoragePouch('memory'),
                     });
-                    const collection = await db.collection({
-                        name: 'human',
-                        schema: schemas.primaryHuman
+                    const collections = await db.addCollections({
+                        human: {
+                            schema: schemas.primaryHuman
+                        }
                     });
                     await AsyncTestUtil.assertThrows(
-                        () => collection.insert({
+                        () => collections.human.insert({
                             firstName: 'foo',
                             lastName: 'bar',
                             age: 20
@@ -424,10 +434,12 @@ config.parallel('rx-collection.test.js', () => {
                         name: randomCouchString(10),
                         storage: getRxStoragePouch('memory'),
                     });
-                    const collection = await db.collection({
-                        name: 'human',
-                        schema: schemas.primaryHuman
+                    const collections = await db.addCollections({
+                        human: {
+                            schema: schemas.primaryHuman
+                        }
                     });
+                    const collection = collections.human;
                     const docData = schemaObjects.human();
                     await collection.insert(docData);
 
@@ -449,12 +461,13 @@ config.parallel('rx-collection.test.js', () => {
                         name: randomCouchString(10),
                         storage: getRxStoragePouch('memory'),
                     });
-                    const collection = await db.collection({
-                        name: 'human',
-                        schema: schemas.human
+                    const collections = await db.addCollections({
+                        human: {
+                            schema: schemas.human
+                        }
                     });
                     const docs = new Array(10).fill(0).map(() => schemaObjects.human());
-                    const ret = await collection.bulkInsert(docs);
+                    const ret = await collections.human.bulkInsert(docs);
 
                     assert.strictEqual(ret.success.length, 10);
                     db.destroy();
@@ -466,10 +479,12 @@ config.parallel('rx-collection.test.js', () => {
                         name: randomCouchString(10),
                         storage: getRxStoragePouch('memory'),
                     });
-                    const collection = await db.collection({
-                        name: 'human',
-                        schema: schemas.primaryHuman
+                    const collections = await db.addCollections({
+                        human: {
+                            schema: schemas.primaryHuman
+                        }
                     });
+                    const collection = collections.human;
                     const double = schemaObjects.human();
                     double.passportId = 'foobar';
                     await collection.insert(double);
@@ -565,10 +580,12 @@ config.parallel('rx-collection.test.js', () => {
                                 name: randomCouchString(10),
                                 storage: getRxStoragePouch('memory'),
                             });
-                            const collection = await db.collection({
-                                name: 'human',
-                                schema: schemas.human
+                            const collections = await db.addCollections({
+                                human: {
+                                    schema: schemas.human
+                                }
                             });
+                            const collection = collections.human;
                             const human = schemaObjects.human();
                             const passportId = human.passportId;
                             await collection.insert(human);
@@ -1183,10 +1200,12 @@ config.parallel('rx-collection.test.js', () => {
                             name: randomCouchString(10),
                             storage: getRxStoragePouch('memory'),
                         });
-                        const collection = await db.collection({
-                            name: 'human',
-                            schema: schemas.human
+                        const collections = await db.addCollections({
+                            human: {
+                                schema: schemas.human
+                            }
                         });
+                        const collection = collections.human;
                         const human = schemaObjects.human();
                         const passportId = human.passportId;
                         await collection.insert(human);
@@ -1222,10 +1241,12 @@ config.parallel('rx-collection.test.js', () => {
                         name: randomCouchString(10),
                         storage: getRxStoragePouch('memory'),
                     });
-                    const collection = await db.collection({
-                        name: 'human',
-                        schema: schemas.primaryHuman
+                    const collections = await db.addCollections({
+                        human: {
+                            schema: schemas.primaryHuman
+                        }
                     });
+                    const collection = collections.human;
                     const obj = schemaObjects.simpleHuman();
                     obj.firstName = 'foobar';
                     await collection.upsert(obj);
@@ -1238,10 +1259,12 @@ config.parallel('rx-collection.test.js', () => {
                         name: randomCouchString(10),
                         storage: getRxStoragePouch('memory'),
                     });
-                    const collection = await db.collection({
-                        name: 'human',
-                        schema: schemas.primaryHuman
+                    const collections = await db.addCollections({
+                        human: {
+                            schema: schemas.primaryHuman
+                        }
                     });
+                    const collection = collections.human;
                     const obj = schemaObjects.simpleHuman();
                     await collection.insert(obj);
                     obj.firstName = 'foobar';
@@ -1255,10 +1278,12 @@ config.parallel('rx-collection.test.js', () => {
                         name: randomCouchString(10),
                         storage: getRxStoragePouch('memory'),
                     });
-                    const collection = await db.collection({
-                        name: 'human',
-                        schema: schemas.primaryHuman
+                    const collections = await db.addCollections({
+                        human: {
+                            schema: schemas.primaryHuman
+                        }
                     });
+                    const collection = collections.human;
                     const obj = schemaObjects.simpleHuman();
                     await collection.insert(obj);
                     obj.firstName = 'foobar';
@@ -1278,10 +1303,12 @@ config.parallel('rx-collection.test.js', () => {
                         name: randomCouchString(10),
                         storage: getRxStoragePouch('memory'),
                     });
-                    const collection = await db.collection({
-                        name: 'human',
-                        schema: schemas.primaryHuman
+                    const collections = await db.addCollections({
+                        human: {
+                            schema: schemas.primaryHuman
+                        }
                     });
+                    const collection = collections.human;
                     const obj = schemaObjects.simpleHuman();
                     await collection.insert(obj);
                     const cloned: any = clone(obj);
@@ -1300,10 +1327,12 @@ config.parallel('rx-collection.test.js', () => {
                         name: randomCouchString(10),
                         storage: getRxStoragePouch('memory'),
                     });
-                    const collection = await db.collection({
-                        name: 'human',
-                        schema: schemas.primaryHuman
+                    const collections = await db.addCollections({
+                        human: {
+                            schema: schemas.primaryHuman
+                        }
                     });
+                    const collection = collections.human;
                     const obj: any = schemaObjects.simpleHuman();
                     obj.firstName = 'foobar';
                     obj['foo'] = 'bar';
@@ -1405,10 +1434,12 @@ config.parallel('rx-collection.test.js', () => {
                         name: config.rootPath + 'test_tmp/' + randomCouchString(10),
                         storage: getRxStoragePouch(leveldown),
                     });
-                    const c = await db.collection({
-                        name: 'humans',
-                        schema: schemas.primaryHuman
+                    const collections = await db.addCollections({
+                        human: {
+                            schema: schemas.primaryHuman
+                        }
                     });
+                    const c = collections.human;
 
                     const docData = schemaObjects.simpleHuman();
                     await c.atomicUpsert(docData);
@@ -1432,10 +1463,12 @@ config.parallel('rx-collection.test.js', () => {
                     const schema: RxJsonSchema<HumanDocumentType> = clone(schemas.humanDefault);
 
                     const defaultValue = schema.properties.age.default;
-                    const collection = await db.collection({
-                        name: 'nestedhuman',
-                        schema
+                    const collections = await db.addCollections({
+                        nestedhuman: {
+                            schema
+                        }
                     });
+                    const collection = collections.nestedhuman;
 
                     const doc = await collection.atomicUpsert({
                         passportId: 'foobar',
@@ -1460,10 +1493,12 @@ config.parallel('rx-collection.test.js', () => {
                     });
                     const schema: RxJsonSchema<HumanDocumentType> = clone(schemas.humanDefault);
 
-                    const collection = await db.collection({
-                        name: 'nestedhuman',
-                        schema
+                    const collections = await db.addCollections({
+                        nestedhuman: {
+                            schema
+                        }
                     });
+                    const collection = collections.nestedhuman;
 
                     const doc = await collection.atomicUpsert({
                         passportId: 'foobar',
@@ -1511,19 +1546,22 @@ config.parallel('rx-collection.test.js', () => {
                         name: randomCouchString(10),
                         storage: getRxStoragePouch('memory'),
                     });
-                    const collection = await db.collection({
-                        name: 'human',
-                        schema: schemas.primaryHuman
+                    const collections = await db.addCollections({
+                        human: {
+                            schema: schemas.primaryHuman
+                        }
                     });
+                    const collection = collections.human;
 
                     await collection.remove();
                     const otherSchema: any = clone(schemas.primaryHuman);
                     otherSchema.properties['foobar'] = {
                         type: 'string'
                     };
-                    await db.collection({
-                        name: 'human',
-                        schema: otherSchema
+                    await db.addCollections({
+                        human: {
+                            schema: otherSchema
+                        }
                     });
                     db.destroy();
                 });
@@ -1532,10 +1570,12 @@ config.parallel('rx-collection.test.js', () => {
                         name: randomCouchString(10),
                         storage: getRxStoragePouch('memory'),
                     });
-                    const collection = await db.collection({
-                        name: 'human',
-                        schema: schemas.primaryHuman
+                    const collections = await db.addCollections({
+                        human: {
+                            schema: schemas.primaryHuman
+                        }
                     });
+                    const collection = collections.human;
                     await Promise.all(
                         new Array(5).fill(0)
                             .map(() => collection.insert(schemaObjects.human()))
@@ -1544,10 +1584,12 @@ config.parallel('rx-collection.test.js', () => {
                     assert.strictEqual(5, allDocs.length);
                     await collection.remove();
 
-                    const collection2 = await db.collection({
-                        name: 'human',
-                        schema: schemas.primaryHuman
+                    const collections2 = await db.addCollections({
+                        human: {
+                            schema: schemas.primaryHuman
+                        }
                     });
+                    const collection2 = collections2.human;
                     const noDocs = await collection2.find().exec();
                     assert.strictEqual(0, noDocs.length);
                     db.destroy();
@@ -1557,10 +1599,13 @@ config.parallel('rx-collection.test.js', () => {
                         name: randomCouchString(10),
                         storage: getRxStoragePouch('memory'),
                     });
-                    const collection = await db.collection({
-                        name: 'human',
-                        schema: schemas.primaryHuman
+                    const collections = await db.addCollections({
+                        human: {
+                            schema: schemas.primaryHuman
+                        }
                     });
+                    const collection = collections.human;
+
                     await Promise.all(
                         new Array(5).fill(0)
                             .map(() => collection.insert(schemaObjects.human()))
@@ -1569,15 +1614,18 @@ config.parallel('rx-collection.test.js', () => {
 
                     const otherSchema = clone(schemas.primaryHuman);
                     otherSchema.version = 1;
-                    const collection2 = await db.collection({
-                        name: 'human',
-                        schema: otherSchema,
-                        migrationStrategies: {
-                            1: function (doc: any) {
-                                return doc;
+                    const collections2 = await db.addCollections({
+                        human: {
+                            schema: otherSchema,
+                            migrationStrategies: {
+                                1: function (doc: any) {
+                                    return doc;
+                                }
                             }
                         }
                     });
+                    const collection2 = collections2.human;
+
                     const noDocs = await collection2.find().exec();
                     assert.strictEqual(noDocs.length, 0);
                     await Promise.all(
@@ -1589,10 +1637,12 @@ config.parallel('rx-collection.test.js', () => {
                     await collection2.remove();
 
 
-                    const collection0Again = await db.collection({
-                        name: 'human',
-                        schema: schemas.primaryHuman
+                    const collections0Again = await db.addCollections({
+                        human: {
+                            schema: schemas.primaryHuman
+                        }
                     });
+                    const collection0Again = collections0Again.human;
                     const noDocs2 = await collection0Again.find().exec();
                     assert.strictEqual(noDocs2.length, 0);
 
@@ -1736,10 +1786,12 @@ config.parallel('rx-collection.test.js', () => {
                 name: randomCouchString(10),
                 storage: getRxStoragePouch('memory'),
             });
-            const collection = await db.collection({
-                name: 'humanx',
-                schema
+            const collections = await db.addCollections({
+                humanx: {
+                    schema
+                }
             });
+            const collection = collections.humanx;
             const doc = await collection.insert({
                 passportId: randomCouchString(10)
             });
@@ -1776,10 +1828,13 @@ config.parallel('rx-collection.test.js', () => {
                 name: randomCouchString(10),
                 storage: getRxStoragePouch('memory'),
             });
-            const collection = await db.collection({
-                name: 'humanx',
-                schema
+            const collections = await db.addCollections({
+                humanx: {
+                    schema
+                }
             });
+            const collection = collections.humanx;
+
             // insert a document
             await collection.insert({
                 passportId: 'foobar',
@@ -1803,13 +1858,15 @@ config.parallel('rx-collection.test.js', () => {
             });
 
             // test with auto_compaction
-            const collection: any = await db.collection({
-                name: 'human_compact',
-                schema: schemas.primaryHuman,
-                instanceCreationOptions: {
-                    auto_compaction: true
+            const collections = await db.addCollections({
+                human_compact: {
+                    schema: schemas.primaryHuman,
+                    instanceCreationOptions: {
+                        auto_compaction: true
+                    }
                 }
             });
+            const collection = collections.human_compact;
             assert.ok(collection.storageInstance.internals.pouch.auto_compaction);
             db.destroy();
         });
@@ -1834,7 +1891,6 @@ config.parallel('rx-collection.test.js', () => {
             });
 
             const collectionParams = {
-                name: 'humans',
                 schema,
                 methods: {
                     foo() {
@@ -1848,9 +1904,9 @@ config.parallel('rx-collection.test.js', () => {
                 }
             };
             const cloned = clone(collectionParams);
-            await db.collection(
-                collectionParams
-            );
+            await db.addCollections({
+                humans: collectionParams
+            });
             assert.deepStrictEqual(Object.keys(cloned), Object.keys(collectionParams));
             assert.deepStrictEqual(cloned, collectionParams);
 
@@ -1861,9 +1917,9 @@ config.parallel('rx-collection.test.js', () => {
                 name: randomCouchString(10),
                 storage: getRxStoragePouch('memory'),
             });
-            await db2.collection(
-                collectionParams
-            );
+            await db2.addCollections({
+                humans: collectionParams
+            });
             assert.deepStrictEqual(cloned, collectionParams);
 
             db2.destroy();

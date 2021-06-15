@@ -45,11 +45,12 @@ config.parallel('no-validate.node.js', () => {
             name: randomCouchString(10),
             storage: getRxStoragePouch('memory'),
         });
-        const col = await db.collection({
-            name: 'humans',
-            schema
+        const cols = await db.addCollections({
+            humans: {
+                schema
+            }
         });
-        await col.insert({
+        await cols.humans.insert({
             passportId: randomCouchString(12),
             foo: 'bar'
         });
@@ -60,15 +61,16 @@ config.parallel('no-validate.node.js', () => {
             name: randomCouchString(10),
             storage: getRxStoragePouch('memory'),
         });
-        const col = await db.collection({
-            name: 'humans',
-            schema
+        const cols = await db.addCollections({
+            humans: {
+                schema
+            }
         });
-        await col.insert({
+        await cols.humans.insert({
             passportId: randomCouchString(12),
             foo: 'bar'
         });
-        const doc = await col.findOne().exec();
+        const doc = await cols.humans.findOne().exec();
         assert.strictEqual(doc.get('foo'), 'bar');
 
         await doc.atomicPatch({ bar: 'foo' });

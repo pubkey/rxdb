@@ -151,11 +151,13 @@ for (let r = 0; r < runs; r++) {
                 eventReduce: true,
                 storage: getRxStoragePouch('memory')
             });
-            const col = await db.collection({
-                name: 'human',
-                schema: schemas.averageSchema(),
-                methods: ormMethods
+            const cols = await db.addCollections({
+                human: {
+                    schema: schemas.averageSchema(),
+                    methods: ormMethods
+                }
             });
+            const col = cols.human;
             let lastDoc;
 
             const docsData = new Array(benchmark.insertDocuments.blocks * benchmark.insertDocuments.blockSize)
@@ -190,11 +192,13 @@ for (let r = 0; r < runs; r++) {
                 eventReduce: true,
                 storage: getRxStoragePouch('memory')
             });
-            const col = await db.collection({
-                name: 'human',
-                schema,
-                methods: ormMethods
+            const cols = await db.addCollections({
+                human: {
+                    schema,
+                    methods: ormMethods
+                }
             });
+            const col = cols.human;
 
             await Promise.all(
                 new Array(benchmark.findDocuments.amount)
@@ -210,11 +214,13 @@ for (let r = 0; r < runs; r++) {
                 eventReduce: true,
                 ignoreDuplicate: true
             });
-            const col2 = await db2.collection({
-                name: 'human',
-                schema,
-                methods: ormMethods
+            const cols2 = await db2.addCollections({
+                human: {
+                    schema,
+                    methods: ormMethods
+                }
             });
+            const col2 = cols2.human;
 
 
             const startTime = nowTime();
@@ -236,10 +242,12 @@ for (let r = 0; r < runs; r++) {
                 eventReduce: true,
                 storage: getRxStoragePouch('memory')
             });
-            const col = await db.collection({
-                name: 'human',
-                schema: schemas.averageSchema()
+            const cols = await db.addCollections({
+                human: {
+                    schema: schemas.averageSchema()
+                }
             });
+            const col = cols.human;
 
             // insert into old collection
             await Promise.all(
@@ -258,17 +266,19 @@ for (let r = 0; r < runs; r++) {
             const newSchema = schemas.averageSchema();
             newSchema.version = 1;
             newSchema.properties.var2.type = 'string';
-            const col2 = await db2.collection({
-                name: 'human',
-                schema: newSchema,
-                migrationStrategies: {
-                    1: (oldDoc: any) => {
-                        oldDoc.var2 = oldDoc.var2 + '';
-                        return oldDoc;
-                    }
-                },
-                autoMigrate: false
+            const cols2 = await db2.addCollections({
+                human: {
+                    schema: newSchema,
+                    migrationStrategies: {
+                        1: (oldDoc: any) => {
+                            oldDoc.var2 = oldDoc.var2 + '';
+                            return oldDoc;
+                        }
+                    },
+                    autoMigrate: false
+                }
             });
+            const col2 = cols2.human;
 
             const startTime = nowTime();
 
@@ -287,10 +297,12 @@ for (let r = 0; r < runs; r++) {
                 eventReduce: true,
                 storage: getRxStoragePouch('memory')
             });
-            const col = await db.collection({
-                name: 'human',
-                schema: schemas.averageSchema()
+            const cols = await db.addCollections({
+                human: {
+                    schema: schemas.averageSchema()
+                }
             });
+            const col = cols.human;
 
             const query = col.find({
                 selector: {
@@ -302,7 +314,6 @@ for (let r = 0; r < runs; r++) {
                     { var1: 'asc' }
                 ]
             });
-
 
             let t = 0;
             let lastResult: any[] = [];

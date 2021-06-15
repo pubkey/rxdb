@@ -59,13 +59,14 @@ describe('bug-report.test.js', () => {
             ignoreDuplicate: true
         });
         // create a collection
-        const collection = await db.collection({
-            name: 'mycollection',
-            schema: mySchema
+        const collections = await db.addCollections({
+            mycollection: {
+                schema: mySchema
+            }
         });
 
         // insert a document
-        await collection.insert({
+        await collections.mycollection.insert({
             passportId: 'foobar',
             firstName: 'Bob',
             lastName: 'Kelso',
@@ -83,13 +84,14 @@ describe('bug-report.test.js', () => {
             ignoreDuplicate: true
         });
         // create a collection
-        const collectionInOtherTab = await dbInOtherTab.collection({
-            name: 'mycollection',
-            schema: mySchema
+        const collectionInOtherTab = await dbInOtherTab.addCollections({
+            mycollection: {
+                schema: mySchema
+            }
         });
 
         // find the document in the other tab
-        const myDocument = await collectionInOtherTab
+        const myDocument = await collectionInOtherTab.mycollection
             .findOne()
             .where('firstName')
             .eq('Bob')
@@ -103,7 +105,7 @@ describe('bug-report.test.js', () => {
 
         // you can also wait for events
         const emitted = [];
-        const sub = collectionInOtherTab
+        const sub = collectionInOtherTab.mycollection
             .findOne().$
             .subscribe(doc => emitted.push(doc));
         await AsyncTestUtil.waitUntil(() => emitted.length === 1);

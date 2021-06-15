@@ -396,18 +396,20 @@ config.parallel('in-memory.test.js', () => {
                 ignoreDuplicate: true
             });
 
-            const c1 = await db.collection({
-                name: 'humans',
-                schema: schemas.human
+            const c1 = await db.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
             });
-            const c2 = await db2.collection({
-                name: 'humans',
-                schema: schemas.human
+            const c2 = await db2.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
             });
-            const memCol = await c1.inMemory();
+            const memCol = await c1.humans.inMemory();
 
             const emitted: any[] = [];
-            c2.find().$.subscribe(docs => emitted.push(docs));
+            c2.humans.find().$.subscribe(docs => emitted.push(docs));
             await AsyncTestUtil.waitUntil(() => emitted.length === 1);
 
             await memCol.insert(schemaObjects.human());
@@ -549,16 +551,17 @@ config.parallel('in-memory.test.js', () => {
                 multiInstance: true,
                 ignoreDuplicate: true
             });
-            const col = await db.collection({
-                name: 'heroes',
-                schema
+            const cols = await db.addCollections({
+                heroes: {
+                    schema
+                }
             });
-            await col.insert({
+            await cols.heroes.insert({
                 name: 'alice',
                 color: 'azure',
                 maxHp: 101
             });
-            await col.insert({
+            await cols.heroes.insert({
                 name: 'bob',
                 color: 'blue',
                 maxHp: 100
@@ -571,11 +574,12 @@ config.parallel('in-memory.test.js', () => {
                 multiInstance: true,
                 ignoreDuplicate: true
             });
-            const col2 = await db2.collection({
-                name: 'heroes',
-                schema
+            const col2 = await db2.addCollections({
+                heroes: {
+                    schema
+                }
             });
-            const memCol = await col2.inMemory();
+            const memCol = await col2.heroes.inMemory();
 
             const doc = await memCol
                 .findOne()
@@ -593,10 +597,10 @@ config.parallel('in-memory.test.js', () => {
             assert.strictEqual(alice.maxHp, 101);
 
             // check if it works from mem to parent
-            await alice.atomicPatch({maxHp: 103});
+            await alice.atomicPatch({ maxHp: 103 });
 
             await AsyncTestUtil.waitUntil(async () => {
-                const aliceDoc = await col2
+                const aliceDoc = await col2.heroes
                     .findOne()
                     .where('name').eq('alice')
                     .exec();
@@ -612,18 +616,20 @@ config.parallel('in-memory.test.js', () => {
                 multiInstance: true,
                 ignoreDuplicate: true
             });
-            const col = await db.collection({
-                name: 'heroes',
-                schema: schemas.human,
-                statics: {
-                    foo() {
-                        return 'bar';
+            const cols = await db.addCollections({
+                heroes: {
+                    schema: schemas.human,
+                    statics: {
+                        foo() {
+                            return 'bar';
+                        }
+                    },
+                    options: {
+                        foobar: 'foobar'
                     }
-                },
-                options: {
-                    foobar: 'foobar'
                 }
             });
+            const col = cols.heroes;
             const memCol = await col.inMemory();
 
             // check method

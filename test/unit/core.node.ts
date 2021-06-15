@@ -71,9 +71,10 @@ config.parallel('core.node.js', () => {
                 name: randomCouchString(10),
                 storage: getRxStoragePouch('memory'),
             });
-            await db.collection({
-                name: 'humans',
-                schema
+            await db.addCollections({
+                humans: {
+                    schema
+                }
             });
             db.destroy();
         });
@@ -84,9 +85,10 @@ config.parallel('core.node.js', () => {
                 name: randomCouchString(10),
                 storage: getRxStoragePouch('memory'),
             });
-            await db.collection({
-                name: 'humans',
-                schema
+            await db.addCollections({
+                humans: {
+                    schema
+                }
             });
 
             await db.humans.insert({
@@ -113,13 +115,14 @@ config.parallel('core.node.js', () => {
                 name: randomCouchString(10),
                 storage: getRxStoragePouch('memory'),
             });
-            const col = await db.collection({
-                name: 'humans',
-                schema
+            const col = await db.addCollections({
+                humans: {
+                    schema
+                }
             });
             let error;
             try {
-                await col.insert({
+                await col.humans.insert({
                     foo: 'bar'
                 });
             } catch (e) {

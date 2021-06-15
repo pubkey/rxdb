@@ -430,10 +430,12 @@ config.parallel('rx-query.test.js', () => {
                 name: config.rootPath + 'test_tmp/' + randomCouchString(10),
                 storage: getRxStoragePouch(leveldown),
             });
-            const c = await db.collection({
-                name: 'humans',
-                schema: schemas.human
+            const cols = await db.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
             });
+            const c = cols.humans;
             await c.insert(schemaObjects.human());
 
             const query1 = c.findOne().where('age').gt(0);
@@ -532,10 +534,12 @@ config.parallel('rx-query.test.js', () => {
                 eventReduce: true,
                 storage: getRxStoragePouch('memory'),
             });
-            const col = await db.collection({
-                name: 'human',
-                schema
+            const cols = await db.addCollections({
+                human: {
+                    schema
+                }
             });
+            const col = cols.human;
 
             await Promise.all(
                 new Array(10)
@@ -552,10 +556,12 @@ config.parallel('rx-query.test.js', () => {
                 eventReduce: true,
                 ignoreDuplicate: true
             });
-            const col2 = await db2.collection({
-                name: 'human',
-                schema
+            const cols2 = await db2.addCollections({
+                human: {
+                    schema
+                }
             });
+            const col2 = cols2.human;
 
             const allDocs = await col2.find().exec();
             assert.strictEqual(allDocs.length, 10);
@@ -644,10 +650,12 @@ config.parallel('rx-query.test.js', () => {
                     name: randomCouchString(10),
                     storage: getRxStoragePouch('memory'),
                 });
-                const col = await db.collection({
-                    name: 'humans',
-                    schema
+                const cols = await db.addCollections({
+                    humans: {
+                        schema
+                    }
                 });
+                const col = cols.humans;
                 await col.insert({
                     id: randomCouchString(12),
                     childProperty: 'A'
@@ -697,10 +705,13 @@ config.parallel('rx-query.test.js', () => {
                     storage: getRxStoragePouch('memory'),
                     password: randomCouchString(20)
                 });
-                const collection = await db.collection({
-                    name: randomCouchString(10),
-                    schema
+                const colName = randomCouchString(10);
+                const collections = await db.addCollections({
+                    [colName]: {
+                        schema
+                    }
                 });
+                const collection = collections[colName];
 
                 const query = collection
                     .findOne()
@@ -740,10 +751,14 @@ config.parallel('rx-query.test.js', () => {
                     storage: getRxStoragePouch('memory'),
                     password: randomCouchString(20)
                 });
-                const collection = await db.collection({
-                    name: randomCouchString(10),
-                    schema
+
+                const colName = randomCouchString(10);
+                const collections = await db.addCollections({
+                    [colName]: {
+                        schema
+                    }
                 });
+                const collection = collections[colName];
 
                 const queryAll = collection
                     .find()
@@ -844,10 +859,12 @@ config.parallel('rx-query.test.js', () => {
                 name: randomCouchString(10),
                 storage: getRxStoragePouch('memory'),
             });
-            const col = await db.collection({
-                name: 'humans',
-                schema
+            const cols = await db.addCollections({
+                humans: {
+                    schema
+                }
             });
+            const col = cols.humans;
 
             await col.storageInstance.internals.pouch.createIndex({
                 name: 'idx-rxdb-info',
@@ -1084,10 +1101,12 @@ config.parallel('rx-query.test.js', () => {
                     }
                 }
             };
-            const roomsession = await db.collection({
-                name: 'roomsession',
-                schema
+            const collections = await db.addCollections({
+                roomsession: {
+                    schema
+                }
             });
+            const roomsession = collections.roomsession;
             const roomId = 'roomId';
             const sessionId = 'sessionID';
             await roomsession.insert({
@@ -1154,10 +1173,12 @@ config.parallel('rx-query.test.js', () => {
                 ignoreDuplicate: true
             });
             // create a collection
-            const collection = await db.collection({
-                name: 'mycollection',
-                schema: mySchema
+            const collections = await db.addCollections({
+                mycollection: {
+                    schema: mySchema
+                }
             });
+            const collection = collections.mycollection;
 
             // insert a document
             await collection.insert({
@@ -1223,10 +1244,12 @@ config.parallel('rx-query.test.js', () => {
             });
 
             // create a collection
-            const collection = await db.collection({
-                name: 'mycollection',
-                schema: mySchema
+            const collections = await db.addCollections({
+                mycollection: {
+                    schema: mySchema
+                }
             });
+            const collection = collections.mycollection;
 
             // insert documents
             await collection.bulkInsert([
@@ -1327,10 +1350,12 @@ config.parallel('rx-query.test.js', () => {
             const schema = clone(schemas.human);
             schema.keyCompression = false;
 
-            const c = await db.collection({
-                name: 'humans',
-                schema
+            const cols = await db.addCollections({
+                humans: {
+                    schema
+                }
             });
+            const c = cols.humans;
 
             const docDataMatching = schemaObjects.human();
             docDataMatching.age = 42;

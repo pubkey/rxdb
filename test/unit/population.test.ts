@@ -181,26 +181,28 @@ config.parallel('population.test.js', () => {
                     name: randomCouchString(10),
                     storage: getRxStoragePouch('memory'),
                 });
-                const col = await db.collection({
-                    name: 'human',
-                    schema: {
-                        version: 0,
-                        primaryKey: 'name',
-                        type: 'object',
-                        properties: {
-                            name: {
-                                type: 'string'
-                            },
-                            friends: {
-                                type: 'array',
-                                ref: 'human',
-                                items: {
+                const cols = await db.addCollections({
+                    human: {
+                        schema: {
+                            version: 0,
+                            primaryKey: 'name',
+                            type: 'object',
+                            properties: {
+                                name: {
                                     type: 'string'
+                                },
+                                friends: {
+                                    type: 'array',
+                                    ref: 'human',
+                                    items: {
+                                        type: 'string'
+                                    }
                                 }
                             }
                         }
                     }
                 });
+                const col = cols.human;
                 const friends = new Array(5)
                     .fill(0)
                     .map(() => {
@@ -238,14 +240,16 @@ config.parallel('population.test.js', () => {
                         }
                     }
                 };
-                const col = await db.collection<{ name: string }>({
-                    name: 'human',
-                    schema
+                const cols = await db.addCollections({
+                    human: {
+                        schema
+                    },
+                    human2: {
+                        schema
+                    }
                 });
-                const col2 = await db.collection({
-                    name: 'human2',
-                    schema
-                });
+                const col = cols.human;
+                const col2 = cols.human2;
 
                 const doc = await col.insert({
                     name: 'foobar'
@@ -287,39 +291,42 @@ config.parallel('population.test.js', () => {
                 storage: getRxStoragePouch('memory'),
                 multiInstance: false // this must be false here
             });
-            const colA = await db.collection({
-                name: 'doca',
-                schema: {
-                    type: 'object',
-                    primaryKey: 'name',
-                    version: 0,
-                    properties: {
-                        name: {
-                            type: 'string'
-                        },
-                        refB: {
-                            ref: 'docb', // refers to collection human
-                            type: 'string' // ref-values must always be string (primary of foreign RxDocument)
+            const cols = await db.addCollections({
+                doca: {
+                    schema: {
+                        type: 'object',
+                        primaryKey: 'name',
+                        version: 0,
+                        properties: {
+                            name: {
+                                type: 'string'
+                            },
+                            refB: {
+                                ref: 'docb', // refers to collection human
+                                type: 'string' // ref-values must always be string (primary of foreign RxDocument)
+                            }
+                        }
+                    }
+                },
+                docb: {
+                    schema: {
+                        version: 0,
+                        primaryKey: 'name',
+                        type: 'object',
+                        properties: {
+                            name: {
+                                type: 'string'
+                            },
+                            somevalue: {
+                                type: 'string'
+                            }
                         }
                     }
                 }
             });
-            const colB = await db.collection({
-                name: 'docb',
-                schema: {
-                    version: 0,
-                    primaryKey: 'name',
-                    type: 'object',
-                    properties: {
-                        name: {
-                            type: 'string'
-                        },
-                        somevalue: {
-                            type: 'string'
-                        }
-                    }
-                }
-            });
+            const colA = cols.doca;
+            const colB = cols.docb;
+
             await colB.insert({
                 name: 'docB-01',
                 somevalue: 'foobar'

@@ -36,10 +36,12 @@ config.parallel('validate-z-schema.node.js', () => {
                     name: randomCouchString(10),
                     storage: getRxStoragePouch('memory'),
                 });
-                const col = await db.collection({
-                    name: 'humans',
-                    schema: schemas.human
+                const cols = await db.addCollections({
+                    humans: {
+                        schema: schemas.human
+                    }
                 });
+                const col = cols.humans;
 
                 const doc = await col.insert(schemaObjects.human());
                 assert.ok(doc);
@@ -53,10 +55,12 @@ config.parallel('validate-z-schema.node.js', () => {
                     name: randomCouchString(10),
                     storage: getRxStoragePouch('memory'),
                 });
-                const col = await db.collection({
-                    name: 'humans',
-                    schema: schemas.human
+                const cols = await db.addCollections({
+                    humans: {
+                        schema: schemas.human
+                    }
                 });
+                const col = cols.humans;
 
                 await AsyncTestUtil.assertThrows(
                     () => col.insert({
@@ -72,10 +76,12 @@ config.parallel('validate-z-schema.node.js', () => {
                     name: randomCouchString(10),
                     storage: getRxStoragePouch('memory'),
                 });
-                const col = await db.collection({
-                    name: 'humans',
-                    schema: schemas.human
+                const cols = await db.addCollections({
+                    humans: {
+                        schema: schemas.human
+                    }
                 });
+                const col = cols.humans;
 
                 let error = null;
                 try {

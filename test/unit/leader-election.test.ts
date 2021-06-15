@@ -173,9 +173,10 @@ config.parallel('leader-election.test.js', () => {
                 multiInstance: false
             });
             // setTimeout(() => db.destroy(), dbLifetime);
-            await db.collection({
-                name: 'human',
-                schema: schemas.human
+            await db.addCollections({
+                human: {
+                    schema: schemas.human
+                }
             });
             assert.strictEqual(db.isLeader(), true);
             db.destroy();

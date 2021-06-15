@@ -16,6 +16,7 @@ Breaking:
   - Calling `RxDatabase.server()` now returns a promise that resolves when the server is started up.
   - Renamed `replication`-plugin to `replication-couchdb` to be more consistend in naming like with `replication-graphql`
     - Renamed `RxCollection().sync()` to `RxCollection().syncCouchDB()`
+  - Removed the deprecated `RxDatabase.collection()` use `RxDatabase().addCollections()` instead.
 
 ### 9.20.0 (15 May 2021)
 

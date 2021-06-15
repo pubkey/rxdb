@@ -298,18 +298,20 @@ config.parallel('reactive-query.test.js', () => {
                 storage: getRxStoragePouch('memory'),
                 ignoreDuplicate: true
             });
-            await db.collection({
-                name: 'crawlstate',
-                schema: crawlStateSchema
+            await db.addCollections({
+                crawlstate: {
+                    schema: crawlStateSchema
+                }
             });
             const db2 = await createRxDatabase({
                 name,
                 storage: getRxStoragePouch('memory'),
                 ignoreDuplicate: true
             });
-            await db2.collection({
-                name: 'crawlstate',
-                schema: crawlStateSchema
+            await db2.addCollections({
+                crawlstate: {
+                    schema: crawlStateSchema
+                }
             });
 
             const emitted: any[] = [];
@@ -399,10 +401,12 @@ config.parallel('reactive-query.test.js', () => {
                     storage: getRxStoragePouch('memory'),
                     ignoreDuplicate: true
                 });
-                const collection = await db.collection({
-                    name: 'humans',
-                    schema: schemas.human
+                const collections = await db.addCollections({
+                    humans: {
+                        schema: schemas.human
+                    }
                 });
+                const collection = collections.humans;
 
                 await collection.insert(schemaObjects.human());
 

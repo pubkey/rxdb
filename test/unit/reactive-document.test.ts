@@ -158,10 +158,12 @@ config.parallel('reactive-document.test.js', () => {
                     name: randomCouchString(10),
                     storage: getRxStoragePouch('memory'),
                 });
-                const col = await db.collection({
-                    name: 'humans',
-                    schema: schemas.humanFinal
+                const cols = await db.addCollections({
+                    humans: {
+                        schema: schemas.humanFinal
+                    }
                 });
+                const col = cols.humans;
                 const docData = schemaObjects.human();
                 await col.insert(docData);
                 const doc = await col.findOne().exec();

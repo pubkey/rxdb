@@ -827,12 +827,13 @@ config.parallel('rx-schema.test.js', () => {
                 name: randomCouchString(10),
                 storage: getRxStoragePouch('memory')
             });
-            const col = await db.collection({
-                name: 'items',
-                schema
+            const cols = await db.addCollections({
+                items: {
+                    schema
+                }
             });
 
-            await col.insert({
+            await cols.items.insert({
                 id: '1',
                 fileInfo: {
                     watch: {
@@ -841,7 +842,7 @@ config.parallel('rx-schema.test.js', () => {
                 }
             });
 
-            const query = col.find()
+            const query = cols.items.find()
                 .where('fileInfo.watch.time')
                 .gt(-9999999999999999999999999999)
                 .sort('fileInfo.watch.time');
@@ -879,11 +880,12 @@ config.parallel('rx-schema.test.js', () => {
                 name: randomCouchString(10),
                 storage: getRxStoragePouch('memory')
             });
-            const collection = await db.collection({
-                name: 'test',
-                schema: mySchema
+            const collections = await db.addCollections({
+                test: {
+                    schema: mySchema
+                }
             });
-            await collection.insert({
+            await collections.test.insert({
                 passportId: 'foobar',
                 firstName: 'Bob',
                 age: 56
@@ -919,12 +921,13 @@ config.parallel('rx-schema.test.js', () => {
                 name: randomCouchString(10),
                 storage: getRxStoragePouch('memory')
             });
-            const collection = await db.collection({
-                name: 'test',
-                schema: mySchema
+            const collections = await db.addCollections({
+                test: {
+                    schema: mySchema
+                }
             });
 
-            await collection.insert({
+            await collections.test.insert({
                 id: randomCouchString(12),
                 properties: {
                     name: 'Title',
@@ -963,12 +966,13 @@ config.parallel('rx-schema.test.js', () => {
                 name: randomCouchString(10),
                 storage: getRxStoragePouch('memory')
             });
-            const collection = await db.collection({
-                name: 'test',
-                schema: mySchema
+            const collections = await db.addCollections({
+                test: {
+                    schema: mySchema
+                }
             });
 
-            await collection.insert({
+            await collections.test.insert({
                 id: randomCouchString(12),
                 properties: {
                     name: 'Title',
@@ -981,7 +985,7 @@ config.parallel('rx-schema.test.js', () => {
                     ['properties.name'],
                     ['properties.properties']
                 ],
-                collection.schema.indexes
+                collections.test.schema.indexes
             );
 
             db.destroy();

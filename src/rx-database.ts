@@ -13,7 +13,6 @@ import type {
     RxDatabaseCreator,
     RxDumpDatabase,
     RxDumpDatabaseAny,
-    RxCollectionCreatorBase,
     AllMigrationStates,
     ServerResponse,
     BackupOptions,
@@ -183,16 +182,18 @@ export class RxDatabaseBase<
      * creates multiple RxCollections at once
      * to be much faster by saving db txs and doing stuff in bulk-operations
      * This function is not called often, but mostly in the critical path at the initial page load
-     * So it must be as fast as possible
+     * So it must be as fast as possible.
      */
-    async addCollections(collectionCreators: {
-        // TODO instead of [name: string] only allow keyof Collections
-        [name: string]: RxCollectionCreatorBase
-    }): Promise<{ [key: string]: RxCollection }> {
+    async addCollections<CreatedCollections = Partial<Collections>>(collectionCreators: {
+        [key in keyof CreatedCollections]: RxCollectionCreator
+    }): Promise<{ [key in keyof CreatedCollections]: RxCollection }> {
         // get local management docs in bulk request
         const collectionDocs = await this.internalStore.findDocumentsById(
             Object.keys(collectionCreators)
-                .map(name => _collectionNamePrimary(name, collectionCreators[name].schema))
+                .map(name => {
+                    const schema: RxJsonSchema<any> = (collectionCreators as any)[name].schema;
+                    return _collectionNamePrimary(name, schema);
+                })
         );
 
         const internalDocByCollectionName: any = {};
@@ -200,14 +201,15 @@ export class RxDatabaseBase<
             internalDocByCollectionName[key] = doc;
         });
 
-        const schemaHashByName: { [k: string]: string } = {};
+        const schemaHashByName: { [key in keyof CreatedCollections]: string } = {} as any;
         const collections = await Promise.all(
             Object.entries(collectionCreators).map(([name, args]) => {
-                const internalDoc = internalDocByCollectionName[_collectionNamePrimary(name, collectionCreators[name].schema)];
-                const useArgs: RxCollectionCreator = flatClone(args) as any;
-                useArgs.name = name;
-                const schema = createRxSchema(args.schema);
-                schemaHashByName[name] = schema.hash;
+                const useName: keyof CreatedCollections = name as any;
+                const internalDoc = internalDocByCollectionName[_collectionNamePrimary(name, collectionCreators[useName].schema)];
+                const useArgs: RxCollectionCreator & { name: keyof CreatedCollections; } = flatClone(args) as any;
+                useArgs.name = useName;
+                const schema = createRxSchema((args as RxCollectionCreator).schema);
+                schemaHashByName[useName] = schema.hash;
                 (useArgs as any).schema = schema;
                 (useArgs as any).database = this;
 
@@ -221,16 +223,16 @@ export class RxDatabaseBase<
                 }
 
                 // collection already exists but has different schema
-                if (internalDoc && internalDoc.schemaHash !== schemaHashByName[name]) {
+                if (internalDoc && internalDoc.schemaHash !== schemaHashByName[useName]) {
                     throw newRxError('DB6', {
                         name: name,
                         previousSchemaHash: internalDoc.schemaHash,
-                        schemaHash: schemaHashByName[name]
+                        schemaHash: schemaHashByName[useName]
                     });
                 }
 
                 // run hooks
-                const hookData: RxCollectionCreator = flatClone(args) as any;
+                const hookData: RxCollectionCreator & { name: string; } = flatClone(args) as any;
                 (hookData as any).database = this;
                 hookData.name = name;
                 runPluginHooks('preCreateRxCollection', hookData);
@@ -240,16 +242,16 @@ export class RxDatabaseBase<
         );
 
         const bulkPutDocs: BulkWriteRow<InternalStoreDocumentData>[] = [];
-        const ret: { [key: string]: RxCollection } = {};
+        const ret: { [key in keyof CreatedCollections]: RxCollection } = {} as any;
         collections.forEach(collection => {
-            const name = collection.name;
+            const name: keyof CreatedCollections = collection.name as any;
             ret[name] = collection;
             if (
                 collection.schema.crypt &&
                 !this.password
             ) {
                 throw newRxError('DB7', {
-                    name
+                    name: name as string
                 });
             }
 
@@ -257,7 +259,7 @@ export class RxDatabaseBase<
             if (!internalDocByCollectionName[name]) {
                 bulkPutDocs.push({
                     document: {
-                        collectionName: _collectionNamePrimary(name, collectionCreators[name].schema),
+                        collectionName: _collectionNamePrimary(name as any, collectionCreators[name].schema),
                         schemaHash: schemaHashByName[name],
                         schema: collection.schema.normalized,
                         version: collection.schema.version,
@@ -281,33 +283,6 @@ export class RxDatabaseBase<
         }
 
         return ret;
-    }
-
-    /**
-     * create or fetch a collection
-     * @deprecated use addCollections() instead, it is faster and better typed
-     */
-    collection<
-        RxDocumentType = any,
-        OrmMethods = {},
-        StaticMethods = { [key: string]: any }
-    >(args: RxCollectionCreator): Promise<
-        RxCollection<
-            RxDocumentType,
-            OrmMethods,
-            StaticMethods
-        >
-    > {
-        if (typeof args === 'string') {
-            return Promise.resolve(this.collections[args]);
-        }
-
-        // collection() is deprecated, call new bulk-creation method
-        return this.addCollections({
-            [args.name]: args
-        }).then(colObject => {
-            return colObject[args.name] as any;
-        });
     }
 
     /**

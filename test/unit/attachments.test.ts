@@ -167,12 +167,13 @@ config.parallel('attachments.test.ts', () => {
             });
             const schemaJson = AsyncTestUtil.clone(schemas.human);
             schemaJson.attachments = {};
-            const collection = await db.collection({
-                name: 'humans',
-                schema: schemaJson
+            const collections = await db.addCollections({
+                humans: {
+                    schema: schemaJson
+                }
             });
-            await collection.insert(schemaObjects.human());
-            const doc = await collection.findOne().exec(true);
+            await collections.humans.insert(schemaObjects.human());
+            const doc = await collections.humans.findOne().exec(true);
             const docAge = doc.age;
             await doc.putAttachment({
                 id: 'cat.txt',
@@ -186,10 +187,12 @@ config.parallel('attachments.test.ts', () => {
                 multiInstance: false,
                 ignoreDuplicate: true
             });
-            const c2 = await db2.collection({
-                name: 'humans',
-                schema: schemaJson
+            const cols2 = await db2.addCollections({
+                humans: {
+                    schema: schemaJson
+                }
             });
+            const c2 = cols2.humans;
             const doc2 = await c2.findOne().exec();
             assert.strictEqual(docAge, doc2.age);
             const attachment = doc2.getAttachment('cat.txt');
@@ -356,9 +359,10 @@ config.parallel('attachments.test.ts', () => {
             });
             const schemaJson = AsyncTestUtil.clone(schemas.human);
             schemaJson.attachments = {};
-            const c = await db.collection({
-                name: 'humans',
-                schema: schemaJson
+            const c = await db.addCollections({
+                humans: {
+                    schema: schemaJson
+                }
             });
 
             const db2 = await createRxDatabase({
@@ -367,14 +371,15 @@ config.parallel('attachments.test.ts', () => {
                 multiInstance: true,
                 ignoreDuplicate: true
             });
-            const c2 = await db2.collection({
-                name: 'humans',
-                schema: schemaJson
+            const c2 = await db2.addCollections({
+                humans: {
+                    schema: schemaJson
+                }
             });
 
-            await c.insert(schemaObjects.human());
-            const doc = await c.findOne().exec();
-            const doc2 = await c2.findOne().exec();
+            await c.humans.insert(schemaObjects.human());
+            const doc = await c.humans.findOne().exec();
+            const doc2 = await c2.humans.findOne().exec();
             assert.strictEqual(doc.age, doc2.age);
 
             const doc2Streamed: any[] = [];
@@ -426,18 +431,19 @@ config.parallel('attachments.test.ts', () => {
                 attachments: {},
                 required: ['id']
             };
-            const schema1: RxJsonSchema = clone(schema0);
+            const schema1: RxJsonSchema<DocData> = clone(schema0);
             schema1.version = 1;
 
             const db = await createRxDatabase({
                 name: dbName,
                 storage: getRxStoragePouch('memory'),
             });
-            const col = await db.collection({
-                name: 'heroes',
-                schema: schema0
+            const col = await db.addCollections({
+                heroes: {
+                    schema: schema0
+                }
             });
-            const doc: RxDocument<DocData> = await col.insert({
+            const doc: RxDocument<DocData> = await col.heroes.insert({
                 id: 'alice'
             });
             await doc.putAttachment({
@@ -459,13 +465,14 @@ config.parallel('attachments.test.ts', () => {
                     return oldDoc;
                 }
             };
-            const col2 = await db2.collection({
-                name: 'heroes',
-                schema: schema1,
-                migrationStrategies
+            const col2 = await db2.addCollections({
+                heroes: {
+                    schema: schema1,
+                    migrationStrategies
+                }
             });
 
-            const doc2: RxDocument<DocData> = await col2.findOne().exec();
+            const doc2: RxDocument<DocData> = await col2.heroes.findOne().exec();
             assert.strictEqual(doc2.allAttachments().length, 1);
             const firstAttachment = doc2.allAttachments()[0];
             const data = await firstAttachment.getStringData();
@@ -490,18 +497,19 @@ config.parallel('attachments.test.ts', () => {
                 attachments: {},
                 required: ['id']
             };
-            const schema1: RxJsonSchema = clone(schema0);
+            const schema1: RxJsonSchema<DocData> = clone(schema0);
             schema1.version = 1;
 
             const db = await createRxDatabase({
                 name: dbName,
                 storage: getRxStoragePouch('memory'),
             });
-            const col = await db.collection({
-                name: 'heroes',
-                schema: schema0
+            const col = await db.addCollections({
+                heroes: {
+                    schema: schema0
+                }
             });
-            const doc: RxDocument<DocData> = await col.insert({
+            const doc: RxDocument<DocData> = await col.heroes.insert({
                 id: 'alice'
             });
             await doc.putAttachment({
@@ -521,12 +529,13 @@ config.parallel('attachments.test.ts', () => {
                     return oldDoc;
                 }
             };
-            const col2 = await db2.collection({
-                name: 'heroes',
-                schema: schema1,
-                migrationStrategies
+            const col2 = await db2.addCollections({
+                heroes: {
+                    schema: schema1,
+                    migrationStrategies
+                }
             });
-            const doc2: RxDocument<DocData> = await col2.findOne().exec();
+            const doc2: RxDocument<DocData> = await col2.heroes.findOne().exec();
             assert.strictEqual(doc2.allAttachments().length, 0);
 
             db2.destroy();
@@ -548,18 +557,19 @@ config.parallel('attachments.test.ts', () => {
                 attachments: {},
                 required: ['id']
             };
-            const schema1: RxJsonSchema = clone(schema0);
+            const schema1: RxJsonSchema<DocData> = clone(schema0);
             schema1.version = 1;
 
             const db = await createRxDatabase({
                 name: dbName,
                 storage: getRxStoragePouch('memory'),
             });
-            const col = await db.collection({
-                name: 'heroes',
-                schema: schema0
+            const col = await db.addCollections({
+                heroes: {
+                    schema: schema0
+                }
             });
-            const doc: RxDocument<DocData> = await col.insert({
+            const doc: RxDocument<DocData> = await col.heroes.insert({
                 id: 'alice'
             });
             await doc.putAttachment({
@@ -590,13 +600,15 @@ config.parallel('attachments.test.ts', () => {
                     return oldDoc;
                 }
             };
-            const col2 = await db2.collection({
-                name: 'heroes',
-                schema: schema1,
-                migrationStrategies
+            const col2 = await db2.addCollections({
+                heroes: {
+
+                    schema: schema1,
+                    migrationStrategies
+                }
             });
 
-            const doc2: RxDocument<DocData> = await col2.findOne().exec();
+            const doc2: RxDocument<DocData> = await col2.heroes.findOne().exec();
             assert.strictEqual(doc2.allAttachments().length, 1);
             const firstAttachment = doc2.allAttachments()[0];
             const data = await firstAttachment.getStringData();
@@ -616,17 +628,18 @@ config.parallel('attachments.test.ts', () => {
             });
             const schemaJson = AsyncTestUtil.clone(schemas.human);
             schemaJson.attachments = {};
-            const c = await db.collection({
-                name: 'humans',
-                schema: schemaJson,
-                attachments: {
-                    foobar() {
-                        return 'foobar ' + this.type;
+            const c = await db.addCollections({
+                humans: {
+                    schema: schemaJson,
+                    attachments: {
+                        foobar() {
+                            return 'foobar ' + this.type;
+                        }
                     }
                 }
             });
-            await c.insert(schemaObjects.human());
-            const doc = await c.findOne().exec();
+            await c.humans.insert(schemaObjects.human());
+            const doc = await c.humans.findOne().exec();
             const attachment = await doc.putAttachment({
                 id: 'cat.txt',
                 data: blobBufferUtil.createBlobBuffer('meow I am a kitty', 'text/plain'),
@@ -657,10 +670,12 @@ config.parallel('attachments.test.ts', () => {
                 storage: getRxStoragePouch('memory'),
                 multiInstance: true
             });
-            const myCollection = await myDB.collection({
-                name: 'mycollection',
-                schema: myschema
+            const myCollections = await myDB.addCollections({
+                mycollection: {
+                    schema: myschema
+                }
             });
+            const myCollection = myCollections.mycollection;
             const mydoc = myCollection.newDocument({
                 name: 'mydoc'
             });
@@ -688,12 +703,13 @@ config.parallel('attachments.test.ts', () => {
             });
             const schemaJson = AsyncTestUtil.clone(schemas.human);
             schemaJson.attachments = {};
-            const c = await db.collection({
-                name: 'humans',
-                schema: schemaJson
+            const c = await db.addCollections({
+                humans: {
+                    schema: schemaJson
+                }
             });
-            await c.insert(schemaObjects.human());
-            const doc = await c.findOne().exec();
+            await c.humans.insert(schemaObjects.human());
+            const doc = await c.humans.findOne().exec();
 
             const attachments = await doc.allAttachments();
             assert.strictEqual(attachments.length, 0);

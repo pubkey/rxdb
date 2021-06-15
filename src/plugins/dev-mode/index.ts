@@ -56,7 +56,7 @@ export const RxDBDevModePlugin: RxPlugin = {
         preCreateRxDatabase: (args: RxDatabaseCreator<any, any>) => {
             ensureDatabaseNameIsValid(args);
         },
-        preCreateRxCollection: (args: RxCollectionCreator) => {
+        preCreateRxCollection: (args: RxCollectionCreator & { name: string; }) => {
             ensureCollectionNameValid(args);
             if (args.name.charAt(0) === '_') {
                 throw newRxError('DB2', {

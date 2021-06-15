@@ -356,22 +356,24 @@ config.parallel('local-documents.test.js', () => {
                 storage: getRxStoragePouch('memory'),
                 ignoreDuplicate: true
             });
-            const c1 = await db.collection({
-                name: 'humans',
-                schema: schemas.primaryHuman
+            const c1 = await db.addCollections({
+                humans: {
+                    schema: schemas.primaryHuman
+                }
             });
-            const c2 = await db2.collection({
-                name: 'humans',
-                schema: schemas.primaryHuman
+            const c2 = await db2.addCollections({
+                humans: {
+                    schema: schemas.primaryHuman
+                }
             });
-            const doc1 = await c1.insertLocal('foobar', {
+            const doc1 = await c1.humans.insertLocal('foobar', {
                 foo: 'bar'
             });
-            const doc2 = await c2.getLocal<TestDocType>('foobar');
+            const doc2 = await c2.humans.getLocal<TestDocType>('foobar');
             await doc1.atomicPatch({ foo: 'bar2' });
 
             const emitted: any[] = [];
-            const sub = c2.getLocal$('foobar').subscribe((x: any) => {
+            const sub = c2.humans.getLocal$('foobar').subscribe((x: any) => {
                 emitted.push(x);
             });
 
@@ -419,30 +421,32 @@ config.parallel('local-documents.test.js', () => {
                 name,
                 storage: getRxStoragePouch('memory'),
             });
-            const c1 = await db.collection({
-                name: 'humans',
-                schema: schemas.primaryHuman
+            const c1 = await db.addCollections({
+                humans: {
+                    schema: schemas.primaryHuman
+                }
             });
             const db2 = await createRxDatabase({
                 name,
                 storage: getRxStoragePouch('memory'),
                 ignoreDuplicate: true
             });
-            const c2 = await db2.collection({
-                name: 'humans',
-                schema: schemas.primaryHuman
+            const c2 = await db2.addCollections({
+                humans: {
+                    schema: schemas.primaryHuman
+                }
             });
             const docData = schemaObjects.human();
             docData.passportId = 'foobar';
             docData.age = 40;
-            const doc = await c1.insert(docData);
-            const localDoc = await c1.insertLocal('foobar', {
+            const doc = await c1.humans.insert(docData);
+            const localDoc = await c1.humans.insertLocal('foobar', {
                 foo: 'bar',
                 age: 10
             });
 
-            const doc2 = await c2.findOne().exec();
-            const localDoc2 = await c2.getLocal('foobar');
+            const doc2 = await c2.humans.findOne().exec();
+            const localDoc2 = await c2.humans.getLocal('foobar');
             await doc.atomicPatch({ age: 50 });
 
             await AsyncTestUtil.waitUntil(() => doc2.age === 50);
@@ -466,21 +470,22 @@ config.parallel('local-documents.test.js', () => {
                 name,
                 storage: getRxStoragePouch('memory'),
             });
-            const c1 = await db.collection({
-                name: 'humans',
-                schema: schemas.primaryHuman
+            const c1 = await db.addCollections({
+                humans: {
+                    schema: schemas.primaryHuman
+                }
             });
-            const inMem = await c1.inMemory();
+            const inMem = await c1.humans.inMemory();
 
             await inMem.insertLocal('foobar', {
                 foo: 'bar',
                 age: 10
             });
-            const doc = await c1.getLocal('foobar');
+            const doc = await c1.humans.getLocal('foobar');
             assert.ok(doc);
             assert.strictEqual(doc.get('age'), 10);
 
-            await c1.insertLocal('foobar2', {
+            await c1.humans.insertLocal('foobar2', {
                 foo: 'bar',
                 age: 11
             });
@@ -575,10 +580,12 @@ config.parallel('local-documents.test.js', () => {
                     },
                 }
             };
-            const boundaryMgmtCol = await db.collection<DocData>({
-                name: 'human',
-                schema: boundaryMgmtSchema
+            const boundaryMgmtCols = await db.addCollections({
+                human: {
+                    schema: boundaryMgmtSchema
+                }
             });
+            const boundaryMgmtCol = boundaryMgmtCols.human;
 
             const groups = {
                 bndrPlnId: 'mygroup',
@@ -628,13 +635,14 @@ config.parallel('local-documents.test.js', () => {
                 storage: getRxStoragePouch(leveldown),
                 multiInstance: false
             });
-            const col = await db.collection({
-                name: 'humans',
-                schema: schemas.human
+            const cols = await db.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
             });
 
             await db.insertLocal(localDocId, localDocData);
-            await col.insertLocal(localDocId, localDocData);
+            await cols.humans.insertLocal(localDocId, localDocData);
 
             await db.destroy();
 
@@ -643,13 +651,14 @@ config.parallel('local-documents.test.js', () => {
                 storage: getRxStoragePouch(leveldown),
                 multiInstance: false
             });
-            const col2 = await db2.collection({
-                name: 'humans',
-                schema: schemas.human
+            const col2 = await db2.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
             });
 
             const docDb = await db2.getLocal(localDocId);
-            const docCol = await col2.getLocal(localDocId);
+            const docCol = await col2.humans.getLocal(localDocId);
 
             assert.ok(docDb);
             assert.ok(docCol);

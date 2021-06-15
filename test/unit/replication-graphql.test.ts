@@ -1167,10 +1167,12 @@ describe('replication-graphql.test.js', () => {
 
                 const schema = clone(schemas.humanWithTimestamp);
                 schema.indexes = ['name'];
-                const collection = await db.collection({
-                    name: 'humans',
-                    schema
+                const collections = await db.addCollections({
+                    humans: {
+                        schema
+                    }
                 });
+                const collection = collections.humans;
 
                 const replicationState = collection.syncGraphQL({
                     url: server.url,
@@ -1478,14 +1480,18 @@ describe('replication-graphql.test.js', () => {
                     ignoreDuplicate: true
                 });
 
-                const collection1 = await db1.collection({
-                    name: 'humans',
-                    schema: schemas.humanWithTimestamp
+                const collections1 = await db1.addCollections({
+                    humans: {
+                        schema: schemas.humanWithTimestamp
+                    }
                 });
-                const collection2 = await db2.collection({
-                    name: 'humans',
-                    schema: schemas.humanWithTimestamp
+                const collection1 = collections1.humans;
+                const collections2 = await db2.addCollections({
+                    humans: {
+                        schema: schemas.humanWithTimestamp
+                    }
                 });
+                const collection2 = collections2.humans;
 
                 collection1.syncGraphQL({
                     url: server.url,
@@ -1544,10 +1550,12 @@ describe('replication-graphql.test.js', () => {
                     name,
                     storage: getRxStoragePouch('memory'),
                 });
-                const collection = await db.collection({
-                    name: 'humans',
-                    schema: schemas.humanWithTimestamp
+                const collections = await db.addCollections({
+                    humans: {
+                        schema: schemas.humanWithTimestamp
+                    }
                 });
+                const collection = collections.humans;
 
                 for (let i = 0; i < amount; i++) {
                     await collection.insert(schemaObjects.humanWithTimestamp());
@@ -1889,12 +1897,14 @@ describe('replication-graphql.test.js', () => {
                     ignoreDuplicate: true,
                     password: randomCouchString(10)
                 });
-                const schema: RxJsonSchema = clone(schemas.humanWithTimestamp);
+                const schema: RxJsonSchema<any> = clone(schemas.humanWithTimestamp);
                 schema.encrypted = ['name'];
-                const collection = await db.collection({
-                    name: 'humans',
-                    schema
+                const collections = await db.addCollections({
+                    humans: {
+                        schema
+                    }
                 });
+                const collection = collections.humans;
 
                 const testData = getTestData(1);
                 testData[0].name = 'Alice';
@@ -1931,10 +1941,12 @@ describe('replication-graphql.test.js', () => {
                 });
                 const schema = clone(schemas.humanWithTimestamp);
                 schema.keyCompression = true;
-                const collection = await db.collection({
-                    name: 'humans',
-                    schema
+                const collections = await db.addCollections({
+                    humans: {
+                        schema
+                    }
                 });
+                const collection = collections.humans;
 
                 const testData = getTestData(1);
                 testData[0].name = 'Alice';
@@ -2065,12 +2077,14 @@ describe('replication-graphql.test.js', () => {
                     ignoreDuplicate: true,
                     password: randomCouchString(10)
                 });
-                const schema: RxJsonSchema = clone(schemas.humanWithTimestampAllIndex);
+                const schema: RxJsonSchema<any> = clone(schemas.humanWithTimestampAllIndex);
                 schema.encrypted = ['name'];
-                const collection = await db.collection({
-                    name: 'humans',
-                    schema
+                const collections = await db.addCollections({
+                    humans: {
+                        schema
+                    }
                 });
+                const collection = collections.humans;
 
                 // insert data to slow down the db
                 const amount = 30;
@@ -2116,12 +2130,14 @@ describe('replication-graphql.test.js', () => {
                     ignoreDuplicate: true,
                     password: randomCouchString(10)
                 });
-                const schema: RxJsonSchema = clone(schemas.humanWithTimestampAllIndex);
+                const schema: RxJsonSchema<any> = clone(schemas.humanWithTimestampAllIndex);
                 schema.encrypted = ['name'];
-                const collection = await db.collection({
-                    name: 'humans',
-                    schema
+                const collections = await db.addCollections({
+                    humans: {
+                        schema
+                    }
                 });
+                const collection = collections.humans;
 
                 const amount = 50;
                 const testData = getTestData(amount);
@@ -2163,11 +2179,13 @@ describe('replication-graphql.test.js', () => {
                     eventReduce: true,
                     password: randomCouchString(10)
                 });
-                const schema: RxJsonSchema = clone(schemas.humanWithTimestampAllIndex);
-                const collection = await db.collection({
-                    name: 'humans',
-                    schema
+                const schema: RxJsonSchema<any> = clone(schemas.humanWithTimestampAllIndex);
+                const collections = await db.addCollections({
+                    humans: {
+                        schema
+                    }
                 });
+                const collection = collections.humans;
 
                 const server = await SpawnServer.spawn();
                 assert.strictEqual(server.getDocuments().length, 0);
@@ -2332,10 +2350,12 @@ describe('replication-graphql.test.js', () => {
                     eventReduce: true,
                     ignoreDuplicate: true
                 });
-                const collection = await db.collection({
-                    name: 'humans',
-                    schema: schemas.humanWithTimestampAllIndex
+                const collections = await db.addCollections({
+                    humans: {
+                        schema: schemas.humanWithTimestampAllIndex
+                    }
                 });
+                const collection = collections.humans;
 
                 // insert data to slow down the db
                 const amount = 30;
@@ -2372,10 +2392,12 @@ describe('replication-graphql.test.js', () => {
                     eventReduce: true,
                     ignoreDuplicate: true
                 });
-                const collection2 = await db2.collection({
-                    name: 'humans',
-                    schema: schemas.humanWithTimestampAllIndex
+                const collections2 = await db2.addCollections({
+                    humans: {
+                        schema: schemas.humanWithTimestampAllIndex
+                    }
                 });
+                const collection2 = collections2.humans;
                 const replicationState2 = collection2.syncGraphQL({
                     url: browserServerUrl,
                     push: {

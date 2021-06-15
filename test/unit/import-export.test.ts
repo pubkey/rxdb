@@ -42,10 +42,12 @@ config.parallel('import-export.test.js', () => {
                     storage: getRxStoragePouch('memory'),
                     password: randomCouchString(10)
                 });
-                const col = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
-                    name: 'enchuman',
-                    schema: schemas.encryptedObjectHuman
+                const cols = await db.addCollections({
+                    enchuman: {
+                        schema: schemas.encryptedObjectHuman
+                    }
                 });
+                const col = cols.enchuman;
 
                 const fns = [];
                 for (let i = 0; i < 10; i++)
@@ -68,10 +70,13 @@ config.parallel('import-export.test.js', () => {
                     storage: getRxStoragePouch('memory'),
                     password: randomCouchString(10)
                 });
-                const col = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
-                    name: 'enchuman',
-                    schema: schemas.encryptedObjectHuman
+                const cols = await db.addCollections({
+                    enchuman: {
+                        schema: schemas.encryptedObjectHuman
+                    }
                 });
+                const col = cols.enchuman;
+
                 const fns = [];
                 for (let i = 0; i < 10; i++)
                     fns.push(col.insert(schemaObjects.encryptedObjectHuman()));
@@ -95,10 +100,13 @@ config.parallel('import-export.test.js', () => {
                     storage: getRxStoragePouch('memory'),
                     password: randomCouchString(10)
                 });
-                const col = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
-                    name: 'enchuman',
-                    schema: schemas.encryptedObjectHuman
+                const cols = await db.addCollections({
+                    enchuman: {
+                        schema: schemas.encryptedObjectHuman
+                    }
                 });
+                const col = cols.enchuman;
+
                 const fns = [];
                 for (let i = 0; i < 10; i++) {
                     fns.push(col.insert(schemaObjects.encryptedObjectHuman()));
@@ -146,10 +154,12 @@ config.parallel('import-export.test.js', () => {
                         storage: getRxStoragePouch('memory'),
                         password
                     });
-                    const col = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
-                        name: 'enchuman',
-                        schema: schemas.encryptedObjectHuman
+                    const cols = await db.addCollections({
+                        enchuman: {
+                            schema: schemas.encryptedObjectHuman
+                        }
                     });
+                    const col = cols.enchuman;
 
                     const fns = [];
                     for (let i = 0; i < 10; i++)
@@ -163,10 +173,12 @@ config.parallel('import-export.test.js', () => {
                         storage: getRxStoragePouch('memory'),
                         password
                     });
-                    const emptyCol = await db2.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
-                        name: 'enchuman',
-                        schema: schemas.encryptedObjectHuman
+                    const emptyCols = await db2.addCollections({
+                        enchuman: {
+                            schema: schemas.encryptedObjectHuman
+                        }
                     });
+                    const emptyCol = emptyCols.enchuman;
 
                     // try to decrypt first
                     const firstDoc = json.docs[0];
@@ -207,20 +219,24 @@ config.parallel('import-export.test.js', () => {
                         storage: getRxStoragePouch('memory'),
                         password: randomCouchString(10)
                     });
-                    const col = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
-                        name: 'enchuman',
-                        schema: schemas.encryptedObjectHuman
+                    const cols = await db.addCollections({
+                        enchuman: {
+                            schema: schemas.encryptedObjectHuman
+                        }
                     });
+                    const col = cols.enchuman;
 
                     const db2 = await createRxDatabase<any, any, { enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
                         name: randomCouchString(10),
                         storage: getRxStoragePouch('memory'),
                         password: randomCouchString(10)
                     });
-                    const col2 = await db2.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
-                        name: 'enchuman',
-                        schema: schemas.encryptedObjectHuman
+                    const cols2 = await db2.addCollections({
+                        enchuman: {
+                            schema: schemas.encryptedObjectHuman
+                        }
                     });
+                    const col2 = cols2.enchuman;
 
                     const fns = [];
                     for (let i = 0; i < 10; i++)
@@ -241,20 +257,26 @@ config.parallel('import-export.test.js', () => {
                         storage: getRxStoragePouch('memory'),
                         password: randomCouchString(10)
                     });
-                    const col = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
-                        name: 'enchuman',
-                        schema: schemas.encryptedObjectHuman
+                    const cols = await db.addCollections({
+                        enchuman: {
+                            schema: schemas.encryptedObjectHuman
+                        }
                     });
+                    const col = cols.enchuman;
+
+
                     const fns = [];
                     for (let i = 0; i < 5; i++)
                         fns.push(col.insert(schemaObjects.encryptedObjectHuman()));
                     await Promise.all(fns);
 
                     // empty collection with same schema
-                    const col2 = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
-                        name: 'enchuman2',
-                        schema: schemas.encryptedObjectHuman
+                    const cols2 = await db.addCollections({
+                        enchuman2: {
+                            schema: schemas.encryptedObjectHuman
+                        }
                     });
+                    const col2 = cols2.enchuman2;
 
                     const json = await col.dump();
                     // add one with broken schema
@@ -303,13 +325,16 @@ config.parallel('import-export.test.js', () => {
                     storage: getRxStoragePouch('memory'),
                     password: randomCouchString(10)
                 });
-                const col = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
-                    name: 'enchuman',
-                    schema: schemas.encryptedObjectHuman
+                const cols = await db.addCollections({
+                    enchuman: {
+                        schema: schemas.encryptedObjectHuman
+                    }
                 });
+                const col = cols.enchuman;
                 const fns = [];
-                for (let i = 0; i < 10; i++)
+                for (let i = 0; i < 10; i++) {
                     fns.push(col.insert(schemaObjects.encryptedObjectHuman()));
+                }
                 await Promise.all(fns);
                 const json = await db.dump();
                 assert.strictEqual(json.encrypted, true);
@@ -326,10 +351,12 @@ config.parallel('import-export.test.js', () => {
                     storage: getRxStoragePouch('memory'),
                     password: randomCouchString(10)
                 });
-                const col = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
-                    name: 'enchuman',
-                    schema: schemas.encryptedObjectHuman
+                const cols = await db.addCollections({
+                    enchuman: {
+                        schema: schemas.encryptedObjectHuman
+                    }
                 });
+                const col = cols.enchuman;
                 await Promise.all(
                     new Array(10).fill(0)
                         .map(() => col.insert(schemaObjects.encryptedObjectHuman()))
@@ -354,14 +381,18 @@ config.parallel('import-export.test.js', () => {
                     storage: getRxStoragePouch('memory'),
                     password: randomCouchString(10)
                 });
-                const col = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
-                    name: 'enchuman',
-                    schema: schemas.encryptedObjectHuman
+                const cols = await db.addCollections({
+                    enchuman: {
+                        schema: schemas.encryptedObjectHuman
+                    }
                 });
-                const col2 = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
-                    name: 'enchuman2',
-                    schema: schemas.encryptedObjectHuman
+                const col = cols.enchuman;
+                const cols2 = await db.addCollections({
+                    enchuman2: {
+                        schema: schemas.encryptedObjectHuman
+                    }
                 });
+                const col2 = cols2.enchuman2;
 
                 const fns = [];
                 for (let i = 0; i < 10; i++) {
@@ -382,14 +413,16 @@ config.parallel('import-export.test.js', () => {
                     storage: getRxStoragePouch('memory'),
                     password: randomCouchString(10)
                 });
-                const col = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
-                    name: 'enchuman',
-                    schema: schemas.encryptedObjectHuman
+                const cols = await db.addCollections({
+                    enchuman: {
+                        schema: schemas.encryptedObjectHuman
+                    },
+                    enchuman2: {
+                        schema: schemas.encryptedObjectHuman
+                    }
                 });
-                const col2 = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
-                    name: 'enchuman2',
-                    schema: schemas.encryptedObjectHuman
-                });
+                const col = cols.enchuman;
+                const col2 = cols.enchuman2;
 
                 const fns = [];
                 for (let i = 0; i < 10; i++) {
@@ -428,19 +461,23 @@ config.parallel('import-export.test.js', () => {
                         storage: getRxStoragePouch('memory'),
                         password
                     });
-                    const col = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
-                        name: 'enchuman',
-                        schema: schemas.encryptedObjectHuman
+                    const cols = await db.addCollections({
+                        enchuman: {
+                            schema: schemas.encryptedObjectHuman
+                        }
                     });
+                    const col = cols.enchuman;
                     const db2 = await createRxDatabase<any, any, { enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
                         name: randomCouchString(10),
                         storage: getRxStoragePouch('memory'),
                         password
                     });
-                    const col2 = await db2.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
-                        name: 'enchuman',
-                        schema: schemas.encryptedObjectHuman
+                    const cols2 = await db2.addCollections({
+                        enchuman: {
+                            schema: schemas.encryptedObjectHuman
+                        }
                     });
+                    const col2 = cols2.enchuman;
 
                     const fns = [];
                     for (let i = 0; i < 10; i++)
@@ -466,10 +503,12 @@ config.parallel('import-export.test.js', () => {
                         password: null,
                         multiInstance: true
                     });
-                    const col = await db.collection<schemaObjects.HumanDocumentType>({
-                        name: 'human',
-                        schema: schemas.human
+                    const cols = await db.addCollections({
+                        human: {
+                            schema: schemas.human
+                        }
                     });
+                    const col = cols.human;
 
                     const db2 = await createRxDatabase<any, any, { human: RxCollection<schemaObjects.NestedHumanDocumentType> }>({
                         name: randomCouchString(10),
@@ -477,10 +516,12 @@ config.parallel('import-export.test.js', () => {
                         password: null,
                         multiInstance: true
                     });
-                    const col2 = await db2.collection<schemaObjects.NestedHumanDocumentType>({
-                        name: 'human',
-                        schema: schemas.nestedHuman
+                    const cols2 = await db2.addCollections({
+                        human: {
+                            schema: schemas.nestedHuman
+                        }
                     });
+                    const col2 = cols2.human;
 
                     const fns = [];
                     for (let i = 0; i < 5; i++)
@@ -506,19 +547,22 @@ config.parallel('import-export.test.js', () => {
                         storage: getRxStoragePouch('memory'),
                         password: randomCouchString(10)
                     });
-                    const col = await db.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
-                        name: 'enchuman',
-                        schema: schemas.encryptedObjectHuman
+                    const cols = await db.addCollections({
+                        enchuman: {
+                            schema: schemas.encryptedObjectHuman
+                        }
                     });
+                    const col = cols.enchuman;
 
                     const db2 = await createRxDatabase<any, any, { enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
                         name: randomCouchString(10),
                         storage: getRxStoragePouch('memory'),
                         password: randomCouchString(10)
                     });
-                    await db2.collection<schemaObjects.EncryptedObjectHumanDocumentType>({
-                        name: 'enchuman',
-                        schema: schemas.encryptedObjectHuman
+                    await db2.addCollections({
+                        enchuman: {
+                            schema: schemas.encryptedObjectHuman
+                        }
                     });
 
                     const fns = [];
@@ -540,19 +584,22 @@ config.parallel('import-export.test.js', () => {
                         storage: getRxStoragePouch('memory'),
                         multiInstance: true
                     });
-                    const col = await db.collection<schemaObjects.NestedHumanDocumentType>({
-                        name: 'enchuman',
-                        schema: schemas.nestedHuman
+                    const cols = await db.addCollections({
+                        enchuman: {
+                            schema: schemas.nestedHuman
+                        }
                     });
+                    const col = cols.enchuman;
 
                     const db2 = await createRxDatabase<any, any, { enchuman: RxCollection<schemaObjects.NestedHumanDocumentType> }>({
                         name: randomCouchString(10),
                         storage: getRxStoragePouch('memory'),
                         multiInstance: true
                     });
-                    await db2.collection<schemaObjects.NestedHumanDocumentType>({
-                        name: 'enchuman',
-                        schema: schemas.nestedHuman
+                    await db2.addCollections({
+                        enchuman: {
+                            schema: schemas.nestedHuman
+                        }
                     });
 
                     const fns = [];
@@ -607,10 +654,12 @@ config.parallel('import-export.test.js', () => {
                 name: 'aaa1',
                 storage: getRxStoragePouch('memory'),
             });
-            const col = await db.collection({
-                name: 'demo',
-                schema: docSchema
+            const cols = await db.addCollections({
+                demo: {
+                    schema: docSchema
+                }
             });
+            const col = cols.demo;
             await col.insert({
                 firstName: 'nnnn'
             });
@@ -624,10 +673,12 @@ config.parallel('import-export.test.js', () => {
             );
 
             // should work when the collection exists
-            const col2 = await db2.collection({
-                name: 'demo',
-                schema: docSchema
+            const cols2 = await db2.addCollections({
+                demo: {
+                    schema: docSchema
+                }
             });
+            const col2 = cols2.demo;
             await db2.importDump(json);
             const docs = await col2.find().exec();
             assert.strictEqual(docs.length, 1);

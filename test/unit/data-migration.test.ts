@@ -45,14 +45,15 @@ config.parallel('data-migration.test.js', () => {
                     name: randomCouchString(10),
                     storage: getRxStoragePouch('memory'),
                 });
-                await db.collection({
-                    name: 'foobar',
-                    schema: schemas.simpleHumanV3,
-                    autoMigrate: false,
-                    migrationStrategies: {
-                        1: () => { },
-                        2: () => { },
-                        3: () => { }
+                await db.addCollections({
+                    foobar: {
+                        schema: schemas.simpleHumanV3,
+                        autoMigrate: false,
+                        migrationStrategies: {
+                            1: () => { },
+                            2: () => { },
+                            3: () => { }
+                        }
                     }
                 });
                 db.destroy();
@@ -65,10 +66,11 @@ config.parallel('data-migration.test.js', () => {
                     storage: getRxStoragePouch('memory'),
                     ignoreDuplicate: true
                 });
-                await db.collection({
-                    name: colName,
-                    schema: schemas.human,
-                    autoMigrate: false
+                await db.addCollections({
+                    [colName]: {
+                        schema: schemas.human,
+                        autoMigrate: false
+                    }
                 });
 
                 const db2 = await createRxDatabase({
@@ -76,14 +78,15 @@ config.parallel('data-migration.test.js', () => {
                     storage: getRxStoragePouch('memory'),
                     ignoreDuplicate: true
                 });
-                await db2.collection({
-                    name: colName,
-                    schema: schemas.simpleHumanV3,
-                    autoMigrate: false,
-                    migrationStrategies: {
-                        1: () => { },
-                        2: () => { },
-                        3: () => { }
+                await db2.addCollections({
+                    [colName]: {
+                        schema: schemas.simpleHumanV3,
+                        autoMigrate: false,
+                        migrationStrategies: {
+                            1: () => { },
+                            2: () => { },
+                            3: () => { }
+                        }
                     }
                 });
                 db.destroy();
@@ -97,11 +100,12 @@ config.parallel('data-migration.test.js', () => {
                     storage: getRxStoragePouch('memory'),
                 });
                 await AsyncTestUtil.assertThrows(
-                    () => db.collection({
-                        name: 'foobar',
-                        schema: schemas.human,
-                        autoMigrate: false,
-                        migrationStrategies: [] as any
+                    () => db.addCollections({
+                        foobar: {
+                            schema: schemas.human,
+                            autoMigrate: false,
+                            migrationStrategies: [] as any
+                        }
                     }),
                     'RxTypeError'
                 );
@@ -113,12 +117,13 @@ config.parallel('data-migration.test.js', () => {
                     storage: getRxStoragePouch('memory'),
                 });
                 await AsyncTestUtil.assertThrows(
-                    () => db.collection({
-                        name: 'foobar',
-                        schema: schemas.human,
-                        autoMigrate: false,
-                        migrationStrategies: {
-                            foo: function () { }
+                    () => db.addCollections({
+                        foobar: {
+                            schema: schemas.human,
+                            autoMigrate: false,
+                            migrationStrategies: {
+                                foo: function () { }
+                            }
                         }
                     } as any),
                     'RxError'
@@ -131,12 +136,13 @@ config.parallel('data-migration.test.js', () => {
                     storage: getRxStoragePouch('memory'),
                 });
                 await AsyncTestUtil.assertThrows(
-                    () => db.collection({
-                        name: 'foobar',
-                        schema: schemas.human,
-                        autoMigrate: false,
-                        migrationStrategies: {
-                            '1.1': function () { }
+                    () => db.addCollections({
+                        foobar: {
+                            schema: schemas.human,
+                            autoMigrate: false,
+                            migrationStrategies: {
+                                '1.1': function () { }
+                            }
                         }
                     }),
                     'RxError'
@@ -149,12 +155,13 @@ config.parallel('data-migration.test.js', () => {
                     storage: getRxStoragePouch('memory'),
                 });
                 await AsyncTestUtil.assertThrows(
-                    () => db.collection({
-                        name: 'foobar',
-                        schema: schemas.human,
-                        autoMigrate: false,
-                        migrationStrategies: {
-                            1: 'foobar'
+                    () => db.addCollections({
+                        foobar: {
+                            schema: schemas.human,
+                            autoMigrate: false,
+                            migrationStrategies: {
+                                1: 'foobar'
+                            }
                         }
                     } as any),
                     'RxError'
@@ -167,13 +174,14 @@ config.parallel('data-migration.test.js', () => {
                     storage: getRxStoragePouch('memory'),
                 });
                 await AsyncTestUtil.assertThrows(
-                    () => db.collection({
-                        name: 'foobar',
-                        schema: schemas.simpleHumanV3,
-                        autoMigrate: false,
-                        migrationStrategies: {
-                            1: () => { },
-                            3: () => { }
+                    () => db.addCollections({
+                        foobar: {
+                            schema: schemas.simpleHumanV3,
+                            autoMigrate: false,
+                            migrationStrategies: {
+                                1: () => { },
+                                3: () => { }
+                            }
                         }
                     }),
                     'RxError'
@@ -190,16 +198,18 @@ config.parallel('data-migration.test.js', () => {
                     name: randomCouchString(10),
                     storage: getRxStoragePouch('memory'),
                 });
-                const col = await db.collection({
-                    name: colName,
-                    schema: schemas.simpleHumanV3,
-                    autoMigrate: false,
-                    migrationStrategies: {
-                        1: () => { },
-                        2: () => { },
-                        3: () => { }
+                const cols = await db.addCollections({
+                    [colName]: {
+                        schema: schemas.simpleHumanV3,
+                        autoMigrate: false,
+                        migrationStrategies: {
+                            1: () => { },
+                            2: () => { },
+                            3: () => { }
+                        }
                     }
                 });
+                const col = cols[colName];
                 const old = await _getOldCollections(col.getDataMigrator());
                 assert.deepStrictEqual(old, []);
                 db.destroy();
@@ -212,10 +222,11 @@ config.parallel('data-migration.test.js', () => {
                     storage: getRxStoragePouch('memory'),
                     ignoreDuplicate: true
                 });
-                await db.collection({
-                    name: colName,
-                    schema: schemas.simpleHuman,
-                    autoMigrate: false
+                await db.addCollections({
+                    [colName]: {
+                        schema: schemas.simpleHuman,
+                        autoMigrate: false
+                    }
                 });
 
                 const db2 = await createRxDatabase({
@@ -223,16 +234,18 @@ config.parallel('data-migration.test.js', () => {
                     storage: getRxStoragePouch('memory'),
                     ignoreDuplicate: true
                 });
-                const col2 = await db2.collection({
-                    name: colName,
-                    schema: schemas.simpleHumanV3,
-                    autoMigrate: false,
-                    migrationStrategies: {
-                        1: () => { },
-                        2: () => { },
-                        3: () => { }
+                const cols2 = await db2.addCollections({
+                    [colName]: {
+                        schema: schemas.simpleHumanV3,
+                        autoMigrate: false,
+                        migrationStrategies: {
+                            1: () => { },
+                            2: () => { },
+                            3: () => { }
+                        }
                     }
                 });
+                const col2 = cols2[colName];
                 const old = await _getOldCollections(col2.getDataMigrator());
                 assert.ok(Array.isArray(old));
                 assert.strictEqual(old.length, 1);
@@ -667,10 +680,12 @@ config.parallel('data-migration.test.js', () => {
                     name: dbName,
                     storage: getRxStoragePouch('memory'),
                 });
-                const col = await db.collection({
-                    name: 'heroes',
-                    schema: schema0
+                const cols = await db.addCollections({
+                    heroes: {
+                        schema: schema0
+                    }
                 });
+                const col = cols.heroes;
                 await col.insert({
                     id: 'niven'
                 });
@@ -680,16 +695,18 @@ config.parallel('data-migration.test.js', () => {
                     name: dbName,
                     storage: getRxStoragePouch('memory'),
                 });
-                const col2 = await db2.collection({
-                    name: 'heroes',
-                    schema: schema1,
-                    migrationStrategies: {
-                        1: (oldDoc: any) => {
-                            oldDoc.name = (oldDoc.id as string).toUpperCase();
-                            return oldDoc;
+                const cols2 = await db2.addCollections({
+                    heroes: {
+                        schema: schema1,
+                        migrationStrategies: {
+                            1: (oldDoc: any) => {
+                                oldDoc.name = (oldDoc.id as string).toUpperCase();
+                                return oldDoc;
+                            }
                         }
                     }
                 });
+                const col2 = cols2.heroes;
 
                 const doc = await col2.findOne().exec();
 
@@ -726,10 +743,12 @@ config.parallel('data-migration.test.js', () => {
                     name: dbName,
                     storage: getRxStoragePouch('memory'),
                 });
-                const col = await db.collection<HumanDocumentType>({
-                    name: 'humans',
-                    schema: schemas.humanFinal
+                const cols = await db.addCollections({
+                    humans: {
+                        schema: schemas.humanFinal
+                    }
                 });
+                const col = cols.humans;
                 await col.bulkInsert([
                     {
                         passportId: changedKey,
@@ -755,18 +774,20 @@ config.parallel('data-migration.test.js', () => {
                 const schema2 = clone(schemas.humanFinal);
                 schema2.version = 1;
 
-                const col2 = await db2.collection<HumanDocumentType>({
-                    name: 'humans',
-                    schema: schema2,
-                    migrationStrategies: {
-                        1: function (docData: HumanDocumentType) {
-                            if (docData.passportId === changedKey) {
-                                docData.age = 100;
+                const cols2 = await db2.addCollections({
+                    humans: {
+                        schema: schema2,
+                        migrationStrategies: {
+                            1: function (docData: HumanDocumentType) {
+                                if (docData.passportId === changedKey) {
+                                    docData.age = 100;
+                                }
+                                return docData;
                             }
-                            return docData;
                         }
                     }
                 });
+                const col2 = cols2.humans;
 
                 /**
                  * If document data was not changed by migration, it should have kept the same revision
@@ -907,10 +928,12 @@ config.parallel('data-migration.test.js', () => {
                     name: dbName,
                     storage: getRxStoragePouch('memory'),
                 });
-                const col = await db.collection({
-                    name: 'heroes',
-                    schema: schema0
+                const cols = await db.addCollections({
+                    heroes: {
+                        schema: schema0
+                    }
                 });
+                const col = cols.heroes;
                 await col.insert({
                     name: 'Niven',
                     color: 'black'
@@ -921,17 +944,19 @@ config.parallel('data-migration.test.js', () => {
                     name: dbName,
                     storage: getRxStoragePouch('memory'),
                 });
-                const col2 = await db2.collection({
-                    name: 'heroes',
-                    schema: schema1,
-                    migrationStrategies: {
-                        1: (oldDoc: any) => {
-                            // console.log('migrate from 0 to 1...' + oldDoc.name);
-                            oldDoc.level = 'ss';
-                            return oldDoc;
+                const cols2 = await db2.addCollections({
+                    heroes: {
+                        schema: schema1,
+                        migrationStrategies: {
+                            1: (oldDoc: any) => {
+                                // console.log('migrate from 0 to 1...' + oldDoc.name);
+                                oldDoc.level = 'ss';
+                                return oldDoc;
+                            }
                         }
                     }
                 });
+                const col2 = cols2.heroes;
 
                 const docs = await col2.find().exec();
                 assert.strictEqual(docs.length, 1);

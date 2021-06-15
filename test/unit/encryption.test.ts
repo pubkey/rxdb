@@ -104,13 +104,14 @@ config.parallel('encryption.test.js', () => {
                     storage: getRxStoragePouch('memory'),
                     password: randomCouchString(10)
                 });
-                const c = await db.collection({
-                    name: 'enchuman',
-                    schema: schemas.encryptedObjectHuman
+                const c = await db.addCollections({
+                    enchuman: {
+                        schema: schemas.encryptedObjectHuman
+                    }
                 });
                 const agent = schemaObjects.encryptedObjectHuman();
-                await c.insert(agent);
-                const doc = await c.findOne().exec();
+                await c.enchuman.insert(agent);
+                const doc = await c.enchuman.findOne().exec();
                 const secret = doc.get('secret');
                 assert.strictEqual(agent.secret.name, secret.name);
                 assert.strictEqual(agent.secret.subname, secret.subname);
@@ -140,24 +141,25 @@ config.parallel('encryption.test.js', () => {
                     storage: getRxStoragePouch('memory'),
                     password: randomCouchString(10)
                 });
-                const c = await db.collection({
-                    name: 'enchuman',
-                    schema: schemas.encryptedObjectHuman
+                const c = await db.addCollections({
+                    enchuman: {
+                        schema: schemas.encryptedObjectHuman
+                    }
                 });
                 const agent = schemaObjects.encryptedObjectHuman();
-                await c.insert(agent);
+                await c.enchuman.insert(agent);
                 const newSecret = {
                     name: randomCouchString(10),
                     subname: randomCouchString(10)
                 };
-                const doc = await c.findOne().exec(true);
+                const doc = await c.enchuman.findOne().exec(true);
                 const secret = doc.get('secret');
 
                 assert.strictEqual(agent.secret.name, secret.name);
                 assert.strictEqual(agent.secret.subname, secret.subname);
 
                 await doc.atomicPatch({ secret: newSecret });
-                const docNew = await c.findOne().exec(true);
+                const docNew = await c.enchuman.findOne().exec(true);
 
                 assert.strictEqual(newSecret.name, docNew.get('secret.name'));
                 assert.strictEqual(newSecret.subname, docNew.get('secret.subname'));
@@ -232,10 +234,12 @@ config.parallel('encryption.test.js', () => {
                 password: 'myLongAndStupidPassword'
             });
 
-            const collection = await db.collection({
-                name: 'heroes',
-                schema
+            const collections = await db.addCollections({
+                heroes: {
+                    schema
+                }
             });
+            const collection = collections.heroes;
 
             // insert a document
             const record = await collection.findOne().exec();

@@ -61,10 +61,12 @@ describe('in-memory.node.js', () => {
             name: (config as any).rootPath + 'test_tmp/' + randomCouchString(10),
             storage: getRxStoragePouch(leveldown)
         });
-        const col = await db.collection({
-            name: 'humans',
-            schema
+        const cols = await db.addCollections({
+            humans: {
+                schema
+            }
         });
+        const col = cols.humans;
 
         await AsyncTestUtil.assertThrows(
             () => col.inMemory(),
@@ -80,10 +82,12 @@ describe('in-memory.node.js', () => {
             name: (config as any).rootPath + 'test_tmp/' + randomCouchString(10),
             storage: getRxStoragePouch(leveldown)
         });
-        const col = await db.collection({
-            name: 'humans',
-            schema
+        const cols = await db.addCollections({
+            humans: {
+                schema
+            }
         });
+        const col = cols.humans;
 
         const memCol = await col.inMemory();
         assert.ok(memCol);

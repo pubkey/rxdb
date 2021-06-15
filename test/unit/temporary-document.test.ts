@@ -53,10 +53,12 @@ config.parallel('temporary-document.test.js', () => {
                 name: randomCouchString(10),
                 storage: getRxStoragePouch('memory'),
             });
-            const c = await db.collection({
-                name: 'nestedhuman',
-                schema: schemas.humanDefault
+            const cols = await db.addCollections({
+                nestedhuman: {
+                    schema: schemas.humanDefault
+                }
             });
+            const c = cols.nestedhuman;
             const newDoc = c.newDocument();
             assert.strictEqual(newDoc.age, 20);
 
@@ -112,15 +114,17 @@ config.parallel('temporary-document.test.js', () => {
                 name: randomCouchString(10),
                 storage: getRxStoragePouch('memory'),
             });
-            const c = await db.collection({
-                name: 'humans',
-                schema: schemas.human,
-                methods: {
-                    foobar: function () {
-                        return 'test';
+            const cols = await db.addCollections({
+                humans: {
+                    schema: schemas.human,
+                    methods: {
+                        foobar: function () {
+                            return 'test';
+                        }
                     }
                 }
             });
+            const c = cols.humans;
             const newDoc = c.newDocument(schemaObjects.human());
             assert.strictEqual(newDoc.foobar(), 'test');
             db.destroy();

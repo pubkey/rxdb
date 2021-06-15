@@ -49,9 +49,10 @@ const run = async function () {
     });
 
     // create collection
-    await db.collection({
-        name: 'humans',
-        schema
+    await db.addCollections({
+        humans: {
+            schema
+        }
     });
 
     // insert

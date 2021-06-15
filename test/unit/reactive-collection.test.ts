@@ -30,10 +30,12 @@ config.parallel('reactive-collection.test.js', () => {
                     storage: getRxStoragePouch('memory'),
                 });
                 const colName = 'foobar';
-                const c = await db.collection({
-                    name: colName,
-                    schema: schemas.human
+                const cols = await db.addCollections({
+                    [colName]: {
+                        schema: schemas.human
+                    }
                 });
+                const c = cols[colName];
 
                 c.insert(schemaObjects.human());
                 const changeEvent: RxChangeEvent = await c.$.pipe(first()).toPromise() as any;
@@ -49,10 +51,13 @@ config.parallel('reactive-collection.test.js', () => {
                     name: randomCouchString(10),
                     storage: getRxStoragePouch('memory'),
                 });
-                const c = await db.collection({
-                    name: 'foobar',
-                    schema: schemas.human
+                const cols = await db.addCollections({
+                    foobar: {
+                        schema: schemas.human
+                    }
                 });
+                const c = cols.foobar;
+
                 let calls = 0;
                 const sub = db.$.subscribe(() => {
                     calls++;
@@ -77,10 +82,12 @@ config.parallel('reactive-collection.test.js', () => {
                     name: randomCouchString(10),
                     storage: getRxStoragePouch('memory'),
                 });
-                const collection = await db.collection({
-                    name: 'human',
-                    schema: schemas.primaryHuman
+                const collections = await db.addCollections({
+                    human: {
+                        schema: schemas.primaryHuman
+                    }
                 });
+                const collection = collections.human;
 
                 const emittedCollection: RxChangeEvent[] = [];
                 const colSub = collection.insert$.subscribe((ce) => {
