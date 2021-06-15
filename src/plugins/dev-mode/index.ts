@@ -2,7 +2,8 @@ import type {
     RxPlugin,
     RxCollectionCreator,
     RxDatabaseCreator,
-    RxPluginPreAddRxPluginArgs
+    RxPluginPreAddRxPluginArgs,
+    RxErrorKey
 } from '../../types';
 
 import {
@@ -31,7 +32,7 @@ export const RxDBDevModePlugin: RxPlugin = {
         isDevMode() {
             return true;
         },
-        tunnelErrorMessage(code: string) {
+        tunnelErrorMessage(code: RxErrorKey) {
             if (!ERROR_MESSAGES[code]) {
                 console.error('RxDB: Error-Code not known: ' + code);
                 throw new Error('Error-Code ' + code + ' not known, contact the maintainer');

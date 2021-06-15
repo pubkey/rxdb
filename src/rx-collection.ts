@@ -14,7 +14,8 @@ import {
     pluginMissing,
     now,
     ensureNotFalsy,
-    getFromMapOrThrow
+    getFromMapOrThrow,
+    clone
 } from './util';
 import {
     _handleToStorageInstance,
@@ -459,7 +460,7 @@ export class RxCollectionBase<
         const docsData: RxDocumentData<RxDocumentType>[] = [];
         const docsMap: Map<string, RxDocumentData<RxDocumentType>> = new Map();
         Array.from(rxDocumentMap.values()).forEach(rxDocument => {
-            const data = rxDocument.toJSON(true);
+            const data: RxDocumentData<RxDocumentType> = clone(rxDocument.toJSON(true)) as any;
             docsData.push(data);
             docsMap.set(rxDocument.primary, data);
         });

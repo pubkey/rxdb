@@ -365,6 +365,7 @@ import { stringMd5 } from 'pouchdb-md5';
 import { rev as pouchUtilsRev } from 'pouchdb-utils';
 import { overwritable } from './overwritable';
 import { DeepReadonly } from './types/util';
+import { newRxError } from './rx-error';
 
 /**
  * Creates a revision string that does NOT include the revision height
@@ -413,10 +414,10 @@ export function isFolderPath(name: string) {
     }
 }
 
-export function getFromMapOrThrow<K, V>(map: Map<K, V>, key: K): V {
+export function getFromMapOrThrow<K, V>(map: Map<K, V> | WeakMap<any, V>, key: K): V {
     const val = map.get(key);
     if (!val) {
-        throw new Error('this should never happen ' + key);
+        throw newRxError('SNH', { args: { key } });
     }
     return val;
 }

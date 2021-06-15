@@ -128,12 +128,6 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
             writeRowById.set(writeRow.document._id, writeRow);
             const storeDocumentData = flatClone(writeRow.document);
 
-            // TODO remove this check, this must be ensured via typings
-            if (!storeDocumentData._id) {
-                console.dir(writeRow);
-                throw new Error('_id missing');
-            }
-
             /**
              * add local prefix
              * Local documents always have _id as primary
@@ -348,7 +342,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             filter(pouchRow => {
                 const doc = pouchRow.doc;
                 if (!doc) {
-                    throw new Error('this should never happen');
+                    throw newRxError('SNH', { args: { pouchRow } });
                 }
                 const eventKey = getEventKey(false, doc._id, doc._rev);
                 if (this.processesEventsSet.has(eventKey)) {
@@ -378,24 +372,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         const primaryKey = getPrimary<any>(this.schema);
         const primary: string = (doc as any)[primaryKey];
         const eventId = getEventKey(false, primary, doc._rev);
-
-
-        // TODO remove this check when migration is done
-        function ensureNoAttachmentData(data: any) {
-            if (!data || !data._attachments) {
-                return;
-            }
-            Object.values(data._attachments).forEach((obj: any) => {
-                if (obj.data) {
-                    console.dir(change);
-                    console.dir(obj);
-                    throw new Error('event data cannot contain attachment buffer!!');
-                }
-            });
-        }
-        ensureNoAttachmentData(change.doc);
-        ensureNoAttachmentData(change.previous);
-
 
         const storageChangeEvent: RxStorageChangeEvent<RxDocumentData<RxDocType>> = {
             eventId,
@@ -680,23 +656,11 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     ): Promise<
         RxStorageBulkWriteResponse<RxDocType>
     > {
-        // TODO remove this check when rx-storage mirgration is done
-        if (!Array.isArray(documentWrites)) {
-            throw new Error('non an array');
-        }
-
         const primaryKey = getPrimary(this.schema);
         const writeRowById: Map<string, BulkWriteRow<RxDocType>> = new Map();
 
         const insertDocs: (RxDocType & { _id: string; _rev: string })[] = documentWrites.map(writeData => {
             const primary: string = (writeData.document as any)[primaryKey];
-
-            // TODO remove this check when primary key was made required
-            if (!primary) {
-                console.dir(writeData.document);
-                console.dir(this.schema);
-                throw new Error('primary missing ' + primaryKey);
-            }
             writeRowById.set(primary, writeData);
 
             const storeDocumentData: any = rxDocumentDataToPouchDocumentData<RxDocType>(
@@ -1164,10 +1128,6 @@ export function pouchSwapPrimaryToId<RxDocType>(
  * out: 'foobar'
  */
 export function pouchStripLocalFlagFromPrimary(str: string): string {
-    // TODO remove this check once the migration is done
-    if (!str.startsWith(POUCHDB_LOCAL_PREFIX)) {
-        throw new Error('does not start with local prefix');
-    }
     return str.substring(POUCHDB_LOCAL_PREFIX.length);
 }
 
@@ -1184,8 +1144,7 @@ export function pouchChangeRowToChangeEvent<DocumentData>(
     const pouchDoc = pouchRow.doc;
     const id = pouchRow.id;
     if (!pouchDoc) {
-        console.dir(pouchRow);
-        throw new Error('this should never happen');
+        throw newRxError('SNH', { args: { pouchRow } });
     }
 
     const doc = pouchDocumentDataToRxDocumentData<DocumentData>(
@@ -1225,8 +1184,7 @@ export function pouchChangeRowToChangeStreamEvent<DocumentData>(
 ): ChangeStreamEvent<DocumentData> {
     const doc = pouchRow.doc;
     if (!doc) {
-        console.dir(pouchRow);
-        throw new Error('this should never happen');
+        throw newRxError('SNH', { args: { pouchRow } });
     }
     const revHeight = getHeightOfRevision(doc._rev);
 

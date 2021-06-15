@@ -20,6 +20,10 @@ Breaking:
   - Removed the deprecated `RxDatabase.collection()` use `RxDatabase().addCollections()` instead.
   - Outgoing data is not `Readonly` typed and [deep-frozen](https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze) in dev mode
 
+Other:
+  - Moved all `should never happen` errors into own error code.
+  - Improved typings of error codes.
+
 ### 9.20.0 (15 May 2021)
 
 Bugfixes:

@@ -5,7 +5,7 @@
  */
 
 
-export const ERROR_MESSAGES: { [k: string]: string } = {
+export const ERROR_MESSAGES = {
     // util.js
     UT1: 'given name is no string or empty',
     UT2: `collection- and database-names must match the regex
@@ -178,4 +178,11 @@ export const ERROR_MESSAGES: { [k: string]: string } = {
     S1: 'You cannot create collections after calling RxDatabase.server()',
 
     // plugins/replication-graphql.js
+
+    /**
+     * Should never be thrown, use this for
+     * null checks etc. so you do not have to increase the
+     * build size with error message strings.
+     */
+    SNH: 'This should never happen'
 };

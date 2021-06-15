@@ -166,7 +166,7 @@ export class RxDatabaseBase<
             docId
         );
         if (!doc) {
-            throw new Error('this should never happen');
+            throw newRxError('SNH');
         }
         const writeDoc = flatClone(doc);
         writeDoc._deleted = true;

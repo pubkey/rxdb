@@ -12,6 +12,7 @@ import {
     writeSingleLocal
 } from '../../rx-storage-helper';
 import { flatClone } from '../../util';
+import { newRxError } from '../../rx-error';
 
 /**
  * when the replication starts,
@@ -132,7 +133,7 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
         const filteredResults = changes.filter((change) => {
             const changeDoc = change.doc ? change.doc : change.previous;
             if (!changeDoc || changeDoc === 'UNKNOWN') {
-                throw new Error('this should never happen');
+                throw newRxError('SNH', { args: { changeDoc } });
             }
 
             /**

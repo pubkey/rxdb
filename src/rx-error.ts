@@ -5,7 +5,8 @@
 import { overwritable } from './overwritable';
 import type {
     RxErrorParameters,
-    PouchWriteError
+    PouchWriteError,
+    RxErrorKey
 } from './types';
 
 /**
@@ -44,12 +45,12 @@ function messageForError(
 }
 
 export class RxError extends Error {
-    public code: string;
+    public code: RxErrorKey;
     public message: string;
     public parameters: RxErrorParameters;
     public rxdb: true;
     constructor(
-        code: string,
+        code: RxErrorKey,
         message: string,
         parameters: RxErrorParameters = {}
     ) {
@@ -72,12 +73,12 @@ export class RxError extends Error {
 }
 
 export class RxTypeError extends TypeError {
-    public code: string;
+    public code: RxErrorKey;
     public message: string;
     public parameters: RxErrorParameters;
     public rxdb: true;
     constructor(
-        code: string,
+        code: RxErrorKey,
         message: string,
         parameters: RxErrorParameters = {}
     ) {
@@ -100,7 +101,7 @@ export class RxTypeError extends TypeError {
 }
 
 export function newRxError(
-    code: string,
+    code: RxErrorKey,
     parameters?: RxErrorParameters
 ): RxError {
     return new RxError(
@@ -109,8 +110,9 @@ export function newRxError(
         parameters
     );
 }
+
 export function newRxTypeError(
-    code: string,
+    code: RxErrorKey,
     parameters?: RxErrorParameters
 ): RxTypeError {
     return new RxTypeError(

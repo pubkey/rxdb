@@ -10,6 +10,7 @@ import {
     filter,
     map
 } from 'rxjs/operators';
+import { newRxError } from '../../rx-error';
 import { getNewestSequence } from '../../rx-storage-helper';
 import type {
     BackupOptions,
@@ -19,6 +20,7 @@ import type {
     RxDocument,
     RxPlugin
 } from '../../types';
+import { getFromMapOrThrow } from '../../util';
 import {
     clearFolder,
     deleteFolder,
@@ -82,9 +84,9 @@ function addToBackupStates(db: RxDatabase, state: RxBackupState) {
     if (!BACKUP_STATES_BY_DB.has(db)) {
         BACKUP_STATES_BY_DB.set(db, []);
     }
-    const ar = BACKUP_STATES_BY_DB.get(db);
+    const ar = getFromMapOrThrow(BACKUP_STATES_BY_DB, db);
     if (!ar) {
-        throw new Error('this should never happen');
+        throw newRxError('SNH');
     }
     ar.push(state);
 }

@@ -101,11 +101,6 @@ export function createRxDocument<DT, OM>(
 ): RxDocument<DT, OM> {
     const primary = docData[rxCollection.schema.primaryPath];
 
-    // TODO remove this check when rx-storage is migrated
-    if (!primary) {
-        throw new Error('createRxDocument() missing primary ' + rxCollection.schema.primaryPath);
-    }
-
     // return from cache if exsists
     const cacheDoc = rxCollection._docCache.get(primary);
     if (cacheDoc) {
