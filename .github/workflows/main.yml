@@ -73,9 +73,9 @@ jobs:
             ./node_modules
             ./examples/angular/node_modules
           # invalidate cache when any package-lock.json changes
-          key: ${{ runner.os }}-npm-angular-x1-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-angular-x2-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-angular-x1-
+            ${{ runner.os }}-npm-angular-x2-
 
       - name: prepare core
         run: |
@@ -104,6 +104,10 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.1.5
+        with:
+          node-version: 14.17.0
       - name: prepare core
         run: |
           npm install
@@ -120,6 +124,10 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.1.5
+        with:
+          node-version: 14.17.0
       - name: prepare core
         run: |
           npm install
@@ -336,6 +344,10 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.1.5
+        with:
+          node-version: 14.17.0
       - name: prepare core
         run: |
           npm install
@@ -350,6 +362,10 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.1.5
+        with:
+          node-version: 14.17.0
       - name: prepare core
         run: |
           npm install
