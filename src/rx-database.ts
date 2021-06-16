@@ -31,8 +31,7 @@ import {
     newRxError
 } from './rx-error';
 import {
-    createRxSchema,
-    getPseudoSchemaForVersion
+    createRxSchema
 } from './rx-schema';
 import {
     isRxChangeEventIntern,
@@ -60,6 +59,7 @@ import {
     writeSingle
 } from './rx-storage-helper';
 import type { RxBackupState } from './plugins/backup';
+import { getPseudoSchemaForVersion } from './rx-schema-helper';
 
 /**
  * stores the used database names

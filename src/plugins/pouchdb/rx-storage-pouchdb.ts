@@ -62,10 +62,6 @@ import {
     PouchDB
 } from './pouch-db';
 import { newRxError } from '../../rx-error';
-import {
-    getPrimary,
-    getSchemaByObjectPath
-} from '../../rx-schema';
 
 import {
     fromEvent,
@@ -74,6 +70,7 @@ import {
     Subscription
 } from 'rxjs';
 import { filter, map, mergeMap } from 'rxjs/operators';
+import { getSchemaByObjectPath } from '../../rx-schema-helper';
 
 /**
  * prefix of local pouchdb documents
@@ -352,7 +349,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                 }
             })
         ).subscribe((pouchRow: PouchChangeRow) => {
-            const primaryKey = getPrimary<RxDocType>(this.schema);
+            const primaryKey = this.schema.primaryKey;
             const event = pouchChangeRowToChangeEvent<RxDocType>(
                 primaryKey,
                 pouchRow
@@ -369,7 +366,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         endTime?: number
     ) {
         const doc: RxDocumentData<RxDocType> = change.operation === 'DELETE' ? change.previous as any : change.doc as any;
-        const primaryKey = getPrimary<any>(this.schema);
+        const primaryKey = this.schema.primaryKey;
         const primary: string = (doc as any)[primaryKey];
         const eventId = getEventKey(false, primary, doc._rev);
 
@@ -401,7 +398,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     getSortComparator(
         query: MangoQuery<RxDocType>
     ): SortComparator<RxDocType> {
-        const primaryKey = getPrimary<any>(this.schema);
+        const primaryKey = this.schema.primaryKey;
         const sortOptions: MangoQuerySortPart[] = query.sort ? query.sort : [{
             [primaryKey]: 'asc'
         }];
@@ -444,7 +441,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     getQueryMatcher(
         query: MangoQuery<RxDocType>
     ): QueryMatcher<RxDocType> {
-        const primaryKey = getPrimary<RxDocType>(this.schema);
+        const primaryKey = this.schema.primaryKey;
         const massagedSelector = massageSelector(query.selector);
 
         const fun: QueryMatcher<RxDocType> = (doc: RxDocType) => {
@@ -472,7 +469,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     prepareQuery(
         mutateableQuery: MangoQuery<RxDocType>
     ): PreparedQuery<RxDocType> {
-        const primaryKey = getPrimary<RxDocType>(this.schema);
+        const primaryKey = this.schema.primaryKey;
         const query = mutateableQuery;
 
         /**
@@ -561,7 +558,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     public async bulkAddRevisions(
         documents: RxDocumentData<RxDocType>[]
     ): Promise<void> {
-        const primaryKey = getPrimary(this.schema);
+        const primaryKey = this.schema.primaryKey;
 
 
         /**
@@ -656,7 +653,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     ): Promise<
         RxStorageBulkWriteResponse<RxDocType>
     > {
-        const primaryKey = getPrimary(this.schema);
+        const primaryKey = this.schema.primaryKey;
         const writeRowById: Map<string, BulkWriteRow<RxDocType>> = new Map();
 
         const insertDocs: (RxDocType & { _id: string; _rev: string })[] = documentWrites.map(writeData => {
@@ -786,7 +783,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     public async query(
         preparedQuery: PreparedQuery<RxDocType>
     ): Promise<RxStorageQueryResult<RxDocType>> {
-        const primaryKey = getPrimary(this.schema);
+        const primaryKey = this.schema.primaryKey;
 
         const findResult = await this.internals.pouch.find<RxDocType>(preparedQuery);
         const ret: RxStorageQueryResult<RxDocType> = {
@@ -813,7 +810,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     }
 
     async findDocumentsById(ids: string[]): Promise<Map<string, RxDocumentData<RxDocType>>> {
-        const primaryKey = getPrimary<any>(this.schema);
+        const primaryKey = this.schema.primaryKey;
         const pouchResult = await this.internals.pouch.allDocs({
             include_docs: true,
             keys: ids
@@ -843,7 +840,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         changes: ChangeStreamEvent<RxDocType>[];
         lastSequence: number;
     }> {
-        const primaryKey = getPrimary(this.schema);
+        const primaryKey = this.schema.primaryKey;
 
         const pouchResults = await this.internals.pouch.changes({
             live: false,
@@ -1279,8 +1276,7 @@ export async function createIndexesOnPouch(
         return;
     }
 
-    const primaryKey = getPrimary<any>(schema);
-
+    const primaryKey = schema.primaryKey;
     const before = await pouch.getIndexes();
     const existingIndexes: Set<string> = new Set(
         before.indexes.map(idx => idx.name)

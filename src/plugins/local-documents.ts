@@ -12,8 +12,6 @@ import {
     newRxTypeError
 } from '../rx-error';
 import {
-    clone,
-    deepFreezeWhenDevMode,
     flatClone,
     getFromMapOrThrow
 } from '../util';
@@ -48,6 +46,10 @@ import {
     findLocalDocument,
     writeSingleLocal
 } from '../rx-storage-helper';
+
+import {
+    overwritable
+} from '../overwritable';
 
 const DOC_CACHE_BY_PARENT = new WeakMap();
 const _getDocCache = (parent: any) => {
@@ -161,7 +163,7 @@ const RxLocalDocumentPrototype: any = {
         }
 
         let valueObj = objectPath.get(this._data, objPath);
-        valueObj = deepFreezeWhenDevMode(valueObj);
+        valueObj = overwritable.deepFreezeWhenDevMode(valueObj);
         return valueObj;
     },
     get$(this: RxDocument, path: string) {
@@ -411,26 +413,22 @@ function getLocal$(this: RxCollection, id: string): Observable<RxLocalDocument |
     );
 }
 
-export const rxdb = true;
-export const prototypes = {
-    RxCollection: (proto: any) => {
-        proto.insertLocal = insertLocal;
-        proto.upsertLocal = upsertLocal;
-        proto.getLocal = getLocal;
-        proto.getLocal$ = getLocal$;
-    },
-    RxDatabase: (proto: any) => {
-        proto.insertLocal = insertLocal;
-        proto.upsertLocal = upsertLocal;
-        proto.getLocal = getLocal;
-        proto.getLocal$ = getLocal$;
-    }
-};
-export const overwritable = {};
-
 export const RxDBLocalDocumentsPlugin: RxPlugin = {
     name: 'local-documents',
-    rxdb,
-    prototypes,
-    overwritable
+    rxdb: true,
+    prototypes: {
+        RxCollection: (proto: any) => {
+            proto.insertLocal = insertLocal;
+            proto.upsertLocal = upsertLocal;
+            proto.getLocal = getLocal;
+            proto.getLocal$ = getLocal$;
+        },
+        RxDatabase: (proto: any) => {
+            proto.insertLocal = insertLocal;
+            proto.upsertLocal = upsertLocal;
+            proto.getLocal = getLocal;
+            proto.getLocal$ = getLocal$;
+        }
+    },
+    overwritable: {}
 };

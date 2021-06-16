@@ -2,6 +2,7 @@
  * functions that can or should be overwritten by plugins
  */
 
+import { DeepReadonly } from './types/util';
 import {
     pluginMissing
 } from './util';
@@ -15,6 +16,17 @@ export const overwritable = {
     isDevMode(): boolean {
         return false;
     },
+
+    /**
+     * Deep freezes and object when in dev-mode.
+     * Deep-Freezing has the same performaance as deep-cloning, so we only do that in dev-mode.
+     * Also we can ensure the readonly state via typescript
+     * @link https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
+     */
+    deepFreezeWhenDevMode<T>(obj: T): DeepReadonly<T> {
+        return obj as any;
+    },
+
     /**
      * validates if a password can be used
      * @overwritten by plugin (optional)

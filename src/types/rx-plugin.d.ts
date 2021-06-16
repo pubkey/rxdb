@@ -1,6 +1,9 @@
 import { RxQuery, RxQueryOP, MangoQuery } from './rx-query';
 import { RxCollection } from './rx-collection';
 import { RxStorageInstanceCreationParams } from './rx-storage';
+import type {
+    DeepReadonly
+} from '../types'
 
 export type RxPluginPreCreateRxQueryArgs = {
     op: RxQueryOP;
@@ -40,6 +43,7 @@ export interface RxPlugin {
     };
     overwritable?: {
         isDevMode?: () => boolean;
+        deepFreezeWhenDevMode?: <T>(obj: T) => DeepReadonly<T>,
         validatePassword?: Function,
         checkAdapter?: Function,
         tunnelErrorMessage?: Function

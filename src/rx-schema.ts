@@ -1,14 +1,11 @@
-import objectPath from 'object-path';
 import deepEqual from 'deep-equal';
 
 import {
     clone,
     hash,
     sortObject,
-    trimDots,
     pluginMissing,
-    overwriteGetterForCaching,
-    flatClone
+    overwriteGetterForCaching
 } from './util';
 import {
     newRxError,
@@ -21,8 +18,7 @@ import {
 } from './rx-document';
 
 import type {
-    RxJsonSchema,
-    JsonSchema
+    RxJsonSchema
 } from './types';
 
 export class RxSchema<T = any> {
@@ -36,7 +32,7 @@ export class RxSchema<T = any> {
         this.indexes = getIndexes(this.jsonSchema);
 
         // primary is always required
-        this.primaryPath = getPrimary(this.jsonSchema);
+        this.primaryPath = this.jsonSchema.primaryKey;
         if (this.primaryPath) {
             (this.jsonSchema as any).required.push(this.primaryPath);
         }
@@ -174,14 +170,6 @@ export function getIndexes<T = any>(
 }
 
 /**
- * returns the primary path of a jsonschema
- * @return primaryPath on the top level of the schema
- */
-export function getPrimary<DocType>(jsonSchema: RxJsonSchema<DocType>): keyof DocType {
-    return jsonSchema.primaryKey;
-}
-
-/**
  * array with previous version-numbers
  */
 export function getPreviousVersions(schema: RxJsonSchema<any>): number[] {
@@ -203,7 +191,7 @@ export function getFinalFields<T = any>(
         .filter(key => (jsonSchema as any).properties[key].final);
 
     // primary is also final
-    ret.push(getPrimary<T>(jsonSchema) as any);
+    ret.push(jsonSchema.primaryKey as any);
     return ret;
 }
 
@@ -293,42 +281,4 @@ export function createRxSchema<T>(
 
 export function isInstanceOf(obj: any): boolean {
     return obj instanceof RxSchema;
-}
-
-
-/**
- * Helper function to create a valid RxJsonSchema
- * with a given version.
- */
-export function getPseudoSchemaForVersion<T = any>(
-    version: number,
-    primaryKey: keyof T
-): RxJsonSchema<T> {
-    const pseudoSchema: RxJsonSchema<T> = {
-        version,
-        type: 'object',
-        primaryKey: primaryKey as any,
-        properties: {
-            [primaryKey]: {
-                type: 'string'
-            }
-        } as any
-    };
-    return pseudoSchema;
-}
-
-/**
- * Returns the sub-schema for a given path
- */
-export function getSchemaByObjectPath<T = any>(
-    rxJsonSchema: RxJsonSchema<T>,
-    path: string
-): JsonSchema {
-    let usePath: string = path as string;
-    usePath = usePath.replace(/\./g, '.properties.');
-    usePath = 'properties.' + usePath;
-    usePath = trimDots(usePath);
-
-    const ret = objectPath.get(rxJsonSchema, usePath);
-    return ret;
 }

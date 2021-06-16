@@ -3,6 +3,7 @@
  */
 
 import { runPluginHooks } from './hooks';
+import { overwritable } from './overwritable';
 import { newRxError } from './rx-error';
 import type {
     BulkWriteLocalRow,
@@ -16,7 +17,6 @@ import type {
     RxStorageInstance,
     RxStorageKeyObjectInstance
 } from './types';
-import { deepFreezeWhenDevMode } from './util';
 
 export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
 
@@ -202,8 +202,8 @@ export function storageChangeEventToRxChangeEvent<DocType>(
         isLocal,
 
         operation: rxStorageChangeEvent.change.operation,
-        documentData: deepFreezeWhenDevMode(documentData),
-        previousDocumentData: deepFreezeWhenDevMode(previousDocumentData)
+        documentData: overwritable.deepFreezeWhenDevMode(documentData),
+        previousDocumentData: overwritable.deepFreezeWhenDevMode(previousDocumentData)
     };
 
     return ret;

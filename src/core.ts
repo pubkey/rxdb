@@ -52,10 +52,12 @@ export {
     getIndexes,
     normalize,
     getFinalFields,
-    getPreviousVersions,
+    getPreviousVersions
+} from './rx-schema';
+export {
     getPseudoSchemaForVersion,
     getSchemaByObjectPath
-} from './rx-schema';
+} from './rx-schema-helper';
 
 export {
     findLocalDocument,

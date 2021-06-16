@@ -14,7 +14,6 @@ import {
     pluginMissing,
     now,
     nextTick,
-    deepFreezeWhenDevMode,
     flatClone
 } from './util';
 import {
@@ -33,9 +32,10 @@ import type {
     RxDocumentWriteData,
     RxChangeEvent
 } from './types';
-import { getSchemaByObjectPath } from './rx-schema';
 import { getDocumentDataOfRxChangeEvent } from './rx-change-event';
 import { writeToStorageInstance } from './rx-collection-helper';
+import { overwritable } from './overwritable';
+import { getSchemaByObjectPath } from './rx-schema-helper';
 
 export const basePrototype = {
 
@@ -225,7 +225,7 @@ export const basePrototype = {
             typeof valueObj !== 'object' ||
             Array.isArray(valueObj)
         ) {
-            return deepFreezeWhenDevMode(valueObj);
+            return overwritable.deepFreezeWhenDevMode(valueObj);
         }
 
         /**
@@ -247,9 +247,9 @@ export const basePrototype = {
             const data = flatClone(this._data);
             delete (data as any)._rev;
             delete (data as any)._attachments;
-            return deepFreezeWhenDevMode(data);
+            return overwritable.deepFreezeWhenDevMode(data);
         } else {
-            return deepFreezeWhenDevMode(this._data);
+            return overwritable.deepFreezeWhenDevMode(this._data);
         }
     },
 

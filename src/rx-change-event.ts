@@ -6,11 +6,11 @@
 import {
     ChangeEvent as EventReduceChangeEvent,
 } from 'event-reduce-js';
+import { overwritable } from './overwritable';
 
 import type {
     RxChangeEvent
 } from './types';
-import { deepFreezeWhenDevMode } from './util';
 
 export type RxChangeEventBroadcastChannelData = {
     cE: RxChangeEvent<any>,
@@ -54,7 +54,7 @@ export function rxChangeEventToEventReduceChangeEvent<DocType>(
             return {
                 operation: rxChangeEvent.operation,
                 id: rxChangeEvent.documentId,
-                doc: deepFreezeWhenDevMode(rxChangeEvent.documentData) as any,
+                doc: overwritable.deepFreezeWhenDevMode(rxChangeEvent.documentData) as any,
                 previous: rxChangeEvent.previousDocumentData ? rxChangeEvent.previousDocumentData as any : 'UNKNOWN'
             };
         case 'DELETE':

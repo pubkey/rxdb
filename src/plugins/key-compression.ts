@@ -15,9 +15,6 @@ import {
     createCompressedJsonSchema
 } from 'jsonschema-key-compression';
 
-import {
-    getPrimary
-} from '../rx-schema';
 import type {
     RxPlugin,
     RxJsonSchema,
@@ -42,7 +39,7 @@ const COMPRESSION_STATE_BY_COLLECTION: WeakMap<
 export function createCompressionState(
     schema: RxJsonSchema<any>
 ): CompressionState {
-    const primaryPath = getPrimary(schema);
+    const primaryPath = schema.primaryKey;
     const table = createCompressionTable(
         schema as KeyCompressionJsonSchema,
         DEFAULT_COMPRESSION_FLAG,

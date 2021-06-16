@@ -20,9 +20,27 @@ import {
 } from './unallowed-properties';
 import { checkQuery } from './check-query';
 import { newRxError } from '../../rx-error';
+import { DeepReadonly } from '../../types/util';
 
 export * from './check-schema';
 export * from './check-names';
+
+const deepFreeze = require('deep-freeze');
+/**
+ * Deep freezes and object when in dev-mode.
+ * Deep-Freezing has the same performaance as deep-cloning, so we only do that in dev-mode.
+ * Also we can ensure the readonly state via typescript
+ * @link https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
+ */
+export function deepFreezeWhenDevMode<T>(obj: T): DeepReadonly<T> {
+    // direct return if falsy
+    if (!obj) {
+        return obj as any;
+    }
+
+    return deepFreeze(obj);
+}
+
 
 const DEV_MODE_PLUGIN_NAME = 'dev-mode';
 export const RxDBDevModePlugin: RxPlugin = {
@@ -32,6 +50,7 @@ export const RxDBDevModePlugin: RxPlugin = {
         isDevMode() {
             return true;
         },
+        deepFreezeWhenDevMode,
         tunnelErrorMessage(code: RxErrorKey) {
             if (!ERROR_MESSAGES[code]) {
                 console.error('RxDB: Error-Code not known: ' + code);
