@@ -25,6 +25,8 @@ Breaking:
 
 Other:
   - Moved all `should never happen` errors into own error code.
+
+Typings:
   - Improved typings of error codes.
 
 ### 9.20.0 (15 May 2021)
