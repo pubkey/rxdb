@@ -78,8 +78,8 @@ export function getQueryParams<RxDocType>(
             return queryMatcher(queryMatcherData.doc);
         };
 
-        const ret = {
-            primaryKey: rxQuery.collection.schema.primaryPath,
+        const ret: QueryParams<any> = {
+            primaryKey: rxQuery.collection.schema.primaryPath as any,
             skip: queryJson.skip,
             limit: queryJson.limit,
             sortFields: getSortFieldsOfQuery(primaryKey, queryJson),
