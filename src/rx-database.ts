@@ -644,7 +644,7 @@ export function createRxDatabase<
         eventReduce = false,
         ignoreDuplicate = false,
         options = {}
-    }: RxDatabaseCreator<Internals, InstanceCreationOptions>): Promise<RxDatabase<Collections>> {
+    }: RxDatabaseCreator<Internals, InstanceCreationOptions>): Promise<RxDatabase<Collections, Internals, InstanceCreationOptions>> {
 
     runPluginHooks('preCreateRxDatabase', {
         storage,

@@ -14,7 +14,7 @@ import { Observable } from 'rxjs';
 import { RxStorage } from './rx-storage.interface';
 import { PouchDBExpressServerOptions } from './plugins/server';
 
-export interface RxDatabaseCreator<Internals, InstanceCreationOptions> {
+export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = any> {
     storage: RxStorage<Internals, InstanceCreationOptions>,
     instanceCreationOptions?: InstanceCreationOptions;
     name: string;
@@ -36,9 +36,9 @@ export interface ServerOptions {
 
 export type CollectionsOfDatabase = { [key: string]: RxCollection };
 export type RxDatabase<
+    Collections = CollectionsOfDatabase,
     Internals = any,
     InstanceCreationOptions = any,
-    Collections = CollectionsOfDatabase
     > = RxDatabaseBase<
         Internals,
         InstanceCreationOptions,
