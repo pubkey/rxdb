@@ -365,19 +365,14 @@ export class RxCollectionBase<
         const useJson: RxDocumentWriteData<RxDocumentType> = fillObjectDataBeforeInsert(this as any, json);
         let newDoc = tempDoc;
 
-        let startTime: number;
-        let endTime: number;
-
         await this._runHooks('pre', 'insert', useJson);
         this.schema.validate(useJson);
-        startTime = now();
         const insertResult = await writeToStorageInstance(
             this,
             {
                 document: useJson
             }
         );
-        endTime = now();
 
         if (tempDoc) {
             tempDoc._dataSync$.next(insertResult);
@@ -482,12 +477,8 @@ export class RxCollectionBase<
             };
         });
 
-        let startTime: number;
         const results = await this.database.lockedRun(
-            async () => {
-                startTime = now();
-                return this.storageInstance.bulkWrite(removeDocs);
-            }
+            () => this.storageInstance.bulkWrite(removeDocs)
         );
 
         const successIds: string[] = Array.from(results.success.keys());
