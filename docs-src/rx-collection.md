@@ -249,6 +249,7 @@ To import the json dump into your collection, use this function.
 myCollection.importDump(json)
   .then(() => console.log('done'));
 ```
+Note that importing will fire events for each inserted document.
 
 ### sync()
 This method allows you to replicate data between other RxCollections, pouchdb instances or remote servers which support the couchdb-sync-protocol.
