@@ -632,9 +632,9 @@ async function prepare<Internals, InstanceCreationOptions, Collections>(
 }
 
 export function createRxDatabase<
-    Internals,
-    InstanceCreationOptions,
     Collections = { [key: string]: RxCollection },
+    Internals = any,
+    InstanceCreationOptions = any,
     >({
         storage,
         instanceCreationOptions,
