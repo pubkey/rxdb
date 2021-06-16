@@ -340,19 +340,19 @@ export class RxDatabaseBase<
      * @param _decrypted
      * When true, all encrypted values will be decrypted.
      */
-    dump(_decrypted: boolean, _collections?: string[]): Promise<RxDumpDatabase<Collections>>;
-    dump(_decrypted?: false, _collections?: string[]): Promise<RxDumpDatabaseAny<Collections>>;
-    dump(_decrypted: boolean = false, _collections?: string[]): Promise<any> {
+    exportJSON(_decrypted: boolean, _collections?: string[]): Promise<RxDumpDatabase<Collections>>;
+    exportJSON(_decrypted?: false, _collections?: string[]): Promise<RxDumpDatabaseAny<Collections>>;
+    exportJSON(_decrypted: boolean = false, _collections?: string[]): Promise<any> {
         throw pluginMissing('json-dump');
     }
 
     /**
      * Import the parsed JSON export into the collection.
-     * @param _exportedJSON The previously exported data from the `<db>.dump()` method.
+     * @param _exportedJSON The previously exported data from the `<db>.exportJSON()` method.
      * @note When an interface is loaded in this collection all base properties of the type are typed as `any`
      * since data could be encrypted.
      */
-    importDump(_exportedJSON: RxDumpDatabaseAny<Collections>): Promise<void> {
+    importJSON(_exportedJSON: RxDumpDatabaseAny<Collections>): Promise<void> {
         throw pluginMissing('json-dump');
     }
 

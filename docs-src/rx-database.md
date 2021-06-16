@@ -88,23 +88,23 @@ Calling this will return an [rxjs-Observable](http://reactivex.io/documentation/
 myDb.$.subscribe(changeEvent => console.dir(changeEvent));
 ```
 
-### dump()
+### exportJSON()
 Use this function to create a json-export from every piece of data in every collection of this database. You can pass `true` as a parameter to decrypt the encrypted data-fields of your document.
 ```js
-myDatabase.dump()
+myDatabase.exportJSON()
   .then(json => console.dir(json));
 
 // decrypted dump
-myDatabase.dump(true)
+myDatabase.exportJSON(true)
   .then(json => console.dir(json));
 ```
 
-### importDump()
+### importJSON()
 To import the json-dumps into your database, use this function.
 
 ```js
 // import the dump to the database
-emptyDatabase.importDump(json)
+emptyDatabase.importJSON(json)
   .then(() => console.log('done'));
 ```
 

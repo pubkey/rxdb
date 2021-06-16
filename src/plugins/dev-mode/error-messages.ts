@@ -111,8 +111,8 @@ export const ERROR_MESSAGES = {
 
     // plugins/json-dump.js
     JD1: 'You must create the collections before you can import their data',
-    JD2: 'RxCollection.importDump(): the imported json relies on a different schema',
-    JD3: 'RxCollection.importDump(): json.passwordHash does not match the own',
+    JD2: 'RxCollection.importJSON(): the imported json relies on a different schema',
+    JD3: 'RxCollection.importJSON(): json.passwordHash does not match the own',
 
     // plugins/leader-election.js
 

@@ -724,17 +724,17 @@ export class RxCollectionBase<
      * When false or omitted and an interface or type is loaded in this collection,
      * all base properties of the type are typed as `any` since data could be encrypted.
      */
-    dump(_decrypted: boolean): Promise<RxDumpCollection<RxDocumentType>>;
-    dump(_decrypted?: false): Promise<RxDumpCollectionAny<RxDocumentType>>;
-    dump(_decrypted: boolean = false): Promise<any> {
+    exportJSON(_decrypted: boolean): Promise<RxDumpCollection<RxDocumentType>>;
+    exportJSON(_decrypted?: false): Promise<RxDumpCollectionAny<RxDocumentType>>;
+    exportJSON(_decrypted: boolean = false): Promise<any> {
         throw pluginMissing('json-dump');
     }
 
     /**
      * Import the parsed JSON export into the collection.
-     * @param _exportedJSON The previously exported data from the `<collection>.dump()` method.
+     * @param _exportedJSON The previously exported data from the `<collection>.exportJSON()` method.
      */
-    importDump(_exportedJSON: RxDumpCollectionAny<RxDocumentType>): Promise<void> {
+    importJSON(_exportedJSON: RxDumpCollectionAny<RxDocumentType>): Promise<void> {
         throw pluginMissing('json-dump');
     }
 

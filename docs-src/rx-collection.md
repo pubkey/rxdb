@@ -231,22 +231,22 @@ NOTICE: The `Map` returned by `findByIds` is not guaranteed to return elements i
 Same as `findByIds()` but returns an `Observable` that emits the `Map` each time a value of it has changed because of a database write.
 
 
-### dump()
+### exportJSON()
 Use this function to create a json export from every document in the collection. You can pass true as a parameter to decrypt the encrypted data fields of your documents.
 ```js
-myCollection.dump()
+myCollection.exportJSON()
   .then(json => console.dir(json));
 
 // decrypted dump
-myCollection.dump(true)
+myCollection.exportJSON(true)
   .then(json => console.dir(json));
 ```
 
-### importDump()
+### importJSON()
 To import the json dump into your collection, use this function.
 ```js
 // import the dump to the database
-myCollection.importDump(json)
+myCollection.importJSON(json)
   .then(() => console.log('done'));
 ```
 

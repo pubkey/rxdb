@@ -47,7 +47,7 @@ function dumpRxDatabase(
 
     return Promise.all(
         useCollections
-            .map(col => col.dump(decrypted))
+            .map(col => col.exportJSON(decrypted))
     ).then(cols => {
         json.collections = cols;
         return json;
@@ -73,7 +73,7 @@ const importDumpRxDatabase = function (
 
     return Promise.all(
         dump.collections
-            .map((colDump: any) => this.collections[colDump.name].importDump(colDump))
+            .map((colDump: any) => this.collections[colDump.name].importJSON(colDump))
     );
 };
 
@@ -153,12 +153,12 @@ function importDumpRxCollection<RxDocType>(
 export const rxdb = true;
 export const prototypes = {
     RxDatabase: (proto: any) => {
-        proto.dump = dumpRxDatabase;
-        proto.importDump = importDumpRxDatabase;
+        proto.exportJSON = dumpRxDatabase;
+        proto.importJSON = importDumpRxDatabase;
     },
     RxCollection: (proto: any) => {
-        proto.dump = dumpRxCollection;
-        proto.importDump = importDumpRxCollection;
+        proto.exportJSON = dumpRxCollection;
+        proto.importJSON = importDumpRxCollection;
     }
 };
 

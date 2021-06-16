@@ -921,7 +921,7 @@ config.parallel('rx-document.test.js', () => {
             const newSkill = 'newSikSkill';
             await doc.atomicPatch({ skills: doc.skills.concat(newSkill) });
 
-            const colDump = await col.dump(true);
+            const colDump = await col.exportJSON(true);
             const afterSkills = colDump.docs[0].skills;
             assert.strictEqual(afterSkills.length, 4);
             assert.ok(afterSkills.includes(newSkill));

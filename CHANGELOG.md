@@ -19,6 +19,9 @@ Breaking:
     - Renamed `RxCollection().sync()` to `RxCollection().syncCouchDB()`
   - Removed the deprecated `RxDatabase.collection()` use `RxDatabase().addCollections()` instead.
   - Outgoing data is not `Readonly` typed and [deep-frozen](https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze) in dev mode
+  - Renamed the funcitons of the json import/export plugin to be less confusing
+    - `dump()` is now `exportJSON()`
+    - `importDump()` is now `importJSON()`
 
 Other:
   - Moved all `should never happen` errors into own error code.
