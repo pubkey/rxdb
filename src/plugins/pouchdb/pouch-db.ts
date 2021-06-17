@@ -9,8 +9,6 @@ import PouchDBCore from 'pouchdb-core';
 // pouchdb-find
 import PouchDBFind from 'pouchdb-find';
 
-addPouchPlugin(PouchDBFind);
-
 /*
 // comment in to debug
 const pouchdbDebug = require('pouchdb-debug');
@@ -28,6 +26,11 @@ import {
 import type {
     PouchDBInstance
 } from '../../types';
+import { addCustomEventsPluginToPouch } from './custom-events-plugin';
+
+addPouchPlugin(PouchDBFind);
+addCustomEventsPluginToPouch();
+
 
 /**
  * check if the given module is a leveldown-adapter

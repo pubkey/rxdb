@@ -262,6 +262,7 @@ export declare class PouchDBInstance {
         }
     ): Promise<(PouchBulkDocResultRow | PouchWriteError)[]>;
 
+
     find<DocumentData>(mangoQuery: PouchdbQuery): Promise<{
         docs: WithPouchMeta<DocumentData>[]
     }>;

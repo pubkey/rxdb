@@ -12,11 +12,15 @@ import {
     writeSingle,
     blobBufferUtil,
     flatClone,
-    MangoQuery
+    MangoQuery,
+    PouchDBInstance
 } from '../../plugins/core';
 
 import {
-    getRxStoragePouch
+    getRxStoragePouch,
+    addCustomEventsPluginToPouch,
+    getCustomEventEmitterByPouch,
+    PouchDB
 } from '../../plugins/pouchdb';
 
 
@@ -39,9 +43,48 @@ addRxPlugin(RxDBQueryBuilderPlugin);
 declare type TestDocType = { key: string; value: string; };
 
 config.parallel('rx-storage-pouchdb.test.js', () => {
+    describe('custom events plugin', () => {
+        it('should not throw when added to pouch', () => {
+            addCustomEventsPluginToPouch();
+        });
+        it('should emit data on bulkDocs', async () => {
+            const pouch: PouchDBInstance = new PouchDB(
+                randomCouchString(12),
+                {
+                    adapter: 'memory'
+                }
+            ) as any;
+
+            const emitted: any[] = [];
+            const sub = getCustomEventEmitterByPouch(pouch).subscribe(ev => {
+                console.dir(ev);
+                emitted.push(ev);
+            });
+
+            await pouch.bulkDocs([{
+                _id: 'foo',
+                val: 'bar'
+            }], {
+                // add custom data to the options which should be passed through
+                custom: {
+                    foo: 'bar'
+                }
+            } as any);
+
+            await waitUntil(() => emitted.length === 1);
+
+            const first = emitted[0];
+            assert.deepStrictEqual(
+                first.writeOptions.custom,
+                { foo: 'bar' }
+            );
+
+            sub.unsubscribe();
+        });
+    });
     describe('RxStorageInstance', () => {
         describe('.bulkWrite()', () => {
-            it('should write the documents', async () => {
+            it('should write the document', async () => {
                 const storageInstance = await getRxStoragePouch('memory').createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
@@ -53,7 +96,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     [{
                         document: {
                             key: 'foobar',
-                            value: 'barfoo',
+                            value: 'barfoo1',
                             _attachments: {}
                         }
                     }]
@@ -62,7 +105,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 assert.strictEqual(writeResponse.error.size, 0);
                 const first = getFromMapOrThrow(writeResponse.success, 'foobar');
                 assert.strictEqual(first.key, 'foobar');
-                assert.strictEqual(first.value, 'barfoo');
+                assert.strictEqual(first.value, 'barfoo1');
                 assert.ok(first._rev);
 
                 storageInstance.close();

@@ -71,6 +71,7 @@ import {
 } from 'rxjs';
 import { filter, map, mergeMap } from 'rxjs/operators';
 import { getSchemaByObjectPath } from '../../rx-schema-helper';
+import { addCustomEventsPluginToPouch } from './custom-events-plugin';
 
 /**
  * prefix of local pouchdb documents
@@ -675,6 +676,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
 
         const startTime = now();
         const pouchResult = await this.internals.pouch.bulkDocs(insertDocs);
+
         const endTime = now();
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
             success: new Map(),
