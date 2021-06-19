@@ -234,6 +234,14 @@ export declare class PouchDBInstance {
         options: { adapter: string }
     );
     readonly name: string;
+    readonly adapter: string;
+
+    readonly __opts: {
+        db: any | string; // contains the adapter function
+        deterministic_revs: boolean;
+        name: string;
+        adapter: string;
+    };
 
     static debug: Debug;
 

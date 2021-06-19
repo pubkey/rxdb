@@ -344,6 +344,9 @@ config.parallel('reactive-query.test.js', () => {
                 return d2;
             };
 
+
+            console.log('--------------- 1');
+
             await Promise.all(
                 new Array(5)
                     .fill(0)
@@ -356,11 +359,17 @@ config.parallel('reactive-query.test.js', () => {
                     })
             );
 
+            console.log('--------------- 2');
+
+
             await AsyncTestUtil.waitUntil(() => emitted.length > 0);
             await AsyncTestUtil.waitUntil(() => {
                 const lastEmitted = emitted[emitted.length - 1];
                 return lastEmitted.state.providers === 4;
             }, 0, 300);
+
+
+            console.log('--------------- 3');
 
             await Promise.all(
                 new Array(5)
@@ -371,6 +380,9 @@ config.parallel('reactive-query.test.js', () => {
                     }))
                     .map(data => db2.crawlstate.atomicUpsert(data))
             );
+
+
+            console.log('--------------- 4');
             await AsyncTestUtil.waitUntil(() => {
                 if (!emitted.length) return false;
                 const lastEmitted = emitted[emitted.length - 1];

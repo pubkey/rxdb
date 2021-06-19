@@ -81,24 +81,27 @@ config.parallel('cross-instance.test.js', () => {
         });
         describe('negative', () => {
             it('should not get the same events twice', async () => {
+
                 const name = randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);
                 const db1 = c1.database;
                 const db2 = c2.database;
-                let recieved = 0;
+
+                const emitted: any[] = [];
                 db2.$.subscribe(cEvent => {
-                    recieved++;
+                    emitted.push(cEvent);
                     assert.ok(cEvent.operation);
                 });
                 await c1.insert(schemaObjects.human());
                 await wait(100);
 
                 await AsyncTestUtil.waitUntil(async () => {
-                    if (recieved > 1) {
-                        throw new Error('got too many events ' + recieved);
+                    if (emitted.length > 1) {
+                        console.dir(emitted);
+                        throw new Error('got too many events ' + emitted.length);
                     }
-                    return recieved === 1;
+                    return emitted.length === 1;
                 });
 
                 db1.destroy();

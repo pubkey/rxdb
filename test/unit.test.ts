@@ -3,11 +3,11 @@ import './unit/util.test.js';
 import './unit/pouch-db-integration.test.js';
 import './unit/adapter-check.test.js';
 import './unit/rx-storage-pouchdb.test.js';
-import './unit/attachments.test.js'; // TODO move down under plugin
 import './unit/instance-of-check.test.js';
 import './unit/rx-schema.test.js';
 import './unit/key-compression.test.js';
 import './unit/bug-report.test.js';
+import './unit/cross-instance.test.js'; // TODO move down under import export
 import './unit/rx-database.test.js';
 import './unit/rx-collection.test.js';
 import './unit/rx-document.test.js';
@@ -32,10 +32,10 @@ import './unit/replication.test.js';
 import './unit/replication-graphql.test.js';
 import './unit/encryption.test.js';
 import './unit/import-export.test.js';
-import './unit/server.test.js';
-import './unit/cross-instance.test.js';
+import './unit/server.test.js'; // TODO move down under import/export
 import './unit/mod-encryption.test.js';
 import './unit/local-documents.test.js';
 import './unit/in-memory.test.js';
 import './unit/plugin.test.js';
+import './unit/attachments.test.js'; // TODO move down under plugin
 import './unit/last.test.js';

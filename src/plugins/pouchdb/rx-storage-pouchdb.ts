@@ -281,6 +281,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
 
     private changes$: Subject<RxStorageChangeEvent<RxDocumentData<RxDocType>>> = new Subject();
     private subs: Subscription[] = [];
+    private emittedEventIds: ObliviousSet<string>;
 
     constructor(
         public readonly databaseName: string,
@@ -298,14 +299,11 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
          * and create our own event stream, this will work more relyable
          * and does not mix up with write events from other sources.
          */
-        const eventSub = getCustomEventEmitterByPouch(this.internals.pouch).subscribe(async (ev) => {
-
-            console.log('got event form pouch(' + collectionName + ') emitter plugin:');
-            console.log(JSON.stringify(ev, null, 4));
-
+        const emitter = getCustomEventEmitterByPouch(this.internals.pouch);
+        this.emittedEventIds = emitter.obliviousSet;
+        const eventSub = emitter.subject.subscribe(async (ev) => {
 
             if (ev.writeOptions.hasOwnProperty('new_edits') && !ev.writeOptions.new_edits) {
-
                 await Promise.all(
                     ev.writeDocs.map(async (writeDoc) => {
                         const id = writeDoc._id;
@@ -347,6 +345,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                             };
                         } else if (writeDoc._deleted && previousDoc && !previousDoc._deleted) {
                             // was delete
+                            previousDoc._rev = writeDoc._rev;
                             event = {
                                 operation: 'DELETE',
                                 doc: null,
@@ -492,14 +491,16 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         startTime?: number,
         endTime?: number
     ) {
-        console.log('addEventToChangeStream:');
-        console.log(JSON.stringify(change, null, 4));
-
         const doc: RxDocumentData<RxDocType> = change.operation === 'DELETE' ? change.previous as any : change.doc as any;
         const primaryKey = this.schema.primaryKey;
         const primary: string = (doc as any)[primaryKey];
         const eventId = getEventKey(false, primary, doc._rev);
 
+        if (this.emittedEventIds.has(eventId)) {
+            return;
+        }
+
+        this.emittedEventIds.add(eventId);
         const storageChangeEvent: RxStorageChangeEvent<RxDocumentData<RxDocType>> = {
             eventId,
             documentId: primary,
@@ -508,8 +509,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             endTime
         };
 
-        console.log('added event to changestream of ' + this.collectionName + ':');
-        console.dir(storageChangeEvent);
         this.changes$.next(storageChangeEvent);
     }
 

@@ -20,6 +20,7 @@ import {
     now
 } from '../../util';
 import { newRxError } from '../../rx-error';
+import { ObliviousSet } from 'oblivious-set';
 
 // ensure only added once
 let addedToPouch = false;
@@ -38,15 +39,32 @@ declare type EmitData = {
     endTime: number;
 };
 
-const eventEmitterByPouchInstance: WeakMap<PouchDBInstance, Subject<EmitData>> = new WeakMap();
+
+declare type Emitter = {
+    subject: Subject<EmitData>;
+    /**
+     * Contains all eventIds that of emitted events,
+     * used because multi-instance pouchdbs often will reemit the same
+     * event on the other browser tab.
+     */
+    obliviousSet: ObliviousSet<string>;
+}
+export const EVENT_EMITTER_BY_POUCH_INSTANCE: Map<string, Emitter> = new Map();
 
 export function getCustomEventEmitterByPouch(
     pouch: PouchDBInstance
-): Subject<EmitData> {
-    let emitter = eventEmitterByPouchInstance.get(pouch);
+): Emitter {
+    const key = [
+        pouch.name,
+        pouch.adapter
+    ].join('|');
+    let emitter = EVENT_EMITTER_BY_POUCH_INSTANCE.get(key);
     if (!emitter) {
-        emitter = new Subject();
-        eventEmitterByPouchInstance.set(pouch, emitter);
+        emitter = {
+            subject: new Subject(),
+            obliviousSet: new ObliviousSet(60 * 1000)
+        }
+        EVENT_EMITTER_BY_POUCH_INSTANCE.set(key, emitter);
     }
     return emitter;
 }
@@ -69,11 +87,6 @@ export function addCustomEventsPluginToPouch() {
     ) {
         const startTime = now();
         const t = i++;
-
-        console.log('newBulkDocs(): ' + this.name);
-        console.dir(options);
-        console.log(JSON.stringify(body, null, 4));
-
 
         // normalize input
         if (typeof options === 'function') {
@@ -136,12 +149,6 @@ export function addCustomEventsPluginToPouch() {
         deeperOptions.isDeeper = true;
 
         return oldBulkDocs.call(this, body, deeperOptions, (err: any, result: any) => {
-
-            console.log('newBulkDocs() INNER: ' + this.name);
-            console.dir(err);
-            console.dir(options);
-            console.log(JSON.stringify(body, null, 4));
-
             if (err) {
                 if (callback) {
                     callback(err);
@@ -162,7 +169,7 @@ export function addCustomEventsPluginToPouch() {
                         endTime
                     };
                     const emitter = getCustomEventEmitterByPouch(this);
-                    emitter.next(emitData);
+                    emitter.subject.next(emitData);
                 }
 
                 if (callback) {

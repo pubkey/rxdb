@@ -2,6 +2,7 @@ import * as os from 'os';
 import * as nodePath from 'path';
 
 import express from 'express';
+import type { Express } from 'express';
 import corsFn from 'cors';
 
 import {
@@ -43,7 +44,7 @@ try {
 const PouchdbAllDbs = require('pouchdb-all-dbs');
 PouchdbAllDbs(PouchDB);
 
-const APP_OF_DB = new WeakMap();
+const APP_OF_DB: WeakMap<RxDatabase, Express> = new WeakMap();
 const SERVERS_OF_DB = new WeakMap();
 const DBS_WITH_SERVER = new WeakSet();
 
@@ -56,9 +57,13 @@ const normalizeDbName = function (db: RxDatabase) {
 const getPrefix = function (db: RxDatabase) {
     const splitted = db.name.split('/').filter((str: string) => str !== '');
     splitted.pop(); // last was the name
-    if (splitted.length === 0) return '';
+    if (splitted.length === 0) {
+        return '';
+    }
     let ret = splitted.join('/') + '/';
-    if (db.name.startsWith('/')) ret = '/' + ret;
+    if (db.name.startsWith('/')) {
+        ret = '/' + ret;
+    }
     return ret;
 };
 
@@ -68,7 +73,7 @@ const getPrefix = function (db: RxDatabase) {
 function tunnelCollectionPath(
     db: RxDatabase,
     path: string,
-    app: any,
+    app: Express,
     colName: string
 ) {
     const pathWithSlash = path.endsWith('/') ? path : path + '/';
@@ -120,8 +125,12 @@ export async function spawnServer(
     const app = express();
     APP_OF_DB.set(db, app);
 
-    // tunnel requests so collection-names can be used as paths
-    Object.keys(db.collections).forEach(colName => tunnelCollectionPath(db, collectionsPath, app, colName));
+    Object.keys(db.collections).forEach(colName => {
+        // tunnel requests so collection-names can be used as paths
+        tunnelCollectionPath(db, collectionsPath, app, colName);
+    });
+
+
 
     // remember to throw error if collection is created after the server is already there
     DBS_WITH_SERVER.add(db);
@@ -154,8 +163,6 @@ export async function spawnServer(
     }
 
     const pouchApp = ExpressPouchDB(pseudo, usePouchExpressOptions);
-    console.log('pouchApp:');
-    console.dir(pouchApp);
     app.use(collectionsPath, pouchApp);
 
     let server = null;

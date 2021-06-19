@@ -56,8 +56,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
             ) as any;
 
             const emitted: any[] = [];
-            const sub = getCustomEventEmitterByPouch(pouch).subscribe(ev => {
-                console.dir(ev);
+            const sub = getCustomEventEmitterByPouch(pouch).subject.subscribe(ev => {
                 emitted.push(ev);
             });
 

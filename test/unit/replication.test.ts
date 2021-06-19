@@ -515,8 +515,6 @@ describe('replication-couchdb.test.js', () => {
                 });
 
                 const obj = schemaObjects.human();
-                console.log('insert object:');
-                console.dir(obj);
                 await c.insert(obj);
                 await pw8.promise;
                 await AsyncTestUtil.waitUntil(() => events.length === 1);
@@ -580,10 +578,6 @@ describe('replication-couchdb.test.js', () => {
                     results = res;
                     if (results && results.length > 0) pw8.resolve();
                 });
-
-
-
-                console.log('############################');
 
                 const obj = schemaObjects.human();
                 await c.insert(obj);
