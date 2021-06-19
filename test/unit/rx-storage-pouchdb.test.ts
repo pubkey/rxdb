@@ -457,56 +457,6 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 sub.unsubscribe();
                 storageInstance.close();
             });
-            it('should emit changes accross different instances of the same name', async () => {
-                const sameName = randomCouchString(12);
-                const storageInstance1 = await getRxStoragePouch('memory').createStorageInstance<TestDocType>({
-                    databaseName: sameName,
-                    collectionName: sameName,
-                    schema: getPseudoSchemaForVersion(0, 'key'),
-                    options: {}
-                });
-                const storageInstance2 = await getRxStoragePouch('memory').createStorageInstance<TestDocType>({
-                    databaseName: sameName,
-                    collectionName: sameName,
-                    schema: getPseudoSchemaForVersion(0, 'key'),
-                    options: {}
-                });
-
-                // listen to instance 1
-                const emitted: RxStorageChangeEvent<TestDocType>[] = [];
-                const sub = storageInstance1.changeStream().subscribe(x => emitted.push(x));
-
-                // make writes to instance 2
-                const writeData: RxDocumentWriteData<TestDocType> = {
-                    key: 'foobar',
-                    value: 'one',
-                    _deleted: false,
-                    _attachments: {}
-                };
-
-                // overwrite = false
-                await writeSingle(
-                    storageInstance2,
-                    {
-                        document: writeData
-                    }
-                );
-                await waitUntil(() => emitted.length === 1);
-                assert.strictEqual(emitted[0].change.id, writeData.key);
-
-                // overwrite = true
-                writeData.key = 'barfoo';
-                writeData._rev = '1-a723631364fbfa906c5ffa8203ac9725';
-                await storageInstance2.bulkAddRevisions(
-                    [writeData as any]
-                );
-                await waitUntil(() => emitted.length === 2);
-                assert.strictEqual(emitted[1].change.id, writeData.key);
-
-                sub.unsubscribe();
-                storageInstance1.close();
-                storageInstance2.close();
-            });
             it('should emit changes when bulkAddRevisions() is used to set the newest revision', async () => {
                 const storageInstance = await getRxStoragePouch('memory').createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
@@ -602,7 +552,6 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                             data: dataBlobBuffer,
                             type: 'text/plain'
                         }
-
                     }
                 };
 
@@ -631,8 +580,6 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 const byIdDoc = getFromMapOrThrow(byId, writeData.key);
                 assert.strictEqual(byIdDoc._attachments.foo.type, 'text/plain');
                 assert.strictEqual(byIdDoc._attachments.foo.length, attachmentData.length);
-
-
 
                 // test emitted
                 assert.strictEqual(emitted[0].change.doc._attachments.foo.type, 'text/plain');

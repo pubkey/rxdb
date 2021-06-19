@@ -66,7 +66,7 @@ const getPrefix = function (db: RxDatabase) {
  * tunnel requests so collection-names can be used as paths
  */
 function tunnelCollectionPath(
-    db: any,
+    db: RxDatabase,
     path: string,
     app: any,
     colName: string
@@ -99,7 +99,7 @@ export async function spawnServer(
         pouchdbExpressOptions = {}
     }
 ): Promise<ServerResponse> {
-    const db = this;
+    const db: RxDatabase = this;
     const collectionsPath = startServer ? path : '/';
     if (!SERVERS_OF_DB.has(db)) {
         SERVERS_OF_DB.set(db, []);
@@ -154,6 +154,8 @@ export async function spawnServer(
     }
 
     const pouchApp = ExpressPouchDB(pseudo, usePouchExpressOptions);
+    console.log('pouchApp:');
+    console.dir(pouchApp);
     app.use(collectionsPath, pouchApp);
 
     let server = null;

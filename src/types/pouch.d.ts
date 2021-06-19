@@ -154,6 +154,7 @@ export type PouchAttachmentWithData = PouchAttachmentMeta & {
      * or directly a buffer
      */
     data: BlobBuffer;
+    type: string;
     /**
      * If set, must be false
      * because we have the full data and not only a stub.

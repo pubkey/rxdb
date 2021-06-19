@@ -1,6 +1,6 @@
 import assert from 'assert';
 import config from './config';
-import AsyncTestUtil from 'async-test-util';
+import AsyncTestUtil, { wait } from 'async-test-util';
 import request from 'request-promise-native';
 import requestR from 'request';
 
@@ -20,7 +20,9 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from '../helper/schemas';
 
 config.parallel('server.test.js', () => {
-    if (!config.platform.isNode()) return;
+    if (!config.platform.isNode()) {
+        return;
+    }
 
     // below imports have to be conditionally imported (only for Node) that's why we use require here instead of import:
     const express = require('express');
@@ -37,7 +39,7 @@ config.parallel('server.test.js', () => {
     it('should run and sync', async function () {
         this.timeout(12 * 1000);
         const port = nexPort();
-        const serverCollection = await humansCollection.create(0);
+        const serverCollection = await humansCollection.create(0, 'human');
 
         await serverCollection.database.server({
             path: '/db',
@@ -51,23 +53,46 @@ config.parallel('server.test.js', () => {
 
         assert.strictEqual(got.doc_count, 1);
 
-        const clientCollection = await humansCollection.create(0);
+        const clientCollection = await humansCollection.create(0, 'humanclient');
 
         // sync
         clientCollection.syncCouchDB({
-            remote: colUrl
+            remote: colUrl,
+            direction: {
+                pull: true,
+                push: true
+            }
         });
 
+        console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+        console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+        console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+        console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+
         // insert one doc on each side
-        await clientCollection.insert(schemaObjects.human());
-        await serverCollection.insert(schemaObjects.human());
+        const insertServer = schemaObjects.human();
+        insertServer.firstName = 'server';
+        await serverCollection.insert(insertServer);
+
+        await wait(200);
+
+        console.log('yyyyyyyyyyyyyyyyy');
+        const insertClient = schemaObjects.human();
+        insertClient.firstName = 'client';
+        await clientCollection.insert(insertClient);
+
+
 
         // both collections should have 2 documents
         await AsyncTestUtil.waitUntil(async () => {
             const serverDocs = await serverCollection.find().exec();
             const clientDocs = await clientCollection.find().exec();
+
+            console.log('serverDocs.length: ' + serverDocs.length);
+            console.log('clientDocs.length: ' + clientDocs.length);
+
             return (clientDocs.length === 2 && serverDocs.length === 2);
-        });
+        }, 10 * 1000, 200);
 
         clientCollection.database.destroy();
         serverCollection.database.destroy();

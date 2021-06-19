@@ -407,13 +407,15 @@ export class RxGraphQLReplicationState<RxDocType> {
             });
         }
 
-        await this.collection.database.lockedRun(
-            async () => {
-                await this.collection.storageInstance.bulkAddRevisions(
-                    toStorageDocs.map(row => _handleToStorageInstance(this.collection, row.doc))
-                );
-            }
-        );
+        if (toStorageDocs.length > 0) {
+            await this.collection.database.lockedRun(
+                async () => {
+                    await this.collection.storageInstance.bulkAddRevisions(
+                        toStorageDocs.map(row => _handleToStorageInstance(this.collection, row.doc))
+                    );
+                }
+            );
+        }
 
         return true;
     }

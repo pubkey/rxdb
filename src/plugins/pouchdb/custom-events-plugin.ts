@@ -10,11 +10,16 @@
 
 import type {
     PouchBulkDocResultRow,
-    PouchDBInstance
+    PouchDBInstance,
+    PouchWriteError
 } from '../../types';
 import PouchDBCore from 'pouchdb-core';
 import { Subject } from 'rxjs';
-import { flatClone } from '../../util';
+import {
+    flatClone,
+    now
+} from '../../util';
+import { newRxError } from '../../rx-error';
 
 // ensure only added once
 let addedToPouch = false;
@@ -26,7 +31,11 @@ declare type EmitData = {
         custom: any;
     };
     writeDocs: any[];
-    writeResult: PouchBulkDocResultRow[];
+    writeResult: (PouchBulkDocResultRow | PouchWriteError)[];
+    // used on new_edits=false to check if the last revision has changed
+    previousDocs: Map<string, any>;
+    startTime: number;
+    endTime: number;
 };
 
 const eventEmitterByPouchInstance: WeakMap<PouchDBInstance, Subject<EmitData>> = new WeakMap();
@@ -46,44 +55,24 @@ export function getCustomEventEmitterByPouch(
 let i = 0;
 
 export function addCustomEventsPluginToPouch() {
-    console.log('############    addCustomEventsPluginToPouch');
     if (addedToPouch) {
         return;
     }
     addedToPouch = true;
 
     const oldBulkDocs: any = PouchDBCore.prototype.bulkDocs;
-
-
-    const newBulkDocs = function (
+    const newBulkDocs = async function (
         this: PouchDBInstance,
         body: any[] | { docs: any[], new_edits?: boolean },
         options: any,
         callback: Function
     ) {
-
+        const startTime = now();
         const t = i++;
 
-        console.log('addCustomEventsPluginToPouch().newBulkDocs() ' + t);
-
-
-        // console.log('body:');
-        // console.dir(body);
-        // console.log('options:');
-        // console.dir(options);
-        // console.log('callback:');
-        // console.dir(callback);
-        // console.log('---------------');
-
-
-        let docs: any[];
-        if (Array.isArray(body)) {
-            docs = body;
-        } else if (body === undefined) {
-            docs = [];
-        } else {
-            docs = body.docs;
-        }
+        console.log('newBulkDocs(): ' + this.name);
+        console.dir(options);
+        console.log(JSON.stringify(body, null, 4));
 
 
         // normalize input
@@ -95,27 +84,47 @@ export function addCustomEventsPluginToPouch() {
             options = {};
         }
 
-        // // console.log('normalized input: ' + t);
-        // // console.log('docs:');
-        // // console.dir(body);
-        // // console.log('options:');
-        // // console.dir(options);
-        // // console.log('callback:');
-        // // console.dir(callback);
-        // // console.log('---------------');
+        let docs: any[];
+        if (Array.isArray(body)) {
+            docs = body;
+        } else if (body === undefined) {
+            docs = [];
+        } else {
+            docs = body.docs;
+            if (body.hasOwnProperty('new_edits')) {
+                options.new_edits = body.new_edits;
+            }
+        }
 
-
-        /*
-        console.log('--- make request to oldBulkDocs:');
-        await new Promise((res, rej) => {
-            const res11 = oldBulkDocs(body, options, () => {
-                console.log('res11:');
-                console.dir(res11);
-                res(res11);
+        if (docs.length === 0) {
+            throw newRxError('SNH', {
+                args: {
+                    body,
+                    options
+                }
             });
-        });
-        process.exit();
-        */
+        }
+
+
+        /**
+         * If new_edits=false we have to first find the current state
+         * of the document and can later check if the state was changed
+         * because a new revision was written and we have to emit an event.
+         */
+        const previousDocs: Map<string, any> = new Map();
+        if (
+            options.hasOwnProperty('new_edits') &&
+            options.new_edits === false
+        ) {
+            const ids = docs.map(doc => doc._id);
+            const previousDocsResult = await this.allDocs({
+                include_docs: true,
+                keys: ids
+            });
+            previousDocsResult.rows
+                .filter(row => !!row.doc)
+                .forEach(row => previousDocs.set(row.doc._id, row.doc));
+        }
 
 
         /**
@@ -127,12 +136,13 @@ export function addCustomEventsPluginToPouch() {
         deeperOptions.isDeeper = true;
 
         return oldBulkDocs.call(this, body, deeperOptions, (err: any, result: any) => {
-            // console.log('original bulk docs resolved with; ' + t);
-            // console.dir(err);
-            // console.dir(result);
+
+            console.log('newBulkDocs() INNER: ' + this.name);
+            console.dir(err);
+            console.dir(options);
+            console.log(JSON.stringify(body, null, 4));
+
             if (err) {
-                // console.log('overwritten bulk docs has thrown: ' + t);
-                // console.dir(err);
                 if (callback) {
                     callback(err);
                 } else {
@@ -140,19 +150,17 @@ export function addCustomEventsPluginToPouch() {
                 }
 
             } else {
-                // console.log('overwritten bulk callback normal result: ' + t);
-                // console.dir(result);
-
-
                 if (!options.isDeeper) {
-                    console.log('emit data for ' + t);
+                    const endTime = now();
                     const emitData = {
                         emitId: t,
                         writeDocs: docs,
                         writeOptions: options,
-                        writeResult: result
+                        writeResult: result,
+                        previousDocs,
+                        startTime,
+                        endTime
                     };
-                    console.dir(emitData);
                     const emitter = getCustomEventEmitterByPouch(this);
                     emitter.next(emitData);
                 }
@@ -164,10 +172,6 @@ export function addCustomEventsPluginToPouch() {
                 }
             }
         });
-
-
-
-
     };
 
     PouchDBCore.plugin({

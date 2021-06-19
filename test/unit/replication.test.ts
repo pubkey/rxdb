@@ -17,13 +17,15 @@ import {
     randomCouchString,
     isRxCollection,
     RxCouchDBReplicationState,
-    SyncOptions
+    SyncOptions,
+    addRxPlugin
 } from '../../plugins/core';
 
 import {
     addPouchPlugin,
     getRxStoragePouch
 } from '../../plugins/pouchdb';
+import { RxDBReplicationCouchDBPlugin } from '../../plugins/replication-couchdb';
 
 import {
     fromEvent
@@ -36,14 +38,20 @@ import {
 
 let request: any;
 let SpawnServer: any;
+
+
 if (config.platform.isNode()) {
     SpawnServer = require('../helper/spawn-server');
     request = require('request-promise');
     addPouchPlugin(require('pouchdb-adapter-http'));
 }
 
-describe('replication.test.js', () => {
-    if (!config.platform.isNode()) return;
+describe('replication-couchdb.test.js', () => {
+    if (!config.platform.isNode()) {
+        return;
+    }
+    addRxPlugin(RxDBReplicationCouchDBPlugin);
+
     describe('spawn-server.js', () => {
         it('spawn and reach a server', async () => {
             const server = await SpawnServer.spawn();
@@ -507,6 +515,8 @@ describe('replication.test.js', () => {
                 });
 
                 const obj = schemaObjects.human();
+                console.log('insert object:');
+                console.dir(obj);
                 await c.insert(obj);
                 await pw8.promise;
                 await AsyncTestUtil.waitUntil(() => events.length === 1);
@@ -570,6 +580,11 @@ describe('replication.test.js', () => {
                     results = res;
                     if (results && results.length > 0) pw8.resolve();
                 });
+
+
+
+                console.log('############################');
+
                 const obj = schemaObjects.human();
                 await c.insert(obj);
                 await pw8.promise;
@@ -577,19 +592,14 @@ describe('replication.test.js', () => {
                 const doc: any = await c.findOne().exec();
                 const doc2: any = await c2.findOne().exec();
 
-                // update and w8 for sync
-                let lastValue = null;
-                const newPromiseWait = AsyncTestUtil.waitResolveable(1400);
-                doc2
-                    .get$('firstName')
-                    .subscribe((newValue: any) => {
-                        lastValue = newValue;
-                        if (lastValue === 'foobar') newPromiseWait.resolve();
-                    });
-                await doc.atomicPatch({ firstName: 'foobar' });
 
-                await newPromiseWait.promise;
-                assert.strictEqual(lastValue, 'foobar');
+                const patchPromise = doc.atomicPatch({ firstName: 'foobar' });
+                await waitUntil(() => doc2.firstName === 'foobar');
+
+                await patchPromise;
+
+                assert.strictEqual(doc2.firstName, 'foobar');
+                assert.strictEqual(doc.firstName, 'foobar');
 
                 syncC.database.destroy();
                 c.database.destroy();
