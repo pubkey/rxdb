@@ -5,7 +5,6 @@ import config from './config';
 import {
     createRxDatabase,
     randomCouchString,
-    RxCollection,
     RxJsonSchema
 } from '../../plugins/core';
 

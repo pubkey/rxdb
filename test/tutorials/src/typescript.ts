@@ -10,7 +10,9 @@ import {
     RxCollection,
     RxJsonSchema,
     RxDocument,
-    createRxDatabase
+    createRxDatabase,
+    addPouchPlugin,
+    getRxStoragePouch
 } from 'rxdb';
 
 import * as MemoryAdapter from 'pouchdb-adapter-memory';
@@ -51,7 +53,7 @@ async function run() {
      */
     const myDatabase: MyDatabase = await createRxDatabase<MyDatabaseCollections>({
         name: 'mydb',
-        adapter: 'memory'
+        storage: getRxStoragePouch('memory')
     });
 
     const heroSchema: RxJsonSchema<HeroDocType> = {

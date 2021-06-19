@@ -23,6 +23,11 @@ import {
     addRxPlugin
 } from 'rxdb/plugins/core';
 
+import {
+    addPouchPlugin,
+    getRxStoragePouch
+} from 'rxdb/plugins/pouchdb';
+
 // import modules
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 
@@ -43,11 +48,11 @@ addRxPlugin(RxDBReplicationPlugin);
 
 // always needed for replication with the node-server
 import * as PouchdbAdapterHttp from 'pouchdb-adapter-http';
-addRxPlugin(PouchdbAdapterHttp);
+addPouchPlugin(PouchdbAdapterHttp);
 
 
 import * as PouchdbAdapterIdb from 'pouchdb-adapter-idb';
-addRxPlugin(PouchdbAdapterIdb);
+addPouchPlugin(PouchdbAdapterIdb);
 const useAdapter = 'idb';
 
 
@@ -78,7 +83,7 @@ async function _create(): Promise<RxHeroesDatabase> {
     console.log('DatabaseService: creating database..');
     const db = await createRxDatabase<RxHeroesCollections>({
         name: 'heroes',
-        adapter: useAdapter,
+        storage: getRxStoragePouch(useAdapter)
         // password: 'myLongAndStupidPassword' // no password needed
     });
     console.log('DatabaseService: created database');

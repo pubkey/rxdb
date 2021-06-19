@@ -2,11 +2,11 @@ const heroSchema = {
     version: 0,
     title: 'hero schema',
     description: 'describes a simple hero',
+    primaryKey: 'name',
     type: 'object',
     properties: {
         name: {
-            type: 'string',
-            primary: true,
+            type: 'string'
         },
         color: {
             type: 'string',

@@ -331,6 +331,7 @@ config.parallel('server.test.js', () => {
             path: '/db',
             port
         });
+        assert.ok(serverResponse);
 
 
         // check access to path
@@ -395,7 +396,7 @@ config.parallel('server.test.js', () => {
             storage: getRxStoragePouch('memory'),
             multiInstance: false
         });
-        const res = await db1.server({
+        await db1.server({
             port
         });
         await AsyncTestUtil.assertThrows(
@@ -417,7 +418,7 @@ config.parallel('server.test.js', () => {
             storage: getRxStoragePouch('memory'),
             multiInstance: false
         });
-        const res1 = await db1.server({
+        await db1.server({
             port
         });
 

@@ -23,7 +23,7 @@ import {
 } from 'rxdb/plugins/core';
 
 import {
-    addPouchPlugin
+    addPouchPlugin, getRxStoragePouch
 } from 'rxdb/plugins/pouchdb';
 
 import { RxDBNoValidatePlugin } from 'rxdb/plugins/no-validate';
@@ -129,7 +129,7 @@ async function _create(): Promise<RxHeroesDatabase> {
     console.log('DatabaseService: creating database..');
     const db = await createRxDatabase<RxHeroesCollections>({
         name: DATABASE_NAME,
-        adapter: IS_SERVER_SIDE_RENDERING ? 'memory' : 'idb',
+        storage: getRxStoragePouch(IS_SERVER_SIDE_RENDERING ? 'memory' : 'idb'),
         multiInstance: !IS_SERVER_SIDE_RENDERING
         // password: 'myLongAndStupidPassword' // no password needed
     });

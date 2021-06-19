@@ -1,18 +1,19 @@
 const {
     createRxDatabase,
-    addRxPlugin
+    addPouchPlugin,
+    getRxStoragePouch
 } = require('rxdb');
-addRxPlugin(require('pouchdb-adapter-memory'));
+addPouchPlugin(require('pouchdb-adapter-memory'));
 
 const heroSchema = {
     title: 'hero schema',
     description: 'describes a simple hero',
     version: 0,
+    primaryKey: 'name',
     type: 'object',
     properties: {
         name: {
-            type: 'string',
-            primary: true
+            type: 'string'
         },
         color: {
             type: 'string'
@@ -30,7 +31,7 @@ function getDatabase(name, adapter) {
 async function createDatabase(name, adapter) {
     const db = await createRxDatabase({
         name,
-        adapter,
+        storage: getRxStoragePouch(adapter),
         password: 'myLongAndStupidPassword'
     });
 

@@ -12,7 +12,6 @@ import {
     flatClone,
     promiseSeries,
     pluginMissing,
-    now,
     ensureNotFalsy,
     getFromMapOrThrow,
     clone

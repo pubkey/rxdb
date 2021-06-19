@@ -1,18 +1,20 @@
 import {
     createRxDatabase,
-    addRxPlugin
+    addRxPlugin,
+    addPouchPlugin,
+    getRxStoragePouch
 } from 'rxdb';
 import {
     heroSchema
 } from './Schema';
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
-import { RxDBReplicationPlugin } from 'rxdb/plugins/replication';
+import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb';
 import { RxDBNoValidatePlugin } from 'rxdb/plugins/no-validate';
 
-addRxPlugin(require('pouchdb-adapter-idb'));
-addRxPlugin(require('pouchdb-adapter-http')); // enable syncing over http
+addPouchPlugin(require('pouchdb-adapter-idb'));
+addPouchPlugin(require('pouchdb-adapter-http')); // enable syncing over http
 addRxPlugin(RxDBLeaderElectionPlugin);
-addRxPlugin(RxDBReplicationPlugin);
+addRxPlugin(RxDBReplicationCouchDBPlugin);
 addRxPlugin(RxDBNoValidatePlugin);
 
 const collections = [
@@ -37,7 +39,7 @@ const _create = async () => {
     console.log('DatabaseService: creating database..');
     const db = await createRxDatabase({
         name: 'heroesreactdb',
-        adapter: 'idb'
+        storage: getRxStoragePouch('idb')
     });
     console.log('DatabaseService: created database');
     window['db'] = db; // write to window for debugging

@@ -49,7 +49,6 @@ import {
     getHeightOfRevision,
     promiseWait,
     blobBufferUtil,
-    nextTick,
     now
 } from '../../util';
 import type {
@@ -64,14 +63,12 @@ import {
 import { newRxError } from '../../rx-error';
 
 import {
-    fromEvent,
     Observable,
     Subject,
     Subscription
 } from 'rxjs';
-import { filter, map, mergeMap } from 'rxjs/operators';
 import { getSchemaByObjectPath } from '../../rx-schema-helper';
-import { addCustomEventsPluginToPouch, getCustomEventEmitterByPouch } from './custom-events-plugin';
+import { getCustomEventEmitterByPouch } from './custom-events-plugin';
 
 /**
  * prefix of local pouchdb documents

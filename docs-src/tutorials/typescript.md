@@ -92,7 +92,7 @@ Now that we have declare all our types, we can use them.
  */
 const myDatabase: MyDatabase = await createRxDatabase<MyDatabaseCollections>({
     name: 'mydb',
-    adapter: 'memory'
+    storage: getRxStoragePouch('memory')
 });
 
 const heroSchema: RxJsonSchema<HeroDocType> = {

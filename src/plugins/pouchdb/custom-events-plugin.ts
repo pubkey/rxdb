@@ -48,7 +48,7 @@ declare type Emitter = {
      * event on the other browser tab.
      */
     obliviousSet: ObliviousSet<string>;
-}
+};
 export const EVENT_EMITTER_BY_POUCH_INSTANCE: Map<string, Emitter> = new Map();
 
 export function getCustomEventEmitterByPouch(
@@ -63,7 +63,7 @@ export function getCustomEventEmitterByPouch(
         emitter = {
             subject: new Subject(),
             obliviousSet: new ObliviousSet(60 * 1000)
-        }
+        };
         EVENT_EMITTER_BY_POUCH_INSTANCE.set(key, emitter);
     }
     return emitter;
