@@ -1,16 +1,17 @@
+import { RxHeroDocumentType } from '@/RxDB';
 import {
     RxJsonSchema
 } from 'rxdb';
-const schema: RxJsonSchema = {
+const schema: RxJsonSchema<RxHeroDocumentType> = {
     title: 'hero schema',
     description: 'describes a simple hero',
     version: 0,
     keyCompression: false,
+    primaryKey: 'name',
     type: 'object',
     properties: {
         name: {
             type: 'string',
-            primary: true,
             default: ''
         },
         color: {

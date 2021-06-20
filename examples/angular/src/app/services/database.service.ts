@@ -82,7 +82,7 @@ async function loadRxDBPlugins(): Promise<void> {
     if (IS_SERVER_SIDE_RENDERING) {
         // for server side rendering, import the memory adapter
         const PouchdbAdapterMemory = require('pouchdb-adapter-' + 'memory');
-        addRxPlugin(PouchdbAdapterMemory);
+        addPouchPlugin(PouchdbAdapterMemory);
     } else {
         // else, use indexeddb
         addPouchPlugin(PouchdbAdapterIdb);
