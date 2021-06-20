@@ -2,6 +2,7 @@ const assert = require('assert');
 const {
     createRxDatabase,
     addPouchPlugin,
+    blobBufferUtil,
     getRxStoragePouch
 } = require('../../../');
 addPouchPlugin(require('pouchdb-adapter-idb'));
@@ -49,7 +50,7 @@ module.exports = (function () {
             });
             assert.ok(doc);
 
-            const attachmentData = 'foo bar asldfkjalkdsfj';
+            const attachmentData = blobBufferUtil.createBlobBuffer('foo bar asldfkjalkdsfj', 'text/plain');
             const attachment = await doc.putAttachment({
                 id: 'cat.jpg',
                 data: attachmentData,
