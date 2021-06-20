@@ -49,7 +49,7 @@ const create = async () => {
             }
         }
     });
-    database.collections.heroes.sync({
+    database.collections.heroes.syncCouchDB({
         remote: SYNC_URL + 'hero/'
     });
     return database;

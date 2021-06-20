@@ -17,19 +17,6 @@ addRxPlugin(RxDBLeaderElectionPlugin);
 addRxPlugin(RxDBReplicationCouchDBPlugin);
 addRxPlugin(RxDBNoValidatePlugin);
 
-const collections = [
-    {
-        name: 'heroes',
-        schema: heroSchema,
-        methods: {
-            hpPercent() {
-                return this.hp / this.maxHP * 100;
-            }
-        },
-        sync: true
-    }
-];
-
 const syncURL = 'http://' + window.location.hostname + ':10102/';
 console.log('host: ' + syncURL);
 
@@ -52,7 +39,16 @@ const _create = async () => {
 
     // create collections
     console.log('DatabaseService: create collections');
-    await Promise.all(collections.map(colData => db.collection(colData)));
+    await db.addCollections({
+        heroes: {
+            schema: heroSchema,
+            methods: {
+                hpPercent() {
+                    return this.hp / this.maxHP * 100;
+                }
+            }
+        }
+    });
 
     // hooks
     console.log('DatabaseService: add hooks');
@@ -71,7 +67,7 @@ const _create = async () => {
 
     // sync
     console.log('DatabaseService: sync');
-    collections.filter(col => col.sync).map(col => col.name).map(colName => db[colName].sync({
+    Object.values(db.collections).map(col => col.name).map(colName => db[colName].syncCouchDB({
         remote: syncURL + colName + '/'
     }));
 
