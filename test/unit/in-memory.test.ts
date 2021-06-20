@@ -47,9 +47,9 @@ config.parallel('in-memory.test.js', () => {
                 const col = await humansCollection.create(0);
                 const inMem = new InMemoryRxCollection(col);
                 await prepareInMemoryRxCollection(inMem);
-                await setIndexes(inMem.schema, inMem.pouch);
+                await setIndexes(inMem.schema, inMem.storageInstance.internals.pouch);
 
-                const hasIndexes = await inMem.pouch.getIndexes();
+                const hasIndexes = await inMem.storageInstance.internals.pouch.getIndexes();
                 assert.strictEqual(hasIndexes.indexes[1].def.fields[0].passportId, 'asc');
 
                 inMem.destroy();
@@ -63,7 +63,7 @@ config.parallel('in-memory.test.js', () => {
                 await prepareInMemoryRxCollection(inMem);
                 await replicateExistingDocuments(col, inMem as any);
 
-                const foundAfter = await inMem.pouch.find({
+                const foundAfter = await inMem.storageInstance.internals.pouch.find({
                     selector: {}
                 });
                 assert.strictEqual(foundAfter.docs.length, 5);
@@ -82,7 +82,7 @@ config.parallel('in-memory.test.js', () => {
 
                 await replicateExistingDocuments(col, inMem as any);
 
-                const foundAfter = await inMem.pouch.find({
+                const foundAfter = await inMem.storageInstance.internals.pouch.find({
                     selector: {}
                 });
                 assert.strictEqual((foundAfter.docs[0] as any).secret, 'foobar');
@@ -114,7 +114,7 @@ config.parallel('in-memory.test.js', () => {
 
                 const doc: any = schemaObjects.human('foobar');
                 doc['_id'] = 'foobar1';
-                await inMem.pouch.put(doc);
+                await inMem.storageInstance.internals.pouch.put(doc);
                 await AsyncTestUtil.waitUntil(() => emitted.length === 1);
                 assert.strictEqual(emitted[0].passportId, 'foobar');
 
@@ -145,7 +145,7 @@ config.parallel('in-memory.test.js', () => {
                 docData['_rev'] = '1-51b2fae5721cc4d3cf7392f19e6cc118';
                 await applyChangedDocumentToPouch(col, docData);
 
-                const foundAfter = await col.pouch.find({
+                const foundAfter = await col.storageInstance.internals.pouch.find({
                     selector: {}
                 });
                 assert.strictEqual(foundAfter.docs.length, 1);
@@ -178,7 +178,7 @@ config.parallel('in-memory.test.js', () => {
                 // insert existing doc, then overwrite
                 const docData: any = schemaObjects.human();
                 docData['_id'] = 'foobar1';
-                const ret = await col.pouch.put(docData);
+                const ret = await col.storageInstance.internals.pouch.put(docData);
 
                 await AsyncTestUtil.wait(100);
                 const sub = obs.subscribe(doc => emitted.push(doc));
@@ -191,7 +191,7 @@ config.parallel('in-memory.test.js', () => {
 
                 await AsyncTestUtil.wait(100);
 
-                const foundAfter = await col.pouch.find({
+                const foundAfter = await col.storageInstance.internals.pouch.find({
                     selector: {}
                 });
 
@@ -212,7 +212,7 @@ config.parallel('in-memory.test.js', () => {
             const col = await humansCollection.create(5);
             const memCol = await col.inMemory();
             assert.ok(memCol.database);
-            assert.ok(memCol.pouch);
+            assert.ok(memCol.storageInstance.internals.pouch);
             col.database.destroy();
         });
         it('should contain the initial documents', async () => {
@@ -439,7 +439,7 @@ config.parallel('in-memory.test.js', () => {
                 const docs = await memCol.find().exec();
                 return docs.length === 1;
             });
-            const memPouchDoc = await memCol.pouch.get(doc.primary);
+            const memPouchDoc = await memCol.storageInstance.internals.pouch.get(doc.primary);
             assert.strictEqual(memPouchDoc.secret, docData.secret);
 
             // insert to memory
@@ -449,7 +449,7 @@ config.parallel('in-memory.test.js', () => {
                 const docs = await col.find().exec();
                 return docs.length === 2;
             });
-            const pouchDoc = await col.pouch.get(doc2.primary);
+            const pouchDoc = await col.storageInstance.internals.pouch.get(doc2.primary);
             assert.notStrictEqual(doc2.secret, pouchDoc.secret);
 
             col.database.destroy();
@@ -467,7 +467,7 @@ config.parallel('in-memory.test.js', () => {
                 const docs = await memCol.find().exec();
                 return docs.length === 1;
             });
-            const memPouchDoc = await memCol.pouch.get(doc.primary);
+            const memPouchDoc = await memCol.storageInstance.internals.pouch.get(doc.primary);
             assert.strictEqual(memPouchDoc.firstName, docData.firstName);
 
             // insert to memory
@@ -477,7 +477,7 @@ config.parallel('in-memory.test.js', () => {
                 const docs = await col.find().exec();
                 return docs.length === 2;
             });
-            const pouchDoc = await col.pouch.get(doc2.primary);
+            const pouchDoc = await col.storageInstance.internals.pouch.get(doc2.primary);
             assert.notStrictEqual(doc2.firstName, pouchDoc.firstName);
 
             col.database.destroy();
