@@ -18,7 +18,7 @@
     "concurrently": "6.2.0",
     "cors": "2.8.5",
     "express-graphql": "0.12.0",
-    "graphql": "15.5.0",
+    "graphql": "15.5.1",
     "graphql-client": "2.0.1",
     "graphql-subscriptions": "1.2.1",
     "local-web-server": "4.2.1",
