@@ -914,6 +914,17 @@ function _atomicUpsertEnsureRxDocumentExists(
     primary: string,
     json: any
 ): Promise<{ doc: RxDocument, inserted: boolean }> {
+    /**
+     * Optimisation shortcut,
+     * first try to find the document in the doc-cache
+     */
+    const docFromCache = rxCollection._docCache.get(primary);
+    if (docFromCache) {
+        return Promise.resolve({
+            doc: docFromCache,
+            inserted: false
+        });
+    }
     return rxCollection.findOne(primary).exec()
         .then(doc => {
             if (!doc) {
