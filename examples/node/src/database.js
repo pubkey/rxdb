@@ -36,15 +36,16 @@ const create = async () => {
         password: 'myLongAndStupidPassword',
         multiInstance: true
     });
-    await database.collection({
-        name: 'heroes',
-        schema: heroSchema,
-        statics: {
-            async addHero(name, color) {
-                return this.upsert({
-                    name,
-                    color
-                });
+    await database.addCollections({
+        heroes: {
+            schema: heroSchema,
+            statics: {
+                async addHero(name, color) {
+                    return this.upsert({
+                        name,
+                        color
+                    });
+                }
             }
         }
     });

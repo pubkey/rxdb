@@ -540,7 +540,7 @@ describe('replication-graphql.test.js', () => {
                         10
                     );
                     assert.strictEqual(changesResult.changes.length, amount);
-                    const deleted = changesResult.changes.find(change => {
+                    const deleted = changesResult.changes.find((change: any) => {
                         return change.operation === 'DELETE';
                     });
                     assert.ok(deleted);
@@ -638,7 +638,7 @@ describe('replication-graphql.test.js', () => {
                     const doc = await c.findOne().exec(true);
                     let docData = doc.toJSON(true);
                     docData = clone(docData); // clone to make it mutateable
-                    docData.name = 'foobar';
+                    (docData as any).name = 'foobar';
 
                     await setLastPullDocument(
                         c,
@@ -693,9 +693,9 @@ describe('replication-graphql.test.js', () => {
                 await replicationState.awaitInitialReplication();
 
                 const docs = await c.find().exec();
-                const docsRev = docs.map(doc => doc.toJSON(true)._rev);
+                const docsRev = docs.map((doc: any) => doc.toJSON(true)._rev);
 
-                docsRev.forEach(rev => {
+                docsRev.forEach((rev: any) => {
                     const ok = wasRevisionfromPullReplication(
                         replicationState.endpointHash,
                         rev
@@ -737,7 +737,7 @@ describe('replication-graphql.test.js', () => {
 
                 // all of test-data should be in the database
                 const docs = await c.find().exec();
-                const ids = docs.map(d => d.primary);
+                const ids = docs.map((d: any) => d.primary);
                 const notInDb = testData.find(doc => !ids.includes(doc.id));
                 if (notInDb) throw new Error('not in db: ' + notInDb.id);
 
@@ -839,7 +839,7 @@ describe('replication-graphql.test.js', () => {
                     url: server.url,
                     pull: {
                         queryBuilder,
-                        modifier: docData => {
+                        modifier: (docData: any) => {
                             // delete name which is required in the schema
                             delete docData.name;
                             return docData;
@@ -849,7 +849,7 @@ describe('replication-graphql.test.js', () => {
                 });
 
                 const errors: any[] = [];
-                const errorSub = replicationState.error$.subscribe(err => {
+                const errorSub = replicationState.error$.subscribe((err: any) => {
                     errors.push(err);
                 });
                 await AsyncTestUtil.waitUntil(() => errors.length === 1);
@@ -1186,7 +1186,7 @@ describe('replication-graphql.test.js', () => {
                 });
 
                 const emitted = [];
-                replicationState.error$.subscribe(err => {
+                replicationState.error$.subscribe((err: any) => {
                     emitted.push(err);
                 });
 
@@ -1579,7 +1579,7 @@ describe('replication-graphql.test.js', () => {
                     },
                     pull: {
                         queryBuilder,
-                        modifier: (doc) => {
+                        modifier: (doc: any) => {
                             if (doc.age > 100) {
                                 return null;
                             }
@@ -1624,7 +1624,7 @@ describe('replication-graphql.test.js', () => {
                 });
 
                 const emitted: RxDocumentData<HumanWithTimestampDocumentType>[] = [];
-                const sub = replicationState.recieved$.subscribe(doc => emitted.push(doc));
+                const sub = replicationState.recieved$.subscribe((doc: any) => emitted.push(doc));
 
                 await replicationState.awaitInitialReplication();
                 assert.strictEqual(emitted.length, batchSize);
@@ -1656,7 +1656,7 @@ describe('replication-graphql.test.js', () => {
                 });
 
                 const emitted: any[] = [];
-                const sub = replicationState.send$.subscribe(doc => emitted.push(doc));
+                const sub = replicationState.send$.subscribe((doc: any) => emitted.push(doc));
                 await replicationState.awaitInitialReplication();
 
                 assert.strictEqual(emitted.length, batchSize);

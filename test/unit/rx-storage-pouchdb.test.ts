@@ -180,7 +180,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 const storageInstance = await getRxStoragePouch('memory').createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
-                    schema: getPseudoSchemaForVersion(0, '_id'),
+                    schema: getPseudoSchemaForVersion(0, '_id' as any),
                     options: {}
                 });
 
@@ -217,7 +217,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 const storageInstance = await getRxStoragePouch('memory').createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
-                    schema: getPseudoSchemaForVersion(0, '_id'),
+                    schema: getPseudoSchemaForVersion(0, '_id' as any),
                     options: {}
                 });
 

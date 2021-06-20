@@ -8,7 +8,8 @@ import {
     addRxPlugin,
     createRxDatabase,
     addPouchPlugin,
-    RxJsonSchema
+    RxJsonSchema,
+    getRxStoragePouch
 } from 'rxdb';
 import * as MemoryAdapter from 'pouchdb-adapter-memory';
 addPouchPlugin(MemoryAdapter);
@@ -38,7 +39,7 @@ async function run() {
     // create database
     const db = await createRxDatabase({
         name: 'mydb',
-        adapter: 'memory'
+        storage: getRxStoragePouch('memory')
     });
 
     // create a collection

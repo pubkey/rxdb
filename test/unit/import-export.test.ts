@@ -316,7 +316,7 @@ config.parallel('import-export.test.js', () => {
                 assert.strictEqual(colDump.encrypted, false);
                 assert.strictEqual(colDump.passwordHash, null);
                 assert.strictEqual(colDump.docs.length, 5);
-                colDump.docs.map(doc => assert.strictEqual(typeof doc, 'object'));
+                colDump.docs.map((doc: any) => assert.strictEqual(typeof doc, 'object'));
                 col.database.destroy();
             });
             it('export encrypted as encrypted', async () => {
@@ -404,7 +404,7 @@ config.parallel('import-export.test.js', () => {
                 const json = await col.database.exportJSON();
                 assert.strictEqual(json.collections.length, 2);
                 json.collections
-                    .forEach(c => assert.strictEqual(c.docs.length, 10));
+                    .forEach((c: any) => assert.strictEqual(c.docs.length, 10));
                 db.destroy();
             });
             it('export 1 of 2 collections', async () => {
@@ -434,7 +434,7 @@ config.parallel('import-export.test.js', () => {
                 const json = await col.database.exportJSON(false, ['enchuman']);
                 assert.strictEqual(json.collections.length, 1);
                 json.collections
-                    .forEach(c => assert.strictEqual(c.docs.length, 10));
+                    .forEach((c: any) => assert.strictEqual(c.docs.length, 10));
                 db.destroy();
             });
         });

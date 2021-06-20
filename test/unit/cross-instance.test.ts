@@ -14,6 +14,7 @@ import {
     createRxDatabase,
     randomCouchString,
     promiseWait,
+    RxDatabase,
 } from '../../plugins/core';
 
 import {
@@ -62,8 +63,8 @@ config.parallel('cross-instance.test.js', () => {
                 const name = randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);
-                const db1 = c1.database;
-                const db2 = c2.database;
+                const db1: RxDatabase = c1.database;
+                const db2: RxDatabase = c2.database;
 
                 let recieved = 0;
                 db2.$.subscribe(cEvent => {
@@ -85,8 +86,8 @@ config.parallel('cross-instance.test.js', () => {
                 const name = randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);
-                const db1 = c1.database;
-                const db2 = c2.database;
+                const db1: RxDatabase = c1.database;
+                const db2: RxDatabase = c2.database;
 
                 const emitted: any[] = [];
                 db2.$.subscribe(cEvent => {

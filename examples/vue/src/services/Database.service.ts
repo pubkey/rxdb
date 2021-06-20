@@ -43,8 +43,8 @@ addRxPlugin(RxDBValidatePlugin);
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
 addRxPlugin(RxDBLeaderElectionPlugin);
 
-import { RxDBReplicationPlugin } from 'rxdb/plugins/replication';
-addRxPlugin(RxDBReplicationPlugin);
+import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb';
+addRxPlugin(RxDBReplicationCouchDBPlugin);
 
 // always needed for replication with the node-server
 import * as PouchdbAdapterHttp from 'pouchdb-adapter-http';

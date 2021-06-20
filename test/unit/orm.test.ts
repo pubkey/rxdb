@@ -5,6 +5,7 @@ import config from './config';
 import {
     createRxDatabase,
     randomCouchString,
+    RxCollection,
     RxJsonSchema
 } from '../../plugins/core';
 
@@ -15,6 +16,7 @@ import {
 
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
+import { HumanDocumentType } from '../helper/schema-objects';
 
 config.parallel('orm.test.js', () => {
     describe('statics', () => {
@@ -94,7 +96,9 @@ config.parallel('orm.test.js', () => {
         });
         describe('run', () => {
             it('should be able to run the method', async () => {
-                const db = await createRxDatabase({
+                const db = await createRxDatabase<{
+                    humans: RxCollection<HumanDocumentType, {}, { foobar(): string; }>
+                }>({
                     name: randomCouchString(10),
                     storage: getRxStoragePouch('memory'),
                 });
@@ -108,7 +112,7 @@ config.parallel('orm.test.js', () => {
                         }
                     }
                 });
-                const res = collections.humans.foobar();
+                const res = (collections.humans as any).foobar();
                 assert.strictEqual(res, 'test');
                 db.destroy();
             });
@@ -128,7 +132,7 @@ config.parallel('orm.test.js', () => {
                     }
                 });
                 const collection = collections.humans;
-                const res = collection.foobar();
+                const res = (collection as any).foobar();
                 assert.strictEqual(res, 'humans');
                 db.destroy();
             });
@@ -148,7 +152,7 @@ config.parallel('orm.test.js', () => {
                     }
                 });
                 const collection = collections.humans;
-                const res = collection.foobar(schemaObjects.human());
+                const res = (collection as any).foobar(schemaObjects.human());
                 assert.strictEqual(res.constructor.name, 'Promise');
                 await res;
                 db.destroy();

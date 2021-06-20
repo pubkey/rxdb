@@ -1,9 +1,9 @@
 const assert = require('assert');
 const {
-    addRxPlugin,
-    createRxDatabase
+    createRxDatabase,
+    addPouchPlugin
 } = require('../../../');
-addRxPlugin(require('pouchdb-adapter-idb'));
+addPouchPlugin(require('pouchdb-adapter-idb'));
 
 
 /**

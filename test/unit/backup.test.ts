@@ -13,6 +13,7 @@ import { createAttachments } from '../helper/humans-collection';
 import {
     backupSingleDocument,
     clearFolder,
+    RxBackupState,
     getMeta
 } from '../../plugins/backup';
 import { BackupMetaFileContent, RxBackupWriteEvent } from '../../src/types';
@@ -111,7 +112,7 @@ describe('backup.test.js', () => {
                 attachments: true
             };
             const emitted: RxBackupWriteEvent[] = [];
-            const backupState = collection.database.backup(options);
+            const backupState: RxBackupState = collection.database.backup(options);
             const sub = backupState.writeEvents$.subscribe(ev => emitted.push(ev));
             await backupState.awaitInitialBackup();
 
