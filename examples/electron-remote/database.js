@@ -19,12 +19,14 @@ const heroSchema = {
             type: 'string'
         }
     },
-    required: ['color']
+    required: ['name', 'color']
 };
 
 let _getDatabase; // cached
 function getDatabase(name, adapter) {
-    if (!_getDatabase) _getDatabase = createDatabase(name, adapter);
+    if (!_getDatabase) {
+        _getDatabase = createDatabase(name, adapter);
+    }
     return _getDatabase;
 }
 
@@ -36,9 +38,10 @@ async function createDatabase(name, adapter) {
     });
 
     console.log('creating hero-collection..');
-    await db.collection({
-        name: 'heroes',
-        schema: heroSchema
+    await db.addCollections({
+        heroes: {
+            schema: heroSchema
+        }
     });
 
     return db;

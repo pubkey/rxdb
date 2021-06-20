@@ -15,11 +15,11 @@ export const JWT_BEARER_TOKEN = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOi
 
 export const heroSchema = {
     version: 0,
+    primaryKey: 'id',
     type: 'object',
     properties: {
         id: {
-            type: 'string',
-            primary: true
+            type: 'string'
         },
         name: {
             type: 'string'
@@ -32,7 +32,7 @@ export const heroSchema = {
         }
     },
     indexes: ['name', 'color', 'updatedAt'],
-    required: ['color']
+    required: ['id', 'color']
 };
 
 export const graphQLGenerationInput = {

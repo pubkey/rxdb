@@ -9,7 +9,13 @@ import {
     createRxDatabase
 } from 'rxdb/plugins/core';
 
-addRxPlugin(require('pouchdb-adapter-idb'));
+import {
+    addPouchPlugin,
+    getRxStoragePouch
+} from 'rxdb/plugins/pouchdb';
+
+
+addPouchPlugin(require('pouchdb-adapter-idb'));
 import {
     RxDBReplicationGraphQLPlugin,
     pullQueryBuilderFromRxSchema,
@@ -82,7 +88,7 @@ async function run() {
     heroesList.innerHTML = 'Create database..';
     const db = await createRxDatabase({
         name: getDatabaseName(),
-        adapter: 'idb'
+        storage: getRxStoragePouch('idb')
     });
     window.db = db;
 
@@ -93,15 +99,16 @@ async function run() {
     });
 
     heroesList.innerHTML = 'Create collection..';
-    const collection = await db.collection({
-        name: 'hero',
-        schema: heroSchema
+    await db.addCollections({
+        hero: {
+            schema: heroSchema
+        }
     });
 
 
     // set up replication
     heroesList.innerHTML = 'Start replication..';
-    const replicationState = collection.syncGraphQL({
+    const replicationState = db.hero.syncGraphQL({
         url: syncURL,
         headers: {
             /* optional, set an auth header */
@@ -196,7 +203,7 @@ async function run() {
 
     // subscribe to heroes list and render the list on change
     heroesList.innerHTML = 'Subscribe to query..';
-    collection.find()
+    db.hero.find()
         .sort({
             name: 'asc'
         })
@@ -218,7 +225,7 @@ async function run() {
     // set up click handlers
     window.deleteHero = async (id) => {
         console.log('delete doc ' + id);
-        const doc = await collection.findOne(id).exec();
+        const doc = await db.hero.findOne(id).exec();
         if (doc) {
             console.log('got doc, remove it');
             try {
@@ -240,7 +247,7 @@ async function run() {
         console.log('inserting hero:');
         console.dir(obj);
 
-        await collection.insert(obj);
+        await db.hero.insert(obj);
         document.querySelector('input[name="name"]').value = '';
         document.querySelector('input[name="color"]').value = '';
     };
