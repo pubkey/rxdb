@@ -56,25 +56,11 @@ addPouchPlugin(PouchdbAdapterIdb);
 const useAdapter = 'idb';
 
 
-const collections = [
-    {
-        name: 'heroes',
-        schema: heroSchema,
-        methods: {
-            hpPercent(this: RxHeroDocument): number {
-                return this.hp / this.maxHP * 100;
-            }
-        },
-        sync: true
-    }
-];
-
 console.log('hostname: ' + window.location.hostname);
 const syncURL = 'http://' + window.location.hostname + ':10101/';
 
 let doSync = true;
 if (window.location.hash === '#nosync') { doSync = false; }
-
 
 /**
  * creates the database
@@ -98,7 +84,17 @@ async function _create(): Promise<RxHeroesDatabase> {
 
     // create collections
     console.log('DatabaseService: create collections');
-    await Promise.all(collections.map((colData) => db.collection(colData)));
+
+    await db.addCollections({
+        heroes: {
+            schema: heroSchema,
+            methods: {
+                hpPercent(this: RxHeroDocument): number {
+                    return this.hp / this.maxHP * 100;
+                }
+            }
+        }
+    });
 
     // hooks
     console.log('DatabaseService: add hooks');
@@ -122,7 +118,7 @@ async function _create(): Promise<RxHeroesDatabase> {
 
     // sync with server
     console.log('DatabaseService: sync');
-    await db.heroes.sync({
+    await db.heroes.syncCouchDB({
         remote: syncURL + '/hero'
     });
 

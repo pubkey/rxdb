@@ -96,7 +96,7 @@ async function run() {
      */
     const clientDB = await createRxDatabase({
         name: 'clientdb',
-        adapter: 'memory'
+        storage: getRxStoragePouch('memory')
     });
 
     // create a collection

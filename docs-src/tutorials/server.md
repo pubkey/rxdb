@@ -36,11 +36,11 @@ You also have to install the module `express-pouchdb` which does not come with R
 Now we can create a database and a collection.
 
 ```typescript
-import { createRxDatabase } from 'rxdb';
+import { createRxDatabase, getRxStoragePouch } from 'rxdb';
 // create database
 const db = await createRxDatabase({
     name: 'mydb',
-    adapter: 'memory'
+    storage: getRxStoragePouch('memory')
 });
 
 // create collection
@@ -134,7 +134,7 @@ On the client you can now also create a database and replicate it with our serve
 
 Start with creating the database and collection.
 ```typescript
-import { addRxPlugin, createRxDatabase } from 'rxdb';
+import { addRxPlugin, createRxDatabase, getRxStoragePouch } from 'rxdb';
 
 // we need the http-plugin to relicate over http
 import * as PouchHttpPlugin from 'pouchdb-adapter-http';
@@ -143,7 +143,7 @@ addRxPlugin(PouchHttpPlugin);
 
 const clientDB = await createRxDatabase({
     name: 'clientdb',
-    adapter: 'memory'
+    storage: getRxStoragePouch('memory')
 });
 
 // create a collection
