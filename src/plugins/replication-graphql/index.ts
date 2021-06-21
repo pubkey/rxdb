@@ -195,7 +195,9 @@ export class RxGraphQLReplicationState<RxDocType> {
     }
 
     /**
-     * @return true if sucessfull
+     * Pull all changes from the server,
+     * start from the last pulled change.
+     * @return true if sucessfull, false if something errored
      */
     async runPull(): Promise<boolean> {
         if (this.isStopped()) {
@@ -204,7 +206,6 @@ export class RxGraphQLReplicationState<RxDocType> {
 
         const latestDocument = await getLastPullDocument(this.collection, this.endpointHash);
         const latestDocumentData = latestDocument ? latestDocument : null;
-
         const pullGraphQL = await this.pull.queryBuilder(latestDocumentData);
 
         let result;
@@ -253,6 +254,7 @@ export class RxGraphQLReplicationState<RxDocType> {
         }
         await this.handleDocumentsFromRemote(modified);
         modified.map((doc: any) => this._subjects.recieved.next(doc));
+
 
         if (modified.length === 0) {
             if (this.live) {
@@ -498,7 +500,9 @@ export function syncGraphQL(
                 (async () => {
                     while (!replicationState.isStopped()) {
                         await promiseWait(replicationState.liveInterval);
-                        if (replicationState.isStopped()) return;
+                        if (replicationState.isStopped()) {
+                            return;
+                        }
                         await replicationState.run(
                             // do not retry on liveInterval-runs because they might stack up
                             // when failing
@@ -509,22 +513,29 @@ export function syncGraphQL(
             }
 
             if (push) {
-                const changeEventsSub = collection.$.subscribe(changeEvent => {
-                    if (replicationState.isStopped()) {
-                        return;
-                    }
-                    const doc = getDocumentDataOfRxChangeEvent(changeEvent);
-                    const rev = doc._rev;
-                    if (
-                        rev &&
-                        !wasRevisionfromPullReplication(
-                            replicationState.endpointHash,
-                            rev
-                        )
-                    ) {
-                        replicationState.run();
-                    }
-                });
+                /**
+                 * When a document is written to the collection,
+                 * we might have to run the replication run() once
+                 */
+                const changeEventsSub = collection.$.pipe(
+                    filter(cE => !cE.isLocal)
+                )
+                    .subscribe(changeEvent => {
+                        if (replicationState.isStopped()) {
+                            return;
+                        }
+                        const doc = getDocumentDataOfRxChangeEvent(changeEvent);
+                        const rev = doc._rev;
+                        if (
+                            rev &&
+                            !wasRevisionfromPullReplication(
+                                replicationState.endpointHash,
+                                rev
+                            )
+                        ) {
+                            replicationState.run();
+                        }
+                    });
                 replicationState._subs.push(changeEventsSub);
             }
         }
