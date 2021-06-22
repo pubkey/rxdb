@@ -1959,9 +1959,6 @@ describe('replication-graphql.test.js', () => {
                 assert.ok(!variable.hasOwnProperty('_attachments'));
                 assert.ok(!variable.hasOwnProperty('_deleted'));
 
-
-
-
                 // build valid output for deleted document
                 const outputDeleted = await builder({
                     id: 'foo',

@@ -1,5 +1,8 @@
 # InMemory Collections
 
+
+**WARNING**: Since version `10.0.0` the in-memory plugin does no longer work. It was not given real performance benefits because of how it uses the pouchdb-memory-adapter on top of leveldown. The in-memory plugin will be reimplemented in a custom memory `RxStorage` class.
+
 When you do a heavy amount of operations on a `RxCollection`, you might want to optimize this by using the in-memory-replication of the collection. The in-memory-replication behaves equal to the original collection but is stored in the Memory of your computer instead of the hard drive. It inherits the `statics` of the original collection, but not its hooks -so you should register them separately in the case you'd want them to apply.
 
 ## Pros:
