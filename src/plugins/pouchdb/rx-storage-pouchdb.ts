@@ -300,10 +300,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         const emitter = getCustomEventEmitterByPouch(this.internals.pouch);
         this.emittedEventIds = emitter.obliviousSet;
         const eventSub = emitter.subject.subscribe(async (ev) => {
-
-            console.log('emitter emitted:');
-            console.dir(ev);
-
             if (ev.writeOptions.hasOwnProperty('new_edits') && !ev.writeOptions.new_edits) {
                 await Promise.all(
                     ev.writeDocs.map(async (writeDoc) => {
@@ -694,8 +690,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     public async bulkAddRevisions(
         documents: RxDocumentData<RxDocType>[]
     ): Promise<void> {
-        console.log('bulkAddRevisions():');
-        console.dir(documents);
         const writeData = documents.map(doc => {
             return pouchSwapPrimaryToId(
                 this.schema.primaryKey,
@@ -738,8 +732,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             return storeDocumentData;
         });
 
-        console.log('pouch.bulkDocs:');
-        console.dir(insertDocs);
         const pouchResult = await this.internals.pouch.bulkDocs(insertDocs, {
             custom: {
                 writeRowById
@@ -821,8 +813,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
 
     async findDocumentsById(ids: string[], deleted: boolean): Promise<Map<string, RxDocumentData<RxDocType>>> {
         const primaryKey = this.schema.primaryKey;
-        console.log('findDocumentsById(deleted: ' + deleted + ', ids: ' + ids.join(', ') + ')');
-
 
         /**
          * On deleted documents, pouchdb will only return the tombstone.
@@ -840,8 +830,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                 doc_ids: ids,
                 style: 'all_docs'
             });
-            console.log('viaChanges:');
-            console.log(JSON.stringify(viaChanges, null, 4));
 
             const retDocs = new Map();
             await Promise.all(
@@ -854,18 +842,13 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                             style: 'all_docs'
                         }
                     );
-                    console.log('firstDoc: ' + result.id);
-                    console.dir(firstDoc);
                     const useFirstDoc = pouchDocumentDataToRxDocumentData(
                         primaryKey,
                         firstDoc
                     );
-                    console.dir(useFirstDoc);
                     retDocs.set(result.id, useFirstDoc);
                 })
             );
-            console.log('findDocumentsById(deleted: ' + deleted + ') ret:');
-            console.dir(retDocs);
             return retDocs;
         }
 
@@ -874,12 +857,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             include_docs: true,
             keys: ids
         });
-        console.log('findDocumentsById(deleted: ' + deleted + ') pouchResult:');
-        console.log(JSON.stringify(pouchResult, null, 4));
-
-
-
-
 
         const ret = new Map();
         pouchResult.rows
@@ -892,9 +869,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                 );
                 ret.set(row.id, docData);
             });
-
-        console.log('findDocumentsById(' + ids.join(', ') + ') result:');
-        console.dir(ret);
 
         return ret;
     }
@@ -1270,9 +1244,6 @@ export function pouchChangeRowToChangeStreamEvent<DocumentData>(
     }
     const revHeight = getHeightOfRevision(doc._rev);
 
-    console.log('pouchChangeRowToChangeStreamEvent():');
-    console.dir(pouchRow);
-
     if (pouchRow.deleted) {
         const previousDoc = flatClone(
             pouchDocumentDataToRxDocumentData(
@@ -1288,7 +1259,6 @@ export function pouchChangeRowToChangeStreamEvent<DocumentData>(
             doc: null,
             previous: previousDoc
         };
-        console.dir(ev);
         return ev;
     } else if (revHeight === 1) {
         const ev: ChangeStreamEvent<DocumentData> = {
@@ -1301,7 +1271,6 @@ export function pouchChangeRowToChangeStreamEvent<DocumentData>(
             ),
             previous: null
         };
-        console.dir(ev);
         return ev;
     } else {
         const ev: ChangeStreamEvent<DocumentData> = {
@@ -1314,7 +1283,6 @@ export function pouchChangeRowToChangeStreamEvent<DocumentData>(
             ),
             previous: 'UNKNOWN'
         };
-        console.dir(ev);
         return ev;
     }
 }

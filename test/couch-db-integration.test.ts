@@ -35,7 +35,7 @@ describe('couchdb-db-integration.test.js', () => {
                 JSON.parse(gotJson);
                 return true;
             } catch (err) {
-                console.log('could not reach couchdb server at ' + COUCHDB_URL);
+                console.error('could not reach couchdb server at ' + COUCHDB_URL);
                 return false;
             }
         }, 1000 * 60, 1000);
@@ -45,7 +45,6 @@ describe('couchdb-db-integration.test.js', () => {
         const col = await humansCollection.create(0);
 
         const couchName = COUCHDB_URL + randomCouchString(12);
-        console.log(couchName);
         const replicationState = await col.syncCouchDB({
             remote: couchName,
             waitForLeadership: false,

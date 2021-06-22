@@ -87,7 +87,7 @@ describe('replication-couchdb.test.js', () => {
                 c.storageInstance.internals.pouch.sync(server.url, {
                     live: true
                 }).on('error', function (err: Error) {
-                    console.log('error:');
+                    console.error('error:');
                     console.log(JSON.stringify(err));
                     throw err;
                 });

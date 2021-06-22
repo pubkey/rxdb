@@ -151,18 +151,13 @@ describe('replication-graphql.test.js', () => {
                     deleted: 'ok'
                 });
 
-                console.log('deletedDocs:');
-                console.log(JSON.stringify(deletedDocs, null, 4));
-
-                const deletedSingle = await Promise.all(
+                await Promise.all(
                     ids.map(id => pouch.get(id, {
                         revs: true,
                         deleted: 'ok',
                         open_revs: 'all'
                     }).catch(() => { }))
                 );
-                console.log('deletedSingle: ');
-                console.log(JSON.stringify(deletedSingle, null, 4));
 
                 assert.strictEqual(deletedDocs.rows.length, 2);
                 const deletedDoc = deletedDocs.rows.find((d: any) => d.value.deleted);
@@ -524,16 +519,8 @@ describe('replication-graphql.test.js', () => {
                         10
                     );
 
-
-                    console.log('changesResult:');
-                    console.dir(changesResult.changedDocs);
-                    console.log(JSON.stringify(changesResult, null, 4));
-
-
                     assert.strictEqual(changesResult.changedDocs.size, 1);
                     const docFromChange = getFromMapOrThrow(changesResult.changedDocs, id);
-                    console.log('docFromChange:');
-                    console.dir(docFromChange);
                     assert.ok(docFromChange.doc._deleted);
                     assert.strictEqual(docFromChange.doc.age, 100);
 
@@ -549,8 +536,6 @@ describe('replication-graphql.test.js', () => {
                     );
                     const firstChange = Array.from(changesResult.changedDocs.values())[0];
 
-                    console.log('firstChange:');
-                    console.dir(firstChange);
                     assert.ok(firstChange.doc.id);
                     c.database.destroy();
                 });
@@ -1122,8 +1107,6 @@ describe('replication-graphql.test.js', () => {
                     SpawnServer.spawn()
                 ]);
 
-                console.log(' ---- 0');
-
                 const replicationState = c.syncGraphQL({
                     url: server.url,
                     push: {
@@ -1134,10 +1117,7 @@ describe('replication-graphql.test.js', () => {
                     deletedFlag: 'deleted'
                 });
 
-                console.log(' ---- 1');
-
                 await replicationState.awaitInitialReplication();
-                console.log(' ---- 2');
 
                 const docsOnServer = server.getDocuments();
                 assert.strictEqual(docsOnServer.length, batchSize);
@@ -1881,7 +1861,6 @@ describe('replication-graphql.test.js', () => {
 
                 const build = buildSchema(output.asString);
 
-                console.log(output.asString);
                 assert.ok(build);
             });
             it('should create a valid output with subscription params', () => {
@@ -1989,7 +1968,7 @@ describe('replication-graphql.test.js', () => {
                     id: 'foo',
                     _deleted: true
                 });
-                const parsedDeleted = parseQuery(outputDeleted.query);
+                parseQuery(outputDeleted.query);
 
                 // should not have added internal properties
                 const variableDeleted: HumanWithTimestampDocumentType = outputDeleted.variables.human;

@@ -81,7 +81,7 @@ config.parallel('plugin.test.js', () => {
             try {
                 await promise;
             } catch (err) {
-                console.log('errrrr');
+                console.error('errrrr');
                 console.dir(stdout);
                 throw new Error(`could not run Core.node.js.
                     # Error: ${err}
@@ -106,7 +106,7 @@ config.parallel('plugin.test.js', () => {
             try {
                 await promise;
             } catch (err) {
-                console.log('errrrr');
+                console.error('errrrr');
                 console.dir(stdout);
                 throw new Error(`could not run full.node.js.
                     # Error: ${err}
@@ -136,7 +136,7 @@ config.parallel('plugin.test.js', () => {
             try {
                 await promise;
             } catch (err) {
-                console.log('errrrr');
+                console.error('errrrr');
                 console.dir(stdout);
                 throw new Error(`could not run in-memory.node.js.
                         # Error: ${err}
@@ -165,7 +165,7 @@ config.parallel('plugin.test.js', () => {
             try {
                 await promise;
             } catch (err) {
-                console.log('errrrr');
+                console.error('errrrr');
                 console.dir(stdout);
                 throw new Error(`could not run ajv-validate.node.js.
                             # Error: ${err}
@@ -194,7 +194,7 @@ config.parallel('plugin.test.js', () => {
             try {
                 await promise;
             } catch (err) {
-                console.log('errrrr');
+                console.error('errrrr');
                 console.dir(stdout);
                 throw new Error(`could not run validate-z-schema.node.js.
                             # Error: ${err}
@@ -223,7 +223,7 @@ config.parallel('plugin.test.js', () => {
             try {
                 await promise;
             } catch (err) {
-                console.log('errrrr');
+                console.error('errrrr');
                 console.dir(stdout);
                 throw new Error(`could not run no-validate.node.js.
                             # Error: ${err}

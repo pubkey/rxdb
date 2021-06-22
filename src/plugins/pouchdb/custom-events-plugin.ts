@@ -155,12 +155,7 @@ export function addCustomEventsPluginToPouch() {
                     return firstDoc;
                 })
             );
-
-            console.log('bulkDocs(new_edits=false) previousDocsResult:');
-            console.log(JSON.stringify(previousDocsResult, null, 4));
-
             previousDocsResult.forEach(doc => previousDocs.set(doc._id, doc));
-
 
             if (options.set_new_edit_as_latest_revision) {
                 docs.forEach(doc => {
@@ -168,7 +163,7 @@ export function addCustomEventsPluginToPouch() {
                     const previous = previousDocs.get(id);
                     if (previous) {
                         const splittedRev = doc._rev.split('-');
-                        const revHeight = parseInt(splittedRev[0]);
+                        const revHeight = parseInt(splittedRev[0], 10);
                         const revLabel = splittedRev[1];
                         doc._revisions = {
                             start: revHeight,
@@ -191,13 +186,6 @@ export function addCustomEventsPluginToPouch() {
         const deeperOptions = flatClone(options);
         deeperOptions.isDeeper = true;
 
-        console.log('deeperOptions:');
-        console.dir(deeperOptions);
-
-
-        console.log('call old bulkDocs with docs:');
-        console.log(JSON.stringify(docs, null, 4));
-
         return oldBulkDocs.call(this, docs, deeperOptions, (err: any, result: any) => {
             if (err) {
                 if (callback) {
@@ -205,9 +193,6 @@ export function addCustomEventsPluginToPouch() {
                 } else {
                     throw err;
                 }
-
-
-
             } else {
                 if (!options.isDeeper) {
                     const endTime = now();
@@ -220,9 +205,6 @@ export function addCustomEventsPluginToPouch() {
                         startTime,
                         endTime
                     };
-
-                    console.log('emitData writeResult:');
-                    console.log(JSON.stringify(result.writeResult));
 
                     const emitter = getCustomEventEmitterByPouch(this);
                     emitter.subject.next(emitData);

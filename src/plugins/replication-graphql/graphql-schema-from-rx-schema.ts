@@ -81,9 +81,6 @@ export function graphQLSchemaFromRxSchema(
             direction: 'input'
         });
 
-        console.log('inputGraphQL:');
-        console.dir(inputGraphQL);
-
         ret.inputs = ret.inputs.concat(
             inputGraphQL
                 .typeDefinitions

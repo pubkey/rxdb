@@ -334,11 +334,6 @@ export class RxCollectionBase<
         );
         const docs = queryResult.documents
             .map((doc: any) => _handleFromStorageInstance(this, doc, noDecrypt));
-
-            console.log('_queryStorageInstance() result:');
-            console.dir(preparedQuery);
-            console.dir(docs);
-
         return docs;
     }
 

@@ -4,7 +4,6 @@ import {
 } from './helper';
 import type {
     RxCollection,
-    ChangeStreamEvent,
     RxLocalDocumentData,
     RxDocumentData
 } from '../../types';
@@ -61,7 +60,6 @@ export async function setLastPushSequence(
     endpointHash: string,
     sequence: number
 ): Promise<CheckpointDoc> {
-    console.log('setLastPushSequence(' + sequence + ')');
     const _id = pushSequenceId(endpointHash);
 
     const doc = await findLocalDocument<CheckpointDoc>(
@@ -115,8 +113,6 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
         collection,
         endpointHash
     );
-    console.log('getChangesSinceLastPushSequence() lastPushSequence: ' + lastPushSequence);
-
 
     let retry = true;
     let lastSequence: number = lastPushSequence;
@@ -143,7 +139,6 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
 
         // optimisation shortcut, do not proceed if there are no changed documents
         if (changesResults.changedDocuments.length === 0) {
-            console.log('getChangesSinceLastPushSequence() optimisation shortcut, do not proceed if there are no changed documents');
             retry = false;
             continue;
         }
@@ -152,11 +147,6 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
             changesResults.changedDocuments.map(row => row.id),
             true
         );
-
-        console.log('getChangesSinceLastPushSequence() docs: ');
-        console.dir(changesResults);
-        console.dir(docs);
-
 
         changesResults.changedDocuments.forEach((row) => {
             const id = row.id;
@@ -195,9 +185,6 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
             retry = false;
         }
     }
-
-    console.log('getChangesSinceLastPushSequence() result:: ' + lastSequence);
-    console.dir(changedDocs);
 
     return {
         changedDocs,

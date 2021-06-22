@@ -205,19 +205,13 @@ export class RxGraphQLReplicationState<RxDocType> {
             return Promise.resolve(false);
         }
 
-        console.log('------------------ runPull()');
-
         const latestDocument = await getLastPullDocument(this.collection, this.endpointHash);
-        console.log('latestDocument:');
-        console.dir(latestDocument);
         const latestDocumentData = latestDocument ? latestDocument : null;
         const pullGraphQL = await this.pull.queryBuilder(latestDocumentData);
 
         let result;
         try {
             result = await this.client.query(pullGraphQL.query, pullGraphQL.variables);
-            console.log('pull result:');
-            console.dir(result);
             if (result.errors) {
                 if (typeof result.errors === 'string') {
                     throw new Error(result.errors);
@@ -298,7 +292,6 @@ export class RxGraphQLReplicationState<RxDocType> {
      * @return true if successfull, false if not
      */
     async runPush(): Promise<boolean> {
-        console.log('------------------------------------------ runPush()');
         const changesResult = await getChangesSinceLastPushSequence<RxDocType>(
             this.collection,
             this.endpointHash,
@@ -341,13 +334,7 @@ export class RxGraphQLReplicationState<RxDocType> {
                     changeWithDoc.doc._deleted = false;
                 }
 
-                console.log('changeWithDoc.doc:');
-                console.dir(changeWithDoc.doc);
-
                 const pushObj = await this.push.queryBuilder(changeWithDoc.doc);
-
-                console.log('pushObj:');
-                console.dir(pushObj);
 
                 const result = await this.client.query(pushObj.query, pushObj.variables);
 
@@ -365,11 +352,6 @@ export class RxGraphQLReplicationState<RxDocType> {
                 }
             }
         } catch (err) {
-
-            console.log('run push row failure:');
-            console.dir(err);
-            console.dir(lastSuccessfullChange);
-
             if (lastSuccessfullChange) {
                 await setLastPushSequence(
                     this.collection,
@@ -387,9 +369,6 @@ export class RxGraphQLReplicationState<RxDocType> {
             this.endpointHash,
             changesResult.lastSequence
         );
-
-
-        console.log('------------------------------------------ runPush() DONE');
 
         if (changesResult.changedDocs.size === 0) {
             if (this.live) {

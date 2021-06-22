@@ -475,8 +475,6 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     include_docs: true,
                     since: 2
                 });
-                console.log('pouchResults:');
-                console.log(JSON.stringify(pouchResults, null, 4));
 
                 const changesAfterDelete = await storageInstance.getChangedDocuments({
                     order: 'asc',
@@ -662,7 +660,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 });
 
                 // insert
-                const insertResult = await storageInstance.bulkWrite([{
+                await storageInstance.bulkWrite([{
                     document: {
                         key: id,
                         value: 'one',
@@ -678,13 +676,6 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     _rev: '2-a6e639f1073f75farxdbreplicationgraphql'
                 };
                 await storageInstance.bulkAddRevisions([bulkInsertAgain]);
-
-
-                console.log('#########################################');
-                console.log('#########################################');
-                console.log('#########################################');
-                console.log('#########################################');
-
 
                 // delete via bulkWrite()
                 await storageInstance.bulkWrite([{
@@ -711,8 +702,6 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 }]);
 
                 await wait(1000);
-
-                console.dir(emitted);
 
                 assert.strictEqual(emitted.length, 3);
                 assert.ok(emitted[0].change.operation === 'INSERT');
