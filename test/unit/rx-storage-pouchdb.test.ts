@@ -469,7 +469,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     }
                 }]);
 
-                const pouchResults = await storageInstance.internals.pouch.changes({
+                await storageInstance.internals.pouch.changes({
                     live: false,
                     limit: 10,
                     include_docs: true,

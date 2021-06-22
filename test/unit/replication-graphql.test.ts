@@ -1953,7 +1953,6 @@ describe('replication-graphql.test.js', () => {
                 const parsed = parseQuery(output.query);
 
                 const variable: HumanWithTimestampDocumentType = output.variables.human;
-                console.dir(variable);
 
                 // should not have added internal properties
                 assert.ok(!variable.hasOwnProperty('_rev'));
@@ -1976,8 +1975,6 @@ describe('replication-graphql.test.js', () => {
                 assert.ok(!variableDeleted.hasOwnProperty('_attachments'));
                 assert.ok(!variableDeleted.hasOwnProperty('_deleted'));
 
-
-                console.dir(outputDeleted.variables);
                 assert.ok(parsed);
             });
         });
