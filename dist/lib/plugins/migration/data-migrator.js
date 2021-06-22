@@ -19,11 +19,13 @@ exports.migrateOldCollection = migrateOldCollection;
 exports.migratePromise = migratePromise;
 exports.DataMigrator = void 0;
 
+var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
+
+var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
+
 var _rxjs = require("rxjs");
 
 var _deepEqual = _interopRequireDefault(require("deep-equal"));
-
-var _pouchDb = require("../../pouch-db");
 
 var _util = require("../../util");
 
@@ -31,17 +33,17 @@ var _rxSchema = require("../../rx-schema");
 
 var _rxError = require("../../rx-error");
 
-var _overwritable = require("../../overwritable");
-
 var _hooks = require("../../hooks");
 
 var _crypter = require("../../crypter");
 
-var _rxCollectionHelper = require("../../rx-collection-helper");
-
 var _migrationState = require("./migration-state");
 
 var _operators = require("rxjs/operators");
+
+var _rxStorageHelper = require("../../rx-storage-helper");
+
+var _rxCollectionHelper = require("../../rx-collection-helper");
 
 /**
  * The DataMigrator handles the documents from collections with older schemas
@@ -50,7 +52,7 @@ var _operators = require("rxjs/operators");
 
 /**
  * TODO this should be completely rewritten because:
- * - The current implemetation does not use pouchdb'S bulkDocs which is much faster
+ * - The current implemetation does not use bulkDocs which is much faster
  * - This could have been done in much less code which would be easier to uderstand
  *
  */
@@ -103,6 +105,8 @@ var DataMigrator = /*#__PURE__*/function () {
      * TODO this is a side-effect which might throw
      * We did this because it is not possible to create new Observer(async(...))
      * @link https://github.com/ReactiveX/rxjs/issues/4074
+     * In the future the whole migration plugin should be rewritten without rxjs
+     * so we do not have this problem.
      */
 
     (function () {
@@ -110,7 +114,7 @@ var DataMigrator = /*#__PURE__*/function () {
       return _getOldCollections(_this).then(function (ret) {
         oldCols = ret;
         var countAll = Promise.all(oldCols.map(function (oldCol) {
-          return (0, _pouchDb.countAllUndeleted)(oldCol.pouchdb);
+          return (0, _rxStorageHelper.countAllUndeleted)(oldCol.storageInstance);
         }));
         return countAll;
       }).then(function (countAll) {
@@ -191,50 +195,101 @@ var DataMigrator = /*#__PURE__*/function () {
 
 exports.DataMigrator = DataMigrator;
 
-function createOldCollection(version, schemaObj, dataMigrator) {
-  var database = dataMigrator.newestCollection.database;
-  var schema = (0, _rxSchema.createRxSchema)(schemaObj, false);
-  var ret = {
-    version: version,
-    dataMigrator: dataMigrator,
-    newestCollection: dataMigrator.newestCollection,
-    database: database,
-    schema: (0, _rxSchema.createRxSchema)(schemaObj, false),
-    pouchdb: database._spawnPouchDB(dataMigrator.newestCollection.name, version, dataMigrator.newestCollection.pouchSettings),
-    _crypter: (0, _crypter.createCrypter)(database.password, schema)
-  };
-
-  if (schema.doKeyCompression()) {
-    ret._keyCompressor = _overwritable.overwritable.createKeyCompressor(schema);
-  }
-
-  return ret;
+function createOldCollection(_x, _x2, _x3) {
+  return _createOldCollection.apply(this, arguments);
 }
 /**
- * get an array with OldCollection-instances from all existing old pouchdb-instance
+ * get an array with OldCollection-instances from all existing old storage-instances
  */
 
 
-function _getOldCollections(dataMigrator) {
-  return Promise.all((0, _rxSchema.getPreviousVersions)(dataMigrator.currentSchema.jsonSchema).map(function (v) {
-    return dataMigrator.database.internalStore.get(dataMigrator.name + '-' + v);
-  }).map(function (fun) {
-    return fun["catch"](function () {
-      return null;
-    });
-  }) // auto-catch so Promise.all continues
-  ).then(function (oldColDocs) {
-    return oldColDocs.filter(function (colDoc) {
-      return colDoc !== null;
-    }).map(function (colDoc) {
-      return createOldCollection(colDoc.schema.version, colDoc.schema, dataMigrator);
-    });
-  });
+function _createOldCollection() {
+  _createOldCollection = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(version, schemaObj, dataMigrator) {
+    var database, schema, storageInstanceCreationParams, storageInstance, ret;
+    return _regenerator["default"].wrap(function _callee$(_context) {
+      while (1) {
+        switch (_context.prev = _context.next) {
+          case 0:
+            database = dataMigrator.newestCollection.database;
+            schema = (0, _rxSchema.createRxSchema)(schemaObj, false);
+            storageInstanceCreationParams = {
+              databaseName: database.name,
+              collectionName: dataMigrator.newestCollection.name,
+              schema: schemaObj,
+              options: dataMigrator.newestCollection.instanceCreationOptions
+            };
+            _context.next = 5;
+            return database.storage.createStorageInstance(storageInstanceCreationParams);
+
+          case 5:
+            storageInstance = _context.sent;
+            ret = {
+              version: version,
+              dataMigrator: dataMigrator,
+              newestCollection: dataMigrator.newestCollection,
+              database: database,
+              schema: (0, _rxSchema.createRxSchema)(schemaObj, false),
+              storageInstance: storageInstance,
+              _crypter: (0, _crypter.createCrypter)(database.password, schema)
+            };
+            return _context.abrupt("return", ret);
+
+          case 8:
+          case "end":
+            return _context.stop();
+        }
+      }
+    }, _callee);
+  }));
+  return _createOldCollection.apply(this, arguments);
+}
+
+function _getOldCollections(_x4) {
+  return _getOldCollections2.apply(this, arguments);
 }
 /**
  * returns true if a migration is needed
  */
 
+
+function _getOldCollections2() {
+  _getOldCollections2 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(dataMigrator) {
+    var oldColDocs;
+    return _regenerator["default"].wrap(function _callee2$(_context2) {
+      while (1) {
+        switch (_context2.prev = _context2.next) {
+          case 0:
+            _context2.next = 2;
+            return Promise.all((0, _rxSchema.getPreviousVersions)(dataMigrator.currentSchema.jsonSchema).map(function (v) {
+              return (0, _rxStorageHelper.getSingleDocument)(dataMigrator.database.internalStore, dataMigrator.name + '-' + v);
+            }).map(function (fun) {
+              return fun["catch"](function () {
+                return null;
+              });
+            }) // auto-catch so Promise.all continues
+            );
+
+          case 2:
+            oldColDocs = _context2.sent;
+            return _context2.abrupt("return", Promise.all(oldColDocs.map(function (colDoc) {
+              if (!colDoc) {
+                return null;
+              }
+
+              return createOldCollection(colDoc.schema.version, colDoc.schema, dataMigrator);
+            }).filter(function (colDoc) {
+              return colDoc !== null;
+            })));
+
+          case 4:
+          case "end":
+            return _context2.stop();
+        }
+      }
+    }, _callee2);
+  }));
+  return _getOldCollections2.apply(this, arguments);
+}
 
 function mustMigrate(dataMigrator) {
   if (dataMigrator.currentSchema.version === 0) {
@@ -261,9 +316,11 @@ function runStrategyIfNotNull(oldCollection, version, docOrNull) {
 }
 
 function getBatchOfOldCollection(oldCollection, batchSize) {
-  return (0, _pouchDb.getBatch)(oldCollection.pouchdb, batchSize).then(function (docs) {
+  return (0, _rxStorageHelper.getBatch)(oldCollection.storageInstance, batchSize).then(function (docs) {
     return docs.map(function (doc) {
-      return (0, _rxCollectionHelper._handleFromPouch)(oldCollection, doc);
+      doc = (0, _util.flatClone)(doc);
+      doc = (0, _rxCollectionHelper._handleFromStorageInstance)(oldCollection, doc);
+      return doc;
     });
   });
 }
@@ -301,7 +358,10 @@ function migrateDocumentData(oldCollection, docData) {
   }
 
   return currentPromise.then(function (doc) {
-    if (doc === null) return Promise.resolve(null); // check final schema
+    if (doc === null) {
+      return Promise.resolve(null);
+    } // check final schema
+
 
     try {
       oldCollection.newestCollection.schema.validate(doc);
@@ -388,17 +448,16 @@ function _migrateDocument(oldCollection, docData) {
        * notice that this data also contains the attachments data
        */
       var attachmentsBefore = migrated._attachments;
-
-      var saveData = oldCollection.newestCollection._handleToPouch(migrated);
-
+      var saveData = (0, _rxCollectionHelper._handleToStorageInstance)(oldCollection.newestCollection, migrated);
       saveData._attachments = attachmentsBefore;
-      return oldCollection.newestCollection.pouch.bulkDocs([saveData], {
-        /**
-         * We need new_edits: false
-         * because we provide the _rev by our own
-         */
-        new_edits: false
-      }).then(function () {
+      /**
+       * We need to add as revision
+       * because we provide the _rev by our own
+       * to have deterministic revisions in case the migration
+       * runs on multiple nodes which must lead to the equal storage state.
+       */
+
+      return oldCollection.newestCollection.storageInstance.bulkAddRevisions([saveData]).then(function () {
         action.res = saveData;
         action.type = 'success';
         return (0, _hooks.runAsyncPluginHooks)('postMigrateDocument', action);
@@ -411,25 +470,30 @@ function _migrateDocument(oldCollection, docData) {
        */
       action.type = 'deleted';
     }
-  }).then(function () {
-    // remove from old collection
-    return oldCollection.pouchdb.remove((0, _rxCollectionHelper._handleToPouch)(oldCollection, docData))["catch"](function () {});
+  }) // remove the migrated document from the old collection
+  .then(function () {
+    var writeDeleted = (0, _util.flatClone)(docData);
+    writeDeleted._deleted = true;
+    return oldCollection.storageInstance.bulkWrite([{
+      previous: (0, _rxCollectionHelper._handleToStorageInstance)(oldCollection, docData),
+      document: (0, _rxCollectionHelper._handleToStorageInstance)(oldCollection, writeDeleted)
+    }]);
   }).then(function () {
     return action;
   });
 }
 /**
- * deletes this.pouchdb and removes it from the database.collectionsCollection
+ * deletes this.storageInstance and removes it from the database.collectionsCollection
  */
 
 
 function deleteOldCollection(oldCollection) {
-  return oldCollection.pouchdb.destroy().then(function () {
+  return oldCollection.storageInstance.remove().then(function () {
     return oldCollection.database.removeCollectionDoc(oldCollection.dataMigrator.name, oldCollection.schema);
   });
 }
 /**
- * runs the migration on all documents and deletes the pouchdb afterwards
+ * runs the migration on all documents and deletes the storage instance afterwards
  */
 
 

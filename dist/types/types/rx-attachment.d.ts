@@ -2,13 +2,12 @@ import { BlobBuffer } from './pouch';
 import {
     RxDocument
 } from './rx-document';
+import { RxAttachmentWriteData } from './rx-storage';
 
 declare type Buffer = any;
 
-export type RxAttachmentCreator = {
+export type RxAttachmentCreator = RxAttachmentWriteData & {
     id: string,
-    data: string | BlobBuffer,
-    type: string
 };
 
 export declare class RxAttachment<RxDocumentType, OrmMethods = {}> {

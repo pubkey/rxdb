@@ -4,7 +4,7 @@
  */
 import { BehaviorSubject, Subject, Subscription, Observable } from 'rxjs';
 import type { RxCollection, PouchSyncHandler, RxPlugin, SyncOptions } from '../types';
-export declare class RxReplicationStateBase {
+export declare class RxCouchDBReplicationStateBase {
     readonly collection: RxCollection;
     readonly syncOptions: SyncOptions;
     _subs: Subscription[];
@@ -26,7 +26,7 @@ export declare class RxReplicationStateBase {
      */
     cancel(): Promise<boolean>;
 }
-export declare type RxReplicationState = RxReplicationStateBase & {
+export declare type RxCouchDBReplicationState = RxCouchDBReplicationStateBase & {
     change$: Observable<any>;
     docs$: Observable<any>;
     denied$: Observable<any>;
@@ -35,9 +35,9 @@ export declare type RxReplicationState = RxReplicationStateBase & {
     complete$: Observable<any>;
     error$: Observable<any>;
 };
-export declare function setPouchEventEmitter(rxRepState: RxReplicationState, evEmitter: PouchSyncHandler): void;
-export declare function createRxReplicationState(collection: RxCollection, syncOptions: SyncOptions): RxReplicationState;
-export declare function sync(this: RxCollection, { remote, waitForLeadership, direction, options, query }: SyncOptions): any;
+export declare function setPouchEventEmitter(rxRepState: RxCouchDBReplicationState, evEmitter: PouchSyncHandler): void;
+export declare function createRxCouchDBReplicationState(collection: RxCollection, syncOptions: SyncOptions): RxCouchDBReplicationState;
+export declare function syncCouchDB(this: RxCollection, { remote, waitForLeadership, direction, options, query }: SyncOptions): any;
 export declare const rxdb = true;
 export declare const prototypes: {
     RxCollection: (proto: any) => void;
@@ -45,4 +45,4 @@ export declare const prototypes: {
 export declare const hooks: {
     createRxCollection: (collection: RxCollection) => void;
 };
-export declare const RxDBReplicationPlugin: RxPlugin;
+export declare const RxDBReplicationCouchDBPlugin: RxPlugin;

@@ -64,10 +64,14 @@ function pushQueryBuilderFromRxSchema(collectionName, input) {
       var k = _ref[0],
           v = _ref[1];
 
-      if (!input.ignoreInputKeys.includes(k)) {
+      if ( // skip if in ignoreInputKeys list
+      !input.ignoreInputKeys.includes(k) && // only use properties that are in the schema
+      input.schema.properties[k]) {
         sendDoc[k] = v;
       }
-    });
+    }); // add deleted flag
+
+    sendDoc[input.deletedFlag] = !!doc._deleted;
     var variables = (_variables = {}, _variables[collectionName] = sendDoc, _variables);
     return {
       query: query,

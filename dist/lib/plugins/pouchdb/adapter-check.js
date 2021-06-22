@@ -4,11 +4,11 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.checkAdapter = checkAdapter;
-exports.RxDBAdapterCheckPlugin = exports.overwritable = exports.prototypes = exports.rxdb = exports.POUCHDB_LOCATION = void 0;
+exports.POUCHDB_LOCATION = void 0;
 
-var _pouchDb = require("../pouch-db");
+var _pouchDb = require("./pouch-db");
 
-var _util = require("../util");
+var _util = require("../../util");
 
 /**
  * this plugin adds the checkAdapter-function to rxdb
@@ -25,7 +25,7 @@ exports.POUCHDB_LOCATION = POUCHDB_LOCATION;
 
 function checkAdapter(adapter) {
   // id of the document which is stored and removed to ensure everything works
-  var _id = POUCHDB_LOCATION + '-' + (0, _util.generateId)();
+  var _id = POUCHDB_LOCATION + '-' + (0, _util.randomCouchString)(12);
 
   var pouch;
 
@@ -73,21 +73,5 @@ function checkAdapter(adapter) {
    * calling destroy would possibly crash the other call
    */
 }
-
-var rxdb = true;
-exports.rxdb = rxdb;
-var prototypes = {};
-exports.prototypes = prototypes;
-var overwritable = {
-  checkAdapter: checkAdapter
-};
-exports.overwritable = overwritable;
-var RxDBAdapterCheckPlugin = {
-  name: 'adapter-check',
-  rxdb: rxdb,
-  prototypes: prototypes,
-  overwritable: overwritable
-};
-exports.RxDBAdapterCheckPlugin = RxDBAdapterCheckPlugin;
 
 //# sourceMappingURL=adapter-check.js.map

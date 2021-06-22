@@ -1,7 +1,6 @@
 import _createClass from "@babel/runtime/helpers/createClass";
-import objectPath from 'object-path';
 import deepEqual from 'deep-equal';
-import { clone, hash, sortObject, trimDots, pluginMissing, overwriteGetterForCaching } from './util';
+import { clone, hash, sortObject, pluginMissing, overwriteGetterForCaching } from './util';
 import { newRxError } from './rx-error';
 import { runPluginHooks } from './hooks';
 import { defineGetterSetter } from './rx-document';
@@ -10,7 +9,7 @@ export var RxSchema = /*#__PURE__*/function () {
     this.jsonSchema = jsonSchema;
     this.indexes = getIndexes(this.jsonSchema); // primary is always required
 
-    this.primaryPath = getPrimary(this.jsonSchema);
+    this.primaryPath = this.jsonSchema.primaryKey;
 
     if (this.primaryPath) {
       this.jsonSchema.required.push(this.primaryPath);
@@ -21,26 +20,10 @@ export var RxSchema = /*#__PURE__*/function () {
     this.jsonSchema.required = this.jsonSchema.required.concat(this.finalFields).filter(function (elem, pos, arr) {
       return arr.indexOf(elem) === pos;
     }); // unique;
-    // add primary to schema if not there (if _id)
-
-    if (!this.jsonSchema.properties[this.primaryPath]) {
-      this.jsonSchema.properties[this.primaryPath] = {
-        type: 'string',
-        minLength: 1
-      };
-    }
   }
 
   var _proto = RxSchema.prototype;
 
-  _proto.getSchemaByObjectPath = function getSchemaByObjectPath(path) {
-    var usePath = path;
-    usePath = usePath.replace(/\./g, '.properties.');
-    usePath = 'properties.' + usePath;
-    usePath = trimDots(usePath);
-    var ret = objectPath.get(this.jsonSchema, usePath);
-    return ret;
-  }
   /**
    * checks if a given change on a document is allowed
    * Ensures that:
@@ -48,8 +31,6 @@ export var RxSchema = /*#__PURE__*/function () {
    * - final fields are not modified
    * @throws {Error} if not valid
    */
-  ;
-
   _proto.validateChange = function validateChange(dataBefore, dataAfter) {
     this.finalFields.forEach(function (fieldName) {
       if (!deepEqual(dataBefore[fieldName], dataAfter[fieldName])) {
@@ -89,39 +70,6 @@ export var RxSchema = /*#__PURE__*/function () {
       return obj[k] = v;
     });
     return obj;
-  };
-
-  _proto.swapIdToPrimary = function swapIdToPrimary(obj) {
-    if (this.primaryPath === '_id' || obj[this.primaryPath]) {
-      return obj;
-    }
-
-    obj[this.primaryPath] = obj._id;
-    delete obj._id;
-    return obj;
-  };
-
-  _proto.swapPrimaryToId = function swapPrimaryToId(obj) {
-    var _this = this;
-
-    if (this.primaryPath === '_id') {
-      return obj;
-    }
-
-    var ret = {};
-    Object.entries(obj).forEach(function (entry) {
-      var newKey = entry[0] === _this.primaryPath ? '_id' : entry[0];
-      ret[newKey] = entry[1];
-    });
-    return ret;
-  }
-  /**
-   * returns true if key-compression should be done
-   */
-  ;
-
-  _proto.doKeyCompression = function doKeyCompression() {
-    return this.jsonSchema.keyCompression;
   }
   /**
    * creates the schema-based document-prototype,
@@ -208,17 +156,6 @@ export function getIndexes(jsonSchema) {
   });
 }
 /**
- * returns the primary path of a jsonschema
- * @return primaryPath which is _id if none defined
- */
-
-export function getPrimary(jsonSchema) {
-  var ret = Object.keys(jsonSchema.properties).filter(function (key) {
-    return jsonSchema.properties[key].primary;
-  }).shift();
-  if (!ret) return '_id';else return ret;
-}
-/**
  * array with previous version-numbers
  */
 
@@ -239,7 +176,7 @@ export function getFinalFields(jsonSchema) {
     return jsonSchema.properties[key]["final"];
   }); // primary is also final
 
-  ret.push(getPrimary(jsonSchema));
+  ret.push(jsonSchema.primaryKey);
   return ret;
 }
 /**
@@ -254,6 +191,12 @@ export function normalize(jsonSchema) {
     normalizedSchema.indexes = Array.from(jsonSchema.indexes); // indexes should remain unsorted
   }
 
+  if (!jsonSchema.required) {
+    jsonSchema.required = [jsonSchema.primaryKey];
+  } else if (!jsonSchema.required.includes(jsonSchema.primaryKey)) {
+    jsonSchema.required.push(jsonSchema.primaryKey);
+  }
+
   return normalizedSchema;
 }
 /**
@@ -261,18 +204,26 @@ export function normalize(jsonSchema) {
  * @return cloned schemaObj
  */
 
-export var fillWithDefaultSettings = function fillWithDefaultSettings(schemaObj) {
+export function fillWithDefaultSettings(schemaObj) {
   schemaObj = clone(schemaObj); // additionalProperties is always false
 
   schemaObj.additionalProperties = false; // fill with key-compression-state ()
 
-  if (!schemaObj.hasOwnProperty('keyCompression')) schemaObj.keyCompression = false; // indexes must be array
+  if (!schemaObj.hasOwnProperty('keyCompression')) {
+    schemaObj.keyCompression = false;
+  } // indexes must be array
+
 
   schemaObj.indexes = schemaObj.indexes || []; // required must be array
 
   schemaObj.required = schemaObj.required || []; // encrypted must be array
 
-  schemaObj.encrypted = schemaObj.encrypted || []; // add _rev
+  schemaObj.encrypted = schemaObj.encrypted || [];
+  /**
+   * TODO we should not need to added the internal fields to the schema.
+   * Better remove the before validation.
+   */
+  // add _rev
 
   schemaObj.properties._rev = {
     type: 'string',
@@ -281,11 +232,15 @@ export var fillWithDefaultSettings = function fillWithDefaultSettings(schemaObj)
 
   schemaObj.properties._attachments = {
     type: 'object'
+  }; // add deleted flag
+
+  schemaObj.properties._deleted = {
+    type: 'boolean'
   }; // version is 0 by default
 
   schemaObj.version = schemaObj.version || 0;
   return schemaObj;
-};
+}
 export function createRxSchema(jsonSchema) {
   var runPreCreateHooks = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
 

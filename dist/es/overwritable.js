@@ -13,26 +13,22 @@ export var overwritable = {
   },
 
   /**
+   * Deep freezes and object when in dev-mode.
+   * Deep-Freezing has the same performaance as deep-cloning, so we only do that in dev-mode.
+   * Also we can ensure the readonly state via typescript
+   * @link https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
+   */
+  deepFreezeWhenDevMode: function deepFreezeWhenDevMode(obj) {
+    return obj;
+  },
+
+  /**
    * validates if a password can be used
    * @overwritten by plugin (optional)
    * @throws if password not valid
    */
   validatePassword: function validatePassword(_password) {
     throw pluginMissing('encryption');
-  },
-
-  /**
-   * creates a key-compressor for the given schema
-   */
-  createKeyCompressor: function createKeyCompressor(_rxSchema) {
-    throw pluginMissing('key-compression');
-  },
-
-  /**
-   * checks if the given adapter can be used
-   */
-  checkAdapter: function checkAdapter(_adapter) {
-    throw pluginMissing('adapter-check');
   },
 
   /**

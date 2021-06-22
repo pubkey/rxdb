@@ -4,5 +4,7 @@ import type { RxCollectionCreator, RxDatabaseCreator } from '../../types';
  * clashes with a property of RxDatabase,
  * we get problems so this function prohibits this
  */
-export declare function ensureCollectionNameValid(args: RxCollectionCreator): void;
-export declare function ensureDatabaseNameIsValid(args: RxDatabaseCreator): void;
+export declare function ensureCollectionNameValid(args: RxCollectionCreator & {
+    name: string;
+}): void;
+export declare function ensureDatabaseNameIsValid(args: RxDatabaseCreator<any, any>): void;

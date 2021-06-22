@@ -65,15 +65,17 @@ export function getRxDocumentConstructor(rxCollection) {
  */
 
 export function createRxDocument(rxCollection, docData) {
-  // return from cache if exsists
-  var id = docData[rxCollection.schema.primaryPath];
+  var primary = docData[rxCollection.schema.primaryPath]; // return from cache if exsists
 
-  var cacheDoc = rxCollection._docCache.get(id);
+  var cacheDoc = rxCollection._docCache.get(primary);
 
-  if (cacheDoc) return cacheDoc;
+  if (cacheDoc) {
+    return cacheDoc;
+  }
+
   var doc = createRxDocumentWithConstructor(getRxDocumentConstructor(rxCollection), rxCollection, docData);
 
-  rxCollection._docCache.set(id, doc);
+  rxCollection._docCache.set(primary, doc);
 
   rxCollection._runHooksSync('post', 'create', docData, doc);
 

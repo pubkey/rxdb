@@ -9,8 +9,13 @@ exports.replicateExistingDocuments = replicateExistingDocuments;
 exports.setIndexes = setIndexes;
 exports.streamChangedDocuments = streamChangedDocuments;
 exports.applyChangedDocumentToPouch = applyChangedDocumentToPouch;
-exports.spawnInMemory = spawnInMemory;
+exports.inMemory = inMemory;
+exports.prepareInMemoryRxCollection = prepareInMemoryRxCollection;
 exports.RxDBInMemoryPlugin = exports.prototypes = exports.rxdb = exports.InMemoryRxCollection = void 0;
+
+var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
+
+var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 
 var _assertThisInitialized2 = _interopRequireDefault(require("@babel/runtime/helpers/assertThisInitialized"));
 
@@ -24,7 +29,7 @@ var _rxCollection = require("../rx-collection");
 
 var _util = require("../util");
 
-var _core = require("../core");
+var _pouchdb = require("../plugins/pouchdb");
 
 var _crypter = require("../crypter");
 
@@ -32,13 +37,11 @@ var _changeEventBuffer = require("../change-event-buffer");
 
 var _rxSchema = require("../rx-schema");
 
-var _pouchDb = require("../pouch-db");
-
 var _rxError = require("../rx-error");
 
-var _rxStoragePouchdb = require("../rx-storage-pouchdb");
+var _rxChangeEvent = require("../rx-change-event");
 
-var _watchForChanges = require("../plugins/watch-for-changes");
+var _rxCollectionHelper = require("../rx-collection-helper");
 
 /**
  * This plugin adds RxCollection.inMemory()
@@ -46,8 +49,6 @@ var _watchForChanges = require("../plugins/watch-for-changes");
  * So you can do faster queries and also query over encrypted fields.
  * Writes will still run on the original collection
  */
-// add the watch-for-changes-plugin
-(0, _core.addRxPlugin)(_watchForChanges.RxDBWatchForChangesPlugin);
 var collectionCacheMap = new WeakMap();
 var collectionPromiseCacheMap = new WeakMap();
 var BULK_DOC_OPTIONS = {
@@ -60,20 +61,18 @@ var BULK_DOC_OPTIONS_FALSE = {
 var InMemoryRxCollection = /*#__PURE__*/function (_RxCollectionBase) {
   (0, _inheritsLoose2["default"])(InMemoryRxCollection, _RxCollectionBase);
 
-  function InMemoryRxCollection(parentCollection) {
+  function InMemoryRxCollection(parentCollection, pouchSettings) {
     var _this;
 
-    var pouchSettings = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
     _this = _RxCollectionBase.call(this, parentCollection.database, parentCollection.name, toCleanSchema(parentCollection.schema), pouchSettings, // pouchSettings
     {}, parentCollection._methods) || this;
     _this._eventCounter = 0;
+    _this.parentCollection = parentCollection;
+    _this.pouchSettings = pouchSettings;
     _this._isInMemory = true;
-    _this._parentCollection = parentCollection;
-
-    _this._parentCollection.onDestroy.then(function () {
+    parentCollection.onDestroy.then(function () {
       return _this.destroy();
     });
-
     _this._crypter = (0, _crypter.createCrypter)(_this.database.password, _this.schema);
     _this._changeStreams = [];
     /**
@@ -84,9 +83,10 @@ var InMemoryRxCollection = /*#__PURE__*/function (_RxCollectionBase) {
     _this.onDestroy.then(function () {
       _this._changeStreams.forEach(function (stream) {
         return stream.cancel();
-      });
+      }); // delete all data
 
-      _this.pouch.destroy();
+
+      _this.storageInstance.internals.pouch.destroy();
     }); // add orm functions and options from parent
 
 
@@ -100,8 +100,6 @@ var InMemoryRxCollection = /*#__PURE__*/function (_RxCollectionBase) {
         }
       });
     });
-    var storage = (0, _rxStoragePouchdb.getRxStoragePouchDb)('memory');
-    _this.pouch = storage.createStorageInstance('rxdb-in-memory', (0, _util.randomCouchString)(10), 0);
     _this._observable$ = new _rxjs.Subject();
     _this._changeEventBuffer = (0, _changeEventBuffer.createChangeEventBuffer)((0, _assertThisInitialized2["default"])(_this));
     var parentProto = Object.getPrototypeOf(parentCollection);
@@ -117,7 +115,7 @@ var InMemoryRxCollection = /*#__PURE__*/function (_RxCollectionBase) {
   _proto.prepareChild = function prepareChild() {
     var _this2 = this;
 
-    return setIndexes(this.schema, this.pouch).then(function () {
+    return setIndexes(this.schema, this.storageInstance.internals.pouch).then(function () {
       _this2._subs.push(_this2._observable$.subscribe(function (cE) {
         // when data changes, send it to RxDocument in docCache
         var doc = _this2._docCache.get(cE.documentId);
@@ -126,23 +124,13 @@ var InMemoryRxCollection = /*#__PURE__*/function (_RxCollectionBase) {
       }));
     }) // initial sync parent's docs to own
     .then(function () {
-      return replicateExistingDocuments(_this2._parentCollection, _this2);
+      return replicateExistingDocuments(_this2.parentCollection, _this2);
     }).then(function () {
-      /**
-       * call watchForChanges() on both sides,
-       * to ensure none-rxdb-changes like replication
-       * will fire into the change-event-stream
-       */
-      _this2._parentCollection.watchForChanges();
-
-      _this2.watchForChanges();
       /**
        * create an ongoing replications between both sides
        */
-
-
       var thisToParentSub = streamChangedDocuments(_this2).pipe((0, _operators.mergeMap)(function (doc) {
-        return applyChangedDocumentToPouch(_this2._parentCollection, doc).then(function () {
+        return applyChangedDocumentToPouch(_this2.parentCollection, doc).then(function () {
           return doc['_rev'];
         });
       })).subscribe(function (changeRev) {
@@ -153,7 +141,7 @@ var InMemoryRxCollection = /*#__PURE__*/function (_RxCollectionBase) {
 
       _this2._subs.push(thisToParentSub);
 
-      var parentToThisSub = streamChangedDocuments(_this2._parentCollection).subscribe(function (doc) {
+      var parentToThisSub = streamChangedDocuments(_this2.parentCollection).subscribe(function (doc) {
         return applyChangedDocumentToPouch(_this2, doc);
       });
 
@@ -169,7 +157,10 @@ var InMemoryRxCollection = /*#__PURE__*/function (_RxCollectionBase) {
   _proto.awaitPersistence = function awaitPersistence() {
     var _this3 = this;
 
-    if (this._nonPersistentRevisions.size === 0) return Promise.resolve();
+    if (this._nonPersistentRevisions.size === 0) {
+      return Promise.resolve();
+    }
+
     return (0, _rxjs.firstValueFrom)(this._nonPersistentRevisionsSubject.pipe((0, _operators.filter)(function () {
       return _this3._nonPersistentRevisions.size === 0;
     })));
@@ -192,7 +183,9 @@ var InMemoryRxCollection = /*#__PURE__*/function (_RxCollectionBase) {
   };
 
   _proto.$emit = function $emit(changeEvent) {
-    if (this._changeEventBuffer.hasChangeWithRevision(changeEvent.documentData && changeEvent.documentData._rev)) {
+    var doc = (0, _rxChangeEvent.getDocumentDataOfRxChangeEvent)(changeEvent);
+
+    if (this._changeEventBuffer.hasChangeWithRevision(doc && doc._rev)) {
       return;
     }
 
@@ -203,7 +196,7 @@ var InMemoryRxCollection = /*#__PURE__*/function (_RxCollectionBase) {
 
     if (this._eventCounter === 10) {
       this._eventCounter = 0;
-      this.pouch.compact();
+      this.storageInstance.internals.pouch.compact();
     }
   }
   /**
@@ -213,7 +206,7 @@ var InMemoryRxCollection = /*#__PURE__*/function (_RxCollectionBase) {
    */
   ;
 
-  _proto.sync = function sync() {
+  _proto.syncCouchDB = function syncCouchDB() {
     throw (0, _rxError.newRxError)('IM2');
   };
 
@@ -232,7 +225,6 @@ exports.InMemoryRxCollection = InMemoryRxCollection;
 function toCleanSchema(rxSchema) {
   var newSchemaJson = (0, _util.clone)(rxSchema.jsonSchema);
   newSchemaJson.keyCompression = false;
-  delete newSchemaJson.properties._id;
   delete newSchemaJson.properties._rev;
   delete newSchemaJson.properties._attachments;
 
@@ -255,7 +247,8 @@ function toCleanSchema(rxSchema) {
 
 
 function replicateExistingDocuments(fromCollection, toCollection) {
-  return fromCollection.pouch.allDocs({
+  var pouch = fromCollection.storageInstance.internals.pouch;
+  return pouch.allDocs({
     attachments: false,
     include_docs: true
   }).then(function (allRows) {
@@ -265,14 +258,15 @@ function replicateExistingDocuments(fromCollection, toCollection) {
       return !doc.language;
     }) // do not replicate design-docs
     .map(function (doc) {
-      return fromCollection._handleFromPouch(doc);
+      return (0, _rxCollectionHelper._handleFromStorageInstance)(fromCollection, doc);
     }) // swap back primary because keyCompression:false
     .map(function (doc) {
-      return fromCollection.schema.swapPrimaryToId(doc);
+      var primaryKey = fromCollection.schema.primaryPath;
+      return (0, _pouchdb.pouchSwapPrimaryToId)(primaryKey, doc);
     });
     if (docs.length === 0) return Promise.resolve([]); // nothing to replicate
     else {
-        return toCollection.pouch.bulkDocs({
+        return toCollection.storageInstance.internals.pouch.bulkDocs({
           docs: docs
         }, BULK_DOC_OPTIONS_FALSE).then(function () {
           return docs;
@@ -310,8 +304,12 @@ function streamChangedDocuments(rxCollection) {
   var prevFilter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function (_i) {
     return true;
   };
-  if (!rxCollection._doNotEmitSet) rxCollection._doNotEmitSet = new Set();
-  var observable = (0, _rxjs.fromEvent)(rxCollection.pouch.changes({
+
+  if (!rxCollection._doNotEmitSet) {
+    rxCollection._doNotEmitSet = new Set();
+  }
+
+  var observable = (0, _rxjs.fromEvent)(rxCollection.storageInstance.internals.pouch.changes({
     since: 'now',
     live: true,
     include_docs: true
@@ -328,11 +326,19 @@ function streamChangedDocuments(rxCollection) {
   (0, _operators.filter)(function (change) {
     // changes on the doNotEmit-list shell not be fired
     var emitFlag = change.id + ':' + change.doc._rev;
-    if (rxCollection._doNotEmitSet.has(emitFlag)) return false;else return true;
+
+    if (rxCollection._doNotEmitSet.has(emitFlag)) {
+      return false;
+    } else {
+      return true;
+    }
   }), (0, _operators.filter)(function (change) {
     return prevFilter(change);
   }), (0, _operators.map)(function (change) {
-    return rxCollection._handleFromPouch(change.doc);
+    return (0, _rxCollectionHelper._handleFromStorageInstance)(rxCollection, change.doc);
+  }), (0, _operators.map)(function (d) {
+    var primaryKey = rxCollection.schema.primaryPath;
+    return (0, _pouchdb.pouchSwapIdToPrimary)(primaryKey, d);
   }));
   return observable;
 }
@@ -343,17 +349,20 @@ function streamChangedDocuments(rxCollection) {
 
 
 function applyChangedDocumentToPouch(rxCollection, docData) {
-  if (!rxCollection._doNotEmitSet) rxCollection._doNotEmitSet = new Set();
+  if (!rxCollection._doNotEmitSet) {
+    rxCollection._doNotEmitSet = new Set();
+  }
 
-  var transformedDoc = rxCollection._handleToPouch(docData);
-
-  return rxCollection.pouch.get(transformedDoc._id).then(function (oldDoc) {
+  var primaryKey = rxCollection.schema.primaryPath;
+  var transformedDoc = (0, _rxCollectionHelper._handleToStorageInstance)(rxCollection, docData);
+  transformedDoc = (0, _pouchdb.pouchSwapPrimaryToId)(primaryKey, transformedDoc);
+  return rxCollection.storageInstance.internals.pouch.get(transformedDoc._id).then(function (oldDoc) {
     return transformedDoc._rev = oldDoc._rev;
   })["catch"](function () {
     // doc not found, do not use a revision
     delete transformedDoc._rev;
   }).then(function () {
-    return rxCollection.pouch.bulkDocs({
+    return rxCollection.storageInstance.internals.pouch.bulkDocs({
       docs: [transformedDoc]
     }, BULK_DOC_OPTIONS);
   }).then(function (bulkRet) {
@@ -379,36 +388,105 @@ var INIT_DONE = false;
  * called in the proto of RxCollection
  */
 
-function spawnInMemory() {
-  var _this5 = this;
+function inMemory() {
+  return _inMemory.apply(this, arguments);
+}
 
-  if (!INIT_DONE) {
-    INIT_DONE = true; // ensure memory-adapter is added
+function _inMemory() {
+  _inMemory = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
+    var _this5 = this;
 
-    if (!_pouchDb.PouchDB.adapters || !_pouchDb.PouchDB.adapters.memory) throw (0, _rxError.newRxError)('IM1');
-  }
+    var col, preparePromise;
+    return _regenerator["default"].wrap(function _callee$(_context) {
+      while (1) {
+        switch (_context.prev = _context.next) {
+          case 0:
+            if (INIT_DONE) {
+              _context.next = 4;
+              break;
+            }
 
-  if (collectionCacheMap.has(this)) {
-    // already exists for this collection -> wait until synced
-    return collectionPromiseCacheMap.get(this).then(function () {
-      return collectionCacheMap.get(_this5);
-    });
-  }
+            INIT_DONE = true; // ensure memory-adapter is added
 
-  var col = new InMemoryRxCollection(this);
-  var preparePromise = col.prepareChild();
-  collectionCacheMap.set(this, col);
-  collectionPromiseCacheMap.set(this, preparePromise);
-  return preparePromise.then(function () {
-    return col;
-  });
+            if (!(!_pouchdb.PouchDB.adapters || !_pouchdb.PouchDB.adapters.memory)) {
+              _context.next = 4;
+              break;
+            }
+
+            throw (0, _rxError.newRxError)('IM1');
+
+          case 4:
+            if (!collectionCacheMap.has(this)) {
+              _context.next = 6;
+              break;
+            }
+
+            return _context.abrupt("return", collectionPromiseCacheMap.get(this).then(function () {
+              return collectionCacheMap.get(_this5);
+            }));
+
+          case 6:
+            col = new InMemoryRxCollection(this);
+            _context.next = 9;
+            return prepareInMemoryRxCollection(col);
+
+          case 9:
+            preparePromise = col.prepareChild();
+            collectionCacheMap.set(this, col);
+            collectionPromiseCacheMap.set(this, preparePromise);
+            return _context.abrupt("return", preparePromise.then(function () {
+              return col;
+            }));
+
+          case 13:
+          case "end":
+            return _context.stop();
+        }
+      }
+    }, _callee, this);
+  }));
+  return _inMemory.apply(this, arguments);
+}
+
+function prepareInMemoryRxCollection(_x) {
+  return _prepareInMemoryRxCollection.apply(this, arguments);
+}
+
+function _prepareInMemoryRxCollection() {
+  _prepareInMemoryRxCollection = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(instance) {
+    var memoryStorage;
+    return _regenerator["default"].wrap(function _callee2$(_context2) {
+      while (1) {
+        switch (_context2.prev = _context2.next) {
+          case 0:
+            memoryStorage = (0, _pouchdb.getRxStoragePouch)('memory', {});
+            _context2.next = 3;
+            return memoryStorage.createStorageInstance({
+              databaseName: 'rxdb-in-memory',
+              collectionName: (0, _util.randomCouchString)(10),
+              schema: instance.schema.jsonSchema,
+              options: instance.pouchSettings
+            });
+
+          case 3:
+            instance.storageInstance = _context2.sent;
+            instance.pouch = instance.storageInstance.internals.pouch;
+
+          case 5:
+          case "end":
+            return _context2.stop();
+        }
+      }
+    }, _callee2);
+  }));
+  return _prepareInMemoryRxCollection.apply(this, arguments);
 }
 
 var rxdb = true;
 exports.rxdb = rxdb;
 var prototypes = {
   RxCollection: function RxCollection(proto) {
-    proto.inMemory = spawnInMemory;
+    proto.inMemory = inMemory;
   }
 };
 exports.prototypes = prototypes;

@@ -1,3 +1,6 @@
+import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
+import _regeneratorRuntime from "@babel/runtime/regenerator";
+
 /**
  * this plugin adds the RxCollection.sync()-function to rxdb
  * you can use it to sync collections with remote or local couchdb-instances
@@ -6,15 +9,12 @@ import PouchReplicationPlugin from 'pouchdb-replication';
 import { BehaviorSubject, Subject, fromEvent, firstValueFrom } from 'rxjs';
 import { skipUntil, filter, first, mergeMap } from 'rxjs/operators';
 import { promiseWait, flatClone } from '../util';
-import { addRxPlugin } from '../core';
 import { newRxError } from '../rx-error';
-import { pouchReplicationFunction, isInstanceOf as isInstanceOfPouchDB } from '../pouch-db';
-import { isInstanceOf as isRxCollection } from '../rx-collection';
-import { RxDBWatchForChangesPlugin } from './watch-for-changes'; // add pouchdb-replication-plugin
+import { pouchReplicationFunction, isInstanceOf as isInstanceOfPouchDB, addPouchPlugin } from '../plugins/pouchdb';
+import { isRxCollection } from '../rx-collection';
+import { _handleFromStorageInstance } from '../rx-collection-helper'; // add pouchdb-replication-plugin
 
-addRxPlugin(PouchReplicationPlugin); // add the watch-for-changes-plugin
-
-addRxPlugin(RxDBWatchForChangesPlugin);
+addPouchPlugin(PouchReplicationPlugin);
 /**
  * Contains all pouchdb instances that
  * are used inside of RxDB by collections or databases.
@@ -22,8 +22,8 @@ addRxPlugin(RxDBWatchForChangesPlugin);
  */
 
 var INTERNAL_POUCHDBS = new WeakSet();
-export var RxReplicationStateBase = /*#__PURE__*/function () {
-  function RxReplicationStateBase(collection, syncOptions) {
+export var RxCouchDBReplicationStateBase = /*#__PURE__*/function () {
+  function RxCouchDBReplicationStateBase(collection, syncOptions) {
     var _this = this;
 
     this._subs = [];
@@ -49,7 +49,7 @@ export var RxReplicationStateBase = /*#__PURE__*/function () {
     });
   }
 
-  var _proto = RxReplicationStateBase.prototype;
+  var _proto = RxCouchDBReplicationStateBase.prototype;
 
   _proto.awaitInitialReplication = function awaitInitialReplication() {
     if (this.syncOptions.options && this.syncOptions.options.live) {
@@ -96,7 +96,7 @@ export var RxReplicationStateBase = /*#__PURE__*/function () {
     return Promise.resolve(true);
   };
 
-  return RxReplicationStateBase;
+  return RxCouchDBReplicationStateBase;
 }();
 export function setPouchEventEmitter(rxRepState, evEmitter) {
   if (rxRepState._pouchEventEmitterObject) {
@@ -121,7 +121,7 @@ export function setPouchEventEmitter(rxRepState, evEmitter) {
       return doc.language !== 'query';
     }) // remove internal docs
     .map(function (doc) {
-      return rxRepState.collection._handleFromPouch(doc);
+      return _handleFromStorageInstance(rxRepState.collection, doc);
     }) // do primary-swap and keycompression
     .forEach(function (doc) {
       return rxRepState._subjects.docs.next(doc);
@@ -143,17 +143,30 @@ export function setPouchEventEmitter(rxRepState, evEmitter) {
   })); // complete
 
 
-  rxRepState._subs.push(fromEvent(evEmitter, 'complete').subscribe(function (info) {
-    /**
-     * when complete fires, it might be that not all changeEvents
-     * have passed throught, because of the delay of .wachtForChanges()
-     * Therefore we have to first ensure that all previous changeEvents have been handled
-     */
-    var unhandledEvents = Array.from(rxRepState.collection._watchForChangesUnhandled);
-    Promise.all(unhandledEvents).then(function () {
-      return rxRepState._subjects.complete.next(info);
-    });
-  })); // auto-cancel one-time replications on complelete to not cause memory leak
+  rxRepState._subs.push(fromEvent(evEmitter, 'complete').subscribe( /*#__PURE__*/function () {
+    var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(info) {
+      return _regeneratorRuntime.wrap(function _callee$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              _context.next = 2;
+              return promiseWait(100);
+
+            case 2:
+              rxRepState._subjects.complete.next(info);
+
+            case 3:
+            case "end":
+              return _context.stop();
+          }
+        }
+      }, _callee);
+    }));
+
+    return function (_x) {
+      return _ref.apply(this, arguments);
+    };
+  }())); // auto-cancel one-time replications on complelete to not cause memory leak
 
 
   if (!rxRepState.syncOptions.options || !rxRepState.syncOptions.options.live) {
@@ -196,26 +209,26 @@ export function setPouchEventEmitter(rxRepState, evEmitter) {
     });
   }));
 }
-export function createRxReplicationState(collection, syncOptions) {
-  return new RxReplicationStateBase(collection, syncOptions);
+export function createRxCouchDBReplicationState(collection, syncOptions) {
+  return new RxCouchDBReplicationStateBase(collection, syncOptions);
 }
-export function sync(_ref) {
+export function syncCouchDB(_ref2) {
   var _this2 = this;
 
-  var remote = _ref.remote,
-      _ref$waitForLeadershi = _ref.waitForLeadership,
-      waitForLeadership = _ref$waitForLeadershi === void 0 ? true : _ref$waitForLeadershi,
-      _ref$direction = _ref.direction,
-      direction = _ref$direction === void 0 ? {
+  var remote = _ref2.remote,
+      _ref2$waitForLeadersh = _ref2.waitForLeadership,
+      waitForLeadership = _ref2$waitForLeadersh === void 0 ? true : _ref2$waitForLeadersh,
+      _ref2$direction = _ref2.direction,
+      direction = _ref2$direction === void 0 ? {
     pull: true,
     push: true
-  } : _ref$direction,
-      _ref$options = _ref.options,
-      options = _ref$options === void 0 ? {
+  } : _ref2$direction,
+      _ref2$options = _ref2.options,
+      options = _ref2$options === void 0 ? {
     live: true,
     retry: true
-  } : _ref$options,
-      query = _ref.query;
+  } : _ref2$options,
+      query = _ref2.query;
   var useOptions = flatClone(options); // prevent #641 by not allowing internal pouchdbs as remote
 
   if (isInstanceOfPouchDB(remote) && INTERNAL_POUCHDBS.has(remote)) {
@@ -227,8 +240,7 @@ export function sync(_ref) {
 
 
   if (isRxCollection(remote)) {
-    remote.watchForChanges();
-    remote = remote.pouch;
+    remote = remote.storageInstance.internals.pouch;
   }
 
   if (query && this !== query.collection) {
@@ -237,13 +249,13 @@ export function sync(_ref) {
     });
   }
 
-  var syncFun = pouchReplicationFunction(this.pouch, direction);
+  var syncFun = pouchReplicationFunction(this.storageInstance.internals.pouch, direction);
 
   if (query) {
-    useOptions.selector = query.keyCompress().selector;
+    useOptions.selector = query.toJSON().selector;
   }
 
-  var repState = createRxReplicationState(this, {
+  var repState = createRxCouchDBReplicationState(this, {
     remote: remote,
     waitForLeadership: waitForLeadership,
     direction: direction,
@@ -258,8 +270,6 @@ export function sync(_ref) {
       return;
     }
 
-    _this2.watchForChanges();
-
     var pouchSync = syncFun(remote, useOptions);
     setPouchEventEmitter(repState, pouchSync);
 
@@ -270,18 +280,22 @@ export function sync(_ref) {
 export var rxdb = true;
 export var prototypes = {
   RxCollection: function RxCollection(proto) {
-    proto.sync = sync;
+    proto.syncCouchDB = syncCouchDB;
   }
 };
 export var hooks = {
   createRxCollection: function createRxCollection(collection) {
-    INTERNAL_POUCHDBS.add(collection.pouch);
+    var pouch = collection.storageInstance.internals.pouch;
+
+    if (pouch) {
+      INTERNAL_POUCHDBS.add(collection.storageInstance.internals.pouch);
+    }
   }
 };
-export var RxDBReplicationPlugin = {
-  name: 'replication',
+export var RxDBReplicationCouchDBPlugin = {
+  name: 'replication-couchdb',
   rxdb: rxdb,
   prototypes: prototypes,
   hooks: hooks
 };
-//# sourceMappingURL=replication.js.map
+//# sourceMappingURL=replication-couchdb.js.map

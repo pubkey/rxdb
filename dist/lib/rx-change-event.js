@@ -3,127 +3,58 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.changeEventfromPouchChange = changeEventfromPouchChange;
-exports.createInsertEvent = createInsertEvent;
-exports.createUpdateEvent = createUpdateEvent;
-exports.createDeleteEvent = createDeleteEvent;
-exports.isInstanceOf = isInstanceOf;
-exports.RxChangeEvent = void 0;
+exports.getDocumentDataOfRxChangeEvent = getDocumentDataOfRxChangeEvent;
+exports.isRxChangeEventIntern = isRxChangeEventIntern;
+exports.rxChangeEventToEventReduceChangeEvent = rxChangeEventToEventReduceChangeEvent;
+
+var _overwritable = require("./overwritable");
 
 /**
  * RxChangeEvents a emitted when something in the database changes
  * they can be grabbed by the observables of database, collection and document
  */
-var RxChangeEvent = /*#__PURE__*/function () {
-  function RxChangeEvent(operation, documentId, documentData, databaseToken, collectionName, isLocal,
-  /**
-   * timestam on when the operation was triggered
-   * and when it was finished
-   * This is optional because we do not have this time
-   * for events that come from pouchdbs changestream.
-   */
-  startTime, endTime, previousData, rxDocument) {
-    this.operation = operation;
-    this.documentId = documentId;
-    this.documentData = documentData;
-    this.databaseToken = databaseToken;
-    this.collectionName = collectionName;
-    this.isLocal = isLocal;
-    this.startTime = startTime;
-    this.endTime = endTime;
-    this.previousData = previousData;
-    this.rxDocument = rxDocument;
+function getDocumentDataOfRxChangeEvent(rxChangeEvent) {
+  if (rxChangeEvent.documentData) {
+    return rxChangeEvent.documentData;
+  } else {
+    return rxChangeEvent.previousDocumentData;
   }
-
-  var _proto = RxChangeEvent.prototype;
-
-  _proto.isIntern = function isIntern() {
-    if (this.collectionName && this.collectionName.charAt(0) === '_') {
-      return true;
-    } else {
-      return false;
-    }
-  };
-
-  _proto.toJSON = function toJSON() {
-    var ret = {
-      operation: this.operation,
-      documentId: this.documentId,
-      documentData: this.documentData,
-      previousData: this.previousData ? this.previousData : undefined,
-      databaseToken: this.databaseToken,
-      collectionName: this.collectionName,
-      isLocal: this.isLocal,
-      startTime: this.startTime,
-      endTime: this.endTime
-    };
-    return ret;
-  };
-
-  _proto.toEventReduceChangeEvent = function toEventReduceChangeEvent() {
-    switch (this.operation) {
-      case 'INSERT':
-        return {
-          operation: this.operation,
-          id: this.documentId,
-          doc: this.documentData,
-          previous: null
-        };
-
-      case 'UPDATE':
-        return {
-          operation: this.operation,
-          id: this.documentId,
-          doc: this.documentData,
-          previous: this.previousData ? this.previousData : 'UNKNOWN'
-        };
-
-      case 'DELETE':
-        return {
-          operation: this.operation,
-          id: this.documentId,
-          doc: null,
-          previous: this.previousData
-        };
-    }
-  };
-
-  return RxChangeEvent;
-}();
-
-exports.RxChangeEvent = RxChangeEvent;
-
-function changeEventfromPouchChange(changeDoc, collection, startTime, // time when the event was streamed out of pouchdb
-endTime) {
-  var operation = changeDoc._rev.startsWith('1-') ? 'INSERT' : 'UPDATE';
-
-  if (changeDoc._deleted) {
-    operation = 'DELETE';
-  } // decompress / primarySwap
-
-
-  var doc = collection._handleFromPouch(changeDoc);
-
-  var documentId = doc[collection.schema.primaryPath];
-  var cE = new RxChangeEvent(operation, documentId, doc, collection.database.token, collection.name, false, startTime, endTime);
-  return cE;
 }
 
-function createInsertEvent(collection, docData, startTime, endTime, doc) {
-  var ret = new RxChangeEvent('INSERT', docData[collection.schema.primaryPath], docData, collection.database.token, collection.name, false, startTime, endTime, null, doc);
-  return ret;
+function isRxChangeEventIntern(rxChangeEvent) {
+  if (rxChangeEvent.collectionName && rxChangeEvent.collectionName.charAt(0) === '_') {
+    return true;
+  } else {
+    return false;
+  }
 }
 
-function createUpdateEvent(collection, docData, previous, startTime, endTime, rxDocument) {
-  return new RxChangeEvent('UPDATE', docData[collection.schema.primaryPath], docData, collection.database.token, collection.name, false, startTime, endTime, previous, rxDocument);
-}
+function rxChangeEventToEventReduceChangeEvent(rxChangeEvent) {
+  switch (rxChangeEvent.operation) {
+    case 'INSERT':
+      return {
+        operation: rxChangeEvent.operation,
+        id: rxChangeEvent.documentId,
+        doc: rxChangeEvent.documentData,
+        previous: null
+      };
 
-function createDeleteEvent(collection, docData, previous, startTime, endTime, rxDocument) {
-  return new RxChangeEvent('DELETE', docData[collection.schema.primaryPath], docData, collection.database.token, collection.name, false, startTime, endTime, previous, rxDocument);
-}
+    case 'UPDATE':
+      return {
+        operation: rxChangeEvent.operation,
+        id: rxChangeEvent.documentId,
+        doc: _overwritable.overwritable.deepFreezeWhenDevMode(rxChangeEvent.documentData),
+        previous: rxChangeEvent.previousDocumentData ? rxChangeEvent.previousDocumentData : 'UNKNOWN'
+      };
 
-function isInstanceOf(obj) {
-  return obj instanceof RxChangeEvent;
+    case 'DELETE':
+      return {
+        operation: rxChangeEvent.operation,
+        id: rxChangeEvent.documentId,
+        doc: null,
+        previous: rxChangeEvent.previousDocumentData
+      };
+  }
 }
 
 //# sourceMappingURL=rx-change-event.js.map

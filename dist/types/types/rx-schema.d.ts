@@ -50,23 +50,40 @@ export interface TopLevelProperty extends JsonSchema {
     default?: any;
 }
 
-export interface PrimaryProperty extends TopLevelProperty {
-    type: 'string';
-    primary: true;
-}
-
-export declare class RxJsonSchema<RxDocType = any> {
+export declare class RxJsonSchema<
+    /**
+     * The doctype must be given, and '=any' cannot be used,
+     * otherwhise the keyof of primaryKey
+     * would be optional when the type of the document is not known.
+     */
+    RxDocType
+    > {
     title?: string;
     description?: string;
     version: number;
+
+    /**
+     * The primary key of the documents.
+     * Must be in the top level of the properties of the schema
+     * and that property must have the type 'string'
+     */
+    primaryKey: keyof RxDocType;
+
     /**
      * TODO this looks like a typescript-bug
      * we have to allows all string because the 'object'-literal is not recognized
      * retry this in later typescript-versions
      */
     type: 'object' | string;
-    properties: { [key in keyof RxDocType]: TopLevelProperty | PrimaryProperty };
+    properties: { [key in keyof RxDocType]: TopLevelProperty };
+
+    /**
+     * TODO on the top level the required-array should be required
+     * because we always have to set the primary key to required.
+     */
     required?: (keyof RxDocType)[];
+
+
     indexes?: Array<string | string[]>;
     encrypted?: string[];
     keyCompression?: boolean;

@@ -4,7 +4,7 @@ export declare type MigrationStateWithCollection = {
     collection: RxCollection;
     state: MigrationState;
 };
-export declare const DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE: WeakMap<RxDatabase<import("../../types").CollectionsOfDatabase>, BehaviorSubject<Observable<MigrationStateWithCollection>[]>>;
+export declare const DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE: WeakMap<RxDatabase<import("../../types").CollectionsOfDatabase, any, any>, BehaviorSubject<Observable<MigrationStateWithCollection>[]>>;
 export declare function getMigrationStateByDatabase(database: RxDatabase): BehaviorSubject<Observable<MigrationStateWithCollection>[]>;
 /**
  * Complete on database destroy

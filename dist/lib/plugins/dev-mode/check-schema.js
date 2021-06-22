@@ -29,8 +29,9 @@ var _entityProperties = require("./entity-properties");
  * @throws {Error}
  */
 function checkFieldNameRegex(fieldName) {
-  if (fieldName === '') return;
-  if (fieldName === '_id') return;
+  if (fieldName === '') return; // TODO why is the fieldname allowed to be empty string?
+
+  if (fieldName === '_deleted') return;
 
   if (['properties', 'language'].includes(fieldName)) {
     throw (0, _rxError.newRxError)('SC23', {
@@ -125,7 +126,7 @@ function validateFieldsDeep(jsonSchema) {
     if (!isNested) {
       // check underscore fields
       if (fieldName.charAt(0) === '_') {
-        if (fieldName === '_id' && schemaObj.primary) {
+        if (fieldName === '_deleted') {
           return;
         }
 
@@ -178,6 +179,12 @@ function getSchemaPropertyRealPath(shortPath) {
 
 
 function checkSchema(jsonSchema) {
+  if (!jsonSchema.primaryKey) {
+    throw (0, _rxError.newRxError)('SC30', {
+      schema: jsonSchema
+    });
+  }
+
   if (!jsonSchema.hasOwnProperty('properties')) {
     throw (0, _rxError.newRxError)('SC29', {
       schema: jsonSchema
@@ -199,20 +206,11 @@ function checkSchema(jsonSchema) {
   }
 
   validateFieldsDeep(jsonSchema);
-  var primaryPath;
   Object.keys(jsonSchema.properties).forEach(function (key) {
     var value = jsonSchema.properties[key]; // check primary
 
-    if (value.primary) {
-      if (primaryPath) {
-        throw (0, _rxError.newRxError)('SC12', {
-          value: value
-        });
-      }
-
-      primaryPath = key;
-
-      if (value.index) {
+    if (key === jsonSchema.primaryKey) {
+      if (jsonSchema.indexes && jsonSchema.indexes.includes(key)) {
         throw (0, _rxError.newRxError)('SC13', {
           value: value
         });
@@ -224,7 +222,7 @@ function checkSchema(jsonSchema) {
         });
       }
 
-      if (value.encrypted) {
+      if (jsonSchema.encrypted && jsonSchema.encrypted.includes(key)) {
         throw (0, _rxError.newRxError)('SC15', {
           value: value
         });

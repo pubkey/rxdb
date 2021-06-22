@@ -1,5 +1,8 @@
 /**
  * handle the en/decryption of documents-data
+ * TODO atm we have the crypter inside of rxdb core.
+ * Instead all should be moved to the encryption plugin
+ * and work via plugin hooks.
  */
 import objectPath from 'object-path';
 import { clone, pluginMissing } from './util';
@@ -9,36 +12,44 @@ export var Crypter = /*#__PURE__*/function () {
     this.schema = schema;
   }
   /**
-   * encrypt and stringify data
+   * encrypt a given string.
    * @overwritten by plugin (optional)
    */
 
 
   var _proto = Crypter.prototype;
 
-  _proto._encryptValue = function _encryptValue(_value) {
+  _proto._encryptString = function _encryptString(_value) {
     throw pluginMissing('encryption');
   }
   /**
-   * decrypt and json-parse an encrypted value
+   * decrypt a given string.
    * @overwritten by plugin (optional)
    */
   ;
 
-  _proto._decryptValue = function _decryptValue(_value) {
+  _proto._decryptString = function _decryptString(_value) {
     throw pluginMissing('encryption');
   };
 
   _proto.encrypt = function encrypt(obj) {
     var _this = this;
 
-    if (!this.password) return obj;
+    if (!this.password) {
+      return obj;
+    }
+
     obj = clone(obj);
     this.schema.encryptedPaths.forEach(function (path) {
       var value = objectPath.get(obj, path);
-      if (typeof value === 'undefined') return;
 
-      var encrypted = _this._encryptValue(value);
+      if (typeof value === 'undefined') {
+        return;
+      }
+
+      var stringValue = JSON.stringify(value);
+
+      var encrypted = _this._encryptString(stringValue);
 
       objectPath.set(obj, path, encrypted);
     });
@@ -52,11 +63,15 @@ export var Crypter = /*#__PURE__*/function () {
     obj = clone(obj);
     this.schema.encryptedPaths.forEach(function (path) {
       var value = objectPath.get(obj, path);
-      if (typeof value === 'undefined') return;
 
-      var decrypted = _this2._decryptValue(value);
+      if (typeof value === 'undefined') {
+        return;
+      }
 
-      objectPath.set(obj, path, decrypted);
+      var decrypted = _this2._decryptString(value);
+
+      var decryptedParsed = JSON.parse(decrypted);
+      objectPath.set(obj, path, decryptedParsed);
     });
     return obj;
   };

@@ -3,10 +3,13 @@ import _regeneratorRuntime from "@babel/runtime/regenerator";
 import objectPath from 'object-path';
 import { BehaviorSubject } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
-import { clone, trimDots, getHeightOfRevision, pluginMissing, now, nextTick } from './util';
-import { createUpdateEvent, createDeleteEvent } from './rx-change-event';
+import { clone, trimDots, getHeightOfRevision, pluginMissing, now, nextTick, flatClone } from './util';
 import { newRxError, newRxTypeError, isPouchdbConflictError } from './rx-error';
 import { runPluginHooks } from './hooks';
+import { getDocumentDataOfRxChangeEvent } from './rx-change-event';
+import { writeToStorageInstance } from './rx-collection-helper';
+import { overwritable } from './overwritable';
+import { getSchemaByObjectPath } from './rx-schema-helper';
 export var basePrototype = {
   /**
    * TODO
@@ -65,7 +68,7 @@ export var basePrototype = {
       return undefined;
     }
 
-    return _this._deleted$.asObservable();
+    return _this._isDeleted$.asObservable();
   },
 
   get deleted() {
@@ -75,7 +78,7 @@ export var basePrototype = {
       return undefined;
     }
 
-    return _this._deleted$.getValue();
+    return _this._isDeleted$.getValue();
   },
 
   /**
@@ -88,9 +91,13 @@ export var basePrototype = {
   },
 
   _handleChangeEvent: function _handleChangeEvent(changeEvent) {
-    if (changeEvent.documentId !== this.primary) return; // ensure that new _rev is higher then current
+    if (changeEvent.documentId !== this.primary) {
+      return;
+    } // ensure that new _rev is higher then current
 
-    var newRevNr = getHeightOfRevision(changeEvent.documentData._rev);
+
+    var docData = getDocumentDataOfRxChangeEvent(changeEvent);
+    var newRevNr = getHeightOfRevision(docData._rev);
     var currentRevNr = getHeightOfRevision(this._data._rev);
     if (currentRevNr > newRevNr) return;
 
@@ -109,7 +116,7 @@ export var basePrototype = {
         // remove from docCache to assure new upserted RxDocuments will be a new instance
         this.collection._docCache["delete"](this.primary);
 
-        this._deleted$.next(true);
+        this._isDeleted$.next(true);
 
         break;
     }
@@ -140,7 +147,7 @@ export var basePrototype = {
       });
     }
 
-    var schemaObj = this.collection.schema.getSchemaByObjectPath(path);
+    var schemaObj = getSchemaByObjectPath(this.collection.schema.jsonSchema, path);
 
     if (!schemaObj) {
       throw newRxError('DOC4', {
@@ -157,7 +164,7 @@ export var basePrototype = {
    * populate the given path
    */
   populate: function populate(path) {
-    var schemaObj = this.collection.schema.getSchemaByObjectPath(path);
+    var schemaObj = getSchemaByObjectPath(this.collection.schema.jsonSchema, path);
     var value = this.get(path);
 
     if (!value) {
@@ -202,23 +209,32 @@ export var basePrototype = {
    */
   get: function get(objPath) {
     if (!this._data) return undefined;
-    var valueObj = objectPath.get(this._data, objPath);
-    valueObj = clone(valueObj); // direct return if array or non-object
+    var valueObj = objectPath.get(this._data, objPath); // direct return if array or non-object
 
-    if (typeof valueObj !== 'object' || Array.isArray(valueObj)) return valueObj;
+    if (typeof valueObj !== 'object' || Array.isArray(valueObj)) {
+      return overwritable.deepFreezeWhenDevMode(valueObj);
+    }
+    /**
+     * TODO find a way to deep-freeze together with defineGetterSetter
+     * so we do not have to do a deep clone here.
+     */
+
+
+    valueObj = clone(valueObj);
     defineGetterSetter(this.collection.schema, valueObj, objPath, this);
     return valueObj;
   },
   toJSON: function toJSON() {
     var withRevAndAttachments = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-    var data = clone(this._data);
 
     if (!withRevAndAttachments) {
+      var data = flatClone(this._data);
       delete data._rev;
       delete data._attachments;
+      return overwritable.deepFreezeWhenDevMode(data);
+    } else {
+      return overwritable.deepFreezeWhenDevMode(this._data);
     }
-
-    return data;
   },
 
   /**
@@ -376,58 +392,58 @@ export var basePrototype = {
   },
 
   /**
-   * @deprecated use atomicPatch instead because it is better typed
-   * and does not allow any keys and values
-   */
-  atomicSet: function atomicSet(key, value) {
-    return this.atomicUpdate(function (docData) {
-      objectPath.set(docData, key, value);
-      return docData;
-    });
-  },
-
-  /**
    * saves the new document-data
    * and handles the events
    */
-  _saveData: function _saveData(newData, oldData) {
-    var _this3 = this;
+  _saveData: function () {
+    var _saveData2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(newData, oldData) {
+      return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+        while (1) {
+          switch (_context2.prev = _context2.next) {
+            case 0:
+              newData = newData; // deleted documents cannot be changed
 
-    newData = newData; // deleted documents cannot be changed
+              if (!this._isDeleted$.getValue()) {
+                _context2.next = 3;
+                break;
+              }
 
-    if (this._deleted$.getValue()) {
-      throw newRxError('DOC11', {
-        id: this.primary,
-        document: this
-      });
-    } // ensure modifications are ok
+              throw newRxError('DOC11', {
+                id: this.primary,
+                document: this
+              });
 
+            case 3:
+              // ensure modifications are ok
+              this.collection.schema.validateChange(oldData, newData);
+              _context2.next = 6;
+              return this.collection._runHooks('pre', 'save', newData, this);
 
-    this.collection.schema.validateChange(oldData, newData);
-    var startTime;
-    return this.collection._runHooks('pre', 'save', newData, this).then(function () {
-      _this3.collection.schema.validate(newData);
+            case 6:
+              this.collection.schema.validate(newData);
+              _context2.next = 9;
+              return writeToStorageInstance(this.collection, {
+                previous: oldData,
+                document: newData
+              });
 
-      startTime = now();
-      return _this3.collection._pouchPut(newData);
-    }).then(function (ret) {
-      var endTime = now();
+            case 9:
+              return _context2.abrupt("return", this.collection._runHooks('post', 'save', newData, this));
 
-      if (!ret.ok) {
-        throw newRxError('DOC12', {
-          data: ret
-        });
-      }
+            case 10:
+            case "end":
+              return _context2.stop();
+          }
+        }
+      }, _callee2, this);
+    }));
 
-      newData._rev = ret.rev; // emit event
+    function _saveData(_x, _x2) {
+      return _saveData2.apply(this, arguments);
+    }
 
-      var changeEvent = createUpdateEvent(_this3.collection, newData, oldData, startTime, endTime, _this3);
-
-      _this3.$emit(changeEvent);
-
-      return _this3.collection._runHooks('post', 'save', newData, _this3);
-    });
-  },
+    return _saveData;
+  }(),
 
   /**
    * saves the temporary document and makes a non-temporary out of it
@@ -435,7 +451,7 @@ export var basePrototype = {
    * @return false if nothing to save
    */
   save: function save() {
-    var _this4 = this;
+    var _this3 = this;
 
     // .save() cannot be called on non-temporary-documents
     if (!this._isTemporary) {
@@ -446,12 +462,12 @@ export var basePrototype = {
     }
 
     return this.collection.insert(this).then(function () {
-      _this4._isTemporary = false;
+      _this3._isTemporary = false;
 
-      _this4.collection._docCache.set(_this4.primary, _this4); // internal events
+      _this3.collection._docCache.set(_this3.primary, _this3); // internal events
 
 
-      _this4._dataSync$.next(_this4._data);
+      _this3._dataSync$.next(_this3._data);
 
       return true;
     });
@@ -463,7 +479,7 @@ export var basePrototype = {
    * instead we keep the values and only set _deleted: true
    */
   remove: function remove() {
-    var _this5 = this;
+    var _this4 = this;
 
     if (this.deleted) {
       return Promise.reject(newRxError('DOC13', {
@@ -472,25 +488,19 @@ export var basePrototype = {
       }));
     }
 
-    var deletedData = clone(this._data);
+    var deletedData = flatClone(this._data);
     var startTime;
     return this.collection._runHooks('pre', 'remove', deletedData, this).then(function () {
       deletedData._deleted = true;
       startTime = now();
-      /**
-       * because pouch.remove will also empty the object,
-       * we set _deleted: true and use pouch.put
-       */
-
-      return _this5.collection._pouchPut(deletedData);
+      return writeToStorageInstance(_this4.collection, {
+        previous: _this4._data,
+        document: deletedData
+      });
     }).then(function () {
-      var endTime = now();
-
-      _this5.$emit(createDeleteEvent(_this5.collection, deletedData, _this5._data, startTime, endTime, _this5));
-
-      return _this5.collection._runHooks('post', 'remove', deletedData, _this5);
+      return _this4.collection._runHooks('post', 'remove', deletedData, _this4);
     }).then(function () {
-      return _this5;
+      return _this4;
     });
   },
   destroy: function destroy() {
@@ -506,7 +516,7 @@ export function createRxDocumentConstructor() {
     this._isTemporary = false; // assume that this is always equal to the doc-data in the database
 
     this._dataSync$ = new BehaviorSubject(jsonData);
-    this._deleted$ = new BehaviorSubject(false);
+    this._isDeleted$ = new BehaviorSubject(false);
     this._atomicQueue = Promise.resolve();
     /**
      * because of the prototype-merge,
@@ -523,7 +533,7 @@ export function defineGetterSetter(schema, valueObj) {
   var objPath = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
   var thisObj = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
   if (valueObj === null) return;
-  var pathProperties = schema.getSchemaByObjectPath(objPath);
+  var pathProperties = getSchemaByObjectPath(schema.jsonSchema, objPath);
   if (typeof pathProperties === 'undefined') return;
   if (pathProperties.properties) pathProperties = pathProperties.properties;
   Object.keys(pathProperties).forEach(function (key) {
@@ -580,7 +590,7 @@ export function createWithConstructor(constructor, collection, jsonData) {
   runPluginHooks('createRxDocument', doc);
   return doc;
 }
-export function isInstanceOf(obj) {
+export function isRxDocument(obj) {
   if (typeof obj === 'undefined') return false;
   return !!obj.isInstanceOfRxDocument;
 }

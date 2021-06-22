@@ -1,8 +1,3 @@
-/**
- * this contains a mapping to basic dependencies
- * which should be easy to change
- */
-import randomToken from 'random-token';
 import { default as deepClone } from 'clone';
 /**
  * Returns an error that indicates that a plugin is missing
@@ -62,13 +57,6 @@ export function hash(msg) {
   }
 
   return Md5.hash(RXDB_HASH_SALT + msg);
-}
-/**
- * generate a new _id as db-primary-key
- */
-
-export function generateId() {
-  return randomToken(10) + ':' + now();
 }
 /**
  * Returns the current unix time in milliseconds
@@ -220,7 +208,10 @@ export function sortObject(obj) {
  */
 
 export function stringifyFilter(key, value) {
-  if (value instanceof RegExp) return value.toString();
+  if (value instanceof RegExp) {
+    return value.toString();
+  }
+
   return value;
 }
 /**
@@ -238,6 +229,9 @@ export function randomCouchString() {
   }
 
   return text;
+}
+export function lastOfArray(ar) {
+  return ar[ar.length - 1];
 }
 /**
  * shuffle the given array
@@ -350,11 +344,6 @@ export function createRevision(docData, deterministic_revs) {
   return stringMd5(JSON.stringify(docWithoutRev));
 }
 /**
- * prefix of local pouchdb documents
- */
-
-export var LOCAL_PREFIX = '_local/';
-/**
  * overwrites the getter with the actual value
  * Mostly used for caching stuff on the first run
  */
@@ -380,6 +369,15 @@ export function isFolderPath(name) {
     } else {
     return false;
   }
+}
+export function getFromMapOrThrow(map, key) {
+  var val = map.get(key);
+
+  if (!val) {
+    throw new Error('missing value from map ' + key);
+  }
+
+  return val;
 }
 export var blobBufferUtil = {
   /**
@@ -409,6 +407,13 @@ export var blobBufferUtil = {
     }
 
     return blobBuffer;
+  },
+  isBlobBuffer: function isBlobBuffer(data) {
+    if (data instanceof Blob || Buffer.isBuffer(data)) {
+      return true;
+    } else {
+      return false;
+    }
   },
   toString: function toString(blobBuffer) {
     if (blobBuffer instanceof Buffer) {

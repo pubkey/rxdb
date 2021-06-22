@@ -18,4 +18,4 @@ export declare function validateFieldsDeep(jsonSchema: any): true;
  * does the checking
  * @throws {Error} if something is not ok
  */
-export declare function checkSchema(jsonSchema: RxJsonSchema): void;
+export declare function checkSchema(jsonSchema: RxJsonSchema<any>): void;

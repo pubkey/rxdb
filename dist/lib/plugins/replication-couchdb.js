@@ -6,9 +6,13 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.setPouchEventEmitter = setPouchEventEmitter;
-exports.createRxReplicationState = createRxReplicationState;
-exports.sync = sync;
-exports.RxDBReplicationPlugin = exports.hooks = exports.prototypes = exports.rxdb = exports.RxReplicationStateBase = void 0;
+exports.createRxCouchDBReplicationState = createRxCouchDBReplicationState;
+exports.syncCouchDB = syncCouchDB;
+exports.RxDBReplicationCouchDBPlugin = exports.hooks = exports.prototypes = exports.rxdb = exports.RxCouchDBReplicationStateBase = void 0;
+
+var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
+
+var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 
 var _pouchdbReplication = _interopRequireDefault(require("pouchdb-replication"));
 
@@ -18,24 +22,20 @@ var _operators = require("rxjs/operators");
 
 var _util = require("../util");
 
-var _core = require("../core");
-
 var _rxError = require("../rx-error");
 
-var _pouchDb = require("../pouch-db");
+var _pouchdb = require("../plugins/pouchdb");
 
 var _rxCollection = require("../rx-collection");
 
-var _watchForChanges = require("./watch-for-changes");
+var _rxCollectionHelper = require("../rx-collection-helper");
 
 /**
  * this plugin adds the RxCollection.sync()-function to rxdb
  * you can use it to sync collections with remote or local couchdb-instances
  */
 // add pouchdb-replication-plugin
-(0, _core.addRxPlugin)(_pouchdbReplication["default"]); // add the watch-for-changes-plugin
-
-(0, _core.addRxPlugin)(_watchForChanges.RxDBWatchForChangesPlugin);
+(0, _pouchdb.addPouchPlugin)(_pouchdbReplication["default"]);
 /**
  * Contains all pouchdb instances that
  * are used inside of RxDB by collections or databases.
@@ -44,8 +44,8 @@ var _watchForChanges = require("./watch-for-changes");
 
 var INTERNAL_POUCHDBS = new WeakSet();
 
-var RxReplicationStateBase = /*#__PURE__*/function () {
-  function RxReplicationStateBase(collection, syncOptions) {
+var RxCouchDBReplicationStateBase = /*#__PURE__*/function () {
+  function RxCouchDBReplicationStateBase(collection, syncOptions) {
     var _this = this;
 
     this._subs = [];
@@ -71,7 +71,7 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
     });
   }
 
-  var _proto = RxReplicationStateBase.prototype;
+  var _proto = RxCouchDBReplicationStateBase.prototype;
 
   _proto.awaitInitialReplication = function awaitInitialReplication() {
     if (this.syncOptions.options && this.syncOptions.options.live) {
@@ -118,10 +118,10 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
     return Promise.resolve(true);
   };
 
-  return RxReplicationStateBase;
+  return RxCouchDBReplicationStateBase;
 }();
 
-exports.RxReplicationStateBase = RxReplicationStateBase;
+exports.RxCouchDBReplicationStateBase = RxCouchDBReplicationStateBase;
 
 function setPouchEventEmitter(rxRepState, evEmitter) {
   if (rxRepState._pouchEventEmitterObject) {
@@ -146,7 +146,7 @@ function setPouchEventEmitter(rxRepState, evEmitter) {
       return doc.language !== 'query';
     }) // remove internal docs
     .map(function (doc) {
-      return rxRepState.collection._handleFromPouch(doc);
+      return (0, _rxCollectionHelper._handleFromStorageInstance)(rxRepState.collection, doc);
     }) // do primary-swap and keycompression
     .forEach(function (doc) {
       return rxRepState._subjects.docs.next(doc);
@@ -168,17 +168,30 @@ function setPouchEventEmitter(rxRepState, evEmitter) {
   })); // complete
 
 
-  rxRepState._subs.push((0, _rxjs.fromEvent)(evEmitter, 'complete').subscribe(function (info) {
-    /**
-     * when complete fires, it might be that not all changeEvents
-     * have passed throught, because of the delay of .wachtForChanges()
-     * Therefore we have to first ensure that all previous changeEvents have been handled
-     */
-    var unhandledEvents = Array.from(rxRepState.collection._watchForChangesUnhandled);
-    Promise.all(unhandledEvents).then(function () {
-      return rxRepState._subjects.complete.next(info);
-    });
-  })); // auto-cancel one-time replications on complelete to not cause memory leak
+  rxRepState._subs.push((0, _rxjs.fromEvent)(evEmitter, 'complete').subscribe( /*#__PURE__*/function () {
+    var _ref = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(info) {
+      return _regenerator["default"].wrap(function _callee$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              _context.next = 2;
+              return (0, _util.promiseWait)(100);
+
+            case 2:
+              rxRepState._subjects.complete.next(info);
+
+            case 3:
+            case "end":
+              return _context.stop();
+          }
+        }
+      }, _callee);
+    }));
+
+    return function (_x) {
+      return _ref.apply(this, arguments);
+    };
+  }())); // auto-cancel one-time replications on complelete to not cause memory leak
 
 
   if (!rxRepState.syncOptions.options || !rxRepState.syncOptions.options.live) {
@@ -222,30 +235,30 @@ function setPouchEventEmitter(rxRepState, evEmitter) {
   }));
 }
 
-function createRxReplicationState(collection, syncOptions) {
-  return new RxReplicationStateBase(collection, syncOptions);
+function createRxCouchDBReplicationState(collection, syncOptions) {
+  return new RxCouchDBReplicationStateBase(collection, syncOptions);
 }
 
-function sync(_ref) {
+function syncCouchDB(_ref2) {
   var _this2 = this;
 
-  var remote = _ref.remote,
-      _ref$waitForLeadershi = _ref.waitForLeadership,
-      waitForLeadership = _ref$waitForLeadershi === void 0 ? true : _ref$waitForLeadershi,
-      _ref$direction = _ref.direction,
-      direction = _ref$direction === void 0 ? {
+  var remote = _ref2.remote,
+      _ref2$waitForLeadersh = _ref2.waitForLeadership,
+      waitForLeadership = _ref2$waitForLeadersh === void 0 ? true : _ref2$waitForLeadersh,
+      _ref2$direction = _ref2.direction,
+      direction = _ref2$direction === void 0 ? {
     pull: true,
     push: true
-  } : _ref$direction,
-      _ref$options = _ref.options,
-      options = _ref$options === void 0 ? {
+  } : _ref2$direction,
+      _ref2$options = _ref2.options,
+      options = _ref2$options === void 0 ? {
     live: true,
     retry: true
-  } : _ref$options,
-      query = _ref.query;
+  } : _ref2$options,
+      query = _ref2.query;
   var useOptions = (0, _util.flatClone)(options); // prevent #641 by not allowing internal pouchdbs as remote
 
-  if ((0, _pouchDb.isInstanceOf)(remote) && INTERNAL_POUCHDBS.has(remote)) {
+  if ((0, _pouchdb.isInstanceOf)(remote) && INTERNAL_POUCHDBS.has(remote)) {
     throw (0, _rxError.newRxError)('RC3', {
       database: this.database.name,
       collection: this.name
@@ -253,9 +266,8 @@ function sync(_ref) {
   } // if remote is RxCollection, get internal pouchdb
 
 
-  if ((0, _rxCollection.isInstanceOf)(remote)) {
-    remote.watchForChanges();
-    remote = remote.pouch;
+  if ((0, _rxCollection.isRxCollection)(remote)) {
+    remote = remote.storageInstance.internals.pouch;
   }
 
   if (query && this !== query.collection) {
@@ -264,13 +276,13 @@ function sync(_ref) {
     });
   }
 
-  var syncFun = (0, _pouchDb.pouchReplicationFunction)(this.pouch, direction);
+  var syncFun = (0, _pouchdb.pouchReplicationFunction)(this.storageInstance.internals.pouch, direction);
 
   if (query) {
-    useOptions.selector = query.keyCompress().selector;
+    useOptions.selector = query.toJSON().selector;
   }
 
-  var repState = createRxReplicationState(this, {
+  var repState = createRxCouchDBReplicationState(this, {
     remote: remote,
     waitForLeadership: waitForLeadership,
     direction: direction,
@@ -285,8 +297,6 @@ function sync(_ref) {
       return;
     }
 
-    _this2.watchForChanges();
-
     var pouchSync = syncFun(remote, useOptions);
     setPouchEventEmitter(repState, pouchSync);
 
@@ -299,22 +309,26 @@ var rxdb = true;
 exports.rxdb = rxdb;
 var prototypes = {
   RxCollection: function RxCollection(proto) {
-    proto.sync = sync;
+    proto.syncCouchDB = syncCouchDB;
   }
 };
 exports.prototypes = prototypes;
 var hooks = {
   createRxCollection: function createRxCollection(collection) {
-    INTERNAL_POUCHDBS.add(collection.pouch);
+    var pouch = collection.storageInstance.internals.pouch;
+
+    if (pouch) {
+      INTERNAL_POUCHDBS.add(collection.storageInstance.internals.pouch);
+    }
   }
 };
 exports.hooks = hooks;
-var RxDBReplicationPlugin = {
-  name: 'replication',
+var RxDBReplicationCouchDBPlugin = {
+  name: 'replication-couchdb',
   rxdb: rxdb,
   prototypes: prototypes,
   hooks: hooks
 };
-exports.RxDBReplicationPlugin = RxDBReplicationPlugin;
+exports.RxDBReplicationCouchDBPlugin = RxDBReplicationCouchDBPlugin;
 
-//# sourceMappingURL=replication.js.map
+//# sourceMappingURL=replication-couchdb.js.map

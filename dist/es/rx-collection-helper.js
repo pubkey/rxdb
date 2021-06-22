@@ -1,51 +1,163 @@
-import { generateId } from './util';
+import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
+import _regeneratorRuntime from "@babel/runtime/regenerator";
+import { flatClone } from './util';
 import { newRxError } from './rx-error';
+import { runPluginHooks } from './hooks';
+import { getSingleDocument, writeSingle } from './rx-storage-helper';
+
 /**
- * wrappers for Pouch.put/get to handle keycompression etc
+ * Every write access on the storage engine,
+ * goes throught this method
+ * so we can run hooks and resolve stuff etc.
+ */
+export function writeToStorageInstance(_x, _x2) {
+  return _writeToStorageInstance.apply(this, arguments);
+}
+/**
+ * wrappers to process document data beofre/after it goes to the storage instnace.
+ * Used to handle keycompression, encryption etc
  */
 
-export function _handleToPouch(col, data) {
-  data = col._crypter.encrypt(data);
-  data = col.schema.swapPrimaryToId(data);
+function _writeToStorageInstance() {
+  _writeToStorageInstance = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(collection, writeRow) {
+    var overwrite,
+        toStorageInstance,
+        writeResult,
+        ret,
+        _args2 = arguments;
+    return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+      while (1) {
+        switch (_context2.prev = _context2.next) {
+          case 0:
+            overwrite = _args2.length > 2 && _args2[2] !== undefined ? _args2[2] : false;
+            toStorageInstance = {
+              previous: writeRow.previous ? _handleToStorageInstance(collection, flatClone(writeRow.previous)) : undefined,
+              document: _handleToStorageInstance(collection, flatClone(writeRow.document))
+            };
 
-  if (col.schema.doKeyCompression()) {
-    data = col._keyCompressor.compress(data);
-  }
+          case 2:
+            if (!true) {
+              _context2.next = 16;
+              break;
+            }
 
-  return data;
+            _context2.prev = 3;
+            _context2.next = 6;
+            return collection.database.lockedRun(function () {
+              return writeSingle(collection.storageInstance, toStorageInstance);
+            });
+
+          case 6:
+            writeResult = _context2.sent;
+            // on success, just return the result
+            ret = _handleFromStorageInstance(collection, writeResult);
+            return _context2.abrupt("return", ret);
+
+          case 11:
+            _context2.prev = 11;
+            _context2.t0 = _context2["catch"](3);
+            return _context2.delegateYield( /*#__PURE__*/_regeneratorRuntime.mark(function _callee() {
+              var useErr, primary, singleRes;
+              return _regeneratorRuntime.wrap(function _callee$(_context) {
+                while (1) {
+                  switch (_context.prev = _context.next) {
+                    case 0:
+                      useErr = _context2.t0;
+                      primary = useErr.documentId;
+
+                      if (!(overwrite && useErr.status === 409)) {
+                        _context.next = 11;
+                        break;
+                      }
+
+                      _context.next = 5;
+                      return collection.database.lockedRun(function () {
+                        return getSingleDocument(collection.storageInstance, primary);
+                      });
+
+                    case 5:
+                      singleRes = _context.sent;
+
+                      if (singleRes) {
+                        _context.next = 8;
+                        break;
+                      }
+
+                      throw newRxError('SNH');
+
+                    case 8:
+                      toStorageInstance.previous = singleRes; // now we can retry
+
+                      _context.next = 16;
+                      break;
+
+                    case 11:
+                      if (!(useErr.status === 409)) {
+                        _context.next = 15;
+                        break;
+                      }
+
+                      throw newRxError('COL19', {
+                        id: primary,
+                        pouchDbError: useErr,
+                        data: writeRow
+                      });
+
+                    case 15:
+                      throw useErr;
+
+                    case 16:
+                    case "end":
+                      return _context.stop();
+                  }
+                }
+              }, _callee);
+            })(), "t1", 14);
+
+          case 14:
+            _context2.next = 2;
+            break;
+
+          case 16:
+          case "end":
+            return _context2.stop();
+        }
+      }
+    }, _callee2, null, [[3, 11]]);
+  }));
+  return _writeToStorageInstance.apply(this, arguments);
 }
-export function _handleFromPouch(col, data) {
+
+export function _handleToStorageInstance(col, data) {
+  data = col._crypter.encrypt(data);
+  var hookParams = {
+    collection: col,
+    doc: data
+  };
+  runPluginHooks('preWriteToStorageInstance', hookParams);
+  return hookParams.doc;
+}
+export function _handleFromStorageInstance(col, data) {
   var noDecrypt = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
-  data = col.schema.swapIdToPrimary(data);
-  if (col.schema.doKeyCompression()) data = col._keyCompressor.decompress(data);
+  var hookParams = {
+    collection: col,
+    doc: data
+  };
+  runPluginHooks('postReadFromInstance', hookParams);
 
   if (noDecrypt) {
-    return data;
+    return hookParams.doc;
   }
 
-  data = col._crypter.decrypt(data);
-  return data;
+  return col._crypter.decrypt(hookParams.doc);
 }
 /**
- * fills in the _id and the
- * default data.
- * This also clones the data
+ * fills in the default data.
+ * This also clones the data.
  */
 
 export function fillObjectDataBeforeInsert(collection, data) {
   var useJson = collection.schema.fillObjectWithDefaults(data);
-
-  if (useJson._id && collection.schema.primaryPath !== '_id') {
-    throw newRxError('COL2', {
-      data: data
-    });
-  } // fill _id
-
-
-  if (collection.schema.primaryPath === '_id' && !useJson._id) {
-    useJson._id = generateId();
-  }
-
   return useJson;
 }
 //# sourceMappingURL=rx-collection-helper.js.map
