@@ -442,8 +442,8 @@ export function _migrateDocument(
                 /**
                  * We need to add as revision
                  * because we provide the _rev by our own
-                 * to have deterministic revisions incase the migration
-                 * runs on multiple nodes.
+                 * to have deterministic revisions in case the migration
+                 * runs on multiple nodes which must lead to the equal storage state.
                  */
                 return oldCollection.newestCollection.storageInstance.bulkAddRevisions([
                     saveData

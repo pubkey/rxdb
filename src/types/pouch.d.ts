@@ -228,6 +228,15 @@ export type PouchBulkDocResultRow = {
     rev: string;
 }
 
+export type PouchBulkDocOptions = {
+    new_edits?: boolean;
+
+    // custom options for RxDB
+    set_new_edit_as_latest_revision?: boolean;
+    isDeeper?: boolean;
+    custom?: any;
+}
+
 export declare class PouchDBInstance {
     constructor(
         name: string,
@@ -258,6 +267,7 @@ export declare class PouchDBInstance {
             key: string;
             value: {
                 rev: string;
+                deleted?: boolean;
             };
             error?: 'not_found' | string;
         }[];
@@ -266,9 +276,7 @@ export declare class PouchDBInstance {
 
     bulkDocs(
         docs: { docs: any[] } | any[],
-        options?: {
-            new_edits?: boolean;
-        }
+        options?: PouchBulkDocOptions,
     ): Promise<(PouchBulkDocResultRow | PouchWriteError)[]>;
 
 

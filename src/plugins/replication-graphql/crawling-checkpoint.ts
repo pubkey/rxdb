@@ -5,7 +5,8 @@ import {
 import type {
     RxCollection,
     ChangeStreamEvent,
-    RxLocalDocumentData
+    RxLocalDocumentData,
+    RxDocumentData
 } from '../../types';
 import {
     findLocalDocument,
@@ -60,6 +61,7 @@ export async function setLastPushSequence(
     endpointHash: string,
     sequence: number
 ): Promise<CheckpointDoc> {
+    console.log('setLastPushSequence(' + sequence + ')');
     const _id = pushSequenceId(endpointHash);
 
     const doc = await findLocalDocument<CheckpointDoc>(
@@ -102,17 +104,27 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
     endpointHash: string,
     batchSize = 10
 ): Promise<{
-    changes: ChangeStreamEvent<RxDocType>[];
+    changedDocs: Map<string, {
+        id: string;
+        doc: RxDocumentData<RxDocType>;
+        sequence: number;
+    }>;
     lastSequence: number;
 }> {
     let lastPushSequence = await getLastPushSequence(
         collection,
         endpointHash
     );
+    console.log('getChangesSinceLastPushSequence() lastPushSequence: ' + lastPushSequence);
+
 
     let retry = true;
     let lastSequence: number = lastPushSequence;
-    let changes: ChangeStreamEvent<RxDocType>[] = [];
+    const changedDocs: Map<string, {
+        id: string;
+        doc: RxDocumentData<RxDocType>;
+        sequence: number;
+    }> = new Map();
 
     /**
      * it can happen that all docs in the batch
@@ -122,18 +134,38 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
      */
     while (retry) {
 
-        const changesResult = await collection.storageInstance.getChanges({
+        const changesResults = await collection.storageInstance.getChangedDocuments({
             startSequence: lastPushSequence,
             limit: batchSize,
             order: 'asc'
         });
-        changes = changesResult.changes;
-        lastSequence = changesResult.lastSequence;
+        lastSequence = changesResults.lastSequence;
 
-        const filteredResults = changes.filter((change) => {
-            const changeDoc = change.doc ? change.doc : change.previous;
-            if (!changeDoc || changeDoc === 'UNKNOWN') {
-                throw newRxError('SNH', { args: { changeDoc } });
+        // optimisation shortcut, do not proceed if there are no changed documents
+        if (changesResults.changedDocuments.length === 0) {
+            console.log('getChangesSinceLastPushSequence() optimisation shortcut, do not proceed if there are no changed documents');
+            retry = false;
+            continue;
+        }
+
+        const docs = await collection.storageInstance.findDocumentsById(
+            changesResults.changedDocuments.map(row => row.id),
+            true
+        );
+
+        console.log('getChangesSinceLastPushSequence() docs: ');
+        console.dir(changesResults);
+        console.dir(docs);
+
+
+        changesResults.changedDocuments.forEach((row) => {
+            const id = row.id;
+            if (changedDocs.has(id)) {
+                return;
+            }
+            const changedDoc = docs.get(id);
+            if (!changedDoc) {
+                throw newRxError('SNH', { args: { docs } });
             }
 
             /**
@@ -142,27 +174,33 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
              */
             if (wasRevisionfromPullReplication(
                 endpointHash,
-                changeDoc._rev
-            )) return false;
+                changedDoc._rev
+            )) {
+                return false;
+            }
 
-            return true;
+            changedDocs.set(id, {
+                id,
+                doc: changedDoc,
+                sequence: row.sequence
+            });
         });
 
-        const useResults = filteredResults;
 
-
-        if (useResults.length === 0 && changes.length === batchSize) {
+        if (changedDocs.size < batchSize && changesResults.changedDocuments.length === batchSize) {
             // no pushable docs found but also not reached the end -> re-run
             lastPushSequence = lastSequence;
             retry = true;
         } else {
-            changes = useResults;
             retry = false;
         }
     }
 
+    console.log('getChangesSinceLastPushSequence() result:: ' + lastSequence);
+    console.dir(changedDocs);
+
     return {
-        changes,
+        changedDocs,
         lastSequence
     };
 }

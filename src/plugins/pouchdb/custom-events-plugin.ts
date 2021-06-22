@@ -9,6 +9,7 @@
  */
 
 import type {
+    PouchBulkDocOptions,
     PouchBulkDocResultRow,
     PouchDBInstance,
     PouchWriteError
@@ -27,10 +28,7 @@ let addedToPouch = false;
 
 declare type EmitData = {
     emitId: number;
-    writeOptions: {
-        new_edits?: boolean;
-        custom: any;
-    };
+    writeOptions: PouchBulkDocOptions;
     writeDocs: any[];
     writeResult: (PouchBulkDocResultRow | PouchWriteError)[];
     // used on new_edits=false to check if the last revision has changed
@@ -82,7 +80,7 @@ export function addCustomEventsPluginToPouch() {
     const newBulkDocs = async function (
         this: PouchDBInstance,
         body: any[] | { docs: any[], new_edits?: boolean },
-        options: any,
+        options: PouchBulkDocOptions,
         callback: Function
     ) {
         const startTime = now();
@@ -130,13 +128,58 @@ export function addCustomEventsPluginToPouch() {
             options.new_edits === false
         ) {
             const ids = docs.map(doc => doc._id);
-            const previousDocsResult = await this.allDocs({
-                include_docs: true,
-                keys: ids
+
+            /**
+             * Pouchdb does not return deleted documents via allDocs()
+             * So have to do use our hack with getting the newest revisions from the
+             * changes.
+             */
+            const viaChanges = await this.changes({
+                live: false,
+                since: 0,
+                doc_ids: ids,
+                style: 'all_docs'
             });
-            previousDocsResult.rows
-                .filter(row => !!row.doc)
-                .forEach(row => previousDocs.set(row.doc._id, row.doc));
+
+            const previousDocsResult = await Promise.all(
+                viaChanges.results.map(async (result) => {
+                    const firstDoc = await this.get(
+                        result.id,
+                        {
+                            rev: result.changes[0].rev,
+                            deleted: 'ok',
+                            revs: options.set_new_edit_as_latest_revision ? true : false,
+                            style: 'all_docs'
+                        }
+                    );
+                    return firstDoc;
+                })
+            );
+
+            console.log('bulkDocs(new_edits=false) previousDocsResult:');
+            console.log(JSON.stringify(previousDocsResult, null, 4));
+
+            previousDocsResult.forEach(doc => previousDocs.set(doc._id, doc));
+
+
+            if (options.set_new_edit_as_latest_revision) {
+                docs.forEach(doc => {
+                    const id = doc._id;
+                    const previous = previousDocs.get(id);
+                    if (previous) {
+                        const splittedRev = doc._rev.split('-');
+                        const revHeight = parseInt(splittedRev[0]);
+                        const revLabel = splittedRev[1];
+                        doc._revisions = {
+                            start: revHeight,
+                            ids: previous._revisions.ids
+                        };
+                        doc._revisions.ids.unshift(revLabel);
+
+                        delete previous._revisions;
+                    }
+                });
+            }
         }
 
 
@@ -148,13 +191,22 @@ export function addCustomEventsPluginToPouch() {
         const deeperOptions = flatClone(options);
         deeperOptions.isDeeper = true;
 
-        return oldBulkDocs.call(this, body, deeperOptions, (err: any, result: any) => {
+        console.log('deeperOptions:');
+        console.dir(deeperOptions);
+
+
+        console.log('call old bulkDocs with docs:');
+        console.log(JSON.stringify(docs, null, 4));
+
+        return oldBulkDocs.call(this, docs, deeperOptions, (err: any, result: any) => {
             if (err) {
                 if (callback) {
                     callback(err);
                 } else {
                     throw err;
                 }
+
+
 
             } else {
                 if (!options.isDeeper) {
@@ -168,6 +220,10 @@ export function addCustomEventsPluginToPouch() {
                         startTime,
                         endTime
                     };
+
+                    console.log('emitData writeResult:');
+                    console.log(JSON.stringify(result.writeResult));
+
                     const emitter = getCustomEventEmitterByPouch(this);
                     emitter.subject.next(emitData);
                 }

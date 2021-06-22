@@ -32,6 +32,9 @@ export async function writeToStorageInstance<RxDocumentType>(
         document: _handleToStorageInstance(collection, flatClone(writeRow.document))
     };
 
+    console.log('writeToStorageInstance:');
+    console.dir(toStorageInstance);
+
     while (true) {
         try {
             const writeResult = await collection.database.lockedRun(

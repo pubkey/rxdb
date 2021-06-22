@@ -240,13 +240,18 @@ export interface RxStorageInstance<
 
     /**
      * Get Multiple documents by their primary value.
+     * This must also return deleted documents.
      */
     findDocumentsById(
         /**
          * List of primary values
          * of the documents to find.
          */
-        ids: string[]
+        ids: string[],
+        /**
+         * If set to true, deleted documents will also be returned.
+         */
+        deleted: boolean
     ): Promise<Map<string, RxDocumentData<DocumentData>>>;
 
     /**
@@ -282,22 +287,18 @@ export interface RxStorageInstance<
     ): Promise<BlobBuffer>;
 
     /**
-     * Returns the changes once,
-     * depending on the given options.
-     *
-     * IMPORTANT: When multiple changes have happened
-     * to the same document, only return the newest change
-     * of each document. We do this because atm it is not possible
-     * to get all changes out of pouchdb.
-     * @link https://stackoverflow.com/questions/33474864/is-there-a-way-to-get-all-revisions-of-a-document-in-pouchdb-when-using-the-chan
-     * TODO this must be fixed to return all changes event of the same document.
+     * Returns the ids of all documents that have been
+     * changed since the given startSequence.
      */
-    getChanges(
+    getChangedDocuments(
         options: ChangeStreamOnceOptions
     ): Promise<{
-        changes: ChangeStreamEvent<RxDocumentData<DocumentData>>[];
+        changedDocuments: {
+            id: string;
+            sequence: number;
+        }[],
         /**
-         * Bhe last sequence number is returned in a separate field
+         * The last sequence number is returned in a separate field
          * because the storage instance might have left out some events
          * that it does not want to send out to the user.
          * But still we need to know that they are there for a gapless pagination.

@@ -16,7 +16,8 @@ import {
 import GraphQLClient from 'graphql-client';
 import {
     promiseWait,
-    getHeightOfRevision
+    getHeightOfRevision,
+    flatClone
 } from '../../util';
 
 import {
@@ -61,8 +62,8 @@ export class RxGraphQLReplicationState<RxDocType> {
         public readonly collection: RxCollection<RxDocType>,
         public readonly url: string,
         public headers: { [k: string]: string },
-        public readonly pull: GraphQLSyncPullOptions,
-        public readonly push: GraphQLSyncPushOptions,
+        public readonly pull: GraphQLSyncPullOptions<RxDocType>,
+        public readonly push: GraphQLSyncPushOptions<RxDocType>,
         public readonly deletedFlag: string,
         public readonly live: boolean,
         public liveInterval: number,
@@ -123,7 +124,7 @@ export class RxGraphQLReplicationState<RxDocType> {
         if (this.collection.destroyed) {
             return true;
         }
-        if (!this.live && this._subjects.initialReplicationComplete['_value']) {
+        if (!this.live && this._subjects.initialReplicationComplete.getValue()) {
             return true;
         }
         if (this._subjects.canceled['_value']) {
@@ -156,7 +157,7 @@ export class RxGraphQLReplicationState<RxDocType> {
             this._subjects.active.next(true);
             const willRetry = await this._run(retryOnFail);
             this._subjects.active.next(false);
-            if (retryOnFail && !willRetry && this._subjects.initialReplicationComplete['_value'] === false) {
+            if (retryOnFail && !willRetry && this._subjects.initialReplicationComplete.getValue() === false) {
                 this._subjects.initialReplicationComplete.next(true);
             }
             this._runQueueCount--;
@@ -204,13 +205,19 @@ export class RxGraphQLReplicationState<RxDocType> {
             return Promise.resolve(false);
         }
 
+        console.log('------------------ runPull()');
+
         const latestDocument = await getLastPullDocument(this.collection, this.endpointHash);
+        console.log('latestDocument:');
+        console.dir(latestDocument);
         const latestDocumentData = latestDocument ? latestDocument : null;
         const pullGraphQL = await this.pull.queryBuilder(latestDocumentData);
 
         let result;
         try {
             result = await this.client.query(pullGraphQL.query, pullGraphQL.variables);
+            console.log('pull result:');
+            console.dir(result);
             if (result.errors) {
                 if (typeof result.errors === 'string') {
                     throw new Error(result.errors);
@@ -228,6 +235,12 @@ export class RxGraphQLReplicationState<RxDocType> {
         // this assumes that there will be always only one property in the response
         // is this correct?
         const data: any[] = result.data[Object.keys(result.data)[0]];
+
+        // optimisation shortcut, do not proceed if there are no documents.
+        if (data.length === 0) {
+            return true;
+        }
+
         const modified: any[] = (await Promise.all(data
             .map(async (doc: any) => await (this.pull as any).modifier(doc))
         )).filter(doc => !!doc);
@@ -238,9 +251,8 @@ export class RxGraphQLReplicationState<RxDocType> {
         if (overwritable.isDevMode()) {
             try {
                 modified.forEach((doc: any) => {
-                    const withoutDeleteFlag = Object.assign({}, doc);
+                    const withoutDeleteFlag = flatClone(doc);
                     delete withoutDeleteFlag[this.deletedFlag];
-                    delete withoutDeleteFlag._revisions;
                     this.collection.schema.validate(withoutDeleteFlag);
                 });
             } catch (err) {
@@ -270,7 +282,12 @@ export class RxGraphQLReplicationState<RxDocType> {
                 newLatestDocument
             );
 
-            // we have more docs, re-run
+            /**
+             * we have more docs, re-run
+             * TODO we should have a options.pull.batchSize param
+             * and only re-run if the previous batch was 'full'
+             * this would save many duplicate requests with empty arrays as response.
+             */
             await this.runPull();
         }
 
@@ -281,38 +298,33 @@ export class RxGraphQLReplicationState<RxDocType> {
      * @return true if successfull, false if not
      */
     async runPush(): Promise<boolean> {
+        console.log('------------------------------------------ runPush()');
         const changesResult = await getChangesSinceLastPushSequence<RxDocType>(
             this.collection,
             this.endpointHash,
             this.push.batchSize,
         );
 
-        const changesWithDocs: any = (
+        const changesWithDocs: { doc: RxDocumentData<RxDocType>; sequence: number; }[] = (
             await Promise.all(
-                changesResult.changes.map(async (change) => {
-                    let doc: any = change.doc ? change.doc : change.previous;
-                    doc[this.deletedFlag] = change.operation === 'DELETE';
-                    delete doc._rev;
-                    delete doc._deleted;
-                    delete doc._attachments;
-
-                    doc = _handleFromStorageInstance(this.collection, doc);
-
-                    doc = await (this.push as any).modifier(doc);
-                    if (!doc) {
+                Array.from(changesResult.changedDocs.values()).map(async (row) => {
+                    let changedDoc = row.doc;
+                    changedDoc = await (this.push as any).modifier(changedDoc);
+                    if (!changedDoc) {
                         return null;
                     }
-
-                    const seq = change.sequence;
                     return {
-                        doc,
-                        seq
+                        doc: changedDoc,
+                        sequence: row.sequence
                     };
                 })
             )
-        ).filter(doc => doc);
+        ).filter(doc => !!doc) as any;
 
-        let lastSuccessfullChange = null;
+        let lastSuccessfullChange: {
+            doc: RxDocumentData<RxDocType>;
+            sequence: number;
+        } | null = null;
         try {
             /**
              * we cannot run all queries parallel
@@ -323,7 +335,20 @@ export class RxGraphQLReplicationState<RxDocType> {
             for (let i = 0; i < changesWithDocs.length; i++) {
                 const changeWithDoc = changesWithDocs[i];
 
+                // TODO _deleted should be required on type RxDocumentData
+                // so we do not need this check here
+                if (!changeWithDoc.doc.hasOwnProperty('_deleted')) {
+                    changeWithDoc.doc._deleted = false;
+                }
+
+                console.log('changeWithDoc.doc:');
+                console.dir(changeWithDoc.doc);
+
                 const pushObj = await this.push.queryBuilder(changeWithDoc.doc);
+
+                console.log('pushObj:');
+                console.dir(pushObj);
+
                 const result = await this.client.query(pushObj.query, pushObj.variables);
 
                 if (result.errors) {
@@ -340,11 +365,16 @@ export class RxGraphQLReplicationState<RxDocType> {
                 }
             }
         } catch (err) {
+
+            console.log('run push row failure:');
+            console.dir(err);
+            console.dir(lastSuccessfullChange);
+
             if (lastSuccessfullChange) {
                 await setLastPushSequence(
                     this.collection,
                     this.endpointHash,
-                    lastSuccessfullChange.seq
+                    lastSuccessfullChange.sequence
                 );
             }
             this._subjects.error.next(err);
@@ -358,7 +388,10 @@ export class RxGraphQLReplicationState<RxDocType> {
             changesResult.lastSequence
         );
 
-        if (changesResult.changes.length === 0) {
+
+        console.log('------------------------------------------ runPush() DONE');
+
+        if (changesResult.changedDocs.size === 0) {
             if (this.live) {
                 // console.log('no more docs to push, wait for ping');
             } else {
@@ -380,7 +413,7 @@ export class RxGraphQLReplicationState<RxDocType> {
 
 
         const docIds: string[] = docs.map(doc => doc[this.collection.schema.primaryPath]);
-        const docsFromLocal = await this.collection.storageInstance.findDocumentsById(docIds);
+        const docsFromLocal = await this.collection.storageInstance.findDocumentsById(docIds, true);
 
         for (const doc of docs) {
             const documentId = doc[this.collection.schema.primaryPath];

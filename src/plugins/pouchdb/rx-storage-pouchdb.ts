@@ -37,6 +37,7 @@ import type {
     BulkWriteLocalRow,
     RxStorageBulkWriteLocalError,
     RxStorageChangeEvent,
+    PouchChangesOptionsNonLive,
 } from '../../types';
 
 import type {
@@ -300,6 +301,9 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         this.emittedEventIds = emitter.obliviousSet;
         const eventSub = emitter.subject.subscribe(async (ev) => {
 
+            console.log('emitter emitted:');
+            console.dir(ev);
+
             if (ev.writeOptions.hasOwnProperty('new_edits') && !ev.writeOptions.new_edits) {
                 await Promise.all(
                     ev.writeDocs.map(async (writeDoc) => {
@@ -328,6 +332,11 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                         }
                         if (!previousDoc && writeDoc._deleted) {
                             // deleted document was added as revision
+                            return;
+                        }
+
+                        if (previousDoc && previousDoc._deleted && writeDoc._deleted) {
+                            // delete document was deleted again
                             return;
                         }
 
@@ -685,6 +694,8 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     public async bulkAddRevisions(
         documents: RxDocumentData<RxDocType>[]
     ): Promise<void> {
+        console.log('bulkAddRevisions():');
+        console.dir(documents);
         const writeData = documents.map(doc => {
             return pouchSwapPrimaryToId(
                 this.schema.primaryKey,
@@ -696,7 +707,8 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         await this.internals.pouch.bulkDocs(
             writeData,
             {
-                new_edits: false
+                new_edits: false,
+                set_new_edit_as_latest_revision: true
             }
         );
     }
@@ -726,6 +738,8 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             return storeDocumentData;
         });
 
+        console.log('pouch.bulkDocs:');
+        console.dir(insertDocs);
         const pouchResult = await this.internals.pouch.bulkDocs(insertDocs, {
             custom: {
                 writeRowById
@@ -805,12 +819,67 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         return attachmentData;
     }
 
-    async findDocumentsById(ids: string[]): Promise<Map<string, RxDocumentData<RxDocType>>> {
+    async findDocumentsById(ids: string[], deleted: boolean): Promise<Map<string, RxDocumentData<RxDocType>>> {
         const primaryKey = this.schema.primaryKey;
+        console.log('findDocumentsById(deleted: ' + deleted + ', ids: ' + ids.join(', ') + ')');
+
+
+        /**
+         * On deleted documents, pouchdb will only return the tombstone.
+         * So we have to get the properties directly for each document
+         * with the hack of getting the changes and then make one request per document
+         * with the latest revision.
+         * TODO create an issue at pouchdb on how to get the document data of deleted documents,
+         * when one past revision was written via new_edits=false
+         * @link https://stackoverflow.com/a/63516761/3443137
+         */
+        if (deleted) {
+            const viaChanges = await this.internals.pouch.changes({
+                live: false,
+                since: 0,
+                doc_ids: ids,
+                style: 'all_docs'
+            });
+            console.log('viaChanges:');
+            console.log(JSON.stringify(viaChanges, null, 4));
+
+            const retDocs = new Map();
+            await Promise.all(
+                viaChanges.results.map(async (result) => {
+                    const firstDoc = await this.internals.pouch.get(
+                        result.id,
+                        {
+                            rev: result.changes[0].rev,
+                            deleted: 'ok',
+                            style: 'all_docs'
+                        }
+                    );
+                    console.log('firstDoc: ' + result.id);
+                    console.dir(firstDoc);
+                    const useFirstDoc = pouchDocumentDataToRxDocumentData(
+                        primaryKey,
+                        firstDoc
+                    );
+                    console.dir(useFirstDoc);
+                    retDocs.set(result.id, useFirstDoc);
+                })
+            );
+            console.log('findDocumentsById(deleted: ' + deleted + ') ret:');
+            console.dir(retDocs);
+            return retDocs;
+        }
+
+
         const pouchResult = await this.internals.pouch.allDocs({
             include_docs: true,
             keys: ids
         });
+        console.log('findDocumentsById(deleted: ' + deleted + ') pouchResult:');
+        console.log(JSON.stringify(pouchResult, null, 4));
+
+
+
+
 
         const ret = new Map();
         pouchResult.rows
@@ -823,6 +892,10 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                 );
                 ret.set(row.id, docData);
             });
+
+        console.log('findDocumentsById(' + ids.join(', ') + ') result:');
+        console.dir(ret);
+
         return ret;
     }
 
@@ -830,34 +903,32 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         return this.changes$.asObservable();
     }
 
-    async getChanges(
+    async getChangedDocuments(
         options: ChangeStreamOnceOptions
     ): Promise<{
-        changes: ChangeStreamEvent<RxDocType>[];
+        changedDocuments: {
+            id: string;
+            sequence: number;
+        }[];
         lastSequence: number;
     }> {
-        const primaryKey = this.schema.primaryKey;
-
-        const pouchResults = await this.internals.pouch.changes({
+        const pouchChangesOpts: PouchChangesOptionsNonLive = {
             live: false,
             limit: options.limit,
-            include_docs: true,
-            descending: options.order === 'asc' ? false : true,
-            since: options.startSequence
-        });
+            include_docs: false,
+            since: options.startSequence,
+            descending: options.order === 'desc' ? true : false
+        };
+        const pouchResults = await this.internals.pouch.changes(pouchChangesOpts);
+        const changedDocuments = pouchResults.results
+            .filter(row => !row.id.startsWith(POUCHDB_DESIGN_PREFIX))
+            .map(row => ({
+                id: row.id,
+                sequence: row.seq
+            }));
         const lastSequence = pouchResults.last_seq;
-
-        const changes: ChangeStreamEvent<RxDocType>[] = pouchResults.results
-            .filter(pouchRow => !pouchRow.id.startsWith(POUCHDB_DESIGN_PREFIX))
-            .map(pouchRow => {
-                return pouchChangeRowToChangeStreamEvent(
-                    primaryKey,
-                    pouchRow
-                );
-            });
-
         return {
-            changes,
+            changedDocuments,
             lastSequence
         };
     }
@@ -1058,6 +1129,7 @@ export function pouchDocumentDataToRxDocumentData<T>(
 
     // always flat clone becaues we mutate the _attachments property.
     useDoc = flatClone(useDoc);
+    delete (useDoc as any)._revisions;
 
     useDoc._attachments = {};
     if (pouchDoc._attachments) {
@@ -1198,6 +1270,9 @@ export function pouchChangeRowToChangeStreamEvent<DocumentData>(
     }
     const revHeight = getHeightOfRevision(doc._rev);
 
+    console.log('pouchChangeRowToChangeStreamEvent():');
+    console.dir(pouchRow);
+
     if (pouchRow.deleted) {
         const previousDoc = flatClone(
             pouchDocumentDataToRxDocumentData(
@@ -1213,6 +1288,7 @@ export function pouchChangeRowToChangeStreamEvent<DocumentData>(
             doc: null,
             previous: previousDoc
         };
+        console.dir(ev);
         return ev;
     } else if (revHeight === 1) {
         const ev: ChangeStreamEvent<DocumentData> = {
@@ -1225,6 +1301,7 @@ export function pouchChangeRowToChangeStreamEvent<DocumentData>(
             ),
             previous: null
         };
+        console.dir(ev);
         return ev;
     } else {
         const ev: ChangeStreamEvent<DocumentData> = {
@@ -1237,6 +1314,7 @@ export function pouchChangeRowToChangeStreamEvent<DocumentData>(
             ),
             previous: 'UNKNOWN'
         };
+        console.dir(ev);
         return ev;
     }
 }

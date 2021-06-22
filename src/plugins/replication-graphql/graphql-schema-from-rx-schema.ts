@@ -74,11 +74,16 @@ export function graphQLSchemaFromRxSchema(
 
         // input
         const inputSchema = stripKeysFromSchema(schema, collectionSettings.ignoreInputKeys as string[]);
+
         const inputGraphQL = getGraphqlSchemaFromJsonSchema({
             rootName: collectionNameInput,
             schema: inputSchema as any,
             direction: 'input'
         });
+
+        console.log('inputGraphQL:');
+        console.dir(inputGraphQL);
+
         ret.inputs = ret.inputs.concat(
             inputGraphQL
                 .typeDefinitions

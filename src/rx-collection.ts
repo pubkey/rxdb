@@ -334,6 +334,11 @@ export class RxCollectionBase<
         );
         const docs = queryResult.documents
             .map((doc: any) => _handleFromStorageInstance(this, doc, noDecrypt));
+
+            console.log('_queryStorageInstance() result:');
+            console.dir(preparedQuery);
+            console.dir(docs);
+
         return docs;
     }
 
@@ -647,7 +652,7 @@ export class RxCollectionBase<
 
         // find everything which was not in docCache
         if (mustBeQueried.length > 0) {
-            const docs = await this.storageInstance.findDocumentsById(mustBeQueried);
+            const docs = await this.storageInstance.findDocumentsById(mustBeQueried, false);
             Array.from(docs.values()).forEach(docData => {
                 docData = _handleFromStorageInstance(this, docData);
                 const doc = createRxDocument<RxDocumentType, OrmMethods>(this as any, docData);
@@ -744,7 +749,7 @@ export class RxCollectionBase<
     /**
      * sync with a GraphQL endpoint
      */
-    syncGraphQL(options: SyncOptionsGraphQL): RxGraphQLReplicationState<RxDocumentType> {
+    syncGraphQL(options: SyncOptionsGraphQL<RxDocumentType>): RxGraphQLReplicationState<RxDocumentType> {
         throw pluginMissing('replication-graphql');
     }
 

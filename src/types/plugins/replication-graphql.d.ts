@@ -1,3 +1,5 @@
+import { RxDocumentData } from '../rx-storage';
+
 export interface RxGraphQLReplicationQueryBuilderResponseObject {
     query: string;
     variables: any;
@@ -10,22 +12,22 @@ export type RxGraphQLReplicationQueryBuilderResponse =
 export type RxGraphQLReplicationQueryBuilder = (doc: any) =>
     RxGraphQLReplicationQueryBuilderResponse;
 
-export interface GraphQLSyncPullOptions {
+export interface GraphQLSyncPullOptions<RxDocType> {
     queryBuilder: RxGraphQLReplicationQueryBuilder;
     modifier?: (doc: any) => Promise<any> | any;
 }
-export interface GraphQLSyncPushOptions {
+export interface GraphQLSyncPushOptions<RxDocType> {
     queryBuilder: RxGraphQLReplicationQueryBuilder;
-    modifier?: (doc: any) => Promise<any> | any;
+    modifier?: (doc: RxDocumentData<RxDocType>) => Promise<any> | any;
     batchSize?: number;
 }
 
-export type SyncOptionsGraphQL = {
+export type SyncOptionsGraphQL<RxDocType> = {
     url: string;
     headers?: { [k: string]: string }; // send with all requests to the endpoint
     waitForLeadership?: boolean; // default=true
-    pull?: GraphQLSyncPullOptions;
-    push?: GraphQLSyncPushOptions;
+    pull?: GraphQLSyncPullOptions<RxDocType>;
+    push?: GraphQLSyncPushOptions<RxDocType>;
     deletedFlag: string;
     live?: boolean; // default=false
     liveInterval?: number; // time in ms

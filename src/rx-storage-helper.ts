@@ -42,7 +42,7 @@ export async function getSingleDocument<RxDocType>(
     storageInstance: RxStorageInstance<RxDocType, any, any>,
     documentId: string
 ): Promise<RxDocumentData<RxDocType> | null> {
-    const results = await storageInstance.findDocumentsById([documentId]);
+    const results = await storageInstance.findDocumentsById([documentId], false);
     const doc = results.get(documentId);
     if (doc) {
         return doc;
@@ -145,7 +145,7 @@ export async function findLocalDocument<DocType>(
 export async function getNewestSequence(
     storageInstance: RxStorageInstance<any, any, any>
 ): Promise<number> {
-    const changesResult = await storageInstance.getChanges({
+    const changesResult = await storageInstance.getChangedDocuments({
         order: 'desc',
         limit: 1,
         startSequence: 0

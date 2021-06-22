@@ -22,6 +22,8 @@ import {
     hash,
     randomCouchString,
     _handleToStorageInstance,
+    flatClone,
+    getFromMapOrThrow,
 } from '../../plugins/core';
 
 import {
@@ -70,6 +72,9 @@ describe('replication-graphql.test.js', () => {
     // for port see karma.config.js
     const browserServerUrl = 'http://localhost:18000' + GRAPHQL_PATH;
 
+    const getEndpointHash = () => hash(AsyncTestUtil.randomString(10));
+    const getTimestamp = () => Math.round(new Date().getTime() / 1000);
+    const endpointHash = getEndpointHash(); // used when we not care about it's value
 
     const batchSize = 5;
     const queryBuilder = (doc: any) => {
@@ -94,7 +99,7 @@ describe('replication-graphql.test.js', () => {
             variables
         };
     };
-    const pushQueryBuilder = (doc: any) => {
+    const pushQueryBuilder = (doc: RxDocumentData<HumanWithTimestampDocumentType>) => {
         if (!doc) {
             throw new Error();
         }
@@ -107,7 +112,13 @@ describe('replication-graphql.test.js', () => {
         }
         `;
         const variables = {
-            human: doc
+            human: {
+                id: doc.id,
+                name: doc.name,
+                age: doc.age,
+                updatedAt: doc.updatedAt,
+                deleted: doc._deleted ? true : false
+            }
         };
 
         return {
@@ -116,87 +127,7 @@ describe('replication-graphql.test.js', () => {
         };
     };
 
-    describe('node', () => {
-        if (!config.platform.isNode()) return;
-        const REQUIRE_FUN = require;
-        addPouchPlugin(REQUIRE_FUN('pouchdb-adapter-http'));
-        const SpawnServer: GraphQLServerModule = REQUIRE_FUN('../helper/graphql-server');
-        const ws = REQUIRE_FUN('ws');
-        const { SubscriptionClient } = REQUIRE_FUN('subscriptions-transport-ws');
-        const ERROR_URL = 'http://localhost:15898/foobar';
-        const getEndpointHash = () => hash(AsyncTestUtil.randomString(10));
-        const getTimestamp = () => Math.round(new Date().getTime() / 1000);
-        const endpointHash = getEndpointHash(); // used when we not care about it's value
-        function getTestData(amount: number): WithDeleted<HumanWithTimestampDocumentType>[] {
-            return new Array(amount).fill(0)
-                .map(() => schemaObjects.humanWithTimestamp())
-                .map((doc: any) => {
-                    doc['deleted'] = false;
-                    return doc;
-                });
-        }
-        config.parallel('graphql-server.js', () => {
-            it('spawn, reach and close a server', async () => {
-                const server = await SpawnServer.spawn();
-                const res = await server.client.query(`{
-                 info
-            }`);
-                assert.strictEqual(res.data.info, 1);
-                server.close();
-            });
-            it('server.setDocument()', async () => {
-                const server = await SpawnServer.spawn<WithDeleted<HumanWithTimestampDocumentType>>();
-                const doc = getTestData(1).pop();
-                if (!doc) {
-                    throw new Error('missing doc');
-                }
-                const res = await server.setDocument(doc);
-                assert.strictEqual(res.data.setHuman.id, doc.id);
-                server.close();
-            });
-            it('should be able to use the ws-subscriptions', async () => {
-                const server = await SpawnServer.spawn();
-
-                const endpointUrl = 'ws://localhost:' + server.wsPort + '/subscriptions';
-                const client = new SubscriptionClient(
-                    endpointUrl,
-                    {
-                        reconnect: true,
-                    },
-                    ws
-                );
-
-                const query = `subscription onHumanChanged {
-                    humanChanged {
-                        id
-                    }
-                }`;
-
-                const ret = client.request({ query });
-                const emitted: any[] = [];
-                const emittedError = [];
-                ret.subscribe({
-                    next(data: any) {
-                        emitted.push(data);
-                    },
-                    error(error: any) {
-                        emittedError.push(error);
-                    }
-                });
-
-                // we have to wait here until the connection is established
-                await AsyncTestUtil.wait(300);
-
-                const doc = getTestData(1).pop();
-                await server.setDocument(doc);
-
-                await AsyncTestUtil.waitUntil(() => emitted.length === 1);
-                assert.ok(emitted[0].data.humanChanged.id);
-                assert.strictEqual(emittedError.length, 0);
-
-                server.close();
-            });
-        });
+    describe('node and browser', () => {
         /**
          * we assume some behavior of pouchdb
          * which is ensured with these tests
@@ -205,14 +136,34 @@ describe('replication-graphql.test.js', () => {
             it('should be possible to retrieve deleted documents in pouchdb', async () => {
                 const c = await humansCollection.createHumanWithTimestamp(2);
                 const pouch = c.storageInstance.internals.pouch;
+                const docs = await c.find().exec();
+                const ids = docs.map(d => d.id);
                 const doc = await c.findOne().exec(true);
                 await doc.remove();
 
+
+                console.dir(ids);
+
                 // get deleted and undeleted from pouch
                 const deletedDocs = await pouch.allDocs({
+                    keys: ids,
                     include_docs: true,
                     deleted: 'ok'
                 });
+
+                console.log('deletedDocs:');
+                console.log(JSON.stringify(deletedDocs, null, 4));
+
+                const deletedSingle = await Promise.all(
+                    ids.map(id => pouch.get(id, {
+                        revs: true,
+                        deleted: 'ok',
+                        open_revs: 'all'
+                    }).catch(() => { }))
+                );
+                console.log('deletedSingle: ');
+                console.log(JSON.stringify(deletedSingle, null, 4));
+
                 assert.strictEqual(deletedDocs.rows.length, 2);
                 const deletedDoc = deletedDocs.rows.find((d: any) => d.value.deleted);
                 const notDeletedDoc = deletedDocs.rows.find((d: any) => !d.value.deleted);
@@ -372,6 +323,7 @@ describe('replication-graphql.test.js', () => {
                 pouch.destroy();
             });
         });
+
         config.parallel('helper', () => {
             describe('.createRevisionForPulledDocument()', () => {
                 it('should create a revision', () => {
@@ -501,8 +453,9 @@ describe('replication-graphql.test.js', () => {
                         endpointHash,
                         10
                     );
-                    assert.strictEqual(changesResult.changes.length, amount);
-                    assert.ok((changesResult.changes[0] as any).doc.name);
+                    assert.strictEqual(changesResult.changedDocs.size, amount);
+                    const firstChange = Array.from(changesResult.changedDocs.values())[0];
+                    assert.ok(firstChange.doc.name);
                     c.database.destroy();
                 });
                 it('should get only the newest update to documents', async () => {
@@ -515,7 +468,7 @@ describe('replication-graphql.test.js', () => {
                         endpointHash,
                         10
                     );
-                    assert.strictEqual(changesResult.changes.length, amount);
+                    assert.strictEqual(changesResult.changedDocs.size, amount);
                     c.database.destroy();
                 });
                 it('should not get more changes then the limit', async () => {
@@ -526,7 +479,7 @@ describe('replication-graphql.test.js', () => {
                         endpointHash,
                         10
                     );
-                    assert.strictEqual(changesResult.changes.length, 10);
+                    assert.strictEqual(changesResult.changedDocs.size, 10);
                     c.database.destroy();
                 });
                 it('should get deletions', async () => {
@@ -539,11 +492,51 @@ describe('replication-graphql.test.js', () => {
                         endpointHash,
                         10
                     );
-                    assert.strictEqual(changesResult.changes.length, amount);
-                    const deleted = changesResult.changes.find((change: any) => {
-                        return change.operation === 'DELETE';
+                    assert.strictEqual(changesResult.changedDocs.size, amount);
+                    const deleted = Array.from(changesResult.changedDocs.values()).find((change) => {
+                        return change.doc._deleted === true;
                     });
-                    assert.ok(deleted);
+
+                    if (!deleted) {
+                        throw new Error('deleted missing');
+                    }
+
+                    assert.ok(deleted.doc._deleted);
+                    assert.ok(deleted.doc.age);
+
+                    c.database.destroy();
+                });
+                it('should get deletions after an update via addRevisions', async () => {
+                    const c = await humansCollection.createHumanWithTimestamp(1);
+                    const oneDoc = await c.findOne().exec(true);
+                    const id = oneDoc.primary;
+
+                    const newDocData: RxDocumentData<HumanWithTimestampDocumentType> = flatClone(oneDoc.toJSON(true));
+                    newDocData.age = 100;
+                    newDocData._rev = '2-23099cb8125d2c79db839ae3f1211cf8';
+                    await c.storageInstance.bulkAddRevisions([newDocData]);
+
+
+                    await oneDoc.remove();
+                    const changesResult = await getChangesSinceLastPushSequence(
+                        c,
+                        endpointHash,
+                        10
+                    );
+
+
+                    console.log('changesResult:');
+                    console.dir(changesResult.changedDocs);
+                    console.log(JSON.stringify(changesResult, null, 4));
+
+
+                    assert.strictEqual(changesResult.changedDocs.size, 1);
+                    const docFromChange = getFromMapOrThrow(changesResult.changedDocs, id);
+                    console.log('docFromChange:');
+                    console.dir(docFromChange);
+                    assert.ok(docFromChange.doc._deleted);
+                    assert.strictEqual(docFromChange.doc.age, 100);
+
                     c.database.destroy();
                 });
                 it('should have resolved the primary', async () => {
@@ -554,8 +547,11 @@ describe('replication-graphql.test.js', () => {
                         endpointHash,
                         10
                     );
-                    const firstDoc = changesResult.changes[0];
-                    assert.ok((firstDoc as any).doc.id);
+                    const firstChange = Array.from(changesResult.changedDocs.values())[0];
+
+                    console.log('firstChange:');
+                    console.dir(firstChange);
+                    assert.ok(firstChange.doc.id);
                     c.database.destroy();
                 });
                 it('should have filtered out replicated docs from the endpoint', async () => {
@@ -585,8 +581,8 @@ describe('replication-graphql.test.js', () => {
                         10
                     );
 
-                    assert.strictEqual(changesResult.changes.length, amount);
-                    const shouldNotBeFound = changesResult.changes.find((change: any) => change.id === toPouch.id);
+                    assert.strictEqual(changesResult.changedDocs.size, amount);
+                    const shouldNotBeFound = Array.from(changesResult.changedDocs.values()).find((change) => change.id === toPouch.id);
                     assert.ok(!shouldNotBeFound);
                     assert.strictEqual(changesResult.lastSequence, amount + 1);
                     c.database.destroy();
@@ -652,6 +648,86 @@ describe('replication-graphql.test.js', () => {
                     assert.strictEqual(ret.name, 'foobar');
                     c.database.destroy();
                 });
+            });
+        });
+    });
+
+    describe('node', () => {
+        if (!config.platform.isNode()) return;
+        const REQUIRE_FUN = require;
+        addPouchPlugin(REQUIRE_FUN('pouchdb-adapter-http'));
+        const SpawnServer: GraphQLServerModule = REQUIRE_FUN('../helper/graphql-server');
+        const ws = REQUIRE_FUN('ws');
+        const { SubscriptionClient } = REQUIRE_FUN('subscriptions-transport-ws');
+        const ERROR_URL = 'http://localhost:15898/foobar';
+        function getTestData(amount: number): WithDeleted<HumanWithTimestampDocumentType>[] {
+            return new Array(amount).fill(0)
+                .map(() => schemaObjects.humanWithTimestamp())
+                .map((doc: any) => {
+                    doc['deleted'] = false;
+                    return doc;
+                });
+        }
+        config.parallel('graphql-server.js', () => {
+            it('spawn, reach and close a server', async () => {
+                const server = await SpawnServer.spawn();
+                const res = await server.client.query(`{
+                 info
+            }`);
+                assert.strictEqual(res.data.info, 1);
+                server.close();
+            });
+            it('server.setDocument()', async () => {
+                const server = await SpawnServer.spawn<WithDeleted<HumanWithTimestampDocumentType>>();
+                const doc = getTestData(1).pop();
+                if (!doc) {
+                    throw new Error('missing doc');
+                }
+                const res = await server.setDocument(doc);
+                assert.strictEqual(res.data.setHuman.id, doc.id);
+                server.close();
+            });
+            it('should be able to use the ws-subscriptions', async () => {
+                const server = await SpawnServer.spawn();
+
+                const endpointUrl = 'ws://localhost:' + server.wsPort + '/subscriptions';
+                const client = new SubscriptionClient(
+                    endpointUrl,
+                    {
+                        reconnect: true,
+                    },
+                    ws
+                );
+
+                const query = `subscription onHumanChanged {
+                    humanChanged {
+                        id
+                    }
+                }`;
+
+                const ret = client.request({ query });
+                const emitted: any[] = [];
+                const emittedError = [];
+                ret.subscribe({
+                    next(data: any) {
+                        emitted.push(data);
+                    },
+                    error(error: any) {
+                        emittedError.push(error);
+                    }
+                });
+
+                // we have to wait here until the connection is established
+                await AsyncTestUtil.wait(300);
+
+                const doc = getTestData(1).pop();
+                await server.setDocument(doc);
+
+                await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+                assert.ok(emitted[0].data.humanChanged.id);
+                assert.strictEqual(emittedError.length, 0);
+
+                server.close();
             });
         });
         config.parallel('live:false pull only', () => {
@@ -1045,6 +1121,9 @@ describe('replication-graphql.test.js', () => {
                     humansCollection.createHumanWithTimestamp(batchSize),
                     SpawnServer.spawn()
                 ]);
+
+                console.log(' ---- 0');
+
                 const replicationState = c.syncGraphQL({
                     url: server.url,
                     push: {
@@ -1055,7 +1134,10 @@ describe('replication-graphql.test.js', () => {
                     deletedFlag: 'deleted'
                 });
 
+                console.log(' ---- 1');
+
                 await replicationState.awaitInitialReplication();
+                console.log(' ---- 2');
 
                 const docsOnServer = server.getDocuments();
                 assert.strictEqual(docsOnServer.length, batchSize);
@@ -1796,7 +1878,10 @@ describe('replication-graphql.test.js', () => {
                         deletedFlag: 'deleted'
                     }
                 });
+
                 const build = buildSchema(output.asString);
+
+                console.log(output.asString);
                 assert.ok(build);
             });
             it('should create a valid output with subscription params', () => {
@@ -1877,14 +1962,43 @@ describe('replication-graphql.test.js', () => {
                     deletedFlag: 'deleted'
                 });
 
+                // build valid output for insert document
                 const output = await builder({
                     id: 'foo',
                     name: 'foo',
                     age: 1234,
-                    updatedAt: 12343
+                    updatedAt: 12343,
+                    _attachments: {},
+                    _rev: '1-foobar'
                 });
-
                 const parsed = parseQuery(output.query);
+
+                const variable: HumanWithTimestampDocumentType = output.variables.human;
+                console.dir(variable);
+
+                // should not have added internal properties
+                assert.ok(!variable.hasOwnProperty('_rev'));
+                assert.ok(!variable.hasOwnProperty('_attachments'));
+                assert.ok(!variable.hasOwnProperty('_deleted'));
+
+
+
+
+                // build valid output for deleted document
+                const outputDeleted = await builder({
+                    id: 'foo',
+                    _deleted: true
+                });
+                const parsedDeleted = parseQuery(outputDeleted.query);
+
+                // should not have added internal properties
+                const variableDeleted: HumanWithTimestampDocumentType = outputDeleted.variables.human;
+                assert.ok(!variableDeleted.hasOwnProperty('_rev'));
+                assert.ok(!variableDeleted.hasOwnProperty('_attachments'));
+                assert.ok(!variableDeleted.hasOwnProperty('_deleted'));
+
+
+                console.dir(outputDeleted.variables);
                 assert.ok(parsed);
             });
         });

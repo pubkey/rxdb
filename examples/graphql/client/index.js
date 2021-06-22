@@ -14,6 +14,9 @@ import {
     getRxStoragePouch
 } from 'rxdb/plugins/pouchdb';
 
+import {
+    filter
+} from 'rxjs/operators';
 
 addPouchPlugin(require('pouchdb-adapter-idb'));
 import {
@@ -190,6 +193,13 @@ async function run() {
         }
     });
 
+    // log all collection events for debugging
+    db.hero.$.pipe(filter(ev => !ev.isLocal)).subscribe(ev => {
+        console.log('colection.$ emitted:');
+        console.dir(ev);
+    });
+
+
     /**
      * We await the inital replication
      * so that the client never shows outdated data.
@@ -199,7 +209,8 @@ async function run() {
      * server.
      */
     heroesList.innerHTML = 'Await initial replication..';
-    await replicationState.awaitInitialReplication();
+    // TODO this did full block the laoding because awaitInitialReplication() never resolves if other tab is leader
+    // await replicationState.awaitInitialReplication();
 
     // subscribe to heroes list and render the list on change
     heroesList.innerHTML = 'Subscribe to query..';
@@ -213,7 +224,7 @@ async function run() {
                 html += `
                     <li class="hero-item">
                         <div class="color-box" style="background:${hero.color}"></div>
-                        <div class="name">${hero.name}</div>
+                        <div class="name">${hero.name} (revision: ${hero._rev})</div>
                         <div class="delete-icon" onclick="window.deleteHero('${hero.primary}')">DELETE</div>
                     </li>
                 `;

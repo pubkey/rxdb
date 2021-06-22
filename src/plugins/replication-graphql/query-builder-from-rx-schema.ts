@@ -74,10 +74,18 @@ export function pushQueryBuilderFromRxSchema(
 
         const sendDoc: any = {};
         Object.entries(doc).forEach(([k, v]) => {
-            if (!(input.ignoreInputKeys as string[]).includes(k)) {
+            if (
+                // skip if in ignoreInputKeys list
+                !(input.ignoreInputKeys as string[]).includes(k) &&
+                // only use properties that are in the schema
+                input.schema.properties[k]
+            ) {
                 sendDoc[k] = v;
             }
         });
+
+        // add deleted flag
+        sendDoc[input.deletedFlag] = !!doc._deleted;
 
         const variables = {
             [collectionName]: sendDoc

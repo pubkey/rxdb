@@ -7,7 +7,7 @@ import './unit/instance-of-check.test.js';
 import './unit/rx-schema.test.js';
 import './unit/key-compression.test.js';
 import './unit/bug-report.test.js';
-import './unit/cross-instance.test.js'; // TODO move down under import export
+import './unit/replication-graphql.test.js'; // move down under replicaiton
 import './unit/rx-database.test.js';
 import './unit/rx-collection.test.js';
 import './unit/rx-document.test.js';
@@ -29,9 +29,9 @@ import './unit/data-migration.test.js';
 import './unit/backup.test.js';
 import './unit/leader-election.test.js';
 import './unit/replication.test.js';
-import './unit/replication-graphql.test.js';
 import './unit/encryption.test.js';
 import './unit/import-export.test.js';
+import './unit/cross-instance.test.js'; // TODO move down under import export
 import './unit/server.test.js'; // TODO move down under import/export
 import './unit/mod-encryption.test.js';
 import './unit/local-documents.test.js';

@@ -189,11 +189,13 @@ export class RxDatabaseBase<
     }): Promise<{ [key in keyof CreatedCollections]: RxCollection }> {
         // get local management docs in bulk request
         const collectionDocs = await this.internalStore.findDocumentsById(
-            Object.keys(collectionCreators)
+            Object
+                .keys(collectionCreators)
                 .map(name => {
                     const schema: RxJsonSchema<any> = (collectionCreators as any)[name].schema;
                     return _collectionNamePrimary(name, schema);
-                })
+                }),
+            false
         );
 
         const internalDocByCollectionName: any = {};
