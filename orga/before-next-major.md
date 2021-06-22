@@ -17,8 +17,6 @@ Instead of mergin the prototype into a single object, we should chain them toget
  - The current implemetation does not use pouchdb's bulkDocs which is much faster
  - This could have been done in much less code which would be easier to uderstand
 
-
-
 ## Move rxjs into a plugin instead of having it internal
 RxDB relies heavily on rxjs. This made it easy in the past to handle the data flow inside of RxDB and also created feature-rich interfaces for users when they want to observe data.
 As long as you have rxjs in your project anyways, like you would have in an angular project, there is no problem with that.
@@ -27,7 +25,7 @@ As soon as a user has another data-handling library like redux or mobx, rxjs inc
 The change would ensure that rxjs is no longer used inside of RxDB. And also there will be a RxDB-plugin which offers the same observable-features as there are today, but optional.
 This would also allow us to create plugins for mobx or react-hooks in the future.
 
-## Move pouchdb into a plugin
+## DONE Move pouchdb into a plugin
 When I started creating RxDB, I used the best solution for a noSQL storage engine that I could find.
 This was pouchdb. Not only because it is a very mature project, but also because it has adapters for so many environments.
 The problem with pouchdb is the build size of 30kb (gziped, with indexeddb adapter) and also the performance decrease by it's overhead which comes from how it handles it's revision tree.
@@ -61,7 +59,7 @@ Also, to not confuse with fast changes that happen directly after each other, th
 
 The change would make all RxDocuments immutable. When you subscribe to a query and the same document is returned in the results, this will always be a new javascript object.
 
-## Use immutable objects instead of deep-cloning stuff
+## DONE Use immutable objects instead of deep-cloning stuff
 RxDB often uses outgoing data also in the internals. For example the result of a query is not only send to the user, but also used inside of RxDB's query-change-detection. To ensure that mutation of the outgoing data is not changing internal stuff, which would cause strange bugs, outgoing data is always deep-cloned before. This is a common practice on many javascript libraries.
 The problem is that deep-cloning big objects can be very CPU expensive.
 So instead of doing a deep-clone, RxDB will assume that outgoing data is immutable.
@@ -69,38 +67,42 @@ If the users wants to modify that data, it has be be deep-cloned by the user.
 To ensure immutability, RxDB will use [deep-freeze](https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze) in the dev-mode (about same expensive as deep clone). Also typescript will throw a build-time error because we will use `ReadonlyArray` and `readonly` to define outgoing data immutable.
 In production-mode, there will be nothing that ensures immutability.
 
-## server-plugin: overwrite defaults of pouchdbExpressOptions
+## DONE server-plugin: overwrite defaults of pouchdbExpressOptions
 The defaults of `pouchdbExpressOptions` from `RxDatabase.server()` require the user to configure stuff to not polute the projects folder with config and log files. We should overwrite the defaults to use `inMemoryConfig: true` and store the logs in the tmp folder.
 
-## remove deprecated RxDocument.atomicSet()
+## DONE remove deprecated RxDocument.atomicSet()
 `atomicSet` is deprecated in favor of `atomicPatch`. Remove the function in the next major release.
 
-## remove RxDatabase.collection()
+## DONE remove RxDatabase.collection()
 It was replaced by `RxDatabase.addCollections()` which is faster and better typed.
 
-## rename wording of the json dump plugin
+## DONE rename wording of the json dump plugin
 The words `dump()` and `importDump()` are confusing. Name it import/export or sth.
 
-## set putAttachment(skipIfSame=true)
+## DONE set putAttachment(skipIfSame=true)
 
 This should be the default. `skipIfSame=true`
 
-## db.server() should be async
+## DONE db.server() should be async
 
 `db.server()` should be async and reject the promise when the startup fails, for example because the port is already used.
 
-## make primary key required
+## DONE make primary key required
 
 The primary key in a schema must be required which makes it less complex to implement other `RxStorage` modules.
 Also the primary key must be set in the top level of the schema as string instead of the `primary: true` in the property.
 This makes it faster to read out the primary key of the schema and also better ensures the required-ness via typescript.
 
-## composite primary keys
+## ~~composite primary keys~~
 
-https://github.com/pubkey/rxdb/issues/3168#issuecomment-845366925
+**MOVED** to backlog because it can be implemented later without breaking change.
 
-## Indexes should use desc/asc like in the RxQuery sort oder
-Atm indexes are defined as `myKey` or `-myKey`. Instead we should use `{myKey: 'asc'}` and `{myKey: 'desc'}` like we do in the sort order of `RxQuery`.
+~~https://github.com/pubkey/rxdb/issues/3168#issuecomment-845366925~~
+
+## ~~Indexes should use desc/asc like in the RxQuery sort oder~~
+DROPPED: There is no way to define descending indexes in pouchdb, couchdb and most other databases. So I am no longer sure that this is a good way to change the schema. So dropped for now to not cause unnecessary migration.
+
+~~Atm indexes are defined as `myKey` or `-myKey`. Instead we should use `{myKey: 'asc'}` and `{myKey: 'desc'}` like we do in the sort order of `RxQuery`.~~
 
 # Maybe
 
