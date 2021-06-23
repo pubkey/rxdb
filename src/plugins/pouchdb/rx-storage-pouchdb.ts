@@ -70,6 +70,7 @@ import {
 } from 'rxjs';
 import { getSchemaByObjectPath } from '../../rx-schema-helper';
 import { getCustomEventEmitterByPouch } from './custom-events-plugin';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 
 /**
  * prefix of local pouchdb documents
@@ -280,6 +281,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     private changes$: Subject<RxStorageChangeEvent<RxDocumentData<RxDocType>>> = new Subject();
     private subs: Subscription[] = [];
     private emittedEventIds: ObliviousSet<string>;
+    private primaryPath: keyof RxDocType;
 
     constructor(
         public readonly databaseName: string,
@@ -289,6 +291,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         public readonly options: Readonly<PouchSettings>
     ) {
         OPEN_POUCHDB_STORAGE_INSTANCES.add(this);
+        this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
 
 
         /**
@@ -305,7 +308,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                     ev.writeDocs.map(async (writeDoc) => {
                         const id = writeDoc._id;
                         writeDoc = pouchDocumentDataToRxDocumentData(
-                            this.schema.primaryKey,
+                            this.primaryPath,
                             writeDoc
                         );
                         writeDoc._attachments = await writeAttachmentsToAttachments(writeDoc._attachments);
@@ -313,7 +316,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                         let previousDoc = ev.previousDocs.get(id);
                         if (previousDoc) {
                             previousDoc = pouchDocumentDataToRxDocumentData(
-                                this.schema.primaryKey,
+                                this.primaryPath,
                                 previousDoc
                             );
                         }
@@ -399,7 +402,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                         writeDoc._attachments = await writeAttachmentsToAttachments(writeDoc._attachments);
 
                         const event = pouchChangeRowToChangeEvent<RxDocType>(
-                            this.schema.primaryKey,
+                            this.primaryPath,
                             writeDoc
                         );
                         this.addEventToChangeStream(event);
@@ -419,7 +422,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                     const id = resultRow.id;
                     const writeRow = getFromMapOrThrow(writeMap, id);
                     const newDoc = pouchDocumentDataToRxDocumentData(
-                        this.schema.primaryKey,
+                        this.primaryPath,
                         writeRow.document as any
                     );
                     newDoc._attachments = await writeAttachmentsToAttachments(newDoc._attachments);
@@ -441,7 +444,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                         // so that the eventkey is calculated correctly.
                         // Is this a hack? idk.
                         const previousDoc = pouchDocumentDataToRxDocumentData(
-                            this.schema.primaryKey,
+                            this.primaryPath,
                             writeRow.previous as any
                         );
                         previousDoc._attachments = await writeAttachmentsToAttachments(previousDoc._attachments);
@@ -532,7 +535,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     ): SortComparator<RxDocType> {
         const primaryKey = this.schema.primaryKey;
         const sortOptions: MangoQuerySortPart[] = query.sort ? query.sort : [{
-            [primaryKey]: 'asc'
+            [this.primaryPath]: 'asc'
         }];
         const massagedSelector = massageSelector(query.selector);
         const inMemoryFields = Object.keys(query.selector);
@@ -577,7 +580,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         const massagedSelector = massageSelector(query.selector);
 
         const fun: QueryMatcher<RxDocType> = (doc: RxDocType) => {
-            const cloned = pouchSwapPrimaryToId(primaryKey, doc);
+            const cloned = pouchSwapPrimaryToId(this.primaryPath, doc);
             const row = {
                 doc: cloned
             };
@@ -682,7 +685,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             }
         });
 
-        query.selector = primarySwapPouchDbQuerySelector(query.selector, primaryKey);
+        query.selector = primarySwapPouchDbQuerySelector(query.selector, this.primaryPath);
 
         return query;
     }
@@ -692,10 +695,13 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     ): Promise<void> {
         const writeData = documents.map(doc => {
             return pouchSwapPrimaryToId(
-                this.schema.primaryKey,
+                this.primaryPath,
                 doc
             );
         });
+
+        console.log('bulkAddRevisions:');
+        console.dir(writeData);
 
         // we do not need the response here because pouchdb returns an empty array on new_edits: false
         await this.internals.pouch.bulkDocs(
@@ -712,17 +718,17 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     ): Promise<
         RxStorageBulkWriteResponse<RxDocType>
     > {
-        const primaryKey = this.schema.primaryKey;
         const writeRowById: Map<string, BulkWriteRow<RxDocType>> = new Map();
 
         const insertDocs: (RxDocType & { _id: string; _rev: string })[] = documentWrites.map(writeData => {
-            const primary: string = (writeData.document as any)[primaryKey];
+            const primary: string = (writeData.document as any)[this.primaryPath];
             writeRowById.set(primary, writeData);
 
             const storeDocumentData: any = rxDocumentDataToPouchDocumentData<RxDocType>(
-                primaryKey,
+                this.primaryPath,
                 writeData.document
             );
+
 
             // if previous document exists, we have to send the previous revision to pouchdb.
             if (writeData.previous) {
@@ -732,6 +738,11 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             return storeDocumentData;
         });
 
+        // console.log('insertDocs:');
+        // console.log(JSON.stringify(insertDocs, null, 4));
+
+        console.log('bulkDocs: ' + this.primaryPath);
+        console.dir(insertDocs);
         const pouchResult = await this.internals.pouch.bulkDocs(insertDocs, {
             custom: {
                 writeRowById
@@ -756,7 +767,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                     ret.error.set(resultRow.id, err);
                 } else {
                     let pushObj: RxDocumentData<RxDocType> = flatClone(writeRow.document) as any;
-                    pushObj = pouchSwapIdToPrimary(primaryKey, pushObj);
+                    pushObj = pouchSwapIdToPrimary(this.primaryPath, pushObj);
                     pushObj._rev = (resultRow as PouchBulkDocResultRow).rev;
 
                     // replace the inserted attachments with their diggest
@@ -785,13 +796,11 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     public async query(
         preparedQuery: PreparedQuery<RxDocType>
     ): Promise<RxStorageQueryResult<RxDocType>> {
-        const primaryKey = this.schema.primaryKey;
-
         const findResult = await this.internals.pouch.find<RxDocType>(preparedQuery);
         const ret: RxStorageQueryResult<RxDocType> = {
             documents: findResult.docs.map(pouchDoc => {
                 const useDoc = pouchDocumentDataToRxDocumentData(
-                    primaryKey,
+                    this.primaryPath,
                     pouchDoc
                 );
                 return useDoc;
@@ -812,8 +821,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     }
 
     async findDocumentsById(ids: string[], deleted: boolean): Promise<Map<string, RxDocumentData<RxDocType>>> {
-        const primaryKey = this.schema.primaryKey;
-
         /**
          * On deleted documents, pouchdb will only return the tombstone.
          * So we have to get the properties directly for each document
@@ -843,7 +850,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                         }
                     );
                     const useFirstDoc = pouchDocumentDataToRxDocumentData(
-                        primaryKey,
+                        this.primaryPath,
                         firstDoc
                     );
                     retDocs.set(result.id, useFirstDoc);
@@ -864,7 +871,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             .forEach(row => {
                 let docData = row.doc;
                 docData = pouchDocumentDataToRxDocumentData(
-                    primaryKey,
+                    this.primaryPath,
                     docData
                 );
                 ret.set(row.id, docData);

@@ -382,3 +382,22 @@ export function humanWithIdAndAgeIndexDocumentType(): HumanWithIdAndAgeIndexDocu
         age: randomNumber(1, 100)
     };
 }
+
+export type HumanWithCompositePrimary = {
+    // optional because it might be created by RxDB and not known before
+    id?: string;
+    firstName: string;
+    lastName: string;
+    info: {
+        age: number;
+    }
+};
+export function humanWithCompositePrimary(): HumanWithCompositePrimary {
+    return {
+        firstName: faker.name.firstName(),
+        lastName: faker.name.lastName(),
+        info: {
+            age: randomNumber(10, 50)
+        }
+    };
+}

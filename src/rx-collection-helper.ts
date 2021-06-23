@@ -86,6 +86,7 @@ export function _handleToStorageInstance(
         doc: data
     };
     runPluginHooks('preWriteToStorageInstance', hookParams);
+
     return hookParams.doc;
 }
 

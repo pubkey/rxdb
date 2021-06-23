@@ -15,14 +15,20 @@ import AsyncTestUtil from 'async-test-util';
 
 import config from './config';
 import {
+    createRxDatabase,
     createRxSchema,
     randomCouchString,
     promiseWait,
-    isRxDocument
+    isRxDocument,
+    RxCollection
 } from '../../plugins/core';
+import {
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
+import { HumanDocumentType, humanWithCompositePrimary, HumanWithCompositePrimary } from '../helper/schema-objects';
 
 config.parallel('primary.test.js', () => {
     describe('Schema', () => {
@@ -309,6 +315,43 @@ config.parallel('primary.test.js', () => {
                 });
             });
             describe('negative', () => { });
+        });
+    });
+    describe('Composite Primary', () => {
+        return; // TODO finish tests for composite primary
+        async function getCompositePrimaryCollection(): Promise<RxCollection<HumanWithCompositePrimary>> {
+            const db = await createRxDatabase<{ human: RxCollection<HumanWithCompositePrimary> }>({
+                name: randomCouchString(10),
+                storage: getRxStoragePouch('memory'),
+                ignoreDuplicate: true
+            });
+            await db.addCollections({
+                human: {
+                    schema: schemas.humanCompositePrimary
+                }
+            });
+            return db.human;
+        }
+        it('should not throw when creating a collection with composite primary', async () => {
+            const col = await getCompositePrimaryCollection();
+            assert.ok(col);
+            col.database.destroy();
+        });
+        it('insert/update/delete a document', async () => {
+            const col = await getCompositePrimaryCollection();
+            assert.ok(col);
+
+            // insert
+            const doc = await col.insert(humanWithCompositePrimary());
+
+            // update
+            await doc.atomicPatch({ lastName: 'alice' });
+
+            // remove
+            await doc.remove();
+
+
+            col.database.destroy();
         });
     });
 });

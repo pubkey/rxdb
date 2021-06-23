@@ -24,7 +24,8 @@ import {
     HumanWithTimestampDocumentType,
     BigHumanDocumentType,
     NostringIndexDocumentType,
-    NoIndexHumanDocumentType
+    NoIndexHumanDocumentType,
+    HumanWithCompositePrimary
 } from './schema-objects';
 
 export const human: RxJsonSchema<HumanDocumentType> = {
@@ -750,6 +751,54 @@ export const refHuman: RxJsonSchema<RefHumanDocumentType> = {
             type: 'string'
         }
     }
+};
+
+export const humanCompositePrimary: RxJsonSchema<HumanWithCompositePrimary> = {
+    title: 'human schema',
+    description: 'describes a human being',
+    version: 0,
+    keyCompression: true,
+    primaryKey: {
+        key: 'id',
+        fields: [
+            'firstName',
+            'info.age'
+        ],
+        separator: '|'
+    },
+    type: 'object',
+    properties: {
+        id: {
+            type: 'string'
+        },
+        firstName: {
+            type: 'string',
+            final: true
+        },
+        lastName: {
+            type: 'string'
+        },
+        info: {
+            type: 'object',
+            properties: {
+                age: {
+                    description: 'age in years',
+                    type: 'integer',
+                    minimum: 0,
+                    maximum: 150,
+                    final: true
+                }
+            },
+            required: ['age']
+        }
+    },
+    required: [
+        'id',
+        'firstName',
+        'lastName',
+        'info'
+    ],
+    indexes: ['firstName']
 };
 
 export const refHumanNested: RxJsonSchema<RefHumanNestedDocumentType> = {

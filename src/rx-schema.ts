@@ -18,6 +18,8 @@ import {
 } from './rx-document';
 
 import type {
+    CompositePrimaryKey,
+    PrimaryKey,
     RxJsonSchema
 } from './types';
 
@@ -32,7 +34,7 @@ export class RxSchema<T = any> {
         this.indexes = getIndexes(this.jsonSchema);
 
         // primary is always required
-        this.primaryPath = this.jsonSchema.primaryKey;
+        this.primaryPath = getPrimaryFieldOfPrimaryKey(this.jsonSchema.primaryKey);
         if (this.primaryPath) {
             (this.jsonSchema as any).required.push(this.primaryPath);
         }
@@ -169,6 +171,16 @@ export function getIndexes<T = any>(
     return (jsonSchema.indexes || []).map(index => Array.isArray(index) ? index : [index]);
 }
 
+export function getPrimaryFieldOfPrimaryKey<RxDocType>(
+    primaryKey: PrimaryKey<RxDocType>
+): keyof RxDocType {
+    if (typeof primaryKey === 'string') {
+        return primaryKey as any;
+    } else {
+        return (primaryKey as CompositePrimaryKey<RxDocType>).key;
+    }
+}
+
 /**
  * array with previous version-numbers
  */
@@ -204,10 +216,16 @@ export function normalize<T>(jsonSchema: RxJsonSchema<T>): RxJsonSchema<T> {
     if (jsonSchema.indexes) {
         normalizedSchema.indexes = Array.from(jsonSchema.indexes); // indexes should remain unsorted
     }
+
+    /**
+     * Instead of adding the primary to the required,
+     * we should throw an error in dev mode.
+     */
+    const primaryField = getPrimaryFieldOfPrimaryKey(jsonSchema.primaryKey);
     if (!jsonSchema.required) {
-        jsonSchema.required = [jsonSchema.primaryKey];
-    } else if (!jsonSchema.required.includes(jsonSchema.primaryKey)) {
-        jsonSchema.required.push(jsonSchema.primaryKey);
+        jsonSchema.required = [primaryField];
+    } else if (!jsonSchema.required.includes(primaryField)) {
+        jsonSchema.required.push(primaryField);
     }
     return normalizedSchema;
 }

@@ -18,8 +18,10 @@ import {
 import type {
     RxPlugin,
     RxJsonSchema,
-    RxCollection
+    RxCollection,
+    CompositePrimaryKey
 } from '../types';
+import { flatClone } from '../util';
 
 declare type CompressionState = {
     table: CompressionTable;
@@ -39,16 +41,14 @@ const COMPRESSION_STATE_BY_COLLECTION: WeakMap<
 export function createCompressionState(
     schema: RxJsonSchema<any>
 ): CompressionState {
-    const primaryPath = schema.primaryKey;
+
+    const compressionSchema: KeyCompressionJsonSchema = flatClone(schema) as any;
+    delete (compressionSchema as any).primaryKey;
+
     const table = createCompressionTable(
-        schema as KeyCompressionJsonSchema,
+        compressionSchema,
         DEFAULT_COMPRESSION_FLAG,
         [
-            /**
-             * Do not compress the primary path
-             * to make it easier to debug errors.
-             */
-            primaryPath as any,
             '_rev',
             '_attachments',
             '_deleted'
@@ -58,6 +58,19 @@ export function createCompressionState(
         table,
         schema as KeyCompressionJsonSchema
     ) as RxJsonSchema<any>;
+
+    // also compress primary key
+    if (typeof schema.primaryKey !== 'string') {
+        const composedPrimary: CompositePrimaryKey<any> = schema.primaryKey as any;
+        const newComposedPrimary: CompositePrimaryKey<any> = {
+            key: compressedPath(table, composedPrimary.key as string),
+            fields: composedPrimary.fields.map(field => compressedPath(table, field as string)),
+            separator: composedPrimary.separator
+        };
+        compressedSchema.primaryKey = newComposedPrimary;
+    } else {
+        compressedSchema.primaryKey = compressedPath(table, schema.primaryKey);
+    }
 
     /**
      * the key compression module does not know about indexes
@@ -132,6 +145,10 @@ export const RxDBKeyCompressionPlugin: RxPlugin = {
              */
             if (params.schema.keyCompression) {
                 const compressionState = createCompressionState(params.schema);
+
+                console.log('compressionState.schema:');
+                console.dir(compressionState.schema);
+
                 params.schema = compressionState.schema;
             }
         },
@@ -159,15 +176,28 @@ export const RxDBKeyCompressionPlugin: RxPlugin = {
                 params.docB
             );
         },
-        preWriteToStorageInstance(params) {
+        preWriteToStorageInstance(params: {
+            collection: RxCollection<any, {}, {}, {}>;
+            doc: any;
+        }) {
             if (!params.collection.schema.jsonSchema.keyCompression) {
                 return;
             }
             const state = getCompressionStateByStorageInstance(params.collection);
+
+            /**
+             * Do not send attachments to compressObject()
+             * because it will deep clone which does not work on Blob or Buffer.
+             */
+            const attachments = params.doc._attachments;
+            delete params.doc._attachments;
+
             params.doc = compressObject(
                 state.table,
                 params.doc
             );
+            params.doc._attachments = attachments;
+
         },
         postReadFromInstance(params) {
             if (!params.collection.schema.jsonSchema.keyCompression) {

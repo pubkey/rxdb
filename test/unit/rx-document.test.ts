@@ -719,12 +719,15 @@ config.parallel('rx-document.test.js', () => {
             });
             const c = cols.humans;
 
+            console.log('.. 1');
             const doc = await c.insert(schemaObjects.human());
+            console.log('.. 2');
             await doc.putAttachment({
                 id: 'sampledata',
                 data: blobBufferUtil.createBlobBuffer('foo bar', 'application/octet-stream'),
                 type: 'application/octet-stream'
             });
+            console.log('.. 3');
 
             const withMeta = doc.toJSON(true);
             assert.ok(withMeta._rev);

@@ -41,19 +41,19 @@ export class Crypter {
         if (!this.password) {
             return obj;
         }
-        obj = clone(obj);
+        const clonedObj = clone(obj);
         this.schema.encryptedPaths
             .forEach(path => {
-                const value = objectPath.get(obj, path);
+                const value = objectPath.get(clonedObj, path);
                 if (typeof value === 'undefined') {
                     return;
                 }
 
                 const stringValue = JSON.stringify(value);
                 const encrypted = this._encryptString(stringValue);
-                objectPath.set(obj, path, encrypted);
+                objectPath.set(clonedObj, path, encrypted);
             });
-        return obj;
+        return clonedObj;
     }
 
     decrypt(obj: any) {

@@ -28,7 +28,7 @@ import {
     newRxError
 } from '../../rx-error';
 import {
-    runAsyncPluginHooks
+    runAsyncPluginHooks, runPluginHooks
 } from '../../hooks';
 import type {
     RxCollection,
@@ -182,11 +182,14 @@ export class DataMigrator {
         if (!this._migratePromise) {
             this._migratePromise = mustMigrate(this)
                 .then(must => {
-                    if (!must) return Promise.resolve(false);
-                    else return new Promise((res, rej) => {
-                        const state$ = this.migrate(batchSize);
-                        (state$ as any).subscribe(null, rej, res);
-                    });
+                    if (!must) {
+                        return Promise.resolve(false);
+                    } else {
+                        return new Promise((res, rej) => {
+                            const state$ = this.migrate(batchSize);
+                            (state$ as any).subscribe(null, rej, res);
+                        });
+                    }
                 });
         }
         return this._migratePromise;
@@ -207,6 +210,11 @@ export async function createOldCollection(
         schema: schemaObj,
         options: dataMigrator.newestCollection.instanceCreationOptions
     };
+    runPluginHooks(
+        'preCreateRxStorageInstance',
+        storageInstanceCreationParams
+    );
+
     const storageInstance = await database.storage.createStorageInstance(
         storageInstanceCreationParams
     );
@@ -397,6 +405,8 @@ export function _migrateDocument(
         newestCollection: oldCollection.newestCollection
     };
 
+    console.log('_migrateDocument()');
+
     return runAsyncPluginHooks(
         'preMigrateDocument',
         {
@@ -468,7 +478,6 @@ export function _migrateDocument(
         .then(() => {
             const writeDeleted = flatClone(docData);
             writeDeleted._deleted = true;
-
             return oldCollection.storageInstance.bulkWrite(
                 [{
                     previous: _handleToStorageInstance(oldCollection, docData),
@@ -502,6 +511,7 @@ export function migrateOldCollection(
     oldCollection: OldRxCollection,
     batchSize = 10
 ): Observable<any> {
+    console.log('migrateOldCollection()');
     if (oldCollection._migrate) {
         // already running
         throw newRxError('DM3');
@@ -536,10 +546,14 @@ export function migrateOldCollection(
                     }
                 })
                 .then(next => {
-                    if (!next) return;
-                    if (error)
+                    if (!next) {
+                        return;
+                    }
+                    if (error) {
                         observer.error(error);
-                    else handleOneBatch();
+                    } else {
+                        handleOneBatch();
+                    }
                 });
         };
         handleOneBatch();
