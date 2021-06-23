@@ -342,10 +342,6 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 assert.strictEqual(foundDeleted.value, 'barfoo2');
                 assert.strictEqual(foundDeleted._deleted, true);
 
-                console.dir(foundDeleted);
-
-                // process.exit();
-
                 storageInstance.close();
             });
         });

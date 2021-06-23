@@ -405,8 +405,6 @@ export function _migrateDocument(
         newestCollection: oldCollection.newestCollection
     };
 
-    console.log('_migrateDocument()');
-
     return runAsyncPluginHooks(
         'preMigrateDocument',
         {
@@ -511,7 +509,6 @@ export function migrateOldCollection(
     oldCollection: OldRxCollection,
     batchSize = 10
 ): Observable<any> {
-    console.log('migrateOldCollection()');
     if (oldCollection._migrate) {
         // already running
         throw newRxError('DM3');

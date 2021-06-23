@@ -107,7 +107,10 @@ export const humanFinal: RxJsonSchema<HumanDocumentType> = {
             maximum: 150,
             final: true
         }
-    }
+    },
+    required: [
+        'passportId'
+    ]
 };
 
 export const simpleHuman: RxJsonSchema<SimpleHumanV3DocumentType> = {
@@ -226,6 +229,9 @@ export const humanSubIndex: RxJsonSchema<HumanWithSubOtherDocumentType> = {
             }
         }
     },
+    required: [
+        'passportId'
+    ],
     indexes: ['other.age']
 };
 
@@ -532,6 +538,9 @@ export const notExistingIndex: RxJsonSchema<{ passportId: string; address: { str
             }
         }
     },
+    required: [
+        'passportId'
+    ],
     indexes: ['address.apartment']
 };
 
@@ -553,6 +562,9 @@ export const compoundIndex: RxJsonSchema<CompoundIndexDocumentType> = {
             type: 'integer'
         }
     },
+    required: [
+        'passportId'
+    ],
     indexes: [
         ['age', 'passportCountry']
     ]
@@ -599,6 +611,9 @@ export const wrongCompoundFormat: RxJsonSchema<CompoundIndexDocumentType> = {
             type: 'integer'
         }
     },
+    required: [
+        'passportId'
+    ],
     compoundIndexes: [{
         foo: 'bar'
     }]
@@ -609,8 +624,12 @@ export const empty: RxJsonSchema<any> = {
     version: 0,
     type: 'object',
     primaryKey: 'id',
-    properties: {},
-    required: []
+    properties: {
+        id: {
+            type: 'string'
+        }
+    },
+    required: ['id']
 };
 
 export const heroArray: RxJsonSchema<HeroArrayDocumentType> = {
@@ -640,7 +659,10 @@ export const heroArray: RxJsonSchema<HeroArrayDocumentType> = {
                 }
             }
         }
-    }
+    },
+    required: [
+        'name'
+    ]
 };
 
 export const simpleArrayHero: RxJsonSchema<SimpleHeroArrayDocumentType> = {
@@ -662,7 +684,10 @@ export const simpleArrayHero: RxJsonSchema<SimpleHeroArrayDocumentType> = {
                 type: 'string',
             }
         }
-    }
+    },
+    required: [
+        'name'
+    ]
 };
 
 export const primaryHuman: RxJsonSchema<HumanDocumentType> = {
@@ -750,7 +775,10 @@ export const refHuman: RxJsonSchema<RefHumanDocumentType> = {
             ref: 'human',
             type: 'string'
         }
-    }
+    },
+    required: [
+        'name'
+    ]
 };
 
 export const humanCompositePrimary: RxJsonSchema<HumanWithCompositePrimary> = {
@@ -772,8 +800,7 @@ export const humanCompositePrimary: RxJsonSchema<HumanWithCompositePrimary> = {
             type: 'string'
         },
         firstName: {
-            type: 'string',
-            final: true
+            type: 'string'
         },
         lastName: {
             type: 'string'
@@ -785,8 +812,7 @@ export const humanCompositePrimary: RxJsonSchema<HumanWithCompositePrimary> = {
                     description: 'age in years',
                     type: 'integer',
                     minimum: 0,
-                    maximum: 150,
-                    final: true
+                    maximum: 150
                 }
             },
             required: ['age']
@@ -820,7 +846,10 @@ export const refHumanNested: RxJsonSchema<RefHumanNestedDocumentType> = {
                 }
             }
         }
-    }
+    },
+    required: [
+        'name'
+    ]
 };
 
 /**
@@ -869,6 +898,9 @@ export function averageSchema(): RxJsonSchema<AverageSchemaDocumentType> {
                 }
             }
         },
+        required: [
+            'id'
+        ],
         indexes: [
             'var1',
             'deep.deep1',
@@ -1056,6 +1088,9 @@ export const humanWithDeepNestedIndexes: RxJsonSchema<{ id: string; name: string
             }
         }
     },
+    required: [
+        'id'
+    ],
     indexes: ['name', 'job.name', 'job.manager.fullName', 'job.manager.previousJobs.[].name']
 };
 

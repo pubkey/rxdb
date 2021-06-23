@@ -41,7 +41,6 @@ const COMPRESSION_STATE_BY_COLLECTION: WeakMap<
 export function createCompressionState(
     schema: RxJsonSchema<any>
 ): CompressionState {
-
     const compressionSchema: KeyCompressionJsonSchema = flatClone(schema) as any;
     delete (compressionSchema as any).primaryKey;
 
@@ -54,9 +53,11 @@ export function createCompressionState(
             '_deleted'
         ]
     );
+
+    delete (compressionSchema as any).primaryKey;
     const compressedSchema: RxJsonSchema<any> = createCompressedJsonSchema(
         table,
-        schema as KeyCompressionJsonSchema
+        compressionSchema
     ) as RxJsonSchema<any>;
 
     // also compress primary key
@@ -145,10 +146,6 @@ export const RxDBKeyCompressionPlugin: RxPlugin = {
              */
             if (params.schema.keyCompression) {
                 const compressionState = createCompressionState(params.schema);
-
-                console.log('compressionState.schema:');
-                console.dir(compressionState.schema);
-
                 params.schema = compressionState.schema;
             }
         },

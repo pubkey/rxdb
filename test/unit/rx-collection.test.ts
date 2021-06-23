@@ -372,23 +372,6 @@ config.parallel('rx-collection.test.js', () => {
                     );
                     db.destroy();
                 });
-                it('should not insert a non-json object', async () => {
-                    const db = await createRxDatabase({
-                        name: randomCouchString(10),
-                        storage: getRxStoragePouch('memory'),
-                    });
-                    const collections = await db.addCollections({
-                        human: {
-                            schema: schemas.human
-                        }
-                    });
-                    await AsyncTestUtil.assertThrows(
-                        () => collections.human.insert('collection'),
-                        'RxError',
-                        'is the wrong type'
-                    );
-                    db.destroy();
-                });
                 it('should not insert human with additional prop', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),

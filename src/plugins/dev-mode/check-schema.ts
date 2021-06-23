@@ -7,8 +7,12 @@ import objectPath from 'object-path';
 import {
     newRxError
 } from '../../rx-error';
+import { getSchemaByObjectPath } from '../../rx-schema-helper';
 import type {
-    RxJsonSchema
+    CompositePrimaryKey,
+    JsonSchema,
+    RxJsonSchema,
+    TopLevelProperty
 } from '../../types';
 import {
     flattenObject,
@@ -153,6 +157,46 @@ export function validateFieldsDeep(jsonSchema: any): true {
     return true;
 }
 
+export function checkPrimaryKey(
+    jsonSchema: RxJsonSchema<any>
+) {
+    if (!jsonSchema.primaryKey) {
+        throw newRxError('SC30', jsonSchema);
+    }
+
+    function validatePrimarySchemaPart(
+        schemaPart: JsonSchema | TopLevelProperty
+    ) {
+        if (!schemaPart) {
+            throw newRxError('SC33', { schema: jsonSchema });
+        }
+
+        const type: string = schemaPart.type as any;
+        if (
+            !type ||
+            !['string', 'number', 'integer'].includes(type)
+        ) {
+            throw newRxError('SC32', { schema: jsonSchema, args: { schemaPart } });
+        }
+    }
+
+    if (typeof jsonSchema.primaryKey === 'string') {
+        const key = jsonSchema.primaryKey;
+        const schemaPart = jsonSchema.properties[key];
+        validatePrimarySchemaPart(schemaPart);
+    } else {
+        const compositePrimaryKey: CompositePrimaryKey<any> = jsonSchema.primaryKey as any;
+
+        const keySchemaPart = getSchemaByObjectPath(jsonSchema, compositePrimaryKey.key);
+        validatePrimarySchemaPart(keySchemaPart);
+
+        compositePrimaryKey.fields.forEach(field => {
+            const schemaPart = getSchemaByObjectPath(jsonSchema, field);
+            validatePrimarySchemaPart(schemaPart);
+        });
+    }
+}
+
 /**
  * computes real path of the object path in the collection schema
  */
@@ -205,6 +249,7 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
     }
 
     validateFieldsDeep(jsonSchema);
+    checkPrimaryKey(jsonSchema);
 
     Object.keys(jsonSchema.properties).forEach(key => {
         const value: any = jsonSchema.properties[key];

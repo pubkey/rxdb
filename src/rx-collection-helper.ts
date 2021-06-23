@@ -13,6 +13,7 @@ import {
 import { runPluginHooks } from './hooks';
 import { getSingleDocument, writeSingle } from './rx-storage-helper';
 import { RxCollectionBase } from './rx-collection';
+import { overwritable } from './overwritable';
 
 
 /**
@@ -31,6 +32,7 @@ export async function writeToStorageInstance<RxDocumentType>(
         previous: writeRow.previous ? _handleToStorageInstance(collection, flatClone(writeRow.previous)) : undefined,
         document: _handleToStorageInstance(collection, flatClone(writeRow.document))
     };
+
 
     while (true) {
         try {
@@ -76,9 +78,15 @@ export async function writeToStorageInstance<RxDocumentType>(
  * Used to handle keycompression, encryption etc
  */
 export function _handleToStorageInstance(
-    col: RxCollection | any,
+    col: RxCollection,
     data: any
 ) {
+
+    // ensure primary key has not been changed
+    if (overwritable.isDevMode()) {
+        col.schema.fillPrimaryKey(data);
+    }
+
     data = (col._crypter as any).encrypt(data);
 
     const hookParams = {
@@ -117,6 +125,8 @@ export function fillObjectDataBeforeInsert(
     collection: RxCollection | RxCollectionBase<any>,
     data: any
 ): any {
-    const useJson = collection.schema.fillObjectWithDefaults(data);
+    let useJson = collection.schema.fillObjectWithDefaults(data);
+    useJson = collection.schema.fillPrimaryKey(useJson);
+
     return useJson;
 }

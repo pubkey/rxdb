@@ -96,6 +96,8 @@ export const ERROR_MESSAGES = {
     DOC15: 'query cannot be an array',
     DOC16: 'Since version 8.0.0 RxDocument.set() can only be called on temporary RxDocuments',
     DOC17: 'Since version 8.0.0 RxDocument.save() can only be called on non-temporary documents',
+    DOC18: 'Document property for composed primary key is missing',
+    DOC19: 'Value of primary key(s) cannot be changed',
 
     // data-migrator.js
     DM1: 'migrate() Migration has already run',
@@ -161,6 +163,8 @@ export const ERROR_MESSAGES = {
     SC28: 'SchemaCheck: encrypted fields is not defined in the schema',
     SC29: 'SchemaCheck: missing object key \'properties\'',
     SC30: 'SchemaCheck: primaryKey is required',
+    SC32: 'SchemaCheck: primary field must have the type string/number/integer',
+    SC33: 'SchemaCheck: used primary key is not a property in the schema',
 
     // plugins/dev-mode
     DEV1: 'dev-mode added multiple times, ' +

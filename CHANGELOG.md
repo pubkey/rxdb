@@ -7,6 +7,7 @@
 Breaking:
   - Setting a `primaryKey` for a schema is now required.
   - When using the type `RxJsonSchema<DocType>` the `DocType` is now required.
+  - A JsonSchema must have the `required` array at the top level and it must contain the primary key.
 
   - Outgoing data is now `Readonly` typed and [deep-frozen](https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze) in dev mode
 
@@ -34,6 +35,9 @@ Breaking:
     - `dump()` is now `exportJSON()`
     - `importDump()` is now `importJSON()`
   - `RxCollection` uses a separate pouchdb instance for local documents, so that they can persist during migrations.
+
+Features:
+  - Added support for composite primary keys.
 
 Other:
   - Moved all `should never happen` errors into own error code.

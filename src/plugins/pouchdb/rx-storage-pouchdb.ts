@@ -497,8 +497,8 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         endTime?: number
     ) {
         const doc: RxDocumentData<RxDocType> = change.operation === 'DELETE' ? change.previous as any : change.doc as any;
-        const primaryKey = this.schema.primaryKey;
-        const primary: string = (doc as any)[primaryKey];
+        const primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
+        const primary: string = (doc as any)[primaryPath];
         const eventId = getEventKey(false, primary, doc._rev);
 
         if (this.emittedEventIds.has(eventId)) {
@@ -576,7 +576,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     getQueryMatcher(
         query: MangoQuery<RxDocType>
     ): QueryMatcher<RxDocType> {
-        const primaryKey = this.schema.primaryKey;
         const massagedSelector = massageSelector(query.selector);
 
         const fun: QueryMatcher<RxDocType> = (doc: RxDocType) => {
@@ -700,9 +699,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             );
         });
 
-        console.log('bulkAddRevisions:');
-        console.dir(writeData);
-
         // we do not need the response here because pouchdb returns an empty array on new_edits: false
         await this.internals.pouch.bulkDocs(
             writeData,
@@ -738,11 +734,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             return storeDocumentData;
         });
 
-        // console.log('insertDocs:');
-        // console.log(JSON.stringify(insertDocs, null, 4));
-
-        console.log('bulkDocs: ' + this.primaryPath);
-        console.dir(insertDocs);
         const pouchResult = await this.internals.pouch.bulkDocs(insertDocs, {
             custom: {
                 writeRowById
@@ -1194,6 +1185,7 @@ export function pouchStripLocalFlagFromPrimary(str: string): string {
 
 export function getEventKey(isLocal: boolean, primary: string, revision: string): string {
 
+    // TODO remove this check this should never happen
     if (!primary) {
         throw new Error('primary missing !!');
     }

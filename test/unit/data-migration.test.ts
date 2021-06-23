@@ -399,7 +399,6 @@ config.parallel('data-migration.test.js', () => {
             });
             describe('.migrate()', () => {
                 it('should resolve finished when no docs', async () => {
-                    console.log('--- 0');
                     const col = await humansCollection.createMigrationCollection(0);
                     const olds = await _getOldCollections(col.getDataMigrator());
                     const oldCol = olds.pop();
@@ -408,14 +407,12 @@ config.parallel('data-migration.test.js', () => {
                     col.database.destroy();
                 });
                 it('should resolve finished when some docs are in the collection', async () => {
-                    console.log('--- 1');
                     const col = await humansCollection.createMigrationCollection(10, {
                         3: (doc: any) => {
                             doc.age = parseInt(doc.age, 10);
                             return doc;
                         }
                     });
-                    console.log('--- 2');
                     const olds = await _getOldCollections(col.getDataMigrator());
                     const oldCol = olds.pop();
 
@@ -426,9 +423,7 @@ config.parallel('data-migration.test.js', () => {
                     const preFiltered = docsPrev.rows.filter((doc: any) => !doc.id.startsWith('_design'));
                     assert.strictEqual(preFiltered.length, 0);
 
-                    console.log('--- 3');
                     await migratePromise(oldCol as any);
-                    console.log('--- 3');
 
                     // check if in new collection
                     const docs = await col.find().exec();

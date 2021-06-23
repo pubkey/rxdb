@@ -28,7 +28,7 @@ import {
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
-import { HumanDocumentType, humanWithCompositePrimary, HumanWithCompositePrimary } from '../helper/schema-objects';
+import { humanWithCompositePrimary, HumanWithCompositePrimary } from '../helper/schema-objects';
 
 config.parallel('primary.test.js', () => {
     describe('Schema', () => {
@@ -318,7 +318,6 @@ config.parallel('primary.test.js', () => {
         });
     });
     describe('Composite Primary', () => {
-        return; // TODO finish tests for composite primary
         async function getCompositePrimaryCollection(): Promise<RxCollection<HumanWithCompositePrimary>> {
             const db = await createRxDatabase<{ human: RxCollection<HumanWithCompositePrimary> }>({
                 name: randomCouchString(10),
@@ -350,6 +349,18 @@ config.parallel('primary.test.js', () => {
             // remove
             await doc.remove();
 
+
+            col.database.destroy();
+        });
+        it('should throw when a primary related field is changed', async () => {
+            const col = await getCompositePrimaryCollection();
+            const doc = await col.insert(humanWithCompositePrimary());
+
+            await AsyncTestUtil.assertThrows(
+                () => doc.atomicPatch({ firstName: 'foobar' }),
+                'RxError',
+                'final fields'
+            );
 
             col.database.destroy();
         });

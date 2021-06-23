@@ -18,7 +18,8 @@ export function getPseudoSchemaForVersion<T = any>(
             [primaryKey]: {
                 type: 'string'
             }
-        } as any
+        } as any,
+        required: [primaryKey]
     };
     return pseudoSchema;
 }
@@ -28,7 +29,7 @@ export function getPseudoSchemaForVersion<T = any>(
  */
 export function getSchemaByObjectPath<T = any>(
     rxJsonSchema: RxJsonSchema<T>,
-    path: string
+    path: keyof T | string
 ): JsonSchema {
     let usePath: string = path as string;
     usePath = usePath.replace(/\./g, '.properties.');

@@ -9,7 +9,6 @@ import './unit/key-compression.test.js';
 import './unit/bug-report.test.js';
 import './unit/rx-database.test.js';
 import './unit/rx-collection.test.js';
-import './unit/data-migration.test.js'; // TODO move down under population
 import './unit/rx-document.test.js';
 import './unit/primary.test.js';
 import './unit/temporary-document.test.js';
@@ -25,6 +24,7 @@ import './unit/reactive-document.test.js';
 import './unit/hooks.test.js';
 import './unit/orm.test.js';
 import './unit/population.test.js';
+import './unit/data-migration.test.js';
 import './unit/backup.test.js';
 import './unit/leader-election.test.js';
 import './unit/replication.test.js';

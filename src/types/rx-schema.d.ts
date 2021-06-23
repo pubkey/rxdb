@@ -104,10 +104,10 @@ export declare class RxJsonSchema<
     properties: { [key in keyof RxDocType]: TopLevelProperty };
 
     /**
-     * TODO on the top level the required-array should be required
+     * On the top level the required-array must be set
      * because we always have to set the primary key to required.
      */
-    required?: (keyof RxDocType)[];
+    required: (keyof RxDocType)[];
 
 
     indexes?: Array<string | string[]>;

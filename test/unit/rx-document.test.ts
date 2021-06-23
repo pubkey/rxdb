@@ -303,6 +303,7 @@ config.parallel('rx-document.test.js', () => {
                     version: 0,
                     type: 'object',
                     primaryKey: 'id',
+                    required: ['id'],
                     properties: {
                         id: {
                             type: 'string'
@@ -719,15 +720,12 @@ config.parallel('rx-document.test.js', () => {
             });
             const c = cols.humans;
 
-            console.log('.. 1');
             const doc = await c.insert(schemaObjects.human());
-            console.log('.. 2');
             await doc.putAttachment({
                 id: 'sampledata',
                 data: blobBufferUtil.createBlobBuffer('foo bar', 'application/octet-stream'),
                 type: 'application/octet-stream'
             });
-            console.log('.. 3');
 
             const withMeta = doc.toJSON(true);
             assert.ok(withMeta._rev);
@@ -946,7 +944,8 @@ config.parallel('rx-document.test.js', () => {
                     value: {
                         type: 'object'
                     }
-                }
+                },
+                required: ['key']
             };
             const cols = await await db.addCollections({
                 heroes: {
@@ -975,6 +974,7 @@ config.parallel('rx-document.test.js', () => {
             const mySchema: RxJsonSchema<{ id: string, children: any[] }> = {
                 version: 0,
                 primaryKey: 'id',
+                required: ['id'],
                 type: 'object',
                 properties: {
                     id: {

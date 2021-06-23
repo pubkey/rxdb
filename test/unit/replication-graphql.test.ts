@@ -141,9 +141,6 @@ describe('replication-graphql.test.js', () => {
                 const doc = await c.findOne().exec(true);
                 await doc.remove();
 
-
-                console.dir(ids);
-
                 // get deleted and undeleted from pouch
                 const deletedDocs = await pouch.allDocs({
                     keys: ids,

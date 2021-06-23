@@ -1,11 +1,13 @@
 import deepEqual from 'deep-equal';
+import objectPath from 'object-path';
 
 import {
     clone,
     hash,
     sortObject,
     pluginMissing,
-    overwriteGetterForCaching
+    overwriteGetterForCaching,
+    flatClone
 } from './util';
 import {
     newRxError,
@@ -35,14 +37,13 @@ export class RxSchema<T = any> {
 
         // primary is always required
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.jsonSchema.primaryKey);
-        if (this.primaryPath) {
-            (this.jsonSchema as any).required.push(this.primaryPath);
-        }
 
         // final fields are always required
         this.finalFields = getFinalFields(this.jsonSchema);
+
         this.jsonSchema.required = (this.jsonSchema as any).required
             .concat(this.finalFields)
+            .filter((field: string) => !field.includes('.'))
             .filter((elem: any, pos: any, arr: any) => arr.indexOf(elem) === pos); // unique;
     }
 
@@ -163,6 +164,30 @@ export class RxSchema<T = any> {
         );
         return proto;
     }
+
+
+    fillPrimaryKey(
+        documentData: T
+    ): T {
+        const cloned = flatClone(documentData);
+
+        const newPrimary = getComposedPrimaryKeyOfDocumentData<T>(
+            this.jsonSchema,
+            documentData
+        );
+
+        const existingPrimary: string | undefined = documentData[this.primaryPath] as any;
+        if (
+            existingPrimary &&
+            existingPrimary !== newPrimary
+        ) {
+            throw newRxError('DOC19', { args: { documentData, existingPrimary, newPrimary } });
+        }
+
+        (cloned as any)[this.primaryPath] = newPrimary;
+        return cloned;
+    }
+
 }
 
 export function getIndexes<T = any>(
@@ -179,6 +204,27 @@ export function getPrimaryFieldOfPrimaryKey<RxDocType>(
     } else {
         return (primaryKey as CompositePrimaryKey<RxDocType>).key;
     }
+}
+
+/**
+ * Returns the composed primaryKey of a document by its data.
+ */
+export function getComposedPrimaryKeyOfDocumentData<RxDocType>(
+    jsonSchema: RxJsonSchema<RxDocType>,
+    documentData: RxDocType
+): string {
+    if (typeof jsonSchema.primaryKey === 'string') {
+        return (documentData as any)[jsonSchema.primaryKey];
+    }
+
+    const compositePrimary: CompositePrimaryKey<RxDocType> = jsonSchema.primaryKey as any;
+    return compositePrimary.fields.map(field => {
+        const value = objectPath.get(documentData as any, field as string);
+        if (typeof value === 'undefined') {
+            throw newRxError('DOC18', { args: { field, documentData } });
+        }
+        return value;
+    }).join(compositePrimary.separator);
 }
 
 /**
@@ -203,7 +249,15 @@ export function getFinalFields<T = any>(
         .filter(key => (jsonSchema as any).properties[key].final);
 
     // primary is also final
-    ret.push(jsonSchema.primaryKey as any);
+    const primaryPath = getPrimaryFieldOfPrimaryKey(jsonSchema.primaryKey);
+    ret.push(primaryPath as string);
+
+    // fields of composite primary are final
+    if (typeof jsonSchema.primaryKey !== 'string') {
+        (jsonSchema.primaryKey as CompositePrimaryKey<T>).fields
+            .forEach(field => ret.push(field as string));
+    }
+
     return ret;
 }
 
@@ -215,17 +269,6 @@ export function normalize<T>(jsonSchema: RxJsonSchema<T>): RxJsonSchema<T> {
     const normalizedSchema: RxJsonSchema<T> = sortObject(clone(jsonSchema));
     if (jsonSchema.indexes) {
         normalizedSchema.indexes = Array.from(jsonSchema.indexes); // indexes should remain unsorted
-    }
-
-    /**
-     * Instead of adding the primary to the required,
-     * we should throw an error in dev mode.
-     */
-    const primaryField = getPrimaryFieldOfPrimaryKey(jsonSchema.primaryKey);
-    if (!jsonSchema.required) {
-        jsonSchema.required = [primaryField];
-    } else if (!jsonSchema.required.includes(primaryField)) {
-        jsonSchema.required.push(primaryField);
     }
     return normalizedSchema;
 }
