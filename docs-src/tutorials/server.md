@@ -55,7 +55,8 @@ const mySchema = {
         value: {
             type: 'string'
         }
-    }
+    },
+    required: ['key']
 };
 await db.addCollections({
     items: {

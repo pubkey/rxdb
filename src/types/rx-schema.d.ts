@@ -106,8 +106,10 @@ export declare class RxJsonSchema<
     /**
      * On the top level the required-array must be set
      * because we always have to set the primary key to required.
+     * 
+     * TODO required should be made non-optional on the top level
      */
-    required: (keyof RxDocType)[];
+    required?: (keyof RxDocType)[];
 
 
     indexes?: Array<string | string[]>;
