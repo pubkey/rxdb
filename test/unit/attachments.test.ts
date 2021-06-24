@@ -309,19 +309,21 @@ config.parallel('attachments.test.ts', () => {
         it('should store the data encrypted', async () => {
             const c = await humansCollection.createEncryptedAttachments(1);
             const doc = await c.findOne().exec(true);
+
+
             const attachment = await doc.putAttachment({
                 id: 'cat.txt',
-                data: blobBufferUtil.createBlobBuffer('foo bar', 'text/plain'),
+                data: blobBufferUtil.createBlobBuffer('foo bar aaa', 'text/plain'),
                 type: 'text/plain'
             });
 
             const encryptedData = await doc.collection.storageInstance.internals.pouch.getAttachment(doc.primary, 'cat.txt');
 
             const dataString = await blobBufferUtil.toString(encryptedData);
-            assert.notStrictEqual(dataString, 'foo bar');
+            assert.notStrictEqual(dataString, 'foo bar aaa');
 
             const data = await attachment.getStringData();
-            assert.strictEqual(data, 'foo bar');
+            assert.strictEqual(data, 'foo bar aaa');
 
             c.database.destroy();
         });

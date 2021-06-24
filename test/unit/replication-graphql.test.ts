@@ -963,7 +963,6 @@ describe('replication-graphql.test.js', () => {
                     SpawnServer.spawn(getTestData(1))
                 ]);
 
-                console.log('----- 1');
                 const replicationState = c.syncGraphQL({
                     url: server.url,
                     pull: {
@@ -979,9 +978,7 @@ describe('replication-graphql.test.js', () => {
                     console.dir(err);
                 });
 
-                console.log('----- 2');
                 await replicationState.awaitInitialReplication();
-                console.log('----- 3');
 
                 // add document & trigger pull
                 const doc = getTestData(1).pop();
@@ -990,7 +987,6 @@ describe('replication-graphql.test.js', () => {
                 }
                 await server.setDocument(doc);
 
-                console.log('----- 4');
                 await AsyncTestUtil.waitUntil(async () => {
                     const docs = await c.find().exec();
                     if (docs.length > 2) {
@@ -999,7 +995,6 @@ describe('replication-graphql.test.js', () => {
                     console.dir(docs.map(d => d.toJSON()));
                     return docs.length === 2;
                 }, 10 * 1000, 100);
-                console.log('----- 5');
 
                 server.close();
                 errorSub.unsubscribe();

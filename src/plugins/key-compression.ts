@@ -202,7 +202,6 @@ export const RxDBKeyCompressionPlugin: RxPlugin = {
                 params.doc
             );
             params.doc._attachments = attachments;
-
         },
         postReadFromInstance(params) {
             if (!params.collection.schema.jsonSchema.keyCompression) {

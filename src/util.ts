@@ -407,7 +407,6 @@ export const blobBufferUtil = {
         type: string
     ): BlobBuffer {
         let blobBuffer: any;
-
         if (isElectronRenderer) {
             // if we are inside of electron-renderer, always use the node-buffer
             return Buffer.from(data, {
@@ -426,10 +425,11 @@ export const blobBufferUtil = {
                 type
             } as any);
         }
+
         return blobBuffer;
     },
     isBlobBuffer(data: any): boolean {
-        if (data instanceof Blob || Buffer.isBuffer(data)) {
+        if (Buffer.isBuffer(data) || data instanceof Blob) {
             return true;
         } else {
             return false;

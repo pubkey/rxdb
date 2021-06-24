@@ -8,6 +8,7 @@
 import objectPath from 'object-path';
 import {
     clone,
+    flatClone,
     pluginMissing
 } from './util';
 
@@ -41,7 +42,22 @@ export class Crypter {
         if (!this.password) {
             return obj;
         }
+
+        obj = flatClone(obj);
+
+
+        /**
+         * Extract attachments because deep-cloning
+         * Buffer or Blob does not work
+         */
+        const attachments = obj._attachments;
+        delete obj._attachments;
+
         const clonedObj = clone(obj);
+        if (attachments) {
+            clonedObj._attachments = attachments;
+        }
+
         this.schema.encryptedPaths
             .forEach(path => {
                 const value = objectPath.get(clonedObj, path);
@@ -58,18 +74,33 @@ export class Crypter {
 
     decrypt(obj: any) {
         if (!this.password) return obj;
-        obj = clone(obj);
+
+        obj = flatClone(obj);
+
+
+        /**
+         * Extract attachments because deep-cloning
+         * Buffer or Blob does not work
+         */
+        const attachments = obj._attachments;
+        delete obj._attachments;
+
+        const clonedObj = clone(obj);
+        if (attachments) {
+            clonedObj._attachments = attachments;
+        }
+
         this.schema.encryptedPaths
             .forEach(path => {
-                const value = objectPath.get(obj, path);
+                const value = objectPath.get(clonedObj, path);
                 if (typeof value === 'undefined') {
                     return;
                 }
                 const decrypted = this._decryptString(value);
                 const decryptedParsed = JSON.parse(decrypted);
-                objectPath.set(obj, path, decryptedParsed);
+                objectPath.set(clonedObj, path, decryptedParsed);
             });
-        return obj;
+        return clonedObj;
     }
 }
 

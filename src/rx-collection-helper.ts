@@ -80,7 +80,6 @@ export function _handleToStorageInstance(
     col: RxCollection | RxCollectionBase<any, any, any>,
     data: any
 ) {
-
     // ensure primary key has not been changed
     if (overwritable.isDevMode()) {
         col.schema.fillPrimaryKey(data);

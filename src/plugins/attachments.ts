@@ -150,13 +150,11 @@ export async function putAttachment(
 ): Promise<RxAttachment> {
     ensureSchemaSupportsAttachments(this);
 
-
-
-
     /**
      * Then encryption plugin is only able to encrypt strings,
      * so unpack as string first.
      */
+
     if (shouldEncrypt(this.collection.schema)) {
         const dataString = await blobBufferUtil.toString(data);
         const encrypted = this.collection._crypter._encryptString(dataString);
@@ -180,6 +178,7 @@ export async function putAttachment(
                 type,
                 data: data
             };
+
             const writeRow = {
                 previous: _handleToStorageInstance(this.collection, flatClone(this._data)),
                 document: _handleToStorageInstance(this.collection, flatClone(docWriteData))

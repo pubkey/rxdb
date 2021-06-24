@@ -7,7 +7,8 @@ import {
     fastUnsecureHash,
     randomCouchString,
     sortObject,
-    now
+    now,
+    blobBufferUtil
 } from '../../plugins/core';
 
 import {
@@ -103,6 +104,26 @@ describe('util.test.js', () => {
                 assert.ok(value > last);
                 last = value;
             });
+        });
+    });
+    describe('blobBufferUtil', () => {
+        it('should be able to run all functions', async () => {
+            const text = 'foobar';
+            const blobBuffer = blobBufferUtil.createBlobBuffer(text, 'plain/text');
+            assert.ok(blobBufferUtil.isBlobBuffer(blobBuffer));
+            const asString = await blobBufferUtil.toString(blobBuffer);
+            assert.strictEqual(text, asString);
+        });
+        it('should be able to run often in circle', async () => {
+            const text = 'foobar';
+            let blobBuffer = blobBufferUtil.createBlobBuffer(text, 'plain/text');
+            let asString = await blobBufferUtil.toString(blobBuffer);
+            blobBuffer = blobBufferUtil.createBlobBuffer(asString, 'plain/text');
+            asString = await blobBufferUtil.toString(blobBuffer);
+            blobBuffer = blobBufferUtil.createBlobBuffer(asString, 'plain/text');
+            asString = await blobBufferUtil.toString(blobBuffer);
+
+            assert.strictEqual(text, asString);
         });
     });
 });
