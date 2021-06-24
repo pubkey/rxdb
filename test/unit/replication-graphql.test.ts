@@ -957,10 +957,13 @@ describe('replication-graphql.test.js', () => {
                 assert.ok(replicationState.isStopped());
             });
             it('should also get documents that come in afterwards with interval .run()', async () => {
+                // TODO this test randomly fails some times
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(0),
                     SpawnServer.spawn(getTestData(1))
                 ]);
+
+                console.log('----- 1');
                 const replicationState = c.syncGraphQL({
                     url: server.url,
                     pull: {
@@ -971,7 +974,14 @@ describe('replication-graphql.test.js', () => {
                     deletedFlag: 'deleted'
                 });
 
+                const errorSub = replicationState.error$.subscribe(err => {
+                    console.error('got error while replication');
+                    console.dir(err);
+                });
+
+                console.log('----- 2');
                 await replicationState.awaitInitialReplication();
+                console.log('----- 3');
 
                 // add document & trigger pull
                 const doc = getTestData(1).pop();
@@ -980,15 +990,19 @@ describe('replication-graphql.test.js', () => {
                 }
                 await server.setDocument(doc);
 
+                console.log('----- 4');
                 await AsyncTestUtil.waitUntil(async () => {
                     const docs = await c.find().exec();
                     if (docs.length > 2) {
                         throw new Error('got too many documents');
                     }
+                    console.dir(docs.map(d => d.toJSON()));
                     return docs.length === 2;
-                });
+                }, 10 * 1000, 100);
+                console.log('----- 5');
 
                 server.close();
+                errorSub.unsubscribe();
                 c.database.destroy();
             });
             it('should overwrite the local doc if the remote gets deleted', async () => {
