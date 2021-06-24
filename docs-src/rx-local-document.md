@@ -54,7 +54,7 @@ const localDoc = await myCollection.getLocal('foobar');
 
 ## getLocal$()
 
-Like `getLocal$()` but returns an `Observable` that emits the document or `null` if not exists.
+Like `getLocal()` but returns an `Observable` that emits the document or `null` if not exists.
 
 ```javascript
 const subscription = myCollection.getLocal$('foobar').subscribe(documentOrNull => {
