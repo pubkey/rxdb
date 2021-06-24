@@ -77,6 +77,9 @@ config.parallel('key-compression.test.js', () => {
                 version: 0,
                 description: 'describes a simple hero',
                 primaryKey: 'id',
+                required: [
+                    'id'
+                ],
                 type: 'object',
                 properties: {
                     id: {
@@ -117,6 +120,7 @@ config.parallel('key-compression.test.js', () => {
                 version: 0,
                 description: 'describes a simple hero',
                 primaryKey: 'key',
+                required: ['key'],
                 type: 'object',
                 properties: {
                     key: {

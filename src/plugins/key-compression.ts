@@ -14,6 +14,7 @@ import {
     DEFAULT_COMPRESSION_FLAG,
     createCompressedJsonSchema
 } from 'jsonschema-key-compression';
+import { getPrimaryFieldOfPrimaryKey } from '../rx-schema';
 
 import type {
     RxPlugin,
@@ -48,6 +49,11 @@ export function createCompressionState(
         compressionSchema,
         DEFAULT_COMPRESSION_FLAG,
         [
+            /**
+             * Do not compress the primary field
+             * for easier debugging.
+             */
+            getPrimaryFieldOfPrimaryKey(schema.primaryKey),
             '_rev',
             '_attachments',
             '_deleted'
