@@ -666,7 +666,12 @@ describe('typings.test.js', function () {
                 const myDb: RxDatabase = {} as any;
                 const typedLocalDoc = await myDb.getLocal<{foo: string;}>('foobar');
                 const typedLocalDocInsert = await myDb.insertLocal<{foo: string;}>('foobar', { bar: 'foo' });
-                const x: null = typedLocalDoc.foo;
+
+                if (!typedLocalDoc) {
+                    throw new Error('local doc missing');
+                }
+
+                const x: string = typedLocalDoc.foo;
                 const x2: string = typedLocalDocInsert.foo;
             });
             `;
@@ -681,6 +686,11 @@ describe('typings.test.js', function () {
                 const myDb: RxDatabase = {} as any;
                 const typedLocalDoc = await myDb.getLocal<{foo: string;}>('foobar');
                 const typedLocalDocUpsert = await myDb.upsertLocal<{foo: string;}>('foobar', { foo: 'bar' });
+
+                if (!typedLocalDoc) {
+                    throw new Error('local doc missing');
+                }
+
                 const x: string = typedLocalDoc.foo;
                 const x2: string = typedLocalDocUpsert.foo;
             });
