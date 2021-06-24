@@ -166,6 +166,15 @@ export class RxSchema<T = any> {
     }
 
 
+    getPrimaryOfDocumentData(
+        documentData: Partial<T>
+    ): string {
+        return getComposedPrimaryKeyOfDocumentData(
+            this.jsonSchema,
+            documentData
+        );
+    }
+
     fillPrimaryKey(
         documentData: T
     ): T {
@@ -211,7 +220,7 @@ export function getPrimaryFieldOfPrimaryKey<RxDocType>(
  */
 export function getComposedPrimaryKeyOfDocumentData<RxDocType>(
     jsonSchema: RxJsonSchema<RxDocType>,
-    documentData: RxDocType
+    documentData: Partial<RxDocType>
 ): string {
     if (typeof jsonSchema.primaryKey === 'string') {
         return (documentData as any)[jsonSchema.primaryKey];

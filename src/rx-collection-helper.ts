@@ -33,7 +33,6 @@ export async function writeToStorageInstance<RxDocumentType>(
         document: _handleToStorageInstance(collection, flatClone(writeRow.document))
     };
 
-
     while (true) {
         try {
             const writeResult = await collection.database.lockedRun(
@@ -78,7 +77,7 @@ export async function writeToStorageInstance<RxDocumentType>(
  * Used to handle keycompression, encryption etc
  */
 export function _handleToStorageInstance(
-    col: RxCollection,
+    col: RxCollection | RxCollectionBase<any, any, any>,
     data: any
 ) {
 
@@ -99,7 +98,7 @@ export function _handleToStorageInstance(
 }
 
 export function _handleFromStorageInstance(
-    col: RxCollection | any,
+    col: RxCollection | RxCollectionBase<any, any, any>,
     data: any,
     noDecrypt = false
 ) {

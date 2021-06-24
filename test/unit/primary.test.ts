@@ -364,5 +364,26 @@ config.parallel('primary.test.js', () => {
 
             col.database.destroy();
         });
+        it('find via composite primary', async () => {
+            const col = await getCompositePrimaryCollection();
+            assert.ok(col);
+
+            // insert
+            const insertData = humanWithCompositePrimary();
+            const doc = await col.insert(insertData);
+
+            // find
+            const id = col.schema.getPrimaryOfDocumentData({
+                firstName: insertData.firstName,
+                info: {
+                    age: insertData.info.age
+                }
+            });
+
+            const found = await col.findOne(id).exec(true);
+            assert.ok(found === doc);
+
+            col.database.destroy();
+        });
     });
 });

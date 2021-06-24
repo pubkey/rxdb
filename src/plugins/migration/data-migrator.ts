@@ -309,7 +309,7 @@ export function getBatchOfOldCollection(
         .then(docs => docs
             .map(doc => {
                 doc = flatClone(doc);
-                doc = _handleFromStorageInstance(oldCollection, doc);
+                doc = _handleFromStorageInstance(oldCollection as any, doc);
                 return doc;
             })
         );
@@ -478,8 +478,8 @@ export function _migrateDocument(
             writeDeleted._deleted = true;
             return oldCollection.storageInstance.bulkWrite(
                 [{
-                    previous: _handleToStorageInstance(oldCollection, docData),
-                    document: _handleToStorageInstance(oldCollection, writeDeleted)
+                    previous: _handleToStorageInstance(oldCollection as any, docData),
+                    document: _handleToStorageInstance(oldCollection as any, writeDeleted)
                 }]
             );
         })

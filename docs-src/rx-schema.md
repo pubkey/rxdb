@@ -60,7 +60,10 @@ In this example-schema we define a hero-collection with the following settings:
             }
         }
     },
-    "required": ["color"],
+    "required": [
+        "name",
+        "color"
+    ],
     "encrypted": ["secret"],
     "attachments": {
         "encrypted": true
@@ -88,7 +91,59 @@ When the version is greater than 0, you have to provide the migrationStrategies 
 ## primaryKey
 
 The `primaryKey` field contains the fieldname of the property that will be used as primary key for the whole collection.
-The value of the primary key of the document must be a `string`, unique and is required.
+The value of the primary key of the document must be a `string`, unique, final and is required.
+
+### composite primary key
+
+You can define a composite primary key which gets composed from multiple properties of the document data.
+
+```javascript
+const mySchema = {
+  keyCompression: true, // set this to true, to enable the keyCompression
+  version: 0,
+  title: 'human schema with composite primary',
+  primaryKey: {
+      // where should the composed string be stored
+      key: 'id',
+      // fields that will be used to create the composed key
+      fields: [
+          'firstName',
+          'lastName'
+      ],
+      // separator which is used to concat the fields values.
+      separator: '|'
+  }
+  type: 'object',
+  properties: {
+      id: {
+          type: 'string'
+      },
+      firstName: {
+          type: 'string'
+      },
+      lastName: {
+          type: 'string'
+      }
+  },
+  required: [
+    'id', 
+    'firstName',
+    'lastName'
+  ]
+};
+```
+
+You can then find a document by using the relevant parts to create the composite primaryKey:
+
+```ts
+const id = myRxCollection.schema.getPrimaryOfDocumentData({
+    firstName: 'foo',
+    lastName: 'bar'
+});
+const myRxDocument = myRxCollection.findOne(id).exec();
+
+```
+
 
 ## keyCompression
 
@@ -118,7 +173,11 @@ const mySchema = {
           type: 'string'
       }
   },
-  required: ['firstName', 'lastName']
+  required: [
+    'id', 
+    'firstName',
+    'lastName'
+]
 };
 ```
 
@@ -162,6 +221,7 @@ const schemaWithIndexes = {
           }       
       }
   },
+  required: ['id'],
   indexes: [
     'firstName', // <- this will create a simple index for the `firstName` field
     'creditCards.[].cvc',
@@ -197,6 +257,7 @@ const schemaWithDefaultAge = {
           default: 20       // <- default will be used
       }
   },
+  required: ['object']
 };
 ```
 
@@ -229,6 +290,7 @@ const schemaWithFinalAge = {
           final: true
       }
   },
+  required: ['id']
 };
 ```
 
@@ -252,6 +314,7 @@ const schemaWithDefaultAge = {
           type: 'string'
       },
   },
+  required: ['id']
   encrypted: ['secret']
 };
 ```
