@@ -666,7 +666,7 @@ describe('typings.test.js', function () {
                 const myDb: RxDatabase = {} as any;
                 const typedLocalDoc = await myDb.getLocal<{foo: string;}>('foobar');
                 const typedLocalDocInsert = await myDb.insertLocal<{foo: string;}>('foobar', { bar: 'foo' });
-                const x: string = typedLocalDoc.foo;
+                const x: undefined = typedLocalDoc.foo;
                 const x2: string = typedLocalDocInsert.foo;
             });
             `;
