@@ -982,6 +982,9 @@ describe('replication-graphql.test.js', () => {
 
                 await AsyncTestUtil.waitUntil(async () => {
                     const docs = await c.find().exec();
+                    if (docs.length > 2) {
+                        throw new Error('got too many documents');
+                    }
                     return docs.length === 2;
                 });
 
