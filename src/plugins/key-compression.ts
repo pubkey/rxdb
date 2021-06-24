@@ -45,6 +45,8 @@ export function createCompressionState(
     const compressionSchema: KeyCompressionJsonSchema = flatClone(schema) as any;
     delete (compressionSchema as any).primaryKey;
 
+
+
     const table = createCompressionTable(
         compressionSchema,
         DEFAULT_COMPRESSION_FLAG,
@@ -53,7 +55,7 @@ export function createCompressionState(
              * Do not compress the primary field
              * for easier debugging.
              */
-            getPrimaryFieldOfPrimaryKey(schema.primaryKey),
+            getPrimaryFieldOfPrimaryKey(schema.primaryKey) as string,
             '_rev',
             '_attachments',
             '_deleted'
