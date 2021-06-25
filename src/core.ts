@@ -98,6 +98,7 @@ export type {
     MangoQuerySortPart,
     MigrationState,
     NumberFunctionMap,
+    DeepReadonlyObject,
 
     // pouchdb stuff
     PouchDBInstance,

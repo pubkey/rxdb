@@ -257,22 +257,26 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
         if (key === jsonSchema.primaryKey) {
             if (jsonSchema.indexes && jsonSchema.indexes.includes(key)) {
                 throw newRxError('SC13', {
-                    value
+                    value,
+                    schema: jsonSchema
                 });
             }
             if (value.unique) {
                 throw newRxError('SC14', {
-                    value
+                    value,
+                    schema: jsonSchema
                 });
             }
             if (jsonSchema.encrypted && jsonSchema.encrypted.includes(key)) {
                 throw newRxError('SC15', {
-                    value
+                    value,
+                    schema: jsonSchema
                 });
             }
             if (value.type !== 'string') {
                 throw newRxError('SC16', {
-                    value
+                    value,
+                    schema: jsonSchema
                 });
             }
         }
@@ -280,7 +284,8 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
         // check if RxDocument-property
         if (rxDocumentProperties().includes(key)) {
             throw newRxError('SC17', {
-                key
+                key,
+                schema: jsonSchema
             });
         }
     });
@@ -290,20 +295,21 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
         // should be an array
         if (!Array.isArray(jsonSchema.indexes)) {
             throw newRxError('SC18', {
-                indexes: jsonSchema.indexes
+                indexes: jsonSchema.indexes,
+                schema: jsonSchema
             });
         }
 
         jsonSchema.indexes.forEach(index => {
             // should contain strings or array of strings
             if (!(typeof index === 'string' || Array.isArray(index))) {
-                throw newRxError('SC19', { index });
+                throw newRxError('SC19', { index, schema: jsonSchema });
             }
             // if is a compound index it must contain strings
             if (Array.isArray(index)) {
                 for (let i = 0; i < index.length; i += 1) {
                     if (typeof index[i] !== 'string') {
-                        throw newRxError('SC20', { index });
+                        throw newRxError('SC20', { index, schema: jsonSchema });
                     }
                 }
             }
@@ -316,7 +322,7 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
      */
     // remove backward-compatibility for compoundIndexes
     if (Object.keys(jsonSchema).includes('compoundIndexes')) {
-        throw newRxError('SC25');
+        throw newRxError('SC25', { schema: jsonSchema });
     }
 
     // remove backward-compatibility for index: true
@@ -337,7 +343,8 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
             key = key.replace('properties.', ''); // first
             key = key.replace(/\.properties\./g, '.'); // middle
             throw newRxError('SC26', {
-                index: trimDots(key)
+                index: trimDots(key),
+                schema: jsonSchema
             });
         });
 
@@ -356,7 +363,10 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
             const realPath = getSchemaPropertyRealPath(indexPath); // real path in the collection schema
             const schemaObj = objectPath.get(jsonSchema, realPath); // get the schema of the indexed property
             if (!schemaObj || typeof schemaObj !== 'object') {
-                throw newRxError('SC21', { index: indexPath });
+                throw newRxError('SC21', {
+                    index: indexPath,
+                    schema: jsonSchema
+                });
             }
             return { indexPath, schemaObj };
         })
@@ -368,7 +378,8 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
         .forEach(index => {
             throw newRxError('SC22', {
                 key: index.indexPath,
-                type: index.schemaObj.type
+                type: index.schemaObj.type,
+                schema: jsonSchema
             });
         });
 
@@ -397,7 +408,8 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
             key = key.replace('properties.', ''); // first
             key = key.replace(/\.properties\./g, '.'); // middle
             throw newRxError('SC27', {
-                index: trimDots(key)
+                index: trimDots(key),
+                schema: jsonSchema
             });
         });
 
@@ -410,7 +422,10 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
                 // get the schema of the indexed property
                 const schemaObj = objectPath.get(jsonSchema, realPath);
                 if (!schemaObj || typeof schemaObj !== 'object') {
-                    throw newRxError('SC28', { field: propPath });
+                    throw newRxError('SC28', {
+                        field: propPath,
+                        schema: jsonSchema
+                    });
                 }
             });
     }

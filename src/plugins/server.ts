@@ -21,7 +21,8 @@ import type {
 } from '../types';
 
 import {
-    addRxPlugin, flatClone
+    addRxPlugin,
+    flatClone
 } from '../core';
 import { RxDBReplicationCouchDBPlugin } from './replication-couchdb';
 addRxPlugin(RxDBReplicationCouchDBPlugin);

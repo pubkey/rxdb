@@ -1,4 +1,4 @@
-import type { BlobBuffer } from './types';
+import type { BlobBuffer, DeepReadonlyObject } from './types';
 import {
     default as deepClone
 } from 'clone';
@@ -290,9 +290,9 @@ export function adapterObject(adapter: any): any {
 }
 
 
-function recursiveDeepCopy<T>(o: T): T {
+function recursiveDeepCopy<T>(o: T | DeepReadonlyObject<T>): T {
     if (!o) return o;
-    return deepClone(o, false);
+    return deepClone(o, false) as any;
 }
 export const clone = recursiveDeepCopy;
 
@@ -301,8 +301,8 @@ export const clone = recursiveDeepCopy;
  * is about 3 times faster then using deepClone
  * @link https://jsperf.com/object-rest-spread-vs-clone/2
  */
-export function flatClone<T>(obj: T): T {
-    return Object.assign({}, obj);
+export function flatClone<T>(obj: T | DeepReadonlyObject<T>): T {
+    return Object.assign({}, obj) as any;
 }
 
 
