@@ -51,9 +51,22 @@ var Crypter = /*#__PURE__*/function () {
       return obj;
     }
 
-    obj = (0, _util.clone)(obj);
+    obj = (0, _util.flatClone)(obj);
+    /**
+     * Extract attachments because deep-cloning
+     * Buffer or Blob does not work
+     */
+
+    var attachments = obj._attachments;
+    delete obj._attachments;
+    var clonedObj = (0, _util.clone)(obj);
+
+    if (attachments) {
+      clonedObj._attachments = attachments;
+    }
+
     this.schema.encryptedPaths.forEach(function (path) {
-      var value = _objectPath["default"].get(obj, path);
+      var value = _objectPath["default"].get(clonedObj, path);
 
       if (typeof value === 'undefined') {
         return;
@@ -63,18 +76,31 @@ var Crypter = /*#__PURE__*/function () {
 
       var encrypted = _this._encryptString(stringValue);
 
-      _objectPath["default"].set(obj, path, encrypted);
+      _objectPath["default"].set(clonedObj, path, encrypted);
     });
-    return obj;
+    return clonedObj;
   };
 
   _proto.decrypt = function decrypt(obj) {
     var _this2 = this;
 
     if (!this.password) return obj;
-    obj = (0, _util.clone)(obj);
+    obj = (0, _util.flatClone)(obj);
+    /**
+     * Extract attachments because deep-cloning
+     * Buffer or Blob does not work
+     */
+
+    var attachments = obj._attachments;
+    delete obj._attachments;
+    var clonedObj = (0, _util.clone)(obj);
+
+    if (attachments) {
+      clonedObj._attachments = attachments;
+    }
+
     this.schema.encryptedPaths.forEach(function (path) {
-      var value = _objectPath["default"].get(obj, path);
+      var value = _objectPath["default"].get(clonedObj, path);
 
       if (typeof value === 'undefined') {
         return;
@@ -84,9 +110,9 @@ var Crypter = /*#__PURE__*/function () {
 
       var decryptedParsed = JSON.parse(decrypted);
 
-      _objectPath["default"].set(obj, path, decryptedParsed);
+      _objectPath["default"].set(clonedObj, path, decryptedParsed);
     });
-    return obj;
+    return clonedObj;
   };
 
   return Crypter;

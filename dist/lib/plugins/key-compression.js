@@ -9,6 +9,10 @@ exports.RxDBKeyCompressionPlugin = exports.overwritable = exports.prototypes = e
 
 var _jsonschemaKeyCompression = require("jsonschema-key-compression");
 
+var _rxSchema = require("../rx-schema");
+
+var _util = require("../util");
+
 /**
  * this plugin adds the keycompression-capabilities to rxdb
  * if you dont use this, ensure that you set disableKeyComression to false in your schema
@@ -21,18 +25,35 @@ var _jsonschemaKeyCompression = require("jsonschema-key-compression");
 var COMPRESSION_STATE_BY_COLLECTION = new WeakMap();
 
 function createCompressionState(schema) {
-  var primaryPath = schema.primaryKey;
-  var table = (0, _jsonschemaKeyCompression.createCompressionTable)(schema, _jsonschemaKeyCompression.DEFAULT_COMPRESSION_FLAG, [
+  var compressionSchema = (0, _util.flatClone)(schema);
+  delete compressionSchema.primaryKey;
+  var table = (0, _jsonschemaKeyCompression.createCompressionTable)(compressionSchema, _jsonschemaKeyCompression.DEFAULT_COMPRESSION_FLAG, [
   /**
-   * Do not compress the primary path
-   * to make it easier to debug errors.
+   * Do not compress the primary field
+   * for easier debugging.
    */
-  primaryPath, '_rev', '_attachments', '_deleted']);
-  var compressedSchema = (0, _jsonschemaKeyCompression.createCompressedJsonSchema)(table, schema);
+  (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(schema.primaryKey), '_rev', '_attachments', '_deleted']);
+  delete compressionSchema.primaryKey;
+  var compressedSchema = (0, _jsonschemaKeyCompression.createCompressedJsonSchema)(table, compressionSchema); // also compress primary key
+
+  if (typeof schema.primaryKey !== 'string') {
+    var composedPrimary = schema.primaryKey;
+    var newComposedPrimary = {
+      key: (0, _jsonschemaKeyCompression.compressedPath)(table, composedPrimary.key),
+      fields: composedPrimary.fields.map(function (field) {
+        return (0, _jsonschemaKeyCompression.compressedPath)(table, field);
+      }),
+      separator: composedPrimary.separator
+    };
+    compressedSchema.primaryKey = newComposedPrimary;
+  } else {
+    compressedSchema.primaryKey = (0, _jsonschemaKeyCompression.compressedPath)(table, schema.primaryKey);
+  }
   /**
    * the key compression module does not know about indexes
    * in the schema, so we have to also compress them here.
    */
+
 
   if (schema.indexes) {
     var newIndexes = schema.indexes.map(function (idx) {
@@ -126,7 +147,15 @@ var RxDBKeyCompressionPlugin = {
       }
 
       var state = getCompressionStateByStorageInstance(params.collection);
+      /**
+       * Do not send attachments to compressObject()
+       * because it will deep clone which does not work on Blob or Buffer.
+       */
+
+      var attachments = params.doc._attachments;
+      delete params.doc._attachments;
       params.doc = (0, _jsonschemaKeyCompression.compressObject)(state.table, params.doc);
+      params.doc._attachments = attachments;
     },
     postReadFromInstance: function postReadFromInstance(params) {
       if (!params.collection.schema.jsonSchema.keyCompression) {

@@ -4,6 +4,7 @@
  */
 import objectPath from 'object-path';
 import { newRxError } from '../../rx-error';
+import { getSchemaByObjectPath } from '../../rx-schema-helper';
 import { flattenObject, trimDots } from '../../util';
 import { rxDocumentProperties } from './entity-properties';
 /**
@@ -137,6 +138,44 @@ export function validateFieldsDeep(jsonSchema) {
   traverse(jsonSchema, '');
   return true;
 }
+export function checkPrimaryKey(jsonSchema) {
+  if (!jsonSchema.primaryKey) {
+    throw newRxError('SC30', jsonSchema);
+  }
+
+  function validatePrimarySchemaPart(schemaPart) {
+    if (!schemaPart) {
+      throw newRxError('SC33', {
+        schema: jsonSchema
+      });
+    }
+
+    var type = schemaPart.type;
+
+    if (!type || !['string', 'number', 'integer'].includes(type)) {
+      throw newRxError('SC32', {
+        schema: jsonSchema,
+        args: {
+          schemaPart: schemaPart
+        }
+      });
+    }
+  }
+
+  if (typeof jsonSchema.primaryKey === 'string') {
+    var key = jsonSchema.primaryKey;
+    var schemaPart = jsonSchema.properties[key];
+    validatePrimarySchemaPart(schemaPart);
+  } else {
+    var compositePrimaryKey = jsonSchema.primaryKey;
+    var keySchemaPart = getSchemaByObjectPath(jsonSchema, compositePrimaryKey.key);
+    validatePrimarySchemaPart(keySchemaPart);
+    compositePrimaryKey.fields.forEach(function (field) {
+      var schemaPart = getSchemaByObjectPath(jsonSchema, field);
+      validatePrimarySchemaPart(schemaPart);
+    });
+  }
+}
 /**
  * computes real path of the object path in the collection schema
  */
@@ -189,6 +228,7 @@ export function checkSchema(jsonSchema) {
   }
 
   validateFieldsDeep(jsonSchema);
+  checkPrimaryKey(jsonSchema);
   Object.keys(jsonSchema.properties).forEach(function (key) {
     var value = jsonSchema.properties[key]; // check primary
 

@@ -14,6 +14,7 @@ export declare function checkFieldNameRegex(fieldName: string): void;
  * validate that all schema-related things are ok
  */
 export declare function validateFieldsDeep(jsonSchema: any): true;
+export declare function checkPrimaryKey(jsonSchema: RxJsonSchema<any>): void;
 /**
  * does the checking
  * @throws {Error} if something is not ok

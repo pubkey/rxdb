@@ -8,6 +8,7 @@ import { newRxError } from '../../rx-error';
 import { Subject } from 'rxjs';
 import { getSchemaByObjectPath } from '../../rx-schema-helper';
 import { getCustomEventEmitterByPouch } from './custom-events-plugin';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 /**
  * prefix of local pouchdb documents
  */
@@ -290,6 +291,7 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
     this.internals = internals;
     this.options = options;
     OPEN_POUCHDB_STORAGE_INSTANCES.add(this);
+    this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
     /**
      * Instead of listening to pouch.changes,
      * we have overwritten pouchdbs bulkDocs()
@@ -320,7 +322,7 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
                         switch (_context5.prev = _context5.next) {
                           case 0:
                             id = writeDoc._id;
-                            writeDoc = pouchDocumentDataToRxDocumentData(_this3.schema.primaryKey, writeDoc);
+                            writeDoc = pouchDocumentDataToRxDocumentData(_this3.primaryPath, writeDoc);
                             _context5.next = 4;
                             return writeAttachmentsToAttachments(writeDoc._attachments);
 
@@ -329,7 +331,7 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
                             previousDoc = ev.previousDocs.get(id);
 
                             if (previousDoc) {
-                              previousDoc = pouchDocumentDataToRxDocumentData(_this3.schema.primaryKey, previousDoc);
+                              previousDoc = pouchDocumentDataToRxDocumentData(_this3.primaryPath, previousDoc);
                             }
 
                             if (!(previousDoc && getHeightOfRevision(previousDoc._rev) > getHeightOfRevision(writeDoc._rev))) {
@@ -464,7 +466,7 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
 
                           case 6:
                             writeDoc._attachments = _context6.sent;
-                            event = pouchChangeRowToChangeEvent(_this3.schema.primaryKey, writeDoc);
+                            event = pouchChangeRowToChangeEvent(_this3.primaryPath, writeDoc);
 
                             _this3.addEventToChangeStream(event);
 
@@ -504,7 +506,7 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
                           case 2:
                             id = resultRow.id;
                             writeRow = getFromMapOrThrow(writeMap, id);
-                            newDoc = pouchDocumentDataToRxDocumentData(_this3.schema.primaryKey, writeRow.document);
+                            newDoc = pouchDocumentDataToRxDocumentData(_this3.primaryPath, writeRow.document);
                             _context7.next = 7;
                             return writeAttachmentsToAttachments(newDoc._attachments);
 
@@ -537,7 +539,7 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
                             // we need to add the new revision to the previous doc
                             // so that the eventkey is calculated correctly.
                             // Is this a hack? idk.
-                            previousDoc = pouchDocumentDataToRxDocumentData(_this3.schema.primaryKey, writeRow.previous);
+                            previousDoc = pouchDocumentDataToRxDocumentData(_this3.primaryPath, writeRow.previous);
                             _context7.next = 17;
                             return writeAttachmentsToAttachments(previousDoc._attachments);
 
@@ -604,8 +606,8 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
 
   _proto2.addEventToChangeStream = function addEventToChangeStream(change, startTime, endTime) {
     var doc = change.operation === 'DELETE' ? change.previous : change.doc;
-    var primaryKey = this.schema.primaryKey;
-    var primary = doc[primaryKey];
+    var primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
+    var primary = doc[primaryPath];
     var eventId = getEventKey(false, primary, doc._rev);
 
     if (this.emittedEventIds.has(eventId)) {
@@ -661,7 +663,7 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
     var _ref6;
 
     var primaryKey = this.schema.primaryKey;
-    var sortOptions = query.sort ? query.sort : [(_ref6 = {}, _ref6[primaryKey] = 'asc', _ref6)];
+    var sortOptions = query.sort ? query.sort : [(_ref6 = {}, _ref6[this.primaryPath] = 'asc', _ref6)];
     var massagedSelector = massageSelector(query.selector);
     var inMemoryFields = Object.keys(query.selector);
 
@@ -698,11 +700,12 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
   ;
 
   _proto2.getQueryMatcher = function getQueryMatcher(query) {
-    var primaryKey = this.schema.primaryKey;
+    var _this4 = this;
+
     var massagedSelector = massageSelector(query.selector);
 
     var fun = function fun(doc) {
-      var cloned = pouchSwapPrimaryToId(primaryKey, doc);
+      var cloned = pouchSwapPrimaryToId(_this4.primaryPath, doc);
       var row = {
         doc: cloned
       };
@@ -723,7 +726,7 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
   ;
 
   _proto2.prepareQuery = function prepareQuery(mutateableQuery) {
-    var _this4 = this;
+    var _this5 = this;
 
     var primaryKey = this.schema.primaryKey;
     var query = mutateableQuery;
@@ -742,7 +745,7 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
         }) || false;
 
         if (!keyUsed) {
-          var schemaObj = getSchemaByObjectPath(_this4.schema, key);
+          var schemaObj = getSchemaByObjectPath(_this5.schema, key);
 
           if (!schemaObj) {
             throw newRxError('QU5', {
@@ -814,13 +817,13 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
         delete query.selector[k];
       }
     });
-    query.selector = primarySwapPouchDbQuerySelector(query.selector, primaryKey);
+    query.selector = primarySwapPouchDbQuerySelector(query.selector, this.primaryPath);
     return query;
   };
 
   _proto2.bulkAddRevisions = /*#__PURE__*/function () {
     var _bulkAddRevisions = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee10(documents) {
-      var _this5 = this;
+      var _this6 = this;
 
       var writeData;
       return _regeneratorRuntime.wrap(function _callee10$(_context10) {
@@ -828,7 +831,7 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
           switch (_context10.prev = _context10.next) {
             case 0:
               writeData = documents.map(function (doc) {
-                return pouchSwapPrimaryToId(_this5.schema.primaryKey, doc);
+                return pouchSwapPrimaryToId(_this6.primaryPath, doc);
               }); // we do not need the response here because pouchdb returns an empty array on new_edits: false
 
               _context10.next = 3;
@@ -854,17 +857,18 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
 
   _proto2.bulkWrite = /*#__PURE__*/function () {
     var _bulkWrite2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee12(documentWrites) {
-      var primaryKey, writeRowById, insertDocs, pouchResult, ret;
+      var _this7 = this;
+
+      var writeRowById, insertDocs, pouchResult, ret;
       return _regeneratorRuntime.wrap(function _callee12$(_context12) {
         while (1) {
           switch (_context12.prev = _context12.next) {
             case 0:
-              primaryKey = this.schema.primaryKey;
               writeRowById = new Map();
               insertDocs = documentWrites.map(function (writeData) {
-                var primary = writeData.document[primaryKey];
+                var primary = writeData.document[_this7.primaryPath];
                 writeRowById.set(primary, writeData);
-                var storeDocumentData = rxDocumentDataToPouchDocumentData(primaryKey, writeData.document); // if previous document exists, we have to send the previous revision to pouchdb.
+                var storeDocumentData = rxDocumentDataToPouchDocumentData(_this7.primaryPath, writeData.document); // if previous document exists, we have to send the previous revision to pouchdb.
 
                 if (writeData.previous) {
                   storeDocumentData._rev = writeData.previous._rev;
@@ -872,20 +876,20 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
 
                 return storeDocumentData;
               });
-              _context12.next = 5;
+              _context12.next = 4;
               return this.internals.pouch.bulkDocs(insertDocs, {
                 custom: {
                   writeRowById: writeRowById
                 }
               });
 
-            case 5:
+            case 4:
               pouchResult = _context12.sent;
               ret = {
                 success: new Map(),
                 error: new Map()
               };
-              _context12.next = 9;
+              _context12.next = 8;
               return Promise.all(pouchResult.map( /*#__PURE__*/function () {
                 var _ref8 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee11(resultRow) {
                   var writeRow, err, pushObj;
@@ -912,7 +916,7 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
 
                         case 6:
                           pushObj = flatClone(writeRow.document);
-                          pushObj = pouchSwapIdToPrimary(primaryKey, pushObj);
+                          pushObj = pouchSwapIdToPrimary(_this7.primaryPath, pushObj);
                           pushObj._rev = resultRow.rev; // replace the inserted attachments with their diggest
 
                           // replace the inserted attachments with their diggest
@@ -950,16 +954,16 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
                 };
               }()));
 
-            case 9:
-              _context12.next = 11;
+            case 8:
+              _context12.next = 10;
               return promiseWait(0).then(function () {
                 return promiseWait(0);
               });
 
-            case 11:
+            case 10:
               return _context12.abrupt("return", ret);
 
-            case 12:
+            case 11:
             case "end":
               return _context12.stop();
           }
@@ -976,26 +980,27 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
 
   _proto2.query = /*#__PURE__*/function () {
     var _query = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee13(preparedQuery) {
-      var primaryKey, findResult, ret;
+      var _this8 = this;
+
+      var findResult, ret;
       return _regeneratorRuntime.wrap(function _callee13$(_context13) {
         while (1) {
           switch (_context13.prev = _context13.next) {
             case 0:
-              primaryKey = this.schema.primaryKey;
-              _context13.next = 3;
+              _context13.next = 2;
               return this.internals.pouch.find(preparedQuery);
 
-            case 3:
+            case 2:
               findResult = _context13.sent;
               ret = {
                 documents: findResult.docs.map(function (pouchDoc) {
-                  var useDoc = pouchDocumentDataToRxDocumentData(primaryKey, pouchDoc);
+                  var useDoc = pouchDocumentDataToRxDocumentData(_this8.primaryPath, pouchDoc);
                   return useDoc;
                 })
               };
               return _context13.abrupt("return", ret);
 
-            case 6:
+            case 5:
             case "end":
               return _context13.stop();
           }
@@ -1041,30 +1046,19 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
 
   _proto2.findDocumentsById = /*#__PURE__*/function () {
     var _findDocumentsById = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee16(ids, deleted) {
-      var _this6 = this;
+      var _this9 = this;
 
-      var primaryKey, viaChanges, retDocs, pouchResult, ret;
+      var viaChanges, retDocs, pouchResult, ret;
       return _regeneratorRuntime.wrap(function _callee16$(_context16) {
         while (1) {
           switch (_context16.prev = _context16.next) {
             case 0:
-              primaryKey = this.schema.primaryKey;
-              /**
-               * On deleted documents, pouchdb will only return the tombstone.
-               * So we have to get the properties directly for each document
-               * with the hack of getting the changes and then make one request per document
-               * with the latest revision.
-               * TODO create an issue at pouchdb on how to get the document data of deleted documents,
-               * when one past revision was written via new_edits=false
-               * @link https://stackoverflow.com/a/63516761/3443137
-               */
-
               if (!deleted) {
-                _context16.next = 9;
+                _context16.next = 8;
                 break;
               }
 
-              _context16.next = 4;
+              _context16.next = 3;
               return this.internals.pouch.changes({
                 live: false,
                 since: 0,
@@ -1072,10 +1066,10 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
                 style: 'all_docs'
               });
 
-            case 4:
+            case 3:
               viaChanges = _context16.sent;
               retDocs = new Map();
-              _context16.next = 8;
+              _context16.next = 7;
               return Promise.all(viaChanges.results.map( /*#__PURE__*/function () {
                 var _ref9 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee15(result) {
                   var firstDoc, useFirstDoc;
@@ -1084,7 +1078,7 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
                       switch (_context15.prev = _context15.next) {
                         case 0:
                           _context15.next = 2;
-                          return _this6.internals.pouch.get(result.id, {
+                          return _this9.internals.pouch.get(result.id, {
                             rev: result.changes[0].rev,
                             deleted: 'ok',
                             style: 'all_docs'
@@ -1092,7 +1086,7 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
 
                         case 2:
                           firstDoc = _context15.sent;
-                          useFirstDoc = pouchDocumentDataToRxDocumentData(primaryKey, firstDoc);
+                          useFirstDoc = pouchDocumentDataToRxDocumentData(_this9.primaryPath, firstDoc);
                           retDocs.set(result.id, useFirstDoc);
 
                         case 5:
@@ -1108,29 +1102,29 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
                 };
               }()));
 
-            case 8:
+            case 7:
               return _context16.abrupt("return", retDocs);
 
-            case 9:
-              _context16.next = 11;
+            case 8:
+              _context16.next = 10;
               return this.internals.pouch.allDocs({
                 include_docs: true,
                 keys: ids
               });
 
-            case 11:
+            case 10:
               pouchResult = _context16.sent;
               ret = new Map();
               pouchResult.rows.filter(function (row) {
                 return !!row.doc;
               }).forEach(function (row) {
                 var docData = row.doc;
-                docData = pouchDocumentDataToRxDocumentData(primaryKey, docData);
+                docData = pouchDocumentDataToRxDocumentData(_this9.primaryPath, docData);
                 ret.set(row.id, docData);
               });
               return _context16.abrupt("return", ret);
 
-            case 15:
+            case 14:
             case "end":
               return _context16.stop();
           }
@@ -1546,6 +1540,7 @@ export function pouchStripLocalFlagFromPrimary(str) {
   return str.substring(POUCHDB_LOCAL_PREFIX.length);
 }
 export function getEventKey(isLocal, primary, revision) {
+  // TODO remove this check this should never happen
   if (!primary) {
     throw new Error('primary missing !!');
   }

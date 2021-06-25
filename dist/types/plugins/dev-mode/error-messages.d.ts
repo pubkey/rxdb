@@ -73,6 +73,8 @@ export declare const ERROR_MESSAGES: {
     DOC15: string;
     DOC16: string;
     DOC17: string;
+    DOC18: string;
+    DOC19: string;
     DM1: string;
     DM2: string;
     DM3: string;
@@ -121,6 +123,8 @@ export declare const ERROR_MESSAGES: {
     SC28: string;
     SC29: string;
     SC30: string;
+    SC32: string;
+    SC33: string;
     DEV1: string;
     VD1: string;
     VD2: string;

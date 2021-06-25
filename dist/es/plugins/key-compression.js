@@ -3,6 +3,8 @@
  * if you dont use this, ensure that you set disableKeyComression to false in your schema
  */
 import { createCompressionTable, compressObject, decompressObject, compressedPath, compressQuery, DEFAULT_COMPRESSION_FLAG, createCompressedJsonSchema } from 'jsonschema-key-compression';
+import { getPrimaryFieldOfPrimaryKey } from '../rx-schema';
+import { flatClone } from '../util';
 
 /**
  * Cache the compression table and the compressed schema
@@ -10,18 +12,35 @@ import { createCompressionTable, compressObject, decompressObject, compressedPat
  */
 var COMPRESSION_STATE_BY_COLLECTION = new WeakMap();
 export function createCompressionState(schema) {
-  var primaryPath = schema.primaryKey;
-  var table = createCompressionTable(schema, DEFAULT_COMPRESSION_FLAG, [
+  var compressionSchema = flatClone(schema);
+  delete compressionSchema.primaryKey;
+  var table = createCompressionTable(compressionSchema, DEFAULT_COMPRESSION_FLAG, [
   /**
-   * Do not compress the primary path
-   * to make it easier to debug errors.
+   * Do not compress the primary field
+   * for easier debugging.
    */
-  primaryPath, '_rev', '_attachments', '_deleted']);
-  var compressedSchema = createCompressedJsonSchema(table, schema);
+  getPrimaryFieldOfPrimaryKey(schema.primaryKey), '_rev', '_attachments', '_deleted']);
+  delete compressionSchema.primaryKey;
+  var compressedSchema = createCompressedJsonSchema(table, compressionSchema); // also compress primary key
+
+  if (typeof schema.primaryKey !== 'string') {
+    var composedPrimary = schema.primaryKey;
+    var newComposedPrimary = {
+      key: compressedPath(table, composedPrimary.key),
+      fields: composedPrimary.fields.map(function (field) {
+        return compressedPath(table, field);
+      }),
+      separator: composedPrimary.separator
+    };
+    compressedSchema.primaryKey = newComposedPrimary;
+  } else {
+    compressedSchema.primaryKey = compressedPath(table, schema.primaryKey);
+  }
   /**
    * the key compression module does not know about indexes
    * in the schema, so we have to also compress them here.
    */
+
 
   if (schema.indexes) {
     var newIndexes = schema.indexes.map(function (idx) {
@@ -110,7 +129,15 @@ export var RxDBKeyCompressionPlugin = {
       }
 
       var state = getCompressionStateByStorageInstance(params.collection);
+      /**
+       * Do not send attachments to compressObject()
+       * because it will deep clone which does not work on Blob or Buffer.
+       */
+
+      var attachments = params.doc._attachments;
+      delete params.doc._attachments;
       params.doc = compressObject(state.table, params.doc);
+      params.doc._attachments = attachments;
     },
     postReadFromInstance: function postReadFromInstance(params) {
       if (!params.collection.schema.jsonSchema.keyCompression) {

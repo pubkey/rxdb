@@ -7,11 +7,14 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.checkFieldNameRegex = checkFieldNameRegex;
 exports.validateFieldsDeep = validateFieldsDeep;
+exports.checkPrimaryKey = checkPrimaryKey;
 exports.checkSchema = checkSchema;
 
 var _objectPath = _interopRequireDefault(require("object-path"));
 
 var _rxError = require("../../rx-error");
+
+var _rxSchemaHelper = require("../../rx-schema-helper");
 
 var _util = require("../../util");
 
@@ -153,6 +156,45 @@ function validateFieldsDeep(jsonSchema) {
   traverse(jsonSchema, '');
   return true;
 }
+
+function checkPrimaryKey(jsonSchema) {
+  if (!jsonSchema.primaryKey) {
+    throw (0, _rxError.newRxError)('SC30', jsonSchema);
+  }
+
+  function validatePrimarySchemaPart(schemaPart) {
+    if (!schemaPart) {
+      throw (0, _rxError.newRxError)('SC33', {
+        schema: jsonSchema
+      });
+    }
+
+    var type = schemaPart.type;
+
+    if (!type || !['string', 'number', 'integer'].includes(type)) {
+      throw (0, _rxError.newRxError)('SC32', {
+        schema: jsonSchema,
+        args: {
+          schemaPart: schemaPart
+        }
+      });
+    }
+  }
+
+  if (typeof jsonSchema.primaryKey === 'string') {
+    var key = jsonSchema.primaryKey;
+    var schemaPart = jsonSchema.properties[key];
+    validatePrimarySchemaPart(schemaPart);
+  } else {
+    var compositePrimaryKey = jsonSchema.primaryKey;
+    var keySchemaPart = (0, _rxSchemaHelper.getSchemaByObjectPath)(jsonSchema, compositePrimaryKey.key);
+    validatePrimarySchemaPart(keySchemaPart);
+    compositePrimaryKey.fields.forEach(function (field) {
+      var schemaPart = (0, _rxSchemaHelper.getSchemaByObjectPath)(jsonSchema, field);
+      validatePrimarySchemaPart(schemaPart);
+    });
+  }
+}
 /**
  * computes real path of the object path in the collection schema
  */
@@ -206,6 +248,7 @@ function checkSchema(jsonSchema) {
   }
 
   validateFieldsDeep(jsonSchema);
+  checkPrimaryKey(jsonSchema);
   Object.keys(jsonSchema.properties).forEach(function (key) {
     var value = jsonSchema.properties[key]; // check primary
 

@@ -17,7 +17,7 @@ import deepEqual from 'deep-equal';
 import { clone, toPromise, flatClone, getHeightOfRevision, createRevision } from '../../util';
 import { createRxSchema } from '../../rx-schema';
 import { newRxError } from '../../rx-error';
-import { runAsyncPluginHooks } from '../../hooks';
+import { runAsyncPluginHooks, runPluginHooks } from '../../hooks';
 import { getPreviousVersions } from '../../rx-schema';
 import { createCrypter } from '../../crypter';
 import { getMigrationStateByDatabase } from './migration-state';
@@ -147,11 +147,15 @@ export var DataMigrator = /*#__PURE__*/function () {
 
     if (!this._migratePromise) {
       this._migratePromise = mustMigrate(this).then(function (must) {
-        if (!must) return Promise.resolve(false);else return new Promise(function (res, rej) {
-          var state$ = _this2.migrate(batchSize);
+        if (!must) {
+          return Promise.resolve(false);
+        } else {
+          return new Promise(function (res, rej) {
+            var state$ = _this2.migrate(batchSize);
 
-          state$.subscribe(null, rej, res);
-        });
+            state$.subscribe(null, rej, res);
+          });
+        }
       });
     }
 
@@ -182,10 +186,11 @@ function _createOldCollection() {
               schema: schemaObj,
               options: dataMigrator.newestCollection.instanceCreationOptions
             };
-            _context.next = 5;
+            runPluginHooks('preCreateRxStorageInstance', storageInstanceCreationParams);
+            _context.next = 6;
             return database.storage.createStorageInstance(storageInstanceCreationParams);
 
-          case 5:
+          case 6:
             storageInstance = _context.sent;
             ret = {
               version: version,
@@ -198,7 +203,7 @@ function _createOldCollection() {
             };
             return _context.abrupt("return", ret);
 
-          case 8:
+          case 9:
           case "end":
             return _context.stop();
         }
@@ -496,8 +501,15 @@ export function migrateOldCollection(oldCollection) {
           });
         }
       }).then(function (next) {
-        if (!next) return;
-        if (error) observer.error(error);else handleOneBatch();
+        if (!next) {
+          return;
+        }
+
+        if (error) {
+          observer.error(error);
+        } else {
+          handleOneBatch();
+        }
       });
     };
 

@@ -4,12 +4,13 @@ import { flatClone } from './util';
 import { newRxError } from './rx-error';
 import { runPluginHooks } from './hooks';
 import { getSingleDocument, writeSingle } from './rx-storage-helper';
-
+import { overwritable } from './overwritable';
 /**
  * Every write access on the storage engine,
  * goes throught this method
  * so we can run hooks and resolve stuff etc.
  */
+
 export function writeToStorageInstance(_x, _x2) {
   return _writeToStorageInstance.apply(this, arguments);
 }
@@ -129,6 +130,11 @@ function _writeToStorageInstance() {
 }
 
 export function _handleToStorageInstance(col, data) {
+  // ensure primary key has not been changed
+  if (overwritable.isDevMode()) {
+    col.schema.fillPrimaryKey(data);
+  }
+
   data = col._crypter.encrypt(data);
   var hookParams = {
     collection: col,
@@ -158,6 +164,7 @@ export function _handleFromStorageInstance(col, data) {
 
 export function fillObjectDataBeforeInsert(collection, data) {
   var useJson = collection.schema.fillObjectWithDefaults(data);
+  useJson = collection.schema.fillPrimaryKey(useJson);
   return useJson;
 }
 //# sourceMappingURL=rx-collection-helper.js.map

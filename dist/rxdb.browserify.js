@@ -545,9 +545,22 @@ var Crypter = /*#__PURE__*/function () {
       return obj;
     }
 
-    obj = (0, _util.clone)(obj);
+    obj = (0, _util.flatClone)(obj);
+    /**
+     * Extract attachments because deep-cloning
+     * Buffer or Blob does not work
+     */
+
+    var attachments = obj._attachments;
+    delete obj._attachments;
+    var clonedObj = (0, _util.clone)(obj);
+
+    if (attachments) {
+      clonedObj._attachments = attachments;
+    }
+
     this.schema.encryptedPaths.forEach(function (path) {
-      var value = _objectPath["default"].get(obj, path);
+      var value = _objectPath["default"].get(clonedObj, path);
 
       if (typeof value === 'undefined') {
         return;
@@ -557,18 +570,31 @@ var Crypter = /*#__PURE__*/function () {
 
       var encrypted = _this._encryptString(stringValue);
 
-      _objectPath["default"].set(obj, path, encrypted);
+      _objectPath["default"].set(clonedObj, path, encrypted);
     });
-    return obj;
+    return clonedObj;
   };
 
   _proto.decrypt = function decrypt(obj) {
     var _this2 = this;
 
     if (!this.password) return obj;
-    obj = (0, _util.clone)(obj);
+    obj = (0, _util.flatClone)(obj);
+    /**
+     * Extract attachments because deep-cloning
+     * Buffer or Blob does not work
+     */
+
+    var attachments = obj._attachments;
+    delete obj._attachments;
+    var clonedObj = (0, _util.clone)(obj);
+
+    if (attachments) {
+      clonedObj._attachments = attachments;
+    }
+
     this.schema.encryptedPaths.forEach(function (path) {
-      var value = _objectPath["default"].get(obj, path);
+      var value = _objectPath["default"].get(clonedObj, path);
 
       if (typeof value === 'undefined') {
         return;
@@ -578,9 +604,9 @@ var Crypter = /*#__PURE__*/function () {
 
       var decryptedParsed = JSON.parse(decrypted);
 
-      _objectPath["default"].set(obj, path, decryptedParsed);
+      _objectPath["default"].set(clonedObj, path, decryptedParsed);
     });
-    return obj;
+    return clonedObj;
   };
 
   return Crypter;
@@ -1145,7 +1171,6 @@ function addRxPlugin(plugin) {
 
 
 },{"./crypter":4,"./hooks":7,"./overwritable":9,"./rx-collection":44,"./rx-database":45,"./rx-document":47,"./rx-error":48,"./rx-query":49,"./rx-schema":51}],11:[function(require,module,exports){
-(function (Buffer){(function (){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
@@ -1172,6 +1197,8 @@ var _util = require("./../util");
 var _rxError = require("../rx-error");
 
 var _rxStorageHelper = require("../rx-storage-helper");
+
+var _rxCollectionHelper = require("../rx-collection-helper");
 
 function ensureSchemaSupportsAttachments(doc) {
   var schemaJson = doc.collection.schema.jsonSchema;
@@ -1237,8 +1264,8 @@ var RxAttachment = /*#__PURE__*/function () {
                         delete docWriteData._attachments[_this.id];
                         _context.next = 5;
                         return (0, _rxStorageHelper.writeSingle)(_this.doc.collection.storageInstance, {
-                          previous: _this.doc._data,
-                          document: docWriteData
+                          previous: (0, _rxCollectionHelper._handleToStorageInstance)(_this.doc.collection, (0, _util.flatClone)(_this.doc._data)),
+                          document: (0, _rxCollectionHelper._handleToStorageInstance)(_this.doc.collection, docWriteData)
                         });
 
                       case 5:
@@ -1396,7 +1423,7 @@ function _putAttachment() {
 
           case 9:
             this._atomicQueue = this._atomicQueue.then( /*#__PURE__*/(0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4() {
-              var currentMeta, newHash, docWriteData, useData, writeResult, attachmentData, attachment, newData;
+              var currentMeta, newHash, docWriteData, writeRow, writeResult, attachmentData, attachment, newData;
               return _regenerator["default"].wrap(function _callee4$(_context4) {
                 while (1) {
                   switch (_context4.prev = _context4.next) {
@@ -1423,16 +1450,16 @@ function _putAttachment() {
                     case 7:
                       docWriteData = (0, _util.flatClone)(_this4._data);
                       docWriteData._attachments = (0, _util.flatClone)(docWriteData._attachments);
-                      useData = typeof data === 'string' ? Buffer.from(data) : data;
                       docWriteData._attachments[id] = {
                         type: type,
-                        data: useData
+                        data: data
+                      };
+                      writeRow = {
+                        previous: (0, _rxCollectionHelper._handleToStorageInstance)(_this4.collection, (0, _util.flatClone)(_this4._data)),
+                        document: (0, _rxCollectionHelper._handleToStorageInstance)(_this4.collection, (0, _util.flatClone)(docWriteData))
                       };
                       _context4.next = 13;
-                      return (0, _rxStorageHelper.writeSingle)(_this4.collection.storageInstance, {
-                        previous: _this4._data,
-                        document: docWriteData
-                      });
+                      return (0, _rxStorageHelper.writeSingle)(_this4.collection.storageInstance, writeRow);
 
                     case 13:
                       writeResult = _context4.sent;
@@ -1652,8 +1679,7 @@ var RxDBAttachmentsPlugin = {
 exports.RxDBAttachmentsPlugin = RxDBAttachmentsPlugin;
 
 
-}).call(this)}).call(this,require("buffer").Buffer)
-},{"../rx-error":48,"../rx-storage-helper":52,"./../util":58,"@babel/runtime/helpers/asyncToGenerator":62,"@babel/runtime/helpers/interopRequireDefault":67,"@babel/runtime/regenerator":72,"buffer":170,"rxjs/operators":908}],12:[function(require,module,exports){
+},{"../rx-collection-helper":43,"../rx-error":48,"../rx-storage-helper":52,"./../util":58,"@babel/runtime/helpers/asyncToGenerator":62,"@babel/runtime/helpers/interopRequireDefault":67,"@babel/runtime/regenerator":72,"rxjs/operators":908}],12:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1854,11 +1880,14 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.checkFieldNameRegex = checkFieldNameRegex;
 exports.validateFieldsDeep = validateFieldsDeep;
+exports.checkPrimaryKey = checkPrimaryKey;
 exports.checkSchema = checkSchema;
 
 var _objectPath = _interopRequireDefault(require("object-path"));
 
 var _rxError = require("../../rx-error");
+
+var _rxSchemaHelper = require("../../rx-schema-helper");
 
 var _util = require("../../util");
 
@@ -2000,6 +2029,45 @@ function validateFieldsDeep(jsonSchema) {
   traverse(jsonSchema, '');
   return true;
 }
+
+function checkPrimaryKey(jsonSchema) {
+  if (!jsonSchema.primaryKey) {
+    throw (0, _rxError.newRxError)('SC30', jsonSchema);
+  }
+
+  function validatePrimarySchemaPart(schemaPart) {
+    if (!schemaPart) {
+      throw (0, _rxError.newRxError)('SC33', {
+        schema: jsonSchema
+      });
+    }
+
+    var type = schemaPart.type;
+
+    if (!type || !['string', 'number', 'integer'].includes(type)) {
+      throw (0, _rxError.newRxError)('SC32', {
+        schema: jsonSchema,
+        args: {
+          schemaPart: schemaPart
+        }
+      });
+    }
+  }
+
+  if (typeof jsonSchema.primaryKey === 'string') {
+    var key = jsonSchema.primaryKey;
+    var schemaPart = jsonSchema.properties[key];
+    validatePrimarySchemaPart(schemaPart);
+  } else {
+    var compositePrimaryKey = jsonSchema.primaryKey;
+    var keySchemaPart = (0, _rxSchemaHelper.getSchemaByObjectPath)(jsonSchema, compositePrimaryKey.key);
+    validatePrimarySchemaPart(keySchemaPart);
+    compositePrimaryKey.fields.forEach(function (field) {
+      var schemaPart = (0, _rxSchemaHelper.getSchemaByObjectPath)(jsonSchema, field);
+      validatePrimarySchemaPart(schemaPart);
+    });
+  }
+}
 /**
  * computes real path of the object path in the collection schema
  */
@@ -2053,6 +2121,7 @@ function checkSchema(jsonSchema) {
   }
 
   validateFieldsDeep(jsonSchema);
+  checkPrimaryKey(jsonSchema);
   Object.keys(jsonSchema.properties).forEach(function (key) {
     var value = jsonSchema.properties[key]; // check primary
 
@@ -2245,7 +2314,7 @@ function checkSchema(jsonSchema) {
 }
 
 
-},{"../../rx-error":48,"../../util":58,"./entity-properties":17,"@babel/runtime/helpers/interopRequireDefault":67,"object-path":629}],17:[function(require,module,exports){
+},{"../../rx-error":48,"../../rx-schema-helper":50,"../../util":58,"./entity-properties":17,"@babel/runtime/helpers/interopRequireDefault":67,"object-path":629}],17:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2413,6 +2482,8 @@ var ERROR_MESSAGES = {
   DOC15: 'query cannot be an array',
   DOC16: 'Since version 8.0.0 RxDocument.set() can only be called on temporary RxDocuments',
   DOC17: 'Since version 8.0.0 RxDocument.save() can only be called on non-temporary documents',
+  DOC18: 'Document property for composed primary key is missing',
+  DOC19: 'Value of primary key(s) cannot be changed',
   // data-migrator.js
   DM1: 'migrate() Migration has already run',
   DM2: 'migration of document failed final document does not match final schema',
@@ -2470,6 +2541,8 @@ var ERROR_MESSAGES = {
   SC28: 'SchemaCheck: encrypted fields is not defined in the schema',
   SC29: 'SchemaCheck: missing object key \'properties\'',
   SC30: 'SchemaCheck: primaryKey is required',
+  SC32: 'SchemaCheck: primary field must have the type string/number/integer',
+  SC33: 'SchemaCheck: used primary key is not a property in the schema',
   // plugins/dev-mode
   DEV1: 'dev-mode added multiple times, ' + 'this is likely because you have mixed up the import from the the plugins/core and the full RxDB',
   // plugins/validate.js
@@ -3539,6 +3612,10 @@ exports.RxDBKeyCompressionPlugin = exports.overwritable = exports.prototypes = e
 
 var _jsonschemaKeyCompression = require("jsonschema-key-compression");
 
+var _rxSchema = require("../rx-schema");
+
+var _util = require("../util");
+
 /**
  * this plugin adds the keycompression-capabilities to rxdb
  * if you dont use this, ensure that you set disableKeyComression to false in your schema
@@ -3551,18 +3628,35 @@ var _jsonschemaKeyCompression = require("jsonschema-key-compression");
 var COMPRESSION_STATE_BY_COLLECTION = new WeakMap();
 
 function createCompressionState(schema) {
-  var primaryPath = schema.primaryKey;
-  var table = (0, _jsonschemaKeyCompression.createCompressionTable)(schema, _jsonschemaKeyCompression.DEFAULT_COMPRESSION_FLAG, [
+  var compressionSchema = (0, _util.flatClone)(schema);
+  delete compressionSchema.primaryKey;
+  var table = (0, _jsonschemaKeyCompression.createCompressionTable)(compressionSchema, _jsonschemaKeyCompression.DEFAULT_COMPRESSION_FLAG, [
   /**
-   * Do not compress the primary path
-   * to make it easier to debug errors.
+   * Do not compress the primary field
+   * for easier debugging.
    */
-  primaryPath, '_rev', '_attachments', '_deleted']);
-  var compressedSchema = (0, _jsonschemaKeyCompression.createCompressedJsonSchema)(table, schema);
+  (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(schema.primaryKey), '_rev', '_attachments', '_deleted']);
+  delete compressionSchema.primaryKey;
+  var compressedSchema = (0, _jsonschemaKeyCompression.createCompressedJsonSchema)(table, compressionSchema); // also compress primary key
+
+  if (typeof schema.primaryKey !== 'string') {
+    var composedPrimary = schema.primaryKey;
+    var newComposedPrimary = {
+      key: (0, _jsonschemaKeyCompression.compressedPath)(table, composedPrimary.key),
+      fields: composedPrimary.fields.map(function (field) {
+        return (0, _jsonschemaKeyCompression.compressedPath)(table, field);
+      }),
+      separator: composedPrimary.separator
+    };
+    compressedSchema.primaryKey = newComposedPrimary;
+  } else {
+    compressedSchema.primaryKey = (0, _jsonschemaKeyCompression.compressedPath)(table, schema.primaryKey);
+  }
   /**
    * the key compression module does not know about indexes
    * in the schema, so we have to also compress them here.
    */
+
 
   if (schema.indexes) {
     var newIndexes = schema.indexes.map(function (idx) {
@@ -3656,7 +3750,15 @@ var RxDBKeyCompressionPlugin = {
       }
 
       var state = getCompressionStateByStorageInstance(params.collection);
+      /**
+       * Do not send attachments to compressObject()
+       * because it will deep clone which does not work on Blob or Buffer.
+       */
+
+      var attachments = params.doc._attachments;
+      delete params.doc._attachments;
       params.doc = (0, _jsonschemaKeyCompression.compressObject)(state.table, params.doc);
+      params.doc._attachments = attachments;
     },
     postReadFromInstance: function postReadFromInstance(params) {
       if (!params.collection.schema.jsonSchema.keyCompression) {
@@ -3671,7 +3773,7 @@ var RxDBKeyCompressionPlugin = {
 exports.RxDBKeyCompressionPlugin = RxDBKeyCompressionPlugin;
 
 
-},{"jsonschema-key-compression":612}],25:[function(require,module,exports){
+},{"../rx-schema":51,"../util":58,"jsonschema-key-compression":612}],25:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4471,11 +4573,15 @@ var DataMigrator = /*#__PURE__*/function () {
 
     if (!this._migratePromise) {
       this._migratePromise = mustMigrate(this).then(function (must) {
-        if (!must) return Promise.resolve(false);else return new Promise(function (res, rej) {
-          var state$ = _this2.migrate(batchSize);
+        if (!must) {
+          return Promise.resolve(false);
+        } else {
+          return new Promise(function (res, rej) {
+            var state$ = _this2.migrate(batchSize);
 
-          state$.subscribe(null, rej, res);
-        });
+            state$.subscribe(null, rej, res);
+          });
+        }
       });
     }
 
@@ -4510,10 +4616,11 @@ function _createOldCollection() {
               schema: schemaObj,
               options: dataMigrator.newestCollection.instanceCreationOptions
             };
-            _context.next = 5;
+            (0, _hooks.runPluginHooks)('preCreateRxStorageInstance', storageInstanceCreationParams);
+            _context.next = 6;
             return database.storage.createStorageInstance(storageInstanceCreationParams);
 
-          case 5:
+          case 6:
             storageInstance = _context.sent;
             ret = {
               version: version,
@@ -4526,7 +4633,7 @@ function _createOldCollection() {
             };
             return _context.abrupt("return", ret);
 
-          case 8:
+          case 9:
           case "end":
             return _context.stop();
         }
@@ -4831,8 +4938,15 @@ function migrateOldCollection(oldCollection) {
           });
         }
       }).then(function (next) {
-        if (!next) return;
-        if (error) observer.error(error);else handleOneBatch();
+        if (!next) {
+          return;
+        }
+
+        if (error) {
+          observer.error(error);
+        } else {
+          handleOneBatch();
+        }
       });
     };
 
@@ -5545,6 +5659,8 @@ var _rxSchemaHelper = require("../../rx-schema-helper");
 
 var _customEventsPlugin = require("./custom-events-plugin");
 
+var _rxSchema = require("../../rx-schema");
+
 /**
  * prefix of local pouchdb documents
  */
@@ -5833,6 +5949,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
     this.internals = internals;
     this.options = options;
     OPEN_POUCHDB_STORAGE_INSTANCES.add(this);
+    this.primaryPath = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(this.schema.primaryKey);
     /**
      * Instead of listening to pouch.changes,
      * we have overwritten pouchdbs bulkDocs()
@@ -5863,7 +5980,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
                         switch (_context5.prev = _context5.next) {
                           case 0:
                             id = writeDoc._id;
-                            writeDoc = pouchDocumentDataToRxDocumentData(_this3.schema.primaryKey, writeDoc);
+                            writeDoc = pouchDocumentDataToRxDocumentData(_this3.primaryPath, writeDoc);
                             _context5.next = 4;
                             return writeAttachmentsToAttachments(writeDoc._attachments);
 
@@ -5872,7 +5989,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
                             previousDoc = ev.previousDocs.get(id);
 
                             if (previousDoc) {
-                              previousDoc = pouchDocumentDataToRxDocumentData(_this3.schema.primaryKey, previousDoc);
+                              previousDoc = pouchDocumentDataToRxDocumentData(_this3.primaryPath, previousDoc);
                             }
 
                             if (!(previousDoc && (0, _util.getHeightOfRevision)(previousDoc._rev) > (0, _util.getHeightOfRevision)(writeDoc._rev))) {
@@ -6007,7 +6124,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
                           case 6:
                             writeDoc._attachments = _context6.sent;
-                            event = pouchChangeRowToChangeEvent(_this3.schema.primaryKey, writeDoc);
+                            event = pouchChangeRowToChangeEvent(_this3.primaryPath, writeDoc);
 
                             _this3.addEventToChangeStream(event);
 
@@ -6047,7 +6164,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
                           case 2:
                             id = resultRow.id;
                             writeRow = (0, _util.getFromMapOrThrow)(writeMap, id);
-                            newDoc = pouchDocumentDataToRxDocumentData(_this3.schema.primaryKey, writeRow.document);
+                            newDoc = pouchDocumentDataToRxDocumentData(_this3.primaryPath, writeRow.document);
                             _context7.next = 7;
                             return writeAttachmentsToAttachments(newDoc._attachments);
 
@@ -6080,7 +6197,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
                             // we need to add the new revision to the previous doc
                             // so that the eventkey is calculated correctly.
                             // Is this a hack? idk.
-                            previousDoc = pouchDocumentDataToRxDocumentData(_this3.schema.primaryKey, writeRow.previous);
+                            previousDoc = pouchDocumentDataToRxDocumentData(_this3.primaryPath, writeRow.previous);
                             _context7.next = 17;
                             return writeAttachmentsToAttachments(previousDoc._attachments);
 
@@ -6147,8 +6264,8 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
   _proto2.addEventToChangeStream = function addEventToChangeStream(change, startTime, endTime) {
     var doc = change.operation === 'DELETE' ? change.previous : change.doc;
-    var primaryKey = this.schema.primaryKey;
-    var primary = doc[primaryKey];
+    var primaryPath = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(this.schema.primaryKey);
+    var primary = doc[primaryPath];
     var eventId = getEventKey(false, primary, doc._rev);
 
     if (this.emittedEventIds.has(eventId)) {
@@ -6204,7 +6321,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
     var _ref6;
 
     var primaryKey = this.schema.primaryKey;
-    var sortOptions = query.sort ? query.sort : [(_ref6 = {}, _ref6[primaryKey] = 'asc', _ref6)];
+    var sortOptions = query.sort ? query.sort : [(_ref6 = {}, _ref6[this.primaryPath] = 'asc', _ref6)];
     var massagedSelector = (0, _pouchdbSelectorCore.massageSelector)(query.selector);
     var inMemoryFields = Object.keys(query.selector);
 
@@ -6241,11 +6358,12 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
   ;
 
   _proto2.getQueryMatcher = function getQueryMatcher(query) {
-    var primaryKey = this.schema.primaryKey;
+    var _this4 = this;
+
     var massagedSelector = (0, _pouchdbSelectorCore.massageSelector)(query.selector);
 
     var fun = function fun(doc) {
-      var cloned = pouchSwapPrimaryToId(primaryKey, doc);
+      var cloned = pouchSwapPrimaryToId(_this4.primaryPath, doc);
       var row = {
         doc: cloned
       };
@@ -6266,7 +6384,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
   ;
 
   _proto2.prepareQuery = function prepareQuery(mutateableQuery) {
-    var _this4 = this;
+    var _this5 = this;
 
     var primaryKey = this.schema.primaryKey;
     var query = mutateableQuery;
@@ -6285,7 +6403,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
         }) || false;
 
         if (!keyUsed) {
-          var schemaObj = (0, _rxSchemaHelper.getSchemaByObjectPath)(_this4.schema, key);
+          var schemaObj = (0, _rxSchemaHelper.getSchemaByObjectPath)(_this5.schema, key);
 
           if (!schemaObj) {
             throw (0, _rxError.newRxError)('QU5', {
@@ -6357,13 +6475,13 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
         delete query.selector[k];
       }
     });
-    query.selector = primarySwapPouchDbQuerySelector(query.selector, primaryKey);
+    query.selector = primarySwapPouchDbQuerySelector(query.selector, this.primaryPath);
     return query;
   };
 
   _proto2.bulkAddRevisions = /*#__PURE__*/function () {
     var _bulkAddRevisions = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee10(documents) {
-      var _this5 = this;
+      var _this6 = this;
 
       var writeData;
       return _regenerator["default"].wrap(function _callee10$(_context10) {
@@ -6371,7 +6489,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
           switch (_context10.prev = _context10.next) {
             case 0:
               writeData = documents.map(function (doc) {
-                return pouchSwapPrimaryToId(_this5.schema.primaryKey, doc);
+                return pouchSwapPrimaryToId(_this6.primaryPath, doc);
               }); // we do not need the response here because pouchdb returns an empty array on new_edits: false
 
               _context10.next = 3;
@@ -6397,17 +6515,18 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
   _proto2.bulkWrite = /*#__PURE__*/function () {
     var _bulkWrite2 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee12(documentWrites) {
-      var primaryKey, writeRowById, insertDocs, pouchResult, ret;
+      var _this7 = this;
+
+      var writeRowById, insertDocs, pouchResult, ret;
       return _regenerator["default"].wrap(function _callee12$(_context12) {
         while (1) {
           switch (_context12.prev = _context12.next) {
             case 0:
-              primaryKey = this.schema.primaryKey;
               writeRowById = new Map();
               insertDocs = documentWrites.map(function (writeData) {
-                var primary = writeData.document[primaryKey];
+                var primary = writeData.document[_this7.primaryPath];
                 writeRowById.set(primary, writeData);
-                var storeDocumentData = rxDocumentDataToPouchDocumentData(primaryKey, writeData.document); // if previous document exists, we have to send the previous revision to pouchdb.
+                var storeDocumentData = rxDocumentDataToPouchDocumentData(_this7.primaryPath, writeData.document); // if previous document exists, we have to send the previous revision to pouchdb.
 
                 if (writeData.previous) {
                   storeDocumentData._rev = writeData.previous._rev;
@@ -6415,20 +6534,20 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
                 return storeDocumentData;
               });
-              _context12.next = 5;
+              _context12.next = 4;
               return this.internals.pouch.bulkDocs(insertDocs, {
                 custom: {
                   writeRowById: writeRowById
                 }
               });
 
-            case 5:
+            case 4:
               pouchResult = _context12.sent;
               ret = {
                 success: new Map(),
                 error: new Map()
               };
-              _context12.next = 9;
+              _context12.next = 8;
               return Promise.all(pouchResult.map( /*#__PURE__*/function () {
                 var _ref8 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee11(resultRow) {
                   var writeRow, err, pushObj;
@@ -6455,7 +6574,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
                         case 6:
                           pushObj = (0, _util.flatClone)(writeRow.document);
-                          pushObj = pouchSwapIdToPrimary(primaryKey, pushObj);
+                          pushObj = pouchSwapIdToPrimary(_this7.primaryPath, pushObj);
                           pushObj._rev = resultRow.rev; // replace the inserted attachments with their diggest
 
                           // replace the inserted attachments with their diggest
@@ -6493,16 +6612,16 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
                 };
               }()));
 
-            case 9:
-              _context12.next = 11;
+            case 8:
+              _context12.next = 10;
               return (0, _util.promiseWait)(0).then(function () {
                 return (0, _util.promiseWait)(0);
               });
 
-            case 11:
+            case 10:
               return _context12.abrupt("return", ret);
 
-            case 12:
+            case 11:
             case "end":
               return _context12.stop();
           }
@@ -6519,26 +6638,27 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
   _proto2.query = /*#__PURE__*/function () {
     var _query = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee13(preparedQuery) {
-      var primaryKey, findResult, ret;
+      var _this8 = this;
+
+      var findResult, ret;
       return _regenerator["default"].wrap(function _callee13$(_context13) {
         while (1) {
           switch (_context13.prev = _context13.next) {
             case 0:
-              primaryKey = this.schema.primaryKey;
-              _context13.next = 3;
+              _context13.next = 2;
               return this.internals.pouch.find(preparedQuery);
 
-            case 3:
+            case 2:
               findResult = _context13.sent;
               ret = {
                 documents: findResult.docs.map(function (pouchDoc) {
-                  var useDoc = pouchDocumentDataToRxDocumentData(primaryKey, pouchDoc);
+                  var useDoc = pouchDocumentDataToRxDocumentData(_this8.primaryPath, pouchDoc);
                   return useDoc;
                 })
               };
               return _context13.abrupt("return", ret);
 
-            case 6:
+            case 5:
             case "end":
               return _context13.stop();
           }
@@ -6584,30 +6704,19 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
   _proto2.findDocumentsById = /*#__PURE__*/function () {
     var _findDocumentsById = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee16(ids, deleted) {
-      var _this6 = this;
+      var _this9 = this;
 
-      var primaryKey, viaChanges, retDocs, pouchResult, ret;
+      var viaChanges, retDocs, pouchResult, ret;
       return _regenerator["default"].wrap(function _callee16$(_context16) {
         while (1) {
           switch (_context16.prev = _context16.next) {
             case 0:
-              primaryKey = this.schema.primaryKey;
-              /**
-               * On deleted documents, pouchdb will only return the tombstone.
-               * So we have to get the properties directly for each document
-               * with the hack of getting the changes and then make one request per document
-               * with the latest revision.
-               * TODO create an issue at pouchdb on how to get the document data of deleted documents,
-               * when one past revision was written via new_edits=false
-               * @link https://stackoverflow.com/a/63516761/3443137
-               */
-
               if (!deleted) {
-                _context16.next = 9;
+                _context16.next = 8;
                 break;
               }
 
-              _context16.next = 4;
+              _context16.next = 3;
               return this.internals.pouch.changes({
                 live: false,
                 since: 0,
@@ -6615,10 +6724,10 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
                 style: 'all_docs'
               });
 
-            case 4:
+            case 3:
               viaChanges = _context16.sent;
               retDocs = new Map();
-              _context16.next = 8;
+              _context16.next = 7;
               return Promise.all(viaChanges.results.map( /*#__PURE__*/function () {
                 var _ref9 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee15(result) {
                   var firstDoc, useFirstDoc;
@@ -6627,7 +6736,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
                       switch (_context15.prev = _context15.next) {
                         case 0:
                           _context15.next = 2;
-                          return _this6.internals.pouch.get(result.id, {
+                          return _this9.internals.pouch.get(result.id, {
                             rev: result.changes[0].rev,
                             deleted: 'ok',
                             style: 'all_docs'
@@ -6635,7 +6744,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
                         case 2:
                           firstDoc = _context15.sent;
-                          useFirstDoc = pouchDocumentDataToRxDocumentData(primaryKey, firstDoc);
+                          useFirstDoc = pouchDocumentDataToRxDocumentData(_this9.primaryPath, firstDoc);
                           retDocs.set(result.id, useFirstDoc);
 
                         case 5:
@@ -6651,29 +6760,29 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
                 };
               }()));
 
-            case 8:
+            case 7:
               return _context16.abrupt("return", retDocs);
 
-            case 9:
-              _context16.next = 11;
+            case 8:
+              _context16.next = 10;
               return this.internals.pouch.allDocs({
                 include_docs: true,
                 keys: ids
               });
 
-            case 11:
+            case 10:
               pouchResult = _context16.sent;
               ret = new Map();
               pouchResult.rows.filter(function (row) {
                 return !!row.doc;
               }).forEach(function (row) {
                 var docData = row.doc;
-                docData = pouchDocumentDataToRxDocumentData(primaryKey, docData);
+                docData = pouchDocumentDataToRxDocumentData(_this9.primaryPath, docData);
                 ret.set(row.id, docData);
               });
               return _context16.abrupt("return", ret);
 
-            case 15:
+            case 14:
             case "end":
               return _context16.stop();
           }
@@ -7103,6 +7212,7 @@ function pouchStripLocalFlagFromPrimary(str) {
 }
 
 function getEventKey(isLocal, primary, revision) {
+  // TODO remove this check this should never happen
   if (!primary) {
     throw new Error('primary missing !!');
   }
@@ -7359,7 +7469,7 @@ function getRxStoragePouch(adapter, pouchSettings) {
 }
 
 
-},{"../../rx-error":48,"../../rx-schema-helper":50,"../../util":58,"./custom-events-plugin":31,"./pouch-db":33,"@babel/runtime/helpers/asyncToGenerator":62,"@babel/runtime/helpers/interopRequireDefault":67,"@babel/runtime/regenerator":72,"pouchdb-md5":662,"pouchdb-selector-core":665,"rxjs":684}],35:[function(require,module,exports){
+},{"../../rx-error":48,"../../rx-schema":51,"../../rx-schema-helper":50,"../../util":58,"./custom-events-plugin":31,"./pouch-db":33,"@babel/runtime/helpers/asyncToGenerator":62,"@babel/runtime/helpers/interopRequireDefault":67,"@babel/runtime/regenerator":72,"pouchdb-md5":662,"pouchdb-selector-core":665,"rxjs":684}],35:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -8775,6 +8885,8 @@ var _hooks = require("./hooks");
 
 var _rxStorageHelper = require("./rx-storage-helper");
 
+var _overwritable = require("./overwritable");
+
 /**
  * Every write access on the storage engine,
  * goes throught this method
@@ -8900,6 +9012,11 @@ function _writeToStorageInstance() {
 }
 
 function _handleToStorageInstance(col, data) {
+  // ensure primary key has not been changed
+  if (_overwritable.overwritable.isDevMode()) {
+    col.schema.fillPrimaryKey(data);
+  }
+
   data = col._crypter.encrypt(data);
   var hookParams = {
     collection: col,
@@ -8931,11 +9048,12 @@ function _handleFromStorageInstance(col, data) {
 
 function fillObjectDataBeforeInsert(collection, data) {
   var useJson = collection.schema.fillObjectWithDefaults(data);
+  useJson = collection.schema.fillPrimaryKey(useJson);
   return useJson;
 }
 
 
-},{"./hooks":7,"./rx-error":48,"./rx-storage-helper":52,"./util":58,"@babel/runtime/helpers/asyncToGenerator":62,"@babel/runtime/helpers/interopRequireDefault":67,"@babel/runtime/regenerator":72}],44:[function(require,module,exports){
+},{"./hooks":7,"./overwritable":9,"./rx-error":48,"./rx-storage-helper":52,"./util":58,"@babel/runtime/helpers/asyncToGenerator":62,"@babel/runtime/helpers/interopRequireDefault":67,"@babel/runtime/regenerator":72}],44:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
@@ -12439,7 +12557,8 @@ function getPseudoSchemaForVersion(version, primaryKey) {
     primaryKey: primaryKey,
     properties: (_properties = {}, _properties[primaryKey] = {
       type: 'string'
-    }, _properties)
+    }, _properties),
+    required: [primaryKey]
   };
   return pseudoSchema;
 }
@@ -12469,6 +12588,8 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.getIndexes = getIndexes;
+exports.getPrimaryFieldOfPrimaryKey = getPrimaryFieldOfPrimaryKey;
+exports.getComposedPrimaryKeyOfDocumentData = getComposedPrimaryKeyOfDocumentData;
 exports.getPreviousVersions = getPreviousVersions;
 exports.getFinalFields = getFinalFields;
 exports.normalize = normalize;
@@ -12480,6 +12601,8 @@ exports.RxSchema = void 0;
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 
 var _deepEqual = _interopRequireDefault(require("deep-equal"));
+
+var _objectPath = _interopRequireDefault(require("object-path"));
 
 var _util = require("./util");
 
@@ -12494,15 +12617,12 @@ var RxSchema = /*#__PURE__*/function () {
     this.jsonSchema = jsonSchema;
     this.indexes = getIndexes(this.jsonSchema); // primary is always required
 
-    this.primaryPath = this.jsonSchema.primaryKey;
-
-    if (this.primaryPath) {
-      this.jsonSchema.required.push(this.primaryPath);
-    } // final fields are always required
-
+    this.primaryPath = getPrimaryFieldOfPrimaryKey(this.jsonSchema.primaryKey); // final fields are always required
 
     this.finalFields = getFinalFields(this.jsonSchema);
-    this.jsonSchema.required = this.jsonSchema.required.concat(this.finalFields).filter(function (elem, pos, arr) {
+    this.jsonSchema.required = this.jsonSchema.required.concat(this.finalFields).filter(function (field) {
+      return !field.includes('.');
+    }).filter(function (elem, pos, arr) {
       return arr.indexOf(elem) === pos;
     }); // unique;
   }
@@ -12569,6 +12689,29 @@ var RxSchema = /*#__PURE__*/function () {
       return proto;
     });
     return proto;
+  };
+
+  _proto.getPrimaryOfDocumentData = function getPrimaryOfDocumentData(documentData) {
+    return getComposedPrimaryKeyOfDocumentData(this.jsonSchema, documentData);
+  };
+
+  _proto.fillPrimaryKey = function fillPrimaryKey(documentData) {
+    var cloned = (0, _util.flatClone)(documentData);
+    var newPrimary = getComposedPrimaryKeyOfDocumentData(this.jsonSchema, documentData);
+    var existingPrimary = documentData[this.primaryPath];
+
+    if (existingPrimary && existingPrimary !== newPrimary) {
+      throw (0, _rxError.newRxError)('DOC19', {
+        args: {
+          documentData: documentData,
+          existingPrimary: existingPrimary,
+          newPrimary: newPrimary
+        }
+      });
+    }
+
+    cloned[this.primaryPath] = newPrimary;
+    return cloned;
   };
 
   (0, _createClass2["default"])(RxSchema, [{
@@ -12642,6 +12785,40 @@ function getIndexes(jsonSchema) {
     return Array.isArray(index) ? index : [index];
   });
 }
+
+function getPrimaryFieldOfPrimaryKey(primaryKey) {
+  if (typeof primaryKey === 'string') {
+    return primaryKey;
+  } else {
+    return primaryKey.key;
+  }
+}
+/**
+ * Returns the composed primaryKey of a document by its data.
+ */
+
+
+function getComposedPrimaryKeyOfDocumentData(jsonSchema, documentData) {
+  if (typeof jsonSchema.primaryKey === 'string') {
+    return documentData[jsonSchema.primaryKey];
+  }
+
+  var compositePrimary = jsonSchema.primaryKey;
+  return compositePrimary.fields.map(function (field) {
+    var value = _objectPath["default"].get(documentData, field);
+
+    if (typeof value === 'undefined') {
+      throw (0, _rxError.newRxError)('DOC18', {
+        args: {
+          field: field,
+          documentData: documentData
+        }
+      });
+    }
+
+    return value;
+  }).join(compositePrimary.separator);
+}
 /**
  * array with previous version-numbers
  */
@@ -12665,7 +12842,15 @@ function getFinalFields(jsonSchema) {
     return jsonSchema.properties[key]["final"];
   }); // primary is also final
 
-  ret.push(jsonSchema.primaryKey);
+  var primaryPath = getPrimaryFieldOfPrimaryKey(jsonSchema.primaryKey);
+  ret.push(primaryPath); // fields of composite primary are final
+
+  if (typeof jsonSchema.primaryKey !== 'string') {
+    jsonSchema.primaryKey.fields.forEach(function (field) {
+      return ret.push(field);
+    });
+  }
+
   return ret;
 }
 /**
@@ -12679,12 +12864,6 @@ function normalize(jsonSchema) {
 
   if (jsonSchema.indexes) {
     normalizedSchema.indexes = Array.from(jsonSchema.indexes); // indexes should remain unsorted
-  }
-
-  if (!jsonSchema.required) {
-    jsonSchema.required = [jsonSchema.primaryKey];
-  } else if (!jsonSchema.required.includes(jsonSchema.primaryKey)) {
-    jsonSchema.required.push(jsonSchema.primaryKey);
   }
 
   return normalizedSchema;
@@ -12750,7 +12929,7 @@ function isInstanceOf(obj) {
 }
 
 
-},{"./hooks":7,"./rx-document":47,"./rx-error":48,"./util":58,"@babel/runtime/helpers/createClass":64,"@babel/runtime/helpers/interopRequireDefault":67,"deep-equal":497}],52:[function(require,module,exports){
+},{"./hooks":7,"./rx-document":47,"./rx-error":48,"./util":58,"@babel/runtime/helpers/createClass":64,"@babel/runtime/helpers/interopRequireDefault":67,"deep-equal":497,"object-path":629}],52:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
@@ -13650,7 +13829,7 @@ var blobBufferUtil = {
     return blobBuffer;
   },
   isBlobBuffer: function isBlobBuffer(data) {
-    if (data instanceof Blob || Buffer.isBuffer(data)) {
+    if (Buffer.isBuffer(data) || data instanceof Blob) {
       return true;
     } else {
       return false;

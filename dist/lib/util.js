@@ -481,7 +481,7 @@ var blobBufferUtil = {
     return blobBuffer;
   },
   isBlobBuffer: function isBlobBuffer(data) {
-    if (data instanceof Blob || Buffer.isBuffer(data)) {
+    if (Buffer.isBuffer(data) || data instanceof Blob) {
       return true;
     } else {
       return false;

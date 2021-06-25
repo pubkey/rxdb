@@ -1,4 +1,4 @@
-import type { RxJsonSchema } from './types';
+import type { PrimaryKey, RxJsonSchema } from './types';
 export declare class RxSchema<T = any> {
     readonly jsonSchema: RxJsonSchema<T>;
     indexes: string[][];
@@ -48,8 +48,15 @@ export declare class RxSchema<T = any> {
      * see RxCollection.getDocumentPrototype()
      */
     getDocumentPrototype(): any;
+    getPrimaryOfDocumentData(documentData: Partial<T>): string;
+    fillPrimaryKey(documentData: T): T;
 }
 export declare function getIndexes<T = any>(jsonSchema: RxJsonSchema<T>): string[][];
+export declare function getPrimaryFieldOfPrimaryKey<RxDocType>(primaryKey: PrimaryKey<RxDocType>): keyof RxDocType;
+/**
+ * Returns the composed primaryKey of a document by its data.
+ */
+export declare function getComposedPrimaryKeyOfDocumentData<RxDocType>(jsonSchema: RxJsonSchema<RxDocType>, documentData: Partial<RxDocType>): string;
 /**
  * array with previous version-numbers
  */

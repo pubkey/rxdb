@@ -1,6 +1,7 @@
 import _createClass from "@babel/runtime/helpers/createClass";
 import deepEqual from 'deep-equal';
-import { clone, hash, sortObject, pluginMissing, overwriteGetterForCaching } from './util';
+import objectPath from 'object-path';
+import { clone, hash, sortObject, pluginMissing, overwriteGetterForCaching, flatClone } from './util';
 import { newRxError } from './rx-error';
 import { runPluginHooks } from './hooks';
 import { defineGetterSetter } from './rx-document';
@@ -9,15 +10,12 @@ export var RxSchema = /*#__PURE__*/function () {
     this.jsonSchema = jsonSchema;
     this.indexes = getIndexes(this.jsonSchema); // primary is always required
 
-    this.primaryPath = this.jsonSchema.primaryKey;
-
-    if (this.primaryPath) {
-      this.jsonSchema.required.push(this.primaryPath);
-    } // final fields are always required
-
+    this.primaryPath = getPrimaryFieldOfPrimaryKey(this.jsonSchema.primaryKey); // final fields are always required
 
     this.finalFields = getFinalFields(this.jsonSchema);
-    this.jsonSchema.required = this.jsonSchema.required.concat(this.finalFields).filter(function (elem, pos, arr) {
+    this.jsonSchema.required = this.jsonSchema.required.concat(this.finalFields).filter(function (field) {
+      return !field.includes('.');
+    }).filter(function (elem, pos, arr) {
       return arr.indexOf(elem) === pos;
     }); // unique;
   }
@@ -84,6 +82,29 @@ export var RxSchema = /*#__PURE__*/function () {
       return proto;
     });
     return proto;
+  };
+
+  _proto.getPrimaryOfDocumentData = function getPrimaryOfDocumentData(documentData) {
+    return getComposedPrimaryKeyOfDocumentData(this.jsonSchema, documentData);
+  };
+
+  _proto.fillPrimaryKey = function fillPrimaryKey(documentData) {
+    var cloned = flatClone(documentData);
+    var newPrimary = getComposedPrimaryKeyOfDocumentData(this.jsonSchema, documentData);
+    var existingPrimary = documentData[this.primaryPath];
+
+    if (existingPrimary && existingPrimary !== newPrimary) {
+      throw newRxError('DOC19', {
+        args: {
+          documentData: documentData,
+          existingPrimary: existingPrimary,
+          newPrimary: newPrimary
+        }
+      });
+    }
+
+    cloned[this.primaryPath] = newPrimary;
+    return cloned;
   };
 
   _createClass(RxSchema, [{
@@ -155,6 +176,38 @@ export function getIndexes(jsonSchema) {
     return Array.isArray(index) ? index : [index];
   });
 }
+export function getPrimaryFieldOfPrimaryKey(primaryKey) {
+  if (typeof primaryKey === 'string') {
+    return primaryKey;
+  } else {
+    return primaryKey.key;
+  }
+}
+/**
+ * Returns the composed primaryKey of a document by its data.
+ */
+
+export function getComposedPrimaryKeyOfDocumentData(jsonSchema, documentData) {
+  if (typeof jsonSchema.primaryKey === 'string') {
+    return documentData[jsonSchema.primaryKey];
+  }
+
+  var compositePrimary = jsonSchema.primaryKey;
+  return compositePrimary.fields.map(function (field) {
+    var value = objectPath.get(documentData, field);
+
+    if (typeof value === 'undefined') {
+      throw newRxError('DOC18', {
+        args: {
+          field: field,
+          documentData: documentData
+        }
+      });
+    }
+
+    return value;
+  }).join(compositePrimary.separator);
+}
 /**
  * array with previous version-numbers
  */
@@ -176,7 +229,15 @@ export function getFinalFields(jsonSchema) {
     return jsonSchema.properties[key]["final"];
   }); // primary is also final
 
-  ret.push(jsonSchema.primaryKey);
+  var primaryPath = getPrimaryFieldOfPrimaryKey(jsonSchema.primaryKey);
+  ret.push(primaryPath); // fields of composite primary are final
+
+  if (typeof jsonSchema.primaryKey !== 'string') {
+    jsonSchema.primaryKey.fields.forEach(function (field) {
+      return ret.push(field);
+    });
+  }
+
   return ret;
 }
 /**
@@ -189,12 +250,6 @@ export function normalize(jsonSchema) {
 
   if (jsonSchema.indexes) {
     normalizedSchema.indexes = Array.from(jsonSchema.indexes); // indexes should remain unsorted
-  }
-
-  if (!jsonSchema.required) {
-    jsonSchema.required = [jsonSchema.primaryKey];
-  } else if (!jsonSchema.required.includes(jsonSchema.primaryKey)) {
-    jsonSchema.required.push(jsonSchema.primaryKey);
   }
 
   return normalizedSchema;

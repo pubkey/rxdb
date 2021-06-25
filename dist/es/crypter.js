@@ -5,7 +5,7 @@
  * and work via plugin hooks.
  */
 import objectPath from 'object-path';
-import { clone, pluginMissing } from './util';
+import { clone, flatClone, pluginMissing } from './util';
 export var Crypter = /*#__PURE__*/function () {
   function Crypter(password, schema) {
     this.password = password;
@@ -39,9 +39,22 @@ export var Crypter = /*#__PURE__*/function () {
       return obj;
     }
 
-    obj = clone(obj);
+    obj = flatClone(obj);
+    /**
+     * Extract attachments because deep-cloning
+     * Buffer or Blob does not work
+     */
+
+    var attachments = obj._attachments;
+    delete obj._attachments;
+    var clonedObj = clone(obj);
+
+    if (attachments) {
+      clonedObj._attachments = attachments;
+    }
+
     this.schema.encryptedPaths.forEach(function (path) {
-      var value = objectPath.get(obj, path);
+      var value = objectPath.get(clonedObj, path);
 
       if (typeof value === 'undefined') {
         return;
@@ -51,18 +64,31 @@ export var Crypter = /*#__PURE__*/function () {
 
       var encrypted = _this._encryptString(stringValue);
 
-      objectPath.set(obj, path, encrypted);
+      objectPath.set(clonedObj, path, encrypted);
     });
-    return obj;
+    return clonedObj;
   };
 
   _proto.decrypt = function decrypt(obj) {
     var _this2 = this;
 
     if (!this.password) return obj;
-    obj = clone(obj);
+    obj = flatClone(obj);
+    /**
+     * Extract attachments because deep-cloning
+     * Buffer or Blob does not work
+     */
+
+    var attachments = obj._attachments;
+    delete obj._attachments;
+    var clonedObj = clone(obj);
+
+    if (attachments) {
+      clonedObj._attachments = attachments;
+    }
+
     this.schema.encryptedPaths.forEach(function (path) {
-      var value = objectPath.get(obj, path);
+      var value = objectPath.get(clonedObj, path);
 
       if (typeof value === 'undefined') {
         return;
@@ -71,9 +97,9 @@ export var Crypter = /*#__PURE__*/function () {
       var decrypted = _this2._decryptString(value);
 
       var decryptedParsed = JSON.parse(decrypted);
-      objectPath.set(obj, path, decryptedParsed);
+      objectPath.set(clonedObj, path, decryptedParsed);
     });
-    return obj;
+    return clonedObj;
   };
 
   return Crypter;

@@ -10,8 +10,8 @@ export declare function writeToStorageInstance<RxDocumentType>(collection: RxCol
  * wrappers to process document data beofre/after it goes to the storage instnace.
  * Used to handle keycompression, encryption etc
  */
-export declare function _handleToStorageInstance(col: RxCollection | any, data: any): any;
-export declare function _handleFromStorageInstance(col: RxCollection | any, data: any, noDecrypt?: boolean): any;
+export declare function _handleToStorageInstance(col: RxCollection | RxCollectionBase<any, any, any>, data: any): any;
+export declare function _handleFromStorageInstance(col: RxCollection | RxCollectionBase<any, any, any>, data: any, noDecrypt?: boolean): any;
 /**
  * fills in the default data.
  * This also clones the data.

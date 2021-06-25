@@ -25,7 +25,8 @@ function getPseudoSchemaForVersion(version, primaryKey) {
     primaryKey: primaryKey,
     properties: (_properties = {}, _properties[primaryKey] = {
       type: 'string'
-    }, _properties)
+    }, _properties),
+    required: [primaryKey]
   };
   return pseudoSchema;
 }

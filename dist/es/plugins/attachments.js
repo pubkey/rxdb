@@ -4,6 +4,7 @@ import { map } from 'rxjs/operators';
 import { blobBufferUtil, flatClone } from './../util';
 import { newRxError } from '../rx-error';
 import { writeSingle } from '../rx-storage-helper';
+import { _handleToStorageInstance } from '../rx-collection-helper';
 
 function ensureSchemaSupportsAttachments(doc) {
   var schemaJson = doc.collection.schema.jsonSchema;
@@ -69,8 +70,8 @@ export var RxAttachment = /*#__PURE__*/function () {
                         delete docWriteData._attachments[_this.id];
                         _context.next = 5;
                         return writeSingle(_this.doc.collection.storageInstance, {
-                          previous: _this.doc._data,
-                          document: docWriteData
+                          previous: _handleToStorageInstance(_this.doc.collection, flatClone(_this.doc._data)),
+                          document: _handleToStorageInstance(_this.doc.collection, docWriteData)
                         });
 
                       case 5:
@@ -224,7 +225,7 @@ function _putAttachment() {
 
           case 9:
             this._atomicQueue = this._atomicQueue.then( /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4() {
-              var currentMeta, newHash, docWriteData, useData, writeResult, attachmentData, attachment, newData;
+              var currentMeta, newHash, docWriteData, writeRow, writeResult, attachmentData, attachment, newData;
               return _regeneratorRuntime.wrap(function _callee4$(_context4) {
                 while (1) {
                   switch (_context4.prev = _context4.next) {
@@ -251,16 +252,16 @@ function _putAttachment() {
                     case 7:
                       docWriteData = flatClone(_this4._data);
                       docWriteData._attachments = flatClone(docWriteData._attachments);
-                      useData = typeof data === 'string' ? Buffer.from(data) : data;
                       docWriteData._attachments[id] = {
                         type: type,
-                        data: useData
+                        data: data
+                      };
+                      writeRow = {
+                        previous: _handleToStorageInstance(_this4.collection, flatClone(_this4._data)),
+                        document: _handleToStorageInstance(_this4.collection, flatClone(docWriteData))
                       };
                       _context4.next = 13;
-                      return writeSingle(_this4.collection.storageInstance, {
-                        previous: _this4._data,
-                        document: docWriteData
-                      });
+                      return writeSingle(_this4.collection.storageInstance, writeRow);
 
                     case 13:
                       writeResult = _context4.sent;

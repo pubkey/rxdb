@@ -22,6 +22,8 @@ var _hooks = require("./hooks");
 
 var _rxStorageHelper = require("./rx-storage-helper");
 
+var _overwritable = require("./overwritable");
+
 /**
  * Every write access on the storage engine,
  * goes throught this method
@@ -147,6 +149,11 @@ function _writeToStorageInstance() {
 }
 
 function _handleToStorageInstance(col, data) {
+  // ensure primary key has not been changed
+  if (_overwritable.overwritable.isDevMode()) {
+    col.schema.fillPrimaryKey(data);
+  }
+
   data = col._crypter.encrypt(data);
   var hookParams = {
     collection: col,
@@ -178,6 +185,7 @@ function _handleFromStorageInstance(col, data) {
 
 function fillObjectDataBeforeInsert(collection, data) {
   var useJson = collection.schema.fillObjectWithDefaults(data);
+  useJson = collection.schema.fillPrimaryKey(useJson);
   return useJson;
 }
 

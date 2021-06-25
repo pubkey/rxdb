@@ -7,4 +7,4 @@ export declare function getPseudoSchemaForVersion<T = any>(version: number, prim
 /**
  * Returns the sub-schema for a given path
  */
-export declare function getSchemaByObjectPath<T = any>(rxJsonSchema: RxJsonSchema<T>, path: string): JsonSchema;
+export declare function getSchemaByObjectPath<T = any>(rxJsonSchema: RxJsonSchema<T>, path: keyof T | string): JsonSchema;

@@ -42,6 +42,7 @@ export declare class RxStorageInstancePouch<RxDocType> implements RxStorageInsta
     private changes$;
     private subs;
     private emittedEventIds;
+    private primaryPath;
     constructor(databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocType>>, internals: Readonly<PouchStorageInternals>, options: Readonly<PouchSettings>);
     private addEventToChangeStream;
     close(): Promise<void>;

@@ -2,6 +2,32 @@
  * @link https://github.com/types/lib-json-schema/blob/master/v4/index.d.ts
  */
 export type JsonSchemaTypes = 'array' | 'boolean' | 'integer' | 'number' | 'null' | 'object' | 'string' | string;
+
+export type CompositePrimaryKey<RxDocType> = {
+    /**
+     * The top level field of the document that will be used
+     * to store the composite key as string.
+     */
+    key: keyof RxDocType;
+
+    /**
+     * The fields of the composite key,
+     * the fields must be required and final
+     * and have the type number, int, or string.
+     */
+    fields: (keyof RxDocType | string)[];
+    /**
+     * The separator which is used to concat the
+     * primary fields values.
+     * Choose a character as separator that is known
+     * to never appear inside of the primary fields values.
+     * I recommend to use the pipe char '|'.
+     */
+    separator: string;
+};
+
+export type PrimaryKey<RxDocType> = keyof RxDocType | CompositePrimaryKey<RxDocType>;
+
 export interface JsonSchema {
     allOf?: JsonSchema[];
     anyOf?: JsonSchema[];
@@ -67,7 +93,7 @@ export declare class RxJsonSchema<
      * Must be in the top level of the properties of the schema
      * and that property must have the type 'string'
      */
-    primaryKey: keyof RxDocType;
+    primaryKey: PrimaryKey<RxDocType>;
 
     /**
      * TODO this looks like a typescript-bug
@@ -78,8 +104,10 @@ export declare class RxJsonSchema<
     properties: { [key in keyof RxDocType]: TopLevelProperty };
 
     /**
-     * TODO on the top level the required-array should be required
+     * On the top level the required-array must be set
      * because we always have to set the primary key to required.
+     * 
+     * TODO required should be made non-optional on the top level
      */
     required?: (keyof RxDocType)[];
 
