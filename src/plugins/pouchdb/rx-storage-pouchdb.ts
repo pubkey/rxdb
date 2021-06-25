@@ -307,10 +307,12 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                 await Promise.all(
                     ev.writeDocs.map(async (writeDoc) => {
                         const id = writeDoc._id;
+
                         writeDoc = pouchDocumentDataToRxDocumentData(
                             this.primaryPath,
                             writeDoc
                         );
+
                         writeDoc._attachments = await writeAttachmentsToAttachments(writeDoc._attachments);
 
                         let previousDoc = ev.previousDocs.get(id);
@@ -1026,7 +1028,7 @@ export async function writeAttachmentsToAttachments(
     await Promise.all(
         Object.entries(attachments).map(async ([key, obj]) => {
             if (!obj.type) {
-                throw newRxError('SNH', { args: obj });
+                throw newRxError('SNH', { args: { obj } });
             }
             if ((obj as RxAttachmentWriteData).data) {
                 const asWrite = (obj as RxAttachmentWriteData);
@@ -1109,7 +1111,7 @@ export function pouchDocumentDataToRxDocumentData<T>(
             if ((value as any).data) {
                 useDoc._attachments[key] = {
                     data: (value as any).data,
-                    type: (value as any).type
+                    type: (value as any).type ? (value as any).type : (value as any).content_type
                 } as any;
             } else {
                 useDoc._attachments[key] = {

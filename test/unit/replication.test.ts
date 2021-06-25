@@ -18,7 +18,9 @@ import {
     isRxCollection,
     RxCouchDBReplicationState,
     SyncOptions,
-    addRxPlugin
+    addRxPlugin,
+    blobBufferUtil,
+    RxChangeEvent
 } from '../../plugins/core';
 
 import {
@@ -35,6 +37,8 @@ import {
     filter,
     first
 } from 'rxjs/operators';
+import { HumanDocumentType } from '../helper/schema-objects';
+import { RxDocumentData } from '../../src/types';
 
 let request: any;
 let SpawnServer: any;
@@ -598,6 +602,43 @@ describe('replication-couchdb.test.js', () => {
                 syncC.database.destroy();
                 c.database.destroy();
                 c2.database.destroy();
+            });
+            it('should get the correct event when an attachment is replicated', async () => {
+                const remoteCollection = await humansCollection.createAttachments(1);
+                const collection = await humansCollection.createAttachments(0, randomCouchString(5));
+                collection.syncCouchDB({
+                    remote: remoteCollection
+                });
+
+                const emitted: RxChangeEvent<RxDocumentData<HumanDocumentType>>[] = [];
+                const sub = collection.$.subscribe(cE => {
+                    emitted.push(cE);
+                });
+
+                const doc = await remoteCollection.findOne().exec(true);
+                await doc.putAttachment({
+                    id: 'cat.txt',
+                    data: blobBufferUtil.createBlobBuffer('meow', 'text/plain'),
+                    type: 'text/plain'
+                });
+
+                await waitUntil(() => emitted.length >= 1);
+                if (emitted.length > 1) {
+                    throw new Error('too much events emitted');
+                }
+
+                const firstEvent = emitted[0];
+                if (!firstEvent || !firstEvent.documentData) {
+                    throw new Error('firstEvent event missing');
+                }
+                assert.strictEqual(
+                    firstEvent.documentData._attachments['cat.txt'].type,
+                    'text/plain'
+                );
+
+                sub.unsubscribe();
+                remoteCollection.database.destroy();
+                collection.database.destroy();
             });
         });
         describe('negative', () => { });

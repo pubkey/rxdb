@@ -166,7 +166,7 @@ export class RxDatabaseBase<
             docId
         );
         if (!doc) {
-            throw newRxError('SNH');
+            throw newRxError('SNH', { name, schema });
         }
         const writeDoc = flatClone(doc);
         writeDoc._deleted = true;

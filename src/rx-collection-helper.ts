@@ -55,7 +55,7 @@ export async function writeToStorageInstance<RxDocumentType>(
                     () => getSingleDocument(collection.storageInstance, primary)
                 );
                 if (!singleRes) {
-                    throw newRxError('SNH');
+                    throw newRxError('SNH', { args: { writeRow } });
                 }
                 toStorageInstance.previous = singleRes;
                 // now we can retry
