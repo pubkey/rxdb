@@ -1,4 +1,4 @@
-import type { BlobBuffer } from './types';
+import type { BlobBuffer, DeepReadonlyObject } from './types';
 /**
  * Returns an error that indicates that a plugin is missing
  * We do not throw a RxError because this should not be handled
@@ -70,14 +70,14 @@ export declare function removeOneFromArrayIfMatches<T>(ar: T[], condition: (x: T
  * transforms the given adapter into a pouch-compatible object
  */
 export declare function adapterObject(adapter: any): any;
-declare function recursiveDeepCopy<T>(o: T): T;
+declare function recursiveDeepCopy<T>(o: T | DeepReadonlyObject<T>): T;
 export declare const clone: typeof recursiveDeepCopy;
 /**
  * does a flat copy on the objects,
  * is about 3 times faster then using deepClone
  * @link https://jsperf.com/object-rest-spread-vs-clone/2
  */
-export declare function flatClone<T>(obj: T): T;
+export declare function flatClone<T>(obj: T | DeepReadonlyObject<T>): T;
 export declare const isElectronRenderer: boolean;
 /**
  * returns a flattened object
