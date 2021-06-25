@@ -103,7 +103,11 @@ function _writeToStorageInstance() {
                         break;
                       }
 
-                      throw (0, _rxError.newRxError)('SNH');
+                      throw (0, _rxError.newRxError)('SNH', {
+                        args: {
+                          writeRow: writeRow
+                        }
+                      });
 
                     case 8:
                       toStorageInstance.previous = singleRes; // now we can retry

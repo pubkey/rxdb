@@ -7046,7 +7046,9 @@ function _writeAttachmentsToAttachments() {
                         }
 
                         throw (0, _rxError.newRxError)('SNH', {
-                          args: obj
+                          args: {
+                            obj: obj
+                          }
                         });
 
                       case 3:
@@ -7157,7 +7159,7 @@ function pouchDocumentDataToRxDocumentData(primaryKey, pouchDoc) {
       if (value.data) {
         useDoc._attachments[key] = {
           data: value.data,
-          type: value.type
+          type: value.type ? value.type : value.content_type
         };
       } else {
         useDoc._attachments[key] = {
@@ -8981,7 +8983,11 @@ function _writeToStorageInstance() {
                         break;
                       }
 
-                      throw (0, _rxError.newRxError)('SNH');
+                      throw (0, _rxError.newRxError)('SNH', {
+                        args: {
+                          writeRow: writeRow
+                        }
+                      });
 
                     case 8:
                       toStorageInstance.previous = singleRes; // now we can retry
@@ -9276,7 +9282,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
     return this.getDataMigrator().migratePromise(batchSize);
   }
   /**
-   * wrapps pouch-find
+   * wrapps the query function of the storage instance.
    */
   ;
 
@@ -10390,7 +10396,10 @@ var RxDatabaseBase = /*#__PURE__*/function () {
                 break;
               }
 
-              throw (0, _rxError.newRxError)('SNH');
+              throw (0, _rxError.newRxError)('SNH', {
+                name: name,
+                schema: schema
+              });
 
             case 6:
               writeDoc = (0, _util.flatClone)(doc);
@@ -13395,7 +13404,7 @@ exports.createRevision = createRevision;
 exports.overwriteGetterForCaching = overwriteGetterForCaching;
 exports.isFolderPath = isFolderPath;
 exports.getFromMapOrThrow = getFromMapOrThrow;
-exports.blobBufferUtil = exports.isElectronRenderer = exports.clone = exports.RXDB_HASH_SALT = void 0;
+exports.blobBufferUtil = exports.isElectronRenderer = exports.clone = exports.RANDOM_STRING = exports.RXDB_HASH_SALT = void 0;
 
 var _clone = _interopRequireDefault(require("clone"));
 
@@ -13654,6 +13663,13 @@ function randomCouchString() {
 
   return text;
 }
+/**
+ * A random string that is never inside of any storage
+ */
+
+
+var RANDOM_STRING = 'Fz7SZXPmYJujkzjY1rpXWvlWBqoGAfAX';
+exports.RANDOM_STRING = RANDOM_STRING;
 
 function lastOfArray(ar) {
   return ar[ar.length - 1];

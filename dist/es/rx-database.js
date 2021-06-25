@@ -143,7 +143,10 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
                 break;
               }
 
-              throw newRxError('SNH');
+              throw newRxError('SNH', {
+                name: name,
+                schema: schema
+              });
 
             case 6:
               writeDoc = flatClone(doc);

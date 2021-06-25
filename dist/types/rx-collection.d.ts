@@ -65,7 +65,7 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     migrate(batchSize?: number): Observable<MigrationState>;
     migratePromise(batchSize?: number): Promise<any>;
     /**
-     * wrapps pouch-find
+     * wrapps the query function of the storage instance.
      */
     _queryStorageInstance(rxQuery: RxQuery | RxQueryBase, limit?: number, noDecrypt?: boolean): Promise<any[]>;
     $emit(changeEvent: RxChangeEvent<any>): any;

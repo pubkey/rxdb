@@ -32,7 +32,7 @@ exports.createRevision = createRevision;
 exports.overwriteGetterForCaching = overwriteGetterForCaching;
 exports.isFolderPath = isFolderPath;
 exports.getFromMapOrThrow = getFromMapOrThrow;
-exports.blobBufferUtil = exports.isElectronRenderer = exports.clone = exports.RXDB_HASH_SALT = void 0;
+exports.blobBufferUtil = exports.isElectronRenderer = exports.clone = exports.RANDOM_STRING = exports.RXDB_HASH_SALT = void 0;
 
 var _clone = _interopRequireDefault(require("clone"));
 
@@ -291,6 +291,13 @@ function randomCouchString() {
 
   return text;
 }
+/**
+ * A random string that is never inside of any storage
+ */
+
+
+var RANDOM_STRING = 'Fz7SZXPmYJujkzjY1rpXWvlWBqoGAfAX';
+exports.RANDOM_STRING = RANDOM_STRING;
 
 function lastOfArray(ar) {
   return ar[ar.length - 1];

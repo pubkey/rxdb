@@ -230,6 +230,11 @@ export function randomCouchString() {
 
   return text;
 }
+/**
+ * A random string that is never inside of any storage
+ */
+
+export var RANDOM_STRING = 'Fz7SZXPmYJujkzjY1rpXWvlWBqoGAfAX';
 export function lastOfArray(ar) {
   return ar[ar.length - 1];
 }

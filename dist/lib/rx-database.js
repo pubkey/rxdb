@@ -175,7 +175,10 @@ var RxDatabaseBase = /*#__PURE__*/function () {
                 break;
               }
 
-              throw (0, _rxError.newRxError)('SNH');
+              throw (0, _rxError.newRxError)('SNH', {
+                name: name,
+                schema: schema
+              });
 
             case 6:
               writeDoc = (0, _util.flatClone)(doc);

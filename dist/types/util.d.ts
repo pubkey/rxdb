@@ -57,6 +57,10 @@ export declare function stringifyFilter(key: string, value: any): any;
  * @link http://stackoverflow.com/a/1349426/3443137
  */
 export declare function randomCouchString(length?: number): string;
+/**
+ * A random string that is never inside of any storage
+ */
+export declare const RANDOM_STRING = "Fz7SZXPmYJujkzjY1rpXWvlWBqoGAfAX";
 export declare function lastOfArray<T>(ar: T[]): T;
 /**
  * shuffle the given array

@@ -205,7 +205,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
     return this.getDataMigrator().migratePromise(batchSize);
   }
   /**
-   * wrapps pouch-find
+   * wrapps the query function of the storage instance.
    */
   ;
 

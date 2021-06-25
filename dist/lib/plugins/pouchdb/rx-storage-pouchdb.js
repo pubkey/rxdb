@@ -1414,7 +1414,9 @@ function _writeAttachmentsToAttachments() {
                         }
 
                         throw (0, _rxError.newRxError)('SNH', {
-                          args: obj
+                          args: {
+                            obj: obj
+                          }
                         });
 
                       case 3:
@@ -1525,7 +1527,7 @@ function pouchDocumentDataToRxDocumentData(primaryKey, pouchDoc) {
       if (value.data) {
         useDoc._attachments[key] = {
           data: value.data,
-          type: value.type
+          type: value.type ? value.type : value.content_type
         };
       } else {
         useDoc._attachments[key] = {
