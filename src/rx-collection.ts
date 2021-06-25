@@ -317,7 +317,7 @@ export class RxCollectionBase<
     }
 
     /**
-     * wrapps pouch-find
+     * wrapps the query function of the storage instance.
      */
     async _queryStorageInstance(
         rxQuery: RxQuery | RxQueryBase,
@@ -332,6 +332,7 @@ export class RxCollectionBase<
         const queryResult = await this.database.lockedRun(
             () => this.storageInstance.query(preparedQuery)
         );
+
         const docs = queryResult.documents
             .map((doc: any) => _handleFromStorageInstance(this, doc, noDecrypt));
         return docs;

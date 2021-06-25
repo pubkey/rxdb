@@ -246,6 +246,12 @@ export function randomCouchString(length: number = 10): string {
     return text;
 }
 
+/**
+ * A random string that is never inside of any storage
+ */
+export const RANDOM_STRING = 'Fz7SZXPmYJujkzjY1rpXWvlWBqoGAfAX';
+
+
 export function lastOfArray<T>(ar: T[]): T {
     return ar[ar.length - 1];
 }

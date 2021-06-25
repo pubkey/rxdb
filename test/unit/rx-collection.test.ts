@@ -21,6 +21,7 @@ import {
     RxDatabase,
     RxError,
     addRxPlugin,
+    RANDOM_STRING
 } from '../../plugins/core';
 
 import {
@@ -945,17 +946,37 @@ config.parallel('rx-collection.test.js', () => {
             describe('.skip()', () => {
                 describe('positive', () => {
                     it('skip first', async () => {
-                        const c = await humansCollection.create();
+                        const c = await humansCollection.create(
+                            2,
+                            randomCouchString(10),
+                            false,
+                            false
+                        );
+
                         const query: any = {
-                            selector: {},
+                            selector: {
+                                passportId: {
+                                    /**
+                                     * TODO The skip-query randomly returns wrong results
+                                     * when this $ne is not set.
+                                     * We should create an issue at the pouchdb repo.
+                                     */
+                                    $ne: RANDOM_STRING
+                                }
+                            },
                             sort: [
                                 { passportId: 'asc' }
                             ]
                         };
+
                         const docs = await c.find(query).exec();
-                        const noFirst = await c.find(query).skip(1).exec();
+                        const noFirstQuery = c.find(query).skip(1);
+                        const noFirst = await noFirstQuery.exec();
+
+                        assert.strictEqual(noFirst.length, 1);
                         assert.strictEqual(noFirst[0]._data.passportId, docs[1]._data.passportId);
                         c.database.destroy();
+
                     });
                     it('skip first in order', async () => {
                         const c = await humansCollection.create();

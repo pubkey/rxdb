@@ -24,7 +24,8 @@ import { MigrationStrategies } from '../../src/types';
 export async function create(
     size: number = 20,
     name: string = 'human',
-    multiInstance: boolean = true
+    multiInstance: boolean = true,
+    eventReduce: boolean = true
 ): Promise<RxCollection<HumanDocumentType, {}, {}>> {
     if (!name) {
         name = 'human';
@@ -34,7 +35,7 @@ export async function create(
         name: randomCouchString(10),
         storage: getRxStoragePouch('memory'),
         multiInstance,
-        eventReduce: true,
+        eventReduce,
         ignoreDuplicate: true
     });
 
