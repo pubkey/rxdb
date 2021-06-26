@@ -529,7 +529,8 @@ var RxCollectionBase = /*#__PURE__*/function () {
   _proto.atomicUpsert = function atomicUpsert(json) {
     var _this6 = this;
 
-    var primary = json[this.schema.primaryPath];
+    var useJson = (0, _rxCollectionHelper.fillObjectDataBeforeInsert)(this, json);
+    var primary = useJson[this.schema.primaryPath];
 
     if (!primary) {
       throw (0, _rxError.newRxError)('COL4', {
@@ -547,10 +548,10 @@ var RxCollectionBase = /*#__PURE__*/function () {
     }
 
     queue = queue.then(function () {
-      return _atomicUpsertEnsureRxDocumentExists(_this6, primary, json);
+      return _atomicUpsertEnsureRxDocumentExists(_this6, primary, useJson);
     }).then(function (wasInserted) {
       if (!wasInserted.inserted) {
-        return _atomicUpsertUpdate(wasInserted.doc, json)
+        return _atomicUpsertUpdate(wasInserted.doc, useJson)
         /**
          * tick here so the event can propagate
          * TODO we should not need that here
