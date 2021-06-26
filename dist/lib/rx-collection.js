@@ -498,13 +498,14 @@ var RxCollectionBase = /*#__PURE__*/function () {
   _proto.upsert = function upsert(json) {
     var _this5 = this;
 
-    var useJson = (0, _util.flatClone)(json);
+    var useJson = (0, _rxCollectionHelper.fillObjectDataBeforeInsert)(this, json);
     var primary = useJson[this.schema.primaryPath];
 
     if (!primary) {
       throw (0, _rxError.newRxError)('COL3', {
         primaryPath: this.schema.primaryPath,
-        data: useJson
+        data: useJson,
+        schema: this.schema.jsonSchema
       });
     }
 

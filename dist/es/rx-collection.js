@@ -468,13 +468,14 @@ export var RxCollectionBase = /*#__PURE__*/function () {
   _proto.upsert = function upsert(json) {
     var _this5 = this;
 
-    var useJson = flatClone(json);
+    var useJson = fillObjectDataBeforeInsert(this, json);
     var primary = useJson[this.schema.primaryPath];
 
     if (!primary) {
       throw newRxError('COL3', {
         primaryPath: this.schema.primaryPath,
-        data: useJson
+        data: useJson,
+        schema: this.schema.jsonSchema
       });
     }
 

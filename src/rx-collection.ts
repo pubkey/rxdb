@@ -509,12 +509,13 @@ export class RxCollectionBase<
      * same as insert but overwrites existing document with same primary
      */
     upsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
-        const useJson: any = flatClone<Partial<RxDocumentType>>(json);
+        const useJson = fillObjectDataBeforeInsert(this as any, json);
         const primary = useJson[this.schema.primaryPath];
         if (!primary) {
             throw newRxError('COL3', {
                 primaryPath: this.schema.primaryPath as string,
-                data: useJson
+                data: useJson,
+                schema: this.schema.jsonSchema
             });
         }
 
