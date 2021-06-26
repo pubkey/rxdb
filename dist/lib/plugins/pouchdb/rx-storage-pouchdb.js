@@ -703,7 +703,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
   _proto2.getSortComparator = function getSortComparator(query) {
     var _ref6;
 
-    var primaryKey = this.schema.primaryKey;
+    var primaryKey = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(this.schema.primaryKey);
     var sortOptions = query.sort ? query.sort : [(_ref6 = {}, _ref6[this.primaryPath] = 'asc', _ref6)];
     var massagedSelector = (0, _pouchdbSelectorCore.massageSelector)(query.selector);
     var inMemoryFields = Object.keys(query.selector);
@@ -769,7 +769,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
   _proto2.prepareQuery = function prepareQuery(mutateableQuery) {
     var _this5 = this;
 
-    var primaryKey = this.schema.primaryKey;
+    var primaryKey = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(this.schema.primaryKey);
     var query = mutateableQuery;
     /**
      * because sort wont work on unused keys we have to workaround
@@ -1754,7 +1754,7 @@ function _createIndexesOnPouch() {
             return _context24.abrupt("return");
 
           case 2:
-            primaryKey = schema.primaryKey;
+            primaryKey = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
             _context24.next = 5;
             return pouch.getIndexes();
 

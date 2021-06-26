@@ -535,7 +535,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     getSortComparator(
         query: MangoQuery<RxDocType>
     ): SortComparator<RxDocType> {
-        const primaryKey = this.schema.primaryKey;
+        const primaryKey = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
         const sortOptions: MangoQuerySortPart[] = query.sort ? query.sort : [{
             [this.primaryPath]: 'asc'
         }];
@@ -605,7 +605,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     prepareQuery(
         mutateableQuery: MangoQuery<RxDocType>
     ): PreparedQuery<RxDocType> {
-        const primaryKey = this.schema.primaryKey;
+        const primaryKey = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
         const query = mutateableQuery;
 
         /**
@@ -1333,7 +1333,7 @@ export async function createIndexesOnPouch(
         return;
     }
 
-    const primaryKey = schema.primaryKey;
+    const primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
     const before = await pouch.getIndexes();
     const existingIndexes: Set<string> = new Set(
         before.indexes.map(idx => idx.name)
