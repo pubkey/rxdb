@@ -352,6 +352,17 @@ config.parallel('primary.test.js', () => {
 
             col.database.destroy();
         });
+        it('.atomicUpsert()', async () => {
+            const col = await getCompositePrimaryCollection();
+            assert.ok(col);
+
+            const data = humanWithCompositePrimary();
+
+            await col.atomicUpsert(data);
+            await col.atomicUpsert(data);
+
+            col.database.destroy();
+        });
         it('should throw when a primary related field is changed', async () => {
             const col = await getCompositePrimaryCollection();
             const doc = await col.insert(humanWithCompositePrimary());

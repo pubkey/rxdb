@@ -136,6 +136,15 @@ const mySchema = {
 You can then find a document by using the relevant parts to create the composite primaryKey:
 
 ```ts
+
+// inserting with composite primary
+await myRxCollection.insert({
+    // id, <- do not set the id, it will be filled by RxDB
+    firstName: 'foo',
+    lastName: 'bar'
+});
+
+// find by composite primary
 const id = myRxCollection.schema.getPrimaryOfDocumentData({
     firstName: 'foo',
     lastName: 'bar'

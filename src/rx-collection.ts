@@ -535,7 +535,8 @@ export class RxCollectionBase<
      * upserts to a RxDocument, uses atomicUpdate if document already exists
      */
     atomicUpsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
-        const primary = (json as any)[this.schema.primaryPath];
+        const useJson = fillObjectDataBeforeInsert(this as any, json);
+        const primary = (useJson as any)[this.schema.primaryPath];
         if (!primary) {
             throw newRxError('COL4', {
                 data: json
@@ -550,10 +551,10 @@ export class RxCollectionBase<
             queue = this._atomicUpsertQueues.get(primary);
         }
         queue = queue
-            .then(() => _atomicUpsertEnsureRxDocumentExists(this as any, primary as any, json))
+            .then(() => _atomicUpsertEnsureRxDocumentExists(this as any, primary as any, useJson))
             .then((wasInserted: any) => {
                 if (!wasInserted.inserted) {
-                    return _atomicUpsertUpdate(wasInserted.doc, json)
+                    return _atomicUpsertUpdate(wasInserted.doc, useJson)
                         /**
                          * tick here so the event can propagate
                          * TODO we should not need that here
