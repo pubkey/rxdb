@@ -25,7 +25,8 @@ import { DeepReadonly } from '../../types/util';
 export * from './check-schema';
 export * from './check-names';
 
-const deepFreeze = require('deep-freeze');
+import deepFreeze from 'deep-freeze';
+
 /**
  * Deep freezes and object when in dev-mode.
  * Deep-Freezing has the same performaance as deep-cloning, so we only do that in dev-mode.
