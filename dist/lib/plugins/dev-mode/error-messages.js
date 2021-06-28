@@ -164,6 +164,7 @@ var ERROR_MESSAGES = {
   // plugins/server.js
   S1: 'You cannot create collections after calling RxDatabase.server()',
   // plugins/replication-graphql.js
+  GQL1: 'cannot find sub schema by key',
 
   /**
    * Should never be thrown, use this for

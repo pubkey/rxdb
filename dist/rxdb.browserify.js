@@ -2569,6 +2569,7 @@ var ERROR_MESSAGES = {
   // plugins/server.js
   S1: 'You cannot create collections after calling RxDatabase.server()',
   // plugins/replication-graphql.js
+  GQL1: 'cannot find sub schema by key',
 
   /**
    * Should never be thrown, use this for
@@ -2582,6 +2583,8 @@ exports.ERROR_MESSAGES = ERROR_MESSAGES;
 
 },{}],19:[function(require,module,exports){
 "use strict";
+
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -2633,22 +2636,21 @@ Object.keys(_checkNames).forEach(function (key) {
   });
 });
 
-var deepFreeze = require('deep-freeze');
+var _deepFreeze = _interopRequireDefault(require("deep-freeze"));
+
 /**
  * Deep freezes and object when in dev-mode.
  * Deep-Freezing has the same performaance as deep-cloning, so we only do that in dev-mode.
  * Also we can ensure the readonly state via typescript
  * @link https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
  */
-
-
 function deepFreezeWhenDevMode(obj) {
   // direct return if falsy
   if (!obj) {
     return obj;
   }
 
-  return deepFreeze(obj);
+  return (0, _deepFreeze["default"])(obj);
 }
 
 var DEV_MODE_PLUGIN_NAME = 'dev-mode';
@@ -2720,7 +2722,7 @@ var RxDBDevModePlugin = {
 exports.RxDBDevModePlugin = RxDBDevModePlugin;
 
 
-},{"../../rx-error":48,"./check-migration-strategies":12,"./check-names":13,"./check-orm":14,"./check-query":15,"./check-schema":16,"./error-messages":18,"./unallowed-properties":20,"deep-freeze":498}],20:[function(require,module,exports){
+},{"../../rx-error":48,"./check-migration-strategies":12,"./check-names":13,"./check-orm":14,"./check-query":15,"./check-schema":16,"./error-messages":18,"./unallowed-properties":20,"@babel/runtime/helpers/interopRequireDefault":67,"deep-freeze":498}],20:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {

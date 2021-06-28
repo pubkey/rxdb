@@ -1,5 +1,7 @@
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -50,22 +52,21 @@ Object.keys(_checkNames).forEach(function (key) {
   });
 });
 
-var deepFreeze = require('deep-freeze');
+var _deepFreeze = _interopRequireDefault(require("deep-freeze"));
+
 /**
  * Deep freezes and object when in dev-mode.
  * Deep-Freezing has the same performaance as deep-cloning, so we only do that in dev-mode.
  * Also we can ensure the readonly state via typescript
  * @link https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
  */
-
-
 function deepFreezeWhenDevMode(obj) {
   // direct return if falsy
   if (!obj) {
     return obj;
   }
 
-  return deepFreeze(obj);
+  return (0, _deepFreeze["default"])(obj);
 }
 
 var DEV_MODE_PLUGIN_NAME = 'dev-mode';

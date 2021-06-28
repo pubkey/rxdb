@@ -131,6 +131,7 @@ export declare const ERROR_MESSAGES: {
     IM1: string;
     IM2: string;
     S1: string;
+    GQL1: string;
     /**
      * Should never be thrown, use this for
      * null checks etc. so you do not have to increase the

@@ -7,15 +7,13 @@ import { checkQuery } from './check-query';
 import { newRxError } from '../../rx-error';
 export * from './check-schema';
 export * from './check-names';
-
-var deepFreeze = require('deep-freeze');
+import deepFreeze from 'deep-freeze';
 /**
  * Deep freezes and object when in dev-mode.
  * Deep-Freezing has the same performaance as deep-cloning, so we only do that in dev-mode.
  * Also we can ensure the readonly state via typescript
  * @link https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
  */
-
 
 export function deepFreezeWhenDevMode(obj) {
   // direct return if falsy

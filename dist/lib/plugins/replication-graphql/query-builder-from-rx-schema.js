@@ -10,6 +10,8 @@ var _graphqlSchemaFromRxSchema = require("./graphql-schema-from-rx-schema");
 
 var _util = require("../../util");
 
+var _rxError = require("../../rx-error");
+
 function pullQueryBuilderFromRxSchema(collectionName, input) {
   var batchSize = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 5;
   input = (0, _graphqlSchemaFromRxSchema.fillUpOptionals)(input);
@@ -25,6 +27,18 @@ function pullQueryBuilderFromRxSchema(collectionName, input) {
   var builder = function builder(doc) {
     var queryKeys = input.feedKeys.map(function (key) {
       var subSchema = schema.properties[key];
+
+      if (!subSchema) {
+        throw (0, _rxError.newRxError)('GQL1', {
+          document: doc,
+          schema: schema,
+          key: key,
+          args: {
+            feedKeys: input.feedKeys
+          }
+        });
+      }
+
       var type = subSchema.type;
       var value = doc ? doc[key] : null;
       var keyString = key + ': ';
