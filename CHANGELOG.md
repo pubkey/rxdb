@@ -2,6 +2,9 @@
 
 ### X.X.X (coming soon)
 
+Types:
+  - `getLocal()` can return `undefined`. Thanks [@chrisdrackett](https://github.com/chrisdrackett)
+
 ### 9.20.0 (15 May 2021)
 
 Bugfixes:
