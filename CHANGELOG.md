@@ -7,6 +7,8 @@ Features:
 
 Types:
   - `getLocal()` can return `undefined`. Thanks [@chrisdrackett](https://github.com/chrisdrackett)
+  - Fixed typings in the dependencies so you can use `noUncheckedIndexedAccess`. Thanks [@seanwu1105](https://github.com/seanwu1105)
+
 
 ### 9.20.0 (15 May 2021)
 
