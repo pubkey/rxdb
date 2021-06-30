@@ -2,6 +2,8 @@
 
 ### X.X.X (coming soon)
 
+### 9.21.0 (30 June 2021)
+
 Features:
   - Added `dataPath` property to GraphQL replication pull options to allow the document JSON lookup path to configured instead of assuming the document data is always the first child of the response [#2606](https://github.com/pubkey/rxdb/issues/2606) Thanks [@joshmcarthur](https://github.com/joshmcarthur)
 
