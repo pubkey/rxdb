@@ -392,7 +392,7 @@ config.parallel('local-documents.test.js', () => {
 
             await doc1.atomicSet('foo', 'bar2');
 
-            await waitUntil(() => doc2.toJSON().foo === 'bar2');
+            await waitUntil(() => doc2 && doc2.toJSON().foo === 'bar2');
 
             db.destroy();
             db2.destroy();
@@ -427,7 +427,7 @@ config.parallel('local-documents.test.js', () => {
                 emitted.push(x);
             });
 
-            await waitUntil(() => doc2.toJSON().foo === 'bar2');
+            await waitUntil(() => doc2 && doc2.toJSON().foo === 'bar2');
             await waitUntil(() => emitted.length >= 2);
 
             sub.unsubscribe();
@@ -459,7 +459,7 @@ config.parallel('local-documents.test.js', () => {
             assert.ok(emitted.pop());
 
             const doc = await db2.getLocal<TestDocType>('foobar');
-            assert.strictEqual(doc.toJSON().foo, 'bar');
+            assert.strictEqual(doc && doc.toJSON().foo, 'bar');
 
             sub.unsubscribe();
             db.destroy();

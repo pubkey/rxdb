@@ -178,7 +178,8 @@ const pushQueryBuilder = doc => {
         mutation CreateHuman($human: HumanInput) {
             setHuman(human: $human) {
                 id,
-                updatedAt
+                updatedAt,
+                deleted
             }
         }
     `;

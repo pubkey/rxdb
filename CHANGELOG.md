@@ -5,6 +5,9 @@
 Features:
   - Added `dataPath` property to GraphQL replication pull options to allow the document JSON lookup path to configured instead of assuming the document data is always the first child of the response [#2606](https://github.com/pubkey/rxdb/issues/2606)
 
+Types:
+  - `getLocal()` can return `undefined`. Thanks [@chrisdrackett](https://github.com/chrisdrackett)
+
 ### 9.20.0 (15 May 2021)
 
 Bugfixes:
