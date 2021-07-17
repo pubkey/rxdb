@@ -9,13 +9,16 @@
     <h1> RxDB Heroes Electron</h1>
     <div id="list-box" class="box">
         <h3>Heroes</h3>
-        <ul id="heroes-list"></ul>
+        <div id="heroes-list"></div>
     </div>
     <div id="insert-box" class="box">
         <h3>Add Hero</h3>
         <input type="text" placeholder="Name" name="name" id="input-name" />
         <input type="text" placeholder="Color" name="color" id="input-color" />
-        <button onclick="addHero();" id="input-submit">Insert</button>
+        <div class="buttons">
+          <button onclick="db.addHero();" id="input-submit">Insert</button>
+          <button onclick="db.addHeroWithAttachments();" id="input-submit">Insert w/ attachments</button>
+        </div>
     </div>
   </body>
 

@@ -1,6 +1,6 @@
 import assert from 'assert';
-import config from './config';
 import AsyncTestUtil, { wait } from 'async-test-util';
+import config from './config';
 
 import * as humansCollection from '../helper/humans-collection';
 import * as schemas from '../helper/schemas';
@@ -631,6 +631,69 @@ config.parallel('attachments.test.ts', () => {
         });
     });
     describe('issues', () => {
+        it('#3022 blob attachments not working with db password', async () => {
+          if (config.platform.isNode()) return;
+
+            const myschema = {
+                version: 0,
+                type: 'object',
+                properties: {
+                    name: {
+                        type: 'string',
+                        primary: true,
+                    },
+                },
+                attachments: {
+                    encrypted: false,
+                },
+            };
+
+            const myDB = await createRxDatabase({
+                name: 'mylocaldb' + randomCouchString(10),
+                adapter: 'idb',
+                multiInstance: true,
+                eventReduce: true,
+                ignoreDuplicate: true,
+                password: 'myLongAndStupidPassword',
+            });
+            const myCollection = await myDB.collection({
+                name: 'mycollection',
+                schema: myschema
+            });
+            const mydoc = myCollection.newDocument({
+                name: 'mydoc'
+            });
+            await mydoc.save();
+            const doc = await myCollection.findOne('mydoc').exec();
+
+            const content = 'barfoo2';
+            const buffer = Buffer.from(content);
+            const blob = new Blob([buffer], { type: 'text/plain' });
+            const attachmentPayload = {
+                id: 'blob.txt',
+                data: blob,
+                type: 'text/plain'
+            };
+
+            const attachment = await doc.putAttachment(attachmentPayload);
+            const attachment1Data = await attachment.getStringData();
+
+            const doc2 = await myCollection.findOne('mydoc').exec();
+            const attachment2 = doc2.getAttachment(attachmentPayload.id);
+            const attachment2Data = await attachment2.getStringData();
+
+            assert.ok(attachment);
+
+            assert.strictEqual(attachment.id, attachmentPayload.id);
+            assert.strictEqual(attachment.type, attachmentPayload.type);
+            assert.strictEqual(content, attachment1Data);
+
+            assert.strictEqual(attachment.id, attachment2.id);
+            assert.strictEqual(attachment.type, attachment2.type);
+            assert.strictEqual(content, attachment2Data);
+
+            await myDB.destroy();
+        });
         it('#455 attachments not working', async () => {
             const myschema = {
                 version: 0,

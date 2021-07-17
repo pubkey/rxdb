@@ -62,26 +62,32 @@ h3{
     font-size: 14px;
     color: rgba(0, 0, 0, 0.54);
 }
-ul{
-    list-style: none;
-    padding: 0 2%;
-    display: inline-block;
-    position: relative;
-    width: 96%;
+#heroes-list {
+    margin: 4px 0;
 }
-ul#heroes-list li{
-    width: 100%;
-    float: left;
-    margin-top: 6px;
-    margin-bottom: 6px;
+#heroes-list div {
+    margin: 3px 0;
+}
+#heroes-list ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+#heroes-list ul li {
+    margin: 4px 0;
+    padding: 0;
 }
 .color-box{
-    width: 20px;
-    height: 20px;
-    float: left;
-    margin-right: 11px;
+    padding: 0.4rem 0;
     border-radius: 2px;
     border-width: 1px;
     border-style: solid;
     border-color: grey;
+}
+.buttons {
+    margin: 0.4rem 0;
+}
+.buttons button {
+    display: block;
+    margin: 0.5rem 0;
 }
