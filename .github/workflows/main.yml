@@ -35,15 +35,15 @@ jobs:
       - name: build
         run: npm run build
       
-      - name: test:typings
-        run: npm run test:typings
-        
       - name: npm run test:node
         run: npm run test:node
   
       - name: npm run test:fast
         run: npm run test:fast
         
+      - name: test:typings
+        run: npm run test:typings
+
       - name: npm run test:performance
         run: npm run test:performance
 
