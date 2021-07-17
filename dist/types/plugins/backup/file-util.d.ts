@@ -1,5 +1,5 @@
-/// <reference types="node" />
 /// <reference types="pouchdb-core" />
+/// <reference types="node" />
 import { BackupMetaFileContent, BackupOptions, RxDatabase } from '../../types';
 /**
  * ensure that the given folder exists
