@@ -48,7 +48,7 @@ jobs:
         run: npm run test:performance
 
       - name: node example
-        run: cd ./examples/node && npm install > "/dev/null" 2>&1 && npm run test
+        run: cd ./examples/node && npm install && npm run test
 
 
   angular:
