@@ -400,9 +400,11 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                         ) {
                             return;
                         }
-                        const writeDoc = getFromMapOrThrow(writeDocsById, resultRow.id);
+                        let writeDoc = getFromMapOrThrow(writeDocsById, resultRow.id);
                         writeDoc._attachments = await writeAttachmentsToAttachments(writeDoc._attachments);
 
+                        writeDoc = flatClone(writeDoc);
+                        writeDoc._rev = (resultRow as any).rev;
                         const event = pouchChangeRowToChangeEvent<RxDocType>(
                             this.primaryPath,
                             writeDoc
