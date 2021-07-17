@@ -14,6 +14,7 @@ import {
     filter
 } from 'rxjs/operators';
 import GraphQLClient from 'graphql-client';
+import objectPath from 'object-path';
 import {
     promiseWait,
     getHeightOfRevision,
@@ -226,9 +227,8 @@ export class RxGraphQLReplicationState<RxDocType> {
             return false;
         }
 
-        // this assumes that there will be always only one property in the response
-        // is this correct?
-        const data: any[] = result.data[Object.keys(result.data)[0]];
+        const dataPath = (this.pull as any).dataPath || ['data', Object.keys(result.data)[0]];
+        const data: any[] = objectPath.get(result, dataPath);
 
         // optimisation shortcut, do not proceed if there are no documents.
         if (data.length === 0) {

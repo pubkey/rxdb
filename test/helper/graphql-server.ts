@@ -86,6 +86,7 @@ export async function spawn(
         type Query {
             info: Int
             feedForRxDBReplication(lastId: String!, minUpdatedAt: Int!, limit: Int!): [Human!]!
+            collectionFeedForRxDBReplication(lastId: String!, minUpdatedAt: Int!, offset: Int, limit: Int!): HumanCollection!
             getAll: [Human!]!
         }
         type Mutation {
@@ -105,6 +106,10 @@ export async function spawn(
             age: Int!,
             updatedAt: Int!,
             deleted: Boolean!
+        }
+        type HumanCollection {
+            collection: [Human!]
+            totalCount: Int!
         }
         type Subscription {
             humanChanged: Human
@@ -126,6 +131,18 @@ export async function spawn(
     // The root provides a resolver function for each API endpoint
     const root = {
         info: () => 1,
+        collectionFeedForRxDBReplication: (args: any) => {
+            const { limit, offset = 0, ...feedForRxDBReplicationArgs } = args;
+            const collection = root.feedForRxDBReplication(feedForRxDBReplicationArgs);
+
+            // console.log('collection');
+            // console.dir(collection);
+
+            return {
+                totalCount: collection.length,
+                collection: collection.slice(offset, offset + limit)
+            };
+        },
         feedForRxDBReplication: (args: any) => {
             // console.log('## feedForRxDBReplication');
             // console.dir(args);
@@ -133,18 +150,17 @@ export async function spawn(
             const sortedDocuments = documents.sort(sortByUpdatedAtAndPrimary);
 
             // only return where updatedAt >= minUpdatedAt
-            const filterForMinUpdatedAtAndId = sortedDocuments.filter((doc) => {
+            const filteredByMinUpdatedAtAndId = sortedDocuments.filter((doc) => {
                 if (doc.updatedAt < args.minUpdatedAt) return false;
                 if (doc.updatedAt > args.minUpdatedAt) return true;
                 if (doc.updatedAt === args.minUpdatedAt) {
                     if (doc.id > args.lastId) return true;
                     else return false;
                 }
-
             });
 
-            // limit
-            const limited = filterForMinUpdatedAtAndId.slice(0, args.limit);
+            // limit if requested
+            const limited = args.limit ? filteredByMinUpdatedAtAndId.slice(0, args.limit) : filteredByMinUpdatedAtAndId;
 
             /*
             console.log('sortedDocuments:');

@@ -150,7 +150,9 @@ export type {
     ServerOptions,
     SyncOptions,
     SyncOptionsGraphQL,
+    MigrationStrategy,
     MigrationStrategies,
-    WithAttachmentsData,
-    RxStorage
+    RxStorage,
+    OldRxCollection,
+    WithAttachmentsData
 } from './types';

@@ -1,5 +1,5 @@
-/// <reference types="node" />
 /// <reference types="pouchdb-core" />
+/// <reference types="node" />
 import type { MangoQuery, PouchDBInstance, PouchSettings, RxStorageBulkWriteResponse, RxJsonSchema, RxLocalDocumentData, RxStorageQueryResult, RxStorageInstanceCreationParams, ChangeStreamEvent, ChangeStreamOnceOptions, PouchChangeRow, RxLocalStorageBulkWriteResponse, RxDocumentData, WithAttachments, RxDocumentWriteData, RxAttachmentWriteData, RxAttachmentData, BlobBuffer, PreparedQuery, RxStorage, RxStorageInstance, RxStorageKeyObjectInstance, BulkWriteRow, BulkWriteLocalRow, RxStorageChangeEvent } from '../../types';
 import type { SortComparator, QueryMatcher, ChangeEvent } from 'event-reduce-js';
 import { Observable } from 'rxjs';

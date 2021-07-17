@@ -45,6 +45,16 @@ Other:
 Typings:
   - Improved typings of error codes.
 
+### 9.21.0 (30 June 2021)
+
+Features:
+  - Added `dataPath` property to GraphQL replication pull options to allow the document JSON lookup path to configured instead of assuming the document data is always the first child of the response [#2606](https://github.com/pubkey/rxdb/issues/2606) Thanks [@joshmcarthur](https://github.com/joshmcarthur)
+
+Types:
+  - `getLocal()` can return `undefined`. Thanks [@chrisdrackett](https://github.com/chrisdrackett)
+  - Fixed typings in the dependencies so you can use `noUncheckedIndexedAccess`. Thanks [@seanwu1105](https://github.com/seanwu1105)
+
+
 ### 9.20.0 (15 May 2021)
 
 Bugfixes:
@@ -112,7 +122,7 @@ Other:
 
 ### 9.13.0 (10 February 2021)
 
-Features: 
+Features:
 
   - Added `RxCollection().bulkRemove()` [#2845](https://github.com/pubkey/rxdb/pull/2845) Thanks [@qinyang912](https://github.com/qinyang912)
 
@@ -183,7 +193,7 @@ Features:
   - Added [RxDocument.atomicPatch()](https://rxdb.info/rx-document.html#atomicpatch)
 
 Bugfixes:
-  - (types) Returned values of `syncGraphQL()` did not type-match with `RxGraphQLReplicationState` 
+  - (types) Returned values of `syncGraphQL()` did not type-match with `RxGraphQLReplicationState`
   - `RxDocument.atomicUpdate()` now does a retry on 409 write conflicts
 
 Other:
@@ -210,7 +220,7 @@ Features:
 Other:
   - Refactored GraphQL replication to run faster [#2524](https://github.com/pubkey/rxdb/pull/2524/) Thanks [@corinv](https://github.com/corinv)
 
-### 9.6.0 (7 September 2020) 
+### 9.6.0 (7 September 2020)
 
 Features:
   - Add `RxReplicationState.setHeaders()` [#2399](https://github.com/pubkey/rxdb/pull/2399/) Thanks [@DDoerner](https://github.com/DDoerner)
@@ -736,7 +746,7 @@ Other:
 
 ## 6.0.0 (September 19, 2017) BREAKING
 
-Breaking:    
+Breaking:
   - Filenames are now kebab-case
   - `pouchdb-replication`-plugin is now imported by default, do not import it by your own.
   - `RxDB.create()` throws if you create the same database twice. (You can use [ignoreDuplicate](https://pubkey.github.io/rxdb/rx-database.html#ignoreduplicate))

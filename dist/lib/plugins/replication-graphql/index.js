@@ -25,6 +25,8 @@ var _operators = require("rxjs/operators");
 
 var _graphqlClient = _interopRequireDefault(require("graphql-client"));
 
+var _objectPath = _interopRequireDefault(require("object-path"));
+
 var _util = require("../../util");
 
 var _core = require("../../core");
@@ -368,7 +370,7 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
     var _runPull = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee5() {
       var _this4 = this;
 
-      var latestDocument, latestDocumentData, pullGraphQL, result, err, data, modified, newLatestDocument;
+      var latestDocument, latestDocumentData, pullGraphQL, result, err, dataPath, data, modified, newLatestDocument;
       return _regenerator["default"].wrap(function _callee5$(_context5) {
         while (1) {
           switch (_context5.prev = _context5.next) {
@@ -429,19 +431,18 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
               return _context5.abrupt("return", false);
 
             case 27:
-              // this assumes that there will be always only one property in the response
-              // is this correct?
-              data = result.data[Object.keys(result.data)[0]]; // optimisation shortcut, do not proceed if there are no documents.
+              dataPath = this.pull.dataPath || ['data', Object.keys(result.data)[0]];
+              data = _objectPath["default"].get(result, dataPath); // optimisation shortcut, do not proceed if there are no documents.
 
               if (!(data.length === 0)) {
-                _context5.next = 30;
+                _context5.next = 31;
                 break;
               }
 
               return _context5.abrupt("return", true);
 
-            case 30:
-              _context5.next = 32;
+            case 31:
+              _context5.next = 33;
               return Promise.all(data.map( /*#__PURE__*/function () {
                 var _ref2 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(doc) {
                   return _regenerator["default"].wrap(function _callee4$(_context4) {
@@ -467,53 +468,53 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
                 };
               }()));
 
-            case 32:
+            case 33:
               modified = _context5.sent.filter(function (doc) {
                 return !!doc;
               });
 
               if (!_overwritable.overwritable.isDevMode()) {
-                _context5.next = 42;
+                _context5.next = 43;
                 break;
               }
 
-              _context5.prev = 34;
+              _context5.prev = 35;
               modified.forEach(function (doc) {
                 var withoutDeleteFlag = (0, _util.flatClone)(doc);
                 delete withoutDeleteFlag[_this4.deletedFlag];
 
                 _this4.collection.schema.validate(withoutDeleteFlag);
               });
-              _context5.next = 42;
+              _context5.next = 43;
               break;
 
-            case 38:
-              _context5.prev = 38;
-              _context5.t1 = _context5["catch"](34);
+            case 39:
+              _context5.prev = 39;
+              _context5.t1 = _context5["catch"](35);
 
               this._subjects.error.next(_context5.t1);
 
               return _context5.abrupt("return", false);
 
-            case 42:
+            case 43:
               if (!this.isStopped()) {
-                _context5.next = 44;
+                _context5.next = 45;
                 break;
               }
 
               return _context5.abrupt("return", true);
 
-            case 44:
-              _context5.next = 46;
+            case 45:
+              _context5.next = 47;
               return this.handleDocumentsFromRemote(modified);
 
-            case 46:
+            case 47:
               modified.map(function (doc) {
                 return _this4._subjects.recieved.next(doc);
               });
 
               if (!(modified.length === 0)) {
-                _context5.next = 51;
+                _context5.next = 52;
                 break;
               }
 
@@ -521,27 +522,27 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
               } else {// console.log('RxGraphQLReplicationState._run(): no more docs and not live; complete = true');
                 }
 
-              _context5.next = 56;
+              _context5.next = 57;
               break;
 
-            case 51:
+            case 52:
               newLatestDocument = modified[modified.length - 1];
-              _context5.next = 54;
+              _context5.next = 55;
               return (0, _crawlingCheckpoint.setLastPullDocument)(this.collection, this.endpointHash, newLatestDocument);
 
-            case 54:
-              _context5.next = 56;
+            case 55:
+              _context5.next = 57;
               return this.runPull();
 
-            case 56:
+            case 57:
               return _context5.abrupt("return", true);
 
-            case 57:
+            case 58:
             case "end":
               return _context5.stop();
           }
         }
-      }, _callee5, this, [[9, 23], [34, 38]]);
+      }, _callee5, this, [[9, 23], [35, 39]]);
     }));
 
     function runPull() {

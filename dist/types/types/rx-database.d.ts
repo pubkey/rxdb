@@ -59,7 +59,7 @@ export interface RxLocalDocumentMutation<StorageType> {
         RxLocalDocument<StorageType, LocalDocType>
     >;
     getLocal<LocalDocType = any>(id: string): Promise<
-        RxLocalDocument<StorageType, LocalDocType>
+        RxLocalDocument<StorageType, LocalDocType> | null
     >;
     getLocal$<LocalDocType = any>(id: string): Observable<
         RxLocalDocument<StorageType, LocalDocType> | null

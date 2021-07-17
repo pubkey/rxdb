@@ -14,7 +14,7 @@
   },
   "author": "pubkey",
   "dependencies": {
-    "apollo-server-express": "2.25.1",
+    "apollo-server-express": "2.25.2",
     "concurrently": "6.2.0",
     "cors": "2.8.5",
     "express-graphql": "0.12.0",
@@ -35,12 +35,12 @@
     "esm": "3.2.25",
     "file-loader": "6.2.0",
     "html-webpack-plugin": "4.5.2",
-    "mini-css-extract-plugin": "1.6.0",
+    "mini-css-extract-plugin": "1.6.2",
     "ncp": "2.0.0",
     "rimraf": "3.0.2",
     "style-loader": "2.0.0",
     "testcafe": "1.14.2",
-    "testcafe-hammerhead": "24.2.2",
+    "testcafe-hammerhead": "24.3.1",
     "webpack": "4.46.0",
     "webpack-cli": "4.7.2",
     "webpack-dev-server": "3.11.2"

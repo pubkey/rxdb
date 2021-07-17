@@ -735,7 +735,65 @@ describe('replication-graphql.test.js', () => {
                 server.close();
                 c.database.destroy();
             });
-            it('pulled docs should be marked with a special revision', async () => {
+
+            it('should pull documents from a custom dataPath if one is specified', async () => {
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(0),
+                    SpawnServer.spawn(getTestData(batchSize))
+                ]);
+
+                const collectionQueryBuilder = (doc: any) => {
+                    if (!doc) {
+                        doc = {
+                            id: '',
+                            updatedAt: 0
+                        };
+                    }
+
+                    const query = `query($lastId: String!, $updatedAt: Int!, $batchSize: Int!)
+                    {
+                        collectionFeedForRxDBReplication(lastId: $lastId, minUpdatedAt: $updatedAt, limit: $batchSize) {
+                            collection {
+                                id
+                                name
+                                age
+                                updatedAt
+                                deleted
+                            }
+                        }
+                    }`;
+
+                    const variables = {
+                        lastId: doc.id,
+                        updatedAt: doc.updatedAt,
+                        batchSize
+                    };
+
+                    return {
+                        query,
+                        variables
+                    };
+                };
+
+                const replicationState = c.syncGraphQL({
+                    url: server.url,
+                    pull: {
+                        queryBuilder: collectionQueryBuilder,
+                        dataPath: 'data.collectionFeedForRxDBReplication.collection'
+                    },
+                    deletedFlag: 'deleted'
+                });
+                assert.strictEqual(replicationState.isStopped(), false);
+
+                await AsyncTestUtil.waitUntil(async () => {
+                    const docs = await c.find().exec();
+                    return docs.length === batchSize;
+                });
+
+                server.close();
+                c.database.destroy();
+            });
+            it('pulled docs should be marked with a special revision if syncRevisions is false', async () => {
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(0),
                     SpawnServer.spawn(getTestData(batchSize))

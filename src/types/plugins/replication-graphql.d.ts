@@ -15,6 +15,7 @@ export type RxGraphQLReplicationQueryBuilder = (doc: any) =>
 export interface GraphQLSyncPullOptions<RxDocType> {
     queryBuilder: RxGraphQLReplicationQueryBuilder;
     modifier?: (doc: any) => Promise<any> | any;
+    dataPath?: string;
 }
 export interface GraphQLSyncPushOptions<RxDocType> {
     queryBuilder: RxGraphQLReplicationQueryBuilder;

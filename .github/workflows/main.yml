@@ -27,7 +27,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v2.1.5
         with:
-          node-version: 14.17.0
+          node-version: 16.5.0
 
       - name: install npm dependencies
         run: npm install
@@ -60,7 +60,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v2.1.5
         with:
-          node-version: 14.17.0
+          node-version: 16.5.0
 
       - name: Reuse npm cache folder
         uses: actions/cache@v2
@@ -106,7 +106,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v2.1.5
         with:
-          node-version: 14.17.0
+          node-version: 16.5.0
       - name: prepare core
         run: |
           npm install
@@ -126,7 +126,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v2.1.5
         with:
-          node-version: 14.17.0
+          node-version: 16.5.0
       - name: prepare core
         run: |
           npm install
@@ -147,12 +147,13 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
-      - name: install dependencies
-        run: sudo apt-get update && sudo apt-get install -y chromium-browser
       - name: Setup Node.js environment
         uses: actions/setup-node@v2.1.5
         with:
-          node-version: 14.17.0
+          node-version: 16.5.0
+
+      - name: install dependencies
+        run: sudo apt-get update && sudo apt-get install -y chromium-browser
       - name: prepare core
         run: |
           npm install
@@ -182,12 +183,12 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
-      - name: install dependencies
-        run: sudo apt-get update && sudo apt-get install -y chromium-browser
       - name: Setup Node.js environment
         uses: actions/setup-node@v2.1.5
         with:
-          node-version: 14.17.0
+          node-version: 16.5.0
+      - name: install dependencies
+        run: sudo apt-get update && sudo apt-get install -y chromium-browser
       - name: prepare core
         run: |
           npm install
@@ -212,7 +213,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v2.1.5
         with:
-          node-version: 14.17.0
+          node-version: 16.5.0
 
       - name: Reuse npm cache folder
         uses: actions/cache@v2
@@ -251,7 +252,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v2.1.5
         with:
-          node-version: 14.17.0
+          node-version: 16.5.0
       - name: prepare core
         run: |
           npm install
@@ -277,7 +278,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v2.1.5
         with:
-          node-version: 14.17.0
+          node-version: 16.5.0
       - name: prepare core
         run: |
           npm install
@@ -323,7 +324,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v2.1.5
         with:
-          node-version: 14.17.0
+          node-version: 16.5.0
 
       - name: prepare core
         run: |
@@ -346,7 +347,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v2.1.5
         with:
-          node-version: 14.17.0
+          node-version: 16.5.0
       - name: prepare core
         run: |
           npm install
@@ -364,7 +365,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v2.1.5
         with:
-          node-version: 14.17.0
+          node-version: 16.5.0
       - name: prepare core
         run: |
           npm install
