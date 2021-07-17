@@ -14,8 +14,16 @@ import {
     promiseWait,
     getDocumentOrmPrototype,
     getDocumentPrototype,
-    addRxPlugin
+    addRxPlugin,
+    blobBufferUtil,
+    RxJsonSchema,
 } from '../../plugins/core';
+
+import {
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
+
+
 import { RxDBAttachmentsPlugin } from '../../plugins/attachments';
 addRxPlugin(RxDBAttachmentsPlugin);
 import { RxDBJsonDumpPlugin } from '../../plugins/json-dump';
@@ -65,19 +73,20 @@ config.parallel('rx-document.test.js', () => {
             it('should get a prototype with all orm-methods', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
-                const col = await db.collection({
-                    name: 'humans',
-                    schema: schemas.humanFinal,
-                    methods: {
-                        foo() {
-                            return 'bar';
+                const cols = await db.addCollections({
+                    humans: {
+                        schema: schemas.humanFinal,
+                        methods: {
+                            foo() {
+                                return 'bar';
+                            }
                         }
                     }
                 });
 
-                const proto = getDocumentOrmPrototype(col);
+                const proto = getDocumentOrmPrototype(cols.humans);
                 const testObj: any = {};
                 Object.setPrototypeOf(
                     testObj,
@@ -92,18 +101,19 @@ config.parallel('rx-document.test.js', () => {
             it('should get a valid prototype', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
-                const col = await db.collection({
-                    name: 'humans',
-                    schema: schemas.human,
-                    methods: {
-                        foo() {
-                            return 'bar';
+                const cols = await db.addCollections({
+                    humans: {
+                        schema: schemas.human,
+                        methods: {
+                            foo() {
+                                return 'bar';
+                            }
                         }
                     }
                 });
-                const proto = getDocumentPrototype(col);
+                const proto = getDocumentPrototype(cols.humans);
 
                 assert.strictEqual(typeof proto.remove, 'function'); // from baseProto
                 assert.strictEqual(proto.foo(), 'bar'); // from orm-proto
@@ -216,7 +226,7 @@ config.parallel('rx-document.test.js', () => {
                 assert.ok(docs.length > 1);
                 const first = docs[0];
 
-                await first.atomicSet('firstName', 'foobar');
+                await first.atomicPatch({ firstName: 'foobar' });
 
                 await first.remove();
                 const docsAfter = await c.find().exec();
@@ -289,11 +299,15 @@ config.parallel('rx-document.test.js', () => {
         });
         describe('negative', () => {
             it('should throw if schema does not match', async () => {
-                const schema = {
-                    $id: '#child-def',
+                const schema: RxJsonSchema<{ id: string; childProperty: 'A' | 'B' | 'C' }> = {
                     version: 0,
                     type: 'object',
+                    primaryKey: 'id',
+                    required: ['id'],
                     properties: {
+                        id: {
+                            type: 'string'
+                        },
                         childProperty: {
                             type: 'string',
                             enum: ['A', 'B', 'C']
@@ -302,15 +316,17 @@ config.parallel('rx-document.test.js', () => {
                 };
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
-                const col = await db.collection({
-                    name: 'humans',
-                    schema
+                const cols = await db.addCollections({
+                    humans: {
+                        schema
+                    }
                 });
 
                 // on doc
-                const doc = await col.insert({
+                const doc = await cols.humans.insert({
+                    id: randomCouchString(12),
                     childProperty: 'A'
                 });
                 await AsyncTestUtil.assertThrows(
@@ -327,20 +343,21 @@ config.parallel('rx-document.test.js', () => {
             it('should throw when final field is modified', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
-                const col = await db.collection({
-                    name: 'humans',
-                    schema: schemas.humanFinal,
-                    methods: {
-                        foo() {
-                            return 'bar';
+                const cols = await db.addCollections({
+                    humans: {
+                        schema: schemas.humanFinal,
+                        methods: {
+                            foo() {
+                                return 'bar';
+                            }
                         }
                     }
                 });
                 const docData = schemaObjects.human();
                 docData.age = 1;
-                const doc = await col.insert(docData);
+                const doc = await cols.humans.insert(docData);
                 await AsyncTestUtil.assertThrows(
                     () => doc.update({
                         $inc: {
@@ -426,12 +443,14 @@ config.parallel('rx-document.test.js', () => {
                 const leveldown = require('leveldown');
                 const db = await createRxDatabase({
                     name: config.rootPath + 'test_tmp/' + randomCouchString(10),
-                    adapter: leveldown
+                    storage: getRxStoragePouch(leveldown),
                 });
-                const c = await db.collection({
-                    name: 'humans',
-                    schema: schemas.primaryHuman
+                const cols = await db.addCollections({
+                    humans: {
+                        schema: schemas.primaryHuman
+                    }
                 });
+                const c = cols.humans;
                 await c.insert(schemaObjects.simpleHuman());
                 const doc = await c.findOne().exec();
                 doc.atomicUpdate((innerDoc: any) => {
@@ -459,12 +478,14 @@ config.parallel('rx-document.test.js', () => {
                 const dbName = config.rootPath + 'test_tmp/' + randomCouchString(10);
                 const db = await createRxDatabase({
                     name: dbName,
-                    adapter: leveldown
+                    storage: getRxStoragePouch(leveldown),
                 });
-                const c = await db.collection({
-                    name: 'humans',
-                    schema: schemas.primaryHuman
+                const cols = await db.addCollections({
+                    humans: {
+                        schema: schemas.primaryHuman
+                    }
                 });
+                const c = cols.humans;
                 await c.insert(schemaObjects.simpleHuman());
                 const doc = await c.findOne().exec();
                 const docData = doc.toJSON();
@@ -479,12 +500,14 @@ config.parallel('rx-document.test.js', () => {
                 // same again
                 const db2 = await createRxDatabase({
                     name: dbName,
-                    adapter: leveldown
+                    storage: getRxStoragePouch(leveldown),
                 });
-                const c2 = await db2.collection({
-                    name: 'humans',
-                    schema: schemas.primaryHuman
+                const cols2 = await db2.addCollections({
+                    humans: {
+                        schema: schemas.primaryHuman
+                    }
                 });
+                const c2 = cols2.humans;
                 const doc2 = await c2.findOne().exec();
                 assert.strictEqual(doc.passportId, doc2.passportId);
                 const docData2 = doc2.toJSON();
@@ -496,22 +519,27 @@ config.parallel('rx-document.test.js', () => {
                 const dbName = randomCouchString(10);
                 const db = await createRxDatabase({
                     name: dbName,
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
-                const c = await db.collection({
-                    name: 'humans',
-                    schema: schemas.primaryHuman
+
+                const cols = await db.addCollections({
+                    humans: {
+                        schema: schemas.primaryHuman
+                    }
                 });
+                const c = cols.humans;
                 const doc = await c.insert(schemaObjects.simpleHuman());
                 const db2 = await createRxDatabase({
                     name: dbName,
-                    adapter: 'memory',
+                    storage: getRxStoragePouch('memory'),
                     ignoreDuplicate: true
                 });
-                const c2 = await db2.collection({
-                    name: 'humans',
-                    schema: schemas.primaryHuman
+                const cols2 = await db2.addCollections({
+                    humans: {
+                        schema: schemas.primaryHuman
+                    }
                 });
+                const c2 = cols2.humans;
                 const doc2 = await c2.findOne().exec(true);
 
                 await Promise.all([
@@ -524,6 +552,7 @@ config.parallel('rx-document.test.js', () => {
                         return d;
                     })
                 ]);
+
                 db.destroy();
                 db2.destroy();
             });
@@ -550,17 +579,19 @@ config.parallel('rx-document.test.js', () => {
             it('should throw when final field is modified', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
-                const col = await db.collection({
-                    name: 'humans',
-                    schema: schemas.humanFinal,
-                    methods: {
-                        foo() {
-                            return 'bar';
+                const cols = await db.addCollections({
+                    humans: {
+                        schema: schemas.humanFinal,
+                        methods: {
+                            foo() {
+                                return 'bar';
+                            }
                         }
                     }
                 });
+                const col = cols.humans;
                 const docData = schemaObjects.human();
                 docData.age = 1;
                 const doc = await col.insert(docData);
@@ -651,8 +682,7 @@ config.parallel('rx-document.test.js', () => {
 
             assert.ok(json.passportId);
             assert.ok(json.firstName);
-            assert.ok(json._id);
-            assert.ok(json._rev); // per default ._rev is also returned
+            assert.ok(json._rev); // when toJSON(true), the _rev field is also returned
             c.database.destroy();
         });
         it('should get a fresh object each time', async () => {
@@ -671,27 +701,29 @@ config.parallel('rx-document.test.js', () => {
             );
             assert.ok(json.passportId);
             assert.ok(json.firstName);
-            assert.ok(json._id);
             assert.strictEqual(typeof json._rev, 'undefined');
             c.database.destroy();
         });
         it('should not return _attachments if not wanted', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 multiInstance: false,
                 ignoreDuplicate: true
             });
             const schemaJson = AsyncTestUtil.clone(schemas.human);
             schemaJson.attachments = {};
-            const c = await db.collection({
-                name: 'humans',
-                schema: schemaJson
+            const cols = await db.addCollections({
+                humans: {
+                    schema: schemaJson
+                }
             });
+            const c = cols.humans;
+
             const doc = await c.insert(schemaObjects.human());
             await doc.putAttachment({
                 id: 'sampledata',
-                data: 'foo bar',
+                data: blobBufferUtil.createBlobBuffer('foo bar', 'application/octet-stream'),
                 type: 'application/octet-stream'
             });
 
@@ -749,7 +781,7 @@ config.parallel('rx-document.test.js', () => {
                     value = newVal;
                 });
 
-                await doc.atomicSet('firstName', 'foobar');
+                await doc.atomicPatch({ firstName: 'foobar' });
 
                 await promiseWait(5);
                 assert.strictEqual(value, 'foobar');
@@ -774,22 +806,36 @@ config.parallel('rx-document.test.js', () => {
                     value = newVal;
                 });
 
-                await doc.atomicSet('mainSkill.level', 10);
+                await doc.atomicPatch({
+                    mainSkill: {
+                        name: randomCouchString(5),
+                        level: 10
+                    }
+                });
                 await promiseWait(5);
                 assert.strictEqual(value, 10);
                 c.database.destroy();
             });
             it('deep-nested-value-observable', async () => {
                 const c = await humansCollection.createDeepNested(1);
-                const doc: any = await c.findOne().exec();
-                const obs = doc.mainSkill.attack.good$;
+                const doc = await c.findOne().exec(true);
+                const obs = (doc.mainSkill.attack as any).good$;
                 assert.ok(obs.subscribe);
 
                 let value = null;
-                doc.mainSkill.attack.good$.subscribe((newVal: any) => {
+                (doc.mainSkill.attack as any).good$.subscribe((newVal: any) => {
                     value = newVal;
                 });
-                await doc.atomicSet('mainSkill.attack.good', true);
+                await doc.atomicPatch({
+                    mainSkill: {
+                        name: 'foobar',
+                        attack: {
+                            good: true,
+                            count: 100
+                        }
+
+                    }
+                });
                 await promiseWait(5);
                 assert.strictEqual(value, true);
                 c.database.destroy();
@@ -853,12 +899,14 @@ config.parallel('rx-document.test.js', () => {
         it('#76 - deepEqual does not work correctly for Arrays', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
-            const col = await await db.collection({
-                name: 'heroes',
-                schema: schemas.simpleArrayHero
+            const cols = await await db.addCollections({
+                heroes: {
+                    schema: schemas.simpleArrayHero
+                }
             });
+            const col = cols.heroes;
             const docData = {
                 name: 'foobar',
                 skills: [
@@ -872,9 +920,9 @@ config.parallel('rx-document.test.js', () => {
             assert.strictEqual(doc.skills.length, 3);
 
             const newSkill = 'newSikSkill';
-            await doc.atomicSet('skills', doc.skills.concat(newSkill));
+            await doc.atomicPatch({ skills: doc.skills.concat(newSkill) });
 
-            const colDump = await col.dump(true);
+            const colDump = await col.exportJSON(true);
             const afterSkills = colDump.docs[0].skills;
             assert.strictEqual(afterSkills.length, 4);
             assert.ok(afterSkills.includes(newSkill));
@@ -883,25 +931,28 @@ config.parallel('rx-document.test.js', () => {
         it('#646 Skip defining getter and setter when property not defined in schema', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
             const schema = {
                 version: 0,
+                primaryKey: 'key',
                 type: 'object',
                 properties: {
                     key: {
-                        type: 'string',
-                        primary: true
+                        type: 'string'
                     },
                     value: {
                         type: 'object'
                     }
-                }
+                },
+                required: ['key']
             };
-            const col = await await db.collection({
-                name: 'heroes',
-                schema
+            const cols = await await db.addCollections({
+                heroes: {
+                    schema
+                }
             });
+            const col = cols.heroes;
 
             const doc = await col.insert({
                 key: 'foobar',
@@ -920,10 +971,15 @@ config.parallel('rx-document.test.js', () => {
         it('#734 Invalid value persists in document after failed update', async () => {
             // create a schema
             const schemaEnum = ['A', 'B'];
-            const mySchema = {
+            const mySchema: RxJsonSchema<{ id: string, children: any[] }> = {
                 version: 0,
+                primaryKey: 'id',
+                required: ['id'],
                 type: 'object',
                 properties: {
+                    id: {
+                        type: 'string'
+                    },
                     children: {
                         type: 'array',
                         items: {
@@ -948,14 +1004,17 @@ config.parallel('rx-document.test.js', () => {
             // create a database
             const db = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 ignoreDuplicate: true
             });
             // create a collection
-            const collection = await db.collection({
-                name: randomCouchString(10),
-                schema: mySchema
+            const colName = randomCouchString(10);
+            const collections = await db.addCollections({
+                [colName]: {
+                    schema: mySchema
+                }
             });
+            const collection = collections[colName];
 
             // insert a document
             const child1 = {
@@ -967,6 +1026,7 @@ config.parallel('rx-document.test.js', () => {
                 abLetter: 'B'
             };
             const doc = await collection.insert({
+                id: randomCouchString(12),
                 children: [
                     child1,
                     child2
@@ -975,7 +1035,7 @@ config.parallel('rx-document.test.js', () => {
 
             const colDoc = await collection.findOne({
                 selector: {
-                    _id: doc._id
+                    id: doc.id
                 }
             }).exec();
 

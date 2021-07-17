@@ -1,9 +1,4 @@
-/**
- * this contains a mapping to basic dependencies
- * which should be easy to change
- */
-import randomToken from 'random-token';
-import type { BlobBuffer } from './types';
+import type { BlobBuffer, DeepReadonlyObject } from './types';
 import {
     default as deepClone
 } from 'clone';
@@ -69,14 +64,6 @@ export function hash(msg: string | any): string {
     }
     return Md5.hash(RXDB_HASH_SALT + msg);
 }
-
-/**
- * generate a new _id as db-primary-key
- */
-export function generateId(): string {
-    return randomToken(10) + ':' + now();
-}
-
 
 /**
  * Returns the current unix time in milliseconds
@@ -239,8 +226,9 @@ export function sortObject(obj: any, noArraySort = false): any {
  * @link https://stackoverflow.com/a/33416684 thank you Fabian Jakobs!
  */
 export function stringifyFilter(key: string, value: any) {
-    if (value instanceof RegExp)
+    if (value instanceof RegExp) {
         return value.toString();
+    }
     return value;
 }
 
@@ -256,6 +244,16 @@ export function randomCouchString(length: number = 10): string {
         text += possible.charAt(Math.floor(Math.random() * possible.length));
 
     return text;
+}
+
+/**
+ * A random string that is never inside of any storage
+ */
+export const RANDOM_STRING = 'Fz7SZXPmYJujkzjY1rpXWvlWBqoGAfAX';
+
+
+export function lastOfArray<T>(ar: T[]): T {
+    return ar[ar.length - 1];
 }
 
 /**
@@ -298,9 +296,9 @@ export function adapterObject(adapter: any): any {
 }
 
 
-function recursiveDeepCopy<T>(o: T): T {
+function recursiveDeepCopy<T>(o: T | DeepReadonlyObject<T>): T {
     if (!o) return o;
-    return deepClone(o, false);
+    return deepClone(o, false) as any;
 }
 export const clone = recursiveDeepCopy;
 
@@ -309,8 +307,8 @@ export const clone = recursiveDeepCopy;
  * is about 3 times faster then using deepClone
  * @link https://jsperf.com/object-rest-spread-vs-clone/2
  */
-export function flatClone<T>(obj: T): T {
-    return Object.assign({}, obj);
+export function flatClone<T>(obj: T | DeepReadonlyObject<T>): T {
+    return Object.assign({}, obj) as any;
 }
 
 
@@ -368,11 +366,6 @@ export function createRevision(docData: any, deterministic_revs: boolean): strin
 }
 
 /**
- * prefix of local pouchdb documents
- */
-export const LOCAL_PREFIX: string = '_local/';
-
-/**
  * overwrites the getter with the actual value
  * Mostly used for caching stuff on the first run
  */
@@ -402,8 +395,13 @@ export function isFolderPath(name: string) {
     }
 }
 
-
-
+export function getFromMapOrThrow<K, V>(map: Map<K, V> | WeakMap<any, V>, key: K): V {
+    const val = map.get(key);
+    if (!val) {
+        throw new Error('missing value from map ' + key);
+    }
+    return val;
+}
 
 export const blobBufferUtil = {
     /**
@@ -415,7 +413,6 @@ export const blobBufferUtil = {
         type: string
     ): BlobBuffer {
         let blobBuffer: any;
-
         if (isElectronRenderer) {
             // if we are inside of electron-renderer, always use the node-buffer
             return Buffer.from(data, {
@@ -434,7 +431,15 @@ export const blobBufferUtil = {
                 type
             } as any);
         }
+
         return blobBuffer;
+    },
+    isBlobBuffer(data: any): boolean {
+        if (Buffer.isBuffer(data) || data instanceof Blob) {
+            return true;
+        } else {
+            return false;
+        }
     },
     toString(blobBuffer: BlobBuffer): Promise<string> {
         if (blobBuffer instanceof Buffer) {

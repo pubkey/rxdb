@@ -2,7 +2,8 @@ import type {
     RxPlugin,
     RxCollectionCreator,
     RxDatabaseCreator,
-    RxPluginPreAddRxPluginArgs
+    RxPluginPreAddRxPluginArgs,
+    RxErrorKey
 } from '../../types';
 
 import {
@@ -19,8 +20,29 @@ import {
 } from './unallowed-properties';
 import { checkQuery } from './check-query';
 import { newRxError } from '../../rx-error';
+import { DeepReadonly } from '../../types/util';
 
 export * from './check-schema';
+export * from './check-names';
+
+import deepFreeze from 'deep-freeze';
+
+/**
+ * Deep freezes and object when in dev-mode.
+ * Deep-Freezing has the same performaance as deep-cloning, so we only do that in dev-mode.
+ * Also we can ensure the readonly state via typescript
+ * @link https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
+ */
+export function deepFreezeWhenDevMode<T>(obj: T): DeepReadonly<T> {
+    // direct return if falsy
+    if (!obj) {
+        return obj as any;
+    }
+
+    return deepFreeze(obj);
+}
+
+
 const DEV_MODE_PLUGIN_NAME = 'dev-mode';
 export const RxDBDevModePlugin: RxPlugin = {
     name: DEV_MODE_PLUGIN_NAME,
@@ -29,7 +51,8 @@ export const RxDBDevModePlugin: RxPlugin = {
         isDevMode() {
             return true;
         },
-        tunnelErrorMessage(code: string) {
+        deepFreezeWhenDevMode,
+        tunnelErrorMessage(code: RxErrorKey) {
             if (!ERROR_MESSAGES[code]) {
                 console.error('RxDB: Error-Code not known: ' + code);
                 throw new Error('Error-Code ' + code + ' not known, contact the maintainer');
@@ -51,10 +74,10 @@ export const RxDBDevModePlugin: RxPlugin = {
             }
         },
         preCreateRxSchema: checkSchema,
-        preCreateRxDatabase: (args: RxDatabaseCreator) => {
+        preCreateRxDatabase: (args: RxDatabaseCreator<any, any>) => {
             ensureDatabaseNameIsValid(args);
         },
-        preCreateRxCollection: (args: RxCollectionCreator) => {
+        preCreateRxCollection: (args: RxCollectionCreator & { name: string; }) => {
             ensureCollectionNameValid(args);
             if (args.name.charAt(0) === '_') {
                 throw newRxError('DB2', {

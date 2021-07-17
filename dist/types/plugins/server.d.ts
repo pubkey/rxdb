@@ -5,7 +5,7 @@ export declare function spawnServer(this: RxDatabase, { path, port, cors, startS
     cors?: boolean | undefined;
     startServer?: boolean | undefined;
     pouchdbExpressOptions?: {} | undefined;
-}): ServerResponse;
+}): Promise<ServerResponse>;
 /**
  * runs when the database gets destroyed
  */

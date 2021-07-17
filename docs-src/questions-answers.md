@@ -3,7 +3,7 @@
 ## Can't change the schema
 
 When you make changes to the schema of a collection, you sometimes can get an error like
-`Error: collection(): another instance created this collection with a different schema`.
+`Error: addCollections(): another instance created this collection with a different schema`.
 
 This means you have created a collection before and added document-data to it.
 When you now just change the schema, it is likely that the new schema does not match the saved documents inside of the collection.

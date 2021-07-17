@@ -1,5 +1,8 @@
 /**
  * handle the en/decryption of documents-data
+ * TODO atm we have the crypter inside of rxdb core.
+ * Instead all should be moved to the encryption plugin
+ * and work via plugin hooks.
  */
 import { RxSchema } from './rx-schema';
 export declare class Crypter {
@@ -7,15 +10,15 @@ export declare class Crypter {
     schema: RxSchema;
     constructor(password: any, schema: RxSchema);
     /**
-     * encrypt and stringify data
+     * encrypt a given string.
      * @overwritten by plugin (optional)
      */
-    _encryptValue(_value: any): string;
+    _encryptString(_value: string): string;
     /**
-     * decrypt and json-parse an encrypted value
+     * decrypt a given string.
      * @overwritten by plugin (optional)
      */
-    _decryptValue(_value: any): string;
+    _decryptString(_value: string): string;
     encrypt(obj: any): any;
     decrypt(obj: any): any;
 }

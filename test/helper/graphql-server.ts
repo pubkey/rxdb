@@ -93,22 +93,12 @@ export async function spawn(
             setHuman(human: HumanInput): Human
             setHumanFail(human: HumanInput): Human
         }
-        input RevisionInput {
-          start: Int!,
-          ids: [String!]!
-        }
         input HumanInput {
             id: ID!,
             name: String!,
             age: Int!,
             updatedAt: Int!,
-            deleted: Boolean!,
-            _rev: String,
-            _revisions: RevisionInput,
-        }
-        type Revision {
-          start: Int!,
-          ids: [String!]!
+            deleted: Boolean!
         }
         type Human {
             id: ID!,
@@ -116,8 +106,6 @@ export async function spawn(
             age: Int!,
             updatedAt: Int!,
             deleted: Boolean!
-            _rev: String,
-            _revisions: Revision,
         }
         type HumanCollection {
             collection: [Human!]

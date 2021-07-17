@@ -5,7 +5,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RxDBLocalDocumentsPlugin = exports.overwritable = exports.prototypes = exports.rxdb = exports.RxLocalDocument = void 0;
+exports.RxDBLocalDocumentsPlugin = exports.RxLocalDocument = void 0;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
@@ -16,8 +16,6 @@ var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/inh
 var _objectPath = _interopRequireDefault(require("object-path"));
 
 var _rxDocument = require("../rx-document");
-
-var _rxChangeEvent = require("../rx-change-event");
 
 var _docCache = require("../doc-cache");
 
@@ -31,11 +29,10 @@ var _rxCollection = require("../rx-collection");
 
 var _operators = require("rxjs/operators");
 
-/**
- * This plugin adds the local-documents-support
- * Local documents behave equal then with pouchdb
- * @link https://pouchdb.com/guides/local-documents.html
- */
+var _rxStorageHelper = require("../rx-storage-helper");
+
+var _overwritable = require("../overwritable");
+
 var DOC_CACHE_BY_PARENT = new WeakMap();
 
 var _getDocCache = function _getDocCache(parent) {
@@ -56,7 +53,10 @@ var _getChangeSub = function _getChangeSub(parent) {
       var docCache = _getDocCache(parent);
 
       var doc = docCache.get(cE.documentId);
-      if (doc) doc._handleChangeEvent(cE);
+
+      if (doc) {
+        doc._handleChangeEvent(cE);
+      }
     });
 
     parent._subs.push(sub);
@@ -86,23 +86,17 @@ var RxLocalDocument = /*#__PURE__*/function (_RxDocumentParent) {
 
 exports.RxLocalDocument = RxLocalDocument;
 
-var _getPouchByParent = function _getPouchByParent(parent) {
-  if ((0, _rxDatabase.isInstanceOf)(parent)) return parent.internalStore; // database
-  else return parent.pouch; // collection
-};
+function _getKeyObjectStorageInstanceByParent(parent) {
+  if ((0, _rxDatabase.isRxDatabase)(parent)) {
+    return parent.localDocumentsStore; // database
+  } else {
+    return parent.localDocumentsStore; // collection
+  }
+}
 
 var RxLocalDocumentPrototype = {
-  toPouchJson: function toPouchJson() {
-    var data = (0, _util.clone)(this._data);
-    data._id = _util.LOCAL_PREFIX + this.id;
-  },
-
   get isLocal() {
     return true;
-  },
-
-  get parentPouch() {
-    return _getPouchByParent(this.parent);
   },
 
   //
@@ -115,9 +109,9 @@ var RxLocalDocumentPrototype = {
 
     switch (changeEvent.operation) {
       case 'UPDATE':
-        var newData = (0, _util.clone)(changeEvent.documentData);
+        var newData = changeEvent.documentData;
 
-        this._dataSync$.next((0, _util.clone)(newData));
+        this._dataSync$.next(newData);
 
         break;
 
@@ -127,7 +121,7 @@ var RxLocalDocumentPrototype = {
 
         docCache["delete"](this.primary);
 
-        this._deleted$.next(true);
+        this._isDeleted$.next(true);
 
         break;
     }
@@ -156,7 +150,9 @@ var RxLocalDocumentPrototype = {
     return this.parent.$emit(changeEvent);
   },
   get: function get(objPath) {
-    if (!this._data) return undefined;
+    if (!this._data) {
+      return undefined;
+    }
 
     if (typeof objPath !== 'string') {
       throw (0, _rxError.newRxTypeError)('LD2', {
@@ -166,7 +162,7 @@ var RxLocalDocumentPrototype = {
 
     var valueObj = _objectPath["default"].get(this._data, objPath);
 
-    valueObj = (0, _util.clone)(valueObj);
+    valueObj = _overwritable.overwritable.deepFreezeWhenDevMode(valueObj);
     return valueObj;
   },
   get$: function get$(path) {
@@ -184,7 +180,7 @@ var RxLocalDocumentPrototype = {
   set: function set(objPath, value) {
     if (!value) {
       // object path not set, overwrite whole data
-      var data = (0, _util.clone)(objPath);
+      var data = (0, _util.flatClone)(objPath);
       data._rev = this._data._rev;
       this._data = data;
       return this;
@@ -197,40 +193,48 @@ var RxLocalDocumentPrototype = {
       });
     }
 
-    if (Object.is(this.get(objPath), value)) return;
+    if (Object.is(this.get(objPath), value)) {
+      return;
+    }
 
     _objectPath["default"].set(this._data, objPath, value);
 
     return this;
   },
   _saveData: function _saveData(newData) {
-    var _this2 = this;
-
     var oldData = this._dataSync$.getValue();
 
-    newData = (0, _util.clone)(newData);
-    newData._id = _util.LOCAL_PREFIX + this.id;
-    var startTime = (0, _util.now)();
-    return this.parentPouch.put(newData).then(function (res) {
-      var endTime = (0, _util.now)();
-      newData._rev = res.rev;
-      var changeEvent = new _rxChangeEvent.RxChangeEvent('UPDATE', _this2.id, (0, _util.clone)(newData), (0, _rxDatabase.isInstanceOf)(_this2.parent) ? _this2.parent.token : _this2.parent.database.token, (0, _rxCollection.isInstanceOf)(_this2.parent) ? _this2.parent.name : null, true, startTime, endTime, oldData, _this2);
+    var storageInstance = _getKeyObjectStorageInstanceByParent(this.parent);
 
-      _this2.$emit(changeEvent);
+    newData._id = this.id;
+    return storageInstance.bulkWrite([{
+      previous: oldData,
+      document: newData
+    }]).then(function (res) {
+      var docResult = res.success.get(newData._id);
+
+      if (!docResult) {
+        throw (0, _util.getFromMapOrThrow)(res.error, newData._id);
+      }
+
+      newData._rev = docResult._rev;
     });
   },
   remove: function remove() {
-    var _this3 = this;
+    var _this2 = this;
 
-    var removeId = _util.LOCAL_PREFIX + this.id;
-    var startTime = (0, _util.now)();
-    return this.parentPouch.remove(removeId, this._data._rev).then(function () {
-      _getDocCache(_this3.parent)["delete"](_this3.id);
+    var storageInstance = _getKeyObjectStorageInstanceByParent(this.parent);
 
-      var endTime = (0, _util.now)();
-      var changeEvent = new _rxChangeEvent.RxChangeEvent('DELETE', _this3.id, (0, _util.clone)(_this3._data), (0, _rxDatabase.isInstanceOf)(_this3.parent) ? _this3.parent.token : _this3.parent.database.token, (0, _rxCollection.isInstanceOf)(_this3.parent) ? _this3.parent.name : null, true, startTime, endTime, null, _this3);
-
-      _this3.$emit(changeEvent);
+    var writeData = {
+      _id: this.id,
+      _deleted: true,
+      _attachments: {}
+    };
+    return (0, _rxStorageHelper.writeSingleLocal)(storageInstance, {
+      previous: this._data,
+      document: writeData
+    }).then(function () {
+      _getDocCache(_this2.parent)["delete"](_this2.id);
     });
   }
 };
@@ -283,36 +287,29 @@ RxLocalDocument.create = function (id, data, parent) {
  */
 
 
-function insertLocal(id, data) {
-  var _this4 = this;
+function insertLocal(id, docData) {
+  var _this3 = this;
 
-  if ((0, _rxCollection.isInstanceOf)(this) && this._isInMemory) {
-    return this._parentCollection.insertLocal(id, data);
+  if ((0, _rxCollection.isRxCollection)(this) && this._isInMemory) {
+    return this.parentCollection.insertLocal(id, docData);
   }
 
-  data = (0, _util.clone)(data);
   return this.getLocal(id).then(function (existing) {
     if (existing) {
       throw (0, _rxError.newRxError)('LD7', {
         id: id,
-        data: data
+        data: docData
       });
     } // create new one
 
 
-    var pouch = _getPouchByParent(_this4);
-
-    var saveData = (0, _util.clone)(data);
-    saveData._id = _util.LOCAL_PREFIX + id;
-    var startTime = (0, _util.now)();
-    return pouch.put(saveData).then(function (res) {
-      data._rev = res.rev;
-      var newDoc = RxLocalDocument.create(id, data, _this4);
-      var endTime = (0, _util.now)();
-      var changeEvent = new _rxChangeEvent.RxChangeEvent('INSERT', id, (0, _util.clone)(data), (0, _rxDatabase.isInstanceOf)(_this4) ? _this4.token : _this4.database.token, (0, _rxCollection.isInstanceOf)(_this4) ? _this4.name : '', true, startTime, endTime, undefined, newDoc);
-
-      _this4.$emit(changeEvent);
-
+    docData = (0, _util.flatClone)(docData);
+    docData._id = id;
+    return (0, _rxStorageHelper.writeSingleLocal)(_getKeyObjectStorageInstanceByParent(_this3), {
+      document: docData
+    }).then(function (res) {
+      docData._rev = res._rev;
+      var newDoc = RxLocalDocument.create(id, docData, _this3);
       return newDoc;
     });
   });
@@ -324,16 +321,16 @@ function insertLocal(id, data) {
 
 
 function upsertLocal(id, data) {
-  var _this5 = this;
+  var _this4 = this;
 
-  if ((0, _rxCollection.isInstanceOf)(this) && this._isInMemory) {
+  if ((0, _rxCollection.isRxCollection)(this) && this._isInMemory) {
     return this._parentCollection.upsertLocal(id, data);
   }
 
   return this.getLocal(id).then(function (existing) {
     if (!existing) {
       // create new one
-      var docPromise = _this5.insertLocal(id, data);
+      var docPromise = _this4.insertLocal(id, data);
 
       return docPromise;
     } else {
@@ -349,21 +346,30 @@ function upsertLocal(id, data) {
 }
 
 function getLocal(id) {
-  var _this6 = this;
+  var _this5 = this;
 
-  if ((0, _rxCollection.isInstanceOf)(this) && this._isInMemory) return this._parentCollection.getLocal(id);
+  if ((0, _rxCollection.isRxCollection)(this) && this._isInMemory) {
+    return this.parentCollection.getLocal(id);
+  }
 
-  var pouch = _getPouchByParent(this);
+  var storageInstance = _getKeyObjectStorageInstanceByParent(this);
 
   var docCache = _getDocCache(this); // check in doc-cache
 
 
   var found = docCache.get(id);
-  if (found) return Promise.resolve(found); // if not found, check in pouch
 
-  return pouch.get(_util.LOCAL_PREFIX + id).then(function (docData) {
-    if (!docData) return null;
-    var doc = RxLocalDocument.create(id, docData, _this6);
+  if (found) {
+    return Promise.resolve(found);
+  } // if not found, check in storage instance
+
+
+  return (0, _rxStorageHelper.findLocalDocument)(storageInstance, id).then(function (docData) {
+    if (!docData) {
+      return null;
+    }
+
+    var doc = RxLocalDocument.create(id, docData, _this5);
     return doc;
   })["catch"](function () {
     return null;
@@ -371,7 +377,7 @@ function getLocal(id) {
 }
 
 function getLocal$(id) {
-  var _this7 = this;
+  var _this6 = this;
 
   return this.$.pipe((0, _operators.startWith)(null), (0, _operators.mergeMap)( /*#__PURE__*/function () {
     var _ref = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(cE) {
@@ -391,7 +397,7 @@ function getLocal$(id) {
 
             case 4:
               _context.next = 6;
-              return _this7.getLocal(id);
+              return _this6.getLocal(id);
 
             case 6:
               doc = _context.sent;
@@ -418,7 +424,7 @@ function getLocal$(id) {
           switch (_context2.prev = _context2.next) {
             case 0:
               if (!changeEventOrDoc.changeEvent) {
-                _context2.next = 17;
+                _context2.next = 12;
                 break;
               }
 
@@ -434,40 +440,27 @@ function getLocal$(id) {
               });
 
             case 6:
-              if (!cE.rxDocument) {
-                _context2.next = 10;
-                break;
-              }
+              _context2.next = 8;
+              return _this6.getLocal(id);
 
-              _context2.t0 = cE.rxDocument;
-              _context2.next = 13;
-              break;
-
-            case 10:
-              _context2.next = 12;
-              return _this7.getLocal(id);
-
-            case 12:
-              _context2.t0 = _context2.sent;
-
-            case 13:
-              doc = _context2.t0;
+            case 8:
+              doc = _context2.sent;
               return _context2.abrupt("return", {
                 use: true,
                 doc: doc
               });
 
-            case 15:
-              _context2.next = 18;
+            case 10:
+              _context2.next = 13;
               break;
 
-            case 17:
+            case 12:
               return _context2.abrupt("return", {
                 use: true,
                 doc: changeEventOrDoc.doc
               });
 
-            case 18:
+            case 13:
             case "end":
               return _context2.stop();
           }
@@ -485,30 +478,24 @@ function getLocal$(id) {
   }));
 }
 
-var rxdb = true;
-exports.rxdb = rxdb;
-var prototypes = {
-  RxCollection: function RxCollection(proto) {
-    proto.insertLocal = insertLocal;
-    proto.upsertLocal = upsertLocal;
-    proto.getLocal = getLocal;
-    proto.getLocal$ = getLocal$;
-  },
-  RxDatabase: function RxDatabase(proto) {
-    proto.insertLocal = insertLocal;
-    proto.upsertLocal = upsertLocal;
-    proto.getLocal = getLocal;
-    proto.getLocal$ = getLocal$;
-  }
-};
-exports.prototypes = prototypes;
-var overwritable = {};
-exports.overwritable = overwritable;
 var RxDBLocalDocumentsPlugin = {
   name: 'local-documents',
-  rxdb: rxdb,
-  prototypes: prototypes,
-  overwritable: overwritable
+  rxdb: true,
+  prototypes: {
+    RxCollection: function RxCollection(proto) {
+      proto.insertLocal = insertLocal;
+      proto.upsertLocal = upsertLocal;
+      proto.getLocal = getLocal;
+      proto.getLocal$ = getLocal$;
+    },
+    RxDatabase: function RxDatabase(proto) {
+      proto.insertLocal = insertLocal;
+      proto.upsertLocal = upsertLocal;
+      proto.getLocal = getLocal;
+      proto.getLocal$ = getLocal$;
+    }
+  },
+  overwritable: {}
 };
 exports.RxDBLocalDocumentsPlugin = RxDBLocalDocumentsPlugin;
 

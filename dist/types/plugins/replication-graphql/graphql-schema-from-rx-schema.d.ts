@@ -11,7 +11,7 @@ export declare type Prefixes = {
  */
 export declare type GraphQLParamType = 'ID' | 'ID!' | 'String' | 'String!' | 'Int' | 'Int!' | string;
 export declare type GraphQLSchemaFromRxSchemaInputSingleCollection = {
-    schema: RxJsonSchema;
+    schema: RxJsonSchema<any>;
     deletedFlag: string;
     feedKeys: string[];
     ignoreInputKeys?: string[];

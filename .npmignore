@@ -13,7 +13,7 @@ babel.config.js
 .eslintignore
 .gitignore
 .transpile_state.json
-.travis.yml
+.github/
 renovate.json
 ISSUE_TEMPLATE.md
 PULL_REQUEST_TEMPLATE.md

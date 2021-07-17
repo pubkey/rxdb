@@ -4,7 +4,7 @@
 import { hash, now } from '../util';
 import { createRxQuery, _getDefaultQuery } from '../rx-query';
 import { newRxError } from '../rx-error';
-import { createInsertEvent } from '../rx-change-event';
+import { _handleToStorageInstance } from '../rx-collection-helper';
 
 function dumpRxDatabase() {
   var _this = this;
@@ -32,7 +32,7 @@ function dumpRxDatabase() {
     return _this.collections[colName];
   });
   return Promise.all(useCollections.map(function (col) {
-    return col.dump(decrypted);
+    return col.exportJSON(decrypted);
   })).then(function (cols) {
     json.collections = cols;
     return json;
@@ -59,7 +59,7 @@ var importDumpRxDatabase = function importDumpRxDatabase(dump) {
   }
 
   return Promise.all(dump.collections.map(function (colDump) {
-    return _this2.collections[colDump.name].importDump(colDump);
+    return _this2.collections[colDump.name].importJSON(colDump);
   }));
 };
 
@@ -80,7 +80,7 @@ var dumpRxCollection = function dumpRxCollection() {
   }
 
   var query = createRxQuery('find', _getDefaultQuery(this), this);
-  return this._pouchFind(query, undefined, encrypted).then(function (docs) {
+  return this._queryStorageInstance(query, undefined, encrypted).then(function (docs) {
     json.docs = docs.map(function (docData) {
       delete docData._rev;
       delete docData._attachments;
@@ -115,35 +115,29 @@ function importDumpRxCollection(exportedJSON) {
   }) // validate schema
   .map(function (doc) {
     return _this3.schema.validate(doc);
-  }) // transform
-  .map(function (doc) {
-    return _this3._handleToPouch(doc);
   });
   var startTime;
   return this.database.lockedRun( // write to disc
   function () {
     startTime = now();
-    return _this3.pouch.bulkDocs(docs);
-  }).then(function () {
-    var endTime = now();
-    docs.forEach(function (doc) {
-      // emit change events
-      var emitEvent = createInsertEvent(_this3, doc, startTime, endTime);
-
-      _this3.$emit(emitEvent);
+    var writeMe = docs.map(function (doc) {
+      return {
+        document: _handleToStorageInstance(_this3, doc)
+      };
     });
+    return _this3.storageInstance.bulkWrite(writeMe);
   });
 }
 
 export var rxdb = true;
 export var prototypes = {
   RxDatabase: function RxDatabase(proto) {
-    proto.dump = dumpRxDatabase;
-    proto.importDump = importDumpRxDatabase;
+    proto.exportJSON = dumpRxDatabase;
+    proto.importJSON = importDumpRxDatabase;
   },
   RxCollection: function RxCollection(proto) {
-    proto.dump = dumpRxCollection;
-    proto.importDump = importDumpRxCollection;
+    proto.exportJSON = dumpRxCollection;
+    proto.importJSON = importDumpRxCollection;
   }
 };
 export var overwritable = {};

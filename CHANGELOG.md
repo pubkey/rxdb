@@ -2,6 +2,49 @@
 
 ### X.X.X (coming soon)
 
+### 10.0.0 (coming soon) BREAKING [read the announcement](./orga/releases/10.0.0.md)
+
+Breaking:
+  - Setting a `primaryKey` for a schema is now required.
+  - When using the type `RxJsonSchema<DocType>` the `DocType` is now required.
+  - A JsonSchema must have the `required` array at the top level and it must contain the primary key.
+
+  - Outgoing data is now `Readonly` typed and [deep-frozen](https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze) in dev mode
+
+  - `RxDocument.putAttachment()` no longer supports string as data, only `Blob` or `Buffer`.
+  - Changed the default of `putAttachment` to `skipIfSame=true`.
+
+  - Removed the deprecated `atomicSet()`, use `atomicPatch()` instead.
+  - Removed the deprecated `RxDatabase.collection()` use `RxDatabase().addCollections()` instead.
+
+
+  - Moved everything pouchdb related to the `pouchdb` plugin.
+  - Pouchdb plugins are not longer added via `addRxPlugin()` but `addPouchPlugin()`. (RxDB plugins are still added via `addRxPlugin`).
+  - Removed plugin hook `preCreatePouchDb`.
+  - Removed the `watch-for-changes` plugin, this is now directly integrated into the pouchdb `RxStorage`.
+  - Removed the `adapter-check` plugin. (The function `adapterCheck` is move to the pouchdb plugin).
+
+
+  - Calling `RxDatabase.server()` now returns a promise that resolves when the server is started up.
+  - Changed the defaults of `PouchDBExpressServerOptions` from the `server()` method, by default we now store logs in the tmp folder and the config is in memory.
+  - Renamed `replication`-plugin to `replication-couchdb` to be more consistend in naming like with `replication-graphql`
+    - Renamed `RxCollection().sync()` to `RxCollection().syncCouchDB()`
+
+
+  - Renamed the functions of the json import/export plugin to be less confusing
+    - `dump()` is now `exportJSON()`
+    - `importDump()` is now `importJSON()`
+  - `RxCollection` uses a separate pouchdb instance for local documents, so that they can persist during migrations.
+
+Features:
+  - Added support for composite primary keys.
+
+Other:
+  - Moved all `should never happen` errors into own error code.
+
+Typings:
+  - Improved typings of error codes.
+
 ### 9.21.0 (30 June 2021)
 
 Features:

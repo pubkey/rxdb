@@ -1,8 +1,0 @@
-{
-  "name": "rxdb-plugin-watch-for-changes",
-  "main": "../../dist/lib/plugins/watch-for-changes.js",
-  "jsnext:main": "../../dist/es/plugins/watch-for-changes.js",
-  "module": "../../dist/es/plugins/watch-for-changes.js",
-  "types": "../../dist/types/plugins/watch-for-changes.d.ts",
-  "sideEffects": false
-}

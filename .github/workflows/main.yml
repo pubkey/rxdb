@@ -35,20 +35,20 @@ jobs:
       - name: build
         run: npm run build
       
-      - name: test:typings
-        run: npm run test:typings
-        
       - name: npm run test:node
         run: npm run test:node
   
       - name: npm run test:fast
         run: npm run test:fast
         
+      - name: test:typings
+        run: npm run test:typings
+
       - name: npm run test:performance
         run: npm run test:performance
 
       - name: node example
-        run: cd ./examples/node && npm install > "/dev/null" 2>&1 && npm run test
+        run: cd ./examples/node && npm install && npm run test
 
 
   angular:
@@ -72,9 +72,9 @@ jobs:
             ./node_modules
             ./examples/angular/node_modules
           # invalidate cache when any package-lock.json changes
-          key: ${{ runner.os }}-npm-angular-x1-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-angular-x2-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-angular-x1-
+            ${{ runner.os }}-npm-angular-x2-
 
       - name: prepare core
         run: |
@@ -107,7 +107,6 @@ jobs:
         uses: actions/setup-node@v2.1.5
         with:
           node-version: 16.5.0
-
       - name: prepare core
         run: |
           npm install
@@ -128,7 +127,6 @@ jobs:
         uses: actions/setup-node@v2.1.5
         with:
           node-version: 16.5.0
-
       - name: prepare core
         run: |
           npm install

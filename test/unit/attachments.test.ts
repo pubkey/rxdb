@@ -13,8 +13,13 @@ import {
     RxJsonSchema,
     blobBufferUtil,
     MigrationStrategies,
-    WithAttachmentsData
+    WithAttachmentsData,
 } from '../../plugins/core';
+
+import {
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
+
 
 config.parallel('attachments.test.ts', () => {
     describe('.putAttachment()', () => {
@@ -23,7 +28,7 @@ config.parallel('attachments.test.ts', () => {
             const doc = await c.findOne().exec(true);
             const attachment = await doc.putAttachment({
                 id: 'cat.txt',
-                data: 'meow',
+                data: blobBufferUtil.createBlobBuffer('meow', 'text/plain'),
                 type: 'text/plain'
             });
             assert.ok(attachment);
@@ -36,12 +41,12 @@ config.parallel('attachments.test.ts', () => {
             const doc = await c.findOne().exec(true);
             await doc.putAttachment({
                 id: 'cat.txt',
-                data: 'meow',
+                data: blobBufferUtil.createBlobBuffer('meow', 'text/plain'),
                 type: 'text/plain'
             });
             await doc.putAttachment({
                 id: 'cat2.txt',
-                data: 'meowmeow',
+                data: blobBufferUtil.createBlobBuffer('meowmeow', 'text/plain'),
                 type: 'text/plain'
             });
             c.database.destroy();
@@ -54,7 +59,7 @@ config.parallel('attachments.test.ts', () => {
                     .fill(0)
                     .map(() => doc.putAttachment({
                         id: AsyncTestUtil.randomString(5) + '.txt',
-                        data: 'meow I am a kitty with a knife ' + AsyncTestUtil.randomString(5),
+                        data: blobBufferUtil.createBlobBuffer('meow I am a kitty with a knife ' + AsyncTestUtil.randomString(5), 'text/plain'),
                         type: 'text/plain'
                     }))
             );
@@ -67,11 +72,11 @@ config.parallel('attachments.test.ts', () => {
             const doc = await c.findOne().exec(true);
             await doc.putAttachment({
                 id: 'cat2.txt',
-                data: [
+                data: blobBufferUtil.createBlobBuffer([
                     AsyncTestUtil.randomString(100),
                     AsyncTestUtil.randomString(100),
                     AsyncTestUtil.randomString(100)
-                ].join(' '), // use space here
+                ].join(' '), 'text/plain'), // use space here
                 type: 'text/plain'
             });
             c.database.destroy();
@@ -79,12 +84,12 @@ config.parallel('attachments.test.ts', () => {
         it('should not update the document if skipIfSame=true and same data', async () => {
             const c = await humansCollection.createAttachments(1);
             const doc = await c.findOne().exec(true);
-            const data = AsyncTestUtil.randomString(100);
+            const data = blobBufferUtil.createBlobBuffer(AsyncTestUtil.randomString(100), 'text/plain');
             await doc.putAttachment({
                 id: 'cat.txt',
                 data,
                 type: 'text/plain'
-            });
+            }, true);
             const revBefore = doc.revision;
             await doc.putAttachment({
                 id: 'cat.txt',
@@ -104,13 +109,13 @@ config.parallel('attachments.test.ts', () => {
             const doc = await c.findOne().exec(true);
             await doc.putAttachment({
                 id: 'cat.txt',
-                data: AsyncTestUtil.randomString(100),
+                data: blobBufferUtil.createBlobBuffer(AsyncTestUtil.randomString(100), 'text/plain'),
                 type: 'text/plain'
-            });
+            }, true);
             const revBefore = doc.revision;
             await doc.putAttachment({
                 id: 'cat.txt',
-                data: AsyncTestUtil.randomString(100),
+                data: blobBufferUtil.createBlobBuffer(AsyncTestUtil.randomString(100), 'text/plain'),
                 type: 'text/plain'
             }, false);
             await wait(50);
@@ -127,12 +132,11 @@ config.parallel('attachments.test.ts', () => {
             const doc = await c.findOne().exec(true);
             await doc.putAttachment({
                 id: 'cat.txt',
-                data: 'meow I am a kitty with a knife',
+                data: blobBufferUtil.createBlobBuffer('meow I am a kitty with a knife', 'text/plain'),
                 type: 'text/plain'
             });
             const attachment: any = doc.getAttachment('cat.txt');
             assert.ok(attachment);
-            assert.strictEqual(attachment.rev, 2);
             c.database.destroy();
         });
         it('should find the attachment after another doc-update', async () => {
@@ -140,11 +144,13 @@ config.parallel('attachments.test.ts', () => {
             const doc = await c.findOne().exec(true);
             await doc.putAttachment({
                 id: 'cat.txt',
-                data: 'meow I am a kitty with a knife',
+                data: blobBufferUtil.createBlobBuffer('meow I am a kitty with a knife', 'text/plain'),
                 type: 'text/plain'
             });
 
-            await doc.atomicSet('age', 7);
+            await doc.atomicPatch({
+                age: 7
+            });
 
             const attachment: any = doc.getAttachment('cat.txt');
             assert.ok(attachment);
@@ -155,35 +161,38 @@ config.parallel('attachments.test.ts', () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 multiInstance: false,
                 ignoreDuplicate: true
             });
             const schemaJson = AsyncTestUtil.clone(schemas.human);
             schemaJson.attachments = {};
-            const collection = await db.collection({
-                name: 'humans',
-                schema: schemaJson
+            const collections = await db.addCollections({
+                humans: {
+                    schema: schemaJson
+                }
             });
-            await collection.insert(schemaObjects.human());
-            const doc = await collection.findOne().exec(true);
+            await collections.humans.insert(schemaObjects.human());
+            const doc = await collections.humans.findOne().exec(true);
             const docAge = doc.age;
             await doc.putAttachment({
                 id: 'cat.txt',
-                data: 'meow I am a kitty with a knife',
+                data: blobBufferUtil.createBlobBuffer('meow I am a kitty with a knife', 'text/plain'),
                 type: 'text/plain'
             });
             await db.destroy();
             const db2 = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 multiInstance: false,
                 ignoreDuplicate: true
             });
-            const c2 = await db2.collection({
-                name: 'humans',
-                schema: schemaJson
+            const cols2 = await db2.addCollections({
+                humans: {
+                    schema: schemaJson
+                }
             });
+            const c2 = cols2.humans;
             const doc2 = await c2.findOne().exec();
             assert.strictEqual(docAge, doc2.age);
             const attachment = doc2.getAttachment('cat.txt');
@@ -199,7 +208,7 @@ config.parallel('attachments.test.ts', () => {
             const dat = AsyncTestUtil.randomString(100) + ' ' + AsyncTestUtil.randomString(100);
             await doc.putAttachment({
                 id: 'cat.txt',
-                data: dat,
+                data: blobBufferUtil.createBlobBuffer(dat, 'text/plain'),
                 type: 'text/plain'
             });
             const attachment: any = doc.getAttachment('cat.txt');
@@ -216,7 +225,7 @@ config.parallel('attachments.test.ts', () => {
             const dat = AsyncTestUtil.randomString(100) + ' ' + AsyncTestUtil.randomString(100);
             await doc.putAttachment({
                 id: 'cat.txt',
-                data: dat,
+                data: blobBufferUtil.createBlobBuffer(dat, 'text/plain'),
                 type: 'text/plain'
             });
             const attachment: any = doc.getAttachment('cat.txt');
@@ -231,7 +240,7 @@ config.parallel('attachments.test.ts', () => {
             const doc = await c.findOne().exec(true);
             await doc.putAttachment({
                 id: 'cat.txt',
-                data: 'meow I am a kitty with a knife',
+                data: blobBufferUtil.createBlobBuffer('meow I am a kitty with a knife', 'text/plain'),
                 type: 'text/plain'
             });
             const attachment: any = doc.getAttachment('cat.txt');
@@ -255,7 +264,7 @@ config.parallel('attachments.test.ts', () => {
                     .fill(0)
                     .map(() => doc.putAttachment({
                         id: AsyncTestUtil.randomString(5) + '.txt',
-                        data: 'meow I am a kitty with a knife ' + AsyncTestUtil.randomString(500),
+                        data: blobBufferUtil.createBlobBuffer('meow I am a kitty with a knife ' + AsyncTestUtil.randomString(500), 'text/plain'),
                         type: 'text/plain'
                     }))
             );
@@ -268,7 +277,7 @@ config.parallel('attachments.test.ts', () => {
             const doc = await c.findOne().exec(true);
             await doc.putAttachment({
                 id: 'janosch.txt',
-                data: 'foo bar',
+                data: blobBufferUtil.createBlobBuffer('foo bar', 'text/plain'),
                 type: 'text/plain'
             });
             const attachments = doc.allAttachments();
@@ -287,7 +296,7 @@ config.parallel('attachments.test.ts', () => {
             await AsyncTestUtil.assertThrows(
                 () => doc.putAttachment({
                     id: AsyncTestUtil.randomString(5) + '.txt',
-                    data: 'meow I am a kitty with a knife ',
+                    data: blobBufferUtil.createBlobBuffer('meow I am a kitty with a knife ', 'text/plain'),
                     type: 'text/plain'
                 }),
                 'RxError',
@@ -300,18 +309,21 @@ config.parallel('attachments.test.ts', () => {
         it('should store the data encrypted', async () => {
             const c = await humansCollection.createEncryptedAttachments(1);
             const doc = await c.findOne().exec(true);
+
+
             const attachment = await doc.putAttachment({
                 id: 'cat.txt',
-                data: 'foo bar',
+                data: blobBufferUtil.createBlobBuffer('foo bar aaa', 'text/plain'),
                 type: 'text/plain'
             });
 
-            const encryptedData = await doc.collection.pouch.getAttachment(doc.primary, 'cat.txt');
+            const encryptedData = await doc.collection.storageInstance.internals.pouch.getAttachment(doc.primary, 'cat.txt');
+
             const dataString = await blobBufferUtil.toString(encryptedData);
-            assert.notStrictEqual(dataString, 'foo bar');
+            assert.notStrictEqual(dataString, 'foo bar aaa');
 
             const data = await attachment.getStringData();
-            assert.strictEqual(data, 'foo bar');
+            assert.strictEqual(data, 'foo bar aaa');
 
             c.database.destroy();
         });
@@ -322,7 +334,7 @@ config.parallel('attachments.test.ts', () => {
             const doc = await c.findOne().exec(true);
             await doc.putAttachment({
                 id: 'cat.txt',
-                data: 'foo bar',
+                data: blobBufferUtil.createBlobBuffer('foo bar', 'text/plain'),
                 type: 'text/plain'
             });
 
@@ -343,31 +355,33 @@ config.parallel('attachments.test.ts', () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 multiInstance: true,
                 ignoreDuplicate: true
             });
             const schemaJson = AsyncTestUtil.clone(schemas.human);
             schemaJson.attachments = {};
-            const c = await db.collection({
-                name: 'humans',
-                schema: schemaJson
+            const c = await db.addCollections({
+                humans: {
+                    schema: schemaJson
+                }
             });
 
             const db2 = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 multiInstance: true,
                 ignoreDuplicate: true
             });
-            const c2 = await db2.collection({
-                name: 'humans',
-                schema: schemaJson
+            const c2 = await db2.addCollections({
+                humans: {
+                    schema: schemaJson
+                }
             });
 
-            await c.insert(schemaObjects.human());
-            const doc = await c.findOne().exec();
-            const doc2 = await c2.findOne().exec();
+            await c.humans.insert(schemaObjects.human());
+            const doc = await c.humans.findOne().exec();
+            const doc2 = await c2.humans.findOne().exec();
             assert.strictEqual(doc.age, doc2.age);
 
             const doc2Streamed: any[] = [];
@@ -376,7 +390,7 @@ config.parallel('attachments.test.ts', () => {
 
             const putAttachment = await doc.putAttachment({
                 id: 'cat.txt',
-                data: 'meow I am a kitty',
+                data: blobBufferUtil.createBlobBuffer('meow I am a kitty', 'text/plain'),
                 type: 'text/plain'
             });
 
@@ -410,39 +424,40 @@ config.parallel('attachments.test.ts', () => {
             const schema0: RxJsonSchema<DocData> = {
                 version: 0,
                 type: 'object',
+                primaryKey: 'id',
                 properties: {
                     id: {
-                        type: 'string',
-                        primary: true
+                        type: 'string'
                     }
                 },
                 attachments: {},
                 required: ['id']
             };
-            const schema1: RxJsonSchema = clone(schema0);
+            const schema1: RxJsonSchema<DocData> = clone(schema0);
             schema1.version = 1;
 
             const db = await createRxDatabase({
                 name: dbName,
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
-            const col = await db.collection({
-                name: 'heroes',
-                schema: schema0
+            const col = await db.addCollections({
+                heroes: {
+                    schema: schema0
+                }
             });
-            const doc: RxDocument<DocData> = await col.insert({
+            const doc: RxDocument<DocData> = await col.heroes.insert({
                 id: 'alice'
             });
             await doc.putAttachment({
                 id: 'foobar',
-                data: 'barfoo',
+                data: blobBufferUtil.createBlobBuffer('barfoo', 'text/plain'),
                 type: 'text/plain'
             });
             await db.destroy();
 
             const db2 = await createRxDatabase({
                 name: dbName,
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
 
             const migrationStrategies: MigrationStrategies = {
@@ -452,13 +467,16 @@ config.parallel('attachments.test.ts', () => {
                     return oldDoc;
                 }
             };
-            const col2 = await db2.collection({
-                name: 'heroes',
-                schema: schema1,
-                migrationStrategies
+
+            const col2 = await db2.addCollections({
+                heroes: {
+                    schema: schema1,
+                    migrationStrategies
+                }
             });
 
-            const doc2: RxDocument<DocData> = await col2.findOne().exec();
+            const doc2: RxDocument<DocData> = await col2.heroes.findOne().exec();
+
             assert.strictEqual(doc2.allAttachments().length, 1);
             const firstAttachment = doc2.allAttachments()[0];
             const data = await firstAttachment.getStringData();
@@ -473,40 +491,41 @@ config.parallel('attachments.test.ts', () => {
             };
             const schema0: RxJsonSchema<DocData> = {
                 version: 0,
+                primaryKey: 'id',
                 type: 'object',
                 properties: {
                     id: {
-                        type: 'string',
-                        primary: true
+                        type: 'string'
                     }
                 },
                 attachments: {},
                 required: ['id']
             };
-            const schema1: RxJsonSchema = clone(schema0);
+            const schema1: RxJsonSchema<DocData> = clone(schema0);
             schema1.version = 1;
 
             const db = await createRxDatabase({
                 name: dbName,
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
-            const col = await db.collection({
-                name: 'heroes',
-                schema: schema0
+            const col = await db.addCollections({
+                heroes: {
+                    schema: schema0
+                }
             });
-            const doc: RxDocument<DocData> = await col.insert({
+            const doc: RxDocument<DocData> = await col.heroes.insert({
                 id: 'alice'
             });
             await doc.putAttachment({
                 id: 'foobar',
-                data: 'barfoo',
+                data: blobBufferUtil.createBlobBuffer('barfoo', 'text/plain'),
                 type: 'text/plain'
             });
             await db.destroy();
 
             const db2 = await createRxDatabase({
                 name: dbName,
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
             const migrationStrategies: MigrationStrategies = {
                 1: (oldDoc: WithAttachmentsData<DocData>) => {
@@ -514,12 +533,13 @@ config.parallel('attachments.test.ts', () => {
                     return oldDoc;
                 }
             };
-            const col2 = await db2.collection({
-                name: 'heroes',
-                schema: schema1,
-                migrationStrategies
+            const col2 = await db2.addCollections({
+                heroes: {
+                    schema: schema1,
+                    migrationStrategies
+                }
             });
-            const doc2: RxDocument<DocData> = await col2.findOne().exec();
+            const doc2: RxDocument<DocData> = await col2.heroes.findOne().exec();
             assert.strictEqual(doc2.allAttachments().length, 0);
 
             db2.destroy();
@@ -531,40 +551,41 @@ config.parallel('attachments.test.ts', () => {
             };
             const schema0: RxJsonSchema<DocData> = {
                 version: 0,
+                primaryKey: 'id',
                 type: 'object',
                 properties: {
                     id: {
-                        type: 'string',
-                        primary: true
+                        type: 'string'
                     }
                 },
                 attachments: {},
                 required: ['id']
             };
-            const schema1: RxJsonSchema = clone(schema0);
+            const schema1: RxJsonSchema<DocData> = clone(schema0);
             schema1.version = 1;
 
             const db = await createRxDatabase({
                 name: dbName,
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
-            const col = await db.collection({
-                name: 'heroes',
-                schema: schema0
+            const col = await db.addCollections({
+                heroes: {
+                    schema: schema0
+                }
             });
-            const doc: RxDocument<DocData> = await col.insert({
+            const doc: RxDocument<DocData> = await col.heroes.insert({
                 id: 'alice'
             });
             await doc.putAttachment({
                 id: 'foobar',
-                data: 'barfoo1',
+                data: blobBufferUtil.createBlobBuffer('barfoo1', 'text/plain'),
                 type: 'text/plain'
             });
             await db.destroy();
 
             const db2 = await createRxDatabase({
                 name: dbName,
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
             const migrationStrategies: MigrationStrategies = {
                 1: async (oldDoc: WithAttachmentsData<DocData>) => {
@@ -583,13 +604,15 @@ config.parallel('attachments.test.ts', () => {
                     return oldDoc;
                 }
             };
-            const col2 = await db2.collection({
-                name: 'heroes',
-                schema: schema1,
-                migrationStrategies
+            const col2 = await db2.addCollections({
+                heroes: {
+
+                    schema: schema1,
+                    migrationStrategies
+                }
             });
 
-            const doc2: RxDocument<DocData> = await col2.findOne().exec();
+            const doc2: RxDocument<DocData> = await col2.heroes.findOne().exec();
             assert.strictEqual(doc2.allAttachments().length, 1);
             const firstAttachment = doc2.allAttachments()[0];
             const data = await firstAttachment.getStringData();
@@ -603,26 +626,27 @@ config.parallel('attachments.test.ts', () => {
         it('should be able to call the defined function', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 multiInstance: false,
                 ignoreDuplicate: true
             });
             const schemaJson = AsyncTestUtil.clone(schemas.human);
             schemaJson.attachments = {};
-            const c = await db.collection({
-                name: 'humans',
-                schema: schemaJson,
-                attachments: {
-                    foobar() {
-                        return 'foobar ' + this.type;
+            const c = await db.addCollections({
+                humans: {
+                    schema: schemaJson,
+                    attachments: {
+                        foobar() {
+                            return 'foobar ' + this.type;
+                        }
                     }
                 }
             });
-            await c.insert(schemaObjects.human());
-            const doc = await c.findOne().exec();
+            await c.humans.insert(schemaObjects.human());
+            const doc = await c.humans.findOne().exec();
             const attachment = await doc.putAttachment({
                 id: 'cat.txt',
-                data: 'meow I am a kitty',
+                data: blobBufferUtil.createBlobBuffer('meow I am a kitty', 'text/plain'),
                 type: 'text/plain'
             });
 
@@ -634,11 +658,11 @@ config.parallel('attachments.test.ts', () => {
         it('#455 attachments not working', async () => {
             const myschema = {
                 version: 0,
+                primaryKey: 'name',
                 type: 'object',
                 properties: {
                     name: {
-                        type: 'string',
-                        primary: true,
+                        type: 'string'
                     },
                 },
                 attachments: {
@@ -647,13 +671,15 @@ config.parallel('attachments.test.ts', () => {
             };
             const myDB = await createRxDatabase({
                 name: 'mylocaldb' + randomCouchString(10),
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 multiInstance: true
             });
-            const myCollection = await myDB.collection({
-                name: 'mycollection',
-                schema: myschema
+            const myCollections = await myDB.addCollections({
+                mycollection: {
+                    schema: myschema
+                }
             });
+            const myCollection = myCollections.mycollection;
             const mydoc = myCollection.newDocument({
                 name: 'mydoc'
             });
@@ -661,7 +687,7 @@ config.parallel('attachments.test.ts', () => {
             const doc = await myCollection.findOne('mydoc').exec();
             await doc.putAttachment({
                 id: 'sampledata',
-                data: 'foo bar',
+                data: blobBufferUtil.createBlobBuffer('foo bar', 'text/plain'),
                 type: 'application/octet-stream'
             });
 
@@ -675,18 +701,19 @@ config.parallel('attachments.test.ts', () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 multiInstance: false,
                 ignoreDuplicate: true
             });
             const schemaJson = AsyncTestUtil.clone(schemas.human);
             schemaJson.attachments = {};
-            const c = await db.collection({
-                name: 'humans',
-                schema: schemaJson
+            const c = await db.addCollections({
+                humans: {
+                    schema: schemaJson
+                }
             });
-            await c.insert(schemaObjects.human());
-            const doc = await c.findOne().exec();
+            await c.humans.insert(schemaObjects.human());
+            const doc = await c.humans.findOne().exec();
 
             const attachments = await doc.allAttachments();
             assert.strictEqual(attachments.length, 0);

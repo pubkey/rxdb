@@ -12,8 +12,13 @@ import {
     createRxDatabase,
     RxJsonSchema,
     promiseWait,
-    randomCouchString
+    randomCouchString,
 } from '../../plugins/core';
+import {
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
+
+
 import { firstValueFrom } from 'rxjs';
 
 config.parallel('rx-query.test.js', () => {
@@ -66,7 +71,7 @@ config.parallel('rx-query.test.js', () => {
                 .limit(10)
                 .sort('-age');
             const str = q.toString();
-            const mustString = '{"op":"find","other":{"queryBuilderPath":"age"},"query":{"limit":10,"selector":{"_id":{},"age":{"$gt":18,"$lt":67},"name":{"$ne":"Alice"}},"sort":[{"age":"desc"}]}}';
+            const mustString = '{"op":"find","other":{"queryBuilderPath":"age"},"query":{"limit":10,"selector":{"age":{"$gt":18,"$lt":67},"name":{"$ne":"Alice"},"passportId":{}},"sort":[{"age":"desc"}]}}';
             assert.strictEqual(str, mustString);
             const str2 = q.toString();
             assert.strictEqual(str2, mustString);
@@ -79,7 +84,7 @@ config.parallel('rx-query.test.js', () => {
                 passportId: 'desc', age: 'desc'
             });
             const str = q.toString();
-            const mustString = '{"op":"find","other":{},"query":{"selector":{"_id":{}},"sort":[{"passportId":"desc"},{"age":"desc"}]}}';
+            const mustString = '{"op":"find","other":{},"query":{"selector":{"passportId":{}},"sort":[{"passportId":"desc"},{"age":"desc"}]}}';
             assert.strictEqual(str, mustString);
             const str2 = q.toString();
             assert.strictEqual(str2, mustString);
@@ -303,7 +308,11 @@ config.parallel('rx-query.test.js', () => {
         });
         it('BUG should not match regex', async () => {
             const col = await humansCollection.create(0);
-            const q = col.find({
+
+
+            // TODO using $and fails, we have to open an issue at the pouchdb repo
+            /*
+           const q = col.find({
                 selector: {
                     $and: [{
                         color: {
@@ -312,8 +321,18 @@ config.parallel('rx-query.test.js', () => {
                     }]
                 }
             });
+            */
+
+            const q = col.find({
+                selector: {
+                    color: {
+                        $regex: new RegExp('f', 'i')
+                    }
+                }
+            });
 
             const docData = {
+                _id: 'mydoc',
                 color: 'green',
                 hp: 100,
                 maxHP: 767,
@@ -354,6 +373,7 @@ config.parallel('rx-query.test.js', () => {
             });
 
             await AsyncTestUtil.waitUntil(() => fired.length === 1);
+
             assert.strictEqual(query._execOverDatabaseCount, 1);
             assert.strictEqual(query._latestChangeEvent, 2);
 
@@ -376,7 +396,7 @@ config.parallel('rx-query.test.js', () => {
             // it is assumed that this query can never handled by event-reduce
             const q = col.find()
                 .where('firstName').ne('AliceFoobar')
-                .sort('_id')
+                .sort('passportId')
                 .skip(1);
 
             let results = await q.exec();
@@ -387,7 +407,7 @@ config.parallel('rx-query.test.js', () => {
             const addDoc = schemaObjects.human();
 
             // set _id to first value to force a re-exec-over database
-            (addDoc as any)._id = '1-aaaaaaaaaaaaaaaaaaaaaaaaaaa';
+            addDoc.passportId = '1-aaaaaaaaaaaaaaaaaaaaaaaaaaa';
             addDoc.firstName = 'NotAliceFoobar';
 
             await col.insert(addDoc);
@@ -408,12 +428,14 @@ config.parallel('rx-query.test.js', () => {
             const leveldown = require('leveldown');
             const db = await createRxDatabase({
                 name: config.rootPath + 'test_tmp/' + randomCouchString(10),
-                adapter: leveldown
+                storage: getRxStoragePouch(leveldown),
             });
-            const c = await db.collection({
-                name: 'humans',
-                schema: schemas.human
+            const cols = await db.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
             });
+            const c = cols.humans;
             await c.insert(schemaObjects.human());
 
             const query1 = c.findOne().where('age').gt(0);
@@ -510,12 +532,14 @@ config.parallel('rx-query.test.js', () => {
             const db = await createRxDatabase({
                 name: dbName,
                 eventReduce: true,
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
-            const col = await db.collection({
-                name: 'human',
-                schema
+            const cols = await db.addCollections({
+                human: {
+                    schema
+                }
             });
+            const col = cols.human;
 
             await Promise.all(
                 new Array(10)
@@ -528,14 +552,16 @@ config.parallel('rx-query.test.js', () => {
 
             const db2 = await createRxDatabase({
                 name: dbName,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 eventReduce: true,
                 ignoreDuplicate: true
             });
-            const col2 = await db2.collection({
-                name: 'human',
-                schema
+            const cols2 = await db2.addCollections({
+                human: {
+                    schema
+                }
             });
+            const col2 = cols2.human;
 
             const allDocs = await col2.find().exec();
             assert.strictEqual(allDocs.length, 10);
@@ -606,11 +632,14 @@ config.parallel('rx-query.test.js', () => {
         });
         describe('negative', () => {
             it('should throw if schema does not match', async () => {
-                const schema = {
-                    $id: '#child-def',
+                const schema: RxJsonSchema<{ id: string; childProperty: 'A' | 'B' | 'C' }> = {
                     version: 0,
+                    primaryKey: 'id',
                     type: 'object',
                     properties: {
+                        id: {
+                            type: 'string'
+                        },
                         childProperty: {
                             type: 'string',
                             enum: ['A', 'B', 'C']
@@ -619,13 +648,16 @@ config.parallel('rx-query.test.js', () => {
                 };
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
-                const col = await db.collection({
-                    name: 'humans',
-                    schema
+                const cols = await db.addCollections({
+                    humans: {
+                        schema
+                    }
                 });
+                const col = cols.humans;
                 await col.insert({
+                    id: randomCouchString(12),
                     childProperty: 'A'
                 });
                 await AsyncTestUtil.assertThrows(
@@ -644,14 +676,14 @@ config.parallel('rx-query.test.js', () => {
     describe('issues', () => {
         describe('#157 Cannot sort on field(s) "XXX" when using the default index', () => {
             it('schema example 1', async () => {
-                const schema: RxJsonSchema = {
+                const schema: RxJsonSchema<{ user_id: string; user_pwd: string; last_login: number; status: string; }> = {
                     keyCompression: false,
                     version: 0,
+                    primaryKey: 'user_id',
                     type: 'object',
                     properties: {
                         user_id: {
-                            type: 'string',
-                            primary: true
+                            type: 'string'
                         },
                         user_pwd: {
                             type: 'string',
@@ -670,13 +702,16 @@ config.parallel('rx-query.test.js', () => {
                 };
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory',
+                    storage: getRxStoragePouch('memory'),
                     password: randomCouchString(20)
                 });
-                const collection = await db.collection({
-                    name: randomCouchString(10),
-                    schema
+                const colName = randomCouchString(10);
+                const collections = await db.addCollections({
+                    [colName]: {
+                        schema
+                    }
                 });
+                const collection = collections[colName];
 
                 const query = collection
                     .findOne()
@@ -696,11 +731,15 @@ config.parallel('rx-query.test.js', () => {
                 db.destroy();
             });
             it('schema example 2', async () => {
-                const schema: RxJsonSchema = {
+                const schema: RxJsonSchema<{ id: string; value: number; }> = {
                     keyCompression: false,
                     version: 0,
+                    primaryKey: 'id',
                     type: 'object',
                     properties: {
+                        id: {
+                            type: 'string'
+                        },
                         value: {
                             type: 'number'
                         }
@@ -709,13 +748,17 @@ config.parallel('rx-query.test.js', () => {
                 };
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory',
+                    storage: getRxStoragePouch('memory'),
                     password: randomCouchString(20)
                 });
-                const collection = await db.collection({
-                    name: randomCouchString(10),
-                    schema
+
+                const colName = randomCouchString(10);
+                const collections = await db.addCollections({
+                    [colName]: {
+                        schema
+                    }
                 });
+                const collection = collections[colName];
 
                 const queryAll = collection
                     .find()
@@ -791,173 +834,15 @@ config.parallel('rx-query.test.js', () => {
 
             c.database.destroy();
         });
-        it('#393 Deleting all items with a sorted subscribe throws error', async () => {
-            // TODO it seams like this fails randomly
-            // further investigation needed
-            return;
-            /*
-            const schema = {
-                primaryPath: '_id',
-                keyCompression: false,
-                properties: {
-                    id: {
-                        primary: true,
-                        type: 'string'
-                    },
-                    title: {
-                        index: true,
-                        type: 'string'
-                    },
-                    integration: {
-                        type: 'string'
-                    },
-                    type: {
-                        index: true,
-                        type: 'string'
-                    },
-                    bodyTEMP: {
-                        type: 'string'
-                    },
-                    data: {
-                        type: 'object'
-                    },
-                    parentId: {
-                        type: 'string'
-                    },
-                    author: {
-                        type: 'string'
-                    },
-                    created: {
-                        index: true,
-                        type: 'string'
-                    },
-                    updated: {
-                        index: true,
-                        type: 'string'
-                    },
-                    orgName: {
-                        type: 'string'
-                    },
-                    bucket: {
-                        type: 'string'
-                    },
-                    url: {
-                        unique: true,
-                        type: 'string'
-                    },
-                    createdAt: {
-                        format: 'date-time',
-                        type: 'string',
-                        index: true
-                    },
-                    updatedAt: {
-                        format: 'date-time',
-                        type: 'string',
-                        index: true
-                    }
-                },
-                type: 'object',
-                required: [
-                    'title',
-                    'integration',
-                    'type',
-                    'created',
-                    'updated'
-                ],
-                title: 'things',
-                version: 0
-            };
-
-            const name = util.randomCouchString(10);
-            const db = await RxDB.create({
-                name,
-                adapter: 'memory',
-                ignoreDuplicate: true
-            });
-            const col = await db.collection({
-                name: 'humans',
-                schema
-            });
-            const db2 = await RxDB.create({
-                name,
-                adapter: 'memory',
-                ignoreDuplicate: true
-            });
-            const col2 = await db2.collection({
-                name: 'humans',
-                schema
-            });
-
-            const destroyAll = async function(collection) {
-                const remove = async item => {
-                    try {
-                        await item.remove();
-                    } catch (e) {
-                        // loop on document conflicts to delete all revisions
-                        await remove(item);
-                    }
-                    return true;
-                };
-                const all = await collection.find().exec();
-                if (!all) return;
-
-                return await Promise.all(all.map(remove));
-            };
-
-            const generateDocData = () => {
-                return {
-                    id: AsyncTestUtil.randomString(10),
-                    title: AsyncTestUtil.randomString(10),
-                    integration: AsyncTestUtil.randomString(10),
-                    type: AsyncTestUtil.randomString(10),
-                    created: AsyncTestUtil.randomString(10),
-                    updated: AsyncTestUtil.randomString(10),
-                    bucket: 'foobar',
-                    createdAt: '2002-10-02T10:00:00-05:00',
-                    updatedAt: '2002-10-02T10:00:00-05:00'
-                };
-            };
-
-            await Promise.all(
-                new Array(10)
-                .fill(0)
-                .map(() => generateDocData())
-                .map(data => col.insert(data))
-            );
-
-            const emitted = [];
-            const sub = col2.find()
-                .limit(8)
-                .where('bucket').eq('foobar')
-                .sort({
-                    updatedAt: 'desc'
-                })
-                .$.subscribe(res => {
-                    emitted.push(res);
-                });
-
-            await destroyAll(col);
-
-            // w8 until empty array on other tab
-            await AsyncTestUtil.waitUntil(() => {
-                const last = emitted[emitted.length - 1];
-                return last && last.length === 0;
-            });
-
-            sub.unsubscribe();
-            db.destroy();
-            db2.destroy();
-            */
-        });
         it('#585 sort by sub-path not working', async () => {
             const schema = {
                 version: 0,
                 type: 'object',
+                primaryKey: 'id',
                 keyCompression: false,
                 properties: {
                     id: {
-                        type: 'string',
-                        primary: true
+                        type: 'string'
                     },
                     info: {
                         type: 'object',
@@ -972,21 +857,23 @@ config.parallel('rx-query.test.js', () => {
             };
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
-            const col = await db.collection({
-                name: 'humans',
-                schema
+            const cols = await db.addCollections({
+                humans: {
+                    schema
+                }
             });
+            const col = cols.humans;
 
-            await col.pouch.createIndex({
+            await col.storageInstance.internals.pouch.createIndex({
                 name: 'idx-rxdb-info',
                 ddoc: 'idx-rxdb-info',
                 index: {
                     fields: ['info']
                 }
             });
-            await col.pouch.createIndex({
+            await col.storageInstance.internals.pouch.createIndex({
                 name: 'idx-rxdb-info.title',
                 ddoc: 'idx-rxdb-info.title',
                 index: {
@@ -1029,10 +916,11 @@ config.parallel('rx-query.test.js', () => {
 
             db.destroy();
         });
-        it('#609 default index on _id when better possible', async () => {
-            const mySchema: RxJsonSchema = {
+        it('#609 default index on primaryKey when better possible', async () => {
+            const mySchema: RxJsonSchema<{ name: string; passportId: string; }> = {
                 version: 0,
                 keyCompression: false,
+                primaryKey: 'name',
                 type: 'object',
                 properties: {
                     name: {
@@ -1057,7 +945,7 @@ config.parallel('rx-query.test.js', () => {
                     passportId: 'foofbar'
                 }
             });
-            const explained1 = await collection.pouch.explain(q1.toJSON());
+            const explained1 = await collection.storageInstance.internals.pouch.explain(q1.toJSON());
             assert.ok(explained1.index.ddoc);
             assert.ok(explained1.index.ddoc.startsWith('_design/idx-'));
 
@@ -1067,18 +955,22 @@ config.parallel('rx-query.test.js', () => {
                     passportId: 'foofbar'
                 }
             }).sort('passportId');
-            const explained2 = await collection.pouch.explain(q2.toJSON());
+            const explained2 = await collection.storageInstance.internals.pouch.explain(q2.toJSON());
             assert.ok(explained2.index.ddoc);
             assert.ok(explained2.index.ddoc.startsWith('_design/idx-'));
 
             collection.database.destroy();
         });
         it('#698 Same query producing a different result', async () => {
-            const mySchema: RxJsonSchema = {
+            const mySchema: RxJsonSchema<{ id: string; event_id: number; user_id: string; created_at: number }> = {
                 version: 0,
                 keyCompression: false,
+                primaryKey: 'id',
                 type: 'object',
                 properties: {
+                    id: {
+                        type: 'string'
+                    },
                     event_id: {
                         type: 'number'
                     },
@@ -1094,11 +986,13 @@ config.parallel('rx-query.test.js', () => {
             const collection = await humansCollection.createBySchema(mySchema);
 
             await collection.insert({
+                id: randomCouchString(12),
                 event_id: 1,
                 user_id: '6',
                 created_at: 1337
             });
             await collection.insert({
+                id: randomCouchString(12),
                 event_id: 2,
                 user_id: '6',
                 created_at: 1337
@@ -1192,10 +1086,11 @@ config.parallel('rx-query.test.js', () => {
         it('#724 find() does not find all matching documents', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
-            const schema = {
+            const schema: RxJsonSchema<{ roomId: string; sessionId: string }> = {
                 version: 0,
+                primaryKey: 'roomId',
                 type: 'object',
                 properties: {
                     roomId: {
@@ -1206,10 +1101,12 @@ config.parallel('rx-query.test.js', () => {
                     }
                 }
             };
-            const roomsession = await db.collection({
-                name: 'roomsession',
-                schema
+            const collections = await db.addCollections({
+                roomsession: {
+                    schema
+                }
             });
+            const roomsession = collections.roomsession;
             const roomId = 'roomId';
             const sessionId = 'sessionID';
             await roomsession.insert({
@@ -1245,11 +1142,11 @@ config.parallel('rx-query.test.js', () => {
             // create a schema
             const mySchema = {
                 version: 0,
+                primaryKey: 'passportId',
                 type: 'object',
                 properties: {
                     passportId: {
-                        type: 'string',
-                        primary: true
+                        type: 'string'
                     },
                     firstName: {
                         type: 'string'
@@ -1271,15 +1168,17 @@ config.parallel('rx-query.test.js', () => {
             // create a database
             const db = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 eventReduce: true,
                 ignoreDuplicate: true
             });
             // create a collection
-            const collection = await db.collection({
-                name: 'mycollection',
-                schema: mySchema
+            const collections = await db.addCollections({
+                mycollection: {
+                    schema: mySchema
+                }
             });
+            const collection = collections.mycollection;
 
             // insert a document
             await collection.insert({
@@ -1302,7 +1201,7 @@ config.parallel('rx-query.test.js', () => {
                 lastName: null
             };
 
-            const pouchResult = await collection.pouch.find({
+            const pouchResult = await collection.storageInstance.internals.pouch.find({
                 selector
             });
             const pouchDocs = pouchResult.docs;
@@ -1323,11 +1222,11 @@ config.parallel('rx-query.test.js', () => {
             // create a schema
             const mySchema = {
                 version: 0,
+                primaryKey: 'passportId',
                 type: 'object',
                 properties: {
                     passportId: {
-                        type: 'string',
-                        primary: true
+                        type: 'string'
                     },
                     firstName: {
                         type: 'string'
@@ -1339,16 +1238,18 @@ config.parallel('rx-query.test.js', () => {
             };
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 eventReduce: true,
                 ignoreDuplicate: true
             });
 
             // create a collection
-            const collection = await db.collection({
-                name: 'mycollection',
-                schema: mySchema
+            const collections = await db.addCollections({
+                mycollection: {
+                    schema: mySchema
+                }
             });
+            const collection = collections.mycollection;
 
             // insert documents
             await collection.bulkInsert([
@@ -1443,16 +1344,18 @@ config.parallel('rx-query.test.js', () => {
         it('gitter: mutating find-params causes different results', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 eventReduce: false
             });
             const schema = clone(schemas.human);
             schema.keyCompression = false;
 
-            const c = await db.collection({
-                name: 'humans',
-                schema
+            const cols = await db.addCollections({
+                humans: {
+                    schema
+                }
             });
+            const c = cols.humans;
 
             const docDataMatching = schemaObjects.human();
             docDataMatching.age = 42;

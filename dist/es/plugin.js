@@ -9,9 +9,9 @@ import { basePrototype as RxDocumentPrototype } from './rx-document';
 import { RxQueryBase } from './rx-query';
 import { RxCollectionBase } from './rx-collection';
 import { RxDatabaseBase } from './rx-database';
-import { PouchDB } from './pouch-db';
 import { overwritable } from './overwritable';
 import { HOOKS, runPluginHooks } from './hooks';
+import { newRxTypeError } from './rx-error';
 /**
  * prototypes that can be manipulated with a plugin
  */
@@ -25,6 +25,11 @@ var PROTOTYPES = {
   RxDatabase: RxDatabaseBase.prototype
 };
 var ADDED_PLUGINS = new Set();
+/**
+ * Add a plugin to the RxDB library.
+ * Plugins are added globally and cannot be removed.
+ */
+
 export function addRxPlugin(plugin) {
   runPluginHooks('preAddRxPlugin', {
     plugin: plugin,
@@ -36,17 +41,21 @@ export function addRxPlugin(plugin) {
   } else {
     ADDED_PLUGINS.add(plugin);
   }
+  /**
+   * Since version 10.0.0 we decoupled pouchdb from
+   * the rxdb core. Therefore pouchdb plugins must be added
+   * with the addPouchPlugin() method of the pouchdb plugin.
+   */
+
 
   if (!plugin.rxdb) {
-    // pouchdb-plugin
-    if (typeof plugin === 'object' && plugin["default"]) plugin = plugin["default"];
-    PouchDB.plugin(plugin);
-    return;
-  }
+    throw newRxTypeError('PL1', {
+      plugin: plugin
+    });
+  } // prototype-overwrites
 
-  var rxPlugin = plugin; // prototype-overwrites
 
-  if (rxPlugin.prototypes) {
+  if (plugin.prototypes) {
     Object.entries(plugin.prototypes).forEach(function (_ref) {
       var name = _ref[0],
           fun = _ref[1];
@@ -55,12 +64,12 @@ export function addRxPlugin(plugin) {
   } // overwritable-overwrites
 
 
-  if (rxPlugin.overwritable) {
+  if (plugin.overwritable) {
     Object.assign(overwritable, plugin.overwritable);
   } // extend-hooks
 
 
-  if (rxPlugin.hooks) {
+  if (plugin.hooks) {
     Object.entries(plugin.hooks).forEach(function (_ref2) {
       var name = _ref2[0],
           fun = _ref2[1];

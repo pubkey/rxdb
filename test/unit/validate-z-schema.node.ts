@@ -8,8 +8,14 @@ import * as schemas from '../helper/schemas';
 import {
     randomCouchString,
     addRxPlugin,
-    createRxDatabase
+    createRxDatabase,
 } from '../../plugins/core';
+
+import {
+    addPouchPlugin,
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
+
 
 import { RxDBValidateZSchemaPlugin } from '../../plugins/validate-z-schema';
 addRxPlugin(RxDBValidateZSchemaPlugin);
@@ -20,7 +26,7 @@ addRxPlugin(RxDBKeyCompressionPlugin);
 import { RxDBDevModePlugin } from '../../plugins/dev-mode';
 addRxPlugin(RxDBDevModePlugin);
 
-addRxPlugin(require('pouchdb-adapter-memory'));
+addPouchPlugin(require('pouchdb-adapter-memory'));
 
 config.parallel('validate-z-schema.node.js', () => {
     describe('validation', () => {
@@ -28,12 +34,14 @@ config.parallel('validate-z-schema.node.js', () => {
             it('should not throw', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
-                const col = await db.collection({
-                    name: 'humans',
-                    schema: schemas.human
+                const cols = await db.addCollections({
+                    humans: {
+                        schema: schemas.human
+                    }
                 });
+                const col = cols.humans;
 
                 const doc = await col.insert(schemaObjects.human());
                 assert.ok(doc);
@@ -45,12 +53,14 @@ config.parallel('validate-z-schema.node.js', () => {
             it('should not validate wrong data', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
-                const col = await db.collection({
-                    name: 'humans',
-                    schema: schemas.human
+                const cols = await db.addCollections({
+                    humans: {
+                        schema: schemas.human
+                    }
                 });
+                const col = cols.humans;
 
                 await AsyncTestUtil.assertThrows(
                     () => col.insert({
@@ -64,12 +74,14 @@ config.parallel('validate-z-schema.node.js', () => {
             it('should have the correct params in error', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
-                const col = await db.collection({
-                    name: 'humans',
-                    schema: schemas.human
+                const cols = await db.addCollections({
+                    humans: {
+                        schema: schemas.human
+                    }
                 });
+                const col = cols.humans;
 
                 let error = null;
                 try {

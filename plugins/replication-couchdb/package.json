@@ -1,0 +1,8 @@
+{
+  "name": "rxdb-plugin-replication-couchdb",
+  "main": "../../dist/lib/plugins/replication-couchdb.js",
+  "jsnext:main": "../../dist/es/plugins/replication-couchdb.js",
+  "module": "../../dist/es/plugins/replication-couchdb.js",
+  "types": "../../dist/types/plugins/replication-couchdb.d.ts",
+  "sideEffects": false
+}

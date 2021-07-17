@@ -9,7 +9,16 @@ import {
     createRxDatabase
 } from 'rxdb/plugins/core';
 
-addRxPlugin(require('pouchdb-adapter-idb'));
+import {
+    addPouchPlugin,
+    getRxStoragePouch
+} from 'rxdb/plugins/pouchdb';
+
+import {
+    filter
+} from 'rxjs/operators';
+
+addPouchPlugin(require('pouchdb-adapter-idb'));
 import {
     RxDBReplicationGraphQLPlugin,
     pullQueryBuilderFromRxSchema,
@@ -82,7 +91,7 @@ async function run() {
     heroesList.innerHTML = 'Create database..';
     const db = await createRxDatabase({
         name: getDatabaseName(),
-        adapter: 'idb'
+        storage: getRxStoragePouch('idb')
     });
     window.db = db;
 
@@ -93,15 +102,16 @@ async function run() {
     });
 
     heroesList.innerHTML = 'Create collection..';
-    const collection = await db.collection({
-        name: 'hero',
-        schema: heroSchema
+    await db.addCollections({
+        hero: {
+            schema: heroSchema
+        }
     });
 
 
     // set up replication
     heroesList.innerHTML = 'Start replication..';
-    const replicationState = collection.syncGraphQL({
+    const replicationState = db.hero.syncGraphQL({
         url: syncURL,
         headers: {
             /* optional, set an auth header */
@@ -183,6 +193,13 @@ async function run() {
         }
     });
 
+    // log all collection events for debugging
+    db.hero.$.pipe(filter(ev => !ev.isLocal)).subscribe(ev => {
+        console.log('colection.$ emitted:');
+        console.dir(ev);
+    });
+
+
     /**
      * We await the inital replication
      * so that the client never shows outdated data.
@@ -192,11 +209,12 @@ async function run() {
      * server.
      */
     heroesList.innerHTML = 'Await initial replication..';
-    await replicationState.awaitInitialReplication();
+    // TODO this did full block the laoding because awaitInitialReplication() never resolves if other tab is leader
+    // await replicationState.awaitInitialReplication();
 
     // subscribe to heroes list and render the list on change
     heroesList.innerHTML = 'Subscribe to query..';
-    collection.find()
+    db.hero.find()
         .sort({
             name: 'asc'
         })
@@ -206,7 +224,7 @@ async function run() {
                 html += `
                     <li class="hero-item">
                         <div class="color-box" style="background:${hero.color}"></div>
-                        <div class="name">${hero.name}</div>
+                        <div class="name">${hero.name} (revision: ${hero._rev})</div>
                         <div class="delete-icon" onclick="window.deleteHero('${hero.primary}')">DELETE</div>
                     </li>
                 `;
@@ -218,7 +236,7 @@ async function run() {
     // set up click handlers
     window.deleteHero = async (id) => {
         console.log('delete doc ' + id);
-        const doc = await collection.findOne(id).exec();
+        const doc = await db.hero.findOne(id).exec();
         if (doc) {
             console.log('got doc, remove it');
             try {
@@ -240,7 +258,7 @@ async function run() {
         console.log('inserting hero:');
         console.dir(obj);
 
-        await collection.insert(obj);
+        await db.hero.insert(obj);
         document.querySelector('input[name="name"]').value = '';
         document.querySelector('input[name="color"]').value = '';
     };

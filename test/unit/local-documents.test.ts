@@ -8,8 +8,15 @@ import {
     createRxDatabase,
     randomCouchString,
     RxLocalDocument,
-    addRxPlugin
+    addRxPlugin,
+    RxJsonSchema,
 } from '../../plugins/core';
+
+import {
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
+
+
 import { RxDBLocalDocumentsPlugin } from '../../plugins/local-documents';
 addRxPlugin(RxDBLocalDocumentsPlugin);
 import config from './config';
@@ -114,6 +121,7 @@ config.parallel('local-documents.test.js', () => {
         });
         it('should emit the document when exists', async () => {
             const c = await humansCollection.create();
+
             await c.insertLocal(id, {
                 foo: 'bar'
             });
@@ -130,7 +138,8 @@ config.parallel('local-documents.test.js', () => {
             c.database.destroy();
         });
         it('collection: should emit again when state changed', async () => {
-            const c = await humansCollection.create();
+
+            const c = await humansCollection.create(0);
 
             const cEmits: any[] = [];
 
@@ -155,7 +164,7 @@ config.parallel('local-documents.test.js', () => {
             c.database.destroy();
         });
         it('database: should emit again when state changed', async () => {
-            const c = await humansCollection.create();
+            const c = await humansCollection.create(0);
             const db = c.database;
 
             const cEmits: any[] = [];
@@ -244,67 +253,6 @@ config.parallel('local-documents.test.js', () => {
             c.database.destroy();
         });
     });
-    describe('.atomicSet()', () => {
-        it('should change the value', async () => {
-            const c = await humansCollection.create();
-            const doc = await c.insertLocal('foobar', {
-                foo: 'bar'
-            });
-
-            await doc.atomicSet('foo', 'bar2');
-            assert.strictEqual(doc.get('foo'), 'bar2');
-
-            await doc.atomicSet('foo', 'bar3');
-            assert.strictEqual(doc.get('foo'), 'bar3');
-
-            c.database.destroy();
-        });
-        it('should save the doc persistent', async () => {
-            const name = randomCouchString(10);
-            const db = await createRxDatabase({
-                name,
-                adapter: 'memory'
-            });
-            const doc = await db.insertLocal('foobar', {
-                foo: 'bar'
-            });
-
-            await doc.atomicSet('foo', 'bar2');
-            db.destroy();
-
-            const db2 = await createRxDatabase({
-                name,
-                adapter: 'memory',
-                ignoreDuplicate: true
-            });
-            const doc2 = await db2.getLocal('foobar');
-            assert.ok(doc2);
-            assert.strictEqual(doc2.get('foo'), 'bar2');
-            db2.destroy();
-        });
-        it('should not fail with many atomic updates in parallel', async () => {
-            const c = await humansCollection.create(0);
-            const db = c.database;
-
-            // database
-            const docDb = await db.insertLocal('foobar', {
-                foo: 'bar'
-            });
-            await Promise.all(
-                new Array(20).map(() => docDb.atomicSet('foo', randomString()))
-            );
-
-            // collection
-            const doc = await c.insertLocal('foobar', {
-                foo: 'bar'
-            });
-            await Promise.all(
-                new Array(20).map(() => doc.atomicSet('foo', randomString()))
-            );
-
-            await db.destroy();
-        });
-    });
     describe('with database', () => {
         it('should be able to use local documents directly on the database', async () => {
             const c = await humansCollection.create();
@@ -323,11 +271,11 @@ config.parallel('local-documents.test.js', () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
             const db2 = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 ignoreDuplicate: true
             });
 
@@ -337,7 +285,7 @@ config.parallel('local-documents.test.js', () => {
             const doc2 = await db2.getLocal('foobar');
             assert.ok(doc2);
 
-            await doc1.atomicSet('foo', 'bar2');
+            await doc1.atomicPatch({ foo: 'bar2' });
             await AsyncTestUtil.waitUntil(() => doc2.get('foo') === 'bar2');
 
             db.destroy();
@@ -347,11 +295,11 @@ config.parallel('local-documents.test.js', () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
             const db2 = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 ignoreDuplicate: true
             });
 
@@ -377,11 +325,11 @@ config.parallel('local-documents.test.js', () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
             const db2 = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 ignoreDuplicate: true
             });
 
@@ -390,7 +338,7 @@ config.parallel('local-documents.test.js', () => {
             });
             const doc2 = await db2.getLocal<TestDocType>('foobar');
 
-            await doc1.atomicSet('foo', 'bar2');
+            await doc1.atomicPatch({ foo: 'bar2' });
 
             await waitUntil(() => doc2 && doc2.toJSON().foo === 'bar2');
 
@@ -401,29 +349,31 @@ config.parallel('local-documents.test.js', () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
             const db2 = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 ignoreDuplicate: true
             });
-            const c1 = await db.collection({
-                name: 'humans',
-                schema: schemas.primaryHuman
+            const c1 = await db.addCollections({
+                humans: {
+                    schema: schemas.primaryHuman
+                }
             });
-            const c2 = await db2.collection({
-                name: 'humans',
-                schema: schemas.primaryHuman
+            const c2 = await db2.addCollections({
+                humans: {
+                    schema: schemas.primaryHuman
+                }
             });
-            const doc1 = await c1.insertLocal('foobar', {
+            const doc1 = await c1.humans.insertLocal('foobar', {
                 foo: 'bar'
             });
-            const doc2 = await c2.getLocal<TestDocType>('foobar');
-            await doc1.atomicSet('foo', 'bar2');
+            const doc2 = await c2.humans.getLocal<TestDocType>('foobar');
+            await doc1.atomicPatch({ foo: 'bar2' });
 
             const emitted: any[] = [];
-            const sub = c2.getLocal$('foobar').subscribe((x: any) => {
+            const sub = c2.humans.getLocal$('foobar').subscribe((x: any) => {
                 emitted.push(x);
             });
 
@@ -438,11 +388,11 @@ config.parallel('local-documents.test.js', () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
             const db2 = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 ignoreDuplicate: true
             });
 
@@ -469,38 +419,40 @@ config.parallel('local-documents.test.js', () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
-            const c1 = await db.collection({
-                name: 'humans',
-                schema: schemas.primaryHuman
+            const c1 = await db.addCollections({
+                humans: {
+                    schema: schemas.primaryHuman
+                }
             });
             const db2 = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 ignoreDuplicate: true
             });
-            const c2 = await db2.collection({
-                name: 'humans',
-                schema: schemas.primaryHuman
+            const c2 = await db2.addCollections({
+                humans: {
+                    schema: schemas.primaryHuman
+                }
             });
             const docData = schemaObjects.human();
             docData.passportId = 'foobar';
             docData.age = 40;
-            const doc = await c1.insert(docData);
-            const localDoc = await c1.insertLocal('foobar', {
+            const doc = await c1.humans.insert(docData);
+            const localDoc = await c1.humans.insertLocal('foobar', {
                 foo: 'bar',
                 age: 10
             });
 
-            const doc2 = await c2.findOne().exec();
-            const localDoc2 = await c2.getLocal('foobar');
-            await doc.atomicSet('age', 50);
+            const doc2 = await c2.humans.findOne().exec();
+            const localDoc2 = await c2.humans.getLocal('foobar');
+            await doc.atomicPatch({ age: 50 });
 
             await AsyncTestUtil.waitUntil(() => doc2.age === 50);
             await AsyncTestUtil.wait(20);
             assert.strictEqual(localDoc2.get('age'), 10);
-            await localDoc.atomicSet('age', 66);
+            await localDoc.atomicPatch({ age: 66 });
 
             await AsyncTestUtil.waitUntil(() => localDoc2.get('age') === 66);
             await AsyncTestUtil.wait(20);
@@ -511,27 +463,29 @@ config.parallel('local-documents.test.js', () => {
         });
     });
     describe('in-memory', () => {
+        return; // TODO commented out while in-memory plugin is not rewritten.
         it('should call the non-mem parent', async () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
-            const c1 = await db.collection({
-                name: 'humans',
-                schema: schemas.primaryHuman
+            const c1 = await db.addCollections({
+                humans: {
+                    schema: schemas.primaryHuman
+                }
             });
-            const inMem = await c1.inMemory();
+            const inMem = await c1.humans.inMemory();
 
             await inMem.insertLocal('foobar', {
                 foo: 'bar',
                 age: 10
             });
-            const doc = await c1.getLocal('foobar');
+            const doc = await c1.humans.getLocal('foobar');
             assert.ok(doc);
             assert.strictEqual(doc.get('age'), 10);
 
-            await c1.insertLocal('foobar2', {
+            await c1.humans.insertLocal('foobar2', {
                 foo: 'bar',
                 age: 11
             });
@@ -544,7 +498,7 @@ config.parallel('local-documents.test.js', () => {
     describe('issues', () => {
         it('PouchDB: Create and remove local doc', async () => {
             const c = await humansCollection.create();
-            const pouch = c.pouch;
+            const pouch = c.storageInstance.internals.pouch;
 
             // create
             await pouch.put({
@@ -592,20 +546,26 @@ config.parallel('local-documents.test.js', () => {
 
             myCollection.database.destroy();
         });
-        it('#663', async () => {
+        it('#663 Document conflicts with LocalDocument in the same Collection', async () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
-            const boundaryMgmtSchema = {
+
+            type DocData = { id: string; boudariesGrp: { bndrPlnId: string; bndrPlnNm: string; }[] };
+            const boundaryMgmtSchema: RxJsonSchema<DocData> = {
                 version: 0,
                 type: 'object',
+                primaryKey: 'id',
                 properties: {
+                    id: {
+                        type: 'string'
+                    },
                     boudariesGrp: {
                         type: 'array',
                         uniqueItems: false,
-                        item: {
+                        items: {
                             type: 'object',
                             properties: {
                                 bndrPlnId: {
@@ -620,17 +580,22 @@ config.parallel('local-documents.test.js', () => {
                     },
                 }
             };
-            const boundaryMgmtCol = await db.collection({
-                name: 'human',
-                schema: boundaryMgmtSchema
+            const boundaryMgmtCols = await db.addCollections({
+                human: {
+                    schema: boundaryMgmtSchema
+                }
             });
+            const boundaryMgmtCol = boundaryMgmtCols.human;
 
+            const groups = {
+                bndrPlnId: 'mygroup',
+                bndrPlnNm: 'other'
+            };
 
             // insert non-local
             await boundaryMgmtCol.insert({
-                boudariesGrp: [
-                    'mygroup'
-                ]
+                id: randomCouchString(12),
+                boudariesGrp: [groups]
             });
 
             await boundaryMgmtCol.insertLocal('metadata', {
@@ -645,12 +610,12 @@ config.parallel('local-documents.test.js', () => {
             const grpId = 'foobar';
             const metadata = await boundaryMgmtCol.getLocal('metadata');
 
-            await metadata.atomicSet('selectedBndrPlnId', grpId);
+            await metadata.atomicPatch({ selectedBndrPlnId: grpId });
 
-            const data = await boundaryMgmtCol.findOne().exec();
+            const data = await boundaryMgmtCol.findOne().exec(true);
             const json = data.toJSON();
 
-            assert.strictEqual(json.boudariesGrp[0], 'mygroup');
+            assert.deepStrictEqual(json.boudariesGrp[0], groups);
 
             db.destroy();
         });
@@ -667,31 +632,33 @@ config.parallel('local-documents.test.js', () => {
 
             const db = await createRxDatabase({
                 name: dbName,
-                adapter: leveldown,
+                storage: getRxStoragePouch(leveldown),
                 multiInstance: false
             });
-            const col = await db.collection({
-                name: 'humans',
-                schema: schemas.human
+            const cols = await db.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
             });
 
             await db.insertLocal(localDocId, localDocData);
-            await col.insertLocal(localDocId, localDocData);
+            await cols.humans.insertLocal(localDocId, localDocData);
 
             await db.destroy();
 
             const db2 = await createRxDatabase({
                 name: dbName,
-                adapter: leveldown,
+                storage: getRxStoragePouch(leveldown),
                 multiInstance: false
             });
-            const col2 = await db2.collection({
-                name: 'humans',
-                schema: schemas.human
+            const col2 = await db2.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
             });
 
             const docDb = await db2.getLocal(localDocId);
-            const docCol = await col2.getLocal(localDocId);
+            const docCol = await col2.humans.getLocal(localDocId);
 
             assert.ok(docDb);
             assert.ok(docCol);
@@ -708,7 +675,7 @@ config.parallel('local-documents.test.js', () => {
             const dbName: string = config.rootPath + 'test_tmp/' + randomCouchString(10);
             const db = await createRxDatabase({
                 name: dbName,
-                adapter: 'leveldb',
+                storage: getRxStoragePouch('leveldb'),
                 multiInstance: false
             });
 

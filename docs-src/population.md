@@ -13,9 +13,9 @@ The `ref`-keyword in properties describes to which collection the field-value be
 export const refHuman = {
     title: 'human related to other human',
     version: 0,
+    primaryKey: 'name',
     properties: {
         name: {
-            primary: true,
             type: 'string'
         },
         bestFriend: {
@@ -31,11 +31,11 @@ You can also have a one-to-many reference by using a string-array.
 ```js
 export const schemaWithOneToManyReference = {
   version: 0,
+  primaryKey: 'name',
   type: 'object',
   properties: {
     name: {
-      type: 'string',
-      primary: true
+      type: 'string'
     },
     friends: {
       type: 'array',

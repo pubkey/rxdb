@@ -11,8 +11,13 @@ import {
     createRxDatabase,
     RxJsonSchema,
     randomCouchString,
-    createCrypter
+    createCrypter,
 } from '../../plugins/core';
+
+import {
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
+
 
 config.parallel('encryption.test.js', () => {
     describe('Crypter.js', () => {
@@ -21,46 +26,24 @@ config.parallel('encryption.test.js', () => {
             const c = createCrypter('foobar', schema);
             assert.strictEqual(c.constructor.name, 'Crypter');
         });
-        describe('._encryptValue()', () => {
+        describe('._encryptString()', () => {
             it('string', () => {
                 const schema = createRxSchema(schemas.human);
                 const c = createCrypter('mypw', schema);
                 const value = 'foobar';
-                const encrypted = c._encryptValue(value);
+                const encrypted = c._encryptString(value);
                 assert.strictEqual(typeof encrypted, 'string');
                 assert.ok(!encrypted.includes(value));
                 assert.ok(encrypted.length > value.length);
             });
-            it('object', () => {
-                const schema = createRxSchema(schemas.human);
-                const c = createCrypter('mypw', schema);
-                const value = {
-                    foo: 'bar'
-                };
-                const encrypted = c._encryptValue(value);
-                assert.strictEqual(typeof encrypted, 'string');
-
-                assert.ok(!encrypted.includes(value.foo));
-                assert.ok(encrypted.length > 5);
-            });
         });
-        describe('._decryptValue()', () => {
+        describe('._decryptString()', () => {
             it('string', () => {
                 const schema = createRxSchema(schemas.human);
                 const c = createCrypter('mypw', schema);
                 const value = 'foobar';
-                const encrypted = c._encryptValue(value);
-                const decrypted = c._decryptValue(encrypted);
-                assert.deepStrictEqual(decrypted, value);
-            });
-            it('object', () => {
-                const schema = createRxSchema(schemas.human);
-                const c = createCrypter('mypw', schema);
-                const value = {
-                    foo: 'bar'
-                };
-                const encrypted = c._encryptValue(value);
-                const decrypted = c._decryptValue(encrypted);
+                const encrypted = c._encryptString(value);
+                const decrypted = c._decryptString(encrypted);
                 assert.deepStrictEqual(decrypted, value);
             });
         });
@@ -118,16 +101,17 @@ config.parallel('encryption.test.js', () => {
             it('should insert one encrypted value (object)', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory',
+                    storage: getRxStoragePouch('memory'),
                     password: randomCouchString(10)
                 });
-                const c = await db.collection({
-                    name: 'enchuman',
-                    schema: schemas.encryptedObjectHuman
+                const c = await db.addCollections({
+                    enchuman: {
+                        schema: schemas.encryptedObjectHuman
+                    }
                 });
                 const agent = schemaObjects.encryptedObjectHuman();
-                await c.insert(agent);
-                const doc = await c.findOne().exec();
+                await c.enchuman.insert(agent);
+                const doc = await c.enchuman.findOne().exec();
                 const secret = doc.get('secret');
                 assert.strictEqual(agent.secret.name, secret.name);
                 assert.strictEqual(agent.secret.subname, secret.subname);
@@ -146,7 +130,7 @@ config.parallel('encryption.test.js', () => {
                 const secret = doc.get('secret');
                 assert.strictEqual(agent.secret, secret);
                 const newSecret = randomCouchString(10);
-                await doc.atomicSet('secret', newSecret);
+                await doc.atomicPatch({ secret: newSecret });
                 const docNew = await c.findOne().exec(true);
                 assert.strictEqual(newSecret, docNew.get('secret'));
                 c.database.destroy();
@@ -154,27 +138,28 @@ config.parallel('encryption.test.js', () => {
             it('should save one encrypted value (object)', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory',
+                    storage: getRxStoragePouch('memory'),
                     password: randomCouchString(10)
                 });
-                const c = await db.collection({
-                    name: 'enchuman',
-                    schema: schemas.encryptedObjectHuman
+                const c = await db.addCollections({
+                    enchuman: {
+                        schema: schemas.encryptedObjectHuman
+                    }
                 });
                 const agent = schemaObjects.encryptedObjectHuman();
-                await c.insert(agent);
+                await c.enchuman.insert(agent);
                 const newSecret = {
                     name: randomCouchString(10),
                     subname: randomCouchString(10)
                 };
-                const doc = await c.findOne().exec(true);
+                const doc = await c.enchuman.findOne().exec(true);
                 const secret = doc.get('secret');
 
                 assert.strictEqual(agent.secret.name, secret.name);
                 assert.strictEqual(agent.secret.subname, secret.subname);
 
-                await doc.atomicSet('secret', newSecret);
-                const docNew = await c.findOne().exec(true);
+                await doc.atomicPatch({ secret: newSecret });
+                const docNew = await c.enchuman.findOne().exec(true);
 
                 assert.strictEqual(newSecret.name, docNew.get('secret.name'));
                 assert.strictEqual(newSecret.subname, docNew.get('secret.subname'));
@@ -192,7 +177,7 @@ config.parallel('encryption.test.js', () => {
             // 1. create and destroy encrypted db
             const db1 = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 password
             });
             await db1.destroy();
@@ -201,7 +186,7 @@ config.parallel('encryption.test.js', () => {
             await AsyncTestUtil.assertThrows(
                 () => createRxDatabase({
                     name,
-                    adapter: 'memory',
+                    storage: getRxStoragePouch('memory'),
                     password: 'foobarfoobar'
                 }),
                 'RxError',
@@ -211,22 +196,22 @@ config.parallel('encryption.test.js', () => {
             // 3. reopen with correct password
             const db2 = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 password
             });
             assert.ok(db2);
             await db2.destroy();
         });
         it('#917 Unexpected end of JSON input', async () => {
-            const schema: RxJsonSchema = {
+            const schema: RxJsonSchema<{ name: string; color: string; happy: boolean; }> = {
                 title: 'hero schema',
                 description: 'describes a simple hero',
                 version: 0,
+                primaryKey: 'name',
                 type: 'object',
                 properties: {
                     name: {
-                        type: 'string',
-                        primary: true
+                        type: 'string'
                     },
                     color: {
                         type: 'string'
@@ -245,14 +230,16 @@ config.parallel('encryption.test.js', () => {
 
             const db = await createRxDatabase({
                 name: dbName,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 password: 'myLongAndStupidPassword'
             });
 
-            const collection = await db.collection({
-                name: 'heroes',
-                schema
+            const collections = await db.addCollections({
+                heroes: {
+                    schema
+                }
             });
+            const collection = collections.heroes;
 
             // insert a document
             const record = await collection.findOne().exec();

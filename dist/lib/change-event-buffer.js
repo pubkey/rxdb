@@ -6,6 +6,8 @@ Object.defineProperty(exports, "__esModule", {
 exports.createChangeEventBuffer = createChangeEventBuffer;
 exports.ChangeEventBuffer = void 0;
 
+var _operators = require("rxjs/operators");
+
 /**
  * a buffer-cache which holds the last X changeEvents of the collection
  */
@@ -23,7 +25,9 @@ var ChangeEventBuffer = /*#__PURE__*/function () {
     this.eventCounterMap = new WeakMap();
     this.buffer = [];
     this.collection = collection;
-    this.subs.push(this.collection.$.subscribe(function (cE) {
+    this.subs.push(this.collection.$.pipe((0, _operators.filter)(function (cE) {
+      return !cE.isLocal;
+    })).subscribe(function (cE) {
       return _this._handleChangeEvent(cE);
     }));
   }
@@ -31,7 +35,6 @@ var ChangeEventBuffer = /*#__PURE__*/function () {
   var _proto = ChangeEventBuffer.prototype;
 
   _proto._handleChangeEvent = function _handleChangeEvent(changeEvent) {
-    // console.log('changeEventBuffer()._handleChangeEvent()');
     this.counter++;
     this.buffer.push(changeEvent);
     this.eventCounterMap.set(changeEvent, this.counter);
@@ -110,6 +113,7 @@ var ChangeEventBuffer = /*#__PURE__*/function () {
   /**
    * use this to check if a change has already been handled
    * @returns true if change with revision exists
+   * TODO only used in the in-memory plugin, we should move it there.
    *
    */
   ;
@@ -121,7 +125,10 @@ var ChangeEventBuffer = /*#__PURE__*/function () {
     while (t > 0) {
       t--;
       var cE = this.buffer[t];
-      if (cE.documentData && cE.documentData._rev === revision) return true;
+
+      if (cE.documentData && cE.documentData._rev === revision) {
+        return true;
+      }
     }
 
     return false;

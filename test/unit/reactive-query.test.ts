@@ -17,6 +17,10 @@ import {
 } from '../../plugins/core';
 
 import {
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
+
+import {
     filter,
     map,
     first,
@@ -121,7 +125,7 @@ config.parallel('reactive-query.test.js', () => {
 
             // change doc so query does not match
             const newPromiseWait = AsyncTestUtil.waitResolveable(500);
-            await doc.atomicSet('firstName', 'foobar');
+            await doc.atomicPatch({ firstName: 'foobar' });
             await newPromiseWait.promise;
             assert.strictEqual(values.length, 0);
             querySub.unsubscribe();
@@ -192,7 +196,7 @@ config.parallel('reactive-query.test.js', () => {
             // edit+save doc
             const newPromiseWait = AsyncTestUtil.waitResolveable(300);
 
-            await doc.atomicSet('firstName', 'foobar');
+            await doc.atomicPatch({ firstName: 'foobar' });
             await newPromiseWait.promise;
 
             await promiseWait(20);
@@ -277,10 +281,10 @@ config.parallel('reactive-query.test.js', () => {
             const crawlStateSchema = {
                 version: 0,
                 type: 'object',
+                primaryKey: 'key',
                 properties: {
                     key: {
-                        type: 'string',
-                        primary: true
+                        type: 'string'
                     },
                     state: {
                         type: 'object'
@@ -291,21 +295,23 @@ config.parallel('reactive-query.test.js', () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 ignoreDuplicate: true
             });
-            await db.collection({
-                name: 'crawlstate',
-                schema: crawlStateSchema
+            await db.addCollections({
+                crawlstate: {
+                    schema: crawlStateSchema
+                }
             });
             const db2 = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 ignoreDuplicate: true
             });
-            await db2.collection({
-                name: 'crawlstate',
-                schema: crawlStateSchema
+            await db2.addCollections({
+                crawlstate: {
+                    schema: crawlStateSchema
+                }
             });
 
             const emitted: any[] = [];
@@ -365,6 +371,7 @@ config.parallel('reactive-query.test.js', () => {
                     }))
                     .map(data => db2.crawlstate.atomicUpsert(data))
             );
+
             await AsyncTestUtil.waitUntil(() => {
                 if (!emitted.length) return false;
                 const lastEmitted = emitted[emitted.length - 1];
@@ -392,13 +399,15 @@ config.parallel('reactive-query.test.js', () => {
                 const name = randomCouchString(10);
                 const db = await createRxDatabase({
                     name,
-                    adapter: 'memory',
+                    storage: getRxStoragePouch('memory'),
                     ignoreDuplicate: true
                 });
-                const collection = await db.collection({
-                    name: 'humans',
-                    schema: schemas.human
+                const collections = await db.addCollections({
+                    humans: {
+                        schema: schemas.human
+                    }
                 });
+                const collection = collections.humans;
 
                 await collection.insert(schemaObjects.human());
 
@@ -417,7 +426,7 @@ config.parallel('reactive-query.test.js', () => {
                 // Let's try with a different query
                 collection
                     .find()
-                    .sort('_id')
+                    .sort('passportId')
                     .exec()
                     .then((x) => {
                         results.push(x);
@@ -425,7 +434,7 @@ config.parallel('reactive-query.test.js', () => {
 
                 const subs3 = collection
                     .find()
-                    .sort('_id')
+                    .sort('passportId')
                     .$.subscribe(x => {
                         results.push(x);
                         subs3.unsubscribe();

@@ -1,16 +1,17 @@
 import type {
     RxJsonSchema
 } from 'rxdb/plugins/core';
-export const HERO_SCHEMA: RxJsonSchema = {
+import { RxHeroDocumentType } from '../RxDB';
+export const HERO_SCHEMA: RxJsonSchema<RxHeroDocumentType> = {
     title: 'hero schema',
     description: 'describes a simple hero',
     version: 0,
     keyCompression: false,
+    primaryKey: 'name',
     type: 'object',
     properties: {
         name: {
             type: 'string',
-            primary: true,
             default: ''
         },
         color: {
@@ -51,5 +52,11 @@ export const HERO_SCHEMA: RxJsonSchema = {
             default: []
         }
     },
-    required: ['color', 'hp', 'maxHP', 'skills']
+    required: [
+        'name',
+        'color',
+        'hp',
+        'maxHP',
+        'skills'
+    ]
 };

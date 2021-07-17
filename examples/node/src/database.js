@@ -1,10 +1,11 @@
 require('babel-polyfill');
 const {
-    addRxPlugin,
-    createRxDatabase
+    createRxDatabase,
+    addPouchPlugin,
+    getRxStoragePouch
 } = require('../../../');
-addRxPlugin(require('pouchdb-adapter-node-websql'));
-addRxPlugin(require('pouchdb-adapter-http'));
+addPouchPlugin(require('pouchdb-adapter-node-websql'));
+addPouchPlugin(require('pouchdb-adapter-http'));
 
 const Database = {};
 
@@ -12,6 +13,7 @@ const heroSchema = {
     title: 'hero schema',
     description: 'describes a simple hero',
     version: 0,
+    primaryKey: 'name',
     type: 'object',
     properties: {
         name: {
@@ -30,23 +32,24 @@ const SYNC_URL = 'http://localhost:10102/';
 const create = async () => {
     const database = await createRxDatabase({
         name: 'heroesdb',
-        adapter: 'websql',
+        storage: getRxStoragePouch('websql'),
         password: 'myLongAndStupidPassword',
         multiInstance: true
     });
-    await database.collection({
-        name: 'heroes',
-        schema: heroSchema,
-        statics: {
-            async addHero(name, color) {
-                return this.upsert({
-                    name,
-                    color
-                });
+    await database.addCollections({
+        heroes: {
+            schema: heroSchema,
+            statics: {
+                async addHero(name, color) {
+                    return this.upsert({
+                        name,
+                        color
+                    });
+                }
             }
         }
     });
-    database.collections.heroes.sync({
+    database.collections.heroes.syncCouchDB({
         remote: SYNC_URL + 'hero/'
     });
     return database;
@@ -54,7 +57,9 @@ const create = async () => {
 
 let createPromise = null;
 Database.get = async () => {
-    if (!createPromise) createPromise = create();
+    if (!createPromise) {
+        createPromise = create();
+    }
     return createPromise;
 };
 

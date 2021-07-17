@@ -19,12 +19,8 @@ import { RxDBEncryptionPlugin } from './plugins/encryption';
 addRxPlugin(RxDBEncryptionPlugin);
 import { RxDBUpdatePlugin } from './plugins/update';
 addRxPlugin(RxDBUpdatePlugin);
-import { RxDBWatchForChangesPlugin } from './plugins/watch-for-changes';
-addRxPlugin(RxDBWatchForChangesPlugin);
-import { RxDBReplicationPlugin } from './plugins/replication';
-addRxPlugin(RxDBReplicationPlugin);
-import { RxDBAdapterCheckPlugin } from './plugins/adapter-check';
-addRxPlugin(RxDBAdapterCheckPlugin);
+import { RxDBReplicationCouchDBPlugin } from './plugins/replication-couchdb';
+addRxPlugin(RxDBReplicationCouchDBPlugin);
 import { RxDBJsonDumpPlugin } from './plugins/json-dump';
 addRxPlugin(RxDBJsonDumpPlugin);
 import { RxDBInMemoryPlugin } from './plugins/in-memory';
@@ -37,4 +33,5 @@ import { RxDBQueryBuilderPlugin } from './plugins/query-builder';
 addRxPlugin(RxDBQueryBuilderPlugin); // re-export things from core
 
 export * from './core';
+export * from './plugins/pouchdb';
 //# sourceMappingURL=index.js.map

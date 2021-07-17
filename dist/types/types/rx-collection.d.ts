@@ -17,17 +17,15 @@ export interface NumberFunctionMap {
     [key: number]: Function;
 }
 
-export interface RxCollectionCreator extends RxCollectionCreatorBase {
-    name: string;
-}
 
 /**
- * TODO remove RxCollectionCreator
- * and rename this one in the next release
+ * Params to create a new collection.
+ * Notice the name of the collection is set onle level higher
+ * when calling addCollections()
  */
-export type RxCollectionCreatorBase = {
-    schema: RxJsonSchema;
-    pouchSettings?: PouchSettings;
+export type RxCollectionCreator = {
+    schema: RxJsonSchema<any>;
+    instanceCreationOptions?: any;
     migrationStrategies?: MigrationStrategies;
     autoMigrate?: boolean;
     statics?: KeyFunctionMap;
@@ -72,10 +70,11 @@ export type RxCollectionHookNoInstanceCallback<
 export type RxCollection<
     RxDocumentType = any,
     OrmMethods = {},
-    StaticMethods = { [key: string]: any }
-    > = RxCollectionBase<RxDocumentType, OrmMethods> &
-    RxCollectionGenerated<RxDocumentType, OrmMethods> &
-    StaticMethods;
+    StaticMethods = {},
+    InstanceCreationOptions = {}
+    > = StaticMethods &
+    RxCollectionBase<InstanceCreationOptions, RxDocumentType, OrmMethods> &
+    RxCollectionGenerated<RxDocumentType, OrmMethods>;
 
 export interface RxCollectionGenerated<RxDocumentType = any, OrmMethods = {}> extends RxLocalDocumentMutation<RxCollection<RxDocumentType, OrmMethods>> {
 

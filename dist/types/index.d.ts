@@ -4,3 +4,4 @@
  * It basically just rxdb-core with some default plugins
  */
 export * from './core';
+export * from './plugins/pouchdb';

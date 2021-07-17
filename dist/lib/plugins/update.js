@@ -24,7 +24,9 @@ function update(updateObj) {
 
 function RxQueryUpdate(updateObj) {
   return this.exec().then(function (docs) {
-    if (!docs) return null;
+    if (!docs) {
+      return null;
+    }
 
     if (Array.isArray(docs)) {
       return Promise.all(docs.map(function (doc) {

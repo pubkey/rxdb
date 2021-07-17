@@ -1,11 +1,15 @@
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 var _exportNames = {
+  deepFreezeWhenDevMode: true,
   RxDBDevModePlugin: true
 };
+exports.deepFreezeWhenDevMode = deepFreezeWhenDevMode;
 exports.RxDBDevModePlugin = void 0;
 
 var _errorMessages = require("./error-messages");
@@ -34,6 +38,37 @@ var _checkQuery = require("./check-query");
 
 var _rxError = require("../../rx-error");
 
+var _checkNames = require("./check-names");
+
+Object.keys(_checkNames).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _checkNames[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _checkNames[key];
+    }
+  });
+});
+
+var _deepFreeze = _interopRequireDefault(require("deep-freeze"));
+
+/**
+ * Deep freezes and object when in dev-mode.
+ * Deep-Freezing has the same performaance as deep-cloning, so we only do that in dev-mode.
+ * Also we can ensure the readonly state via typescript
+ * @link https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
+ */
+function deepFreezeWhenDevMode(obj) {
+  // direct return if falsy
+  if (!obj) {
+    return obj;
+  }
+
+  return (0, _deepFreeze["default"])(obj);
+}
+
 var DEV_MODE_PLUGIN_NAME = 'dev-mode';
 var RxDBDevModePlugin = {
   name: DEV_MODE_PLUGIN_NAME,
@@ -42,6 +77,7 @@ var RxDBDevModePlugin = {
     isDevMode: function isDevMode() {
       return true;
     },
+    deepFreezeWhenDevMode: deepFreezeWhenDevMode,
     tunnelErrorMessage: function tunnelErrorMessage(code) {
       if (!_errorMessages.ERROR_MESSAGES[code]) {
         console.error('RxDB: Error-Code not known: ' + code);

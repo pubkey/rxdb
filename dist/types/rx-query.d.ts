@@ -1,6 +1,6 @@
 import { BehaviorSubject } from 'rxjs';
-import type { RxCollection, RxDocument, RxQueryOP, RxQuery, MangoQuery, MangoQuerySortPart, MangoQuerySelector } from './types';
-import { PreparedQuery } from './rx-storate.interface';
+import type { RxCollection, RxDocument, RxQueryOP, RxQuery, MangoQuery, MangoQuerySortPart, MangoQuerySelector, PreparedQuery } from './types';
+import type { QueryMatcher } from 'event-reduce-js';
 export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocument<RxDocumentType[]> | RxDocument<RxDocumentType>> {
     op: RxQueryOP;
     mangoQuery: Readonly<MangoQuery>;
@@ -54,10 +54,10 @@ export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumen
     exec(throwIfMissing: true): Promise<RxDocument<RxDocumentType>>;
     exec(): Promise<RxQueryResult>;
     /**
-     * cached call to get the massageSelector
+     * cached call to get the queryMatcher
      * @overwrites itself with the actual value
      */
-    get massageSelector(): any;
+    get queryMatcher(): QueryMatcher<RxDocumentType>;
     /**
      * returns a string that is used for equal-comparisons
      * @overwrites itself with the actual value
@@ -65,14 +65,12 @@ export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumen
     toString(): string;
     /**
      * returns the prepared query
+     * which can be send to the storage instance to query for documents.
      * @overwrites itself with the actual value
+     * TODO rename this function, toJSON is missleading
+     * because we do not return the plain mango query object.
      */
     toJSON(): PreparedQuery<RxDocumentType>;
-    /**
-     * returns the key-compressed version of the query
-     * @overwrites itself with the actual value
-     */
-    keyCompress(): MangoQuery<any>;
     /**
      * returns true if the document matches the query,
      * does not use the 'skip' and 'limit'

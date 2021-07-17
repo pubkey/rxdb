@@ -14,7 +14,10 @@ import {
     DataMigrator,
     createDataMigrator
 } from './data-migrator';
-import { getMigrationStateByDatabase, onDatabaseDestroy } from './migration-state';
+import {
+    getMigrationStateByDatabase,
+    onDatabaseDestroy
+} from './migration-state';
 
 export const DATA_MIGRATOR_BY_COLLECTION: WeakMap<RxCollection, DataMigrator> = new WeakMap();
 

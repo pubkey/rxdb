@@ -12,6 +12,7 @@ import {
 import {
     skip
 } from 'rxjs/operators';
+import { RxHeroDocument } from 'src/app/RxDB';
 
 @Component({
     selector: 'hero-edit',
@@ -21,7 +22,7 @@ import {
 })
 export class HeroEditComponent implements OnInit {
 
-    @Input('hero') hero: any;
+    @Input('hero') hero?: RxHeroDocument;
     @Output('done') done = new EventEmitter();
 
     public synced: Boolean = true;
@@ -35,6 +36,9 @@ export class HeroEditComponent implements OnInit {
     }
 
     ngOnInit() {
+        if (!this.hero) {
+            throw new Error('should never happen');
+        }
         this.formValue = this.hero.hp;
         this.subs.push(
             this.hero.$
@@ -49,11 +53,18 @@ export class HeroEditComponent implements OnInit {
     }
 
     async submit() {
-        await this.hero.atomicSet('hp', this.formValue);
+        if (!this.hero) {
+            throw new Error('should never happen');
+        }
+
+        await this.hero.atomicPatch({ hp: this.formValue });
         this.done.emit(true);
     }
 
     resync() {
+        if (!this.hero) {
+            throw new Error('should never happen');
+        }
         this.formValue = this.hero.hp;
         this.synced = true;
         this._cdr.detectChanges();

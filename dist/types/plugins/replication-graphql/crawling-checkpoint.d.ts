@@ -1,20 +1,23 @@
-import type { RxCollection, PouchChangeRow, PouchChangeDoc } from '../../types';
+import type { RxCollection, RxDocumentData } from '../../types';
 /**
  * @return last sequence checkpoint
  */
 export declare function getLastPushSequence(collection: RxCollection, endpointHash: string): Promise<number>;
-export declare function setLastPushSequence(collection: RxCollection, endpointHash: string, seq: any): Promise<{
-    ok: boolean;
-    id: string;
-    rev: string;
-}>;
-export declare function getChangesSinceLastPushSequence(collection: RxCollection, endpointHash: string, lastPulledRevField: string, batchSize?: number, syncRevisions?: boolean): Promise<{
-    results: (PouchChangeRow & PouchChangeDoc)[];
-    last_seq: number;
+declare type CheckpointDoc = {
+    _id: string;
+    value: number;
+};
+export declare function setLastPushSequence(collection: RxCollection, endpointHash: string, sequence: number): Promise<CheckpointDoc>;
+export declare function getChangesSinceLastPushSequence<RxDocType>(collection: RxCollection<RxDocType, any>, endpointHash: string, batchSize?: number): Promise<{
+    changedDocs: Map<string, {
+        id: string;
+        doc: RxDocumentData<RxDocType>;
+        sequence: number;
+    }>;
+    lastSequence: number;
 }>;
 export declare function getLastPullDocument(collection: RxCollection, endpointHash: string): Promise<any>;
 export declare function setLastPullDocument(collection: RxCollection, endpointHash: string, doc: any): Promise<{
-    ok: boolean;
-    id: string;
-    rev: string;
+    _id: string;
 }>;
+export {};

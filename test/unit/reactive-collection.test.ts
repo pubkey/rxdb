@@ -6,13 +6,20 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
 import {
-    createRxDatabase, randomCouchString, isRxDocument
+    createRxDatabase,
+    randomCouchString,
+    RxChangeEvent
 } from '../../plugins/core';
+
+import {
+    getRxStoragePouch,
+} from '../../plugins/pouchdb';
+
+
 import AsyncTestUtil from 'async-test-util';
 import {
     first
 } from 'rxjs/operators';
-import { RxChangeEvent, RxChangeEventDelete } from '../../src/rx-change-event';
 
 config.parallel('reactive-collection.test.js', () => {
     describe('.insert()', () => {
@@ -20,17 +27,18 @@ config.parallel('reactive-collection.test.js', () => {
             it('should get a valid event on insert', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
                 const colName = 'foobar';
-                const c = await db.collection({
-                    name: colName,
-                    schema: schemas.human
+                const cols = await db.addCollections({
+                    [colName]: {
+                        schema: schemas.human
+                    }
                 });
+                const c = cols[colName];
 
                 c.insert(schemaObjects.human());
                 const changeEvent: RxChangeEvent = await c.$.pipe(first()).toPromise() as any;
-                assert.strictEqual(changeEvent.constructor.name, 'RxChangeEvent');
                 assert.strictEqual(changeEvent.collectionName, colName);
                 assert.strictEqual(typeof changeEvent.documentId, 'string');
                 assert.ok(changeEvent.documentData);
@@ -41,12 +49,15 @@ config.parallel('reactive-collection.test.js', () => {
             it('should get no event on non-succes-insert', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
-                const c = await db.collection({
-                    name: 'foobar',
-                    schema: schemas.human
+                const cols = await db.addCollections({
+                    foobar: {
+                        schema: schemas.human
+                    }
                 });
+                const c = cols.foobar;
+
                 let calls = 0;
                 const sub = db.$.subscribe(() => {
                     calls++;
@@ -69,12 +80,14 @@ config.parallel('reactive-collection.test.js', () => {
             it('should fire on bulk insert', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
-                const collection = await db.collection({
-                    name: 'human',
-                    schema: schemas.primaryHuman
+                const collections = await db.addCollections({
+                    human: {
+                        schema: schemas.primaryHuman
+                    }
                 });
+                const collection = collections.human;
 
                 const emittedCollection: RxChangeEvent[] = [];
                 const colSub = collection.insert$.subscribe((ce) => {
@@ -89,7 +102,6 @@ config.parallel('reactive-collection.test.js', () => {
                 assert.strictEqual(changeEvent.operation, 'INSERT');
                 assert.strictEqual(changeEvent.collectionName, 'human');
                 assert.strictEqual(changeEvent.documentId, docs[0].passportId);
-                assert.ok(isRxDocument(changeEvent.rxDocument));
                 assert.ok(changeEvent.documentData);
 
                 colSub.unsubscribe();
@@ -102,7 +114,7 @@ config.parallel('reactive-collection.test.js', () => {
             it('should fire on bulk remove', async () => {
                 const c = await humansCollection.create(10);
 
-                const emittedCollection: RxChangeEventDelete[] = [];
+                const emittedCollection: RxChangeEvent[] = [];
                 const colSub = c.remove$.subscribe((ce) => {
                     emittedCollection.push(ce);
                 });
@@ -117,9 +129,8 @@ config.parallel('reactive-collection.test.js', () => {
                 assert.strictEqual(changeEvent.operation, 'DELETE');
                 assert.strictEqual(changeEvent.collectionName, 'human');
                 assert.strictEqual(changeEvent.documentId, docList[0].primary);
-                assert.ok(isRxDocument(changeEvent.rxDocument));
-                assert.ok(changeEvent.documentData);
-                assert.ok(changeEvent.previousData);
+                assert.ok(!changeEvent.documentData);
+                assert.ok(changeEvent.previousDocumentData);
 
                 colSub.unsubscribe();
                 c.database.destroy();
@@ -171,7 +182,9 @@ config.parallel('reactive-collection.test.js', () => {
 
             await c.insert(schemaObjects.human());
 
-            await AsyncTestUtil.waitUntil(() => emitted.length === 4);
+            await AsyncTestUtil.waitUntil(() => {
+                return emitted.length === 4;
+            });
             emitted.forEach(cE => assert.strictEqual(cE.operation, 'INSERT'));
             c.database.destroy();
         });
@@ -189,8 +202,8 @@ config.parallel('reactive-collection.test.js', () => {
             await c.insert(schemaObjects.human());
             await doc3.remove();
 
-            await doc1.atomicSet('firstName', 'foobar1');
-            await doc2.atomicSet('firstName', 'foobar2');
+            await doc1.atomicPatch({ firstName: 'foobar1' });
+            await doc2.atomicPatch({ firstName: 'foobar2' });
 
             await AsyncTestUtil.waitUntil(() => emitted.length === 2);
             emitted.forEach(cE => assert.strictEqual(cE.operation, 'UPDATE'));

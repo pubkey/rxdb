@@ -59,13 +59,13 @@ Object.keys(_crawlingCheckpoint).forEach(function (key) {
   });
 });
 
-var _watchForChanges = require("../watch-for-changes");
-
 var _leaderElection = require("../leader-election");
+
+var _overwritable = require("../../overwritable");
 
 var _rxChangeEvent = require("../../rx-change-event");
 
-var _overwritable = require("../../overwritable");
+var _rxCollectionHelper = require("../../rx-collection-helper");
 
 var _graphqlSchemaFromRxSchema = require("./graphql-schema-from-rx-schema");
 
@@ -102,15 +102,9 @@ function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o =
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
 (0, _core.addRxPlugin)(_leaderElection.RxDBLeaderElectionPlugin);
-/**
- * add the watch-for-changes-plugin
- * so pouchdb will emit events when something gets written to it
- */
-
-(0, _core.addRxPlugin)(_watchForChanges.RxDBWatchForChangesPlugin);
 
 var RxGraphQLReplicationState = /*#__PURE__*/function () {
-  function RxGraphQLReplicationState(collection, url, headers, pull, push, deletedFlag, lastPulledRevField, live, liveInterval, retryTime, syncRevisions) {
+  function RxGraphQLReplicationState(collection, url, headers, pull, push, deletedFlag, live, liveInterval, retryTime) {
     this._subjects = {
       recieved: new _rxjs.Subject(),
       // all documents that are recieved from the endpoint
@@ -141,11 +135,9 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
     this.pull = pull;
     this.push = push;
     this.deletedFlag = deletedFlag;
-    this.lastPulledRevField = lastPulledRevField;
     this.live = live;
     this.liveInterval = liveInterval;
     this.retryTime = retryTime;
-    this.syncRevisions = syncRevisions;
     this.client = (0, _graphqlClient["default"])({
       url: url,
       headers: headers
@@ -182,7 +174,7 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
       return true;
     }
 
-    if (!this.live && this._subjects.initialReplicationComplete['_value']) {
+    if (!this.live && this._subjects.initialReplicationComplete.getValue()) {
       return true;
     }
 
@@ -247,7 +239,7 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
 
                         _this2._subjects.active.next(false);
 
-                        if (retryOnFail && !willRetry && _this2._subjects.initialReplicationComplete['_value'] === false) {
+                        if (retryOnFail && !willRetry && _this2._subjects.initialReplicationComplete.getValue() === false) {
                           _this2._subjects.initialReplicationComplete.next(true);
                         }
 
@@ -366,7 +358,9 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
     return _run;
   }()
   /**
-   * @return true if sucessfull
+   * Pull all changes from the server,
+   * start from the last pulled change.
+   * @return true if sucessfull, false if something errored
    */
   ;
 
@@ -376,7 +370,7 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
     var _runPull = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee5() {
       var _this4 = this;
 
-      var latestDocument, latestDocumentData, pullGraphQL, result, err, dataPath, data, modified, docIds, docsWithRevisions, newLatestDocument;
+      var latestDocument, latestDocumentData, pullGraphQL, result, err, dataPath, data, modified, newLatestDocument;
       return _regenerator["default"].wrap(function _callee5$(_context5) {
         while (1) {
           switch (_context5.prev = _context5.next) {
@@ -438,8 +432,17 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
 
             case 27:
               dataPath = this.pull.dataPath || ['data', Object.keys(result.data)[0]];
-              data = _objectPath["default"].get(result, dataPath);
-              _context5.next = 31;
+              data = _objectPath["default"].get(result, dataPath); // optimisation shortcut, do not proceed if there are no documents.
+
+              if (!(data.length === 0)) {
+                _context5.next = 31;
+                break;
+              }
+
+              return _context5.abrupt("return", true);
+
+            case 31:
+              _context5.next = 33;
               return Promise.all(data.map( /*#__PURE__*/function () {
                 var _ref2 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(doc) {
                   return _regenerator["default"].wrap(function _callee4$(_context4) {
@@ -465,63 +468,53 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
                 };
               }()));
 
-            case 31:
+            case 33:
               modified = _context5.sent.filter(function (doc) {
                 return !!doc;
               });
 
               if (!_overwritable.overwritable.isDevMode()) {
-                _context5.next = 41;
+                _context5.next = 43;
                 break;
               }
 
-              _context5.prev = 33;
+              _context5.prev = 35;
               modified.forEach(function (doc) {
-                var withoutDeleteFlag = Object.assign({}, doc);
+                var withoutDeleteFlag = (0, _util.flatClone)(doc);
                 delete withoutDeleteFlag[_this4.deletedFlag];
-                delete withoutDeleteFlag._revisions;
 
                 _this4.collection.schema.validate(withoutDeleteFlag);
               });
-              _context5.next = 41;
+              _context5.next = 43;
               break;
 
-            case 37:
-              _context5.prev = 37;
-              _context5.t1 = _context5["catch"](33);
+            case 39:
+              _context5.prev = 39;
+              _context5.t1 = _context5["catch"](35);
 
               this._subjects.error.next(_context5.t1);
 
               return _context5.abrupt("return", false);
 
-            case 41:
-              docIds = modified.map(function (doc) {
-                return doc[_this4.collection.schema.primaryPath];
-              });
-              _context5.next = 44;
-              return (0, _helper.getDocsWithRevisionsFromPouch)(this.collection, docIds);
-
-            case 44:
-              docsWithRevisions = _context5.sent;
-
+            case 43:
               if (!this.isStopped()) {
-                _context5.next = 47;
+                _context5.next = 45;
                 break;
               }
 
               return _context5.abrupt("return", true);
 
-            case 47:
-              _context5.next = 49;
-              return this.handleDocumentsFromRemote(modified, docsWithRevisions);
+            case 45:
+              _context5.next = 47;
+              return this.handleDocumentsFromRemote(modified);
 
-            case 49:
+            case 47:
               modified.map(function (doc) {
                 return _this4._subjects.recieved.next(doc);
               });
 
               if (!(modified.length === 0)) {
-                _context5.next = 54;
+                _context5.next = 52;
                 break;
               }
 
@@ -529,27 +522,27 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
               } else {// console.log('RxGraphQLReplicationState._run(): no more docs and not live; complete = true');
                 }
 
-              _context5.next = 59;
+              _context5.next = 57;
               break;
 
-            case 54:
+            case 52:
               newLatestDocument = modified[modified.length - 1];
-              _context5.next = 57;
+              _context5.next = 55;
               return (0, _crawlingCheckpoint.setLastPullDocument)(this.collection, this.endpointHash, newLatestDocument);
 
-            case 57:
-              _context5.next = 59;
+            case 55:
+              _context5.next = 57;
               return this.runPull();
 
-            case 59:
+            case 57:
               return _context5.abrupt("return", true);
 
-            case 60:
+            case 58:
             case "end":
               return _context5.stop();
           }
         }
-      }, _callee5, this, [[9, 23], [33, 37]]);
+      }, _callee5, this, [[9, 23], [35, 39]]);
     }));
 
     function runPull() {
@@ -569,55 +562,45 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
     var _runPush = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee7() {
       var _this5 = this;
 
-      var changes, changesWithDocs, lastSuccessfullChange, i, changeWithDoc, pushObj, result, err;
+      var changesResult, changesWithDocs, lastSuccessfullChange, i, changeWithDoc, pushObj, result, err;
       return _regenerator["default"].wrap(function _callee7$(_context7) {
         while (1) {
           switch (_context7.prev = _context7.next) {
             case 0:
               _context7.next = 2;
-              return (0, _crawlingCheckpoint.getChangesSinceLastPushSequence)(this.collection, this.endpointHash, this.lastPulledRevField, this.push.batchSize, this.syncRevisions);
+              return (0, _crawlingCheckpoint.getChangesSinceLastPushSequence)(this.collection, this.endpointHash, this.push.batchSize);
 
             case 2:
-              changes = _context7.sent;
+              changesResult = _context7.sent;
               _context7.next = 5;
-              return Promise.all(changes.results.map( /*#__PURE__*/function () {
-                var _ref3 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee6(change) {
-                  var doc, seq;
+              return Promise.all(Array.from(changesResult.changedDocs.values()).map( /*#__PURE__*/function () {
+                var _ref3 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee6(row) {
+                  var changedDoc;
                   return _regenerator["default"].wrap(function _callee6$(_context6) {
                     while (1) {
                       switch (_context6.prev = _context6.next) {
                         case 0:
-                          doc = change['doc'];
-                          doc[_this5.deletedFlag] = !!change['deleted'];
-                          delete doc._deleted;
-                          delete doc._attachments;
-                          delete doc[_this5.lastPulledRevField];
+                          changedDoc = row.doc;
+                          _context6.next = 3;
+                          return _this5.push.modifier(changedDoc);
 
-                          if (!_this5.syncRevisions) {
-                            delete doc._rev;
-                          }
+                        case 3:
+                          changedDoc = _context6.sent;
 
-                          _context6.next = 8;
-                          return _this5.push.modifier(doc);
-
-                        case 8:
-                          doc = _context6.sent;
-
-                          if (doc) {
-                            _context6.next = 11;
+                          if (changedDoc) {
+                            _context6.next = 6;
                             break;
                           }
 
                           return _context6.abrupt("return", null);
 
-                        case 11:
-                          seq = change.seq;
+                        case 6:
                           return _context6.abrupt("return", {
-                            doc: doc,
-                            seq: seq
+                            doc: changedDoc,
+                            sequence: row.sequence
                           });
 
-                        case 13:
+                        case 7:
                         case "end":
                           return _context6.stop();
                       }
@@ -632,7 +615,7 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
 
             case 5:
               changesWithDocs = _context7.sent.filter(function (doc) {
-                return doc;
+                return !!doc;
               });
               lastSuccessfullChange = null;
               _context7.prev = 7;
@@ -640,81 +623,87 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
 
             case 9:
               if (!(i < changesWithDocs.length)) {
-                _context7.next = 32;
+                _context7.next = 33;
                 break;
               }
 
-              changeWithDoc = changesWithDocs[i];
-              _context7.next = 13;
+              changeWithDoc = changesWithDocs[i]; // TODO _deleted should be required on type RxDocumentData
+              // so we do not need this check here
+
+              if (!changeWithDoc.doc.hasOwnProperty('_deleted')) {
+                changeWithDoc.doc._deleted = false;
+              }
+
+              _context7.next = 14;
               return this.push.queryBuilder(changeWithDoc.doc);
 
-            case 13:
+            case 14:
               pushObj = _context7.sent;
-              _context7.next = 16;
+              _context7.next = 17;
               return this.client.query(pushObj.query, pushObj.variables);
 
-            case 16:
+            case 17:
               result = _context7.sent;
 
               if (!result.errors) {
-                _context7.next = 27;
+                _context7.next = 28;
                 break;
               }
 
               if (!(typeof result.errors === 'string')) {
-                _context7.next = 22;
+                _context7.next = 23;
                 break;
               }
 
               throw new Error(result.errors);
 
-            case 22:
+            case 23:
               err = new Error('unknown errors occured - see innerErrors for more details');
               err.innerErrors = result.errors;
               throw err;
 
-            case 25:
-              _context7.next = 29;
+            case 26:
+              _context7.next = 30;
               break;
 
-            case 27:
+            case 28:
               this._subjects.send.next(changeWithDoc.doc);
 
               lastSuccessfullChange = changeWithDoc;
 
-            case 29:
+            case 30:
               i++;
               _context7.next = 9;
               break;
 
-            case 32:
-              _context7.next = 41;
+            case 33:
+              _context7.next = 42;
               break;
 
-            case 34:
-              _context7.prev = 34;
+            case 35:
+              _context7.prev = 35;
               _context7.t0 = _context7["catch"](7);
 
               if (!lastSuccessfullChange) {
-                _context7.next = 39;
+                _context7.next = 40;
                 break;
               }
 
-              _context7.next = 39;
-              return (0, _crawlingCheckpoint.setLastPushSequence)(this.collection, this.endpointHash, lastSuccessfullChange.seq);
+              _context7.next = 40;
+              return (0, _crawlingCheckpoint.setLastPushSequence)(this.collection, this.endpointHash, lastSuccessfullChange.sequence);
 
-            case 39:
+            case 40:
               this._subjects.error.next(_context7.t0);
 
               return _context7.abrupt("return", false);
 
-            case 41:
-              _context7.next = 43;
-              return (0, _crawlingCheckpoint.setLastPushSequence)(this.collection, this.endpointHash, changes.last_seq);
+            case 42:
+              _context7.next = 44;
+              return (0, _crawlingCheckpoint.setLastPushSequence)(this.collection, this.endpointHash, changesResult.lastSequence);
 
-            case 43:
-              if (!(changes.results.length === 0)) {
-                _context7.next = 47;
+            case 44:
+              if (!(changesResult.changedDocs.size === 0)) {
+                _context7.next = 48;
                 break;
               }
 
@@ -722,22 +711,22 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
               } else {// console.log('RxGraphQLReplicationState._runPull(): no more docs to push and not live; complete = true');
                 }
 
-              _context7.next = 49;
+              _context7.next = 50;
               break;
 
-            case 47:
-              _context7.next = 49;
+            case 48:
+              _context7.next = 50;
               return this.runPush();
 
-            case 49:
+            case 50:
               return _context7.abrupt("return", true);
 
-            case 50:
+            case 51:
             case "end":
               return _context7.stop();
           }
         }
-      }, _callee7, this, [[7, 34]]);
+      }, _callee7, this, [[7, 35]]);
     }));
 
     function runPush() {
@@ -748,67 +737,64 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
   }();
 
   _proto.handleDocumentsFromRemote = /*#__PURE__*/function () {
-    var _handleDocumentsFromRemote = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee9(docs, docsWithRevisions) {
+    var _handleDocumentsFromRemote = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee9(docs) {
       var _this6 = this;
 
-      var toPouchDocs, _iterator, _step, doc, deletedValue, toPouch, primaryValue, pouchState, newRevision, newRevisionHeight, revisionId, startTime, endTime, _i, _toPouchDocs, tpd, originalDoc, cE;
+      var toStorageDocs, docIds, docsFromLocal, _iterator, _step, doc, documentId, deletedValue, docStateInLocalStorageInstance, newRevision, hasHeight, newRevisionHeight;
 
       return _regenerator["default"].wrap(function _callee9$(_context9) {
         while (1) {
           switch (_context9.prev = _context9.next) {
             case 0:
-              toPouchDocs = [];
+              toStorageDocs = [];
+              docIds = docs.map(function (doc) {
+                return doc[_this6.collection.schema.primaryPath];
+              });
+              _context9.next = 4;
+              return this.collection.storageInstance.findDocumentsById(docIds, true);
+
+            case 4:
+              docsFromLocal = _context9.sent;
 
               for (_iterator = _createForOfIteratorHelperLoose(docs); !(_step = _iterator()).done;) {
                 doc = _step.value;
+                documentId = doc[this.collection.schema.primaryPath];
                 deletedValue = doc[this.deletedFlag];
-                toPouch = this.collection._handleToPouch(doc);
-                toPouch._deleted = deletedValue;
-                delete toPouch[this.deletedFlag];
+                doc._deleted = deletedValue;
+                delete doc[this.deletedFlag];
+                docStateInLocalStorageInstance = docsFromLocal.get(documentId);
+                newRevision = (0, _helper.createRevisionForPulledDocument)(this.endpointHash, doc);
 
-                if (!this.syncRevisions) {
-                  primaryValue = toPouch._id;
-                  pouchState = docsWithRevisions[primaryValue];
-                  newRevision = (0, _helper.createRevisionForPulledDocument)(this.endpointHash, toPouch);
-
-                  if (pouchState) {
-                    newRevisionHeight = pouchState.revisions.start + 1;
-                    revisionId = newRevision;
-                    newRevision = newRevisionHeight + '-' + newRevision;
-                    toPouch._revisions = {
-                      start: newRevisionHeight,
-                      ids: pouchState.revisions.ids
-                    };
-
-                    toPouch._revisions.ids.unshift(revisionId);
-                  } else {
-                    newRevision = '1-' + newRevision;
-                  }
-
-                  toPouch._rev = newRevision;
+                if (docStateInLocalStorageInstance) {
+                  hasHeight = (0, _util.getHeightOfRevision)(docStateInLocalStorageInstance._rev);
+                  newRevisionHeight = hasHeight + 1;
+                  newRevision = newRevisionHeight + '-' + newRevision;
                 } else {
-                  toPouch[this.lastPulledRevField] = toPouch._rev;
+                  newRevision = '1-' + newRevision;
                 }
 
-                toPouchDocs.push({
-                  doc: toPouch,
+                doc._rev = newRevision;
+                toStorageDocs.push({
+                  doc: doc,
                   deletedValue: deletedValue
                 });
               }
 
-              startTime = (0, _util.now)();
-              _context9.next = 5;
+              if (!(toStorageDocs.length > 0)) {
+                _context9.next = 9;
+                break;
+              }
+
+              _context9.next = 9;
               return this.collection.database.lockedRun( /*#__PURE__*/(0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee8() {
                 return _regenerator["default"].wrap(function _callee8$(_context8) {
                   while (1) {
                     switch (_context8.prev = _context8.next) {
                       case 0:
                         _context8.next = 2;
-                        return _this6.collection.pouch.bulkDocs(toPouchDocs.map(function (tpd) {
-                          return tpd.doc;
-                        }), {
-                          new_edits: false
-                        });
+                        return _this6.collection.storageInstance.bulkAddRevisions(toStorageDocs.map(function (row) {
+                          return (0, _rxCollectionHelper._handleToStorageInstance)(_this6.collection, row.doc);
+                        }));
 
                       case 2:
                       case "end":
@@ -818,34 +804,10 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
                 }, _callee8);
               })));
 
-            case 5:
-              endTime = (0, _util.now)();
-              /**
-               * because bulkDocs with new_edits: false
-               * does not stream changes to the pouchdb,
-               * we create the event and emit it,
-               * so other instances get informed about it
-               */
-
-              for (_i = 0, _toPouchDocs = toPouchDocs; _i < _toPouchDocs.length; _i++) {
-                tpd = _toPouchDocs[_i];
-                originalDoc = (0, _util.flatClone)(tpd.doc);
-
-                if (tpd.deletedValue) {
-                  originalDoc._deleted = tpd.deletedValue;
-                } else {
-                  delete originalDoc._deleted;
-                }
-
-                delete originalDoc[this.deletedFlag];
-                delete originalDoc._revisions;
-                cE = (0, _rxChangeEvent.changeEventfromPouchChange)(originalDoc, this.collection, startTime, endTime);
-                this.collection.$emit(cE);
-              }
-
+            case 9:
               return _context9.abrupt("return", true);
 
-            case 8:
+            case 10:
             case "end":
               return _context9.stop();
           }
@@ -853,7 +815,7 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
       }, _callee9, this);
     }));
 
-    function handleDocumentsFromRemote(_x3, _x4) {
+    function handleDocumentsFromRemote(_x3) {
       return _handleDocumentsFromRemote.apply(this, arguments);
     }
 
@@ -895,8 +857,6 @@ function syncGraphQL(_ref5) {
       pull = _ref5.pull,
       push = _ref5.push,
       deletedFlag = _ref5.deletedFlag,
-      _ref5$lastPulledRevFi = _ref5.lastPulledRevField,
-      lastPulledRevField = _ref5$lastPulledRevFi === void 0 ? 'last_pulled_rev' : _ref5$lastPulledRevFi,
       _ref5$live = _ref5.live,
       live = _ref5$live === void 0 ? false : _ref5$live,
       _ref5$liveInterval = _ref5.liveInterval,
@@ -904,9 +864,7 @@ function syncGraphQL(_ref5) {
       _ref5$retryTime = _ref5.retryTime,
       retryTime = _ref5$retryTime === void 0 ? 1000 * 5 : _ref5$retryTime,
       _ref5$autoStart = _ref5.autoStart,
-      autoStart = _ref5$autoStart === void 0 ? true : _ref5$autoStart,
-      _ref5$syncRevisions = _ref5.syncRevisions,
-      syncRevisions = _ref5$syncRevisions === void 0 ? false : _ref5$syncRevisions;
+      autoStart = _ref5$autoStart === void 0 ? true : _ref5$autoStart;
   var collection = this; // fill in defaults for pull & push
 
   if (pull) {
@@ -915,11 +873,9 @@ function syncGraphQL(_ref5) {
 
   if (push) {
     if (!push.modifier) push.modifier = _helper.DEFAULT_MODIFIER;
-  } // ensure the collection is listening to plain-pouchdb writes
+  }
 
-
-  collection.watchForChanges();
-  var replicationState = new RxGraphQLReplicationState(collection, url, headers, pull, push, deletedFlag, lastPulledRevField, live, liveInterval, retryTime, syncRevisions);
+  var replicationState = new RxGraphQLReplicationState(collection, url, headers, pull, push, deletedFlag, live, liveInterval, retryTime);
 
   if (!autoStart) {
     return replicationState;
@@ -980,13 +936,18 @@ function syncGraphQL(_ref5) {
 
       if (push) {
         /**
-         * we have to use the rxdb changestream
-         * because the pouchdb.changes stream sometimes
-         * does not emit events or stucks
+         * When a document is written to the collection,
+         * we might have to run the replication run() once
          */
-        var changeEventsSub = collection.$.subscribe(function (changeEvent) {
-          if (replicationState.isStopped()) return;
-          var rev = changeEvent.documentData._rev;
+        var changeEventsSub = collection.$.pipe((0, _operators.filter)(function (cE) {
+          return !cE.isLocal;
+        })).subscribe(function (changeEvent) {
+          if (replicationState.isStopped()) {
+            return;
+          }
+
+          var doc = (0, _rxChangeEvent.getDocumentDataOfRxChangeEvent)(changeEvent);
+          var rev = doc._rev;
 
           if (rev && !(0, _helper.wasRevisionfromPullReplication)(replicationState.endpointHash, rev)) {
             replicationState.run();

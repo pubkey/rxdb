@@ -2,13 +2,13 @@ import _createClass from "@babel/runtime/helpers/createClass";
 import deepEqual from 'deep-equal';
 import { merge, BehaviorSubject, firstValueFrom } from 'rxjs';
 import { mergeMap, filter, map, tap } from 'rxjs/operators';
-import { massageSelector, filterInMemoryFields } from 'pouchdb-selector-core';
-import { sortObject, stringifyFilter, pluginMissing, clone, overwriteGetterForCaching, now } from './util';
+import { sortObject, stringifyFilter, pluginMissing, clone, overwriteGetterForCaching, now, promiseWait } from './util';
 import { newRxError, newRxTypeError } from './rx-error';
 import { runPluginHooks } from './hooks';
 import { createRxDocuments } from './rx-document-prototype-merge';
 import { calculateNewResults } from './event-reduce';
 import { triggerCacheReplacement } from './query-cache';
+import { _handleToStorageInstance } from './rx-collection-helper';
 var _queryCount = 0;
 
 var newQueryID = function newQueryID() {
@@ -74,11 +74,11 @@ export var RxQueryBase = /*#__PURE__*/function () {
 
     switch (this.op) {
       case 'find':
-        docsPromise = this.collection._pouchFind(this);
+        docsPromise = this.collection._queryStorageInstance(this);
         break;
 
       case 'findOne':
-        docsPromise = this.collection._pouchFind(this, 1);
+        docsPromise = this.collection._queryStorageInstance(this, 1);
         break;
 
       default:
@@ -140,7 +140,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
     });
   }
   /**
-   * cached call to get the massageSelector
+   * cached call to get the queryMatcher
    * @overwrites itself with the actual value
    */
   ;
@@ -165,35 +165,23 @@ export var RxQueryBase = /*#__PURE__*/function () {
   }
   /**
    * returns the prepared query
+   * which can be send to the storage instance to query for documents.
    * @overwrites itself with the actual value
+   * TODO rename this function, toJSON is missleading
+   * because we do not return the plain mango query object.
    */
   ;
 
   _proto.toJSON = function toJSON() {
-    var value = this.collection.database.storage.prepareQuery(this.asRxQuery, clone(this.mangoQuery));
+    var hookInput = {
+      rxQuery: this,
+      // can be mutated by the hooks so we have to deep clone first.
+      mangoQuery: clone(this.mangoQuery)
+    };
+    runPluginHooks('prePrepareQuery', hookInput);
+    var value = this.collection.storageInstance.prepareQuery(hookInput.mangoQuery);
 
     this.toJSON = function () {
-      return value;
-    };
-
-    return value;
-  }
-  /**
-   * returns the key-compressed version of the query
-   * @overwrites itself with the actual value
-   */
-  ;
-
-  _proto.keyCompress = function keyCompress() {
-    var value;
-
-    if (!this.collection.schema.doKeyCompression()) {
-      value = this.toJSON();
-    } else {
-      value = this.collection._keyCompressor.compressQuery(this.toJSON());
-    }
-
-    this.keyCompress = function () {
       return value;
     };
 
@@ -208,24 +196,11 @@ export var RxQueryBase = /*#__PURE__*/function () {
 
   _proto.doesDocumentDataMatch = function doesDocumentDataMatch(docData) {
     // if doc is deleted, it cannot match
-    if (docData._deleted) return false;
-    docData = this.collection.schema.swapPrimaryToId(docData); // return matchesSelector(docData, selector);
+    if (docData._deleted) {
+      return false;
+    }
 
-    /**
-     * the following is equal to the implementation of pouchdb
-     * we do not use matchesSelector() directly so we can cache the
-     * result of massageSelector
-     * @link https://github.com/pouchdb/pouchdb/blob/master/packages/node_modules/pouchdb-selector-core/src/matches-selector.js
-     */
-
-    var selector = this.massageSelector;
-    var row = {
-      doc: docData
-    };
-    var rowsMatched = filterInMemoryFields([row], {
-      selector: selector
-    }, Object.keys(selector));
-    return rowsMatched && rowsMatched.length === 1;
+    return this.queryMatcher(_handleToStorageInstance(this.collection, docData));
   }
   /**
    * deletes all found documents
@@ -237,9 +212,14 @@ export var RxQueryBase = /*#__PURE__*/function () {
     var ret;
     return this.exec().then(function (docs) {
       ret = docs;
-      if (Array.isArray(docs)) return Promise.all(docs.map(function (doc) {
-        return doc.remove();
-      }));else return docs.remove();
+
+      if (Array.isArray(docs)) {
+        return Promise.all(docs.map(function (doc) {
+          return doc.remove();
+        }));
+      } else {
+        return docs.remove();
+      }
     }).then(function () {
       return ret;
     });
@@ -287,19 +267,25 @@ export var RxQueryBase = /*#__PURE__*/function () {
          */
         var results$ = this._resultsDocs$.pipe(mergeMap(function (docs) {
           return _ensureEqual(_this3).then(function (hasChanged) {
-            if (hasChanged) return false; // wait for next emit
-            else return docs;
+            if (hasChanged) {
+              // wait for next emit
+              return false;
+            } else {
+              return docs;
+            }
           });
         }), filter(function (docs) {
           return !!docs;
         }), // not if previous returned false
         map(function (docs) {
-          // findOne()-queries emit document or null
           if (_this3.op === 'findOne') {
+            // findOne()-queries emit document or null
             var doc = docs.length === 0 ? null : docs[0];
             return doc;
-          } else return docs; // find()-queries emit RxDocument[]
-
+          } else {
+            // find()-queries emit RxDocument[]
+            return docs;
+          }
         }), map(function (docs) {
           // copy the array so it wont matter if the user modifies it
           var ret = Array.isArray(docs) ? docs.slice() : docs;
@@ -325,9 +311,9 @@ export var RxQueryBase = /*#__PURE__*/function () {
     } // stores the changeEvent-Number of the last handled change-event
 
   }, {
-    key: "massageSelector",
+    key: "queryMatcher",
     get: function get() {
-      return overwriteGetterForCaching(this, 'massageSelector', massageSelector(this.mangoQuery.selector));
+      return overwriteGetterForCaching(this, 'queryMatcher', this.collection.storageInstance.getQueryMatcher(this.toJSON()));
     }
   }, {
     key: "asRxQuery",
@@ -397,15 +383,11 @@ function _isResultsInSync(rxQuery) {
 
 function _ensureEqual(rxQuery) {
   rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue.then(function () {
-    return new Promise(function (res) {
-      return setTimeout(res, 0);
-    });
+    return promiseWait(0);
   }).then(function () {
     return __ensureEqual(rxQuery);
   }).then(function (ret) {
-    return new Promise(function (res) {
-      return setTimeout(res, 0);
-    }).then(function () {
+    return promiseWait(0).then(function () {
       return ret;
     });
   });

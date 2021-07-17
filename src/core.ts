@@ -7,36 +7,33 @@ import './types/modules/crypto-js.d';
 import './types/modules/graphql-client.d';
 import './types/modules/mocha.parallel.d';
 import './types/modules/modifiyjs.d';
-import './types/modules/pouchdb-selector-core.d';
 import './types/modules/random-token.d';
 
 
-
 export { addRxPlugin } from './plugin';
-export {
-    PouchDB,
-    validateCouchDBString,
-    getBatch,
-    countAllUndeleted,
-    getNewestSequence
-} from './pouch-db';
 
 export {
     createRxDatabase,
     removeRxDatabase,
-    checkAdapter,
-    isInstanceOf as isRxDatabase,
+    isRxDatabase,
     dbCount,
     _collectionNamePrimary // used in tests
 } from './rx-database';
 
 export {
-    isInstanceOf as isRxCollection,
-    create as _createRxCollection // used in tests
+    isRxCollection,
+    RxCollectionBase,
+    createRxCollection // used in tests
 } from './rx-collection';
 
 export {
-    isInstanceOf as isRxDocument
+    _handleFromStorageInstance,
+    _handleToStorageInstance,
+    fillObjectDataBeforeInsert
+} from './rx-collection-helper';
+
+export {
+    isRxDocument
 } from './rx-document';
 
 export {
@@ -57,15 +54,21 @@ export {
     getFinalFields,
     getPreviousVersions
 } from './rx-schema';
+export {
+    getPseudoSchemaForVersion,
+    getSchemaByObjectPath
+} from './rx-schema-helper';
 
 export {
-    RxChangeEvent
-} from './rx-change-event';
-
-export {
-    getRxStoragePouchDb,
-    getPouchLocation
-} from './rx-storage-pouchdb';
+    findLocalDocument,
+    getSingleDocument,
+    getNewestSequence,
+    getAllDocuments,
+    writeSingleLocal,
+    writeSingle,
+    countAllUndeleted,
+    getBatch
+} from './rx-storage-helper';
 
 export {
     _clearHook // used in tests
@@ -76,11 +79,6 @@ export {
 } from './crypter';
 
 export * from './query-cache';
-
-export type {
-    RxStorage
-} from './rx-storate.interface';
-
 
 export * from './util';
 
@@ -100,16 +98,21 @@ export type {
     MangoQuerySortPart,
     MigrationState,
     NumberFunctionMap,
+    DeepReadonlyObject,
+
+    // pouchdb stuff
     PouchDBInstance,
     PouchReplicationOptions,
     PouchSettings,
     PouchSyncHandler,
     PouchSyncHandlerEvents,
+    PouchdbQuery,
+
     RxAttachment,
     RxAttachmentCreator,
     RxCollection,
     RxCacheReplacementPolicy,
-    PrimaryProperty,
+    RxChangeEvent,
     RxCollectionCreator,
     RxCollectionGenerated,
     RxCollectionHookCallback,
@@ -119,7 +122,6 @@ export type {
     RxDatabase,
     RxDatabaseCreator,
     RxDocument,
-    RxDocumentTypeWithRev,
     RxDumpCollection,
     RxDumpCollectionAny,
     RxDumpCollectionAsAny,
@@ -127,7 +129,6 @@ export type {
     Buffer,
     Debug,
     ExtractDTcol,
-    PouchdbQuery,
     RxDatabaseGenerated,
     RxDocumentBase,
     RxDumpCollectionBase,
@@ -144,13 +145,14 @@ export type {
     RxQueryOP,
     RxQueryObject,
     RxQueryOptions,
-    RxReplicationState,
+    RxCouchDBReplicationState,
     RxTypeError,
     ServerOptions,
     SyncOptions,
     SyncOptionsGraphQL,
     MigrationStrategy,
     MigrationStrategies,
+    RxStorage,
     OldRxCollection,
     WithAttachmentsData
 } from './types';

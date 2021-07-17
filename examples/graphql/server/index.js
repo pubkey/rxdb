@@ -142,6 +142,9 @@ export async function run() {
             );
             log('published changedHero ' + doc.id);
 
+            console.log('## current documents:');
+            console.log(JSON.stringify(documents, null, 4));
+
             return doc;
         },
         changedHero: (args) => {

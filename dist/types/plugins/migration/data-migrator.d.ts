@@ -4,12 +4,12 @@
  */
 /**
  * TODO this should be completely rewritten because:
- * - The current implemetation does not use pouchdb'S bulkDocs which is much faster
+ * - The current implemetation does not use bulkDocs which is much faster
  * - This could have been done in much less code which would be easier to uderstand
  *
  */
 import { Observable } from 'rxjs';
-import type { RxCollection, RxDatabase, MigrationState, NumberFunctionMap, OldRxCollection } from '../../types';
+import type { RxCollection, RxDatabase, MigrationState, NumberFunctionMap, OldRxCollection, RxJsonSchema } from '../../types';
 import { RxSchema } from '../../rx-schema';
 export declare class DataMigrator {
     newestCollection: RxCollection;
@@ -23,9 +23,9 @@ export declare class DataMigrator {
     migrate(batchSize?: number): Observable<MigrationState>;
     migratePromise(batchSize: number): Promise<any>;
 }
-export declare function createOldCollection(version: number, schemaObj: any, dataMigrator: DataMigrator): OldRxCollection;
+export declare function createOldCollection(version: number, schemaObj: RxJsonSchema<any>, dataMigrator: DataMigrator): Promise<OldRxCollection>;
 /**
- * get an array with OldCollection-instances from all existing old pouchdb-instance
+ * get an array with OldCollection-instances from all existing old storage-instances
  */
 export declare function _getOldCollections(dataMigrator: DataMigrator): Promise<OldRxCollection[]>;
 /**
@@ -52,11 +52,11 @@ export declare function _migrateDocument(oldCollection: OldRxCollection, docData
     doc: {};
 }>;
 /**
- * deletes this.pouchdb and removes it from the database.collectionsCollection
+ * deletes this.storageInstance and removes it from the database.collectionsCollection
  */
 export declare function deleteOldCollection(oldCollection: OldRxCollection): Promise<void>;
 /**
- * runs the migration on all documents and deletes the pouchdb afterwards
+ * runs the migration on all documents and deletes the storage instance afterwards
  */
 export declare function migrateOldCollection(oldCollection: OldRxCollection, batchSize?: number): Observable<any>;
 export declare function migratePromise(oldCollection: OldRxCollection, batchSize?: number): Promise<any>;

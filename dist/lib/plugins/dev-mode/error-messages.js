@@ -16,6 +16,9 @@ var ERROR_MESSAGES = {
   UT2: "collection- and database-names must match the regex\n    info: if your database-name specifies a folder, the name must contain the slash-char '/' or '\\'",
   UT3: 'replication-direction must either be push or pull or both. But not none',
   UT4: 'given leveldown is no valid adapter',
+  // plugins
+  PL1: 'Given plugin is not RxDB plugin. Pouchdb plugins must be added via addPouchPlugin()',
+  PL2: 'You tried importy a RxDB plugin to pouchdb. Use addRxPlugin() instead.',
   // pouch-db.js
   P1: 'PouchDB.getBatch: limit must be > 2',
   // rx-query
@@ -41,19 +44,19 @@ var ERROR_MESSAGES = {
   MQ8: 'Can\'t mix sort syntaxes. Use either array or object',
   // rx-database
   DB1: 'RxDocument.prepare(): another instance on this adapter has a different password',
-  DB2: 'RxDatabase.collection(): collection-names cannot start with underscore _',
-  DB3: 'RxDatabase.collection(): collection already exists. use myDatabase.[collectionName] to get it',
-  DB4: 'RxDatabase.collection(): schema is missing',
-  DB5: 'RxDatabase.collection(): collection-name not allowed',
-  DB6: 'RxDatabase.collection(): another instance created this collection with a different schema. Read this https://pubkey.github.io/rxdb/questions-answers.html#cant-change-the-schema',
-  DB7: 'RxDatabase.collection(): schema encrypted but no password given',
+  DB2: 'RxDatabase.addCollections(): collection-names cannot start with underscore _',
+  DB3: 'RxDatabase.addCollections(): collection already exists. use myDatabase.[collectionName] to get it',
+  DB4: 'RxDatabase.addCollections(): schema is missing',
+  DB5: 'RxDatabase.addCollections(): collection-name not allowed',
+  DB6: 'RxDatabase.addCollections(): another instance created this collection with a different schema. Read this https://pubkey.github.io/rxdb/questions-answers.html#cant-change-the-schema',
+  DB7: 'RxDatabase.addCollections(): schema encrypted but no password given',
   DB8: 'RxDatabase.create(): A RxDatabase with the same name and adapter already exists.\n' + 'Make sure to use this combination only once or set ignoreDuplicate to true if you do this intentional',
   DB9: 'RxDatabase.create(): Adapter not added. Use RxDB.plugin(require(\'pouchdb-adapter-[adaptername]\');',
   DB10: 'RxDatabase.create(): To use leveldown-adapters, you have to add the leveldb-plugin. Use RxDB.plugin(require(\'pouchdb-adapter-leveldb\'));',
   DB11: 'RxDatabase.create(): Invalid db-name, folder-paths must not have an ending slash',
   // rx-collection
   COL1: 'RxDocument.insert() You cannot insert an existing document',
-  COL2: 'RxCollection.insert() do not provide ._id when it is not the primary key',
+  // removed in 10.0.0 - COL2: 'RxCollection.insert() do not provide ._id when it is not the primary key',
   COL3: 'RxCollection.upsert() does not work without primary',
   COL4: 'RxCollection.atomicUpsert() does not work without primary',
   COL5: 'RxCollection.find() if you want to search by _id, use .findOne(_id)',
@@ -83,12 +86,14 @@ var ERROR_MESSAGES = {
   DOC9: 'final fields cannot be modified',
   DOC10: 'RxDocument.set(): cannot set childpath when rootPath not selected',
   DOC11: 'RxDocument.save(): cant save deleted document',
-  DOC12: 'RxDocument.save(): error',
+  // removed in 10.0.0 DOC12: 'RxDocument.save(): error',
   DOC13: 'RxDocument.remove(): Document is already deleted',
   DOC14: 'RxDocument.destroy() does not exist',
   DOC15: 'query cannot be an array',
   DOC16: 'Since version 8.0.0 RxDocument.set() can only be called on temporary RxDocuments',
   DOC17: 'Since version 8.0.0 RxDocument.save() can only be called on non-temporary documents',
+  DOC18: 'Document property for composed primary key is missing',
+  DOC19: 'Value of primary key(s) cannot be changed',
   // data-migrator.js
   DM1: 'migrate() Migration has already run',
   DM2: 'migration of document failed final document does not match final schema',
@@ -100,8 +105,8 @@ var ERROR_MESSAGES = {
   EN2: 'validatePassword: min-length of password not complied',
   // plugins/json-dump.js
   JD1: 'You must create the collections before you can import their data',
-  JD2: 'RxCollection.importDump(): the imported json relies on a different schema',
-  JD3: 'RxCollection.importDump(): json.passwordHash does not match the own',
+  JD2: 'RxCollection.importJSON(): the imported json relies on a different schema',
+  JD3: 'RxCollection.importJSON(): json.passwordHash does not match the own',
   // plugins/leader-election.js
   // plugins/local-documents.js
   LD1: 'RxDocument.allAttachments$ cant use attachments on local documents',
@@ -113,10 +118,10 @@ var ERROR_MESSAGES = {
   LD7: 'Local document already exists',
   // plugins/replication.js
   RC1: 'Replication: already added',
-  RC2: 'RxCollection.sync() query must be from the same RxCollection',
-  RC3: 'RxCollection.sync() Do not use a collection\'s pouchdb as remote, use the collection instead',
-  RC4: 'RxReplicationState.awaitInitialReplication() cannot await inital replication when live: true',
-  RC5: 'RxReplicationState.awaitInitialReplication() cannot await inital replication if multiInstance because the replication might run on another instance',
+  RC2: 'RxCollection.syncCouchDB() query must be from the same RxCollection',
+  RC3: 'RxCollection.syncCouchDB() Do not use a collection\'s pouchdb as remote, use the collection instead',
+  RC4: 'RxCouchDBReplicationState.awaitInitialReplication() cannot await inital replication when live: true',
+  RC5: 'RxCouchDBReplicationState.awaitInitialReplication() cannot await inital replication if multiInstance because the replication might run on another instance',
   // plugins/dev-mode/check-schema.js
   SC1: 'fieldnames do not match the regex',
   SC2: 'SchemaCheck: name \'item\' reserved for array-fields',
@@ -127,7 +132,7 @@ var ERROR_MESSAGES = {
   SC8: 'SchemaCheck: first level-fields cannot start with underscore _',
   SC10: 'SchemaCheck: schema defines ._rev, this will be done automatically',
   SC11: 'SchemaCheck: schema needs a number >=0 as version',
-  SC12: 'SchemaCheck: primary can only be defined once',
+  // removed in 10.0.0 - SC12: 'SchemaCheck: primary can only be defined once',
   SC13: 'SchemaCheck: primary is always index, do not declare it as index',
   SC14: 'SchemaCheck: primary is always unique, do not declare it as index',
   SC15: 'SchemaCheck: primary cannot be encrypted',
@@ -145,17 +150,28 @@ var ERROR_MESSAGES = {
   SC27: 'SchemaCheck: encrypted fields need to be specified at collection schema level',
   SC28: 'SchemaCheck: encrypted fields is not defined in the schema',
   SC29: 'SchemaCheck: missing object key \'properties\'',
+  SC30: 'SchemaCheck: primaryKey is required',
+  SC32: 'SchemaCheck: primary field must have the type string/number/integer',
+  SC33: 'SchemaCheck: used primary key is not a property in the schema',
   // plugins/dev-mode
   DEV1: 'dev-mode added multiple times, ' + 'this is likely because you have mixed up the import from the the plugins/core and the full RxDB',
   // plugins/validate.js
   VD1: 'Sub-schema not found, does the schemaPath exists in your schema?',
   VD2: 'object does not match schema',
   // plugins/in-memory.js
-  IM1: 'InMemory: Memory-Adapter must be added. Use RxDB.plugin(require(\'pouchdb-adapter-memory\'));',
+  IM1: 'InMemory: Memory-Adapter must be added. Use addPouchPlugin(require(\'pouchdb-adapter-memory\'));',
   IM2: 'inMemoryCollection.sync(): Do not replicate with the in-memory instance. Replicate with the parent instead',
   // plugins/server.js
-  S1: 'You cannot create collections after calling RxDatabase.server()' // plugins/replication-graphql.js
+  S1: 'You cannot create collections after calling RxDatabase.server()',
+  // plugins/replication-graphql.js
+  GQL1: 'cannot find sub schema by key',
 
+  /**
+   * Should never be thrown, use this for
+   * null checks etc. so you do not have to increase the
+   * build size with error message strings.
+   */
+  SNH: 'This should never happen'
 };
 exports.ERROR_MESSAGES = ERROR_MESSAGES;
 

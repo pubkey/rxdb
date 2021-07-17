@@ -2,7 +2,6 @@ import * as path from 'path';
 import {
     BehaviorSubject,
     firstValueFrom,
-    fromEvent,
     Observable,
     Subject,
     Subscription
@@ -11,15 +10,17 @@ import {
     filter,
     map
 } from 'rxjs/operators';
-import { getNewestSequence } from '../../pouch-db';
+import { newRxError } from '../../rx-error';
+import { getNewestSequence } from '../../rx-storage-helper';
 import type {
     BackupOptions,
-    PouchdbChangesResult,
     RxBackupWriteEvent,
+    RxCollection,
     RxDatabase,
     RxDocument,
     RxPlugin
 } from '../../types';
+import { getFromMapOrThrow } from '../../util';
 import {
     clearFolder,
     deleteFolder,
@@ -83,9 +84,9 @@ function addToBackupStates(db: RxDatabase, state: RxBackupState) {
     if (!BACKUP_STATES_BY_DB.has(db)) {
         BACKUP_STATES_BY_DB.set(db, []);
     }
-    const ar = BACKUP_STATES_BY_DB.get(db);
+    const ar = getFromMapOrThrow(BACKUP_STATES_BY_DB, db);
     if (!ar) {
-        throw new Error('this should never happen');
+        throw newRxError('SNH');
     }
     ar.push(state);
 }
@@ -129,10 +130,10 @@ export class RxBackupState {
                 .keys(this.database.collections)
                 .map(async (collectionName) => {
                     const processedDocuments: Set<string> = new Set();
-                    const collection = this.database.collections[collectionName];
+                    const collection: RxCollection = this.database.collections[collectionName];
 
                     await this.database.requestIdlePromise();
-                    const newestSeq = await getNewestSequence(collection.pouch);
+                    const newestSeq = await getNewestSequence(collection.storageInstance);
 
                     if (!meta.collectionStates[collectionName]) {
                         meta.collectionStates[collectionName] = {
@@ -145,29 +146,29 @@ export class RxBackupState {
                     let hasMore = true;
                     while (hasMore && !this.isStopped) {
                         await this.database.requestIdlePromise();
-                        const pouchChanges: PouchdbChangesResult = await collection.pouch.changes({
-                            live: false,
-                            since: lastSequence,
+
+                        const changesResult = await collection.storageInstance.getChangedDocuments({
+                            startSequence: lastSequence,
                             limit: this.options.batchSize,
-                            include_docs: false
+                            order: 'asc'
                         });
-                        lastSequence = pouchChanges.last_seq;
+                        lastSequence = changesResult.lastSequence;
+
                         meta.collectionStates[collectionName].lastSequence = lastSequence;
 
-                        const docIds: string[] = pouchChanges.results
-                            .filter(doc => {
+                        const docIds: string[] = changesResult.changedDocuments
+                            .filter(changedDocument => {
                                 if (
-                                    processedDocuments.has(doc.id) &&
-                                    doc.seq < newestSeq
+                                    processedDocuments.has(changedDocument.id) &&
+                                    changedDocument.sequence < newestSeq
                                 ) {
                                     return false;
                                 } else {
-                                    processedDocuments.add(doc.id);
+                                    processedDocuments.add(changedDocument.id);
                                     return true;
                                 }
                             })
                             .map(r => r.id)
-                            .filter(id => !id.startsWith('_design/'))
                             // unique
                             .filter((elem, pos, arr) => arr.indexOf(elem) === pos);
                         await this.database.requestIdlePromise();
@@ -218,18 +219,9 @@ export class RxBackupState {
     }
 
     public watchForChanges() {
-        const collections = Object.values(this.database.collections);
+        const collections: RxCollection[] = Object.values(this.database.collections);
         collections.forEach(collection => {
-            const changes$: Observable<any> =
-                fromEvent(
-                    collection.pouch.changes({
-                        since: 'now',
-                        live: true,
-                        include_docs: false
-                    }),
-                    'change'
-                );
-
+            const changes$ = collection.storageInstance.changeStream();
             const sub = changes$.subscribe(() => {
                 this.persistOnce();
             });

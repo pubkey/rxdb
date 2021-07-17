@@ -1,21 +1,24 @@
 import {
-    LOCAL_PREFIX
-} from '../../util';
-
-import {
-    PLUGIN_IDENT,
-    getDocFromPouchOrNull,
-    wasRevisionfromPullReplication
+    wasRevisionfromPullReplication,
+    GRAPHQL_REPLICATION_PLUGIN_IDENT
 } from './helper';
 import type {
-    RxCollection, PouchChangeRow, PouchChangeDoc, PouchdbChangesResult
+    RxCollection,
+    RxLocalDocumentData,
+    RxDocumentData
 } from '../../types';
+import {
+    findLocalDocument,
+    writeSingleLocal
+} from '../../rx-storage-helper';
+import { flatClone } from '../../util';
+import { newRxError } from '../../rx-error';
 
 /**
  * when the replication starts,
  * we need a way to find out where it ended the last time.
  *
- * For push-replication, we use the pouchdb-sequence:
+ * For push-replication, we use the storageInstance-sequence:
  * We get the documents newer then the last sequence-id
  * and push them to the server.
  *
@@ -30,7 +33,7 @@ import type {
 // things for the push-checkpoint
 //
 
-const pushSequenceId = (endpointHash: string) => LOCAL_PREFIX + PLUGIN_IDENT + '-push-checkpoint-' + endpointHash;
+const pushSequenceId = (endpointHash: string) => GRAPHQL_REPLICATION_PLUGIN_IDENT + '-push-checkpoint-' + endpointHash;
 
 /**
  * @return last sequence checkpoint
@@ -39,47 +42,72 @@ export async function getLastPushSequence(
     collection: RxCollection,
     endpointHash: string
 ): Promise<number> {
-    const doc = await getDocFromPouchOrNull(
-        collection,
+    const doc = await findLocalDocument<CheckpointDoc>(
+        collection.localDocumentsStore,
         pushSequenceId(endpointHash)
     );
-    if (!doc) return 0;
-    else return doc.value;
+    if (!doc) {
+        return 0;
+    } else {
+        return doc.value;
+    }
 }
+
+declare type CheckpointDoc = { _id: string; value: number; };
 
 export async function setLastPushSequence(
     collection: RxCollection,
     endpointHash: string,
-    seq: any
-) {
+    sequence: number
+): Promise<CheckpointDoc> {
     const _id = pushSequenceId(endpointHash);
-    let doc = await getDocFromPouchOrNull(
-        collection,
+
+    const doc = await findLocalDocument<CheckpointDoc>(
+        collection.localDocumentsStore,
         _id
     );
     if (!doc) {
-        doc = {
-            _id,
-            value: seq
-        };
+        const res = await writeSingleLocal<CheckpointDoc>(
+            collection.localDocumentsStore,
+            {
+                document: {
+                    _id,
+                    value: sequence,
+                    _attachments: {}
+                }
+            }
+        );
+        return res as any;
     } else {
-        doc.value = seq;
+        const newDoc = flatClone(doc);
+        newDoc.value = sequence;
+        const res = await writeSingleLocal<CheckpointDoc>(
+            collection.localDocumentsStore,
+            {
+                previous: doc,
+                document: {
+                    _id,
+                    value: sequence,
+                    _attachments: {}
+                }
+            }
+        );
+        return res as any;
     }
-
-    const res = await collection.pouch.put(doc);
-    return res;
 }
 
 
-export async function getChangesSinceLastPushSequence(
-    collection: RxCollection,
+export async function getChangesSinceLastPushSequence<RxDocType>(
+    collection: RxCollection<RxDocType, any>,
     endpointHash: string,
-    lastPulledRevField: string,
-    batchSize = 10,
-    syncRevisions: boolean = false,
+    batchSize = 10
 ): Promise<{
-    results: (PouchChangeRow & PouchChangeDoc)[];
-    last_seq: number;
+    changedDocs: Map<string, {
+        id: string;
+        doc: RxDocumentData<RxDocType>;
+        sequence: number;
+    }>;
+    lastSequence: number;
 }> {
     let lastPushSequence = await getLastPushSequence(
         collection,
@@ -87,7 +115,12 @@ export async function getChangesSinceLastPushSequence(
     );
 
     let retry = true;
-    let changes;
+    let lastSequence: number = lastPushSequence;
+    const changedDocs: Map<string, {
+        id: string;
+        doc: RxDocumentData<RxDocType>;
+        sequence: number;
+    }> = new Map();
 
     /**
      * it can happen that all docs in the batch
@@ -96,72 +129,67 @@ export async function getChangesSinceLastPushSequence(
      * until we reach the end of it
      */
     while (retry) {
-        changes = await collection.pouch.changes({
-            since: lastPushSequence,
+
+        const changesResults = await collection.storageInstance.getChangedDocuments({
+            startSequence: lastPushSequence,
             limit: batchSize,
-            include_docs: true
-            // style: 'all_docs'
-        } as any);
-        const filteredResults = changes.results.filter((change: any) => {
+            order: 'asc'
+        });
+        lastSequence = changesResults.lastSequence;
+
+        // optimisation shortcut, do not proceed if there are no changed documents
+        if (changesResults.changedDocuments.length === 0) {
+            retry = false;
+            continue;
+        }
+
+        const docs = await collection.storageInstance.findDocumentsById(
+            changesResults.changedDocuments.map(row => row.id),
+            true
+        );
+
+        changesResults.changedDocuments.forEach((row) => {
+            const id = row.id;
+            if (changedDocs.has(id)) {
+                return;
+            }
+            const changedDoc = docs.get(id);
+            if (!changedDoc) {
+                throw newRxError('SNH', { args: { docs } });
+            }
+
             /**
              * filter out changes with revisions resulting from the pull-stream
              * so that they will not be upstreamed again
              */
             if (wasRevisionfromPullReplication(
                 endpointHash,
-                change.doc._rev
-            )) return false;
+                changedDoc._rev
+            )) {
+                return false;
+            }
 
-            if (change.doc[lastPulledRevField] === change.doc._rev) return false;
-            /**
-             * filter out internal docs
-             * that are used for views or indexes in pouchdb
-             */
-            if (change.id.startsWith('_design/')) return false;
-
-            return true;
+            changedDocs.set(id, {
+                id,
+                doc: changedDoc,
+                sequence: row.sequence
+            });
         });
 
-        let useResults = filteredResults;
 
-        if (filteredResults.length > 0 && syncRevisions) {
-            const docsSearch = filteredResults.map((result: any) => {
-                return {
-                    id: result.id,
-                    rev: result.doc._rev
-                };
-            });
-
-            const bulkGetDocs = await collection.pouch.bulkGet({
-                docs: docsSearch,
-                revs: true,
-                latest: true
-            });
-
-            useResults = bulkGetDocs.results.map((result: any) => {
-                return {
-                    id: result.id,
-                    doc: result.docs[0]['ok'],
-                    deleted: result.docs[0]['ok']._deleted
-                };
-            }) as any;
-        }
-
-        if (useResults.length === 0 && changes.results.length === batchSize) {
+        if (changedDocs.size < batchSize && changesResults.changedDocuments.length === batchSize) {
             // no pushable docs found but also not reached the end -> re-run
-            lastPushSequence = changes.last_seq;
+            lastPushSequence = lastSequence;
             retry = true;
         } else {
-            changes.results = useResults;
             retry = false;
         }
     }
 
-    (changes as PouchdbChangesResult).results.forEach((change: any) => {
-        change.doc = collection._handleFromPouch(change.doc);
-    });
-
-    return changes as any;
+    return {
+        changedDocs,
+        lastSequence
+    };
 }
 
 
@@ -170,15 +198,19 @@ export async function getChangesSinceLastPushSequence(
 //
 
 
-const pullLastDocumentId = (endpointHash: string) => LOCAL_PREFIX + PLUGIN_IDENT + '-pull-checkpoint-' + endpointHash;
+const pullLastDocumentId = (endpointHash: string) => GRAPHQL_REPLICATION_PLUGIN_IDENT + '-pull-checkpoint-' + endpointHash;
 
 export async function getLastPullDocument(
     collection: RxCollection,
     endpointHash: string
 ) {
-    const localDoc = await getDocFromPouchOrNull(collection, pullLastDocumentId(endpointHash));
-    if (!localDoc) return null;
-    else {
+    const localDoc = await findLocalDocument<any>(
+        collection.localDocumentsStore,
+        pullLastDocumentId(endpointHash)
+    );
+    if (!localDoc) {
+        return null;
+    } else {
         return localDoc.doc;
     }
 }
@@ -187,20 +219,34 @@ export async function setLastPullDocument(
     collection: RxCollection,
     endpointHash: string,
     doc: any
-) {
+): Promise<{ _id: string }> {
     const _id = pullLastDocumentId(endpointHash);
-    let localDoc = await getDocFromPouchOrNull(
-        collection,
+
+    const localDoc: RxLocalDocumentData = await findLocalDocument<any>(
+        collection.localDocumentsStore,
         _id
     );
-    if (!localDoc) {
-        localDoc = {
-            _id,
-            doc
-        };
-    } else {
-        localDoc.doc = doc;
-    }
 
-    return collection.pouch.put(localDoc);
+    if (!localDoc) {
+        return writeSingleLocal(
+            collection.localDocumentsStore,
+            {
+                document: {
+                    _id,
+                    doc,
+                    _attachments: {}
+                }
+            }
+        );
+    } else {
+        const newDoc = flatClone(localDoc);
+        newDoc.doc = doc;
+        return writeSingleLocal(
+            collection.localDocumentsStore,
+            {
+                previous: localDoc,
+                document: newDoc
+            }
+        );
+    }
 }

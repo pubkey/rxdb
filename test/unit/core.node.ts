@@ -12,17 +12,24 @@ import {
     createRxDatabase,
     isRxDocument,
     randomCouchString,
-    RxJsonSchema
+    RxJsonSchema,
 } from '../../plugins/core';
 
-addRxPlugin(require('../../plugins/validate'));
-addRxPlugin(require('pouchdb-adapter-memory'));
+import {
+    addPouchPlugin,
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
 
-const schema: RxJsonSchema = {
+
+addRxPlugin(require('../../plugins/validate'));
+addPouchPlugin(require('pouchdb-adapter-memory'));
+
+const schema: RxJsonSchema<{ passportId: string; firstName: string; lastName: string }> = {
     title: 'human schema',
     description: 'describes a human being',
     version: 0,
     keyCompression: false,
+    primaryKey: 'passportId',
     type: 'object',
     properties: {
         passportId: {
@@ -35,7 +42,7 @@ const schema: RxJsonSchema = {
             type: 'string'
         }
     },
-    indexes: ['passportId'],
+    indexes: [],
     required: ['firstName', 'lastName']
 };
 
@@ -44,7 +51,7 @@ config.parallel('core.node.js', () => {
         it('create database', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
             db.destroy();
         });
@@ -52,7 +59,7 @@ config.parallel('core.node.js', () => {
             await AsyncTestUtil.assertThrows(
                 () => createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory',
+                    storage: getRxStoragePouch('memory'),
                     password: 'myLongAndStupidPassword'
                 }),
                 Error,
@@ -62,11 +69,12 @@ config.parallel('core.node.js', () => {
         it('create collection', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
-            await db.collection({
-                name: 'humans',
-                schema
+            await db.addCollections({
+                humans: {
+                    schema
+                }
             });
             db.destroy();
         });
@@ -75,11 +83,12 @@ config.parallel('core.node.js', () => {
         it('insert and find a document', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
-            await db.collection({
-                name: 'humans',
-                schema
+            await db.addCollections({
+                humans: {
+                    schema
+                }
             });
 
             await db.humans.insert({
@@ -104,15 +113,16 @@ config.parallel('core.node.js', () => {
         it('should throw error-codes instead of messages', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
-            const col = await db.collection({
-                name: 'humans',
-                schema
+            const col = await db.addCollections({
+                humans: {
+                    schema
+                }
             });
             let error;
             try {
-                await col.insert({
+                await col.humans.insert({
                     foo: 'bar'
                 });
             } catch (e) {

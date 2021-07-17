@@ -7,17 +7,14 @@ import {
     RxCollection,
 } from './rx-collection';
 import {
-    RxChangeEvent
-} from '../rx-change-event';
-import {
     RxAttachment,
     RxAttachmentCreator
 } from './rx-attachment';
-import { WithPouchMeta } from './pouch';
+import { RxDocumentData } from './rx-storage';
+import { RxChangeEvent } from './rx-change-event';
+import { DeepReadonly } from './util';
 
 export type RxDocument<RxDocumentType = {}, OrmMethods = {}> = RxDocumentBase<RxDocumentType, OrmMethods> & RxDocumentType & OrmMethods;
-
-export type RxDocumentTypeWithRev<RxDocumentType> = RxDocumentType & { _rev: string };
 
 declare type AtomicUpdateFunction<RxDocumentType> = (doc: RxDocumentType) => RxDocumentType | Promise<RxDocumentType>;
 
@@ -35,17 +32,17 @@ export declare interface RxDocumentBase<RxDocumentType, OrmMethods = {}> {
     // internal things
     _isTemporary: boolean;
     _dataSync$: BehaviorSubject<RxDocumentType>;
-    _data: WithPouchMeta<RxDocumentType>;
-    _deleted$: BehaviorSubject<boolean>;
+    _data: RxDocumentData<RxDocumentType>;
+    _isDeleted$: BehaviorSubject<boolean>;
     primaryPath: string;
     revision: string;
     _atomicQueue: Promise<any>;
-    $emit(cE: RxChangeEvent): void;
+    $emit(cE: RxChangeEvent<RxDocumentType>): void;
     _saveData(newData: any, oldData: any): Promise<void>;
     // /internal things
 
     get$(path: string): Observable<any>;
-    get(objPath: string): any;
+    get(objPath: string): DeepReadonly<any>;
     populate(objPath: string): Promise<RxDocument<RxDocumentType, OrmMethods> | any | null>;
 
     /**
@@ -56,14 +53,6 @@ export declare interface RxDocumentBase<RxDocumentType, OrmMethods = {}> {
      * patches the given properties
      */
     atomicPatch(patch: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>>;
-
-    /**
-     * @deprecated use atomicPatch or atomicUpdate instead
-     * because it is better works with typescript
-     */
-    atomicSet(objPath: string, value: any): Promise<RxDocument<RxDocumentType, OrmMethods>>;
-
-
 
     update(updateObj: any): Promise<any>;
     remove(): Promise<boolean>;
@@ -81,15 +70,16 @@ export declare interface RxDocumentBase<RxDocumentType, OrmMethods = {}> {
          * operation will be skipped.
          * This prevents us from upgrading the revision
          * and causing events in the change stream.
+         * (default = true)
          */
         skipIfSame?: boolean
     ): Promise<RxAttachment<RxDocumentType, OrmMethods>>;
     getAttachment(id: string): RxAttachment<RxDocumentType, OrmMethods> | null;
     allAttachments(): RxAttachment<RxDocumentType, OrmMethods>[];
 
-    toJSON(): RxDocumentType;
-    toJSON(withRevAndAttachments: true): RxDocumentTypeWithRev<RxDocumentType>;
-    toJSON(withRevAndAttachments: false): RxDocumentType;
+    toJSON(): DeepReadonly<RxDocumentType>;
+    toJSON(withRevAndAttachments: true): DeepReadonly<RxDocumentData<RxDocumentType>>;
+    toJSON(withRevAndAttachments: false): DeepReadonly<RxDocumentType>;
 
     destroy(): void;
 }

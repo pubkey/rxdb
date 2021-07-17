@@ -6,8 +6,9 @@
 
 import '@babel/polyfill';
 import * as RxDB from './index.js';
+import * as RxDbPouchPlugin from './plugins/pouchdb/index.js';
 
-RxDB.addRxPlugin(require('pouchdb-adapter-idb'));
-RxDB.addRxPlugin(require('pouchdb-adapter-http'));
+RxDbPouchPlugin.addPouchPlugin(require('pouchdb-adapter-idb'));
+RxDbPouchPlugin.addPouchPlugin(require('pouchdb-adapter-http'));
 
 (window as any)['RxDB'] = RxDB;

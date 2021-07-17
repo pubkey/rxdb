@@ -1,6 +1,5 @@
 import { Observable } from 'rxjs';
-import { RxChangeEvent } from './rx-change-event';
-import type { RxDocument, RxCollection } from './types';
+import type { RxDocument, RxCollection, RxDocumentData, RxDocumentWriteData, RxChangeEvent } from './types';
 export declare const basePrototype: {
     /**
      * TODO
@@ -8,7 +7,7 @@ export declare const basePrototype: {
      * we should make these accesors functions instead of getters.
      */
     readonly _data: {} | undefined;
-    readonly primaryPath: string | undefined;
+    readonly primaryPath: undefined;
     readonly primary: any;
     readonly revision: string | undefined;
     readonly deleted$: Observable<boolean> | undefined;
@@ -17,11 +16,11 @@ export declare const basePrototype: {
      * returns the observable which emits the plain-data of this document
      */
     readonly $: Observable<any>;
-    _handleChangeEvent(this: import("./types").RxDocumentBase<{}, {}>, changeEvent: RxChangeEvent): void;
+    _handleChangeEvent(this: import("./types").RxDocumentBase<{}, {}>, changeEvent: RxChangeEvent<any>): void;
     /**
      * emits the changeEvent to the upper instance (RxCollection)
      */
-    $emit(this: import("./types").RxDocumentBase<{}, {}>, changeEvent: RxChangeEvent): void;
+    $emit(this: import("./types").RxDocumentBase<{}, {}>, changeEvent: RxChangeEvent<any>): any;
     /**
      * returns observable of the value of the given path
      */
@@ -34,13 +33,13 @@ export declare const basePrototype: {
      * get data by objectPath
      */
     get(this: import("./types").RxDocumentBase<{}, {}>, objPath: string): any | null;
-    toJSON(this: import("./types").RxDocumentBase<{}, {}>, withRevAndAttachments?: boolean): {
-        _rev: string;
-        _attachments?: {
-            [attachmentId: string]: import("./types").PouchAttachmentMeta;
-        } | undefined;
+    toJSON(this: import("./types").RxDocumentBase<{}, {}>, withRevAndAttachments?: boolean): import("./types").DeepReadonlyObject<{
         _deleted?: boolean | undefined;
-    };
+        _attachments: {
+            [attachmentId: string]: import("./types").RxAttachmentData;
+        };
+        _rev: string;
+    }>;
     /**
      * set data by objectPath
      * This can only be called on temporary documents
@@ -66,15 +65,10 @@ export declare const basePrototype: {
      */
     atomicPatch<RxDocumentType = any>(this: RxDocument<RxDocumentType, {}>, patch: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, {}>>;
     /**
-     * @deprecated use atomicPatch instead because it is better typed
-     * and does not allow any keys and values
-     */
-    atomicSet(this: import("./types").RxDocumentBase<{}, {}>, key: string, value: any): Promise<import("./types").RxDocumentBase<{}, {}>>;
-    /**
      * saves the new document-data
      * and handles the events
      */
-    _saveData(this: import("./types").RxDocumentBase<{}, {}>, newData: any, oldData: any): Promise<void>;
+    _saveData<RxDocumentType_1>(this: RxDocument<RxDocumentType_1, {}>, newData: RxDocumentWriteData<RxDocumentType_1>, oldData: RxDocumentData<RxDocumentType_1>): Promise<void>;
     /**
      * saves the temporary document and makes a non-temporary out of it
      * Saving a temporary doc is basically the same as RxCollection.insert()
@@ -96,7 +90,7 @@ export declare function createRxDocumentConstructor(proto?: {
      * we should make these accesors functions instead of getters.
      */
     readonly _data: {} | undefined;
-    readonly primaryPath: string | undefined;
+    readonly primaryPath: undefined;
     readonly primary: any;
     readonly revision: string | undefined;
     readonly deleted$: Observable<boolean> | undefined;
@@ -109,7 +103,7 @@ export declare function createRxDocumentConstructor(proto?: {
     /**
      * emits the changeEvent to the upper instance (RxCollection)
      */
-    $emit(this: import("./types").RxDocumentBase<{}, {}>, changeEvent: RxChangeEvent<any>): void;
+    $emit(this: import("./types").RxDocumentBase<{}, {}>, changeEvent: RxChangeEvent<any>): any;
     /**
      * returns observable of the value of the given path
      */
@@ -122,13 +116,13 @@ export declare function createRxDocumentConstructor(proto?: {
      * get data by objectPath
      */
     get(this: import("./types").RxDocumentBase<{}, {}>, objPath: string): any;
-    toJSON(this: import("./types").RxDocumentBase<{}, {}>, withRevAndAttachments?: boolean): {
-        _rev: string;
-        _attachments?: {
-            [attachmentId: string]: import("./types").PouchAttachmentMeta;
-        } | undefined;
+    toJSON(this: import("./types").RxDocumentBase<{}, {}>, withRevAndAttachments?: boolean): import("./types").DeepReadonlyObject<{
         _deleted?: boolean | undefined;
-    };
+        _attachments: {
+            [attachmentId: string]: import("./types").RxAttachmentData;
+        };
+        _rev: string;
+    }>;
     /**
      * set data by objectPath
      * This can only be called on temporary documents
@@ -154,15 +148,10 @@ export declare function createRxDocumentConstructor(proto?: {
      */
     atomicPatch<RxDocumentType = any>(this: RxDocument<RxDocumentType, {}>, patch: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, {}>>;
     /**
-     * @deprecated use atomicPatch instead because it is better typed
-     * and does not allow any keys and values
-     */
-    atomicSet(this: import("./types").RxDocumentBase<{}, {}>, key: string, value: any): Promise<import("./types").RxDocumentBase<{}, {}>>;
-    /**
      * saves the new document-data
      * and handles the events
      */
-    _saveData(this: import("./types").RxDocumentBase<{}, {}>, newData: any, oldData: any): Promise<void>;
+    _saveData<RxDocumentType_1>(this: RxDocument<RxDocumentType_1, {}>, newData: RxDocumentWriteData<RxDocumentType_1>, oldData: RxDocumentData<RxDocumentType_1>): Promise<void>;
     /**
      * saves the temporary document and makes a non-temporary out of it
      * Saving a temporary doc is basically the same as RxCollection.insert()
@@ -185,7 +174,7 @@ export declare function createRxDocumentConstructor(proto?: {
          * we should make these accesors functions instead of getters.
          */
         readonly _data: {} | undefined;
-        readonly primaryPath: string | undefined;
+        readonly primaryPath: undefined;
         readonly primary: any;
         readonly revision: string | undefined;
         readonly deleted$: Observable<boolean> | undefined;
@@ -198,7 +187,7 @@ export declare function createRxDocumentConstructor(proto?: {
         /**
          * emits the changeEvent to the upper instance (RxCollection)
          */
-        $emit(this: import("./types").RxDocumentBase<{}, {}>, changeEvent: RxChangeEvent<any>): void;
+        $emit(this: import("./types").RxDocumentBase<{}, {}>, changeEvent: RxChangeEvent<any>): any;
         /**
          * returns observable of the value of the given path
          */
@@ -211,13 +200,13 @@ export declare function createRxDocumentConstructor(proto?: {
          * get data by objectPath
          */
         get(this: import("./types").RxDocumentBase<{}, {}>, objPath: string): any;
-        toJSON(this: import("./types").RxDocumentBase<{}, {}>, withRevAndAttachments?: boolean): {
-            _rev: string;
-            _attachments?: {
-                [attachmentId: string]: import("./types").PouchAttachmentMeta;
-            } | undefined;
+        toJSON(this: import("./types").RxDocumentBase<{}, {}>, withRevAndAttachments?: boolean): import("./types").DeepReadonlyObject<{
             _deleted?: boolean | undefined;
-        };
+            _attachments: {
+                [attachmentId: string]: import("./types").RxAttachmentData;
+            };
+            _rev: string;
+        }>;
         /**
          * set data by objectPath
          * This can only be called on temporary documents
@@ -243,15 +232,10 @@ export declare function createRxDocumentConstructor(proto?: {
          */
         atomicPatch<RxDocumentType = any>(this: RxDocument<RxDocumentType, {}>, patch: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, {}>>;
         /**
-         * @deprecated use atomicPatch instead because it is better typed
-         * and does not allow any keys and values
-         */
-        atomicSet(this: import("./types").RxDocumentBase<{}, {}>, key: string, value: any): Promise<import("./types").RxDocumentBase<{}, {}>>;
-        /**
          * saves the new document-data
          * and handles the events
          */
-        _saveData(this: import("./types").RxDocumentBase<{}, {}>, newData: any, oldData: any): Promise<void>;
+        _saveData<RxDocumentType_1>(this: RxDocument<RxDocumentType_1, {}>, newData: RxDocumentWriteData<RxDocumentType_1>, oldData: RxDocumentData<RxDocumentType_1>): Promise<void>;
         /**
          * saves the temporary document and makes a non-temporary out of it
          * Saving a temporary doc is basically the same as RxCollection.insert()
@@ -269,4 +253,4 @@ export declare function createRxDocumentConstructor(proto?: {
 };
 export declare function defineGetterSetter(schema: any, valueObj: any, objPath?: string, thisObj?: boolean): void;
 export declare function createWithConstructor(constructor: any, collection: RxCollection, jsonData: any): RxDocument | null;
-export declare function isInstanceOf(obj: any): boolean;
+export declare function isRxDocument(obj: any): boolean;

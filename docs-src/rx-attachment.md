@@ -39,7 +39,7 @@ const attachment = await myDocument.putAttachment(
         data,   // (string|Blob|Buffer) data of the attachment
         type    // (string) type of the attachment-data like 'image/jpeg'
     },
-    true // (boolean, optional) skipIfSame:If true and attachment already exists with same data, the write will be skipped
+    true // (boolean, optional, default=true) skipIfSame:If true and attachment already exists with same data, the write will be skipped
 );
 ```
 

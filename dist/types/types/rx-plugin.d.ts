@@ -1,5 +1,9 @@
 import { RxQuery, RxQueryOP, MangoQuery } from './rx-query';
 import { RxCollection } from './rx-collection';
+import { RxStorageInstanceCreationParams } from './rx-storage';
+import type {
+    DeepReadonly
+} from '../types'
 
 export type RxPluginPreCreateRxQueryArgs = {
     op: RxQueryOP;
@@ -39,8 +43,8 @@ export interface RxPlugin {
     };
     overwritable?: {
         isDevMode?: () => boolean;
+        deepFreezeWhenDevMode?: <T>(obj: T) => DeepReadonly<T>,
         validatePassword?: Function,
-        createKeyCompressor?: Function,
         checkAdapter?: Function,
         tunnelErrorMessage?: Function
     };
@@ -56,10 +60,15 @@ export interface RxPlugin {
         preCreateRxSchema?: Function,
         createRxSchema?: Function,
         preCreateRxQuery?: (data: RxPluginPreCreateRxQueryArgs) => void,
+        prePrepareQuery?: (i: { rxQuery: RxQuery<any>; mangoQuery: MangoQuery<any> }) => void,
+        preQueryMatcher?: (i: { rxQuery: RxQuery<any>; doc: any }) => void;
+        preSortComparator?: (i: { rxQuery: RxQuery<any>; docA: any; docB: any; }) => void,
+        preWriteToStorageInstance?: (i: { collection: RxCollection; doc: any }) => void;
+        postReadFromInstance?: (i: { collection: RxCollection, doc: any }) => void;
         createRxQuery?: (query: RxQuery) => void,
         createRxDocument?: Function,
         postCreateRxDocument?: Function,
-        preCreatePouchDb?: Function,
+        preCreateRxStorageInstance?: (params: RxStorageInstanceCreationParams<any, any>) => void,
         preMigrateDocument?: Function,
         postMigrateDocument?: Function
     };

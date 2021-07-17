@@ -9,18 +9,21 @@ if (config.platform.isNode())
 
 import {
     createRxDatabase,
-    addRxPlugin,
     randomCouchString,
     promiseWait,
     clone,
-    countAllUndeleted,
-    getBatch,
-    PouchDB,
     isRxDatabase,
     PouchDBInstance,
-    getNewestSequence,
-    blobBufferUtil
+    blobBufferUtil,
 } from '../../plugins/core';
+
+import {
+    PouchDB,
+    addPouchPlugin,
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
+
+
 import * as schemaObjects from './../helper/schema-objects';
 
 config.parallel('pouch-db-integration.test.js', () => {
@@ -34,18 +37,20 @@ config.parallel('pouch-db-integration.test.js', () => {
             await AsyncTestUtil.assertThrows(
                 () => createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: memdown
+                    storage: getRxStoragePouch(memdown)
                 }),
                 'RxError',
                 'leveldb-plugin'
             );
         });
         it('should work after adding the leveldb-plugin', async () => {
-            if (!config.platform.isNode()) return;
+            if (!config.platform.isNode()) {
+                return;
+            }
             PouchDB.plugin(leveldb);
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: memdown
+                storage: getRxStoragePouch(memdown)
             });
             assert.ok(isRxDatabase(db));
             db.destroy();
@@ -56,17 +61,17 @@ config.parallel('pouch-db-integration.test.js', () => {
             await AsyncTestUtil.assertThrows(
                 () => createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory')
                 }),
                 'RxError',
                 'Adapter'
             );
         });
         it('should work when adapter was added', async () => {
-            addRxPlugin(require('pouchdb-adapter-memory'));
+            addPouchPlugin(require('pouchdb-adapter-memory'));
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory')
             });
             assert.ok(isRxDatabase(db));
             db.destroy();
@@ -79,7 +84,7 @@ config.parallel('pouch-db-integration.test.js', () => {
             await AsyncTestUtil.assertThrows(
                 () => createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'localstorage'
+                    storage: getRxStoragePouch('localstorage')
                 }),
                 'RxError',
                 'Adapter'
@@ -92,7 +97,7 @@ config.parallel('pouch-db-integration.test.js', () => {
                 await AsyncTestUtil.assertThrows(
                     () => createRxDatabase({
                         name: randomCouchString(10),
-                        adapter: 'websql'
+                        storage: getRxStoragePouch('websql')
                     }),
                     'RxError',
                     'Adapter'
@@ -104,186 +109,14 @@ config.parallel('pouch-db-integration.test.js', () => {
                 // test websql on chrome only
                 if (config.platform.name !== 'chrome') return;
 
-                addRxPlugin(require('pouchdb-adapter-websql'));
+                addPouchPlugin(require('pouchdb-adapter-websql'));
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'websql'
+                    storage: getRxStoragePouch('websql')
                 });
                 assert.ok(isRxDatabase(db));
                 await promiseWait(10);
                 db.destroy();
-            });
-        });
-    });
-    describe('own pouchdb functions', () => {
-        describe('.countAllUndeleted()', () => {
-            it('should return 0', async () => {
-                const name = randomCouchString(10);
-                const pouchdb = new PouchDB(
-                    name, {
-                    adapter: 'memory'
-                }
-                );
-                const count = await countAllUndeleted(pouchdb as any);
-                assert.deepStrictEqual(count, 0);
-            });
-            it('should return 1', async () => {
-                const name = randomCouchString(10);
-                const pouchdb = new PouchDB(
-                    name, {
-                    adapter: 'memory'
-                }
-                );
-                await pouchdb.put({
-                    _id: randomCouchString(10)
-                });
-                const count = await countAllUndeleted(pouchdb as any);
-                assert.deepStrictEqual(count, 1);
-            });
-            it('should not count deleted docs', async () => {
-                const name = randomCouchString(10);
-                const pouchdb = new PouchDB(
-                    name, {
-                    adapter: 'memory'
-                }
-                );
-                const _id = randomCouchString(10);
-                await pouchdb.put({
-                    _id,
-                    x: 1
-                });
-
-                const countBefore = await countAllUndeleted(pouchdb as any);
-                assert.deepStrictEqual(countBefore, 1);
-
-                const doc = await pouchdb.get(_id);
-                await pouchdb.remove(doc);
-                const count = await countAllUndeleted(pouchdb as any);
-                assert.deepStrictEqual(count, 0);
-            });
-            it('should count a big amount with one deleted doc', async () => {
-                const name = randomCouchString(10);
-                const pouchdb = new PouchDB(
-                    name, {
-                    adapter: 'memory'
-                }
-                );
-
-                const _id = randomCouchString(10);
-                await pouchdb.put({
-                    _id,
-                    x: 1
-                });
-                const countBefore = await countAllUndeleted(pouchdb as any);
-                assert.deepStrictEqual(countBefore, 1);
-                const doc = await pouchdb.get(_id);
-                await pouchdb.remove(doc);
-
-                let t = 42;
-                while (t > 0) {
-                    await pouchdb.put({
-                        _id: randomCouchString(10),
-                        x: 1
-                    });
-                    t--;
-                }
-                const count = await countAllUndeleted(pouchdb as any);
-                assert.deepStrictEqual(count, 42);
-            });
-        });
-        describe('.getBatch()', () => {
-            it('should return empty array', async () => {
-                const name = randomCouchString(10);
-                const pouchdb = new PouchDB(
-                    name, {
-                    adapter: 'memory'
-                }
-                );
-                const docs = await getBatch(pouchdb as any, 10);
-                assert.deepStrictEqual(docs, []);
-            });
-            it('should not return deleted', async () => {
-                const name = randomCouchString(10);
-                const pouchdb = new PouchDB(
-                    name, {
-                    adapter: 'memory'
-                }
-                );
-
-                const _id = randomCouchString(10);
-                await pouchdb.put({
-                    _id,
-                    x: 1
-                });
-
-                const countBefore = await countAllUndeleted(pouchdb as any);
-                assert.deepStrictEqual(countBefore, 1);
-
-                const doc = await pouchdb.get(_id);
-                await pouchdb.remove(doc);
-
-                const docs = await getBatch(pouchdb as any, 10);
-                assert.deepStrictEqual(docs, []);
-            });
-            it('should return one document in array', async () => {
-                const name = randomCouchString(10);
-                const pouchdb = new PouchDB(
-                    name, {
-                    adapter: 'memory'
-                }
-                );
-                const _id = randomCouchString(10);
-                await pouchdb.put({
-                    _id,
-                    x: 1
-                });
-                const docs: any[] = await getBatch(pouchdb as any, 10);
-                assert.strictEqual(docs.length, 1);
-                assert.strictEqual(docs[0].x, 1);
-                assert.strictEqual(docs[0]._id, _id);
-            });
-            it('should max return batchSize', async () => {
-                const name = randomCouchString(10);
-                const pouchdb = new PouchDB(
-                    name, {
-                    adapter: 'memory'
-                }
-                );
-
-                let t = 42;
-                while (t > 0) {
-                    await pouchdb.put({
-                        _id: randomCouchString(10),
-                        x: 1
-                    });
-                    t--;
-                }
-                const batchSize = 13;
-                const docs: any[] = await getBatch(pouchdb as any, batchSize);
-                assert.strictEqual(docs.length, batchSize);
-                docs.forEach(doc => {
-                    assert.strictEqual(doc.x, 1);
-                });
-            });
-        });
-        describe('.getNewestSequence()', () => {
-            it('should get the latest sequence', async () => {
-                const pouchdb = new PouchDB(
-                    randomCouchString(10),
-                    {
-                        adapter: 'memory'
-                    }
-                );
-
-                const latestBefore = await getNewestSequence(pouchdb);
-                await pouchdb.put({
-                    _id: 'foobar'
-                });
-                await pouchdb.put({
-                    _id: 'foobar2'
-                });
-                const latestAfter = await getNewestSequence(pouchdb);
-                assert.ok(latestAfter > latestBefore);
             });
         });
     });
@@ -452,7 +285,7 @@ config.parallel('pouch-db-integration.test.js', () => {
                 docs
             }, bulkOptions);
 
-            let foundAfter = await pouch.find({
+            let foundAfter = await pouch.find<{ firstName: string, _deleted: boolean }>({
                 selector: {}
             });
             assert.strictEqual(foundAfter.docs.length, 1);

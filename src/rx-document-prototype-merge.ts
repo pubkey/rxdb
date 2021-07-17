@@ -99,19 +99,21 @@ export function createRxDocument<DT, OM>(
     rxCollection: RxCollection<DT, OM>,
     docData: any
 ): RxDocument<DT, OM> {
+    const primary = docData[rxCollection.schema.primaryPath];
 
     // return from cache if exsists
-    const id = docData[rxCollection.schema.primaryPath];
-    const cacheDoc = rxCollection._docCache.get(id);
-    if (cacheDoc) return cacheDoc as any;
+    const cacheDoc = rxCollection._docCache.get(primary);
+    if (cacheDoc) {
+        return cacheDoc as any;
+    }
 
     const doc = createRxDocumentWithConstructor(
-        getRxDocumentConstructor(rxCollection),
-        rxCollection,
+        getRxDocumentConstructor(rxCollection as any),
+        rxCollection as any,
         docData
     );
 
-    rxCollection._docCache.set(id, doc as any);
+    rxCollection._docCache.set(primary, doc as any);
     rxCollection._runHooksSync('post', 'create', docData, doc);
     runPluginHooks('postCreateRxDocument', doc);
     return doc as any;
@@ -125,7 +127,7 @@ export function createRxDocuments<DT, OM>(
     docsJSON: any[]
 ): RxDocument<DT, OM>[] {
     return docsJSON.map(
-        json => createRxDocument<DT, OM>(rxCollection, json)
+        json => createRxDocument<DT, OM>(rxCollection as any, json)
     );
 }
 

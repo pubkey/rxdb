@@ -8,9 +8,9 @@ import type {
     PouchReplicationOptions,
     PouchSyncHandler
 } from '../pouch';
-import type { RxReplicationStateBase } from '../../plugins/replication';
+import type { RxCouchDBReplicationStateBase } from '../../plugins/replication-couchdb';
 
-export declare class RxReplicationState extends RxReplicationStateBase {
+export declare class RxCouchDBReplicationState extends RxCouchDBReplicationStateBase {
     collection: RxCollection;
 
     change$: Observable<any>;

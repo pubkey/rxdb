@@ -17,8 +17,8 @@ import GraphQLClient from 'graphql-client';
 import objectPath from 'object-path';
 import {
     promiseWait,
-    flatClone,
-    now
+    getHeightOfRevision,
+    flatClone
 } from '../../util';
 
 import {
@@ -31,8 +31,7 @@ import {
 import {
     DEFAULT_MODIFIER,
     wasRevisionfromPullReplication,
-    createRevisionForPulledDocument,
-    getDocsWithRevisionsFromPouch
+    createRevisionForPulledDocument
 } from './helper';
 import {
     setLastPushSequence,
@@ -41,11 +40,7 @@ import {
     getChangesSinceLastPushSequence
 } from './crawling-checkpoint';
 
-import { RxDBWatchForChangesPlugin } from '../watch-for-changes';
 import { RxDBLeaderElectionPlugin } from '../leader-election';
-import {
-    changeEventfromPouchChange
-} from '../../rx-change-event';
 import {
     overwritable
 } from '../../overwritable';
@@ -53,32 +48,27 @@ import type {
     RxCollection,
     GraphQLSyncPullOptions,
     GraphQLSyncPushOptions,
-    RxPlugin
+    RxPlugin,
+    RxDocumentData
 } from '../../types';
+import { getDocumentDataOfRxChangeEvent } from '../../rx-change-event';
+import { _handleFromStorageInstance, _handleToStorageInstance } from '../../rx-collection-helper';
 
 addRxPlugin(RxDBLeaderElectionPlugin);
 
-/**
- * add the watch-for-changes-plugin
- * so pouchdb will emit events when something gets written to it
- */
-addRxPlugin(RxDBWatchForChangesPlugin);
 
-
-export class RxGraphQLReplicationState {
+export class RxGraphQLReplicationState<RxDocType> {
 
     constructor(
-        public readonly collection: RxCollection,
+        public readonly collection: RxCollection<RxDocType>,
         public readonly url: string,
         public headers: { [k: string]: string },
-        public readonly pull: GraphQLSyncPullOptions,
-        public readonly push: GraphQLSyncPushOptions,
+        public readonly pull: GraphQLSyncPullOptions<RxDocType>,
+        public readonly push: GraphQLSyncPushOptions<RxDocType>,
         public readonly deletedFlag: string,
-        public readonly lastPulledRevField: string,
         public readonly live: boolean,
         public liveInterval: number,
-        public retryTime: number,
-        public readonly syncRevisions: boolean
+        public retryTime: number
     ) {
         this.client = GraphQLClient({
             url,
@@ -105,7 +95,7 @@ export class RxGraphQLReplicationState {
 
     public initialReplicationComplete$: Observable<any> = undefined as any;
 
-    public recieved$: Observable<any> = undefined as any;
+    public recieved$: Observable<RxDocumentData<RxDocType>> = undefined as any;
     public send$: Observable<any> = undefined as any;
     public error$: Observable<any> = undefined as any;
     public canceled$: Observable<any> = undefined as any;
@@ -135,7 +125,7 @@ export class RxGraphQLReplicationState {
         if (this.collection.destroyed) {
             return true;
         }
-        if (!this.live && this._subjects.initialReplicationComplete['_value']) {
+        if (!this.live && this._subjects.initialReplicationComplete.getValue()) {
             return true;
         }
         if (this._subjects.canceled['_value']) {
@@ -168,7 +158,7 @@ export class RxGraphQLReplicationState {
             this._subjects.active.next(true);
             const willRetry = await this._run(retryOnFail);
             this._subjects.active.next(false);
-            if (retryOnFail && !willRetry && this._subjects.initialReplicationComplete['_value'] === false) {
+            if (retryOnFail && !willRetry && this._subjects.initialReplicationComplete.getValue() === false) {
                 this._subjects.initialReplicationComplete.next(true);
             }
             this._runQueueCount--;
@@ -207,10 +197,11 @@ export class RxGraphQLReplicationState {
     }
 
     /**
-     * @return true if sucessfull
+     * Pull all changes from the server,
+     * start from the last pulled change.
+     * @return true if sucessfull, false if something errored
      */
     async runPull(): Promise<boolean> {
-        // console.log('RxGraphQLReplicationState.runPull(): start');
         if (this.isStopped()) {
             return Promise.resolve(false);
         }
@@ -238,6 +229,12 @@ export class RxGraphQLReplicationState {
 
         const dataPath = (this.pull as any).dataPath || ['data', Object.keys(result.data)[0]];
         const data: any[] = objectPath.get(result, dataPath);
+
+        // optimisation shortcut, do not proceed if there are no documents.
+        if (data.length === 0) {
+            return true;
+        }
+
         const modified: any[] = (await Promise.all(data
             .map(async (doc: any) => await (this.pull as any).modifier(doc))
         )).filter(doc => !!doc);
@@ -248,9 +245,8 @@ export class RxGraphQLReplicationState {
         if (overwritable.isDevMode()) {
             try {
                 modified.forEach((doc: any) => {
-                    const withoutDeleteFlag = Object.assign({}, doc);
+                    const withoutDeleteFlag = flatClone(doc);
                     delete withoutDeleteFlag[this.deletedFlag];
-                    delete withoutDeleteFlag._revisions;
                     this.collection.schema.validate(withoutDeleteFlag);
                 });
             } catch (err) {
@@ -259,16 +255,12 @@ export class RxGraphQLReplicationState {
             }
         }
 
-        const docIds = modified.map((doc: any) => doc[this.collection.schema.primaryPath]);
-        const docsWithRevisions = await getDocsWithRevisionsFromPouch(
-            this.collection,
-            docIds
-        );
         if (this.isStopped()) {
             return true;
         }
-        await this.handleDocumentsFromRemote(modified, docsWithRevisions as any);
+        await this.handleDocumentsFromRemote(modified);
         modified.map((doc: any) => this._subjects.recieved.next(doc));
+
 
         if (modified.length === 0) {
             if (this.live) {
@@ -284,7 +276,12 @@ export class RxGraphQLReplicationState {
                 newLatestDocument
             );
 
-            // we have more docs, re-run
+            /**
+             * we have more docs, re-run
+             * TODO we should have a options.pull.batchSize param
+             * and only re-run if the previous batch was 'full'
+             * this would save many duplicate requests with empty arrays as response.
+             */
             await this.runPull();
         }
 
@@ -295,41 +292,32 @@ export class RxGraphQLReplicationState {
      * @return true if successfull, false if not
      */
     async runPush(): Promise<boolean> {
-        // console.log('RxGraphQLReplicationState.runPush(): start');
-
-        const changes = await getChangesSinceLastPushSequence(
+        const changesResult = await getChangesSinceLastPushSequence<RxDocType>(
             this.collection,
             this.endpointHash,
-            this.lastPulledRevField,
             this.push.batchSize,
-            this.syncRevisions
         );
 
-        const changesWithDocs: any = (await Promise.all(changes.results.map(async (change: any) => {
-            let doc = change['doc'];
+        const changesWithDocs: { doc: RxDocumentData<RxDocType>; sequence: number; }[] = (
+            await Promise.all(
+                Array.from(changesResult.changedDocs.values()).map(async (row) => {
+                    let changedDoc = row.doc;
+                    changedDoc = await (this.push as any).modifier(changedDoc);
+                    if (!changedDoc) {
+                        return null;
+                    }
+                    return {
+                        doc: changedDoc,
+                        sequence: row.sequence
+                    };
+                })
+            )
+        ).filter(doc => !!doc) as any;
 
-            doc[this.deletedFlag] = !!change['deleted'];
-            delete doc._deleted;
-            delete doc._attachments;
-            delete doc[this.lastPulledRevField];
-
-            if (!this.syncRevisions) {
-                delete doc._rev;
-            }
-
-            doc = await (this.push as any).modifier(doc);
-            if (!doc) {
-                return null;
-            }
-
-            const seq = change.seq;
-            return {
-                doc,
-                seq
-            };
-        }))).filter(doc => doc);
-
-        let lastSuccessfullChange = null;
+        let lastSuccessfullChange: {
+            doc: RxDocumentData<RxDocType>;
+            sequence: number;
+        } | null = null;
         try {
             /**
              * we cannot run all queries parallel
@@ -339,8 +327,17 @@ export class RxGraphQLReplicationState {
              */
             for (let i = 0; i < changesWithDocs.length; i++) {
                 const changeWithDoc = changesWithDocs[i];
+
+                // TODO _deleted should be required on type RxDocumentData
+                // so we do not need this check here
+                if (!changeWithDoc.doc.hasOwnProperty('_deleted')) {
+                    changeWithDoc.doc._deleted = false;
+                }
+
                 const pushObj = await this.push.queryBuilder(changeWithDoc.doc);
+
                 const result = await this.client.query(pushObj.query, pushObj.variables);
+
                 if (result.errors) {
                     if (typeof result.errors === 'string') {
                         throw new Error(result.errors);
@@ -355,12 +352,11 @@ export class RxGraphQLReplicationState {
                 }
             }
         } catch (err) {
-
             if (lastSuccessfullChange) {
                 await setLastPushSequence(
                     this.collection,
                     this.endpointHash,
-                    lastSuccessfullChange.seq
+                    lastSuccessfullChange.sequence
                 );
             }
             this._subjects.error.next(err);
@@ -371,10 +367,10 @@ export class RxGraphQLReplicationState {
         await setLastPushSequence(
             this.collection,
             this.endpointHash,
-            changes.last_seq
+            changesResult.lastSequence
         );
 
-        if (changes.results.length === 0) {
+        if (changesResult.changedDocs.size === 0) {
             if (this.live) {
                 // console.log('no more docs to push, wait for ping');
             } else {
@@ -388,84 +384,51 @@ export class RxGraphQLReplicationState {
         return true;
     }
 
-    async handleDocumentsFromRemote(docs: any[], docsWithRevisions: any[]): Promise<boolean> {
-        const toPouchDocs: any[] = [];
+    async handleDocumentsFromRemote(docs: any[]): Promise<boolean> {
+        const toStorageDocs: {
+            doc: RxDocumentData<RxDocType>;
+            deletedValue: boolean;
+        }[] = [];
+
+
+        const docIds: string[] = docs.map(doc => doc[this.collection.schema.primaryPath]);
+        const docsFromLocal = await this.collection.storageInstance.findDocumentsById(docIds, true);
+
         for (const doc of docs) {
+            const documentId = doc[this.collection.schema.primaryPath];
             const deletedValue = doc[this.deletedFlag];
-            const toPouch = this.collection._handleToPouch(doc);
-            toPouch._deleted = deletedValue;
-            delete toPouch[this.deletedFlag];
 
-            if (!this.syncRevisions) {
-                const primaryValue = toPouch._id;
+            doc._deleted = deletedValue;
+            delete doc[this.deletedFlag];
 
-                const pouchState = docsWithRevisions[primaryValue];
-                let newRevision = createRevisionForPulledDocument(
-                    this.endpointHash,
-                    toPouch
-                );
-                if (pouchState) {
-                    const newRevisionHeight = pouchState.revisions.start + 1;
-                    const revisionId = newRevision;
-                    newRevision = newRevisionHeight + '-' + newRevision;
-                    toPouch._revisions = {
-                        start: newRevisionHeight,
-                        ids: pouchState.revisions.ids
-                    };
-                    toPouch._revisions.ids.unshift(revisionId);
-                } else {
-                    newRevision = '1-' + newRevision;
-                }
-
-                toPouch._rev = newRevision;
+            const docStateInLocalStorageInstance = docsFromLocal.get(documentId);
+            let newRevision = createRevisionForPulledDocument(
+                this.endpointHash,
+                doc
+            );
+            if (docStateInLocalStorageInstance) {
+                const hasHeight = getHeightOfRevision(docStateInLocalStorageInstance._rev);
+                const newRevisionHeight = hasHeight + 1;
+                newRevision = newRevisionHeight + '-' + newRevision;
             } else {
-                toPouch[this.lastPulledRevField] = toPouch._rev;
+                newRevision = '1-' + newRevision;
             }
+            doc._rev = newRevision;
 
-            toPouchDocs.push({
-                doc: toPouch,
+            toStorageDocs.push({
+                doc: doc,
                 deletedValue
             });
         }
 
-
-        const startTime = now();
-        await this.collection.database.lockedRun(
-            async () => {
-                await this.collection.pouch.bulkDocs(
-                    toPouchDocs.map(tpd => tpd.doc),
-                    {
-                        new_edits: false
-                    }
-                );
-            }
-        );
-        const endTime = now();
-
-        /**
-         * because bulkDocs with new_edits: false
-         * does not stream changes to the pouchdb,
-         * we create the event and emit it,
-         * so other instances get informed about it
-         */
-        for (const tpd of toPouchDocs) {
-            const originalDoc = flatClone(tpd.doc);
-
-            if (tpd.deletedValue) {
-                originalDoc._deleted = tpd.deletedValue;
-            } else {
-                delete originalDoc._deleted;
-            }
-            delete originalDoc[this.deletedFlag];
-            delete originalDoc._revisions;
-
-            const cE = changeEventfromPouchChange(
-                originalDoc,
-                this.collection,
-                startTime,
-                endTime
+        if (toStorageDocs.length > 0) {
+            await this.collection.database.lockedRun(
+                async () => {
+                    await this.collection.storageInstance.bulkAddRevisions(
+                        toStorageDocs.map(row => _handleToStorageInstance(this.collection, row.doc))
+                    );
+                }
             );
-            this.collection.$emit(cE);
         }
 
         return true;
@@ -497,12 +460,10 @@ export function syncGraphQL(
         pull,
         push,
         deletedFlag,
-        lastPulledRevField = 'last_pulled_rev',
         live = false,
         liveInterval = 1000 * 10, // in ms
         retryTime = 1000 * 5, // in ms
-        autoStart = true, // if this is false, the replication does nothing at start
-        syncRevisions = false,
+        autoStart = true // if this is false, the replication does nothing at start
     }: any
 ) {
     const collection = this;
@@ -515,9 +476,6 @@ export function syncGraphQL(
         if (!push.modifier) push.modifier = DEFAULT_MODIFIER;
     }
 
-    // ensure the collection is listening to plain-pouchdb writes
-    collection.watchForChanges();
-
     const replicationState = new RxGraphQLReplicationState(
         collection,
         url,
@@ -525,11 +483,9 @@ export function syncGraphQL(
         pull,
         push,
         deletedFlag,
-        lastPulledRevField,
         live,
         liveInterval,
-        retryTime,
-        syncRevisions
+        retryTime
     );
 
     if (!autoStart) {
@@ -556,7 +512,9 @@ export function syncGraphQL(
                 (async () => {
                     while (!replicationState.isStopped()) {
                         await promiseWait(replicationState.liveInterval);
-                        if (replicationState.isStopped()) return;
+                        if (replicationState.isStopped()) {
+                            return;
+                        }
                         await replicationState.run(
                             // do not retry on liveInterval-runs because they might stack up
                             // when failing
@@ -568,23 +526,28 @@ export function syncGraphQL(
 
             if (push) {
                 /**
-                 * we have to use the rxdb changestream
-                 * because the pouchdb.changes stream sometimes
-                 * does not emit events or stucks
+                 * When a document is written to the collection,
+                 * we might have to run the replication run() once
                  */
-                const changeEventsSub = collection.$.subscribe(changeEvent => {
-                    if (replicationState.isStopped()) return;
-                    const rev = changeEvent.documentData._rev;
-                    if (
-                        rev &&
-                        !wasRevisionfromPullReplication(
-                            replicationState.endpointHash,
-                            rev
-                        )
-                    ) {
-                        replicationState.run();
-                    }
-                });
+                const changeEventsSub = collection.$.pipe(
+                    filter(cE => !cE.isLocal)
+                )
+                    .subscribe(changeEvent => {
+                        if (replicationState.isStopped()) {
+                            return;
+                        }
+                        const doc = getDocumentDataOfRxChangeEvent(changeEvent);
+                        const rev = doc._rev;
+                        if (
+                            rev &&
+                            !wasRevisionfromPullReplication(
+                                replicationState.endpointHash,
+                                rev
+                            )
+                        ) {
+                            replicationState.run();
+                        }
+                    });
                 replicationState._subs.push(changeEventsSub);
             }
         }

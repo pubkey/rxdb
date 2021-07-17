@@ -4,7 +4,7 @@
  */
 /**
  * TODO this should be completely rewritten because:
- * - The current implemetation does not use pouchdb'S bulkDocs which is much faster
+ * - The current implemetation does not use bulkDocs which is much faster
  * - This could have been done in much less code which would be easier to uderstand
  *
  */
@@ -13,10 +13,6 @@ import {
     Observable
 } from 'rxjs';
 import deepEqual from 'deep-equal';
-import {
-    countAllUndeleted,
-    getBatch
-} from '../../pouch-db';
 import {
     clone,
     toPromise,
@@ -31,9 +27,8 @@ import {
     RxError,
     newRxError
 } from '../../rx-error';
-import { overwritable } from '../../overwritable';
 import {
-    runAsyncPluginHooks
+    runAsyncPluginHooks, runPluginHooks
 } from '../../hooks';
 import type {
     RxCollection,
@@ -41,7 +36,9 @@ import type {
     MigrationState,
     NumberFunctionMap,
     OldRxCollection,
-    WithAttachmentsData
+    WithAttachmentsData,
+    RxJsonSchema,
+    RxDocumentData
 } from '../../types';
 import {
     RxSchema,
@@ -51,11 +48,17 @@ import {
     createCrypter
 } from '../../crypter';
 import {
-    _handleToPouch,
-    _handleFromPouch
-} from '../../rx-collection-helper';
-import { getMigrationStateByDatabase, MigrationStateWithCollection } from './migration-state';
+    getMigrationStateByDatabase,
+    MigrationStateWithCollection
+} from './migration-state';
 import { map } from 'rxjs/operators';
+import {
+    countAllUndeleted,
+    getBatch,
+    getSingleDocument
+} from '../../rx-storage-helper';
+import { InternalStoreDocumentData } from '../../rx-database';
+import { _handleFromStorageInstance, _handleToStorageInstance } from '../../rx-collection-helper';
 
 export class DataMigrator {
 
@@ -104,6 +107,8 @@ export class DataMigrator {
          * TODO this is a side-effect which might throw
          * We did this because it is not possible to create new Observer(async(...))
          * @link https://github.com/ReactiveX/rxjs/issues/4074
+         * In the future the whole migration plugin should be rewritten without rxjs
+         * so we do not have this problem.
          */
         (() => {
             let oldCols: OldRxCollection[];
@@ -111,7 +116,7 @@ export class DataMigrator {
                 .then(ret => {
                     oldCols = ret;
                     const countAll: Promise<number[]> = Promise.all(
-                        oldCols.map(oldCol => countAllUndeleted(oldCol.pouchdb))
+                        oldCols.map(oldCol => countAllUndeleted(oldCol.storageInstance))
                     );
                     return countAll;
                 })
@@ -177,70 +182,84 @@ export class DataMigrator {
         if (!this._migratePromise) {
             this._migratePromise = mustMigrate(this)
                 .then(must => {
-                    if (!must) return Promise.resolve(false);
-                    else return new Promise((res, rej) => {
-                        const state$ = this.migrate(batchSize);
-                        (state$ as any).subscribe(null, rej, res);
-                    });
+                    if (!must) {
+                        return Promise.resolve(false);
+                    } else {
+                        return new Promise((res, rej) => {
+                            const state$ = this.migrate(batchSize);
+                            (state$ as any).subscribe(null, rej, res);
+                        });
+                    }
                 });
         }
         return this._migratePromise;
     }
 }
 
-export function createOldCollection(
+export async function createOldCollection(
     version: number,
-    schemaObj: any,
+    schemaObj: RxJsonSchema<any>,
     dataMigrator: DataMigrator
-): OldRxCollection {
+): Promise<OldRxCollection> {
     const database = dataMigrator.newestCollection.database;
     const schema = createRxSchema(schemaObj, false);
+
+    const storageInstanceCreationParams = {
+        databaseName: database.name,
+        collectionName: dataMigrator.newestCollection.name,
+        schema: schemaObj,
+        options: dataMigrator.newestCollection.instanceCreationOptions
+    };
+    runPluginHooks(
+        'preCreateRxStorageInstance',
+        storageInstanceCreationParams
+    );
+
+    const storageInstance = await database.storage.createStorageInstance(
+        storageInstanceCreationParams
+    );
     const ret: OldRxCollection = {
         version,
         dataMigrator,
         newestCollection: dataMigrator.newestCollection,
         database,
         schema: createRxSchema(schemaObj, false),
-        pouchdb: database._spawnPouchDB(
-            dataMigrator.newestCollection.name,
-            version,
-            dataMigrator.newestCollection.pouchSettings
-        ),
+        storageInstance,
         _crypter: createCrypter(
             database.password,
             schema
         )
     };
 
-    if (schema.doKeyCompression()) {
-        ret._keyCompressor = overwritable.createKeyCompressor(schema);
-    }
-
     return ret;
 }
 
 /**
- * get an array with OldCollection-instances from all existing old pouchdb-instance
+ * get an array with OldCollection-instances from all existing old storage-instances
  */
-export function _getOldCollections(
+export async function _getOldCollections(
     dataMigrator: DataMigrator
 ): Promise<OldRxCollection[]> {
-    return Promise
-        .all(
-            getPreviousVersions(dataMigrator.currentSchema.jsonSchema)
-                .map(v => (dataMigrator.database.internalStore as any).get(dataMigrator.name + '-' + v))
-                .map(fun => fun.catch(() => null)) // auto-catch so Promise.all continues
-        )
-        .then(oldColDocs => oldColDocs
-            .filter(colDoc => colDoc !== null)
+    const oldColDocs: (RxDocumentData<InternalStoreDocumentData> | null)[] = await Promise.all(
+        getPreviousVersions(dataMigrator.currentSchema.jsonSchema)
+            .map(v => getSingleDocument<InternalStoreDocumentData>(dataMigrator.database.internalStore, dataMigrator.name + '-' + v))
+            .map(fun => fun.catch(() => null)) // auto-catch so Promise.all continues
+    );
+
+    return Promise.all(
+        oldColDocs
             .map(colDoc => {
+                if (!colDoc) {
+                    return null as any;
+                }
                 return createOldCollection(
                     colDoc.schema.version,
                     colDoc.schema,
                     dataMigrator
                 );
             })
-        );
+            .filter(colDoc => colDoc !== null)
+    );
 }
 
 
@@ -284,11 +303,15 @@ export function getBatchOfOldCollection(
     batchSize: number
 ): Promise<any[]> {
     return getBatch(
-        oldCollection.pouchdb,
+        oldCollection.storageInstance,
         batchSize
     )
         .then(docs => docs
-            .map(doc => _handleFromPouch(oldCollection, doc))
+            .map(doc => {
+                doc = flatClone(doc);
+                doc = _handleFromStorageInstance(oldCollection as any, doc);
+                return doc;
+            })
         );
 }
 
@@ -302,7 +325,6 @@ export function migrateDocumentData(
     oldCollection: OldRxCollection,
     docData: any
 ): Promise<any | null> {
-
     /**
      * We cannot deep-clone Blob or Buffer
      * so we just flat clone it here
@@ -327,7 +349,9 @@ export function migrateDocumentData(
     }
 
     return currentPromise.then(doc => {
-        if (doc === null) return Promise.resolve(null);
+        if (doc === null) {
+            return Promise.resolve(null);
+        }
 
         // check final schema
         try {
@@ -420,25 +444,25 @@ export function _migrateDocument(
                  * notice that this data also contains the attachments data
                  */
                 const attachmentsBefore = migrated._attachments;
-                const saveData: WithAttachmentsData<any> = oldCollection.newestCollection._handleToPouch(migrated);
+                const saveData: WithAttachmentsData<any> = _handleToStorageInstance(oldCollection.newestCollection, migrated);
                 saveData._attachments = attachmentsBefore;
 
-                return oldCollection.newestCollection.pouch
-                    .bulkDocs([saveData], {
-                        /**
-                         * We need new_edits: false
-                         * because we provide the _rev by our own
-                         */
-                        new_edits: false
-                    })
-                    .then(() => {
-                        action.res = saveData;
-                        action.type = 'success';
-                        return runAsyncPluginHooks(
-                            'postMigrateDocument',
-                            action
-                        );
-                    });
+                /**
+                 * We need to add as revision
+                 * because we provide the _rev by our own
+                 * to have deterministic revisions in case the migration
+                 * runs on multiple nodes which must lead to the equal storage state.
+                 */
+                return oldCollection.newestCollection.storageInstance.bulkAddRevisions([
+                    saveData
+                ]).then(() => {
+                    action.res = saveData;
+                    action.type = 'success';
+                    return runAsyncPluginHooks(
+                        'postMigrateDocument',
+                        action
+                    );
+                });
             } else {
                 /**
                  * Migration strategy returned null
@@ -448,24 +472,28 @@ export function _migrateDocument(
                 action.type = 'deleted';
             }
         })
+        // remove the migrated document from the old collection
         .then(() => {
-            // remove from old collection
-            return oldCollection.pouchdb.remove(
-                _handleToPouch(oldCollection, docData)
-            ).catch(() => { });
+            const writeDeleted = flatClone(docData);
+            writeDeleted._deleted = true;
+            return oldCollection.storageInstance.bulkWrite(
+                [{
+                    previous: _handleToStorageInstance(oldCollection as any, docData),
+                    document: _handleToStorageInstance(oldCollection as any, writeDeleted)
+                }]
+            );
         })
         .then(() => action) as any;
 }
 
 
 /**
- * deletes this.pouchdb and removes it from the database.collectionsCollection
+ * deletes this.storageInstance and removes it from the database.collectionsCollection
  */
 export function deleteOldCollection(
     oldCollection: OldRxCollection
 ): Promise<void> {
-    return oldCollection
-        .pouchdb.destroy()
+    return oldCollection.storageInstance.remove()
         .then(
             () => oldCollection.database.removeCollectionDoc(
                 oldCollection.dataMigrator.name,
@@ -475,7 +503,7 @@ export function deleteOldCollection(
 }
 
 /**
- * runs the migration on all documents and deletes the pouchdb afterwards
+ * runs the migration on all documents and deletes the storage instance afterwards
  */
 export function migrateOldCollection(
     oldCollection: OldRxCollection,
@@ -515,10 +543,14 @@ export function migrateOldCollection(
                     }
                 })
                 .then(next => {
-                    if (!next) return;
-                    if (error)
+                    if (!next) {
+                        return;
+                    }
+                    if (error) {
                         observer.error(error);
-                    else handleOneBatch();
+                    } else {
+                        handleOneBatch();
+                    }
                 });
         };
         handleOneBatch();

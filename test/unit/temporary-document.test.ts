@@ -7,6 +7,11 @@ import {
     randomCouchString
 } from '../../plugins/core';
 
+import {
+    getRxStoragePouch,
+} from '../../plugins/pouchdb';
+
+
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
@@ -46,12 +51,14 @@ config.parallel('temporary-document.test.js', () => {
         it('should have default-values', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
-            const c = await db.collection({
-                name: 'nestedhuman',
-                schema: schemas.humanDefault
+            const cols = await db.addCollections({
+                nestedhuman: {
+                    schema: schemas.humanDefault
+                }
             });
+            const c = cols.nestedhuman;
             const newDoc = c.newDocument();
             assert.strictEqual(newDoc.age, 20);
 
@@ -79,7 +86,7 @@ config.parallel('temporary-document.test.js', () => {
                 const newDoc = c.newDocument(schemaObjects.human());
                 await newDoc.save();
 
-                await newDoc.atomicSet('firstName', 'foobar');
+                await newDoc.atomicPatch({ firstName: 'foobar' });
                 assert.strictEqual('foobar', newDoc.firstName);
                 const allDocs = await c.find().exec();
                 assert.strictEqual(allDocs.length, 1);
@@ -105,17 +112,19 @@ config.parallel('temporary-document.test.js', () => {
         it('should be able to use ORM-functions', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
-            const c = await db.collection({
-                name: 'humans',
-                schema: schemas.human,
-                methods: {
-                    foobar: function () {
-                        return 'test';
+            const cols = await db.addCollections({
+                humans: {
+                    schema: schemas.human,
+                    methods: {
+                        foobar: function () {
+                            return 'test';
+                        }
                     }
                 }
             });
+            const c = cols.humans;
             const newDoc = c.newDocument(schemaObjects.human());
             assert.strictEqual(newDoc.foobar(), 'test');
             db.destroy();
@@ -129,8 +138,8 @@ config.parallel('temporary-document.test.js', () => {
             const emitted: any[] = [];
             const sub = newDoc.firstName$.subscribe((val: any) => emitted.push(val));
 
-            await newDoc.atomicSet('firstName', 'foobar1');
-            await newDoc.atomicSet('firstName', 'foobar2');
+            await newDoc.atomicPatch({ firstName: 'foobar1' });
+            await newDoc.atomicPatch({ firstName: 'foobar2' });
 
             await AsyncTestUtil.waitUntil(() => emitted.length === 3);
             assert.strictEqual('foobar2', emitted.pop());

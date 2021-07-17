@@ -2,7 +2,8 @@ import {
     filter,
     startWith,
     mergeMap,
-    shareReplay
+    shareReplay,
+    map
 } from 'rxjs/operators';
 
 import {
@@ -11,16 +12,15 @@ import {
     flatClone,
     promiseSeries,
     pluginMissing,
-    now,
-    ensureNotFalsy
+    ensureNotFalsy,
+    getFromMapOrThrow,
+    clone
 } from './util';
 import {
-    validateCouchDBString
-} from './pouch-db';
-import {
-    _handleToPouch,
-    _handleFromPouch,
-    fillObjectDataBeforeInsert
+    _handleToStorageInstance,
+    _handleFromStorageInstance,
+    fillObjectDataBeforeInsert,
+    writeToStorageInstance
 } from './rx-collection-helper';
 import {
     createRxQuery,
@@ -31,14 +31,6 @@ import {
     isInstanceOf as isInstanceOfRxSchema,
     createRxSchema
 } from './rx-schema';
-import {
-    RxChangeEvent,
-    createInsertEvent,
-    RxChangeEventInsert,
-    RxChangeEventUpdate,
-    RxChangeEventDelete,
-    createDeleteEvent
-} from './rx-change-event';
 import {
     newRxError,
     newRxTypeError
@@ -63,7 +55,6 @@ import {
     ChangeEventBuffer,
     createChangeEventBuffer
 } from './change-event-buffer';
-import { overwritable } from './overwritable';
 import {
     runAsyncPluginHooks,
     runPluginHooks
@@ -75,10 +66,8 @@ import type {
 } from 'rxjs';
 
 import type {
-    PouchSettings,
     KeyFunctionMap,
-    RxReplicationState,
-    PouchDBInstance,
+    RxCouchDBReplicationState,
     MigrationState,
     SyncOptions,
     RxCollection,
@@ -91,8 +80,18 @@ import type {
     MangoQuery,
     MangoQueryNoLimit,
     RxCacheReplacementPolicy,
-    WithPouchMeta,
-    PouchWriteError
+    RxStorageBulkWriteError,
+    RxDocumentData,
+    RxDocumentWriteData,
+    RxStorageInstanceCreationParams,
+    RxStorageKeyObjectInstance,
+    BulkWriteRow,
+    RxChangeEvent,
+    RxChangeEventInsert,
+    RxChangeEventUpdate,
+    RxChangeEventDelete,
+    RxStorage,
+    RxStorageInstance
 } from './types';
 import type {
     RxGraphQLReplicationState
@@ -103,29 +102,32 @@ import {
 } from './rx-schema';
 import {
     createWithConstructor as createRxDocumentWithConstructor,
-    isInstanceOf as isRxDocument
+    isRxDocument
 } from './rx-document';
 
 import {
     createRxDocument,
     getRxDocumentConstructor
 } from './rx-document-prototype-merge';
+import { storageChangeEventToRxChangeEvent } from './rx-storage-helper';
+import { validateDatabaseName } from './plugins/dev-mode/check-names';
 
 const HOOKS_WHEN = ['pre', 'post'];
 const HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
 let hooksApplied = false;
 
 export class RxCollectionBase<
+    InstanceCreationOptions,
     RxDocumentType = { [prop: string]: any },
     OrmMethods = {},
     StaticMethods = { [key: string]: any }
     > {
 
     constructor(
-        public database: RxDatabase,
+        public database: RxDatabase<any, InstanceCreationOptions>,
         public name: string,
         public schema: RxSchema<RxDocumentType>,
-        public pouchSettings: PouchSettings = {},
+        public instanceCreationOptions: InstanceCreationOptions = {} as any,
         public migrationStrategies: KeyFunctionMap = {},
         public methods: KeyFunctionMap = {},
         public attachments: KeyFunctionMap = {},
@@ -139,7 +141,7 @@ export class RxCollectionBase<
     /**
      * returns observable
      */
-    get $(): Observable<RxChangeEvent> {
+    get $(): Observable<RxChangeEvent<any>> {
         return this._observable$ as any;
     }
     get insert$(): Observable<RxChangeEventInsert<RxDocumentType>> {
@@ -172,19 +174,28 @@ export class RxCollectionBase<
     public synced: boolean = false;
     public hooks: any = {};
     public _subs: Subscription[] = [];
-    public _repStates: Set<RxReplicationState> = new Set();
-    public pouch: PouchDBInstance = {} as PouchDBInstance; // this is needed to preserve this name
+
+    // TODO move _repStates into migration plugin
+    public _repStates: Set<RxCouchDBReplicationState> = new Set();
+
+    // TODO use type RxStorageInstance when rx-storage is implemented
+    public storageInstance: RxStorageInstance<RxDocumentType, any, any> = {} as any;
+
+    /**
+     * Stores the local documents so that they are not deleted
+     * when a migration runs.
+     */
+    public localDocumentsStore: RxStorageKeyObjectInstance<any, any> = {} as any;
+
 
     public _docCache: DocCache<
         RxDocument<RxDocumentType, OrmMethods>
     > = createDocCache();
+
     public _queryCache: QueryCache = createQueryCache();
     public _crypter: Crypter = {} as Crypter;
-    public _observable$?: Observable<any>; // TODO type
+    public _observable$: Observable<RxChangeEvent<RxDocumentType>> = {} as any;
     public _changeEventBuffer: ChangeEventBuffer = {} as ChangeEventBuffer;
-
-    // other
-    public _keyCompressor?: any;
 
     /**
      * returns a promise that is resolved when the collection gets destroyed
@@ -192,46 +203,86 @@ export class RxCollectionBase<
     private _onDestroy?: Promise<void>;
 
     private _onDestroyCall?: () => void;
-    prepare(
+    public async prepare(
         /**
          * set to true if the collection data already exists on this storage adapter
          */
         wasCreatedBefore: boolean
-    ) {
-        this.pouch = this.database._spawnPouchDB(
-            this.name,
-            this.schema.version,
-            this.pouchSettings
+    ): Promise<any> {
+
+
+        const storageInstanceCreationParams: RxStorageInstanceCreationParams<RxDocumentType, InstanceCreationOptions> = {
+            databaseName: this.database.name,
+            collectionName: this.name,
+            schema: this.schema.jsonSchema,
+            options: this.instanceCreationOptions
+        };
+
+        runPluginHooks(
+            'preCreateRxStorageInstance',
+            storageInstanceCreationParams
         );
 
-        if (this.schema.doKeyCompression()) {
-            this._keyCompressor = overwritable.createKeyCompressor(this.schema);
-        }
+        const [
+            storageInstance,
+            localDocumentsStore
+        ] = await Promise.all([
+            (this.database.storage as RxStorage<any, any>).createStorageInstance<RxDocumentType>(
+                storageInstanceCreationParams
+            ),
+            this.database.storage.createKeyObjectStorageInstance(
+                this.database.name,
+                /**
+                 * Use a different collection name for the local documents instance
+                 * so that the local docs can be kept while deleting the normal instance
+                 * after migration.
+                 */
+                this.name + '-local',
+                this.instanceCreationOptions
+            )
+        ]);
+        this.storageInstance = storageInstance;
+        this.localDocumentsStore = localDocumentsStore;
 
         // we trigger the non-blocking things first and await them later so we can do stuff in the mean time
-
-        /**
-         * Sometimes pouchdb emits before the instance is useable.
-         * To prevent random errors, we wait until the .info() call resolved
-         */
-        const spawnedPouchPromise = wasCreatedBefore ? Promise.resolve() : this.pouch.info();
-
-        /**
-         * if wasCreatedBefore we can assume that the indexes already exist
-         * because changing them anyway requires a schema-version change
-         */
-        const createIndexesPromise: Promise<any> = wasCreatedBefore ? Promise.resolve() : _prepareCreateIndexes(
-            this.asRxCollection,
-            spawnedPouchPromise
-        );
 
         this._crypter = createCrypter(this.database.password, this.schema);
 
         this._observable$ = this.database.$.pipe(
-            filter(event => (event as any).collectionName === this.name)
+            filter((event: RxChangeEvent<any>) => {
+                return event.collectionName === this.name;
+            })
         );
         this._changeEventBuffer = createChangeEventBuffer(this.asRxCollection);
 
+
+        const subDocs = storageInstance.changeStream().pipe(
+            map(storageEvent => storageChangeEventToRxChangeEvent(
+                false,
+                storageEvent,
+                this.database,
+                this as any
+            ))
+        ).subscribe(cE => {
+            this.$emit(cE);
+        });
+        this._subs.push(subDocs);
+        const subLocalDocs = this.localDocumentsStore.changeStream().pipe(
+            map(storageEvent => storageChangeEventToRxChangeEvent(
+                true,
+                storageEvent,
+                this.database,
+                this as any
+            ))
+        ).subscribe(cE => this.$emit(cE));
+        this._subs.push(subLocalDocs);
+
+
+        /**
+         * When a write happens to the collection
+         * we find the changed document in the docCache
+         * and tell it that it has to change its data.
+         */
         this._subs.push(
             this._observable$
                 .pipe(
@@ -240,14 +291,11 @@ export class RxCollectionBase<
                 .subscribe(cE => {
                     // when data changes, send it to RxDocument in docCache
                     const doc = this._docCache.get(cE.documentId);
-                    if (doc) doc._handleChangeEvent(cE);
+                    if (doc) {
+                        doc._handleChangeEvent(cE);
+                    }
                 })
         );
-
-        return Promise.all([
-            spawnedPouchPromise,
-            createIndexesPromise
-        ]);
     }
 
 
@@ -269,86 +317,37 @@ export class RxCollectionBase<
     }
 
     /**
-     * wrappers for Pouch.put/get to handle keycompression etc
+     * wrapps the query function of the storage instance.
      */
-    _handleToPouch(docData: any): any {
-        return _handleToPouch(
-            this,
-            docData
-        );
-    }
-    _handleFromPouch(docData: any, noDecrypt = false) {
-        return _handleFromPouch(
-            this,
-            docData,
-            noDecrypt
-        );
-    }
-
-    /**
-     * every write on the pouchdb
-     * is tunneld throught this function
-     */
-    _pouchPut(obj: any, overwrite: boolean = false): Promise<any> {
-        obj = this._handleToPouch(obj);
-        return this.database.lockedRun(
-            () => this.pouch.put(obj)
-        ).catch((err: PouchWriteError) => {
-            if (overwrite && err.status === 409) {
-                return this.database.lockedRun(
-                    () => this.pouch.get(obj._id)
-                ).then((exist: any) => {
-                    obj._rev = exist._rev;
-                    return this.database.lockedRun(
-                        () => this.pouch.put(obj)
-                    );
-                });
-            } else if (err.status === 409) {
-                throw newRxError('COL19', {
-                    id: obj._id,
-                    pouchDbError: err,
-                    data: obj
-                });
-            } else throw err;
-        });
-    }
-
-    /**
-     * get document from pouchdb by its _id
-     */
-    _pouchGet(key: string): Promise<any> {
-        return this
-            .pouch
-            .get(key)
-            .then(doc => this._handleFromPouch(doc));
-    }
-
-    /**
-     * wrapps pouch-find
-     */
-    _pouchFind(
+    async _queryStorageInstance(
         rxQuery: RxQuery | RxQueryBase,
         limit?: number,
         noDecrypt: boolean = false
     ): Promise<any[]> {
-        const compressedQueryJSON: any = rxQuery.keyCompress();
+        const preparedQuery = rxQuery.toJSON();
         if (limit) {
-            compressedQueryJSON['limit'] = limit;
+            preparedQuery['limit'] = limit;
         }
-        return this.database.lockedRun(
-            () => this.pouch.find(compressedQueryJSON)
-        ).then((docsCompressed: any) => {
-            const docs = docsCompressed.docs
-                .map((doc: any) => this._handleFromPouch(doc, noDecrypt));
-            return docs;
-        });
+
+        const queryResult = await this.database.lockedRun(
+            () => this.storageInstance.query(preparedQuery)
+        );
+
+        const docs = queryResult.documents
+            .map((doc: any) => _handleFromStorageInstance(this, doc, noDecrypt));
+        return docs;
     }
 
-    $emit(changeEvent: RxChangeEvent) {
+    $emit(changeEvent: RxChangeEvent<any>) {
         return this.database.$emit(changeEvent);
     }
 
-    insert(
+
+    /**
+     * TODO internally call bulkInsert
+     * to not have duplicated code.
+     */
+    async insert(
         json: RxDocumentType | RxDocument
     ): Promise<RxDocument<RxDocumentType, OrmMethods>> {
         // inserting a temporary-document
@@ -363,130 +362,100 @@ export class RxCollectionBase<
             json = tempDoc.toJSON() as any;
         }
 
-        const useJson = fillObjectDataBeforeInsert(this, json);
+        const useJson: RxDocumentWriteData<RxDocumentType> = fillObjectDataBeforeInsert(this as any, json);
         let newDoc = tempDoc;
 
-        let startTime: number;
-        let endTime: number;
-        return this._runHooks('pre', 'insert', useJson)
-            .then(() => {
-                this.schema.validate(useJson);
-                startTime = now();
-                return this._pouchPut(useJson);
-            }).then(insertResult => {
-                endTime = now();
-                useJson[this.schema.primaryPath as string] = insertResult.id;
-                useJson._rev = insertResult.rev;
+        await this._runHooks('pre', 'insert', useJson);
+        this.schema.validate(useJson);
+        const insertResult = await writeToStorageInstance(
+            this,
+            {
+                document: useJson
+            }
+        );
 
-                if (tempDoc) {
-                    tempDoc._dataSync$.next(useJson);
-                } else newDoc = createRxDocument(this as any, useJson);
+        if (tempDoc) {
+            tempDoc._dataSync$.next(insertResult);
+        } else {
+            newDoc = createRxDocument(this as any, insertResult);
+        }
 
-                return this._runHooks('post', 'insert', useJson, newDoc);
-            }).then(() => {
-                // event
-                const emitEvent = createInsertEvent(
-                    this as any,
-                    useJson,
-                    startTime,
-                    endTime,
-                    newDoc as any
-                );
-                this.$emit(emitEvent);
-                return newDoc as any;
-            });
+        await this._runHooks('post', 'insert', useJson, newDoc);
+
+        return newDoc as any;
     }
 
-    bulkInsert(
+    async bulkInsert(
         docsData: RxDocumentType[]
     ): Promise<{
         success: RxDocument<RxDocumentType, OrmMethods>[],
-        error: PouchWriteError[]
+        error: RxStorageBulkWriteError<RxDocumentType>[]
     }> {
         const useDocs: RxDocumentType[] = docsData.map(docData => {
-            const useDocData = fillObjectDataBeforeInsert(this, docData);
+            const useDocData = fillObjectDataBeforeInsert(this as any, docData);
             return useDocData;
         });
 
-        return Promise.all(
+        const docs = await Promise.all(
             useDocs.map(doc => {
                 return this._runHooks('pre', 'insert', doc).then(() => {
                     this.schema.validate(doc);
                     return doc;
                 });
             })
-        ).then(docs => {
-            const insertDocs: RxDocumentType[] = docs.map(d => this._handleToPouch(d));
-            const docsMap: Map<string, RxDocumentType> = new Map();
-            docs.forEach(d => {
-                docsMap.set((d as any)[this.schema.primaryPath] as any, d);
+        );
+
+        const insertDocs: BulkWriteRow<RxDocumentType>[] = docs.map(d => ({
+            document: _handleToStorageInstance(this, d)
+        }));
+        const docsMap: Map<string, RxDocumentType> = new Map();
+        docs.forEach(d => {
+            docsMap.set((d as any)[this.schema.primaryPath] as any, d);
+        });
+
+        const results = await this.database.lockedRun(
+            () => this.storageInstance.bulkWrite(insertDocs)
+        );
+
+        // create documents
+        const successEntries: [string, RxDocumentData<RxDocumentType>][] = Array.from(results.success.entries());
+        const rxDocuments: any[] = successEntries
+            .map(([key, writtenDocData]) => {
+                const docData: RxDocumentData<RxDocumentType> = getFromMapOrThrow(docsMap, key) as any;
+                docData._rev = writtenDocData._rev;
+                const doc = createRxDocument(this as any, docData);
+                return doc;
             });
 
-            return this.database.lockedRun(
-                () => {
-                    const startTime = now();
-                    return this.pouch.bulkDocs(insertDocs)
-                        .then(results => {
-                            const okResults = results.filter(r => r.ok);
 
-                            // create documents
-                            const rxDocuments: any[] = okResults.map(r => {
-                                const docData: any = docsMap.get(r.id);
-                                docData._rev = r.rev;
-                                const doc = createRxDocument(this as any, docData);
-                                return doc;
-                            });
+        await Promise.all(
+            rxDocuments.map(doc => {
+                return this._runHooks(
+                    'post',
+                    'insert',
+                    docsMap.get(doc.primary),
+                    doc
+                );
+            })
+        );
 
-                            return Promise.all(
-                                rxDocuments.map(doc => {
-                                    return this._runHooks(
-                                        'post',
-                                        'insert',
-                                        docsMap.get(doc.primary),
-                                        doc
-                                    );
-                                })
-                            ).then(() => {
-                                const errorResults: PouchWriteError[] = results.filter(r => !r.ok) as any;
-                                return {
-                                    rxDocuments,
-                                    errorResults
-                                };
-                            });
-                        }).then(({ rxDocuments, errorResults }) => {
-                            const endTime = now();
-                            // emit events
-                            rxDocuments.forEach(doc => {
-                                const emitEvent = createInsertEvent(
-                                    this as any,
-                                    doc.toJSON(true),
-                                    startTime,
-                                    endTime,
-                                    doc
-                                );
-                                this.$emit(emitEvent);
-                            });
-                            return {
-                                success: rxDocuments,
-                                error: errorResults
-                            };
-                        });
-                }
-            );
-        });
+        return {
+            success: rxDocuments,
+            error: Array.from(results.error.values())
+        };
     }
 
     async bulkRemove(
         ids: string[]
     ): Promise<{
         success: RxDocument<RxDocumentType, OrmMethods>[],
-        error: any[]
+        error: RxStorageBulkWriteError<RxDocumentType>[]
     }> {
         const rxDocumentMap = await this.findByIds(ids);
-        const docsData: WithPouchMeta<RxDocumentType>[] = [];
-        const docsMap: Map<string, WithPouchMeta<RxDocumentType>> = new Map();
+        const docsData: RxDocumentData<RxDocumentType>[] = [];
+        const docsMap: Map<string, RxDocumentData<RxDocumentType>> = new Map();
         Array.from(rxDocumentMap.values()).forEach(rxDocument => {
-            const data = rxDocument.toJSON(true);
+            const data: RxDocumentData<RxDocumentType> = clone(rxDocument.toJSON(true)) as any;
             docsData.push(data);
             docsMap.set(rxDocument.primary, data);
         });
@@ -498,53 +467,41 @@ export class RxCollectionBase<
             })
         );
 
-        docsData.forEach(doc => doc._deleted = true);
 
-        const removeDocs = docsData.map(doc => this._handleToPouch(doc));
-
-        let startTime: number;
+        const removeDocs: BulkWriteRow<RxDocumentType>[] = docsData.map(doc => {
+            const writeDoc = flatClone(doc);
+            writeDoc._deleted = true;
+            return {
+                previous: _handleToStorageInstance(this, doc),
+                document: _handleToStorageInstance(this, writeDoc)
+            };
+        });
 
         const results = await this.database.lockedRun(
-            async () => {
-                startTime = now();
-                const bulkResults = await this.pouch.bulkDocs(removeDocs);
-                return bulkResults;
-            }
+            () => this.storageInstance.bulkWrite(removeDocs)
         );
 
-        const endTime = now();
-        const okResults = results.filter(r => r.ok);
+        const successIds: string[] = Array.from(results.success.keys());
+
+        // run hooks
         await Promise.all(
-            okResults.map(r => {
+            successIds.map(id => {
                 return this._runHooks(
                     'post',
                     'remove',
-                    docsMap.get(r.id),
-                    rxDocumentMap.get(r.id)
+                    docsMap.get(id),
+                    rxDocumentMap.get(id)
                 );
             })
         );
 
-        okResults.forEach(r => {
-            const rxDocument = rxDocumentMap.get(r.id) as RxDocument<RxDocumentType, OrmMethods>;
-            const emitEvent = createDeleteEvent(
-                this as any,
-                docsMap.get(r.id) as any,
-                rxDocument._data,
-                startTime,
-                endTime,
-                rxDocument as any,
-            );
-            this.$emit(emitEvent);
-        });
-
-        const rxDocuments: any[] = okResults.map(r => {
-            return rxDocumentMap.get(r.id);
+        const rxDocuments: any[] = successIds.map(id => {
+            return rxDocumentMap.get(id);
         });
 
         return {
             success: rxDocuments,
-            error: okResults.filter(r => !r.ok)
+            error: Array.from(results.error.values())
         };
     }
 
@@ -552,12 +509,13 @@ export class RxCollectionBase<
      * same as insert but overwrites existing document with same primary
      */
     upsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
-        const useJson: any = flatClone(json);
+        const useJson = fillObjectDataBeforeInsert(this as any, json);
         const primary = useJson[this.schema.primaryPath];
         if (!primary) {
             throw newRxError('COL3', {
                 primaryPath: this.schema.primaryPath as string,
-                data: useJson
+                data: useJson,
+                schema: this.schema.jsonSchema
             });
         }
 
@@ -578,7 +536,8 @@ export class RxCollectionBase<
      * upserts to a RxDocument, uses atomicUpdate if document already exists
      */
     atomicUpsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
-        const primary = (json as any)[this.schema.primaryPath];
+        const useJson = fillObjectDataBeforeInsert(this as any, json);
+        const primary = (useJson as any)[this.schema.primaryPath];
         if (!primary) {
             throw newRxError('COL4', {
                 data: json
@@ -593,11 +552,17 @@ export class RxCollectionBase<
             queue = this._atomicUpsertQueues.get(primary);
         }
         queue = queue
-            .then(() => _atomicUpsertEnsureRxDocumentExists(this as any, primary as any, json))
+            .then(() => _atomicUpsertEnsureRxDocumentExists(this as any, primary as any, useJson))
             .then((wasInserted: any) => {
                 if (!wasInserted.inserted) {
-                    return _atomicUpsertUpdate(wasInserted.doc, json)
-                        .then(() => nextTick()) // tick here so the event can propagate
+                    return _atomicUpsertUpdate(wasInserted.doc, useJson)
+                        /**
+                         * tick here so the event can propagate
+                         * TODO we should not need that here
+                         */
+                        .then(() => nextTick())
+                        .then(() => nextTick())
+                        .then(() => nextTick())
                         .then(() => wasInserted.doc);
                 } else
                     return wasInserted.doc;
@@ -634,7 +599,7 @@ export class RxCollectionBase<
         if (typeof queryObj === 'string') {
             query = createRxQuery('findOne', {
                 selector: {
-                    _id: queryObj
+                    [this.schema.primaryPath]: queryObj
                 }
             }, this as any);
         } else {
@@ -685,17 +650,10 @@ export class RxCollectionBase<
 
         // find everything which was not in docCache
         if (mustBeQueried.length > 0) {
-            const result = await this.pouch.allDocs({
-                include_docs: true,
-                keys: mustBeQueried
-            });
-            result.rows.forEach(row => {
-                if (!row.doc) {
-                    // not found
-                    return;
-                }
-                const plainData = this._handleFromPouch(row.doc);
-                const doc = createRxDocument(this as any, plainData);
+            const docs = await this.storageInstance.findDocumentsById(mustBeQueried, false);
+            Array.from(docs.values()).forEach(docData => {
+                docData = _handleFromStorageInstance(this, docData);
+                const doc = createRxDocument<RxDocumentType, OrmMethods>(this as any, docData);
                 ret.set(doc.primary, doc);
             });
         }
@@ -765,40 +723,31 @@ export class RxCollectionBase<
      * When false or omitted and an interface or type is loaded in this collection,
      * all base properties of the type are typed as `any` since data could be encrypted.
      */
-    dump(_decrypted: boolean): Promise<RxDumpCollection<RxDocumentType>>;
-    dump(_decrypted?: false): Promise<RxDumpCollectionAny<RxDocumentType>>;
-    dump(_decrypted: boolean = false): Promise<any> {
+    exportJSON(_decrypted: boolean): Promise<RxDumpCollection<RxDocumentType>>;
+    exportJSON(_decrypted?: false): Promise<RxDumpCollectionAny<RxDocumentType>>;
+    exportJSON(_decrypted: boolean = false): Promise<any> {
         throw pluginMissing('json-dump');
     }
 
     /**
      * Import the parsed JSON export into the collection.
-     * @param _exportedJSON The previously exported data from the `<collection>.dump()` method.
+     * @param _exportedJSON The previously exported data from the `<collection>.exportJSON()` method.
      */
-    importDump(_exportedJSON: RxDumpCollectionAny<RxDocumentType>): Promise<void> {
+    importJSON(_exportedJSON: RxDumpCollectionAny<RxDocumentType>): Promise<void> {
         throw pluginMissing('json-dump');
     }
 
     /**
-     * waits for external changes to the database
-     * and ensures they are emitted to the internal RxChangeEvent-Stream
-     * TODO this can be removed by listening to the pull-change-events of the RxReplicationState
+     * sync with a CouchDB endpoint
      */
-    watchForChanges() {
-        throw pluginMissing('watch-for-changes');
-    }
-
-    /**
-     * sync with another database
-     */
-    sync(_syncOptions: SyncOptions): RxReplicationState {
+    syncCouchDB(_syncOptions: SyncOptions): RxCouchDBReplicationState {
         throw pluginMissing('replication');
     }
 
     /**
      * sync with a GraphQL endpoint
      */
-    syncGraphQL(options: SyncOptionsGraphQL): RxGraphQLReplicationState {
+    syncGraphQL(options: SyncOptionsGraphQL<RxDocumentType>): RxGraphQLReplicationState<RxDocumentType> {
         throw pluginMissing('replication-graphql');
     }
 
@@ -916,10 +865,13 @@ export class RxCollectionBase<
             this._changeEventBuffer.destroy();
         }
         Array.from(this._repStates).forEach(replicationState => replicationState.cancel());
-        delete this.database.collections[this.name];
-        this.destroyed = true;
 
-        return runAsyncPluginHooks('postDestroyRxCollection', this).then(() => true);
+        return this.storageInstance.close().then(() => {
+            delete this.database.collections[this.name];
+            this.destroyed = true;
+
+            return runAsyncPluginHooks('postDestroyRxCollection', this).then(() => true);
+        });
     }
 
     /**
@@ -939,7 +891,7 @@ export class RxCollectionBase<
  * this runs only once
  */
 function _applyHookFunctions(
-    collection: RxCollection
+    collection: RxCollection<any, any>
 ) {
     if (hooksApplied) return; // already run
     hooksApplied = true;
@@ -971,6 +923,17 @@ function _atomicUpsertEnsureRxDocumentExists(
     primary: string,
     json: any
 ): Promise<{ doc: RxDocument, inserted: boolean }> {
+    /**
+     * Optimisation shortcut,
+     * first try to find the document in the doc-cache
+     */
+    const docFromCache = rxCollection._docCache.get(primary);
+    if (docFromCache) {
+        return Promise.resolve({
+            doc: docFromCache,
+            inserted: false
+        });
+    }
     return rxCollection.findOne(primary).exec()
         .then(doc => {
             if (!doc) {
@@ -988,74 +951,14 @@ function _atomicUpsertEnsureRxDocumentExists(
 }
 
 /**
- * creates the indexes in the pouchdb
- */
-function _prepareCreateIndexes(
-    rxCollection: RxCollection,
-    spawnedPouchPromise: Promise<void>
-): Promise<any> {
-
-    /**
-     * pouchdb does no check on already existing indexes
-     * which makes collection re-creation really slow on page reloads
-     * So we have to manually check if the index already exists
-     */
-    return spawnedPouchPromise
-        .then(() => rxCollection.pouch.getIndexes())
-        .then(indexResult => {
-            const existingIndexes: Set<string> = new Set();
-            indexResult.indexes.forEach(idx => existingIndexes.add(idx.name));
-            return existingIndexes;
-        }).then(existingIndexes => {
-            return Promise.all(
-                rxCollection.schema.indexes
-                    .map(indexAr => {
-                        const compressedIdx: string[] = indexAr
-                            .map(key => {
-                                const primPath = rxCollection.schema.primaryPath;
-                                const useKey = key === primPath ? '_id' : key;
-                                if (!rxCollection.schema.doKeyCompression()) {
-                                    return useKey;
-                                } else {
-                                    const indexKey = rxCollection._keyCompressor.transformKey(useKey);
-                                    return indexKey;
-                                }
-                            });
-
-                        const indexName = 'idx-rxdb-index-' + compressedIdx.join(',');
-                        if (existingIndexes.has(indexName)) {
-                            // index already exists
-                            return;
-                        }
-
-                        /**
-                         * TODO
-                         * we might have even better performance by doing a bulkDocs
-                         * on index creation
-                         */
-                        return spawnedPouchPromise.then(
-                            () => rxCollection.pouch.createIndex({
-                                name: indexName,
-                                ddoc: indexName,
-                                index: {
-                                    fields: compressedIdx
-                                }
-                            })
-                        );
-                    })
-            );
-        });
-}
-
-/**
  * creates and prepares a new collection
  */
-export function create(
+export function createRxCollection(
     {
         database,
         name,
         schema,
-        pouchSettings = {},
+        instanceCreationOptions = {},
         migrationStrategies = {},
         autoMigrate = true,
         statics = {},
@@ -1066,7 +969,7 @@ export function create(
     }: any,
     wasCreatedBefore: boolean
 ): Promise<RxCollection> {
-    validateCouchDBString(name);
+    validateDatabaseName(name);
 
     // ensure it is a schema-object
     if (!isInstanceOfRxSchema(schema)) {
@@ -1085,7 +988,7 @@ export function create(
         database,
         name,
         schema,
-        pouchSettings,
+        instanceCreationOptions,
         migrationStrategies,
         methods,
         attachments,
@@ -1118,12 +1021,6 @@ export function create(
         });
 }
 
-export function isInstanceOf(obj: any): boolean {
+export function isRxCollection(obj: any): boolean {
     return obj instanceof RxCollectionBase;
 }
-
-export default {
-    create,
-    isInstanceOf,
-    RxCollectionBase
-};

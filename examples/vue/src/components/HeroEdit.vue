@@ -45,9 +45,7 @@
 import { Component, Prop, Vue } from "vue-property-decorator";
 import DatabaseService from "../services/Database.service";
 import { RxHeroDocument, RxHeroesDatabase } from "../RxDB";
-import {
-    firstValueFrom
-} from 'rxjs';
+import { firstValueFrom } from "rxjs";
 import { skip, map, first } from "rxjs/operators";
 
 @Component({})
@@ -75,7 +73,7 @@ export default class HeroEdit extends Vue {
 
   public async submit() {
     console.log("heroEdit.submit()");
-    await this.hero.atomicSet("hp", this.formData);
+    await this.hero.atomicPatch({ hp: this.formData });
     this.$emit("submit");
   }
   public resync() {

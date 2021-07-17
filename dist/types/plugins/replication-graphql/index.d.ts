@@ -3,24 +3,22 @@
  * you can use it to sync collections with remote graphql endpoint
  */
 import { BehaviorSubject, Subject, Subscription, Observable } from 'rxjs';
-import type { RxCollection, GraphQLSyncPullOptions, GraphQLSyncPushOptions, RxPlugin } from '../../types';
-export declare class RxGraphQLReplicationState {
-    readonly collection: RxCollection;
+import type { RxCollection, GraphQLSyncPullOptions, GraphQLSyncPushOptions, RxPlugin, RxDocumentData } from '../../types';
+export declare class RxGraphQLReplicationState<RxDocType> {
+    readonly collection: RxCollection<RxDocType>;
     readonly url: string;
     headers: {
         [k: string]: string;
     };
-    readonly pull: GraphQLSyncPullOptions;
-    readonly push: GraphQLSyncPushOptions;
+    readonly pull: GraphQLSyncPullOptions<RxDocType>;
+    readonly push: GraphQLSyncPushOptions<RxDocType>;
     readonly deletedFlag: string;
-    readonly lastPulledRevField: string;
     readonly live: boolean;
     liveInterval: number;
     retryTime: number;
-    readonly syncRevisions: boolean;
-    constructor(collection: RxCollection, url: string, headers: {
+    constructor(collection: RxCollection<RxDocType>, url: string, headers: {
         [k: string]: string;
-    }, pull: GraphQLSyncPullOptions, push: GraphQLSyncPushOptions, deletedFlag: string, lastPulledRevField: string, live: boolean, liveInterval: number, retryTime: number, syncRevisions: boolean);
+    }, pull: GraphQLSyncPullOptions<RxDocType>, push: GraphQLSyncPushOptions<RxDocType>, deletedFlag: string, live: boolean, liveInterval: number, retryTime: number);
     client: any;
     endpointHash: string;
     _subjects: {
@@ -36,7 +34,7 @@ export declare class RxGraphQLReplicationState {
     _runQueueCount: number;
     _runCount: number;
     initialReplicationComplete$: Observable<any>;
-    recieved$: Observable<any>;
+    recieved$: Observable<RxDocumentData<RxDocType>>;
     send$: Observable<any>;
     error$: Observable<any>;
     canceled$: Observable<any>;
@@ -53,23 +51,24 @@ export declare class RxGraphQLReplicationState {
      */
     _run(retryOnFail?: boolean): Promise<boolean>;
     /**
-     * @return true if sucessfull
+     * Pull all changes from the server,
+     * start from the last pulled change.
+     * @return true if sucessfull, false if something errored
      */
     runPull(): Promise<boolean>;
     /**
      * @return true if successfull, false if not
      */
     runPush(): Promise<boolean>;
-    handleDocumentsFromRemote(docs: any[], docsWithRevisions: any[]): Promise<boolean>;
+    handleDocumentsFromRemote(docs: any[]): Promise<boolean>;
     cancel(): Promise<any>;
     setHeaders(headers: {
         [k: string]: string;
     }): void;
 }
-export declare function syncGraphQL(this: RxCollection, { url, headers, waitForLeadership, pull, push, deletedFlag, lastPulledRevField, live, liveInterval, // in ms
+export declare function syncGraphQL(this: RxCollection, { url, headers, waitForLeadership, pull, push, deletedFlag, live, liveInterval, // in ms
 retryTime, // in ms
-autoStart, // if this is false, the replication does nothing at start
-syncRevisions, }: any): RxGraphQLReplicationState;
+autoStart }: any): RxGraphQLReplicationState<any>;
 export * from './helper';
 export * from './crawling-checkpoint';
 export * from './graphql-schema-from-rx-schema';

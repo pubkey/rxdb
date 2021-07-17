@@ -48,7 +48,7 @@ At the server-side, there must exist an endpoint which returns newer rows when t
 
 For the push-replication, you also need a modifier which lets RxDB update data with a changed document as input.
 
-```
+```graphql
 input HumanInput {
     id: ID!,
     name: String!,

@@ -3,21 +3,24 @@ import {
     RxSchema
 } from '../rx-schema';
 import { RxPlugin } from './rx-plugin';
+import { ERROR_MESSAGES } from '../plugins/dev-mode/error-messages';
+
+type KeyOf<T extends object> = Extract<keyof T, string>;
+export type RxErrorKey = KeyOf<typeof ERROR_MESSAGES>;
 
 export declare class RxError extends Error {
     readonly rxdb: boolean; // always true, use this to detect if its an rxdb-error
     readonly parameters: RxErrorParameters; // an object with parameters to use the programatically
-    readonly code: string; // error-code
+    readonly code: RxErrorKey; // error-code
     readonly typeError: false; // true if is TypeError
 }
 
 export declare class RxTypeError extends TypeError {
     readonly rxdb: boolean; // always true, use this to detect if its an rxdb-error
     readonly parameters: RxErrorParameters; // an object with parameters to use the programatically
-    readonly code: string; // error-code
+    readonly code: RxErrorKey; // error-code
     readonly typeError: true; // true if is TypeError
 }
-
 
 /**
  * this lists all possible parameters
@@ -30,7 +33,7 @@ export interface RxErrorParameters {
     readonly childpath?: string;
     readonly obj?: any;
     readonly document?: any;
-    readonly schema?: Readonly<RxJsonSchema | RxSchema>;
+    readonly schema?: Readonly<RxJsonSchema<any> | RxSchema>;
     readonly schemaObj?: any;
     readonly pluginKey?: string;
     readonly originalDoc?: Readonly<any>;
@@ -86,6 +89,7 @@ export interface RxErrorParameters {
     readonly database?: any;
     readonly indexes?: Array<string | string[]>;
     readonly index?: string | string[];
+    readonly plugin?: RxPlugin | any;
     readonly plugins?: Set<RxPlugin | any>;
 }
 

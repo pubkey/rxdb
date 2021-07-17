@@ -1,13 +1,14 @@
 import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
-import { LOCAL_PREFIX } from '../../util';
-import { PLUGIN_IDENT, getDocFromPouchOrNull, wasRevisionfromPullReplication } from './helper';
-
+import { wasRevisionfromPullReplication, GRAPHQL_REPLICATION_PLUGIN_IDENT } from './helper';
+import { findLocalDocument, writeSingleLocal } from '../../rx-storage-helper';
+import { flatClone } from '../../util';
+import { newRxError } from '../../rx-error';
 /**
  * when the replication starts,
  * we need a way to find out where it ended the last time.
  *
- * For push-replication, we use the pouchdb-sequence:
+ * For push-replication, we use the storageInstance-sequence:
  * We get the documents newer then the last sequence-id
  * and push them to the server.
  *
@@ -18,8 +19,9 @@ import { PLUGIN_IDENT, getDocFromPouchOrNull, wasRevisionfromPullReplication } f
 //
 // things for the push-checkpoint
 //
+
 var pushSequenceId = function pushSequenceId(endpointHash) {
-  return LOCAL_PREFIX + PLUGIN_IDENT + '-push-checkpoint-' + endpointHash;
+  return GRAPHQL_REPLICATION_PLUGIN_IDENT + '-push-checkpoint-' + endpointHash;
 };
 /**
  * @return last sequence checkpoint
@@ -38,7 +40,7 @@ function _getLastPushSequence() {
         switch (_context.prev = _context.next) {
           case 0:
             _context.next = 2;
-            return getDocFromPouchOrNull(collection, pushSequenceId(endpointHash));
+            return findLocalDocument(collection.localDocumentsStore, pushSequenceId(endpointHash));
 
           case 2:
             doc = _context.sent;
@@ -68,8 +70,8 @@ export function setLastPushSequence(_x3, _x4, _x5) {
 }
 
 function _setLastPushSequence() {
-  _setLastPushSequence = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(collection, endpointHash, seq) {
-    var _id, doc, res;
+  _setLastPushSequence = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(collection, endpointHash, sequence) {
+    var _id, doc, res, newDoc, _res;
 
     return _regeneratorRuntime.wrap(function _callee2$(_context2) {
       while (1) {
@@ -77,28 +79,47 @@ function _setLastPushSequence() {
           case 0:
             _id = pushSequenceId(endpointHash);
             _context2.next = 3;
-            return getDocFromPouchOrNull(collection, _id);
+            return findLocalDocument(collection.localDocumentsStore, _id);
 
           case 3:
             doc = _context2.sent;
 
-            if (!doc) {
-              doc = {
-                _id: _id,
-                value: seq
-              };
-            } else {
-              doc.value = seq;
+            if (doc) {
+              _context2.next = 11;
+              break;
             }
 
             _context2.next = 7;
-            return collection.pouch.put(doc);
+            return writeSingleLocal(collection.localDocumentsStore, {
+              document: {
+                _id: _id,
+                value: sequence,
+                _attachments: {}
+              }
+            });
 
           case 7:
             res = _context2.sent;
             return _context2.abrupt("return", res);
 
-          case 9:
+          case 11:
+            newDoc = flatClone(doc);
+            newDoc.value = sequence;
+            _context2.next = 15;
+            return writeSingleLocal(collection.localDocumentsStore, {
+              previous: doc,
+              document: {
+                _id: _id,
+                value: sequence,
+                _attachments: {}
+              }
+            });
+
+          case 15:
+            _res = _context2.sent;
+            return _context2.abrupt("return", _res);
+
+          case 17:
           case "end":
             return _context2.stop();
         }
@@ -108,120 +129,156 @@ function _setLastPushSequence() {
   return _setLastPushSequence.apply(this, arguments);
 }
 
-export function getChangesSinceLastPushSequence(_x6, _x7, _x8) {
+export function getChangesSinceLastPushSequence(_x6, _x7) {
   return _getChangesSinceLastPushSequence.apply(this, arguments);
 } //
 // things for pull-checkpoint
 //
 
 function _getChangesSinceLastPushSequence() {
-  _getChangesSinceLastPushSequence = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3(collection, endpointHash, lastPulledRevField) {
+  _getChangesSinceLastPushSequence = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3(collection, endpointHash) {
     var batchSize,
-        syncRevisions,
         lastPushSequence,
         retry,
-        changes,
-        filteredResults,
-        useResults,
-        docsSearch,
-        bulkGetDocs,
-        _args3 = arguments;
-    return _regeneratorRuntime.wrap(function _callee3$(_context3) {
+        lastSequence,
+        changedDocs,
+        _loop,
+        _ret,
+        _args4 = arguments;
+
+    return _regeneratorRuntime.wrap(function _callee3$(_context4) {
       while (1) {
-        switch (_context3.prev = _context3.next) {
+        switch (_context4.prev = _context4.next) {
           case 0:
-            batchSize = _args3.length > 3 && _args3[3] !== undefined ? _args3[3] : 10;
-            syncRevisions = _args3.length > 4 && _args3[4] !== undefined ? _args3[4] : false;
-            _context3.next = 4;
+            batchSize = _args4.length > 2 && _args4[2] !== undefined ? _args4[2] : 10;
+            _context4.next = 3;
             return getLastPushSequence(collection, endpointHash);
 
-          case 4:
-            lastPushSequence = _context3.sent;
+          case 3:
+            lastPushSequence = _context4.sent;
             retry = true;
+            lastSequence = lastPushSequence;
+            changedDocs = new Map();
+            /**
+             * it can happen that all docs in the batch
+             * do not have to be replicated.
+             * Then we have to continue grapping the feed
+             * until we reach the end of it
+             */
 
-          case 6:
+            _loop = /*#__PURE__*/_regeneratorRuntime.mark(function _loop() {
+              var changesResults, docs;
+              return _regeneratorRuntime.wrap(function _loop$(_context3) {
+                while (1) {
+                  switch (_context3.prev = _context3.next) {
+                    case 0:
+                      _context3.next = 2;
+                      return collection.storageInstance.getChangedDocuments({
+                        startSequence: lastPushSequence,
+                        limit: batchSize,
+                        order: 'asc'
+                      });
+
+                    case 2:
+                      changesResults = _context3.sent;
+                      lastSequence = changesResults.lastSequence; // optimisation shortcut, do not proceed if there are no changed documents
+
+                      if (!(changesResults.changedDocuments.length === 0)) {
+                        _context3.next = 7;
+                        break;
+                      }
+
+                      retry = false;
+                      return _context3.abrupt("return", "continue");
+
+                    case 7:
+                      _context3.next = 9;
+                      return collection.storageInstance.findDocumentsById(changesResults.changedDocuments.map(function (row) {
+                        return row.id;
+                      }), true);
+
+                    case 9:
+                      docs = _context3.sent;
+                      changesResults.changedDocuments.forEach(function (row) {
+                        var id = row.id;
+
+                        if (changedDocs.has(id)) {
+                          return;
+                        }
+
+                        var changedDoc = docs.get(id);
+
+                        if (!changedDoc) {
+                          throw newRxError('SNH', {
+                            args: {
+                              docs: docs
+                            }
+                          });
+                        }
+                        /**
+                         * filter out changes with revisions resulting from the pull-stream
+                         * so that they will not be upstreamed again
+                         */
+
+
+                        if (wasRevisionfromPullReplication(endpointHash, changedDoc._rev)) {
+                          return false;
+                        }
+
+                        changedDocs.set(id, {
+                          id: id,
+                          doc: changedDoc,
+                          sequence: row.sequence
+                        });
+                      });
+
+                      if (changedDocs.size < batchSize && changesResults.changedDocuments.length === batchSize) {
+                        // no pushable docs found but also not reached the end -> re-run
+                        lastPushSequence = lastSequence;
+                        retry = true;
+                      } else {
+                        retry = false;
+                      }
+
+                    case 12:
+                    case "end":
+                      return _context3.stop();
+                  }
+                }
+              }, _loop);
+            });
+
+          case 8:
             if (!retry) {
-              _context3.next = 21;
+              _context4.next = 15;
               break;
             }
 
-            _context3.next = 9;
-            return collection.pouch.changes({
-              since: lastPushSequence,
-              limit: batchSize,
-              include_docs: true // style: 'all_docs'
+            return _context4.delegateYield(_loop(), "t0", 10);
 
-            });
+          case 10:
+            _ret = _context4.t0;
 
-          case 9:
-            changes = _context3.sent;
-            filteredResults = changes.results.filter(function (change) {
-              /**
-               * filter out changes with revisions resulting from the pull-stream
-               * so that they will not be upstreamed again
-               */
-              if (wasRevisionfromPullReplication(endpointHash, change.doc._rev)) return false;
-              if (change.doc[lastPulledRevField] === change.doc._rev) return false;
-              /**
-               * filter out internal docs
-               * that are used for views or indexes in pouchdb
-               */
-
-              if (change.id.startsWith('_design/')) return false;
-              return true;
-            });
-            useResults = filteredResults;
-
-            if (!(filteredResults.length > 0 && syncRevisions)) {
-              _context3.next = 18;
+            if (!(_ret === "continue")) {
+              _context4.next = 13;
               break;
             }
 
-            docsSearch = filteredResults.map(function (result) {
-              return {
-                id: result.id,
-                rev: result.doc._rev
-              };
-            });
-            _context3.next = 16;
-            return collection.pouch.bulkGet({
-              docs: docsSearch,
-              revs: true,
-              latest: true
+            return _context4.abrupt("continue", 8);
+
+          case 13:
+            _context4.next = 8;
+            break;
+
+          case 15:
+            return _context4.abrupt("return", {
+              changedDocs: changedDocs,
+              lastSequence: lastSequence
             });
 
           case 16:
-            bulkGetDocs = _context3.sent;
-            useResults = bulkGetDocs.results.map(function (result) {
-              return {
-                id: result.id,
-                doc: result.docs[0]['ok'],
-                deleted: result.docs[0]['ok']._deleted
-              };
-            });
-
-          case 18:
-            if (useResults.length === 0 && changes.results.length === batchSize) {
-              // no pushable docs found but also not reached the end -> re-run
-              lastPushSequence = changes.last_seq;
-              retry = true;
-            } else {
-              changes.results = useResults;
-              retry = false;
-            }
-
-            _context3.next = 6;
-            break;
-
-          case 21:
-            changes.results.forEach(function (change) {
-              change.doc = collection._handleFromPouch(change.doc);
-            });
-            return _context3.abrupt("return", changes);
-
-          case 23:
           case "end":
-            return _context3.stop();
+            return _context4.stop();
         }
       }
     }, _callee3);
@@ -230,39 +287,39 @@ function _getChangesSinceLastPushSequence() {
 }
 
 var pullLastDocumentId = function pullLastDocumentId(endpointHash) {
-  return LOCAL_PREFIX + PLUGIN_IDENT + '-pull-checkpoint-' + endpointHash;
+  return GRAPHQL_REPLICATION_PLUGIN_IDENT + '-pull-checkpoint-' + endpointHash;
 };
 
-export function getLastPullDocument(_x9, _x10) {
+export function getLastPullDocument(_x8, _x9) {
   return _getLastPullDocument.apply(this, arguments);
 }
 
 function _getLastPullDocument() {
   _getLastPullDocument = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4(collection, endpointHash) {
     var localDoc;
-    return _regeneratorRuntime.wrap(function _callee4$(_context4) {
+    return _regeneratorRuntime.wrap(function _callee4$(_context5) {
       while (1) {
-        switch (_context4.prev = _context4.next) {
+        switch (_context5.prev = _context5.next) {
           case 0:
-            _context4.next = 2;
-            return getDocFromPouchOrNull(collection, pullLastDocumentId(endpointHash));
+            _context5.next = 2;
+            return findLocalDocument(collection.localDocumentsStore, pullLastDocumentId(endpointHash));
 
           case 2:
-            localDoc = _context4.sent;
+            localDoc = _context5.sent;
 
             if (localDoc) {
-              _context4.next = 7;
+              _context5.next = 7;
               break;
             }
 
-            return _context4.abrupt("return", null);
+            return _context5.abrupt("return", null);
 
           case 7:
-            return _context4.abrupt("return", localDoc.doc);
+            return _context5.abrupt("return", localDoc.doc);
 
           case 8:
           case "end":
-            return _context4.stop();
+            return _context5.stop();
         }
       }
     }, _callee4);
@@ -270,39 +327,49 @@ function _getLastPullDocument() {
   return _getLastPullDocument.apply(this, arguments);
 }
 
-export function setLastPullDocument(_x11, _x12, _x13) {
+export function setLastPullDocument(_x10, _x11, _x12) {
   return _setLastPullDocument.apply(this, arguments);
 }
 
 function _setLastPullDocument() {
   _setLastPullDocument = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee5(collection, endpointHash, doc) {
-    var _id, localDoc;
+    var _id, localDoc, newDoc;
 
-    return _regeneratorRuntime.wrap(function _callee5$(_context5) {
+    return _regeneratorRuntime.wrap(function _callee5$(_context6) {
       while (1) {
-        switch (_context5.prev = _context5.next) {
+        switch (_context6.prev = _context6.next) {
           case 0:
             _id = pullLastDocumentId(endpointHash);
-            _context5.next = 3;
-            return getDocFromPouchOrNull(collection, _id);
+            _context6.next = 3;
+            return findLocalDocument(collection.localDocumentsStore, _id);
 
           case 3:
-            localDoc = _context5.sent;
+            localDoc = _context6.sent;
 
-            if (!localDoc) {
-              localDoc = {
-                _id: _id,
-                doc: doc
-              };
-            } else {
-              localDoc.doc = doc;
+            if (localDoc) {
+              _context6.next = 8;
+              break;
             }
 
-            return _context5.abrupt("return", collection.pouch.put(localDoc));
+            return _context6.abrupt("return", writeSingleLocal(collection.localDocumentsStore, {
+              document: {
+                _id: _id,
+                doc: doc,
+                _attachments: {}
+              }
+            }));
 
-          case 6:
+          case 8:
+            newDoc = flatClone(localDoc);
+            newDoc.doc = doc;
+            return _context6.abrupt("return", writeSingleLocal(collection.localDocumentsStore, {
+              previous: localDoc,
+              document: newDoc
+            }));
+
+          case 11:
           case "end":
-            return _context5.stop();
+            return _context6.stop();
         }
       }
     }, _callee5);

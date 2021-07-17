@@ -20,12 +20,15 @@ describe('typings.test.js', function () {
             RxError,
             RxAttachment,
             RxPlugin,
-            addRxPlugin
+            addRxPlugin,
+            addPouchPlugin,
+            getRxStoragePouch,
+            blobBufferUtil
         } from '${config.rootPath}';
         import * as PouchMemAdapter from 'pouchdb-adapter-memory';
-        addRxPlugin(PouchMemAdapter);
+        addPouchPlugin(PouchMemAdapter);
         const PouchHttpAdapter = require('pouchdb-adapter-http');
-        addRxPlugin(PouchHttpAdapter);
+        addPouchPlugin(PouchHttpAdapter);
 
         type DefaultDocType = {
             passportId: string;
@@ -86,8 +89,8 @@ describe('typings.test.js', function () {
             `;
             let thrown = false;
             try {
-               const code = await transpileCode(brokenCode);
-               console.dir(code);
+                const code = await transpileCode(brokenCode);
+                console.dir(code);
             } catch (err) {
                 thrown = true;
             }
@@ -99,7 +102,7 @@ describe('typings.test.js', function () {
             const code = `
                 import * as rxdb from '${config.rootPath}';
                 import * as PouchMemAdapter from 'pouchdb-adapter-memory';
-                rxdb.addRxPlugin(PouchMemAdapter);
+                rxdb.addPouchPlugin(PouchMemAdapter);
             `;
             await transpileCode(code);
         });
@@ -111,7 +114,7 @@ describe('typings.test.js', function () {
                     (async() => {
                         const databaseCreator: RxDatabaseCreator = {
                             name: 'mydb',
-                            adapter: 'memory',
+                            storage: getRxStoragePouch('memory'),
                             multiInstance: false,
                             ignoreDuplicate: false
                         };
@@ -162,7 +165,7 @@ describe('typings.test.js', function () {
                             hero: RxCollection;
                         }>({
                             name: 'heroes',
-                            adapter: 'memory',
+                            storage: getRxStoragePouch('memory')
                         });
                         const col: RxCollection = db.hero;
                         await db.destroy();
@@ -176,7 +179,7 @@ describe('typings.test.js', function () {
                 const brokenCode = codeBase + `
                     const databaseCreator: RxDatabaseCreator = {
                         name: 'mydb',
-                        adapter: 'memory',
+                        storage: getRxStoragePouch('memory'),
                         multiInstance: false,
                         ignoreDuplicate: false,
                         foo: 'bar'
@@ -220,7 +223,7 @@ describe('typings.test.js', function () {
                     (async() => {
                         const databaseCreator: RxDatabaseCreator = {
                             name: 'mydb',
-                            adapter: 'memory',
+                            storage: getRxStoragePouch('memory'),
                             multiInstance: false,
                             ignoreDuplicate: false
                         };
@@ -230,9 +233,10 @@ describe('typings.test.js', function () {
                         const minimalHuman: RxJsonSchema<DefaultDocType> = ${JSON.stringify(schemas.humanMinimal)};
 
 
-                        const myCollection: RxCollection<any> = await myDb.collection<DefaultDocType>({
-                            name: 'humans',
-                            schema: minimalHuman,
+                        const myCollections = await myDb.addCollections({
+                            humans: {
+                                schema: minimalHuman,
+                            }
                         });
 
 
@@ -252,16 +256,17 @@ describe('typings.test.js', function () {
                     (async() => {
                         const databaseCreator: RxDatabaseCreator = {
                             name: 'mydb',
-                            adapter: 'memory',
+                            storage: getRxStoragePouch('memory'),
                             multiInstance: false,
                             ignoreDuplicate: false
                         };
                         const myDb: RxDatabase = await createRxDatabase(databaseCreator);
 
                         const minimalHuman: RxJsonSchema<DefaultDocType> = ${JSON.stringify(schemas.humanMinimalBroken)};
-                        const myCollection: RxCollection<any> = await myDb.collection<DefaultDocType>({
-                            name: 'humans',
-                            schema: minimalHuman,
+                        const myCollections = await myDb.addCollections({
+                            humans: {
+                                schema: minimalHuman,
+                            }
                         });
 
                         await myDb.destroy();
@@ -286,16 +291,18 @@ describe('typings.test.js', function () {
                     (async() => {
                         const myDb: RxDatabase = await createRxDatabase({
                             name: 'mydb',
-                            adapter: 'memory',
+                            storage: getRxStoragePouch('memory'),
                             multiInstance: false,
                             ignoreDuplicate: false
                         });
-                        const mySchema: RxJsonSchema = ${JSON.stringify(schemas.human)};
-                        const myCollection: RxCollection<any> = await myDb.collection({
-                            name: 'humans',
-                            schema: mySchema,
-                            autoMigrate: false,
+                        const mySchema: RxJsonSchema<any> = ${JSON.stringify(schemas.human)};
+                        const cols = await myDb.addCollections({
+                            humans: {
+                                schema: mySchema,
+                                autoMigrate: false,
+                            }
                         });
+                        const myCollections: RxCollection<any> = cols.humans;
                     })();
                 `;
                 await transpileCode(code);
@@ -305,23 +312,25 @@ describe('typings.test.js', function () {
                     (async() => {
                         const myDb: RxDatabase = await createRxDatabase({
                             name: 'mydb',
-                            adapter: 'memory',
+                            storage: getRxStoragePouch('memory'),
                             multiInstance: false,
                             ignoreDuplicate: false
                         });
-                        const mySchema: RxJsonSchema = ${JSON.stringify(schemas.human)};
+                        const mySchema: RxJsonSchema<any> = ${JSON.stringify(schemas.human)};
 
                         type staticMethods = {
                             countAllDocuments: () => Promise<number>;
                         }
-                        const myCollection: RxCollection<any, any, staticMethods> = await myDb.collection<any, any, staticMethods>({
-                            name: 'humans',
-                            schema: mySchema,
-                            autoMigrate: false,
-                            statics: {
-                                countAllDocuments: () => Promise.resolve(1)
+                        const myCollections = await myDb.addCollections({
+                            humans: {
+                                schema: mySchema,
+                                autoMigrate: false,
+                                statics: {
+                                    countAllDocuments: () => Promise.resolve(1)
+                                }
                             }
                         });
+                        const myCollection: RxCollection<any, any, staticMethods> = myCollections.humans as any;
 
                         await myCollection.countAllDocuments();
                     })();
@@ -333,23 +342,25 @@ describe('typings.test.js', function () {
                     (async() => {
                         const myDb: RxDatabase = await createRxDatabase({
                             name: 'mydb',
-                            adapter: 'memory',
+                            storage: getRxStoragePouch('memory'),
                             multiInstance: false,
                             ignoreDuplicate: false,
                             options: {
                                 foo1: 'bar1'
                             }
                         });
-                        const mySchema: RxJsonSchema = ${JSON.stringify(schemas.human)};
-                        const myCollection: RxCollection<any> = await myDb.collection({
-                            name: 'humans',                            schema: mySchema,
-                            autoMigrate: false,
-                            options: {
-                                foo2: 'bar2'
+                        const mySchema: RxJsonSchema<any> = ${JSON.stringify(schemas.human)};
+                        const myCollections = await myDb.addCollections({
+                            humans: {
+                                schema: mySchema,
+                                autoMigrate: false,
+                                options: {
+                                    foo2: 'bar2'
+                                }
                             }
                         });
                         const x: string = myDb.options.foo1;
-                        const y: string = myCollection.options.foo2;
+                        const y: string = myCollections.humans.options.foo2;
                         myDb.destroy();
                     })();
                 `;
@@ -360,30 +371,32 @@ describe('typings.test.js', function () {
                     (async() => {
                         const myDb: RxDatabase = await createRxDatabase({
                             name: 'mydb',
-                            adapter: 'memory',
+                            storage: getRxStoragePouch('memory'),
                             multiInstance: false,
                             ignoreDuplicate: false,
                             options: {
                                 foo1: 'bar1'
                             }
                         });
-                        const mySchema: RxJsonSchema = ${JSON.stringify(schemas.human)};
+                        const mySchema: RxJsonSchema<any> = ${JSON.stringify(schemas.human)};
                         type docType = {
                                 foo: string
                         };
-                        const myCollection: RxCollection<docType> = await myDb.collection({
-                            name: 'humans',
-                            schema: mySchema,
-                            autoMigrate: false,
-                            options: {
-                                foo2: 'bar2'
+                        const cols = await myDb.addCollections({
+                            humans: {
+                                schema: mySchema,
+                                autoMigrate: false,
+                                options: {
+                                    foo2: 'bar2'
+                                }
                             }
                         });
-                        const result = await myCollection.pouch.put({
+                        const myCollection: RxCollection<docType> = cols.humans;
+                        const result = await myCollection.storageInstance.internals.pouch.put({
                             _id: 'foobar',
                             foo: 'bar'
                         });
-                        const docs = await myCollection.pouch.allDocs();
+                        const docs = await myCollection.storageInstance.internals.pouch.allDocs();
                     })();
                 `;
                 await transpileCode(code);
@@ -393,22 +406,24 @@ describe('typings.test.js', function () {
                     (async() => {
                         const myDb: RxDatabase = await createRxDatabase({
                             name: 'mydb',
-                            adapter: 'memory',
+                            storage: getRxStoragePouch('memory'),
                             multiInstance: false,
                             ignoreDuplicate: false,
                             options: {
                                 foo1: 'bar1'
                             }
                         });
-                        const mySchema: RxJsonSchema = ${JSON.stringify(schemas.human)};
+                        const mySchema: RxJsonSchema<any> = ${JSON.stringify(schemas.human)};
                         type docType = {
                                 foo: string
                         };
-                        const myCollection: RxCollection<docType> = await myDb.collection({
-                            name: 'humans',
-                            schema: mySchema
+                        const cols = await myDb.addCollections({
+                            humans: {
+                                schema: mySchema
+                            }
                         });
-                        const replicationState = myCollection.sync({
+                        const myCollection: RxCollection<docType> = cols.humans;
+                        const replicationState = myCollection.syncCouchDB({
                             remote: 'http://localhost:9090/'
                         });
                         const syncHandler = replicationState._pouchEventEmitterObject;
@@ -431,15 +446,16 @@ describe('typings.test.js', function () {
                     (async() => {
                         const myDb: RxDatabase = await createRxDatabase({
                             name: 'mydb',
-                            adapter: 'memory',
+                            storage: getRxStoragePouch('memory'),
                             multiInstance: false,
                             ignoreDuplicate: false
                         });
-                        const mySchema: RxJsonSchema = ${JSON.stringify(schemas.human)};
-                        const myCollection: RxCollection<any> = await myDb.collection({
-                            name: 'humans',
-                            schema: {}, // wrong schema format
-                            autoMigrate: false,
+                        const mySchema: RxJsonSchema<any> = ${JSON.stringify(schemas.human)};
+                        await myDb.addCollections({
+                            humans: {
+                                schema: {}, // wrong schema format
+                                autoMigrate: false,
+                            }
                         });
                     })();
                 `;
@@ -451,31 +467,6 @@ describe('typings.test.js', function () {
                 }
                 assert.ok(thrown);
             });
-            it('UNTYPED collection should allow to access any static orm-method', async () => {
-                const code = codeBase + `
-                    (async() => {
-                        const myDb: RxDatabase = await createRxDatabase({
-                            name: 'mydb',
-                            adapter: 'memory',
-                            multiInstance: false,
-                            ignoreDuplicate: false
-                        });
-                        const mySchema: RxJsonSchema = ${JSON.stringify(schemas.human)};
-
-                        const myCollection = await myDb.collection({
-                            name: 'humans',
-                            schema: mySchema,
-                            autoMigrate: false,
-                            statics: {
-                                countAllDocuments: () => 1
-                            }
-                        });
-
-                        await myCollection.countAllDocuments();
-                    })();
-                `;
-                await transpileCode(code);
-            });
         });
     });
     config.parallel('change-event', () => {
@@ -484,7 +475,7 @@ describe('typings.test.js', function () {
                 (async() => {
                     const myDb: RxDatabase = await createRxDatabase({
                         name: 'mydb',
-                        adapter: 'memory',
+                        storage: getRxStoragePouch('memory'),
                         multiInstance: false,
                         ignoreDuplicate: false
                     });
@@ -492,16 +483,17 @@ describe('typings.test.js', function () {
                         firstName: string,
                         lastName: string
                     }
-                    const mySchema: RxJsonSchema = ${JSON.stringify(schemas.human)};
-                    const myCollection: RxCollection<docType> = await myDb.collection({
-                        name: 'humans',
-                        schema: mySchema,
-                        autoMigrate: false,
+                    const mySchema: RxJsonSchema<any> = ${JSON.stringify(schemas.human)};
+                    const myCollections = await myDb.addCollections({
+                        humans: {
+                            schema: mySchema,
+                            autoMigrate: false,
+                        }
                     });
 
                     const names: string[] = [];
                     const revs: string[] = [];
-                    const sub1 = myCollection.insert$.subscribe(cE => {
+                    const sub1 = myCollections.humans.insert$.subscribe(cE => {
                         names.push(cE.documentData.firstName);
                         revs.push(cE.documentData._rev);
                     });
@@ -523,19 +515,20 @@ describe('typings.test.js', function () {
                         passportId: string
                     };
 
-                    const myCollection: RxCollection<DocType> = await myDb.collection({
-                        name: 'humans',
-                        schema: {},
-                        autoMigrate: false,
+                    const myCollections = await myDb.addCollections({
+                        humans: {
+                            schema: {},
+                            autoMigrate: false,
+                        }
                     });
 
-                    const result = await myCollection.findOne().exec();
+                    const result = await myCollections.humans.findOne().exec();
                     if(result === null) throw new Error('got no document');
                     const oneDoc: RxDocument<DocType> = result;
                     const id: string = oneDoc.passportId;
                     const prim: string = oneDoc.primary;
 
-                    const otherResult = await myCollection.findOne().exec();
+                    const otherResult = await myCollections.humans.findOne().exec();
                     if(otherResult === null) throw new Error('got no other document');
                     const otherDoc: RxDocument<DocType> = otherResult;
                     const id2 = otherDoc.passportId;
@@ -555,18 +548,18 @@ describe('typings.test.js', function () {
                         passportId: string
                     };
 
-                    const myCollection: RxCollection<DocType> = await myDb.collection({
-                        name: 'humans',
-                        schema: {},
-                        autoMigrate: false,
+                    const myCollections = await myDb.addCollections({
+                        humans: {
+                            schema: {},
+                            autoMigrate: false,
+                        }
                     });
 
-                    const result = await myCollection.findOne().exec();
-                    if(!result) throw new Error('got no doc');
+                    const result = await myCollections.humans.findOne().exec(true);
                     const oneDoc: RxDocument<DocType> = result;
                     const attachment: RxAttachment<DocType> = await oneDoc.putAttachment({
                         id: 'cat.txt',
-                        data: 'foo bar',
+                        data: blobBufferUtil.createBlobBuffer('foo bar', 'text/plain'),
                         type: 'text/plain'
                     });
                 });
@@ -585,14 +578,14 @@ describe('typings.test.js', function () {
                         passportId: string
                     };
 
-                    const myCollection: RxCollection<DocType> = await myDb.collection({
-                        name: 'humans',
-                        schema: {},
-                        autoMigrate: false,
+                    const myCollections = await myDb.addCollections({
+                        humans: {
+                            schema: {},
+                            autoMigrate: false,
+                        }
                     });
 
-                    const result = await myCollection.findOne().exec();
-                    if(!result) throw new Error('got no doc');
+                    const result = await myCollections.humans.findOne().exec(true);
                     const rev: string = result.toJSON(true)._rev;
                 });
             `;
@@ -610,14 +603,15 @@ describe('typings.test.js', function () {
                         passportId: string
                     };
 
-                    const myCollection: RxCollection<DocType> = await myDb.collection({
-                        name: 'humans',
-                        schema: {},
-                        autoMigrate: false,
+                    const myCollections = await myDb.addCollections({
+                        humans: {
+                            schema: {},
+                            autoMigrate: false,
+                        }
                     });
+                    const collection: RxCollection<{}> = myCollections.humans;
 
-                    const result = await myCollection.findOne().exec();
-                    if(!result) throw new Error('got no doc');
+                    const result = await collection.findOne().exec(true);
                     const rev: string = result.toJSON(false)._rev;
                 });
             `;
@@ -638,13 +632,14 @@ describe('typings.test.js', function () {
                         passportId: string
                     };
 
-                    const myCollection: RxCollection<DocType> = await myDb.collection({
-                        name: 'humans',
-                        schema: {},
-                        autoMigrate: false,
+                    const myCollections = await myDb.addCollections({
+                        humans: {
+                            schema: {},
+                            autoMigrate: false,
+                        }
                     });
-                    const doc = await myCollection.findOne().exec();
-                    if(!doc) return;
+                    const collection: RxCollection<DocType> = myCollections.humans;
+                    const doc = await collection.findOne().exec(true);
                     await doc.atomicUpdate(docData => {
                         const newData = {
                             age: 23,
@@ -718,15 +713,17 @@ describe('typings.test.js', function () {
                 (async() => {
                     const myDb: any = {};
 
-                    const myCollection: RxCollection<DefaultDocType, DefaultOrmMethods> = await myDb.collection({
-                        name: 'humans',
-                        schema: {},
-                        methods: {
-                            foobar(){
-                                return 'foobar';
+                    const myCollections = await myDb.addCollections({
+                        humans: {
+                            schema: {},
+                            methods: {
+                                foobar(){
+                                    return 'foobar';
+                                }
                             }
                         }
                     });
+                    const myCollection: RxCollection<DefaultDocType, DefaultOrmMethods> = myCollections.humans;
 
                     const doc = await myCollection.insert({
                         passportId: 'asdf',
@@ -744,10 +741,12 @@ describe('typings.test.js', function () {
                 const code = codeBase + `
                 (async() => {
                     const myDb: any = {};
-                    const myCollection: RxCollection<DefaultDocType, DefaultOrmMethods> = await myDb.collection({
-                        name: 'humans',
-                        schema: {}
+                    const myCollections = await myDb.addCollections({
+                        humans: {
+                            schema: {}
+                        }
                     });
+                    const myCollection: RxCollection<DefaultDocType, DefaultOrmMethods> = myCollections.humans;
                     let myNumber: number;
                     let myString: string;
                     myCollection.postInsert((data, doc) => {
@@ -778,11 +777,13 @@ describe('typings.test.js', function () {
                         }
                     };
 
-                    const myCollection: RxCollection<DocType> = await myDb.collection({
-                        name: 'humans',
-                        schema: {},
-                        autoMigrate: false,
+                    const myCollections = await myDb.addCollections({
+                        humans: {
+                            schema: {},
+                            autoMigrate: false,
+                        }
                     });
+                    const myCollection: RxCollection<DocType> = myCollections.humans;
 
                     const query = myCollection.findOne().where('nestedObject.foo').eq('foobar');
                 });
@@ -795,14 +796,15 @@ describe('typings.test.js', function () {
                 const code = codeBase + `
                 (async() => {
                     const myDb: any = {};
-                    const myCollection: RxCollection<any> = await myDb.collection({
-                        name: 'humans',
-                        schema: {},
-                        autoMigrate: false,
+                    const myCollections = await myDb.addCollections({
+                        humans: {
+                            schema: {},
+                            autoMigrate: false,
+                        }
                     });
 
                     try{
-                        await myCollection.insert({ age: 4});
+                        await myCollections.humans.insert({ age: 4});
                     } catch(err) {
                         if (err.rxdb) {
                             (err as RxError).parameters.errors;
@@ -848,12 +850,15 @@ describe('typings.test.js', function () {
                     const heroSchema = {
                         version: 0,
                         type: 'object',
+                        primaryKey: 'id',
                         properties: {
+                            id: {
+                                type: 'string'
+                            }
                         },
                         required: ['color']
                     }
                     const colCreator: RxCollectionCreator = {
-                        name: 'herocollection',
                         schema: heroSchema
                     };
                 })();

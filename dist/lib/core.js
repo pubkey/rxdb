@@ -5,19 +5,17 @@ Object.defineProperty(exports, "__esModule", {
 });
 var _exportNames = {
   addRxPlugin: true,
-  PouchDB: true,
-  validateCouchDBString: true,
-  getBatch: true,
-  countAllUndeleted: true,
-  getNewestSequence: true,
   createRxDatabase: true,
   removeRxDatabase: true,
-  checkAdapter: true,
   isRxDatabase: true,
   dbCount: true,
   _collectionNamePrimary: true,
   isRxCollection: true,
-  _createRxCollection: true,
+  RxCollectionBase: true,
+  createRxCollection: true,
+  _handleFromStorageInstance: true,
+  _handleToStorageInstance: true,
+  fillObjectDataBeforeInsert: true,
   isRxDocument: true,
   getDocumentOrmPrototype: true,
   getDocumentPrototype: true,
@@ -29,9 +27,16 @@ var _exportNames = {
   normalize: true,
   getFinalFields: true,
   getPreviousVersions: true,
-  RxChangeEvent: true,
-  getRxStoragePouchDb: true,
-  getPouchLocation: true,
+  getPseudoSchemaForVersion: true,
+  getSchemaByObjectPath: true,
+  findLocalDocument: true,
+  getSingleDocument: true,
+  getNewestSequence: true,
+  getAllDocuments: true,
+  writeSingleLocal: true,
+  writeSingle: true,
+  countAllUndeleted: true,
+  getBatch: true,
   _clearHook: true,
   createCrypter: true
 };
@@ -39,36 +44,6 @@ Object.defineProperty(exports, "addRxPlugin", {
   enumerable: true,
   get: function get() {
     return _plugin.addRxPlugin;
-  }
-});
-Object.defineProperty(exports, "PouchDB", {
-  enumerable: true,
-  get: function get() {
-    return _pouchDb.PouchDB;
-  }
-});
-Object.defineProperty(exports, "validateCouchDBString", {
-  enumerable: true,
-  get: function get() {
-    return _pouchDb.validateCouchDBString;
-  }
-});
-Object.defineProperty(exports, "getBatch", {
-  enumerable: true,
-  get: function get() {
-    return _pouchDb.getBatch;
-  }
-});
-Object.defineProperty(exports, "countAllUndeleted", {
-  enumerable: true,
-  get: function get() {
-    return _pouchDb.countAllUndeleted;
-  }
-});
-Object.defineProperty(exports, "getNewestSequence", {
-  enumerable: true,
-  get: function get() {
-    return _pouchDb.getNewestSequence;
   }
 });
 Object.defineProperty(exports, "createRxDatabase", {
@@ -83,16 +58,10 @@ Object.defineProperty(exports, "removeRxDatabase", {
     return _rxDatabase.removeRxDatabase;
   }
 });
-Object.defineProperty(exports, "checkAdapter", {
-  enumerable: true,
-  get: function get() {
-    return _rxDatabase.checkAdapter;
-  }
-});
 Object.defineProperty(exports, "isRxDatabase", {
   enumerable: true,
   get: function get() {
-    return _rxDatabase.isInstanceOf;
+    return _rxDatabase.isRxDatabase;
   }
 });
 Object.defineProperty(exports, "dbCount", {
@@ -110,19 +79,43 @@ Object.defineProperty(exports, "_collectionNamePrimary", {
 Object.defineProperty(exports, "isRxCollection", {
   enumerable: true,
   get: function get() {
-    return _rxCollection.isInstanceOf;
+    return _rxCollection.isRxCollection;
   }
 });
-Object.defineProperty(exports, "_createRxCollection", {
+Object.defineProperty(exports, "RxCollectionBase", {
   enumerable: true,
   get: function get() {
-    return _rxCollection.create;
+    return _rxCollection.RxCollectionBase;
+  }
+});
+Object.defineProperty(exports, "createRxCollection", {
+  enumerable: true,
+  get: function get() {
+    return _rxCollection.createRxCollection;
+  }
+});
+Object.defineProperty(exports, "_handleFromStorageInstance", {
+  enumerable: true,
+  get: function get() {
+    return _rxCollectionHelper._handleFromStorageInstance;
+  }
+});
+Object.defineProperty(exports, "_handleToStorageInstance", {
+  enumerable: true,
+  get: function get() {
+    return _rxCollectionHelper._handleToStorageInstance;
+  }
+});
+Object.defineProperty(exports, "fillObjectDataBeforeInsert", {
+  enumerable: true,
+  get: function get() {
+    return _rxCollectionHelper.fillObjectDataBeforeInsert;
   }
 });
 Object.defineProperty(exports, "isRxDocument", {
   enumerable: true,
   get: function get() {
-    return _rxDocument.isInstanceOf;
+    return _rxDocument.isRxDocument;
   }
 });
 Object.defineProperty(exports, "getDocumentOrmPrototype", {
@@ -185,22 +178,64 @@ Object.defineProperty(exports, "getPreviousVersions", {
     return _rxSchema.getPreviousVersions;
   }
 });
-Object.defineProperty(exports, "RxChangeEvent", {
+Object.defineProperty(exports, "getPseudoSchemaForVersion", {
   enumerable: true,
   get: function get() {
-    return _rxChangeEvent.RxChangeEvent;
+    return _rxSchemaHelper.getPseudoSchemaForVersion;
   }
 });
-Object.defineProperty(exports, "getRxStoragePouchDb", {
+Object.defineProperty(exports, "getSchemaByObjectPath", {
   enumerable: true,
   get: function get() {
-    return _rxStoragePouchdb.getRxStoragePouchDb;
+    return _rxSchemaHelper.getSchemaByObjectPath;
   }
 });
-Object.defineProperty(exports, "getPouchLocation", {
+Object.defineProperty(exports, "findLocalDocument", {
   enumerable: true,
   get: function get() {
-    return _rxStoragePouchdb.getPouchLocation;
+    return _rxStorageHelper.findLocalDocument;
+  }
+});
+Object.defineProperty(exports, "getSingleDocument", {
+  enumerable: true,
+  get: function get() {
+    return _rxStorageHelper.getSingleDocument;
+  }
+});
+Object.defineProperty(exports, "getNewestSequence", {
+  enumerable: true,
+  get: function get() {
+    return _rxStorageHelper.getNewestSequence;
+  }
+});
+Object.defineProperty(exports, "getAllDocuments", {
+  enumerable: true,
+  get: function get() {
+    return _rxStorageHelper.getAllDocuments;
+  }
+});
+Object.defineProperty(exports, "writeSingleLocal", {
+  enumerable: true,
+  get: function get() {
+    return _rxStorageHelper.writeSingleLocal;
+  }
+});
+Object.defineProperty(exports, "writeSingle", {
+  enumerable: true,
+  get: function get() {
+    return _rxStorageHelper.writeSingle;
+  }
+});
+Object.defineProperty(exports, "countAllUndeleted", {
+  enumerable: true,
+  get: function get() {
+    return _rxStorageHelper.countAllUndeleted;
+  }
+});
+Object.defineProperty(exports, "getBatch", {
+  enumerable: true,
+  get: function get() {
+    return _rxStorageHelper.getBatch;
   }
 });
 Object.defineProperty(exports, "_clearHook", {
@@ -224,17 +259,15 @@ require("./types/modules/mocha.parallel.d");
 
 require("./types/modules/modifiyjs.d");
 
-require("./types/modules/pouchdb-selector-core.d");
-
 require("./types/modules/random-token.d");
 
 var _plugin = require("./plugin");
 
-var _pouchDb = require("./pouch-db");
-
 var _rxDatabase = require("./rx-database");
 
 var _rxCollection = require("./rx-collection");
+
+var _rxCollectionHelper = require("./rx-collection-helper");
 
 var _rxDocument = require("./rx-document");
 
@@ -244,9 +277,9 @@ var _rxQuery = require("./rx-query");
 
 var _rxSchema = require("./rx-schema");
 
-var _rxChangeEvent = require("./rx-change-event");
+var _rxSchemaHelper = require("./rx-schema-helper");
 
-var _rxStoragePouchdb = require("./rx-storage-pouchdb");
+var _rxStorageHelper = require("./rx-storage-helper");
 
 var _hooks = require("./hooks");
 

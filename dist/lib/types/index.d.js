@@ -121,6 +121,58 @@ Object.keys(_rxSchema).forEach(function (key) {
   });
 });
 
+var _rxStorage = require("./rx-storage");
+
+Object.keys(_rxStorage).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _rxStorage[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _rxStorage[key];
+    }
+  });
+});
+
+var _rxStorage2 = require("./rx-storage.interface");
+
+Object.keys(_rxStorage2).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _rxStorage2[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _rxStorage2[key];
+    }
+  });
+});
+
+var _rxChangeEvent = require("./rx-change-event");
+
+Object.keys(_rxChangeEvent).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _rxChangeEvent[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _rxChangeEvent[key];
+    }
+  });
+});
+
+var _util = require("./util");
+
+Object.keys(_util).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _util[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _util[key];
+    }
+  });
+});
+
 var _replication = require("./plugins/replication");
 
 Object.keys(_replication).forEach(function (key) {

@@ -21,9 +21,11 @@ import {
 
 import type {
     RxCollection,
-    RxReplicationState,
+    RxCouchDBReplicationState,
     PouchDBInstance,
-    RxPlugin
+    RxPlugin,
+    PouchBulkDocResultRow,
+    RxChangeEvent
 } from '../types';
 import {
     RxCollectionBase
@@ -33,8 +35,11 @@ import {
     randomCouchString
 } from '../util';
 import {
-    addRxPlugin,
-} from '../core';
+    PouchDB,
+    getRxStoragePouch,
+    pouchSwapIdToPrimary,
+    pouchSwapPrimaryToId,
+} from '../plugins/pouchdb';
 import {
     createCrypter
 } from '../crypter';
@@ -46,21 +51,10 @@ import {
     RxSchema
 } from '../rx-schema';
 import {
-    PouchDB
-} from '../pouch-db';
-import {
-    RxChangeEvent
-} from '../rx-change-event';
-import {
     newRxError
 } from '../rx-error';
-import {
-    getRxStoragePouchDb
-} from '../rx-storage-pouchdb';
-
-// add the watch-for-changes-plugin
-import { RxDBWatchForChangesPlugin } from '../plugins/watch-for-changes';
-addRxPlugin(RxDBWatchForChangesPlugin);
+import { getDocumentDataOfRxChangeEvent } from '../rx-change-event';
+import { _handleFromStorageInstance, _handleToStorageInstance } from '../rx-collection-helper';
 
 const collectionCacheMap = new WeakMap();
 const collectionPromiseCacheMap = new WeakMap();
@@ -76,19 +70,19 @@ export
     extends RxCollectionBase<RxDocumentType, OrmMethods> {
 
     constructor(
-        parentCollection: RxCollection,
-        pouchSettings = {}
+        public readonly parentCollection: RxCollection<RxDocumentType, OrmMethods>,
+        public readonly pouchSettings?: any
     ) {
         super(
-            parentCollection.database,
+            parentCollection.database as any,
             parentCollection.name,
             toCleanSchema(parentCollection.schema),
             pouchSettings, // pouchSettings
             {},
-            parentCollection._methods);
+            (parentCollection as any)._methods);
         this._isInMemory = true;
-        this._parentCollection = parentCollection;
-        this._parentCollection.onDestroy.then(() => this.destroy());
+
+        parentCollection.onDestroy.then(() => this.destroy());
         this._crypter = createCrypter(this.database.password, this.schema);
         this._changeStreams = [];
 
@@ -98,7 +92,8 @@ export
          */
         this.onDestroy.then(() => {
             this._changeStreams.forEach((stream: any) => stream.cancel());
-            this.pouch.destroy();
+            // delete all data
+            this.storageInstance.internals.pouch.destroy();
         });
 
         // add orm functions and options from parent
@@ -111,23 +106,15 @@ export
                 });
             });
 
-        const storage = getRxStoragePouchDb('memory');
-        this.pouch = storage.createStorageInstance(
-            'rxdb-in-memory',
-            randomCouchString(10),
-            0
-        );
-
         this._observable$ = new Subject();
         this._changeEventBuffer = createChangeEventBuffer(this as any);
 
         const parentProto = Object.getPrototypeOf(parentCollection);
-        this._oldPouchPut = parentProto._pouchPut.bind(this);
+        this._oldPouchPut = (parentProto as any)._pouchPut.bind(this);
 
         this._nonPersistentRevisions = new Set();
         this._nonPersistentRevisionsSubject = new Subject(); // emits Set.size() when Set is changed
     }
-    private _parentCollection: RxCollection<RxDocumentType, OrmMethods>;
     public _changeStreams: any;
     public _oldPouchPut: Function;
     public _nonPersistentRevisions: any;
@@ -140,7 +127,7 @@ export
     public _eventCounter: number = 0;
 
     prepareChild() {
-        return setIndexes(this.schema, this.pouch)
+        return setIndexes(this.schema, this.storageInstance.internals.pouch)
             .then(() => {
                 this._subs.push(
                     (this._observable$ as any).subscribe((cE: RxChangeEvent) => {
@@ -151,22 +138,14 @@ export
                 );
             })
             // initial sync parent's docs to own
-            .then(() => replicateExistingDocuments(this._parentCollection, this as any))
+            .then(() => replicateExistingDocuments(this.parentCollection as any, this as any))
             .then(() => {
-                /**
-                 * call watchForChanges() on both sides,
-                 * to ensure none-rxdb-changes like replication
-                 * will fire into the change-event-stream
-                 */
-                this._parentCollection.watchForChanges();
-                this.watchForChanges();
-
                 /**
                  * create an ongoing replications between both sides
                  */
                 const thisToParentSub = streamChangedDocuments(this as any)
                     .pipe(
-                        mergeMap(doc => applyChangedDocumentToPouch(this._parentCollection, doc)
+                        mergeMap(doc => applyChangedDocumentToPouch(this.parentCollection, doc)
                             .then(() => doc['_rev'])
                         )
                     )
@@ -176,7 +155,7 @@ export
                     });
                 this._subs.push(thisToParentSub);
 
-                const parentToThisSub = streamChangedDocuments(this._parentCollection)
+                const parentToThisSub = streamChangedDocuments(this.parentCollection)
                     .subscribe(doc => applyChangedDocumentToPouch(this as any, doc));
                 this._subs.push(parentToThisSub);
             });
@@ -187,7 +166,9 @@ export
      * in the parent collection
      */
     awaitPersistence(): Promise<any> {
-        if (this._nonPersistentRevisions.size === 0) return Promise.resolve();
+        if (this._nonPersistentRevisions.size === 0) {
+            return Promise.resolve();
+        }
         return firstValueFrom(
             this._nonPersistentRevisionsSubject.pipe(
                 filter(() => this._nonPersistentRevisions.size === 0),
@@ -207,7 +188,8 @@ export
         });
     }
     $emit(changeEvent: RxChangeEvent) {
-        if ((this._changeEventBuffer as any).hasChangeWithRevision(changeEvent.documentData && changeEvent.documentData._rev)) {
+        const doc = getDocumentDataOfRxChangeEvent(changeEvent);
+        if ((this._changeEventBuffer as any).hasChangeWithRevision(doc && doc._rev)) {
             return;
         }
 
@@ -217,7 +199,7 @@ export
         this._eventCounter++;
         if (this._eventCounter === 10) {
             this._eventCounter = 0;
-            this.pouch.compact();
+            this.storageInstance.internals.pouch.compact();
         }
     }
 
@@ -226,7 +208,7 @@ export
      * Replication on the inMemory is dangerous,
      * replicate with it's parent instead
      */
-    sync(): RxReplicationState {
+    syncCouchDB(): RxCouchDBReplicationState {
         throw newRxError('IM2');
     }
 }
@@ -240,7 +222,6 @@ export
 function toCleanSchema(rxSchema: RxSchema): RxSchema {
     const newSchemaJson = clone(rxSchema.jsonSchema);
     newSchemaJson.keyCompression = false;
-    delete newSchemaJson.properties._id;
     delete newSchemaJson.properties._rev;
     delete newSchemaJson.properties._attachments;
 
@@ -263,7 +244,8 @@ export function replicateExistingDocuments(
     fromCollection: RxCollection,
     toCollection: RxCollection
 ): Promise<any[]> {
-    return fromCollection.pouch.allDocs({
+    const pouch: PouchDBInstance = fromCollection.storageInstance.internals.pouch;
+    return pouch.allDocs({
         attachments: false,
         include_docs: true
     }).then(allRows => {
@@ -271,13 +253,16 @@ export function replicateExistingDocuments(
             .rows
             .map((row: any) => row.doc)
             .filter((doc: any) => !doc.language) // do not replicate design-docs
-            .map((doc: any) => fromCollection._handleFromPouch(doc))
+            .map((doc: any) => _handleFromStorageInstance(fromCollection, doc))
             // swap back primary because keyCompression:false
-            .map((doc: any) => fromCollection.schema.swapPrimaryToId(doc));
+            .map((doc: any) => {
+                const primaryKey: string = fromCollection.schema.primaryPath as any;
+                return pouchSwapPrimaryToId(primaryKey, doc);
+            });
 
         if (docs.length === 0) return Promise.resolve([]); // nothing to replicate
         else {
-            return toCollection.pouch.bulkDocs({
+            return toCollection.storageInstance.internals.pouch.bulkDocs({
                 docs
             }, BULK_DOC_OPTIONS_FALSE)
                 .then(() => docs);
@@ -315,17 +300,22 @@ export function setIndexes(
  * @return observable that emits document-data
  */
 export function streamChangedDocuments(
-    rxCollection: RxCollection,
+    rxCollection: RxCollection<any, any>,
     prevFilter = (_i: any) => true
 ): Observable<any> {
-    if (!rxCollection._doNotEmitSet) rxCollection._doNotEmitSet = new Set();
+    if (!(rxCollection as any)._doNotEmitSet) {
+        (rxCollection as any)._doNotEmitSet = new Set();
+    }
 
-    const observable = ObservableFromEvent(rxCollection.pouch
-        .changes({
-            since: 'now',
-            live: true,
-            include_docs: true
-        }), 'change')
+    const observable = ObservableFromEvent(
+        rxCollection.storageInstance.internals.pouch
+            .changes({
+                since: 'now',
+                live: true,
+                include_docs: true
+            }),
+        'change'
+    )
         .pipe(
             /**
              * we need this delay because with pouchdb 7.2.2
@@ -338,11 +328,18 @@ export function streamChangedDocuments(
             filter(change => {
                 // changes on the doNotEmit-list shell not be fired
                 const emitFlag = change.id + ':' + change.doc._rev;
-                if (rxCollection._doNotEmitSet.has(emitFlag)) return false;
-                else return true;
+                if ((rxCollection as any)._doNotEmitSet.has(emitFlag)) {
+                    return false;
+                } else {
+                    return true;
+                }
             }),
             filter(change => prevFilter(change)),
-            map(change => rxCollection._handleFromPouch(change.doc))
+            map(change => _handleFromStorageInstance(rxCollection, change.doc)),
+            map(d => {
+                const primaryKey: string = rxCollection.schema.primaryPath as any;
+                return pouchSwapIdToPrimary(primaryKey, d);
+            })
         );
     return observable;
 }
@@ -352,31 +349,39 @@ export function streamChangedDocuments(
  * without changeing the revision
  */
 export function applyChangedDocumentToPouch(
-    rxCollection: RxCollection,
+    rxCollection: RxCollection<any, any>,
     docData: any
 ): Promise<any> {
-    if (!rxCollection._doNotEmitSet) rxCollection._doNotEmitSet = new Set();
+    if (!(rxCollection as any)._doNotEmitSet) {
+        (rxCollection as any)._doNotEmitSet = new Set();
+    }
 
-    const transformedDoc = rxCollection._handleToPouch(docData);
+    const primaryKey: string = rxCollection.schema.primaryPath as any;
 
-    return rxCollection.pouch.get(transformedDoc._id)
-        .then(oldDoc => transformedDoc._rev = oldDoc._rev)
+    let transformedDoc = _handleToStorageInstance(rxCollection, docData);
+    transformedDoc = pouchSwapPrimaryToId(
+        primaryKey,
+        transformedDoc
+    );
+
+    return rxCollection.storageInstance.internals.pouch.get(transformedDoc._id)
+        .then((oldDoc: any) => transformedDoc._rev = oldDoc._rev)
         .catch(() => {
             // doc not found, do not use a revision
             delete transformedDoc._rev;
-        }).then(() => rxCollection.pouch.bulkDocs({
+        }).then(() => rxCollection.storageInstance.internals.pouch.bulkDocs({
             docs: [transformedDoc]
         }, BULK_DOC_OPTIONS))
-        .then(bulkRet => {
-            if (bulkRet.length > 0 && !bulkRet[0].ok) {
+        .then((bulkRet: any) => {
+            if (bulkRet.length > 0 && !(bulkRet[0] as PouchBulkDocResultRow).ok) {
                 throw new Error(JSON.stringify(bulkRet[0]));
             }
             // set the flag so this does not appear in the own event-stream again
-            const emitFlag = transformedDoc._id + ':' + bulkRet[0].rev;
-            rxCollection._doNotEmitSet.add(emitFlag);
+            const emitFlag = transformedDoc._id + ':' + (bulkRet[0] as PouchBulkDocResultRow).rev;
+            (rxCollection as any)._doNotEmitSet.add(emitFlag);
 
             // remove from the list later to not have a memory-leak
-            setTimeout(() => rxCollection._doNotEmitSet.delete(emitFlag), 30 * 1000);
+            setTimeout(() => (rxCollection as any)._doNotEmitSet.delete(emitFlag), 30 * 1000);
 
             return transformedDoc;
         });
@@ -386,14 +391,15 @@ let INIT_DONE = false;
 /**
  * called in the proto of RxCollection
  */
-export function spawnInMemory(
+export async function inMemory(
     this: RxCollection
 ): Promise<RxCollection> {
     if (!INIT_DONE) {
         INIT_DONE = true;
         // ensure memory-adapter is added
-        if (!(PouchDB as any).adapters || !(PouchDB as any).adapters.memory)
+        if (!(PouchDB as any).adapters || !(PouchDB as any).adapters.memory) {
             throw newRxError('IM1');
+        }
     }
 
     if (collectionCacheMap.has(this)) {
@@ -403,6 +409,8 @@ export function spawnInMemory(
     }
 
     const col = new InMemoryRxCollection(this);
+    await prepareInMemoryRxCollection(col);
+
     const preparePromise = col.prepareChild();
     collectionCacheMap.set(this, col);
     collectionPromiseCacheMap.set(this, preparePromise);
@@ -410,11 +418,22 @@ export function spawnInMemory(
     return preparePromise.then(() => col) as any;
 }
 
+export async function prepareInMemoryRxCollection(instance: InMemoryRxCollection<any, {}>): Promise<void> {
+    const memoryStorage = getRxStoragePouch('memory', {});
+    instance.storageInstance = await memoryStorage.createStorageInstance({
+        databaseName: 'rxdb-in-memory',
+        collectionName: randomCouchString(10),
+        schema: instance.schema.jsonSchema,
+        options: instance.pouchSettings
+    });
+    (instance as any).pouch = instance.storageInstance.internals.pouch;
+}
+
 
 export const rxdb = true;
 export const prototypes = {
     RxCollection: (proto: any) => {
-        proto.inMemory = spawnInMemory;
+        proto.inMemory = inMemory;
     }
 };
 

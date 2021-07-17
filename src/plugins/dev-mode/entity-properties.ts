@@ -27,7 +27,7 @@ export function rxDatabaseProperties(): string[] {
     if (!_rxDatabaseProperties) {
         // TODO instead of using the pseudoInstance,
         // we should get the properties from the prototype of the class
-        const pseudoInstance: RxDatabaseBase = new (RxDatabaseBase as any)(
+        const pseudoInstance: RxDatabaseBase<any, any> = new (RxDatabaseBase as any)(
             'pseudoInstance',
             'memory'
         );

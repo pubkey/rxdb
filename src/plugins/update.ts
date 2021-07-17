@@ -23,7 +23,9 @@ export function RxQueryUpdate(
     ): Promise<any> {
     return this.exec()
         .then(docs => {
-            if (!docs) return null;
+            if (!docs) {
+                return null;
+            }
             if (Array.isArray(docs)) {
                 return Promise.all(
                     docs.map(doc => doc.update(updateObj))

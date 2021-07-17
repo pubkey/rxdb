@@ -1,4 +1,4 @@
-import type { BlobBuffer } from './types';
+import type { BlobBuffer, DeepReadonlyObject } from './types';
 /**
  * Returns an error that indicates that a plugin is missing
  * We do not throw a RxError because this should not be handled
@@ -13,10 +13,6 @@ export declare function pluginMissing(pluginKey: string): Error;
 export declare function fastUnsecureHash(obj: any): number;
 export declare const RXDB_HASH_SALT = "rxdb-specific-hash-salt";
 export declare function hash(msg: string | any): string;
-/**
- * generate a new _id as db-primary-key
- */
-export declare function generateId(): string;
 export declare function now(): number;
 /**
  * returns a promise that resolves on the next tick
@@ -62,6 +58,11 @@ export declare function stringifyFilter(key: string, value: any): any;
  */
 export declare function randomCouchString(length?: number): string;
 /**
+ * A random string that is never inside of any storage
+ */
+export declare const RANDOM_STRING = "Fz7SZXPmYJujkzjY1rpXWvlWBqoGAfAX";
+export declare function lastOfArray<T>(ar: T[]): T;
+/**
  * shuffle the given array
  */
 export declare function shuffleArray<T>(arr: T[]): T[];
@@ -73,14 +74,14 @@ export declare function removeOneFromArrayIfMatches<T>(ar: T[], condition: (x: T
  * transforms the given adapter into a pouch-compatible object
  */
 export declare function adapterObject(adapter: any): any;
-declare function recursiveDeepCopy<T>(o: T): T;
+declare function recursiveDeepCopy<T>(o: T | DeepReadonlyObject<T>): T;
 export declare const clone: typeof recursiveDeepCopy;
 /**
  * does a flat copy on the objects,
  * is about 3 times faster then using deepClone
  * @link https://jsperf.com/object-rest-spread-vs-clone/2
  */
-export declare function flatClone<T>(obj: T): T;
+export declare function flatClone<T>(obj: T | DeepReadonlyObject<T>): T;
 export declare const isElectronRenderer: boolean;
 /**
  * returns a flattened object
@@ -95,10 +96,6 @@ export declare function getHeightOfRevision(revString: string): number;
  */
 export declare function createRevision(docData: any, deterministic_revs: boolean): string;
 /**
- * prefix of local pouchdb documents
- */
-export declare const LOCAL_PREFIX: string;
-/**
  * overwrites the getter with the actual value
  * Mostly used for caching stuff on the first run
  */
@@ -107,12 +104,14 @@ export declare function overwriteGetterForCaching<ValueType = any>(obj: any, get
  * returns true if the given name is likely a folder path
  */
 export declare function isFolderPath(name: string): boolean;
+export declare function getFromMapOrThrow<K, V>(map: Map<K, V> | WeakMap<any, V>, key: K): V;
 export declare const blobBufferUtil: {
     /**
      * depending if we are on node or browser,
      * we have to use Buffer(node) or Blob(browser)
      */
     createBlobBuffer(data: string, type: string): BlobBuffer;
+    isBlobBuffer(data: any): boolean;
     toString(blobBuffer: BlobBuffer): Promise<string>;
 };
 export {};

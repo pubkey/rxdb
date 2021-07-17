@@ -2,11 +2,8 @@ import {
     map
 } from 'rxjs/operators';
 import {
-    createUpdateEvent
-} from './../rx-change-event';
-import {
-    now,
-    blobBufferUtil
+    blobBufferUtil,
+    flatClone
 } from './../util';
 import {
     newRxError
@@ -14,15 +11,17 @@ import {
 import type {
     RxDocument,
     RxPlugin,
-    RxDocumentTypeWithRev,
-    PouchAttachmentWithData,
     BlobBuffer,
-    WithAttachments,
     OldRxCollection,
-    PouchAttachmentMeta
+    RxDocumentWriteData,
+    RxAttachmentData,
+    RxDocumentData,
+    RxAttachmentCreator,
+    RxAttachmentWriteData
 } from '../types';
-import { pouchAttachmentBinaryHash } from '../pouch-db';
-import { RxSchema } from '../rx-schema';
+import type { RxSchema } from '../rx-schema';
+import { writeSingle } from '../rx-storage-helper';
+import { _handleToStorageInstance } from '../rx-collection-helper';
 
 function ensureSchemaSupportsAttachments(doc: any) {
     const schemaJson = doc.collection.schema.jsonSchema;
@@ -31,23 +30,6 @@ function ensureSchemaSupportsAttachments(doc: any) {
             link: 'https://pubkey.github.io/rxdb/rx-attachment.html'
         });
     }
-}
-
-function resyncRxDocument<RxDocType>(doc: any) {
-    const startTime = now();
-    return doc.collection.pouch.get(doc.primary).then((docDataFromPouch: any) => {
-        const data: RxDocumentTypeWithRev<RxDocType> = doc.collection._handleFromPouch(docDataFromPouch);
-        const endTime = now();
-        const changeEvent = createUpdateEvent(
-            doc.collection,
-            data,
-            null,
-            startTime,
-            endTime,
-            doc
-        );
-        doc.$emit(changeEvent);
-    });
 }
 
 const _assignMethodsToAttachment = function (attachment: any) {
@@ -65,52 +47,69 @@ const _assignMethodsToAttachment = function (attachment: any) {
  * wrapped so that you can access the attachment-data
  */
 export class RxAttachment {
-    public doc: any;
+    public doc: RxDocument;
     public id: string;
     public type: string;
     public length: number;
     public digest: string;
-    public rev: string;
     constructor({
         doc,
         id,
         type,
         length,
-        digest,
-        rev
+        digest
     }: any) {
         this.doc = doc;
         this.id = id;
         this.type = type;
         this.length = length;
         this.digest = digest;
-        this.rev = rev;
 
         _assignMethodsToAttachment(this);
     }
 
-    remove(): Promise<any> {
-        return this.doc.collection.pouch.removeAttachment(
-            this.doc.primary,
-            this.id,
-            this.doc._data._rev
-        ).then(() => resyncRxDocument(this.doc));
+    async remove(): Promise<void> {
+        this.doc._atomicQueue = this.doc._atomicQueue
+            .then(async () => {
+                const docWriteData: RxDocumentWriteData<{}> = flatClone(this.doc._data);
+                docWriteData._attachments = flatClone(docWriteData._attachments);
+                delete docWriteData._attachments[this.id];
+
+                const writeResult: RxDocumentData<any> = await writeSingle(
+                    this.doc.collection.storageInstance,
+                    {
+                        previous: _handleToStorageInstance(this.doc.collection, flatClone(this.doc._data)),
+                        document: _handleToStorageInstance(this.doc.collection, docWriteData)
+                    }
+                );
+
+                const newData = flatClone(this.doc._data);
+                newData._rev = writeResult._rev;
+                newData._attachments = writeResult._attachments;
+                this.doc._dataSync$.next(newData);
+
+            });
+        return this.doc._atomicQueue;
     }
 
     /**
      * returns the data for the attachment
      */
-    getData(): Promise<BlobBuffer> {
-        return this.doc.collection.pouch.getAttachment(this.doc.primary, this.id)
-            .then((data: any) => {
-                if (shouldEncrypt(this.doc.collection.schema)) {
-                    return blobBufferUtil.toString(data)
-                        .then(dataString => blobBufferUtil.createBlobBuffer(
-                            this.doc.collection._crypter._decryptValue(dataString),
-                            this.type as any
-                        ));
-                } else return data;
-            });
+    async getData(): Promise<BlobBuffer> {
+        const plainData = await this.doc.collection.storageInstance.getAttachmentData(
+            this.doc.primary,
+            this.id
+        );
+        if (shouldEncrypt(this.doc.collection.schema)) {
+            const dataString = await blobBufferUtil.toString(plainData);
+            const ret = blobBufferUtil.createBlobBuffer(
+                this.doc.collection._crypter._decryptString(dataString),
+                this.type as any
+            );
+            return ret;
+        } else {
+            return plainData;
+        }
     }
 
     getStringData(): Promise<string> {
@@ -118,18 +117,17 @@ export class RxAttachment {
     }
 }
 
-export function fromPouchDocument(
+export function fromStorageInstanceResult(
     id: string,
-    pouchDocAttachment: any,
+    attachmentData: RxAttachmentData,
     rxDocument: RxDocument
 ) {
     return new RxAttachment({
         doc: rxDocument,
         id,
-        type: pouchDocAttachment.content_type,
-        length: pouchDocAttachment.length,
-        digest: pouchDocAttachment.digest,
-        rev: pouchDocAttachment.revpos
+        type: attachmentData.type,
+        length: attachmentData.length,
+        digest: attachmentData.digest
     });
 }
 
@@ -143,53 +141,67 @@ export async function putAttachment(
         id,
         data,
         type = 'text/plain'
-    }: any,
+    }: RxAttachmentCreator,
     /**
-     * TODO set to default=true
-     * in next major release
+     * If set to true, the write will be skipped
+     * when the attachment already contains the same data.
      */
-    skipIfSame: boolean = false
+    skipIfSame: boolean = true
 ): Promise<RxAttachment> {
     ensureSchemaSupportsAttachments(this);
 
-    if (shouldEncrypt(this.collection.schema)) {
-        data = (this.collection._crypter as any)._encryptValue(data);
-    }
+    /**
+     * Then encryption plugin is only able to encrypt strings,
+     * so unpack as string first.
+     */
 
-    const blobBuffer = blobBufferUtil.createBlobBuffer(data, type);
+    if (shouldEncrypt(this.collection.schema)) {
+        const dataString = await blobBufferUtil.toString(data);
+        const encrypted = this.collection._crypter._encryptString(dataString);
+        data = blobBufferUtil.createBlobBuffer(encrypted, 'text/plain');
+    }
 
     this._atomicQueue = this._atomicQueue
         .then(async () => {
             if (skipIfSame && this._data._attachments && this._data._attachments[id]) {
                 const currentMeta = this._data._attachments[id];
-
-                const newHash: string = await pouchAttachmentBinaryHash(data);
-
-                if (currentMeta.content_type === type && currentMeta.digest === newHash) {
+                const newHash = await this.collection.database.storage.hash(data);
+                if (currentMeta.type === type && currentMeta.digest === newHash) {
                     // skip because same data and same type
                     return this.getAttachment(id);
                 }
             }
-            return this.collection.pouch.putAttachment(
-                this.primary,
-                id,
-                this._data._rev,
-                blobBuffer,
-                type
-            ).then(() => this.collection.pouch.get(this.primary))
-                .then(docData => {
-                    const attachmentData = docData._attachments[id];
-                    const attachment = fromPouchDocument(
-                        id,
-                        attachmentData,
-                        this
-                    );
 
-                    this._data._rev = docData._rev;
-                    this._data._attachments = docData._attachments;
-                    return resyncRxDocument(this)
-                        .then(() => attachment);
-                });
+            const docWriteData: RxDocumentWriteData<{}> = flatClone(this._data);
+            docWriteData._attachments = flatClone(docWriteData._attachments);
+            docWriteData._attachments[id] = {
+                type,
+                data: data
+            };
+
+            const writeRow = {
+                previous: _handleToStorageInstance(this.collection, flatClone(this._data)),
+                document: _handleToStorageInstance(this.collection, flatClone(docWriteData))
+            };
+
+            const writeResult = await writeSingle(
+                this.collection.storageInstance,
+                writeRow
+            );
+
+            const attachmentData = writeResult._attachments[id];
+            const attachment = fromStorageInstanceResult(
+                id,
+                attachmentData,
+                this
+            );
+
+            const newData = flatClone(this._data);
+            newData._rev = writeResult._rev;
+            newData._attachments = writeResult._attachments;
+            this._dataSync$.next(newData);
+
+            return attachment;
         });
     return this._atomicQueue;
 }
@@ -207,7 +219,7 @@ export function getAttachment(
         return null;
 
     const attachmentData = docData._attachments[id];
-    const attachment = fromPouchDocument(
+    const attachment = fromStorageInstanceResult(
         id,
         attachmentData,
         this
@@ -225,11 +237,12 @@ export function allAttachments(
     const docData: any = this._dataSync$.getValue();
 
     // if there are no attachments, the field is missing
-    if (!docData._attachments) return [];
-
+    if (!docData._attachments) {
+        return [];
+    }
     return Object.keys(docData._attachments)
         .map(id => {
-            return fromPouchDocument(
+            return fromStorageInstanceResult(
                 id,
                 docData._attachments[id],
                 this
@@ -237,36 +250,32 @@ export function allAttachments(
         });
 }
 
-export async function preMigrateDocument(
+export async function preMigrateDocument<RxDocType>(
     data: {
-        docData: WithAttachments<any>;
+        docData: RxDocumentData<RxDocType>;
         oldCollection: OldRxCollection
     }
 ): Promise<void> {
     const attachments = data.docData._attachments;
     if (attachments) {
         const mustDecrypt = !!shouldEncrypt(data.oldCollection.schema);
-        const newAttachments: { [attachmentId: string]: PouchAttachmentWithData } = {};
+        const newAttachments: { [attachmentId: string]: RxAttachmentWriteData } = {};
         await Promise.all(
             Object.keys(attachments).map(async (attachmentId) => {
-                const attachment: PouchAttachmentMeta = attachments[attachmentId];
-                const docPrimary: string = data.docData[data.oldCollection.schema.primaryPath];
+                const attachment: RxAttachmentData = attachments[attachmentId];
+                const docPrimary: string = (data.docData as any)[data.oldCollection.schema.primaryPath];
 
-                let rawAttachmentData = await data.oldCollection.pouchdb.getAttachment(docPrimary, attachmentId);
+                let rawAttachmentData = await data.oldCollection.storageInstance.getAttachmentData(docPrimary, attachmentId);
                 if (mustDecrypt) {
                     rawAttachmentData = await blobBufferUtil.toString(rawAttachmentData)
                         .then(dataString => blobBufferUtil.createBlobBuffer(
-                            data.oldCollection._crypter._decryptValue(dataString),
-                            (attachment as PouchAttachmentMeta).content_type as any
+                            data.oldCollection._crypter._decryptString(dataString),
+                            (attachment as RxAttachmentData).type as any
                         ));
                 }
 
                 newAttachments[attachmentId] = {
-                    digest: attachment.digest,
-                    length: attachment.length,
-                    revpos: attachment.revpos,
-                    content_type: attachment.content_type,
-                    stub: false, // set this to false because now we have the full data
+                    type: attachment.type,
                     data: rawAttachmentData
                 };
             })
@@ -276,11 +285,11 @@ export async function preMigrateDocument(
          * Hooks mutate the input
          * instead of returning stuff
          */
-        data.docData._attachments = newAttachments;
+        (data.docData as RxDocumentWriteData<RxDocType>)._attachments = newAttachments;
     }
 }
 
-export async function postMigrateDocument(action: any): Promise<void> {
+export async function postMigrateDocument(_action: any): Promise<void> {
     /**
      * No longer needed because
      * we store the attachemnts data buffers directly in the document.
@@ -299,8 +308,9 @@ export const prototypes = {
                 return this._dataSync$
                     .pipe(
                         map((data: any) => {
-                            if (!data['_attachments'])
+                            if (!data['_attachments']) {
                                 return {};
+                            }
                             return data['_attachments'];
                         }),
                         map((attachmentsData: any) => Object.entries(
@@ -309,7 +319,7 @@ export const prototypes = {
                         map(entries => {
                             return (entries as any)
                                 .map(([id, attachmentData]: any) => {
-                                    return fromPouchDocument(
+                                    return fromStorageInstanceResult(
                                         id,
                                         attachmentData,
                                         this

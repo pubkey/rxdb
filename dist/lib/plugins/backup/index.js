@@ -25,7 +25,11 @@ var _rxjs = require("rxjs");
 
 var _operators = require("rxjs/operators");
 
-var _pouchDb = require("../../pouch-db");
+var _rxError = require("../../rx-error");
+
+var _rxStorageHelper = require("../../rx-storage-helper");
+
+var _util = require("../../util");
 
 var _fileUtil = require("./file-util");
 
@@ -135,10 +139,10 @@ function addToBackupStates(db, state) {
     BACKUP_STATES_BY_DB.set(db, []);
   }
 
-  var ar = BACKUP_STATES_BY_DB.get(db);
+  var ar = (0, _util.getFromMapOrThrow)(BACKUP_STATES_BY_DB, db);
 
   if (!ar) {
-    throw new Error('this should never happen');
+    throw (0, _rxError.newRxError)('SNH');
   }
 
   ar.push(state);
@@ -232,7 +236,7 @@ var RxBackupState = /*#__PURE__*/function () {
 
                         case 4:
                           _context5.next = 6;
-                          return (0, _pouchDb.getNewestSequence)(collection.pouch);
+                          return (0, _rxStorageHelper.getNewestSequence)(collection.storageInstance);
 
                         case 6:
                           newestSeq = _context5.sent;
@@ -247,7 +251,7 @@ var RxBackupState = /*#__PURE__*/function () {
                           lastSequence = meta.collectionStates[collectionName].lastSequence;
                           hasMore = true;
                           _loop = /*#__PURE__*/_regenerator["default"].mark(function _loop() {
-                            var pouchChanges, docIds, docs;
+                            var changesResult, docIds, docs;
                             return _regenerator["default"].wrap(function _loop$(_context4) {
                               while (1) {
                                 switch (_context4.prev = _context4.next) {
@@ -257,28 +261,25 @@ var RxBackupState = /*#__PURE__*/function () {
 
                                   case 2:
                                     _context4.next = 4;
-                                    return collection.pouch.changes({
-                                      live: false,
-                                      since: lastSequence,
+                                    return collection.storageInstance.getChangedDocuments({
+                                      startSequence: lastSequence,
                                       limit: _this2.options.batchSize,
-                                      include_docs: false
+                                      order: 'asc'
                                     });
 
                                   case 4:
-                                    pouchChanges = _context4.sent;
-                                    lastSequence = pouchChanges.last_seq;
+                                    changesResult = _context4.sent;
+                                    lastSequence = changesResult.lastSequence;
                                     meta.collectionStates[collectionName].lastSequence = lastSequence;
-                                    docIds = pouchChanges.results.filter(function (doc) {
-                                      if (processedDocuments.has(doc.id) && doc.seq < newestSeq) {
+                                    docIds = changesResult.changedDocuments.filter(function (changedDocument) {
+                                      if (processedDocuments.has(changedDocument.id) && changedDocument.sequence < newestSeq) {
                                         return false;
                                       } else {
-                                        processedDocuments.add(doc.id);
+                                        processedDocuments.add(changedDocument.id);
                                         return true;
                                       }
                                     }).map(function (r) {
                                       return r.id;
-                                    }).filter(function (id) {
-                                      return !id.startsWith('_design/');
                                     }) // unique
                                     . // unique
                                     filter(function (elem, pos, arr) {
@@ -444,11 +445,7 @@ var RxBackupState = /*#__PURE__*/function () {
 
     var collections = Object.values(this.database.collections);
     collections.forEach(function (collection) {
-      var changes$ = (0, _rxjs.fromEvent)(collection.pouch.changes({
-        since: 'now',
-        live: true,
-        include_docs: false
-      }), 'change');
+      var changes$ = collection.storageInstance.changeStream();
       var sub = changes$.subscribe(function () {
         _this3.persistOnce();
       });

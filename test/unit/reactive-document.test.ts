@@ -12,12 +12,17 @@ import * as schemaObjects from '../helper/schema-objects';
 import {
     createRxDatabase,
     randomCouchString,
-    promiseWait,
-    RxChangeEvent
+    promiseWait
 } from '../../plugins/core';
+
+import {
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
+
 import {
     first
 } from 'rxjs/operators';
+import type { RxChangeEvent } from '../../src/types';
 
 config.parallel('reactive-document.test.js', () => {
     describe('.save()', () => {
@@ -34,19 +39,19 @@ config.parallel('reactive-document.test.js', () => {
                     emittedCollection.push(cE);
                 });
 
-                await doc.atomicSet('firstName', newName);
+                await doc.atomicPatch({ firstName: newName });
 
                 await AsyncTestUtil.waitUntil(() => emittedCollection.length === 1);
                 const docDataAfter = await doc.$.pipe(first()).toPromise();
 
 
-                const changeEvent: RxChangeEvent = emittedCollection[0];
+                const changeEvent: any = emittedCollection[0];
                 assert.strictEqual(changeEvent.documentData.firstName, newName);
-                assert.strictEqual(changeEvent.previousData.firstName, oldName);
+                assert.strictEqual(changeEvent.previousDocumentData.firstName, oldName);
 
 
-                assert.strictEqual(docDataAfter._id, doc.primary);
-                assert.strictEqual(docDataAfter._id, doc.primary);
+                assert.strictEqual(docDataAfter.passportId, doc.primary);
+                assert.strictEqual(docDataAfter.passportId, doc.primary);
                 colSub.unsubscribe();
                 c.database.destroy();
             });
@@ -60,7 +65,7 @@ config.parallel('reactive-document.test.js', () => {
                     valueObj.v = newVal;
                 });
                 const setName = randomCouchString(10);
-                await doc.atomicSet('firstName', setName);
+                await doc.atomicPatch({ firstName: setName });
                 await promiseWait(5);
                 assert.strictEqual(valueObj.v, setName);
                 c.database.destroy();
@@ -75,7 +80,12 @@ config.parallel('reactive-document.test.js', () => {
                     valueObj.v = newVal;
                 });
                 const setName = randomCouchString(10);
-                await doc.atomicSet('mainSkill.name', setName);
+                await doc.atomicPatch({
+                    mainSkill: {
+                        name: setName,
+                        level: 10
+                    }
+                });
                 promiseWait(5);
                 assert.strictEqual(valueObj.v, setName);
                 c.database.destroy();
@@ -87,7 +97,7 @@ config.parallel('reactive-document.test.js', () => {
                 const sub = doc.get$('firstName').subscribe((newVal: any) => v1 = newVal);
                 await promiseWait(5);
 
-                await doc.atomicSet('firstName', 'foobar');
+                await doc.atomicPatch({ firstName: 'foobar' });
 
                 let v2;
                 doc.get$('firstName').subscribe((newVal: any) => v2 = newVal);
@@ -146,12 +156,14 @@ config.parallel('reactive-document.test.js', () => {
             it('final fields cannot be observed', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
-                const col = await db.collection({
-                    name: 'humans',
-                    schema: schemas.humanFinal
+                const cols = await db.addCollections({
+                    humans: {
+                        schema: schemas.humanFinal
+                    }
                 });
+                const col = cols.humans;
                 const docData = schemaObjects.human();
                 await col.insert(docData);
                 const doc = await col.findOne().exec();

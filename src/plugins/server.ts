@@ -1,29 +1,34 @@
+import * as os from 'os';
+import * as nodePath from 'path';
+
 import express from 'express';
+import type { Express } from 'express';
 import corsFn from 'cors';
 
 import {
-    PouchDB
-} from '../pouch-db';
+    addPouchPlugin,
+    PouchDB,
+    RxStoragePouch
+} from '../plugins/pouchdb';
 import {
     newRxError
 } from '../rx-error';
 import type {
+    PouchDBExpressServerOptions,
     RxDatabase,
     RxPlugin,
     ServerResponse
 } from '../types';
 
 import {
-    addRxPlugin
+    addRxPlugin,
+    flatClone
 } from '../core';
-import { RxDBReplicationPlugin } from './replication';
-addRxPlugin(RxDBReplicationPlugin);
-
-import { RxDBWatchForChangesPlugin } from './watch-for-changes';
-addRxPlugin(RxDBWatchForChangesPlugin);
+import { RxDBReplicationCouchDBPlugin } from './replication-couchdb';
+addRxPlugin(RxDBReplicationCouchDBPlugin);
 
 import PouchAdapterHttp from 'pouchdb-adapter-http';
-addRxPlugin(PouchAdapterHttp);
+addPouchPlugin(PouchAdapterHttp);
 
 let ExpressPouchDB: any;
 try {
@@ -40,7 +45,7 @@ try {
 const PouchdbAllDbs = require('pouchdb-all-dbs');
 PouchdbAllDbs(PouchDB);
 
-const APP_OF_DB = new WeakMap();
+const APP_OF_DB: WeakMap<RxDatabase, Express> = new WeakMap();
 const SERVERS_OF_DB = new WeakMap();
 const DBS_WITH_SERVER = new WeakSet();
 
@@ -53,9 +58,13 @@ const normalizeDbName = function (db: RxDatabase) {
 const getPrefix = function (db: RxDatabase) {
     const splitted = db.name.split('/').filter((str: string) => str !== '');
     splitted.pop(); // last was the name
-    if (splitted.length === 0) return '';
+    if (splitted.length === 0) {
+        return '';
+    }
     let ret = splitted.join('/') + '/';
-    if (db.name.startsWith('/')) ret = '/' + ret;
+    if (db.name.startsWith('/')) {
+        ret = '/' + ret;
+    }
     return ret;
 };
 
@@ -63,12 +72,11 @@ const getPrefix = function (db: RxDatabase) {
  * tunnel requests so collection-names can be used as paths
  */
 function tunnelCollectionPath(
-    db: any,
+    db: RxDatabase,
     path: string,
-    app: any,
+    app: Express,
     colName: string
 ) {
-    db[colName].watchForChanges();
     const pathWithSlash = path.endsWith('/') ? path : path + '/';
     const collectionPath = pathWithSlash + colName;
     app.use(collectionPath, async function (req: any, res: any, next: any) {
@@ -87,7 +95,7 @@ function tunnelCollectionPath(
     });
 }
 
-export function spawnServer(
+export async function spawnServer(
     this: RxDatabase,
     {
         path = '/db',
@@ -96,14 +104,21 @@ export function spawnServer(
         startServer = true,
         pouchdbExpressOptions = {}
     }
-): ServerResponse {
-    const db = this;
+): Promise<ServerResponse> {
+    const db: RxDatabase = this;
     const collectionsPath = startServer ? path : '/';
-    if (!SERVERS_OF_DB.has(db))
+    if (!SERVERS_OF_DB.has(db)) {
         SERVERS_OF_DB.set(db, []);
+    }
+
+    const storage: RxStoragePouch = db.storage as any;
+    if (!storage.adapter) {
+        throw new Error('The RxDB server plugin only works with pouchdb storage.');
+    }
+
 
     const pseudo = PouchDB.defaults({
-        adapter: db.adapter,
+        adapter: storage.adapter,
         prefix: getPrefix(db),
         log: false
     });
@@ -111,8 +126,12 @@ export function spawnServer(
     const app = express();
     APP_OF_DB.set(db, app);
 
-    // tunnel requests so collection-names can be used as paths
-    Object.keys(db.collections).forEach(colName => tunnelCollectionPath(db, collectionsPath, app, colName));
+    Object.keys(db.collections).forEach(colName => {
+        // tunnel requests so collection-names can be used as paths
+        tunnelCollectionPath(db, collectionsPath, app, colName);
+    });
+
+
 
     // remember to throw error if collection is created after the server is already there
     DBS_WITH_SERVER.add(db);
@@ -128,7 +147,23 @@ export function spawnServer(
         }));
     }
 
-    const pouchApp = ExpressPouchDB(pseudo, pouchdbExpressOptions);
+    /**
+     * Overwrite the defaults of PouchDBExpressServerOptions.
+     * In RxDB the defaults should not polute anything with folders so we store the config in memory
+     * and the logs in the tmp folder of the os.
+     */
+    const usePouchExpressOptions: PouchDBExpressServerOptions = flatClone(pouchdbExpressOptions);
+    if (typeof usePouchExpressOptions.inMemoryConfig === 'undefined') {
+        usePouchExpressOptions.inMemoryConfig = true;
+    }
+    if (typeof usePouchExpressOptions.logPath === 'undefined') {
+        usePouchExpressOptions.logPath = nodePath.join(
+            os.tmpdir(),
+            'rxdb-server-log.txt'
+        );
+    }
+
+    const pouchApp = ExpressPouchDB(pseudo, usePouchExpressOptions);
     app.use(collectionsPath, pouchApp);
 
     let server = null;
@@ -136,7 +171,6 @@ export function spawnServer(
     if (startServer) {
         /**
          * Listen for errors on server startup.
-         * TODO in the next major release we should make db.server() async
          * and properly handle the error instead of returning a startupPromise
          */
         startupPromise = new Promise((res, rej) => {
@@ -174,11 +208,12 @@ export function spawnServer(
         );
     }
 
+
+    await startupPromise;
     const response: ServerResponse = {
         app,
         pouchApp,
-        server,
-        startupPromise
+        server
     };
     return response;
 }

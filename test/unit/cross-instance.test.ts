@@ -6,15 +6,22 @@
  */
 
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
+import AsyncTestUtil, { wait } from 'async-test-util';
 
 import config from './config';
 import {
     isRxDatabase,
     createRxDatabase,
     randomCouchString,
-    promiseWait
+    promiseWait,
+    RxDatabase,
 } from '../../plugins/core';
+
+import {
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
+
+
 import * as schemas from './../helper/schemas';
 import * as schemaObjects from './../helper/schema-objects';
 import * as humansCollection from './../helper/humans-collection';
@@ -24,7 +31,7 @@ config.parallel('cross-instance.test.js', () => {
         it('create a multiInstance database', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 multiInstance: true
             });
             assert.ok(isRxDatabase(db));
@@ -34,13 +41,13 @@ config.parallel('cross-instance.test.js', () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 multiInstance: true,
                 ignoreDuplicate: true
             });
             const db2 = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 multiInstance: true,
                 ignoreDuplicate: true
             });
@@ -56,13 +63,13 @@ config.parallel('cross-instance.test.js', () => {
                 const name = randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);
-                const db1 = c1.database;
-                const db2 = c2.database;
+                const db1: RxDatabase = c1.database;
+                const db2: RxDatabase = c2.database;
 
                 let recieved = 0;
                 db2.$.subscribe(cEvent => {
                     recieved++;
-                    assert.strictEqual(cEvent.constructor.name, 'RxChangeEvent');
+                    assert.ok(cEvent.operation);
                 });
                 await c1.insert(schemaObjects.human());
                 await AsyncTestUtil.waitUntil(async () => {
@@ -75,20 +82,27 @@ config.parallel('cross-instance.test.js', () => {
         });
         describe('negative', () => {
             it('should not get the same events twice', async () => {
+
                 const name = randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);
-                const db1 = c1.database;
-                const db2 = c2.database;
-                let recieved = 0;
+                const db1: RxDatabase = c1.database;
+                const db2: RxDatabase = c2.database;
+
+                const emitted: any[] = [];
                 db2.$.subscribe(cEvent => {
-                    recieved++;
-                    assert.strictEqual(cEvent.constructor.name, 'RxChangeEvent');
+                    emitted.push(cEvent);
+                    assert.ok(cEvent.operation);
                 });
                 await c1.insert(schemaObjects.human());
+                await wait(100);
 
                 await AsyncTestUtil.waitUntil(async () => {
-                    return recieved === 1;
+                    if (emitted.length > 1) {
+                        console.dir(emitted);
+                        throw new Error('got too many events ' + emitted.length);
+                    }
+                    return emitted.length === 1;
                 });
 
                 db1.destroy();
@@ -104,7 +118,7 @@ config.parallel('cross-instance.test.js', () => {
             let recieved = 0;
             c2.$.subscribe(cEvent => {
                 recieved++;
-                assert.strictEqual(cEvent.constructor.name, 'RxChangeEvent');
+                assert.ok(cEvent.operation);
             });
             await c1.insert(schemaObjects.human());
 
@@ -119,7 +133,7 @@ config.parallel('cross-instance.test.js', () => {
             const c1 = await humansCollection.create(0);
             const c2 = await humansCollection.create(0);
             let got;
-            c2.pouch.changes({
+            c2.storageInstance.internals.pouch.changes({
                 since: 'now',
                 live: true,
                 include_docs: true
@@ -156,7 +170,7 @@ config.parallel('cross-instance.test.js', () => {
                 firstNameAfter = newValue;
             });
 
-            await doc1.atomicSet('firstName', 'foobar');
+            await doc1.atomicPatch({ firstName: 'foobar' });
 
             await promiseWait(10);
             await AsyncTestUtil.waitUntil(() => firstNameAfter === 'foobar');
@@ -170,33 +184,35 @@ config.parallel('cross-instance.test.js', () => {
             const password = randomCouchString(10);
             const db1 = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 password,
                 multiInstance: true,
                 ignoreDuplicate: true
             });
             const db2 = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 password,
                 multiInstance: true,
                 ignoreDuplicate: true
             });
-            const c1 = await db1.collection({
-                name: 'human',
-                schema: schemas.encryptedHuman
+            const c1 = await db1.addCollections({
+                human: {
+                    schema: schemas.encryptedHuman
+                }
             });
-            const c2 = await db2.collection({
-                name: 'human',
-                schema: schemas.encryptedHuman
+            const c2 = await db2.addCollections({
+                human: {
+                    schema: schemas.encryptedHuman
+                }
             });
-            await c1.insert(schemaObjects.encryptedHuman());
+            await c1.human.insert(schemaObjects.encryptedHuman());
 
-            const doc1 = await c1.findOne().exec(true);
-            const doc2 = await c2.findOne().exec(true);
+            const doc1 = await c1.human.findOne().exec(true);
+            const doc2 = await c2.human.findOne().exec(true);
 
             let recievedCollection = 0;
-            c2.$.subscribe(() => {
+            c2.human.$.subscribe(() => {
                 recievedCollection = recievedCollection + 1;
             });
 
@@ -210,7 +226,7 @@ config.parallel('cross-instance.test.js', () => {
                 secretAfter = newValue;
             });
 
-            await doc1.atomicSet('secret', 'foobar');
+            await doc1.atomicPatch({ secret: 'foobar' });
 
             await AsyncTestUtil.waitUntil(() => secretAfter === 'foobar');
             assert.strictEqual(secretAfter, 'foobar');
@@ -223,33 +239,35 @@ config.parallel('cross-instance.test.js', () => {
             const password = randomCouchString(10);
             const db1 = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 password,
                 multiInstance: true,
                 ignoreDuplicate: true
             });
             const db2 = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 password,
                 multiInstance: true,
                 ignoreDuplicate: true
             });
-            const c1 = await db1.collection({
-                name: 'human',
-                schema: schemas.encryptedObjectHuman
+            const c1 = await db1.addCollections({
+                human: {
+                    schema: schemas.encryptedObjectHuman
+                }
             });
-            const c2 = await db2.collection({
-                name: 'human',
-                schema: schemas.encryptedObjectHuman
+            const c2 = await db2.addCollections({
+                human: {
+                    schema: schemas.encryptedObjectHuman
+                }
             });
-            await c1.insert(schemaObjects.encryptedObjectHuman());
+            await c1.human.insert(schemaObjects.encryptedObjectHuman());
 
-            const doc1 = await c1.findOne().exec(true);
-            const doc2 = await c2.findOne().exec(true);
+            const doc1 = await c1.human.findOne().exec(true);
+            const doc2 = await c2.human.findOne().exec(true);
 
             let recievedCollection = 0;
-            c2.$.subscribe(() => {
+            c2.human.$.subscribe(() => {
                 recievedCollection = recievedCollection + 1;
             });
 
@@ -263,9 +281,11 @@ config.parallel('cross-instance.test.js', () => {
                 secretAfter = newValue;
             });
 
-            await doc1.atomicSet('secret', {
-                name: 'foo',
-                subname: 'bar'
+            await doc1.atomicPatch({
+                secret: {
+                    name: 'foo',
+                    subname: 'bar'
+                }
             });
 
             await AsyncTestUtil.waitUntil(() => secretAfter.name === 'foo');
@@ -289,7 +309,7 @@ config.parallel('cross-instance.test.js', () => {
                 let recieved = 0;
                 c2.$.subscribe(cEvent => {
                     recieved++;
-                    assert.strictEqual(cEvent.constructor.name, 'RxChangeEvent');
+                    assert.ok(cEvent.operation);
                     waitPromise.resolve();
                 });
                 await c1.insert(schemaObjects.human());
@@ -303,10 +323,11 @@ config.parallel('cross-instance.test.js', () => {
                 const name = randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);
+
                 let recieved = 0;
                 c2.$.subscribe(cEvent => {
                     recieved++;
-                    assert.strictEqual(cEvent.constructor.name, 'RxChangeEvent');
+                    assert.ok(cEvent.operation);
                 });
 
                 await c1.insert(schemaObjects.human());
