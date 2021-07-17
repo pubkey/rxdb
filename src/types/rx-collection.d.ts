@@ -51,9 +51,11 @@ export type RxCacheReplacementPolicy = (collection: RxCollection, queryCache: Qu
 
 export type RxCollectionHookCallback<
     RxDocumentType,
-    OrmMethods
+    OrmMethods,
+    MiddlewareInputType
     > = (
-        data: RxDocumentType,
+        this: RxCollection<RxDocumentType, OrmMethods>,
+        data: MiddlewareInputType,
         instance: RxDocument<RxDocumentType, OrmMethods>
     ) => void | Promise<void> | any;
 export type RxCollectionHookNoInstance<RxDocumentType, OrmMethods> = (data: RxDocumentType) => void | Promise<void> | any;
@@ -63,29 +65,31 @@ export type RxCollectionHookCallbackNonAsync<RxDocumentType, OrmMethods> = (
 ) => void | any;
 export type RxCollectionHookNoInstanceCallback<
     RxDocumentType,
-    OrmMethods
+    OrmMethods,
+    MiddlewareInputType
     > = (
-        data: RxDocumentType,
-        instance: RxCollection<RxDocumentType, OrmMethods>
+        this: RxCollection<RxDocumentType, OrmMethods>,
+        data: MiddlewareInputType,
     ) => Promise<void> | void | any;
 
 export type RxCollection<
     RxDocumentType = any,
     OrmMethods = {},
-    StaticMethods = { [key: string]: any }
+    StaticMethods = { [key: string]: any },
+    MiddlewareInputType = RxDocument<RxDocumentType, OrmMethods>
     > = RxCollectionBase<RxDocumentType, OrmMethods> &
-    RxCollectionGenerated<RxDocumentType, OrmMethods> &
+    RxCollectionGenerated<RxDocumentType, OrmMethods, MiddlewareInputType> &
     StaticMethods;
 
-export interface RxCollectionGenerated<RxDocumentType = any, OrmMethods = {}> extends RxLocalDocumentMutation<RxCollection<RxDocumentType, OrmMethods>> {
+export interface RxCollectionGenerated<RxDocumentType = any, OrmMethods = {}, MiddlewareInputType = any> extends RxLocalDocumentMutation<RxCollection<RxDocumentType, OrmMethods>> {
 
     // HOOKS
-    preInsert(fun: RxCollectionHookNoInstanceCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
-    preSave(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
-    preRemove(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
-    postInsert(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
-    postSave(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
-    postRemove(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
+    preInsert(fun: RxCollectionHookNoInstanceCallback<RxDocumentType, OrmMethods, MiddlewareInputType>, parallel: boolean): void;
+    preSave(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods, MiddlewareInputType>, parallel: boolean): void;
+    preRemove(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods, MiddlewareInputType>, parallel: boolean): void;
+    postInsert(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods, MiddlewareInputType>, parallel: boolean): void;
+    postSave(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods, MiddlewareInputType>, parallel: boolean): void;
+    postRemove(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods, MiddlewareInputType>, parallel: boolean): void;
     postCreate(fun: RxCollectionHookCallbackNonAsync<RxDocumentType, OrmMethods>): void;
 
     // only inMemory-collections
