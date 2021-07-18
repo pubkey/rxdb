@@ -48,7 +48,10 @@ jobs:
         run: npm run test:performance
 
       - name: node example
-        run: cd ./examples/node && npm install && npm run test
+        working-directory: ./examples/node
+        run: |
+          npm install
+          npm run test
 
 
   angular:
@@ -85,8 +88,9 @@ jobs:
       - name: angular build
         working-directory: ./examples/angular
         run: |
-          npm install > "/dev/null" 2>&1
-          npm run lint && npm run build
+          npm install
+          npm run lint
+          npm run build
 
       - name: angular test
         # uses: DevExpress/testcafe-action@latest
@@ -160,7 +164,7 @@ jobs:
           npm run build
       - name: electron install
         working-directory: ./examples/electron
-        run: npm install > "/dev/null" 2>&1
+        run: npm install
 
       # TODO I had to disable that again because the tests randomly fail. We need to upgrade electron and spectron
       #- name: electron test
@@ -171,7 +175,7 @@ jobs:
 
       - name: electron-remote install
         working-directory: ./examples/electron-remote
-        run: npm install > "/dev/null" 2>&1
+        run: npm install
 
       - name: electron-remote test
         uses: GabrielBB/xvfb-action@v1.5
@@ -197,7 +201,7 @@ jobs:
       - name: react install
         run: |
           cd ./examples/react
-          npm install > "/dev/null" 2>&1
+          npm install
           npm run build
 
       - name: react test
@@ -237,7 +241,7 @@ jobs:
       - name: react-native
         run: |
           cd ./examples/react-native
-          npx yarn@1.13.0 install > "/dev/null" 2>&1
+          npx yarn@1.13.0 install
           npm run test
           echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
           sudo sysctl -p
@@ -259,9 +263,11 @@ jobs:
           npm run build
           rm -r node_modules
       - name: vue build
+        working-directory: ./examples/vue
         run: |
-          cd ./examples/vue && npm install > "/dev/null" 2>&1
-          npm run lint && npm run build
+          npm install
+          npm run lint
+          npm run build
         
       - name: vue test
         uses: GabrielBB/xvfb-action@v1
