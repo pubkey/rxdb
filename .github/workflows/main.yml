@@ -88,6 +88,7 @@ jobs:
       - name: angular build
         working-directory: ./examples/angular
         run: |
+          npm run preinstall
           npm install --legacy-peer-deps
           npm run lint
           npm run build
