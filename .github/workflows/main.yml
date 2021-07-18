@@ -81,7 +81,7 @@ jobs:
 
       - name: prepare core
         run: |
-          npm install
+          npm install --legacy-peer-deps
           npm run build
           rm -r node_modules
 
@@ -160,7 +160,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y chromium-browser
       - name: prepare core
         run: |
-          npm install
+          npm install --legacy-peer-deps
           npm run build
       - name: electron install
         working-directory: ./examples/electron
@@ -175,7 +175,7 @@ jobs:
 
       - name: electron-remote install
         working-directory: ./examples/electron-remote
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       - name: electron-remote test
         uses: GabrielBB/xvfb-action@v1.5
@@ -259,7 +259,7 @@ jobs:
           node-version: 16.5.0
       - name: prepare core
         run: |
-          npm install
+          npm install --legacy-peer-deps
           npm run build
           rm -r node_modules
       - name: vue build
