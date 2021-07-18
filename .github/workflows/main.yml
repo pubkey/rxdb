@@ -88,7 +88,7 @@ jobs:
       - name: angular build
         working-directory: ./examples/angular
         run: |
-          npm install
+          npm install --legacy-peer-deps
           npm run lint
           npm run build
 
@@ -164,7 +164,7 @@ jobs:
           npm run build
       - name: electron install
         working-directory: ./examples/electron
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       # TODO I had to disable that again because the tests randomly fail. We need to upgrade electron and spectron
       #- name: electron test
@@ -195,13 +195,13 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y chromium-browser
       - name: prepare core
         run: |
-          npm install
+          npm install --legacy-peer-deps
           npm run build
           rm -r node_modules
       - name: react install
         run: |
           cd ./examples/react
-          npm install
+          npm install --legacy-peer-deps
           npm run build
 
       - name: react test
@@ -265,7 +265,7 @@ jobs:
       - name: vue build
         working-directory: ./examples/vue
         run: |
-          npm install
+          npm install --legacy-peer-deps
           npm run lint
           npm run build
         
