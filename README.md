@@ -278,7 +278,7 @@ const mySchema = {
 <summary>
   <b>Mango / Chained queries</b>
   <p>
-RxDB can be queried by standard NoSQL mango queries, like you maybe know from other NoSQL Databases like **mongoDB**.
+RxDB can be queried by standard NoSQL mango queries, like you maybe know from other NoSQL Databases like <b>mongoDB</b>.
 
 Also you can use the [mquery](https://github.com/aheckmann/mquery) api to create chained mango-queries.
   </p>
