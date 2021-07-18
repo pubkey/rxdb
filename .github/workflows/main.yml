@@ -63,7 +63,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v2.1.5
         with:
-          node-version: 16.5.0
+          node-version: 14.17.3
 
       - name: Reuse npm cache folder
         uses: actions/cache@v2
