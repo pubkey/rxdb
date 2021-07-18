@@ -165,7 +165,9 @@ jobs:
           npm run build
       - name: electron install
         working-directory: ./examples/electron
-        run: npm install --legacy-peer-deps
+        run: |
+          npm run preinstall
+          npm install --legacy-peer-deps
 
       # TODO I had to disable that again because the tests randomly fail. We need to upgrade electron and spectron
       #- name: electron test
@@ -176,7 +178,8 @@ jobs:
 
       - name: electron-remote install
         working-directory: ./examples/electron-remote
-        run: npm install --legacy-peer-deps
+        run: |
+          npm install --legacy-peer-deps
 
       - name: electron-remote test
         uses: GabrielBB/xvfb-action@v1.5
@@ -200,8 +203,9 @@ jobs:
           npm run build
           rm -r node_modules
       - name: react install
+        working-directory: ./examples/react
         run: |
-          cd ./examples/react
+          npm run preinstall
           npm install --legacy-peer-deps
           npm run build
 
@@ -266,6 +270,7 @@ jobs:
       - name: vue build
         working-directory: ./examples/vue
         run: |
+          npm run preinstall
           npm install --legacy-peer-deps
           npm run lint
           npm run build
