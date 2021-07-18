@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "preinstall": "npm run preinstall:rxdb && npm run preinstall:versions",
-    "preinstall:rxdb": "(cd ../../ && npx yarn@1.13.0 pack ../../ --filename ./examples/angular/rxdb-local.tgz)",
+    "preinstall:rxdb": "(cd ../../ && npx yarn@1.22.10 pack ../../ --filename ./examples/angular/rxdb-local.tgz)",
     "preinstall:versions": "node ./scripts/ensure-equal-versions.js",
     "postinstall": "ngcc",
     "start": "concurrently \"npm run server\" \"npm run dev\"",
