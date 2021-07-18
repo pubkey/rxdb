@@ -81,14 +81,14 @@ jobs:
 
       - name: prepare core
         run: |
-          npm install --legacy-peer-deps
+          npm install --force
           npm run build
           rm -r node_modules
 
       - name: angular build
         working-directory: ./examples/angular
         run: |
-          npm install --legacy-peer-deps
+          npm install --force
           npm run lint
           npm run build
 
