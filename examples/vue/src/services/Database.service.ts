@@ -23,6 +23,11 @@ import {
     addRxPlugin
 } from 'rxdb/plugins/core';
 
+import {
+    addPouchPlugin,
+    getRxStoragePouch
+} from 'rxdb/plugins/pouchdb';
+
 // import modules
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 
@@ -38,38 +43,24 @@ addRxPlugin(RxDBValidatePlugin);
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
 addRxPlugin(RxDBLeaderElectionPlugin);
 
-import { RxDBReplicationPlugin } from 'rxdb/plugins/replication';
-addRxPlugin(RxDBReplicationPlugin);
+import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb';
+addRxPlugin(RxDBReplicationCouchDBPlugin);
 
 // always needed for replication with the node-server
 import * as PouchdbAdapterHttp from 'pouchdb-adapter-http';
-addRxPlugin(PouchdbAdapterHttp);
+addPouchPlugin(PouchdbAdapterHttp);
 
 
 import * as PouchdbAdapterIdb from 'pouchdb-adapter-idb';
-addRxPlugin(PouchdbAdapterIdb);
+addPouchPlugin(PouchdbAdapterIdb);
 const useAdapter = 'idb';
 
-
-const collections = [
-    {
-        name: 'heroes',
-        schema: heroSchema,
-        methods: {
-            hpPercent(this: RxHeroDocument): number {
-                return this.hp / this.maxHP * 100;
-            }
-        },
-        sync: true
-    }
-];
 
 console.log('hostname: ' + window.location.hostname);
 const syncURL = 'http://' + window.location.hostname + ':10101/';
 
 let doSync = true;
 if (window.location.hash === '#nosync') { doSync = false; }
-
 
 /**
  * creates the database
@@ -78,7 +69,7 @@ async function _create(): Promise<RxHeroesDatabase> {
     console.log('DatabaseService: creating database..');
     const db = await createRxDatabase<RxHeroesCollections>({
         name: 'heroes',
-        adapter: useAdapter,
+        storage: getRxStoragePouch(useAdapter)
         // password: 'myLongAndStupidPassword' // no password needed
     });
     console.log('DatabaseService: created database');
@@ -93,7 +84,17 @@ async function _create(): Promise<RxHeroesDatabase> {
 
     // create collections
     console.log('DatabaseService: create collections');
-    await Promise.all(collections.map((colData) => db.collection(colData)));
+
+    await db.addCollections({
+        heroes: {
+            schema: heroSchema,
+            methods: {
+                hpPercent(this: RxHeroDocument): number {
+                    return this.hp / this.maxHP * 100;
+                }
+            }
+        }
+    });
 
     // hooks
     console.log('DatabaseService: add hooks');
@@ -117,7 +118,7 @@ async function _create(): Promise<RxHeroesDatabase> {
 
     // sync with server
     console.log('DatabaseService: sync');
-    await db.heroes.sync({
+    await db.heroes.syncCouchDB({
         remote: syncURL + '/hero'
     });
 

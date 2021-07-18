@@ -18,6 +18,7 @@ export interface SimpleHumanDocumentType {
     lastName: string;
 }
 export interface AgeHumanDocumentType {
+    passportId: string;
     age: number;
 }
 export interface HumanDocumentType extends SimpleHumanDocumentType, AgeHumanDocumentType { }
@@ -316,12 +317,6 @@ export interface HumanWithTimestampDocumentType {
     name: string;
     age: number;
     updatedAt: number;
-    _rev?: string;
-    _revisions?: {
-        start: number;
-        ids: [string];
-    };
-    last_pulled_rev?: string;
 }
 export function humanWithTimestamp(): HumanWithTimestampDocumentType {
     const now = new Date().getTime() / 1000;
@@ -363,24 +358,15 @@ export function averageSchema(): AverageSchemaDocumentType {
 }
 
 export interface PointDocumentType {
+    id: string;
     x: number;
     y: number;
 }
 export function point(): PointDocumentType {
     return {
+        id: randomToken(12),
         x: faker.datatype.number(),
         y: faker.datatype.number()
-    };
-}
-
-export interface IdPrimaryDocumentType {
-    _id: string;
-    firstName: string;
-}
-export function _idPrimary(): IdPrimaryDocumentType {
-    return {
-        _id: randomToken(12),
-        firstName: faker.name.firstName()
     };
 }
 
@@ -394,5 +380,24 @@ export function humanWithIdAndAgeIndexDocumentType(): HumanWithIdAndAgeIndexDocu
         id: randomToken(12),
         name: faker.name.firstName(),
         age: randomNumber(1, 100)
+    };
+}
+
+export type HumanWithCompositePrimary = {
+    // optional because it might be created by RxDB and not known before
+    id?: string;
+    firstName: string;
+    lastName: string;
+    info: {
+        age: number;
+    }
+};
+export function humanWithCompositePrimary(): HumanWithCompositePrimary {
+    return {
+        firstName: faker.name.firstName(),
+        lastName: faker.name.lastName(),
+        info: {
+            age: randomNumber(10, 50)
+        }
     };
 }

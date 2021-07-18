@@ -11,16 +11,13 @@ import {
     tap
 } from 'rxjs/operators';
 import {
-    massageSelector,
-    filterInMemoryFields
-} from 'pouchdb-selector-core';
-import {
     sortObject,
     stringifyFilter,
     pluginMissing,
     clone,
     overwriteGetterForCaching,
-    now
+    now,
+    promiseWait
 } from './util';
 import {
     newRxError,
@@ -36,16 +33,18 @@ import type {
     RxQuery,
     MangoQuery,
     MangoQuerySortPart,
-    MangoQuerySelector
+    MangoQuerySelector,
+    PreparedQuery,
+    RxChangeEvent
 } from './types';
 
 import {
     createRxDocuments
 } from './rx-document-prototype-merge';
-import type { RxChangeEvent } from './rx-change-event';
 import { calculateNewResults } from './event-reduce';
-import { PreparedQuery } from './rx-storate.interface';
 import { triggerCacheReplacement } from './query-cache';
+import type { QueryMatcher } from 'event-reduce-js';
+import { _handleToStorageInstance } from './rx-collection-helper';
 
 let _queryCount = 0;
 const newQueryID = function (): number {
@@ -95,17 +94,24 @@ export class RxQueryBase<
                     mergeMap((docs: any[]) => {
                         return _ensureEqual(this as any)
                             .then((hasChanged: any) => {
-                                if (hasChanged) return false; // wait for next emit
-                                else return docs;
+                                if (hasChanged) {
+                                    // wait for next emit
+                                    return false;
+                                } else {
+                                    return docs;
+                                }
                             });
                     }),
                     filter((docs: any[]) => !!docs), // not if previous returned false
                     map((docs: any[]) => {
-                        // findOne()-queries emit document or null
                         if (this.op === 'findOne') {
+                            // findOne()-queries emit document or null
                             const doc = docs.length === 0 ? null : docs[0];
                             return doc;
-                        } else return docs; // find()-queries emit RxDocument[]
+                        } else {
+                            // find()-queries emit RxDocument[]
+                            return docs;
+                        }
                     }),
                     map(docs => {
                         // copy the array so it wont matter if the user modifies it
@@ -173,6 +179,7 @@ export class RxQueryBase<
      */
     _setResultData(newResultData: any[]): RxDocument[] {
         this._resultsData = newResultData;
+
         const docs = createRxDocuments(
             this.collection,
             this._resultsData
@@ -192,10 +199,10 @@ export class RxQueryBase<
         let docsPromise;
         switch (this.op) {
             case 'find':
-                docsPromise = this.collection._pouchFind(this as any);
+                docsPromise = this.collection._queryStorageInstance(this as any);
                 break;
             case 'findOne':
-                docsPromise = this.collection._pouchFind(this as any, 1);
+                docsPromise = this.collection._queryStorageInstance(this as any, 1);
                 break;
             default:
                 throw newRxError('QU1', {
@@ -257,14 +264,16 @@ export class RxQueryBase<
 
 
     /**
-     * cached call to get the massageSelector
+     * cached call to get the queryMatcher
      * @overwrites itself with the actual value
      */
-    get massageSelector(): any {
+    get queryMatcher(): QueryMatcher<RxDocumentType> {
         return overwriteGetterForCaching(
             this,
-            'massageSelector',
-            massageSelector(this.mangoQuery.selector)
+            'queryMatcher',
+            this.collection.storageInstance.getQueryMatcher(
+                this.toJSON()
+            )
         );
     }
 
@@ -285,32 +294,23 @@ export class RxQueryBase<
 
     /**
      * returns the prepared query
+     * which can be send to the storage instance to query for documents.
      * @overwrites itself with the actual value
+     * TODO rename this function, toJSON is missleading
+     * because we do not return the plain mango query object.
      */
     toJSON(): PreparedQuery<RxDocumentType> {
-        const value = this.collection.database.storage.prepareQuery(
-            this.asRxQuery,
-            clone(this.mangoQuery)
+        const hookInput = {
+            rxQuery: this,
+            // can be mutated by the hooks so we have to deep clone first.
+            mangoQuery: clone(this.mangoQuery)
+        };
+        runPluginHooks('prePrepareQuery', hookInput);
+
+        const value = this.collection.storageInstance.prepareQuery(
+            hookInput.mangoQuery
         );
         this.toJSON = () => value;
-        return value;
-    }
-
-    /**
-     * returns the key-compressed version of the query
-     * @overwrites itself with the actual value
-     */
-    keyCompress(): MangoQuery<any> {
-        let value: MangoQuery<any>;
-        if (!this.collection.schema.doKeyCompression()) {
-            value = this.toJSON();
-        } else {
-            value = this
-                .collection
-                ._keyCompressor
-                .compressQuery(this.toJSON());
-        }
-        this.keyCompress = () => value;
         return value;
     }
 
@@ -321,27 +321,13 @@ export class RxQueryBase<
      */
     doesDocumentDataMatch(docData: RxDocumentType | any): boolean {
         // if doc is deleted, it cannot match
-        if (docData._deleted) return false;
-        docData = this.collection.schema.swapPrimaryToId(docData);
+        if (docData._deleted) {
+            return false;
+        }
 
-        // return matchesSelector(docData, selector);
-
-        /**
-         * the following is equal to the implementation of pouchdb
-         * we do not use matchesSelector() directly so we can cache the
-         * result of massageSelector
-         * @link https://github.com/pouchdb/pouchdb/blob/master/packages/node_modules/pouchdb-selector-core/src/matches-selector.js
-         */
-        const selector = this.massageSelector;
-        const row = {
-            doc: docData
-        };
-        const rowsMatched = filterInMemoryFields(
-            [row],
-            { selector: selector },
-            Object.keys(selector)
+        return this.queryMatcher(
+            _handleToStorageInstance(this.collection, docData)
         );
-        return rowsMatched && rowsMatched.length === 1;
     }
 
     /**
@@ -354,8 +340,11 @@ export class RxQueryBase<
             .exec()
             .then(docs => {
                 ret = docs;
-                if (Array.isArray(docs)) return Promise.all(docs.map(doc => doc.remove()));
-                else return (docs as any).remove();
+                if (Array.isArray(docs)) {
+                    return Promise.all(docs.map(doc => doc.remove()));
+                } else {
+                    return (docs as any).remove();
+                }
             })
             .then(() => ret);
     }
@@ -463,11 +452,10 @@ function _isResultsInSync(rxQuery: RxQueryBase): boolean {
  */
 function _ensureEqual(rxQuery: RxQueryBase): Promise<boolean> {
     rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue
-        .then(() => new Promise(res => setTimeout(res, 0)))
+        .then(() => promiseWait(0))
         .then(() => __ensureEqual(rxQuery))
         .then(ret => {
-            return new Promise(res => setTimeout(res, 0))
-                .then(() => ret);
+            return promiseWait(0).then(() => ret);
         });
     return rxQuery._ensureEqualQueue;
 }
@@ -510,13 +498,11 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
              * we have to filter out the events that happend before the read has started
              * so that we do not fill event-reduce with the wrong data
              */
-            missedChangeEvents = missedChangeEvents.filter((cE: RxChangeEvent) => {
+            missedChangeEvents = missedChangeEvents.filter((cE: RxChangeEvent<any>) => {
                 return !cE.startTime || cE.startTime > rxQuery._lastExecStart;
             });
 
-
-
-            const runChangeEvents: RxChangeEvent[] = ((rxQuery as any).collection as RxCollection)
+            const runChangeEvents: RxChangeEvent<any>[] = ((rxQuery as any).collection as RxCollection)
                 ._changeEventBuffer
                 .reduceByLastOfDoc(missedChangeEvents);
 
@@ -531,6 +517,7 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
                 rxQuery as any,
                 runChangeEvents
             );
+
             if (eventReduceResult.runFullQueryAgain) {
                 // could not calculate the new results, execute must be done
                 mustReExec = true;

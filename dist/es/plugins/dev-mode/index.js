@@ -6,6 +6,23 @@ import { ensureCollectionNameValid, ensureDatabaseNameIsValid } from './unallowe
 import { checkQuery } from './check-query';
 import { newRxError } from '../../rx-error';
 export * from './check-schema';
+export * from './check-names';
+import deepFreeze from 'deep-freeze';
+/**
+ * Deep freezes and object when in dev-mode.
+ * Deep-Freezing has the same performaance as deep-cloning, so we only do that in dev-mode.
+ * Also we can ensure the readonly state via typescript
+ * @link https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
+ */
+
+export function deepFreezeWhenDevMode(obj) {
+  // direct return if falsy
+  if (!obj) {
+    return obj;
+  }
+
+  return deepFreeze(obj);
+}
 var DEV_MODE_PLUGIN_NAME = 'dev-mode';
 export var RxDBDevModePlugin = {
   name: DEV_MODE_PLUGIN_NAME,
@@ -14,6 +31,7 @@ export var RxDBDevModePlugin = {
     isDevMode: function isDevMode() {
       return true;
     },
+    deepFreezeWhenDevMode: deepFreezeWhenDevMode,
     tunnelErrorMessage: function tunnelErrorMessage(code) {
       if (!ERROR_MESSAGES[code]) {
         console.error('RxDB: Error-Code not known: ' + code);

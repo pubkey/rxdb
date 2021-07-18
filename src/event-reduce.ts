@@ -2,10 +2,13 @@ import {
     ActionName,
     calculateActionName,
     runAction,
-    QueryParams
+    QueryParams,
+    QueryMatcher,
+    SortComparator
 } from 'event-reduce-js';
-import type { RxQuery, MangoQuery } from './types';
-import { RxChangeEvent } from './rx-change-event';
+import type { RxQuery, MangoQuery, RxChangeEvent } from './types';
+import { runPluginHooks } from './hooks';
+import { rxChangeEventToEventReduceChangeEvent } from './rx-change-event';
 
 export type EventReduceResultNeg = {
     runFullQueryAgain: true,
@@ -19,11 +22,11 @@ export type EventReduceResult<RxDocumentType> = EventReduceResultNeg | EventRedu
 
 
 export function getSortFieldsOfQuery<RxDocType>(
-    primaryKey: string,
+    primaryKey: keyof RxDocType,
     query: MangoQuery<RxDocType>
 ): string[] {
     if (!query.sort || query.sort.length === 0) {
-        return [primaryKey];
+        return [primaryKey as any];
     } else {
         return query.sort.map(part => Object.keys(part)[0]);
     }
@@ -36,16 +39,52 @@ export function getQueryParams<RxDocType>(
     rxQuery: RxQuery<RxDocType>
 ): QueryParams<RxDocType> {
     if (!RXQUERY_QUERY_PARAMS_CACHE.has(rxQuery)) {
-        const storage = rxQuery.collection.database.storage;
+        const collection = rxQuery.collection;
         const queryJson: MangoQuery<RxDocType> = rxQuery.toJSON();
-        const primaryKey = rxQuery.collection.schema.primaryPath;
-        const ret = {
-            primaryKey: rxQuery.collection.schema.primaryPath,
+        const primaryKey = collection.schema.primaryPath;
+
+
+        /**
+         * Create a custom sort comparator
+         * that uses the hooks to ensure
+         * we send for example compressed documents to be sorted by compressed queries.
+         */
+        const sortComparator = collection.storageInstance.getSortComparator(queryJson);
+        const useSortComparator: SortComparator<RxDocType> = (docA: RxDocType, docB: RxDocType) => {
+            const sortComparatorData = {
+                docA,
+                docB,
+                rxQuery
+            };
+            runPluginHooks('preSortComparator', sortComparatorData);
+            return sortComparator(sortComparatorData.docA, sortComparatorData.docB);
+        };
+
+
+        /**
+         * Create a custom query matcher
+         * that uses the hooks to ensure
+         * we send for example compressed documents to match compressed queries.
+         */
+        const queryMatcher = collection.storageInstance.getQueryMatcher(queryJson);
+        const useQueryMatcher: QueryMatcher<RxDocType> = (doc: RxDocType) => {
+
+            const queryMatcherData = {
+                doc,
+                rxQuery
+            };
+            runPluginHooks('preQueryMatcher', queryMatcherData);
+
+            return queryMatcher(queryMatcherData.doc);
+        };
+
+        const ret: QueryParams<any> = {
+            primaryKey: rxQuery.collection.schema.primaryPath as any,
             skip: queryJson.skip,
             limit: queryJson.limit,
             sortFields: getSortFieldsOfQuery(primaryKey, queryJson),
-            sortComparator: storage.getSortComparator(primaryKey, queryJson),
-            queryMatcher: storage.getQueryMatcher(primaryKey, queryJson)
+            sortComparator: useSortComparator,
+            queryMatcher: useQueryMatcher
         };
         RXQUERY_QUERY_PARAMS_CACHE.set(rxQuery, ret);
         return ret;
@@ -70,7 +109,7 @@ export function calculateNewResults<RxDocumentType>(
     let changed: boolean = false;
 
     const foundNonOptimizeable = rxChangeEvents.find(cE => {
-        const eventReduceEvent = cE.toEventReduceChangeEvent();
+        const eventReduceEvent = rxChangeEventToEventReduceChangeEvent(cE);
         const actionName: ActionName = calculateActionName({
             queryParams,
             changeEvent: eventReduceEvent,

@@ -40,6 +40,32 @@ export const HOOKS: { [k: string]: any[] } = {
     createRxSchema: [],
     preCreateRxQuery: [],
     createRxQuery: [],
+    /**
+     * Runs before a document is send to the query matcher.
+     */
+    preQueryMatcher: [],
+    /**
+     * Runs before a document is send to the sortComparator.
+     */
+    preSortComparator: [],
+    /**
+     * Runs before a query is send to the
+     * prepareQuery function of the storage engine.
+     */
+    prePrepareQuery: [],
+
+    /**
+     * Runs before the document data is send to the
+     * bulkWrite of the storage instance
+     */
+    preWriteToStorageInstance: [],
+
+    /**
+     * Runs after the document data is ready from
+     * the storage instance.
+     */
+    postReadFromInstance: [],
+
     createRxDocument: [],
     /**
      * runs after a RxDocument is created,
@@ -47,15 +73,12 @@ export const HOOKS: { [k: string]: any[] } = {
      */
     postCreateRxDocument: [],
     /**
-     * runs before a pouchdb-instance is created
-     * gets pouchParameters as attribute so you can manipulate them
-     * {
-     *   location: string,
-     *   adapter: any,
-     *   settings: object
-     * }
+     * Runs before a RxStorageInstance is created
+     * gets the params of createStorageInstance()
+     * as attribute so you can manipulate them.
+     * Notice that you have to clone stuff before mutating the inputs.
      */
-    preCreatePouchDb: [],
+    preCreateRxStorageInstance: [],
     /**
      * runs on the document-data before the document is migrated
      * {

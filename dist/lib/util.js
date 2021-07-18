@@ -8,7 +8,6 @@ Object.defineProperty(exports, "__esModule", {
 exports.pluginMissing = pluginMissing;
 exports.fastUnsecureHash = fastUnsecureHash;
 exports.hash = hash;
-exports.generateId = generateId;
 exports.now = now;
 exports.nextTick = nextTick;
 exports.promiseWait = promiseWait;
@@ -22,6 +21,7 @@ exports.ensureNotFalsy = ensureNotFalsy;
 exports.sortObject = sortObject;
 exports.stringifyFilter = stringifyFilter;
 exports.randomCouchString = randomCouchString;
+exports.lastOfArray = lastOfArray;
 exports.shuffleArray = shuffleArray;
 exports.removeOneFromArrayIfMatches = removeOneFromArrayIfMatches;
 exports.adapterObject = adapterObject;
@@ -31,9 +31,8 @@ exports.getHeightOfRevision = getHeightOfRevision;
 exports.createRevision = createRevision;
 exports.overwriteGetterForCaching = overwriteGetterForCaching;
 exports.isFolderPath = isFolderPath;
-exports.blobBufferUtil = exports.LOCAL_PREFIX = exports.isElectronRenderer = exports.clone = exports.RXDB_HASH_SALT = void 0;
-
-var _randomToken = _interopRequireDefault(require("random-token"));
+exports.getFromMapOrThrow = getFromMapOrThrow;
+exports.blobBufferUtil = exports.isElectronRenderer = exports.clone = exports.RANDOM_STRING = exports.RXDB_HASH_SALT = void 0;
 
 var _clone = _interopRequireDefault(require("clone"));
 
@@ -44,11 +43,6 @@ var _isElectron = _interopRequireDefault(require("is-electron"));
 var _pouchdbMd = require("pouchdb-md5");
 
 var _pouchdbUtils = require("pouchdb-utils");
-
-/**
- * this contains a mapping to basic dependencies
- * which should be easy to change
- */
 
 /**
  * Returns an error that indicates that a plugin is missing
@@ -110,14 +104,6 @@ function hash(msg) {
   }
 
   return _sparkMd["default"].hash(RXDB_HASH_SALT + msg);
-}
-/**
- * generate a new _id as db-primary-key
- */
-
-
-function generateId() {
-  return (0, _randomToken["default"])(10) + ':' + now();
 }
 /**
  * Returns the current unix time in milliseconds
@@ -282,7 +268,10 @@ function sortObject(obj) {
 
 
 function stringifyFilter(key, value) {
-  if (value instanceof RegExp) return value.toString();
+  if (value instanceof RegExp) {
+    return value.toString();
+  }
+
   return value;
 }
 /**
@@ -301,6 +290,17 @@ function randomCouchString() {
   }
 
   return text;
+}
+/**
+ * A random string that is never inside of any storage
+ */
+
+
+var RANDOM_STRING = 'Fz7SZXPmYJujkzjY1rpXWvlWBqoGAfAX';
+exports.RANDOM_STRING = RANDOM_STRING;
+
+function lastOfArray(ar) {
+  return ar[ar.length - 1];
 }
 /**
  * shuffle the given array
@@ -419,17 +419,10 @@ function createRevision(docData, deterministic_revs) {
   return (0, _pouchdbMd.stringMd5)(JSON.stringify(docWithoutRev));
 }
 /**
- * prefix of local pouchdb documents
- */
-
-
-var LOCAL_PREFIX = '_local/';
-/**
  * overwrites the getter with the actual value
  * Mostly used for caching stuff on the first run
  */
 
-exports.LOCAL_PREFIX = LOCAL_PREFIX;
 
 function overwriteGetterForCaching(obj, getterName, value) {
   Object.defineProperty(obj, getterName, {
@@ -453,6 +446,16 @@ function isFolderPath(name) {
     } else {
     return false;
   }
+}
+
+function getFromMapOrThrow(map, key) {
+  var val = map.get(key);
+
+  if (!val) {
+    throw new Error('missing value from map ' + key);
+  }
+
+  return val;
 }
 
 var blobBufferUtil = {
@@ -483,6 +486,13 @@ var blobBufferUtil = {
     }
 
     return blobBuffer;
+  },
+  isBlobBuffer: function isBlobBuffer(data) {
+    if (Buffer.isBuffer(data) || data instanceof Blob) {
+      return true;
+    } else {
+      return false;
+    }
   },
   toString: function toString(blobBuffer) {
     if (blobBuffer instanceof Buffer) {

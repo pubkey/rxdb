@@ -8,7 +8,15 @@ import AsyncTestUtil from 'async-test-util';
 import PouchAdapterMemory from 'pouchdb-adapter-memory';
 const leveldown = require('leveldown');
 
-import type { RxJsonSchema } from '../../plugins/core';
+import {
+    RxJsonSchema
+} from '../../plugins/core';
+
+import {
+    getRxStoragePouch,
+    addPouchPlugin
+} from '../../plugins/pouchdb';
+
 import config from './config';
 
 const {
@@ -17,21 +25,19 @@ const {
     randomCouchString
 } = require('../../plugins/core/');
 
-import {RxDBInMemoryPlugin} from '../../plugins/in-memory';
+import { RxDBInMemoryPlugin } from '../../plugins/in-memory';
 addRxPlugin(RxDBInMemoryPlugin);
 
-import {RxDBDevModePlugin} from '../../plugins/dev-mode';
+import { RxDBDevModePlugin } from '../../plugins/dev-mode';
 addRxPlugin(RxDBDevModePlugin);
 
-import {RxDBWatchForChangesPlugin} from '../../plugins/watch-for-changes';
-addRxPlugin(RxDBWatchForChangesPlugin);
+addPouchPlugin(require('pouchdb-adapter-leveldb'));
 
-addRxPlugin(require('pouchdb-adapter-leveldb'));
-
-const schema: RxJsonSchema = {
+const schema: RxJsonSchema<{ passportId: string; firstName: string; lastName: string; }> = {
     title: 'human schema',
     description: 'describes a human being',
     version: 0,
+    primaryKey: 'passportId',
     keyCompression: false,
     type: 'object',
     properties: {
@@ -45,7 +51,7 @@ const schema: RxJsonSchema = {
             type: 'string'
         }
     },
-    indexes: ['passportId'],
+    indexes: [],
     required: ['firstName', 'lastName']
 };
 
@@ -53,12 +59,14 @@ describe('in-memory.node.js', () => {
     it('should throw when used without memory-adapter', async () => {
         const db = await createRxDatabase({
             name: (config as any).rootPath + 'test_tmp/' + randomCouchString(10),
-            adapter: leveldown
+            storage: getRxStoragePouch(leveldown)
         });
-        const col = await db.collection({
-            name: 'humans',
-            schema
+        const cols = await db.addCollections({
+            humans: {
+                schema
+            }
         });
+        const col = cols.humans;
 
         await AsyncTestUtil.assertThrows(
             () => col.inMemory(),
@@ -69,15 +77,17 @@ describe('in-memory.node.js', () => {
         db.destroy();
     });
     it('should work again when memory-adapter was added', async () => {
-        addRxPlugin(PouchAdapterMemory);
+        addPouchPlugin(PouchAdapterMemory);
         const db = await createRxDatabase({
             name: (config as any).rootPath + 'test_tmp/' + randomCouchString(10),
-            adapter: leveldown
+            storage: getRxStoragePouch(leveldown)
         });
-        const col = await db.collection({
-            name: 'humans',
-            schema
+        const cols = await db.addCollections({
+            humans: {
+                schema
+            }
         });
+        const col = cols.humans;
 
         const memCol = await col.inMemory();
         assert.ok(memCol);

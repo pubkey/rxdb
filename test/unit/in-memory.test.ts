@@ -16,24 +16,40 @@ import {
     addRxPlugin
 } from '../../plugins/core';
 import {
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
+import {
     RxDBInMemoryPlugin,
     InMemoryRxCollection,
     setIndexes,
     replicateExistingDocuments,
     streamChangedDocuments,
-    applyChangedDocumentToPouch
+    applyChangedDocumentToPouch,
+    prepareInMemoryRxCollection
 } from '../../plugins/in-memory';
 addRxPlugin(RxDBInMemoryPlugin);
 
 config.parallel('in-memory.test.js', () => {
+
+    /**
+     * TODO
+     * the in-memory plugin is disabled for now
+     * because the pouchdb memory adapter is anyway slower then indexeddb
+     * and this plugin is just painful to maintain.
+     * It should be recreated when the rx-storage migration is done
+     * and we have a slower memory storage.
+     */
+    return;
+
     describe('internals', () => {
         describe('.setIndexes()', () => {
             it('should have set all indexes', async () => {
                 const col = await humansCollection.create(0);
-                const inMem = new (InMemoryRxCollection as any)(col);
-                await setIndexes(inMem.schema, inMem.pouch);
+                const inMem = new InMemoryRxCollection(col);
+                await prepareInMemoryRxCollection(inMem);
+                await setIndexes(inMem.schema, inMem.storageInstance.internals.pouch);
 
-                const hasIndexes = await inMem.pouch.getIndexes();
+                const hasIndexes = await inMem.storageInstance.internals.pouch.getIndexes();
                 assert.strictEqual(hasIndexes.indexes[1].def.fields[0].passportId, 'asc');
 
                 inMem.destroy();
@@ -43,10 +59,11 @@ config.parallel('in-memory.test.js', () => {
         describe('.replicateExistingDocuments()', () => {
             it('should have replicated all documents', async () => {
                 const col = await humansCollection.create(5);
-                const inMem = new (InMemoryRxCollection as any)(col);
-                await replicateExistingDocuments(col, inMem);
+                const inMem = new InMemoryRxCollection(col);
+                await prepareInMemoryRxCollection(inMem);
+                await replicateExistingDocuments(col, inMem as any);
 
-                const foundAfter = await inMem.pouch.find({
+                const foundAfter = await inMem.storageInstance.internals.pouch.find({
                     selector: {}
                 });
                 assert.strictEqual(foundAfter.docs.length, 5);
@@ -60,13 +77,15 @@ config.parallel('in-memory.test.js', () => {
                     firstName: 'steve',
                     secret: 'foobar'
                 });
-                const inMem = new (InMemoryRxCollection as any)(col);
-                await replicateExistingDocuments(col, inMem);
+                const inMem = new InMemoryRxCollection(col);
+                await prepareInMemoryRxCollection(inMem);
 
-                const foundAfter = await inMem.pouch.find({
+                await replicateExistingDocuments(col, inMem as any);
+
+                const foundAfter = await inMem.storageInstance.internals.pouch.find({
                     selector: {}
                 });
-                assert.strictEqual(foundAfter.docs[0].secret, 'foobar');
+                assert.strictEqual((foundAfter.docs[0] as any).secret, 'foobar');
                 inMem.destroy();
                 col.database.destroy();
             });
@@ -87,14 +106,15 @@ config.parallel('in-memory.test.js', () => {
             });
             it('should stream a doc-change of an inMemory collection', async () => {
                 const col = await humansCollection.create(0);
-                const inMem = new (InMemoryRxCollection as any)(col);
-                const obs = streamChangedDocuments(inMem);
+                const inMem = new InMemoryRxCollection(col);
+                await prepareInMemoryRxCollection(inMem);
+                const obs = streamChangedDocuments(inMem as any);
                 const emitted: any[] = [];
                 const sub = obs.subscribe(d => emitted.push(d));
 
                 const doc: any = schemaObjects.human('foobar');
                 doc['_id'] = 'foobar1';
-                await inMem.pouch.put(doc);
+                await inMem.storageInstance.internals.pouch.put(doc);
                 await AsyncTestUtil.waitUntil(() => emitted.length === 1);
                 assert.strictEqual(emitted[0].passportId, 'foobar');
 
@@ -125,11 +145,11 @@ config.parallel('in-memory.test.js', () => {
                 docData['_rev'] = '1-51b2fae5721cc4d3cf7392f19e6cc118';
                 await applyChangedDocumentToPouch(col, docData);
 
-                const foundAfter = await col.pouch.find({
+                const foundAfter = await col.storageInstance.internals.pouch.find({
                     selector: {}
                 });
                 assert.strictEqual(foundAfter.docs.length, 1);
-                assert.strictEqual(foundAfter.docs[0]._id, 'foobar1');
+                assert.strictEqual((foundAfter.docs[0] as any)._id, 'foobar1');
 
                 col.database.destroy();
             });
@@ -158,7 +178,7 @@ config.parallel('in-memory.test.js', () => {
                 // insert existing doc, then overwrite
                 const docData: any = schemaObjects.human();
                 docData['_id'] = 'foobar1';
-                const ret = await col.pouch.put(docData);
+                const ret = await col.storageInstance.internals.pouch.put(docData);
 
                 await AsyncTestUtil.wait(100);
                 const sub = obs.subscribe(doc => emitted.push(doc));
@@ -171,7 +191,7 @@ config.parallel('in-memory.test.js', () => {
 
                 await AsyncTestUtil.wait(100);
 
-                const foundAfter = await col.pouch.find({
+                const foundAfter = await col.storageInstance.internals.pouch.find({
                     selector: {}
                 });
 
@@ -192,7 +212,7 @@ config.parallel('in-memory.test.js', () => {
             const col = await humansCollection.create(5);
             const memCol = await col.inMemory();
             assert.ok(memCol.database);
-            assert.ok(memCol.pouch);
+            assert.ok(memCol.storageInstance.internals.pouch);
             col.database.destroy();
         });
         it('should contain the initial documents', async () => {
@@ -219,7 +239,7 @@ config.parallel('in-memory.test.js', () => {
             const memCol = await col.inMemory();
             const memDoc: any = await memCol.findOne().exec();
 
-            await memDoc.atomicSet('firstName', 'foobar');
+            await memDoc.atomicPatch({ firstName: 'foobar' });
 
             await AsyncTestUtil.waitUntil(async () => {
                 const doc = await col.findOne()
@@ -236,7 +256,7 @@ config.parallel('in-memory.test.js', () => {
 
             const doc: any = await col.findOne().exec();
 
-            await doc.atomicSet('firstName', 'foobar');
+            await doc.atomicPatch({ firstName: 'foobar' });
 
             await AsyncTestUtil.waitUntil(async () => {
                 const memDoc = await memCol.findOne()
@@ -259,7 +279,7 @@ config.parallel('in-memory.test.js', () => {
             await AsyncTestUtil.wait(100);
             assert.strictEqual(emitted.length, 1);
 
-            await doc.atomicSet('firstName', 'foobar');
+            await doc.atomicPatch({ firstName: 'foobar' });
             await AsyncTestUtil.wait(100);
             assert.strictEqual(emitted.length, 2);
 
@@ -296,7 +316,7 @@ config.parallel('in-memory.test.js', () => {
             assert.strictEqual(foundMem.length, 1);
 
             // update event
-            await doc.atomicSet('firstName', 'foobar');
+            await doc.atomicPatch({ firstName: 'foobar' });
             await AsyncTestUtil.wait(100);
             assert.strictEqual(emitted.length, 2);
             foundCol = await col.find().where('firstName').ne('foobar2').exec();
@@ -365,29 +385,31 @@ config.parallel('in-memory.test.js', () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 multiInstance: true,
                 ignoreDuplicate: true
             });
             const db2 = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 multiInstance: true,
                 ignoreDuplicate: true
             });
 
-            const c1 = await db.collection({
-                name: 'humans',
-                schema: schemas.human
+            const c1 = await db.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
             });
-            const c2 = await db2.collection({
-                name: 'humans',
-                schema: schemas.human
+            const c2 = await db2.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
             });
-            const memCol = await c1.inMemory();
+            const memCol = await c1.humans.inMemory();
 
             const emitted: any[] = [];
-            c2.find().$.subscribe(docs => emitted.push(docs));
+            c2.humans.find().$.subscribe(docs => emitted.push(docs));
             await AsyncTestUtil.waitUntil(() => emitted.length === 1);
 
             await memCol.insert(schemaObjects.human());
@@ -417,7 +439,7 @@ config.parallel('in-memory.test.js', () => {
                 const docs = await memCol.find().exec();
                 return docs.length === 1;
             });
-            const memPouchDoc = await memCol.pouch.get(doc.primary);
+            const memPouchDoc = await memCol.storageInstance.internals.pouch.get(doc.primary);
             assert.strictEqual(memPouchDoc.secret, docData.secret);
 
             // insert to memory
@@ -427,7 +449,7 @@ config.parallel('in-memory.test.js', () => {
                 const docs = await col.find().exec();
                 return docs.length === 2;
             });
-            const pouchDoc = await col.pouch.get(doc2.primary);
+            const pouchDoc = await col.storageInstance.internals.pouch.get(doc2.primary);
             assert.notStrictEqual(doc2.secret, pouchDoc.secret);
 
             col.database.destroy();
@@ -445,7 +467,7 @@ config.parallel('in-memory.test.js', () => {
                 const docs = await memCol.find().exec();
                 return docs.length === 1;
             });
-            const memPouchDoc = await memCol.pouch.get(doc.primary);
+            const memPouchDoc = await memCol.storageInstance.internals.pouch.get(doc.primary);
             assert.strictEqual(memPouchDoc.firstName, docData.firstName);
 
             // insert to memory
@@ -455,7 +477,7 @@ config.parallel('in-memory.test.js', () => {
                 const docs = await col.find().exec();
                 return docs.length === 2;
             });
-            const pouchDoc = await col.pouch.get(doc2.primary);
+            const pouchDoc = await col.storageInstance.internals.pouch.get(doc2.primary);
             assert.notStrictEqual(doc2.firstName, pouchDoc.firstName);
 
             col.database.destroy();
@@ -465,14 +487,13 @@ config.parallel('in-memory.test.js', () => {
         it('should resolve the promise after some time', async () => {
             const col = await humansCollection.create(0);
             const memCol = await col.inMemory();
-
             await memCol.awaitPersistence();
 
             await memCol.insert(schemaObjects.simpleHuman() as any);
             await memCol.awaitPersistence();
 
             const doc: any = await memCol.findOne().exec();
-            await doc.atomicSet('age', 6);
+            await doc.atomicPatch({ age: 6 });
             await memCol.awaitPersistence();
 
             await doc.remove();
@@ -490,12 +511,12 @@ config.parallel('in-memory.test.js', () => {
             assert.strictEqual(docs.length, amount);
             col.database.destroy();
         });
-        it('should not allow to use .sync() on inMemory', async () => {
+        it('should not allow to use .syncCouchDB() on inMemory', async () => {
             const col = await humansCollection.create(5);
             const memCol = await col.inMemory();
 
             await AsyncTestUtil.assertThrows(
-                () => memCol.sync({} as any),
+                () => memCol.syncCouchDB({} as any),
                 'RxError',
                 'not replicate'
             );
@@ -506,11 +527,11 @@ config.parallel('in-memory.test.js', () => {
         it('#401 error: _id is required for puts', async () => {
             const schema = {
                 version: 0,
+                primaryKey: 'name',
                 type: 'object',
                 properties: {
                     name: {
-                        type: 'string',
-                        primary: true
+                        type: 'string'
                     },
                     color: {
                         type: 'string'
@@ -526,20 +547,21 @@ config.parallel('in-memory.test.js', () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 multiInstance: true,
                 ignoreDuplicate: true
             });
-            const col = await db.collection({
-                name: 'heroes',
-                schema
+            const cols = await db.addCollections({
+                heroes: {
+                    schema
+                }
             });
-            await col.insert({
+            await cols.heroes.insert({
                 name: 'alice',
                 color: 'azure',
                 maxHp: 101
             });
-            await col.insert({
+            await cols.heroes.insert({
                 name: 'bob',
                 color: 'blue',
                 maxHp: 100
@@ -548,15 +570,16 @@ config.parallel('in-memory.test.js', () => {
 
             const db2 = await createRxDatabase({
                 name,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 multiInstance: true,
                 ignoreDuplicate: true
             });
-            const col2 = await db2.collection({
-                name: 'heroes',
-                schema
+            const col2 = await db2.addCollections({
+                heroes: {
+                    schema
+                }
             });
-            const memCol = await col2.inMemory();
+            const memCol = await col2.heroes.inMemory();
 
             const doc = await memCol
                 .findOne()
@@ -574,10 +597,10 @@ config.parallel('in-memory.test.js', () => {
             assert.strictEqual(alice.maxHp, 101);
 
             // check if it works from mem to parent
-            await alice.atomicSet('maxHp', 103);
+            await alice.atomicPatch({ maxHp: 103 });
 
             await AsyncTestUtil.waitUntil(async () => {
-                const aliceDoc = await col2
+                const aliceDoc = await col2.heroes
                     .findOne()
                     .where('name').eq('alice')
                     .exec();
@@ -589,26 +612,28 @@ config.parallel('in-memory.test.js', () => {
         it('#744 inMemory collections don\'t implement static methods and options', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 multiInstance: true,
                 ignoreDuplicate: true
             });
-            const col = await db.collection({
-                name: 'heroes',
-                schema: schemas.human,
-                statics: {
-                    foo() {
-                        return 'bar';
+            const cols = await db.addCollections({
+                heroes: {
+                    schema: schemas.human,
+                    statics: {
+                        foo() {
+                            return 'bar';
+                        }
+                    },
+                    options: {
+                        foobar: 'foobar'
                     }
-                },
-                options: {
-                    foobar: 'foobar'
                 }
             });
+            const col = cols.heroes;
             const memCol = await col.inMemory();
 
             // check method
-            assert.strictEqual(memCol.foo(), 'bar');
+            assert.strictEqual((memCol as any).foo(), 'bar');
 
             // check options
             assert.strictEqual(memCol.options.foobar, 'foobar');

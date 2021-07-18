@@ -8,11 +8,11 @@ import assert from 'assert';
 import { waitUntil } from 'async-test-util';
 
 import {
-    addRxPlugin,
+    addPouchPlugin,
     randomCouchString
 } from '../';
-addRxPlugin(require('pouchdb-adapter-memory'));
-addRxPlugin(require('pouchdb-adapter-http'));
+addPouchPlugin(require('pouchdb-adapter-memory'));
+addPouchPlugin(require('pouchdb-adapter-http'));
 import request from 'request-promise-native';
 
 import * as humansCollection from './helper/humans-collection';
@@ -35,7 +35,7 @@ describe('couchdb-db-integration.test.js', () => {
                 JSON.parse(gotJson);
                 return true;
             } catch (err) {
-                console.log('could not reach couchdb server at ' + COUCHDB_URL);
+                console.error('could not reach couchdb server at ' + COUCHDB_URL);
                 return false;
             }
         }, 1000 * 60, 1000);
@@ -45,8 +45,7 @@ describe('couchdb-db-integration.test.js', () => {
         const col = await humansCollection.create(0);
 
         const couchName = COUCHDB_URL + randomCouchString(12);
-        console.log(couchName);
-        const replicationState = await col.sync({
+        const replicationState = await col.syncCouchDB({
             remote: couchName,
             waitForLeadership: false,
             direction: {
@@ -68,7 +67,7 @@ describe('couchdb-db-integration.test.js', () => {
 
         // create a new collection
         const col2 = await humansCollection.create(0);
-        await col2.sync({
+        await col2.syncCouchDB({
             remote: couchName,
             waitForLeadership: false,
             direction: {

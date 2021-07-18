@@ -15,14 +15,20 @@ import AsyncTestUtil from 'async-test-util';
 
 import config from './config';
 import {
+    createRxDatabase,
     createRxSchema,
     randomCouchString,
     promiseWait,
-    isRxDocument
+    isRxDocument,
+    RxCollection
 } from '../../plugins/core';
+import {
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
+import { humanWithCompositePrimary, HumanWithCompositePrimary } from '../helper/schema-objects';
 
 config.parallel('primary.test.js', () => {
     describe('Schema', () => {
@@ -36,7 +42,9 @@ config.parallel('primary.test.js', () => {
             describe('negative', () => {
                 it('throw if primary is also index', () => {
                     const schemaObj = clone(schemas.primaryHuman);
-                    (schemaObj.properties.passportId as any).index = true;
+                    schemaObj.indexes = [
+                        'passportId'
+                    ];
                     assert.throws(() => createRxSchema(schemaObj), Error);
                 });
                 it('throw if primary is also unique', () => {
@@ -47,14 +55,6 @@ config.parallel('primary.test.js', () => {
                 it('throw if primary is no string', () => {
                     const schemaObj = clone(schemas.primaryHuman);
                     schemaObj.properties.passportId.type = 'integer';
-                    assert.throws(() => createRxSchema(schemaObj), Error);
-                });
-                it('throw if primary is defined twice', () => {
-                    const schemaObj = clone(schemas.primaryHuman);
-                    (schemaObj.properties as any).passportId2 = {
-                        type: 'string',
-                        primary: true
-                    };
                     assert.throws(() => createRxSchema(schemaObj), Error);
                 });
                 it('throw if primary is encrypted', () => {
@@ -69,14 +69,6 @@ config.parallel('primary.test.js', () => {
                 it('should validate the human', () => {
                     const schema = createRxSchema(schemas.primaryHuman);
                     const obj = schemaObjects.simpleHuman();
-                    assert.ok(schema.validate(obj));
-                });
-            });
-
-            describe('positive', () => {
-                it('should validate when primary key is _id', () => {
-                    const schema = createRxSchema(schemas._idPrimary);
-                    const obj = schemaObjects._idPrimary();
                     assert.ok(schema.validate(obj));
                 });
             });
@@ -109,7 +101,7 @@ config.parallel('primary.test.js', () => {
                     const c = await humansCollection.createPrimary(0);
                     const obj = schemaObjects.simpleHuman();
                     await c.insert(obj);
-                    const all = await c.pouch.allDocs({
+                    const all = await c.storageInstance.internals.pouch.allDocs({
                         include_docs: true
                     });
                     const first = all.rows[0].doc;
@@ -248,7 +240,7 @@ config.parallel('primary.test.js', () => {
                     const obj = schemaObjects.simpleHuman();
                     await c.insert(obj);
                     const doc = await c.findOne().exec(true);
-                    await doc.atomicSet('firstName', 'foobar');
+                    await doc.atomicPatch({ firstName: 'foobar' });
                     const doc2 = await c.findOne().exec(true);
 
                     assert.strictEqual(doc2.get('firstName'), 'foobar');
@@ -267,7 +259,7 @@ config.parallel('primary.test.js', () => {
                     const doc = await c.findOne().exec(true);
                     let value;
                     const sub = doc.get$('firstName').subscribe((newVal: any) => value = newVal);
-                    await doc.atomicSet('firstName', 'foobar');
+                    await doc.atomicPatch({ firstName: 'foobar' });
                     await promiseWait(10);
                     assert.strictEqual(value, 'foobar');
                     sub.unsubscribe();
@@ -314,7 +306,7 @@ config.parallel('primary.test.js', () => {
                         if (count >= 2) pW8.resolve();
                     });
                     const doc2 = await c2.findOne().exec(true);
-                    await doc2.atomicSet('firstName', 'foobar');
+                    await doc2.atomicPatch({ firstName: 'foobar' });
                     await pW8.promise;
                     await AsyncTestUtil.waitUntil(() => value === 'foobar');
                     assert.strictEqual(count, 2);
@@ -323,6 +315,97 @@ config.parallel('primary.test.js', () => {
                 });
             });
             describe('negative', () => { });
+        });
+    });
+    describe('Composite Primary', () => {
+        async function getCompositePrimaryCollection(): Promise<RxCollection<HumanWithCompositePrimary>> {
+            const db = await createRxDatabase<{ human: RxCollection<HumanWithCompositePrimary> }>({
+                name: randomCouchString(10),
+                storage: getRxStoragePouch('memory'),
+                ignoreDuplicate: true
+            });
+            await db.addCollections({
+                human: {
+                    schema: schemas.humanCompositePrimary
+                }
+            });
+            return db.human;
+        }
+        it('should not throw when creating a collection with composite primary', async () => {
+            const col = await getCompositePrimaryCollection();
+            assert.ok(col);
+            col.database.destroy();
+        });
+        it('insert/update/delete a document', async () => {
+            const col = await getCompositePrimaryCollection();
+            assert.ok(col);
+
+            // insert
+            const doc = await col.insert(humanWithCompositePrimary());
+
+            // update
+            await doc.atomicPatch({ lastName: 'alice' });
+
+            // remove
+            await doc.remove();
+
+
+            col.database.destroy();
+        });
+        it('.atomicUpsert()', async () => {
+            const col = await getCompositePrimaryCollection();
+            assert.ok(col);
+
+            const data = humanWithCompositePrimary();
+
+            await col.atomicUpsert(data);
+            await col.atomicUpsert(data);
+
+            col.database.destroy();
+        });
+        it('.upsert()', async () => {
+            const col = await getCompositePrimaryCollection();
+            assert.ok(col);
+
+            const data = humanWithCompositePrimary();
+
+            await col.upsert(data);
+            await col.upsert(data);
+
+            col.database.destroy();
+        });
+        it('should throw when a primary related field is changed', async () => {
+            const col = await getCompositePrimaryCollection();
+            const doc = await col.insert(humanWithCompositePrimary());
+
+            await AsyncTestUtil.assertThrows(
+                () => doc.atomicPatch({ firstName: 'foobar' }),
+                'RxError',
+                'final fields'
+            );
+
+            col.database.destroy();
+        });
+        it('find via composite primary', async () => {
+            const col = await getCompositePrimaryCollection();
+            assert.ok(col);
+
+            // insert
+            const insertData = humanWithCompositePrimary();
+            const doc = await col.insert(insertData);
+
+            // find
+            const id = col.schema.getPrimaryOfDocumentData({
+                firstName: insertData.firstName,
+                info: {
+                    age: insertData.info.age
+                }
+            });
+
+            const found = await col.findOne(id).exec(true);
+            assert.ok(found === doc);
+
+            col.database.destroy();
         });
     });
 });

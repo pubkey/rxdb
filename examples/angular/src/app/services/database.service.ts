@@ -21,9 +21,14 @@ import {
     createRxDatabase,
     addRxPlugin
 } from 'rxdb/plugins/core';
+
+import {
+    addPouchPlugin, getRxStoragePouch
+} from 'rxdb/plugins/pouchdb';
+
 import { RxDBNoValidatePlugin } from 'rxdb/plugins/no-validate';
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
-import { RxDBReplicationPlugin } from 'rxdb/plugins/replication';
+import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb';
 import * as PouchdbAdapterHttp from 'pouchdb-adapter-http';
 import * as PouchdbAdapterIdb from 'pouchdb-adapter-idb';
 import {
@@ -34,9 +39,9 @@ import {
 } from '../../shared';
 import { HERO_SCHEMA } from '../schemas/hero.schema';
 
-let collections = [
-    {
-        name: HERO_COLLECTION_NAME,
+
+const collectionSettings = {
+    [HERO_COLLECTION_NAME]: {
         schema: HERO_SCHEMA,
         methods: {
             hpPercent(this: RxHeroDocument): number {
@@ -45,7 +50,7 @@ let collections = [
         },
         sync: true
     }
-];
+};
 
 const syncHost = IS_SERVER_SIDE_RENDERING ? 'localhost' : window.location.hostname;
 const syncURL = 'http://' + syncHost + ':' + COUCHDB_PORT + '/' + DATABASE_NAME;
@@ -70,17 +75,17 @@ function doSync(): boolean {
 async function loadRxDBPlugins(): Promise<void> {
 
 
-    addRxPlugin(RxDBReplicationPlugin);
+    addRxPlugin(RxDBReplicationCouchDBPlugin);
     // http-adapter is always needed for replication with the node-server
-    addRxPlugin(PouchdbAdapterHttp);
+    addPouchPlugin(PouchdbAdapterHttp);
 
     if (IS_SERVER_SIDE_RENDERING) {
         // for server side rendering, import the memory adapter
         const PouchdbAdapterMemory = require('pouchdb-adapter-' + 'memory');
-        addRxPlugin(PouchdbAdapterMemory);
+        addPouchPlugin(PouchdbAdapterMemory);
     } else {
         // else, use indexeddb
-        addRxPlugin(PouchdbAdapterIdb);
+        addPouchPlugin(PouchdbAdapterIdb);
 
         // then we also need the leader election
         addRxPlugin(RxDBLeaderElectionPlugin);
@@ -97,13 +102,13 @@ async function loadRxDBPlugins(): Promise<void> {
             // add dev-mode plugin
             // which does many checks and add full error-messages
             import('rxdb/plugins/dev-mode').then(
-                module => addRxPlugin(module)
+                module => addRxPlugin(module as any)
             ),
 
             // we use the schema-validation only in dev-mode
             // this validates each document if it is matching the jsonschema
             import('rxdb/plugins/validate').then(
-                module => addRxPlugin(module)
+                module => addRxPlugin(module as any)
             )
         ]);
     } else {
@@ -124,7 +129,7 @@ async function _create(): Promise<RxHeroesDatabase> {
     console.log('DatabaseService: creating database..');
     const db = await createRxDatabase<RxHeroesCollections>({
         name: DATABASE_NAME,
-        adapter: IS_SERVER_SIDE_RENDERING ? 'memory' : 'idb',
+        storage: getRxStoragePouch(IS_SERVER_SIDE_RENDERING ? 'memory' : 'idb'),
         multiInstance: !IS_SERVER_SIDE_RENDERING
         // password: 'myLongAndStupidPassword' // no password needed
     });
@@ -146,7 +151,7 @@ async function _create(): Promise<RxHeroesDatabase> {
 
     // create collections
     console.log('DatabaseService: create collections');
-    await Promise.all(collections.map(colData => db.collection(colData)));
+    await db.addCollections(collectionSettings);
 
     // hooks
     console.log('DatabaseService: add hooks');
@@ -179,7 +184,7 @@ async function _create(): Promise<RxHeroesDatabase> {
              * we just run a one-time replication to ensure the client has the same data as the server.
              */
             console.log('DatabaseService: await initial replication to ensure SSR has all data');
-            const firstReplication = await db.hero.sync({
+            const firstReplication = await db.hero.syncCouchDB({
                 remote: collectionUrl,
                 options: {
                     live: false
@@ -191,7 +196,7 @@ async function _create(): Promise<RxHeroesDatabase> {
         /**
          * we start a live replication which also sync the ongoing changes
          */
-        await db.hero.sync({
+        await db.hero.syncCouchDB({
             remote: collectionUrl,
             options: {
                 live: true

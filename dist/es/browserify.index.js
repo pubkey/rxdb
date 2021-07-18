@@ -5,7 +5,8 @@
  */
 import '@babel/polyfill';
 import * as RxDB from './index.js';
-RxDB.addRxPlugin(require('pouchdb-adapter-idb'));
-RxDB.addRxPlugin(require('pouchdb-adapter-http'));
+import * as RxDbPouchPlugin from './plugins/pouchdb/index.js';
+RxDbPouchPlugin.addPouchPlugin(require('pouchdb-adapter-idb'));
+RxDbPouchPlugin.addPouchPlugin(require('pouchdb-adapter-http'));
 window['RxDB'] = RxDB;
 //# sourceMappingURL=browserify.index.js.map

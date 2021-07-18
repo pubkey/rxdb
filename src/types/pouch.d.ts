@@ -136,9 +136,14 @@ export type PouchChangeRow = {
 export type PouchAttachmentMeta = {
     digest: string;
     content_type: string;
-    revpos: number;
     length: number;
     stub: boolean;
+
+    /**
+     * 'revpos indicates the generation number (numeric prefix in the revID) at which the attachment was last altered'
+     *  @link https://github.com/couchbase/couchbase-lite-ios/issues/1200#issuecomment-206444554
+     */
+    revpos: number;
 };
 
 export type BlobBuffer = Buffer | Blob;
@@ -149,6 +154,7 @@ export type PouchAttachmentWithData = PouchAttachmentMeta & {
      * or directly a buffer
      */
     data: BlobBuffer;
+    type: string;
     /**
      * If set, must be false
      * because we have the full data and not only a stub.
@@ -159,6 +165,10 @@ export type PouchAttachmentWithData = PouchAttachmentMeta & {
 export type PouchChangeDoc = {
     _id: string;
     _rev: string;
+    /**
+     * True if the document is deleted.
+     */
+    _deleted?: boolean;
     _attachments: {
         [attachmentId: string]: PouchAttachmentMeta
     };
@@ -212,12 +222,35 @@ export type PouchdbQuery = MangoQuery & {
     sort?: PouchDbSorting
 };
 
+export type PouchBulkDocResultRow = {
+    ok: boolean;
+    id: string;
+    rev: string;
+}
+
+export type PouchBulkDocOptions = {
+    new_edits?: boolean;
+
+    // custom options for RxDB
+    set_new_edit_as_latest_revision?: boolean;
+    isDeeper?: boolean;
+    custom?: any;
+}
+
 export declare class PouchDBInstance {
     constructor(
         name: string,
         options: { adapter: string }
     );
     readonly name: string;
+    readonly adapter: string;
+
+    readonly __opts: {
+        db: any | string; // contains the adapter function
+        deterministic_revs: boolean;
+        name: string;
+        adapter: string;
+    };
 
     static debug: Debug;
 
@@ -234,6 +267,7 @@ export declare class PouchDBInstance {
             key: string;
             value: {
                 rev: string;
+                deleted?: boolean;
             };
             error?: 'not_found' | string;
         }[];
@@ -242,17 +276,12 @@ export declare class PouchDBInstance {
 
     bulkDocs(
         docs: { docs: any[] } | any[],
-        options?: {
-            new_edits?: boolean;
-        }
-    ): Promise<{
-        ok: boolean;
-        id: string;
-        rev: string;
-    }[]>;
+        options?: PouchBulkDocOptions,
+    ): Promise<(PouchBulkDocResultRow | PouchWriteError)[]>;
 
-    find(mangoQuery: PouchdbQuery): Promise<{
-        docs: any[]
+
+    find<DocumentData>(mangoQuery: PouchdbQuery): Promise<{
+        docs: WithPouchMeta<DocumentData>[]
     }>;
     compact(options?: any): Promise<any>;
     destroy(options?: any): Promise<void>;
@@ -265,11 +294,7 @@ export declare class PouchDBInstance {
     put(
         doc: any,
         options?: any,
-    ): Promise<{
-        ok: boolean;
-        id: string;
-        rev: string;
-    }>;
+    ): Promise<PouchBulkDocResultRow>;
     remove(
         doc: any | string,
         options?: any,
@@ -348,7 +373,17 @@ export declare class PouchDBInstance {
     explain(query: any): Promise<any>;
 
     getIndexes(): Promise<{
-        indexes: any[];
+        indexes: {
+            ddoc: any | null;
+            name: string;
+            type: string;
+            def: {
+                fields: {
+                    [key: string]: 'asc' | 'desc'
+                }[];
+            }
+        }[];
+        total_rows: number;
     }>;
 
     createIndex(opts: {

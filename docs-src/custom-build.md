@@ -14,6 +14,36 @@ import {
 } from 'rxdb/plugins/core';
 ```
 
+
+## pouchdb
+
+To call `createRxDatabase` you have to specify the storage engine which is used to store documents and run queries.
+At the moment we only have the pouchdb storage engine which uses pouchdb together with different adapters.
+
+```javascript
+import { 
+    addPouchPlugin,
+    getRxStoragePouch,
+    checkAdapter
+} from 'rxdb/plugins/pouchdb';
+addRxPlugin(RxDBAdapterCheckPlugin);
+
+// add pouchdb specific plugins (non RxDB plugins)
+addPouchPlugin(require('pouchdb-adapter-idb'));
+
+// with that you can create a database with the pouchdb storage engine
+const db = await createRxDatabase({
+    name: 'heroesdb',
+    // use pouchdb with the indexeddb-adapter as storage engine.
+    storage: getRxStoragePouch('idb'),
+    password: 'myLongAndStupidPassword'
+});
+
+// in the pouchdb plugin also there is the method to check if a given pouchdb-adapter works
+await checkAdapter('leveldb'); // > boolean
+```
+
+
 ## required modules
 
 Some parts of RxDB are not in the core, but are required. This means they must always be overwrite by at least one plugin.
@@ -91,13 +121,13 @@ import { RxDBMigrationPlugin } from 'rxdb/plugins/migration';
 addRxPlugin(RxDBMigrationPlugin);
 ```
 
-### replication
+### replication-couchdb
 
-Adds the [replication](./replication.md)-functionality to RxDB which allows you to replicate the database with a CouchDB compliant endpoint.
+Adds the [CouchDB replication](./replication-couchdb.md)-functionality to RxDB which allows you to replicate the database with a CouchDB compliant endpoint.
 
 ```javascript
-import { RxDBReplicationPlugin } from 'rxdb/plugins/replication';
-addRxPlugin(RxDBReplicationPlugin);
+import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication';
+addRxPlugin(RxDBReplicationCouchDBPlugin);
 ```
 
 ### replication-graphql
@@ -191,33 +221,6 @@ The update-module is only required when you use [RxDocument.update](./rx-documen
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
 addRxPlugin(RxDBUpdatePlugin);
 ```
-
-### watch-for-changes
-
-When you write data on the internal pouchdb of a collection, by default the changeEvent will not be emitted to RxDB's changestream.
-The watch-for-changes plugin lets you tell the collection to actively watch for changes on the pouchdb-instance whose origin is not RxDB.
-This plugin is used internally by the replication-plugin and the in-memory-plugin.
-
-```javascript
-import { RxDBWatchForChangesPlugin } from 'rxdb/plugins/watch-for-changes';
-addRxPlugin(RxDBWatchForChangesPlugin);
-
-// you can now call this once and then do writes on the pouchdb
-myRxCollection.watchForChanges();
-
-// now write sth on the pouchdb
-myRxCollection.pouch.put({/* ... */});
-```
-
-### adapter-check
-
-This module add the [checkAdapter](./rx-database.md#checkadapter)-function to RxDB.
-
-```javascript
-import { RxDBAdapterCheckPlugin } from 'rxdb/plugins/adapter-check';
-addRxPlugin(RxDBAdapterCheckPlugin);
-```
-
 
 ### server
 Spawns a couchdb-compatible server from a RxDatabase. Use this to replicate data from your electron-node to the browser-window. Or to fast setup a dev-environment.

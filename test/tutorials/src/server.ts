@@ -6,16 +6,19 @@
 
 import {
     addRxPlugin,
-    createRxDatabase
+    createRxDatabase,
+    addPouchPlugin,
+    RxJsonSchema,
+    getRxStoragePouch
 } from 'rxdb';
 import * as MemoryAdapter from 'pouchdb-adapter-memory';
-addRxPlugin(MemoryAdapter);
+addPouchPlugin(MemoryAdapter);
 
 import { RxDBServerPlugin } from 'rxdb/plugins/server';
 addRxPlugin(RxDBServerPlugin);
 
 import * as PouchHttpPlugin from 'pouchdb-adapter-http';
-addRxPlugin(PouchHttpPlugin);
+addPouchPlugin(PouchHttpPlugin);
 
 import AsyncTestUtil from 'async-test-util';
 import * as request from 'request-promise-native';
@@ -24,32 +27,40 @@ import * as assert from 'assert';
 import * as os from 'os';
 import * as path from 'path';
 
+
+declare type ItemDocumentData = {
+    key: string;
+    value: string;
+};
+
 async function run() {
 
 
     // create database
     const db = await createRxDatabase({
         name: 'mydb',
-        adapter: 'memory'
+        storage: getRxStoragePouch('memory')
     });
 
     // create a collection
-    const mySchema = {
+    const mySchema: RxJsonSchema<ItemDocumentData> = {
         version: 0,
         type: 'object',
+        primaryKey: 'key',
         properties: {
             key: {
-                type: 'string',
-                primary: true
+                type: 'string'
             },
             value: {
                 type: 'string'
             }
-        }
+        },
+        required: ['key']
     };
-    await db.collection({
-        name: 'items',
-        schema: mySchema
+    await db.addCollections({
+        items: {
+            schema: mySchema
+        }
     });
 
     // insert one document
@@ -59,7 +70,7 @@ async function run() {
     });
 
     // spawn the server
-    const serverState = db.server({
+    const serverState = await db.server({
         path: '/db',
         port: 3000,
         cors: true,
@@ -86,17 +97,18 @@ async function run() {
      */
     const clientDB = await createRxDatabase({
         name: 'clientdb',
-        adapter: 'memory'
+        storage: getRxStoragePouch('memory')
     });
 
     // create a collection
-    await clientDB.collection({
-        name: 'items',
-        schema: mySchema
+    await clientDB.addCollections({
+        items: {
+            schema: mySchema
+        }
     });
 
     // replicate with server
-    clientDB.items.sync({
+    clientDB.items.syncCouchDB({
         remote: 'http://localhost:3000/db/items'
     });
 

@@ -7,7 +7,7 @@ Schemas define how your data looks. Which field should be used as primary, which
 In this example-schema we define a hero-collection with the following settings:
 
 - the version-number of the schema is 0
-- the name-property is the **primary**. This means its an unique, indexed, required string which can be used to definitely find a single document.
+- the name-property is the **primaryKey**. This means its an unique, indexed, required `string` which can be used to definitely find a single document.
 - the color-field is required for every document
 - the healthpoints-field must be a number between 0 and 100
 - the secret-field stores an encrypted value
@@ -20,11 +20,11 @@ In this example-schema we define a hero-collection with the following settings:
     "title": "hero schema",
     "version": 0,
     "description": "describes a simple hero",
+    "primaryKey": "name",
     "type": "object",
     "properties": {
         "name": {
-            "type": "string",
-            "primary": true
+            "type": "string"
         },
         "color": {
             "type": "string"
@@ -60,7 +60,10 @@ In this example-schema we define a hero-collection with the following settings:
             }
         }
     },
-    "required": ["color"],
+    "required": [
+        "name",
+        "color"
+    ],
     "encrypted": ["secret"],
     "attachments": {
         "encrypted": true
@@ -85,22 +88,36 @@ console.dir(myDatabase.heroes.name);
 The `version` field is a number, starting with `0`.
 When the version is greater than 0, you have to provide the migrationStrategies to create a collection with this schema.
 
-## keyCompression
+## primaryKey
 
-Since version `8.0.0`, the keyCompression is disabled by default. If you have a huge amount of documents it makes sense to enable the keyCompression and save disk-space.
-`keyCompression` can only be used on the **top-level** of a schema.
+The `primaryKey` field contains the fieldname of the property that will be used as primary key for the whole collection.
+The value of the primary key of the document must be a `string`, unique, final and is required.
 
-**Notice:** When you use `keyCompression` together with the graphql replication, you must ensure that direct non-RxDB writes to the remote database must also write compressed documents. Therefore it is not recommended to enable `keyCompression` for that use case.
+### composite primary key
 
-
+You can define a composite primary key which gets composed from multiple properties of the document data.
 
 ```javascript
 const mySchema = {
   keyCompression: true, // set this to true, to enable the keyCompression
   version: 0,
-  title: 'human schema no compression',
+  title: 'human schema with composite primary',
+  primaryKey: {
+      // where should the composed string be stored
+      key: 'id',
+      // fields that will be used to create the composed key
+      fields: [
+          'firstName',
+          'lastName'
+      ],
+      // separator which is used to concat the fields values.
+      separator: '|'
+  }
   type: 'object',
   properties: {
+      id: {
+          type: 'string'
+      },
       firstName: {
           type: 'string'
       },
@@ -108,7 +125,68 @@ const mySchema = {
           type: 'string'
       }
   },
-  required: ['firstName', 'lastName']
+  required: [
+    'id', 
+    'firstName',
+    'lastName'
+  ]
+};
+```
+
+You can then find a document by using the relevant parts to create the composite primaryKey:
+
+```ts
+
+// inserting with composite primary
+await myRxCollection.insert({
+    // id, <- do not set the id, it will be filled by RxDB
+    firstName: 'foo',
+    lastName: 'bar'
+});
+
+// find by composite primary
+const id = myRxCollection.schema.getPrimaryOfDocumentData({
+    firstName: 'foo',
+    lastName: 'bar'
+});
+const myRxDocument = myRxCollection.findOne(id).exec();
+
+```
+
+
+## keyCompression
+
+If set to true (disabled by default), the documents will be stored in a compressed formant which saves up to 40% disc space.
+For compression the npm module [jsonschema-key-compression](https://github.com/pubkey/jsonschema-key-compression) is used.
+
+`keyCompression` can only be set on the **top-level** of a schema.
+
+**Notice:** When you use `keyCompression` together with the graphql replication, you must ensure that direct non-RxDB writes to the remote database must also write compressed documents. Therefore it is not recommended to enable `keyCompression` for that use case.
+
+
+```javascript
+const mySchema = {
+  keyCompression: true, // set this to true, to enable the keyCompression
+  version: 0,
+  title: 'human schema with compression',
+  primaryKey: 'id',
+  type: 'object',
+  properties: {
+      id: {
+          type: 'string'
+      },
+      firstName: {
+          type: 'string'
+      },
+      lastName: {
+          type: 'string'
+      }
+  },
+  required: [
+    'id', 
+    'firstName',
+    'lastName'
+]
 };
 ```
 
@@ -123,10 +201,14 @@ Index is only allowed on field types `string`, `integer` and `number`
 ```js
 const schemaWithIndexes = {
   version: 0,
-  title: 'human schema no compression',
+  title: 'human schema with indexes',
   keyCompression: true,
+  primaryKey: 'id',
   type: 'object',
   properties: {
+      id: {
+          type: 'string'
+      },
       firstName: {
           type: 'string'
       },
@@ -148,6 +230,7 @@ const schemaWithIndexes = {
           }       
       }
   },
+  required: ['id'],
   indexes: [
     'firstName', // <- this will create a simple index for the `firstName` field
     'creditCards.[].cvc',
@@ -166,8 +249,12 @@ Whenever you insert a document or create a temporary-document, unset fields will
 ```js
 const schemaWithDefaultAge = {
   version: 0,
+  primaryKey: 'id',
   type: 'object',
   properties: {
+      id: {
+          type: 'string'
+      },
       firstName: {
           type: 'string'
       },
@@ -179,6 +266,7 @@ const schemaWithDefaultAge = {
           default: 20       // <- default will be used
       }
   },
+  required: ['object']
 };
 ```
 
@@ -194,8 +282,12 @@ Advantages:
 ```js
 const schemaWithFinalAge = {
   version: 0,
+  primaryKey: 'id',
   type: 'object',
   properties: {
+      id: {
+          type: 'string'
+      },
       firstName: {
           type: 'string'
       },
@@ -207,6 +299,7 @@ const schemaWithFinalAge = {
           final: true
       }
   },
+  required: ['id']
 };
 ```
 
@@ -220,12 +313,17 @@ The password used for encryption is set during database creation. [See RxDatabas
 ```js
 const schemaWithDefaultAge = {
   version: 0,
+  primaryKey: 'id',
   type: 'object',
   properties: {
+      id: {
+          type: 'string'
+      },
       secret: {
           type: 'string'
       },
   },
+  required: ['id']
   encrypted: ['secret']
 };
 ```

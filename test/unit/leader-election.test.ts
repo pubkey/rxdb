@@ -7,10 +7,21 @@ import * as humansCollection from '../helper/humans-collection';
 
 import {
     createRxDatabase,
-    randomCouchString
+    randomCouchString,
+    addRxPlugin,
 } from '../../plugins/core';
 
+import {
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
+
+
+import {
+    RxDBLeaderElectionPlugin
+} from '../../plugins/leader-election';
+
 config.parallel('leader-election.test.js', () => {
+    addRxPlugin(RxDBLeaderElectionPlugin);
     describe('.die()', () => {
         it('other instance applies on death of leader', async () => {
             const name = randomCouchString(10);
@@ -158,13 +169,14 @@ config.parallel('leader-election.test.js', () => {
         it('non-multiInstance should always be leader', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 multiInstance: false
             });
             // setTimeout(() => db.destroy(), dbLifetime);
-            await db.collection({
-                name: 'human',
-                schema: schemas.human
+            await db.addCollections({
+                human: {
+                    schema: schemas.human
+                }
             });
             assert.strictEqual(db.isLeader(), true);
             db.destroy();

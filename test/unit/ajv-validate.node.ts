@@ -8,8 +8,13 @@ import * as schemas from '../helper/schemas';
 import {
     addRxPlugin,
     createRxDatabase,
-    randomCouchString
+    randomCouchString,
 } from '../../plugins/core';
+
+import {
+    addPouchPlugin,
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
 
 import { RxDBAjvValidatePlugin } from '../../plugins/ajv-validate';
 addRxPlugin(RxDBAjvValidatePlugin);
@@ -20,7 +25,7 @@ addRxPlugin(RxDBKeyCompressionPlugin);
 import { RxDBDevModePlugin } from '../../plugins/dev-mode';
 addRxPlugin(RxDBDevModePlugin);
 
-addRxPlugin(require('pouchdb-adapter-memory'));
+addPouchPlugin(require('pouchdb-adapter-memory'));
 
 config.parallel('ajv-validate.node.js', () => {
     describe('validation', () => {
@@ -28,14 +33,15 @@ config.parallel('ajv-validate.node.js', () => {
             it('should not throw', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
-                const col = await db.collection({
-                    name: 'humans',
-                    schema: schemas.human
+                const cols = await db.addCollections({
+                    humans: {
+                        schema: schemas.human
+                    }
                 });
 
-                const doc = await col.insert(schemaObjects.human());
+                const doc = await cols.humans.insert(schemaObjects.human());
                 assert.ok(doc);
 
                 db.destroy();
@@ -45,15 +51,16 @@ config.parallel('ajv-validate.node.js', () => {
             it('should not validate wrong data', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
-                const col = await db.collection({
-                    name: 'humans',
-                    schema: schemas.human
+                const cols = await db.addCollections({
+                    humans: {
+                        schema: schemas.human
+                    }
                 });
 
                 await AsyncTestUtil.assertThrows(
-                    () => col.insert({
+                    () => cols.humans.insert({
                         foo: 'bar'
                     }),
                     'RxError'
@@ -64,16 +71,17 @@ config.parallel('ajv-validate.node.js', () => {
             it('should have the correct params in error', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
-                const col = await db.collection({
-                    name: 'humans',
-                    schema: schemas.human
+                const cols = await db.addCollections({
+                    humans: {
+                        schema: schemas.human
+                    }
                 });
 
                 let error = null;
                 try {
-                    await col.insert({
+                    await cols.humans.insert({
                         foo: 'bar'
                     });
                 } catch (e) {

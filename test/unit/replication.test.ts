@@ -12,14 +12,22 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
 import {
-    addRxPlugin,
     createRxDatabase,
     promiseWait,
     randomCouchString,
     isRxCollection,
-    RxReplicationState,
-    SyncOptions
+    RxCouchDBReplicationState,
+    SyncOptions,
+    addRxPlugin,
+    blobBufferUtil,
+    RxChangeEvent
 } from '../../plugins/core';
+
+import {
+    addPouchPlugin,
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
+import { RxDBReplicationCouchDBPlugin } from '../../plugins/replication-couchdb';
 
 import {
     fromEvent
@@ -29,17 +37,25 @@ import {
     filter,
     first
 } from 'rxjs/operators';
+import { HumanDocumentType } from '../helper/schema-objects';
+import { RxDocumentData } from '../../src/types';
 
 let request: any;
 let SpawnServer: any;
+
+
 if (config.platform.isNode()) {
     SpawnServer = require('../helper/spawn-server');
     request = require('request-promise');
-    addRxPlugin(require('pouchdb-adapter-http'));
+    addPouchPlugin(require('pouchdb-adapter-http'));
 }
 
-describe('replication.test.js', () => {
-    if (!config.platform.isNode()) return;
+describe('replication-couchdb.test.js', () => {
+    if (!config.platform.isNode()) {
+        return;
+    }
+    addRxPlugin(RxDBReplicationCouchDBPlugin);
+
     describe('spawn-server.js', () => {
         it('spawn and reach a server', async () => {
             const server = await SpawnServer.spawn();
@@ -72,18 +88,18 @@ describe('replication.test.js', () => {
                 const c2 = await humansCollection.create(0);
 
                 const pw8 = AsyncTestUtil.waitResolveable(1000);
-                c.pouch.sync(server.url, {
+                c.storageInstance.internals.pouch.sync(server.url, {
                     live: true
-                }).on('error', function (err) {
-                    console.log('error:');
+                }).on('error', function (err: Error) {
+                    console.error('error:');
                     console.log(JSON.stringify(err));
-                    throw new Error(err);
+                    throw err;
                 });
-                c2.pouch.sync(server.url, {
+                c2.storageInstance.internals.pouch.sync(server.url, {
                     live: true
                 });
                 let count = 0;
-                c2.pouch.changes({
+                c2.storageInstance.internals.pouch.changes({
                     since: 'now',
                     live: true,
                     include_docs: true
@@ -113,17 +129,17 @@ describe('replication.test.js', () => {
                 const server = await SpawnServer.spawn();
                 const c = await humansCollection.create(0, undefined, false);
                 const c2 = await humansCollection.create(0, undefined, false);
-                c.pouch.sync(server.url, {
+                c.storageInstance.internals.pouch.sync(server.url, {
                     live: true
                 });
-                c2.pouch.sync(server.url, {
+                c2.storageInstance.internals.pouch.sync(server.url, {
                     live: true
                 });
 
                 const e1 = [];
                 const pouch$ =
                     fromEvent(
-                        c.pouch.changes({
+                        c.storageInstance.internals.pouch.changes({
                             since: 'now',
                             live: true,
                             include_docs: true
@@ -134,7 +150,7 @@ describe('replication.test.js', () => {
                         ).subscribe(e => e1.push(e));
                 const e2 = [];
                 const pouch2$ =
-                    fromEvent(c2.pouch.changes({
+                    fromEvent(c2.storageInstance.internals.pouch.changes({
                         since: 'now',
                         live: true,
                         include_docs: true
@@ -163,7 +179,7 @@ describe('replication.test.js', () => {
             it('push-only-sync', async () => {
                 const c = await humansCollection.create(10, undefined, false);
                 const c2 = await humansCollection.create(10, undefined, false);
-                const replicationState = c.sync({
+                const replicationState = c.syncCouchDB({
                     remote: c2,
                     waitForLeadership: false,
                     direction: {
@@ -186,7 +202,7 @@ describe('replication.test.js', () => {
             it('pull-only-sync', async () => {
                 const c = await humansCollection.create(10, undefined, false);
                 const c2 = await humansCollection.create(10, undefined, false);
-                c.sync({
+                c.syncCouchDB({
                     remote: c2,
                     waitForLeadership: false,
                     direction: {
@@ -211,7 +227,7 @@ describe('replication.test.js', () => {
                 const c = await humansCollection.create(0);
                 const c2 = await humansCollection.create(10, undefined, false);
                 await AsyncTestUtil.assertThrows(
-                    () => c.sync({
+                    () => c.syncCouchDB({
                         remote: c2,
                         direction: {
                             push: false,
@@ -237,7 +253,7 @@ describe('replication.test.js', () => {
                 matchingDoc.firstName = 'foobar';
                 await c2.insert(matchingDoc);
 
-                c.sync({
+                c.syncCouchDB({
                     remote: c2,
                     waitForLeadership: false,
                     query: query
@@ -265,7 +281,7 @@ describe('replication.test.js', () => {
 
                 const query = otherCollection.find().where('firstName').eq('foobar');
                 await AsyncTestUtil.assertThrows(
-                    () => c.sync({
+                    () => c.syncCouchDB({
                         remote: c2,
                         query
                     }),
@@ -284,7 +300,7 @@ describe('replication.test.js', () => {
             it('should be able to get the event-emitter after some time', async () => {
                 const c = await humansCollection.create(0);
                 const c2 = await humansCollection.create(10);
-                const repState = await c.sync({
+                const repState = await c.syncCouchDB({
                     remote: c2,
                     waitForLeadership: false
                 });
@@ -304,7 +320,7 @@ describe('replication.test.js', () => {
             it('should emit change-events', async () => {
                 const c = await humansCollection.create(0);
                 const c2 = await humansCollection.create(10);
-                const repState = await c.sync({
+                const repState = await c.syncCouchDB({
                     remote: c2,
                     waitForLeadership: false
                 });
@@ -322,7 +338,7 @@ describe('replication.test.js', () => {
             it('should be active', async () => {
                 const c = await humansCollection.create();
                 const c2 = await humansCollection.create(10);
-                const repState = await c.sync({
+                const repState = await c.syncCouchDB({
                     remote: c2,
                     waitForLeadership: false
                 });
@@ -340,7 +356,7 @@ describe('replication.test.js', () => {
                 server.close(true);
                 const c = await humansCollection.create(0);
 
-                const repState = c.sync({
+                const repState = c.syncCouchDB({
                     remote: server.url
                 });
 
@@ -355,7 +371,7 @@ describe('replication.test.js', () => {
                 const server = await SpawnServer.spawn();
                 const c = await humansCollection.create(0);
 
-                const repState = c.sync({
+                const repState = c.syncCouchDB({
                     remote: server.url
                 });
 
@@ -379,7 +395,7 @@ describe('replication.test.js', () => {
             it('should always be false on live-replication', async () => {
                 const c = await humansCollection.create();
                 const c2 = await humansCollection.create(10);
-                const repState = await c.sync({
+                const repState = await c.syncCouchDB({
                     remote: c2,
                     waitForLeadership: false
                 });
@@ -392,7 +408,7 @@ describe('replication.test.js', () => {
             it('should emit true on non-live-replication when done', async () => {
                 const c = await humansCollection.create(10);
                 const c2 = await humansCollection.create(10);
-                const repState = await c.sync({
+                const repState = await c.syncCouchDB({
                     remote: c2,
                     waitForLeadership: true,
                     direction: {
@@ -428,7 +444,7 @@ describe('replication.test.js', () => {
             it('should emit one event per doc', async () => {
                 const c = await humansCollection.create(0);
                 const c2 = await humansCollection.create(10);
-                const repState = await c.sync({
+                const repState = await c.syncCouchDB({
                     remote: c2,
                     waitForLeadership: false
                 });
@@ -446,7 +462,7 @@ describe('replication.test.js', () => {
             it('should not emit', async () => {
                 const c = await humansCollection.create(0);
                 const c2 = await humansCollection.create(10);
-                const repState = await c.sync({
+                const repState = await c.syncCouchDB({
                     remote: c2,
                     waitForLeadership: false
                 });
@@ -464,7 +480,7 @@ describe('replication.test.js', () => {
             it('should have the full data when resolved', async () => {
                 const c = await humansCollection.create(0);
                 const c2 = await humansCollection.create(10);
-                const repState = await c.sync({
+                const repState = await c.syncCouchDB({
                     remote: c2,
                     waitForLeadership: false,
                     options: {
@@ -488,10 +504,10 @@ describe('replication.test.js', () => {
 
                 const c = await humansCollection.create(0, 'colsource' + randomCouchString(5));
                 const c2 = await humansCollection.create(0, 'colsync' + randomCouchString(5));
-                c.sync({
+                c.syncCouchDB({
                     remote: syncPouch
                 });
-                c2.sync({
+                c2.syncCouchDB({
                     remote: syncPouch
                 });
 
@@ -506,7 +522,7 @@ describe('replication.test.js', () => {
                 await c.insert(obj);
                 await pw8.promise;
                 await AsyncTestUtil.waitUntil(() => events.length === 1);
-                assert.strictEqual(events[0].constructor.name, 'RxChangeEvent');
+                assert.ok(events[0]);
 
                 syncC.database.destroy();
                 c.database.destroy();
@@ -519,10 +535,10 @@ describe('replication.test.js', () => {
 
                 const c = await humansCollection.create(0, 'colsource' + randomCouchString(5));
                 const c2 = await humansCollection.create(0, 'colsync' + randomCouchString(5));
-                c.sync({
+                c.syncCouchDB({
                     remote: syncPouch
                 });
-                c2.sync({
+                c2.syncCouchDB({
                     remote: syncPouch
                 });
 
@@ -552,10 +568,10 @@ describe('replication.test.js', () => {
 
                 const c = await humansCollection.create(0, 'colsource' + randomCouchString(5));
                 const c2 = await humansCollection.create(0, 'colsync' + randomCouchString(5));
-                c.sync({
+                c.syncCouchDB({
                     remote: syncPouch
                 });
-                c2.sync({
+                c2.syncCouchDB({
                     remote: syncPouch
                 });
 
@@ -566,6 +582,7 @@ describe('replication.test.js', () => {
                     results = res;
                     if (results && results.length > 0) pw8.resolve();
                 });
+
                 const obj = schemaObjects.human();
                 await c.insert(obj);
                 await pw8.promise;
@@ -573,23 +590,55 @@ describe('replication.test.js', () => {
                 const doc: any = await c.findOne().exec();
                 const doc2: any = await c2.findOne().exec();
 
-                // update and w8 for sync
-                let lastValue = null;
-                const newPromiseWait = AsyncTestUtil.waitResolveable(1400);
-                doc2
-                    .get$('firstName')
-                    .subscribe((newValue: any) => {
-                        lastValue = newValue;
-                        if (lastValue === 'foobar') newPromiseWait.resolve();
-                    });
-                await doc.atomicSet('firstName', 'foobar');
 
-                await newPromiseWait.promise;
-                assert.strictEqual(lastValue, 'foobar');
+                const patchPromise = doc.atomicPatch({ firstName: 'foobar' });
+                await waitUntil(() => doc2.firstName === 'foobar');
+
+                await patchPromise;
+
+                assert.strictEqual(doc2.firstName, 'foobar');
+                assert.strictEqual(doc.firstName, 'foobar');
 
                 syncC.database.destroy();
                 c.database.destroy();
                 c2.database.destroy();
+            });
+            it('should get the correct event when an attachment is replicated', async () => {
+                const remoteCollection = await humansCollection.createAttachments(1);
+                const collection = await humansCollection.createAttachments(0, randomCouchString(5));
+                collection.syncCouchDB({
+                    remote: remoteCollection
+                });
+
+                const emitted: RxChangeEvent<RxDocumentData<HumanDocumentType>>[] = [];
+                const sub = collection.$.subscribe(cE => {
+                    emitted.push(cE);
+                });
+
+                const doc = await remoteCollection.findOne().exec(true);
+                await doc.putAttachment({
+                    id: 'cat.txt',
+                    data: blobBufferUtil.createBlobBuffer('meow', 'text/plain'),
+                    type: 'text/plain'
+                });
+
+                await waitUntil(() => emitted.length >= 1);
+                if (emitted.length > 1) {
+                    throw new Error('too much events emitted');
+                }
+
+                const firstEvent = emitted[0];
+                if (!firstEvent || !firstEvent.documentData) {
+                    throw new Error('firstEvent event missing');
+                }
+                assert.strictEqual(
+                    firstEvent.documentData._attachments['cat.txt'].type,
+                    'text/plain'
+                );
+
+                sub.unsubscribe();
+                remoteCollection.database.destroy();
+                collection.database.destroy();
             });
         });
         describe('negative', () => { });
@@ -599,11 +648,11 @@ describe('replication.test.js', () => {
             // create a schema
             const mySchema = {
                 version: 0,
+                primaryKey: 'passportId',
                 type: 'object',
                 properties: {
                     passportId: {
-                        type: 'string',
-                        primary: true
+                        type: 'string'
                     },
                     firstName: {
                         type: 'string'
@@ -622,13 +671,15 @@ describe('replication.test.js', () => {
             // create a database
             const db1 = await createRxDatabase({
                 name: randomCouchString(12),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
             // create a collection
-            const collection1 = await db1.collection({
-                name: 'crawlstate',
-                schema: mySchema
+            const collections1 = await db1.addCollections({
+                crawlstate: {
+                    schema: mySchema
+                }
             });
+            const collection1 = collections1.crawlstate;
 
             // insert a document
             await collection1.insert({
@@ -641,19 +692,22 @@ describe('replication.test.js', () => {
             // create another database
             const db2 = await createRxDatabase({
                 name: randomCouchString(12),
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory'),
             });
             // create a collection
-            const collection2 = await db2.collection({
-                name: 'crawlstate',
-                schema: mySchema
+            const collections2 = await db2.addCollections({
+                crawlstate: {
+                    schema: mySchema
+                }
             });
+            const collection2 = collections2.crawlstate;
 
             // query for all documents on db2-collection2 (query will be cached)
-            let documents = await collection2.find().exec();
+            const documents = await collection2.find().exec();
+            assert.ok(documents);
 
             // Replicate from db1-collection1 to db2-collection2
-            const pullstate: RxReplicationState = collection2.sync({
+            const pullstate: RxCouchDBReplicationState = collection2.syncCouchDB({
                 remote: collection1,
                 direction: {
                     pull: true,
@@ -671,11 +725,14 @@ describe('replication.test.js', () => {
                     first()
                 ).toPromise();
 
-            // query for all documents on db2-collection2 again (result is read from cache which doesnt contain replicated doc)
-            // collection2._queryCache.destroy();
-            documents = await collection2.find().exec();
 
-            assert.strictEqual(documents.length, 1);
+
+            await waitUntil(async () => {
+                // query for all documents on db2-collection2 again (result is read from cache which doesnt contain replicated doc)
+                // collection2._queryCache.destroy();
+                const newDocs = await collection2.find().exec();
+                return newDocs.length === 1;
+            });
 
             // clean up afterwards
             db1.destroy();
@@ -686,8 +743,8 @@ describe('replication.test.js', () => {
             const colB = await humansCollection.create(0);
 
             await AsyncTestUtil.assertThrows(
-                () => colA.sync({
-                    remote: colB.pouch,
+                () => colA.syncCouchDB({
+                    remote: colB.storageInstance.internals.pouch,
                     direction: {
                         pull: true,
                         push: false
@@ -718,7 +775,7 @@ describe('replication.test.js', () => {
                 }
             };
 
-            const syncState = collection.sync(syncOptions);
+            const syncState = collection.syncCouchDB(syncOptions);
             await syncState.awaitInitialReplication();
 
             await waitUntil(() => syncState.canceled === true);
@@ -728,28 +785,6 @@ describe('replication.test.js', () => {
 
             collection.database.destroy();
             syncCollection.database.destroy();
-
-            /*
-            global.gc();
-            const usedBefore = process.memoryUsage().heapUsed / 1024 / 1024;
-
-            await Promise.all(
-                new Array(1000).fill(0).map(async () => {
-                    const syncState = collection.sync(syncOptions);
-                    await syncState.awaitInitialReplication();
-                    await syncState.cancel();
-                })
-            );
-
-
-            global.gc();
-            const usedAfter = process.memoryUsage().heapUsed / 1024 / 1024;
-
-            console.log('usedBefore: ' + usedBefore);
-            console.log('usedAfter: ' + usedAfter);
-
-            process.exit();
-            */
         });
     });
 });

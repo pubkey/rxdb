@@ -8,24 +8,30 @@ import {
     randomCouchString,
     RxCollection,
     RxDocument,
-    MangoQuery
+    MangoQuery,
 } from '../../plugins/core';
+
+import {
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
+
 
 describe('event-reduce.test.js', () => {
     async function createCollection(eventReduce: boolean): Promise<RxCollection> {
         const db = await createRxDatabase({
             name: randomCouchString(10),
-            adapter: 'memory',
+            storage: getRxStoragePouch('memory'),
             eventReduce
         });
         const schema = clone(schemas.primaryHuman);
         schema.keyCompression = false;
         schema.indexes = ['age', 'lastName'];
-        const collection = await db.collection({
-            name: 'items',
-            schema
+        const collections = await db.addCollections({
+            items: {
+                schema
+            }
         });
-        return collection;
+        return collections.items;
     }
     function ensureResultsEqual(res1: RxDocument[], res2: RxDocument[]) {
         assert.deepStrictEqual(
@@ -99,7 +105,7 @@ describe('event-reduce.test.js', () => {
                     .findOne()
                     .sort('lastName')
                     .exec(true);
-                await docToUpdate.atomicSet('age', 50);
+                await docToUpdate.atomicPatch({ age: 50 });
             })
         );
 

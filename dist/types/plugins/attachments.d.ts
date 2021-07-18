@@ -1,28 +1,27 @@
-import type { RxDocument, RxPlugin, BlobBuffer, WithAttachments, OldRxCollection } from '../types';
+import type { RxDocument, RxPlugin, BlobBuffer, OldRxCollection, RxAttachmentData, RxDocumentData, RxAttachmentCreator } from '../types';
 /**
  * an RxAttachment is basically just the attachment-stub
  * wrapped so that you can access the attachment-data
  */
 export declare class RxAttachment {
-    doc: any;
+    doc: RxDocument;
     id: string;
     type: string;
     length: number;
     digest: string;
-    rev: string;
-    constructor({ doc, id, type, length, digest, rev }: any);
-    remove(): Promise<any>;
+    constructor({ doc, id, type, length, digest }: any);
+    remove(): Promise<void>;
     /**
      * returns the data for the attachment
      */
     getData(): Promise<BlobBuffer>;
     getStringData(): Promise<string>;
 }
-export declare function fromPouchDocument(id: string, pouchDocAttachment: any, rxDocument: RxDocument): RxAttachment;
-export declare function putAttachment(this: RxDocument, { id, data, type }: any, 
+export declare function fromStorageInstanceResult(id: string, attachmentData: RxAttachmentData, rxDocument: RxDocument): RxAttachment;
+export declare function putAttachment(this: RxDocument, { id, data, type }: RxAttachmentCreator, 
 /**
- * TODO set to default=true
- * in next major release
+ * If set to true, the write will be skipped
+ * when the attachment already contains the same data.
  */
 skipIfSame?: boolean): Promise<RxAttachment>;
 /**
@@ -33,11 +32,11 @@ export declare function getAttachment(this: RxDocument, id: string): RxAttachmen
  * returns all attachments of the document
  */
 export declare function allAttachments(this: RxDocument): RxAttachment[];
-export declare function preMigrateDocument(data: {
-    docData: WithAttachments<any>;
+export declare function preMigrateDocument<RxDocType>(data: {
+    docData: RxDocumentData<RxDocType>;
     oldCollection: OldRxCollection;
 }): Promise<void>;
-export declare function postMigrateDocument(action: any): Promise<void>;
+export declare function postMigrateDocument(_action: any): Promise<void>;
 export declare const rxdb = true;
 export declare const prototypes: {
     RxDocument: (proto: any) => void;

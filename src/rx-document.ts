@@ -7,18 +7,15 @@ import {
     distinctUntilChanged,
     map
 } from 'rxjs/operators';
-
 import {
     clone,
     trimDots,
     getHeightOfRevision,
     pluginMissing,
     now,
-    nextTick
+    nextTick,
+    flatClone
 } from './util';
-import {
-    RxChangeEvent, createUpdateEvent, createDeleteEvent
-} from './rx-change-event';
 import {
     newRxError,
     newRxTypeError,
@@ -30,8 +27,15 @@ import {
 
 import type {
     RxDocument,
-    RxCollection
+    RxCollection,
+    RxDocumentData,
+    RxDocumentWriteData,
+    RxChangeEvent
 } from './types';
+import { getDocumentDataOfRxChangeEvent } from './rx-change-event';
+import { writeToStorageInstance } from './rx-collection-helper';
+import { overwritable } from './overwritable';
+import { getSchemaByObjectPath } from './rx-schema-helper';
 
 export const basePrototype = {
 
@@ -78,14 +82,14 @@ export const basePrototype = {
         if (!_this.isInstanceOfRxDocument) {
             return undefined;
         }
-        return _this._deleted$.asObservable();
+        return _this._isDeleted$.asObservable();
     },
     get deleted() {
         const _this: RxDocument = this as any;
         if (!_this.isInstanceOfRxDocument) {
             return undefined;
         }
-        return _this._deleted$.getValue();
+        return _this._isDeleted$.getValue();
     },
 
     /**
@@ -96,12 +100,14 @@ export const basePrototype = {
         return _this._dataSync$.asObservable();
     },
 
-    _handleChangeEvent(this: RxDocument, changeEvent: RxChangeEvent) {
-        if (changeEvent.documentId !== this.primary)
+    _handleChangeEvent(this: RxDocument, changeEvent: RxChangeEvent<any>) {
+        if (changeEvent.documentId !== this.primary) {
             return;
+        }
 
         // ensure that new _rev is higher then current
-        const newRevNr = getHeightOfRevision(changeEvent.documentData._rev);
+        const docData = getDocumentDataOfRxChangeEvent(changeEvent);
+        const newRevNr = getHeightOfRevision(docData._rev);
         const currentRevNr = getHeightOfRevision(this._data._rev);
         if (currentRevNr > newRevNr) return;
 
@@ -115,7 +121,7 @@ export const basePrototype = {
             case 'DELETE':
                 // remove from docCache to assure new upserted RxDocuments will be a new instance
                 this.collection._docCache.delete(this.primary);
-                this._deleted$.next(true);
+                this._isDeleted$.next(true);
                 break;
         }
     },
@@ -123,7 +129,7 @@ export const basePrototype = {
     /**
      * emits the changeEvent to the upper instance (RxCollection)
      */
-    $emit(this: RxDocument, changeEvent: RxChangeEvent) {
+    $emit(this: RxDocument, changeEvent: RxChangeEvent<any>) {
         return this.collection.$emit(changeEvent);
     },
 
@@ -147,7 +153,10 @@ export const basePrototype = {
             });
         }
 
-        const schemaObj = this.collection.schema.getSchemaByObjectPath(path);
+        const schemaObj = getSchemaByObjectPath(
+            this.collection.schema.jsonSchema,
+            path
+        );
         if (!schemaObj) {
             throw newRxError('DOC4', {
                 path
@@ -165,7 +174,10 @@ export const basePrototype = {
      * populate the given path
      */
     populate(this: RxDocument, path: string): Promise<RxDocument | null> {
-        const schemaObj = this.collection.schema.getSchemaByObjectPath(path);
+        const schemaObj = getSchemaByObjectPath(
+            this.collection.schema.jsonSchema,
+            path
+        );
         const value = this.get(path);
         if (!value) {
             return Promise.resolve(null);
@@ -182,7 +194,7 @@ export const basePrototype = {
             });
         }
 
-        const refCollection = this.collection.database.collections[schemaObj.ref];
+        const refCollection: RxCollection = this.collection.database.collections[schemaObj.ref];
         if (!refCollection) {
             throw newRxError('DOC7', {
                 ref: schemaObj.ref,
@@ -207,14 +219,20 @@ export const basePrototype = {
     get(this: RxDocument, objPath: string): any | null {
         if (!this._data) return undefined;
         let valueObj = objectPath.get(this._data, objPath);
-        valueObj = clone(valueObj);
 
         // direct return if array or non-object
         if (
             typeof valueObj !== 'object' ||
             Array.isArray(valueObj)
-        ) return valueObj;
+        ) {
+            return overwritable.deepFreezeWhenDevMode(valueObj);
+        }
 
+        /**
+         * TODO find a way to deep-freeze together with defineGetterSetter
+         * so we do not have to do a deep clone here.
+         */
+        valueObj = clone(valueObj);
         defineGetterSetter(
             this.collection.schema,
             valueObj,
@@ -225,12 +243,14 @@ export const basePrototype = {
     },
 
     toJSON(this: RxDocument, withRevAndAttachments = false) {
-        const data = clone(this._data);
         if (!withRevAndAttachments) {
+            const data = flatClone(this._data);
             delete (data as any)._rev;
-            delete data._attachments;
+            delete (data as any)._attachments;
+            return overwritable.deepFreezeWhenDevMode(data);
+        } else {
+            return overwritable.deepFreezeWhenDevMode(this._data);
         }
-        return data;
     },
 
     /**
@@ -357,25 +377,18 @@ export const basePrototype = {
     },
 
     /**
-     * @deprecated use atomicPatch instead because it is better typed
-     * and does not allow any keys and values
-     */
-    atomicSet(this: RxDocument, key: string, value: any) {
-        return this.atomicUpdate(docData => {
-            objectPath.set(docData, key, value);
-            return docData;
-        });
-    },
-
-    /**
      * saves the new document-data
      * and handles the events
      */
-    _saveData(this: RxDocument, newData: any, oldData: any): Promise<void> {
+    async _saveData<RxDocumentType>(
+        this: RxDocument<RxDocumentType>,
+        newData: RxDocumentWriteData<RxDocumentType>,
+        oldData: RxDocumentData<RxDocumentType>
+    ): Promise<void> {
         newData = newData;
 
         // deleted documents cannot be changed
-        if (this._deleted$.getValue()) {
+        if (this._isDeleted$.getValue()) {
             throw newRxError('DOC11', {
                 id: this.primary,
                 document: this
@@ -385,36 +398,18 @@ export const basePrototype = {
         // ensure modifications are ok
         this.collection.schema.validateChange(oldData, newData);
 
-        let startTime: number;
-        return this.collection._runHooks('pre', 'save', newData, this)
-            .then(() => {
-                this.collection.schema.validate(newData);
-                startTime = now();
-                return this.collection._pouchPut(newData);
-            })
-            .then(ret => {
-                const endTime = now();
-                if (!ret.ok) {
-                    throw newRxError('DOC12', {
-                        data: ret
-                    });
-                }
-                newData._rev = ret.rev;
+        await this.collection._runHooks('pre', 'save', newData, this);
 
-                // emit event
-                const changeEvent = createUpdateEvent(
-                    this.collection,
-                    newData,
-                    oldData,
-                    startTime,
-                    endTime,
-                    this
-                );
+        this.collection.schema.validate(newData);
+        await writeToStorageInstance(
+            this.collection,
+            {
+                previous: oldData,
+                document: newData
+            }
+        );
 
-                this.$emit(changeEvent);
-
-                return this.collection._runHooks('post', 'save', newData, this);
-            });
+        return this.collection._runHooks('post', 'save', newData, this);
     },
 
     /**
@@ -456,31 +451,21 @@ export const basePrototype = {
             }));
         }
 
-        const deletedData = clone(this._data);
+        const deletedData = flatClone(this._data);
         let startTime: number;
         return this.collection._runHooks('pre', 'remove', deletedData, this)
             .then(() => {
                 deletedData._deleted = true;
                 startTime = now();
-                /**
-                 * because pouch.remove will also empty the object,
-                 * we set _deleted: true and use pouch.put
-                 */
-                return this.collection._pouchPut(deletedData);
+                return writeToStorageInstance(
+                    this.collection,
+                    {
+                        previous: this._data,
+                        document: deletedData
+                    }
+                );
             })
             .then(() => {
-                const endTime = now();
-                this.$emit(
-                    createDeleteEvent(
-                        this.collection,
-                        deletedData,
-                        this._data,
-                        startTime,
-                        endTime,
-                        this
-                    )
-                );
-
                 return this.collection._runHooks('post', 'remove', deletedData, this);
             })
             .then(() => this);
@@ -503,7 +488,7 @@ export function createRxDocumentConstructor(proto = basePrototype) {
 
         // assume that this is always equal to the doc-data in the database
         this._dataSync$ = new BehaviorSubject(jsonData);
-        this._deleted$ = new BehaviorSubject(false) as any;
+        this._isDeleted$ = new BehaviorSubject(false) as any;
 
         this._atomicQueue = Promise.resolve();
 
@@ -526,7 +511,11 @@ export function defineGetterSetter(
     if (valueObj === null) return;
 
 
-    let pathProperties = schema.getSchemaByObjectPath(objPath);
+    let pathProperties = getSchemaByObjectPath(
+        schema.jsonSchema,
+        objPath
+    );
+
     if (typeof pathProperties === 'undefined') return;
     if (pathProperties.properties) pathProperties = pathProperties.properties;
 
@@ -595,7 +584,7 @@ export function createWithConstructor(
     return doc;
 }
 
-export function isInstanceOf(obj: any): boolean {
+export function isRxDocument(obj: any): boolean {
     if (typeof obj === 'undefined') return false;
     return !!obj.isInstanceOfRxDocument;
 }

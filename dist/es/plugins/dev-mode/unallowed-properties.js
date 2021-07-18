@@ -1,7 +1,7 @@
 import { newRxError } from '../../rx-error';
 import { rxDatabaseProperties } from './entity-properties';
-import { validateCouchDBString } from '../../pouch-db';
 import { isFolderPath } from '../../util';
+import { validateDatabaseName } from './check-names';
 /**
  * if the name of a collection
  * clashes with a property of RxDatabase,
@@ -16,12 +16,7 @@ export function ensureCollectionNameValid(args) {
   }
 }
 export function ensureDatabaseNameIsValid(args) {
-  /**
-   * Not all strings can be used as couchdb collection name
-   * So we only allow couchdb-valid string as databse name
-   * which solves some strange bugs.
-   */
-  validateCouchDBString(args.name);
+  validateDatabaseName(args.name);
   /**
    * The server-plugin has problems when a path with and ending slash is given
    * So we do not allow this.

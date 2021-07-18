@@ -16,6 +16,11 @@ import {
     randomCouchString
 } from '../../plugins/core';
 
+import {
+    getRxStoragePouch,
+} from '../../plugins/pouchdb';
+
+
 config.parallel('hooks.test.js', () => {
     describe('get/set', () => {
         it('should set a hook', async () => {
@@ -122,7 +127,7 @@ config.parallel('hooks.test.js', () => {
                 });
                 it('should have the collection bound to the this-scope', async () => {
                     const c = await humansCollection.createPrimary(0);
-                    c.foo = 'bar';
+                    (c as any).foo = 'bar';
                     let hasRun = false;
                     c.preInsert(function (this: any) {
                         hasRun = true;
@@ -209,7 +214,7 @@ config.parallel('hooks.test.js', () => {
                         assert.ok(isRxDocument(instance));
                         count++;
                     }, false);
-                    await doc.atomicSet('firstName', 'foobar');
+                    await doc.atomicPatch({ firstName: 'foobar' });
                     assert.strictEqual(count, 1);
                     c.database.destroy();
                 });
@@ -223,7 +228,7 @@ config.parallel('hooks.test.js', () => {
                         assert.ok(isRxDocument(instance));
                         count++;
                     }, true);
-                    await doc.atomicSet('firstName', 'foobar');
+                    await doc.atomicPatch({ firstName: 'foobar' });
                     assert.strictEqual(count, 1);
                     c.database.destroy();
                 });
@@ -238,7 +243,7 @@ config.parallel('hooks.test.js', () => {
                         hasRun = true;
                     }, false);
 
-                    await doc.atomicSet('firstName', 'foobar');
+                    await doc.atomicPatch({ firstName: 'foobar' });
                     assert.ok(hasRun);
                     c.database.destroy();
                 });
@@ -253,7 +258,7 @@ config.parallel('hooks.test.js', () => {
                         await promiseWait(10);
                         hasRun = true;
                     }, false);
-                    await doc.atomicSet('firstName', 'foobar');
+                    await doc.atomicPatch({ firstName: 'foobar' });
                     assert.ok(hasRun);
                     c.database.destroy();
                 });
@@ -270,7 +275,7 @@ config.parallel('hooks.test.js', () => {
 
                     let failC = 0;
                     try {
-                        await doc.atomicSet('firstName', 'foobar');
+                        await doc.atomicPatch({ firstName: 'foobar' });
                     } catch (e) {
                         failC++;
                     }
@@ -293,7 +298,7 @@ config.parallel('hooks.test.js', () => {
                         assert.ok(isRxDocument(instance));
                         count++;
                     }, false);
-                    await doc.atomicSet('firstName', 'foobar');
+                    await doc.atomicPatch({ firstName: 'foobar' });
                     assert.strictEqual(count, 1);
                     c.database.destroy();
                 });
@@ -307,7 +312,7 @@ config.parallel('hooks.test.js', () => {
                         assert.ok(isRxDocument(instance));
                         count++;
                     }, true);
-                    await doc.atomicSet('firstName', 'foobar');
+                    await doc.atomicPatch({ firstName: 'foobar' });
                     assert.strictEqual(count, 1);
                     c.database.destroy();
                 });
@@ -419,7 +424,7 @@ config.parallel('hooks.test.js', () => {
                 });
                 it('should have the collection bound to the this-scope', async () => {
                     const c = await humansCollection.createPrimary(1);
-                    c.foo2 = 'bar2';
+                    (c as any).foo2 = 'bar2';
                     let hasRun = false;
 
                     c.postRemove(function (this: any) {
@@ -458,13 +463,15 @@ config.parallel('hooks.test.js', () => {
             it('should define a getter', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory',
+                    storage: getRxStoragePouch('memory'),
                     multiInstance: true
                 });
-                const collection = await db.collection({
-                    name: 'myhumans',
-                    schema: schemas.primaryHuman
+                const collections = await db.addCollections({
+                    myhumans: {
+                        schema: schemas.primaryHuman
+                    }
                 });
+                const collection = collections.myhumans;
                 collection.postCreate(function (_data, instance) {
                     assert.ok(isRxDocument(instance));
                     Object.defineProperty(instance, 'myField', {
@@ -484,13 +491,15 @@ config.parallel('hooks.test.js', () => {
             it('should throw when adding an async-hook', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory',
+                    storage: getRxStoragePouch('memory'),
                     multiInstance: true
                 });
-                const collection = await db.collection({
-                    name: 'myhumans',
-                    schema: schemas.primaryHuman
+                const collections = await db.addCollections({
+                    myhumans: {
+                        schema: schemas.primaryHuman
+                    }
                 });
+                const collection = collections.myhumans;
 
                 const hookFun = function (doc: any) {
                     Object.defineProperty(doc, 'myField', {

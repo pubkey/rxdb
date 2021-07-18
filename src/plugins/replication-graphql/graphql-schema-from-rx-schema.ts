@@ -20,7 +20,7 @@ export type Prefixes = {
 export type GraphQLParamType = 'ID' | 'ID!' | 'String' | 'String!' | 'Int' | 'Int!' | string;
 
 export type GraphQLSchemaFromRxSchemaInputSingleCollection = {
-    schema: RxJsonSchema;
+    schema: RxJsonSchema<any>;
     deletedFlag: string;
     // which keys must be send to the feed-query to get the newer documents?
     feedKeys: string[];
@@ -74,11 +74,13 @@ export function graphQLSchemaFromRxSchema(
 
         // input
         const inputSchema = stripKeysFromSchema(schema, collectionSettings.ignoreInputKeys as string[]);
+
         const inputGraphQL = getGraphqlSchemaFromJsonSchema({
             rootName: collectionNameInput,
             schema: inputSchema as any,
             direction: 'input'
         });
+
         ret.inputs = ret.inputs.concat(
             inputGraphQL
                 .typeDefinitions
@@ -204,7 +206,7 @@ export function fillUpOptionals(
     return input;
 }
 
-function stripKeysFromSchema(schema: RxJsonSchema, strip: string[]): RxJsonSchema {
+function stripKeysFromSchema<T>(schema: RxJsonSchema<T>, strip: string[]): RxJsonSchema<Partial<T>> {
     const cloned: any = clone(schema);
     strip.forEach(key => {
         delete cloned.properties[key];

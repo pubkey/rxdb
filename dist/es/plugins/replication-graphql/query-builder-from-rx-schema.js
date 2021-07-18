@@ -1,5 +1,6 @@
 import { fillUpOptionals, SPACING } from './graphql-schema-from-rx-schema';
 import { ucfirst } from '../../util';
+import { newRxError } from '../../rx-error';
 export function pullQueryBuilderFromRxSchema(collectionName, input) {
   var batchSize = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 5;
   input = fillUpOptionals(input);
@@ -15,6 +16,18 @@ export function pullQueryBuilderFromRxSchema(collectionName, input) {
   var builder = function builder(doc) {
     var queryKeys = input.feedKeys.map(function (key) {
       var subSchema = schema.properties[key];
+
+      if (!subSchema) {
+        throw newRxError('GQL1', {
+          document: doc,
+          schema: schema,
+          key: key,
+          args: {
+            feedKeys: input.feedKeys
+          }
+        });
+      }
+
       var type = subSchema.type;
       var value = doc ? doc[key] : null;
       var keyString = key + ': ';
@@ -53,10 +66,14 @@ export function pushQueryBuilderFromRxSchema(collectionName, input) {
       var k = _ref[0],
           v = _ref[1];
 
-      if (!input.ignoreInputKeys.includes(k)) {
+      if ( // skip if in ignoreInputKeys list
+      !input.ignoreInputKeys.includes(k) && // only use properties that are in the schema
+      input.schema.properties[k]) {
         sendDoc[k] = v;
       }
-    });
+    }); // add deleted flag
+
+    sendDoc[input.deletedFlag] = !!doc._deleted;
     var variables = (_variables = {}, _variables[collectionName] = sendDoc, _variables);
     return {
       query: query,

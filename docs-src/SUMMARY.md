@@ -18,8 +18,8 @@
         * [pouchSettings](./rx-database.md#pouchSettings)
     * [Functions](./rx-database.md#functions)
         * [$](./rx-database.md#observe-with-)
-        * [dump()](./rx-database.md#dump)
-        * [importDump()](./rx-database.md#importdump)
+        * [exportJSON()](./rx-database.md#dump)
+        * [importJSON()](./rx-database.md#importdump)
         * [server()](./rx-database.md#server)
         * [waitForLeadership()](./rx-database.md#waitforleadership)
         * [requestIdlePromise()](./rx-database.md#requestidlepromise)
@@ -58,8 +58,8 @@
         * [findOne()](./rx-collection.md#findone)
         * [findByIds()](./rx-collection.md#findbyids)
         * [findByIds$()](./rx-collection.md#findbyids$)
-        * [dump()](./rx-collection.md#dump)
-        * [importDump()](./rx-collection.md#importdump)
+        * [exportJSON()](./rx-collection.md#dump)
+        * [importJSON()](./rx-collection.md#importdump)
         * [sync()](./rx-collection.md#sync)
         * [remove()](./rx-collection.md#remove)
         * [destroy()](./rx-collection.md#destroy)
@@ -75,7 +75,6 @@
         * [update()](./rx-document.md#update)
         * [atomicUpdate()](./rx-document.md#atomicupdate)
         * [atomicPatch()](./rx-document.md#atomicpatch)
-        * [atomicSet()](./rx-document.md#atomicset)
         * [$](./rx-document.md#observe-)
         * [remove()](./rx-document.md#remove)
         * [deleted$](./rx-document.md#deleted$)
@@ -107,7 +106,7 @@
 
 * [LeaderElection](./leader-election.md)
 
-* [Replication CouchDB](./replication.md)
+* [Replication CouchDB](./replication-couchdb.md)
 
 * [Replication GraphQL](./replication-graphql.md)
 

@@ -31,11 +31,7 @@ var _encryption = require("./plugins/encryption");
 
 var _update = require("./plugins/update");
 
-var _watchForChanges = require("./plugins/watch-for-changes");
-
-var _replication = require("./plugins/replication");
-
-var _adapterCheck = require("./plugins/adapter-check");
+var _replicationCouchdb = require("./plugins/replication-couchdb");
 
 var _jsonDump = require("./plugins/json-dump");
 
@@ -46,6 +42,19 @@ var _attachments = require("./plugins/attachments");
 var _localDocuments = require("./plugins/local-documents");
 
 var _queryBuilder = require("./plugins/query-builder");
+
+var _pouchdb = require("./plugins/pouchdb");
+
+Object.keys(_pouchdb).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _pouchdb[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _pouchdb[key];
+    }
+  });
+});
 
 /**
  * this is the default rxdb-export
@@ -60,9 +69,7 @@ var _queryBuilder = require("./plugins/query-builder");
 (0, _core.addRxPlugin)(_leaderElection.RxDBLeaderElectionPlugin);
 (0, _core.addRxPlugin)(_encryption.RxDBEncryptionPlugin);
 (0, _core.addRxPlugin)(_update.RxDBUpdatePlugin);
-(0, _core.addRxPlugin)(_watchForChanges.RxDBWatchForChangesPlugin);
-(0, _core.addRxPlugin)(_replication.RxDBReplicationPlugin);
-(0, _core.addRxPlugin)(_adapterCheck.RxDBAdapterCheckPlugin);
+(0, _core.addRxPlugin)(_replicationCouchdb.RxDBReplicationCouchDBPlugin);
 (0, _core.addRxPlugin)(_jsonDump.RxDBJsonDumpPlugin);
 (0, _core.addRxPlugin)(_inMemory.RxDBInMemoryPlugin);
 (0, _core.addRxPlugin)(_attachments.RxDBAttachmentsPlugin);

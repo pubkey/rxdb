@@ -4,12 +4,16 @@
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
 import {
-    validateCouchDBString,
     fastUnsecureHash,
     randomCouchString,
     sortObject,
-    now
+    now,
+    blobBufferUtil
 } from '../../plugins/core';
+
+import {
+    validateDatabaseName
+} from '../../plugins/dev-mode';
 
 describe('util.test.js', () => {
     describe('.fastUnsecureHash()', () => {
@@ -52,34 +56,34 @@ describe('util.test.js', () => {
     describe('.validateCouchDBString()', () => {
         describe('positive', () => {
             it('should validate a normal string', () => {
-                validateCouchDBString('foobar');
+                validateDatabaseName('foobar');
             });
             it('should allow _ and $ after the first character', () => {
-                validateCouchDBString('foo_bar');
-                validateCouchDBString('foobar_');
-                validateCouchDBString('foobar$');
+                validateDatabaseName('foo_bar');
+                validateDatabaseName('foobar_');
+                validateDatabaseName('foobar$');
             });
             it('should not allow _ and $ as the first character', async () => {
                 await AsyncTestUtil.assertThrows(
-                    () => validateCouchDBString('$foobar'),
+                    () => validateDatabaseName('$foobar'),
                     'RxError',
                     'UT2'
                 );
                 await AsyncTestUtil.assertThrows(
-                    () => validateCouchDBString('_foobar'),
+                    () => validateDatabaseName('_foobar'),
                     'RxError',
                     'UT2'
                 );
             });
             it('should validate foldernames', () => {
-                validateCouchDBString('./foobar'); // unix
-                validateCouchDBString('.\\foobar'); // windows
+                validateDatabaseName('./foobar'); // unix
+                validateDatabaseName('.\\foobar'); // windows
             });
         });
         describe('negative', () => {
             it('should not validate a spaced string', async () => {
                 await AsyncTestUtil.assertThrows(
-                    () => validateCouchDBString('foo bar'),
+                    () => validateDatabaseName('foo bar'),
                     'RxError',
                     'UT2'
                 );
@@ -100,6 +104,26 @@ describe('util.test.js', () => {
                 assert.ok(value > last);
                 last = value;
             });
+        });
+    });
+    describe('blobBufferUtil', () => {
+        it('should be able to run all functions', async () => {
+            const text = 'foobar';
+            const blobBuffer = blobBufferUtil.createBlobBuffer(text, 'plain/text');
+            assert.ok(blobBufferUtil.isBlobBuffer(blobBuffer));
+            const asString = await blobBufferUtil.toString(blobBuffer);
+            assert.strictEqual(text, asString);
+        });
+        it('should be able to run often in circle', async () => {
+            const text = 'foobar';
+            let blobBuffer = blobBufferUtil.createBlobBuffer(text, 'plain/text');
+            let asString = await blobBufferUtil.toString(blobBuffer);
+            blobBuffer = blobBufferUtil.createBlobBuffer(asString, 'plain/text');
+            asString = await blobBufferUtil.toString(blobBuffer);
+            blobBuffer = blobBufferUtil.createBlobBuffer(asString, 'plain/text');
+            asString = await blobBufferUtil.toString(blobBuffer);
+
+            assert.strictEqual(text, asString);
         });
     });
 });

@@ -7,6 +7,10 @@ export * from './rx-error';
 export * from './rx-plugin';
 export * from './rx-query';
 export * from './rx-schema';
+export * from './rx-storage';
+export * from './rx-storage.interface';
+export * from './rx-change-event';
+export * from './util';
 
 // plugins
 export * from './plugins/replication';

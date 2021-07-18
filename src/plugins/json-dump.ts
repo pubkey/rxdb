@@ -15,9 +15,11 @@ import {
 import type {
     RxDatabase,
     RxCollection,
-    RxPlugin
+    RxPlugin,
+    RxDocumentData,
+    BulkWriteRow
 } from '../types';
-import { createInsertEvent } from '../rx-change-event';
+import { _handleToStorageInstance } from '../rx-collection-helper';
 
 function dumpRxDatabase(
     this: RxDatabase,
@@ -45,7 +47,7 @@ function dumpRxDatabase(
 
     return Promise.all(
         useCollections
-            .map(col => col.dump(decrypted))
+            .map(col => col.exportJSON(decrypted))
     ).then(cols => {
         json.collections = cols;
         return json;
@@ -71,7 +73,7 @@ const importDumpRxDatabase = function (
 
     return Promise.all(
         dump.collections
-            .map((colDump: any) => this.collections[colDump.name].importDump(colDump))
+            .map((colDump: any) => this.collections[colDump.name].importJSON(colDump))
     );
 };
 
@@ -95,7 +97,7 @@ const dumpRxCollection = function (
     }
 
     const query = createRxQuery('find', _getDefaultQuery(this), this);
-    return this._pouchFind(query, undefined, encrypted)
+    return this._queryStorageInstance(query, undefined, encrypted)
         .then((docs: any) => {
             json.docs = docs.map((docData: any) => {
                 delete docData._rev;
@@ -106,8 +108,8 @@ const dumpRxCollection = function (
         });
 };
 
-function importDumpRxCollection(
-    this: RxCollection,
+function importDumpRxCollection<RxDocType>(
+    this: RxCollection<RxDocType>,
     exportedJSON: any
 ): Promise<any> {
     // check schemaHash
@@ -129,45 +131,34 @@ function importDumpRxCollection(
         });
     }
 
-    const docs = exportedJSON.docs
+    const docs: RxDocumentData<RxDocType>[] = exportedJSON.docs
         // decrypt
         .map((doc: any) => this._crypter.decrypt(doc))
         // validate schema
-        .map((doc: any) => this.schema.validate(doc))
-        // transform
-        .map((doc: any) => this._handleToPouch(doc));
+        .map((doc: any) => this.schema.validate(doc));
 
     let startTime: number;
     return this.database.lockedRun(
         // write to disc
         () => {
             startTime = now();
-            return this.pouch.bulkDocs(docs);
+            const writeMe: BulkWriteRow<RxDocType>[] = docs.map(doc => ({
+                document: _handleToStorageInstance(this, doc)
+            }));
+            return this.storageInstance.bulkWrite(writeMe);
         }
-    ).then(() => {
-        const endTime = now();
-        docs.forEach((doc: any) => {
-            // emit change events
-            const emitEvent = createInsertEvent(
-                this,
-                doc,
-                startTime,
-                endTime
-            );
-            this.$emit(emitEvent);
-        });
-    });
+    );
 }
 
 export const rxdb = true;
 export const prototypes = {
     RxDatabase: (proto: any) => {
-        proto.dump = dumpRxDatabase;
-        proto.importDump = importDumpRxDatabase;
+        proto.exportJSON = dumpRxDatabase;
+        proto.importJSON = importDumpRxDatabase;
     },
     RxCollection: (proto: any) => {
-        proto.dump = dumpRxCollection;
-        proto.importDump = importDumpRxCollection;
+        proto.exportJSON = dumpRxCollection;
+        proto.importJSON = importDumpRxCollection;
     }
 };
 

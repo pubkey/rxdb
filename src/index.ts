@@ -30,14 +30,8 @@ addRxPlugin(RxDBEncryptionPlugin);
 import { RxDBUpdatePlugin } from './plugins/update';
 addRxPlugin(RxDBUpdatePlugin);
 
-import { RxDBWatchForChangesPlugin } from './plugins/watch-for-changes';
-addRxPlugin(RxDBWatchForChangesPlugin);
-
-import { RxDBReplicationPlugin } from './plugins/replication';
-addRxPlugin(RxDBReplicationPlugin);
-
-import { RxDBAdapterCheckPlugin } from './plugins/adapter-check';
-addRxPlugin(RxDBAdapterCheckPlugin);
+import { RxDBReplicationCouchDBPlugin } from './plugins/replication-couchdb';
+addRxPlugin(RxDBReplicationCouchDBPlugin);
 
 import { RxDBJsonDumpPlugin } from './plugins/json-dump';
 addRxPlugin(RxDBJsonDumpPlugin);
@@ -56,3 +50,5 @@ addRxPlugin(RxDBQueryBuilderPlugin);
 
 // re-export things from core
 export * from './core';
+
+export * from './plugins/pouchdb';

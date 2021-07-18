@@ -1,9 +1,11 @@
 const assert = require('assert');
 const {
-    addRxPlugin,
-    createRxDatabase
+    createRxDatabase,
+    addPouchPlugin,
+    blobBufferUtil,
+    getRxStoragePouch
 } = require('../../../');
-addRxPlugin(require('pouchdb-adapter-idb'));
+addPouchPlugin(require('pouchdb-adapter-idb'));
 
 
 /**
@@ -16,7 +18,7 @@ module.exports = (function () {
         await (async function () {
             const db = await createRxDatabase({
                 name: 'foobar587' + new Date().getTime(),
-                adapter: 'idb',
+                storage: getRxStoragePouch('idb'),
                 password: 'myLongAndStupidPassword',
                 multiInstance: true
             });
@@ -26,28 +28,29 @@ module.exports = (function () {
                 throw new Error('wrong BroadcastChannel-method chosen: ' + db.broadcastChannel.method.type);
             }
 
-            const col = await db.collection({
-                name: 'heroes',
-                schema: {
-                    version: 0,
-                    type: 'object',
-                    properties: {
-                        id: {
-                            type: 'string',
-                            primary: true
+            await db.addCollections({
+                heroes: {
+                    schema: {
+                        primaryKey: 'id',
+                        version: 0,
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string'
+                            }
+                        },
+                        attachments: {
+                            encrypted: true
                         }
-                    },
-                    attachments: {
-                        encrypted: true
                     }
                 }
             });
-            const doc = await col.insert({
+            const doc = await db.heroes.insert({
                 id: 'foo'
             });
             assert.ok(doc);
 
-            const attachmentData = 'foo bar asldfkjalkdsfj';
+            const attachmentData = blobBufferUtil.createBlobBuffer('foo bar asldfkjalkdsfj', 'text/plain');
             const attachment = await doc.putAttachment({
                 id: 'cat.jpg',
                 data: attachmentData,

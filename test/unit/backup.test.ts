@@ -7,12 +7,13 @@ import config from './config';
 
 import * as schemaObjects from '../helper/schema-objects';
 import {
-    addRxPlugin
+    addRxPlugin, blobBufferUtil
 } from '../../plugins/core';
 import { createAttachments } from '../helper/humans-collection';
 import {
     backupSingleDocument,
     clearFolder,
+    RxBackupState,
     getMeta
 } from '../../plugins/backup';
 import { BackupMetaFileContent, RxBackupWriteEvent } from '../../src/types';
@@ -45,7 +46,7 @@ describe('backup.test.js', () => {
             const firstDoc = await collection.findOne().exec(true);
             await firstDoc.putAttachment({
                 id: 'cat.txt',
-                data: 'lol',
+                data: blobBufferUtil.createBlobBuffer('lol', 'text/plain'),
                 type: 'text/plain'
             });
 
@@ -77,7 +78,7 @@ describe('backup.test.js', () => {
             const firstDoc = await collection.findOne().exec(true);
             await firstDoc.putAttachment({
                 id: 'cat.txt',
-                data: 'lol',
+                data: blobBufferUtil.createBlobBuffer('lol', 'text/plain'),
                 type: 'text/plain'
             });
             const directory = getBackupDir();
@@ -111,7 +112,7 @@ describe('backup.test.js', () => {
                 attachments: true
             };
             const emitted: RxBackupWriteEvent[] = [];
-            const backupState = collection.database.backup(options);
+            const backupState: RxBackupState = collection.database.backup(options);
             const sub = backupState.writeEvents$.subscribe(ev => emitted.push(ev));
             await backupState.awaitInitialBackup();
 
@@ -128,7 +129,7 @@ describe('backup.test.js', () => {
             const firstDoc = await collection.findOne().exec(true);
             await firstDoc.putAttachment({
                 id: 'cat.txt',
-                data: 'lol',
+                data: blobBufferUtil.createBlobBuffer('lol', 'text/plain'),
                 type: 'text/plain'
             });
             const directory = getBackupDir();

@@ -8,7 +8,7 @@ import { getPreviousVersions } from '../../rx-schema';
  * @throws {Error|TypeError} if not ok
  */
 export function checkMigrationStrategies(
-    schema: RxJsonSchema,
+    schema: RxJsonSchema<any>,
     migrationStrategies: NumberFunctionMap
 ): boolean {
     // migrationStrategies must be object not array

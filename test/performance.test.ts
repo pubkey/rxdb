@@ -17,7 +17,11 @@ import {
     dbCount,
     RxDatabase
 } from '../plugins/core';
-addRxPlugin(require('pouchdb-adapter-memory'));
+import {
+    addPouchPlugin, getRxStoragePouch
+} from '../plugins/pouchdb';
+
+addPouchPlugin(require('pouchdb-adapter-memory'));
 import { RxDBNoValidatePlugin } from '../plugins/no-validate';
 addRxPlugin(RxDBNoValidatePlugin);
 import { RxDBKeyCompressionPlugin } from '../plugins/key-compression';
@@ -118,7 +122,7 @@ for (let r = 0; r < runs; r++) {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
                     eventReduce: true,
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory')
                 });
                 dbs.push(db);
 
@@ -145,13 +149,15 @@ for (let r = 0; r < runs; r++) {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
                 eventReduce: true,
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory')
             });
-            const col = await db.collection({
-                name: 'human',
-                schema: schemas.averageSchema(),
-                methods: ormMethods
+            const cols = await db.addCollections({
+                human: {
+                    schema: schemas.averageSchema(),
+                    methods: ormMethods
+                }
             });
+            const col = cols.human;
             let lastDoc;
 
             const docsData = new Array(benchmark.insertDocuments.blocks * benchmark.insertDocuments.blockSize)
@@ -184,13 +190,15 @@ for (let r = 0; r < runs; r++) {
             const db = await createRxDatabase({
                 name: dbName,
                 eventReduce: true,
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory')
             });
-            const col = await db.collection({
-                name: 'human',
-                schema,
-                methods: ormMethods
+            const cols = await db.addCollections({
+                human: {
+                    schema,
+                    methods: ormMethods
+                }
             });
+            const col = cols.human;
 
             await Promise.all(
                 new Array(benchmark.findDocuments.amount)
@@ -202,15 +210,17 @@ for (let r = 0; r < runs; r++) {
 
             const db2 = await createRxDatabase({
                 name: dbName,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 eventReduce: true,
                 ignoreDuplicate: true
             });
-            const col2 = await db2.collection({
-                name: 'human',
-                schema,
-                methods: ormMethods
+            const cols2 = await db2.addCollections({
+                human: {
+                    schema,
+                    methods: ormMethods
+                }
             });
+            const col2 = cols2.human;
 
 
             const startTime = nowTime();
@@ -230,12 +240,14 @@ for (let r = 0; r < runs; r++) {
             const db = await createRxDatabase({
                 name,
                 eventReduce: true,
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory')
             });
-            const col = await db.collection({
-                name: 'human',
-                schema: schemas.averageSchema()
+            const cols = await db.addCollections({
+                human: {
+                    schema: schemas.averageSchema()
+                }
             });
+            const col = cols.human;
 
             // insert into old collection
             await Promise.all(
@@ -248,23 +260,25 @@ for (let r = 0; r < runs; r++) {
             const db2 = await createRxDatabase({
                 name,
                 eventReduce: true,
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 ignoreDuplicate: true
             });
             const newSchema = schemas.averageSchema();
             newSchema.version = 1;
             newSchema.properties.var2.type = 'string';
-            const col2 = await db2.collection({
-                name: 'human',
-                schema: newSchema,
-                migrationStrategies: {
-                    1: (oldDoc: any) => {
-                        oldDoc.var2 = oldDoc.var2 + '';
-                        return oldDoc;
-                    }
-                },
-                autoMigrate: false
+            const cols2 = await db2.addCollections({
+                human: {
+                    schema: newSchema,
+                    migrationStrategies: {
+                        1: (oldDoc: any) => {
+                            oldDoc.var2 = oldDoc.var2 + '';
+                            return oldDoc;
+                        }
+                    },
+                    autoMigrate: false
+                }
             });
+            const col2 = cols2.human;
 
             const startTime = nowTime();
 
@@ -281,12 +295,14 @@ for (let r = 0; r < runs; r++) {
             const db = await createRxDatabase({
                 name,
                 eventReduce: true,
-                adapter: 'memory'
+                storage: getRxStoragePouch('memory')
             });
-            const col = await db.collection({
-                name: 'human',
-                schema: schemas.averageSchema()
+            const cols = await db.addCollections({
+                human: {
+                    schema: schemas.averageSchema()
+                }
             });
+            const col = cols.human;
 
             const query = col.find({
                 selector: {
@@ -298,7 +314,6 @@ for (let r = 0; r < runs; r++) {
                     { var1: 'asc' }
                 ]
             });
-
 
             let t = 0;
             let lastResult: any[] = [];

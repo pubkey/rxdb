@@ -12,75 +12,81 @@ import {
     newRxError
 } from '../rx-error';
 
-import {
+import type {
     Crypter
 } from '../crypter';
-import type { RxPlugin, RxDatabase } from '../types';
-import { hash, LOCAL_PREFIX } from '../util';
+import type {
+    RxPlugin,
+    RxDatabase,
+    RxLocalDocumentData
+} from '../types';
+import { hash } from '../util';
+import { findLocalDocument } from '../rx-storage-helper';
 
 const minPassLength = 8;
 
-export function encrypt(value: any, password: any) {
+export function encrypt(value: string, password: any): string {
     const encrypted = AES.encrypt(value, password);
     return encrypted.toString();
 }
 
-export function decrypt(cipherText: string, password: any) {
+export function decrypt(cipherText: string, password: any): string {
     const decrypted = AES.decrypt(cipherText, password);
     return decrypted.toString(cryptoEnc);
 }
 
-const _encryptValue = function (this: Crypter, value: any) {
-    return encrypt(JSON.stringify(value), this.password);
+const _encryptString = function (this: Crypter, value: string) {
+    return encrypt(value, this.password);
 };
 
-const _decryptValue = function (this: Crypter, encryptedValue: any) {
+const _decryptString = function (this: Crypter, encryptedValue: string): string {
     const decrypted = decrypt(encryptedValue, this.password);
-    return JSON.parse(decrypted);
+    return decrypted;
 };
 
 
-export type PasswordHashDocument = {
-    _id: string;
+export type PasswordHashDocument = RxLocalDocumentData<{
     value: string;
-};
+}>;
 
 /**
  * validates and inserts the password hash into the internal collection
  * to ensure there is/was no other instance with a different password
  * which would cause strange side effects when both instances save into the same db
  */
-export function storePasswordHashIntoDatabase(
+export async function storePasswordHashIntoDatabase(
     rxDatabase: RxDatabase
 ): Promise<boolean> {
     if (!rxDatabase.password) {
         return Promise.resolve(false);
     }
     const pwHash = hash(rxDatabase.password);
-    return rxDatabase.internalStore.get(LOCAL_PREFIX + 'pwHash')
-        .catch(() => null)
-        .then((pwHashDoc: PasswordHashDocument | null) => {
-            /**
-             * if pwHash was not saved, we save it,
-             * this operation might throw because another instance runs save at the same time,
-             */
-            if (!pwHashDoc) {
-                return rxDatabase.internalStore.put({
-                    _id: LOCAL_PREFIX + 'pwHash',
-                    value: pwHash
-                }).catch(() => null)
-                    .then(() => true);
-            } else if (pwHash !== pwHashDoc.value) {
-                // different hash was already set by other instance
-                return rxDatabase.destroy().then(() => {
-                    throw newRxError('DB1', {
-                        passwordHash: hash(rxDatabase.password),
-                        existingPasswordHash: pwHashDoc.value
-                    });
-                });
-            }
-            return true;
+    const pwHashDocumentId = 'pwHash';
+
+    const pwHashDoc = await findLocalDocument<PasswordHashDocument>(
+        rxDatabase.localDocumentsStore,
+        pwHashDocumentId
+    );
+    if (!pwHashDoc) {
+        const docData: PasswordHashDocument = {
+            _id: pwHashDocumentId,
+            value: pwHash,
+            _attachments: {}
+        };
+        await rxDatabase.localDocumentsStore.bulkWrite([{
+            document: docData
+        }]);
+        return true;
+    } else if (pwHash !== pwHashDoc.value) {
+        // different hash was already set by other instance
+        await rxDatabase.destroy();
+        throw newRxError('DB1', {
+            passwordHash: hash(rxDatabase.password),
+            existingPasswordHash: pwHashDoc.value
         });
+    } else {
+        return true;
+    }
 }
 
 
@@ -92,8 +98,8 @@ export const prototypes = {
      * set crypto-functions for the Crypter.prototype
      */
     Crypter: (proto: any) => {
-        proto._encryptValue = _encryptValue;
-        proto._decryptValue = _decryptValue;
+        proto._encryptString = _encryptString;
+        proto._decryptString = _decryptString;
     }
 };
 export const overwritable = {

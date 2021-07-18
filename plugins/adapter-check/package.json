@@ -1,8 +1,0 @@
-{
-  "name": "rxdb-plugin-adapter-check",
-  "main": "../../dist/lib/plugins/adapter-check.js",
-  "jsnext:main": "../../dist/es/plugins/adapter-check.js",
-  "module": "../../dist/es/plugins/adapter-check.js",
-  "types": "../../dist/types/plugins/adapter-check.d.ts",
-  "sideEffects": false
-}

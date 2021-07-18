@@ -35,20 +35,23 @@ jobs:
       - name: build
         run: npm run build
       
-      - name: test:typings
-        run: npm run test:typings
-        
       - name: npm run test:node
         run: npm run test:node
   
       - name: npm run test:fast
         run: npm run test:fast
         
+      - name: test:typings
+        run: npm run test:typings
+
       - name: npm run test:performance
         run: npm run test:performance
 
       - name: node example
-        run: cd ./examples/node && npm install > "/dev/null" 2>&1 && npm run test
+        working-directory: ./examples/node
+        run: |
+          npm install
+          npm run test
 
 
   angular:
@@ -72,21 +75,23 @@ jobs:
             ./node_modules
             ./examples/angular/node_modules
           # invalidate cache when any package-lock.json changes
-          key: ${{ runner.os }}-npm-angular-x1-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-angular-x3-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-angular-x1-
+            ${{ runner.os }}-npm-angular-x3-
 
       - name: prepare core
         run: |
-          npm install
+          npm install --legacy-peer-deps
           npm run build
           rm -r node_modules
 
       - name: angular build
         working-directory: ./examples/angular
         run: |
-          npm install > "/dev/null" 2>&1
-          npm run lint && npm run build
+          npm run preinstall
+          npm install --legacy-peer-deps
+          npm run lint
+          npm run build
 
       - name: angular test
         # uses: DevExpress/testcafe-action@latest
@@ -107,7 +112,6 @@ jobs:
         uses: actions/setup-node@v2.1.5
         with:
           node-version: 16.5.0
-
       - name: prepare core
         run: |
           npm install
@@ -128,7 +132,6 @@ jobs:
         uses: actions/setup-node@v2.1.5
         with:
           node-version: 16.5.0
-
       - name: prepare core
         run: |
           npm install
@@ -158,11 +161,13 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y chromium-browser
       - name: prepare core
         run: |
-          npm install
+          npm install --legacy-peer-deps
           npm run build
       - name: electron install
         working-directory: ./examples/electron
-        run: npm install > "/dev/null" 2>&1
+        run: |
+          npm run preinstall
+          npm install --legacy-peer-deps
 
       # TODO I had to disable that again because the tests randomly fail. We need to upgrade electron and spectron
       #- name: electron test
@@ -173,7 +178,8 @@ jobs:
 
       - name: electron-remote install
         working-directory: ./examples/electron-remote
-        run: npm install > "/dev/null" 2>&1
+        run: |
+          npm install --legacy-peer-deps
 
       - name: electron-remote test
         uses: GabrielBB/xvfb-action@v1.5
@@ -193,13 +199,14 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y chromium-browser
       - name: prepare core
         run: |
-          npm install
+          npm install --legacy-peer-deps
           npm run build
           rm -r node_modules
       - name: react install
+        working-directory: ./examples/react
         run: |
-          cd ./examples/react
-          npm install > "/dev/null" 2>&1
+          npm run preinstall
+          npm install --legacy-peer-deps
           npm run build
 
       - name: react test
@@ -239,7 +246,7 @@ jobs:
       - name: react-native
         run: |
           cd ./examples/react-native
-          npx yarn@1.13.0 install > "/dev/null" 2>&1
+          npx yarn@1.13.0 install
           npm run test
           echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
           sudo sysctl -p
@@ -257,13 +264,16 @@ jobs:
           node-version: 16.5.0
       - name: prepare core
         run: |
-          npm install
+          npm install --legacy-peer-deps
           npm run build
           rm -r node_modules
       - name: vue build
+        working-directory: ./examples/vue
         run: |
-          cd ./examples/vue && npm install > "/dev/null" 2>&1
-          npm run lint && npm run build
+          npm run preinstall
+          npm install --legacy-peer-deps
+          npm run lint
+          npm run build
         
       - name: vue test
         uses: GabrielBB/xvfb-action@v1

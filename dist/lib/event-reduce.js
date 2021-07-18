@@ -10,6 +10,10 @@ exports.RXQUERY_QUERY_PARAMS_CACHE = void 0;
 
 var _eventReduceJs = require("event-reduce-js");
 
+var _hooks = require("./hooks");
+
+var _rxChangeEvent = require("./rx-change-event");
+
 function getSortFieldsOfQuery(primaryKey, query) {
   if (!query.sort || query.sort.length === 0) {
     return [primaryKey];
@@ -25,16 +29,51 @@ exports.RXQUERY_QUERY_PARAMS_CACHE = RXQUERY_QUERY_PARAMS_CACHE;
 
 function getQueryParams(rxQuery) {
   if (!RXQUERY_QUERY_PARAMS_CACHE.has(rxQuery)) {
-    var storage = rxQuery.collection.database.storage;
+    var collection = rxQuery.collection;
     var queryJson = rxQuery.toJSON();
-    var primaryKey = rxQuery.collection.schema.primaryPath;
+    var primaryKey = collection.schema.primaryPath;
+    /**
+     * Create a custom sort comparator
+     * that uses the hooks to ensure
+     * we send for example compressed documents to be sorted by compressed queries.
+     */
+
+    var sortComparator = collection.storageInstance.getSortComparator(queryJson);
+
+    var useSortComparator = function useSortComparator(docA, docB) {
+      var sortComparatorData = {
+        docA: docA,
+        docB: docB,
+        rxQuery: rxQuery
+      };
+      (0, _hooks.runPluginHooks)('preSortComparator', sortComparatorData);
+      return sortComparator(sortComparatorData.docA, sortComparatorData.docB);
+    };
+    /**
+     * Create a custom query matcher
+     * that uses the hooks to ensure
+     * we send for example compressed documents to match compressed queries.
+     */
+
+
+    var queryMatcher = collection.storageInstance.getQueryMatcher(queryJson);
+
+    var useQueryMatcher = function useQueryMatcher(doc) {
+      var queryMatcherData = {
+        doc: doc,
+        rxQuery: rxQuery
+      };
+      (0, _hooks.runPluginHooks)('preQueryMatcher', queryMatcherData);
+      return queryMatcher(queryMatcherData.doc);
+    };
+
     var ret = {
       primaryKey: rxQuery.collection.schema.primaryPath,
       skip: queryJson.skip,
       limit: queryJson.limit,
       sortFields: getSortFieldsOfQuery(primaryKey, queryJson),
-      sortComparator: storage.getSortComparator(primaryKey, queryJson),
-      queryMatcher: storage.getQueryMatcher(primaryKey, queryJson)
+      sortComparator: useSortComparator,
+      queryMatcher: useQueryMatcher
     };
     RXQUERY_QUERY_PARAMS_CACHE.set(rxQuery, ret);
     return ret;
@@ -57,7 +96,7 @@ function calculateNewResults(rxQuery, rxChangeEvents) {
   var previousResultsMap = rxQuery._resultsDataMap;
   var changed = false;
   var foundNonOptimizeable = rxChangeEvents.find(function (cE) {
-    var eventReduceEvent = cE.toEventReduceChangeEvent();
+    var eventReduceEvent = (0, _rxChangeEvent.rxChangeEventToEventReduceChangeEvent)(cE);
     var actionName = (0, _eventReduceJs.calculateActionName)({
       queryParams: queryParams,
       changeEvent: eventReduceEvent,

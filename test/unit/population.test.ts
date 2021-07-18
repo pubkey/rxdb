@@ -9,8 +9,13 @@ import {
     isRxDocument,
     randomCouchString,
     createRxSchema,
-    RxJsonSchema
+    RxJsonSchema,
 } from '../../plugins/core';
+
+import {
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
+
 
 config.parallel('population.test.js', () => {
     describe('createRxSchema', () => {
@@ -18,6 +23,7 @@ config.parallel('population.test.js', () => {
             it('should allow to create a schema with a relation', () => {
                 const schema = createRxSchema({
                     version: 0,
+                    primaryKey: 'bestFriend',
                     type: 'object',
                     properties: {
                         bestFriend: {
@@ -36,12 +42,12 @@ config.parallel('population.test.js', () => {
             it('should allow primary as relation key', () => {
                 const schema = createRxSchema({
                     version: 0,
+                    primaryKey: 'bestFriend',
                     type: 'object',
                     properties: {
                         bestFriend: {
                             ref: 'human',
-                            type: 'string',
-                            primary: true
+                            type: 'string'
                         }
                     }
                 });
@@ -50,8 +56,12 @@ config.parallel('population.test.js', () => {
             it('should allow to create a schema with a relation in nested', () => {
                 const schema = createRxSchema({
                     version: 0,
+                    primaryKey: 'id',
                     type: 'object',
                     properties: {
+                        id: {
+                            type: 'string',
+                        },
                         foo: {
                             type: 'object',
                             properties: {
@@ -68,8 +78,12 @@ config.parallel('population.test.js', () => {
             it('should allow to create relation of array', () => {
                 const schema = createRxSchema({
                     version: 0,
+                    primaryKey: 'id',
                     type: 'object',
                     properties: {
+                        id: {
+                            type: 'string'
+                        },
                         friends: {
                             type: 'array',
                             items: {
@@ -84,8 +98,12 @@ config.parallel('population.test.js', () => {
             it('should allow to create relation with nullable string', () => {
                 const schema = createRxSchema({
                     version: 0,
+                    primaryKey: 'id',
                     type: 'object',
                     properties: {
+                        id: {
+                            type: 'string'
+                        },
                         friends: {
                             type: 'array',
                             items: {
@@ -103,8 +121,12 @@ config.parallel('population.test.js', () => {
                 assert.throws(
                     () => createRxSchema({
                         version: 0,
+                        primaryKey: 'id',
                         type: 'object',
                         properties: {
+                            id: {
+                                type: 'string'
+                            },
                             bestFriend: {
                                 ref: 'human'
                             }
@@ -117,8 +139,12 @@ config.parallel('population.test.js', () => {
                 assert.throws(
                     () => createRxSchema({
                         version: 0,
+                        primaryKey: 'id',
                         type: 'object',
                         properties: {
+                            id: {
+                                type: 'string'
+                            },
                             friends: {
                                 type: 'array',
                                 items: {
@@ -153,28 +179,30 @@ config.parallel('population.test.js', () => {
             it('populate string-array', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
-                const col = await db.collection({
-                    name: 'human',
-                    schema: {
-                        version: 0,
-                        type: 'object',
-                        properties: {
-                            name: {
-                                type: 'string',
-                                primary: true
-                            },
-                            friends: {
-                                type: 'array',
-                                ref: 'human',
-                                items: {
+                const cols = await db.addCollections({
+                    human: {
+                        schema: {
+                            version: 0,
+                            primaryKey: 'name',
+                            type: 'object',
+                            properties: {
+                                name: {
                                     type: 'string'
+                                },
+                                friends: {
+                                    type: 'array',
+                                    ref: 'human',
+                                    items: {
+                                        type: 'string'
+                                    }
                                 }
                             }
                         }
                     }
                 });
+                const col = cols.human;
                 const friends = new Array(5)
                     .fill(0)
                     .map(() => {
@@ -199,27 +227,29 @@ config.parallel('population.test.js', () => {
             it('populate with primary as ref', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    adapter: 'memory'
+                    storage: getRxStoragePouch('memory'),
                 });
-                const schema: RxJsonSchema = {
+                const schema: RxJsonSchema<{ name: string; }> = {
                     version: 0,
+                    primaryKey: 'name',
                     type: 'object',
                     properties: {
                         name: {
                             type: 'string',
-                            primary: true,
                             ref: 'human2'
                         }
                     }
                 };
-                const col = await db.collection<{ name: string }>({
-                    name: 'human',
-                    schema
+                const cols = await db.addCollections({
+                    human: {
+                        schema
+                    },
+                    human2: {
+                        schema
+                    }
                 });
-                const col2 = await db.collection({
-                    name: 'human2',
-                    schema
-                });
+                const col = cols.human;
+                const col2 = cols.human2;
 
                 const doc = await col.insert({
                     name: 'foobar'
@@ -258,42 +288,45 @@ config.parallel('population.test.js', () => {
         it('#222 population not working when multiInstance: false', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                adapter: 'memory',
+                storage: getRxStoragePouch('memory'),
                 multiInstance: false // this must be false here
             });
-            const colA = await db.collection({
-                name: 'doca',
-                schema: {
-                    type: 'object',
-                    version: 0,
-                    properties: {
-                        name: {
-                            primary: true,
-                            type: 'string'
-                        },
-                        refB: {
-                            ref: 'docb', // refers to collection human
-                            type: 'string' // ref-values must always be string (primary of foreign RxDocument)
+            const cols = await db.addCollections({
+                doca: {
+                    schema: {
+                        type: 'object',
+                        primaryKey: 'name',
+                        version: 0,
+                        properties: {
+                            name: {
+                                type: 'string'
+                            },
+                            refB: {
+                                ref: 'docb', // refers to collection human
+                                type: 'string' // ref-values must always be string (primary of foreign RxDocument)
+                            }
+                        }
+                    }
+                },
+                docb: {
+                    schema: {
+                        version: 0,
+                        primaryKey: 'name',
+                        type: 'object',
+                        properties: {
+                            name: {
+                                type: 'string'
+                            },
+                            somevalue: {
+                                type: 'string'
+                            }
                         }
                     }
                 }
             });
-            const colB = await db.collection({
-                name: 'docb',
-                schema: {
-                    version: 0,
-                    type: 'object',
-                    properties: {
-                        name: {
-                            primary: true,
-                            type: 'string'
-                        },
-                        somevalue: {
-                            type: 'string'
-                        }
-                    }
-                }
-            });
+            const colA = cols.doca;
+            const colB = cols.docb;
+
             await colB.insert({
                 name: 'docB-01',
                 somevalue: 'foobar'

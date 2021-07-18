@@ -6,6 +6,7 @@ import {
 } from './graphql-schema-from-rx-schema';
 import { ucfirst } from '../../util';
 import { RxGraphQLReplicationQueryBuilder } from '../../types';
+import { newRxError } from '../../rx-error';
 
 export function pullQueryBuilderFromRxSchema(
     collectionName: string,
@@ -26,6 +27,16 @@ export function pullQueryBuilderFromRxSchema(
 
         const queryKeys = input.feedKeys.map(key => {
             const subSchema: any = schema.properties[key];
+            if (!subSchema) {
+                throw newRxError('GQL1', {
+                    document: doc,
+                    schema,
+                    key,
+                    args: {
+                        feedKeys: input.feedKeys
+                    }
+                });
+            }
             const type = subSchema.type;
             const value = doc ? doc[key] : null;
             let keyString = key + ': ';
@@ -74,10 +85,18 @@ export function pushQueryBuilderFromRxSchema(
 
         const sendDoc: any = {};
         Object.entries(doc).forEach(([k, v]) => {
-            if (!(input.ignoreInputKeys as string[]).includes(k)) {
+            if (
+                // skip if in ignoreInputKeys list
+                !(input.ignoreInputKeys as string[]).includes(k) &&
+                // only use properties that are in the schema
+                input.schema.properties[k]
+            ) {
                 sendDoc[k] = v;
             }
         });
+
+        // add deleted flag
+        sendDoc[input.deletedFlag] = !!doc._deleted;
 
         const variables = {
             [collectionName]: sendDoc

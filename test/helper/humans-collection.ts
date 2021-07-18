@@ -6,10 +6,15 @@ import {
     createRxDatabase,
     RxJsonSchema,
     RxCollection,
-    PouchDB,
     RxDatabase,
     randomCouchString
 } from '../../plugins/core';
+
+import {
+    PouchDB,
+    getRxStoragePouch
+} from '../../plugins/pouchdb';
+
 
 import {
     HumanDocumentType
@@ -19,21 +24,25 @@ import { MigrationStrategies } from '../../src/types';
 export async function create(
     size: number = 20,
     name: string = 'human',
-    multiInstance: boolean = true
+    multiInstance: boolean = true,
+    eventReduce: boolean = true
 ): Promise<RxCollection<HumanDocumentType, {}, {}>> {
-    if (!name) name = 'human';
+    if (!name) {
+        name = 'human';
+    }
     PouchDB.plugin(require('pouchdb-adapter-memory'));
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.HumanDocumentType> }>({
         name: randomCouchString(10),
-        adapter: 'memory',
+        storage: getRxStoragePouch('memory'),
         multiInstance,
-        eventReduce: true,
+        eventReduce,
         ignoreDuplicate: true
     });
 
-    const collection = await db.collection<schemaObjects.HumanDocumentType>({
-        name,
-        schema: schemas.human
+    const collections = await db.addCollections({
+        [name]: {
+            schema: schemas.human
+        }
     });
 
     // insert data
@@ -41,31 +50,32 @@ export async function create(
         const docsData = new Array(size)
             .fill(0)
             .map(() => schemaObjects.human());
-        await collection.bulkInsert(docsData);
+        await collections[name].bulkInsert(docsData);
     }
-    return collection;
+    return collections[name];
 }
 
 export async function createBySchema<RxDocumentType = {}>(
-    schema: RxJsonSchema,
+    schema: RxJsonSchema<RxDocumentType>,
     name = 'human'
 ): Promise<RxCollection<RxDocumentType, {}, {}>> {
     PouchDB.plugin(require('pouchdb-adapter-memory'));
 
     const db = await createRxDatabase<{ [prop: string]: RxCollection<RxDocumentType> }>({
         name: randomCouchString(10),
-        adapter: 'memory',
+        storage: getRxStoragePouch('memory'),
         multiInstance: true,
         eventReduce: true,
         ignoreDuplicate: true
     });
 
-    const collection = await db.collection<RxDocumentType>({
-        name,
-        schema
+    const collections = await db.addCollections({
+        [name]: {
+            schema
+        }
     });
 
-    return collection;
+    return collections[name];
 }
 
 export async function createAttachments(
@@ -78,7 +88,7 @@ export async function createAttachments(
     PouchDB.plugin(require('pouchdb-adapter-memory'));
     const db = await createRxDatabase<{ [prop: string]: RxCollection<schemaObjects.HumanDocumentType> }>({
         name: randomCouchString(10),
-        adapter: 'memory',
+        storage: getRxStoragePouch('memory'),
         multiInstance,
         eventReduce: true,
         ignoreDuplicate: true
@@ -87,9 +97,10 @@ export async function createAttachments(
     const schemaJson = clone(schemas.human);
     schemaJson.attachments = {};
 
-    const collection = await db.collection<schemaObjects.HumanDocumentType>({
-        name,
-        schema: schemaJson
+    const collections = await db.addCollections({
+        [name]: {
+            schema: schemaJson
+        }
     });
 
     // insert data
@@ -97,10 +108,10 @@ export async function createAttachments(
         const docsData = new Array(size)
             .fill(0)
             .map(() => schemaObjects.human());
-        await collection.bulkInsert(docsData);
+        await collections[name].bulkInsert(docsData);
     }
 
-    return collection;
+    return collections[name];
 }
 
 export async function createEncryptedAttachments(
@@ -115,7 +126,7 @@ export async function createEncryptedAttachments(
     const db = await createRxDatabase<{ [prop: string]: RxCollection<schemaObjects.HumanDocumentType> }>({
         name: randomCouchString(10),
         password: 'foooooobaaaar',
-        adapter: 'memory',
+        storage: getRxStoragePouch('memory'),
         multiInstance,
         eventReduce: true,
         ignoreDuplicate: true
@@ -126,9 +137,10 @@ export async function createEncryptedAttachments(
         encrypted: true
     };
 
-    const collection = await db.collection<schemaObjects.HumanDocumentType>({
-        name,
-        schema: schemaJson
+    const collections = await db.addCollections({
+        [name]: {
+            schema: schemaJson
+        }
     });
 
     // insert data
@@ -136,10 +148,10 @@ export async function createEncryptedAttachments(
         const docsData = new Array(size)
             .fill(0)
             .map(() => schemaObjects.human());
-        await collection.bulkInsert(docsData);
+        await collections[name].bulkInsert(docsData);
     }
 
-    return collection;
+    return collections[name];
 }
 
 export async function createNoCompression(
@@ -150,16 +162,17 @@ export async function createNoCompression(
 
     const db = await createRxDatabase<{ [prop: string]: RxCollection<schemaObjects.HumanDocumentType> }>({
         name: randomCouchString(10),
-        adapter: 'memory',
+        storage: getRxStoragePouch('memory'),
         eventReduce: true,
         ignoreDuplicate: true
     });
     const schemaJSON = clone(schemas.human);
     schemaJSON.keyCompression = false;
     // setTimeout(() => db.destroy(), dbLifetime);
-    const collection = await db.collection<schemaObjects.HumanDocumentType>({
-        name,
-        schema: schemaJSON
+    const collections = await db.addCollections({
+        [name]: {
+            schema: schemaJSON
+        }
     });
 
     // insert data
@@ -167,10 +180,10 @@ export async function createNoCompression(
         const docsData = new Array(size)
             .fill(0)
             .map(() => schemaObjects.human());
-        await collection.bulkInsert(docsData);
+        await collections[name].bulkInsert(docsData);
     }
 
-    return collection;
+    return collections[name];
 }
 
 export async function createAgeIndex(
@@ -180,14 +193,15 @@ export async function createAgeIndex(
 
     const db = await createRxDatabase<{ humana: RxCollection<schemaObjects.HumanDocumentType> }>({
         name: randomCouchString(10),
-        adapter: 'memory',
+        storage: getRxStoragePouch('memory'),
         eventReduce: true,
         ignoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
-    const collection = await db.collection<schemaObjects.HumanDocumentType>({
-        name: 'humana',
-        schema: schemas.humanAgeIndex
+    const collections = await db.addCollections({
+        humana: {
+            schema: schemas.humanAgeIndex
+        }
     });
 
     // insert data
@@ -195,10 +209,10 @@ export async function createAgeIndex(
         const docsData = new Array(amount)
             .fill(0)
             .map(() => schemaObjects.human());
-        await collection.bulkInsert(docsData);
+        await collections.humana.bulkInsert(docsData);
     }
 
-    return collection;
+    return collections.humana;
 }
 
 export async function multipleOnSameDB(
@@ -218,18 +232,18 @@ export async function multipleOnSameDB(
         human2: RxCollection<schemaObjects.HumanDocumentType>
     }>({
         name: randomCouchString(10),
-        adapter: 'memory',
+        storage: getRxStoragePouch('memory'),
         eventReduce: true,
         ignoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
-    const collection = await db.collection<schemaObjects.HumanDocumentType>({
-        name: 'human',
-        schema: schemas.human
-    });
-    const collection2 = await db.collection<schemaObjects.HumanDocumentType>({
-        name: 'human2',
-        schema: schemas.human
+    const collections = await db.addCollections({
+        human: {
+            schema: schemas.human
+        },
+        human2: {
+            schema: schemas.human
+        }
     });
 
     // insert data
@@ -237,18 +251,18 @@ export async function multipleOnSameDB(
         const docsData = new Array(size)
             .fill(0)
             .map(() => schemaObjects.human());
-        await collection.bulkInsert(docsData);
+        await collections.human.bulkInsert(docsData);
 
         const docsData2 = new Array(size)
             .fill(0)
             .map(() => schemaObjects.human());
-        await collection2.bulkInsert(docsData2);
+        await collections.human2.bulkInsert(docsData2);
     }
 
     return {
         db,
-        collection,
-        collection2
+        collection: collections.human,
+        collection2: collections.human2
     };
 }
 
@@ -260,14 +274,15 @@ export async function createNested(
 
     const db = await createRxDatabase<{ nestedhuman: RxCollection<schemaObjects.NestedHumanDocumentType> }>({
         name: randomCouchString(10),
-        adapter,
+        storage: getRxStoragePouch('memory'),
         eventReduce: true,
         ignoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
-    const collection = await db.collection<schemaObjects.NestedHumanDocumentType>({
-        name: 'nestedhuman',
-        schema: schemas.nestedHuman
+    const collections = await db.addCollections({
+        nestedhuman: {
+            schema: schemas.nestedHuman
+        }
     });
 
     // insert data
@@ -275,10 +290,10 @@ export async function createNested(
         const docsData = new Array(amount)
             .fill(0)
             .map(() => schemaObjects.nestedHuman());
-        await collection.bulkInsert(docsData);
+        await collections.nestedhuman.bulkInsert(docsData);
     }
 
-    return collection;
+    return collections.nestedhuman;
 }
 
 export async function createDeepNested(
@@ -289,13 +304,14 @@ export async function createDeepNested(
 
     const db = await createRxDatabase<{ nestedhuman: RxCollection<schemaObjects.DeepNestedHumanDocumentType> }>({
         name: randomCouchString(10),
-        adapter,
+        storage: getRxStoragePouch('memory'),
         eventReduce: true,
     });
     // setTimeout(() => db.destroy(), dbLifetime);
-    const collection = await db.collection<schemaObjects.DeepNestedHumanDocumentType>({
-        name: 'nestedhuman',
-        schema: schemas.deepNestedHuman
+    const collections = await db.addCollections({
+        nestedhuman: {
+            schema: schemas.deepNestedHuman
+        }
     });
 
     // insert data
@@ -303,11 +319,10 @@ export async function createDeepNested(
         const docsData = new Array(amount)
             .fill(0)
             .map(() => schemaObjects.deepNestedHuman());
-        await collection.bulkInsert(docsData);
+        await collections.nestedhuman.bulkInsert(docsData);
     }
 
-
-    return collection;
+    return collections.nestedhuman;
 }
 
 export async function createEncrypted(
@@ -316,14 +331,15 @@ export async function createEncrypted(
 
     const db = await createRxDatabase<{ encryptedhuman: RxCollection<schemaObjects.EncryptedHumanDocumentType> }>({
         name: randomCouchString(10),
-        adapter: 'memory',
+        storage: getRxStoragePouch('memory'),
         eventReduce: true,
         password: randomCouchString(10)
     });
     // setTimeout(() => db.destroy(), dbLifetime);
-    const collection = await db.collection<schemaObjects.EncryptedHumanDocumentType>({
-        name: 'encryptedhuman',
-        schema: schemas.encryptedHuman
+    const collections = await db.addCollections({
+        encryptedhuman: {
+            schema: schemas.encryptedHuman
+        }
     });
 
     // insert data
@@ -331,10 +347,10 @@ export async function createEncrypted(
         const docsData = new Array(amount)
             .fill(0)
             .map(() => schemaObjects.encryptedHuman());
-        await collection.bulkInsert(docsData);
+        await collections.encryptedhuman.bulkInsert(docsData);
     }
 
-    return collection;
+    return collections.encryptedhuman;
 }
 
 export async function createMultiInstance(
@@ -346,26 +362,27 @@ export async function createMultiInstance(
 
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.HumanDocumentType> }>({
         name,
-        adapter: 'memory',
+        storage: getRxStoragePouch('memory'),
         password,
         multiInstance: true,
         eventReduce: true,
         ignoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
-    const collection = await db.collection<schemaObjects.HumanDocumentType>({
-        name: 'human',
-        schema: schemas.human
+    const collections = await db.addCollections({
+        human: {
+            schema: schemas.human
+        }
     });
     // insert data
     if (amount > 0) {
         const docsData = new Array(amount)
             .fill(0)
             .map(() => schemaObjects.human());
-        await collection.bulkInsert(docsData);
+        await collections.human.bulkInsert(docsData);
     }
 
-    return collection;
+    return collections.human;
 }
 
 export async function createPrimary(
@@ -375,15 +392,16 @@ export async function createPrimary(
 
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.SimpleHumanDocumentType> }>({
         name,
-        adapter: 'memory',
+        storage: getRxStoragePouch('memory'),
         multiInstance: true,
         eventReduce: true,
         ignoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
-    const collection = await db.collection<schemaObjects.SimpleHumanDocumentType>({
-        name: 'human',
-        schema: schemas.primaryHuman
+    const collections = await db.addCollections({
+        human: {
+            schema: schemas.primaryHuman
+        }
     });
 
     // insert data
@@ -391,10 +409,10 @@ export async function createPrimary(
         const docsData = new Array(amount)
             .fill(0)
             .map(() => schemaObjects.simpleHuman());
-        await collection.bulkInsert(docsData);
+        await collections.human.bulkInsert(docsData);
     }
 
-    return collection;
+    return collections.human;
 }
 
 export async function createHumanWithTimestamp(
@@ -404,15 +422,16 @@ export async function createHumanWithTimestamp(
 
     const db = await createRxDatabase<{ humans: RxCollection<schemaObjects.HumanWithTimestampDocumentType> }>({
         name,
-        adapter: 'memory',
+        storage: getRxStoragePouch('memory'),
         multiInstance: true,
         eventReduce: true,
         ignoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
-    const collection = await db.collection<schemaObjects.HumanWithTimestampDocumentType>({
-        name: 'humans',
-        schema: schemas.humanWithTimestamp
+    const collections = await db.addCollections({
+        humans: {
+            schema: schemas.humanWithTimestamp
+        }
     });
 
     // insert data
@@ -420,10 +439,10 @@ export async function createHumanWithTimestamp(
         const docsData = new Array(amount)
             .fill(0)
             .map(() => schemaObjects.humanWithTimestamp());
-        await collection.bulkInsert(docsData);
+        await collections.humans.bulkInsert(docsData);
     }
 
-    return collection;
+    return collections.humans;
 }
 
 export async function createMigrationCollection(
@@ -447,39 +466,41 @@ export async function createMigrationCollection(
     const colName = 'human';
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.SimpleHumanAgeDocumentType> }>({
         name,
-        adapter: 'memory',
+        storage: getRxStoragePouch('memory'),
         eventReduce: true,
         ignoreDuplicate: true
     });
-    const col = await db.collection<schemaObjects.SimpleHumanAgeDocumentType>({
-        name: colName,
-        schema: schemas.simpleHuman,
-        autoMigrate: false
+    const cols = await db.addCollections({
+        [colName]: {
+            schema: schemas.simpleHuman,
+            autoMigrate: false
+        }
     });
 
     await Promise.all(
         new Array(amount)
             .fill(0)
-            .map(() => col.insert(schemaObjects.simpleHumanAge()))
+            .map(() => cols[colName].insert(schemaObjects.simpleHumanAge()))
     );
 
-    col.destroy();
+    cols[colName].destroy();
     db.destroy();
 
     const db2 = await createRxDatabase<{ human: RxCollection<schemaObjects.SimpleHumanV3DocumentType> }>({
         name,
-        adapter: 'memory',
+        storage: getRxStoragePouch('memory'),
         eventReduce: true,
         ignoreDuplicate: true
     });
-    const col2 = await db2.collection<schemaObjects.SimpleHumanV3DocumentType>({
-        name: colName,
-        schema: schemas.simpleHumanV3,
-        autoMigrate,
-        migrationStrategies
+    const cols2 = await db2.addCollections({
+        [colName]: {
+            schema: schemas.simpleHumanV3,
+            autoMigrate,
+            migrationStrategies
+        }
     });
 
-    return col2;
+    return cols2[colName];
 }
 
 export async function createRelated(
@@ -489,25 +510,26 @@ export async function createRelated(
 
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.RefHumanDocumentType> }>({
         name,
-        adapter: 'memory',
+        storage: getRxStoragePouch('memory'),
         multiInstance: true,
         eventReduce: true,
         ignoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
-    const collection = await db.collection<schemaObjects.RefHumanDocumentType>({
-        name: 'human',
-        schema: schemas.refHuman
+    const collections = await db.addCollections({
+        human: {
+            schema: schemas.refHuman
+        }
     });
 
     const doc1 = schemaObjects.refHuman();
     const doc2 = schemaObjects.refHuman(doc1.name);
     doc1.bestFriend = doc2.name; // cross-relation
 
-    await collection.insert(doc1);
-    await collection.insert(doc2);
+    await collections.human.insert(doc1);
+    await collections.human.insert(doc2);
 
-    return collection;
+    return collections.human;
 }
 
 export async function createRelatedNested(
@@ -516,25 +538,26 @@ export async function createRelatedNested(
 
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.RefHumanNestedDocumentType> }>({
         name,
-        adapter: 'memory',
+        storage: getRxStoragePouch('memory'),
         multiInstance: true,
         eventReduce: true,
         ignoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
-    const collection = await db.collection<schemaObjects.RefHumanNestedDocumentType>({
-        name: 'human',
-        schema: schemas.refHumanNested
+    const collections = await db.addCollections({
+        human: {
+            schema: schemas.refHumanNested
+        }
     });
 
     const doc1 = schemaObjects.refHumanNested();
     const doc2 = schemaObjects.refHumanNested(doc1.name);
     doc1.foo.bestFriend = doc2.name; // cross-relation
 
-    await collection.insert(doc1);
-    await collection.insert(doc2);
+    await collections.human.insert(doc1);
+    await collections.human.insert(doc2);
 
-    return collection;
+    return collections.human;
 }
 
 export async function createIdAndAgeIndex(
@@ -544,14 +567,15 @@ export async function createIdAndAgeIndex(
 
     const db = await createRxDatabase<{ humana: RxCollection<schemaObjects.HumanWithIdAndAgeIndexDocumentType> }>({
         name: randomCouchString(10),
-        adapter: 'memory',
+        storage: getRxStoragePouch('memory'),
         eventReduce: true,
         ignoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
-    const collection = await db.collection<schemaObjects.HumanWithIdAndAgeIndexDocumentType>({
-        name: 'humana',
-        schema: schemas.humanIdAndAgeIndex
+    const collections = await db.addCollections({
+        humana: {
+            schema: schemas.humanIdAndAgeIndex
+        }
     });
 
     // insert data
@@ -559,8 +583,8 @@ export async function createIdAndAgeIndex(
         const docsData = new Array(amount)
             .fill(0)
             .map(() => schemaObjects.humanWithIdAndAgeIndexDocumentType());
-        await collection.bulkInsert(docsData);
+        await collections.humana.bulkInsert(docsData);
     }
 
-    return collection;
+    return collections.humana;
 }
