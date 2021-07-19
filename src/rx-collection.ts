@@ -348,7 +348,7 @@ export class RxCollectionBase<
      * to not have duplicated code.
      */
     async insert(
-        json: RxDocumentType | RxDocument
+        json: RxDocumentType | RxDocument | any
     ): Promise<RxDocument<RxDocumentType, OrmMethods>> {
         // inserting a temporary-document
         let tempDoc: RxDocument | null = null;
