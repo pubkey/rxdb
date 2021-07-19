@@ -76,9 +76,10 @@ export type RxCollection<
     StaticMethods = {},
     InstanceCreationOptions = {},
     MiddlewareInputType = RxDocumentType
-    > = StaticMethods &
+    > =
     RxCollectionBase<InstanceCreationOptions, RxDocumentType, OrmMethods, MiddlewareInputType> &
-    RxCollectionGenerated<RxDocumentType, OrmMethods, MiddlewareInputType>;
+    RxCollectionGenerated<RxDocumentType, OrmMethods, MiddlewareInputType> & 
+    StaticMethods;
 
 export interface RxCollectionGenerated<RxDocumentType = any, OrmMethods = {}, MiddlewareInputType = any> extends RxLocalDocumentMutation<RxCollection<RxDocumentType, OrmMethods>> {
 
