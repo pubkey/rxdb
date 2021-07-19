@@ -120,7 +120,8 @@ export class RxCollectionBase<
     InstanceCreationOptions,
     RxDocumentType = { [prop: string]: any },
     OrmMethods = {},
-    StaticMethods = { [key: string]: any }
+    StaticMethods = { [key: string]: any },
+    MiddlewareInputType = RxDocumentType
     > {
 
     constructor(
@@ -348,7 +349,7 @@ export class RxCollectionBase<
      * to not have duplicated code.
      */
     async insert(
-        json: RxDocumentType | RxDocument | any
+        json: MiddlewareInputType | RxDocument
     ): Promise<RxDocument<RxDocumentType, OrmMethods>> {
         // inserting a temporary-document
         let tempDoc: RxDocument | null = null;
@@ -386,7 +387,7 @@ export class RxCollectionBase<
     }
 
     async bulkInsert(
-        docsData: RxDocumentType[]
+        docsData: MiddlewareInputType[]
     ): Promise<{
         success: RxDocument<RxDocumentType, OrmMethods>[],
         error: RxStorageBulkWriteError<RxDocumentType>[]
@@ -508,7 +509,7 @@ export class RxCollectionBase<
     /**
      * same as insert but overwrites existing document with same primary
      */
-    upsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
+    upsert(json: Partial<MiddlewareInputType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
         const useJson = fillObjectDataBeforeInsert(this as any, json);
         const primary = useJson[this.schema.primaryPath];
         if (!primary) {
@@ -535,7 +536,7 @@ export class RxCollectionBase<
     /**
      * upserts to a RxDocument, uses atomicUpdate if document already exists
      */
-    atomicUpsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
+    atomicUpsert(json: Partial<MiddlewareInputType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
         const useJson = fillObjectDataBeforeInsert(this as any, json);
         const primary = (useJson as any)[this.schema.primaryPath];
         if (!primary) {
