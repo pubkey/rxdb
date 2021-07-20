@@ -33,11 +33,14 @@ jobs:
       # https://github.com/honkit/honkit
       # so we do not need this
       - name: downgrade nodejs for gitbook
-        run: sudo n 13.8.0
+        run: |
+          sudo n 13.8.0
+          node -v
+          rm -r node_modules/
+          npm install
 
       - name: build docs
         run: |
-          node -v
           npm run docs:build
 
       - name: Commit files
