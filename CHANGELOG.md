@@ -2,7 +2,7 @@
 
 ### X.X.X (coming soon)
 
-### 10.0.0 (coming soon) BREAKING [read the announcement](./orga/releases/10.0.0.md)
+### 10.0.0 (20 July 2021) BREAKING [read the announcement](./orga/releases/10.0.0.md)
 
 Breaking:
   - Setting a `primaryKey` for a schema is now required.
