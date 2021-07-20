@@ -37,6 +37,7 @@ jobs:
 
       - name: build docs
         run: |
+          node -v
           npm run docs:build
 
       - name: Commit files
