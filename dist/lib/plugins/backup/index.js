@@ -281,8 +281,7 @@ var RxBackupState = /*#__PURE__*/function () {
                                     }).map(function (r) {
                                       return r.id;
                                     }) // unique
-                                    . // unique
-                                    filter(function (elem, pos, arr) {
+                                    .filter(function (elem, pos, arr) {
                                       return arr.indexOf(elem) === pos;
                                     });
                                     _context4.next = 10;

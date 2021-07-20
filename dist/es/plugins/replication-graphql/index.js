@@ -443,7 +443,7 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
 
               if (this.live) {// console.log('no more docs, wait for ping');
               } else {// console.log('RxGraphQLReplicationState._run(): no more docs and not live; complete = true');
-                }
+              }
 
               _context5.next = 57;
               break;
@@ -632,7 +632,7 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
 
               if (this.live) {// console.log('no more docs to push, wait for ping');
               } else {// console.log('RxGraphQLReplicationState._runPull(): no more docs to push and not live; complete = true');
-                }
+              }
 
               _context7.next = 50;
               break;

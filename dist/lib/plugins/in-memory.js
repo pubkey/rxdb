@@ -266,12 +266,12 @@ function replicateExistingDocuments(fromCollection, toCollection) {
     });
     if (docs.length === 0) return Promise.resolve([]); // nothing to replicate
     else {
-        return toCollection.storageInstance.internals.pouch.bulkDocs({
-          docs: docs
-        }, BULK_DOC_OPTIONS_FALSE).then(function () {
-          return docs;
-        });
-      }
+      return toCollection.storageInstance.internals.pouch.bulkDocs({
+        docs: docs
+      }, BULK_DOC_OPTIONS_FALSE).then(function () {
+        return docs;
+      });
+    }
   });
 }
 /**

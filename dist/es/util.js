@@ -370,8 +370,8 @@ export function isFolderPath(name) {
   if (name.includes('/') || // unix
   name.includes('\\') // windows
   ) {
-      return true;
-    } else {
+    return true;
+  } else {
     return false;
   }
 }
