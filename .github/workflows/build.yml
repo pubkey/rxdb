@@ -30,7 +30,10 @@ jobs:
         run: npm run build
       
       - name: build docs
-        run: npm run docs:build
+        # https://stackoverflow.com/a/65840763/3443137
+        run: |
+          npm install graceful-fs@4.2.0 --save
+          npm run docs:build
 
       - name: Commit files
         run: |
