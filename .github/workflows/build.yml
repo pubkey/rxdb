@@ -29,8 +29,11 @@ jobs:
       - name: build code
         run: npm run build
       
+      # TODO move from gitbook to honkit
+      # https://github.com/honkit/honkit
+      # so we do not need this
       - name: downgrade nodejs for gitbook
-        run: n 13.8.0
+        run: sudo n 13.8.0
 
       - name: build docs
         run: |
