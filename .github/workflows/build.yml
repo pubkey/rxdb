@@ -33,8 +33,12 @@ jobs:
       # https://github.com/honkit/honkit
       # so we do not need this
       - name: downgrade nodejs for gitbook
+        uses: actions/setup-node@v2.2.0
+        with:
+          node-version: 13.8.0
+
+      - name: reinstall with older node version
         run: |
-          sudo n 13.8.0
           node -v
           rm -r node_modules/
           npm install
