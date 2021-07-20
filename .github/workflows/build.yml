@@ -29,10 +29,11 @@ jobs:
       - name: build code
         run: npm run build
       
+      - name: downgrade nodejs for gitbook
+        run: n 13.8.0
+
       - name: build docs
-        # https://stackoverflow.com/a/65840763/3443137
         run: |
-          npm install graceful-fs@4.2.0 --save
           npm run docs:build
 
       - name: Commit files
