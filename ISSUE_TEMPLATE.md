@@ -28,6 +28,7 @@
 <!-- DESCRIBE WHY YOU OPEN THIS ISSUE -->
 
 ## Info
+  - RxDB Version: 
   - Environment: (Node.js/browser/electron/etc..)
   - Adapter: (IndexedDB/Localstorage/LevelDB/etc..)
   - Stack: (Typescript, Babel, Angular, React, etc..)
