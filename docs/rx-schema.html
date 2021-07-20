@@ -333,7 +333,7 @@
                 <a href="rx-database.html#dump">
             
                     
-                    dump()
+                    exportJSON()
             
                 </a>
             
@@ -346,7 +346,7 @@
                 <a href="rx-database.html#importdump">
             
                     
-                    importDump()
+                    importJSON()
             
                 </a>
             
@@ -851,7 +851,7 @@
                 <a href="rx-collection.html#dump">
             
                     
-                    dump()
+                    exportJSON()
             
                 </a>
             
@@ -864,7 +864,7 @@
                 <a href="rx-collection.html#importdump">
             
                     
-                    importDump()
+                    importJSON()
             
                 </a>
             
@@ -1068,19 +1068,6 @@
     
         <li class="chapter " data-level="1.6.3.7" data-path="rx-document.html">
             
-                <a href="rx-document.html#atomicset">
-            
-                    
-                    atomicSet()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.6.3.8" data-path="rx-document.html">
-            
                 <a href="rx-document.html#observe-">
             
                     
@@ -1092,7 +1079,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.9" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.8" data-path="rx-document.html">
             
                 <a href="rx-document.html#remove">
             
@@ -1105,7 +1092,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.10" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.9" data-path="rx-document.html">
             
                 <a href="rx-document.html#deleted$">
             
@@ -1118,7 +1105,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.11" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.10" data-path="rx-document.html">
             
                 <a href="rx-document.html#tojson">
             
@@ -1131,7 +1118,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.12" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.11" data-path="rx-document.html">
             
                 <a href="rx-document.html#set">
             
@@ -1144,7 +1131,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.13" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.12" data-path="rx-document.html">
             
                 <a href="rx-document.html#save">
             
@@ -1157,7 +1144,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.14" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.13" data-path="rx-document.html">
             
                 <a href="rx-document.html#isrxdocument">
             
@@ -1394,9 +1381,9 @@
             
         </li>
     
-        <li class="chapter " data-level="1.14" data-path="replication.html">
+        <li class="chapter " data-level="1.14" data-path="replication-couchdb.html">
             
-                <a href="replication.html">
+                <a href="replication-couchdb.html">
             
                     
                     Replication CouchDB
@@ -1633,7 +1620,7 @@
 <p>In this example-schema we define a hero-collection with the following settings:</p>
 <ul>
 <li>the version-number of the schema is 0</li>
-<li>the name-property is the <strong>primary</strong>. This means its an unique, indexed, required string which can be used to definitely find a single document.</li>
+<li>the name-property is the <strong>primaryKey</strong>. This means its an unique, indexed, required <code>string</code> which can be used to definitely find a single document.</li>
 <li>the color-field is required for every document</li>
 <li>the healthpoints-field must be a number between 0 and 100</li>
 <li>the secret-field stores an encrypted value</li>
@@ -1644,11 +1631,11 @@
   <span class="hljs-string">&quot;title&quot;</span>: <span class="hljs-string">&quot;hero schema&quot;</span>,
   <span class="hljs-string">&quot;version&quot;</span>: <span class="hljs-number">0</span>,
   <span class="hljs-string">&quot;description&quot;</span>: <span class="hljs-string">&quot;describes a simple hero&quot;</span>,
+  <span class="hljs-string">&quot;primaryKey&quot;</span>: <span class="hljs-string">&quot;name&quot;</span>,
   <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;object&quot;</span>,
   <span class="hljs-string">&quot;properties&quot;</span>: {
       <span class="hljs-string">&quot;name&quot;</span>: {
-          <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>,
-          <span class="hljs-string">&quot;primary&quot;</span>: <span class="hljs-literal">true</span>
+          <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
       },
       <span class="hljs-string">&quot;color&quot;</span>: {
           <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
@@ -1684,7 +1671,10 @@
           }
       }
   },
-  <span class="hljs-string">&quot;required&quot;</span>: [<span class="hljs-string">&quot;color&quot;</span>],
+  <span class="hljs-string">&quot;required&quot;</span>: [
+      <span class="hljs-string">&quot;name&quot;</span>,
+      <span class="hljs-string">&quot;color&quot;</span>
+  ],
   <span class="hljs-string">&quot;encrypted&quot;</span>: [<span class="hljs-string">&quot;secret&quot;</span>],
   <span class="hljs-string">&quot;attachments&quot;</span>: {
       <span class="hljs-string">&quot;encrypted&quot;</span>: <span class="hljs-literal">true</span>
@@ -1705,16 +1695,31 @@
 <h2 id="version">version</h2>
 <p>The <code>version</code> field is a number, starting with <code>0</code>.
 When the version is greater than 0, you have to provide the migrationStrategies to create a collection with this schema.</p>
-<h2 id="keycompression">keyCompression</h2>
-<p>Since version <code>8.0.0</code>, the keyCompression is disabled by default. If you have a huge amount of documents it makes sense to enable the keyCompression and save disk-space.
-<code>keyCompression</code> can only be used on the <strong>top-level</strong> of a schema.</p>
-<p><strong>Notice:</strong> When you use <code>keyCompression</code> together with the graphql replication, you must ensure that direct non-RxDB writes to the remote database must also write compressed documents. Therefore it is not recommended to enable <code>keyCompression</code> for that use case.</p>
+<h2 id="primarykey">primaryKey</h2>
+<p>The <code>primaryKey</code> field contains the fieldname of the property that will be used as primary key for the whole collection.
+The value of the primary key of the document must be a <code>string</code>, unique, final and is required.</p>
+<h3 id="composite-primary-key">composite primary key</h3>
+<p>You can define a composite primary key which gets composed from multiple properties of the document data.</p>
 <pre><code class="lang-javascript"><span class="hljs-keyword">const</span> mySchema = {
   keyCompression: <span class="hljs-literal">true</span>, <span class="hljs-comment">// set this to true, to enable the keyCompression</span>
   version: <span class="hljs-number">0</span>,
-  title: <span class="hljs-string">&apos;human schema no compression&apos;</span>,
+  title: <span class="hljs-string">&apos;human schema with composite primary&apos;</span>,
+  primaryKey: {
+      <span class="hljs-comment">// where should the composed string be stored</span>
+      key: <span class="hljs-string">&apos;id&apos;</span>,
+      <span class="hljs-comment">// fields that will be used to create the composed key</span>
+      fields: [
+          <span class="hljs-string">&apos;firstName&apos;</span>,
+          <span class="hljs-string">&apos;lastName&apos;</span>
+      ],
+      <span class="hljs-comment">// separator which is used to concat the fields values.</span>
+      separator: <span class="hljs-string">&apos;|&apos;</span>
+  }
   type: <span class="hljs-string">&apos;object&apos;</span>,
   properties: {
+      id: {
+          type: <span class="hljs-string">&apos;string&apos;</span>
+      },
       firstName: {
           type: <span class="hljs-string">&apos;string&apos;</span>
       },
@@ -1722,7 +1727,56 @@ When the version is greater than 0, you have to provide the migrationStrategies 
           type: <span class="hljs-string">&apos;string&apos;</span>
       }
   },
-  required: [<span class="hljs-string">&apos;firstName&apos;</span>, <span class="hljs-string">&apos;lastName&apos;</span>]
+  required: [
+    <span class="hljs-string">&apos;id&apos;</span>, 
+    <span class="hljs-string">&apos;firstName&apos;</span>,
+    <span class="hljs-string">&apos;lastName&apos;</span>
+  ]
+};
+</code></pre>
+<p>You can then find a document by using the relevant parts to create the composite primaryKey:</p>
+<pre><code class="lang-ts">
+<span class="hljs-comment">// inserting with composite primary</span>
+await myRxCollection.insert({
+    <span class="hljs-comment">// id, &lt;- do not set the id, it will be filled by RxDB</span>
+    firstName: <span class="hljs-string">&apos;foo&apos;</span>,
+    lastName: <span class="hljs-string">&apos;bar&apos;</span>
+});
+
+<span class="hljs-comment">// find by composite primary</span>
+<span class="hljs-keyword">const</span> id = myRxCollection.schema.getPrimaryOfDocumentData({
+    firstName: <span class="hljs-string">&apos;foo&apos;</span>,
+    lastName: <span class="hljs-string">&apos;bar&apos;</span>
+});
+<span class="hljs-keyword">const</span> myRxDocument = myRxCollection.findOne(id).exec();
+</code></pre>
+<h2 id="keycompression">keyCompression</h2>
+<p>If set to true (disabled by default), the documents will be stored in a compressed formant which saves up to 40% disc space.
+For compression the npm module <a href="https://github.com/pubkey/jsonschema-key-compression" target="_blank">jsonschema-key-compression</a> is used.</p>
+<p><code>keyCompression</code> can only be set on the <strong>top-level</strong> of a schema.</p>
+<p><strong>Notice:</strong> When you use <code>keyCompression</code> together with the graphql replication, you must ensure that direct non-RxDB writes to the remote database must also write compressed documents. Therefore it is not recommended to enable <code>keyCompression</code> for that use case.</p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> mySchema = {
+  keyCompression: <span class="hljs-literal">true</span>, <span class="hljs-comment">// set this to true, to enable the keyCompression</span>
+  version: <span class="hljs-number">0</span>,
+  title: <span class="hljs-string">&apos;human schema with compression&apos;</span>,
+  primaryKey: <span class="hljs-string">&apos;id&apos;</span>,
+  type: <span class="hljs-string">&apos;object&apos;</span>,
+  properties: {
+      id: {
+          type: <span class="hljs-string">&apos;string&apos;</span>
+      },
+      firstName: {
+          type: <span class="hljs-string">&apos;string&apos;</span>
+      },
+      lastName: {
+          type: <span class="hljs-string">&apos;string&apos;</span>
+      }
+  },
+  required: [
+    <span class="hljs-string">&apos;id&apos;</span>, 
+    <span class="hljs-string">&apos;firstName&apos;</span>,
+    <span class="hljs-string">&apos;lastName&apos;</span>
+]
 };
 </code></pre>
 <h2 id="indexes">Indexes</h2>
@@ -1731,10 +1785,14 @@ When the version is greater than 0, you have to provide the migrationStrategies 
 <h3 id="index-example">Index-example</h3>
 <pre><code class="lang-js"><span class="hljs-keyword">const</span> schemaWithIndexes = {
   version: <span class="hljs-number">0</span>,
-  title: <span class="hljs-string">&apos;human schema no compression&apos;</span>,
+  title: <span class="hljs-string">&apos;human schema with indexes&apos;</span>,
   keyCompression: <span class="hljs-literal">true</span>,
+  primaryKey: <span class="hljs-string">&apos;id&apos;</span>,
   type: <span class="hljs-string">&apos;object&apos;</span>,
   properties: {
+      id: {
+          type: <span class="hljs-string">&apos;string&apos;</span>
+      },
       firstName: {
           type: <span class="hljs-string">&apos;string&apos;</span>
       },
@@ -1756,6 +1814,7 @@ When the version is greater than 0, you have to provide the migrationStrategies 
           }       
       }
   },
+  required: [<span class="hljs-string">&apos;id&apos;</span>],
   indexes: [
     <span class="hljs-string">&apos;firstName&apos;</span>, <span class="hljs-comment">// &lt;- this will create a simple index for the `firstName` field</span>
     <span class="hljs-string">&apos;creditCards.[].cvc&apos;</span>,
@@ -1770,8 +1829,12 @@ When the version is greater than 0, you have to provide the migrationStrategies 
 Whenever you insert a document or create a temporary-document, unset fields will be filled with default-values.</p>
 <pre><code class="lang-js"><span class="hljs-keyword">const</span> schemaWithDefaultAge = {
   version: <span class="hljs-number">0</span>,
+  primaryKey: <span class="hljs-string">&apos;id&apos;</span>,
   type: <span class="hljs-string">&apos;object&apos;</span>,
   properties: {
+      id: {
+          type: <span class="hljs-string">&apos;string&apos;</span>
+      },
       firstName: {
           type: <span class="hljs-string">&apos;string&apos;</span>
       },
@@ -1783,6 +1846,7 @@ Whenever you insert a document or create a temporary-document, unset fields will
           <span class="hljs-keyword">default</span>: <span class="hljs-number">20</span>       <span class="hljs-comment">// &lt;- default will be used</span>
       }
   },
+  required: [<span class="hljs-string">&apos;object&apos;</span>]
 };
 </code></pre>
 <h2 id="final">final</h2>
@@ -1795,8 +1859,12 @@ Final fields cannot be observed because they anyway will not change.</p>
 </ul>
 <pre><code class="lang-js"><span class="hljs-keyword">const</span> schemaWithFinalAge = {
   version: <span class="hljs-number">0</span>,
+  primaryKey: <span class="hljs-string">&apos;id&apos;</span>,
   type: <span class="hljs-string">&apos;object&apos;</span>,
   properties: {
+      id: {
+          type: <span class="hljs-string">&apos;string&apos;</span>
+      },
       firstName: {
           type: <span class="hljs-string">&apos;string&apos;</span>
       },
@@ -1808,6 +1876,7 @@ Final fields cannot be observed because they anyway will not change.</p>
           final: <span class="hljs-literal">true</span>
       }
   },
+  required: [<span class="hljs-string">&apos;id&apos;</span>]
 };
 </code></pre>
 <h2 id="encryption">encryption</h2>
@@ -1816,12 +1885,17 @@ You can set all fields to be encrypted, even nested objects. You can not run que
 The password used for encryption is set during database creation. <a href="rx-database.html#password">See RxDatabase</a>.</p>
 <pre><code class="lang-js"><span class="hljs-keyword">const</span> schemaWithDefaultAge = {
   version: <span class="hljs-number">0</span>,
+  primaryKey: <span class="hljs-string">&apos;id&apos;</span>,
   type: <span class="hljs-string">&apos;object&apos;</span>,
   properties: {
+      id: {
+          type: <span class="hljs-string">&apos;string&apos;</span>
+      },
       secret: {
           type: <span class="hljs-string">&apos;string&apos;</span>
       },
   },
+  required: [<span class="hljs-string">&apos;id&apos;</span>]
   encrypted: [<span class="hljs-string">&apos;secret&apos;</span>]
 };
 </code></pre>
@@ -1873,7 +1947,7 @@ For example, fieldnames must match the regex <code>^[a-zA-Z][[a-zA-Z0-9_]*]?[a-z
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"RxSchema","level":"1.4","depth":1,"next":{"title":"Example","level":"1.4.1","depth":2,"anchor":"#example","path":"rx-schema.md","ref":"./rx-schema.md#example","articles":[]},"previous":{"title":"isRxDatabase()","level":"1.3.2.10","depth":3,"anchor":"#isrxdatabase","path":"rx-database.md","ref":"./rx-database.md#isrxdatabase","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-schema.md","mtime":"2021-06-30T14:07:56.732Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-06-30T14:10:56.618Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"RxSchema","level":"1.4","depth":1,"next":{"title":"Example","level":"1.4.1","depth":2,"anchor":"#example","path":"rx-schema.md","ref":"./rx-schema.md#example","articles":[]},"previous":{"title":"isRxDatabase()","level":"1.3.2.10","depth":3,"anchor":"#isrxdatabase","path":"rx-database.md","ref":"./rx-database.md#isrxdatabase","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-schema.md","mtime":"2021-07-20T11:40:42.512Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-07-20T11:45:01.241Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

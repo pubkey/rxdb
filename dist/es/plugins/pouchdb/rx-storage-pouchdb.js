@@ -466,11 +466,13 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
 
                           case 6:
                             writeDoc._attachments = _context6.sent;
+                            writeDoc = flatClone(writeDoc);
+                            writeDoc._rev = resultRow.rev;
                             event = pouchChangeRowToChangeEvent(_this3.primaryPath, writeDoc);
 
                             _this3.addEventToChangeStream(event);
 
-                          case 9:
+                          case 11:
                           case "end":
                             return _context6.stop();
                         }

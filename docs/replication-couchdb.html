@@ -333,7 +333,7 @@
                 <a href="rx-database.html#dump">
             
                     
-                    dump()
+                    exportJSON()
             
                 </a>
             
@@ -346,7 +346,7 @@
                 <a href="rx-database.html#importdump">
             
                     
-                    importDump()
+                    importJSON()
             
                 </a>
             
@@ -851,7 +851,7 @@
                 <a href="rx-collection.html#dump">
             
                     
-                    dump()
+                    exportJSON()
             
                 </a>
             
@@ -864,7 +864,7 @@
                 <a href="rx-collection.html#importdump">
             
                     
-                    importDump()
+                    importJSON()
             
                 </a>
             
@@ -1068,19 +1068,6 @@
     
         <li class="chapter " data-level="1.6.3.7" data-path="rx-document.html">
             
-                <a href="rx-document.html#atomicset">
-            
-                    
-                    atomicSet()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.6.3.8" data-path="rx-document.html">
-            
                 <a href="rx-document.html#observe-">
             
                     
@@ -1092,7 +1079,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.9" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.8" data-path="rx-document.html">
             
                 <a href="rx-document.html#remove">
             
@@ -1105,7 +1092,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.10" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.9" data-path="rx-document.html">
             
                 <a href="rx-document.html#deleted$">
             
@@ -1118,7 +1105,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.11" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.10" data-path="rx-document.html">
             
                 <a href="rx-document.html#tojson">
             
@@ -1131,7 +1118,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.12" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.11" data-path="rx-document.html">
             
                 <a href="rx-document.html#set">
             
@@ -1144,7 +1131,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.13" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.12" data-path="rx-document.html">
             
                 <a href="rx-document.html#save">
             
@@ -1157,7 +1144,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.14" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.13" data-path="rx-document.html">
             
                 <a href="rx-document.html#isrxdocument">
             
@@ -1394,9 +1381,9 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.14" data-path="replication.html">
+        <li class="chapter active" data-level="1.14" data-path="replication-couchdb.html">
             
-                <a href="replication.html">
+                <a href="replication-couchdb.html">
             
                     
                     Replication CouchDB
@@ -1627,17 +1614,17 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="replication">Replication</h1>
-<p>One of the most powerful features with CouchDB, PouchDB and RxDB is <strong>sync</strong>.
-You can sync every RxCollection with another RxCollection, a PouchDB-instance or a remote pouch/couch-DB.</p>
-<h2 id="rxcollectionsync">Rx.Collection.sync()</h2>
-<p>To replicate the collection with another instance, use <code>RxCollection.sync()</code>.
+                                <h1 id="couchdb-replication">CouchDB Replication</h1>
+<p>With the CouchDB replication you can replicate data in both directions with any CouchDB- or PouchDB compliant endpoint.
+It works with remote endpoints and also with local pouchdb instances or <code>RxCollection</code> that is created with the pouchdb storage.</p>
+<h2 id="rxcollectionsynccouchdb">Rx.Collection.syncCouchDB()</h2>
+<p>To replicate the collection with another instance, use <code>RxCollection.syncCouchDB()</code>.
 It basically does the same as <a href="https://pouchdb.com/guides/replication.html" target="_blank">pouchdb-sync</a> but also adds event-handlers to make sure that change-events will be recognized in the internal event-stream.</p>
 <pre><code class="lang-js">
 <span class="hljs-comment">// you need these plugins to sync</span>
 addRxPlugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;pouchdb-adapter-http&apos;</span>)); <span class="hljs-comment">// enable syncing over http (remote database)</span>
 
-<span class="hljs-keyword">const</span> replicationState = myCollection.sync({
+<span class="hljs-keyword">const</span> replicationState = myCollection.syncCouchDB({
     remote: <span class="hljs-string">&apos;http://localhost:10102/db/&apos;</span>, <span class="hljs-comment">// remote database. This can be the serverURL, another RxCollection or a PouchDB-instance</span>
     waitForLeadership: <span class="hljs-literal">true</span>,              <span class="hljs-comment">// (optional) [default=true] to save performance, the sync starts on leader-instance only</span>
     direction: {                          <span class="hljs-comment">// direction (optional) to specify sync-directions</span>
@@ -1660,7 +1647,7 @@ addRxPlugin(<span class="hljs-built_in">require</span>(<span class="hljs-string"
 <li>Create multiple subdomains for CouchDB and use a max of 6 active synchronizations (or less) for each</li>
 </ol>
 <h2 id="rxreplicationstate">RxReplicationState</h2>
-<p>The method <code>RxCollection.sync()</code> returns a RxReplicationState which can be used to observe events via rxjs-observables and to cancel the replication.</p>
+<p>The method <code>RxCollection.syncCouchDB()</code> returns a RxReplicationState which can be used to observe events via rxjs-observables and to cancel the replication.</p>
 <h3 id="change">change$</h3>
 <p>Emits the change-events every time some documents get replicated.</p>
 <pre><code class="lang-js">replicationState.change$.subscribe(change =&gt; <span class="hljs-built_in">console</span>.dir(change));
@@ -1694,7 +1681,7 @@ Only one-time-replications will complete.</p>
 <h3 id="awaitinitialreplication">awaitInitialReplication()</h3>
 <p>Returns a <code>Promise</code> that resolves when the initial replication is done and the data is equal to replication goal.
 This only works on non-live replications and when <code>waitForLeadership: false</code></p>
-<pre><code class="lang-js"><span class="hljs-keyword">const</span> repState = <span class="hljs-keyword">await</span> myCollection.sync({
+<pre><code class="lang-js"><span class="hljs-keyword">const</span> repState = <span class="hljs-keyword">await</span> myCollection.syncCouchDB({
   remote: <span class="hljs-string">&apos;http://localhost:8080/db&apos;</span>,
   waitForLeadership: <span class="hljs-literal">false</span>,
   options: {
@@ -1712,7 +1699,7 @@ This only works on non-live replications and when <code>waitForLeadership: false
 <li>When you do many writes in parallen and replicate them. Your replication might stuck because it reaches the maxSockets value of nodejs. You can increase it by setting<pre><code class="lang-js"><span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;http&apos;</span>).globalAgent.maxSockets = <span class="hljs-number">10</span>;
 </code></pre>
 </li>
-<li>Especially when you replicate big attachments, you might get a stuck or slow replication. <a href="https://pouchdb.com/errors.html#replicating_attachments_slow" target="_blank">See</a>. You can solve this be changing the batches configuration.<pre><code class="lang-js"><span class="hljs-keyword">const</span> replicationState = <span class="hljs-keyword">await</span> myCollection.sync({
+<li>Especially when you replicate big attachments, you might get a stuck or slow replication. <a href="https://pouchdb.com/errors.html#replicating_attachments_slow" target="_blank">See</a>. You can solve this be changing the batches configuration.<pre><code class="lang-js"><span class="hljs-keyword">const</span> replicationState = <span class="hljs-keyword">await</span> myCollection.syncCouchDB({
 remote: <span class="hljs-string">&apos;http://...&apos;</span>,
 options: {
     retry: <span class="hljs-literal">true</span>,
@@ -1769,7 +1756,7 @@ options: {
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Replication CouchDB","level":"1.14","depth":1,"next":{"title":"Replication GraphQL","level":"1.15","depth":1,"path":"replication-graphql.md","ref":"./replication-graphql.md","articles":[]},"previous":{"title":"LeaderElection","level":"1.13","depth":1,"path":"leader-election.md","ref":"./leader-election.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"replication.md","mtime":"2021-06-30T14:07:56.732Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-06-30T14:10:56.618Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Replication CouchDB","level":"1.14","depth":1,"next":{"title":"Replication GraphQL","level":"1.15","depth":1,"path":"replication-graphql.md","ref":"./replication-graphql.md","articles":[]},"previous":{"title":"LeaderElection","level":"1.13","depth":1,"path":"leader-election.md","ref":"./leader-election.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"replication-couchdb.md","mtime":"2021-07-20T11:40:42.512Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-07-20T11:45:01.241Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

@@ -333,7 +333,7 @@
                 <a href="rx-database.html#dump">
             
                     
-                    dump()
+                    exportJSON()
             
                 </a>
             
@@ -346,7 +346,7 @@
                 <a href="rx-database.html#importdump">
             
                     
-                    importDump()
+                    importJSON()
             
                 </a>
             
@@ -851,7 +851,7 @@
                 <a href="rx-collection.html#dump">
             
                     
-                    dump()
+                    exportJSON()
             
                 </a>
             
@@ -864,7 +864,7 @@
                 <a href="rx-collection.html#importdump">
             
                     
-                    importDump()
+                    importJSON()
             
                 </a>
             
@@ -1068,19 +1068,6 @@
     
         <li class="chapter " data-level="1.6.3.7" data-path="rx-document.html">
             
-                <a href="rx-document.html#atomicset">
-            
-                    
-                    atomicSet()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.6.3.8" data-path="rx-document.html">
-            
                 <a href="rx-document.html#observe-">
             
                     
@@ -1092,7 +1079,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.9" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.8" data-path="rx-document.html">
             
                 <a href="rx-document.html#remove">
             
@@ -1105,7 +1092,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.10" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.9" data-path="rx-document.html">
             
                 <a href="rx-document.html#deleted$">
             
@@ -1118,7 +1105,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.11" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.10" data-path="rx-document.html">
             
                 <a href="rx-document.html#tojson">
             
@@ -1131,7 +1118,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.12" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.11" data-path="rx-document.html">
             
                 <a href="rx-document.html#set">
             
@@ -1144,7 +1131,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.13" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.12" data-path="rx-document.html">
             
                 <a href="rx-document.html#save">
             
@@ -1157,7 +1144,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.14" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.13" data-path="rx-document.html">
             
                 <a href="rx-document.html#isrxdocument">
             
@@ -1394,9 +1381,9 @@
             
         </li>
     
-        <li class="chapter " data-level="1.14" data-path="replication.html">
+        <li class="chapter " data-level="1.14" data-path="replication-couchdb.html">
             
-                <a href="replication.html">
+                <a href="replication-couchdb.html">
             
                     
                     Replication CouchDB
@@ -1637,6 +1624,30 @@
     <span class="hljs-comment">/* ... */</span>
 } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/core&apos;</span>;
 </code></pre>
+<h2 id="pouchdb">pouchdb</h2>
+<p>To call <code>createRxDatabase</code> you have to specify the storage engine which is used to store documents and run queries.
+At the moment we only have the pouchdb storage engine which uses pouchdb together with different adapters.</p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">import</span> { 
+    addPouchPlugin,
+    getRxStoragePouch,
+    checkAdapter
+} <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/pouchdb&apos;</span>;
+addRxPlugin(RxDBAdapterCheckPlugin);
+
+<span class="hljs-comment">// add pouchdb specific plugins (non RxDB plugins)</span>
+addPouchPlugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;pouchdb-adapter-idb&apos;</span>));
+
+<span class="hljs-comment">// with that you can create a database with the pouchdb storage engine</span>
+<span class="hljs-keyword">const</span> db = <span class="hljs-keyword">await</span> createRxDatabase({
+    name: <span class="hljs-string">&apos;heroesdb&apos;</span>,
+    <span class="hljs-comment">// use pouchdb with the indexeddb-adapter as storage engine.</span>
+    storage: getRxStoragePouch(<span class="hljs-string">&apos;idb&apos;</span>),
+    password: <span class="hljs-string">&apos;myLongAndStupidPassword&apos;</span>
+});
+
+<span class="hljs-comment">// in the pouchdb plugin also there is the method to check if a given pouchdb-adapter works</span>
+<span class="hljs-keyword">await</span> checkAdapter(<span class="hljs-string">&apos;leveldb&apos;</span>); <span class="hljs-comment">// &gt; boolean</span>
+</code></pre>
 <h2 id="required-modules">required modules</h2>
 <p>Some parts of RxDB are not in the core, but are required. This means they must always be overwrite by at least one plugin.</p>
 <h3 id="validate">validate</h3>
@@ -1680,10 +1691,10 @@ addRxPlugin(RxDBQueryBuilderPlugin);
 <pre><code class="lang-javascript"><span class="hljs-keyword">import</span> { RxDBMigrationPlugin } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/migration&apos;</span>;
 addRxPlugin(RxDBMigrationPlugin);
 </code></pre>
-<h3 id="replication">replication</h3>
-<p>Adds the <a href="replication.html">replication</a>-functionality to RxDB which allows you to replicate the database with a CouchDB compliant endpoint.</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">import</span> { RxDBReplicationPlugin } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/replication&apos;</span>;
-addRxPlugin(RxDBReplicationPlugin);
+<h3 id="replication-couchdb">replication-couchdb</h3>
+<p>Adds the <a href="replication-couchdb.html">CouchDB replication</a>-functionality to RxDB which allows you to replicate the database with a CouchDB compliant endpoint.</p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">import</span> { RxDBReplicationCouchDBPlugin } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/replication&apos;</span>;
+addRxPlugin(RxDBReplicationCouchDBPlugin);
 </code></pre>
 <h3 id="replication-graphql">replication-graphql</h3>
 <p>Allows you to do a replication with a GraphQL endpoint.</p>
@@ -1735,24 +1746,6 @@ addRxPlugin(RxDBEncryptionPlugin);
 <p>The update-module is only required when you use <a href="rx-document.html#update">RxDocument.update</a> or <a href="rx-query.html#update">RxQuery.update</a>.</p>
 <pre><code class="lang-javascript"><span class="hljs-keyword">import</span> { RxDBUpdatePlugin } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/update&apos;</span>;
 addRxPlugin(RxDBUpdatePlugin);
-</code></pre>
-<h3 id="watch-for-changes">watch-for-changes</h3>
-<p>When you write data on the internal pouchdb of a collection, by default the changeEvent will not be emitted to RxDB&apos;s changestream.
-The watch-for-changes plugin lets you tell the collection to actively watch for changes on the pouchdb-instance whose origin is not RxDB.
-This plugin is used internally by the replication-plugin and the in-memory-plugin.</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">import</span> { RxDBWatchForChangesPlugin } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/watch-for-changes&apos;</span>;
-addRxPlugin(RxDBWatchForChangesPlugin);
-
-<span class="hljs-comment">// you can now call this once and then do writes on the pouchdb</span>
-myRxCollection.watchForChanges();
-
-<span class="hljs-comment">// now write sth on the pouchdb</span>
-myRxCollection.pouch.put({<span class="hljs-comment">/* ... */</span>});
-</code></pre>
-<h3 id="adapter-check">adapter-check</h3>
-<p>This module add the <a href="rx-database.html#checkadapter">checkAdapter</a>-function to RxDB.</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">import</span> { RxDBAdapterCheckPlugin } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/adapter-check&apos;</span>;
-addRxPlugin(RxDBAdapterCheckPlugin);
 </code></pre>
 <h3 id="server">server</h3>
 <p>Spawns a couchdb-compatible server from a RxDatabase. Use this to replicate data from your electron-node to the browser-window. Or to fast setup a dev-environment.</p>
@@ -1814,7 +1807,7 @@ addRxPlugin(RxDBServerPlugin);
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Custom Build","level":"1.20","depth":1,"next":{"title":"Creating Plugins","level":"1.21","depth":1,"path":"plugins.md","ref":"./plugins.md","articles":[]},"previous":{"title":"LocalDocuments","level":"1.19","depth":1,"path":"rx-local-document.md","ref":"./rx-local-document.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"custom-build.md","mtime":"2021-06-30T14:07:56.700Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-06-30T14:10:56.618Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Custom Build","level":"1.20","depth":1,"next":{"title":"Creating Plugins","level":"1.21","depth":1,"path":"plugins.md","ref":"./plugins.md","articles":[]},"previous":{"title":"LocalDocuments","level":"1.19","depth":1,"path":"rx-local-document.md","ref":"./rx-local-document.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"custom-build.md","mtime":"2021-07-20T11:40:42.472Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-07-20T11:45:01.241Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
