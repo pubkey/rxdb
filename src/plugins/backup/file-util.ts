@@ -1,6 +1,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { BackupMetaFileContent, BackupOptions, RxDatabase } from '../../types';
+import {
+    BackupMetaFileContent,
+    BackupOptions,
+    RxDatabase
+} from '../../types';
 
 /**
  * ensure that the given folder exists
