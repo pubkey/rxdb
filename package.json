@@ -2,7 +2,7 @@
   "name": "rxdb",
   "description": "A realtime Database for JavaScript applications",
   "// version": "For pre-release versions run 'npm publish --tag next'",
-  "version": "10.0.1",
+  "version": "10.0.2",
   "author": "pubkey",
   "repository": {
     "type": "git",
