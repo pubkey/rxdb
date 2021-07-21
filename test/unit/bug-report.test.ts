@@ -113,9 +113,10 @@ describe('bug-report.test.js', () => {
 
         const docRef = ref(myDocument);
 
-        docRef.value.atomicPatch({ firstName: 'notBob' });
+        await docRef.value.atomicPatch({ firstName: 'notBob1' });
+
         /*
-	myDocument.collection
+	 await myDocument.collection
 	.find()
 	.where('firstName')
 	.eq('Bob')
@@ -124,7 +125,8 @@ describe('bug-report.test.js', () => {
                 firstName: 'notBob'
 	    }
 	});
-       */
+	*/
+
 
 
 
