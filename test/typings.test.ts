@@ -723,7 +723,7 @@ describe('typings.test.js', function () {
                             }
                         }
                     });
-                    const myCollection: RxCollection<DefaultDocType, DefaultOrmMethods> = myCollections.humans;
+                    const myCollection: RxCollection<DefaultDocType, DefaultOrmMethods, {}> = myCollections.humans;
 
                     // via insert
                     const doc = await myCollection.insert({
