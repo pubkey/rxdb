@@ -10,6 +10,7 @@
  */
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
+import { ref } from 'vue';
 
 import {
     createRxDatabase,
@@ -109,6 +110,23 @@ describe('bug-report.test.js', () => {
             .findOne().$
             .subscribe(doc => emitted.push(doc));
         await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+
+        const docRef = ref(myDocument);
+
+        docRef.value.atomicPatch({ firstName: 'notBob' });
+        /*
+	myDocument.collection
+	.find()
+	.where('firstName')
+	.eq('Bob')
+	.update({
+            $set: {
+                firstName: 'notBob'
+	    }
+	});
+       */
+
+
 
         // clean up afterwards
         sub.unsubscribe();
