@@ -725,12 +725,16 @@ describe('typings.test.js', function () {
                     });
                     const myCollection: RxCollection<DefaultDocType, DefaultOrmMethods> = myCollections.humans;
 
+                    // via insert
                     const doc = await myCollection.insert({
                         passportId: 'asdf',
                         age: 10
                     });
-
                     const x: string = doc.foobar();
+
+                    // via query findOne()
+                    const doc2 = await myCollection.findOne('asdf').exec(true);
+                    const x2: string = doc.foobar();
                 });
                 `;
                 await transpileCode(code);
