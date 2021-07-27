@@ -86,10 +86,10 @@ export interface RxCollectionGenerated<RxDocumentType = any, OrmMethods = {}, Mi
     // HOOKS
     preInsert(fun: RxCollectionHookNoInstanceCallback<RxDocumentType, OrmMethods, MiddlewareInputType>, parallel: boolean): void;
     preSave(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods, MiddlewareInputType>, parallel: boolean): void;
-    preRemove(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods, MiddlewareInputType>, parallel: boolean): void;
-    postInsert(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods, MiddlewareInputType>, parallel: boolean): void;
-    postSave(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods, MiddlewareInputType>, parallel: boolean): void;
-    postRemove(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods, MiddlewareInputType>, parallel: boolean): void;
+    preRemove(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods, RxDocumentType>, parallel: boolean): void;
+    postInsert(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods, RxDocumentType>, parallel: boolean): void;
+    postSave(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods, RxDocumentType>, parallel: boolean): void;
+    postRemove(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods, RxDocumentType>, parallel: boolean): void;
     postCreate(fun: RxCollectionHookCallbackNonAsync<RxDocumentType, OrmMethods>): void;
 
     // only inMemory-collections
