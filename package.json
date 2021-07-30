@@ -90,7 +90,7 @@
   "dependencies": {
     "@babel/runtime": "7.14.8",
     "@types/clone": "2.1.1",
-    "@types/cors": "2.8.10",
+    "@types/cors": "2.8.12",
     "@types/deep-equal": "1.0.1",
     "@types/express": "4.17.12",
     "@types/is-my-json-valid": "2.18.0",
