@@ -224,7 +224,7 @@ const database = await createRxDatabase({
 
 ## cordova-sqlite
 
-Uses cordova's global `cordova.sqlitePlugin`.
+Uses cordova's global `cordova.sqlitePlugin`. It can be used with cordova and capacitor.
 
 ```js
 // npm install pouchdb-adapter-cordova-sqlite --save
