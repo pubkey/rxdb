@@ -83,7 +83,7 @@ RxDB is made so that you can use **exactly the same code** at
 -   ![NodeJS](docs-src/files/icons/nodejs.png) [NodeJS](https://github.com/pubkey/rxdb/tree/master/examples/node)
 -   ![electron](docs-src/files/icons/electron.png) [Electron](https://github.com/pubkey/rxdb/tree/master/examples/electron)
 -   ![react-native](docs-src/files/icons/react-native.png) [React-Native](https://github.com/pubkey/rxdb/tree/master/examples/react-native)
--   ![cordova](docs-src/files/icons/cordova.png) [Cordova/Phonegap](https://cordova.apache.org/)
+-   ![cordova](docs-src/files/icons/cordova.png) [Cordova/Phonegap/Capacitor](https://cordova.apache.org/)
 
 We optimized, double-checked and made boilerplates so you can directly start to use RxDB with frameworks like
 
