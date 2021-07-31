@@ -220,7 +220,7 @@ const database = await createRxDatabase({
 });
 ```
 
-# Cordova / Phonegap
+# Cordova / Phonegap / Capacitor
 
 ## cordova-sqlite
 
