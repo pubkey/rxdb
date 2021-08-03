@@ -526,6 +526,12 @@
       "rules": {
         "no-undef": "off"
       }
+    },
+    {
+      "files": "./examples/react/test/e2e.test.js",
+      "rules": {
+        "no-undef": "off"
+      }
     }
   ]
 }
