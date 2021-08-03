@@ -90,7 +90,6 @@ import type {
     RxChangeEventInsert,
     RxChangeEventUpdate,
     RxChangeEventDelete,
-    RxStorage,
     RxStorageInstance
 } from './types';
 import type {
@@ -124,7 +123,7 @@ export class RxCollectionBase<
     > {
 
     constructor(
-        public database: RxDatabase<any, InstanceCreationOptions>,
+        public database: RxDatabase<{[key: string]: RxCollection}, InstanceCreationOptions>,
         public name: string,
         public schema: RxSchema<RxDocumentType>,
         public instanceCreationOptions: InstanceCreationOptions = {} as any,
@@ -227,7 +226,7 @@ export class RxCollectionBase<
             storageInstance,
             localDocumentsStore
         ] = await Promise.all([
-            (this.database.storage as RxStorage<any, any>).createStorageInstance<RxDocumentType>(
+            this.database.storage.createStorageInstance<RxDocumentType>(
                 storageInstanceCreationParams
             ),
             this.database.storage.createKeyObjectStorageInstance(
