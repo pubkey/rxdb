@@ -19,6 +19,8 @@ export const ERROR_MESSAGES = {
 
     // pouch-db.js
     P1: 'PouchDB.getBatch: limit must be > 2',
+    P2: 'bulkWrite() cannot be called with an empty array',
+    P3: 'bulkAddRevisions cannot be called with an empty array',
 
     // rx-query
     QU1: 'RxQuery._execOverDatabase(): op not known',

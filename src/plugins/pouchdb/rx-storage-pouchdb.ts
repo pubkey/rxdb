@@ -119,6 +119,14 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
     public async bulkWrite<D = any>(
         documentWrites: BulkWriteLocalRow<D>[]
     ): Promise<RxLocalStorageBulkWriteResponse<D>> {
+        if (documentWrites.length === 0) {
+            throw newRxError('P2', {
+                args: {
+                    documentWrites
+                }
+            });
+        }
+
         const writeRowById: Map<string, BulkWriteLocalRow<D>> = new Map();
 
         const insertDocs: RxLocalDocumentData<D>[] = documentWrites.map(writeRow => {
@@ -696,6 +704,14 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     public async bulkAddRevisions(
         documents: RxDocumentData<RxDocType>[]
     ): Promise<void> {
+        if (documents.length === 0) {
+            throw newRxError('P3', {
+                args: {
+                    documents
+                }
+            });
+        }
+
         const writeData = documents.map(doc => {
             return pouchSwapPrimaryToId(
                 this.primaryPath,
@@ -718,6 +734,13 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     ): Promise<
         RxStorageBulkWriteResponse<RxDocType>
     > {
+        if (documentWrites.length === 0) {
+            throw newRxError('P2', {
+                args: {
+                    documentWrites
+                }
+            });
+        }
 
         const writeRowById: Map<string, BulkWriteRow<RxDocType>> = new Map();
 
