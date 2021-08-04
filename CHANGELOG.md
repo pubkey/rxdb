@@ -2,8 +2,8 @@
 
 ### X.X.X (coming soon)
 
-Other:
-  - Improve error message when write functions are called with empty objects.
+Bugfixes:
+  - Calling bulk-methods with an empty array must not throw an error.
 
 
 ### 10.0.0 (20 July 2021) BREAKING [read the announcement](./orga/releases/10.0.0.md)

@@ -391,6 +391,17 @@ export class RxCollectionBase<
         success: RxDocument<RxDocumentType, OrmMethods>[],
         error: RxStorageBulkWriteError<RxDocumentType>[]
     }> {
+        /**
+         * Optimization shortcut,
+         * do nothing when called with an empty array
+         */
+        if (docsData.length === 0) {
+            return {
+                success: [],
+                error: []
+            };
+        }
+
         const useDocs: RxDocumentType[] = docsData.map(docData => {
             const useDocData = fillObjectDataBeforeInsert(this as any, docData);
             return useDocData;
@@ -451,6 +462,17 @@ export class RxCollectionBase<
         success: RxDocument<RxDocumentType, OrmMethods>[],
         error: RxStorageBulkWriteError<RxDocumentType>[]
     }> {
+        /**
+         * Optimization shortcut,
+         * do nothing when called with an empty array
+         */
+        if (ids.length === 0) {
+            return {
+                success: [],
+                error: []
+            };
+        }
+
         const rxDocumentMap = await this.findByIds(ids);
         const docsData: RxDocumentData<RxDocumentType>[] = [];
         const docsMap: Map<string, RxDocumentData<RxDocumentType>> = new Map();

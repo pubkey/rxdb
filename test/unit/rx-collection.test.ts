@@ -456,6 +456,11 @@ config.parallel('rx-collection.test.js', () => {
                     assert.strictEqual(ret.success.length, 10);
                     db.destroy();
                 });
+                it('should not throw when called with an empty array', async () => {
+                    const col = await humansCollection.create(0);
+                    await col.bulkInsert([]);
+                    col.database.destroy();
+                });
             });
             describe('negative', () => {
                 it('should throw if one already exists', async () => {
@@ -499,6 +504,11 @@ config.parallel('rx-collection.test.js', () => {
                     assert.strictEqual(finalList.length, 0);
 
                     c.database.destroy();
+                });
+                it('should not throw when called with an empty array', async () => {
+                    const col = await humansCollection.create(0);
+                    await col.bulkRemove([]);
+                    col.database.destroy();
                 });
             });
         });
