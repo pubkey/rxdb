@@ -90,7 +90,8 @@ import type {
     RxChangeEventInsert,
     RxChangeEventUpdate,
     RxChangeEventDelete,
-    RxStorageInstance
+    RxStorageInstance,
+    CollectionsOfDatabase
 } from './types';
 import type {
     RxGraphQLReplicationState
@@ -123,7 +124,7 @@ export class RxCollectionBase<
     > {
 
     constructor(
-        public database: RxDatabase<{[key: string]: RxCollection}, InstanceCreationOptions>,
+        public database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions>,
         public name: string,
         public schema: RxSchema<RxDocumentType>,
         public instanceCreationOptions: InstanceCreationOptions = {} as any,
