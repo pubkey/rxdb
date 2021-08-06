@@ -90,8 +90,8 @@ import type {
     RxChangeEventInsert,
     RxChangeEventUpdate,
     RxChangeEventDelete,
-    RxStorage,
-    RxStorageInstance
+    RxStorageInstance,
+    CollectionsOfDatabase
 } from './types';
 import type {
     RxGraphQLReplicationState
@@ -124,7 +124,7 @@ export class RxCollectionBase<
     > {
 
     constructor(
-        public database: RxDatabase<any, InstanceCreationOptions>,
+        public database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions>,
         public name: string,
         public schema: RxSchema<RxDocumentType>,
         public instanceCreationOptions: InstanceCreationOptions = {} as any,
@@ -227,7 +227,7 @@ export class RxCollectionBase<
             storageInstance,
             localDocumentsStore
         ] = await Promise.all([
-            (this.database.storage as RxStorage<any, any>).createStorageInstance<RxDocumentType>(
+            this.database.storage.createStorageInstance<RxDocumentType>(
                 storageInstanceCreationParams
             ),
             this.database.storage.createKeyObjectStorageInstance(
