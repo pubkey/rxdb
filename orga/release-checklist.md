@@ -9,7 +9,7 @@ Things that have to be done before, while and after a release.
 
 ## release
 
-- [ ] Run the [build action](https://github.com/pubkey/rxdb/actions?query=workflow%3ABuild) and wait until it is finished
+- [ ] Run the [build action](https://github.com/pubkey/rxdb/actions/workflows/build.yml?query=workflow%3ABuild) and wait until it is finished
 - [ ] run `git pull`
 - [ ] Update the `version`-field in the package.json
 - [ ] Update the version and the date in the CHANGELOG.md
