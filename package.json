@@ -102,7 +102,7 @@
     "cors": "2.8.5",
     "crypto-js": "4.0.0",
     "custom-idle-queue": "3.0.1",
-    "deep-equal": "^2.0.1",
+    "deep-equal": "2.0.5",
     "deep-freeze": "0.0.1",
     "event-reduce-js": "1.4.0",
     "express": "4.17.1",
