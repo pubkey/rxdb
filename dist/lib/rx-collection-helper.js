@@ -9,6 +9,7 @@ exports.writeToStorageInstance = writeToStorageInstance;
 exports._handleToStorageInstance = _handleToStorageInstance;
 exports._handleFromStorageInstance = _handleFromStorageInstance;
 exports.fillObjectDataBeforeInsert = fillObjectDataBeforeInsert;
+exports.createRxCollectionStorageInstances = createRxCollectionStorageInstances;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
@@ -191,6 +192,50 @@ function fillObjectDataBeforeInsert(collection, data) {
   var useJson = collection.schema.fillObjectWithDefaults(data);
   useJson = collection.schema.fillPrimaryKey(useJson);
   return useJson;
+}
+/**
+ * Creates the storage instances that are used internally in the collection
+ */
+
+
+function createRxCollectionStorageInstances(_x3, _x4, _x5, _x6) {
+  return _createRxCollectionStorageInstances.apply(this, arguments);
+}
+
+function _createRxCollectionStorageInstances() {
+  _createRxCollectionStorageInstances = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(collectionName, rxDatabase, storageInstanceCreationParams, instanceCreationOptions) {
+    var _yield$Promise$all, storageInstance, localDocumentsStore;
+
+    return _regenerator["default"].wrap(function _callee3$(_context3) {
+      while (1) {
+        switch (_context3.prev = _context3.next) {
+          case 0:
+            _context3.next = 2;
+            return Promise.all([rxDatabase.storage.createStorageInstance(storageInstanceCreationParams), rxDatabase.storage.createKeyObjectStorageInstance(rxDatabase.name,
+            /**
+             * Use a different collection name for the local documents instance
+             * so that the local docs can be kept while deleting the normal instance
+             * after migration.
+             */
+            collectionName + '-local', instanceCreationOptions)]);
+
+          case 2:
+            _yield$Promise$all = _context3.sent;
+            storageInstance = _yield$Promise$all[0];
+            localDocumentsStore = _yield$Promise$all[1];
+            return _context3.abrupt("return", {
+              storageInstance: storageInstance,
+              localDocumentsStore: localDocumentsStore
+            });
+
+          case 6:
+          case "end":
+            return _context3.stop();
+        }
+      }
+    }, _callee3);
+  }));
+  return _createRxCollectionStorageInstances.apply(this, arguments);
 }
 
 //# sourceMappingURL=rx-collection-helper.js.map

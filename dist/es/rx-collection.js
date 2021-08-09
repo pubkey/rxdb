@@ -3,7 +3,7 @@ import _createClass from "@babel/runtime/helpers/createClass";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { filter, startWith, mergeMap, shareReplay, map } from 'rxjs/operators';
 import { ucfirst, nextTick, flatClone, promiseSeries, pluginMissing, ensureNotFalsy, getFromMapOrThrow, clone } from './util';
-import { _handleToStorageInstance, _handleFromStorageInstance, fillObjectDataBeforeInsert, writeToStorageInstance } from './rx-collection-helper';
+import { _handleToStorageInstance, _handleFromStorageInstance, fillObjectDataBeforeInsert, writeToStorageInstance, createRxCollectionStorageInstances } from './rx-collection-helper';
 import { createRxQuery, _getDefaultQuery } from './rx-query';
 import { isInstanceOf as isInstanceOfRxSchema, createRxSchema } from './rx-schema';
 import { newRxError, newRxTypeError } from './rx-error';
@@ -70,7 +70,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     wasCreatedBefore) {
       var _this = this;
 
-      var storageInstanceCreationParams, _yield$Promise$all, storageInstance, localDocumentsStore, subDocs, subLocalDocs;
+      var storageInstanceCreationParams, _yield$createRxCollec, storageInstance, localDocumentsStore, subDocs, subLocalDocs;
 
       return _regeneratorRuntime.wrap(function _callee$(_context) {
         while (1) {
@@ -84,18 +84,12 @@ export var RxCollectionBase = /*#__PURE__*/function () {
               };
               runPluginHooks('preCreateRxStorageInstance', storageInstanceCreationParams);
               _context.next = 4;
-              return Promise.all([this.database.storage.createStorageInstance(storageInstanceCreationParams), this.database.storage.createKeyObjectStorageInstance(this.database.name,
-              /**
-               * Use a different collection name for the local documents instance
-               * so that the local docs can be kept while deleting the normal instance
-               * after migration.
-               */
-              this.name + '-local', this.instanceCreationOptions)]);
+              return createRxCollectionStorageInstances(this.name, this.database, storageInstanceCreationParams, this.instanceCreationOptions);
 
             case 4:
-              _yield$Promise$all = _context.sent;
-              storageInstance = _yield$Promise$all[0];
-              localDocumentsStore = _yield$Promise$all[1];
+              _yield$createRxCollec = _context.sent;
+              storageInstance = _yield$createRxCollec.storageInstance;
+              localDocumentsStore = _yield$createRxCollec.localDocumentsStore;
               this.storageInstance = storageInstance;
               this.localDocumentsStore = localDocumentsStore; // we trigger the non-blocking things first and await them later so we can do stuff in the mean time
 
@@ -320,11 +314,22 @@ export var RxCollectionBase = /*#__PURE__*/function () {
         while (1) {
           switch (_context4.prev = _context4.next) {
             case 0:
+              if (!(docsData.length === 0)) {
+                _context4.next = 2;
+                break;
+              }
+
+              return _context4.abrupt("return", {
+                success: [],
+                error: []
+              });
+
+            case 2:
               useDocs = docsData.map(function (docData) {
                 var useDocData = fillObjectDataBeforeInsert(_this3, docData);
                 return useDocData;
               });
-              _context4.next = 3;
+              _context4.next = 5;
               return Promise.all(useDocs.map(function (doc) {
                 return _this3._runHooks('pre', 'insert', doc).then(function () {
                   _this3.schema.validate(doc);
@@ -333,7 +338,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
                 });
               }));
 
-            case 3:
+            case 5:
               docs = _context4.sent;
               insertDocs = docs.map(function (d) {
                 return {
@@ -344,12 +349,12 @@ export var RxCollectionBase = /*#__PURE__*/function () {
               docs.forEach(function (d) {
                 docsMap.set(d[_this3.schema.primaryPath], d);
               });
-              _context4.next = 9;
+              _context4.next = 11;
               return this.database.lockedRun(function () {
                 return _this3.storageInstance.bulkWrite(insertDocs);
               });
 
-            case 9:
+            case 11:
               results = _context4.sent;
               // create documents
               successEntries = Array.from(results.success.entries());
@@ -361,18 +366,18 @@ export var RxCollectionBase = /*#__PURE__*/function () {
                 var doc = createRxDocument(_this3, docData);
                 return doc;
               });
-              _context4.next = 14;
+              _context4.next = 16;
               return Promise.all(rxDocuments.map(function (doc) {
                 return _this3._runHooks('post', 'insert', docsMap.get(doc.primary), doc);
               }));
 
-            case 14:
+            case 16:
               return _context4.abrupt("return", {
                 success: rxDocuments,
                 error: Array.from(results.error.values())
               });
 
-            case 15:
+            case 17:
             case "end":
               return _context4.stop();
           }
@@ -396,10 +401,21 @@ export var RxCollectionBase = /*#__PURE__*/function () {
         while (1) {
           switch (_context5.prev = _context5.next) {
             case 0:
-              _context5.next = 2;
-              return this.findByIds(ids);
+              if (!(ids.length === 0)) {
+                _context5.next = 2;
+                break;
+              }
+
+              return _context5.abrupt("return", {
+                success: [],
+                error: []
+              });
 
             case 2:
+              _context5.next = 4;
+              return this.findByIds(ids);
+
+            case 4:
               rxDocumentMap = _context5.sent;
               docsData = [];
               docsMap = new Map();
@@ -408,13 +424,13 @@ export var RxCollectionBase = /*#__PURE__*/function () {
                 docsData.push(data);
                 docsMap.set(rxDocument.primary, data);
               });
-              _context5.next = 8;
+              _context5.next = 10;
               return Promise.all(docsData.map(function (doc) {
                 var primary = doc[_this4.schema.primaryPath];
                 return _this4._runHooks('pre', 'remove', doc, rxDocumentMap.get(primary));
               }));
 
-            case 8:
+            case 10:
               removeDocs = docsData.map(function (doc) {
                 var writeDoc = flatClone(doc);
                 writeDoc._deleted = true;
@@ -423,21 +439,21 @@ export var RxCollectionBase = /*#__PURE__*/function () {
                   document: _handleToStorageInstance(_this4, writeDoc)
                 };
               });
-              _context5.next = 11;
+              _context5.next = 13;
               return this.database.lockedRun(function () {
                 return _this4.storageInstance.bulkWrite(removeDocs);
               });
 
-            case 11:
+            case 13:
               results = _context5.sent;
               successIds = Array.from(results.success.keys()); // run hooks
 
-              _context5.next = 15;
+              _context5.next = 17;
               return Promise.all(successIds.map(function (id) {
                 return _this4._runHooks('post', 'remove', docsMap.get(id), rxDocumentMap.get(id));
               }));
 
-            case 15:
+            case 17:
               rxDocuments = successIds.map(function (id) {
                 return rxDocumentMap.get(id);
               });
@@ -446,7 +462,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
                 error: Array.from(results.error.values())
               });
 
-            case 17:
+            case 19:
             case "end":
               return _context5.stop();
           }

@@ -20,7 +20,7 @@ export declare const basePrototype: {
     /**
      * emits the changeEvent to the upper instance (RxCollection)
      */
-    $emit(this: import("./types").RxDocumentBase<{}, {}>, changeEvent: RxChangeEvent<any>): any;
+    $emit(this: import("./types").RxDocumentBase<{}, {}>, changeEvent: RxChangeEvent<any>): void;
     /**
      * returns observable of the value of the given path
      */
@@ -103,7 +103,7 @@ export declare function createRxDocumentConstructor(proto?: {
     /**
      * emits the changeEvent to the upper instance (RxCollection)
      */
-    $emit(this: import("./types").RxDocumentBase<{}, {}>, changeEvent: RxChangeEvent<any>): any;
+    $emit(this: import("./types").RxDocumentBase<{}, {}>, changeEvent: RxChangeEvent<any>): void;
     /**
      * returns observable of the value of the given path
      */
@@ -187,7 +187,7 @@ export declare function createRxDocumentConstructor(proto?: {
         /**
          * emits the changeEvent to the upper instance (RxCollection)
          */
-        $emit(this: import("./types").RxDocumentBase<{}, {}>, changeEvent: RxChangeEvent<any>): any;
+        $emit(this: import("./types").RxDocumentBase<{}, {}>, changeEvent: RxChangeEvent<any>): void;
         /**
          * returns observable of the value of the given path
          */

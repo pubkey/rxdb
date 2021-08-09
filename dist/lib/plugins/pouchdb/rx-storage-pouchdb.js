@@ -116,6 +116,18 @@ var RxStorageKeyObjectInstancePouch = /*#__PURE__*/function () {
         while (1) {
           switch (_context2.prev = _context2.next) {
             case 0:
+              if (!(documentWrites.length === 0)) {
+                _context2.next = 2;
+                break;
+              }
+
+              throw (0, _rxError.newRxError)('P2', {
+                args: {
+                  documentWrites: documentWrites
+                }
+              });
+
+            case 2:
               writeRowById = new Map();
               insertDocs = documentWrites.map(function (writeRow) {
                 writeRowById.set(writeRow.document._id, writeRow);
@@ -134,10 +146,10 @@ var RxStorageKeyObjectInstancePouch = /*#__PURE__*/function () {
                 return storeDocumentData;
               });
               startTime = (0, _util.now)();
-              _context2.next = 5;
+              _context2.next = 7;
               return this.internals.pouch.bulkDocs(insertDocs);
 
-            case 5:
+            case 7:
               pouchResult = _context2.sent;
               endTime = (0, _util.now)();
               ret = {
@@ -224,7 +236,7 @@ var RxStorageKeyObjectInstancePouch = /*#__PURE__*/function () {
               });
               return _context2.abrupt("return", ret);
 
-            case 10:
+            case 12:
             case "end":
               return _context2.stop();
           }
@@ -873,17 +885,29 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
         while (1) {
           switch (_context10.prev = _context10.next) {
             case 0:
+              if (!(documents.length === 0)) {
+                _context10.next = 2;
+                break;
+              }
+
+              throw (0, _rxError.newRxError)('P3', {
+                args: {
+                  documents: documents
+                }
+              });
+
+            case 2:
               writeData = documents.map(function (doc) {
                 return pouchSwapPrimaryToId(_this6.primaryPath, doc);
               }); // we do not need the response here because pouchdb returns an empty array on new_edits: false
 
-              _context10.next = 3;
+              _context10.next = 5;
               return this.internals.pouch.bulkDocs(writeData, {
                 new_edits: false,
                 set_new_edit_as_latest_revision: true
               });
 
-            case 3:
+            case 5:
             case "end":
               return _context10.stop();
           }
@@ -907,6 +931,18 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
         while (1) {
           switch (_context12.prev = _context12.next) {
             case 0:
+              if (!(documentWrites.length === 0)) {
+                _context12.next = 2;
+                break;
+              }
+
+              throw (0, _rxError.newRxError)('P2', {
+                args: {
+                  documentWrites: documentWrites
+                }
+              });
+
+            case 2:
               writeRowById = new Map();
               insertDocs = documentWrites.map(function (writeData) {
                 var primary = writeData.document[_this7.primaryPath];
@@ -919,20 +955,20 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
                 return storeDocumentData;
               });
-              _context12.next = 4;
+              _context12.next = 6;
               return this.internals.pouch.bulkDocs(insertDocs, {
                 custom: {
                   writeRowById: writeRowById
                 }
               });
 
-            case 4:
+            case 6:
               pouchResult = _context12.sent;
               ret = {
                 success: new Map(),
                 error: new Map()
               };
-              _context12.next = 8;
+              _context12.next = 10;
               return Promise.all(pouchResult.map( /*#__PURE__*/function () {
                 var _ref8 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee11(resultRow) {
                   var writeRow, err, pushObj;
@@ -997,16 +1033,16 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
                 };
               }()));
 
-            case 8:
-              _context12.next = 10;
+            case 10:
+              _context12.next = 12;
               return (0, _util.promiseWait)(0).then(function () {
                 return (0, _util.promiseWait)(0);
               });
 
-            case 10:
+            case 12:
               return _context12.abrupt("return", ret);
 
-            case 11:
+            case 13:
             case "end":
               return _context12.stop();
           }

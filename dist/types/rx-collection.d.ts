@@ -5,7 +5,7 @@ import { DocCache } from './doc-cache';
 import { QueryCache } from './query-cache';
 import { ChangeEventBuffer } from './change-event-buffer';
 import type { Subscription, Observable } from 'rxjs';
-import type { KeyFunctionMap, RxCouchDBReplicationState, MigrationState, SyncOptions, RxCollection, RxDatabase, RxQuery, RxDocument, SyncOptionsGraphQL, RxDumpCollection, RxDumpCollectionAny, MangoQuery, MangoQueryNoLimit, RxCacheReplacementPolicy, RxStorageBulkWriteError, RxStorageKeyObjectInstance, RxChangeEvent, RxChangeEventInsert, RxChangeEventUpdate, RxChangeEventDelete, RxStorageInstance } from './types';
+import type { KeyFunctionMap, RxCouchDBReplicationState, MigrationState, SyncOptions, RxCollection, RxDatabase, RxQuery, RxDocument, SyncOptionsGraphQL, RxDumpCollection, RxDumpCollectionAny, MangoQuery, MangoQueryNoLimit, RxCacheReplacementPolicy, RxStorageBulkWriteError, RxStorageKeyObjectInstance, RxChangeEvent, RxChangeEventInsert, RxChangeEventUpdate, RxChangeEventDelete, RxStorageInstance, CollectionsOfDatabase } from './types';
 import type { RxGraphQLReplicationState } from './plugins/replication-graphql';
 import { RxSchema } from './rx-schema';
 export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = {
@@ -13,7 +13,7 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
 }, OrmMethods = {}, StaticMethods = {
     [key: string]: any;
 }> {
-    database: RxDatabase<any, InstanceCreationOptions>;
+    database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions>;
     name: string;
     schema: RxSchema<RxDocumentType>;
     instanceCreationOptions: InstanceCreationOptions;
@@ -23,7 +23,7 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     options: any;
     cacheReplacementPolicy: RxCacheReplacementPolicy;
     statics: KeyFunctionMap;
-    constructor(database: RxDatabase<any, InstanceCreationOptions>, name: string, schema: RxSchema<RxDocumentType>, instanceCreationOptions?: InstanceCreationOptions, migrationStrategies?: KeyFunctionMap, methods?: KeyFunctionMap, attachments?: KeyFunctionMap, options?: any, cacheReplacementPolicy?: RxCacheReplacementPolicy, statics?: KeyFunctionMap);
+    constructor(database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions>, name: string, schema: RxSchema<RxDocumentType>, instanceCreationOptions?: InstanceCreationOptions, migrationStrategies?: KeyFunctionMap, methods?: KeyFunctionMap, attachments?: KeyFunctionMap, options?: any, cacheReplacementPolicy?: RxCacheReplacementPolicy, statics?: KeyFunctionMap);
     /**
      * returns observable
      */
@@ -68,7 +68,7 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
      * wrapps the query function of the storage instance.
      */
     _queryStorageInstance(rxQuery: RxQuery | RxQueryBase, limit?: number, noDecrypt?: boolean): Promise<any[]>;
-    $emit(changeEvent: RxChangeEvent<any>): any;
+    $emit(changeEvent: RxChangeEvent<any>): void;
     /**
      * TODO internally call bulkInsert
      * to not have duplicated code.

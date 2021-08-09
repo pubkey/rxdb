@@ -1,4 +1,4 @@
-import type { BulkWriteRow, RxCollection, RxDocumentData } from './types';
+import type { BulkWriteRow, RxCollection, RxDatabase, RxDocumentData, RxStorageInstance, RxStorageInstanceCreationParams, RxStorageKeyObjectInstance } from './types';
 import { RxCollectionBase } from './rx-collection';
 /**
  * Every write access on the storage engine,
@@ -17,3 +17,10 @@ export declare function _handleFromStorageInstance(col: RxCollection | RxCollect
  * This also clones the data.
  */
 export declare function fillObjectDataBeforeInsert(collection: RxCollection | RxCollectionBase<any>, data: any): any;
+/**
+ * Creates the storage instances that are used internally in the collection
+ */
+export declare function createRxCollectionStorageInstances<RxDocumentType, Internals, InstanceCreationOptions>(collectionName: string, rxDatabase: RxDatabase, storageInstanceCreationParams: RxStorageInstanceCreationParams<RxDocumentType, InstanceCreationOptions>, instanceCreationOptions: InstanceCreationOptions): Promise<{
+    storageInstance: RxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions>;
+    localDocumentsStore: RxStorageKeyObjectInstance<any, InstanceCreationOptions>;
+}>;

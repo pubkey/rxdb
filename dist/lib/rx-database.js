@@ -47,6 +47,8 @@ var _rxStorageHelper = require("./rx-storage-helper");
 
 var _rxSchemaHelper = require("./rx-schema-helper");
 
+var _rxCollectionHelper = require("./rx-collection-helper");
+
 /**
  * stores the used database names
  * so we can throw when the same database is created more then once.
@@ -362,18 +364,18 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     return _removeAllOfCollection(this, collectionName) // get all relevant pouchdb-instances
     .then(function (knownVersions) {
       return Promise.all(knownVersions.map(function (v) {
-        return _this3.storage.createStorageInstance({
+        return (0, _rxCollectionHelper.createRxCollectionStorageInstances)(collectionName, _this3, {
           databaseName: _this3.name,
           collectionName: collectionName,
           schema: (0, _rxSchemaHelper.getPseudoSchemaForVersion)(v, 'collectionName'),
           options: _this3.instanceCreationOptions
-        });
+        }, {});
       }));
-    }) // remove documents
-    .then(function (storageInstance) {
-      return Promise.all(storageInstance.map(function (instance) {
+    }) // remove normal and local documents
+    .then(function (storageInstances) {
+      return Promise.all(storageInstances.map(function (instance) {
         return _this3.lockedRun(function () {
-          return instance.remove();
+          return Promise.all([instance.storageInstance.remove(), instance.localDocumentsStore.remove()]);
         });
       }));
     }).then(function () {});

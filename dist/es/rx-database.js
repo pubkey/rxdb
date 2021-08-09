@@ -14,6 +14,7 @@ import { Subject } from 'rxjs';
 import { createRxCollection } from './rx-collection';
 import { findLocalDocument, getAllDocuments, getSingleDocument, INTERNAL_STORAGE_NAME, storageChangeEventToRxChangeEvent, writeSingle } from './rx-storage-helper';
 import { getPseudoSchemaForVersion } from './rx-schema-helper';
+import { createRxCollectionStorageInstances } from './rx-collection-helper';
 /**
  * stores the used database names
  * so we can throw when the same database is created more then once.
@@ -330,18 +331,18 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
     return _removeAllOfCollection(this, collectionName) // get all relevant pouchdb-instances
     .then(function (knownVersions) {
       return Promise.all(knownVersions.map(function (v) {
-        return _this3.storage.createStorageInstance({
+        return createRxCollectionStorageInstances(collectionName, _this3, {
           databaseName: _this3.name,
           collectionName: collectionName,
           schema: getPseudoSchemaForVersion(v, 'collectionName'),
           options: _this3.instanceCreationOptions
-        });
+        }, {});
       }));
-    }) // remove documents
-    .then(function (storageInstance) {
-      return Promise.all(storageInstance.map(function (instance) {
+    }) // remove normal and local documents
+    .then(function (storageInstances) {
+      return Promise.all(storageInstances.map(function (instance) {
         return _this3.lockedRun(function () {
-          return instance.remove();
+          return Promise.all([instance.storageInstance.remove(), instance.localDocumentsStore.remove()]);
         });
       }));
     }).then(function () {});
