@@ -2,6 +2,8 @@
 
 ### X.X.X (coming soon)
 
+### 10.0.3 (9 August 2021)
+
 Bugfixes:
   - Calling bulk-methods with an empty array must not throw an error.
   - `RxCollection.remove()` does not delete local documents [#3319](https://github.com/pubkey/rxdb/issues/3319)
