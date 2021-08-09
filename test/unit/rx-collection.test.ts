@@ -1608,6 +1608,33 @@ config.parallel('rx-collection.test.js', () => {
                     assert.strictEqual(0, noDocs.length);
                     db.destroy();
                 });
+                it('should have deleted the local documents', async () => {
+                    const db = await createRxDatabase({
+                        name: randomCouchString(10),
+                        storage: getRxStoragePouch('memory'),
+                    });
+                    const collections = await db.addCollections({
+                        human: {
+                            schema: schemas.primaryHuman
+                        }
+                    });
+                    const collection = collections.human;
+                    const id = 'foobar';
+                    await collection.insertLocal(id, { foo: 'bar' });
+
+                    await collection.remove();
+
+                    const collections2 = await db.addCollections({
+                        human: {
+                            schema: schemas.primaryHuman
+                        }
+                    });
+                    const collection2 = collections2.human;
+                    const hasLocal = await collection2.getLocal(id);
+                    assert.strictEqual(hasLocal, null);
+
+                    await db.destroy();
+                });
                 it('should delete when older versions exist', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),

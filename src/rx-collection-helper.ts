@@ -1,8 +1,12 @@
 import type {
     BulkWriteRow,
     RxCollection,
+    RxDatabase,
     RxDocumentData,
-    RxStorageBulkWriteError
+    RxStorageBulkWriteError,
+    RxStorageInstance,
+    RxStorageInstanceCreationParams,
+    RxStorageKeyObjectInstance
 } from './types';
 import {
     flatClone
@@ -127,4 +131,42 @@ export function fillObjectDataBeforeInsert(
     useJson = collection.schema.fillPrimaryKey(useJson);
 
     return useJson;
+}
+
+/**
+ * Creates the storage instances that are used internally in the collection
+ */
+export async function createRxCollectionStorageInstances<RxDocumentType, Internals, InstanceCreationOptions>(
+    collectionName: string,
+    rxDatabase: RxDatabase,
+    storageInstanceCreationParams: RxStorageInstanceCreationParams<RxDocumentType, InstanceCreationOptions>,
+    instanceCreationOptions: InstanceCreationOptions
+): Promise<{
+    storageInstance: RxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions>,
+    localDocumentsStore: RxStorageKeyObjectInstance<any, InstanceCreationOptions>
+}> {
+
+    const [
+        storageInstance,
+        localDocumentsStore
+    ] = await Promise.all([
+        rxDatabase.storage.createStorageInstance<RxDocumentType>(
+            storageInstanceCreationParams
+        ),
+        rxDatabase.storage.createKeyObjectStorageInstance(
+            rxDatabase.name,
+            /**
+             * Use a different collection name for the local documents instance
+             * so that the local docs can be kept while deleting the normal instance
+             * after migration.
+             */
+            collectionName + '-local',
+            instanceCreationOptions
+        )
+    ]);
+
+    return {
+        storageInstance,
+        localDocumentsStore
+    };
 }

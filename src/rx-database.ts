@@ -60,6 +60,7 @@ import {
 } from './rx-storage-helper';
 import type { RxBackupState } from './plugins/backup';
 import { getPseudoSchemaForVersion } from './rx-schema-helper';
+import { createRxCollectionStorageInstances } from './rx-collection-helper';
 
 /**
  * stores the used database names
@@ -302,23 +303,29 @@ export class RxDatabaseBase<
                 return Promise.all(
                     knownVersions
                         .map(v => {
-                            return this.storage.createStorageInstance(
+                            return createRxCollectionStorageInstances<any, any, any>(
+                                collectionName,
+                                this as any,
                                 {
                                     databaseName: this.name,
                                     collectionName,
                                     schema: getPseudoSchemaForVersion<InternalStoreDocumentData>(v, 'collectionName'),
                                     options: this.instanceCreationOptions
-                                }
+                                },
+                                {}
                             );
                         })
                 );
             })
-            // remove documents
-            .then(storageInstance => {
+            // remove normal and local documents
+            .then(storageInstances => {
                 return Promise.all(
-                    storageInstance.map(
+                    storageInstances.map(
                         instance => this.lockedRun(
-                            () => instance.remove()
+                            () => Promise.all([
+                                instance.storageInstance.remove(),
+                                instance.localDocumentsStore.remove()
+                            ])
                         )
                     )
                 );

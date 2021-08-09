@@ -20,7 +20,8 @@ import {
     _handleToStorageInstance,
     _handleFromStorageInstance,
     fillObjectDataBeforeInsert,
-    writeToStorageInstance
+    writeToStorageInstance,
+    createRxCollectionStorageInstances
 } from './rx-collection-helper';
 import {
     createRxQuery,
@@ -223,24 +224,16 @@ export class RxCollectionBase<
             storageInstanceCreationParams
         );
 
-        const [
+
+        const {
             storageInstance,
             localDocumentsStore
-        ] = await Promise.all([
-            this.database.storage.createStorageInstance<RxDocumentType>(
-                storageInstanceCreationParams
-            ),
-            this.database.storage.createKeyObjectStorageInstance(
-                this.database.name,
-                /**
-                 * Use a different collection name for the local documents instance
-                 * so that the local docs can be kept while deleting the normal instance
-                 * after migration.
-                 */
-                this.name + '-local',
-                this.instanceCreationOptions
-            )
-        ]);
+        } = await createRxCollectionStorageInstances<RxDocumentType, any, InstanceCreationOptions>(
+            this.name,
+            this.database,
+            storageInstanceCreationParams,
+            this.instanceCreationOptions
+        );
         this.storageInstance = storageInstance;
         this.localDocumentsStore = localDocumentsStore;
 

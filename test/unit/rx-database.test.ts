@@ -539,18 +539,41 @@ config.parallel('rx-database.test.js', () => {
             await c.database.remove();
         });
         it('should be possible to recreate the database with other password', async () => {
+            const name = randomCouchString(10);
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name,
                 storage: getRxStoragePouch('memory'),
                 password: 'fo222222obar'
             });
             await db.remove();
 
             const db2 = await createRxDatabase({
-                name: randomCouchString(10),
+                name,
                 storage: getRxStoragePouch('memory'),
                 password: 'foo2222333333bar2'
             });
+            await db2.remove();
+        });
+        it('should have deleted the local documents', async () => {
+            const name = randomCouchString(10);
+            const db = await createRxDatabase({
+                name,
+                storage: getRxStoragePouch('memory')
+            });
+
+            const id = 'foobar';
+            await db.insertLocal(id, { foo: 'bar' });
+
+            await db.remove();
+
+            const db2 = await createRxDatabase({
+                name,
+                storage: getRxStoragePouch('memory')
+            });
+
+            const hasLocal = await db2.getLocal(id);
+            assert.strictEqual(hasLocal, null);
+
             await db2.remove();
         });
     });

@@ -4,7 +4,7 @@
 
 Bugfixes:
   - Calling bulk-methods with an empty array must not throw an error.
-
+  - `RxCollection.remove()` does not delete local documents [#3319](https://github.com/pubkey/rxdb/issues/3319)
 
 ### 10.0.0 (20 July 2021) BREAKING [read the announcement](./orga/releases/10.0.0.md)
 
