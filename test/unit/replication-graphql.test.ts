@@ -681,6 +681,22 @@ describe('replication-graphql.test.js', () => {
                     assert.strictEqual(ret.name, 'foobar');
                     c.database.destroy();
                 });
+                it('should delete the doc after db.remove()', async () => {
+                    const c = await humansCollection.createHumanWithTimestamp(
+                        1
+                    );
+                    const doc = await c.findOne().exec(true);
+                    let docData = doc.toJSON(true);
+                    docData = clone(docData); // clone to make it mutateable
+                    (docData as any).name = 'foobar';
+
+                    await setLastPullDocument(c, endpointHash, docData);
+                    await c.database.remove();
+                    const ret = await getLastPullDocument(c, endpointHash);
+                    console.log(`${ret?.name}==foobar`);
+                    assert.notStrictEqual(ret?.name, 'foobar');
+                    c.database.destroy();
+                });
             });
         });
     });
