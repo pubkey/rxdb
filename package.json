@@ -175,7 +175,7 @@
     "gzip-size-cli": "5.0.0",
     "karma": "6.3.4",
     "karma-babel-preprocessor": "8.0.1",
-    "karma-browserify": "8.0.0",
+    "karma-browserify": "8.1.0",
     "karma-chrome-launcher": "3.1.0",
     "karma-coverage": "2.0.3",
     "karma-detect-browsers": "2.3.3",
