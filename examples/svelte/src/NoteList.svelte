@@ -27,7 +27,7 @@
 
 <div>
   <h2>NoteList.svelte</h2>
-  <ul class="nostyle">
+  <ul id="note-list" class="nostyle">
     {#await noteList}
       Loading Notes...
     {:then results}
