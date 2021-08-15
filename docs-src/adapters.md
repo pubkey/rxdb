@@ -1,6 +1,6 @@
 # Adapters
 
-RxDB itself is not a self-contained database. It uses adapters that define where the data is stored. Depending on which environment you work in, you can choose between different adapters. For example in the browser you want to store the data inside of IndexedDB but on NodeJs you want to store the data on the filesystem.
+RxDB itself is not a self-contained database. It is based on Pouchdb which itself is based on adapters that define where the data is stored. Depending on which environment you work in, you can choose between different adapters. For example in the browser you want to store the data inside of IndexedDB but on NodeJs you want to store the data on the filesystem.
 
 This page is an overview over the different adapters with recommendations on what to use where.
 
@@ -16,12 +16,18 @@ Use this adapter when:
   - You do not want persistent state, for example in your test suite
 
 ```js
+import {
+    createRxDatabase
+} from 'rxdb/plugins/core'
+import {
+    getRxStoragePouch
+} from 'rxdb/plugins/pouchdb'
 // npm install pouchdb-adapter-memory --save
 addRxPlugin(require('pouchdb-adapter-memory'));
 
 const database = await createRxDatabase({
     name: 'mydatabase',
-    adapter: 'memory' // the name of your adapter
+    storage: getRxStoragePouch('memory')
 });
 ```
 
@@ -37,7 +43,7 @@ const memdown = require('memdown');
 
 const database = await createRxDatabase({
     name: 'mydatabase',
-    adapter: memdown // the full leveldown-module
+    storage: getRxStoragePouch(memdown) // the full leveldown-module
 });
 ```
 
@@ -55,7 +61,7 @@ addRxPlugin(require('pouchdb-adapter-idb'));
 
 const database = await createRxDatabase({
     name: 'mydatabase',
-    adapter: 'idb' // the name of your adapter
+    storage: getRxStoragePouch('idb')
 });
 ```
 
@@ -71,7 +77,7 @@ addRxPlugin(require('pouchdb-adapter-indexeddb'));
 
 const database = await createRxDatabase({
     name: 'mydatabase',
-    adapter: 'indexeddb' // the name of your adapter
+    storage: getRxStoragePouch('indexeddb')
 });
 ```
 
@@ -85,7 +91,7 @@ addRxPlugin(require('pouchdb-adapter-websql'));
 
 const database = await createRxDatabase({
     name: 'mydatabase',
-    adapter: 'websql' // the name of your adapter
+    storage: getRxStoragePouch('websql')
 });
 ```
 
@@ -103,13 +109,13 @@ const leveldown = require('leveldown');
 
 const database = await createRxDatabase({
     name: 'mydatabase',
-    adapter: leveldown // the full leveldown-module
+    storage: getRxStoragePouch(leveldown) // the full leveldown-module
 });
 
 // or use a specific folder to store the data
 const database = await createRxDatabase({
     name: '/root/user/project/mydatabase',
-    adapter: leveldown // the full leveldown-module
+    storage: getRxStoragePouch(leveldown) // the full leveldown-module
 });
 ```
 
@@ -123,13 +129,13 @@ addRxPlugin(require('pouchdb-adapter-node-websql'));
 
 const database = await createRxDatabase({
     name: 'mydatabase',
-    adapter: 'websql' // the name of your adapter
+    storage: getRxStoragePouch('websql') // the name of your adapter
 });
 
 // or use a specific folder to store the data
 const database = await createRxDatabase({
     name: '/root/user/project/mydatabase',
-    adapter: 'websql' // the name of your adapter
+    storage: getRxStoragePouch('websql') // the name of your adapter
 });
 ```
 
@@ -185,7 +191,7 @@ addRxPlugin(require('pouchdb-adapter-http'));
 
 const database = await createRxDatabase({
     name: 'mydatabase',
-    adapter: 'react-native-sqlite' // the name of your adapter
+    storage: getRxStoragePouch('react-native-sqlite') // the name of your adapter
 });
 ```
 
@@ -201,7 +207,7 @@ addRxPlugin(require('pouchdb-adapter-asyncstorage'));
 
 const database = await createRxDatabase({
     name: 'mydatabase',
-    adapter: 'node-asyncstorage' // the name of your adapter
+    storage: getRxStoragePouch('node-asyncstorage') // the name of your adapter
 });
 ```
 
@@ -216,7 +222,7 @@ const asyncstorageDown = require('asyncstorage-down');
 
 const database = await createRxDatabase({
     name: 'mydatabase',
-    adapter: asyncstorageDown // the full leveldown-module
+    storage: getRxStoragePouch(asyncstorageDown) // the full leveldown-module
 });
 ```
 
@@ -230,10 +236,37 @@ Uses cordova's global `cordova.sqlitePlugin`. It can be used with cordova and ca
 // npm install pouchdb-adapter-cordova-sqlite --save
 addRxPlugin(require('pouchdb-adapter-cordova-sqlite'));
 
-const database = await createRxDatabase({
-    name: 'mydatabase',
-    adapter: 'cordova-sqlite' // the name of your adapter
-});
+/**
+ * In capacitor/cordova you have to wait until all plugins are loaded and 'window.sqlitePlugin'
+ * can be accessed.
+ * This functions Waits until document deviceready is called which ensures that everything is loaded.
+ * @link https://cordova.apache.org/docs/de/latest/cordova/events/events.deviceready.html
+ */
+export function awaitCapacitorDeviceReady(): Promise<void> {
+    return new Promise(res => {
+        document.addEventListener('deviceready', () => {
+            res();
+        });
+    });
+}
+
+async function getDatabase(){
+
+    // first wait until the deviceready event is fired
+    await awaitCapacitorDeviceReady();
+
+    const database = await createRxDatabase({
+        name: 'mydatabase',
+        storage: getRxStoragePouch(
+            'cordova-sqlite',
+            // pouch settings are passed as second parameter
+            {
+                // for ios devices, the cordova-sqlite adapter needs to know where to save the data.
+                iosDatabaseLocation: 'Library'
+            }
+        )
+    });
+}
 ```
 
 --------------------------------------------------------------------------------
