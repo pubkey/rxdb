@@ -294,6 +294,7 @@ jobs:
           node-version: 16.5.0
       - name: prepare core
         run: |
+          npm run preinstall
           npm install --legacy-peer-deps
           npm run build
           rm -r node_modules
