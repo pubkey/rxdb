@@ -77,7 +77,7 @@
     "got": "11.8.2",
     "local-web-server": "4.2.1",
     "pouchdb-server": "4.2.0",
-    "testcafe": "1.15.2",
+    "testcafe": "1.15.3",
     "ts-mocha": "8.0.0",
     "ts-node": "10.2.1",
     "tslint": "6.1.3",
