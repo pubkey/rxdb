@@ -121,7 +121,8 @@ export class RxSchema<T = any> {
                 throw newRxError('DOC9', {
                     dataBefore,
                     dataAfter,
-                    fieldName
+                    fieldName,
+                    schema: this.jsonSchema
                 });
             }
         });
@@ -190,7 +191,16 @@ export class RxSchema<T = any> {
             existingPrimary &&
             existingPrimary !== newPrimary
         ) {
-            throw newRxError('DOC19', { args: { documentData, existingPrimary, newPrimary } });
+            throw newRxError(
+                'DOC19',
+                {
+                    args: {
+                        documentData,
+                        existingPrimary,
+                        newPrimary,
+                    },
+                    schema: this.jsonSchema
+                });
         }
 
         (cloned as any)[this.primaryPath] = newPrimary;

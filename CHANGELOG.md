@@ -4,6 +4,7 @@
 
 Other:
   - Added svelte example [#3287](https://github.com/pubkey/rxdb/pull/3287) Thanks [@bkeating](https://github.com/bkeating)
+  - Improved error messages
 
 ### 10.0.3 (9 August 2021)
 

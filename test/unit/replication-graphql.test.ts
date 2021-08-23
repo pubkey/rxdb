@@ -1050,7 +1050,6 @@ describe('replication-graphql.test.js', () => {
                     if (docs.length > 2) {
                         throw new Error('got too many documents');
                     }
-                    console.dir(docs.map(d => d.toJSON()));
                     return docs.length === 2;
                 }, 10 * 1000, 100);
 

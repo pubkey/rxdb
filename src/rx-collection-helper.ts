@@ -65,6 +65,7 @@ export async function writeToStorageInstance<RxDocumentType>(
                 // now we can retry
             } else if (useErr.status === 409) {
                 throw newRxError('COL19', {
+                    collection: collection.name,
                     id: primary,
                     pouchDbError: useErr,
                     data: writeRow
