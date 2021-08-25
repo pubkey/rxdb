@@ -22,7 +22,7 @@ To make it easy, here is an example where the temperature is pulled every ten se
 ```javascript
 const db = await createRxDatabase({
   name: 'weatherDB',
-  adapter: 'localstorage',
+  storage: getRxStoragePouch('idb'),
   password: 'myPassword',
   multiInstance: true
 });

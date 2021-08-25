@@ -11,7 +11,7 @@ It basically does the same as [pouchdb-sync](https://pouchdb.com/guides/replicat
 ```js
 
 // you need these plugins to sync
-addRxPlugin(require('pouchdb-adapter-http')); // enable syncing over http (remote database)
+addPouchPlugin(require('pouchdb-adapter-http')); // enable syncing over http (remote database)
 
 const replicationState = myCollection.syncCouchDB({
     remote: 'http://localhost:10102/db/', // remote database. This can be the serverURL, another RxCollection or a PouchDB-instance

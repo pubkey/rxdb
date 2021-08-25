@@ -23,7 +23,7 @@ import {
     getRxStoragePouch
 } from 'rxdb/plugins/pouchdb'
 // npm install pouchdb-adapter-memory --save
-addRxPlugin(require('pouchdb-adapter-memory'));
+addPouchPlugin(require('pouchdb-adapter-memory'));
 
 const database = await createRxDatabase({
     name: 'mydatabase',
@@ -37,7 +37,7 @@ With RxDB you can also use adapters that implement [abstract-leveldown](https://
 ```js
 // npm install memdown --save
 // npm install pouchdb-adapter-leveldb --save
-addRxPlugin(require('pouchdb-adapter-leveldb')); // leveldown adapters need the leveldb plugin to work
+addPouchPlugin(require('pouchdb-adapter-leveldb')); // leveldown adapters need the leveldb plugin to work
 
 const memdown = require('memdown');
 
@@ -57,7 +57,7 @@ The IndexedDB adapter stores the data inside of [IndexedDB](https://developer.mo
 
 ```js
 // npm install pouchdb-adapter-idb --save
-addRxPlugin(require('pouchdb-adapter-idb'));
+addPouchPlugin(require('pouchdb-adapter-idb'));
 
 const database = await createRxDatabase({
     name: 'mydatabase',
@@ -73,7 +73,7 @@ A reimplementation of the indexeddb adapter which uses native secondary indexes.
 
 ```js
 // npm install pouchdb-adapter-indexeddb --save
-addRxPlugin(require('pouchdb-adapter-indexeddb'));
+addPouchPlugin(require('pouchdb-adapter-indexeddb'));
 
 const database = await createRxDatabase({
     name: 'mydatabase',
@@ -87,7 +87,7 @@ This adapter stores the data inside of websql. It has a different performance be
 
 ```js
 // npm install pouchdb-adapter-websql --save
-addRxPlugin(require('pouchdb-adapter-websql'));
+addPouchPlugin(require('pouchdb-adapter-websql'));
 
 const database = await createRxDatabase({
     name: 'mydatabase',
@@ -104,7 +104,7 @@ This adapter uses a [LevelDB C++ binding](https://github.com/Level/leveldown) to
 ```js
 // npm install leveldown --save
 // npm install pouchdb-adapter-leveldb --save
-addRxPlugin(require('pouchdb-adapter-leveldb')); // leveldown adapters need the leveldb plugin to work
+addPouchPlugin(require('pouchdb-adapter-leveldb')); // leveldown adapters need the leveldb plugin to work
 const leveldown = require('leveldown');
 
 const database = await createRxDatabase({
@@ -125,7 +125,7 @@ This adapter uses the [node-websql](https://github.com/nolanlawson/node-websql)-
 
 ```js
 // npm install pouchdb-adapter-node-websql --save
-addRxPlugin(require('pouchdb-adapter-node-websql'));
+addPouchPlugin(require('pouchdb-adapter-node-websql'));
 
 const database = await createRxDatabase({
     name: 'mydatabase',
@@ -180,14 +180,15 @@ process.browser = true;
 Then you can use it inside of your code.
 
 ```js
-import { addRxPlugin, createRxDatabase } from 'rxdb';
+import { createRxDatabase } from 'rxdb';
+import { addPouchPlugin, getRxStoragePouch } from 'rxdb/plugins/pouchdb';
 import SQLite from 'react-native-sqlite-2'
 import SQLiteAdapterFactory from 'pouchdb-adapter-react-native-sqlite'
 
 const SQLiteAdapter = SQLiteAdapterFactory(SQLite)
 
-addRxPlugin(SQLiteAdapter);
-addRxPlugin(require('pouchdb-adapter-http'));
+addPouchPlugin(SQLiteAdapter);
+addPouchPlugin(require('pouchdb-adapter-http'));
 
 const database = await createRxDatabase({
     name: 'mydatabase',
@@ -203,7 +204,7 @@ Uses react-native's [asyncstorage](https://facebook.github.io/react-native/docs/
 
 ```js
 // npm install pouchdb-adapter-asyncstorage --save
-addRxPlugin(require('pouchdb-adapter-asyncstorage'));
+addPouchPlugin(require('pouchdb-adapter-asyncstorage'));
 
 const database = await createRxDatabase({
     name: 'mydatabase',
@@ -216,7 +217,7 @@ A leveldown adapter that stores on asyncstorage.
 
 ```js
 // npm install pouchdb-adapter-asyncstorage-down --save
-addRxPlugin(require('pouchdb-adapter-leveldb')); // leveldown adapters need the leveldb plugin to work
+addPouchPlugin(require('pouchdb-adapter-leveldb')); // leveldown adapters need the leveldb plugin to work
 
 const asyncstorageDown = require('asyncstorage-down');
 
@@ -234,7 +235,7 @@ Uses cordova's global `cordova.sqlitePlugin`. It can be used with cordova and ca
 
 ```js
 // npm install pouchdb-adapter-cordova-sqlite --save
-addRxPlugin(require('pouchdb-adapter-cordova-sqlite'));
+addPouchPlugin(require('pouchdb-adapter-cordova-sqlite'));
 
 /**
  * In capacitor/cordova you have to wait until all plugins are loaded and 'window.sqlitePlugin'

@@ -16,6 +16,7 @@ Because the server plugin only works in node, it is not part of the default rxdb
 
 ```typescript
 import { addRxPlugin } from 'rxdb';
+import { addPouchPlugin } from 'rxdb/plugins/pouchdb';
 
 // add the server-plugin
 import { RxDBServerPlugin } from 'rxdb/plugins/server';
@@ -23,7 +24,7 @@ addRxPlugin(RxDBServerPlugin);
 
 // add the memory-adapter
 import * as MemoryAdapter from 'pouchdb-adapter-memory';
-addRxPlugin(MemoryAdapter);
+addPouchPlugin(MemoryAdapter);
 ```
 
 You also have to install the module `express-pouchdb` which does not come with RxDB.
@@ -135,11 +136,12 @@ On the client you can now also create a database and replicate it with our serve
 
 Start with creating the database and collection.
 ```typescript
-import { addRxPlugin, createRxDatabase, getRxStoragePouch } from 'rxdb';
+import { createRxDatabase, getRxStoragePouch } from 'rxdb';
+import { addPouchPlugin } from 'rxdb/plugins/pouchdb';
 
 // we need the http-plugin to relicate over http
 import * as PouchHttpPlugin from 'pouchdb-adapter-http';
-addRxPlugin(PouchHttpPlugin);
+addPouchPlugin(PouchHttpPlugin);
 
 
 const clientDB = await createRxDatabase({

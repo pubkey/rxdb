@@ -10,7 +10,7 @@ The database is created by the asynchronous .create()-function of the main RxDB-
 import { createRxDatabase } from 'rxdb';
 const db = await createRxDatabase({
   name: 'heroesdb',           // <- name
-  adapter: 'idb',          // <- storage-adapter
+  storage: getRxStoragePouch('idb'),          // <- storage-adapter
   password: 'myPassword',     // <- password (optional)
   multiInstance: true,         // <- multiInstance (optional, default: true)
   eventReduce: false // <- eventReduce (optional, default: true)
@@ -33,11 +33,11 @@ Example for browsers:
 ```javascript
 
 // this adapter stores the data in indexeddb
-addRxPlugin(require('pouchdb-adapter-idb'));
+addPouchPlugin(require('pouchdb-adapter-idb'));
 
 const db = await createRxDatabase({
   name: 'mydatabase',
-  adapter: 'idb' // name of the adapter
+  storage: getRxStoragePouch('idb')
 });
 ```
 
@@ -66,12 +66,12 @@ In some rare cases like unit-tests, you want to do this intentional by setting `
 ```js
 const db1 = await createRxDatabase({
   name: 'heroesdb',
-  adapter: 'websql',
+  storage: getRxStoragePouch('websql'),
   ignoreDuplicate: true
 });
 const db2 = await createRxDatabase({
   name: 'heroesdb',
-  adapter: 'websql',
+  storage: getRxStoragePouch('websql'),
   ignoreDuplicate: true // this create-call will not throw because you explicitly allow it
 });
 ```

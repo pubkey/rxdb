@@ -33,7 +33,7 @@ Returns a promise that resolves with another `RxCollection` that is the in-memor
 // IMPORTANT: You have to add the memory-adapter before you can use inMemory-Collections
 // RUN 'npm install pouchdb-adapter-memory --save'
 import PouchAdapterMemory from 'pouchdb-adapter-memory';
-addRxPlugin(PouchAdapterMemory);
+addPouchPlugin(PouchAdapterMemory);
 
 const memCol = await myCollection.inMemory();
 
