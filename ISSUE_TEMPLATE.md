@@ -36,8 +36,8 @@
 ## Code
 
 ```js
-  const collection = await myDatabase.collection(/* ... */);
-  await collection.insert(/* ... */);
+  await myDatabase.addCollections(/* ... */);
+  await myDatabase.humans.insert(/* ... */);
   /* ... */
 ```
 

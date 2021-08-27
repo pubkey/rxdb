@@ -44,12 +44,14 @@ window.RxDB
             document.title = '♛ ' + document.title;
             leaderIcon.style.display = 'block';
         });
-        return db.collection({
-            name: 'hero',
-            schema: heroSchema
+        return db.addCollections({
+            hero: {
+                schema: heroSchema
+            }
         });
     })
-    .then(function(col) {
+    .then(function() {
+        var col = window.db.hero;
         window.col = col;
         return col;
     })

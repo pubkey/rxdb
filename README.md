@@ -126,8 +126,12 @@ const db = await createRxDatabase({
     password: 'myLongAndStupidPassword'
 });
 
-// create a collection
-await db.collection({name: 'heroes', schema: mySchema});    
+// create collections
+await db.addCollections({
+  heroes: {
+    schema: mySchema
+  }
+});
 
 // insert a document
 db.heroes.insert({ name: 'Bob' });                          
