@@ -200,7 +200,6 @@ const replicationState = myCollection.syncGraphQL({
     url: 'http://example.com/graphql', // url to the GraphQL endpoint
     push: {
         queryBuilder: pushQueryBuilder, // the queryBuilder from above
-        batchSize: 5, // (optional) amount of documents that will be send in one batch
         modifier: d => d // (optional) modifies all pushed documents before they are send to the GraphQL endpoint. Returning null will skip the document.
     },
     deletedFlag: 'deleted', // the flag which indicates if a pulled document is deleted
