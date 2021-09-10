@@ -108,7 +108,7 @@ npm install rxjs --save
 
 ```javascript
 import { 
-  addPouchPlugin.
+  addPouchPlugin,
   createRxDatabase,
   getRxStoragePouch
 } from 'rxdb';
