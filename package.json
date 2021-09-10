@@ -211,7 +211,7 @@
     "rollup-plugin-node-resolve": "5.2.0",
     "rxjs": "7.3.0",
     "shelljs": "0.8.4",
-    "source-map-support": "0.5.19",
+    "source-map-support": "0.5.20",
     "subscriptions-transport-ws": "0.9.19",
     "terser": "5.7.2",
     "terser-webpack-plugin": "4.2.3",
