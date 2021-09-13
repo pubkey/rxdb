@@ -8,7 +8,7 @@
  * - 'npm run test:node' so it runs in nodejs
  * - 'npm run test:browser' so it runs in the browser
  */
-import assert from 'assert';
+import assert, { fail } from 'assert';
 import AsyncTestUtil from 'async-test-util';
 
 import {
@@ -20,99 +20,39 @@ import {
     getRxStoragePouch,
 } from '../../plugins/pouchdb';
 
-
 describe('bug-report.test.js', () => {
-    it('should fail because it reproduces the bug', async () => {
-
-
-        // create a schema
-        const mySchema = {
-            version: 0,
-            primaryKey: 'passportId',
-            type: 'object',
-            properties: {
-                passportId: {
-                    type: 'string'
-                },
-                firstName: {
-                    type: 'string'
-                },
-                lastName: {
-                    type: 'string'
-                },
-                age: {
-                    type: 'integer',
-                    minimum: 0,
-                    maximum: 150
-                }
-            }
-        };
-
-        // generate a random database-name
+    it('reusing the name of a previously removed collection should not result in an unhandled rejection', async () => {
+        window.addEventListener('unhandledrejection', () => {
+            // we should not get here
+            fail()
+        });
         const name = randomCouchString(10);
-
-        // create a database
+        const test = {
+            schema: {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                    },
+                },
+            },
+        };
         const db = await createRxDatabase({
             name,
             storage: getRxStoragePouch('memory'),
-            eventReduce: true,
-            ignoreDuplicate: true
         });
-        // create a collection
-        const collections = await db.addCollections({
-            mycollection: {
-                schema: mySchema
-            }
-        });
+        await db.addCollections({ test });
 
-        // insert a document
-        await collections.mycollection.insert({
-            passportId: 'foobar',
-            firstName: 'Bob',
-            lastName: 'Kelso',
-            age: 56
-        });
-
-        /**
-         * to simulate the event-propagation over multiple browser-tabs,
-         * we create the same database again
-         */
-        const dbInOtherTab = await createRxDatabase({
-            name,
-            storage: getRxStoragePouch('memory'),
-            eventReduce: true,
-            ignoreDuplicate: true
-        });
-        // create a collection
-        const collectionInOtherTab = await dbInOtherTab.addCollections({
-            mycollection: {
-                schema: mySchema
-            }
-        });
-
-        // find the document in the other tab
-        const myDocument = await collectionInOtherTab.mycollection
-            .findOne()
-            .where('firstName')
-            .eq('Bob')
-            .exec();
-
-        /*
-         * assert things,
-         * here your tests should fail to show that there is a bug
-         */
-        assert.strictEqual(myDocument.age, 56);
-
-        // you can also wait for events
-        const emitted = [];
-        const sub = collectionInOtherTab.mycollection
-            .findOne().$
-            .subscribe(doc => emitted.push(doc));
-        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
-
-        // clean up afterwards
-        sub.unsubscribe();
+        await db.test.remove();             // < commenting out these two lines
+        await db.addCollections({ test });  // < will result in test (trivially) passing.
+                                            // with these lines present, subsequent operations 
+                                            // on collection succeed, but cause unhandled rejection
+        await db.test.insert({ id: 'test' }); 
+                                            // not a huge deal on its own(?), but I'm seeing
+                                            // other weird (and more difficult to "test")
+                                            // issues coinciding with this
         db.destroy();
-        dbInOtherTab.destroy();
     });
 });
