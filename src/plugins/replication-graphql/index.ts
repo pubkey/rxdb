@@ -37,7 +37,8 @@ import {
     setLastPushSequence,
     getLastPullDocument,
     setLastPullDocument,
-    getChangesSinceLastPushSequence
+    getChangesSinceLastPushSequence,
+    pushSequenceId
 } from './crawling-checkpoint';
 
 import { RxDBLeaderElectionPlugin } from '../leader-election';
@@ -75,10 +76,12 @@ export class RxGraphQLReplicationState<RxDocType> {
             headers
         });
         this.endpointHash = hash(url);
+        this.replicationDocId = pushSequenceId(this.endpointHash)
         this._prepare();
     }
     public client: any;
     public endpointHash: string;
+    public replicationDocId: string;
     public _subjects = {
         recieved: new Subject(), // all documents that are recieved from the endpoint
         send: new Subject(), // all documents that are send to the endpoint

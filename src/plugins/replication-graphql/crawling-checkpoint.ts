@@ -33,7 +33,7 @@ import { newRxError } from '../../rx-error';
 // things for the push-checkpoint
 //
 
-const pushSequenceId = (endpointHash: string) => GRAPHQL_REPLICATION_PLUGIN_IDENT + '-push-checkpoint-' + endpointHash;
+export const pushSequenceId = (endpointHash: string) => GRAPHQL_REPLICATION_PLUGIN_IDENT + '-push-checkpoint-' + endpointHash;
 
 /**
  * @return last sequence checkpoint
