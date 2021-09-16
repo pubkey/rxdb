@@ -38,7 +38,8 @@ import {
     getLastPullDocument,
     setLastPullDocument,
     getChangesSinceLastPushSequence,
-    pushSequenceId
+    pushSequenceId,
+    pullLastDocumentId
 } from './crawling-checkpoint';
 
 import { RxDBLeaderElectionPlugin } from '../leader-election';
@@ -54,7 +55,9 @@ import type {
 } from '../../types';
 import { getDocumentDataOfRxChangeEvent } from '../../rx-change-event';
 import { _handleFromStorageInstance, _handleToStorageInstance } from '../../rx-collection-helper';
-
+import {
+    findLocalDocument,
+} from '../../rx-storage-helper';
 addRxPlugin(RxDBLeaderElectionPlugin);
 
 
@@ -76,12 +79,14 @@ export class RxGraphQLReplicationState<RxDocType> {
             headers
         });
         this.endpointHash = hash(url);
-        this.replicationDocId = pushSequenceId(this.endpointHash)
+        this.pushDocId = pushSequenceId(this.endpointHash)
+        this.pullDocId = pullLastDocumentId(this.endpointHash);
         this._prepare();
     }
     public client: any;
     public endpointHash: string;
-    public replicationDocId: string;
+    public pullDocId: string;
+    public pushDocId: string;
     public _subjects = {
         recieved: new Subject(), // all documents that are recieved from the endpoint
         send: new Subject(), // all documents that are send to the endpoint
@@ -443,6 +448,16 @@ export class RxGraphQLReplicationState<RxDocType> {
         }
         this._subs.forEach(sub => sub.unsubscribe());
         this._subjects.canceled.next(true);
+        return Promise.resolve(true);
+    }
+
+    async reset(): Promise<any> {
+        const pullDoc = await this.collection.getLocal(this.pullDocId)
+        const pushDoc = await this.collection.getLocal(this.pushDocId)
+
+        if (pullDoc) await pullDoc.remove()
+        if (pushDoc) await pushDoc.remove()
+
         return Promise.resolve(true);
     }
 

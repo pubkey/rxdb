@@ -279,9 +279,13 @@ When the clients sends a document to the server which causes a conflict, this ha
 
 When you call `myCollection.syncGraphQL()` it returns a `RxGraphQLReplicationState` which can be used to subscribe to events, for debugging or other functions.
 
-#### .replicationDocId
+#### .pullDocId
 
-This is the id of the document used to track the replication state. This is a local document added to the collection. You can use this id to filter out this doc when subscribing to `update$` on the collection if needed.
+This is the id of the document used to track the pull replication state. This is the id of a local document added to the collection. You can use this id to filter out this doc when subscribing to `update$` on the collection if needed.
+
+#### .pushDocId
+
+This is the id of the document used to track the push replication state. This is the id of a local document added to the collection. You can use this id to filter out this doc when subscribing to `update$` on the collection if needed.
 
 #### .isStopped()
 
@@ -326,6 +330,10 @@ Cancels the replication. This is done automatically if the `RxCollection` or it'
 ```js
 await replicationState.cancel();
 ```
+
+#### .reset()
+
+Resets the replication state. This will make your replication start from scratch pulling and pushing all docs again.
 
 #### .recieved$
 

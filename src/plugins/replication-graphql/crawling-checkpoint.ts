@@ -198,7 +198,7 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
 //
 
 
-const pullLastDocumentId = (endpointHash: string) => GRAPHQL_REPLICATION_PLUGIN_IDENT + '-pull-checkpoint-' + endpointHash;
+export const pullLastDocumentId = (endpointHash: string) => GRAPHQL_REPLICATION_PLUGIN_IDENT + '-pull-checkpoint-' + endpointHash;
 
 export async function getLastPullDocument(
     collection: RxCollection,
