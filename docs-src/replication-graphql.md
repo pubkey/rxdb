@@ -37,7 +37,7 @@ For example if your documents look like this,
 }
 ```
 
-Then your data is always sortable by `updatedAt`. This ensures that when RxDB fetches 'new' changes, it can send the latest `updatedAt` to the GraphQL-endpoint and then recieve all newer documents.
+Then your data is always sortable by `updatedAt`. This ensures that when RxDB fetches 'new' changes, it can send the latest `updatedAt` to the GraphQL-endpoint and then receive all newer documents.
 
 Deleted documents still exist but have `deleted: true` set. This ensures that when RxDB fetches new documents, even the deleted documents are send back and can be known at the client-side.
 
@@ -170,7 +170,7 @@ const replicationState = myCollection.syncGraphQL({
 
 #### Push replication
 
-For the push-replication, you also need a `queryBuilder`. Here, the builder recieves a changed document as input which has to be send to the server. It also returns a GraphQL-Query and its data.
+For the push-replication, you also need a `queryBuilder`. Here, the builder receives a changed document as input which has to be send to the server. It also returns a GraphQL-Query and its data.
 
 ```js
 const pushQueryBuilder = doc => {
@@ -279,7 +279,9 @@ When the clients sends a document to the server which causes a conflict, this ha
 
 When you call `myCollection.syncGraphQL()` it returns a `RxGraphQLReplicationState` which can be used to subscribe to events, for debugging or other functions.
 
+#### .replicationDocId
 
+This is the id of the document used to track the replication state. This is a local document added to the collection. You can use this id to filter out this doc when subscribing to `update$` on the collection if needed.
 
 #### .isStopped()
 
@@ -319,7 +321,7 @@ await replicationState.run();
 
 #### .cancel()
 
-Cancels the replication. This is done autmatically if the `RxCollection` or it's `RxDatabase` is destroyed.
+Cancels the replication. This is done automatically if the `RxCollection` or it's `RxDatabase` is destroyed.
 
 ```js
 await replicationState.cancel();
@@ -327,7 +329,7 @@ await replicationState.cancel();
 
 #### .recieved$
 
-An `Observable` that emits each document that is recieved from the endpoint.
+An `Observable` that emits each document that is received from the endpoint.
 
 #### .send$
 
