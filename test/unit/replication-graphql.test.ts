@@ -1736,7 +1736,7 @@ describe('replication-graphql.test.js', () => {
         });
 
         config.parallel('observables', () => {
-            it('should emit the recieved documents when pulling', async () => {
+            it('should emit the received documents when pulling', async () => {
                 const testData = getTestData(batchSize);
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(0),
@@ -1752,7 +1752,7 @@ describe('replication-graphql.test.js', () => {
                 });
 
                 const emitted: RxDocumentData<HumanWithTimestampDocumentType>[] = [];
-                const sub = replicationState.recieved$.subscribe((doc: any) => emitted.push(doc));
+                const sub = replicationState.received$.subscribe((doc: any) => emitted.push(doc));
 
                 await replicationState.awaitInitialReplication();
                 assert.strictEqual(emitted.length, batchSize);
