@@ -110,7 +110,7 @@
     "is-my-json-valid": "2.20.5",
     "jsonschema-key-compression": "1.4.0",
     "modifyjs": "0.3.1",
-    "object-path": "0.11.7",
+    "object-path": "0.11.8",
     "oblivious-set": "1.0.0",
     "pouchdb-adapter-http": "7.2.2",
     "pouchdb-all-dbs": "1.1.1",
