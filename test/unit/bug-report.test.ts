@@ -21,17 +21,15 @@ declare type TestDocType = {
 config.parallel('bug-report.test.ts', () => {
     describe.only('removeRxDB()!!!', () => {
         it.only('should delete local docs ', async () => {
-
-
             const localDocId = 'foobar';
-            const c = await humansCollection.create2();
+            const c = await humansCollection.create2(0);
             const doc = await c.insertLocal(localDocId, { foo: 'bar' });
 
             // remove the database
             await c.database.remove();
 
             // create a brand new database
-            const cNew = await humansCollection.create2();
+            const cNew = await humansCollection.create2(0);
 
             // get local doc from first database
             const fooBar = await cNew.getLocal(localDocId);
