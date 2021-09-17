@@ -848,7 +848,8 @@ function _removeRxDatabase() {
             _context9.next = 8;
             return Promise.all(docs.map( /*#__PURE__*/function () {
               var _ref4 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee8(colDoc) {
-                var id, split, collectionName, version, instance, localInstance;
+                var id, split, collectionName, version, _yield$Promise$all, instance, localInstance;
+
                 return _regenerator["default"].wrap(function _callee8$(_context8) {
                   while (1) {
                     switch (_context8.prev = _context8.next) {
@@ -858,33 +859,24 @@ function _removeRxDatabase() {
                         collectionName = split[0];
                         version = parseInt(split[1], 10);
                         _context8.next = 6;
-                        return storage.createStorageInstance({
+                        return Promise.all([storage.createStorageInstance({
                           databaseName: databaseName,
                           collectionName: collectionName,
                           schema: (0, _rxSchemaHelper.getPseudoSchemaForVersion)(version, 'collectionName'),
                           options: {}
-                        });
+                        }), storage.createKeyObjectStorageInstance(databaseName, collectionName + '-local', {})]);
 
                       case 6:
-                        instance = _context8.sent;
-                        _context8.next = 9;
-                        return storage.createKeyObjectStorageInstance(databaseName, collectionName + '-local', {});
+                        _yield$Promise$all = _context8.sent;
+                        instance = _yield$Promise$all[0];
+                        localInstance = _yield$Promise$all[1];
+                        _context8.next = 11;
+                        return Promise.all([instance.remove(), localInstance.remove()]);
 
-                      case 9:
-                        localInstance = _context8.sent;
-                        console.log(collectionName, 'DELETE IT');
-                        _context8.next = 13;
-                        return instance.remove();
-
-                      case 13:
-                        _context8.next = 15;
-                        return localInstance.remove();
-
-                      case 15:
-                        console.log(collectionName, 'DELETED!!!');
+                      case 11:
                         return _context8.abrupt("return");
 
-                      case 17:
+                      case 12:
                       case "end":
                         return _context8.stop();
                     }
