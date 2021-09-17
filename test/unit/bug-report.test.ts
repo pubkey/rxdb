@@ -5,9 +5,9 @@ import * as humansCollection from '../helper/humans-collection';
 import { addRxPlugin } from '../../plugins/core';
 
 import { RxDBLocalDocumentsPlugin } from '../../plugins/local-documents';
+// import { createRxCollectionStorageInstances } from '../../src/rx-collection-helper'
 addRxPlugin(RxDBLocalDocumentsPlugin);
 import config from './config';
-import { removeRxDatabase } from '../../src/rx-database';
 
 let leveldown: any;
 if (config.platform.isNode()) {
@@ -19,22 +19,24 @@ declare type TestDocType = {
 };
 
 config.parallel('bug-report.test.ts', () => {
-    describe('removeRxDB()!!!', () => {
-        it('should delete local docs ', async () => {
+    describe.only('removeRxDB()!!!', () => {
+        it.only('should delete local docs ', async () => {
+
+
             const localDocId = 'foobar';
-            const c = await humansCollection.create();
+            const c = await humansCollection.create2();
             const doc = await c.insertLocal(localDocId, { foo: 'bar' });
 
             // remove the database
             await c.database.remove();
 
             // create a brand new database
-            const cNew = await humansCollection.create();
+            const cNew = await humansCollection.create2();
 
             // get local doc from first database
-            const fooBar = await c.getLocal(localDocId);
+            const fooBar = await cNew.getLocal(localDocId);
 
-            assert.strictEqual(fooBar, undefined);
+            assert.strictEqual(fooBar, null);
         });
     });
 });

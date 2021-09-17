@@ -55,6 +55,40 @@ export async function create(
     return collections[name];
 }
 
+export async function create2(
+    size: number = 20,
+    name: string = 'human',
+    multiInstance: boolean = true,
+    eventReduce: boolean = true
+): Promise<RxCollection<HumanDocumentType, {}, {}>> {
+    if (!name) {
+        name = 'human';
+    }
+    PouchDB.plugin(require('pouchdb-adapter-memory'));
+    const db = await createRxDatabase<{ human: RxCollection<schemaObjects.HumanDocumentType> }>({
+        name: 'humandatabase',
+        storage: getRxStoragePouch('memory'),
+        multiInstance,
+        eventReduce,
+        ignoreDuplicate: true
+    });
+
+    const collections = await db.addCollections({
+        [name]: {
+            schema: schemas.human
+        }
+    });
+
+    // insert data
+    if (size > 0) {
+        const docsData = new Array(size)
+            .fill(0)
+            .map(() => schemaObjects.human());
+        await collections[name].bulkInsert(docsData);
+    }
+    return collections[name];
+}
+
 export async function createBySchema<RxDocumentType = {}>(
     schema: RxJsonSchema<RxDocumentType>,
     name = 'human'
