@@ -716,19 +716,19 @@ export async function removeRxDatabase(
                 const collectionName = split[0];
                 const version = parseInt(split[1], 10);
 
-                const instance = await storage.createStorageInstance<InternalStoreDocumentData>(
-                    {
-                        databaseName,
-                        collectionName,
-                        schema: getPseudoSchemaForVersion(version, 'collectionName'),
-                        options: {}
-                    }
-                );
-                const localInstance = await storage.createKeyObjectStorageInstance(databaseName, collectionName + '-local', {})
+                const [instance, localInstance] = await Promise.all([
+                    storage.createStorageInstance<InternalStoreDocumentData>(
+                        {
+                            databaseName,
+                            collectionName,
+                            schema: getPseudoSchemaForVersion(version, 'collectionName'),
+                            options: {}
+                        }
+                    ),
+                    storage.createKeyObjectStorageInstance(databaseName, collectionName + '-local', {})
+                ]);
 
-                await instance.remove()
-                await localInstance.remove()
-
+                await Promise.all([instance.remove(), localInstance.remove()]);
                 return 
             })
     );

@@ -846,31 +846,45 @@ function _removeRxDatabase() {
           case 5:
             docs = _context9.sent;
             _context9.next = 8;
-            return Promise.all(docs.map(function (colDoc) {
-              return colDoc.collectionName;
-            }).map( /*#__PURE__*/function () {
-              var _ref4 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee8(id) {
-                var split, name, version, instance;
+            return Promise.all(docs.map( /*#__PURE__*/function () {
+              var _ref4 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee8(colDoc) {
+                var id, split, collectionName, version, instance, localInstance;
                 return _regenerator["default"].wrap(function _callee8$(_context8) {
                   while (1) {
                     switch (_context8.prev = _context8.next) {
                       case 0:
+                        id = colDoc.collectionName;
                         split = id.split('-');
-                        name = split[0];
+                        collectionName = split[0];
                         version = parseInt(split[1], 10);
-                        _context8.next = 5;
+                        _context8.next = 6;
                         return storage.createStorageInstance({
                           databaseName: databaseName,
-                          collectionName: name,
+                          collectionName: collectionName,
                           schema: (0, _rxSchemaHelper.getPseudoSchemaForVersion)(version, 'collectionName'),
                           options: {}
                         });
 
-                      case 5:
+                      case 6:
                         instance = _context8.sent;
-                        return _context8.abrupt("return", instance.remove());
+                        _context8.next = 9;
+                        return storage.createKeyObjectStorageInstance(databaseName, collectionName + '-local', {});
 
-                      case 7:
+                      case 9:
+                        localInstance = _context8.sent;
+                        console.log(collectionName, 'DELETE IT');
+                        _context8.next = 13;
+                        return instance.remove();
+
+                      case 13:
+                        _context8.next = 15;
+                        return localInstance.remove();
+
+                      case 15:
+                        console.log(collectionName, 'DELETED!!!');
+                        return _context8.abrupt("return");
+
+                      case 17:
                       case "end":
                         return _context8.stop();
                     }
