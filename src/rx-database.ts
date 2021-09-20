@@ -31,7 +31,7 @@ import {
     newRxError
 } from './rx-error';
 import {
-    createRxSchema
+    createRxSchema, getPrimaryFieldOfPrimaryKey
 } from './rx-schema';
 import {
     isRxChangeEventIntern,
@@ -60,7 +60,7 @@ import {
 } from './rx-storage-helper';
 import type { RxBackupState } from './plugins/backup';
 import { getPseudoSchemaForVersion } from './rx-schema-helper';
-import { createRxCollectionStorageInstances } from './rx-collection-helper';
+import { createRxCollectionStorageInstances, getCollectionLocalInstanceName } from './rx-collection-helper';
 
 /**
  * stores the used database names
@@ -708,20 +708,30 @@ export async function removeRxDatabase(
     const docs = await getAllDocuments(storageInstance.internalStore);
     await Promise.all(
         docs
-            .map(colDoc => colDoc.collectionName)
-            .map(async (id: string) => {
+            .map(async (colDoc) => {
+                const id = colDoc.collectionName;
+                const schema = colDoc.schema
                 const split = id.split('-');
-                const name = split[0];
+                const collectionName = split[0];
                 const version = parseInt(split[1], 10);
-                const instance = await storage.createStorageInstance<InternalStoreDocumentData>(
-                    {
+                const primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
+                const [instance, localInstance] = await Promise.all([
+                    storage.createStorageInstance<InternalStoreDocumentData>(
+                        {
+                            databaseName,
+                            collectionName,
+                            schema: getPseudoSchemaForVersion(version, primaryPath as any),
+                            options: {}
+                        }
+                    ),
+                    storage.createKeyObjectStorageInstance(
                         databaseName,
-                        collectionName: name,
-                        schema: getPseudoSchemaForVersion(version, 'collectionName'),
-                        options: {}
-                    }
-                );
-                return instance.remove();
+                        getCollectionLocalInstanceName(collectionName),
+                        {}
+                    )
+                ]);
+
+                await Promise.all([instance.remove(), localInstance.remove()]);
             })
     );
 

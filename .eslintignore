@@ -14,5 +14,6 @@ examples/react-native
 examples/vanilla
 examples/vue
 examples/svelte
+examples/react/build
 node_modules
 docs

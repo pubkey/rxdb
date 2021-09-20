@@ -200,10 +200,10 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
 
 const pullLastDocumentId = (endpointHash: string) => GRAPHQL_REPLICATION_PLUGIN_IDENT + '-pull-checkpoint-' + endpointHash;
 
-export async function getLastPullDocument(
-    collection: RxCollection,
+export async function getLastPullDocument<RxDocType>(
+    collection: RxCollection<RxDocType>,
     endpointHash: string
-) {
+): Promise<RxDocType | null> {
     const localDoc = await findLocalDocument<any>(
         collection.localDocumentsStore,
         pullLastDocumentId(endpointHash)

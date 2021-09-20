@@ -2490,6 +2490,26 @@ describe('replication-graphql.test.js', () => {
 
                 c.database.destroy();
             });
+            it('#3319 database.remove() should delete the last-pull document', async () => {
+                const dbName = randomCouchString(12);
+                const c = await humansCollection.createHumanWithTimestamp(1, dbName);
+                const doc = await c.findOne().exec(true);
+                let docData = doc.toJSON(true);
+                docData = clone(docData); // clone to make it mutateable
+                (docData as any).name = 'foobar';
+
+                await setLastPullDocument(c, endpointHash, docData);
+                await c.database.remove();
+
+
+                // recreate the same collection again
+                const c2 = await humansCollection.createHumanWithTimestamp(1, dbName);
+                // there should be no pull document now
+                const ret = await getLastPullDocument(c2, endpointHash);
+                assert.strictEqual(ret, null);
+
+                c2.database.destroy();
+            });
         });
     });
     describe('browser', () => {
