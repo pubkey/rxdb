@@ -124,7 +124,7 @@ export async function spawn(
 
     const pubsub = new PubSub();
     /*pubsub.subscribe('humanChanged', data => {
-        console.log('pubsub recieved!!');
+        console.log('pubsub received!!');
         console.dir(data);
     });*/
 
