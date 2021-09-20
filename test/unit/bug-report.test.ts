@@ -10,6 +10,7 @@
  */
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
+import config from './config';
 
 import {
     createRxDatabase,
@@ -24,6 +25,16 @@ import {
 describe('bug-report.test.js', () => {
     it('should fail because it reproduces the bug', async () => {
 
+        /**
+         * If your test should only run in nodejs or only run in the browser,
+         * you should comment in the return operator and addapt the if statement.
+         */
+        if (
+            !config.platform.isNode() // runs only in node
+            // config.platform.isNode() // runs only in the browser
+        ) {
+            // return;
+        }
 
         // create a schema
         const mySchema = {
