@@ -12,7 +12,7 @@ RxDB has a QueryChangeDetection to optimize observed or reused queries. This mak
 ```js
 const db = await createRxDatabase({
   name: 'heroesdb',
-  adapter: 'memory',
+  storage: getRxStoragePouch('memory'),
   queryChangeDetection: true // <- enable queryChangeDetection
 });
 ```

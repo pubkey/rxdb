@@ -29,12 +29,18 @@ addRxPlugin(RxDBLeaderElectionPlugin);
 export var RxGraphQLReplicationState = /*#__PURE__*/function () {
   function RxGraphQLReplicationState(collection, url, headers, pull, push, deletedFlag, live, liveInterval, retryTime) {
     this._subjects = {
+      received: new Subject(),
+      // all documents that are received from the endpoint
+
+      /**
+       * @deprecated use received instead because it is spelled correctly
+       */
       recieved: new Subject(),
-      // all documents that are recieved from the endpoint
+      // all documents that are received from the endpoint
       send: new Subject(),
       // all documents that are send to the endpoint
       error: new Subject(),
-      // all errors that are revieced from the endpoint, emits new Error() objects
+      // all errors that are received from the endpoint, emits new Error() objects
       canceled: new BehaviorSubject(false),
       // true when the replication was canceled
       active: new BehaviorSubject(false),
@@ -47,6 +53,7 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
     this._runQueueCount = 0;
     this._runCount = 0;
     this.initialReplicationComplete$ = undefined;
+    this.received$ = undefined;
     this.recieved$ = undefined;
     this.send$ = undefined;
     this.error$ = undefined;
@@ -283,7 +290,7 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
   /**
    * Pull all changes from the server,
    * start from the last pulled change.
-   * @return true if sucessfull, false if something errored
+   * @return true if successfully, false if something errored
    */
   ;
 
@@ -337,7 +344,7 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
               throw new Error(result.errors);
 
             case 18:
-              err = new Error('unknown errors occured - see innerErrors for more details');
+              err = new Error('unknown errors occurred - see innerErrors for more details');
               err.innerErrors = result.errors;
               throw err;
 
@@ -355,7 +362,7 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
 
             case 27:
               dataPath = this.pull.dataPath || ['data', Object.keys(result.data)[0]];
-              data = objectPath.get(result, dataPath); // optimisation shortcut, do not proceed if there are no documents.
+              data = objectPath.get(result, dataPath); // optimization shortcut, do not proceed if there are no documents.
 
               if (!(data.length === 0)) {
                 _context5.next = 31;
@@ -433,11 +440,18 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
 
             case 47:
               modified.map(function (doc) {
+                return _this4._subjects.received.next(doc);
+              });
+              /**
+               * @deprecated use received instead because it is spelled correctly
+               */
+
+              modified.map(function (doc) {
                 return _this4._subjects.recieved.next(doc);
               });
 
               if (!(modified.length === 0)) {
-                _context5.next = 52;
+                _context5.next = 53;
                 break;
               }
 
@@ -445,22 +459,22 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
               } else {// console.log('RxGraphQLReplicationState._run(): no more docs and not live; complete = true');
               }
 
-              _context5.next = 57;
+              _context5.next = 58;
               break;
 
-            case 52:
+            case 53:
               newLatestDocument = modified[modified.length - 1];
-              _context5.next = 55;
+              _context5.next = 56;
               return setLastPullDocument(this.collection, this.endpointHash, newLatestDocument);
 
-            case 55:
-              _context5.next = 57;
+            case 56:
+              _context5.next = 58;
               return this.runPull();
 
-            case 57:
+            case 58:
               return _context5.abrupt("return", true);
 
-            case 58:
+            case 59:
             case "end":
               return _context5.stop();
           }
@@ -581,7 +595,7 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
               throw new Error(result.errors);
 
             case 23:
-              err = new Error('unknown errors occured - see innerErrors for more details');
+              err = new Error('unknown errors occurred - see innerErrors for more details');
               err.innerErrors = result.errors;
               throw err;
 

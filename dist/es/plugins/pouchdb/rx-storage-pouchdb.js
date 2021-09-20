@@ -621,7 +621,16 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
   _proto2.addEventToChangeStream = function addEventToChangeStream(change, startTime, endTime) {
     var doc = change.operation === 'DELETE' ? change.previous : change.doc;
     var primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
-    var primary = doc[primaryPath];
+    var primary = doc[primaryPath]; // TODO remove this check because this should never happen
+
+    if (!primary) {
+      console.log('----');
+      console.dir(this.schema);
+      console.dir(change);
+      console.dir(doc);
+      throw new Error('primary missing (' + primaryPath + ')');
+    }
+
     var eventId = getEventKey(false, primary, doc._rev);
 
     if (this.emittedEventIds.has(eventId)) {

@@ -846,31 +846,36 @@ function _removeRxDatabase() {
           case 5:
             docs = _context9.sent;
             _context9.next = 8;
-            return Promise.all(docs.map(function (colDoc) {
-              return colDoc.collectionName;
-            }).map( /*#__PURE__*/function () {
-              var _ref4 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee8(id) {
-                var split, name, version, instance;
+            return Promise.all(docs.map( /*#__PURE__*/function () {
+              var _ref4 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee8(colDoc) {
+                var id, schema, split, collectionName, version, primaryPath, _yield$Promise$all, instance, localInstance;
+
                 return _regenerator["default"].wrap(function _callee8$(_context8) {
                   while (1) {
                     switch (_context8.prev = _context8.next) {
                       case 0:
+                        id = colDoc.collectionName;
+                        schema = colDoc.schema;
                         split = id.split('-');
-                        name = split[0];
+                        collectionName = split[0];
                         version = parseInt(split[1], 10);
-                        _context8.next = 5;
-                        return storage.createStorageInstance({
+                        primaryPath = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
+                        _context8.next = 8;
+                        return Promise.all([storage.createStorageInstance({
                           databaseName: databaseName,
-                          collectionName: name,
-                          schema: (0, _rxSchemaHelper.getPseudoSchemaForVersion)(version, 'collectionName'),
+                          collectionName: collectionName,
+                          schema: (0, _rxSchemaHelper.getPseudoSchemaForVersion)(version, primaryPath),
                           options: {}
-                        });
+                        }), storage.createKeyObjectStorageInstance(databaseName, (0, _rxCollectionHelper.getCollectionLocalInstanceName)(collectionName), {})]);
 
-                      case 5:
-                        instance = _context8.sent;
-                        return _context8.abrupt("return", instance.remove());
+                      case 8:
+                        _yield$Promise$all = _context8.sent;
+                        instance = _yield$Promise$all[0];
+                        localInstance = _yield$Promise$all[1];
+                        _context8.next = 13;
+                        return Promise.all([instance.remove(), localInstance.remove()]);
 
-                      case 7:
+                      case 13:
                       case "end":
                         return _context8.stop();
                     }

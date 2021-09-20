@@ -103,6 +103,7 @@ function _writeToStorageInstance() {
                       }
 
                       throw newRxError('COL19', {
+                        collection: collection.name,
                         id: primary,
                         pouchDbError: useErr,
                         data: writeRow
@@ -171,6 +172,9 @@ export function fillObjectDataBeforeInsert(collection, data) {
   useJson = collection.schema.fillPrimaryKey(useJson);
   return useJson;
 }
+export function getCollectionLocalInstanceName(collectionName) {
+  return collectionName + '-local';
+}
 /**
  * Creates the storage instances that are used internally in the collection
  */
@@ -194,7 +198,7 @@ function _createRxCollectionStorageInstances() {
              * so that the local docs can be kept while deleting the normal instance
              * after migration.
              */
-            collectionName + '-local', instanceCreationOptions)]);
+            getCollectionLocalInstanceName(collectionName), instanceCreationOptions)]);
 
           case 2:
             _yield$Promise$all = _context3.sent;

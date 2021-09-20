@@ -16,7 +16,7 @@ export declare function getChangesSinceLastPushSequence<RxDocType>(collection: R
     }>;
     lastSequence: number;
 }>;
-export declare function getLastPullDocument(collection: RxCollection, endpointHash: string): Promise<any>;
+export declare function getLastPullDocument<RxDocType>(collection: RxCollection<RxDocType>, endpointHash: string): Promise<RxDocType | null>;
 export declare function setLastPullDocument(collection: RxCollection, endpointHash: string, doc: any): Promise<{
     _id: string;
 }>;
