@@ -627,6 +627,9 @@ describe('replication-graphql.test.js', () => {
                         c,
                         endpointHash
                     );
+                    if (!ret) {
+                        throw new Error('last pull document missing');
+                    }
                     assert.strictEqual(ret.name, 'foobar');
                     c.database.destroy();
                 });
