@@ -66,14 +66,14 @@ config.parallel('cross-instance.test.js', () => {
                 const db1: RxDatabase = c1.database;
                 const db2: RxDatabase = c2.database;
 
-                let recieved = 0;
+                let received = 0;
                 db2.$.subscribe(cEvent => {
-                    recieved++;
+                    received++;
                     assert.ok(cEvent.operation);
                 });
                 await c1.insert(schemaObjects.human());
                 await AsyncTestUtil.waitUntil(async () => {
-                    return recieved > 0;
+                    return received > 0;
                 });
 
                 db1.destroy();
@@ -115,15 +115,15 @@ config.parallel('cross-instance.test.js', () => {
             const name = randomCouchString(10);
             const c1 = await humansCollection.createMultiInstance(name);
             const c2 = await humansCollection.createMultiInstance(name);
-            let recieved = 0;
+            let received = 0;
             c2.$.subscribe(cEvent => {
-                recieved++;
+                received++;
                 assert.ok(cEvent.operation);
             });
             await c1.insert(schemaObjects.human());
 
             await AsyncTestUtil.waitUntil(async () => {
-                return recieved > 0;
+                return received > 0;
             });
 
             c1.database.destroy();
@@ -160,9 +160,9 @@ config.parallel('cross-instance.test.js', () => {
             const doc1 = await c1.findOne().exec(true);
             const doc2 = await c2.findOne().exec(true);
 
-            let recieved = 0;
+            let received = 0;
             doc2.$.subscribe(() => {
-                recieved = recieved + 1;
+                received = received + 1;
             });
 
             let firstNameAfter: any;
@@ -211,14 +211,14 @@ config.parallel('cross-instance.test.js', () => {
             const doc1 = await c1.human.findOne().exec(true);
             const doc2 = await c2.human.findOne().exec(true);
 
-            let recievedCollection = 0;
+            let receivedCollection = 0;
             c2.human.$.subscribe(() => {
-                recievedCollection = recievedCollection + 1;
+                receivedCollection = receivedCollection + 1;
             });
 
-            let recieved = 0;
+            let received = 0;
             doc2.$.subscribe(() => {
-                recieved = recieved + 1;
+                received = received + 1;
             });
 
             let secretAfter: any;
@@ -266,14 +266,14 @@ config.parallel('cross-instance.test.js', () => {
             const doc1 = await c1.human.findOne().exec(true);
             const doc2 = await c2.human.findOne().exec(true);
 
-            let recievedCollection = 0;
+            let receivedCollection = 0;
             c2.human.$.subscribe(() => {
-                recievedCollection = recievedCollection + 1;
+                receivedCollection = receivedCollection + 1;
             });
 
-            let recieved = 0;
+            let received = 0;
             doc2.$.subscribe(() => {
-                recieved = recieved + 1;
+                received = received + 1;
             });
 
             let secretAfter: any;
@@ -306,16 +306,16 @@ config.parallel('cross-instance.test.js', () => {
                 const c2 = await humansCollection.createMultiInstance(name);
                 const waitPromise = AsyncTestUtil.waitResolveable(500);
 
-                let recieved = 0;
+                let received = 0;
                 c2.$.subscribe(cEvent => {
-                    recieved++;
+                    received++;
                     assert.ok(cEvent.operation);
                     waitPromise.resolve();
                 });
                 await c1.insert(schemaObjects.human());
 
                 await waitPromise.promise;
-                assert.strictEqual(recieved, 1);
+                assert.strictEqual(received, 1);
                 c1.database.destroy();
                 c2.database.destroy();
             });
@@ -324,17 +324,17 @@ config.parallel('cross-instance.test.js', () => {
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);
 
-                let recieved = 0;
+                let received = 0;
                 c2.$.subscribe(cEvent => {
-                    recieved++;
+                    received++;
                     assert.ok(cEvent.operation);
                 });
 
                 await c1.insert(schemaObjects.human());
                 await c1.insert(schemaObjects.human());
 
-                await AsyncTestUtil.waitUntil(() => recieved === 2);
-                assert.strictEqual(recieved, 2);
+                await AsyncTestUtil.waitUntil(() => received === 2);
+                assert.strictEqual(received, 2);
                 c1.database.destroy();
                 c2.database.destroy();
             });

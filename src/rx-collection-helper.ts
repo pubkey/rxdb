@@ -134,6 +134,11 @@ export function fillObjectDataBeforeInsert(
     return useJson;
 }
 
+
+export function getCollectionLocalInstanceName(collectionName: string): string {
+    return collectionName + '-local';
+}
+
 /**
  * Creates the storage instances that are used internally in the collection
  */
@@ -161,7 +166,7 @@ export async function createRxCollectionStorageInstances<RxDocumentType, Interna
              * so that the local docs can be kept while deleting the normal instance
              * after migration.
              */
-            collectionName + '-local',
+            getCollectionLocalInstanceName(collectionName),
             instanceCreationOptions
         )
     ]);

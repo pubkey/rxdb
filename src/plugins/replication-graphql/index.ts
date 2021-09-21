@@ -80,9 +80,13 @@ export class RxGraphQLReplicationState<RxDocType> {
     public client: any;
     public endpointHash: string;
     public _subjects = {
-        recieved: new Subject(), // all documents that are recieved from the endpoint
+        received: new Subject(), // all documents that are received from the endpoint
+        /**
+         * @deprecated use received instead because it is spelled correctly
+         */
+        recieved: new Subject(), // all documents that are received from the endpoint
         send: new Subject(), // all documents that are send to the endpoint
-        error: new Subject(), // all errors that are revieced from the endpoint, emits new Error() objects
+        error: new Subject(), // all errors that are received from the endpoint, emits new Error() objects
         canceled: new BehaviorSubject(false), // true when the replication was canceled
         active: new BehaviorSubject(false), // true when something is running, false when not
         initialReplicationComplete: new BehaviorSubject(false) // true the initial replication-cycle is over
@@ -95,6 +99,10 @@ export class RxGraphQLReplicationState<RxDocType> {
 
     public initialReplicationComplete$: Observable<any> = undefined as any;
 
+    public received$: Observable<RxDocumentData<RxDocType>> = undefined as any;
+    /**
+     * @deprecated use received instead because it is spelled correctly
+     */
     public recieved$: Observable<RxDocumentData<RxDocType>> = undefined as any;
     public send$: Observable<any> = undefined as any;
     public error$: Observable<any> = undefined as any;
@@ -199,7 +207,7 @@ export class RxGraphQLReplicationState<RxDocType> {
     /**
      * Pull all changes from the server,
      * start from the last pulled change.
-     * @return true if sucessfull, false if something errored
+     * @return true if successfully, false if something errored
      */
     async runPull(): Promise<boolean> {
         if (this.isStopped()) {
@@ -217,7 +225,7 @@ export class RxGraphQLReplicationState<RxDocType> {
                 if (typeof result.errors === 'string') {
                     throw new Error(result.errors);
                 } else {
-                    const err: any = new Error('unknown errors occured - see innerErrors for more details');
+                    const err: any = new Error('unknown errors occurred - see innerErrors for more details');
                     err.innerErrors = result.errors;
                     throw err;
                 }
@@ -230,7 +238,7 @@ export class RxGraphQLReplicationState<RxDocType> {
         const dataPath = (this.pull as any).dataPath || ['data', Object.keys(result.data)[0]];
         const data: any[] = objectPath.get(result, dataPath);
 
-        // optimisation shortcut, do not proceed if there are no documents.
+        // optimization shortcut, do not proceed if there are no documents.
         if (data.length === 0) {
             return true;
         }
@@ -259,6 +267,10 @@ export class RxGraphQLReplicationState<RxDocType> {
             return true;
         }
         await this.handleDocumentsFromRemote(modified);
+        modified.map((doc: any) => this._subjects.received.next(doc));
+        /**
+         * @deprecated use received instead because it is spelled correctly
+         */
         modified.map((doc: any) => this._subjects.recieved.next(doc));
 
 
@@ -342,7 +354,7 @@ export class RxGraphQLReplicationState<RxDocType> {
                     if (typeof result.errors === 'string') {
                         throw new Error(result.errors);
                     } else {
-                        const err: any = new Error('unknown errors occured - see innerErrors for more details');
+                        const err: any = new Error('unknown errors occurred - see innerErrors for more details');
                         err.innerErrors = result.errors;
                         throw err;
                     }

@@ -22,6 +22,10 @@ export declare class RxGraphQLReplicationState<RxDocType> {
     client: any;
     endpointHash: string;
     _subjects: {
+        received: Subject<unknown>;
+        /**
+         * @deprecated use received instead because it is spelled correctly
+         */
         recieved: Subject<unknown>;
         send: Subject<unknown>;
         error: Subject<unknown>;
@@ -34,6 +38,10 @@ export declare class RxGraphQLReplicationState<RxDocType> {
     _runQueueCount: number;
     _runCount: number;
     initialReplicationComplete$: Observable<any>;
+    received$: Observable<RxDocumentData<RxDocType>>;
+    /**
+     * @deprecated use received instead because it is spelled correctly
+     */
     recieved$: Observable<RxDocumentData<RxDocType>>;
     send$: Observable<any>;
     error$: Observable<any>;
@@ -53,7 +61,7 @@ export declare class RxGraphQLReplicationState<RxDocType> {
     /**
      * Pull all changes from the server,
      * start from the last pulled change.
-     * @return true if sucessfull, false if something errored
+     * @return true if successfully, false if something errored
      */
     runPull(): Promise<boolean>;
     /**

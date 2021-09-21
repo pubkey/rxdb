@@ -6,6 +6,10 @@ Other:
   - Added svelte example [#3287](https://github.com/pubkey/rxdb/pull/3287) Thanks [@bkeating](https://github.com/bkeating)
   - Improved error messages
 
+Bugfixes:
+  - [#3319](https://github.com/pubkey/rxdb/issues/3319) Graphql replication checkpoint was not deleted after running `RxDatabase.remove()`
+  - Fixed spelling of `recieved -> received` everywhere. The old getters are still useable but `deprecated` [#3392](https://github.com/pubkey/rxdb/pull/3392). Thanks [chrisdrackett](https://github.com/chrisdrackett)
+
 ### 10.0.3 (9 August 2021)
 
 Bugfixes:

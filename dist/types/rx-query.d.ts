@@ -38,7 +38,7 @@ export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumen
     _$?: BehaviorSubject<RxQueryResult>;
     /**
      * set the new result-data as result-docs of the query
-     * @param newResultData json-docs that were recieved from pouchdb
+     * @param newResultData json-docs that were received from pouchdb
      */
     _setResultData(newResultData: any[]): RxDocument[];
     /**

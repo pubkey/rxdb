@@ -511,6 +511,16 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         const doc: RxDocumentData<RxDocType> = change.operation === 'DELETE' ? change.previous as any : change.doc as any;
         const primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
         const primary: string = (doc as any)[primaryPath];
+
+        // TODO remove this check because this should never happen
+        if (!primary) {
+            console.log('----');
+            console.dir(this.schema);
+            console.dir(change);
+            console.dir(doc);
+            throw new Error('primary missing (' + primaryPath + ')');
+        }
+
         const eventId = getEventKey(false, primary, doc._rev);
 
         if (this.emittedEventIds.has(eventId)) {
@@ -1211,12 +1221,17 @@ export function pouchStripLocalFlagFromPrimary(str: string): string {
     return str.substring(POUCHDB_LOCAL_PREFIX.length);
 }
 
-export function getEventKey(isLocal: boolean, primary: string, revision: string): string {
+export function getEventKey(
+    isLocal: boolean,
+    primary: string,
+    revision: string
+): string {
 
     // TODO remove this check this should never happen
     if (!primary) {
         throw new Error('primary missing !!');
     }
+
     const prefix = isLocal ? 'local' : 'non-local';
     const eventKey = prefix + '|' + primary + '|' + revision;
     return eventKey;

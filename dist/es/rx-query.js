@@ -49,7 +49,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
 
   /**
    * set the new result-data as result-docs of the query
-   * @param newResultData json-docs that were recieved from pouchdb
+   * @param newResultData json-docs that were received from pouchdb
    */
   _proto._setResultData = function _setResultData(newResultData) {
     this._resultsData = newResultData;

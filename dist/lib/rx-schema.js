@@ -55,12 +55,15 @@ var RxSchema = /*#__PURE__*/function () {
    * @throws {Error} if not valid
    */
   _proto.validateChange = function validateChange(dataBefore, dataAfter) {
+    var _this = this;
+
     this.finalFields.forEach(function (fieldName) {
       if (!(0, _deepEqual["default"])(dataBefore[fieldName], dataAfter[fieldName])) {
         throw (0, _rxError.newRxError)('DOC9', {
           dataBefore: dataBefore,
           dataAfter: dataAfter,
-          fieldName: fieldName
+          fieldName: fieldName,
+          schema: _this.jsonSchema
         });
       }
     });
@@ -124,7 +127,8 @@ var RxSchema = /*#__PURE__*/function () {
           documentData: documentData,
           existingPrimary: existingPrimary,
           newPrimary: newPrimary
-        }
+        },
+        schema: this.jsonSchema
       });
     }
 

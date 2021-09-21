@@ -627,6 +627,9 @@ describe('replication-graphql.test.js', () => {
                         c,
                         endpointHash
                     );
+                    if (!ret) {
+                        throw new Error('last pull document missing');
+                    }
                     assert.strictEqual(ret.name, 'foobar');
                     c.database.destroy();
                 });
@@ -1736,7 +1739,7 @@ describe('replication-graphql.test.js', () => {
         });
 
         config.parallel('observables', () => {
-            it('should emit the recieved documents when pulling', async () => {
+            it('should emit the received documents when pulling', async () => {
                 const testData = getTestData(batchSize);
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(0),
@@ -1752,7 +1755,7 @@ describe('replication-graphql.test.js', () => {
                 });
 
                 const emitted: RxDocumentData<HumanWithTimestampDocumentType>[] = [];
-                const sub = replicationState.recieved$.subscribe((doc: any) => emitted.push(doc));
+                const sub = replicationState.received$.subscribe((doc: any) => emitted.push(doc));
 
                 await replicationState.awaitInitialReplication();
                 assert.strictEqual(emitted.length, batchSize);
@@ -2489,6 +2492,26 @@ describe('replication-graphql.test.js', () => {
                 assert.ok(replicationState._runCount < 20, replicationState._runCount.toString());
 
                 c.database.destroy();
+            });
+            it('#3319 database.remove() should delete the last-pull document', async () => {
+                const dbName = randomCouchString(12);
+                const c = await humansCollection.createHumanWithTimestamp(1, dbName);
+                const doc = await c.findOne().exec(true);
+                let docData = doc.toJSON(true);
+                docData = clone(docData); // clone to make it mutateable
+                (docData as any).name = 'foobar';
+
+                await setLastPullDocument(c, endpointHash, docData);
+                await c.database.remove();
+
+
+                // recreate the same collection again
+                const c2 = await humansCollection.createHumanWithTimestamp(1, dbName);
+                // there should be no pull document now
+                const ret = await getLastPullDocument(c2, endpointHash);
+                assert.strictEqual(ret, null);
+
+                c2.database.destroy();
             });
         });
     });

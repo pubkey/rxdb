@@ -158,11 +158,11 @@ config.parallel('reactive-query.test.js', () => {
         it('get no change when nothing happens', async () => {
             const c = await humansCollection.create(1);
             const query = c.find();
-            let recieved = 0;
+            let received = 0;
             const querySub = query.$.subscribe(() => {
-                recieved++;
+                received++;
             });
-            await AsyncTestUtil.waitUntil(() => recieved === 1);
+            await AsyncTestUtil.waitUntil(() => received === 1);
             querySub.unsubscribe();
             c.database.destroy();
         });

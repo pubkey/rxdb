@@ -17,6 +17,7 @@ export declare function _handleFromStorageInstance(col: RxCollection | RxCollect
  * This also clones the data.
  */
 export declare function fillObjectDataBeforeInsert(collection: RxCollection | RxCollectionBase<any>, data: any): any;
+export declare function getCollectionLocalInstanceName(collectionName: string): string;
 /**
  * Creates the storage instances that are used internally in the collection
  */
