@@ -10,6 +10,7 @@
  */
 import assert, { fail } from 'assert';
 import AsyncTestUtil from 'async-test-util';
+import config from './config';
 
 import {
     createRxDatabase,
@@ -22,6 +23,9 @@ import {
 
 describe('bug-report.test.js', () => {
     it('reusing the name of a previously removed collection should not result in an unhandled rejection', async () => {
+        if (config.platform.isNode()) {
+            return
+        }
         window.addEventListener('unhandledrejection', () => {
             // we should not get here
             fail()
@@ -47,12 +51,12 @@ describe('bug-report.test.js', () => {
 
         await db.test.remove();             // < commenting out these two lines
         await db.addCollections({ test });  // < will result in test (trivially) passing.
-                                            // with these lines present, subsequent operations 
-                                            // on collection succeed, but cause unhandled rejection
-        await db.test.insert({ id: 'test' }); 
-                                            // not a huge deal on its own(?), but I'm seeing
-                                            // other weird (and more difficult to "test")
-                                            // issues coinciding with this
+        // with these lines present, subsequent operations 
+        // on collection succeed, but cause unhandled rejection
+        await db.test.insert({ id: 'test' });
+        // not a huge deal on its own(?), but I'm seeing
+        // other weird (and more difficult to "test")
+        // issues coinciding with this
         db.destroy();
     });
 });
