@@ -996,6 +996,17 @@ config.parallel('rx-collection.test.js', () => {
                         const noFirst = await c.find().sort({
                             passportId: 'asc'
                         }).skip(1).exec();
+
+                        /**
+                         * On really really rare occasions this test fails for unknown reason,
+                         * so we log out the current state to better reproduce.
+                         */
+                        if (noFirst[0]._data.passportId !== docs[1]._data.passportId) {
+                            console.log('If this is logged, debug the test:');
+                            console.dir(docs.map(doc => doc.toJSON()));
+                            console.dir(noFirst.map(doc => doc.toJSON()));
+                        }
+
                         assert.strictEqual(noFirst[0]._data.passportId, docs[1]._data.passportId);
                         c.database.destroy();
                     });
