@@ -1,4 +1,4 @@
-# before next major release
+# Things do to before the next major release
 
 This list contains things that have to be done but will create breaking changes.
 
