@@ -3,6 +3,7 @@
 ### X.X.X (coming soon)
 
 Other:
+  - Refactored the migration plugin for better performance by writing the documents in bulk requests
   - Added svelte example [#3287](https://github.com/pubkey/rxdb/pull/3287) Thanks [@bkeating](https://github.com/bkeating)
   - Improved error messages
 
