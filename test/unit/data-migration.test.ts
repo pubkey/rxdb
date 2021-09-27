@@ -27,7 +27,7 @@ import {
     _getOldCollections,
     getBatchOfOldCollection,
     migrateDocumentData,
-    _migrateDocument,
+    _migrateDocuments,
     deleteOldCollection,
     migrateOldCollection,
     migratePromise
@@ -367,7 +367,7 @@ config.parallel('data-migration.test.js', () => {
                     col.database.destroy();
                 });
             });
-            describe('._migrateDocument()', () => {
+            describe('._migrateDocuments()', () => {
                 /**
                  * this test is to handle the following case:
                  * 1. user starts migration
@@ -389,11 +389,11 @@ config.parallel('data-migration.test.js', () => {
                     // simluate prerun of migrate()
                     const oldDocs = await getBatchOfOldCollection(oldCol as any, 10);
                     const tryDoc = oldDocs.shift();
-                    const action = await _migrateDocument(oldCol as any, tryDoc);
-                    assert.strictEqual(action.type, 'success');
+                    const actions = await _migrateDocuments(oldCol as any, [tryDoc]);
+                    assert.strictEqual(actions[0].type, 'success');
 
                     // this should no crash because existing doc will be overwritten
-                    await _migrateDocument(oldCol as any, tryDoc);
+                    await _migrateDocuments(oldCol as any, [tryDoc]);
                     col.database.destroy();
                 });
             });

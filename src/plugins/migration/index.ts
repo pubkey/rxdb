@@ -2,7 +2,10 @@ import {
     combineLatest,
     Observable
 } from 'rxjs';
-import { shareReplay, switchMap } from 'rxjs/operators';
+import {
+    shareReplay,
+    switchMap
+} from 'rxjs/operators';
 import type {
     RxPlugin,
     RxCollection,
@@ -11,8 +14,7 @@ import type {
 } from '../../types';
 import {
     mustMigrate,
-    DataMigrator,
-    createDataMigrator
+    DataMigrator
 } from './data-migrator';
 import {
     getMigrationStateByDatabase,
@@ -44,7 +46,7 @@ export const RxDBMigrationPlugin: RxPlugin = {
                 if (!DATA_MIGRATOR_BY_COLLECTION.has(this)) {
                     DATA_MIGRATOR_BY_COLLECTION.set(
                         this,
-                        createDataMigrator(
+                        new DataMigrator(
                             this.asRxCollection,
                             this.migrationStrategies
                         )
@@ -66,7 +68,7 @@ export {
     _getOldCollections,
     getBatchOfOldCollection,
     migrateDocumentData,
-    _migrateDocument,
+    _migrateDocuments,
     deleteOldCollection,
     migrateOldCollection,
     migratePromise,

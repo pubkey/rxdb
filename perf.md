@@ -651,3 +651,28 @@ BEFORE:
     "perInstance": 17.622248932999998
   },
 
+
+
+## refactor migration plugin
+
+BEFORE:
+
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 10218.362063
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 10408.40937
+  },
+
+AFTER STEP 1:
+
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 8282.815032
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 7828.624684
+  },

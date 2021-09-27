@@ -277,13 +277,6 @@ export function mustMigrate(dataMigrator: DataMigrator): Promise<boolean> {
         });
 }
 
-export function createDataMigrator(
-    newestCollection: RxCollection,
-    migrationStrategies: NumberFunctionMap
-): DataMigrator {
-    return new DataMigrator(newestCollection, migrationStrategies);
-}
-
 export function runStrategyIfNotNull(
     oldCollection: OldRxCollection,
     version: number,
@@ -389,101 +382,124 @@ export function isDocumentDataWithoutRevisionEqual<T>(doc1: T, doc2: T): boolean
 }
 
 /**
- * transform docdata and save to new collection
+ * transform documents data and save them to the new collection
  * @return status-action with status and migrated document
  */
-export function _migrateDocument(
+export async function _migrateDocuments(
     oldCollection: OldRxCollection,
-    docData: any
-): Promise<{ type: string, doc: {} }> {
-    const action = {
-        res: null as any,
-        type: '',
-        migrated: null,
-        doc: docData,
-        oldCollection,
-        newestCollection: oldCollection.newestCollection
-    };
+    documentsData: any[]
+): Promise<{ type: string, doc: any }[]> {
 
-    return runAsyncPluginHooks(
-        'preMigrateDocument',
-        {
-            docData,
-            oldCollection
-        }
-    )
-        .then(() => migrateDocumentData(oldCollection, docData))
-        .then(migrated => {
+    // run hooks that might mutate documentsData
+    await Promise.all(
+        documentsData.map(docData => runAsyncPluginHooks(
+            'preMigrateDocument',
+            {
+                docData,
+                oldCollection
+            }
+        ))
+    );
+    // run the migration strategies on each document
+    const migratedDocuments: (any | null)[] = await Promise.all(
+        documentsData.map(docData => migrateDocumentData(oldCollection, docData))
+    );
+
+
+    const bulkWriteToStorageInput: any[] = [];
+    const actions: any[] = [];
+
+    documentsData.forEach((docData, idx) => {
+        const migratedDocData: any | null = migratedDocuments[idx];
+        const action = {
+            res: null as any,
+            type: '',
+            migrated: migratedDocData,
+            doc: docData,
+            oldCollection,
+            newestCollection: oldCollection.newestCollection
+        };
+        actions.push(action);
+
+        /**
+         * Determiniticly handle the revision
+         * so migrating the same data on multiple instances
+         * will result in the same output.
+         */
+        if (isDocumentDataWithoutRevisionEqual(docData, migratedDocData)) {
             /**
-             * Determiniticly handle the revision
-             * so migrating the same data on multiple instances
-             * will result in the same output.
+             * Data not changed by migration strategies, keep the same revision.
+             * This ensures that other replicated instances that did not migrate already
+             * will still have the same document.
              */
-            if (isDocumentDataWithoutRevisionEqual(docData, migrated)) {
-                /**
-                 * Data not changed by migration strategies, keep the same revision.
-                 * This ensures that other replicated instances that did not migrate already
-                 * will still have the same document.
-                 */
-                migrated._rev = docData._rev;
-            } else if (migrated !== null) {
-                /**
-                 * data changed, increase revision height
-                 * so replicating instances use our new document data
-                 */
-                const newHeight = getHeightOfRevision(docData._rev) + 1;
-                const newRevision = newHeight + '-' + createRevision(migrated, true);
-                migrated._rev = newRevision;
-            }
+            migratedDocData._rev = docData._rev;
+        } else if (migratedDocData !== null) {
+            /**
+             * data changed, increase revision height
+             * so replicating instances use our new document data
+             */
+            const newHeight = getHeightOfRevision(docData._rev) + 1;
+            const newRevision = newHeight + '-' + createRevision(migratedDocData, true);
+            migratedDocData._rev = newRevision;
+        }
 
-            action.migrated = migrated;
-            if (migrated) {
 
-                /**
-                 * save to newest collection
-                 * notice that this data also contains the attachments data
-                 */
-                const attachmentsBefore = migrated._attachments;
-                const saveData: WithAttachmentsData<any> = _handleToStorageInstance(oldCollection.newestCollection, migrated);
-                saveData._attachments = attachmentsBefore;
+        if (migratedDocData) {
+            /**
+             * save to newest collection
+             * notice that this data also contains the attachments data
+             */
+            const attachmentsBefore = migratedDocData._attachments;
+            const saveData: WithAttachmentsData<any> = _handleToStorageInstance(oldCollection.newestCollection, migratedDocData);
+            saveData._attachments = attachmentsBefore;
+            bulkWriteToStorageInput.push(saveData);
+            action.res = saveData;
+            action.type = 'success';
+        } else {
+            /**
+             * Migration strategy returned null
+             * which means we should not migrate this document,
+             * just drop it.
+             */
+            action.type = 'deleted';
+        }
+    });
 
-                /**
-                 * We need to add as revision
-                 * because we provide the _rev by our own
-                 * to have deterministic revisions in case the migration
-                 * runs on multiple nodes which must lead to the equal storage state.
-                 */
-                return oldCollection.newestCollection.storageInstance.bulkAddRevisions([
-                    saveData
-                ]).then(() => {
-                    action.res = saveData;
-                    action.type = 'success';
-                    return runAsyncPluginHooks(
-                        'postMigrateDocument',
-                        action
-                    );
-                });
-            } else {
-                /**
-                 * Migration strategy returned null
-                 * which means we should not migrate this document,
-                 * just drop it.
-                 */
-                action.type = 'deleted';
-            }
-        })
-        // remove the migrated document from the old collection
-        .then(() => {
-            const writeDeleted = flatClone(docData);
-            writeDeleted._deleted = true;
-            return oldCollection.storageInstance.bulkWrite(
-                [{
-                    previous: _handleToStorageInstance(oldCollection as any, docData),
-                    document: _handleToStorageInstance(oldCollection as any, writeDeleted)
-                }]
-            );
-        })
-        .then(() => action) as any;
+
+    /**
+     * Write the documents to the newest collection.
+     * We need to add as revision
+     * because we provide the _rev by our own
+     * to have deterministic revisions in case the migration
+     * runs on multiple nodes which must lead to the equal storage state.
+     */
+    if (bulkWriteToStorageInput.length) {
+        await oldCollection.newestCollection.storageInstance.bulkAddRevisions(bulkWriteToStorageInput);
+    }
+
+    // run hooks
+    await Promise.all(
+        actions.map(action => runAsyncPluginHooks(
+            'postMigrateDocument',
+            action
+        ))
+    );
+
+    // remove the documents from the old collection storage instance
+    const bulkDeleteInputData = documentsData.map(docData => {
+        const writeDeleted = flatClone(docData);
+        writeDeleted._deleted = true;
+        return {
+            previous: _handleToStorageInstance(oldCollection as any, docData),
+            document: _handleToStorageInstance(oldCollection as any, writeDeleted)
+        };
+    });
+
+    if (bulkDeleteInputData.length) {
+        await oldCollection.storageInstance.bulkWrite(bulkDeleteInputData);
+    }
+
+    return actions;
 }
 
 
@@ -535,11 +551,10 @@ export function migrateOldCollection(
                         allBatchesDone();
                         return false;
                     } else {
-                        return Promise.all(
-                            batch.map(doc => _migrateDocument(oldCollection, doc)
-                                .then(action => observer.next(action))
-                            )
-                        ).catch(e => error = e).then(() => true);
+                        return _migrateDocuments(oldCollection, batch)
+                            .then((actions: any[]) => actions.forEach(action => observer.next(action)))
+                            .catch(e => error = e)
+                            .then(() => true);
                     }
                 })
                 .then(next => {
