@@ -32,7 +32,6 @@ export declare function _getOldCollections(dataMigrator: DataMigrator): Promise<
  * returns true if a migration is needed
  */
 export declare function mustMigrate(dataMigrator: DataMigrator): Promise<boolean>;
-export declare function createDataMigrator(newestCollection: RxCollection, migrationStrategies: NumberFunctionMap): DataMigrator;
 export declare function runStrategyIfNotNull(oldCollection: OldRxCollection, version: number, docOrNull: any | null): Promise<any | null>;
 export declare function getBatchOfOldCollection(oldCollection: OldRxCollection, batchSize: number): Promise<any[]>;
 /**
@@ -44,13 +43,13 @@ export declare function getBatchOfOldCollection(oldCollection: OldRxCollection, 
 export declare function migrateDocumentData(oldCollection: OldRxCollection, docData: any): Promise<any | null>;
 export declare function isDocumentDataWithoutRevisionEqual<T>(doc1: T, doc2: T): boolean;
 /**
- * transform docdata and save to new collection
+ * transform documents data and save them to the new collection
  * @return status-action with status and migrated document
  */
-export declare function _migrateDocument(oldCollection: OldRxCollection, docData: any): Promise<{
+export declare function _migrateDocuments(oldCollection: OldRxCollection, documentsData: any[]): Promise<{
     type: string;
-    doc: {};
-}>;
+    doc: any;
+}[]>;
 /**
  * deletes this.storageInstance and removes it from the database.collectionsCollection
  */

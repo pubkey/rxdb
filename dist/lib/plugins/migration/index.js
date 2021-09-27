@@ -21,10 +21,10 @@ Object.defineProperty(exports, "migrateDocumentData", {
     return _dataMigrator.migrateDocumentData;
   }
 });
-Object.defineProperty(exports, "_migrateDocument", {
+Object.defineProperty(exports, "_migrateDocuments", {
   enumerable: true,
   get: function get() {
-    return _dataMigrator._migrateDocument;
+    return _dataMigrator._migrateDocuments;
   }
 });
 Object.defineProperty(exports, "deleteOldCollection", {
@@ -83,7 +83,7 @@ var RxDBMigrationPlugin = {
     RxCollection: function RxCollection(proto) {
       proto.getDataMigrator = function () {
         if (!DATA_MIGRATOR_BY_COLLECTION.has(this)) {
-          DATA_MIGRATOR_BY_COLLECTION.set(this, (0, _dataMigrator.createDataMigrator)(this.asRxCollection, this.migrationStrategies));
+          DATA_MIGRATOR_BY_COLLECTION.set(this, new _dataMigrator.DataMigrator(this.asRxCollection, this.migrationStrategies));
         }
 
         return DATA_MIGRATOR_BY_COLLECTION.get(this);
