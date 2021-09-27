@@ -14,8 +14,8 @@ Instead of mergin the prototype into a single object, we should chain them toget
 
 ### Refactor data-migrator
 
- - The current implemetation does not use pouchdb's bulkDocs which is much faster
- - This could have been done in much less code which would be easier to uderstand
+ - The current implemetation does not use pouchdb's bulkDocs which is much faster.
+ - This could have been done in much less code which would be easier to understand.
 
 ## Move rxjs into a plugin instead of having it internal
 RxDB relies heavily on rxjs. This made it easy in the past to handle the data flow inside of RxDB and also created feature-rich interfaces for users when they want to observe data.
