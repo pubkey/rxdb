@@ -1,10 +1,10 @@
 # Offline First
 
 Offline-First is a software paradigm where the software must work as well offline as it does online.
-To implements this, you have to store data at the client side so your application can still access it when the internet goes away.
-This can be either done with complex caching strategies, or by going full in and use an offline first database (like RxDB) that stores the data inside of IndexedDb and replicates it from and to the backend in the background. This makes the local database, not the server, the gateway for all persistent changes in application state.
+To implement this, you have to store data at the client side, so that your application can still access it when the internet goes away.
+This can be either done with complex caching strategies, or by using an offline first database (like RxDB) that stores the data inside of IndexedDb and replicates it from and to the backend in the background. This makes the local database, not the server, the gateway for all persistent changes in application state.
 
-# Offline-First is not about having no internet connection
+# Offline first is not about having no internet connection
 
 While in the past, internet connection was an unstable thing, especially for mobile devices things have changed.
 We now have better mobile networks and having no internet becomes a rare case even in remote locations.
@@ -62,3 +62,18 @@ Offline first applications do not scale up with the amount of user actions but i
 Once that data is transferred to the client, the user can do as many interactions with it as required without connecting to the server.
 
 ## You might not need REST
+
+On normal web applications you make different requests for each kind of data interaction.
+For that you have to define a swagger route, implement a route handler on the backend and create some client code to send or fetch data from that route. There more complex your application becomes, the more REST routes you have to maintain and implement.
+
+With offline first apps, you have a way to hack around all this cumbersome work. You just replicate the whole state from the server to the client. The replication does not only run once, you have a **realtime replication** and all changes at one side are automatically there on the other side. On the client you can access every piece of state with simple database query.
+While this of course only works for amounts of data that the client can load and store, it makes implementing prototypes and simple apps much faster.
+
+## You might not need Redux
+
+Data is hard, especially for UI applications where many things can happen at the same time.
+The user is clicking around. Stuff is loaded from the server. All of these things interact with the global state of the app.
+To manage this complexity it is common to use state management libraries like Redux or MobX. With them you write all this lasagna code to wrap the mutation of data and to make the UI react to all these changes.
+
+On offline first apps, you global state is already there in a single place stored inside of the local database.
+You do not have to care whether this data came from the UI, another tab, the backend or another device of the same user. You can just make writes to the database and fetch data out of it.
