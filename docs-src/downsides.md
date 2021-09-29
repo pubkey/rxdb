@@ -9,3 +9,4 @@
 - does not work with too much data
 - conflict handling
 - indexddb not really persistent
+- eventually consistent

@@ -2,7 +2,7 @@
 
 Offline-First is a software paradigm where the software must work as well offline as it does online.
 To implement this, you have to store data at the client side, so that your application can still access it when the internet goes away.
-This can be either done with complex caching strategies, or by using an offline first database (like RxDB) that stores the data inside of IndexedDb and replicates it from and to the backend in the background. This makes the local database, not the server, the gateway for all persistent changes in application state.
+This can be either done with complex caching strategies, or by using an offline first database (like [RxDB](https://github.com/pubkey/rxdb)) that stores the data inside of IndexedDb and replicates it from and to the backend in the background. This makes the local database, not the server, the gateway for all persistent changes in application state.
 
 > **Offline first is not about having no internet connection**
 
@@ -19,11 +19,6 @@ In offline-first apps, the operations go directly against the local storage whic
   <img src="./files/loading-spinner-not-needed.gif" alt="loading spinner not needed" width="300" />
 </p>
 
-## Error handling is easier
-
-When the client makes a request to the server, there are many things that can go wrong. The client cannot connect, the server is too busy or whatever. So in a 'normal' application you have to prepare for each of these error cases and show correct error messages to the user or handle the errors in other ways.
-In offline-first apps, the local client data is replicated to the server in the background by using resilient and battle proven replication protocols that automatically handle and resolve any errors out of sight.
-
 ## Multi-tab usage just works
 
 Many, even big websites like amazon, reddit and stackoverflow do not handle multi tab usage correctly. When a user has multiple tabs of the website open and does a login on one of these tabs, the state does not change on the other tabs.
@@ -38,7 +33,7 @@ On offline first applications, there is always exactly one state of the data acr
 In the past, often the bandwidth was the limiting factor on determining the loading time of an application.
 But while bandwidth has improved over the years, latency became the limiting factor.
 You can always increase the bandwidth by setting up more cables or sending more Starlink satelites to space.
-But reducing the latency is not so easy. It is defined by the physical properties of the tranfer medium and the speed of light.
+But reducing the latency is not so easy. It is defined by the physical properties of the tranfer medium, the speed of light and the distance to the server. All of these three are hard to optimize.
 
 Offline first application benefit from that because sending the inital state to the client can be done much faster with more bandwidth. And once the data is there, we do no longer have to care about the latency to the backend server.
 
@@ -47,6 +42,26 @@ Offline first application benefit from that because sending the inital state to 
 </p>
 
 
+## Realtime comes for free
+
+Most websites lie to their users. They do not lie because they display wrong data, but because they display **old data** that was loaded from the backend at the time the user opened the site.
+To overcome this, you could build a realtime website where you create a websocket that streams updates from the backend to the client. This means work. Your client needs to tell the server which page is currently opened and which updates the client is interested to. Then the server can push updates over the websocket and you can update the UI accordingly.
+
+With offline first applications you already have a realtime replication with the backend. Most offline first databases provide some concept of changestream or data subscriptions. With RxDB you can even directly subscribe to query results or single fields of documents. This makes it easy to have an always updated UI whenever the global shared state changes.
+
+<p align="center">
+  <img src="./files/realtime.gif" alt="loading spinner not needed" width="700" />
+</p>
+
+
+## Scales with data size, not with the amount of user interaction
+
+On normal applications, each user interaction can result in multiple requests to the backend server which increase its load.
+The more users interact with your application, the more backend resources you have to provide.
+
+Offline first applications do not scale up with the amount of user actions but instead they scale up with the amount of data.
+Once that data is transferred to the client, the user can do as many interactions with it as required without connecting to the server.
+
 
 ## Modern apps have longer runtimes
 
@@ -54,19 +69,13 @@ In the past you used websites only for a short time. You open it, perform some a
 Today web applications have changed and with it the way we use them. Single page applications are opened once and then used over the whole day. Chat apps, email clients, PWAs and hybrid apps. All of these where made to have long runtimes.
 This makes the time for user interactions more important than the initial loading time. Offline first applications benefit from that because there is often no loading time on user actions while loading the initial state to the client is not that relevant.
 
-## Scales with data size, not with the amount of user interaction
-
-On normal applications, each user interaction can result in multiple requests to the backend server which increase its load.
-The more users interact with your application, the more backend resources you have to provide.
-Offline first applications do not scale up with the amount of user actions but instead they scale up with the amount of data.
-Once that data is transferred to the client, the user can do as many interactions with it as required without connecting to the server.
 
 ## You might not need REST
 
 On normal web applications you make different requests for each kind of data interaction.
 For that you have to define a swagger route, implement a route handler on the backend and create some client code to send or fetch data from that route. There more complex your application becomes, the more REST routes you have to maintain and implement.
 
-With offline first apps, you have a way to hack around all this cumbersome work. You just replicate the whole state from the server to the client. The replication does not only run once, you have a **realtime replication** and all changes at one side are automatically there on the other side. On the client you can access every piece of state with simple database query.
+With offline first apps, you have a way to hack around all this cumbersome work. You just replicate the whole state from the server to the client. The replication does not only run once, you have a **realtime replication** and all changes at one side are automatically there on the other side. On the client you can access every piece of state with a simple database query.
 While this of course only works for amounts of data that the client can load and store, it makes implementing prototypes and simple apps much faster.
 
 ## You might not need Redux
