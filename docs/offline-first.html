@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>LocalDocuments · RxDB - Documentation</title>
+        <title>About Offline First · RxDB - Documentation</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -63,10 +63,6 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="custom-build.html" />
-    
-    
-    <link rel="prev" href="query-cache.html" />
     
 
     </head>
@@ -1446,7 +1442,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.19" data-path="rx-local-document.html">
+        <li class="chapter " data-level="1.19" data-path="rx-local-document.html">
             
                 <a href="rx-local-document.html">
             
@@ -1512,7 +1508,7 @@
             <ul class="articles">
                 
     
-        <li class="chapter " data-level="1.23.1" data-path="offline-first.html">
+        <li class="chapter active" data-level="1.23.1" data-path="offline-first.html">
             
                 <a href="offline-first.html">
             
@@ -1638,7 +1634,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >LocalDocuments</a>
+        <a href="." >About Offline First</a>
     </h1>
 </div>
 
@@ -1653,93 +1649,65 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="local-documents">Local Documents</h1>
-<p>Local documents are a special class of documents which are used to store local metadata.
-They come in handy when you want to store settings or additional data next to your documents.</p>
-<ul>
-<li>Local Documents can exist on <code>RxDatabase</code> or <code>RxCollection</code></li>
-<li>Local Document do not have to match the collections schema</li>
-<li>Local Documents do not get replicated</li>
-<li>Local Documents will not be found on queries</li>
-<li>Local Documents can not have attachments</li>
-<li>Local Documents will not get handled by the <a href="data-migration.html">data-migration</a></li>
-</ul>
-<h2 id="insertlocal">insertLocal()</h2>
-<p>Creates a local document for the database or collection. Throws if a local document with the same id already exists. Returns a Promise which resolves the new <code>RxLocalDocument</code>.</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> localDoc = <span class="hljs-keyword">await</span> myCollection.insertLocal(
-    <span class="hljs-string">&apos;foobar&apos;</span>,   <span class="hljs-comment">// id</span>
-    {           <span class="hljs-comment">// data</span>
-        foo: <span class="hljs-string">&apos;bar&apos;</span>
-    }
-);
+                                <h1 id="offline-first">Offline First</h1>
+<p>Offline-First is a software paradigm where the software must work as well offline as it does online.
+To implement this, you have to store data at the client side, so that your application can still access it when the internet goes away.
+This can be either done with complex caching strategies, or by using an offline first database (like RxDB) that stores the data inside of IndexedDb and replicates it from and to the backend in the background. This makes the local database, not the server, the gateway for all persistent changes in application state.</p>
+<blockquote>
+<p><strong>Offline first is not about having no internet connection</strong></p>
+</blockquote>
+<p>While in the past, internet connection was an unstable thing, especially for mobile devices things have changed.
+We now have better mobile networks and having no internet becomes a rare case even in remote locations.
+So do we even need offline first applications or is it something of the past? In the following I will point some of the points on why offline first applications are better, not because they support offline usage, but because of other reasons.</p>
+<h2 id="ux-is-better-without-loading-spinners">UX is better without loading spinners</h2>
+<p>In &apos;normal&apos; web applications, most user interactions like fetching, saving or deleting data, correspond to a request to the backend server. This means that each of these interactions require the user to await the unknown latency to and from a remote server while looking at a loading spinner.
+In offline-first apps, the operations go directly against the local storage which happens almost instantly. There is no perceptible loading time and so it is not even necessary to implement a loading spinner at all. As soon as the user clicks, the UI represents the new state as if it was already changed in the backend.</p>
+<p align="center">
+  <img src="files/loading-spinner-not-needed.gif" alt="loading spinner not needed" width="300">
+</p>
 
-<span class="hljs-comment">// you can also use local-documents on a database</span>
-<span class="hljs-keyword">const</span> localDoc = <span class="hljs-keyword">await</span> myDatabase.insertLocal(
-    <span class="hljs-string">&apos;foobar&apos;</span>,   <span class="hljs-comment">// id</span>
-    {           <span class="hljs-comment">// data</span>
-        foo: <span class="hljs-string">&apos;bar&apos;</span>
-    }
-);
-</code></pre>
-<h2 id="upsertlocal">upsertLocal()</h2>
-<p>Creates a local document for the database or collection if not exists. Overwrites the if exists. Returns a Promise which resolves the <code>RxLocalDocument</code>.</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> localDoc = <span class="hljs-keyword">await</span> myCollection.upsertLocal(
-    <span class="hljs-string">&apos;foobar&apos;</span>,   <span class="hljs-comment">// id</span>
-    {           <span class="hljs-comment">// data</span>
-        foo: <span class="hljs-string">&apos;bar&apos;</span>
-    }
-);
-</code></pre>
-<h2 id="getlocal">getLocal()</h2>
-<p>Find a <code>RxLocalDocument</code> by it&apos;s id. Returns a Promise which resolves the <code>RxLocalDocument</code> or <code>null</code> if not exists.</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> localDoc = <span class="hljs-keyword">await</span> myCollection.getLocal(<span class="hljs-string">&apos;foobar&apos;</span>);
-</code></pre>
-<h2 id="getlocal">getLocal$()</h2>
-<p>Like <code>getLocal()</code> but returns an <code>Observable</code> that emits the document or <code>null</code> if not exists.</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> subscription = myCollection.getLocal$(<span class="hljs-string">&apos;foobar&apos;</span>).subscribe(documentOrNull =&gt; {
-    <span class="hljs-built_in">console</span>.dir(documentOrNull); <span class="hljs-comment">// &gt; RxLocalDocument or null</span>
-});
-</code></pre>
-<h2 id="rxlocaldocument">RxLocalDocument</h2>
-<p>A <code>RxLocalDocument</code> behaves like a normal <code>RxDocument</code>.</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> localDoc = <span class="hljs-keyword">await</span> myCollection.getLocal(<span class="hljs-string">&apos;foobar&apos;</span>);
+<h2 id="error-handling-is-easier">Error handling is easier</h2>
+<p>When the client makes a request to the server, there are many things that can go wrong. The client cannot connect, the server is too busy or whatever. So in a &apos;normal&apos; application you have to prepare for each of these error cases and show correct error messages to the user or handle the errors in other ways.
+In offline-first apps, the local client data is replicated to the server in the background by using resilient and battle proven replication protocols that automatically handle and resolve any errors out of sight.</p>
+<h2 id="multi-tab-usage-just-works">Multi-tab usage just works</h2>
+<p>Many, even big websites like amazon, reddit and stackoverflow do not handle multi tab usage correctly. When a user has multiple tabs of the website open and does a login on one of these tabs, the state does not change on the other tabs.
+On offline first applications, there is always exactly one state of the data across all tabs. Offline first databases (like RxDB) store the data inside of IndexedDb and <strong>share the state</strong> between all tabs of the same origin.</p>
+<p align="center">
+  <img src="files/multiwindow.gif" alt="RxDB multi tab" width="450">
+</p>
 
-<span class="hljs-comment">// access data</span>
-<span class="hljs-keyword">const</span> foo = localDoc.get(<span class="hljs-string">&apos;foo&apos;</span>);
+<h2 id="latency-is-more-important-then-bandwidth">Latency is more important then bandwidth</h2>
+<p>In the past, often the bandwidth was the limiting factor on determining the loading time of an application.
+But while bandwidth has improved over the years, latency became the limiting factor.
+You can always increase the bandwidth by setting up more cables or sending more Starlink satelites to space.
+But reducing the latency is not so easy. It is defined by the physical properties of the tranfer medium and the speed of light.</p>
+<p>Offline first application benefit from that because sending the inital state to the client can be done much faster with more bandwidth. And once the data is there, we do no longer have to care about the latency to the backend server.</p>
+<p align="center">
+  <img src="files/latency-london-san-franzisco.png" alt="latency london san franzisco" width="300">
+</p>
 
-<span class="hljs-comment">// change data</span>
-localDoc.set(<span class="hljs-string">&apos;foo&apos;</span>, <span class="hljs-string">&apos;bar2&apos;</span>);
-<span class="hljs-keyword">await</span> localDoc.save();
 
-<span class="hljs-comment">// observe data</span>
-localDoc.get$(<span class="hljs-string">&apos;foo&apos;</span>).subscribe(value =&gt; { <span class="hljs-comment">/* .. */</span> });
 
-<span class="hljs-comment">// remove it</span>
-<span class="hljs-keyword">await</span> localDoc.remove();
-</code></pre>
-<h2 id="notice-because-the-local-document-does-not-have-a-schema-accessing-the-documents-data-fields-via-pseudo-proxy-will-not-work">NOTICE: Because the local document does not have a schema, accessing the documents data-fields via pseudo-proxy will not work.</h2>
-<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> foo = localDoc.foo; <span class="hljs-comment">// undefined</span>
-<span class="hljs-keyword">const</span> foo = localDoc.get(<span class="hljs-string">&apos;foo&apos;</span>); <span class="hljs-comment">// works!</span>
-
-localDoc.foo = <span class="hljs-string">&apos;bar&apos;</span>; <span class="hljs-comment">// does not work!</span>
-localDoc.set(<span class="hljs-string">&apos;foo&apos;</span>, <span class="hljs-string">&apos;bar&apos;</span>); <span class="hljs-comment">// works</span>
-</code></pre>
-<p>For the usage with typescript, you can have access to the typed data of the document over <code>toJSON()</code></p>
-<pre><code class="lang-ts"><span class="hljs-keyword">declare</span> <span class="hljs-keyword">type</span> MyLocalDocumentType = {
-  foo: <span class="hljs-built_in">string</span>
-}
-<span class="hljs-keyword">const</span> localDoc = await myCollection.upsertLocal&lt;MyLocalDocumentType&gt;(
-    <span class="hljs-string">&apos;foobar&apos;</span>,   <span class="hljs-comment">// id</span>
-    {           <span class="hljs-comment">// data</span>
-        foo: <span class="hljs-string">&apos;bar&apos;</span>
-    }
-);
-
-<span class="hljs-comment">// typescript will know that foo is a string</span>
-<span class="hljs-keyword">const</span> foo: <span class="hljs-built_in">string</span> = localDoc.toJSON().foo;
-</code></pre>
-<hr>
-<p>If you are new to RxDB, you should continue <a href="custom-build.html">here</a></p>
+<h2 id="modern-apps-have-longer-runtimes">Modern apps have longer runtimes</h2>
+<p>In the past you used websites only for a short time. You open it, perform some action and then close it again. This made the first load time the important metric when evaluating page speed.
+Today web applications have changed and with it the way we use them. Single page applications are opened once and then used over the whole day. Chat apps, email clients, PWAs and hybrid apps. All of these where made to have long runtimes.
+This makes the time for user interactions more important than the initial loading time. Offline first applications benefit from that because there is often no loading time on user actions while loading the initial state to the client is not that relevant.</p>
+<h2 id="scales-with-data-size-not-with-the-amount-of-user-interaction">Scales with data size, not with the amount of user interaction</h2>
+<p>On normal applications, each user interaction can result in multiple requests to the backend server which increase its load.
+The more users interact with your application, the more backend resources you have to provide.
+Offline first applications do not scale up with the amount of user actions but instead they scale up with the amount of data.
+Once that data is transferred to the client, the user can do as many interactions with it as required without connecting to the server.</p>
+<h2 id="you-might-not-need-rest">You might not need REST</h2>
+<p>On normal web applications you make different requests for each kind of data interaction.
+For that you have to define a swagger route, implement a route handler on the backend and create some client code to send or fetch data from that route. There more complex your application becomes, the more REST routes you have to maintain and implement.</p>
+<p>With offline first apps, you have a way to hack around all this cumbersome work. You just replicate the whole state from the server to the client. The replication does not only run once, you have a <strong>realtime replication</strong> and all changes at one side are automatically there on the other side. On the client you can access every piece of state with simple database query.
+While this of course only works for amounts of data that the client can load and store, it makes implementing prototypes and simple apps much faster.</p>
+<h2 id="you-might-not-need-redux">You might not need Redux</h2>
+<p>Data is hard, especially for UI applications where many things can happen at the same time.
+The user is clicking around. Stuff is loaded from the server. All of these things interact with the global state of the app.
+To manage this complexity it is common to use state management libraries like Redux or MobX. With them you write all this lasagna code to wrap the mutation of data and to make the UI react to all these changes.</p>
+<p>On offline first apps, you global state is already there in a single place stored inside of the local database.
+You do not have to care whether this data came from the UI, another tab, the backend or another device of the same user. You can just make writes to the database and fetch data out of it.</p>
 
                                 
                                 </section>
@@ -1767,14 +1735,6 @@ localDoc.set(<span class="hljs-string">&apos;foo&apos;</span>, <span class="hljs
 
             
                 
-                <a href="query-cache.html" class="navigation navigation-prev " aria-label="Previous page: QueryCache">
-                    <i class="fa fa-angle-left"></i>
-                </a>
-                
-                
-                <a href="custom-build.html" class="navigation navigation-next " aria-label="Next page: Custom Build">
-                    <i class="fa fa-angle-right"></i>
-                </a>
                 
             
         
@@ -1783,7 +1743,7 @@ localDoc.set(<span class="hljs-string">&apos;foo&apos;</span>, <span class="hljs
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"LocalDocuments","level":"1.19","depth":1,"next":{"title":"Custom Build","level":"1.20","depth":1,"path":"custom-build.md","ref":"./custom-build.md","articles":[]},"previous":{"title":"QueryCache","level":"1.18","depth":1,"path":"query-cache.md","ref":"./query-cache.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-local-document.md","mtime":"2021-09-29T01:31:05.305Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-09-29T01:36:06.648Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"About Offline First","level":"1.23.1","depth":2,"next":{"title":"Tutorials","level":"2.1","depth":1,"ref":"","articles":[{"title":"Use RxDB with Typescript","level":"2.1.1","depth":2,"path":"tutorials/typescript.md","ref":"./tutorials/typescript.md","articles":[]},{"title":"Using the Server Plugin","level":"2.1.2","depth":2,"path":"tutorials/server.md","ref":"./tutorials/server.md","articles":[]}]},"previous":{"title":"Opinions","level":"1.23","depth":1,"ref":"","articles":[{"title":"About Offline First","level":"1.23.1","depth":2,"path":"offline-first.md","ref":"./offline-first.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"offline-first.md","mtime":"2021-09-29T01:31:05.301Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-09-29T01:36:06.648Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
