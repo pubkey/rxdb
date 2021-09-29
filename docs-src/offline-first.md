@@ -47,7 +47,7 @@ Offline first application benefit from that because sending the inital state to 
 Most websites lie to their users. They do not lie because they display wrong data, but because they display **old data** that was loaded from the backend at the time the user opened the site.
 To overcome this, you could build a realtime website where you create a websocket that streams updates from the backend to the client. This means work. Your client needs to tell the server which page is currently opened and which updates the client is interested to. Then the server can push updates over the websocket and you can update the UI accordingly.
 
-With offline first applications you already have a realtime replication with the backend. Most offline first databases provide some concept of changestream or data subscriptions. With RxDB you can even directly subscribe to query results or single fields of documents. This makes it easy to have an always updated UI whenever the global shared state changes.
+With offline first applications you already have a realtime replication with the backend. Most offline first databases provide some concept of changestream or data subscriptions and with [RxDB](https://github.com/pubkey/rxdb) you can even directly subscribe to query results or single fields of documents. This makes it easy to have an always updated UI whenever data on the backend changes.
 
 <p align="center">
   <img src="./files/realtime.gif" alt="loading spinner not needed" width="700" />
