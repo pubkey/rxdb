@@ -4,7 +4,7 @@ Offline-First is a software paradigm where the software must work as well offlin
 To implement this, you have to store data at the client side, so that your application can still access it when the internet goes away.
 This can be either done with complex caching strategies, or by using an offline first database (like RxDB) that stores the data inside of IndexedDb and replicates it from and to the backend in the background. This makes the local database, not the server, the gateway for all persistent changes in application state.
 
-# Offline first is not about having no internet connection
+> **Offline first is not about having no internet connection**
 
 While in the past, internet connection was an unstable thing, especially for mobile devices things have changed.
 We now have better mobile networks and having no internet becomes a rare case even in remote locations.
