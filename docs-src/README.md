@@ -92,7 +92,7 @@ db.heroes
 </h4>
 
 <p align="justify">
-  RxDB is based on <a href="https://json-schema.org/">json-schema</a> where the structure of documents is defined for each collection. This is useful when you develope in a team with multiple developers. It also provides information for RxDB to do performance optimizations. Also the schema is versionized and you can provide migration strategies to migrate the data which is already stored on the clients.
+  RxDB is based on <a href="https://json-schema.org/">json-schema</a> where the structure of documents is defined for each collection. This is useful when you develop in a team with multiple developers. It also provides information for RxDB to do performance optimizations. Also the schema is versionized and you can provide migration strategies to migrate the data which is already stored on the clients.
 </p>
 
 <h4>
