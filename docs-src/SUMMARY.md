@@ -124,13 +124,14 @@
 
 * [Adapters](./adapters.md)
 
-* Opinions
-    * [About Offline First](./offline-first.md)
 
 
 * Tutorials
     * [Use RxDB with Typescript](./tutorials/typescript.md)
     * [Using the Server Plugin](./tutorials/server.md)
+
+* Opinions
+    * [About Offline First](./offline-first.md)
 
 * [Questions & Answers](./questions-answers.md)
 

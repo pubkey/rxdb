@@ -33,7 +33,7 @@ On offline first applications, there is always exactly one state of the data acr
   <img src="./files/multiwindow.gif" alt="RxDB multi tab" width="450" />
 </p>
 
-## Latency is more important then bandwidth
+## Latency is more important than bandwidth
 
 In the past, often the bandwidth was the limiting factor on determining the loading time of an application.
 But while bandwidth has improved over the years, latency became the limiting factor.
