@@ -7,7 +7,7 @@ But there is no free lunch. The offline first paradigm is not the perfect approa
 
 In the following I will point out the limitations you need to know before deciding to create an offline first application.
 
-## Does not work with big data
+## It only works with small datasets
 
 Making data available offline means it must be loaded from the server and then stored at the clients device.
 You need to load the full dataset on the first pageload and on every ongoing load you need to download the new changes to that set.
@@ -57,6 +57,9 @@ Imagine two of your users modify the same JSON document, while both are offline.
 So you replicate stuff between the clients and your backend. Each change on one side directly changes the state of the other sides in "realtime". But this realtime is not the same as in [realtime computing](https://en.wikipedia.org/wiki/Real-time_computing). In the offline first world, the word realtime was introduced by firebase and is more meant as a marketing slogan than a technical description.
 There is an internet between your backend and your clients and everything you do on one machine takes at least once the latency until it can affect anything on the other machines. You have to keep this in mind when you develop anything where the timing is important, like a multiplayer game or a stock trading app.
 
+<p align="center">
+  <img src="./files/latency-london-san-franzisco.png" alt="latency london san franzisco" width="300" />
+</p>
 
 ## Eventual consistency
 
@@ -64,6 +67,11 @@ An offline first app does not have a single source of truth. There is a source o
 The user could update a document based on wrong assumptions because it was not fully replicated at that point in time because the user is offline. A good way to handle this problem is to show the replication state in the UI and tell the user when the replication is running, stopped, paused or finished.
 
 And some data is just too important to be "eventual consistent". Create a wire transfer in your online banking app while you are offline. You keep the smartphone laying at your night desk and when you use again in the next morning, it goes online and replicates the transaction. No thank you, do not use offline first for these kind of things, or at least you have to display the replication state of each document in the UI.
+
+<p align="center">
+  <img src="./files/cap-theorem.png" alt="latency london san franzisco" width="150" />
+</p>
+
 
 ## Permissions and authentication
 
@@ -106,4 +114,11 @@ You have a Postgres database and run a query over 1000ths of rows, which takes 2
 ## There is no relational data
 
 I started creating [RxDB](https://github.com/pubkey/rxdb) many years ago and while still maintaining it, I often worked with all these other offline first databases out there. RxDB and all of these other ones, are based on some kind of document databases similar to NoSQL. Often people want to have a relational database like the SQL one they use at the backend. Why are there no real relations in RxDB? I could answer with these arguments like how JavaScript works better with document based data, how performance is better when having no joins or even how NoSQL queries are more composable.
-But the truth is, everything is NoSQL because it makes replication easy. An SQL query that mutates data in different tables, cannot be partially replicated without breaking the client. You have foreign keys that point to other rows and if these rows are not replicated yet, you have a problem. To implement a robust replication protocol for relational data, you need some stuff like a [reliable atomic clock](https://www.theverge.com/2012/11/26/3692392/google-spanner-atomic-clocks-GPS) and you have to block queries over multiple tables while a transaction replicated. [Watch this guy](https://youtu.be/iEFcmfmdh2w?t=607) implementing offline first replication on top of SQLite and he even does not use relations in his table.
+
+But the truth is, everything is NoSQL because it makes replication easy. An SQL query that mutates data in different tables, cannot be partially replicated without breaking the client. You have foreign keys that point to other rows and if these rows are not replicated yet, you have a problem. To implement a robust replication protocol for relational data, you need some stuff like a [reliable atomic clock](https://www.theverge.com/2012/11/26/3692392/google-spanner-atomic-clocks-GPS) and you have to block queries over multiple tables while a transaction replicated. [Watch this guy](https://youtu.be/iEFcmfmdh2w?t=607) implementing offline first replication on top of SQLite or read this [discussion](https://github.com/supabase/supabase/discussions/357) about implementing offline first in supabase.
+
+So creating replication for an SQL offline first database is possible, but it is way more work then just adding some network protocols on top of Postgres.
+
+<p align="center">
+  <img src="./files/no-relational-data.png" alt="latency london san franzisco" width="250" />
+</p>
