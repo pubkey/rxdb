@@ -10,7 +10,6 @@ import type {
     RxJsonSchema,
     RxCollection,
     ServerOptions,
-    RxDatabaseCreator,
     RxDumpDatabase,
     RxDumpDatabaseAny,
     AllMigrationStates,
@@ -21,7 +20,7 @@ import type {
     RxStorageInstance,
     BulkWriteRow,
     RxChangeEvent,
-    CreateRxDatabaseFunction
+    RxDatabaseCreator
 } from './types';
 
 import {
@@ -32,7 +31,8 @@ import {
     newRxError
 } from './rx-error';
 import {
-    createRxSchema, getPrimaryFieldOfPrimaryKey
+    createRxSchema,
+    getPrimaryFieldOfPrimaryKey
 } from './rx-schema';
 import {
     isRxChangeEventIntern,
@@ -61,7 +61,10 @@ import {
 } from './rx-storage-helper';
 import type { RxBackupState } from './plugins/backup';
 import { getPseudoSchemaForVersion } from './rx-schema-helper';
-import { createRxCollectionStorageInstances, getCollectionLocalInstanceName } from './rx-collection-helper';
+import {
+    createRxCollectionStorageInstances,
+    getCollectionLocalInstanceName
+} from './rx-collection-helper';
 
 /**
  * stores the used database names
@@ -641,7 +644,11 @@ async function prepare<Internals, InstanceCreationOptions, Collections>(
     }
 }
 
-export const createRxDatabase: CreateRxDatabaseFunction = (
+export function createRxDatabase<
+    Collections = { [key: string]: RxCollection },
+    Internals = any,
+    InstanceCreationOptions = any
+>(
     {
         storage,
         instanceCreationOptions,
@@ -651,8 +658,10 @@ export const createRxDatabase: CreateRxDatabaseFunction = (
         eventReduce = false,
         ignoreDuplicate = false,
         options = {}
-    }
-) => {
+    }: RxDatabaseCreator<Internals, InstanceCreationOptions>
+): Promise<
+    RxDatabase<Collections, Internals, InstanceCreationOptions>
+> {
     runPluginHooks('preCreateRxDatabase', {
         storage,
         instanceCreationOptions,
@@ -674,7 +683,7 @@ export const createRxDatabase: CreateRxDatabaseFunction = (
     }
     USED_DATABASE_NAMES.add(name);
 
-    const rxDatabase: RxDatabase = new RxDatabaseBase(
+    const rxDatabase: RxDatabase<Collections> = new RxDatabaseBase(
         name,
         storage,
         instanceCreationOptions,

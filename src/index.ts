@@ -23,7 +23,11 @@ import { RxDBInMemoryPlugin } from './plugins/in-memory';
 import { RxDBAttachmentsPlugin } from './plugins/attachments';
 import { RxDBLocalDocumentsPlugin } from './plugins/local-documents';
 import { RxDBQueryBuilderPlugin } from './plugins/query-builder';
-import type { CreateRxDatabaseFunction } from './types';
+import type {
+    RxDatabase,
+    RxDatabaseCreator,
+    RxCollection
+} from './types';
 
 
 let defaultPluginsAdded: boolean = false;
@@ -53,10 +57,20 @@ export function addDefaultRxPlugins() {
  * in the package.json, we have to ensure that the default plugins
  * are added before the first database is created.
  * So we have to wrap the createRxDatabase function.
+ * Always ensure that this function has the same typings as in the rx-database.ts
+ * TODO create a type for that function and use it on both sides.
  */
-export const createRxDatabase: CreateRxDatabaseFunction = (params) => {
+export function createRxDatabase<
+    Collections = { [key: string]: RxCollection },
+    Internals = any,
+    InstanceCreationOptions = any
+>(
+    params: RxDatabaseCreator<Internals, InstanceCreationOptions>
+): Promise<
+    RxDatabase<Collections, Internals, InstanceCreationOptions>
+> {
     addDefaultRxPlugins();
-    return createRxDatabaseCore(params);
+    return createRxDatabaseCore<Collections, Internals, InstanceCreationOptions>(params);
 }
 
 // re-export things from core
