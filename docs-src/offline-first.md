@@ -6,9 +6,10 @@ This can be either done with complex caching strategies, or by using an offline 
 
 > **Offline first is not about having no internet connection**
 
-While in the past, internet connection was an unstable thing, especially for mobile devices things have changed.
-We now have better mobile networks and having no internet becomes a rare case even in remote locations.
-So do we even need offline first applications or is it something of the past? In the following I will point some of the points on why offline first applications are better, not because they support offline usage, but because of other reasons.
+While in the past, internet connection was an unstable, things are changing especially for mobile devices.
+Mobile networks become better and having no internet becomes less common even in remote locations.
+So if we did no care about offline first applications in the past, why should we even care now?
+In the following I will point some of the points on why offline first applications are better, not because they support offline usage, but because of other reasons.
 
 ## UX is better without loading spinners
 
@@ -86,3 +87,11 @@ To manage this complexity it is common to use state management libraries like Re
 
 On offline first apps, you global state is already there in a single place stored inside of the local database.
 You do not have to care whether this data came from the UI, another tab, the backend or another device of the same user. You can just make writes to the database and fetch data out of it.
+
+
+<!--
+ TODO topics
+ - you might not need a backend
+   - nothing to sync
+   - sync can be done p2p webrtc https://hypercore-protocol.org/
+-->
