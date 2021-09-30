@@ -29,6 +29,19 @@ const db = await createRxDatabase({
 
 If you use the key-compression, disable it and check if the behavior changes.
 
+## Disable multiInstance
+
+By default, RxDB propagates events between different browser tabs of the same website. Disable this feature and check if the behavior of your bug changes.
+
+```ts
+const db = await createRxDatabase({
+    name,
+    adapter: 'memory'
+    multiInstance: false,
+});
+```
+
+
 ## Pouch Debug
 
 By enabling the pouchdb debugging, you can observe what is going on in the internal pouchdb of your database.
