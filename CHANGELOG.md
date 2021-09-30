@@ -2,6 +2,9 @@
 
 ### X.X.X (coming soon)
 
+Other:
+  - We now have set `sideEffects: false` to the default in the package.json so tree shaking can work.
+
 ### 10.1.0 (27 September 2021)
 
 Other:
