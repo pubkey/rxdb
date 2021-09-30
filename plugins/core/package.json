@@ -1,8 +1,0 @@
-{
-  "name": "rxdb-core",
-  "main": "../../dist/lib/core.js",
-  "jsnext:main": "../../dist/es/core.js",
-  "module": "../../dist/es/core.js",
-  "types": "../../dist/types/core.d.ts",
-  "sideEffects": false
-}
