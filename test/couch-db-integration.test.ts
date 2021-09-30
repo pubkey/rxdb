@@ -10,10 +10,9 @@ import { waitUntil } from 'async-test-util';
 import {
     addPouchPlugin,
     randomCouchString,
-    addRxPlugin
+    addDefaultRxPlugins
 } from '../';
-import { RxDBReplicationCouchDBPlugin } from '../plugins/replication-couchdb';
-addRxPlugin(RxDBReplicationCouchDBPlugin);
+addDefaultRxPlugins();
 
 addPouchPlugin(require('pouchdb-adapter-memory'));
 addPouchPlugin(require('pouchdb-adapter-http'));
