@@ -63,7 +63,7 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="questions-answers.html" />
+    <link rel="next" href="downsides-of-offline-first.html" />
     
     
 
@@ -1575,6 +1575,19 @@
             
         </li>
     
+        <li class="chapter " data-level="2.2.2" data-path="downsides-of-offline-first.html">
+            
+                <a href="downsides-of-offline-first.html">
+            
+                    
+                    Downsites of Offline First
+            
+                </a>
+            
+
+            
+        </li>
+    
 
             </ul>
             
@@ -1658,9 +1671,10 @@ This can be either done with complex caching strategies, or by using an offline 
 <blockquote>
 <p><strong>Offline first is not about having no internet connection</strong></p>
 </blockquote>
-<p>While in the past, internet connection was an unstable thing, especially for mobile devices things have changed.
-We now have better mobile networks and having no internet becomes a rare case even in remote locations.
-So do we even need offline first applications or is it something of the past? In the following I will point some of the points on why offline first applications are better, not because they support offline usage, but because of other reasons.</p>
+<p>While in the past, internet connection was an unstable, things are changing especially for mobile devices.
+Mobile networks become better and having no internet becomes less common even in remote locations.
+So if we did no care about offline first applications in the past, why should we even care now?
+In the following I will point out why offline first applications are better, not because they support offline usage, but because of other reasons.</p>
 <h2 id="ux-is-better-without-loading-spinners">UX is better without loading spinners</h2>
 <p>In &apos;normal&apos; web applications, most user interactions like fetching, saving or deleting data, correspond to a request to the backend server. This means that each of these interactions require the user to await the unknown latency to and from a remote server while looking at a loading spinner.
 In offline-first apps, the operations go directly against the local storage which happens almost instantly. There is no perceptible loading time and so it is not even necessary to implement a loading spinner at all. As soon as the user clicks, the UI represents the new state as if it was already changed in the backend.</p>
@@ -1669,7 +1683,7 @@ In offline-first apps, the operations go directly against the local storage whic
 </p>
 
 <h2 id="multi-tab-usage-just-works">Multi-tab usage just works</h2>
-<p>Many, even big websites like amazon, reddit and stackoverflow do not handle multi tab usage correctly. When a user has multiple tabs of the website open and does a login on one of these tabs, the state does not change on the other tabs.
+<p>Many, even big websites like amazon, reddit and stack overflow do not handle multi tab usage correctly. When a user has multiple tabs of the website open and does a login on one of these tabs, the state does not change on the other tabs.
 On offline first applications, there is always exactly one state of the data across all tabs. Offline first databases (like RxDB) store the data inside of IndexedDb and <strong>share the state</strong> between all tabs of the same origin.</p>
 <p align="center">
   <img src="files/multiwindow.gif" alt="RxDB multi tab" width="450">
@@ -1678,9 +1692,9 @@ On offline first applications, there is always exactly one state of the data acr
 <h2 id="latency-is-more-important-than-bandwidth">Latency is more important than bandwidth</h2>
 <p>In the past, often the bandwidth was the limiting factor on determining the loading time of an application.
 But while bandwidth has improved over the years, latency became the limiting factor.
-You can always increase the bandwidth by setting up more cables or sending more Starlink satelites to space.
-But reducing the latency is not so easy. It is defined by the physical properties of the tranfer medium, the speed of light and the distance to the server. All of these three are hard to optimize.</p>
-<p>Offline first application benefit from that because sending the inital state to the client can be done much faster with more bandwidth. And once the data is there, we do no longer have to care about the latency to the backend server.</p>
+You can always increase the bandwidth by setting up more cables or sending more Starlink satellites to space.
+But reducing the latency is not so easy. It is defined by the physical properties of the transfer medium, the speed of light and the distance to the server. All of these three are hard to optimize.</p>
+<p>Offline first application benefit from that because sending the initial state to the client can be done much faster with more bandwidth. And once the data is there, we do no longer have to care about the latency to the backend server.</p>
 <p align="center">
   <img src="files/latency-london-san-franzisco.png" alt="latency london san franzisco" width="300">
 </p>
@@ -1689,7 +1703,7 @@ But reducing the latency is not so easy. It is defined by the physical propertie
 <h2 id="realtime-comes-for-free">Realtime comes for free</h2>
 <p>Most websites lie to their users. They do not lie because they display wrong data, but because they display <strong>old data</strong> that was loaded from the backend at the time the user opened the site.
 To overcome this, you could build a realtime website where you create a websocket that streams updates from the backend to the client. This means work. Your client needs to tell the server which page is currently opened and which updates the client is interested to. Then the server can push updates over the websocket and you can update the UI accordingly.</p>
-<p>With offline first applications you already have a realtime replication with the backend. Most offline first databases provide some concept of changestream or data subscriptions and with <a href="https://github.com/pubkey/rxdb" target="_blank">RxDB</a> you can even directly subscribe to query results or single fields of documents. This makes it easy to have an always updated UI whenever data on the backend changes.</p>
+<p>With offline first applications, you already have a realtime replication with the backend. Most offline first databases provide some concept of changestream or data subscriptions and with <a href="https://github.com/pubkey/rxdb" target="_blank">RxDB</a> you can even directly subscribe to query results or single fields of documents. This makes it easy to have an always updated UI whenever data on the backend changes.</p>
 <p align="center">
   <img src="files/realtime.gif" alt="loading spinner not needed" width="700">
 </p>
@@ -1702,19 +1716,27 @@ The more users interact with your application, the more backend resources you ha
 Once that data is transferred to the client, the user can do as many interactions with it as required without connecting to the server.</p>
 <h2 id="modern-apps-have-longer-runtimes">Modern apps have longer runtimes</h2>
 <p>In the past you used websites only for a short time. You open it, perform some action and then close it again. This made the first load time the important metric when evaluating page speed.
-Today web applications have changed and with it the way we use them. Single page applications are opened once and then used over the whole day. Chat apps, email clients, PWAs and hybrid apps. All of these where made to have long runtimes.
+Today web applications have changed and with it the way we use them. Single page applications are opened once and then used over the whole day. Chat apps, email clients, PWAs and hybrid apps. All of these were made to have long runtimes.
 This makes the time for user interactions more important than the initial loading time. Offline first applications benefit from that because there is often no loading time on user actions while loading the initial state to the client is not that relevant.</p>
 <h2 id="you-might-not-need-rest">You might not need REST</h2>
-<p>On normal web applications you make different requests for each kind of data interaction.
-For that you have to define a swagger route, implement a route handler on the backend and create some client code to send or fetch data from that route. There more complex your application becomes, the more REST routes you have to maintain and implement.</p>
-<p>With offline first apps, you have a way to hack around all this cumbersome work. You just replicate the whole state from the server to the client. The replication does not only run once, you have a <strong>realtime replication</strong> and all changes at one side are automatically there on the other side. On the client you can access every piece of state with a simple database query.
+<p>On normal web applications, you make different requests for each kind of data interaction.
+For that you have to define a swagger route, implement a route handler on the backend and create some client code to send or fetch data from that route. The more complex your application becomes, the more REST routes you have to maintain and implement.</p>
+<p>With offline first apps, you have a way to hack around all this cumbersome work. You just replicate the whole state from the server to the client. The replication does not only run once, you have a <strong>realtime replication</strong> and all changes at one side are automatically there on the other side. On the client, you can access every piece of state with a simple database query.
 While this of course only works for amounts of data that the client can load and store, it makes implementing prototypes and simple apps much faster.</p>
 <h2 id="you-might-not-need-redux">You might not need Redux</h2>
 <p>Data is hard, especially for UI applications where many things can happen at the same time.
 The user is clicking around. Stuff is loaded from the server. All of these things interact with the global state of the app.
-To manage this complexity it is common to use state management libraries like Redux or MobX. With them you write all this lasagna code to wrap the mutation of data and to make the UI react to all these changes.</p>
-<p>On offline first apps, you global state is already there in a single place stored inside of the local database.
+To manage this complexity it is common to use state management libraries like Redux or MobX. With them, you write all this lasagna code to wrap the mutation of data and to make the UI react to all these changes.</p>
+<p>On offline first apps, your global state is already there in a single place stored inside of the local database.
 You do not have to care whether this data came from the UI, another tab, the backend or another device of the same user. You can just make writes to the database and fetch data out of it.</p>
+<!--
+ TODO topics
+ - you might not need a backend
+   - nothing to sync
+   - sync can be done p2p webrtc https://hypercore-protocol.org/
+-->
+<hr>
+<p>If you are new to RxDB, you should continue with the <a href="downsides-of-offline-first.html">Downsides of Offline First</a></p>
 
                                 
                                 </section>
@@ -1743,7 +1765,7 @@ You do not have to care whether this data came from the UI, another tab, the bac
             
                 
                 
-                <a href="questions-answers.html" class="navigation navigation-next navigation-unique" aria-label="Next page: Questions & Answers">
+                <a href="downsides-of-offline-first.html" class="navigation navigation-next navigation-unique" aria-label="Next page: Downsites of Offline First">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -1754,7 +1776,7 @@ You do not have to care whether this data came from the UI, another tab, the bac
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"About Offline First","level":"2.2.1","depth":2,"next":{"title":"Questions & Answers","level":"2.3","depth":1,"path":"questions-answers.md","ref":"./questions-answers.md","articles":[]},"previous":{"title":"Opinions","level":"2.2","depth":1,"ref":"","articles":[{"title":"About Offline First","level":"2.2.1","depth":2,"path":"offline-first.md","ref":"./offline-first.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"offline-first.md","mtime":"2021-09-29T04:38:56.294Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-09-29T04:43:49.297Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"About Offline First","level":"2.2.1","depth":2,"next":{"title":"Downsites of Offline First","level":"2.2.2","depth":2,"path":"downsides-of-offline-first.md","ref":"./downsides-of-offline-first.md","articles":[]},"previous":{"title":"Opinions","level":"2.2","depth":1,"ref":"","articles":[{"title":"About Offline First","level":"2.2.1","depth":2,"path":"offline-first.md","ref":"./offline-first.md","articles":[]},{"title":"Downsites of Offline First","level":"2.2.2","depth":2,"path":"downsides-of-offline-first.md","ref":"./downsides-of-offline-first.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"offline-first.md","mtime":"2021-09-30T20:12:57.516Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-09-30T20:17:03.013Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
