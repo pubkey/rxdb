@@ -7,7 +7,7 @@ A RxDatabase-Object contains your collections and handles the synchronisation of
 The database is created by the asynchronous .create()-function of the main RxDB-module. It has the following parameters:
 
 ```javascript
-import { createRxDatabase } from 'rxdb';
+import { createRxDatabase, getRxStoragePouch } from 'rxdb';
 const db = await createRxDatabase({
   name: 'heroesdb',           // <- name
   storage: getRxStoragePouch('idb'),          // <- storage-adapter
