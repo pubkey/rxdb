@@ -11,6 +11,7 @@ babel.config.js
 .editorconfig
 .eslintrc.json
 .eslintignore
+.eslintcache
 .gitignore
 .transpile_state.json
 .github/

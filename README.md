@@ -465,7 +465,7 @@ Before your decide to use RxDB, or even before you decide to create an offline f
 ## Contribute
 
 [Check out how you can contribute to this project](./docs-src/contribute.md).
-
+[Read this when you have found a bug](./orga/bug-checklist.md)
 ## Follow up
 
 -   Follow RxDB on [twitter](https://twitter.com/intent/follow?screen_name=rxdbjs) to not miss the latest enhancements.

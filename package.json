@@ -32,8 +32,7 @@
   "jsnext:main": "./dist/es/index.js",
   "module": "./dist/es/index.js",
   "types": "./dist/types/index.d.ts",
-  "// sideEffects": "Do not set sideEffects to false here, see issue #2798",
-  "sideEffects": true,
+  "sideEffects": false,
   "scripts": {
     "postinstall": "node scripts/postinstall.js || echo \"ignore\"",
     "pretest": "npm run transpile",
@@ -58,7 +57,7 @@
     "dockertest": "docker run -it -v $(pwd):/usr/src/app markadams/chromium-xvfb-js:latest-onbuild",
     "profile": "npm run pretest && cross-env NODE_ENV=fast NODE_PROF=true mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js --prof && node scripts/profile.js",
     "clear": "rimraf -rf test_tmp/ && rimraf -rf dist/ && rimraf .transpile_state.json",
-    "lint": "eslint . --ext .js,.ts,.json",
+    "lint": "eslint . --ext .js,.ts,.json --cache",
     "lint:fix": "eslint --fix . --ext .js,.ts,.json",
     "check-types": "tsc",
     "transpile": "node scripts/transpile.js",

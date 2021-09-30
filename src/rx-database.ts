@@ -10,7 +10,6 @@ import type {
     RxJsonSchema,
     RxCollection,
     ServerOptions,
-    RxDatabaseCreator,
     RxDumpDatabase,
     RxDumpDatabaseAny,
     AllMigrationStates,
@@ -20,7 +19,8 @@ import type {
     RxStorageKeyObjectInstance,
     RxStorageInstance,
     BulkWriteRow,
-    RxChangeEvent
+    RxChangeEvent,
+    RxDatabaseCreator
 } from './types';
 
 import {
@@ -31,7 +31,8 @@ import {
     newRxError
 } from './rx-error';
 import {
-    createRxSchema, getPrimaryFieldOfPrimaryKey
+    createRxSchema,
+    getPrimaryFieldOfPrimaryKey
 } from './rx-schema';
 import {
     isRxChangeEventIntern,
@@ -60,7 +61,10 @@ import {
 } from './rx-storage-helper';
 import type { RxBackupState } from './plugins/backup';
 import { getPseudoSchemaForVersion } from './rx-schema-helper';
-import { createRxCollectionStorageInstances, getCollectionLocalInstanceName } from './rx-collection-helper';
+import {
+    createRxCollectionStorageInstances,
+    getCollectionLocalInstanceName
+} from './rx-collection-helper';
 
 /**
  * stores the used database names
@@ -643,8 +647,9 @@ async function prepare<Internals, InstanceCreationOptions, Collections>(
 export function createRxDatabase<
     Collections = { [key: string]: RxCollection },
     Internals = any,
-    InstanceCreationOptions = any,
-    >({
+    InstanceCreationOptions = any
+>(
+    {
         storage,
         instanceCreationOptions,
         name,
@@ -653,8 +658,10 @@ export function createRxDatabase<
         eventReduce = false,
         ignoreDuplicate = false,
         options = {}
-    }: RxDatabaseCreator<Internals, InstanceCreationOptions>): Promise<RxDatabase<Collections, Internals, InstanceCreationOptions>> {
-
+    }: RxDatabaseCreator<Internals, InstanceCreationOptions>
+): Promise<
+    RxDatabase<Collections, Internals, InstanceCreationOptions>
+> {
     runPluginHooks('preCreateRxDatabase', {
         storage,
         instanceCreationOptions,
