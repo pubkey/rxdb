@@ -114,7 +114,7 @@ await replicationState.cancel(); // cancel() is async
 ```
 
 ## Known problems and workarounds
-  - When you do many writes in parallen and replicate them. Your replication might stuck because it reaches the maxSockets value of nodejs. You can increase it by setting
+  - When you do many writes in parallel and replicate them. Your replication might stuck because it reaches the maxSockets value of nodejs. You can increase it by setting
 ```js
 require('http').globalAgent.maxSockets = 10;
 ```  
