@@ -1,8 +1,0 @@
-{
-  "name": "rxdb-plugin-no-validate",
-  "main": "../../dist/lib/plugins/no-validate.js",
-  "jsnext:main": "../../dist/es/plugins/no-validate.js",
-  "module": "../../dist/es/plugins/no-validate.js",
-  "types": "../../dist/types/plugins/no-validate.d.ts",
-  "sideEffects": false
-}

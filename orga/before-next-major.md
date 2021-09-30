@@ -47,9 +47,7 @@ See [#3392](https://github.com/pubkey/rxdb/pull/3392)
 
 ## Use exports field in package.json
 
-Use the [exports](https://webpack.js.org/guides/package-exports/) field in the `package.json` instead of the other fields like `main` or `jsnext:main`.
-Also we no longer need a package.json for each plugin in the `/plugins` folder, instead add the plugins to the exports field.
-Be sure to not break [2798](https://github.com/pubkey/rxdb/issues/2798) again. To be able to set the `sideEffects: false`, add a method `addDefaultRxPlugins()` that adds all default plugins to the RxDB state.
+Rename the paths in the `exports` field in the `package.json` so that users can do `import {} from 'rxdb/core'` instead of the current `import {} from 'rxdb/plugins/core'`
 
 
 # Maybe

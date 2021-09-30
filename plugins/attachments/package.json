@@ -1,8 +1,0 @@
-{
-  "name": "rxdb-plugin-attachments",
-  "main": "../../dist/lib/plugins/attachments.js",
-  "jsnext:main": "../../dist/es/plugins/attachments.js",
-  "module": "../../dist/es/plugins/attachments.js",
-  "types": "../../dist/types/plugins/attachments.d.ts",
-  "sideEffects": false
-}

@@ -1,8 +1,0 @@
-{
-  "name": "rxdb-plugin-encryption",
-  "main": "../../dist/lib/plugins/encryption.js",
-  "jsnext:main": "../../dist/es/plugins/encryption.js",
-  "module": "../../dist/es/plugins/encryption.js",
-  "types": "../../dist/types/plugins/encryption.d.ts",
-  "sideEffects": false
-}

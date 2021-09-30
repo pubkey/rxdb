@@ -1,8 +1,0 @@
-{
-  "name": "rxdb-plugin-dev-mode",
-  "main": "../../dist/lib/plugins/dev-mode/index.js",
-  "jsnext:main": "../../dist/es/plugins/dev-mode/index.js",
-  "module": "../../dist/es/plugins/dev-mode/index.js",
-  "types": "../../dist/types/plugins/dev-mode/index.d.ts",
-  "sideEffects": false
-}
