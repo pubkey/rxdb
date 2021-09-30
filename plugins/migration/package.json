@@ -1,0 +1,8 @@
+{
+  "name": "rxdb-plugin-migration",
+  "main": "../../dist/lib/plugins/migration/index.js",
+  "jsnext:main": "../../dist/es/plugins/migration/index.js",
+  "module": "../../dist/es/plugins/migration/index.js",
+  "types": "../../dist/types/plugins/migration/index.d.ts",
+  "sideEffects": false
+}

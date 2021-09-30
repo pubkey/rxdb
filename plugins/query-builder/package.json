@@ -1,0 +1,8 @@
+{
+  "name": "rxdb-plugin-query-builder",
+  "main": "../../dist/lib/plugins/query-builder/index.js",
+  "jsnext:main": "../../dist/es/plugins/query-builder/index.js",
+  "module": "../../dist/es/plugins/query-builder/index.js",
+  "types": "../../dist/types/plugins/query-builder/index.d.ts",
+  "sideEffects": false
+}

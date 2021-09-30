@@ -14,80 +14,14 @@
         "isolatedModules": false,
         // Import non-ES modules as default imports.
         "esModuleInterop": true,
+
         "outDir": "./dist/typings",
         "noEmit": true,
         "declaration": true,
+
         "typeRoots": [
             "./src/typings/modules"
-        ],
-        "paths": {
-            "rxdb": [
-                "./dist/types/index.d.ts"
-            ],
-            "./plugins/ajv-validate": [
-                "./dist/es/plugins/ajv-validate.d.js"
-            ],
-            "./plugins/attachments": [
-                "./dist/es/plugins/attachments.d.js"
-            ],
-            "./plugins/backup": [
-                "./dist/es/plugins/backup/index.d.js"
-            ],
-            "./plugins/core": [
-                "./dist/es/plugins/core.d.js"
-            ],
-            "./plugins/dev-mode": [
-                "./dist/es/plugins/dev-mode/index.d.js"
-            ],
-            "./plugins/encryption": [
-                "./dist/es/plugins/encryption.d.js"
-            ],
-            "./plugins/in-memory": [
-                "./dist/es/plugins/in-memory.d.js"
-            ],
-            "./plugins/json-dump": [
-                "./dist/es/plugins/json-dump.d.js"
-            ],
-            "./plugins/key-compression": [
-                "./dist/es/plugins/key-compression.d.js"
-            ],
-            "./plugins/leader-election": [
-                "./dist/es/plugins/leader-election.d.js"
-            ],
-            "./plugins/local-documents": [
-                "./dist/es/plugins/local-documents.d.js"
-            ],
-            "./plugins/migration": [
-                "./dist/es/plugins/migration/index.d.js"
-            ],
-            "./plugins/no-validate": [
-                "./dist/es/plugins/no-validate.d.js"
-            ],
-            "./plugins/pouchdb": [
-                "./dist/es/plugins/pouchdb/index.d.js"
-            ],
-            "./plugins/query-builder": [
-                "./dist/es/plugins/query-builder/index.d.js"
-            ],
-            "./plugins/replication-couchdb": [
-                "./dist/es/plugins/replication-couchdb.d.js"
-            ],
-            "./plugins/replication-graphql": [
-                "./dist/es/plugins/replication-graphql/index.d.js"
-            ],
-            "./plugins/server": [
-                "./dist/es/plugins/server.d.js"
-            ],
-            "./plugins/update": [
-                "./dist/es/plugins/update.d.js"
-            ],
-            "./plugins/validate": [
-                "./dist/es/plugins/validate.d.js"
-            ],
-            "./plugins/validate-z-schema": [
-                "./dist/es/plugins/validate-z-schema.d.js"
-            ]
-        }
+        ]
     },
     "formatCodeOptions": {
         "indentSize": 2,
