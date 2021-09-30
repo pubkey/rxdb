@@ -25,6 +25,25 @@ export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = an
     options?: any;
 }
 
+export type CreateRxDatabaseFunction<
+    Collections = { [key: string]: RxCollection },
+    Internals = any,
+    InstanceCreationOptions = any
+    > = (
+        {
+            storage,
+            instanceCreationOptions,
+            name,
+            password,
+            multiInstance,
+            eventReduce,
+            ignoreDuplicate,
+            options: any
+        }: RxDatabaseCreator<Internals, InstanceCreationOptions>
+    ) => Promise<
+        RxDatabase<Collections, Internals, InstanceCreationOptions>
+    >;
+
 // options for the server-plugin
 export interface ServerOptions {
     path?: string;

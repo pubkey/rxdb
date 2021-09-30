@@ -20,7 +20,8 @@ import type {
     RxStorageKeyObjectInstance,
     RxStorageInstance,
     BulkWriteRow,
-    RxChangeEvent
+    RxChangeEvent,
+    CreateRxDatabaseFunction
 } from './types';
 
 import {
@@ -640,11 +641,8 @@ async function prepare<Internals, InstanceCreationOptions, Collections>(
     }
 }
 
-export function createRxDatabase<
-    Collections = { [key: string]: RxCollection },
-    Internals = any,
-    InstanceCreationOptions = any,
-    >({
+export const createRxDatabase: CreateRxDatabaseFunction = (
+    {
         storage,
         instanceCreationOptions,
         name,
@@ -653,8 +651,8 @@ export function createRxDatabase<
         eventReduce = false,
         ignoreDuplicate = false,
         options = {}
-    }: RxDatabaseCreator<Internals, InstanceCreationOptions>): Promise<RxDatabase<Collections, Internals, InstanceCreationOptions>> {
-
+    }
+) => {
     runPluginHooks('preCreateRxDatabase', {
         storage,
         instanceCreationOptions,
@@ -676,7 +674,7 @@ export function createRxDatabase<
     }
     USED_DATABASE_NAMES.add(name);
 
-    const rxDatabase: RxDatabase<Collections> = new RxDatabaseBase(
+    const rxDatabase: RxDatabase = new RxDatabaseBase(
         name,
         storage,
         instanceCreationOptions,
