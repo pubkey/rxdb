@@ -31,6 +31,11 @@ import type {
 
 
 let defaultPluginsAdded: boolean = false;
+
+/**
+ * Adds the default plugins
+ * that are used on non-custom builds.
+ */
 export function addDefaultRxPlugins() {
     if (defaultPluginsAdded) {
         return;

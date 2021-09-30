@@ -9,8 +9,12 @@ import { waitUntil } from 'async-test-util';
 
 import {
     addPouchPlugin,
-    randomCouchString
+    randomCouchString,
+    addRxPlugin
 } from '../';
+import { RxDBReplicationCouchDBPlugin } from '../plugins/replication-couchdb';
+addRxPlugin(RxDBReplicationCouchDBPlugin);
+
 addPouchPlugin(require('pouchdb-adapter-memory'));
 addPouchPlugin(require('pouchdb-adapter-http'));
 import request from 'request-promise-native';
