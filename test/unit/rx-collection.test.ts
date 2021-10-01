@@ -1000,6 +1000,9 @@ config.parallel('rx-collection.test.js', () => {
                         /**
                          * On really really rare occasions this test fails for unknown reason,
                          * so we log out the current state to better reproduce.
+                         * 
+                         * Might be fixed in the next pouchdb version.
+                         * @link https://github.com/pouchdb/pouchdb/pull/8371
                          */
                         if (noFirst[0]._data.passportId !== docs[1]._data.passportId) {
                             console.log('If this is logged, debug the test:');
