@@ -966,5 +966,100 @@ config.parallel('data-migration.test.js', () => {
                 db2.destroy();
             });
         });
+        it('#3417 migration from RxDB 9 fails without primaryKey', async () => {
+            const dbName = randomCouchString(10);
+            const schema0 = {
+                version: 0,
+                primaryKey: 'name',
+                type: 'object',
+                properties: {
+                    name: {
+                        type: 'string',
+                    },
+                },
+                required: ['name'],
+            };
+            const schema1 = {
+                version: 1,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                    },
+                    name: {
+                        type: 'string',
+                    },
+                },
+                required: ['id', 'name'],
+            };
+            const db = await createRxDatabase({
+                name: dbName,
+                storage: getRxStoragePouch('memory'),
+            });
+            const cols = await db.addCollections({
+                mycollection: {
+                    schema: schema0,
+                },
+            });
+            const col = cols.mycollection;
+            await col.insert({
+                name: 'test',
+            });
+
+            const colPouch = col.storageInstance.internals.pouch;
+            const intPouch = db.internalStore.internals.pouch;
+
+            // Patch the database to look like an RxDB 9 database with the same schema without the primaryKey field
+
+            const tDoc = await colPouch.get('test');
+            // Delete doc because its _id changes
+            await colPouch.remove(tDoc);
+            await colPouch.put({ _id: 'abc', name: tDoc._id });
+
+            const docId = _collectionNamePrimary(col.name, col.schema.jsonSchema);
+            const iDoc = await intPouch.get(docId);
+            await db.internalStore.internals.pouch.put({
+                ...iDoc,
+                schemaHash: 'bc131f72539e8299d8812ce336cec412',
+                schema: {
+                    additionalProperties: false,
+                    encrypted: [],
+                    indexes: [],
+                    keyCompression: false,
+                    properties: {
+                        _attachments: { type: 'object' },
+                        _id: { minLength: 1, type: 'string' },
+                        _rev: { minLength: 1, type: 'string' },
+                        name: { type: 'string' },
+                    },
+                    required: ['_id', 'name'],
+                    type: 'object',
+                    version: 0,
+                },
+            });
+            await db.destroy();
+
+            const db2 = await createRxDatabase({
+                name: dbName,
+                storage: getRxStoragePouch('memory'),
+            });
+            const cols2 = await db2.addCollections({
+                mycollection: {
+                    schema: schema1,
+                    migrationStrategies: {
+                        1: (oldDoc: any) => oldDoc,
+                    },
+                },
+            });
+            const col2 = cols2.mycollection;
+
+            const doc = await col2.findOne().exec();
+
+            assert.ok(doc);
+            assert.strictEqual(doc.id, 'abc');
+            assert.strictEqual(doc.name, 'test');
+            db2.destroy();
+        });
     });
 });
