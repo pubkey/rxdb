@@ -457,7 +457,7 @@ Get started now by [reading the docs](https://rxdb.info/) or exploring the [exam
 
 ## Pros and cons
 
-Before your decide to use RxDB, or even before you decide to create an offline first application, read this:
+Before you decide to use RxDB, or even before you decide to create an offline first application, read this:
 
 - [About Offline First](https://rxdb.info/offline-first.html)
 - [Downsides of Offline First](https://rxdb.info/downsides-of-offline-first.html)
