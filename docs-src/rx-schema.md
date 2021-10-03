@@ -276,7 +276,7 @@ Final fields cannot be observed because they will not change.
 
 Advantages:
 
-- With final fields you can ensure that no other in your dev-team accidentally modifies the data
+- With final fields you can ensure that no-one accidentally modifies the data
 - When you enable the `query-change-detection`, some performance-improvements are done
 
 ```js
