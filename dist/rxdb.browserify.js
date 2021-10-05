@@ -51043,7 +51043,7 @@ Object.defineProperty(exports, "zipAll", { enumerable: true, get: function () { 
 var zipWith_1 = require("./internal/operators/zipWith");
 Object.defineProperty(exports, "zipWith", { enumerable: true, get: function () { return zipWith_1.zipWith; } });
 
-},{"./internal/AsyncSubject":544,"./internal/BehaviorSubject":545,"./internal/Notification":546,"./internal/Observable":548,"./internal/ReplaySubject":549,"./internal/Scheduler":550,"./internal/Subject":551,"./internal/Subscriber":552,"./internal/Subscription":553,"./internal/config":554,"./internal/firstValueFrom":555,"./internal/lastValueFrom":556,"./internal/observable/ConnectableObservable":557,"./internal/observable/bindCallback":558,"./internal/observable/bindNodeCallback":560,"./internal/observable/combineLatest":561,"./internal/observable/concat":562,"./internal/observable/connectable":563,"./internal/observable/defer":564,"./internal/observable/dom/animationFrames":565,"./internal/observable/empty":566,"./internal/observable/forkJoin":567,"./internal/observable/from":568,"./internal/observable/fromEvent":570,"./internal/observable/fromEventPattern":571,"./internal/observable/generate":573,"./internal/observable/iif":574,"./internal/observable/interval":575,"./internal/observable/merge":576,"./internal/observable/never":577,"./internal/observable/of":578,"./internal/observable/onErrorResumeNext":579,"./internal/observable/pairs":580,"./internal/observable/partition":581,"./internal/observable/race":582,"./internal/observable/range":583,"./internal/observable/throwError":584,"./internal/observable/timer":585,"./internal/observable/using":586,"./internal/observable/zip":587,"./internal/operators/audit":589,"./internal/operators/auditTime":590,"./internal/operators/buffer":591,"./internal/operators/bufferCount":592,"./internal/operators/bufferTime":593,"./internal/operators/bufferToggle":594,"./internal/operators/bufferWhen":595,"./internal/operators/catchError":596,"./internal/operators/combineAll":597,"./internal/operators/combineLatestAll":599,"./internal/operators/combineLatestWith":600,"./internal/operators/concatAll":602,"./internal/operators/concatMap":603,"./internal/operators/concatMapTo":604,"./internal/operators/concatWith":605,"./internal/operators/connect":606,"./internal/operators/count":607,"./internal/operators/debounce":608,"./internal/operators/debounceTime":609,"./internal/operators/defaultIfEmpty":610,"./internal/operators/delay":611,"./internal/operators/delayWhen":612,"./internal/operators/dematerialize":613,"./internal/operators/distinct":614,"./internal/operators/distinctUntilChanged":615,"./internal/operators/distinctUntilKeyChanged":616,"./internal/operators/elementAt":617,"./internal/operators/endWith":618,"./internal/operators/every":619,"./internal/operators/exhaust":620,"./internal/operators/exhaustAll":621,"./internal/operators/exhaustMap":622,"./internal/operators/expand":623,"./internal/operators/filter":624,"./internal/operators/finalize":625,"./internal/operators/find":626,"./internal/operators/findIndex":627,"./internal/operators/first":628,"./internal/operators/flatMap":629,"./internal/operators/groupBy":630,"./internal/operators/ignoreElements":631,"./internal/operators/isEmpty":632,"./internal/operators/last":634,"./internal/operators/map":635,"./internal/operators/mapTo":636,"./internal/operators/materialize":637,"./internal/operators/max":638,"./internal/operators/mergeAll":640,"./internal/operators/mergeMap":642,"./internal/operators/mergeMapTo":643,"./internal/operators/mergeScan":644,"./internal/operators/mergeWith":645,"./internal/operators/min":646,"./internal/operators/multicast":647,"./internal/operators/observeOn":648,"./internal/operators/pairwise":650,"./internal/operators/pluck":652,"./internal/operators/publish":653,"./internal/operators/publishBehavior":654,"./internal/operators/publishLast":655,"./internal/operators/publishReplay":656,"./internal/operators/raceWith":658,"./internal/operators/reduce":659,"./internal/operators/refCount":660,"./internal/operators/repeat":661,"./internal/operators/repeatWhen":662,"./internal/operators/retry":663,"./internal/operators/retryWhen":664,"./internal/operators/sample":665,"./internal/operators/sampleTime":666,"./internal/operators/scan":667,"./internal/operators/sequenceEqual":669,"./internal/operators/share":670,"./internal/operators/shareReplay":671,"./internal/operators/single":672,"./internal/operators/skip":673,"./internal/operators/skipLast":674,"./internal/operators/skipUntil":675,"./internal/operators/skipWhile":676,"./internal/operators/startWith":677,"./internal/operators/subscribeOn":678,"./internal/operators/switchAll":679,"./internal/operators/switchMap":680,"./internal/operators/switchMapTo":681,"./internal/operators/switchScan":682,"./internal/operators/take":683,"./internal/operators/takeLast":684,"./internal/operators/takeUntil":685,"./internal/operators/takeWhile":686,"./internal/operators/tap":687,"./internal/operators/throttle":688,"./internal/operators/throttleTime":689,"./internal/operators/throwIfEmpty":690,"./internal/operators/timeInterval":691,"./internal/operators/timeout":692,"./internal/operators/timeoutWith":693,"./internal/operators/timestamp":694,"./internal/operators/toArray":695,"./internal/operators/window":696,"./internal/operators/windowCount":697,"./internal/operators/windowTime":698,"./internal/operators/windowToggle":699,"./internal/operators/windowWhen":700,"./internal/operators/withLatestFrom":701,"./internal/operators/zipAll":703,"./internal/operators/zipWith":704,"./internal/scheduled/scheduled":711,"./internal/scheduler/VirtualTimeScheduler":721,"./internal/scheduler/animationFrame":722,"./internal/scheduler/asap":724,"./internal/scheduler/async":725,"./internal/scheduler/queue":730,"./internal/symbol/observable":733,"./internal/types":734,"./internal/util/ArgumentOutOfRangeError":735,"./internal/util/EmptyError":736,"./internal/util/NotFoundError":738,"./internal/util/ObjectUnsubscribedError":739,"./internal/util/SequenceError":740,"./internal/util/UnsubscriptionError":741,"./internal/util/identity":750,"./internal/util/isObservable":757,"./internal/util/noop":763,"./internal/util/pipe":765}],544:[function(require,module,exports){
+},{"./internal/AsyncSubject":544,"./internal/BehaviorSubject":545,"./internal/Notification":546,"./internal/Observable":548,"./internal/ReplaySubject":549,"./internal/Scheduler":550,"./internal/Subject":551,"./internal/Subscriber":552,"./internal/Subscription":553,"./internal/config":554,"./internal/firstValueFrom":555,"./internal/lastValueFrom":556,"./internal/observable/ConnectableObservable":557,"./internal/observable/bindCallback":558,"./internal/observable/bindNodeCallback":560,"./internal/observable/combineLatest":561,"./internal/observable/concat":562,"./internal/observable/connectable":563,"./internal/observable/defer":564,"./internal/observable/dom/animationFrames":565,"./internal/observable/empty":566,"./internal/observable/forkJoin":567,"./internal/observable/from":568,"./internal/observable/fromEvent":569,"./internal/observable/fromEventPattern":570,"./internal/observable/generate":572,"./internal/observable/iif":573,"./internal/observable/interval":575,"./internal/observable/merge":576,"./internal/observable/never":577,"./internal/observable/of":578,"./internal/observable/onErrorResumeNext":579,"./internal/observable/pairs":580,"./internal/observable/partition":581,"./internal/observable/race":582,"./internal/observable/range":583,"./internal/observable/throwError":584,"./internal/observable/timer":585,"./internal/observable/using":586,"./internal/observable/zip":587,"./internal/operators/audit":589,"./internal/operators/auditTime":590,"./internal/operators/buffer":591,"./internal/operators/bufferCount":592,"./internal/operators/bufferTime":593,"./internal/operators/bufferToggle":594,"./internal/operators/bufferWhen":595,"./internal/operators/catchError":596,"./internal/operators/combineAll":597,"./internal/operators/combineLatestAll":599,"./internal/operators/combineLatestWith":600,"./internal/operators/concatAll":602,"./internal/operators/concatMap":603,"./internal/operators/concatMapTo":604,"./internal/operators/concatWith":605,"./internal/operators/connect":606,"./internal/operators/count":607,"./internal/operators/debounce":608,"./internal/operators/debounceTime":609,"./internal/operators/defaultIfEmpty":610,"./internal/operators/delay":611,"./internal/operators/delayWhen":612,"./internal/operators/dematerialize":613,"./internal/operators/distinct":614,"./internal/operators/distinctUntilChanged":615,"./internal/operators/distinctUntilKeyChanged":616,"./internal/operators/elementAt":617,"./internal/operators/endWith":618,"./internal/operators/every":619,"./internal/operators/exhaust":620,"./internal/operators/exhaustAll":621,"./internal/operators/exhaustMap":622,"./internal/operators/expand":623,"./internal/operators/filter":624,"./internal/operators/finalize":625,"./internal/operators/find":626,"./internal/operators/findIndex":627,"./internal/operators/first":628,"./internal/operators/flatMap":629,"./internal/operators/groupBy":630,"./internal/operators/ignoreElements":631,"./internal/operators/isEmpty":632,"./internal/operators/last":634,"./internal/operators/map":635,"./internal/operators/mapTo":636,"./internal/operators/materialize":637,"./internal/operators/max":638,"./internal/operators/mergeAll":640,"./internal/operators/mergeMap":642,"./internal/operators/mergeMapTo":643,"./internal/operators/mergeScan":644,"./internal/operators/mergeWith":645,"./internal/operators/min":646,"./internal/operators/multicast":647,"./internal/operators/observeOn":648,"./internal/operators/pairwise":650,"./internal/operators/pluck":652,"./internal/operators/publish":653,"./internal/operators/publishBehavior":654,"./internal/operators/publishLast":655,"./internal/operators/publishReplay":656,"./internal/operators/raceWith":658,"./internal/operators/reduce":659,"./internal/operators/refCount":660,"./internal/operators/repeat":661,"./internal/operators/repeatWhen":662,"./internal/operators/retry":663,"./internal/operators/retryWhen":664,"./internal/operators/sample":665,"./internal/operators/sampleTime":666,"./internal/operators/scan":667,"./internal/operators/sequenceEqual":669,"./internal/operators/share":670,"./internal/operators/shareReplay":671,"./internal/operators/single":672,"./internal/operators/skip":673,"./internal/operators/skipLast":674,"./internal/operators/skipUntil":675,"./internal/operators/skipWhile":676,"./internal/operators/startWith":677,"./internal/operators/subscribeOn":678,"./internal/operators/switchAll":679,"./internal/operators/switchMap":680,"./internal/operators/switchMapTo":681,"./internal/operators/switchScan":682,"./internal/operators/take":683,"./internal/operators/takeLast":684,"./internal/operators/takeUntil":685,"./internal/operators/takeWhile":686,"./internal/operators/tap":687,"./internal/operators/throttle":688,"./internal/operators/throttleTime":689,"./internal/operators/throwIfEmpty":690,"./internal/operators/timeInterval":691,"./internal/operators/timeout":692,"./internal/operators/timeoutWith":693,"./internal/operators/timestamp":694,"./internal/operators/toArray":695,"./internal/operators/window":696,"./internal/operators/windowCount":697,"./internal/operators/windowTime":698,"./internal/operators/windowToggle":699,"./internal/operators/windowWhen":700,"./internal/operators/withLatestFrom":701,"./internal/operators/zipAll":703,"./internal/operators/zipWith":704,"./internal/scheduled/scheduled":711,"./internal/scheduler/VirtualTimeScheduler":721,"./internal/scheduler/animationFrame":722,"./internal/scheduler/asap":724,"./internal/scheduler/async":725,"./internal/scheduler/queue":730,"./internal/symbol/observable":733,"./internal/types":734,"./internal/util/ArgumentOutOfRangeError":735,"./internal/util/EmptyError":736,"./internal/util/NotFoundError":738,"./internal/util/ObjectUnsubscribedError":739,"./internal/util/SequenceError":740,"./internal/util/UnsubscriptionError":741,"./internal/util/identity":750,"./internal/util/isObservable":757,"./internal/util/noop":763,"./internal/util/pipe":765}],544:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -51184,7 +51184,7 @@ var Notification = (function () {
     };
     Notification.prototype.accept = function (nextOrObserver, error, complete) {
         var _a;
-        return isFunction_1.isFunction((_a = nextOrObserver) === null || _a === void 0 ? void 0 : _a.next)
+        return (0, isFunction_1.isFunction)((_a = nextOrObserver) === null || _a === void 0 ? void 0 : _a.next)
             ? this.observe(nextOrObserver)
             : this.do(nextOrObserver, error, complete);
     };
@@ -51192,11 +51192,11 @@ var Notification = (function () {
         var _a = this, kind = _a.kind, value = _a.value, error = _a.error;
         var result = kind === 'N'
             ?
-                of_1.of(value)
+                (0, of_1.of)(value)
             :
                 kind === 'E'
                     ?
-                        throwError_1.throwError(function () { return error; })
+                        (0, throwError_1.throwError)(function () { return error; })
                     :
                         kind === 'C'
                             ?
@@ -51279,7 +51279,7 @@ var Observable = (function () {
     Observable.prototype.subscribe = function (observerOrNext, error, complete) {
         var _this = this;
         var subscriber = isSubscriber(observerOrNext) ? observerOrNext : new Subscriber_1.SafeSubscriber(observerOrNext, error, complete);
-        errorContext_1.errorContext(function () {
+        (0, errorContext_1.errorContext)(function () {
             var _a = _this, operator = _a.operator, source = _a.source;
             subscriber.add(operator
                 ?
@@ -51328,7 +51328,7 @@ var Observable = (function () {
         for (var _i = 0; _i < arguments.length; _i++) {
             operations[_i] = arguments[_i];
         }
-        return pipe_1.pipeFromArray(operations)(this);
+        return (0, pipe_1.pipeFromArray)(operations)(this);
     };
     Observable.prototype.toPromise = function (promiseCtor) {
         var _this = this;
@@ -51349,13 +51349,13 @@ function getPromiseCtor(promiseCtor) {
     return (_a = promiseCtor !== null && promiseCtor !== void 0 ? promiseCtor : config_1.config.Promise) !== null && _a !== void 0 ? _a : Promise;
 }
 function isObserver(value) {
-    return value && isFunction_1.isFunction(value.next) && isFunction_1.isFunction(value.error) && isFunction_1.isFunction(value.complete);
+    return value && (0, isFunction_1.isFunction)(value.next) && (0, isFunction_1.isFunction)(value.error) && (0, isFunction_1.isFunction)(value.complete);
 }
 function isSubscriber(value) {
-    return (value && value instanceof Subscriber_1.Subscriber) || (isObserver(value) && Subscription_1.isSubscription(value));
+    return (value && value instanceof Subscriber_1.Subscriber) || (isObserver(value) && (0, Subscription_1.isSubscription)(value));
 }
 
-},{"./Subscriber":552,"./Subscription":553,"./config":554,"./symbol/observable":733,"./util/errorContext":749,"./util/isFunction":754,"./util/pipe":765}],549:[function(require,module,exports){
+},{"./Subscriber":552,"./Subscription":553,"./config":554,"./symbol/observable":733,"./util/errorContext":748,"./util/isFunction":754,"./util/pipe":765}],549:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -51509,7 +51509,7 @@ var Subject = (function (_super) {
     };
     Subject.prototype.next = function (value) {
         var _this = this;
-        errorContext_1.errorContext(function () {
+        (0, errorContext_1.errorContext)(function () {
             var e_1, _a;
             _this._throwIfClosed();
             if (!_this.isStopped) {
@@ -51532,7 +51532,7 @@ var Subject = (function (_super) {
     };
     Subject.prototype.error = function (err) {
         var _this = this;
-        errorContext_1.errorContext(function () {
+        (0, errorContext_1.errorContext)(function () {
             _this._throwIfClosed();
             if (!_this.isStopped) {
                 _this.hasError = _this.isStopped = true;
@@ -51546,7 +51546,7 @@ var Subject = (function (_super) {
     };
     Subject.prototype.complete = function () {
         var _this = this;
-        errorContext_1.errorContext(function () {
+        (0, errorContext_1.errorContext)(function () {
             _this._throwIfClosed();
             if (!_this.isStopped) {
                 _this.isStopped = true;
@@ -51582,7 +51582,7 @@ var Subject = (function (_super) {
         var _a = this, hasError = _a.hasError, isStopped = _a.isStopped, observers = _a.observers;
         return hasError || isStopped
             ? Subscription_1.EMPTY_SUBSCRIPTION
-            : (observers.push(subscriber), new Subscription_1.Subscription(function () { return arrRemove_1.arrRemove(observers, subscriber); }));
+            : (observers.push(subscriber), new Subscription_1.Subscription(function () { return (0, arrRemove_1.arrRemove)(observers, subscriber); }));
     };
     Subject.prototype._checkFinalizedStatuses = function (subscriber) {
         var _a = this, hasError = _a.hasError, thrownError = _a.thrownError, isStopped = _a.isStopped;
@@ -51632,7 +51632,7 @@ var AnonymousSubject = (function (_super) {
 }(Subject));
 exports.AnonymousSubject = AnonymousSubject;
 
-},{"./Observable":548,"./Subscription":553,"./util/ObjectUnsubscribedError":739,"./util/arrRemove":745,"./util/errorContext":749}],552:[function(require,module,exports){
+},{"./Observable":548,"./Subscription":553,"./util/ObjectUnsubscribedError":739,"./util/arrRemove":745,"./util/errorContext":748}],552:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -51665,10 +51665,14 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EMPTY_OBSERVER = exports.SafeSubscriber = exports.Subscriber = void 0;
@@ -51687,7 +51691,7 @@ var Subscriber = (function (_super) {
         _this.isStopped = false;
         if (destination) {
             _this.destination = destination;
-            if (Subscription_1.isSubscription(destination)) {
+            if ((0, Subscription_1.isSubscription)(destination)) {
                 destination.add(_this);
             }
         }
@@ -51701,7 +51705,7 @@ var Subscriber = (function (_super) {
     };
     Subscriber.prototype.next = function (value) {
         if (this.isStopped) {
-            handleStoppedNotification(NotificationFactories_1.nextNotification(value), this);
+            handleStoppedNotification((0, NotificationFactories_1.nextNotification)(value), this);
         }
         else {
             this._next(value);
@@ -51709,7 +51713,7 @@ var Subscriber = (function (_super) {
     };
     Subscriber.prototype.error = function (err) {
         if (this.isStopped) {
-            handleStoppedNotification(NotificationFactories_1.errorNotification(err), this);
+            handleStoppedNotification((0, NotificationFactories_1.errorNotification)(err), this);
         }
         else {
             this.isStopped = true;
@@ -51759,7 +51763,7 @@ var SafeSubscriber = (function (_super) {
     function SafeSubscriber(observerOrNext, error, complete) {
         var _this = _super.call(this) || this;
         var next;
-        if (isFunction_1.isFunction(observerOrNext)) {
+        if ((0, isFunction_1.isFunction)(observerOrNext)) {
             next = observerOrNext;
         }
         else if (observerOrNext) {
@@ -51793,14 +51797,14 @@ function wrapForErrorHandling(handler, instance) {
             args[_i] = arguments[_i];
         }
         try {
-            handler.apply(void 0, __spreadArray([], __read(args)));
+            handler.apply(void 0, __spreadArray([], __read(args), false));
         }
         catch (err) {
             if (config_1.config.useDeprecatedSynchronousErrorHandling) {
-                errorContext_1.captureError(err);
+                (0, errorContext_1.captureError)(err);
             }
             else {
-                reportUnhandledError_1.reportUnhandledError(err);
+                (0, reportUnhandledError_1.reportUnhandledError)(err);
             }
         }
     };
@@ -51819,7 +51823,7 @@ exports.EMPTY_OBSERVER = {
     complete: noop_1.noop,
 };
 
-},{"./NotificationFactories":547,"./Subscription":553,"./config":554,"./scheduler/timeoutProvider":731,"./util/errorContext":749,"./util/isFunction":754,"./util/noop":763,"./util/reportUnhandledError":766}],553:[function(require,module,exports){
+},{"./NotificationFactories":547,"./Subscription":553,"./config":554,"./scheduler/timeoutProvider":731,"./util/errorContext":748,"./util/isFunction":754,"./util/noop":763,"./util/reportUnhandledError":766}],553:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -51848,10 +51852,14 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isSubscription = exports.EMPTY_SUBSCRIPTION = exports.Subscription = void 0;
@@ -51893,7 +51901,7 @@ var Subscription = (function () {
                 }
             }
             var initialTeardown = this.initialTeardown;
-            if (isFunction_1.isFunction(initialTeardown)) {
+            if ((0, isFunction_1.isFunction)(initialTeardown)) {
                 try {
                     initialTeardown();
                 }
@@ -51913,7 +51921,7 @@ var Subscription = (function () {
                         catch (err) {
                             errors = errors !== null && errors !== void 0 ? errors : [];
                             if (err instanceof UnsubscriptionError_1.UnsubscriptionError) {
-                                errors = __spreadArray(__spreadArray([], __read(errors)), __read(err.errors));
+                                errors = __spreadArray(__spreadArray([], __read(errors), false), __read(err.errors), false);
                             }
                             else {
                                 errors.push(err);
@@ -51965,12 +51973,12 @@ var Subscription = (function () {
             this._parentage = null;
         }
         else if (Array.isArray(_parentage)) {
-            arrRemove_1.arrRemove(_parentage, parent);
+            (0, arrRemove_1.arrRemove)(_parentage, parent);
         }
     };
     Subscription.prototype.remove = function (teardown) {
         var _teardowns = this._teardowns;
-        _teardowns && arrRemove_1.arrRemove(_teardowns, teardown);
+        _teardowns && (0, arrRemove_1.arrRemove)(_teardowns, teardown);
         if (teardown instanceof Subscription) {
             teardown._removeParent(this);
         }
@@ -51986,11 +51994,11 @@ exports.Subscription = Subscription;
 exports.EMPTY_SUBSCRIPTION = Subscription.EMPTY;
 function isSubscription(value) {
     return (value instanceof Subscription ||
-        (value && 'closed' in value && isFunction_1.isFunction(value.remove) && isFunction_1.isFunction(value.add) && isFunction_1.isFunction(value.unsubscribe)));
+        (value && 'closed' in value && (0, isFunction_1.isFunction)(value.remove) && (0, isFunction_1.isFunction)(value.add) && (0, isFunction_1.isFunction)(value.unsubscribe)));
 }
 exports.isSubscription = isSubscription;
 function execTeardown(teardown) {
-    if (isFunction_1.isFunction(teardown)) {
+    if ((0, isFunction_1.isFunction)(teardown)) {
         teardown();
     }
     else {
@@ -52104,7 +52112,7 @@ var ConnectableObservable = (function (_super) {
         _this._subject = null;
         _this._refCount = 0;
         _this._connection = null;
-        if (lift_1.hasLift(source)) {
+        if ((0, lift_1.hasLift)(source)) {
             _this.lift = source.lift;
         }
         return _this;
@@ -52146,7 +52154,7 @@ var ConnectableObservable = (function (_super) {
         return connection;
     };
     ConnectableObservable.prototype.refCount = function () {
-        return refCount_1.refCount()(this);
+        return (0, refCount_1.refCount)()(this);
     };
     return ConnectableObservable;
 }(Observable_1.Observable));
@@ -52158,7 +52166,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.bindCallback = void 0;
 var bindCallbackInternals_1 = require("./bindCallbackInternals");
 function bindCallback(callbackFunc, resultSelector, scheduler) {
-    return bindCallbackInternals_1.bindCallbackInternals(false, callbackFunc, resultSelector, scheduler);
+    return (0, bindCallbackInternals_1.bindCallbackInternals)(false, callbackFunc, resultSelector, scheduler);
 }
 exports.bindCallback = bindCallback;
 
@@ -52180,10 +52188,14 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.bindCallbackInternals = void 0;
@@ -52195,7 +52207,7 @@ var observeOn_1 = require("../operators/observeOn");
 var AsyncSubject_1 = require("../AsyncSubject");
 function bindCallbackInternals(isNodeStyle, callbackFunc, resultSelector, scheduler) {
     if (resultSelector) {
-        if (isScheduler_1.isScheduler(resultSelector)) {
+        if ((0, isScheduler_1.isScheduler)(resultSelector)) {
             scheduler = resultSelector;
         }
         else {
@@ -52206,7 +52218,7 @@ function bindCallbackInternals(isNodeStyle, callbackFunc, resultSelector, schedu
                 }
                 return bindCallbackInternals(isNodeStyle, callbackFunc, scheduler)
                     .apply(this, args)
-                    .pipe(mapOneOrManyArgs_1.mapOneOrManyArgs(resultSelector));
+                    .pipe((0, mapOneOrManyArgs_1.mapOneOrManyArgs)(resultSelector));
             };
         }
     }
@@ -52218,7 +52230,7 @@ function bindCallbackInternals(isNodeStyle, callbackFunc, resultSelector, schedu
             }
             return bindCallbackInternals(isNodeStyle, callbackFunc)
                 .apply(this, args)
-                .pipe(subscribeOn_1.subscribeOn(scheduler), observeOn_1.observeOn(scheduler));
+                .pipe((0, subscribeOn_1.subscribeOn)(scheduler), (0, observeOn_1.observeOn)(scheduler));
         };
     }
     return function () {
@@ -52235,7 +52247,7 @@ function bindCallbackInternals(isNodeStyle, callbackFunc, resultSelector, schedu
                 uninitialized = false;
                 var isAsync_1 = false;
                 var isComplete_1 = false;
-                callbackFunc.apply(_this, __spreadArray(__spreadArray([], __read(args)), [
+                callbackFunc.apply(_this, __spreadArray(__spreadArray([], __read(args), false), [
                     function () {
                         var results = [];
                         for (var _i = 0; _i < arguments.length; _i++) {
@@ -52254,7 +52266,7 @@ function bindCallbackInternals(isNodeStyle, callbackFunc, resultSelector, schedu
                             subject.complete();
                         }
                     },
-                ]));
+                ], false));
                 if (isComplete_1) {
                     subject.complete();
                 }
@@ -52272,7 +52284,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.bindNodeCallback = void 0;
 var bindCallbackInternals_1 = require("./bindCallbackInternals");
 function bindNodeCallback(callbackFunc, resultSelector, scheduler) {
-    return bindCallbackInternals_1.bindCallbackInternals(true, callbackFunc, resultSelector, scheduler);
+    return (0, bindCallbackInternals_1.bindCallbackInternals)(true, callbackFunc, resultSelector, scheduler);
 }
 exports.bindNodeCallback = bindNodeCallback;
 
@@ -52288,23 +52300,24 @@ var mapOneOrManyArgs_1 = require("../util/mapOneOrManyArgs");
 var args_1 = require("../util/args");
 var createObject_1 = require("../util/createObject");
 var OperatorSubscriber_1 = require("../operators/OperatorSubscriber");
+var executeSchedule_1 = require("../util/executeSchedule");
 function combineLatest() {
     var args = [];
     for (var _i = 0; _i < arguments.length; _i++) {
         args[_i] = arguments[_i];
     }
-    var scheduler = args_1.popScheduler(args);
-    var resultSelector = args_1.popResultSelector(args);
-    var _a = argsArgArrayOrObject_1.argsArgArrayOrObject(args), observables = _a.args, keys = _a.keys;
+    var scheduler = (0, args_1.popScheduler)(args);
+    var resultSelector = (0, args_1.popResultSelector)(args);
+    var _a = (0, argsArgArrayOrObject_1.argsArgArrayOrObject)(args), observables = _a.args, keys = _a.keys;
     if (observables.length === 0) {
-        return from_1.from([], scheduler);
+        return (0, from_1.from)([], scheduler);
     }
     var result = new Observable_1.Observable(combineLatestInit(observables, scheduler, keys
         ?
-            function (values) { return createObject_1.createObject(keys, values); }
+            function (values) { return (0, createObject_1.createObject)(keys, values); }
         :
             identity_1.identity));
-    return resultSelector ? result.pipe(mapOneOrManyArgs_1.mapOneOrManyArgs(resultSelector)) : result;
+    return resultSelector ? result.pipe((0, mapOneOrManyArgs_1.mapOneOrManyArgs)(resultSelector)) : result;
 }
 exports.combineLatest = combineLatest;
 function combineLatestInit(observables, scheduler, valueTransform) {
@@ -52317,7 +52330,7 @@ function combineLatestInit(observables, scheduler, valueTransform) {
             var remainingFirstValues = length;
             var _loop_1 = function (i) {
                 maybeSchedule(scheduler, function () {
-                    var source = from_1.from(observables[i], scheduler);
+                    var source = (0, from_1.from)(observables[i], scheduler);
                     var hasFirstValue = false;
                     source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
                         values[i] = value;
@@ -52344,30 +52357,30 @@ function combineLatestInit(observables, scheduler, valueTransform) {
 exports.combineLatestInit = combineLatestInit;
 function maybeSchedule(scheduler, execute, subscription) {
     if (scheduler) {
-        subscription.add(scheduler.schedule(execute));
+        (0, executeSchedule_1.executeSchedule)(subscription, scheduler, execute);
     }
     else {
         execute();
     }
 }
 
-},{"../Observable":548,"../operators/OperatorSubscriber":588,"../util/args":742,"../util/argsArgArrayOrObject":743,"../util/createObject":748,"../util/identity":750,"../util/mapOneOrManyArgs":762,"./from":568}],562:[function(require,module,exports){
+},{"../Observable":548,"../operators/OperatorSubscriber":588,"../util/args":742,"../util/argsArgArrayOrObject":743,"../util/createObject":747,"../util/executeSchedule":749,"../util/identity":750,"../util/mapOneOrManyArgs":762,"./from":568}],562:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.concat = void 0;
 var concatAll_1 = require("../operators/concatAll");
-var fromArray_1 = require("./fromArray");
 var args_1 = require("../util/args");
+var from_1 = require("./from");
 function concat() {
     var args = [];
     for (var _i = 0; _i < arguments.length; _i++) {
         args[_i] = arguments[_i];
     }
-    return concatAll_1.concatAll()(fromArray_1.internalFromArray(args, args_1.popScheduler(args)));
+    return (0, concatAll_1.concatAll)()((0, from_1.from)(args, (0, args_1.popScheduler)(args)));
 }
 exports.concat = concat;
 
-},{"../operators/concatAll":602,"../util/args":742,"./fromArray":569}],563:[function(require,module,exports){
+},{"../operators/concatAll":602,"../util/args":742,"./from":568}],563:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.connectable = void 0;
@@ -52388,7 +52401,7 @@ function connectable(source, config) {
     });
     result.connect = function () {
         if (!connection || connection.closed) {
-            connection = defer_1.defer(function () { return source; }).subscribe(subject);
+            connection = (0, defer_1.defer)(function () { return source; }).subscribe(subject);
             if (resetOnDisconnect) {
                 connection.add(function () { return (subject = connector()); });
             }
@@ -52404,15 +52417,15 @@ exports.connectable = connectable;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.defer = void 0;
 var Observable_1 = require("../Observable");
-var from_1 = require("./from");
+var innerFrom_1 = require("./innerFrom");
 function defer(observableFactory) {
     return new Observable_1.Observable(function (subscriber) {
-        from_1.innerFrom(observableFactory()).subscribe(subscriber);
+        (0, innerFrom_1.innerFrom)(observableFactory()).subscribe(subscriber);
     });
 }
 exports.defer = defer;
 
-},{"../Observable":548,"./from":568}],565:[function(require,module,exports){
+},{"../Observable":548,"./innerFrom":574}],565:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.animationFrames = void 0;
@@ -52466,7 +52479,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.forkJoin = void 0;
 var Observable_1 = require("../Observable");
 var argsArgArrayOrObject_1 = require("../util/argsArgArrayOrObject");
-var from_1 = require("./from");
+var innerFrom_1 = require("./innerFrom");
 var args_1 = require("../util/args");
 var OperatorSubscriber_1 = require("../operators/OperatorSubscriber");
 var mapOneOrManyArgs_1 = require("../util/mapOneOrManyArgs");
@@ -52476,8 +52489,8 @@ function forkJoin() {
     for (var _i = 0; _i < arguments.length; _i++) {
         args[_i] = arguments[_i];
     }
-    var resultSelector = args_1.popResultSelector(args);
-    var _a = argsArgArrayOrObject_1.argsArgArrayOrObject(args), sources = _a.args, keys = _a.keys;
+    var resultSelector = (0, args_1.popResultSelector)(args);
+    var _a = (0, argsArgArrayOrObject_1.argsArgArrayOrObject)(args), sources = _a.args, keys = _a.keys;
     var result = new Observable_1.Observable(function (subscriber) {
         var length = sources.length;
         if (!length) {
@@ -52489,16 +52502,16 @@ function forkJoin() {
         var remainingEmissions = length;
         var _loop_1 = function (sourceIndex) {
             var hasValue = false;
-            from_1.innerFrom(sources[sourceIndex]).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+            (0, innerFrom_1.innerFrom)(sources[sourceIndex]).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
                 if (!hasValue) {
                     hasValue = true;
                     remainingEmissions--;
                 }
                 values[sourceIndex] = value;
-            }, function () {
-                if (!--remainingCompletions || !hasValue) {
+            }, function () { return remainingCompletions--; }, undefined, function () {
+                if (!remainingCompletions || !hasValue) {
                     if (!remainingEmissions) {
-                        subscriber.next(keys ? createObject_1.createObject(keys, values) : values);
+                        subscriber.next(keys ? (0, createObject_1.createObject)(keys, values) : values);
                     }
                     subscriber.complete();
                 }
@@ -52508,11 +52521,226 @@ function forkJoin() {
             _loop_1(sourceIndex);
         }
     });
-    return resultSelector ? result.pipe(mapOneOrManyArgs_1.mapOneOrManyArgs(resultSelector)) : result;
+    return resultSelector ? result.pipe((0, mapOneOrManyArgs_1.mapOneOrManyArgs)(resultSelector)) : result;
 }
 exports.forkJoin = forkJoin;
 
-},{"../Observable":548,"../operators/OperatorSubscriber":588,"../util/args":742,"../util/argsArgArrayOrObject":743,"../util/createObject":748,"../util/mapOneOrManyArgs":762,"./from":568}],568:[function(require,module,exports){
+},{"../Observable":548,"../operators/OperatorSubscriber":588,"../util/args":742,"../util/argsArgArrayOrObject":743,"../util/createObject":747,"../util/mapOneOrManyArgs":762,"./innerFrom":574}],568:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.from = void 0;
+var scheduled_1 = require("../scheduled/scheduled");
+var innerFrom_1 = require("./innerFrom");
+function from(input, scheduler) {
+    return scheduler ? (0, scheduled_1.scheduled)(input, scheduler) : (0, innerFrom_1.innerFrom)(input);
+}
+exports.from = from;
+
+},{"../scheduled/scheduled":711,"./innerFrom":574}],569:[function(require,module,exports){
+"use strict";
+var __read = (this && this.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.fromEvent = void 0;
+var innerFrom_1 = require("../observable/innerFrom");
+var Observable_1 = require("../Observable");
+var mergeMap_1 = require("../operators/mergeMap");
+var isArrayLike_1 = require("../util/isArrayLike");
+var isFunction_1 = require("../util/isFunction");
+var mapOneOrManyArgs_1 = require("../util/mapOneOrManyArgs");
+var nodeEventEmitterMethods = ['addListener', 'removeListener'];
+var eventTargetMethods = ['addEventListener', 'removeEventListener'];
+var jqueryMethods = ['on', 'off'];
+function fromEvent(target, eventName, options, resultSelector) {
+    if ((0, isFunction_1.isFunction)(options)) {
+        resultSelector = options;
+        options = undefined;
+    }
+    if (resultSelector) {
+        return fromEvent(target, eventName, options).pipe((0, mapOneOrManyArgs_1.mapOneOrManyArgs)(resultSelector));
+    }
+    var _a = __read(isEventTarget(target)
+        ? eventTargetMethods.map(function (methodName) { return function (handler) { return target[methodName](eventName, handler, options); }; })
+        :
+            isNodeStyleEventEmitter(target)
+                ? nodeEventEmitterMethods.map(toCommonHandlerRegistry(target, eventName))
+                : isJQueryStyleEventEmitter(target)
+                    ? jqueryMethods.map(toCommonHandlerRegistry(target, eventName))
+                    : [], 2), add = _a[0], remove = _a[1];
+    if (!add) {
+        if ((0, isArrayLike_1.isArrayLike)(target)) {
+            return (0, mergeMap_1.mergeMap)(function (subTarget) { return fromEvent(subTarget, eventName, options); })((0, innerFrom_1.innerFrom)(target));
+        }
+    }
+    if (!add) {
+        throw new TypeError('Invalid event target');
+    }
+    return new Observable_1.Observable(function (subscriber) {
+        var handler = function () {
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i] = arguments[_i];
+            }
+            return subscriber.next(1 < args.length ? args : args[0]);
+        };
+        add(handler);
+        return function () { return remove(handler); };
+    });
+}
+exports.fromEvent = fromEvent;
+function toCommonHandlerRegistry(target, eventName) {
+    return function (methodName) { return function (handler) { return target[methodName](eventName, handler); }; };
+}
+function isNodeStyleEventEmitter(target) {
+    return (0, isFunction_1.isFunction)(target.addListener) && (0, isFunction_1.isFunction)(target.removeListener);
+}
+function isJQueryStyleEventEmitter(target) {
+    return (0, isFunction_1.isFunction)(target.on) && (0, isFunction_1.isFunction)(target.off);
+}
+function isEventTarget(target) {
+    return (0, isFunction_1.isFunction)(target.addEventListener) && (0, isFunction_1.isFunction)(target.removeEventListener);
+}
+
+},{"../Observable":548,"../observable/innerFrom":574,"../operators/mergeMap":642,"../util/isArrayLike":751,"../util/isFunction":754,"../util/mapOneOrManyArgs":762}],570:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.fromEventPattern = void 0;
+var Observable_1 = require("../Observable");
+var isFunction_1 = require("../util/isFunction");
+var mapOneOrManyArgs_1 = require("../util/mapOneOrManyArgs");
+function fromEventPattern(addHandler, removeHandler, resultSelector) {
+    if (resultSelector) {
+        return fromEventPattern(addHandler, removeHandler).pipe((0, mapOneOrManyArgs_1.mapOneOrManyArgs)(resultSelector));
+    }
+    return new Observable_1.Observable(function (subscriber) {
+        var handler = function () {
+            var e = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                e[_i] = arguments[_i];
+            }
+            return subscriber.next(e.length === 1 ? e[0] : e);
+        };
+        var retValue = addHandler(handler);
+        return (0, isFunction_1.isFunction)(removeHandler) ? function () { return removeHandler(handler, retValue); } : undefined;
+    });
+}
+exports.fromEventPattern = fromEventPattern;
+
+},{"../Observable":548,"../util/isFunction":754,"../util/mapOneOrManyArgs":762}],571:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.fromSubscribable = void 0;
+var Observable_1 = require("../Observable");
+function fromSubscribable(subscribable) {
+    return new Observable_1.Observable(function (subscriber) { return subscribable.subscribe(subscriber); });
+}
+exports.fromSubscribable = fromSubscribable;
+
+},{"../Observable":548}],572:[function(require,module,exports){
+"use strict";
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.generate = void 0;
+var identity_1 = require("../util/identity");
+var isScheduler_1 = require("../util/isScheduler");
+var defer_1 = require("./defer");
+var scheduleIterable_1 = require("../scheduled/scheduleIterable");
+function generate(initialStateOrOptions, condition, iterate, resultSelectorOrScheduler, scheduler) {
+    var _a, _b;
+    var resultSelector;
+    var initialState;
+    if (arguments.length === 1) {
+        (_a = initialStateOrOptions, initialState = _a.initialState, condition = _a.condition, iterate = _a.iterate, _b = _a.resultSelector, resultSelector = _b === void 0 ? identity_1.identity : _b, scheduler = _a.scheduler);
+    }
+    else {
+        initialState = initialStateOrOptions;
+        if (!resultSelectorOrScheduler || (0, isScheduler_1.isScheduler)(resultSelectorOrScheduler)) {
+            resultSelector = identity_1.identity;
+            scheduler = resultSelectorOrScheduler;
+        }
+        else {
+            resultSelector = resultSelectorOrScheduler;
+        }
+    }
+    function gen() {
+        var state;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    state = initialState;
+                    _a.label = 1;
+                case 1:
+                    if (!(!condition || condition(state))) return [3, 4];
+                    return [4, resultSelector(state)];
+                case 2:
+                    _a.sent();
+                    _a.label = 3;
+                case 3:
+                    state = iterate(state);
+                    return [3, 1];
+                case 4: return [2];
+            }
+        });
+    }
+    return (0, defer_1.defer)((scheduler
+        ?
+            function () { return (0, scheduleIterable_1.scheduleIterable)(gen(), scheduler); }
+        :
+            gen));
+}
+exports.generate = generate;
+
+},{"../scheduled/scheduleIterable":707,"../util/identity":750,"../util/isScheduler":760,"./defer":564}],573:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.iif = void 0;
+var defer_1 = require("./defer");
+function iif(condition, trueResult, falseResult) {
+    return (0, defer_1.defer)(function () { return (condition() ? trueResult : falseResult); });
+}
+exports.iif = iif;
+
+},{"./defer":564}],574:[function(require,module,exports){
 (function (process){(function (){
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -52570,59 +52798,55 @@ var __values = (this && this.__values) || function(o) {
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.fromArrayLike = exports.innerFrom = exports.from = void 0;
+exports.fromReadableStreamLike = exports.fromAsyncIterable = exports.fromIterable = exports.fromPromise = exports.fromArrayLike = exports.fromInteropObservable = exports.innerFrom = void 0;
 var isArrayLike_1 = require("../util/isArrayLike");
 var isPromise_1 = require("../util/isPromise");
-var observable_1 = require("../symbol/observable");
 var Observable_1 = require("../Observable");
-var scheduled_1 = require("../scheduled/scheduled");
-var isFunction_1 = require("../util/isFunction");
-var reportUnhandledError_1 = require("../util/reportUnhandledError");
 var isInteropObservable_1 = require("../util/isInteropObservable");
 var isAsyncIterable_1 = require("../util/isAsyncIterable");
 var throwUnobservableError_1 = require("../util/throwUnobservableError");
 var isIterable_1 = require("../util/isIterable");
 var isReadableStreamLike_1 = require("../util/isReadableStreamLike");
-function from(input, scheduler) {
-    return scheduler ? scheduled_1.scheduled(input, scheduler) : innerFrom(input);
-}
-exports.from = from;
+var isFunction_1 = require("../util/isFunction");
+var reportUnhandledError_1 = require("../util/reportUnhandledError");
+var observable_1 = require("../symbol/observable");
 function innerFrom(input) {
     if (input instanceof Observable_1.Observable) {
         return input;
     }
     if (input != null) {
-        if (isInteropObservable_1.isInteropObservable(input)) {
+        if ((0, isInteropObservable_1.isInteropObservable)(input)) {
             return fromInteropObservable(input);
         }
-        if (isArrayLike_1.isArrayLike(input)) {
+        if ((0, isArrayLike_1.isArrayLike)(input)) {
             return fromArrayLike(input);
         }
-        if (isPromise_1.isPromise(input)) {
+        if ((0, isPromise_1.isPromise)(input)) {
             return fromPromise(input);
         }
-        if (isAsyncIterable_1.isAsyncIterable(input)) {
+        if ((0, isAsyncIterable_1.isAsyncIterable)(input)) {
             return fromAsyncIterable(input);
         }
-        if (isIterable_1.isIterable(input)) {
+        if ((0, isIterable_1.isIterable)(input)) {
             return fromIterable(input);
         }
-        if (isReadableStreamLike_1.isReadableStreamLike(input)) {
+        if ((0, isReadableStreamLike_1.isReadableStreamLike)(input)) {
             return fromReadableStreamLike(input);
         }
     }
-    throw throwUnobservableError_1.createInvalidObservableTypeError(input);
+    throw (0, throwUnobservableError_1.createInvalidObservableTypeError)(input);
 }
 exports.innerFrom = innerFrom;
 function fromInteropObservable(obj) {
     return new Observable_1.Observable(function (subscriber) {
         var obs = obj[observable_1.observable]();
-        if (isFunction_1.isFunction(obs.subscribe)) {
+        if ((0, isFunction_1.isFunction)(obs.subscribe)) {
             return obs.subscribe(subscriber);
         }
         throw new TypeError('Provided object does not correctly implement Symbol.observable');
     });
 }
+exports.fromInteropObservable = fromInteropObservable;
 function fromArrayLike(array) {
     return new Observable_1.Observable(function (subscriber) {
         for (var i = 0; i < array.length && !subscriber.closed; i++) {
@@ -52644,6 +52868,7 @@ function fromPromise(promise) {
             .then(null, reportUnhandledError_1.reportUnhandledError);
     });
 }
+exports.fromPromise = fromPromise;
 function fromIterable(iterable) {
     return new Observable_1.Observable(function (subscriber) {
         var e_1, _a;
@@ -52666,14 +52891,17 @@ function fromIterable(iterable) {
         subscriber.complete();
     });
 }
+exports.fromIterable = fromIterable;
 function fromAsyncIterable(asyncIterable) {
     return new Observable_1.Observable(function (subscriber) {
         process(asyncIterable, subscriber).catch(function (err) { return subscriber.error(err); });
     });
 }
+exports.fromAsyncIterable = fromAsyncIterable;
 function fromReadableStreamLike(readableStream) {
-    return fromAsyncIterable(isReadableStreamLike_1.readableStreamLikeToAsyncGenerator(readableStream));
+    return fromAsyncIterable((0, isReadableStreamLike_1.readableStreamLikeToAsyncGenerator)(readableStream));
 }
+exports.fromReadableStreamLike = fromReadableStreamLike;
 function process(asyncIterable, subscriber) {
     var asyncIterable_1, asyncIterable_1_1;
     var e_2, _a;
@@ -52721,222 +52949,7 @@ function process(asyncIterable, subscriber) {
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"../Observable":548,"../scheduled/scheduled":711,"../symbol/observable":733,"../util/isArrayLike":751,"../util/isAsyncIterable":752,"../util/isFunction":754,"../util/isInteropObservable":755,"../util/isIterable":756,"../util/isPromise":758,"../util/isReadableStreamLike":759,"../util/reportUnhandledError":766,"../util/throwUnobservableError":767,"_process":536}],569:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.internalFromArray = void 0;
-var scheduleArray_1 = require("../scheduled/scheduleArray");
-var from_1 = require("./from");
-function internalFromArray(input, scheduler) {
-    return scheduler ? scheduleArray_1.scheduleArray(input, scheduler) : from_1.fromArrayLike(input);
-}
-exports.internalFromArray = internalFromArray;
-
-},{"../scheduled/scheduleArray":705,"./from":568}],570:[function(require,module,exports){
-"use strict";
-var __read = (this && this.__read) || function (o, n) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator];
-    if (!m) return o;
-    var i = m.call(o), r, ar = [], e;
-    try {
-        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
-    }
-    catch (error) { e = { error: error }; }
-    finally {
-        try {
-            if (r && !r.done && (m = i["return"])) m.call(i);
-        }
-        finally { if (e) throw e.error; }
-    }
-    return ar;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.fromEvent = void 0;
-var Observable_1 = require("../Observable");
-var mergeMap_1 = require("../operators/mergeMap");
-var isArrayLike_1 = require("../util/isArrayLike");
-var isFunction_1 = require("../util/isFunction");
-var mapOneOrManyArgs_1 = require("../util/mapOneOrManyArgs");
-var fromArray_1 = require("./fromArray");
-var nodeEventEmitterMethods = ['addListener', 'removeListener'];
-var eventTargetMethods = ['addEventListener', 'removeEventListener'];
-var jqueryMethods = ['on', 'off'];
-function fromEvent(target, eventName, options, resultSelector) {
-    if (isFunction_1.isFunction(options)) {
-        resultSelector = options;
-        options = undefined;
-    }
-    if (resultSelector) {
-        return fromEvent(target, eventName, options).pipe(mapOneOrManyArgs_1.mapOneOrManyArgs(resultSelector));
-    }
-    var _a = __read(isEventTarget(target)
-        ? eventTargetMethods.map(function (methodName) { return function (handler) { return target[methodName](eventName, handler, options); }; })
-        :
-            isNodeStyleEventEmitter(target)
-                ? nodeEventEmitterMethods.map(toCommonHandlerRegistry(target, eventName))
-                : isJQueryStyleEventEmitter(target)
-                    ? jqueryMethods.map(toCommonHandlerRegistry(target, eventName))
-                    : [], 2), add = _a[0], remove = _a[1];
-    if (!add) {
-        if (isArrayLike_1.isArrayLike(target)) {
-            return mergeMap_1.mergeMap(function (subTarget) { return fromEvent(subTarget, eventName, options); })(fromArray_1.internalFromArray(target));
-        }
-    }
-    if (!add) {
-        throw new TypeError('Invalid event target');
-    }
-    return new Observable_1.Observable(function (subscriber) {
-        var handler = function () {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i] = arguments[_i];
-            }
-            return subscriber.next(1 < args.length ? args : args[0]);
-        };
-        add(handler);
-        return function () { return remove(handler); };
-    });
-}
-exports.fromEvent = fromEvent;
-function toCommonHandlerRegistry(target, eventName) {
-    return function (methodName) { return function (handler) { return target[methodName](eventName, handler); }; };
-}
-function isNodeStyleEventEmitter(target) {
-    return isFunction_1.isFunction(target.addListener) && isFunction_1.isFunction(target.removeListener);
-}
-function isJQueryStyleEventEmitter(target) {
-    return isFunction_1.isFunction(target.on) && isFunction_1.isFunction(target.off);
-}
-function isEventTarget(target) {
-    return isFunction_1.isFunction(target.addEventListener) && isFunction_1.isFunction(target.removeEventListener);
-}
-
-},{"../Observable":548,"../operators/mergeMap":642,"../util/isArrayLike":751,"../util/isFunction":754,"../util/mapOneOrManyArgs":762,"./fromArray":569}],571:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.fromEventPattern = void 0;
-var Observable_1 = require("../Observable");
-var isFunction_1 = require("../util/isFunction");
-var mapOneOrManyArgs_1 = require("../util/mapOneOrManyArgs");
-function fromEventPattern(addHandler, removeHandler, resultSelector) {
-    if (resultSelector) {
-        return fromEventPattern(addHandler, removeHandler).pipe(mapOneOrManyArgs_1.mapOneOrManyArgs(resultSelector));
-    }
-    return new Observable_1.Observable(function (subscriber) {
-        var handler = function () {
-            var e = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                e[_i] = arguments[_i];
-            }
-            return subscriber.next(e.length === 1 ? e[0] : e);
-        };
-        var retValue = addHandler(handler);
-        return isFunction_1.isFunction(removeHandler) ? function () { return removeHandler(handler, retValue); } : undefined;
-    });
-}
-exports.fromEventPattern = fromEventPattern;
-
-},{"../Observable":548,"../util/isFunction":754,"../util/mapOneOrManyArgs":762}],572:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.fromSubscribable = void 0;
-var Observable_1 = require("../Observable");
-function fromSubscribable(subscribable) {
-    return new Observable_1.Observable(function (subscriber) { return subscribable.subscribe(subscriber); });
-}
-exports.fromSubscribable = fromSubscribable;
-
-},{"../Observable":548}],573:[function(require,module,exports){
-"use strict";
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.generate = void 0;
-var identity_1 = require("../util/identity");
-var isScheduler_1 = require("../util/isScheduler");
-var defer_1 = require("./defer");
-var scheduleIterable_1 = require("../scheduled/scheduleIterable");
-function generate(initialStateOrOptions, condition, iterate, resultSelectorOrScheduler, scheduler) {
-    var _a, _b;
-    var resultSelector;
-    var initialState;
-    if (arguments.length === 1) {
-        (_a = initialStateOrOptions, initialState = _a.initialState, condition = _a.condition, iterate = _a.iterate, _b = _a.resultSelector, resultSelector = _b === void 0 ? identity_1.identity : _b, scheduler = _a.scheduler);
-    }
-    else {
-        initialState = initialStateOrOptions;
-        if (!resultSelectorOrScheduler || isScheduler_1.isScheduler(resultSelectorOrScheduler)) {
-            resultSelector = identity_1.identity;
-            scheduler = resultSelectorOrScheduler;
-        }
-        else {
-            resultSelector = resultSelectorOrScheduler;
-        }
-    }
-    function gen() {
-        var state;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    state = initialState;
-                    _a.label = 1;
-                case 1:
-                    if (!(!condition || condition(state))) return [3, 4];
-                    return [4, resultSelector(state)];
-                case 2:
-                    _a.sent();
-                    _a.label = 3;
-                case 3:
-                    state = iterate(state);
-                    return [3, 1];
-                case 4: return [2];
-            }
-        });
-    }
-    return defer_1.defer((scheduler
-        ?
-            function () { return scheduleIterable_1.scheduleIterable(gen(), scheduler); }
-        :
-            gen));
-}
-exports.generate = generate;
-
-},{"../scheduled/scheduleIterable":707,"../util/identity":750,"../util/isScheduler":760,"./defer":564}],574:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.iif = void 0;
-var defer_1 = require("./defer");
-function iif(condition, trueResult, falseResult) {
-    return defer_1.defer(function () { return (condition() ? trueResult : falseResult); });
-}
-exports.iif = iif;
-
-},{"./defer":564}],575:[function(require,module,exports){
+},{"../Observable":548,"../symbol/observable":733,"../util/isArrayLike":751,"../util/isAsyncIterable":752,"../util/isFunction":754,"../util/isInteropObservable":755,"../util/isIterable":756,"../util/isPromise":758,"../util/isReadableStreamLike":759,"../util/reportUnhandledError":766,"../util/throwUnobservableError":767,"_process":536}],575:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.interval = void 0;
@@ -52948,7 +52961,7 @@ function interval(period, scheduler) {
     if (period < 0) {
         period = 0;
     }
-    return timer_1.timer(period, period, scheduler);
+    return (0, timer_1.timer)(period, period, scheduler);
 }
 exports.interval = interval;
 
@@ -52957,30 +52970,30 @@ exports.interval = interval;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.merge = void 0;
 var mergeAll_1 = require("../operators/mergeAll");
-var fromArray_1 = require("./fromArray");
-var from_1 = require("./from");
+var innerFrom_1 = require("./innerFrom");
 var empty_1 = require("./empty");
 var args_1 = require("../util/args");
+var from_1 = require("./from");
 function merge() {
     var args = [];
     for (var _i = 0; _i < arguments.length; _i++) {
         args[_i] = arguments[_i];
     }
-    var scheduler = args_1.popScheduler(args);
-    var concurrent = args_1.popNumber(args, Infinity);
+    var scheduler = (0, args_1.popScheduler)(args);
+    var concurrent = (0, args_1.popNumber)(args, Infinity);
     var sources = args;
     return !sources.length
         ?
             empty_1.EMPTY
         : sources.length === 1
             ?
-                from_1.innerFrom(sources[0])
+                (0, innerFrom_1.innerFrom)(sources[0])
             :
-                mergeAll_1.mergeAll(concurrent)(fromArray_1.internalFromArray(sources, scheduler));
+                (0, mergeAll_1.mergeAll)(concurrent)((0, from_1.from)(sources, scheduler));
 }
 exports.merge = merge;
 
-},{"../operators/mergeAll":640,"../util/args":742,"./empty":566,"./from":568,"./fromArray":569}],577:[function(require,module,exports){
+},{"../operators/mergeAll":640,"../util/args":742,"./empty":566,"./from":568,"./innerFrom":574}],577:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.never = exports.NEVER = void 0;
@@ -52996,20 +53009,19 @@ exports.never = never;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.of = void 0;
-var fromArray_1 = require("./fromArray");
-var scheduleArray_1 = require("../scheduled/scheduleArray");
 var args_1 = require("../util/args");
+var from_1 = require("./from");
 function of() {
     var args = [];
     for (var _i = 0; _i < arguments.length; _i++) {
         args[_i] = arguments[_i];
     }
-    var scheduler = args_1.popScheduler(args);
-    return scheduler ? scheduleArray_1.scheduleArray(args, scheduler) : fromArray_1.internalFromArray(args);
+    var scheduler = (0, args_1.popScheduler)(args);
+    return (0, from_1.from)(args, scheduler);
 }
 exports.of = of;
 
-},{"../scheduled/scheduleArray":705,"../util/args":742,"./fromArray":569}],579:[function(require,module,exports){
+},{"../util/args":742,"./from":568}],579:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.onErrorResumeNext = void 0;
@@ -53021,7 +53033,7 @@ function onErrorResumeNext() {
     for (var _i = 0; _i < arguments.length; _i++) {
         sources[_i] = arguments[_i];
     }
-    return onErrorResumeNext_1.onErrorResumeNext(argsOrArgArray_1.argsOrArgArray(sources))(empty_1.EMPTY);
+    return (0, onErrorResumeNext_1.onErrorResumeNext)((0, argsOrArgArray_1.argsOrArgArray)(sources))(empty_1.EMPTY);
 }
 exports.onErrorResumeNext = onErrorResumeNext;
 
@@ -53031,7 +53043,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.pairs = void 0;
 var from_1 = require("./from");
 function pairs(obj, scheduler) {
-    return from_1.from(Object.entries(obj), scheduler);
+    return (0, from_1.from)(Object.entries(obj), scheduler);
 }
 exports.pairs = pairs;
 
@@ -53041,18 +53053,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.partition = void 0;
 var not_1 = require("../util/not");
 var filter_1 = require("../operators/filter");
-var from_1 = require("./from");
+var innerFrom_1 = require("./innerFrom");
 function partition(source, predicate, thisArg) {
-    return [filter_1.filter(predicate, thisArg)(from_1.innerFrom(source)), filter_1.filter(not_1.not(predicate, thisArg))(from_1.innerFrom(source))];
+    return [(0, filter_1.filter)(predicate, thisArg)((0, innerFrom_1.innerFrom)(source)), (0, filter_1.filter)((0, not_1.not)(predicate, thisArg))((0, innerFrom_1.innerFrom)(source))];
 }
 exports.partition = partition;
 
-},{"../operators/filter":624,"../util/not":764,"./from":568}],582:[function(require,module,exports){
+},{"../operators/filter":624,"../util/not":764,"./innerFrom":574}],582:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.raceInit = exports.race = void 0;
 var Observable_1 = require("../Observable");
-var from_1 = require("./from");
+var innerFrom_1 = require("./innerFrom");
 var argsOrArgArray_1 = require("../util/argsOrArgArray");
 var OperatorSubscriber_1 = require("../operators/OperatorSubscriber");
 function race() {
@@ -53060,15 +53072,15 @@ function race() {
     for (var _i = 0; _i < arguments.length; _i++) {
         sources[_i] = arguments[_i];
     }
-    sources = argsOrArgArray_1.argsOrArgArray(sources);
-    return sources.length === 1 ? from_1.innerFrom(sources[0]) : new Observable_1.Observable(raceInit(sources));
+    sources = (0, argsOrArgArray_1.argsOrArgArray)(sources);
+    return sources.length === 1 ? (0, innerFrom_1.innerFrom)(sources[0]) : new Observable_1.Observable(raceInit(sources));
 }
 exports.race = race;
 function raceInit(sources) {
     return function (subscriber) {
         var subscriptions = [];
         var _loop_1 = function (i) {
-            subscriptions.push(from_1.innerFrom(sources[i]).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+            subscriptions.push((0, innerFrom_1.innerFrom)(sources[i]).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
                 if (subscriptions) {
                     for (var s = 0; s < subscriptions.length; s++) {
                         s !== i && subscriptions[s].unsubscribe();
@@ -53085,7 +53097,7 @@ function raceInit(sources) {
 }
 exports.raceInit = raceInit;
 
-},{"../Observable":548,"../operators/OperatorSubscriber":588,"../util/argsOrArgArray":744,"./from":568}],583:[function(require,module,exports){
+},{"../Observable":548,"../operators/OperatorSubscriber":588,"../util/argsOrArgArray":744,"./innerFrom":574}],583:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.range = void 0;
@@ -53132,7 +53144,7 @@ exports.throwError = void 0;
 var Observable_1 = require("../Observable");
 var isFunction_1 = require("../util/isFunction");
 function throwError(errorOrErrorFactory, scheduler) {
-    var errorFactory = isFunction_1.isFunction(errorOrErrorFactory) ? errorOrErrorFactory : function () { return errorOrErrorFactory; };
+    var errorFactory = (0, isFunction_1.isFunction)(errorOrErrorFactory) ? errorOrErrorFactory : function () { return errorOrErrorFactory; };
     var init = function (subscriber) { return subscriber.error(errorFactory()); };
     return new Observable_1.Observable(scheduler ? function (subscriber) { return scheduler.schedule(init, 0, subscriber); } : init);
 }
@@ -53151,7 +53163,7 @@ function timer(dueTime, intervalOrScheduler, scheduler) {
     if (scheduler === void 0) { scheduler = async_1.async; }
     var intervalDuration = -1;
     if (intervalOrScheduler != null) {
-        if (isScheduler_1.isScheduler(intervalOrScheduler)) {
+        if ((0, isScheduler_1.isScheduler)(intervalOrScheduler)) {
             scheduler = intervalOrScheduler;
         }
         else {
@@ -53159,7 +53171,7 @@ function timer(dueTime, intervalOrScheduler, scheduler) {
         }
     }
     return new Observable_1.Observable(function (subscriber) {
-        var due = isDate_1.isValidDate(dueTime) ? +dueTime - scheduler.now() : dueTime;
+        var due = (0, isDate_1.isValidDate)(dueTime) ? +dueTime - scheduler.now() : dueTime;
         if (due < 0) {
             due = 0;
         }
@@ -53184,13 +53196,13 @@ exports.timer = timer;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.using = void 0;
 var Observable_1 = require("../Observable");
-var from_1 = require("./from");
+var innerFrom_1 = require("./innerFrom");
 var empty_1 = require("./empty");
 function using(resourceFactory, observableFactory) {
     return new Observable_1.Observable(function (subscriber) {
         var resource = resourceFactory();
         var result = observableFactory(resource);
-        var source = result ? from_1.innerFrom(result) : empty_1.EMPTY;
+        var source = result ? (0, innerFrom_1.innerFrom)(result) : empty_1.EMPTY;
         source.subscribe(subscriber);
         return function () {
             if (resource) {
@@ -53201,7 +53213,7 @@ function using(resourceFactory, observableFactory) {
 }
 exports.using = using;
 
-},{"../Observable":548,"./empty":566,"./from":568}],587:[function(require,module,exports){
+},{"../Observable":548,"./empty":566,"./innerFrom":574}],587:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -53219,15 +53231,19 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.zip = void 0;
 var Observable_1 = require("../Observable");
-var from_1 = require("./from");
+var innerFrom_1 = require("./innerFrom");
 var argsOrArgArray_1 = require("../util/argsOrArgArray");
 var empty_1 = require("./empty");
 var OperatorSubscriber_1 = require("../operators/OperatorSubscriber");
@@ -53237,8 +53253,8 @@ function zip() {
     for (var _i = 0; _i < arguments.length; _i++) {
         args[_i] = arguments[_i];
     }
-    var resultSelector = args_1.popResultSelector(args);
-    var sources = argsOrArgArray_1.argsOrArgArray(args);
+    var resultSelector = (0, args_1.popResultSelector)(args);
+    var sources = (0, argsOrArgArray_1.argsOrArgArray)(args);
     return sources.length
         ? new Observable_1.Observable(function (subscriber) {
             var buffers = sources.map(function () { return []; });
@@ -53247,11 +53263,11 @@ function zip() {
                 buffers = completed = null;
             });
             var _loop_1 = function (sourceIndex) {
-                from_1.innerFrom(sources[sourceIndex]).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+                (0, innerFrom_1.innerFrom)(sources[sourceIndex]).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
                     buffers[sourceIndex].push(value);
                     if (buffers.every(function (buffer) { return buffer.length; })) {
                         var result = buffers.map(function (buffer) { return buffer.shift(); });
-                        subscriber.next(resultSelector ? resultSelector.apply(void 0, __spreadArray([], __read(result))) : result);
+                        subscriber.next(resultSelector ? resultSelector.apply(void 0, __spreadArray([], __read(result), false)) : result);
                         if (buffers.some(function (buffer, i) { return !buffer.length && completed[i]; })) {
                             subscriber.complete();
                         }
@@ -53272,7 +53288,7 @@ function zip() {
 }
 exports.zip = zip;
 
-},{"../Observable":548,"../operators/OperatorSubscriber":588,"../util/args":742,"../util/argsOrArgArray":744,"./empty":566,"./from":568}],588:[function(require,module,exports){
+},{"../Observable":548,"../operators/OperatorSubscriber":588,"../util/args":742,"../util/argsOrArgArray":744,"./empty":566,"./innerFrom":574}],588:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -53350,10 +53366,10 @@ exports.OperatorSubscriber = OperatorSubscriber;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.audit = void 0;
 var lift_1 = require("../util/lift");
-var from_1 = require("../observable/from");
+var innerFrom_1 = require("../observable/innerFrom");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function audit(durationSelector) {
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var hasValue = false;
         var lastValue = null;
         var durationSubscriber = null;
@@ -53377,7 +53393,7 @@ function audit(durationSelector) {
             hasValue = true;
             lastValue = value;
             if (!durationSubscriber) {
-                from_1.innerFrom(durationSelector(value)).subscribe((durationSubscriber = new OperatorSubscriber_1.OperatorSubscriber(subscriber, endDuration, cleanupDuration)));
+                (0, innerFrom_1.innerFrom)(durationSelector(value)).subscribe((durationSubscriber = new OperatorSubscriber_1.OperatorSubscriber(subscriber, endDuration, cleanupDuration)));
             }
         }, function () {
             isComplete = true;
@@ -53387,7 +53403,7 @@ function audit(durationSelector) {
 }
 exports.audit = audit;
 
-},{"../observable/from":568,"../util/lift":761,"./OperatorSubscriber":588}],590:[function(require,module,exports){
+},{"../observable/innerFrom":574,"../util/lift":761,"./OperatorSubscriber":588}],590:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.auditTime = void 0;
@@ -53396,7 +53412,7 @@ var audit_1 = require("./audit");
 var timer_1 = require("../observable/timer");
 function auditTime(duration, scheduler) {
     if (scheduler === void 0) { scheduler = async_1.async; }
-    return audit_1.audit(function () { return timer_1.timer(duration, scheduler); });
+    return (0, audit_1.audit)(function () { return (0, timer_1.timer)(duration, scheduler); });
 }
 exports.auditTime = auditTime;
 
@@ -53408,7 +53424,7 @@ var lift_1 = require("../util/lift");
 var noop_1 = require("../util/noop");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function buffer(closingNotifier) {
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var currentBuffer = [];
         source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) { return currentBuffer.push(value); }, function () {
             subscriber.next(currentBuffer);
@@ -53447,7 +53463,7 @@ var arrRemove_1 = require("../util/arrRemove");
 function bufferCount(bufferSize, startBufferEvery) {
     if (startBufferEvery === void 0) { startBufferEvery = null; }
     startBufferEvery = startBufferEvery !== null && startBufferEvery !== void 0 ? startBufferEvery : bufferSize;
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var buffers = [];
         var count = 0;
         source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
@@ -53477,7 +53493,7 @@ function bufferCount(bufferSize, startBufferEvery) {
                 try {
                     for (var toEmit_1 = __values(toEmit), toEmit_1_1 = toEmit_1.next(); !toEmit_1_1.done; toEmit_1_1 = toEmit_1.next()) {
                         var buffer = toEmit_1_1.value;
-                        arrRemove_1.arrRemove(buffers, buffer);
+                        (0, arrRemove_1.arrRemove)(buffers, buffer);
                         subscriber.next(buffer);
                     }
                 }
@@ -53533,22 +53549,23 @@ var OperatorSubscriber_1 = require("./OperatorSubscriber");
 var arrRemove_1 = require("../util/arrRemove");
 var async_1 = require("../scheduler/async");
 var args_1 = require("../util/args");
+var executeSchedule_1 = require("../util/executeSchedule");
 function bufferTime(bufferTimeSpan) {
     var _a, _b;
     var otherArgs = [];
     for (var _i = 1; _i < arguments.length; _i++) {
         otherArgs[_i - 1] = arguments[_i];
     }
-    var scheduler = (_a = args_1.popScheduler(otherArgs)) !== null && _a !== void 0 ? _a : async_1.asyncScheduler;
+    var scheduler = (_a = (0, args_1.popScheduler)(otherArgs)) !== null && _a !== void 0 ? _a : async_1.asyncScheduler;
     var bufferCreationInterval = (_b = otherArgs[0]) !== null && _b !== void 0 ? _b : null;
     var maxBufferSize = otherArgs[1] || Infinity;
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var bufferRecords = [];
         var restartOnEmit = false;
         var emit = function (record) {
             var buffer = record.buffer, subs = record.subs;
             subs.unsubscribe();
-            arrRemove_1.arrRemove(bufferRecords, record);
+            (0, arrRemove_1.arrRemove)(bufferRecords, record);
             subscriber.next(buffer);
             restartOnEmit && startBuffer();
         };
@@ -53562,16 +53579,15 @@ function bufferTime(bufferTimeSpan) {
                     subs: subs,
                 };
                 bufferRecords.push(record_1);
-                subs.add(scheduler.schedule(function () { return emit(record_1); }, bufferTimeSpan));
+                (0, executeSchedule_1.executeSchedule)(subs, scheduler, function () { return emit(record_1); }, bufferTimeSpan);
             }
         };
-        bufferCreationInterval !== null && bufferCreationInterval >= 0
-            ?
-                subscriber.add(scheduler.schedule(function () {
-                    startBuffer();
-                    !this.closed && subscriber.add(this.schedule(null, bufferCreationInterval));
-                }, bufferCreationInterval))
-            : (restartOnEmit = true);
+        if (bufferCreationInterval !== null && bufferCreationInterval >= 0) {
+            (0, executeSchedule_1.executeSchedule)(subscriber, scheduler, startBuffer, bufferCreationInterval, true);
+        }
+        else {
+            restartOnEmit = true;
+        }
         startBuffer();
         var bufferTimeSubscriber = new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
             var e_1, _a;
@@ -53604,7 +53620,7 @@ function bufferTime(bufferTimeSpan) {
 }
 exports.bufferTime = bufferTime;
 
-},{"../Subscription":553,"../scheduler/async":725,"../util/args":742,"../util/arrRemove":745,"../util/lift":761,"./OperatorSubscriber":588}],594:[function(require,module,exports){
+},{"../Subscription":553,"../scheduler/async":725,"../util/args":742,"../util/arrRemove":745,"../util/executeSchedule":749,"../util/lift":761,"./OperatorSubscriber":588}],594:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -53621,23 +53637,23 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.bufferToggle = void 0;
 var Subscription_1 = require("../Subscription");
 var lift_1 = require("../util/lift");
-var from_1 = require("../observable/from");
+var innerFrom_1 = require("../observable/innerFrom");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 var noop_1 = require("../util/noop");
 var arrRemove_1 = require("../util/arrRemove");
 function bufferToggle(openings, closingSelector) {
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var buffers = [];
-        from_1.innerFrom(openings).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (openValue) {
+        (0, innerFrom_1.innerFrom)(openings).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (openValue) {
             var buffer = [];
             buffers.push(buffer);
             var closingSubscription = new Subscription_1.Subscription();
             var emitBuffer = function () {
-                arrRemove_1.arrRemove(buffers, buffer);
+                (0, arrRemove_1.arrRemove)(buffers, buffer);
                 subscriber.next(buffer);
                 closingSubscription.unsubscribe();
             };
-            closingSubscription.add(from_1.innerFrom(closingSelector(openValue)).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, emitBuffer, noop_1.noop)));
+            closingSubscription.add((0, innerFrom_1.innerFrom)(closingSelector(openValue)).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, emitBuffer, noop_1.noop)));
         }, noop_1.noop));
         source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
             var e_1, _a;
@@ -53664,16 +53680,16 @@ function bufferToggle(openings, closingSelector) {
 }
 exports.bufferToggle = bufferToggle;
 
-},{"../Subscription":553,"../observable/from":568,"../util/arrRemove":745,"../util/lift":761,"../util/noop":763,"./OperatorSubscriber":588}],595:[function(require,module,exports){
+},{"../Subscription":553,"../observable/innerFrom":574,"../util/arrRemove":745,"../util/lift":761,"../util/noop":763,"./OperatorSubscriber":588}],595:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.bufferWhen = void 0;
 var lift_1 = require("../util/lift");
 var noop_1 = require("../util/noop");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
-var from_1 = require("../observable/from");
+var innerFrom_1 = require("../observable/innerFrom");
 function bufferWhen(closingSelector) {
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var buffer = null;
         var closingSubscriber = null;
         var openBuffer = function () {
@@ -53681,7 +53697,7 @@ function bufferWhen(closingSelector) {
             var b = buffer;
             buffer = [];
             b && subscriber.next(b);
-            from_1.innerFrom(closingSelector()).subscribe((closingSubscriber = new OperatorSubscriber_1.OperatorSubscriber(subscriber, openBuffer, noop_1.noop)));
+            (0, innerFrom_1.innerFrom)(closingSelector()).subscribe((closingSubscriber = new OperatorSubscriber_1.OperatorSubscriber(subscriber, openBuffer, noop_1.noop)));
         };
         openBuffer();
         source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) { return buffer === null || buffer === void 0 ? void 0 : buffer.push(value); }, function () {
@@ -53692,20 +53708,20 @@ function bufferWhen(closingSelector) {
 }
 exports.bufferWhen = bufferWhen;
 
-},{"../observable/from":568,"../util/lift":761,"../util/noop":763,"./OperatorSubscriber":588}],596:[function(require,module,exports){
+},{"../observable/innerFrom":574,"../util/lift":761,"../util/noop":763,"./OperatorSubscriber":588}],596:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.catchError = void 0;
-var from_1 = require("../observable/from");
+var innerFrom_1 = require("../observable/innerFrom");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 var lift_1 = require("../util/lift");
 function catchError(selector) {
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var innerSub = null;
         var syncUnsub = false;
         var handledResult;
         innerSub = source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, undefined, undefined, function (err) {
-            handledResult = from_1.innerFrom(selector(err, catchError(selector)(source)));
+            handledResult = (0, innerFrom_1.innerFrom)(selector(err, catchError(selector)(source)));
             if (innerSub) {
                 innerSub.unsubscribe();
                 innerSub = null;
@@ -53724,7 +53740,7 @@ function catchError(selector) {
 }
 exports.catchError = catchError;
 
-},{"../observable/from":568,"../util/lift":761,"./OperatorSubscriber":588}],597:[function(require,module,exports){
+},{"../observable/innerFrom":574,"../util/lift":761,"./OperatorSubscriber":588}],597:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.combineAll = void 0;
@@ -53749,10 +53765,14 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.combineLatest = void 0;
@@ -53767,11 +53787,11 @@ function combineLatest() {
     for (var _i = 0; _i < arguments.length; _i++) {
         args[_i] = arguments[_i];
     }
-    var resultSelector = args_1.popResultSelector(args);
+    var resultSelector = (0, args_1.popResultSelector)(args);
     return resultSelector
-        ? pipe_1.pipe(combineLatest.apply(void 0, __spreadArray([], __read(args))), mapOneOrManyArgs_1.mapOneOrManyArgs(resultSelector))
-        : lift_1.operate(function (source, subscriber) {
-            combineLatest_1.combineLatestInit(__spreadArray([source], __read(argsOrArgArray_1.argsOrArgArray(args))))(subscriber);
+        ? (0, pipe_1.pipe)(combineLatest.apply(void 0, __spreadArray([], __read(args), false)), (0, mapOneOrManyArgs_1.mapOneOrManyArgs)(resultSelector))
+        : (0, lift_1.operate)(function (source, subscriber) {
+            (0, combineLatest_1.combineLatestInit)(__spreadArray([source], __read((0, argsOrArgArray_1.argsOrArgArray)(args)), false))(subscriber);
         });
 }
 exports.combineLatest = combineLatest;
@@ -53783,7 +53803,7 @@ exports.combineLatestAll = void 0;
 var combineLatest_1 = require("../observable/combineLatest");
 var joinAllInternals_1 = require("./joinAllInternals");
 function combineLatestAll(project) {
-    return joinAllInternals_1.joinAllInternals(combineLatest_1.combineLatest, project);
+    return (0, joinAllInternals_1.joinAllInternals)(combineLatest_1.combineLatest, project);
 }
 exports.combineLatestAll = combineLatestAll;
 
@@ -53805,10 +53825,14 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.combineLatestWith = void 0;
@@ -53818,7 +53842,7 @@ function combineLatestWith() {
     for (var _i = 0; _i < arguments.length; _i++) {
         otherSources[_i] = arguments[_i];
     }
-    return combineLatest_1.combineLatest.apply(void 0, __spreadArray([], __read(otherSources)));
+    return combineLatest_1.combineLatest.apply(void 0, __spreadArray([], __read(otherSources), false));
 }
 exports.combineLatestWith = combineLatestWith;
 
@@ -53840,36 +53864,40 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.concat = void 0;
 var lift_1 = require("../util/lift");
 var concatAll_1 = require("./concatAll");
-var fromArray_1 = require("../observable/fromArray");
 var args_1 = require("../util/args");
+var from_1 = require("../observable/from");
 function concat() {
     var args = [];
     for (var _i = 0; _i < arguments.length; _i++) {
         args[_i] = arguments[_i];
     }
-    var scheduler = args_1.popScheduler(args);
-    return lift_1.operate(function (source, subscriber) {
-        concatAll_1.concatAll()(fromArray_1.internalFromArray(__spreadArray([source], __read(args)), scheduler)).subscribe(subscriber);
+    var scheduler = (0, args_1.popScheduler)(args);
+    return (0, lift_1.operate)(function (source, subscriber) {
+        (0, concatAll_1.concatAll)()((0, from_1.from)(__spreadArray([source], __read(args), false), scheduler)).subscribe(subscriber);
     });
 }
 exports.concat = concat;
 
-},{"../observable/fromArray":569,"../util/args":742,"../util/lift":761,"./concatAll":602}],602:[function(require,module,exports){
+},{"../observable/from":568,"../util/args":742,"../util/lift":761,"./concatAll":602}],602:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.concatAll = void 0;
 var mergeAll_1 = require("./mergeAll");
 function concatAll() {
-    return mergeAll_1.mergeAll(1);
+    return (0, mergeAll_1.mergeAll)(1);
 }
 exports.concatAll = concatAll;
 
@@ -53880,7 +53908,7 @@ exports.concatMap = void 0;
 var mergeMap_1 = require("./mergeMap");
 var isFunction_1 = require("../util/isFunction");
 function concatMap(project, resultSelector) {
-    return isFunction_1.isFunction(resultSelector) ? mergeMap_1.mergeMap(project, resultSelector, 1) : mergeMap_1.mergeMap(project, 1);
+    return (0, isFunction_1.isFunction)(resultSelector) ? (0, mergeMap_1.mergeMap)(project, resultSelector, 1) : (0, mergeMap_1.mergeMap)(project, 1);
 }
 exports.concatMap = concatMap;
 
@@ -53891,7 +53919,7 @@ exports.concatMapTo = void 0;
 var concatMap_1 = require("./concatMap");
 var isFunction_1 = require("../util/isFunction");
 function concatMapTo(innerObservable, resultSelector) {
-    return isFunction_1.isFunction(resultSelector) ? concatMap_1.concatMap(function () { return innerObservable; }, resultSelector) : concatMap_1.concatMap(function () { return innerObservable; });
+    return (0, isFunction_1.isFunction)(resultSelector) ? (0, concatMap_1.concatMap)(function () { return innerObservable; }, resultSelector) : (0, concatMap_1.concatMap)(function () { return innerObservable; });
 }
 exports.concatMapTo = concatMapTo;
 
@@ -53913,10 +53941,14 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.concatWith = void 0;
@@ -53926,7 +53958,7 @@ function concatWith() {
     for (var _i = 0; _i < arguments.length; _i++) {
         otherSources[_i] = arguments[_i];
     }
-    return concat_1.concat.apply(void 0, __spreadArray([], __read(otherSources)));
+    return concat_1.concat.apply(void 0, __spreadArray([], __read(otherSources), false));
 }
 exports.concatWith = concatWith;
 
@@ -53944,21 +53976,21 @@ var DEFAULT_CONFIG = {
 function connect(selector, config) {
     if (config === void 0) { config = DEFAULT_CONFIG; }
     var connector = config.connector;
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var subject = connector();
-        from_1.from(selector(fromSubscribable_1.fromSubscribable(subject))).subscribe(subscriber);
+        (0, from_1.from)(selector((0, fromSubscribable_1.fromSubscribable)(subject))).subscribe(subscriber);
         subscriber.add(source.subscribe(subject));
     });
 }
 exports.connect = connect;
 
-},{"../Subject":551,"../observable/from":568,"../observable/fromSubscribable":572,"../util/lift":761}],607:[function(require,module,exports){
+},{"../Subject":551,"../observable/from":568,"../observable/fromSubscribable":571,"../util/lift":761}],607:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.count = void 0;
 var reduce_1 = require("./reduce");
 function count(predicate) {
-    return reduce_1.reduce(function (total, value, i) { return (!predicate || predicate(value, i) ? total + 1 : total); }, 0);
+    return (0, reduce_1.reduce)(function (total, value, i) { return (!predicate || predicate(value, i) ? total + 1 : total); }, 0);
 }
 exports.count = count;
 
@@ -53969,9 +54001,9 @@ exports.debounce = void 0;
 var lift_1 = require("../util/lift");
 var noop_1 = require("../util/noop");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
-var from_1 = require("../observable/from");
+var innerFrom_1 = require("../observable/innerFrom");
 function debounce(durationSelector) {
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var hasValue = false;
         var lastValue = null;
         var durationSubscriber = null;
@@ -53990,7 +54022,7 @@ function debounce(durationSelector) {
             hasValue = true;
             lastValue = value;
             durationSubscriber = new OperatorSubscriber_1.OperatorSubscriber(subscriber, emit, noop_1.noop);
-            from_1.innerFrom(durationSelector(value)).subscribe(durationSubscriber);
+            (0, innerFrom_1.innerFrom)(durationSelector(value)).subscribe(durationSubscriber);
         }, function () {
             emit();
             subscriber.complete();
@@ -54001,7 +54033,7 @@ function debounce(durationSelector) {
 }
 exports.debounce = debounce;
 
-},{"../observable/from":568,"../util/lift":761,"../util/noop":763,"./OperatorSubscriber":588}],609:[function(require,module,exports){
+},{"../observable/innerFrom":574,"../util/lift":761,"../util/noop":763,"./OperatorSubscriber":588}],609:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.debounceTime = void 0;
@@ -54010,7 +54042,7 @@ var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function debounceTime(dueTime, scheduler) {
     if (scheduler === void 0) { scheduler = async_1.asyncScheduler; }
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var activeTask = null;
         var lastValue = null;
         var lastTime = null;
@@ -54057,7 +54089,7 @@ exports.defaultIfEmpty = void 0;
 var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function defaultIfEmpty(defaultValue) {
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var hasValue = false;
         source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
             hasValue = true;
@@ -54081,8 +54113,8 @@ var delayWhen_1 = require("./delayWhen");
 var timer_1 = require("../observable/timer");
 function delay(due, scheduler) {
     if (scheduler === void 0) { scheduler = async_1.asyncScheduler; }
-    var duration = timer_1.timer(due, scheduler);
-    return delayWhen_1.delayWhen(function () { return duration; });
+    var duration = (0, timer_1.timer)(due, scheduler);
+    return (0, delayWhen_1.delayWhen)(function () { return duration; });
 }
 exports.delay = delay;
 
@@ -54098,10 +54130,10 @@ var mergeMap_1 = require("./mergeMap");
 function delayWhen(delayDurationSelector, subscriptionDelay) {
     if (subscriptionDelay) {
         return function (source) {
-            return concat_1.concat(subscriptionDelay.pipe(take_1.take(1), ignoreElements_1.ignoreElements()), source.pipe(delayWhen(delayDurationSelector)));
+            return (0, concat_1.concat)(subscriptionDelay.pipe((0, take_1.take)(1), (0, ignoreElements_1.ignoreElements)()), source.pipe(delayWhen(delayDurationSelector)));
         };
     }
-    return mergeMap_1.mergeMap(function (value, index) { return delayDurationSelector(value, index).pipe(take_1.take(1), mapTo_1.mapTo(value)); });
+    return (0, mergeMap_1.mergeMap)(function (value, index) { return delayDurationSelector(value, index).pipe((0, take_1.take)(1), (0, mapTo_1.mapTo)(value)); });
 }
 exports.delayWhen = delayWhen;
 
@@ -54113,8 +54145,8 @@ var Notification_1 = require("../Notification");
 var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function dematerialize() {
-    return lift_1.operate(function (source, subscriber) {
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (notification) { return Notification_1.observeNotification(notification, subscriber); }));
+    return (0, lift_1.operate)(function (source, subscriber) {
+        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (notification) { return (0, Notification_1.observeNotification)(notification, subscriber); }));
     });
 }
 exports.dematerialize = dematerialize;
@@ -54127,7 +54159,7 @@ var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 var noop_1 = require("../util/noop");
 function distinct(keySelector, flushes) {
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var distinctKeys = new Set();
         source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
             var key = keySelector ? keySelector(value) : value;
@@ -54151,7 +54183,7 @@ var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function distinctUntilChanged(comparator, keySelector) {
     if (keySelector === void 0) { keySelector = identity_1.identity; }
     comparator = comparator !== null && comparator !== void 0 ? comparator : defaultCompare;
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var previousKey;
         var first = true;
         source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
@@ -54175,7 +54207,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.distinctUntilKeyChanged = void 0;
 var distinctUntilChanged_1 = require("./distinctUntilChanged");
 function distinctUntilKeyChanged(key, compare) {
-    return distinctUntilChanged_1.distinctUntilChanged(function (x, y) { return compare ? compare(x[key], y[key]) : x[key] === y[key]; });
+    return (0, distinctUntilChanged_1.distinctUntilChanged)(function (x, y) { return compare ? compare(x[key], y[key]) : x[key] === y[key]; });
 }
 exports.distinctUntilKeyChanged = distinctUntilKeyChanged;
 
@@ -54194,7 +54226,7 @@ function elementAt(index, defaultValue) {
     }
     var hasDefaultValue = arguments.length >= 2;
     return function (source) {
-        return source.pipe(filter_1.filter(function (v, i) { return i === index; }), take_1.take(1), hasDefaultValue ? defaultIfEmpty_1.defaultIfEmpty(defaultValue) : throwIfEmpty_1.throwIfEmpty(function () { return new ArgumentOutOfRangeError_1.ArgumentOutOfRangeError(); }));
+        return source.pipe((0, filter_1.filter)(function (v, i) { return i === index; }), (0, take_1.take)(1), hasDefaultValue ? (0, defaultIfEmpty_1.defaultIfEmpty)(defaultValue) : (0, throwIfEmpty_1.throwIfEmpty)(function () { return new ArgumentOutOfRangeError_1.ArgumentOutOfRangeError(); }));
     };
 }
 exports.elementAt = elementAt;
@@ -54217,10 +54249,14 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.endWith = void 0;
@@ -54231,7 +54267,7 @@ function endWith() {
     for (var _i = 0; _i < arguments.length; _i++) {
         values[_i] = arguments[_i];
     }
-    return function (source) { return concat_1.concat(source, of_1.of.apply(void 0, __spreadArray([], __read(values)))); };
+    return function (source) { return (0, concat_1.concat)(source, of_1.of.apply(void 0, __spreadArray([], __read(values), false))); };
 }
 exports.endWith = endWith;
 
@@ -54242,7 +54278,7 @@ exports.every = void 0;
 var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function every(predicate, thisArg) {
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var index = 0;
         source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
             if (!predicate.call(thisArg, value, index++, source)) {
@@ -54269,15 +54305,15 @@ exports.exhaust = exhaustAll_1.exhaustAll;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.exhaustAll = void 0;
 var lift_1 = require("../util/lift");
-var from_1 = require("../observable/from");
+var innerFrom_1 = require("../observable/innerFrom");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function exhaustAll() {
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var isComplete = false;
         var innerSub = null;
         source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (inner) {
             if (!innerSub) {
-                innerSub = from_1.innerFrom(inner).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, undefined, function () {
+                innerSub = (0, innerFrom_1.innerFrom)(inner).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, undefined, function () {
                     innerSub = null;
                     isComplete && subscriber.complete();
                 }));
@@ -54290,21 +54326,21 @@ function exhaustAll() {
 }
 exports.exhaustAll = exhaustAll;
 
-},{"../observable/from":568,"../util/lift":761,"./OperatorSubscriber":588}],622:[function(require,module,exports){
+},{"../observable/innerFrom":574,"../util/lift":761,"./OperatorSubscriber":588}],622:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.exhaustMap = void 0;
 var map_1 = require("./map");
-var from_1 = require("../observable/from");
+var innerFrom_1 = require("../observable/innerFrom");
 var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function exhaustMap(project, resultSelector) {
     if (resultSelector) {
         return function (source) {
-            return source.pipe(exhaustMap(function (a, i) { return from_1.innerFrom(project(a, i)).pipe(map_1.map(function (b, ii) { return resultSelector(a, b, i, ii); })); }));
+            return source.pipe(exhaustMap(function (a, i) { return (0, innerFrom_1.innerFrom)(project(a, i)).pipe((0, map_1.map)(function (b, ii) { return resultSelector(a, b, i, ii); })); }));
         };
     }
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var index = 0;
         var innerSub = null;
         var isComplete = false;
@@ -54314,7 +54350,7 @@ function exhaustMap(project, resultSelector) {
                     innerSub = null;
                     isComplete && subscriber.complete();
                 });
-                from_1.innerFrom(project(outerValue, index++)).subscribe(innerSub);
+                (0, innerFrom_1.innerFrom)(project(outerValue, index++)).subscribe(innerSub);
             }
         }, function () {
             isComplete = true;
@@ -54324,7 +54360,7 @@ function exhaustMap(project, resultSelector) {
 }
 exports.exhaustMap = exhaustMap;
 
-},{"../observable/from":568,"../util/lift":761,"./OperatorSubscriber":588,"./map":635}],623:[function(require,module,exports){
+},{"../observable/innerFrom":574,"../util/lift":761,"./OperatorSubscriber":588,"./map":635}],623:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.expand = void 0;
@@ -54333,8 +54369,8 @@ var mergeInternals_1 = require("./mergeInternals");
 function expand(project, concurrent, scheduler) {
     if (concurrent === void 0) { concurrent = Infinity; }
     concurrent = (concurrent || 0) < 1 ? Infinity : concurrent;
-    return lift_1.operate(function (source, subscriber) {
-        return mergeInternals_1.mergeInternals(source, subscriber, project, concurrent, undefined, true, scheduler);
+    return (0, lift_1.operate)(function (source, subscriber) {
+        return (0, mergeInternals_1.mergeInternals)(source, subscriber, project, concurrent, undefined, true, scheduler);
     });
 }
 exports.expand = expand;
@@ -54346,7 +54382,7 @@ exports.filter = void 0;
 var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function filter(predicate, thisArg) {
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var index = 0;
         source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) { return predicate.call(thisArg, value, index++) && subscriber.next(value); }));
     });
@@ -54359,7 +54395,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.finalize = void 0;
 var lift_1 = require("../util/lift");
 function finalize(callback) {
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         try {
             source.subscribe(subscriber);
         }
@@ -54377,7 +54413,7 @@ exports.createFind = exports.find = void 0;
 var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function find(predicate, thisArg) {
-    return lift_1.operate(createFind(predicate, thisArg, 'value'));
+    return (0, lift_1.operate)(createFind(predicate, thisArg, 'value'));
 }
 exports.find = find;
 function createFind(predicate, thisArg, emit) {
@@ -54405,7 +54441,7 @@ exports.findIndex = void 0;
 var lift_1 = require("../util/lift");
 var find_1 = require("./find");
 function findIndex(predicate, thisArg) {
-    return lift_1.operate(find_1.createFind(predicate, thisArg, 'index'));
+    return (0, lift_1.operate)((0, find_1.createFind)(predicate, thisArg, 'index'));
 }
 exports.findIndex = findIndex;
 
@@ -54422,7 +54458,7 @@ var identity_1 = require("../util/identity");
 function first(predicate, defaultValue) {
     var hasDefaultValue = arguments.length >= 2;
     return function (source) {
-        return source.pipe(predicate ? filter_1.filter(function (v, i) { return predicate(v, i, source); }) : identity_1.identity, take_1.take(1), hasDefaultValue ? defaultIfEmpty_1.defaultIfEmpty(defaultValue) : throwIfEmpty_1.throwIfEmpty(function () { return new EmptyError_1.EmptyError(); }));
+        return source.pipe(predicate ? (0, filter_1.filter)(function (v, i) { return predicate(v, i, source); }) : identity_1.identity, (0, take_1.take)(1), hasDefaultValue ? (0, defaultIfEmpty_1.defaultIfEmpty)(defaultValue) : (0, throwIfEmpty_1.throwIfEmpty)(function () { return new EmptyError_1.EmptyError(); }));
     };
 }
 exports.first = first;
@@ -54454,12 +54490,12 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.groupBy = void 0;
 var Observable_1 = require("../Observable");
-var from_1 = require("../observable/from");
+var innerFrom_1 = require("../observable/innerFrom");
 var Subject_1 = require("../Subject");
 var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function groupBy(keySelector, elementOrOptions, duration, connector) {
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var element;
         if (!elementOrOptions || typeof elementOrOptions === 'function') {
             element = elementOrOptions;
@@ -54486,7 +54522,7 @@ function groupBy(keySelector, elementOrOptions, duration, connector) {
                             group_1.complete();
                             durationSubscriber_1 === null || durationSubscriber_1 === void 0 ? void 0 : durationSubscriber_1.unsubscribe();
                         }, undefined, undefined, function () { return groups.delete(key_1); });
-                        groupBySourceSubscriber.add(from_1.innerFrom(duration(grouped)).subscribe(durationSubscriber_1));
+                        groupBySourceSubscriber.add((0, innerFrom_1.innerFrom)(duration(grouped)).subscribe(durationSubscriber_1));
                     }
                 }
                 group_1.next(element ? element(value) : value);
@@ -54528,7 +54564,7 @@ var GroupBySubscriber = (function (_super) {
     return GroupBySubscriber;
 }(OperatorSubscriber_1.OperatorSubscriber));
 
-},{"../Observable":548,"../Subject":551,"../observable/from":568,"../util/lift":761,"./OperatorSubscriber":588}],631:[function(require,module,exports){
+},{"../Observable":548,"../Subject":551,"../observable/innerFrom":574,"../util/lift":761,"./OperatorSubscriber":588}],631:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ignoreElements = void 0;
@@ -54536,7 +54572,7 @@ var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 var noop_1 = require("../util/noop");
 function ignoreElements() {
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, noop_1.noop));
     });
 }
@@ -54549,7 +54585,7 @@ exports.isEmpty = void 0;
 var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function isEmpty() {
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function () {
             subscriber.next(false);
             subscriber.complete();
@@ -54571,7 +54607,7 @@ var pipe_1 = require("../util/pipe");
 var mergeMap_1 = require("./mergeMap");
 var toArray_1 = require("./toArray");
 function joinAllInternals(joinFn, project) {
-    return pipe_1.pipe(toArray_1.toArray(), mergeMap_1.mergeMap(function (sources) { return joinFn(sources); }), project ? mapOneOrManyArgs_1.mapOneOrManyArgs(project) : identity_1.identity);
+    return (0, pipe_1.pipe)((0, toArray_1.toArray)(), (0, mergeMap_1.mergeMap)(function (sources) { return joinFn(sources); }), project ? (0, mapOneOrManyArgs_1.mapOneOrManyArgs)(project) : identity_1.identity);
 }
 exports.joinAllInternals = joinAllInternals;
 
@@ -54588,7 +54624,7 @@ var identity_1 = require("../util/identity");
 function last(predicate, defaultValue) {
     var hasDefaultValue = arguments.length >= 2;
     return function (source) {
-        return source.pipe(predicate ? filter_1.filter(function (v, i) { return predicate(v, i, source); }) : identity_1.identity, takeLast_1.takeLast(1), hasDefaultValue ? defaultIfEmpty_1.defaultIfEmpty(defaultValue) : throwIfEmpty_1.throwIfEmpty(function () { return new EmptyError_1.EmptyError(); }));
+        return source.pipe(predicate ? (0, filter_1.filter)(function (v, i) { return predicate(v, i, source); }) : identity_1.identity, (0, takeLast_1.takeLast)(1), hasDefaultValue ? (0, defaultIfEmpty_1.defaultIfEmpty)(defaultValue) : (0, throwIfEmpty_1.throwIfEmpty)(function () { return new EmptyError_1.EmptyError(); }));
     };
 }
 exports.last = last;
@@ -54600,7 +54636,7 @@ exports.map = void 0;
 var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function map(project, thisArg) {
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var index = 0;
         source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
             subscriber.next(project.call(thisArg, value, index++));
@@ -54615,7 +54651,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.mapTo = void 0;
 var map_1 = require("./map");
 function mapTo(value) {
-    return map_1.map(function () { return value; });
+    return (0, map_1.map)(function () { return value; });
 }
 exports.mapTo = mapTo;
 
@@ -54627,7 +54663,7 @@ var Notification_1 = require("../Notification");
 var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function materialize() {
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
             subscriber.next(Notification_1.Notification.createNext(value));
         }, function () {
@@ -54648,7 +54684,7 @@ exports.max = void 0;
 var reduce_1 = require("./reduce");
 var isFunction_1 = require("../util/isFunction");
 function max(comparer) {
-    return reduce_1.reduce(isFunction_1.isFunction(comparer) ? function (x, y) { return (comparer(x, y) > 0 ? x : y); } : function (x, y) { return (x > y ? x : y); });
+    return (0, reduce_1.reduce)((0, isFunction_1.isFunction)(comparer) ? function (x, y) { return (comparer(x, y) > 0 ? x : y); } : function (x, y) { return (x > y ? x : y); });
 }
 exports.max = max;
 
@@ -54670,33 +54706,37 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.merge = void 0;
 var lift_1 = require("../util/lift");
 var argsOrArgArray_1 = require("../util/argsOrArgArray");
-var fromArray_1 = require("../observable/fromArray");
 var mergeAll_1 = require("./mergeAll");
 var args_1 = require("../util/args");
+var from_1 = require("../observable/from");
 function merge() {
     var args = [];
     for (var _i = 0; _i < arguments.length; _i++) {
         args[_i] = arguments[_i];
     }
-    var scheduler = args_1.popScheduler(args);
-    var concurrent = args_1.popNumber(args, Infinity);
-    args = argsOrArgArray_1.argsOrArgArray(args);
-    return lift_1.operate(function (source, subscriber) {
-        mergeAll_1.mergeAll(concurrent)(fromArray_1.internalFromArray(__spreadArray([source], __read(args)), scheduler)).subscribe(subscriber);
+    var scheduler = (0, args_1.popScheduler)(args);
+    var concurrent = (0, args_1.popNumber)(args, Infinity);
+    args = (0, argsOrArgArray_1.argsOrArgArray)(args);
+    return (0, lift_1.operate)(function (source, subscriber) {
+        (0, mergeAll_1.mergeAll)(concurrent)((0, from_1.from)(__spreadArray([source], __read(args), false), scheduler)).subscribe(subscriber);
     });
 }
 exports.merge = merge;
 
-},{"../observable/fromArray":569,"../util/args":742,"../util/argsOrArgArray":744,"../util/lift":761,"./mergeAll":640}],640:[function(require,module,exports){
+},{"../observable/from":568,"../util/args":742,"../util/argsOrArgArray":744,"../util/lift":761,"./mergeAll":640}],640:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mergeAll = void 0;
@@ -54704,7 +54744,7 @@ var mergeMap_1 = require("./mergeMap");
 var identity_1 = require("../util/identity");
 function mergeAll(concurrent) {
     if (concurrent === void 0) { concurrent = Infinity; }
-    return mergeMap_1.mergeMap(identity_1.identity, concurrent);
+    return (0, mergeMap_1.mergeMap)(identity_1.identity, concurrent);
 }
 exports.mergeAll = mergeAll;
 
@@ -54712,7 +54752,8 @@ exports.mergeAll = mergeAll;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mergeInternals = void 0;
-var from_1 = require("../observable/from");
+var innerFrom_1 = require("../observable/innerFrom");
+var executeSchedule_1 = require("../util/executeSchedule");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function mergeInternals(source, subscriber, project, concurrent, onBeforeNext, expand, innerSubScheduler, additionalTeardown) {
     var buffer = [];
@@ -54729,7 +54770,7 @@ function mergeInternals(source, subscriber, project, concurrent, onBeforeNext, e
         expand && subscriber.next(value);
         active++;
         var innerComplete = false;
-        from_1.innerFrom(project(value, index++)).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (innerValue) {
+        (0, innerFrom_1.innerFrom)(project(value, index++)).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (innerValue) {
             onBeforeNext === null || onBeforeNext === void 0 ? void 0 : onBeforeNext(innerValue);
             if (expand) {
                 outerNext(innerValue);
@@ -54745,7 +54786,12 @@ function mergeInternals(source, subscriber, project, concurrent, onBeforeNext, e
                     active--;
                     var _loop_1 = function () {
                         var bufferedValue = buffer.shift();
-                        innerSubScheduler ? subscriber.add(innerSubScheduler.schedule(function () { return doInnerSub(bufferedValue); })) : doInnerSub(bufferedValue);
+                        if (innerSubScheduler) {
+                            (0, executeSchedule_1.executeSchedule)(subscriber, innerSubScheduler, function () { return doInnerSub(bufferedValue); });
+                        }
+                        else {
+                            doInnerSub(bufferedValue);
+                        }
                     };
                     while (buffer.length && active < concurrent) {
                         _loop_1();
@@ -54768,28 +54814,28 @@ function mergeInternals(source, subscriber, project, concurrent, onBeforeNext, e
 }
 exports.mergeInternals = mergeInternals;
 
-},{"../observable/from":568,"./OperatorSubscriber":588}],642:[function(require,module,exports){
+},{"../observable/innerFrom":574,"../util/executeSchedule":749,"./OperatorSubscriber":588}],642:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mergeMap = void 0;
 var map_1 = require("./map");
-var from_1 = require("../observable/from");
+var innerFrom_1 = require("../observable/innerFrom");
 var lift_1 = require("../util/lift");
 var mergeInternals_1 = require("./mergeInternals");
 var isFunction_1 = require("../util/isFunction");
 function mergeMap(project, resultSelector, concurrent) {
     if (concurrent === void 0) { concurrent = Infinity; }
-    if (isFunction_1.isFunction(resultSelector)) {
-        return mergeMap(function (a, i) { return map_1.map(function (b, ii) { return resultSelector(a, b, i, ii); })(from_1.innerFrom(project(a, i))); }, concurrent);
+    if ((0, isFunction_1.isFunction)(resultSelector)) {
+        return mergeMap(function (a, i) { return (0, map_1.map)(function (b, ii) { return resultSelector(a, b, i, ii); })((0, innerFrom_1.innerFrom)(project(a, i))); }, concurrent);
     }
     else if (typeof resultSelector === 'number') {
         concurrent = resultSelector;
     }
-    return lift_1.operate(function (source, subscriber) { return mergeInternals_1.mergeInternals(source, subscriber, project, concurrent); });
+    return (0, lift_1.operate)(function (source, subscriber) { return (0, mergeInternals_1.mergeInternals)(source, subscriber, project, concurrent); });
 }
 exports.mergeMap = mergeMap;
 
-},{"../observable/from":568,"../util/isFunction":754,"../util/lift":761,"./map":635,"./mergeInternals":641}],643:[function(require,module,exports){
+},{"../observable/innerFrom":574,"../util/isFunction":754,"../util/lift":761,"./map":635,"./mergeInternals":641}],643:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mergeMapTo = void 0;
@@ -54797,13 +54843,13 @@ var mergeMap_1 = require("./mergeMap");
 var isFunction_1 = require("../util/isFunction");
 function mergeMapTo(innerObservable, resultSelector, concurrent) {
     if (concurrent === void 0) { concurrent = Infinity; }
-    if (isFunction_1.isFunction(resultSelector)) {
-        return mergeMap_1.mergeMap(function () { return innerObservable; }, resultSelector, concurrent);
+    if ((0, isFunction_1.isFunction)(resultSelector)) {
+        return (0, mergeMap_1.mergeMap)(function () { return innerObservable; }, resultSelector, concurrent);
     }
     if (typeof resultSelector === 'number') {
         concurrent = resultSelector;
     }
-    return mergeMap_1.mergeMap(function () { return innerObservable; }, concurrent);
+    return (0, mergeMap_1.mergeMap)(function () { return innerObservable; }, concurrent);
 }
 exports.mergeMapTo = mergeMapTo;
 
@@ -54815,9 +54861,9 @@ var lift_1 = require("../util/lift");
 var mergeInternals_1 = require("./mergeInternals");
 function mergeScan(accumulator, seed, concurrent) {
     if (concurrent === void 0) { concurrent = Infinity; }
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var state = seed;
-        return mergeInternals_1.mergeInternals(source, subscriber, function (value, index) { return accumulator(state, value, index); }, concurrent, function (value) {
+        return (0, mergeInternals_1.mergeInternals)(source, subscriber, function (value, index) { return accumulator(state, value, index); }, concurrent, function (value) {
             state = value;
         }, false, undefined, function () { return (state = null); });
     });
@@ -54842,10 +54888,14 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mergeWith = void 0;
@@ -54855,7 +54905,7 @@ function mergeWith() {
     for (var _i = 0; _i < arguments.length; _i++) {
         otherSources[_i] = arguments[_i];
     }
-    return merge_1.merge.apply(void 0, __spreadArray([], __read(otherSources)));
+    return merge_1.merge.apply(void 0, __spreadArray([], __read(otherSources), false));
 }
 exports.mergeWith = mergeWith;
 
@@ -54866,7 +54916,7 @@ exports.min = void 0;
 var reduce_1 = require("./reduce");
 var isFunction_1 = require("../util/isFunction");
 function min(comparer) {
-    return reduce_1.reduce(isFunction_1.isFunction(comparer) ? function (x, y) { return (comparer(x, y) < 0 ? x : y); } : function (x, y) { return (x < y ? x : y); });
+    return (0, reduce_1.reduce)((0, isFunction_1.isFunction)(comparer) ? function (x, y) { return (comparer(x, y) < 0 ? x : y); } : function (x, y) { return (x < y ? x : y); });
 }
 exports.min = min;
 
@@ -54878,9 +54928,9 @@ var ConnectableObservable_1 = require("../observable/ConnectableObservable");
 var isFunction_1 = require("../util/isFunction");
 var connect_1 = require("./connect");
 function multicast(subjectOrSubjectFactory, selector) {
-    var subjectFactory = isFunction_1.isFunction(subjectOrSubjectFactory) ? subjectOrSubjectFactory : function () { return subjectOrSubjectFactory; };
-    if (isFunction_1.isFunction(selector)) {
-        return connect_1.connect(selector, {
+    var subjectFactory = (0, isFunction_1.isFunction)(subjectOrSubjectFactory) ? subjectOrSubjectFactory : function () { return subjectOrSubjectFactory; };
+    if ((0, isFunction_1.isFunction)(selector)) {
+        return (0, connect_1.connect)(selector, {
             connector: subjectFactory,
         });
     }
@@ -54892,17 +54942,18 @@ exports.multicast = multicast;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.observeOn = void 0;
+var executeSchedule_1 = require("../util/executeSchedule");
 var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function observeOn(scheduler, delay) {
     if (delay === void 0) { delay = 0; }
-    return lift_1.operate(function (source, subscriber) {
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) { return subscriber.add(scheduler.schedule(function () { return subscriber.next(value); }, delay)); }, function () { return subscriber.add(scheduler.schedule(function () { return subscriber.complete(); }, delay)); }, function (err) { return subscriber.add(scheduler.schedule(function () { return subscriber.error(err); }, delay)); }));
+    return (0, lift_1.operate)(function (source, subscriber) {
+        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) { return (0, executeSchedule_1.executeSchedule)(subscriber, scheduler, function () { return subscriber.next(value); }, delay); }, function () { return (0, executeSchedule_1.executeSchedule)(subscriber, scheduler, function () { return subscriber.complete(); }, delay); }, function (err) { return (0, executeSchedule_1.executeSchedule)(subscriber, scheduler, function () { return subscriber.error(err); }, delay); }));
     });
 }
 exports.observeOn = observeOn;
 
-},{"../util/lift":761,"./OperatorSubscriber":588}],649:[function(require,module,exports){
+},{"../util/executeSchedule":749,"../util/lift":761,"./OperatorSubscriber":588}],649:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -54920,15 +54971,19 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.onErrorResumeNext = void 0;
 var lift_1 = require("../util/lift");
-var from_1 = require("../observable/from");
+var innerFrom_1 = require("../observable/innerFrom");
 var argsOrArgArray_1 = require("../util/argsOrArgArray");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 var noop_1 = require("../util/noop");
@@ -54937,15 +54992,15 @@ function onErrorResumeNext() {
     for (var _i = 0; _i < arguments.length; _i++) {
         sources[_i] = arguments[_i];
     }
-    var nextSources = argsOrArgArray_1.argsOrArgArray(sources);
-    return lift_1.operate(function (source, subscriber) {
-        var remaining = __spreadArray([source], __read(nextSources));
+    var nextSources = (0, argsOrArgArray_1.argsOrArgArray)(sources);
+    return (0, lift_1.operate)(function (source, subscriber) {
+        var remaining = __spreadArray([source], __read(nextSources), false);
         var subscribeNext = function () {
             if (!subscriber.closed) {
                 if (remaining.length > 0) {
                     var nextSource = void 0;
                     try {
-                        nextSource = from_1.innerFrom(remaining.shift());
+                        nextSource = (0, innerFrom_1.innerFrom)(remaining.shift());
                     }
                     catch (err) {
                         subscribeNext();
@@ -54965,14 +55020,14 @@ function onErrorResumeNext() {
 }
 exports.onErrorResumeNext = onErrorResumeNext;
 
-},{"../observable/from":568,"../util/argsOrArgArray":744,"../util/lift":761,"../util/noop":763,"./OperatorSubscriber":588}],650:[function(require,module,exports){
+},{"../observable/innerFrom":574,"../util/argsOrArgArray":744,"../util/lift":761,"../util/noop":763,"./OperatorSubscriber":588}],650:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pairwise = void 0;
 var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function pairwise() {
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var prev;
         var hasPrev = false;
         source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
@@ -54993,7 +55048,7 @@ var not_1 = require("../util/not");
 var filter_1 = require("./filter");
 function partition(predicate, thisArg) {
     return function (source) {
-        return [filter_1.filter(predicate, thisArg)(source), filter_1.filter(not_1.not(predicate, thisArg))(source)];
+        return [(0, filter_1.filter)(predicate, thisArg)(source), (0, filter_1.filter)((0, not_1.not)(predicate, thisArg))(source)];
     };
 }
 exports.partition = partition;
@@ -55012,7 +55067,7 @@ function pluck() {
     if (length === 0) {
         throw new Error('list of properties cannot be empty.');
     }
-    return map_1.map(function (x) {
+    return (0, map_1.map)(function (x) {
         var currentProp = x;
         for (var i = 0; i < length; i++) {
             var p = currentProp === null || currentProp === void 0 ? void 0 : currentProp[properties[i]];
@@ -55036,7 +55091,7 @@ var Subject_1 = require("../Subject");
 var multicast_1 = require("./multicast");
 var connect_1 = require("./connect");
 function publish(selector) {
-    return selector ? function (source) { return connect_1.connect(selector)(source); } : function (source) { return multicast_1.multicast(new Subject_1.Subject())(source); };
+    return selector ? function (source) { return (0, connect_1.connect)(selector)(source); } : function (source) { return (0, multicast_1.multicast)(new Subject_1.Subject())(source); };
 }
 exports.publish = publish;
 
@@ -55076,11 +55131,11 @@ var ReplaySubject_1 = require("../ReplaySubject");
 var multicast_1 = require("./multicast");
 var isFunction_1 = require("../util/isFunction");
 function publishReplay(bufferSize, windowTime, selectorOrScheduler, timestampProvider) {
-    if (selectorOrScheduler && !isFunction_1.isFunction(selectorOrScheduler)) {
+    if (selectorOrScheduler && !(0, isFunction_1.isFunction)(selectorOrScheduler)) {
         timestampProvider = selectorOrScheduler;
     }
-    var selector = isFunction_1.isFunction(selectorOrScheduler) ? selectorOrScheduler : undefined;
-    return function (source) { return multicast_1.multicast(new ReplaySubject_1.ReplaySubject(bufferSize, windowTime, timestampProvider), selector)(source); };
+    var selector = (0, isFunction_1.isFunction)(selectorOrScheduler) ? selectorOrScheduler : undefined;
+    return function (source) { return (0, multicast_1.multicast)(new ReplaySubject_1.ReplaySubject(bufferSize, windowTime, timestampProvider), selector)(source); };
 }
 exports.publishReplay = publishReplay;
 
@@ -55102,10 +55157,14 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.race = void 0;
@@ -55116,7 +55175,7 @@ function race() {
     for (var _i = 0; _i < arguments.length; _i++) {
         args[_i] = arguments[_i];
     }
-    return raceWith_1.raceWith.apply(void 0, __spreadArray([], __read(argsOrArgArray_1.argsOrArgArray(args))));
+    return raceWith_1.raceWith.apply(void 0, __spreadArray([], __read((0, argsOrArgArray_1.argsOrArgArray)(args)), false));
 }
 exports.race = race;
 
@@ -55138,10 +55197,14 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.raceWith = void 0;
@@ -55155,8 +55218,8 @@ function raceWith() {
     }
     return !otherSources.length
         ? identity_1.identity
-        : lift_1.operate(function (source, subscriber) {
-            race_1.raceInit(__spreadArray([source], __read(otherSources)))(subscriber);
+        : (0, lift_1.operate)(function (source, subscriber) {
+            (0, race_1.raceInit)(__spreadArray([source], __read(otherSources), false))(subscriber);
         });
 }
 exports.raceWith = raceWith;
@@ -55168,7 +55231,7 @@ exports.reduce = void 0;
 var scanInternals_1 = require("./scanInternals");
 var lift_1 = require("../util/lift");
 function reduce(accumulator, seed) {
-    return lift_1.operate(scanInternals_1.scanInternals(accumulator, seed, arguments.length >= 2, false, true));
+    return (0, lift_1.operate)((0, scanInternals_1.scanInternals)(accumulator, seed, arguments.length >= 2, false, true));
 }
 exports.reduce = reduce;
 
@@ -55179,7 +55242,7 @@ exports.refCount = void 0;
 var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function refCount() {
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var connection = null;
         source._refCount++;
         var refCounter = new OperatorSubscriber_1.OperatorSubscriber(subscriber, undefined, undefined, undefined, function () {
@@ -55214,7 +55277,7 @@ function repeat(count) {
     if (count === void 0) { count = Infinity; }
     return count <= 0
         ? function () { return empty_1.EMPTY; }
-        : lift_1.operate(function (source, subscriber) {
+        : (0, lift_1.operate)(function (source, subscriber) {
             var soFar = 0;
             var innerSub;
             var subscribeForRepeat = function () {
@@ -55253,7 +55316,7 @@ var Subject_1 = require("../Subject");
 var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function repeatWhen(notifier) {
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var innerSub;
         var syncResub = false;
         var completions$;
@@ -55303,7 +55366,7 @@ var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 var identity_1 = require("../util/identity");
 var timer_1 = require("../observable/timer");
-var from_1 = require("../observable/from");
+var innerFrom_1 = require("../observable/innerFrom");
 function retry(configOrCount) {
     if (configOrCount === void 0) { configOrCount = Infinity; }
     var config;
@@ -55318,7 +55381,7 @@ function retry(configOrCount) {
     var _a = config.count, count = _a === void 0 ? Infinity : _a, delay = config.delay, _b = config.resetOnSuccess, resetOnSuccess = _b === void 0 ? false : _b;
     return count <= 0
         ? identity_1.identity
-        : lift_1.operate(function (source, subscriber) {
+        : (0, lift_1.operate)(function (source, subscriber) {
             var soFar = 0;
             var innerSub;
             var subscribeForRetry = function () {
@@ -55341,7 +55404,7 @@ function retry(configOrCount) {
                             }
                         };
                         if (delay != null) {
-                            var notifier = typeof delay === 'number' ? timer_1.timer(delay) : from_1.innerFrom(delay(err, soFar));
+                            var notifier = typeof delay === 'number' ? (0, timer_1.timer)(delay) : (0, innerFrom_1.innerFrom)(delay(err, soFar));
                             var notifierSubscriber_1 = new OperatorSubscriber_1.OperatorSubscriber(subscriber, function () {
                                 notifierSubscriber_1.unsubscribe();
                                 resub_1();
@@ -55369,7 +55432,7 @@ function retry(configOrCount) {
 }
 exports.retry = retry;
 
-},{"../observable/from":568,"../observable/timer":585,"../util/identity":750,"../util/lift":761,"./OperatorSubscriber":588}],664:[function(require,module,exports){
+},{"../observable/innerFrom":574,"../observable/timer":585,"../util/identity":750,"../util/lift":761,"./OperatorSubscriber":588}],664:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.retryWhen = void 0;
@@ -55377,7 +55440,7 @@ var Subject_1 = require("../Subject");
 var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function retryWhen(notifier) {
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var innerSub;
         var syncResub = false;
         var errors$;
@@ -55413,7 +55476,7 @@ var lift_1 = require("../util/lift");
 var noop_1 = require("../util/noop");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function sample(notifier) {
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var hasValue = false;
         var lastValue = null;
         source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
@@ -55442,7 +55505,7 @@ var sample_1 = require("./sample");
 var interval_1 = require("../observable/interval");
 function sampleTime(period, scheduler) {
     if (scheduler === void 0) { scheduler = async_1.asyncScheduler; }
-    return sample_1.sample(interval_1.interval(period, scheduler));
+    return (0, sample_1.sample)((0, interval_1.interval)(period, scheduler));
 }
 exports.sampleTime = sampleTime;
 
@@ -55453,7 +55516,7 @@ exports.scan = void 0;
 var lift_1 = require("../util/lift");
 var scanInternals_1 = require("./scanInternals");
 function scan(accumulator, seed) {
-    return lift_1.operate(scanInternals_1.scanInternals(accumulator, seed, arguments.length >= 2, true));
+    return (0, lift_1.operate)((0, scanInternals_1.scanInternals)(accumulator, seed, arguments.length >= 2, true));
 }
 exports.scan = scan;
 
@@ -55492,7 +55555,7 @@ var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function sequenceEqual(compareTo, comparator) {
     if (comparator === void 0) { comparator = function (a, b) { return a === b; }; }
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var aState = createState();
         var bState = createState();
         var emit = function (isEqual) {
@@ -55546,10 +55609,14 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.share = void 0;
@@ -55582,7 +55649,7 @@ function share(options) {
             reset();
             conn === null || conn === void 0 ? void 0 : conn.unsubscribe();
         };
-        return lift_1.operate(function (source, subscriber) {
+        return (0, lift_1.operate)(function (source, subscriber) {
             refCount++;
             if (!hasErrored && !hasCompleted) {
                 cancelReset();
@@ -55611,7 +55678,7 @@ function share(options) {
                         dest.complete();
                     },
                 });
-                from_1.from(source).subscribe(connection);
+                (0, from_1.from)(source).subscribe(connection);
             }
         })(wrapperSource);
     };
@@ -55629,7 +55696,7 @@ function handleReset(reset, on) {
     if (on === false) {
         return null;
     }
-    return on.apply(void 0, __spreadArray([], __read(args))).pipe(take_1.take(1))
+    return on.apply(void 0, __spreadArray([], __read(args), false)).pipe((0, take_1.take)(1))
         .subscribe(function () { return reset(); });
 }
 
@@ -55652,7 +55719,7 @@ function shareReplay(configOrBufferSize, windowTime, scheduler) {
     else {
         bufferSize = configOrBufferSize !== null && configOrBufferSize !== void 0 ? configOrBufferSize : Infinity;
     }
-    return share_1.share({
+    return (0, share_1.share)({
         connector: function () { return new ReplaySubject_1.ReplaySubject(bufferSize, windowTime, scheduler); },
         resetOnError: true,
         resetOnComplete: false,
@@ -55671,7 +55738,7 @@ var NotFoundError_1 = require("../util/NotFoundError");
 var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function single(predicate) {
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var hasValue = false;
         var singleValue;
         var seenValue = false;
@@ -55702,7 +55769,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.skip = void 0;
 var filter_1 = require("./filter");
 function skip(count) {
-    return filter_1.filter(function (_, index) { return count <= index; });
+    return (0, filter_1.filter)(function (_, index) { return count <= index; });
 }
 exports.skip = skip;
 
@@ -55717,7 +55784,7 @@ function skipLast(skipCount) {
     return skipCount <= 0
         ?
             identity_1.identity
-        : lift_1.operate(function (source, subscriber) {
+        : (0, lift_1.operate)(function (source, subscriber) {
             var ring = new Array(skipCount);
             var seen = 0;
             source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
@@ -55745,29 +55812,29 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.skipUntil = void 0;
 var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
-var from_1 = require("../observable/from");
+var innerFrom_1 = require("../observable/innerFrom");
 var noop_1 = require("../util/noop");
 function skipUntil(notifier) {
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var taking = false;
         var skipSubscriber = new OperatorSubscriber_1.OperatorSubscriber(subscriber, function () {
             skipSubscriber === null || skipSubscriber === void 0 ? void 0 : skipSubscriber.unsubscribe();
             taking = true;
         }, noop_1.noop);
-        from_1.innerFrom(notifier).subscribe(skipSubscriber);
+        (0, innerFrom_1.innerFrom)(notifier).subscribe(skipSubscriber);
         source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) { return taking && subscriber.next(value); }));
     });
 }
 exports.skipUntil = skipUntil;
 
-},{"../observable/from":568,"../util/lift":761,"../util/noop":763,"./OperatorSubscriber":588}],676:[function(require,module,exports){
+},{"../observable/innerFrom":574,"../util/lift":761,"../util/noop":763,"./OperatorSubscriber":588}],676:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.skipWhile = void 0;
 var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function skipWhile(predicate) {
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var taking = false;
         var index = 0;
         source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) { return (taking || (taking = !predicate(value, index++))) && subscriber.next(value); }));
@@ -55787,9 +55854,9 @@ function startWith() {
     for (var _i = 0; _i < arguments.length; _i++) {
         values[_i] = arguments[_i];
     }
-    var scheduler = args_1.popScheduler(values);
-    return lift_1.operate(function (source, subscriber) {
-        (scheduler ? concat_1.concat(values, source, scheduler) : concat_1.concat(values, source)).subscribe(subscriber);
+    var scheduler = (0, args_1.popScheduler)(values);
+    return (0, lift_1.operate)(function (source, subscriber) {
+        (scheduler ? (0, concat_1.concat)(values, source, scheduler) : (0, concat_1.concat)(values, source)).subscribe(subscriber);
     });
 }
 exports.startWith = startWith;
@@ -55801,7 +55868,7 @@ exports.subscribeOn = void 0;
 var lift_1 = require("../util/lift");
 function subscribeOn(scheduler, delay) {
     if (delay === void 0) { delay = 0; }
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         subscriber.add(scheduler.schedule(function () { return source.subscribe(subscriber); }, delay));
     });
 }
@@ -55814,7 +55881,7 @@ exports.switchAll = void 0;
 var switchMap_1 = require("./switchMap");
 var identity_1 = require("../util/identity");
 function switchAll() {
-    return switchMap_1.switchMap(identity_1.identity);
+    return (0, switchMap_1.switchMap)(identity_1.identity);
 }
 exports.switchAll = switchAll;
 
@@ -55822,11 +55889,11 @@ exports.switchAll = switchAll;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.switchMap = void 0;
-var from_1 = require("../observable/from");
+var innerFrom_1 = require("../observable/innerFrom");
 var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function switchMap(project, resultSelector) {
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var innerSubscriber = null;
         var index = 0;
         var isComplete = false;
@@ -55835,7 +55902,7 @@ function switchMap(project, resultSelector) {
             innerSubscriber === null || innerSubscriber === void 0 ? void 0 : innerSubscriber.unsubscribe();
             var innerIndex = 0;
             var outerIndex = index++;
-            from_1.innerFrom(project(value, outerIndex)).subscribe((innerSubscriber = new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (innerValue) { return subscriber.next(resultSelector ? resultSelector(value, innerValue, outerIndex, innerIndex++) : innerValue); }, function () {
+            (0, innerFrom_1.innerFrom)(project(value, outerIndex)).subscribe((innerSubscriber = new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (innerValue) { return subscriber.next(resultSelector ? resultSelector(value, innerValue, outerIndex, innerIndex++) : innerValue); }, function () {
                 innerSubscriber = null;
                 checkComplete();
             })));
@@ -55847,14 +55914,14 @@ function switchMap(project, resultSelector) {
 }
 exports.switchMap = switchMap;
 
-},{"../observable/from":568,"../util/lift":761,"./OperatorSubscriber":588}],681:[function(require,module,exports){
+},{"../observable/innerFrom":574,"../util/lift":761,"./OperatorSubscriber":588}],681:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.switchMapTo = void 0;
 var switchMap_1 = require("./switchMap");
 var isFunction_1 = require("../util/isFunction");
 function switchMapTo(innerObservable, resultSelector) {
-    return isFunction_1.isFunction(resultSelector) ? switchMap_1.switchMap(function () { return innerObservable; }, resultSelector) : switchMap_1.switchMap(function () { return innerObservable; });
+    return (0, isFunction_1.isFunction)(resultSelector) ? (0, switchMap_1.switchMap)(function () { return innerObservable; }, resultSelector) : (0, switchMap_1.switchMap)(function () { return innerObservable; });
 }
 exports.switchMapTo = switchMapTo;
 
@@ -55865,9 +55932,9 @@ exports.switchScan = void 0;
 var switchMap_1 = require("./switchMap");
 var lift_1 = require("../util/lift");
 function switchScan(accumulator, seed) {
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var state = seed;
-        switchMap_1.switchMap(function (value, index) { return accumulator(state, value, index); }, function (_, innerValue) { return ((state = innerValue), innerValue); })(source).subscribe(subscriber);
+        (0, switchMap_1.switchMap)(function (value, index) { return accumulator(state, value, index); }, function (_, innerValue) { return ((state = innerValue), innerValue); })(source).subscribe(subscriber);
         return function () {
             state = null;
         };
@@ -55886,7 +55953,7 @@ function take(count) {
     return count <= 0
         ?
             function () { return empty_1.EMPTY; }
-        : lift_1.operate(function (source, subscriber) {
+        : (0, lift_1.operate)(function (source, subscriber) {
             var seen = 0;
             source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
                 if (++seen <= count) {
@@ -55921,7 +55988,7 @@ var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function takeLast(count) {
     return count <= 0
         ? function () { return empty_1.EMPTY; }
-        : lift_1.operate(function (source, subscriber) {
+        : (0, lift_1.operate)(function (source, subscriber) {
             var buffer = [];
             source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
                 buffer.push(value);
@@ -55955,17 +56022,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.takeUntil = void 0;
 var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
-var from_1 = require("../observable/from");
+var innerFrom_1 = require("../observable/innerFrom");
 var noop_1 = require("../util/noop");
 function takeUntil(notifier) {
-    return lift_1.operate(function (source, subscriber) {
-        from_1.innerFrom(notifier).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function () { return subscriber.complete(); }, noop_1.noop));
+    return (0, lift_1.operate)(function (source, subscriber) {
+        (0, innerFrom_1.innerFrom)(notifier).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function () { return subscriber.complete(); }, noop_1.noop));
         !subscriber.closed && source.subscribe(subscriber);
     });
 }
 exports.takeUntil = takeUntil;
 
-},{"../observable/from":568,"../util/lift":761,"../util/noop":763,"./OperatorSubscriber":588}],686:[function(require,module,exports){
+},{"../observable/innerFrom":574,"../util/lift":761,"../util/noop":763,"./OperatorSubscriber":588}],686:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.takeWhile = void 0;
@@ -55973,7 +56040,7 @@ var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function takeWhile(predicate, inclusive) {
     if (inclusive === void 0) { inclusive = false; }
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var index = 0;
         source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
             var result = predicate(value, index++);
@@ -55993,12 +56060,12 @@ var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 var identity_1 = require("../util/identity");
 function tap(observerOrNext, error, complete) {
-    var tapObserver = isFunction_1.isFunction(observerOrNext) || error || complete
+    var tapObserver = (0, isFunction_1.isFunction)(observerOrNext) || error || complete
         ?
             { next: observerOrNext, error: error, complete: complete }
         : observerOrNext;
     return tapObserver
-        ? lift_1.operate(function (source, subscriber) {
+        ? (0, lift_1.operate)(function (source, subscriber) {
             var _a;
             (_a = tapObserver.subscribe) === null || _a === void 0 ? void 0 : _a.call(tapObserver);
             var isUnsub = true;
@@ -56035,14 +56102,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.throttle = exports.defaultThrottleConfig = void 0;
 var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
-var from_1 = require("../observable/from");
+var innerFrom_1 = require("../observable/innerFrom");
 exports.defaultThrottleConfig = {
     leading: true,
     trailing: false,
 };
 function throttle(durationSelector, _a) {
     var _b = _a === void 0 ? exports.defaultThrottleConfig : _a, leading = _b.leading, trailing = _b.trailing;
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var hasValue = false;
         var sendValue = null;
         var throttled = null;
@@ -56060,7 +56127,7 @@ function throttle(durationSelector, _a) {
             isComplete && subscriber.complete();
         };
         var startThrottle = function (value) {
-            return (throttled = from_1.innerFrom(durationSelector(value)).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, endThrottling, cleanupThrottling)));
+            return (throttled = (0, innerFrom_1.innerFrom)(durationSelector(value)).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, endThrottling, cleanupThrottling)));
         };
         var send = function () {
             if (hasValue) {
@@ -56083,7 +56150,7 @@ function throttle(durationSelector, _a) {
 }
 exports.throttle = throttle;
 
-},{"../observable/from":568,"../util/lift":761,"./OperatorSubscriber":588}],689:[function(require,module,exports){
+},{"../observable/innerFrom":574,"../util/lift":761,"./OperatorSubscriber":588}],689:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.throttleTime = void 0;
@@ -56093,8 +56160,8 @@ var timer_1 = require("../observable/timer");
 function throttleTime(duration, scheduler, config) {
     if (scheduler === void 0) { scheduler = async_1.asyncScheduler; }
     if (config === void 0) { config = throttle_1.defaultThrottleConfig; }
-    var duration$ = timer_1.timer(duration, scheduler);
-    return throttle_1.throttle(function () { return duration$; }, config);
+    var duration$ = (0, timer_1.timer)(duration, scheduler);
+    return (0, throttle_1.throttle)(function () { return duration$; }, config);
 }
 exports.throttleTime = throttleTime;
 
@@ -56107,7 +56174,7 @@ var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function throwIfEmpty(errorFactory) {
     if (errorFactory === void 0) { errorFactory = defaultErrorFactory; }
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var hasValue = false;
         source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
             hasValue = true;
@@ -56131,15 +56198,15 @@ var map_1 = require("./map");
 function timeInterval(scheduler) {
     if (scheduler === void 0) { scheduler = async_1.async; }
     return function (source) {
-        return defer_1.defer(function () {
-            return source.pipe(scan_1.scan(function (_a, value) {
+        return (0, defer_1.defer)(function () {
+            return source.pipe((0, scan_1.scan)(function (_a, value) {
                 var current = _a.current;
                 return ({ value: value, current: scheduler.now(), last: current });
             }, {
                 current: scheduler.now(),
                 value: undefined,
                 last: undefined,
-            }), map_1.map(function (_a) {
+            }), (0, map_1.map)(function (_a) {
                 var current = _a.current, last = _a.last, value = _a.value;
                 return new TimeInterval(value, current - last);
             }));
@@ -56163,11 +56230,11 @@ exports.timeout = exports.TimeoutError = void 0;
 var async_1 = require("../scheduler/async");
 var isDate_1 = require("../util/isDate");
 var lift_1 = require("../util/lift");
-var from_1 = require("../observable/from");
+var innerFrom_1 = require("../observable/innerFrom");
 var createErrorClass_1 = require("../util/createErrorClass");
-var caughtSchedule_1 = require("../util/caughtSchedule");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
-exports.TimeoutError = createErrorClass_1.createErrorClass(function (_super) {
+var executeSchedule_1 = require("../util/executeSchedule");
+exports.TimeoutError = (0, createErrorClass_1.createErrorClass)(function (_super) {
     return function TimeoutErrorImpl(info) {
         if (info === void 0) { info = null; }
         _super(this);
@@ -56177,7 +56244,7 @@ exports.TimeoutError = createErrorClass_1.createErrorClass(function (_super) {
     };
 });
 function timeout(config, schedulerArg) {
-    var _a = (isDate_1.isValidDate(config)
+    var _a = ((0, isDate_1.isValidDate)(config)
         ? { first: config }
         : typeof config === 'number'
             ? { each: config }
@@ -56185,19 +56252,24 @@ function timeout(config, schedulerArg) {
     if (first == null && each == null) {
         throw new TypeError('No timeout provided.');
     }
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var originalSourceSubscription;
         var timerSubscription;
         var lastValue = null;
         var seen = 0;
         var startTimer = function (delay) {
-            timerSubscription = caughtSchedule_1.caughtSchedule(subscriber, scheduler, function () {
-                originalSourceSubscription.unsubscribe();
-                from_1.innerFrom(_with({
-                    meta: meta,
-                    lastValue: lastValue,
-                    seen: seen,
-                })).subscribe(subscriber);
+            timerSubscription = (0, executeSchedule_1.executeSchedule)(subscriber, scheduler, function () {
+                try {
+                    originalSourceSubscription.unsubscribe();
+                    (0, innerFrom_1.innerFrom)(_with({
+                        meta: meta,
+                        lastValue: lastValue,
+                        seen: seen,
+                    })).subscribe(subscriber);
+                }
+                catch (err) {
+                    subscriber.error(err);
+                }
             }, delay);
         };
         originalSourceSubscription = source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
@@ -56219,7 +56291,7 @@ function timeoutErrorFactory(info) {
     throw new exports.TimeoutError(info);
 }
 
-},{"../observable/from":568,"../scheduler/async":725,"../util/caughtSchedule":746,"../util/createErrorClass":747,"../util/isDate":753,"../util/lift":761,"./OperatorSubscriber":588}],693:[function(require,module,exports){
+},{"../observable/innerFrom":574,"../scheduler/async":725,"../util/createErrorClass":746,"../util/executeSchedule":749,"../util/isDate":753,"../util/lift":761,"./OperatorSubscriber":588}],693:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.timeoutWith = void 0;
@@ -56231,7 +56303,7 @@ function timeoutWith(due, withObservable, scheduler) {
     var each;
     var _with;
     scheduler = scheduler !== null && scheduler !== void 0 ? scheduler : async_1.async;
-    if (isDate_1.isValidDate(due)) {
+    if ((0, isDate_1.isValidDate)(due)) {
         first = due;
     }
     else if (typeof due === 'number') {
@@ -56246,7 +56318,7 @@ function timeoutWith(due, withObservable, scheduler) {
     if (first == null && each == null) {
         throw new TypeError('No timeout provided.');
     }
-    return timeout_1.timeout({
+    return (0, timeout_1.timeout)({
         first: first,
         each: each,
         scheduler: scheduler,
@@ -56263,7 +56335,7 @@ var dateTimestampProvider_1 = require("../scheduler/dateTimestampProvider");
 var map_1 = require("./map");
 function timestamp(timestampProvider) {
     if (timestampProvider === void 0) { timestampProvider = dateTimestampProvider_1.dateTimestampProvider; }
-    return map_1.map(function (value) { return ({ value: value, timestamp: timestampProvider.now() }); });
+    return (0, map_1.map)(function (value) { return ({ value: value, timestamp: timestampProvider.now() }); });
 }
 exports.timestamp = timestamp;
 
@@ -56275,8 +56347,8 @@ var reduce_1 = require("./reduce");
 var lift_1 = require("../util/lift");
 var arrReducer = function (arr, value) { return (arr.push(value), arr); };
 function toArray() {
-    return lift_1.operate(function (source, subscriber) {
-        reduce_1.reduce(arrReducer, [])(source).subscribe(subscriber);
+    return (0, lift_1.operate)(function (source, subscriber) {
+        (0, reduce_1.reduce)(arrReducer, [])(source).subscribe(subscriber);
     });
 }
 exports.toArray = toArray;
@@ -56290,7 +56362,7 @@ var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 var noop_1 = require("../util/noop");
 function window(windowBoundaries) {
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var windowSubject = new Subject_1.Subject();
         subscriber.next(windowSubject.asObservable());
         var errorHandler = function (err) {
@@ -56334,7 +56406,7 @@ var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function windowCount(windowSize, startWindowEvery) {
     if (startWindowEvery === void 0) { startWindowEvery = 0; }
     var startEvery = startWindowEvery > 0 ? startWindowEvery : windowSize;
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var windows = [new Subject_1.Subject()];
         var starts = [];
         var count = 0;
@@ -56392,23 +56464,24 @@ var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 var arrRemove_1 = require("../util/arrRemove");
 var args_1 = require("../util/args");
+var executeSchedule_1 = require("../util/executeSchedule");
 function windowTime(windowTimeSpan) {
     var _a, _b;
     var otherArgs = [];
     for (var _i = 1; _i < arguments.length; _i++) {
         otherArgs[_i - 1] = arguments[_i];
     }
-    var scheduler = (_a = args_1.popScheduler(otherArgs)) !== null && _a !== void 0 ? _a : async_1.asyncScheduler;
+    var scheduler = (_a = (0, args_1.popScheduler)(otherArgs)) !== null && _a !== void 0 ? _a : async_1.asyncScheduler;
     var windowCreationInterval = (_b = otherArgs[0]) !== null && _b !== void 0 ? _b : null;
     var maxWindowSize = otherArgs[1] || Infinity;
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var windowRecords = [];
         var restartOnClose = false;
         var closeWindow = function (record) {
             var window = record.window, subs = record.subs;
             window.complete();
             subs.unsubscribe();
-            arrRemove_1.arrRemove(windowRecords, record);
+            (0, arrRemove_1.arrRemove)(windowRecords, record);
             restartOnClose && startWindow();
         };
         var startWindow = function () {
@@ -56423,16 +56496,15 @@ function windowTime(windowTimeSpan) {
                 };
                 windowRecords.push(record_1);
                 subscriber.next(window_1.asObservable());
-                subs.add(scheduler.schedule(function () { return closeWindow(record_1); }, windowTimeSpan));
+                (0, executeSchedule_1.executeSchedule)(subs, scheduler, function () { return closeWindow(record_1); }, windowTimeSpan);
             }
         };
-        windowCreationInterval !== null && windowCreationInterval >= 0
-            ?
-                subscriber.add(scheduler.schedule(function () {
-                    startWindow();
-                    !this.closed && subscriber.add(this.schedule(null, windowCreationInterval));
-                }, windowCreationInterval))
-            : (restartOnClose = true);
+        if (windowCreationInterval !== null && windowCreationInterval >= 0) {
+            (0, executeSchedule_1.executeSchedule)(subscriber, scheduler, startWindow, windowCreationInterval, true);
+        }
+        else {
+            restartOnClose = true;
+        }
         startWindow();
         var loop = function (cb) { return windowRecords.slice().forEach(cb); };
         var terminate = function (cb) {
@@ -56456,7 +56528,7 @@ function windowTime(windowTimeSpan) {
 }
 exports.windowTime = windowTime;
 
-},{"../Subject":551,"../Subscription":553,"../scheduler/async":725,"../util/args":742,"../util/arrRemove":745,"../util/lift":761,"./OperatorSubscriber":588}],699:[function(require,module,exports){
+},{"../Subject":551,"../Subscription":553,"../scheduler/async":725,"../util/args":742,"../util/arrRemove":745,"../util/executeSchedule":749,"../util/lift":761,"./OperatorSubscriber":588}],699:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -56474,12 +56546,12 @@ exports.windowToggle = void 0;
 var Subject_1 = require("../Subject");
 var Subscription_1 = require("../Subscription");
 var lift_1 = require("../util/lift");
-var from_1 = require("../observable/from");
+var innerFrom_1 = require("../observable/innerFrom");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 var noop_1 = require("../util/noop");
 var arrRemove_1 = require("../util/arrRemove");
 function windowToggle(openings, closingSelector) {
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var windows = [];
         var handleError = function (err) {
             while (0 < windows.length) {
@@ -56487,18 +56559,18 @@ function windowToggle(openings, closingSelector) {
             }
             subscriber.error(err);
         };
-        from_1.innerFrom(openings).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (openValue) {
+        (0, innerFrom_1.innerFrom)(openings).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (openValue) {
             var window = new Subject_1.Subject();
             windows.push(window);
             var closingSubscription = new Subscription_1.Subscription();
             var closeWindow = function () {
-                arrRemove_1.arrRemove(windows, window);
+                (0, arrRemove_1.arrRemove)(windows, window);
                 window.complete();
                 closingSubscription.unsubscribe();
             };
             var closingNotifier;
             try {
-                closingNotifier = from_1.innerFrom(closingSelector(openValue));
+                closingNotifier = (0, innerFrom_1.innerFrom)(closingSelector(openValue));
             }
             catch (err) {
                 handleError(err);
@@ -56537,16 +56609,16 @@ function windowToggle(openings, closingSelector) {
 }
 exports.windowToggle = windowToggle;
 
-},{"../Subject":551,"../Subscription":553,"../observable/from":568,"../util/arrRemove":745,"../util/lift":761,"../util/noop":763,"./OperatorSubscriber":588}],700:[function(require,module,exports){
+},{"../Subject":551,"../Subscription":553,"../observable/innerFrom":574,"../util/arrRemove":745,"../util/lift":761,"../util/noop":763,"./OperatorSubscriber":588}],700:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.windowWhen = void 0;
 var Subject_1 = require("../Subject");
 var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
-var from_1 = require("../observable/from");
+var innerFrom_1 = require("../observable/innerFrom");
 function windowWhen(closingSelector) {
-    return lift_1.operate(function (source, subscriber) {
+    return (0, lift_1.operate)(function (source, subscriber) {
         var window;
         var closingSubscriber;
         var handleError = function (err) {
@@ -56560,7 +56632,7 @@ function windowWhen(closingSelector) {
             subscriber.next(window.asObservable());
             var closingNotifier;
             try {
-                closingNotifier = from_1.innerFrom(closingSelector());
+                closingNotifier = (0, innerFrom_1.innerFrom)(closingSelector());
             }
             catch (err) {
                 handleError(err);
@@ -56580,7 +56652,7 @@ function windowWhen(closingSelector) {
 }
 exports.windowWhen = windowWhen;
 
-},{"../Subject":551,"../observable/from":568,"../util/lift":761,"./OperatorSubscriber":588}],701:[function(require,module,exports){
+},{"../Subject":551,"../observable/innerFrom":574,"../util/lift":761,"./OperatorSubscriber":588}],701:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -56598,16 +56670,20 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.withLatestFrom = void 0;
 var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
-var from_1 = require("../observable/from");
+var innerFrom_1 = require("../observable/innerFrom");
 var identity_1 = require("../util/identity");
 var noop_1 = require("../util/noop");
 var args_1 = require("../util/args");
@@ -56616,14 +56692,14 @@ function withLatestFrom() {
     for (var _i = 0; _i < arguments.length; _i++) {
         inputs[_i] = arguments[_i];
     }
-    var project = args_1.popResultSelector(inputs);
-    return lift_1.operate(function (source, subscriber) {
+    var project = (0, args_1.popResultSelector)(inputs);
+    return (0, lift_1.operate)(function (source, subscriber) {
         var len = inputs.length;
         var otherValues = new Array(len);
         var hasValue = inputs.map(function () { return false; });
         var ready = false;
         var _loop_1 = function (i) {
-            from_1.innerFrom(inputs[i]).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+            (0, innerFrom_1.innerFrom)(inputs[i]).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
                 otherValues[i] = value;
                 if (!ready && !hasValue[i]) {
                     hasValue[i] = true;
@@ -56636,15 +56712,15 @@ function withLatestFrom() {
         }
         source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
             if (ready) {
-                var values = __spreadArray([value], __read(otherValues));
-                subscriber.next(project ? project.apply(void 0, __spreadArray([], __read(values))) : values);
+                var values = __spreadArray([value], __read(otherValues), false);
+                subscriber.next(project ? project.apply(void 0, __spreadArray([], __read(values), false)) : values);
             }
         }));
     });
 }
 exports.withLatestFrom = withLatestFrom;
 
-},{"../observable/from":568,"../util/args":742,"../util/identity":750,"../util/lift":761,"../util/noop":763,"./OperatorSubscriber":588}],702:[function(require,module,exports){
+},{"../observable/innerFrom":574,"../util/args":742,"../util/identity":750,"../util/lift":761,"../util/noop":763,"./OperatorSubscriber":588}],702:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -56662,10 +56738,14 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.zip = void 0;
@@ -56676,8 +56756,8 @@ function zip() {
     for (var _i = 0; _i < arguments.length; _i++) {
         sources[_i] = arguments[_i];
     }
-    return lift_1.operate(function (source, subscriber) {
-        zip_1.zip.apply(void 0, __spreadArray([source], __read(sources))).subscribe(subscriber);
+    return (0, lift_1.operate)(function (source, subscriber) {
+        zip_1.zip.apply(void 0, __spreadArray([source], __read(sources), false)).subscribe(subscriber);
     });
 }
 exports.zip = zip;
@@ -56689,7 +56769,7 @@ exports.zipAll = void 0;
 var zip_1 = require("../observable/zip");
 var joinAllInternals_1 = require("./joinAllInternals");
 function zipAll(project) {
-    return joinAllInternals_1.joinAllInternals(zip_1.zip, project);
+    return (0, joinAllInternals_1.joinAllInternals)(zip_1.zip, project);
 }
 exports.zipAll = zipAll;
 
@@ -56711,10 +56791,14 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.zipWith = void 0;
@@ -56724,7 +56808,7 @@ function zipWith() {
     for (var _i = 0; _i < arguments.length; _i++) {
         otherInputs[_i] = arguments[_i];
     }
-    return zip_1.zip.apply(void 0, __spreadArray([], __read(otherInputs)));
+    return zip_1.zip.apply(void 0, __spreadArray([], __read(otherInputs), false));
 }
 exports.zipWith = zipWith;
 
@@ -56756,114 +56840,98 @@ exports.scheduleArray = scheduleArray;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.scheduleAsyncIterable = void 0;
 var Observable_1 = require("../Observable");
-var Subscription_1 = require("../Subscription");
+var executeSchedule_1 = require("../util/executeSchedule");
 function scheduleAsyncIterable(input, scheduler) {
     if (!input) {
         throw new Error('Iterable cannot be null');
     }
     return new Observable_1.Observable(function (subscriber) {
-        var sub = new Subscription_1.Subscription();
-        sub.add(scheduler.schedule(function () {
+        (0, executeSchedule_1.executeSchedule)(subscriber, scheduler, function () {
             var iterator = input[Symbol.asyncIterator]();
-            sub.add(scheduler.schedule(function () {
-                var _this = this;
+            (0, executeSchedule_1.executeSchedule)(subscriber, scheduler, function () {
                 iterator.next().then(function (result) {
                     if (result.done) {
                         subscriber.complete();
                     }
                     else {
                         subscriber.next(result.value);
-                        _this.schedule();
                     }
                 });
-            }));
-        }));
-        return sub;
+            }, 0, true);
+        });
     });
 }
 exports.scheduleAsyncIterable = scheduleAsyncIterable;
 
-},{"../Observable":548,"../Subscription":553}],707:[function(require,module,exports){
+},{"../Observable":548,"../util/executeSchedule":749}],707:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.scheduleIterable = void 0;
 var Observable_1 = require("../Observable");
 var iterator_1 = require("../symbol/iterator");
 var isFunction_1 = require("../util/isFunction");
-var caughtSchedule_1 = require("../util/caughtSchedule");
+var executeSchedule_1 = require("../util/executeSchedule");
 function scheduleIterable(input, scheduler) {
     return new Observable_1.Observable(function (subscriber) {
         var iterator;
-        subscriber.add(scheduler.schedule(function () {
+        (0, executeSchedule_1.executeSchedule)(subscriber, scheduler, function () {
             iterator = input[iterator_1.iterator]();
-            caughtSchedule_1.caughtSchedule(subscriber, scheduler, function () {
-                var _a = iterator.next(), value = _a.value, done = _a.done;
+            (0, executeSchedule_1.executeSchedule)(subscriber, scheduler, function () {
+                var _a;
+                var value;
+                var done;
+                try {
+                    (_a = iterator.next(), value = _a.value, done = _a.done);
+                }
+                catch (err) {
+                    subscriber.error(err);
+                    return;
+                }
                 if (done) {
                     subscriber.complete();
                 }
                 else {
                     subscriber.next(value);
-                    this.schedule();
                 }
-            });
-        }));
-        return function () { return isFunction_1.isFunction(iterator === null || iterator === void 0 ? void 0 : iterator.return) && iterator.return(); };
+            }, 0, true);
+        });
+        return function () { return (0, isFunction_1.isFunction)(iterator === null || iterator === void 0 ? void 0 : iterator.return) && iterator.return(); };
     });
 }
 exports.scheduleIterable = scheduleIterable;
 
-},{"../Observable":548,"../symbol/iterator":732,"../util/caughtSchedule":746,"../util/isFunction":754}],708:[function(require,module,exports){
+},{"../Observable":548,"../symbol/iterator":732,"../util/executeSchedule":749,"../util/isFunction":754}],708:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.scheduleObservable = void 0;
-var Observable_1 = require("../Observable");
-var Subscription_1 = require("../Subscription");
-var observable_1 = require("../symbol/observable");
+var innerFrom_1 = require("../observable/innerFrom");
+var observeOn_1 = require("../operators/observeOn");
+var subscribeOn_1 = require("../operators/subscribeOn");
 function scheduleObservable(input, scheduler) {
-    return new Observable_1.Observable(function (subscriber) {
-        var sub = new Subscription_1.Subscription();
-        sub.add(scheduler.schedule(function () {
-            var observable = input[observable_1.observable]();
-            sub.add(observable.subscribe({
-                next: function (value) { sub.add(scheduler.schedule(function () { return subscriber.next(value); })); },
-                error: function (err) { sub.add(scheduler.schedule(function () { return subscriber.error(err); })); },
-                complete: function () { sub.add(scheduler.schedule(function () { return subscriber.complete(); })); },
-            }));
-        }));
-        return sub;
-    });
+    return (0, innerFrom_1.innerFrom)(input).pipe((0, subscribeOn_1.subscribeOn)(scheduler), (0, observeOn_1.observeOn)(scheduler));
 }
 exports.scheduleObservable = scheduleObservable;
 
-},{"../Observable":548,"../Subscription":553,"../symbol/observable":733}],709:[function(require,module,exports){
+},{"../observable/innerFrom":574,"../operators/observeOn":648,"../operators/subscribeOn":678}],709:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.schedulePromise = void 0;
-var Observable_1 = require("../Observable");
+var innerFrom_1 = require("../observable/innerFrom");
+var observeOn_1 = require("../operators/observeOn");
+var subscribeOn_1 = require("../operators/subscribeOn");
 function schedulePromise(input, scheduler) {
-    return new Observable_1.Observable(function (subscriber) {
-        return scheduler.schedule(function () {
-            return input.then(function (value) {
-                subscriber.add(scheduler.schedule(function () {
-                    subscriber.next(value);
-                    subscriber.add(scheduler.schedule(function () { return subscriber.complete(); }));
-                }));
-            }, function (err) {
-                subscriber.add(scheduler.schedule(function () { return subscriber.error(err); }));
-            });
-        });
-    });
+    return (0, innerFrom_1.innerFrom)(input).pipe((0, subscribeOn_1.subscribeOn)(scheduler), (0, observeOn_1.observeOn)(scheduler));
 }
 exports.schedulePromise = schedulePromise;
 
-},{"../Observable":548}],710:[function(require,module,exports){
+},{"../observable/innerFrom":574,"../operators/observeOn":648,"../operators/subscribeOn":678}],710:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.scheduleReadableStreamLike = void 0;
 var scheduleAsyncIterable_1 = require("./scheduleAsyncIterable");
 var isReadableStreamLike_1 = require("../util/isReadableStreamLike");
 function scheduleReadableStreamLike(input, scheduler) {
-    return scheduleAsyncIterable_1.scheduleAsyncIterable(isReadableStreamLike_1.readableStreamLikeToAsyncGenerator(input), scheduler);
+    return (0, scheduleAsyncIterable_1.scheduleAsyncIterable)((0, isReadableStreamLike_1.readableStreamLikeToAsyncGenerator)(input), scheduler);
 }
 exports.scheduleReadableStreamLike = scheduleReadableStreamLike;
 
@@ -56886,26 +56954,26 @@ var isReadableStreamLike_1 = require("../util/isReadableStreamLike");
 var scheduleReadableStreamLike_1 = require("./scheduleReadableStreamLike");
 function scheduled(input, scheduler) {
     if (input != null) {
-        if (isInteropObservable_1.isInteropObservable(input)) {
-            return scheduleObservable_1.scheduleObservable(input, scheduler);
+        if ((0, isInteropObservable_1.isInteropObservable)(input)) {
+            return (0, scheduleObservable_1.scheduleObservable)(input, scheduler);
         }
-        if (isArrayLike_1.isArrayLike(input)) {
-            return scheduleArray_1.scheduleArray(input, scheduler);
+        if ((0, isArrayLike_1.isArrayLike)(input)) {
+            return (0, scheduleArray_1.scheduleArray)(input, scheduler);
         }
-        if (isPromise_1.isPromise(input)) {
-            return schedulePromise_1.schedulePromise(input, scheduler);
+        if ((0, isPromise_1.isPromise)(input)) {
+            return (0, schedulePromise_1.schedulePromise)(input, scheduler);
         }
-        if (isAsyncIterable_1.isAsyncIterable(input)) {
-            return scheduleAsyncIterable_1.scheduleAsyncIterable(input, scheduler);
+        if ((0, isAsyncIterable_1.isAsyncIterable)(input)) {
+            return (0, scheduleAsyncIterable_1.scheduleAsyncIterable)(input, scheduler);
         }
-        if (isIterable_1.isIterable(input)) {
-            return scheduleIterable_1.scheduleIterable(input, scheduler);
+        if ((0, isIterable_1.isIterable)(input)) {
+            return (0, scheduleIterable_1.scheduleIterable)(input, scheduler);
         }
-        if (isReadableStreamLike_1.isReadableStreamLike(input)) {
-            return scheduleReadableStreamLike_1.scheduleReadableStreamLike(input, scheduler);
+        if ((0, isReadableStreamLike_1.isReadableStreamLike)(input)) {
+            return (0, scheduleReadableStreamLike_1.scheduleReadableStreamLike)(input, scheduler);
         }
     }
-    throw throwUnobservableError_1.createInvalidObservableTypeError(input);
+    throw (0, throwUnobservableError_1.createInvalidObservableTypeError)(input);
 }
 exports.scheduled = scheduled;
 
@@ -57226,7 +57294,7 @@ var AsyncAction = (function (_super) {
         }
         catch (e) {
             errored = true;
-            errorValue = (!!e && e) || new Error(e);
+            errorValue = e ? e : new Error('Scheduled action threw falsy error');
         }
         if (errored) {
             this.unsubscribe();
@@ -57239,7 +57307,7 @@ var AsyncAction = (function (_super) {
             var actions = scheduler.actions;
             this.work = this.state = this.scheduler = null;
             this.pending = false;
-            arrRemove_1.arrRemove(actions, this);
+            (0, arrRemove_1.arrRemove)(actions, this);
             if (id != null) {
                 this.id = this.recycleAsyncId(scheduler, id, null);
             }
@@ -57538,10 +57606,14 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.animationFrameProvider = void 0;
@@ -57567,7 +57639,7 @@ exports.animationFrameProvider = {
             args[_i] = arguments[_i];
         }
         var delegate = exports.animationFrameProvider.delegate;
-        return ((delegate === null || delegate === void 0 ? void 0 : delegate.requestAnimationFrame) || requestAnimationFrame).apply(void 0, __spreadArray([], __read(args)));
+        return ((delegate === null || delegate === void 0 ? void 0 : delegate.requestAnimationFrame) || requestAnimationFrame).apply(void 0, __spreadArray([], __read(args), false));
     },
     cancelAnimationFrame: function () {
         var args = [];
@@ -57575,7 +57647,7 @@ exports.animationFrameProvider = {
             args[_i] = arguments[_i];
         }
         var delegate = exports.animationFrameProvider.delegate;
-        return ((delegate === null || delegate === void 0 ? void 0 : delegate.cancelAnimationFrame) || cancelAnimationFrame).apply(void 0, __spreadArray([], __read(args)));
+        return ((delegate === null || delegate === void 0 ? void 0 : delegate.cancelAnimationFrame) || cancelAnimationFrame).apply(void 0, __spreadArray([], __read(args), false));
     },
     delegate: undefined,
 };
@@ -57627,10 +57699,14 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.immediateProvider = void 0;
@@ -57643,7 +57719,7 @@ exports.immediateProvider = {
             args[_i] = arguments[_i];
         }
         var delegate = exports.immediateProvider.delegate;
-        return ((delegate === null || delegate === void 0 ? void 0 : delegate.setImmediate) || setImmediate).apply(void 0, __spreadArray([], __read(args)));
+        return ((delegate === null || delegate === void 0 ? void 0 : delegate.setImmediate) || setImmediate).apply(void 0, __spreadArray([], __read(args), false));
     },
     clearImmediate: function (handle) {
         var delegate = exports.immediateProvider.delegate;
@@ -57670,10 +57746,14 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.intervalProvider = void 0;
@@ -57684,7 +57764,7 @@ exports.intervalProvider = {
             args[_i] = arguments[_i];
         }
         var delegate = exports.intervalProvider.delegate;
-        return ((delegate === null || delegate === void 0 ? void 0 : delegate.setInterval) || setInterval).apply(void 0, __spreadArray([], __read(args)));
+        return ((delegate === null || delegate === void 0 ? void 0 : delegate.setInterval) || setInterval).apply(void 0, __spreadArray([], __read(args), false));
     },
     clearInterval: function (handle) {
         var delegate = exports.intervalProvider.delegate;
@@ -57731,10 +57811,14 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.timeoutProvider = void 0;
@@ -57745,7 +57829,7 @@ exports.timeoutProvider = {
             args[_i] = arguments[_i];
         }
         var delegate = exports.timeoutProvider.delegate;
-        return ((delegate === null || delegate === void 0 ? void 0 : delegate.setTimeout) || setTimeout).apply(void 0, __spreadArray([], __read(args)));
+        return ((delegate === null || delegate === void 0 ? void 0 : delegate.setTimeout) || setTimeout).apply(void 0, __spreadArray([], __read(args), false));
     },
     clearTimeout: function (handle) {
         var delegate = exports.timeoutProvider.delegate;
@@ -57782,7 +57866,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ArgumentOutOfRangeError = void 0;
 var createErrorClass_1 = require("./createErrorClass");
-exports.ArgumentOutOfRangeError = createErrorClass_1.createErrorClass(function (_super) {
+exports.ArgumentOutOfRangeError = (0, createErrorClass_1.createErrorClass)(function (_super) {
     return function ArgumentOutOfRangeErrorImpl() {
         _super(this);
         this.name = 'ArgumentOutOfRangeError';
@@ -57790,18 +57874,18 @@ exports.ArgumentOutOfRangeError = createErrorClass_1.createErrorClass(function (
     };
 });
 
-},{"./createErrorClass":747}],736:[function(require,module,exports){
+},{"./createErrorClass":746}],736:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EmptyError = void 0;
 var createErrorClass_1 = require("./createErrorClass");
-exports.EmptyError = createErrorClass_1.createErrorClass(function (_super) { return function EmptyErrorImpl() {
+exports.EmptyError = (0, createErrorClass_1.createErrorClass)(function (_super) { return function EmptyErrorImpl() {
     _super(this);
     this.name = 'EmptyError';
     this.message = 'no elements in sequence';
 }; });
 
-},{"./createErrorClass":747}],737:[function(require,module,exports){
+},{"./createErrorClass":746}],737:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TestTools = exports.Immediate = void 0;
@@ -57840,7 +57924,7 @@ exports.TestTools = {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NotFoundError = void 0;
 var createErrorClass_1 = require("./createErrorClass");
-exports.NotFoundError = createErrorClass_1.createErrorClass(function (_super) {
+exports.NotFoundError = (0, createErrorClass_1.createErrorClass)(function (_super) {
     return function NotFoundErrorImpl(message) {
         _super(this);
         this.name = 'NotFoundError';
@@ -57848,12 +57932,12 @@ exports.NotFoundError = createErrorClass_1.createErrorClass(function (_super) {
     };
 });
 
-},{"./createErrorClass":747}],739:[function(require,module,exports){
+},{"./createErrorClass":746}],739:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ObjectUnsubscribedError = void 0;
 var createErrorClass_1 = require("./createErrorClass");
-exports.ObjectUnsubscribedError = createErrorClass_1.createErrorClass(function (_super) {
+exports.ObjectUnsubscribedError = (0, createErrorClass_1.createErrorClass)(function (_super) {
     return function ObjectUnsubscribedErrorImpl() {
         _super(this);
         this.name = 'ObjectUnsubscribedError';
@@ -57861,12 +57945,12 @@ exports.ObjectUnsubscribedError = createErrorClass_1.createErrorClass(function (
     };
 });
 
-},{"./createErrorClass":747}],740:[function(require,module,exports){
+},{"./createErrorClass":746}],740:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SequenceError = void 0;
 var createErrorClass_1 = require("./createErrorClass");
-exports.SequenceError = createErrorClass_1.createErrorClass(function (_super) {
+exports.SequenceError = (0, createErrorClass_1.createErrorClass)(function (_super) {
     return function SequenceErrorImpl(message) {
         _super(this);
         this.name = 'SequenceError';
@@ -57874,12 +57958,12 @@ exports.SequenceError = createErrorClass_1.createErrorClass(function (_super) {
     };
 });
 
-},{"./createErrorClass":747}],741:[function(require,module,exports){
+},{"./createErrorClass":746}],741:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UnsubscriptionError = void 0;
 var createErrorClass_1 = require("./createErrorClass");
-exports.UnsubscriptionError = createErrorClass_1.createErrorClass(function (_super) {
+exports.UnsubscriptionError = (0, createErrorClass_1.createErrorClass)(function (_super) {
     return function UnsubscriptionErrorImpl(errors) {
         _super(this);
         this.message = errors
@@ -57890,7 +57974,7 @@ exports.UnsubscriptionError = createErrorClass_1.createErrorClass(function (_sup
     };
 });
 
-},{"./createErrorClass":747}],742:[function(require,module,exports){
+},{"./createErrorClass":746}],742:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.popNumber = exports.popScheduler = exports.popResultSelector = void 0;
@@ -57900,11 +57984,11 @@ function last(arr) {
     return arr[arr.length - 1];
 }
 function popResultSelector(args) {
-    return isFunction_1.isFunction(last(args)) ? args.pop() : undefined;
+    return (0, isFunction_1.isFunction)(last(args)) ? args.pop() : undefined;
 }
 exports.popResultSelector = popResultSelector;
 function popScheduler(args) {
-    return isScheduler_1.isScheduler(last(args)) ? args.pop() : undefined;
+    return (0, isScheduler_1.isScheduler)(last(args)) ? args.pop() : undefined;
 }
 exports.popScheduler = popScheduler;
 function popNumber(args, defaultValue) {
@@ -57964,25 +58048,6 @@ exports.arrRemove = arrRemove;
 },{}],746:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.caughtSchedule = void 0;
-function caughtSchedule(subscriber, scheduler, execute, delay) {
-    if (delay === void 0) { delay = 0; }
-    var subscription = scheduler.schedule(function () {
-        try {
-            execute.call(this);
-        }
-        catch (err) {
-            subscriber.error(err);
-        }
-    }, delay);
-    subscriber.add(subscription);
-    return subscription;
-}
-exports.caughtSchedule = caughtSchedule;
-
-},{}],747:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 exports.createErrorClass = void 0;
 function createErrorClass(createImpl) {
     var _super = function (instance) {
@@ -57996,7 +58061,7 @@ function createErrorClass(createImpl) {
 }
 exports.createErrorClass = createErrorClass;
 
-},{}],748:[function(require,module,exports){
+},{}],747:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createObject = void 0;
@@ -58005,7 +58070,7 @@ function createObject(keys, values) {
 }
 exports.createObject = createObject;
 
-},{}],749:[function(require,module,exports){
+},{}],748:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.captureError = exports.errorContext = void 0;
@@ -58039,7 +58104,30 @@ function captureError(err) {
 }
 exports.captureError = captureError;
 
-},{"../config":554}],750:[function(require,module,exports){
+},{"../config":554}],749:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.executeSchedule = void 0;
+function executeSchedule(parentSubscription, scheduler, work, delay, repeat) {
+    if (delay === void 0) { delay = 0; }
+    if (repeat === void 0) { repeat = false; }
+    var scheduleSubscription = scheduler.schedule(function () {
+        work();
+        if (repeat) {
+            parentSubscription.add(this.schedule(null, delay));
+        }
+        else {
+            this.unsubscribe();
+        }
+    }, delay);
+    parentSubscription.add(scheduleSubscription);
+    if (!repeat) {
+        return scheduleSubscription;
+    }
+}
+exports.executeSchedule = executeSchedule;
+
+},{}],750:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.identity = void 0;
@@ -58060,7 +58148,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.isAsyncIterable = void 0;
 var isFunction_1 = require("./isFunction");
 function isAsyncIterable(obj) {
-    return Symbol.asyncIterator && isFunction_1.isFunction(obj === null || obj === void 0 ? void 0 : obj[Symbol.asyncIterator]);
+    return Symbol.asyncIterator && (0, isFunction_1.isFunction)(obj === null || obj === void 0 ? void 0 : obj[Symbol.asyncIterator]);
 }
 exports.isAsyncIterable = isAsyncIterable;
 
@@ -58089,7 +58177,7 @@ exports.isInteropObservable = void 0;
 var observable_1 = require("../symbol/observable");
 var isFunction_1 = require("./isFunction");
 function isInteropObservable(input) {
-    return isFunction_1.isFunction(input[observable_1.observable]);
+    return (0, isFunction_1.isFunction)(input[observable_1.observable]);
 }
 exports.isInteropObservable = isInteropObservable;
 
@@ -58100,7 +58188,7 @@ exports.isIterable = void 0;
 var iterator_1 = require("../symbol/iterator");
 var isFunction_1 = require("./isFunction");
 function isIterable(input) {
-    return isFunction_1.isFunction(input === null || input === void 0 ? void 0 : input[iterator_1.iterator]);
+    return (0, isFunction_1.isFunction)(input === null || input === void 0 ? void 0 : input[iterator_1.iterator]);
 }
 exports.isIterable = isIterable;
 
@@ -58111,7 +58199,7 @@ exports.isObservable = void 0;
 var Observable_1 = require("../Observable");
 var isFunction_1 = require("./isFunction");
 function isObservable(obj) {
-    return !!obj && (obj instanceof Observable_1.Observable || (isFunction_1.isFunction(obj.lift) && isFunction_1.isFunction(obj.subscribe)));
+    return !!obj && (obj instanceof Observable_1.Observable || ((0, isFunction_1.isFunction)(obj.lift) && (0, isFunction_1.isFunction)(obj.subscribe)));
 }
 exports.isObservable = isObservable;
 
@@ -58121,7 +58209,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.isPromise = void 0;
 var isFunction_1 = require("./isFunction");
 function isPromise(value) {
-    return isFunction_1.isFunction(value === null || value === void 0 ? void 0 : value.then);
+    return (0, isFunction_1.isFunction)(value === null || value === void 0 ? void 0 : value.then);
 }
 exports.isPromise = isPromise;
 
@@ -58204,7 +58292,7 @@ function readableStreamLikeToAsyncGenerator(readableStream) {
 }
 exports.readableStreamLikeToAsyncGenerator = readableStreamLikeToAsyncGenerator;
 function isReadableStreamLike(obj) {
-    return isFunction_1.isFunction(obj === null || obj === void 0 ? void 0 : obj.getReader);
+    return (0, isFunction_1.isFunction)(obj === null || obj === void 0 ? void 0 : obj.getReader);
 }
 exports.isReadableStreamLike = isReadableStreamLike;
 
@@ -58214,7 +58302,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.isScheduler = void 0;
 var isFunction_1 = require("./isFunction");
 function isScheduler(value) {
-    return value && isFunction_1.isFunction(value.schedule);
+    return value && (0, isFunction_1.isFunction)(value.schedule);
 }
 exports.isScheduler = isScheduler;
 
@@ -58224,7 +58312,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.operate = exports.hasLift = void 0;
 var isFunction_1 = require("./isFunction");
 function hasLift(source) {
-    return isFunction_1.isFunction(source === null || source === void 0 ? void 0 : source.lift);
+    return (0, isFunction_1.isFunction)(source === null || source === void 0 ? void 0 : source.lift);
 }
 exports.hasLift = hasLift;
 function operate(init) {
@@ -58262,20 +58350,24 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mapOneOrManyArgs = void 0;
 var map_1 = require("../operators/map");
 var isArray = Array.isArray;
 function callOrApply(fn, args) {
-    return isArray(args) ? fn.apply(void 0, __spreadArray([], __read(args))) : fn(args);
+    return isArray(args) ? fn.apply(void 0, __spreadArray([], __read(args), false)) : fn(args);
 }
 function mapOneOrManyArgs(fn) {
-    return map_1.map(function (args) { return callOrApply(fn, args); });
+    return (0, map_1.map)(function (args) { return callOrApply(fn, args); });
 }
 exports.mapOneOrManyArgs = mapOneOrManyArgs;
 

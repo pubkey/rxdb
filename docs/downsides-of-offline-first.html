@@ -63,7 +63,7 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="questions-answers.html" />
+    <link rel="next" href="why-nosql.html" />
     
     
     <link rel="prev" href="offline-first.html" />
@@ -1590,6 +1590,19 @@
             
         </li>
     
+        <li class="chapter " data-level="2.2.3" data-path="why-nosql.html">
+            
+                <a href="why-nosql.html">
+            
+                    
+                    Why NoSQL
+            
+                </a>
+            
+
+            
+        </li>
+    
 
             </ul>
             
@@ -1717,6 +1730,8 @@ Of course, this does not work for state that is not stored at the backend. So if
 <h2 id="realtime-is-a-lie">Realtime is a lie</h2>
 <p>So you replicate stuff between the clients and your backend. Each change on one side directly changes the state of the other sides in <strong>realtime</strong>. But this &quot;realtime&quot; is not the same as in <a href="https://en.wikipedia.org/wiki/Real-time_computing" target="_blank">realtime computing</a>. In the offline first world, the word realtime was introduced by firebase and is more meant as a marketing slogan than a technical description.
 There is an internet between your backend and your clients and everything you do on one machine takes at least once the latency until it can affect anything on the other machines. You have to keep this in mind when you develop anything where the timing is important, like a multiplayer game or a stock trading app.</p>
+<p>Even when you run a query against the local database, there is no &quot;real&quot; realtime.
+Client side databases run on JavaScript and JavaScript runs on a single CPU that might be partially blocked because the user is running some background processes. So you can never guarantee a response deadline which violates the time constraint of realtime computing.</p>
 <p align="center">
   <img src="files/latency-london-san-franzisco.png" alt="latency london san franzisco" width="300">
 </p>
@@ -1767,6 +1782,11 @@ With &apos;normal&apos; applications, this is already hard enough and often dang
   <img src="files/no-relational-data.png" alt="no relational data" width="250">
 </p>
 
+
+
+<hr>
+<p>If you are new to RxDB, you should continue with <a href="why-nosql.html">Why it has to be NoSQL</a></p>
+
                                 
                                 </section>
                             
@@ -1798,7 +1818,7 @@ With &apos;normal&apos; applications, this is already hard enough and often dang
                 </a>
                 
                 
-                <a href="questions-answers.html" class="navigation navigation-next " aria-label="Next page: Questions & Answers">
+                <a href="why-nosql.html" class="navigation navigation-next " aria-label="Next page: Why NoSQL">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -1809,7 +1829,7 @@ With &apos;normal&apos; applications, this is already hard enough and often dang
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Downsides of Offline First","level":"2.2.2","depth":2,"next":{"title":"Questions & Answers","level":"2.3","depth":1,"path":"questions-answers.md","ref":"./questions-answers.md","articles":[]},"previous":{"title":"About Offline First","level":"2.2.1","depth":2,"path":"offline-first.md","ref":"./offline-first.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"downsides-of-offline-first.md","mtime":"2021-10-04T19:07:25.573Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-10-04T19:12:06.611Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Downsides of Offline First","level":"2.2.2","depth":2,"next":{"title":"Why NoSQL","level":"2.2.3","depth":2,"path":"why-nosql.md","ref":"./why-nosql.md","articles":[]},"previous":{"title":"About Offline First","level":"2.2.1","depth":2,"path":"offline-first.md","ref":"./offline-first.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"downsides-of-offline-first.md","mtime":"2021-10-05T16:01:04.352Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-10-05T16:06:17.849Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
