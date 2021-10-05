@@ -62,6 +62,9 @@ Imagine two of your users modify the same JSON document, while both are offline.
 So you replicate stuff between the clients and your backend. Each change on one side directly changes the state of the other sides in **realtime**. But this "realtime" is not the same as in [realtime computing](https://en.wikipedia.org/wiki/Real-time_computing). In the offline first world, the word realtime was introduced by firebase and is more meant as a marketing slogan than a technical description.
 There is an internet between your backend and your clients and everything you do on one machine takes at least once the latency until it can affect anything on the other machines. You have to keep this in mind when you develop anything where the timing is important, like a multiplayer game or a stock trading app.
 
+Even when you run a query against the local database, there is no "real" realtime.
+Client side databases run on JavaScript and JavaScript runs on a single CPU that might be partially blocked because the user is running some background processes. So you can never guarantee a response deadline which violates the time constraint of realtime computing.
+
 <p align="center">
   <img src="./files/latency-london-san-franzisco.png" alt="latency london san franzisco" width="300" />
 </p>
@@ -129,3 +132,8 @@ So creating replication for an SQL offline first database is way more work then 
 <p align="center">
   <img src="./files/no-relational-data.png" alt="no relational data" width="250" />
 </p>
+
+
+
+---------
+If you are new to RxDB, you should continue with [Why it has to be NoSQL](./why-nosql.md)

@@ -133,6 +133,7 @@
 * Opinions
     * [About Offline First](./offline-first.md)
     * [Downsites of Offline First](./downsides-of-offline-first.md)
+    * [Why NoSQL](./why-nosql.md)
 
 * [Questions & Answers](./questions-answers.md)
 
