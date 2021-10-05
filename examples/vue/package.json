@@ -28,7 +28,7 @@
     "vue-class-component": "7.2.6",
     "vue-property-decorator": "9.1.2",
     "vue-router": "3.5.2",
-    "rxjs": "7.3.0"
+    "rxjs": "7.3.1"
   },
   "devDependencies": {
     "@types/node": "14.17.20",

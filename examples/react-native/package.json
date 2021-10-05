@@ -32,6 +32,6 @@
     "react": "17.0.2",
     "react-native": "https://github.com/expo/react-native/archive/sdk-38.0.2.tar.gz",
     "rxdb": "file:rxdb-local.tgz",
-    "rxjs": "7.3.0"
+    "rxjs": "7.3.1"
   }
 }

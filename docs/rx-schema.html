@@ -1582,7 +1582,7 @@
                 <a href="downsides-of-offline-first.html">
             
                     
-                    Downsites of Offline First
+                    Downsides of Offline First
             
                 </a>
             
@@ -1803,7 +1803,7 @@ await myRxCollection.insert({
 <span class="hljs-keyword">const</span> myRxDocument = myRxCollection.findOne(id).exec();
 </code></pre>
 <h2 id="keycompression">keyCompression</h2>
-<p>If set to true (disabled by default), the documents will be stored in a compressed formant which saves up to 40% disc space.
+<p>If set to true (disabled by default), the documents will be stored in a compressed format which saves up to 40% disc space.
 For compression the npm module <a href="https://github.com/pubkey/jsonschema-key-compression" target="_blank">jsonschema-key-compression</a> is used.</p>
 <p><code>keyCompression</code> can only be set on the <strong>top-level</strong> of a schema.</p>
 <p><strong>Notice:</strong> When you use <code>keyCompression</code> together with the graphql replication, you must ensure that direct non-RxDB writes to the remote database must also write compressed documents. Therefore it is not recommended to enable <code>keyCompression</code> for that use case.</p>
@@ -1903,10 +1903,10 @@ Whenever you insert a document or create a temporary-document, unset fields will
 </code></pre>
 <h2 id="final">final</h2>
 <p>By setting a field to <code>final</code>, you make sure it cannot be modified later. Final fields are always required.
-Final fields cannot be observed because they anyway will not change.</p>
+Final fields cannot be observed because they will not change.</p>
 <p>Advantages:</p>
 <ul>
-<li>With final fields you can ensure that no other in your dev-team accidentally modifies the data</li>
+<li>With final fields you can ensure that no-one accidentally modifies the data</li>
 <li>When you enable the <code>query-change-detection</code>, some performance-improvements are done</li>
 </ul>
 <pre><code class="lang-js"><span class="hljs-keyword">const</span> schemaWithFinalAge = {
@@ -1999,7 +1999,7 @@ For example, fieldnames must match the regex <code>^[a-zA-Z][[a-zA-Z0-9_]*]?[a-z
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"RxSchema","level":"1.4","depth":1,"next":{"title":"Example","level":"1.4.1","depth":2,"anchor":"#example","path":"rx-schema.md","ref":"./rx-schema.md#example","articles":[]},"previous":{"title":"isRxDatabase()","level":"1.3.2.10","depth":3,"anchor":"#isrxdatabase","path":"rx-database.md","ref":"./rx-database.md#isrxdatabase","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-schema.md","mtime":"2021-10-01T01:15:39.794Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-10-01T01:20:04.904Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"RxSchema","level":"1.4","depth":1,"next":{"title":"Example","level":"1.4.1","depth":2,"anchor":"#example","path":"rx-schema.md","ref":"./rx-schema.md#example","articles":[]},"previous":{"title":"isRxDatabase()","level":"1.3.2.10","depth":3,"anchor":"#isrxdatabase","path":"rx-database.md","ref":"./rx-database.md#isrxdatabase","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-schema.md","mtime":"2021-10-04T19:07:25.613Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-10-04T19:12:06.611Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

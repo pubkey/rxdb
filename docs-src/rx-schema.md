@@ -156,7 +156,7 @@ const myRxDocument = myRxCollection.findOne(id).exec();
 
 ## keyCompression
 
-If set to true (disabled by default), the documents will be stored in a compressed formant which saves up to 40% disc space.
+If set to true (disabled by default), the documents will be stored in a compressed format which saves up to 40% disc space.
 For compression the npm module [jsonschema-key-compression](https://github.com/pubkey/jsonschema-key-compression) is used.
 
 `keyCompression` can only be set on the **top-level** of a schema.
@@ -272,11 +272,11 @@ const schemaWithDefaultAge = {
 
 ## final
 By setting a field to `final`, you make sure it cannot be modified later. Final fields are always required.
-Final fields cannot be observed because they anyway will not change.
+Final fields cannot be observed because they will not change.
 
 Advantages:
 
-- With final fields you can ensure that no other in your dev-team accidentally modifies the data
+- With final fields you can ensure that no-one accidentally modifies the data
 - When you enable the `query-change-detection`, some performance-improvements are done
 
 ```js
