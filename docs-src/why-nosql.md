@@ -17,7 +17,7 @@ the rows with complex subqueries over different tables or collections and then m
 There must be a reason for that. In fact, there are multiple of them and in the following I want to show you why you can neither have, nor want real relational data when you have a client-side database with replication.
 
 <p align="center">
-  <img src="./files/no-sql.png" alt="NoSQL" width="200" />
+  <img src="./files/no-sql.png" alt="NoSQL" width="100" />
 </p>
 
 
@@ -93,14 +93,14 @@ While this sounds easy and realizable, we have some problems:
 This kind of replication works great when you replicate between multiple SQL servers. It does not work great when you replicate between a single server and many clients.
 
 1. As mentioned above, clients can be offline for a long time which could require us to do many and heavy rollbacks on each client when someone comes back after a long time and replicates the change.
-2. Because we have many clients, many changes can appear, and our database would have to roll back many times.
+2. We have many clients where many changes can appear and our database would have to roll back many times.
 3. During the rollback, the database cannot be used for read queries.
 4. It is required that each client downloads and keeps the whole query history.
 
-With **NoSQL**, replication works different. A new client downloads all current documents and each time a document changes, that document is downloaded again. Instead of replicating the query that leads to a data change, we just replicate the changed data itself. Of course, we could do the same with SQL and just replicate the affected rows of a query, like WatermelonDB [does it](https://youtu.be/uFvHURTRLxQ?t=1133). But this would defeat the whole purpose of having a replicating relational database because you would have transactions locally, but these transactions become **meaningless** as soon as the data goes through the replication layer.
+With **NoSQL**, replication works different. A new client downloads all current documents and each time a document changes, that document is downloaded again. Instead of replicating the query that leads to a data change, we just replicate the changed data itself. Of course, we could do the same with SQL and just replicate the affected rows of a query, like WatermelonDB [does it](https://youtu.be/uFvHURTRLxQ?t=1133). This was a clever way to go for WatermelonDB, because it was initially made for React Native and did want to use the fast SQLite instead of the slow [AsyncStorage](https://medium.com/@Sendbird/extreme-optimization-of-asyncstorage-in-react-native-b2a1e0107b34). But in a more general view, it defeats the whole purpose of having a replicating relational database because you have transactions locally, but these transactions become **meaningless** as soon as the data goes through the replication layer.
 
 <p align="center">
-  <img src="./files/database-replication.png" alt="database replication" width="250" />
+  <img src="./files/database-replication.png" alt="database replication" width="200" />
 </p>
 
 
@@ -121,7 +121,7 @@ For simple queries like an insert/update/delete to a single row, this might be d
 
 With NoSQL databases, each write event always affects exactly one document. This makes it easy to optimize the processing of events at the client. For example instead of handling multiple updates to the same document, when the user comes online again, you could skip everything but the last event.
 
-Similar to that you can optimize observable query results. When you query the `customers` table you get a query result of 10 customers. Now a new customer is added to the table and you want to know how the new query results look like. You could analyze the event and now you know that you only have to add the new customer to the previous results set instead of running the whole query again. These types of optimizations can be run with all NoSQL queries and even work with `limit` and `skip` operators. In RxDB this all happens in the background with the [EventReduce algorithm](https://github.com/pubkey/event-reduce) that calculates new query results on incoming changes.
+Similar to that you can optimize observable query results. When you query the `customers` table you get a query result of 10 customers. Now a new customer is added to the table and you want to know how the new query results look like. You could analyze the event and now you know that you only have to add the new customer to the previous results set, instead of running the whole query again. These types of optimizations can be run with all NoSQL queries and even work with `limit` and `skip` operators. In RxDB this all happens in the background with the [EventReduce algorithm](https://github.com/pubkey/event-reduce) that calculates new query results on incoming changes.
 
 These optimizations do not really work with relational data. A change to one table could affect a query to any other tables. and you could not just calculate the new results based on the event. You would always have to re-run the full query to get the updated results.
 
@@ -135,7 +135,7 @@ With relational data, nothing is self-contained. The relevant data for the migra
 
 To use an offline first database in the frontend, you have to make it compatible with your backend APIs.
 Making software things compatible often means you have to find the **lowest common denominator**.
-When you have SQLite in the frontend and want to replicate it with the backend. The backend also has to use SQLite. You cannot even use PostgreSQL because it has a different SQL dialect and some queries might fail. But you do not want to let the frontend dictate which technologies to use in the backend just to make replication work.
+When you have SQLite in the frontend and want to replicate it with the backend, the backend also has to use SQLite. You cannot even use PostgreSQL because it has a different SQL dialect and some queries might fail. But you do not want to let the frontend dictate which technologies to use in the backend just to make replication work.
 
 With NoSQL, you just have documents and writes to these documents. You can build a document based layer on top of everything by **removing** functionality. It can be built on top of SQL, but also on top of a graph database or even on top of a key-value store like [levelDB](./adapters.md#leveldown).
 
@@ -148,7 +148,7 @@ Memory is limited and this is especially true for client side applications where
 When you run a SQL query like `SELECT ..` the result of it can be anything. An `array`, a `number`, a `string`, a single row, it depends on how the query goes on. So the caching strategy can only be to keep the result in memory, once for each query.
 This scales very bad because the more queries you run, the more results you have to store in memory.
 
-When you make a query to a NoSQL collection, you always know how the result will look like. It is a list of documents, based on the collection's schema (if you have one). The result set is stored in memory, but because you get similar documents for different queries to the same collection. We can de-duplicated the documents and let the cache point to the same memory object across queries. So no matter how many queries you make, your cache maximum is the collection size.
+When you make a query to a NoSQL collection, you always know how the result will look like. It is a list of documents, based on the collection's schema (if you have one). The result set is stored in memory, but because you get similar documents for different queries to the same collection, we can de-duplicated the documents. So when multiple queries return the same document, we only have it in the cache **once** and each query caches point to the same memory object. So no matter how many queries you make, your cache maximum is the collection size.
 
 ## TypeScript support
 
@@ -156,7 +156,7 @@ Modern web apps are build with TypeScript and you want the transpiler to know th
 
 
 <p align="center">
-  <img src="./files/typescript.png" alt="typescript" width="100" />
+  <img src="./files/typescript.png" alt="typescript" width="80" />
 </p>
 
 <!-- 
@@ -167,13 +167,14 @@ Modern web apps are build with TypeScript and you want the transpiler to know th
 ## What you lose with NoSQL
 
 - You can not run relational queries across tables inside a single transaction.
+- You can not mutate documents based on a `WHERE` clause, in a single transaction.
 - You need to resolve replication conflicts on a per-document basis.
 
 ## But there is database XY
 
 Yes, there are SQL databases out there that run on the client side or have replication, but not both.
 
-- WebSQL / [sql.js](https://github.com/sql-js/sql.js/): In the past there was **WebSQL** in the browser. It was a direct mapping to SQLite because all browsers used the SQLite implementation. You could store relational data in it, but there was no concept of replication at any point in time. **sql.js** is an SQLLite complied to JavaScript. It has not replication and it has (for now) no persistent storage, everything is stored in memory.
+- WebSQL / [sql.js](https://github.com/sql-js/sql.js/): In the past there was **WebSQL** in the browser. It was a direct mapping to SQLite because all browsers used the SQLite implementation. You could store relational data in it, but there was no concept of replication at any point in time. **sql.js** is an SQLite complied to JavaScript. It has not replication and it has (for now) no persistent storage, everything is stored in memory.
 - WatermelonDB is a SQL databases that runs in the client. WatermelonDB uses a document-based replication that is not able to replicate relational queries.
 - Cockroach / Spanner/ PostgreSQL etc. are SQL databases with replication. But they run on servers, not on clients, so they can make different trade offs.
 
