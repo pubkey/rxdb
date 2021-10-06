@@ -21,6 +21,10 @@ export {
 } from './rx-database';
 
 export {
+    overwritable
+} from './overwritable';
+
+export {
     isRxCollection,
     RxCollectionBase,
     createRxCollection // used in tests

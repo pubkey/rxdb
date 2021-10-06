@@ -22,7 +22,8 @@ import {
 import {
     first
 } from 'rxjs/operators';
-import type { RxChangeEvent } from '../../src/types';
+import type { RxChangeEvent, RxDocument } from '../../src/types';
+import { HumanDocumentType } from '../helper/schema-objects';
 
 config.parallel('reactive-document.test.js', () => {
     describe('.save()', () => {
@@ -174,6 +175,50 @@ config.parallel('reactive-document.test.js', () => {
                 );
                 db.destroy();
             });
+        });
+    });
+    describe('issues', () => {
+        it('#3434 event data must not be mutateable', async () => {
+            const db = await createRxDatabase({
+                name: randomCouchString(10),
+                storage: getRxStoragePouch('memory'),
+                eventReduce: true,
+                ignoreDuplicate: true
+            });
+            const collections = await db.addCollections({
+                mycollection: {
+                    schema: schemas.humanDefault
+                }
+            });
+            await collections.mycollection.insert({
+                passportId: 'foobar',
+                firstName: 'Bob',
+                lastName: 'Kelso',
+                age: 56
+            });
+
+            const person: RxDocument<HumanDocumentType> = await db.mycollection.findOne().exec();
+
+
+            let hasThrown = false;
+            person.$.subscribe(data => {
+                try {
+                    // mutating the document data is not allowed and should throw
+                    delete data['_rev'];
+                } catch (err) {
+                    hasThrown = true;
+                }
+            });
+
+            await person.atomicUpdate(state => {
+                state.age = 50;
+                return state
+            });
+
+            assert.strictEqual(person.age, 50);
+            assert.ok(hasThrown);
+
+            db.destroy();
         });
     });
 });

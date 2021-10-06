@@ -2,8 +2,12 @@
 
 ### X.X.X (coming soon)
 
+Bugfixes:
+  - Observed document data must be deep freezed in dev mode [#3434](https://github.com/pubkey/rxdb/issues/3434) Thanks [@chrisdrackett](https://github.com/chrisdrackett)
+
 Other:
   - We now have set `sideEffects: false` to the default in the package.json so tree shaking can work.
+
 
 ### 10.1.0 (27 September 2021)
 

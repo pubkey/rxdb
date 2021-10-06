@@ -97,7 +97,9 @@ export const basePrototype = {
      */
     get $(): Observable<any> {
         const _this: RxDocument = this as any;
-        return _this._dataSync$.asObservable();
+        return _this._dataSync$.asObservable().pipe(
+            map(docData => overwritable.deepFreezeWhenDevMode(docData))
+        );
     },
 
     _handleChangeEvent(this: RxDocument, changeEvent: RxChangeEvent<any>) {
