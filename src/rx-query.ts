@@ -188,7 +188,15 @@ export class RxQueryBase<
          * we directly use the objects that are stored in the RxDocument
          * to ensure we do not store the same data twice and fill up the memory.
          */
-        this._resultsData = docs.map(doc => doc._dataSync$.getValue());
+        const primPath = this.collection.schema.primaryPath;
+        this._resultsDataMap = new Map();
+        this._resultsData = docs.map(doc => {
+            const docData: RxDocumentType = doc._dataSync$.getValue() as any;
+            const id: string = docData[primPath] as any;
+            this._resultsDataMap.set(id, docData);
+            return docData;
+        });
+
 
         this._resultsDocs$.next(docs);
         return docs as any;
@@ -219,12 +227,6 @@ export class RxQueryBase<
 
         return docsPromise.then(docs => {
             this._lastExecEnd = now();
-            this._resultsDataMap = new Map();
-            const primPath = this.collection.schema.primaryPath;
-            docs.forEach(doc => {
-                const id = doc[primPath];
-                this._resultsDataMap.set(id, doc);
-            });
             return docs;
         });
     }
