@@ -259,6 +259,38 @@ config.parallel('rx-query.test.js', () => {
             col.database.destroy();
         });
     });
+    describe('result caching', () => {
+        /**
+         * The object stored in the query cache should be
+         * exact the same as the object used in a document data.
+         * This ensures that we do not use double the memory
+         * by storing the data multiple times.
+         */
+        it('should reuse the cached result object in the document', async () => {
+            const col = await humansCollection.create(1);
+            const query = col.find({
+                selector: {
+                    name: {
+                        $ne: 'foobar'
+                    }
+                }
+            });
+            const docs = await query.exec();
+            const doc = docs[0];
+            if (!doc) {
+                throw new Error('doc missing');
+            }
+
+            const docDataObject = doc._dataSync$.getValue();
+            const inQueryCacheObject = query._resultsData[0];
+
+            assert.ok(
+                docDataObject === inQueryCacheObject
+            );
+
+            col.database.destroy();
+        });
+    });
     describe('doesDocMatchQuery()', () => {
         it('should match', async () => {
             const col = await humansCollection.create(0);

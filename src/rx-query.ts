@@ -178,12 +178,18 @@ export class RxQueryBase<
      * @param newResultData json-docs that were received from pouchdb
      */
     _setResultData(newResultData: any[]): RxDocument[] {
-        this._resultsData = newResultData;
-
         const docs = createRxDocuments(
             this.collection,
-            this._resultsData
+            newResultData
         );
+
+        /**
+         * Instead of using the newResultData in the result cache,
+         * we directly use the objects that are stored in the RxDocument
+         * to ensure we do not store the same data twice and fill up the memory.
+         */
+        this._resultsData = docs.map(doc => doc._dataSync$.getValue());
+
         this._resultsDocs$.next(docs);
         return docs as any;
     }

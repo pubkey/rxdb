@@ -22,7 +22,10 @@ import {
 import {
     first
 } from 'rxjs/operators';
-import type { RxChangeEvent, RxDocument } from '../../src/types';
+import type {
+    RxChangeEvent,
+    RxDocument
+} from '../../src/types';
 import { HumanDocumentType } from '../helper/schema-objects';
 
 config.parallel('reactive-document.test.js', () => {

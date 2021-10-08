@@ -19,6 +19,7 @@ import {
 import {
     runPluginHooks
 } from './hooks';
+import { overwritable } from './overwritable';
 
 // caches
 const protoForCollection: WeakMap<RxCollection, any> = new WeakMap();
@@ -110,7 +111,7 @@ export function createRxDocument<DT, OM>(
     const doc = createRxDocumentWithConstructor(
         getRxDocumentConstructor(rxCollection as any),
         rxCollection as any,
-        docData
+        overwritable.deepFreezeWhenDevMode(docData)
     );
 
     rxCollection._docCache.set(primary, doc as any);

@@ -12,7 +12,8 @@ import {
 } from '../../plugins/core';
 
 import {
-    validateDatabaseName
+    validateDatabaseName,
+    deepFreezeWhenDevMode
 } from '../../plugins/dev-mode';
 
 describe('util.test.js', () => {
@@ -124,6 +125,24 @@ describe('util.test.js', () => {
             asString = await blobBufferUtil.toString(blobBuffer);
 
             assert.strictEqual(text, asString);
+        });
+    });
+    describe('.deepFreezeWhenDevMode()', () => {
+        it('should not allow to mutate the object', () => {
+            const obj = {
+                foo: 'bar'
+            };
+            const frozen = deepFreezeWhenDevMode(obj);
+            assert.throws(
+                () => (frozen as any).foo = 'xxx'
+            );
+        });
+        it('should freeze the given object and not create a new frozen one', () => {
+            const obj = {
+                foo: 'bar'
+            };
+            const frozen = deepFreezeWhenDevMode(obj);
+            assert.ok(obj === frozen);
         });
     });
 });
