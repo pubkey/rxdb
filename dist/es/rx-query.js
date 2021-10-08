@@ -52,6 +52,8 @@ export var RxQueryBase = /*#__PURE__*/function () {
    * @param newResultData json-docs that were received from pouchdb
    */
   _proto._setResultData = function _setResultData(newResultData) {
+    var _this = this;
+
     var docs = createRxDocuments(this.collection, newResultData);
     /**
      * Instead of using the newResultData in the result cache,
@@ -59,8 +61,16 @@ export var RxQueryBase = /*#__PURE__*/function () {
      * to ensure we do not store the same data twice and fill up the memory.
      */
 
+    var primPath = this.collection.schema.primaryPath;
+    this._resultsDataMap = new Map();
     this._resultsData = docs.map(function (doc) {
-      return doc._dataSync$.getValue();
+      var docData = doc._dataSync$.getValue();
+
+      var id = docData[primPath];
+
+      _this._resultsDataMap.set(id, docData);
+
+      return docData;
     });
 
     this._resultsDocs$.next(docs);
@@ -74,7 +84,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
   ;
 
   _proto._execOverDatabase = function _execOverDatabase() {
-    var _this = this;
+    var _this2 = this;
 
     this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
     this._lastExecStart = now();
@@ -97,14 +107,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
     }
 
     return docsPromise.then(function (docs) {
-      _this._lastExecEnd = now();
-      _this._resultsDataMap = new Map();
-      var primPath = _this.collection.schema.primaryPath;
-      docs.forEach(function (doc) {
-        var id = doc[primPath];
-
-        _this._resultsDataMap.set(id, doc);
-      });
+      _this2._lastExecEnd = now();
       return docs;
     });
   }
@@ -116,7 +119,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
   ;
 
   _proto.exec = function exec(throwIfMissing) {
-    var _this2 = this;
+    var _this3 = this;
 
     // TODO this should be ensured by typescript
     if (throwIfMissing && this.op !== 'findOne') {
@@ -134,13 +137,13 @@ export var RxQueryBase = /*#__PURE__*/function () {
 
 
     return _ensureEqual(this).then(function () {
-      return firstValueFrom(_this2.$);
+      return firstValueFrom(_this3.$);
     }).then(function (result) {
       if (!result && throwIfMissing) {
         throw newRxError('QU10', {
-          collection: _this2.collection.name,
-          query: _this2.mangoQuery,
-          op: _this2.op
+          collection: _this3.collection.name,
+          query: _this3.mangoQuery,
+          op: _this3.op
         });
       } else {
         return result;
@@ -266,7 +269,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
   _createClass(RxQueryBase, [{
     key: "$",
     get: function get() {
-      var _this3 = this;
+      var _this4 = this;
 
       if (!this._$) {
         /**
@@ -274,7 +277,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
          * This also ensures that there is a reemit on subscribe
          */
         var results$ = this._resultsDocs$.pipe(mergeMap(function (docs) {
-          return _ensureEqual(_this3).then(function (hasChanged) {
+          return _ensureEqual(_this4).then(function (hasChanged) {
             if (hasChanged) {
               // wait for next emit
               return false;
@@ -286,7 +289,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
           return !!docs;
         }), // not if previous returned false
         map(function (docs) {
-          if (_this3.op === 'findOne') {
+          if (_this4.op === 'findOne') {
             // findOne()-queries emit document or null
             var doc = docs.length === 0 ? null : docs[0];
             return doc;
@@ -305,7 +308,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
 
 
         var changeEvents$ = this.collection.$.pipe(tap(function () {
-          return _ensureEqual(_this3);
+          return _ensureEqual(_this4);
         }), filter(function () {
           return false;
         }));
