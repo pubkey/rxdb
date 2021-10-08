@@ -5,22 +5,22 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.writeAttachmentsToAttachments = writeAttachmentsToAttachments;
+exports.RxStoragePouch = exports.RxStorageKeyObjectInstancePouch = exports.RxStorageInstancePouch = exports.POUCHDB_LOCAL_PREFIX = exports.POUCHDB_DESIGN_PREFIX = exports.OPEN_POUCHDB_STORAGE_INSTANCES = void 0;
 exports.checkPouchAdapter = checkPouchAdapter;
-exports.pouchHash = pouchHash;
-exports.pouchSwapIdToPrimary = pouchSwapIdToPrimary;
-exports.pouchDocumentDataToRxDocumentData = pouchDocumentDataToRxDocumentData;
-exports.rxDocumentDataToPouchDocumentData = rxDocumentDataToPouchDocumentData;
-exports.pouchSwapPrimaryToId = pouchSwapPrimaryToId;
-exports.pouchStripLocalFlagFromPrimary = pouchStripLocalFlagFromPrimary;
-exports.getEventKey = getEventKey;
-exports.pouchChangeRowToChangeEvent = pouchChangeRowToChangeEvent;
-exports.pouchChangeRowToChangeStreamEvent = pouchChangeRowToChangeStreamEvent;
-exports.primarySwapPouchDbQuerySelector = primarySwapPouchDbQuerySelector;
 exports.createIndexesOnPouch = createIndexesOnPouch;
+exports.getEventKey = getEventKey;
 exports.getPouchLocation = getPouchLocation;
 exports.getRxStoragePouch = getRxStoragePouch;
-exports.RxStoragePouch = exports.RxStorageInstancePouch = exports.RxStorageKeyObjectInstancePouch = exports.OPEN_POUCHDB_STORAGE_INSTANCES = exports.POUCHDB_DESIGN_PREFIX = exports.POUCHDB_LOCAL_PREFIX = void 0;
+exports.pouchChangeRowToChangeEvent = pouchChangeRowToChangeEvent;
+exports.pouchChangeRowToChangeStreamEvent = pouchChangeRowToChangeStreamEvent;
+exports.pouchDocumentDataToRxDocumentData = pouchDocumentDataToRxDocumentData;
+exports.pouchHash = pouchHash;
+exports.pouchStripLocalFlagFromPrimary = pouchStripLocalFlagFromPrimary;
+exports.pouchSwapIdToPrimary = pouchSwapIdToPrimary;
+exports.pouchSwapPrimaryToId = pouchSwapPrimaryToId;
+exports.primarySwapPouchDbQuerySelector = primarySwapPouchDbQuerySelector;
+exports.rxDocumentDataToPouchDocumentData = rxDocumentDataToPouchDocumentData;
+exports.writeAttachmentsToAttachments = writeAttachmentsToAttachments;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 

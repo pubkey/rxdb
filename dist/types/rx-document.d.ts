@@ -6,7 +6,7 @@ export declare const basePrototype: {
      * instead of appliying the _this-hack
      * we should make these accesors functions instead of getters.
      */
-    readonly _data: {} | undefined;
+    readonly _data: import("./types").DeepReadonlyObject<{}> | undefined;
     readonly primaryPath: undefined;
     readonly primary: any;
     readonly revision: string | undefined;
@@ -89,7 +89,7 @@ export declare function createRxDocumentConstructor(proto?: {
      * instead of appliying the _this-hack
      * we should make these accesors functions instead of getters.
      */
-    readonly _data: {} | undefined;
+    readonly _data: import("./types").DeepReadonlyObject<{}> | undefined;
     readonly primaryPath: undefined;
     readonly primary: any;
     readonly revision: string | undefined;
@@ -173,7 +173,7 @@ export declare function createRxDocumentConstructor(proto?: {
          * instead of appliying the _this-hack
          * we should make these accesors functions instead of getters.
          */
-        readonly _data: {} | undefined;
+        readonly _data: import("./types").DeepReadonlyObject<{}> | undefined;
         readonly primaryPath: undefined;
         readonly primary: any;
         readonly revision: string | undefined;

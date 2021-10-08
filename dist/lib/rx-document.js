@@ -5,11 +5,11 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.createRxDocumentConstructor = createRxDocumentConstructor;
-exports.defineGetterSetter = defineGetterSetter;
-exports.createWithConstructor = createWithConstructor;
-exports.isRxDocument = isRxDocument;
 exports.basePrototype = void 0;
+exports.createRxDocumentConstructor = createRxDocumentConstructor;
+exports.createWithConstructor = createWithConstructor;
+exports.defineGetterSetter = defineGetterSetter;
+exports.isRxDocument = isRxDocument;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
@@ -112,7 +112,9 @@ var basePrototype = {
   get $() {
     var _this = this;
 
-    return _this._dataSync$.asObservable();
+    return _this._dataSync$.asObservable().pipe((0, _operators.map)(function (docData) {
+      return _overwritable.overwritable.deepFreezeWhenDevMode(docData);
+    }));
   },
 
   _handleChangeEvent: function _handleChangeEvent(changeEvent) {

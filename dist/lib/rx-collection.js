@@ -5,9 +5,9 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.RxCollectionBase = void 0;
 exports.createRxCollection = createRxCollection;
 exports.isRxCollection = isRxCollection;
-exports.RxCollectionBase = void 0;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 

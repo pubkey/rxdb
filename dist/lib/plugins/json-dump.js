@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RxDBJsonDumpPlugin = exports.overwritable = exports.prototypes = exports.rxdb = void 0;
+exports.rxdb = exports.prototypes = exports.overwritable = exports.RxDBJsonDumpPlugin = void 0;
 
 var _util = require("../util");
 

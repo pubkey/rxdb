@@ -3,9 +3,9 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE = void 0;
 exports.getMigrationStateByDatabase = getMigrationStateByDatabase;
 exports.onDatabaseDestroy = onDatabaseDestroy;
-exports.DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE = void 0;
 
 var _rxjs = require("rxjs");
 

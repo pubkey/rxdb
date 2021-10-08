@@ -5,15 +5,15 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports._ensureStorageTokenExists = _ensureStorageTokenExists;
-exports.writeToSocket = writeToSocket;
+exports.RxDatabaseBase = void 0;
 exports._collectionNamePrimary = _collectionNamePrimary;
+exports._ensureStorageTokenExists = _ensureStorageTokenExists;
 exports._removeAllOfCollection = _removeAllOfCollection;
 exports.createRxDatabase = createRxDatabase;
-exports.removeRxDatabase = removeRxDatabase;
-exports.isRxDatabase = isRxDatabase;
 exports.dbCount = dbCount;
-exports.RxDatabaseBase = void 0;
+exports.isRxDatabase = isRxDatabase;
+exports.removeRxDatabase = removeRxDatabase;
+exports.writeToSocket = writeToSocket;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 

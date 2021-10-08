@@ -3,8 +3,8 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.createChangeEventBuffer = createChangeEventBuffer;
 exports.ChangeEventBuffer = void 0;
+exports.createChangeEventBuffer = createChangeEventBuffer;
 
 var _operators = require("rxjs/operators");
 

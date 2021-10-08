@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RxDBNoValidatePlugin = exports.hooks = exports.prototypes = exports.rxdb = void 0;
+exports.rxdb = exports.prototypes = exports.hooks = exports.RxDBNoValidatePlugin = void 0;
 
 /**
  * this plugin validates all documents

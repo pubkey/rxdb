@@ -5,9 +5,9 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getCustomEventEmitterByPouch = getCustomEventEmitterByPouch;
-exports.addCustomEventsPluginToPouch = addCustomEventsPluginToPouch;
 exports.EVENT_EMITTER_BY_POUCH_INSTANCE = void 0;
+exports.addCustomEventsPluginToPouch = addCustomEventsPluginToPouch;
+exports.getCustomEventEmitterByPouch = getCustomEventEmitterByPouch;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 

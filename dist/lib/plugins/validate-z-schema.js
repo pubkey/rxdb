@@ -5,7 +5,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RxDBValidateZSchemaPlugin = exports.hooks = exports.prototypes = exports.rxdb = void 0;
+exports.rxdb = exports.prototypes = exports.hooks = exports.RxDBValidateZSchemaPlugin = void 0;
 
 var _zSchema = _interopRequireDefault(require("z-schema"));
 

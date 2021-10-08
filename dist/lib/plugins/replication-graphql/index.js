@@ -12,8 +12,8 @@ var _exportNames = {
   prototypes: true,
   RxDBReplicationGraphQLPlugin: true
 };
+exports.rxdb = exports.prototypes = exports.RxGraphQLReplicationState = exports.RxDBReplicationGraphQLPlugin = void 0;
 exports.syncGraphQL = syncGraphQL;
-exports.RxDBReplicationGraphQLPlugin = exports.prototypes = exports.rxdb = exports.RxGraphQLReplicationState = void 0;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 

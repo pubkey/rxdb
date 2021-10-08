@@ -10,6 +10,7 @@ var _exportNames = {
   isRxDatabase: true,
   dbCount: true,
   _collectionNamePrimary: true,
+  overwritable: true,
   isRxCollection: true,
   RxCollectionBase: true,
   createRxCollection: true,
@@ -40,58 +41,28 @@ var _exportNames = {
   _clearHook: true,
   createCrypter: true
 };
-Object.defineProperty(exports, "addRxPlugin", {
-  enumerable: true,
-  get: function get() {
-    return _plugin.addRxPlugin;
-  }
-});
-Object.defineProperty(exports, "createRxDatabase", {
-  enumerable: true,
-  get: function get() {
-    return _rxDatabase.createRxDatabase;
-  }
-});
-Object.defineProperty(exports, "removeRxDatabase", {
-  enumerable: true,
-  get: function get() {
-    return _rxDatabase.removeRxDatabase;
-  }
-});
-Object.defineProperty(exports, "isRxDatabase", {
-  enumerable: true,
-  get: function get() {
-    return _rxDatabase.isRxDatabase;
-  }
-});
-Object.defineProperty(exports, "dbCount", {
-  enumerable: true,
-  get: function get() {
-    return _rxDatabase.dbCount;
-  }
-});
-Object.defineProperty(exports, "_collectionNamePrimary", {
-  enumerable: true,
-  get: function get() {
-    return _rxDatabase._collectionNamePrimary;
-  }
-});
-Object.defineProperty(exports, "isRxCollection", {
-  enumerable: true,
-  get: function get() {
-    return _rxCollection.isRxCollection;
-  }
-});
 Object.defineProperty(exports, "RxCollectionBase", {
   enumerable: true,
   get: function get() {
     return _rxCollection.RxCollectionBase;
   }
 });
-Object.defineProperty(exports, "createRxCollection", {
+Object.defineProperty(exports, "RxSchema", {
   enumerable: true,
   get: function get() {
-    return _rxCollection.createRxCollection;
+    return _rxSchema.RxSchema;
+  }
+});
+Object.defineProperty(exports, "_clearHook", {
+  enumerable: true,
+  get: function get() {
+    return _hooks._clearHook;
+  }
+});
+Object.defineProperty(exports, "_collectionNamePrimary", {
+  enumerable: true,
+  get: function get() {
+    return _rxDatabase._collectionNamePrimary;
   }
 });
 Object.defineProperty(exports, "_handleFromStorageInstance", {
@@ -106,16 +77,70 @@ Object.defineProperty(exports, "_handleToStorageInstance", {
     return _rxCollectionHelper._handleToStorageInstance;
   }
 });
+Object.defineProperty(exports, "addRxPlugin", {
+  enumerable: true,
+  get: function get() {
+    return _plugin.addRxPlugin;
+  }
+});
+Object.defineProperty(exports, "countAllUndeleted", {
+  enumerable: true,
+  get: function get() {
+    return _rxStorageHelper.countAllUndeleted;
+  }
+});
+Object.defineProperty(exports, "createCrypter", {
+  enumerable: true,
+  get: function get() {
+    return _crypter.createCrypter;
+  }
+});
+Object.defineProperty(exports, "createRxCollection", {
+  enumerable: true,
+  get: function get() {
+    return _rxCollection.createRxCollection;
+  }
+});
+Object.defineProperty(exports, "createRxDatabase", {
+  enumerable: true,
+  get: function get() {
+    return _rxDatabase.createRxDatabase;
+  }
+});
+Object.defineProperty(exports, "createRxSchema", {
+  enumerable: true,
+  get: function get() {
+    return _rxSchema.createRxSchema;
+  }
+});
+Object.defineProperty(exports, "dbCount", {
+  enumerable: true,
+  get: function get() {
+    return _rxDatabase.dbCount;
+  }
+});
 Object.defineProperty(exports, "fillObjectDataBeforeInsert", {
   enumerable: true,
   get: function get() {
     return _rxCollectionHelper.fillObjectDataBeforeInsert;
   }
 });
-Object.defineProperty(exports, "isRxDocument", {
+Object.defineProperty(exports, "findLocalDocument", {
   enumerable: true,
   get: function get() {
-    return _rxDocument.isRxDocument;
+    return _rxStorageHelper.findLocalDocument;
+  }
+});
+Object.defineProperty(exports, "getAllDocuments", {
+  enumerable: true,
+  get: function get() {
+    return _rxStorageHelper.getAllDocuments;
+  }
+});
+Object.defineProperty(exports, "getBatch", {
+  enumerable: true,
+  get: function get() {
+    return _rxStorageHelper.getBatch;
   }
 });
 Object.defineProperty(exports, "getDocumentOrmPrototype", {
@@ -130,28 +155,10 @@ Object.defineProperty(exports, "getDocumentPrototype", {
     return _rxDocumentPrototypeMerge.getDocumentPrototype;
   }
 });
-Object.defineProperty(exports, "isRxQuery", {
+Object.defineProperty(exports, "getFinalFields", {
   enumerable: true,
   get: function get() {
-    return _rxQuery.isInstanceOf;
-  }
-});
-Object.defineProperty(exports, "isRxSchema", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchema.isInstanceOf;
-  }
-});
-Object.defineProperty(exports, "createRxSchema", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchema.createRxSchema;
-  }
-});
-Object.defineProperty(exports, "RxSchema", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchema.RxSchema;
+    return _rxSchema.getFinalFields;
   }
 });
 Object.defineProperty(exports, "getIndexes", {
@@ -160,16 +167,10 @@ Object.defineProperty(exports, "getIndexes", {
     return _rxSchema.getIndexes;
   }
 });
-Object.defineProperty(exports, "normalize", {
+Object.defineProperty(exports, "getNewestSequence", {
   enumerable: true,
   get: function get() {
-    return _rxSchema.normalize;
-  }
-});
-Object.defineProperty(exports, "getFinalFields", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchema.getFinalFields;
+    return _rxStorageHelper.getNewestSequence;
   }
 });
 Object.defineProperty(exports, "getPreviousVersions", {
@@ -190,34 +191,58 @@ Object.defineProperty(exports, "getSchemaByObjectPath", {
     return _rxSchemaHelper.getSchemaByObjectPath;
   }
 });
-Object.defineProperty(exports, "findLocalDocument", {
-  enumerable: true,
-  get: function get() {
-    return _rxStorageHelper.findLocalDocument;
-  }
-});
 Object.defineProperty(exports, "getSingleDocument", {
   enumerable: true,
   get: function get() {
     return _rxStorageHelper.getSingleDocument;
   }
 });
-Object.defineProperty(exports, "getNewestSequence", {
+Object.defineProperty(exports, "isRxCollection", {
   enumerable: true,
   get: function get() {
-    return _rxStorageHelper.getNewestSequence;
+    return _rxCollection.isRxCollection;
   }
 });
-Object.defineProperty(exports, "getAllDocuments", {
+Object.defineProperty(exports, "isRxDatabase", {
   enumerable: true,
   get: function get() {
-    return _rxStorageHelper.getAllDocuments;
+    return _rxDatabase.isRxDatabase;
   }
 });
-Object.defineProperty(exports, "writeSingleLocal", {
+Object.defineProperty(exports, "isRxDocument", {
   enumerable: true,
   get: function get() {
-    return _rxStorageHelper.writeSingleLocal;
+    return _rxDocument.isRxDocument;
+  }
+});
+Object.defineProperty(exports, "isRxQuery", {
+  enumerable: true,
+  get: function get() {
+    return _rxQuery.isInstanceOf;
+  }
+});
+Object.defineProperty(exports, "isRxSchema", {
+  enumerable: true,
+  get: function get() {
+    return _rxSchema.isInstanceOf;
+  }
+});
+Object.defineProperty(exports, "normalize", {
+  enumerable: true,
+  get: function get() {
+    return _rxSchema.normalize;
+  }
+});
+Object.defineProperty(exports, "overwritable", {
+  enumerable: true,
+  get: function get() {
+    return _overwritable.overwritable;
+  }
+});
+Object.defineProperty(exports, "removeRxDatabase", {
+  enumerable: true,
+  get: function get() {
+    return _rxDatabase.removeRxDatabase;
   }
 });
 Object.defineProperty(exports, "writeSingle", {
@@ -226,28 +251,10 @@ Object.defineProperty(exports, "writeSingle", {
     return _rxStorageHelper.writeSingle;
   }
 });
-Object.defineProperty(exports, "countAllUndeleted", {
+Object.defineProperty(exports, "writeSingleLocal", {
   enumerable: true,
   get: function get() {
-    return _rxStorageHelper.countAllUndeleted;
-  }
-});
-Object.defineProperty(exports, "getBatch", {
-  enumerable: true,
-  get: function get() {
-    return _rxStorageHelper.getBatch;
-  }
-});
-Object.defineProperty(exports, "_clearHook", {
-  enumerable: true,
-  get: function get() {
-    return _hooks._clearHook;
-  }
-});
-Object.defineProperty(exports, "createCrypter", {
-  enumerable: true,
-  get: function get() {
-    return _crypter.createCrypter;
+    return _rxStorageHelper.writeSingleLocal;
   }
 });
 
@@ -264,6 +271,8 @@ require("./types/modules/random-token.d");
 var _plugin = require("./plugin");
 
 var _rxDatabase = require("./rx-database");
+
+var _overwritable = require("./overwritable");
 
 var _rxCollection = require("./rx-collection");
 

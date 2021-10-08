@@ -3,9 +3,10 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.RxDBKeyCompressionPlugin = void 0;
 exports.createCompressionState = createCompressionState;
 exports.getCompressionStateByStorageInstance = getCompressionStateByStorageInstance;
-exports.RxDBKeyCompressionPlugin = exports.overwritable = exports.prototypes = exports.rxdb = void 0;
+exports.rxdb = exports.prototypes = exports.overwritable = void 0;
 
 var _jsonschemaKeyCompression = require("jsonschema-key-compression");
 

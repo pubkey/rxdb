@@ -3,10 +3,10 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getSortFieldsOfQuery = getSortFieldsOfQuery;
-exports.getQueryParams = getQueryParams;
-exports.calculateNewResults = calculateNewResults;
 exports.RXQUERY_QUERY_PARAMS_CACHE = void 0;
+exports.calculateNewResults = calculateNewResults;
+exports.getQueryParams = getQueryParams;
+exports.getSortFieldsOfQuery = getSortFieldsOfQuery;
 
 var _eventReduceJs = require("event-reduce-js");
 

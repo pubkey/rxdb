@@ -3,9 +3,9 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.GRAPHQL_REPLICATION_PLUGIN_IDENT = exports.DEFAULT_MODIFIER = void 0;
 exports.createRevisionForPulledDocument = createRevisionForPulledDocument;
 exports.wasRevisionfromPullReplication = wasRevisionfromPullReplication;
-exports.DEFAULT_MODIFIER = exports.GRAPHQL_REPLICATION_PLUGIN_IDENT = void 0;
 
 var _util = require("../../util");
 

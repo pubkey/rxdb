@@ -8,9 +8,9 @@ var _exportNames = {
   applyBuildingStep: true,
   RxDBQueryBuilderPlugin: true
 };
-exports.runBuildingStep = runBuildingStep;
-exports.applyBuildingStep = applyBuildingStep;
 exports.RxDBQueryBuilderPlugin = void 0;
+exports.applyBuildingStep = applyBuildingStep;
+exports.runBuildingStep = runBuildingStep;
 
 var _nosqlQueryBuilder = require("./mquery/nosql-query-builder");
 

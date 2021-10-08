@@ -5,11 +5,11 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.RxQueryBase = void 0;
 exports._getDefaultQuery = _getDefaultQuery;
-exports.tunnelQueryCache = tunnelQueryCache;
 exports.createRxQuery = createRxQuery;
 exports.isInstanceOf = isInstanceOf;
-exports.RxQueryBase = void 0;
+exports.tunnelQueryCache = tunnelQueryCache;
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 
@@ -76,8 +76,16 @@ var RxQueryBase = /*#__PURE__*/function () {
    * @param newResultData json-docs that were received from pouchdb
    */
   _proto._setResultData = function _setResultData(newResultData) {
-    this._resultsData = newResultData;
-    var docs = (0, _rxDocumentPrototypeMerge.createRxDocuments)(this.collection, this._resultsData);
+    var docs = (0, _rxDocumentPrototypeMerge.createRxDocuments)(this.collection, newResultData);
+    /**
+     * Instead of using the newResultData in the result cache,
+     * we directly use the objects that are stored in the RxDocument
+     * to ensure we do not store the same data twice and fill up the memory.
+     */
+
+    this._resultsData = docs.map(function (doc) {
+      return doc._dataSync$.getValue();
+    });
 
     this._resultsDocs$.next(docs);
 

@@ -6,9 +6,9 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.checkFieldNameRegex = checkFieldNameRegex;
-exports.validateFieldsDeep = validateFieldsDeep;
 exports.checkPrimaryKey = checkPrimaryKey;
 exports.checkSchema = checkSchema;
+exports.validateFieldsDeep = validateFieldsDeep;
 
 var _objectPath = _interopRequireDefault(require("object-path"));
 

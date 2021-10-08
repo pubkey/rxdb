@@ -3,22 +3,18 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.DATA_MIGRATOR_BY_COLLECTION = void 0;
+Object.defineProperty(exports, "DataMigrator", {
+  enumerable: true,
+  get: function get() {
+    return _dataMigrator.DataMigrator;
+  }
+});
+exports.RxDBMigrationPlugin = void 0;
 Object.defineProperty(exports, "_getOldCollections", {
   enumerable: true,
   get: function get() {
     return _dataMigrator._getOldCollections;
-  }
-});
-Object.defineProperty(exports, "getBatchOfOldCollection", {
-  enumerable: true,
-  get: function get() {
-    return _dataMigrator.getBatchOfOldCollection;
-  }
-});
-Object.defineProperty(exports, "migrateDocumentData", {
-  enumerable: true,
-  get: function get() {
-    return _dataMigrator.migrateDocumentData;
   }
 });
 Object.defineProperty(exports, "_migrateDocuments", {
@@ -33,6 +29,18 @@ Object.defineProperty(exports, "deleteOldCollection", {
     return _dataMigrator.deleteOldCollection;
   }
 });
+Object.defineProperty(exports, "getBatchOfOldCollection", {
+  enumerable: true,
+  get: function get() {
+    return _dataMigrator.getBatchOfOldCollection;
+  }
+});
+Object.defineProperty(exports, "migrateDocumentData", {
+  enumerable: true,
+  get: function get() {
+    return _dataMigrator.migrateDocumentData;
+  }
+});
 Object.defineProperty(exports, "migrateOldCollection", {
   enumerable: true,
   get: function get() {
@@ -45,13 +53,6 @@ Object.defineProperty(exports, "migratePromise", {
     return _dataMigrator.migratePromise;
   }
 });
-Object.defineProperty(exports, "DataMigrator", {
-  enumerable: true,
-  get: function get() {
-    return _dataMigrator.DataMigrator;
-  }
-});
-exports.RxDBMigrationPlugin = exports.DATA_MIGRATOR_BY_COLLECTION = void 0;
 
 var _rxjs = require("rxjs");
 

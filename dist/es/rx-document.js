@@ -87,7 +87,9 @@ export var basePrototype = {
   get $() {
     var _this = this;
 
-    return _this._dataSync$.asObservable();
+    return _this._dataSync$.asObservable().pipe(map(function (docData) {
+      return overwritable.deepFreezeWhenDevMode(docData);
+    }));
   },
 
   _handleChangeEvent: function _handleChangeEvent(changeEvent) {

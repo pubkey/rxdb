@@ -3,15 +3,17 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getDocumentPrototype = getDocumentPrototype;
-exports.getRxDocumentConstructor = getRxDocumentConstructor;
 exports.createRxDocument = createRxDocument;
 exports.createRxDocuments = createRxDocuments;
 exports.getDocumentOrmPrototype = getDocumentOrmPrototype;
+exports.getDocumentPrototype = getDocumentPrototype;
+exports.getRxDocumentConstructor = getRxDocumentConstructor;
 
 var _rxDocument = require("./rx-document");
 
 var _hooks = require("./hooks");
+
+var _overwritable = require("./overwritable");
 
 /**
  * For the ORM capabilities,
@@ -89,7 +91,7 @@ function createRxDocument(rxCollection, docData) {
     return cacheDoc;
   }
 
-  var doc = (0, _rxDocument.createWithConstructor)(getRxDocumentConstructor(rxCollection), rxCollection, docData);
+  var doc = (0, _rxDocument.createWithConstructor)(getRxDocumentConstructor(rxCollection), rxCollection, _overwritable.overwritable.deepFreezeWhenDevMode(docData));
 
   rxCollection._docCache.set(primary, doc);
 

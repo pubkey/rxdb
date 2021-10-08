@@ -3,8 +3,8 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.merge = merge;
 exports.isObject = isObject;
+exports.merge = merge;
 
 /**
  * this is copied from

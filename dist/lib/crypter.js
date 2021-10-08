@@ -5,8 +5,8 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.createCrypter = createCrypter;
 exports.Crypter = void 0;
+exports.createCrypter = createCrypter;
 
 var _objectPath = _interopRequireDefault(require("object-path"));
 

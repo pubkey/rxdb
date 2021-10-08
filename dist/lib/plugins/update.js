@@ -5,9 +5,10 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.update = update;
+exports.RxDBUpdatePlugin = void 0;
 exports.RxQueryUpdate = RxQueryUpdate;
-exports.RxDBUpdatePlugin = exports.prototypes = exports.rxdb = void 0;
+exports.rxdb = exports.prototypes = void 0;
+exports.update = update;
 
 var _modifyjs = _interopRequireDefault(require("modifyjs"));
 

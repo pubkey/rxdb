@@ -5,10 +5,10 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.RxTypeError = exports.RxError = void 0;
+exports.isPouchdbConflictError = isPouchdbConflictError;
 exports.newRxError = newRxError;
 exports.newRxTypeError = newRxTypeError;
-exports.isPouchdbConflictError = isPouchdbConflictError;
-exports.RxTypeError = exports.RxError = void 0;
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 

@@ -5,11 +5,11 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.PouchDB = void 0;
+exports.addPouchPlugin = addPouchPlugin;
+exports.isInstanceOf = isInstanceOf;
 exports.isLevelDown = isLevelDown;
 exports.pouchReplicationFunction = pouchReplicationFunction;
-exports.isInstanceOf = isInstanceOf;
-exports.addPouchPlugin = addPouchPlugin;
-exports.PouchDB = void 0;
 
 var _pouchdbCore = _interopRequireDefault(require("pouchdb-core"));
 

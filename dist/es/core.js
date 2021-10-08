@@ -10,6 +10,7 @@ import './types/modules/random-token.d';
 export { addRxPlugin } from './plugin';
 export { createRxDatabase, removeRxDatabase, isRxDatabase, dbCount, _collectionNamePrimary // used in tests
 } from './rx-database';
+export { overwritable } from './overwritable';
 export { isRxCollection, RxCollectionBase, createRxCollection // used in tests
 } from './rx-collection';
 export { _handleFromStorageInstance, _handleToStorageInstance, fillObjectDataBeforeInsert } from './rx-collection-helper';

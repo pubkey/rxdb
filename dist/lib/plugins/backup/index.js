@@ -11,9 +11,9 @@ var _exportNames = {
   backup: true,
   RxDBBackupPlugin: true
 };
-exports.backupSingleDocument = backupSingleDocument;
-exports.backup = backup;
 exports.RxDBBackupPlugin = exports.RxBackupState = void 0;
+exports.backup = backup;
+exports.backupSingleDocument = backupSingleDocument;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
