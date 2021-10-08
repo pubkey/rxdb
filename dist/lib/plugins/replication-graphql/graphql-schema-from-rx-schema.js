@@ -3,9 +3,9 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.graphQLSchemaFromRxSchema = graphQLSchemaFromRxSchema;
-exports.fillUpOptionals = fillUpOptionals;
 exports.SPACING = void 0;
+exports.fillUpOptionals = fillUpOptionals;
+exports.graphQLSchemaFromRxSchema = graphQLSchemaFromRxSchema;
 
 var _getGraphqlFromJsonschema = require("get-graphql-from-jsonschema");
 

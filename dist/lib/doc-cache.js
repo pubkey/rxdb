@@ -3,8 +3,8 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.createDocCache = createDocCache;
 exports.DocCache = void 0;
+exports.createDocCache = createDocCache;
 
 var DocCache = /*#__PURE__*/function () {
   function DocCache() {

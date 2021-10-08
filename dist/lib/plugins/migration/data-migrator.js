@@ -5,18 +5,18 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.createOldCollection = createOldCollection;
+exports.DataMigrator = void 0;
 exports._getOldCollections = _getOldCollections;
-exports.mustMigrate = mustMigrate;
-exports.runStrategyIfNotNull = runStrategyIfNotNull;
-exports.getBatchOfOldCollection = getBatchOfOldCollection;
-exports.migrateDocumentData = migrateDocumentData;
-exports.isDocumentDataWithoutRevisionEqual = isDocumentDataWithoutRevisionEqual;
 exports._migrateDocuments = _migrateDocuments;
+exports.createOldCollection = createOldCollection;
 exports.deleteOldCollection = deleteOldCollection;
+exports.getBatchOfOldCollection = getBatchOfOldCollection;
+exports.isDocumentDataWithoutRevisionEqual = isDocumentDataWithoutRevisionEqual;
+exports.migrateDocumentData = migrateDocumentData;
 exports.migrateOldCollection = migrateOldCollection;
 exports.migratePromise = migratePromise;
-exports.DataMigrator = void 0;
+exports.mustMigrate = mustMigrate;
+exports.runStrategyIfNotNull = runStrategyIfNotNull;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 

@@ -5,9 +5,9 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.spawnServer = spawnServer;
-exports.onDestroy = onDestroy;
 exports.RxDBServerPlugin = void 0;
+exports.onDestroy = onDestroy;
+exports.spawnServer = spawnServer;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 

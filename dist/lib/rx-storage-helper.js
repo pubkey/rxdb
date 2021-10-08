@@ -5,16 +5,16 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getAllDocuments = getAllDocuments;
-exports.getSingleDocument = getSingleDocument;
+exports.INTERNAL_STORAGE_NAME = void 0;
 exports.countAllUndeleted = countAllUndeleted;
+exports.findLocalDocument = findLocalDocument;
+exports.getAllDocuments = getAllDocuments;
 exports.getBatch = getBatch;
+exports.getNewestSequence = getNewestSequence;
+exports.getSingleDocument = getSingleDocument;
+exports.storageChangeEventToRxChangeEvent = storageChangeEventToRxChangeEvent;
 exports.writeSingle = writeSingle;
 exports.writeSingleLocal = writeSingleLocal;
-exports.findLocalDocument = findLocalDocument;
-exports.getNewestSequence = getNewestSequence;
-exports.storageChangeEventToRxChangeEvent = storageChangeEventToRxChangeEvent;
-exports.INTERNAL_STORAGE_NAME = void 0;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 

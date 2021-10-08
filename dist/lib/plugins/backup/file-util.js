@@ -5,16 +5,16 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.ensureFolderExists = ensureFolderExists;
 exports.clearFolder = clearFolder;
 exports.deleteFolder = deleteFolder;
-exports.prepareFolders = prepareFolders;
-exports.writeToFile = writeToFile;
-exports.writeJsonToFile = writeJsonToFile;
-exports.metaFileLocation = metaFileLocation;
-exports.getMeta = getMeta;
-exports.setMeta = setMeta;
 exports.documentFolder = documentFolder;
+exports.ensureFolderExists = ensureFolderExists;
+exports.getMeta = getMeta;
+exports.metaFileLocation = metaFileLocation;
+exports.prepareFolders = prepareFolders;
+exports.setMeta = setMeta;
+exports.writeJsonToFile = writeJsonToFile;
+exports.writeToFile = writeToFile;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 

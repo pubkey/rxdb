@@ -3,11 +3,12 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.RxDBLeaderElectionPlugin = exports.LeaderElector = void 0;
 exports.getForDatabase = getForDatabase;
 exports.isLeader = isLeader;
-exports.waitForLeadership = waitForLeadership;
 exports.onDestroy = onDestroy;
-exports.RxDBLeaderElectionPlugin = exports.prototypes = exports.rxdb = exports.LeaderElector = void 0;
+exports.rxdb = exports.prototypes = void 0;
+exports.waitForLeadership = waitForLeadership;
 
 var _broadcastChannel = require("broadcast-channel");
 

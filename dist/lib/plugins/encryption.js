@@ -5,10 +5,11 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.encrypt = encrypt;
+exports.RxDBEncryptionPlugin = void 0;
 exports.decrypt = decrypt;
+exports.encrypt = encrypt;
+exports.rxdb = exports.prototypes = exports.overwritable = void 0;
 exports.storePasswordHashIntoDatabase = storePasswordHashIntoDatabase;
-exports.RxDBEncryptionPlugin = exports.overwritable = exports.prototypes = exports.rxdb = void 0;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 

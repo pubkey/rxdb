@@ -3,10 +3,10 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.runPluginHooks = runPluginHooks;
-exports.runAsyncPluginHooks = runAsyncPluginHooks;
-exports._clearHook = _clearHook;
 exports.HOOKS = void 0;
+exports._clearHook = _clearHook;
+exports.runAsyncPluginHooks = runAsyncPluginHooks;
+exports.runPluginHooks = runPluginHooks;
 
 /**
  * stores the hooks that where added by the plugins

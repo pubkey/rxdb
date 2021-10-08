@@ -5,16 +5,16 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getIndexes = getIndexes;
-exports.getPrimaryFieldOfPrimaryKey = getPrimaryFieldOfPrimaryKey;
-exports.getComposedPrimaryKeyOfDocumentData = getComposedPrimaryKeyOfDocumentData;
-exports.getPreviousVersions = getPreviousVersions;
-exports.getFinalFields = getFinalFields;
-exports.normalize = normalize;
-exports.fillWithDefaultSettings = fillWithDefaultSettings;
-exports.createRxSchema = createRxSchema;
-exports.isInstanceOf = isInstanceOf;
 exports.RxSchema = void 0;
+exports.createRxSchema = createRxSchema;
+exports.fillWithDefaultSettings = fillWithDefaultSettings;
+exports.getComposedPrimaryKeyOfDocumentData = getComposedPrimaryKeyOfDocumentData;
+exports.getFinalFields = getFinalFields;
+exports.getIndexes = getIndexes;
+exports.getPreviousVersions = getPreviousVersions;
+exports.getPrimaryFieldOfPrimaryKey = getPrimaryFieldOfPrimaryKey;
+exports.isInstanceOf = isInstanceOf;
+exports.normalize = normalize;
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 

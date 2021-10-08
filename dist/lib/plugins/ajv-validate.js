@@ -5,8 +5,9 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.RxDBAjvValidatePlugin = void 0;
 exports._getValidator = _getValidator;
-exports.RxDBAjvValidatePlugin = exports.hooks = exports.prototypes = exports.rxdb = void 0;
+exports.rxdb = exports.prototypes = exports.hooks = void 0;
 
 var _ajv = _interopRequireDefault(require("ajv"));
 

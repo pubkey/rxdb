@@ -5,13 +5,16 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.fromStorageInstanceResult = fromStorageInstanceResult;
-exports.putAttachment = putAttachment;
-exports.getAttachment = getAttachment;
+exports.RxDBAttachmentsPlugin = exports.RxAttachment = void 0;
 exports.allAttachments = allAttachments;
-exports.preMigrateDocument = preMigrateDocument;
+exports.fromStorageInstanceResult = fromStorageInstanceResult;
+exports.getAttachment = getAttachment;
+exports.overwritable = exports.hooks = void 0;
 exports.postMigrateDocument = postMigrateDocument;
-exports.RxDBAttachmentsPlugin = exports.hooks = exports.overwritable = exports.prototypes = exports.rxdb = exports.RxAttachment = void 0;
+exports.preMigrateDocument = preMigrateDocument;
+exports.prototypes = void 0;
+exports.putAttachment = putAttachment;
+exports.rxdb = void 0;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 

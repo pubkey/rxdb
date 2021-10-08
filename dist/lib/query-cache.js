@@ -3,11 +3,12 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.createQueryCache = createQueryCache;
-exports.uncacheRxQuery = uncacheRxQuery;
+exports.QueryCache = exports.DEFAULT_UNEXECUTED_LIFETME = exports.DEFAULT_TRY_TO_KEEP_MAX = exports.COLLECTIONS_WITH_RUNNING_CLEANUP = void 0;
 exports.countRxQuerySubscribers = countRxQuerySubscribers;
+exports.createQueryCache = createQueryCache;
+exports.defaultCacheReplacementPolicyMonad = exports.defaultCacheReplacementPolicy = void 0;
 exports.triggerCacheReplacement = triggerCacheReplacement;
-exports.COLLECTIONS_WITH_RUNNING_CLEANUP = exports.defaultCacheReplacementPolicy = exports.defaultCacheReplacementPolicyMonad = exports.DEFAULT_UNEXECUTED_LIFETME = exports.DEFAULT_TRY_TO_KEEP_MAX = exports.QueryCache = void 0;
+exports.uncacheRxQuery = uncacheRxQuery;
 
 var _util = require("./util");
 

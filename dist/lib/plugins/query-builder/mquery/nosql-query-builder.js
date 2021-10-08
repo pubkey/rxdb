@@ -3,10 +3,10 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.mQuerySortToRxDBSort = mQuerySortToRxDBSort;
+exports.OTHER_MANGO_OPERATORS = exports.OTHER_MANGO_ATTRIBUTES = exports.NoSqlQueryBuilderClass = void 0;
 exports.canMerge = canMerge;
 exports.createQueryBuilder = createQueryBuilder;
-exports.OTHER_MANGO_OPERATORS = exports.OTHER_MANGO_ATTRIBUTES = exports.NoSqlQueryBuilderClass = void 0;
+exports.mQuerySortToRxDBSort = mQuerySortToRxDBSort;
 
 var _mqueryUtils = require("./mquery-utils");
 

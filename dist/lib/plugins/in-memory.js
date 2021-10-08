@@ -5,13 +5,15 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.replicateExistingDocuments = replicateExistingDocuments;
-exports.setIndexes = setIndexes;
-exports.streamChangedDocuments = streamChangedDocuments;
+exports.RxDBInMemoryPlugin = exports.InMemoryRxCollection = void 0;
 exports.applyChangedDocumentToPouch = applyChangedDocumentToPouch;
 exports.inMemory = inMemory;
 exports.prepareInMemoryRxCollection = prepareInMemoryRxCollection;
-exports.RxDBInMemoryPlugin = exports.prototypes = exports.rxdb = exports.InMemoryRxCollection = void 0;
+exports.prototypes = void 0;
+exports.replicateExistingDocuments = replicateExistingDocuments;
+exports.rxdb = void 0;
+exports.setIndexes = setIndexes;
+exports.streamChangedDocuments = streamChangedDocuments;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 

@@ -9,8 +9,8 @@ var _exportNames = {
   deepFreezeWhenDevMode: true,
   RxDBDevModePlugin: true
 };
-exports.deepFreezeWhenDevMode = deepFreezeWhenDevMode;
 exports.RxDBDevModePlugin = void 0;
+exports.deepFreezeWhenDevMode = deepFreezeWhenDevMode;
 
 var _errorMessages = require("./error-messages");
 

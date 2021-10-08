@@ -3,8 +3,8 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.checkAdapter = checkAdapter;
 exports.POUCHDB_LOCATION = void 0;
+exports.checkAdapter = checkAdapter;
 
 var _pouchDb = require("./pouch-db");
 

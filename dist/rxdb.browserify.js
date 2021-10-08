@@ -27,8 +27,8 @@ window['RxDB'] = RxDB;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.createChangeEventBuffer = createChangeEventBuffer;
 exports.ChangeEventBuffer = void 0;
+exports.createChangeEventBuffer = createChangeEventBuffer;
 
 var _operators = require("rxjs/operators");
 
@@ -187,6 +187,7 @@ var _exportNames = {
   isRxDatabase: true,
   dbCount: true,
   _collectionNamePrimary: true,
+  overwritable: true,
   isRxCollection: true,
   RxCollectionBase: true,
   createRxCollection: true,
@@ -217,58 +218,28 @@ var _exportNames = {
   _clearHook: true,
   createCrypter: true
 };
-Object.defineProperty(exports, "addRxPlugin", {
-  enumerable: true,
-  get: function get() {
-    return _plugin.addRxPlugin;
-  }
-});
-Object.defineProperty(exports, "createRxDatabase", {
-  enumerable: true,
-  get: function get() {
-    return _rxDatabase.createRxDatabase;
-  }
-});
-Object.defineProperty(exports, "removeRxDatabase", {
-  enumerable: true,
-  get: function get() {
-    return _rxDatabase.removeRxDatabase;
-  }
-});
-Object.defineProperty(exports, "isRxDatabase", {
-  enumerable: true,
-  get: function get() {
-    return _rxDatabase.isRxDatabase;
-  }
-});
-Object.defineProperty(exports, "dbCount", {
-  enumerable: true,
-  get: function get() {
-    return _rxDatabase.dbCount;
-  }
-});
-Object.defineProperty(exports, "_collectionNamePrimary", {
-  enumerable: true,
-  get: function get() {
-    return _rxDatabase._collectionNamePrimary;
-  }
-});
-Object.defineProperty(exports, "isRxCollection", {
-  enumerable: true,
-  get: function get() {
-    return _rxCollection.isRxCollection;
-  }
-});
 Object.defineProperty(exports, "RxCollectionBase", {
   enumerable: true,
   get: function get() {
     return _rxCollection.RxCollectionBase;
   }
 });
-Object.defineProperty(exports, "createRxCollection", {
+Object.defineProperty(exports, "RxSchema", {
   enumerable: true,
   get: function get() {
-    return _rxCollection.createRxCollection;
+    return _rxSchema.RxSchema;
+  }
+});
+Object.defineProperty(exports, "_clearHook", {
+  enumerable: true,
+  get: function get() {
+    return _hooks._clearHook;
+  }
+});
+Object.defineProperty(exports, "_collectionNamePrimary", {
+  enumerable: true,
+  get: function get() {
+    return _rxDatabase._collectionNamePrimary;
   }
 });
 Object.defineProperty(exports, "_handleFromStorageInstance", {
@@ -283,16 +254,70 @@ Object.defineProperty(exports, "_handleToStorageInstance", {
     return _rxCollectionHelper._handleToStorageInstance;
   }
 });
+Object.defineProperty(exports, "addRxPlugin", {
+  enumerable: true,
+  get: function get() {
+    return _plugin.addRxPlugin;
+  }
+});
+Object.defineProperty(exports, "countAllUndeleted", {
+  enumerable: true,
+  get: function get() {
+    return _rxStorageHelper.countAllUndeleted;
+  }
+});
+Object.defineProperty(exports, "createCrypter", {
+  enumerable: true,
+  get: function get() {
+    return _crypter.createCrypter;
+  }
+});
+Object.defineProperty(exports, "createRxCollection", {
+  enumerable: true,
+  get: function get() {
+    return _rxCollection.createRxCollection;
+  }
+});
+Object.defineProperty(exports, "createRxDatabase", {
+  enumerable: true,
+  get: function get() {
+    return _rxDatabase.createRxDatabase;
+  }
+});
+Object.defineProperty(exports, "createRxSchema", {
+  enumerable: true,
+  get: function get() {
+    return _rxSchema.createRxSchema;
+  }
+});
+Object.defineProperty(exports, "dbCount", {
+  enumerable: true,
+  get: function get() {
+    return _rxDatabase.dbCount;
+  }
+});
 Object.defineProperty(exports, "fillObjectDataBeforeInsert", {
   enumerable: true,
   get: function get() {
     return _rxCollectionHelper.fillObjectDataBeforeInsert;
   }
 });
-Object.defineProperty(exports, "isRxDocument", {
+Object.defineProperty(exports, "findLocalDocument", {
   enumerable: true,
   get: function get() {
-    return _rxDocument.isRxDocument;
+    return _rxStorageHelper.findLocalDocument;
+  }
+});
+Object.defineProperty(exports, "getAllDocuments", {
+  enumerable: true,
+  get: function get() {
+    return _rxStorageHelper.getAllDocuments;
+  }
+});
+Object.defineProperty(exports, "getBatch", {
+  enumerable: true,
+  get: function get() {
+    return _rxStorageHelper.getBatch;
   }
 });
 Object.defineProperty(exports, "getDocumentOrmPrototype", {
@@ -307,28 +332,10 @@ Object.defineProperty(exports, "getDocumentPrototype", {
     return _rxDocumentPrototypeMerge.getDocumentPrototype;
   }
 });
-Object.defineProperty(exports, "isRxQuery", {
+Object.defineProperty(exports, "getFinalFields", {
   enumerable: true,
   get: function get() {
-    return _rxQuery.isInstanceOf;
-  }
-});
-Object.defineProperty(exports, "isRxSchema", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchema.isInstanceOf;
-  }
-});
-Object.defineProperty(exports, "createRxSchema", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchema.createRxSchema;
-  }
-});
-Object.defineProperty(exports, "RxSchema", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchema.RxSchema;
+    return _rxSchema.getFinalFields;
   }
 });
 Object.defineProperty(exports, "getIndexes", {
@@ -337,16 +344,10 @@ Object.defineProperty(exports, "getIndexes", {
     return _rxSchema.getIndexes;
   }
 });
-Object.defineProperty(exports, "normalize", {
+Object.defineProperty(exports, "getNewestSequence", {
   enumerable: true,
   get: function get() {
-    return _rxSchema.normalize;
-  }
-});
-Object.defineProperty(exports, "getFinalFields", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchema.getFinalFields;
+    return _rxStorageHelper.getNewestSequence;
   }
 });
 Object.defineProperty(exports, "getPreviousVersions", {
@@ -367,34 +368,58 @@ Object.defineProperty(exports, "getSchemaByObjectPath", {
     return _rxSchemaHelper.getSchemaByObjectPath;
   }
 });
-Object.defineProperty(exports, "findLocalDocument", {
-  enumerable: true,
-  get: function get() {
-    return _rxStorageHelper.findLocalDocument;
-  }
-});
 Object.defineProperty(exports, "getSingleDocument", {
   enumerable: true,
   get: function get() {
     return _rxStorageHelper.getSingleDocument;
   }
 });
-Object.defineProperty(exports, "getNewestSequence", {
+Object.defineProperty(exports, "isRxCollection", {
   enumerable: true,
   get: function get() {
-    return _rxStorageHelper.getNewestSequence;
+    return _rxCollection.isRxCollection;
   }
 });
-Object.defineProperty(exports, "getAllDocuments", {
+Object.defineProperty(exports, "isRxDatabase", {
   enumerable: true,
   get: function get() {
-    return _rxStorageHelper.getAllDocuments;
+    return _rxDatabase.isRxDatabase;
   }
 });
-Object.defineProperty(exports, "writeSingleLocal", {
+Object.defineProperty(exports, "isRxDocument", {
   enumerable: true,
   get: function get() {
-    return _rxStorageHelper.writeSingleLocal;
+    return _rxDocument.isRxDocument;
+  }
+});
+Object.defineProperty(exports, "isRxQuery", {
+  enumerable: true,
+  get: function get() {
+    return _rxQuery.isInstanceOf;
+  }
+});
+Object.defineProperty(exports, "isRxSchema", {
+  enumerable: true,
+  get: function get() {
+    return _rxSchema.isInstanceOf;
+  }
+});
+Object.defineProperty(exports, "normalize", {
+  enumerable: true,
+  get: function get() {
+    return _rxSchema.normalize;
+  }
+});
+Object.defineProperty(exports, "overwritable", {
+  enumerable: true,
+  get: function get() {
+    return _overwritable.overwritable;
+  }
+});
+Object.defineProperty(exports, "removeRxDatabase", {
+  enumerable: true,
+  get: function get() {
+    return _rxDatabase.removeRxDatabase;
   }
 });
 Object.defineProperty(exports, "writeSingle", {
@@ -403,28 +428,10 @@ Object.defineProperty(exports, "writeSingle", {
     return _rxStorageHelper.writeSingle;
   }
 });
-Object.defineProperty(exports, "countAllUndeleted", {
+Object.defineProperty(exports, "writeSingleLocal", {
   enumerable: true,
   get: function get() {
-    return _rxStorageHelper.countAllUndeleted;
-  }
-});
-Object.defineProperty(exports, "getBatch", {
-  enumerable: true,
-  get: function get() {
-    return _rxStorageHelper.getBatch;
-  }
-});
-Object.defineProperty(exports, "_clearHook", {
-  enumerable: true,
-  get: function get() {
-    return _hooks._clearHook;
-  }
-});
-Object.defineProperty(exports, "createCrypter", {
-  enumerable: true,
-  get: function get() {
-    return _crypter.createCrypter;
+    return _rxStorageHelper.writeSingleLocal;
   }
 });
 
@@ -441,6 +448,8 @@ require("./types/modules/random-token.d");
 var _plugin = require("./plugin");
 
 var _rxDatabase = require("./rx-database");
+
+var _overwritable = require("./overwritable");
 
 var _rxCollection = require("./rx-collection");
 
@@ -491,7 +500,7 @@ Object.keys(_util).forEach(function (key) {
 });
 
 
-},{"./crypter":4,"./hooks":7,"./plugin":10,"./query-cache":41,"./rx-collection":44,"./rx-collection-helper":43,"./rx-database":45,"./rx-document":47,"./rx-document-prototype-merge":46,"./rx-query":49,"./rx-schema":51,"./rx-schema-helper":50,"./rx-storage-helper":52,"./types/modules/crypto-js.d":53,"./types/modules/graphql-client.d":54,"./types/modules/mocha.parallel.d":55,"./types/modules/modifiyjs.d":56,"./types/modules/random-token.d":57,"./util":58}],4:[function(require,module,exports){
+},{"./crypter":4,"./hooks":7,"./overwritable":9,"./plugin":10,"./query-cache":41,"./rx-collection":44,"./rx-collection-helper":43,"./rx-database":45,"./rx-document":47,"./rx-document-prototype-merge":46,"./rx-query":49,"./rx-schema":51,"./rx-schema-helper":50,"./rx-storage-helper":52,"./types/modules/crypto-js.d":53,"./types/modules/graphql-client.d":54,"./types/modules/mocha.parallel.d":55,"./types/modules/modifiyjs.d":56,"./types/modules/random-token.d":57,"./util":58}],4:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
@@ -499,8 +508,8 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.createCrypter = createCrypter;
 exports.Crypter = void 0;
+exports.createCrypter = createCrypter;
 
 var _objectPath = _interopRequireDefault(require("object-path"));
 
@@ -625,8 +634,8 @@ function createCrypter(password, schema) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.createDocCache = createDocCache;
 exports.DocCache = void 0;
+exports.createDocCache = createDocCache;
 
 var DocCache = /*#__PURE__*/function () {
   function DocCache() {
@@ -664,10 +673,10 @@ function createDocCache() {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getSortFieldsOfQuery = getSortFieldsOfQuery;
-exports.getQueryParams = getQueryParams;
-exports.calculateNewResults = calculateNewResults;
 exports.RXQUERY_QUERY_PARAMS_CACHE = void 0;
+exports.calculateNewResults = calculateNewResults;
+exports.getQueryParams = getQueryParams;
+exports.getSortFieldsOfQuery = getSortFieldsOfQuery;
 
 var _eventReduceJs = require("event-reduce-js");
 
@@ -794,10 +803,10 @@ function calculateNewResults(rxQuery, rxChangeEvents) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.runPluginHooks = runPluginHooks;
-exports.runAsyncPluginHooks = runAsyncPluginHooks;
-exports._clearHook = _clearHook;
 exports.HOOKS = void 0;
+exports._clearHook = _clearHook;
+exports.runAsyncPluginHooks = runAsyncPluginHooks;
+exports.runPluginHooks = runPluginHooks;
 
 /**
  * stores the hooks that where added by the plugins
@@ -1213,13 +1222,16 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.fromStorageInstanceResult = fromStorageInstanceResult;
-exports.putAttachment = putAttachment;
-exports.getAttachment = getAttachment;
+exports.RxDBAttachmentsPlugin = exports.RxAttachment = void 0;
 exports.allAttachments = allAttachments;
-exports.preMigrateDocument = preMigrateDocument;
+exports.fromStorageInstanceResult = fromStorageInstanceResult;
+exports.getAttachment = getAttachment;
+exports.overwritable = exports.hooks = void 0;
 exports.postMigrateDocument = postMigrateDocument;
-exports.RxDBAttachmentsPlugin = exports.hooks = exports.overwritable = exports.prototypes = exports.rxdb = exports.RxAttachment = void 0;
+exports.preMigrateDocument = preMigrateDocument;
+exports.prototypes = void 0;
+exports.putAttachment = putAttachment;
+exports.rxdb = void 0;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
@@ -1914,9 +1926,9 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.checkFieldNameRegex = checkFieldNameRegex;
-exports.validateFieldsDeep = validateFieldsDeep;
 exports.checkPrimaryKey = checkPrimaryKey;
 exports.checkSchema = checkSchema;
+exports.validateFieldsDeep = validateFieldsDeep;
 
 var _objectPath = _interopRequireDefault(require("object-path"));
 
@@ -2630,8 +2642,8 @@ var _exportNames = {
   deepFreezeWhenDevMode: true,
   RxDBDevModePlugin: true
 };
-exports.deepFreezeWhenDevMode = deepFreezeWhenDevMode;
 exports.RxDBDevModePlugin = void 0;
+exports.deepFreezeWhenDevMode = deepFreezeWhenDevMode;
 
 var _errorMessages = require("./error-messages");
 
@@ -2815,10 +2827,11 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.encrypt = encrypt;
+exports.RxDBEncryptionPlugin = void 0;
 exports.decrypt = decrypt;
+exports.encrypt = encrypt;
+exports.rxdb = exports.prototypes = exports.overwritable = void 0;
 exports.storePasswordHashIntoDatabase = storePasswordHashIntoDatabase;
-exports.RxDBEncryptionPlugin = exports.overwritable = exports.prototypes = exports.rxdb = void 0;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
@@ -2995,13 +3008,15 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.replicateExistingDocuments = replicateExistingDocuments;
-exports.setIndexes = setIndexes;
-exports.streamChangedDocuments = streamChangedDocuments;
+exports.RxDBInMemoryPlugin = exports.InMemoryRxCollection = void 0;
 exports.applyChangedDocumentToPouch = applyChangedDocumentToPouch;
 exports.inMemory = inMemory;
 exports.prepareInMemoryRxCollection = prepareInMemoryRxCollection;
-exports.RxDBInMemoryPlugin = exports.prototypes = exports.rxdb = exports.InMemoryRxCollection = void 0;
+exports.prototypes = void 0;
+exports.replicateExistingDocuments = replicateExistingDocuments;
+exports.rxdb = void 0;
+exports.setIndexes = setIndexes;
+exports.streamChangedDocuments = streamChangedDocuments;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
@@ -3494,7 +3509,7 @@ exports.RxDBInMemoryPlugin = RxDBInMemoryPlugin;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RxDBJsonDumpPlugin = exports.overwritable = exports.prototypes = exports.rxdb = void 0;
+exports.rxdb = exports.prototypes = exports.overwritable = exports.RxDBJsonDumpPlugin = void 0;
 
 var _util = require("../util");
 
@@ -3660,9 +3675,10 @@ exports.RxDBJsonDumpPlugin = RxDBJsonDumpPlugin;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.RxDBKeyCompressionPlugin = void 0;
 exports.createCompressionState = createCompressionState;
 exports.getCompressionStateByStorageInstance = getCompressionStateByStorageInstance;
-exports.RxDBKeyCompressionPlugin = exports.overwritable = exports.prototypes = exports.rxdb = void 0;
+exports.rxdb = exports.prototypes = exports.overwritable = void 0;
 
 var _jsonschemaKeyCompression = require("jsonschema-key-compression");
 
@@ -3833,11 +3849,12 @@ exports.RxDBKeyCompressionPlugin = RxDBKeyCompressionPlugin;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.RxDBLeaderElectionPlugin = exports.LeaderElector = void 0;
 exports.getForDatabase = getForDatabase;
 exports.isLeader = isLeader;
-exports.waitForLeadership = waitForLeadership;
 exports.onDestroy = onDestroy;
-exports.RxDBLeaderElectionPlugin = exports.prototypes = exports.rxdb = exports.LeaderElector = void 0;
+exports.rxdb = exports.prototypes = void 0;
+exports.waitForLeadership = waitForLeadership;
 
 var _broadcastChannel = require("broadcast-channel");
 
@@ -3950,7 +3967,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RxDBLocalDocumentsPlugin = exports.RxLocalDocument = void 0;
+exports.RxLocalDocument = exports.RxDBLocalDocumentsPlugin = void 0;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
@@ -4453,18 +4470,18 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.createOldCollection = createOldCollection;
+exports.DataMigrator = void 0;
 exports._getOldCollections = _getOldCollections;
-exports.mustMigrate = mustMigrate;
-exports.runStrategyIfNotNull = runStrategyIfNotNull;
-exports.getBatchOfOldCollection = getBatchOfOldCollection;
-exports.migrateDocumentData = migrateDocumentData;
-exports.isDocumentDataWithoutRevisionEqual = isDocumentDataWithoutRevisionEqual;
 exports._migrateDocuments = _migrateDocuments;
+exports.createOldCollection = createOldCollection;
 exports.deleteOldCollection = deleteOldCollection;
+exports.getBatchOfOldCollection = getBatchOfOldCollection;
+exports.isDocumentDataWithoutRevisionEqual = isDocumentDataWithoutRevisionEqual;
+exports.migrateDocumentData = migrateDocumentData;
 exports.migrateOldCollection = migrateOldCollection;
 exports.migratePromise = migratePromise;
-exports.DataMigrator = void 0;
+exports.mustMigrate = mustMigrate;
+exports.runStrategyIfNotNull = runStrategyIfNotNull;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
@@ -5080,22 +5097,18 @@ function migratePromise(oldCollection, batchSize) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.DATA_MIGRATOR_BY_COLLECTION = void 0;
+Object.defineProperty(exports, "DataMigrator", {
+  enumerable: true,
+  get: function get() {
+    return _dataMigrator.DataMigrator;
+  }
+});
+exports.RxDBMigrationPlugin = void 0;
 Object.defineProperty(exports, "_getOldCollections", {
   enumerable: true,
   get: function get() {
     return _dataMigrator._getOldCollections;
-  }
-});
-Object.defineProperty(exports, "getBatchOfOldCollection", {
-  enumerable: true,
-  get: function get() {
-    return _dataMigrator.getBatchOfOldCollection;
-  }
-});
-Object.defineProperty(exports, "migrateDocumentData", {
-  enumerable: true,
-  get: function get() {
-    return _dataMigrator.migrateDocumentData;
   }
 });
 Object.defineProperty(exports, "_migrateDocuments", {
@@ -5110,6 +5123,18 @@ Object.defineProperty(exports, "deleteOldCollection", {
     return _dataMigrator.deleteOldCollection;
   }
 });
+Object.defineProperty(exports, "getBatchOfOldCollection", {
+  enumerable: true,
+  get: function get() {
+    return _dataMigrator.getBatchOfOldCollection;
+  }
+});
+Object.defineProperty(exports, "migrateDocumentData", {
+  enumerable: true,
+  get: function get() {
+    return _dataMigrator.migrateDocumentData;
+  }
+});
 Object.defineProperty(exports, "migrateOldCollection", {
   enumerable: true,
   get: function get() {
@@ -5122,13 +5147,6 @@ Object.defineProperty(exports, "migratePromise", {
     return _dataMigrator.migratePromise;
   }
 });
-Object.defineProperty(exports, "DataMigrator", {
-  enumerable: true,
-  get: function get() {
-    return _dataMigrator.DataMigrator;
-  }
-});
-exports.RxDBMigrationPlugin = exports.DATA_MIGRATOR_BY_COLLECTION = void 0;
 
 var _rxjs = require("rxjs");
 
@@ -5182,9 +5200,9 @@ exports.RxDBMigrationPlugin = RxDBMigrationPlugin;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE = void 0;
 exports.getMigrationStateByDatabase = getMigrationStateByDatabase;
 exports.onDatabaseDestroy = onDatabaseDestroy;
-exports.DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE = void 0;
 
 var _rxjs = require("rxjs");
 
@@ -5222,8 +5240,8 @@ function onDatabaseDestroy(database) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.checkAdapter = checkAdapter;
 exports.POUCHDB_LOCATION = void 0;
+exports.checkAdapter = checkAdapter;
 
 var _pouchDb = require("./pouch-db");
 
@@ -5302,9 +5320,9 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getCustomEventEmitterByPouch = getCustomEventEmitterByPouch;
-exports.addCustomEventsPluginToPouch = addCustomEventsPluginToPouch;
 exports.EVENT_EMITTER_BY_POUCH_INSTANCE = void 0;
+exports.addCustomEventsPluginToPouch = addCustomEventsPluginToPouch;
+exports.getCustomEventEmitterByPouch = getCustomEventEmitterByPouch;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
@@ -5623,11 +5641,11 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.PouchDB = void 0;
+exports.addPouchPlugin = addPouchPlugin;
+exports.isInstanceOf = isInstanceOf;
 exports.isLevelDown = isLevelDown;
 exports.pouchReplicationFunction = pouchReplicationFunction;
-exports.isInstanceOf = isInstanceOf;
-exports.addPouchPlugin = addPouchPlugin;
-exports.PouchDB = void 0;
 
 var _pouchdbCore = _interopRequireDefault(require("pouchdb-core"));
 
@@ -5728,22 +5746,22 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.writeAttachmentsToAttachments = writeAttachmentsToAttachments;
+exports.RxStoragePouch = exports.RxStorageKeyObjectInstancePouch = exports.RxStorageInstancePouch = exports.POUCHDB_LOCAL_PREFIX = exports.POUCHDB_DESIGN_PREFIX = exports.OPEN_POUCHDB_STORAGE_INSTANCES = void 0;
 exports.checkPouchAdapter = checkPouchAdapter;
-exports.pouchHash = pouchHash;
-exports.pouchSwapIdToPrimary = pouchSwapIdToPrimary;
-exports.pouchDocumentDataToRxDocumentData = pouchDocumentDataToRxDocumentData;
-exports.rxDocumentDataToPouchDocumentData = rxDocumentDataToPouchDocumentData;
-exports.pouchSwapPrimaryToId = pouchSwapPrimaryToId;
-exports.pouchStripLocalFlagFromPrimary = pouchStripLocalFlagFromPrimary;
-exports.getEventKey = getEventKey;
-exports.pouchChangeRowToChangeEvent = pouchChangeRowToChangeEvent;
-exports.pouchChangeRowToChangeStreamEvent = pouchChangeRowToChangeStreamEvent;
-exports.primarySwapPouchDbQuerySelector = primarySwapPouchDbQuerySelector;
 exports.createIndexesOnPouch = createIndexesOnPouch;
+exports.getEventKey = getEventKey;
 exports.getPouchLocation = getPouchLocation;
 exports.getRxStoragePouch = getRxStoragePouch;
-exports.RxStoragePouch = exports.RxStorageInstancePouch = exports.RxStorageKeyObjectInstancePouch = exports.OPEN_POUCHDB_STORAGE_INSTANCES = exports.POUCHDB_DESIGN_PREFIX = exports.POUCHDB_LOCAL_PREFIX = void 0;
+exports.pouchChangeRowToChangeEvent = pouchChangeRowToChangeEvent;
+exports.pouchChangeRowToChangeStreamEvent = pouchChangeRowToChangeStreamEvent;
+exports.pouchDocumentDataToRxDocumentData = pouchDocumentDataToRxDocumentData;
+exports.pouchHash = pouchHash;
+exports.pouchStripLocalFlagFromPrimary = pouchStripLocalFlagFromPrimary;
+exports.pouchSwapIdToPrimary = pouchSwapIdToPrimary;
+exports.pouchSwapPrimaryToId = pouchSwapPrimaryToId;
+exports.primarySwapPouchDbQuerySelector = primarySwapPouchDbQuerySelector;
+exports.rxDocumentDataToPouchDocumentData = rxDocumentDataToPouchDocumentData;
+exports.writeAttachmentsToAttachments = writeAttachmentsToAttachments;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
@@ -7635,9 +7653,9 @@ var _exportNames = {
   applyBuildingStep: true,
   RxDBQueryBuilderPlugin: true
 };
-exports.runBuildingStep = runBuildingStep;
-exports.applyBuildingStep = applyBuildingStep;
 exports.RxDBQueryBuilderPlugin = void 0;
+exports.applyBuildingStep = applyBuildingStep;
+exports.runBuildingStep = runBuildingStep;
 
 var _nosqlQueryBuilder = require("./mquery/nosql-query-builder");
 
@@ -7714,8 +7732,8 @@ exports.RxDBQueryBuilderPlugin = RxDBQueryBuilderPlugin;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.merge = merge;
 exports.isObject = isObject;
+exports.merge = merge;
 
 /**
  * this is copied from
@@ -7759,10 +7777,10 @@ function isObject(arg) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.mQuerySortToRxDBSort = mQuerySortToRxDBSort;
+exports.OTHER_MANGO_OPERATORS = exports.OTHER_MANGO_ATTRIBUTES = exports.NoSqlQueryBuilderClass = void 0;
 exports.canMerge = canMerge;
 exports.createQueryBuilder = createQueryBuilder;
-exports.OTHER_MANGO_OPERATORS = exports.OTHER_MANGO_ATTRIBUTES = exports.NoSqlQueryBuilderClass = void 0;
+exports.mQuerySortToRxDBSort = mQuerySortToRxDBSort;
 
 var _mqueryUtils = require("./mquery-utils");
 
@@ -8315,10 +8333,11 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.setPouchEventEmitter = setPouchEventEmitter;
+exports.RxDBReplicationCouchDBPlugin = exports.RxCouchDBReplicationStateBase = void 0;
 exports.createRxCouchDBReplicationState = createRxCouchDBReplicationState;
+exports.rxdb = exports.prototypes = exports.hooks = void 0;
+exports.setPouchEventEmitter = setPouchEventEmitter;
 exports.syncCouchDB = syncCouchDB;
-exports.RxDBReplicationCouchDBPlugin = exports.hooks = exports.prototypes = exports.rxdb = exports.RxCouchDBReplicationStateBase = void 0;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
@@ -8650,9 +8669,10 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.update = update;
+exports.RxDBUpdatePlugin = void 0;
 exports.RxQueryUpdate = RxQueryUpdate;
-exports.RxDBUpdatePlugin = exports.prototypes = exports.rxdb = void 0;
+exports.rxdb = exports.prototypes = void 0;
+exports.update = update;
 
 var _modifyjs = _interopRequireDefault(require("modifyjs"));
 
@@ -8715,7 +8735,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RxDBValidatePlugin = exports.hooks = exports.prototypes = exports.rxdb = void 0;
+exports.rxdb = exports.prototypes = exports.hooks = exports.RxDBValidatePlugin = void 0;
 
 var _isMyJsonValid = _interopRequireDefault(require("is-my-json-valid"));
 
@@ -8807,11 +8827,12 @@ exports.RxDBValidatePlugin = RxDBValidatePlugin;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.createQueryCache = createQueryCache;
-exports.uncacheRxQuery = uncacheRxQuery;
+exports.QueryCache = exports.DEFAULT_UNEXECUTED_LIFETME = exports.DEFAULT_TRY_TO_KEEP_MAX = exports.COLLECTIONS_WITH_RUNNING_CLEANUP = void 0;
 exports.countRxQuerySubscribers = countRxQuerySubscribers;
+exports.createQueryCache = createQueryCache;
+exports.defaultCacheReplacementPolicyMonad = exports.defaultCacheReplacementPolicy = void 0;
 exports.triggerCacheReplacement = triggerCacheReplacement;
-exports.COLLECTIONS_WITH_RUNNING_CLEANUP = exports.defaultCacheReplacementPolicy = exports.defaultCacheReplacementPolicyMonad = exports.DEFAULT_UNEXECUTED_LIFETME = exports.DEFAULT_TRY_TO_KEEP_MAX = exports.QueryCache = void 0;
+exports.uncacheRxQuery = uncacheRxQuery;
 
 var _util = require("./util");
 
@@ -9023,12 +9044,12 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.writeToStorageInstance = writeToStorageInstance;
-exports._handleToStorageInstance = _handleToStorageInstance;
 exports._handleFromStorageInstance = _handleFromStorageInstance;
+exports._handleToStorageInstance = _handleToStorageInstance;
+exports.createRxCollectionStorageInstances = createRxCollectionStorageInstances;
 exports.fillObjectDataBeforeInsert = fillObjectDataBeforeInsert;
 exports.getCollectionLocalInstanceName = getCollectionLocalInstanceName;
-exports.createRxCollectionStorageInstances = createRxCollectionStorageInstances;
+exports.writeToStorageInstance = writeToStorageInstance;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
@@ -9271,9 +9292,9 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.RxCollectionBase = void 0;
 exports.createRxCollection = createRxCollection;
 exports.isRxCollection = isRxCollection;
-exports.RxCollectionBase = void 0;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
@@ -10433,15 +10454,15 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports._ensureStorageTokenExists = _ensureStorageTokenExists;
-exports.writeToSocket = writeToSocket;
+exports.RxDatabaseBase = void 0;
 exports._collectionNamePrimary = _collectionNamePrimary;
+exports._ensureStorageTokenExists = _ensureStorageTokenExists;
 exports._removeAllOfCollection = _removeAllOfCollection;
 exports.createRxDatabase = createRxDatabase;
-exports.removeRxDatabase = removeRxDatabase;
-exports.isRxDatabase = isRxDatabase;
 exports.dbCount = dbCount;
-exports.RxDatabaseBase = void 0;
+exports.isRxDatabase = isRxDatabase;
+exports.removeRxDatabase = removeRxDatabase;
+exports.writeToSocket = writeToSocket;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
@@ -11344,15 +11365,17 @@ function dbCount() {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getDocumentPrototype = getDocumentPrototype;
-exports.getRxDocumentConstructor = getRxDocumentConstructor;
 exports.createRxDocument = createRxDocument;
 exports.createRxDocuments = createRxDocuments;
 exports.getDocumentOrmPrototype = getDocumentOrmPrototype;
+exports.getDocumentPrototype = getDocumentPrototype;
+exports.getRxDocumentConstructor = getRxDocumentConstructor;
 
 var _rxDocument = require("./rx-document");
 
 var _hooks = require("./hooks");
+
+var _overwritable = require("./overwritable");
 
 /**
  * For the ORM capabilities,
@@ -11430,7 +11453,7 @@ function createRxDocument(rxCollection, docData) {
     return cacheDoc;
   }
 
-  var doc = (0, _rxDocument.createWithConstructor)(getRxDocumentConstructor(rxCollection), rxCollection, docData);
+  var doc = (0, _rxDocument.createWithConstructor)(getRxDocumentConstructor(rxCollection), rxCollection, _overwritable.overwritable.deepFreezeWhenDevMode(docData));
 
   rxCollection._docCache.set(primary, doc);
 
@@ -11467,7 +11490,7 @@ function getDocumentOrmPrototype(rxCollection) {
 }
 
 
-},{"./hooks":7,"./rx-document":47}],47:[function(require,module,exports){
+},{"./hooks":7,"./overwritable":9,"./rx-document":47}],47:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
@@ -11475,11 +11498,11 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.createRxDocumentConstructor = createRxDocumentConstructor;
-exports.defineGetterSetter = defineGetterSetter;
-exports.createWithConstructor = createWithConstructor;
-exports.isRxDocument = isRxDocument;
 exports.basePrototype = void 0;
+exports.createRxDocumentConstructor = createRxDocumentConstructor;
+exports.createWithConstructor = createWithConstructor;
+exports.defineGetterSetter = defineGetterSetter;
+exports.isRxDocument = isRxDocument;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
@@ -11582,7 +11605,9 @@ var basePrototype = {
   get $() {
     var _this = this;
 
-    return _this._dataSync$.asObservable();
+    return _this._dataSync$.asObservable().pipe((0, _operators.map)(function (docData) {
+      return _overwritable.overwritable.deepFreezeWhenDevMode(docData);
+    }));
   },
 
   _handleChangeEvent: function _handleChangeEvent(changeEvent) {
@@ -12107,10 +12132,10 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.RxTypeError = exports.RxError = void 0;
+exports.isPouchdbConflictError = isPouchdbConflictError;
 exports.newRxError = newRxError;
 exports.newRxTypeError = newRxTypeError;
-exports.isPouchdbConflictError = isPouchdbConflictError;
-exports.RxTypeError = exports.RxError = void 0;
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 
@@ -12253,11 +12278,11 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.RxQueryBase = void 0;
 exports._getDefaultQuery = _getDefaultQuery;
-exports.tunnelQueryCache = tunnelQueryCache;
 exports.createRxQuery = createRxQuery;
 exports.isInstanceOf = isInstanceOf;
-exports.RxQueryBase = void 0;
+exports.tunnelQueryCache = tunnelQueryCache;
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 
@@ -12324,8 +12349,16 @@ var RxQueryBase = /*#__PURE__*/function () {
    * @param newResultData json-docs that were received from pouchdb
    */
   _proto._setResultData = function _setResultData(newResultData) {
-    this._resultsData = newResultData;
-    var docs = (0, _rxDocumentPrototypeMerge.createRxDocuments)(this.collection, this._resultsData);
+    var docs = (0, _rxDocumentPrototypeMerge.createRxDocuments)(this.collection, newResultData);
+    /**
+     * Instead of using the newResultData in the result cache,
+     * we directly use the objects that are stored in the RxDocument
+     * to ensure we do not store the same data twice and fill up the memory.
+     */
+
+    this._resultsData = docs.map(function (doc) {
+      return doc._dataSync$.getValue();
+    });
 
     this._resultsDocs$.next(docs);
 
@@ -12825,16 +12858,16 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getIndexes = getIndexes;
-exports.getPrimaryFieldOfPrimaryKey = getPrimaryFieldOfPrimaryKey;
-exports.getComposedPrimaryKeyOfDocumentData = getComposedPrimaryKeyOfDocumentData;
-exports.getPreviousVersions = getPreviousVersions;
-exports.getFinalFields = getFinalFields;
-exports.normalize = normalize;
-exports.fillWithDefaultSettings = fillWithDefaultSettings;
-exports.createRxSchema = createRxSchema;
-exports.isInstanceOf = isInstanceOf;
 exports.RxSchema = void 0;
+exports.createRxSchema = createRxSchema;
+exports.fillWithDefaultSettings = fillWithDefaultSettings;
+exports.getComposedPrimaryKeyOfDocumentData = getComposedPrimaryKeyOfDocumentData;
+exports.getFinalFields = getFinalFields;
+exports.getIndexes = getIndexes;
+exports.getPreviousVersions = getPreviousVersions;
+exports.getPrimaryFieldOfPrimaryKey = getPrimaryFieldOfPrimaryKey;
+exports.isInstanceOf = isInstanceOf;
+exports.normalize = normalize;
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 
@@ -13179,16 +13212,16 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getAllDocuments = getAllDocuments;
-exports.getSingleDocument = getSingleDocument;
+exports.INTERNAL_STORAGE_NAME = void 0;
 exports.countAllUndeleted = countAllUndeleted;
+exports.findLocalDocument = findLocalDocument;
+exports.getAllDocuments = getAllDocuments;
 exports.getBatch = getBatch;
+exports.getNewestSequence = getNewestSequence;
+exports.getSingleDocument = getSingleDocument;
+exports.storageChangeEventToRxChangeEvent = storageChangeEventToRxChangeEvent;
 exports.writeSingle = writeSingle;
 exports.writeSingleLocal = writeSingleLocal;
-exports.findLocalDocument = findLocalDocument;
-exports.getNewestSequence = getNewestSequence;
-exports.storageChangeEventToRxChangeEvent = storageChangeEventToRxChangeEvent;
-exports.INTERNAL_STORAGE_NAME = void 0;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
@@ -13595,34 +13628,36 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.pluginMissing = pluginMissing;
-exports.fastUnsecureHash = fastUnsecureHash;
-exports.hash = hash;
-exports.now = now;
-exports.nextTick = nextTick;
-exports.promiseWait = promiseWait;
-exports.toPromise = toPromise;
-exports.requestIdlePromise = requestIdlePromise;
-exports.promiseSeries = promiseSeries;
-exports.requestIdleCallbackIfAvailable = requestIdleCallbackIfAvailable;
-exports.ucfirst = ucfirst;
-exports.trimDots = trimDots;
-exports.ensureNotFalsy = ensureNotFalsy;
-exports.sortObject = sortObject;
-exports.stringifyFilter = stringifyFilter;
-exports.randomCouchString = randomCouchString;
-exports.lastOfArray = lastOfArray;
-exports.shuffleArray = shuffleArray;
-exports.removeOneFromArrayIfMatches = removeOneFromArrayIfMatches;
+exports.RXDB_HASH_SALT = exports.RANDOM_STRING = void 0;
 exports.adapterObject = adapterObject;
+exports.clone = exports.blobBufferUtil = void 0;
+exports.createRevision = createRevision;
+exports.ensureNotFalsy = ensureNotFalsy;
+exports.fastUnsecureHash = fastUnsecureHash;
 exports.flatClone = flatClone;
 exports.flattenObject = flattenObject;
-exports.getHeightOfRevision = getHeightOfRevision;
-exports.createRevision = createRevision;
-exports.overwriteGetterForCaching = overwriteGetterForCaching;
-exports.isFolderPath = isFolderPath;
 exports.getFromMapOrThrow = getFromMapOrThrow;
-exports.blobBufferUtil = exports.isElectronRenderer = exports.clone = exports.RANDOM_STRING = exports.RXDB_HASH_SALT = void 0;
+exports.getHeightOfRevision = getHeightOfRevision;
+exports.hash = hash;
+exports.isElectronRenderer = void 0;
+exports.isFolderPath = isFolderPath;
+exports.lastOfArray = lastOfArray;
+exports.nextTick = nextTick;
+exports.now = now;
+exports.overwriteGetterForCaching = overwriteGetterForCaching;
+exports.pluginMissing = pluginMissing;
+exports.promiseSeries = promiseSeries;
+exports.promiseWait = promiseWait;
+exports.randomCouchString = randomCouchString;
+exports.removeOneFromArrayIfMatches = removeOneFromArrayIfMatches;
+exports.requestIdleCallbackIfAvailable = requestIdleCallbackIfAvailable;
+exports.requestIdlePromise = requestIdlePromise;
+exports.shuffleArray = shuffleArray;
+exports.sortObject = sortObject;
+exports.stringifyFilter = stringifyFilter;
+exports.toPromise = toPromise;
+exports.trimDots = trimDots;
+exports.ucfirst = ucfirst;
 
 var _clone = _interopRequireDefault(require("clone"));
 

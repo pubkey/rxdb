@@ -5,10 +5,11 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.setPouchEventEmitter = setPouchEventEmitter;
+exports.RxDBReplicationCouchDBPlugin = exports.RxCouchDBReplicationStateBase = void 0;
 exports.createRxCouchDBReplicationState = createRxCouchDBReplicationState;
+exports.rxdb = exports.prototypes = exports.hooks = void 0;
+exports.setPouchEventEmitter = setPouchEventEmitter;
 exports.syncCouchDB = syncCouchDB;
-exports.RxDBReplicationCouchDBPlugin = exports.hooks = exports.prototypes = exports.rxdb = exports.RxCouchDBReplicationStateBase = void 0;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 

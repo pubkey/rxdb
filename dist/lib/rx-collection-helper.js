@@ -5,12 +5,12 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.writeToStorageInstance = writeToStorageInstance;
-exports._handleToStorageInstance = _handleToStorageInstance;
 exports._handleFromStorageInstance = _handleFromStorageInstance;
+exports._handleToStorageInstance = _handleToStorageInstance;
+exports.createRxCollectionStorageInstances = createRxCollectionStorageInstances;
 exports.fillObjectDataBeforeInsert = fillObjectDataBeforeInsert;
 exports.getCollectionLocalInstanceName = getCollectionLocalInstanceName;
-exports.createRxCollectionStorageInstances = createRxCollectionStorageInstances;
+exports.writeToStorageInstance = writeToStorageInstance;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 

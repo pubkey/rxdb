@@ -23,7 +23,7 @@ export declare interface RxDocumentBase<RxDocumentType, OrmMethods = {}> {
     collection: RxCollection<RxDocumentType, OrmMethods>;
     readonly deleted: boolean;
 
-    readonly $: Observable<any>;
+    readonly $: Observable<DeepReadonly<any>>;
     readonly deleted$: Observable<boolean>;
 
     readonly primary: string;
@@ -31,7 +31,7 @@ export declare interface RxDocumentBase<RxDocumentType, OrmMethods = {}> {
 
     // internal things
     _isTemporary: boolean;
-    _dataSync$: BehaviorSubject<RxDocumentType>;
+    _dataSync$: BehaviorSubject<DeepReadonly<RxDocumentType>>;
     _data: RxDocumentData<RxDocumentType>;
     _isDeleted$: BehaviorSubject<boolean>;
     primaryPath: string;

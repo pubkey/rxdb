@@ -5,11 +5,11 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getLastPushSequence = getLastPushSequence;
-exports.setLastPushSequence = setLastPushSequence;
 exports.getChangesSinceLastPushSequence = getChangesSinceLastPushSequence;
 exports.getLastPullDocument = getLastPullDocument;
+exports.getLastPushSequence = getLastPushSequence;
 exports.setLastPullDocument = setLastPullDocument;
+exports.setLastPushSequence = setLastPushSequence;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 

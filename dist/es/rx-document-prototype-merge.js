@@ -7,7 +7,8 @@
  * In the future we should do this by chaining the __proto__ objects
  */
 import { createRxDocumentConstructor, basePrototype, createWithConstructor as createRxDocumentWithConstructor } from './rx-document';
-import { runPluginHooks } from './hooks'; // caches
+import { runPluginHooks } from './hooks';
+import { overwritable } from './overwritable'; // caches
 
 var protoForCollection = new WeakMap();
 var constructorForCollection = new WeakMap();
@@ -73,7 +74,7 @@ export function createRxDocument(rxCollection, docData) {
     return cacheDoc;
   }
 
-  var doc = createRxDocumentWithConstructor(getRxDocumentConstructor(rxCollection), rxCollection, docData);
+  var doc = createRxDocumentWithConstructor(getRxDocumentConstructor(rxCollection), rxCollection, overwritable.deepFreezeWhenDevMode(docData));
 
   rxCollection._docCache.set(primary, doc);
 
