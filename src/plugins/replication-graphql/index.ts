@@ -345,8 +345,8 @@ export class RxGraphQLReplicationState<RxDocType> {
 
                 // TODO _deleted should be required on type RxDocumentData
                 // so we do not need this check here
-                if (!changeWithDoc.doc.hasOwnProperty('_deleted')) {
-                    changeWithDoc.doc._deleted = false;
+                if (!changeWithDoc.doc.hasOwnProperty(this.deletedFlag)) {
+                    changeWithDoc.doc[this.deletedFlag] = false;
                 }
 
                 const pushObj = await this.push.queryBuilder(changeWithDoc.doc);
