@@ -267,7 +267,7 @@ changeObservable.subscribe({
 
 #### Helper Functions (beta)
 
-RxDB provides the helper functions `graphQLSchemaFromRxSchema()`, `pullQueryBuilderFromRxSchema()` and `pushQueryBuilderFromRxSchema()` that can be used to generate the GraphQL Schema from the `RxJsonSchema`. To learn how to use them, please inspect the (GraphQL Example)[https://github.com/pubkey/rxdb/tree/master/examples/graphql]
+RxDB provides the helper functions `graphQLSchemaFromRxSchema()`, `pullQueryBuilderFromRxSchema()` and `pushQueryBuilderFromRxSchema()` that can be used to generate the GraphQL Schema from the `RxJsonSchema`. To learn how to use them, please inspect the [GraphQL Example](https://github.com/pubkey/rxdb/tree/master/examples/graphql).
 
 
 ### Conflict Resolution
@@ -360,4 +360,4 @@ An `Observable` that emits `true` when the replication is doing something, `fals
 
 --------------------------------------------------------------------------------
 
-If you are new to RxDB, you should continue [here](./in-memory.md)
+If you are new to RxDB, you should continue [here](./replication.md)

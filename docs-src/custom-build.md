@@ -140,6 +140,21 @@ import { RxDBReplicationGraphQLPlugin } from 'rxdb/plugins/replication-graphql';
 addRxPlugin(RxDBReplicationGraphQLPlugin);
 ```
 
+### replication
+Contains replication primitives to build a custom replication.
+
+See: [Replication Primitives](./replication.md)
+
+```js
+import { replicateRxCollection } from 'rxdb/plugins/replication';
+
+const replicationState = await replicateRxCollection(
+    myRxCollection,
+    /* ... */
+);
+
+```
+
 
 ### attachments
 

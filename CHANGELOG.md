@@ -9,6 +9,8 @@ Other:
   - We now have set `sideEffects: false` to the default in the package.json so tree shaking can work.
   - Optimized memory usage in the query cache.
 
+Features:
+  - Added [replication primitives plugin](./docs-src/replication.md).
 
 ### 10.1.0 (27 September 2021)
 

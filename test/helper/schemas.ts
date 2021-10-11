@@ -995,6 +995,7 @@ export const humanWithTimestamp: RxJsonSchema<HumanWithTimestampDocumentType> = 
             type: 'number'
         }
     },
+    indexes: ['updatedAt'],
     required: ['id', 'name', 'age', 'updatedAt']
 };
 

@@ -110,6 +110,8 @@
 
 * [Replication GraphQL](./replication-graphql.md)
 
+* [Replication Primitives](./replication.md)
+
 * [InMemory](./in-memory.md)
 
 * [Backup](./backup.md)

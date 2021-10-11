@@ -324,6 +324,7 @@ export function humanWithTimestamp(): HumanWithTimestampDocumentType {
         id: randomToken(12),
         name: faker.name.firstName(),
         age: randomNumber(1, 100),
+        // use some time in the past week
         updatedAt: Math.round(randomNumber(now - 60 * 60 * 24 * 7, now))
     };
 }

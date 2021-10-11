@@ -471,7 +471,11 @@ describe('replication-graphql.test.js', () => {
                         endpointHash,
                         10
                     );
-                    assert.strictEqual(changesResult.changedDocs.size, 10);
+                    /**
+                     * The returned size can be lower then the batchSize
+                     * because we skip internal changes like index documents.
+                     */
+                    assert.ok(changesResult.changedDocs.size <= 10);
                     c.database.destroy();
                 });
                 it('should get deletions', async () => {
@@ -566,7 +570,13 @@ describe('replication-graphql.test.js', () => {
                     assert.strictEqual(changesResult.changedDocs.size, amount);
                     const shouldNotBeFound = Array.from(changesResult.changedDocs.values()).find((change) => change.id === toPouch.id);
                     assert.ok(!shouldNotBeFound);
-                    assert.strictEqual(changesResult.lastSequence, amount + 1);
+
+                    /**
+                     * We need amount+2 because we also have skipped the
+                     * document for the updatedAt index of the collection schema.
+                     */
+                    assert.strictEqual(changesResult.lastSequence, amount + 2);
+
                     c.database.destroy();
                 });
             });

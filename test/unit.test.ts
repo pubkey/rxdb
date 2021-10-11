@@ -29,6 +29,7 @@ import './unit/data-migration.test.js';
 import './unit/backup.test.js';
 import './unit/leader-election.test.js';
 import './unit/replication.test.js';
+import './unit/replication-couchdb.test.js';
 import './unit/replication-graphql.test.js';
 import './unit/encryption.test.js';
 import './unit/import-export.test.js';

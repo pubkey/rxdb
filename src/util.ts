@@ -264,6 +264,21 @@ export function shuffleArray<T>(arr: T[]): T[] {
 }
 
 /**
+ * Split array with items into smaller arrays with items
+ * @link https://stackoverflow.com/a/7273794/3443137
+ */
+ export function batchArray<T>(array: T[], batchSize: number): T[][] {
+    array = array.slice(0);
+    const ret: T[][] = [];
+    while (array.length) {
+        const batch = array.splice(0, batchSize);
+        ret.push(batch);
+    }
+    return ret;
+}
+
+
+/**
  * @link https://stackoverflow.com/a/15996017
  */
 export function removeOneFromArrayIfMatches<T>(ar: T[], condition: (x: T) => boolean): T[] {

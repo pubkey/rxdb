@@ -17,6 +17,7 @@ Instead of mergin the prototype into a single object, we should chain them toget
  - The current implemetation does not use pouchdb's bulkDocs which is much faster.
  - This could have been done in much less code which would be easier to understand.
  - Migration strategies should be defined [like in WatermelonDB](https://nozbe.github.io/WatermelonDB/Advanced/Migrations.html) with a `toVersion` version field. We should also add a `fromVersion` field so people could implement performance shortcuts by directly jumping several versions. The current migration strategies use the array index as `toVersion` which is confusing.
+ 
 
 ## Move rxjs into a plugin instead of having it internal
 RxDB relies heavily on rxjs. This made it easy in the past to handle the data flow inside of RxDB and also created feature-rich interfaces for users when they want to observe data.
@@ -25,6 +26,7 @@ As soon as a user has another data-handling library like redux or mobx, rxjs inc
 
 The change would ensure that rxjs is no longer used inside of RxDB. And also there will be a RxDB-plugin which offers the same observable-features as there are today, but optional.
 This would also allow us to create plugins for mobx or react-hooks in the future.
+
 ## Make RxDocument-acessors functions
 
 Things like `RxDocument.deleted$` or `RxDocument.$` should be functions instead of getters.
@@ -56,6 +58,10 @@ Ensure that it works with typescript. Check the rxjs repo and find out how they 
 
 Rename the paths in the `exports` field in the `package.json` so that users can do `import {} from 'rxdb/core'` instead of the current `import {} from 'rxdb/plugins/core'`.
 
+
+## use replication primitives in graphql replication
+
+Atm we have duplicate code. Most of the graphql replication code can be switched out with the general replication plugin. Also we then could support bulk-push methods and replicate multiple changes from the local to the remote in the push replication.
 
 # Maybe
 

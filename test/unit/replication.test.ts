@@ -1,790 +1,465 @@
-/**
- * pouchdb allows to easily replicate database across devices.
- * This behaviour is tested here
- * @link https://pouchdb.com/guides/replication.html
- */
-
 import assert from 'assert';
-import AsyncTestUtil, { waitUntil } from 'async-test-util';
-import config from './config';
+import AsyncTestUtil, {
+    clone, wait
+} from 'async-test-util';
 
+import {
+    first
+} from 'rxjs/operators';
+
+import config from './config';
 import * as schemaObjects from '../helper/schema-objects';
+import {
+    HumanWithTimestampDocumentType
+} from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
 import {
-    createRxDatabase,
-    promiseWait,
-    randomCouchString,
-    isRxCollection,
-    RxCouchDBReplicationState,
-    SyncOptions,
     addRxPlugin,
-    blobBufferUtil,
-    RxChangeEvent
+    createRxDatabase,
+    RxJsonSchema,
+    hash,
+    randomCouchString,
+    _handleToStorageInstance,
+    flatClone,
+    getFromMapOrThrow,
 } from '../../plugins/core';
 
 import {
     addPouchPlugin,
+    pouchSwapPrimaryToId,
+    PouchDB,
     getRxStoragePouch
 } from '../../plugins/pouchdb';
-import { RxDBReplicationCouchDBPlugin } from '../../plugins/replication-couchdb';
+
 
 import {
-    fromEvent
-} from 'rxjs';
-import {
-    map,
-    filter,
-    first
-} from 'rxjs/operators';
-import { HumanDocumentType } from '../helper/schema-objects';
-import { RxDocumentData } from '../../src/types';
+    setLastPushSequence,
+    getLastPushSequence,
+    getChangesSinceLastPushSequence,
+    createRevisionForPulledDocument,
+    setLastPullDocument,
+    getLastPullDocument,
+    wasRevisionfromPullReplication,
+    replicateRxCollection
+} from '../../plugins/replication';
+import * as schemas from '../helper/schemas';
 
-let request: any;
-let SpawnServer: any;
+import type {
+    RxDocumentData,
+    WithDeleted
+} from '../../src/types';
 
+describe('replication.test.js', () => {
+    const REPLICATION_IDENTIFIER_TEST = 'replication-ident-tests'
+    config.parallel('revision-flag', () => {
+        describe('.wasRevisionfromPullReplication()', () => {
+            it('should be false on random revision', async () => {
+                const c = await humansCollection.createHumanWithTimestamp(1);
+                const doc = await c.findOne().exec(true);
 
-if (config.platform.isNode()) {
-    SpawnServer = require('../helper/spawn-server');
-    request = require('request-promise');
-    addPouchPlugin(require('pouchdb-adapter-http'));
-}
-
-describe('replication-couchdb.test.js', () => {
-    if (!config.platform.isNode()) {
-        return;
-    }
-    addRxPlugin(RxDBReplicationCouchDBPlugin);
-
-    describe('spawn-server.js', () => {
-        it('spawn and reach a server', async () => {
-            const server = await SpawnServer.spawn();
-            let path = server.url.split('/');
-            path.pop();
-            path.pop();
-            path = path.join('/');
-            const res = await request(path);
-            const json = JSON.parse(res);
-            assert.strictEqual(typeof json.uuid, 'string');
-            server.close();
-        });
-        it('spawn again', async () => {
-            const server = await SpawnServer.spawn();
-            let path = server.url.split('/');
-            path.pop();
-            path.pop();
-            path = path.join('/');
-            const res = await request(path);
-            const json = JSON.parse(res);
-            assert.strictEqual(typeof json.uuid, 'string');
-            server.close();
-        });
-    });
-    config.parallel('test pouch-sync to ensure nothing broke', () => {
-        describe('positive', () => {
-            it('sync two collections over server', async function () {
-                const server = await SpawnServer.spawn();
-                const c = await humansCollection.create(0);
-                const c2 = await humansCollection.create(0);
-
-                const pw8 = AsyncTestUtil.waitResolveable(1000);
-                c.storageInstance.internals.pouch.sync(server.url, {
-                    live: true
-                }).on('error', function (err: Error) {
-                    console.error('error:');
-                    console.log(JSON.stringify(err));
-                    throw err;
-                });
-                c2.storageInstance.internals.pouch.sync(server.url, {
-                    live: true
-                });
-                let count = 0;
-                c2.storageInstance.internals.pouch.changes({
-                    since: 'now',
-                    live: true,
-                    include_docs: true
-                }).on('change', () => {
-                    count++;
-                    if (count === 2) pw8.resolve();
-                });
-
-                const obj = schemaObjects.human();
-                await c.insert(obj);
-                await pw8.promise;
-
-                await AsyncTestUtil.waitUntil(async () => {
-                    const ds = await c2.find().exec();
-                    return ds.length === 1;
-                });
-                const docs = await c2.find().exec();
-                assert.strictEqual(docs.length, 1);
-
-                assert.strictEqual(docs[0].get('firstName'), obj.firstName);
+                const wasFromPull = wasRevisionfromPullReplication(
+                    REPLICATION_IDENTIFIER_TEST,
+                    doc.toJSON(true)._rev
+                );
+                assert.strictEqual(wasFromPull, false);
 
                 c.database.destroy();
-                c2.database.destroy();
-                server.close();
             });
-            it('Observable.fromEvent should fire on sync-change', async () => {
-                const server = await SpawnServer.spawn();
-                const c = await humansCollection.create(0, undefined, false);
-                const c2 = await humansCollection.create(0, undefined, false);
-                c.storageInstance.internals.pouch.sync(server.url, {
-                    live: true
-                });
-                c2.storageInstance.internals.pouch.sync(server.url, {
-                    live: true
-                });
+            it('should be true for pulled revision', async () => {
+                const c = await humansCollection.createHumanWithTimestamp(0);
+                let toPouch: any = schemaObjects.humanWithTimestamp();
+                toPouch._rev = '1-' + createRevisionForPulledDocument(
+                    REPLICATION_IDENTIFIER_TEST,
+                    toPouch
+                );
+                toPouch = pouchSwapPrimaryToId(
+                    c.schema.primaryPath,
+                    toPouch
+                );
+                await c.storageInstance.internals.pouch.bulkDocs(
+                    [_handleToStorageInstance(c, toPouch)],
+                    {
+                        new_edits: false
+                    }
+                );
 
-                const e1 = [];
-                const pouch$ =
-                    fromEvent(
-                        c.storageInstance.internals.pouch.changes({
-                            since: 'now',
-                            live: true,
-                            include_docs: true
-                        }), 'change')
-                        .pipe(
-                            map((ar: any) => ar[0]),
-                            filter(e => !e.id.startsWith('_'))
-                        ).subscribe(e => e1.push(e));
-                const e2 = [];
-                const pouch2$ =
-                    fromEvent(c2.storageInstance.internals.pouch.changes({
-                        since: 'now',
-                        live: true,
-                        include_docs: true
-                    }), 'change').pipe(
-                        map((ar: any) => ar[0]),
-                        filter(e => !e.id.startsWith('_'))
-                    ).subscribe(e => e2.push(e));
+                const doc = await c.findOne().exec(true);
+                const wasFromPull = wasRevisionfromPullReplication(
+                    REPLICATION_IDENTIFIER_TEST,
+                    doc.toJSON(true)._rev
+                );
+                assert.strictEqual(wasFromPull, true);
 
-                const obj = schemaObjects.human();
-                await c.insert(obj);
-
-                await AsyncTestUtil.waitUntil(() => e1.length === 1);
-                await AsyncTestUtil.waitUntil(() => e2.length === 1);
-                assert.strictEqual(e1.length, e2.length);
-
-                pouch$.unsubscribe();
-                pouch2$.unsubscribe();
                 c.database.destroy();
-                c2.database.destroy();
-                server.close();
             });
         });
     });
-    describe('sync-directions', () => {
-        describe('positive', () => {
-            it('push-only-sync', async () => {
-                const c = await humansCollection.create(10, undefined, false);
-                const c2 = await humansCollection.create(10, undefined, false);
-                const replicationState = c.syncCouchDB({
-                    remote: c2,
-                    waitForLeadership: false,
-                    direction: {
-                        pull: false,
-                        push: true
-                    }
-                });
-                assert.ok(isRxCollection(replicationState.collection));
-                await AsyncTestUtil.waitUntil(async () => {
-                    const docs = await c2.find().exec();
-                    return docs.length === 20;
-                });
-                await AsyncTestUtil.wait(10);
-                const nonSyncedDocs = await c.find().exec();
-                assert.strictEqual(nonSyncedDocs.length, 10);
-
+    config.parallel('replication-checkpoints', () => {
+        describe('.setLastPushSequence()', () => {
+            it('should set the last push sequence', async () => {
+                const c = await humansCollection.createHumanWithTimestamp(0);
+                const ret = await setLastPushSequence(
+                    c,
+                    REPLICATION_IDENTIFIER_TEST,
+                    1
+                );
+                assert.ok(ret._id.includes(REPLICATION_IDENTIFIER_TEST));
                 c.database.destroy();
-                c2.database.destroy();
             });
-            it('pull-only-sync', async () => {
-                const c = await humansCollection.create(10, undefined, false);
-                const c2 = await humansCollection.create(10, undefined, false);
-                c.syncCouchDB({
-                    remote: c2,
-                    waitForLeadership: false,
-                    direction: {
-                        pull: true,
-                        push: false
-                    }
-                });
-                await AsyncTestUtil.waitUntil(async () => {
-                    const docs = await c.find().exec();
-                    return docs.length === 20;
-                });
-                await promiseWait(10);
-                const nonSyncedDocs = await c2.find().exec();
-                assert.strictEqual(nonSyncedDocs.length, 10);
-
+            it('should be able to run multiple times', async () => {
+                const c = await humansCollection.createHumanWithTimestamp(0);
+                await setLastPushSequence(
+                    c,
+                    REPLICATION_IDENTIFIER_TEST,
+                    1
+                );
+                await setLastPushSequence(
+                    c,
+                    REPLICATION_IDENTIFIER_TEST,
+                    2
+                );
                 c.database.destroy();
-                c2.database.destroy();
             });
         });
-        describe('negative', () => {
-            it('should not allow non-way-sync', async () => {
-                const c = await humansCollection.create(0);
-                const c2 = await humansCollection.create(10, undefined, false);
-                await AsyncTestUtil.assertThrows(
-                    () => c.syncCouchDB({
-                        remote: c2,
-                        direction: {
-                            push: false,
-                            pull: false
+        describe('.getLastPushSequence()', () => {
+            it('should get null if not set before', async () => {
+                const c = await humansCollection.createHumanWithTimestamp(0);
+                const ret = await getLastPushSequence(
+                    c,
+                    REPLICATION_IDENTIFIER_TEST
+                );
+                assert.strictEqual(ret, 0);
+                c.database.destroy();
+            });
+            it('should get the value if set before', async () => {
+                const c = await humansCollection.createHumanWithTimestamp(0);
+                await setLastPushSequence(
+                    c,
+                    REPLICATION_IDENTIFIER_TEST,
+                    5
+                );
+                const ret = await getLastPushSequence(
+                    c,
+                    REPLICATION_IDENTIFIER_TEST
+                );
+                assert.strictEqual(ret, 5);
+                c.database.destroy();
+            });
+            it('should get the value if set multiple times', async () => {
+                const c = await humansCollection.createHumanWithTimestamp(0);
+                await setLastPushSequence(
+                    c,
+                    REPLICATION_IDENTIFIER_TEST,
+                    5
+                );
+                const ret = await getLastPushSequence(
+                    c,
+                    REPLICATION_IDENTIFIER_TEST
+                );
+                assert.strictEqual(ret, 5);
+
+                await setLastPushSequence(
+                    c,
+                    REPLICATION_IDENTIFIER_TEST,
+                    10
+                );
+                const ret2 = await getLastPushSequence(
+                    c,
+                    REPLICATION_IDENTIFIER_TEST
+                );
+                assert.strictEqual(ret2, 10);
+                c.database.destroy();
+            });
+        });
+        describe('.getChangesSinceLastPushSequence()', () => {
+            it('should get all changes', async () => {
+                const amount = 5;
+                const c = await humansCollection.createHumanWithTimestamp(amount);
+                const changesResult = await getChangesSinceLastPushSequence(
+                    c,
+                    REPLICATION_IDENTIFIER_TEST,
+                    10
+                );
+                assert.strictEqual(changesResult.changedDocs.size, amount);
+                const firstChange = Array.from(changesResult.changedDocs.values())[0];
+                assert.ok(firstChange.doc.name);
+                c.database.destroy();
+            });
+            it('should get only the newest update to documents', async () => {
+                const amount = 5;
+                const c = await humansCollection.createHumanWithTimestamp(amount);
+                const oneDoc = await c.findOne().exec(true);
+                await oneDoc.atomicPatch({ age: 1 });
+                const changesResult = await getChangesSinceLastPushSequence(
+                    c,
+                    REPLICATION_IDENTIFIER_TEST,
+                    10
+                );
+                assert.strictEqual(changesResult.changedDocs.size, amount);
+                c.database.destroy();
+            });
+            it('should not get more changes then the limit', async () => {
+                const amount = 30;
+                const c = await humansCollection.createHumanWithTimestamp(amount);
+                const changesResult = await getChangesSinceLastPushSequence(
+                    c,
+                    REPLICATION_IDENTIFIER_TEST,
+                    10
+                );
+                /**
+                 * The returned size can be lower then the batchSize
+                 * because we skip internal changes like index documents.
+                 */
+                assert.ok(changesResult.changedDocs.size <= 10);
+                c.database.destroy();
+            });
+            it('should get deletions', async () => {
+                const amount = 5;
+                const c = await humansCollection.createHumanWithTimestamp(amount);
+                const oneDoc = await c.findOne().exec(true);
+                await oneDoc.remove();
+                const changesResult = await getChangesSinceLastPushSequence(
+                    c,
+                    REPLICATION_IDENTIFIER_TEST,
+                    10
+                );
+                assert.strictEqual(changesResult.changedDocs.size, amount);
+                const deleted = Array.from(changesResult.changedDocs.values()).find((change) => {
+                    return change.doc._deleted === true;
+                });
+
+                if (!deleted) {
+                    throw new Error('deleted missing');
+                }
+
+                assert.ok(deleted.doc._deleted);
+                assert.ok(deleted.doc.age);
+
+                c.database.destroy();
+            });
+            it('should get deletions after an update via addRevisions', async () => {
+                const c = await humansCollection.createHumanWithTimestamp(1);
+                const oneDoc = await c.findOne().exec(true);
+                const id = oneDoc.primary;
+
+                const newDocData: RxDocumentData<HumanWithTimestampDocumentType> = flatClone(oneDoc.toJSON(true));
+                newDocData.age = 100;
+                newDocData._rev = '2-23099cb8125d2c79db839ae3f1211cf8';
+                await c.storageInstance.bulkAddRevisions([newDocData]);
+
+
+                await oneDoc.remove();
+                const changesResult = await getChangesSinceLastPushSequence(
+                    c,
+                    REPLICATION_IDENTIFIER_TEST,
+                    10
+                );
+
+                assert.strictEqual(changesResult.changedDocs.size, 1);
+                const docFromChange = getFromMapOrThrow(changesResult.changedDocs, id);
+                assert.ok(docFromChange.doc._deleted);
+                assert.strictEqual(docFromChange.doc.age, 100);
+
+                c.database.destroy();
+            });
+            it('should have resolved the primary', async () => {
+                const amount = 5;
+                const c = await humansCollection.createHumanWithTimestamp(amount);
+                const changesResult = await getChangesSinceLastPushSequence(
+                    c,
+                    REPLICATION_IDENTIFIER_TEST,
+                    10
+                );
+                const firstChange = Array.from(changesResult.changedDocs.values())[0];
+
+                assert.ok(firstChange.doc.id);
+                c.database.destroy();
+            });
+            it('should have filtered out replicated docs from the endpoint', async () => {
+                const amount = 5;
+                const c = await humansCollection.createHumanWithTimestamp(amount);
+                let toPouch: any = schemaObjects.humanWithTimestamp();
+                toPouch._rev = '1-' + createRevisionForPulledDocument(
+                    REPLICATION_IDENTIFIER_TEST,
+                    toPouch
+                );
+                toPouch = pouchSwapPrimaryToId(
+                    c.schema.primaryPath,
+                    toPouch
+                );
+
+                await c.storageInstance.internals.pouch.bulkDocs(
+                    [_handleToStorageInstance(c, toPouch)],
+                    {
+                        new_edits: false
+                    }
+                );
+
+                const allDocs = await c.find().exec();
+
+                assert.strictEqual(allDocs.length, amount + 1);
+
+                const changesResult = await getChangesSinceLastPushSequence(
+                    c,
+                    REPLICATION_IDENTIFIER_TEST,
+                    10
+                );
+
+                assert.strictEqual(changesResult.changedDocs.size, amount);
+                const shouldNotBeFound = Array.from(changesResult.changedDocs.values()).find((change) => change.id === toPouch.id);
+                assert.ok(!shouldNotBeFound);
+
+                /**
+                 * We need amount+2 because we also have skipped the
+                 * document for the updatedAt index of the collection schema.
+                 */
+                assert.strictEqual(changesResult.lastSequence, amount + 2);
+                c.database.destroy();
+            });
+        });
+        describe('.setLastPullDocument()', () => {
+            it('should set the document', async () => {
+                const c = await humansCollection.createHumanWithTimestamp(1);
+                const doc = await c.findOne().exec(true);
+                const docData = doc.toJSON(true);
+                const ret = await setLastPullDocument(
+                    c,
+                    REPLICATION_IDENTIFIER_TEST,
+                    docData
+                );
+                assert.ok(ret._id.includes(REPLICATION_IDENTIFIER_TEST));
+                c.database.destroy();
+            });
+            it('should be able to run multiple times', async () => {
+                const c = await humansCollection.createHumanWithTimestamp(1);
+                const doc = await c.findOne().exec(true);
+                const docData = doc.toJSON(true);
+                await setLastPullDocument(
+                    c,
+                    REPLICATION_IDENTIFIER_TEST,
+                    docData
+                );
+                const ret = await setLastPullDocument(
+                    c,
+                    REPLICATION_IDENTIFIER_TEST,
+                    docData
+                );
+                assert.ok(ret._id.includes(REPLICATION_IDENTIFIER_TEST));
+                c.database.destroy();
+            });
+        });
+        describe('.getLastPullDocument()', () => {
+            it('should return null if no doc set', async () => {
+                const c = await humansCollection.createHumanWithTimestamp(0);
+                const ret = await getLastPullDocument(
+                    c,
+                    REPLICATION_IDENTIFIER_TEST
+                );
+                assert.strictEqual(ret, null);
+                c.database.destroy();
+            });
+            it('should return the doc if it was set', async () => {
+                const c = await humansCollection.createHumanWithTimestamp(1);
+                const doc = await c.findOne().exec(true);
+                let docData = doc.toJSON(true);
+                docData = clone(docData); // clone to make it mutateable
+                (docData as any).name = 'foobar';
+
+                await setLastPullDocument(
+                    c,
+                    REPLICATION_IDENTIFIER_TEST,
+                    docData
+                );
+                const ret = await getLastPullDocument(
+                    c,
+                    REPLICATION_IDENTIFIER_TEST
+                );
+                if (!ret) {
+                    throw new Error('last pull document missing');
+                }
+                assert.strictEqual(ret.name, 'foobar');
+                c.database.destroy();
+            });
+        });
+    });
+
+    describe('non-live replication', () => {
+        it('should replicate both sides', async () => {
+            const localCollection = await humansCollection.createHumanWithTimestamp(5);
+            const remoteCollection = await humansCollection.createHumanWithTimestamp(5);
+
+            const replicationState = await replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: false,
+                pull: {
+                    async handler(latestPullDocument) {
+                        const minTimestamp = latestPullDocument ? latestPullDocument.updatedAt : 0;
+                        const docs = await remoteCollection.find({
+                            selector: {
+                                updatedAt: {
+                                    $gt: minTimestamp
+                                }
+                            },
+                            sort: [
+                                { updatedAt: 'asc' }
+                            ]
+                        }).exec();
+                        const docsData = docs.map(doc => {
+                            const docData: WithDeleted<HumanWithTimestampDocumentType> = flatClone(doc.toJSON()) as any;
+                            docData._deleted = false;
+                            return docData;
+                        });
+
+                        return {
+                            documents: docsData,
+                            hasMoreDocuments: false
                         }
-                    }),
-                    'RxError',
-                    'direction'
-                );
-                c.database.destroy();
-                c2.database.destroy();
-            });
-        });
-    });
-    describe('query-based sync', () => {
-        describe('positive', () => {
-            it('should only sync documents that match the query', async () => {
-                const c = await humansCollection.create(0, undefined, false);
-                const c2 = await humansCollection.create(10, undefined, false);
-                const query = c.find().where('firstName').eq('foobar');
-
-                const matchingDoc = schemaObjects.human();
-                matchingDoc.firstName = 'foobar';
-                await c2.insert(matchingDoc);
-
-                c.syncCouchDB({
-                    remote: c2,
-                    waitForLeadership: false,
-                    query: query
-                });
-
-                await AsyncTestUtil.waitUntil(async () => {
-                    const ds = await c.find().exec();
-                    return ds.length === 1;
-                });
-                await promiseWait(10);
-                const docs = await c.find().exec();
-
-                assert.strictEqual(docs.length, 1);
-                assert.strictEqual(docs[0].firstName, 'foobar');
-
-                c.database.destroy();
-                c2.database.destroy();
-            });
-        });
-        describe('negative', () => {
-            it('should not allow queries from other collection', async () => {
-                const c = await humansCollection.create(0, undefined, false);
-                const c2 = await humansCollection.create(10, undefined, false);
-                const otherCollection = await humansCollection.create(0, undefined, false);
-
-                const query = otherCollection.find().where('firstName').eq('foobar');
-                await AsyncTestUtil.assertThrows(
-                    () => c.syncCouchDB({
-                        remote: c2,
-                        query
-                    }),
-                    'RxError',
-                    'same'
-                );
-
-                c.database.destroy();
-                c2.database.destroy();
-                otherCollection.database.destroy();
-            });
-        });
-    });
-    config.parallel('RxReplicationState', () => {
-        describe('._pouchEventEmitterObject', () => {
-            it('should be able to get the event-emitter after some time', async () => {
-                const c = await humansCollection.create(0);
-                const c2 = await humansCollection.create(10);
-                const repState = await c.syncCouchDB({
-                    remote: c2,
-                    waitForLeadership: false
-                });
-
-                await AsyncTestUtil.waitUntil(
-                    () => !!repState._pouchEventEmitterObject
-                );
-                const pouchEventEmitter: any = repState._pouchEventEmitterObject;
-                assert.ok(pouchEventEmitter);
-                assert.strictEqual(typeof pouchEventEmitter.on, 'function');
-
-                c.database.destroy();
-                c2.database.destroy();
-            });
-        });
-        describe('change$', () => {
-            it('should emit change-events', async () => {
-                const c = await humansCollection.create(0);
-                const c2 = await humansCollection.create(10);
-                const repState = await c.syncCouchDB({
-                    remote: c2,
-                    waitForLeadership: false
-                });
-                const emited = [];
-                repState.change$.subscribe(cE => emited.push(cE));
-                await AsyncTestUtil.waitUntil(() => emited.length >= 1);
-                await c2.insert(schemaObjects.human());
-                await AsyncTestUtil.waitUntil(() => emited.length >= 2);
-
-                c.database.destroy();
-                c2.database.destroy();
-            });
-        });
-        describe('active$', () => {
-            it('should be active', async () => {
-                const c = await humansCollection.create();
-                const c2 = await humansCollection.create(10);
-                const repState = await c.syncCouchDB({
-                    remote: c2,
-                    waitForLeadership: false
-                });
-                const emited: any[] = [];
-                repState.active$.subscribe(cE => emited.push(cE));
-                await AsyncTestUtil.waitUntil(() => emited.pop() === true);
-
-                c.database.destroy();
-                c2.database.destroy();
-            });
-        });
-        describe('alive$', () => {
-            it('should not be alive', async () => {
-                const server = await SpawnServer.spawn();
-                server.close(true);
-                const c = await humansCollection.create(0);
-
-                const repState = c.syncCouchDB({
-                    remote: server.url
-                });
-
-                const emited: any[] = [];
-                repState.alive$.subscribe(cE => emited.push(cE));
-
-                assert.strictEqual(emited[emited.length - 1], false);
-
-                c.database.destroy();
-            });
-            it('should be alive and transit to not alive', async () => {
-                const server = await SpawnServer.spawn();
-                const c = await humansCollection.create(0);
-
-                const repState = c.syncCouchDB({
-                    remote: server.url
-                });
-
-                const emited: any[] = [];
-                repState.alive$.subscribe(cE => emited.push(cE));
-                await AsyncTestUtil.waitUntil(() => !!emited[emited.length - 1]);
-
-                assert.strictEqual(emited[emited.length - 1], true);
-
-                server.close(true);
-                const obj = schemaObjects.human();
-                await c.insert(obj);
-
-                await AsyncTestUtil.waitUntil(() => !emited[emited.length - 1]);
-                assert.strictEqual(emited[emited.length - 1], false);
-
-                c.database.destroy();
-            });
-        });
-        describe('complete$', () => {
-            it('should always be false on live-replication', async () => {
-                const c = await humansCollection.create();
-                const c2 = await humansCollection.create(10);
-                const repState = await c.syncCouchDB({
-                    remote: c2,
-                    waitForLeadership: false
-                });
-                const beFalse = await repState.complete$.pipe(first()).toPromise();
-                assert.strictEqual(beFalse, false);
-
-                c.database.destroy();
-                c2.database.destroy();
-            });
-            it('should emit true on non-live-replication when done', async () => {
-                const c = await humansCollection.create(10);
-                const c2 = await humansCollection.create(10);
-                const repState = await c.syncCouchDB({
-                    remote: c2,
-                    waitForLeadership: true,
-                    direction: {
-                        pull: true,
-                        push: true
-                    },
-                    options: {
-                        live: false,
-                        retry: true
                     }
-                });
-
-                const emited: any[] = [];
-                const sub = repState.complete$.subscribe(ev => emited.push(ev));
-                await AsyncTestUtil.waitUntil(() => {
-                    const lastEv = emited[emited.length - 1];
-                    let ret = false;
-                    try {
-                        if (
-                            lastEv.push.ok === true &&
-                            lastEv.pull.ok === true
-                        ) ret = true;
-                    } catch (e) { }
-                    return ret;
-                });
-                sub.unsubscribe();
-
-                c.database.destroy();
-                c2.database.destroy();
-            });
-        });
-        describe('docs$', () => {
-            it('should emit one event per doc', async () => {
-                const c = await humansCollection.create(0);
-                const c2 = await humansCollection.create(10);
-                const repState = await c.syncCouchDB({
-                    remote: c2,
-                    waitForLeadership: false
-                });
-                const emitedDocs: any[] = [];
-                repState.docs$.subscribe(doc => emitedDocs.push(doc));
-
-                await AsyncTestUtil.waitUntil(() => emitedDocs.length === 10);
-                emitedDocs.forEach(doc => assert.ok(doc.firstName));
-
-                c.database.destroy();
-                c2.database.destroy();
-            });
-        });
-        describe('denied$', () => {
-            it('should not emit', async () => {
-                const c = await humansCollection.create(0);
-                const c2 = await humansCollection.create(10);
-                const repState = await c.syncCouchDB({
-                    remote: c2,
-                    waitForLeadership: false
-                });
-                const emitted = [];
-                repState.denied$.subscribe(doc => emitted.push(doc));
-
-                await AsyncTestUtil.wait(100);
-                assert.strictEqual(emitted.length, 0);
-
-                c.database.destroy();
-                c2.database.destroy();
-            });
-        });
-        describe('.awaitInitialReplication()', () => {
-            it('should have the full data when resolved', async () => {
-                const c = await humansCollection.create(0);
-                const c2 = await humansCollection.create(10);
-                const repState = await c.syncCouchDB({
-                    remote: c2,
-                    waitForLeadership: false,
-                    options: {
-                        live: false
-                    }
-                });
-                await repState.awaitInitialReplication();
-                const docs = await c.find().exec();
-                assert.strictEqual(docs.length, 10);
-
-                c.database.destroy();
-                c2.database.destroy();
-            });
-        });
-    });
-    config.parallel('events', () => {
-        describe('positive', () => {
-            it('collection: should get an event when a doc syncs', async () => {
-                const syncC = await humansCollection.create(0);
-                const syncPouch = syncC;
-
-                const c = await humansCollection.create(0, 'colsource' + randomCouchString(5));
-                const c2 = await humansCollection.create(0, 'colsync' + randomCouchString(5));
-                c.syncCouchDB({
-                    remote: syncPouch
-                });
-                c2.syncCouchDB({
-                    remote: syncPouch
-                });
-
-                const pw8 = AsyncTestUtil.waitResolveable(1700);
-                const events: any[] = [];
-                c2.$.subscribe(e => {
-                    events.push(e);
-                    pw8.resolve();
-                });
-
-                const obj = schemaObjects.human();
-                await c.insert(obj);
-                await pw8.promise;
-                await AsyncTestUtil.waitUntil(() => events.length === 1);
-                assert.ok(events[0]);
-
-                syncC.database.destroy();
-                c.database.destroy();
-                c2.database.destroy();
-            });
-
-            it('query: should re-find when a docs syncs', async () => {
-                const syncC = await humansCollection.create(0);
-                const syncPouch = syncC;
-
-                const c = await humansCollection.create(0, 'colsource' + randomCouchString(5));
-                const c2 = await humansCollection.create(0, 'colsync' + randomCouchString(5));
-                c.syncCouchDB({
-                    remote: syncPouch
-                });
-                c2.syncCouchDB({
-                    remote: syncPouch
-                });
-
-                const pw8 = AsyncTestUtil.waitResolveable(10000);
-                const results = [];
-                c2.find().$.subscribe(res => {
-                    results.push(res);
-                    if (results.length === 2) pw8.resolve();
-                });
-                assert.strictEqual(results.length, 0);
-                await promiseWait(5);
-
-
-                const obj = schemaObjects.human();
-                await c.insert(obj);
-                await pw8.promise;
-
-                assert.strictEqual(results.length, 2);
-
-                syncC.database.destroy();
-                c.database.destroy();
-                c2.database.destroy();
-            });
-            it('document: should change field when doc saves', async () => {
-                const syncC = await humansCollection.create(0);
-                const syncPouch = syncC;
-
-                const c = await humansCollection.create(0, 'colsource' + randomCouchString(5));
-                const c2 = await humansCollection.create(0, 'colsync' + randomCouchString(5));
-                c.syncCouchDB({
-                    remote: syncPouch
-                });
-                c2.syncCouchDB({
-                    remote: syncPouch
-                });
-
-                // insert and w8 for sync
-                const pw8 = AsyncTestUtil.waitResolveable(1400);
-                let results = null;
-                c2.find().$.subscribe(res => {
-                    results = res;
-                    if (results && results.length > 0) pw8.resolve();
-                });
-
-                const obj = schemaObjects.human();
-                await c.insert(obj);
-                await pw8.promise;
-
-                const doc: any = await c.findOne().exec();
-                const doc2: any = await c2.findOne().exec();
-
-
-                const patchPromise = doc.atomicPatch({ firstName: 'foobar' });
-                await waitUntil(() => doc2.firstName === 'foobar');
-
-                await patchPromise;
-
-                assert.strictEqual(doc2.firstName, 'foobar');
-                assert.strictEqual(doc.firstName, 'foobar');
-
-                syncC.database.destroy();
-                c.database.destroy();
-                c2.database.destroy();
-            });
-            it('should get the correct event when an attachment is replicated', async () => {
-                const remoteCollection = await humansCollection.createAttachments(1);
-                const collection = await humansCollection.createAttachments(0, randomCouchString(5));
-                collection.syncCouchDB({
-                    remote: remoteCollection
-                });
-
-                const emitted: RxChangeEvent<RxDocumentData<HumanDocumentType>>[] = [];
-                const sub = collection.$.subscribe(cE => {
-                    emitted.push(cE);
-                });
-
-                const doc = await remoteCollection.findOne().exec(true);
-                await doc.putAttachment({
-                    id: 'cat.txt',
-                    data: blobBufferUtil.createBlobBuffer('meow', 'text/plain'),
-                    type: 'text/plain'
-                });
-
-                await waitUntil(() => emitted.length >= 1);
-                if (emitted.length > 1) {
-                    throw new Error('too much events emitted');
-                }
-
-                const firstEvent = emitted[0];
-                if (!firstEvent || !firstEvent.documentData) {
-                    throw new Error('firstEvent event missing');
-                }
-                assert.strictEqual(
-                    firstEvent.documentData._attachments['cat.txt'].type,
-                    'text/plain'
-                );
-
-                sub.unsubscribe();
-                remoteCollection.database.destroy();
-                collection.database.destroy();
-            });
-        });
-        describe('negative', () => { });
-    });
-    describe('ISSUES', () => {
-        it('#630 Query cache is not being invalidated by replication', async () => {
-            // create a schema
-            const mySchema = {
-                version: 0,
-                primaryKey: 'passportId',
-                type: 'object',
-                properties: {
-                    passportId: {
-                        type: 'string'
-                    },
-                    firstName: {
-                        type: 'string'
-                    },
-                    lastName: {
-                        type: 'string'
-                    },
-                    age: {
-                        type: 'integer',
-                        minimum: 0,
-                        maximum: 150
-                    }
-                }
-            };
-
-            // create a database
-            const db1 = await createRxDatabase({
-                name: randomCouchString(12),
-                storage: getRxStoragePouch('memory'),
-            });
-            // create a collection
-            const collections1 = await db1.addCollections({
-                crawlstate: {
-                    schema: mySchema
-                }
-            });
-            const collection1 = collections1.crawlstate;
-
-            // insert a document
-            await collection1.insert({
-                passportId: 'foobar',
-                firstName: 'Bob',
-                lastName: 'Kelso',
-                age: 56
-            });
-
-            // create another database
-            const db2 = await createRxDatabase({
-                name: randomCouchString(12),
-                storage: getRxStoragePouch('memory'),
-            });
-            // create a collection
-            const collections2 = await db2.addCollections({
-                crawlstate: {
-                    schema: mySchema
-                }
-            });
-            const collection2 = collections2.crawlstate;
-
-            // query for all documents on db2-collection2 (query will be cached)
-            const documents = await collection2.find().exec();
-            assert.ok(documents);
-
-            // Replicate from db1-collection1 to db2-collection2
-            const pullstate: RxCouchDBReplicationState = collection2.syncCouchDB({
-                remote: collection1,
-                direction: {
-                    pull: true,
-                    push: false
                 },
-                options: {
-                    live: false
+                push: {
+                    async handler(docs) {
+                        // process deleted
+                        const deletedIds = docs
+                            .filter(doc => doc._deleted)
+                            .map(doc => doc.id);
+                        const deletedDocs = await remoteCollection.findByIds(deletedIds);
+                        await Promise.all(
+                            Array.from(deletedDocs.values()).map(doc => doc.remove())
+                        );
+
+                        // process insert/updated
+                        const changedDocs = docs
+                            .filter(doc => !doc._deleted);
+                        await Promise.all(
+                            changedDocs.map(doc => remoteCollection.atomicUpsert(doc))
+                        );
+                    }
                 }
             });
-
-            // Wait for replication to complete
-            await pullstate.complete$
-                .pipe(
-                    filter(completed => completed.ok === true),
-                    first()
-                ).toPromise();
-
-
-
-            await waitUntil(async () => {
-                // query for all documents on db2-collection2 again (result is read from cache which doesnt contain replicated doc)
-                // collection2._queryCache.destroy();
-                const newDocs = await collection2.find().exec();
-                return newDocs.length === 1;
+            replicationState.error$.subscribe(err => {
+                console.log('got error :');
+                console.dir(err);
             });
 
-            // clean up afterwards
-            db1.destroy();
-            db2.destroy();
-        });
-        it('#641 using a collections internal pouch for replication should be prevented', async () => {
-            const colA = await humansCollection.create(0);
-            const colB = await humansCollection.create(0);
+            await replicationState.awaitInitialReplication();
 
-            await AsyncTestUtil.assertThrows(
-                () => colA.syncCouchDB({
-                    remote: colB.storageInstance.internals.pouch,
-                    direction: {
-                        pull: true,
-                        push: false
-                    },
-                    options: {
-                        live: false
-                    }
-                }),
-                'RxError',
-                'pouchdb as remote'
+            const docsLocal = await localCollection.find().exec();
+            const docsRemote = await remoteCollection.find().exec();
+
+            assert.strictEqual(
+                docsLocal.length,
+                docsRemote.length
+            );
+            assert.strictEqual(
+                docsLocal.length,
+                10
             );
 
-            colA.database.destroy();
-            colB.database.destroy();
-        });
-        it('should auto-cancel non-live replications when completed to not cause memory leak', async () => {
-            const collection = await humansCollection.create(10, randomCouchString(10), false);
-            const syncCollection = await humansCollection.create(0, randomCouchString(10), false);
-
-            const syncOptions: SyncOptions = {
-                remote: syncCollection,
-                direction: {
-                    pull: true,
-                    push: true
-                },
-                options: {
-                    live: false
-                }
-            };
-
-            const syncState = collection.syncCouchDB(syncOptions);
-            await syncState.awaitInitialReplication();
-
-            await waitUntil(() => syncState.canceled === true);
-
-            // should have cleaned up itself from the replication state set
-            assert.strictEqual(collection._repStates.size, 0);
-
-            collection.database.destroy();
-            syncCollection.database.destroy();
+            localCollection.database.destroy();
+            remoteCollection.database.destroy();
         });
     });
+
 });
