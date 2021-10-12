@@ -148,10 +148,10 @@ See: [Replication Primitives](./replication.md)
 ```js
 import { replicateRxCollection } from 'rxdb/plugins/replication';
 
-const replicationState = await replicateRxCollection(
-    myRxCollection,
+const replicationState = await replicateRxCollection({
+    collection: myRxCollection,
     /* ... */
-);
+});
 
 ```
 
