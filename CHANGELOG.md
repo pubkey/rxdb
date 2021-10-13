@@ -2,6 +2,8 @@
 
 ### X.X.X (coming soon)
 
+### X.X.X (13 October 2021)
+
 Bugfixes:
   - Observed document data must be deep freezed in dev mode [#3434](https://github.com/pubkey/rxdb/issues/3434) Thanks [@chrisdrackett](https://github.com/chrisdrackett)
 
