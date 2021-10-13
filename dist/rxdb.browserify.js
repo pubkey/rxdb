@@ -13633,6 +13633,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.RXDB_HASH_SALT = exports.RANDOM_STRING = void 0;
 exports.adapterObject = adapterObject;
+exports.batchArray = batchArray;
 exports.clone = exports.blobBufferUtil = void 0;
 exports.createRevision = createRevision;
 exports.ensureNotFalsy = ensureNotFalsy;
@@ -13939,6 +13940,23 @@ function shuffleArray(arr) {
   return arr.sort(function () {
     return Math.random() - 0.5;
   });
+}
+/**
+ * Split array with items into smaller arrays with items
+ * @link https://stackoverflow.com/a/7273794/3443137
+ */
+
+
+function batchArray(array, batchSize) {
+  array = array.slice(0);
+  var ret = [];
+
+  while (array.length) {
+    var batch = array.splice(0, batchSize);
+    ret.push(batch);
+  }
+
+  return ret;
 }
 /**
  * @link https://stackoverflow.com/a/15996017

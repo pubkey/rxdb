@@ -74,6 +74,10 @@ export type RxDocumentWriteData<T> = T & {
     _rev?: string;
 };
 
+export type WithDeleted<DocType> = DocType & {
+    _deleted: boolean;
+}
+
 /**
  * Send to the bulkWrite() method of a storage instance.
  */
@@ -300,7 +304,7 @@ export type RxStorageChangeEvent<DocType> = {
      */
     eventId: string;
     documentId: string;
-    change:  ChangeEvent<DocType>;
+    change: ChangeEvent<DocType>;
 
     /**
      * Unix time in milliseconds of when the operation was triggered

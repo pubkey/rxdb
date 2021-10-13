@@ -31,7 +31,7 @@ export type SyncOptionsGraphQL<RxDocType> = {
     push?: GraphQLSyncPushOptions<RxDocType>;
     deletedFlag: string;
     live?: boolean; // default=false
-    liveInterval?: number; // time in ms
-    retryTime?: number; // time in ms
+    liveInterval?: number; // time in milliseconds
+    retryTime?: number; // time in milliseconds
     autoStart?: boolean; // if this is false, the replication does nothing at start
 };

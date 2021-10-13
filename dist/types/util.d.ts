@@ -67,6 +67,11 @@ export declare function lastOfArray<T>(ar: T[]): T;
  */
 export declare function shuffleArray<T>(arr: T[]): T[];
 /**
+ * Split array with items into smaller arrays with items
+ * @link https://stackoverflow.com/a/7273794/3443137
+ */
+export declare function batchArray<T>(array: T[], batchSize: number): T[][];
+/**
  * @link https://stackoverflow.com/a/15996017
  */
 export declare function removeOneFromArrayIfMatches<T>(ar: T[], condition: (x: T) => boolean): T[];

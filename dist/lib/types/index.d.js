@@ -199,6 +199,19 @@ Object.keys(_replicationGraphql).forEach(function (key) {
   });
 });
 
+var _replicationCouchdb = require("./plugins/replication-couchdb");
+
+Object.keys(_replicationCouchdb).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _replicationCouchdb[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _replicationCouchdb[key];
+    }
+  });
+});
+
 var _server = require("./plugins/server");
 
 Object.keys(_server).forEach(function (key) {

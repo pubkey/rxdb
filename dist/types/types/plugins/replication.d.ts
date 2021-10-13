@@ -1,48 +1,81 @@
-import { Observable } from 'rxjs';
-
+import type { Observable } from 'rxjs';
+import type { RxReplicationStateBase } from '../../plugins/replication';
 import type {
-    RxQuery,
-    RxCollection
+    DeepReadonlyObject,
+    RxCollection,
+    RxDocumentData,
+    WithDeleted
 } from '../../types';
-import type {
-    PouchReplicationOptions,
-    PouchSyncHandler
-} from '../pouch';
-import type { RxCouchDBReplicationStateBase } from '../../plugins/replication-couchdb';
 
-export declare class RxCouchDBReplicationState extends RxCouchDBReplicationStateBase {
-    collection: RxCollection;
+export type ReplicationCheckpointDocument = { _id: string; value: number; };
 
-    change$: Observable<any>;
-    docs$: Observable<any>;
-    denied$: Observable<any>;
-    active$: Observable<any>;
-    alive$: Observable<boolean>;
-    complete$: Observable<any>;
-    error$: Observable<any>;
-
+export type ReplicationPullHandlerResult<RxDocType> = {
     /**
-     * waits until the inital replication is done
-     * and the client can be expected to have the same data as the server
+     * The documents that got pulled from the remote actor.
      */
-    awaitInitialReplication(): Promise<void>;
+    documents: (WithDeleted<RxDocType> | DeepReadonlyObject<WithDeleted<RxDocType>>)[];
+    /**
+     * True if there can be more changes on the remote,
+     * so the pulling will run again.
+     */
+    hasMoreDocuments: boolean;
+};
 
-    // can be used for debuging or custom event-handling
-    // will be set some time after sync() is called
-    _pouchEventEmitterObject: PouchSyncHandler | null;
 
-    // if you do a custom sync, put the thing you get back from pouch here
-    setPouchEventEmitter(pouchSyncState: any): void;
+export type ReplicationPullOptions<RxDocType> = {
+    /**
+     * A handler that pulls the new remote changes
+     * from the remote actor.
+     */
+    handler: (latestPulledDocument: RxDocumentData<RxDocType> | null) => Promise<ReplicationPullHandlerResult<RxDocType>>
+};
+
+export type ReplicationPushOptions<RxDocType> = {
+    /**
+     * A handler that sends the new local changes
+     * to the remote actor.
+     * On error, all documents are send again at later time.
+     */
+    handler: (docs: WithDeleted<RxDocType>[]) => Promise<void>;
+    /**
+     * How many local changes to process at once.
+     */
+    batchSize?: number;
 }
 
-export type SyncOptions = {
-    remote: string | any;
-    waitForLeadership?: boolean;
-    direction?: {
-        push?: boolean,
-        pull?: boolean
-    };
-    // for options see https://pouchdb.com/api.html#replication
-    options?: PouchReplicationOptions;
-    query?: RxQuery<any, any>;
+export type RxReplicationState<RxDocType> = RxReplicationStateBase<RxDocType> & {
+    readonly received$: Observable<RxDocumentData<RxDocType>>;
+    readonly send$: Observable<any>;
+    readonly error$: Observable<any>;
+    readonly canceled$: Observable<any>;
+    readonly active$: Observable<boolean>;
+}
+
+export type ReplicationOptions<RxDocType> = {
+    replicationIdentifier: string,
+    collection: RxCollection<RxDocType>,
+    pull?: ReplicationPullOptions<RxDocType>,
+    push?: ReplicationPushOptions<RxDocType>,
+    /**
+     * default=false
+     */
+    live?: boolean,
+    /**
+     * Interval in milliseconds on when to run() again,
+     * Set this to 0 when you have a back-channel from your server
+     * that like a websocket that tells the client when to pull.
+     */
+    liveInterval?: number,
+    /**
+     * Time in milliseconds
+     */
+    retryTime?: number,
+    /**
+     * If set to false,
+     * it will not wait until the current instance becomes leader.
+     * This means it can happen that multiple browser tabs
+     * run the replication at the same time which is dangerous.
+     * 
+     */
+    waitForLeadership?: boolean; // default=true
 }

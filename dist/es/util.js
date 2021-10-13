@@ -248,6 +248,22 @@ export function shuffleArray(arr) {
   });
 }
 /**
+ * Split array with items into smaller arrays with items
+ * @link https://stackoverflow.com/a/7273794/3443137
+ */
+
+export function batchArray(array, batchSize) {
+  array = array.slice(0);
+  var ret = [];
+
+  while (array.length) {
+    var batch = array.splice(0, batchSize);
+    ret.push(batch);
+  }
+
+  return ret;
+}
+/**
  * @link https://stackoverflow.com/a/15996017
  */
 
