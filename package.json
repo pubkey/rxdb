@@ -213,7 +213,7 @@
     "source-map-support": "0.5.20",
     "subscriptions-transport-ws": "0.9.19",
     "terser": "5.9.0",
-    "terser-webpack-plugin": "4.2.3",
+    "terser-webpack-plugin": "5.2.4",
     "ts-node": "10.2.1",
     "typescript": "4.3.5",
     "walk-sync": "3.0.0",
