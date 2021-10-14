@@ -43,7 +43,7 @@
     "@angular/platform-browser": "12.2.10",
     "@angular/platform-browser-dynamic": "12.2.10",
     "@angular/platform-server": "12.2.10",
-    "@angular/pwa": "0.1102.14",
+    "@angular/pwa": "12.2.10",
     "@angular/router": "12.2.10",
     "@angular/service-worker": "12.2.10",
     "@nguniversal/express-engine": "12.1.0",
