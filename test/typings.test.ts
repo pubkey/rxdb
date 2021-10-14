@@ -137,7 +137,7 @@ describe('typings.test.js', function () {
                 `;
                 await transpileCode(code);
             });
-            it('an collection-untyped database should allow all collection-getters', async () => {
+            it('a collection-untyped database should allow all collection-getters', async () => {
                 const code = codeBase + `
                     (async() => {
                         const db: RxDatabase = {} as RxDatabase;
