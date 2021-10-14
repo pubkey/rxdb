@@ -52,6 +52,9 @@ jobs:
       - name: install npm dependencies
         run: npm install
       
+      - name: build
+        run: npm run build
+
       - name: npm run test:node
         run: npm run test:node
   
