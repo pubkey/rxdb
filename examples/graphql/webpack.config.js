@@ -1,6 +1,7 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const webpack = require('webpack');
 
 module.exports = {
     entry: './client/index.js',
@@ -9,6 +10,9 @@ module.exports = {
         path: path.resolve(__dirname, 'dist')
     },
     plugins: [
+        new webpack.ProvidePlugin({
+            process: 'process/browser',
+        }),
         new HtmlWebpackPlugin({
             template: 'client/index.html',
             filename: 'index.html'
@@ -50,7 +54,7 @@ module.exports = {
         ]
     },
     devServer: {
-        contentBase: path.join(__dirname, 'dist'),
+        static: path.join(__dirname, 'dist'),
         compress: true,
         port: 8888
     },
