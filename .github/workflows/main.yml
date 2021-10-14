@@ -18,10 +18,7 @@ on:
 jobs:
 
   core:
-    # The type of runner that the job will run on
     runs-on: ubuntu-18.04
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - uses: actions/checkout@v2
       - name: Setup Node.js environment
@@ -35,18 +32,32 @@ jobs:
       - name: build
         run: npm run build
       
-      - name: npm run test:node
-        run: npm run test:node
-  
-      - name: npm run test:fast
-        run: npm run test:fast
-        
       - name: test:typings
         run: npm run test:typings
 
       - name: npm run test:performance
         run: npm run test:performance
 
+
+  # run these in a separate job to speed up the CI
+  node:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.4.1
+        with:
+          node-version: 16.5.0
+
+      - name: install npm dependencies
+        run: npm install
+      
+      - name: npm run test:node
+        run: npm run test:node
+  
+      - name: npm run test:fast
+        run: npm run test:fast
+        
       - name: node example
         working-directory: ./examples/node
         run: |
