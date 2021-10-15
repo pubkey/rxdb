@@ -59,7 +59,7 @@
     "rxjs": "7.3.1",
     "stream": "0.0.2",
     "tslib": "2.3.1",
-    "zone.js": "~0.11.4"
+    "zone.js": "0.11.4"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "12.2.10",
