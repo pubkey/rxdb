@@ -17,7 +17,11 @@ const configuration = {
         'detectBrowsers'
     ],
     browserify: {
-        debug: true
+        debug: true,
+        insertGlobalVars: {
+            Buffer: (file) => file.includes('node_modules') ? 'require("buffer").Buffer' : undefined,
+            'Buffer.isBuffer': undefined
+        }
     },
     files: [
         '../test_tmp/unit.test.js'
