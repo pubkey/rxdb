@@ -4,6 +4,7 @@
 
 Bugfixes:
   - GraphQL replication: push not working with keyCompression.
+  - `Buffer` is not available in browsers [#3454](https://github.com/pubkey/rxdb/issues/3454) Thanks [@swnf](https://github.com/swnf)
 
 ### 10.2.0 (13 October 2021)
 
