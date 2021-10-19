@@ -430,14 +430,14 @@ export var blobBufferUtil = {
     return blobBuffer;
   },
   isBlobBuffer: function isBlobBuffer(data) {
-    if (Buffer.isBuffer(data) || data instanceof Blob) {
+    if (typeof Buffer !== 'undefined' && Buffer.isBuffer(data) || data instanceof Blob) {
       return true;
     } else {
       return false;
     }
   },
   toString: function toString(blobBuffer) {
-    if (blobBuffer instanceof Buffer) {
+    if (typeof Buffer !== 'undefined' && blobBuffer instanceof Buffer) {
       // node
       return nextTick().then(function () {
         return blobBuffer.toString();

@@ -4,6 +4,7 @@ import { wasRevisionfromPullReplication, GRAPHQL_REPLICATION_PLUGIN_IDENT } from
 import { findLocalDocument, writeSingleLocal } from '../../rx-storage-helper';
 import { flatClone } from '../../util';
 import { newRxError } from '../../rx-error';
+import { runPluginHooks } from '../../hooks';
 /**
  * when the replication starts,
  * we need a way to find out where it ended the last time.
@@ -167,7 +168,7 @@ function _getChangesSinceLastPushSequence() {
              */
 
             _loop = /*#__PURE__*/_regeneratorRuntime.mark(function _loop() {
-              var changesResults, docs;
+              var changesResults, plainDocs, docs;
               return _regeneratorRuntime.wrap(function _loop$(_context3) {
                 while (1) {
                   switch (_context3.prev = _context3.next) {
@@ -198,7 +199,18 @@ function _getChangesSinceLastPushSequence() {
                       }), true);
 
                     case 9:
-                      docs = _context3.sent;
+                      plainDocs = _context3.sent;
+                      docs = new Map();
+                      Array.from(plainDocs.entries()).map(function (_ref) {
+                        var docId = _ref[0],
+                            docData = _ref[1];
+                        var hookParams = {
+                          collection: collection,
+                          doc: docData
+                        };
+                        runPluginHooks('postReadFromInstance', hookParams);
+                        docs.set(docId, hookParams.doc);
+                      });
                       changesResults.changedDocuments.forEach(function (row) {
                         var id = row.id;
 
@@ -240,7 +252,7 @@ function _getChangesSinceLastPushSequence() {
                         retry = false;
                       }
 
-                    case 12:
+                    case 14:
                     case "end":
                       return _context3.stop();
                   }
