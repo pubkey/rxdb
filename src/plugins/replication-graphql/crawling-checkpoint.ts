@@ -13,6 +13,7 @@ import {
 } from '../../rx-storage-helper';
 import { flatClone } from '../../util';
 import { newRxError } from '../../rx-error';
+import { runPluginHooks } from '../../hooks';
 
 /**
  * when the replication starts,
@@ -143,10 +144,20 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
             continue;
         }
 
-        const docs = await collection.storageInstance.findDocumentsById(
+        const plainDocs = await collection.storageInstance.findDocumentsById(
             changesResults.changedDocuments.map(row => row.id),
             true
         );
+        const docs: Map<string, RxDocumentData<RxDocType>> = new Map();
+        Array.from(plainDocs.entries()).map(([docId, docData]) => {
+            const hookParams = {
+                collection,
+                doc: docData
+            };
+            runPluginHooks('postReadFromInstance', hookParams);
+            docs.set(docId, hookParams.doc);
+        });
+
 
         changesResults.changedDocuments.forEach((row) => {
             const id = row.id;

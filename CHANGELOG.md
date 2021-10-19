@@ -2,6 +2,9 @@
 
 ### X.X.X (coming soon)
 
+Bugfixes:
+  - GraphQL replication: push not working with keyCompression.
+
 ### 10.2.0 (13 October 2021)
 
 Bugfixes:

@@ -579,6 +579,38 @@ describe('replication-graphql.test.js', () => {
 
                     c.database.destroy();
                 });
+                it('should undo the keyCompression', async () => {
+                    const db = await createRxDatabase({
+                        name: randomCouchString(10),
+                        storage: getRxStoragePouch('memory'),
+                        multiInstance: true,
+                        eventReduce: true,
+                        ignoreDuplicate: true,
+                        password: randomCouchString(10)
+                    });
+                    const schema = clone(schemas.humanWithTimestamp);
+                    schema.keyCompression = true;
+                    const collections = await db.addCollections({
+                        humans: {
+                            schema
+                        }
+                    });
+                    const collection = collections.humans;
+                    await collection.insert(schemaObjects.humanWithTimestamp());
+
+                    const changesResult = await getChangesSinceLastPushSequence(
+                        collection,
+                        endpointHash,
+                        10
+                    );
+
+                    const docData = Array.from(changesResult.changedDocs.values())[0];
+                    assert.ok(docData);
+                    assert.ok(docData.doc.age);
+                    assert.ok(docData.doc.updatedAt);
+
+                    db.destroy();
+                });
             });
             describe('.setLastPullDocument()', () => {
                 it('should set the document', async () => {
@@ -2097,7 +2129,7 @@ describe('replication-graphql.test.js', () => {
 
                 db.destroy();
             });
-            it('should work with keyCompression', async () => {
+            it('pull should work with keyCompression', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
                     storage: getRxStoragePouch('memory'),
@@ -2139,6 +2171,58 @@ describe('replication-graphql.test.js', () => {
                 // first key must be compressed
                 assert.ok(Object.keys(pouchDocs.docs[0])[0].startsWith('|'));
 
+                server.close();
+                db.destroy();
+            });
+            it('push should work with keyCompression', async () => {
+                const db = await createRxDatabase({
+                    name: randomCouchString(10),
+                    storage: getRxStoragePouch('memory'),
+                    multiInstance: true,
+                    eventReduce: true,
+                    ignoreDuplicate: true,
+                    password: randomCouchString(10)
+                });
+                const schema = clone(schemas.humanWithTimestamp);
+                schema.keyCompression = true;
+                const collections = await db.addCollections({
+                    humans: {
+                        schema
+                    }
+                });
+                const collection = collections.humans;
+                await collection.insert(schemaObjects.humanWithTimestamp());
+
+                const server = await SpawnServer.spawn<HumanWithTimestampDocumentType>([]);
+
+                const replicationState = collection.syncGraphQL({
+                    url: server.url,
+                    push: {
+                        /**
+                         * TODO for whatever reason this test
+                         * does not work with batchSize=1
+                         */
+                        batchSize: 10,
+                        queryBuilder: doc => {
+                            const ret = pushQueryBuilder(doc);
+                            return ret;
+                        }
+                    },
+                    deletedFlag: 'deleted'
+                });
+                const errorSub = replicationState.error$.subscribe(err => {
+                    console.dir(err);
+                });
+                await replicationState.awaitInitialReplication();
+
+
+
+                const serverDocs = server.getDocuments();
+                assert.strictEqual(serverDocs.length, 1);
+                assert.ok(serverDocs[0].age);
+
+                errorSub.unsubscribe();
+                server.close();
                 db.destroy();
             });
             it('should work with headers', async () => {
