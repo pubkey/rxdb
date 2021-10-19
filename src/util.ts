@@ -450,14 +450,14 @@ export const blobBufferUtil = {
         return blobBuffer;
     },
     isBlobBuffer(data: any): boolean {
-        if (Buffer.isBuffer(data) || data instanceof Blob) {
+        if ((typeof Buffer !== 'undefined' && Buffer.isBuffer(data)) || data instanceof Blob) {
             return true;
         } else {
             return false;
         }
     },
     toString(blobBuffer: BlobBuffer): Promise<string> {
-        if (blobBuffer instanceof Buffer) {
+        if (typeof Buffer !== 'undefined' && blobBuffer instanceof Buffer) {
             // node
             return nextTick()
                 .then(() => blobBuffer.toString());
