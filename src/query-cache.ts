@@ -7,7 +7,11 @@ import type {
     RxCacheReplacementPolicy,
     RxCollection
 } from './types';
-import { nextTick, now, requestIdlePromise } from './util';
+import {
+    nextTick,
+    now,
+    requestIdlePromise
+} from './util';
 
 export class QueryCache {
     public _map: Map<string, RxQuery> = new Map();

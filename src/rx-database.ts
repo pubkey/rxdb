@@ -25,7 +25,9 @@ import type {
 
 import {
     pluginMissing,
-    flatClone
+    flatClone,
+    PROMISE_RESOLVE_FALSE,
+    PROMISE_RESOLVE_VOID
 } from './util';
 import {
     newRxError
@@ -402,7 +404,9 @@ export class RxDatabaseBase<
      * destroys the database-instance and all collections
      */
     public destroy(): Promise<boolean> {
-        if (this.destroyed) return Promise.resolve(false);
+        if (this.destroyed) {
+            return PROMISE_RESOLVE_FALSE;
+        }
         runPluginHooks('preDestroyRxDatabase', this);
         DB_COUNT--;
         this.destroyed = true;
@@ -420,7 +424,7 @@ export class RxDatabaseBase<
             // destroy internal storage instances
             .then(() => this.internalStore.close ? this.internalStore.close() : null)
             // close broadcastChannel if exists
-            .then(() => this.broadcastChannel ? this.broadcastChannel.close() : Promise.resolve())
+            .then(() => this.broadcastChannel ? this.broadcastChannel.close() : PROMISE_RESOLVE_VOID)
             // remove combination from USED_COMBINATIONS-map
             .then(() => USED_DATABASE_NAMES.delete(this.name))
             .then(() => true);
@@ -485,7 +489,7 @@ export function writeToSocket(
     changeEvent: RxChangeEvent
 ): Promise<boolean> {
     if (rxDatabase.destroyed) {
-        return Promise.resolve(false);
+        return PROMISE_RESOLVE_FALSE;
     }
 
     if (
@@ -500,8 +504,9 @@ export function writeToSocket(
         return rxDatabase.broadcastChannel
             .postMessage(sendOverChannel)
             .then(() => true);
-    } else
-        return Promise.resolve(false);
+    } else {
+        return PROMISE_RESOLVE_FALSE;
+    }
 }
 
 /**

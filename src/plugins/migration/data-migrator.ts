@@ -18,7 +18,10 @@ import {
     toPromise,
     flatClone,
     getHeightOfRevision,
-    createRevision
+    createRevision,
+    PROMISE_RESOLVE_VOID,
+    PROMISE_RESOLVE_FALSE,
+    PROMISE_RESOLVE_NULL
 } from '../../util';
 import {
     createRxSchema
@@ -130,7 +133,7 @@ export class DataMigrator {
                     });
                     let currentCol = oldCols.shift();
 
-                    let currentPromise = Promise.resolve();
+                    let currentPromise = PROMISE_RESOLVE_VOID;
                     while (currentCol) {
                         const migrationState$ = migrateOldCollection(
                             currentCol,
@@ -183,7 +186,7 @@ export class DataMigrator {
             this._migratePromise = mustMigrate(this)
                 .then(must => {
                     if (!must) {
-                        return Promise.resolve(false);
+                        return PROMISE_RESOLVE_FALSE;
                     } else {
                         return new Promise((res, rej) => {
                             const state$ = this.migrate(batchSize);
@@ -268,7 +271,7 @@ export async function _getOldCollections(
  */
 export function mustMigrate(dataMigrator: DataMigrator): Promise<boolean> {
     if (dataMigrator.currentSchema.version === 0) {
-        return Promise.resolve(false);
+        return PROMISE_RESOLVE_FALSE;
     }
     return _getOldCollections(dataMigrator)
         .then(oldCols => {
@@ -283,7 +286,7 @@ export function runStrategyIfNotNull(
     docOrNull: any | null
 ): Promise<any | null> {
     if (docOrNull === null) {
-        return Promise.resolve(null);
+        return PROMISE_RESOLVE_NULL;
     } else {
         const ret = oldCollection.dataMigrator.migrationStrategies[version](docOrNull, oldCollection);
         const retPromise = toPromise(ret);
@@ -343,7 +346,7 @@ export function migrateDocumentData(
 
     return currentPromise.then(doc => {
         if (doc === null) {
-            return Promise.resolve(null);
+            return PROMISE_RESOLVE_NULL;
         }
 
         // check final schema

@@ -11,6 +11,7 @@ import type {
     RxDatabase,
     RxPlugin
 } from '../types';
+import { PROMISE_RESOLVE_TRUE } from '../util';
 
 const LEADER_ELECTORS_OF_DB: WeakMap<RxDatabase, LeaderElector> = new WeakMap();
 
@@ -65,7 +66,7 @@ export function isLeader(this: RxDatabase): boolean {
 
 export function waitForLeadership(this: RxDatabase): Promise<boolean> {
     if (!this.multiInstance) {
-        return Promise.resolve(true);
+        return PROMISE_RESOLVE_TRUE;
     } else {
         return this.leaderElector().waitForLeadership();
     }

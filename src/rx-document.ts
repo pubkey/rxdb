@@ -14,7 +14,9 @@ import {
     pluginMissing,
     now,
     nextTick,
-    flatClone
+    flatClone,
+    PROMISE_RESOLVE_NULL,
+    PROMISE_RESOLVE_VOID
 } from './util';
 import {
     newRxError,
@@ -182,7 +184,7 @@ export const basePrototype = {
         );
         const value = this.get(path);
         if (!value) {
-            return Promise.resolve(null);
+            return PROMISE_RESOLVE_NULL;
         }
         if (!schemaObj) {
             throw newRxError('DOC5', {
@@ -492,7 +494,7 @@ export function createRxDocumentConstructor(proto = basePrototype) {
         this._dataSync$ = new BehaviorSubject(jsonData);
         this._isDeleted$ = new BehaviorSubject(false) as any;
 
-        this._atomicQueue = Promise.resolve();
+        this._atomicQueue = PROMISE_RESOLVE_VOID;
 
         /**
          * because of the prototype-merge,

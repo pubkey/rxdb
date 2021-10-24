@@ -20,7 +20,7 @@ import type {
     RxDocument,
     RxPlugin
 } from '../../types';
-import { getFromMapOrThrow } from '../../util';
+import { getFromMapOrThrow, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID } from '../../util';
 import {
     clearFolder,
     deleteFolder,
@@ -94,7 +94,7 @@ function addToBackupStates(db: RxDatabase, state: RxBackupState) {
 export class RxBackupState {
     public isStopped: boolean = false;
     private subs: Subscription[] = [];
-    private persistRunning: Promise<void> = Promise.resolve();
+    private persistRunning: Promise<void> = PROMISE_RESOLVE_VOID;
     private initialReplicationDone$: BehaviorSubject<boolean> = new BehaviorSubject(false as any);
 
     private readonly internalWriteEvents$: Subject<RxBackupWriteEvent> = new Subject();
@@ -244,11 +244,11 @@ export class RxBackupState {
 
     cancel(): Promise<boolean> {
         if (this.isStopped) {
-            return Promise.resolve(false);
+            return PROMISE_RESOLVE_FALSE;
         }
         this.isStopped = true;
         this.subs.forEach(sub => sub.unsubscribe());
-        return Promise.resolve(true);
+        return PROMISE_RESOLVE_TRUE;
     }
 }
 

@@ -22,7 +22,8 @@ import type {
 
 import {
     addRxPlugin,
-    flatClone
+    flatClone,
+    PROMISE_RESOLVE_VOID
 } from '../core';
 import { RxDBReplicationCouchDBPlugin } from './replication-couchdb';
 addRxPlugin(RxDBReplicationCouchDBPlugin);
@@ -167,7 +168,7 @@ export async function spawnServer(
     app.use(collectionsPath, pouchApp);
 
     let server = null;
-    let startupPromise: Promise<void> = Promise.resolve();
+    let startupPromise: Promise<void> = PROMISE_RESOLVE_VOID;
     if (startServer) {
         /**
          * Listen for errors on server startup.

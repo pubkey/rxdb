@@ -2,6 +2,9 @@
 
 ### X.X.X (coming soon)
 
+Other:
+  - Improved performance when many queries are created in a short timespan.
+
 ### 10.2.1 (20 October 2021)
 
 Bugfixes:

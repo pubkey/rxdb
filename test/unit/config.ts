@@ -5,6 +5,7 @@ const {
 import BroadcastChannel from 'broadcast-channel';
 import * as path from 'path';
 import parallel from 'mocha.parallel';
+import { now } from '../../plugins/core';
 
 function isFastMode(): boolean {
     try {
@@ -38,6 +39,16 @@ if (config.platform.name === 'node') {
     require('events').EventEmitter.defaultMaxListeners = 100;
     config.rootPath = path.join(__dirname, '../../');
     console.log('rootPath: ' + config.rootPath);
+
+
+    /**
+     * Add a global function to process, so we can debug timings
+     */
+    (process as any).startTime = performance.now();
+    (process as any).logTime = (msg: string = '') => {
+        const diff = performance.now() - (process as any).startTime;
+        console.log('process logTime(' + msg + ') ' + diff + 'ms');
+    };
 }
 
 export default config;

@@ -32,6 +32,7 @@ import {
 } from '../rx-collection';
 import {
     clone,
+    PROMISE_RESOLVE_VOID,
     randomCouchString
 } from '../util';
 import {
@@ -167,7 +168,7 @@ export
      */
     awaitPersistence(): Promise<any> {
         if (this._nonPersistentRevisions.size === 0) {
-            return Promise.resolve();
+            return PROMISE_RESOLVE_VOID;
         }
         return firstValueFrom(
             this._nonPersistentRevisionsSubject.pipe(
@@ -260,7 +261,10 @@ export function replicateExistingDocuments(
                 return pouchSwapPrimaryToId(primaryKey, doc);
             });
 
-        if (docs.length === 0) return Promise.resolve([]); // nothing to replicate
+        if (docs.length === 0) {
+            // nothing to replicate
+            return Promise.resolve([]);
+        }
         else {
             return toCollection.storageInstance.internals.pouch.bulkDocs({
                 docs

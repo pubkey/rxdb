@@ -21,7 +21,9 @@ import {
 
 import {
     promiseWait,
-    flatClone
+    flatClone,
+    PROMISE_RESOLVE_FALSE,
+    PROMISE_RESOLVE_TRUE
 } from '../util';
 import {
     newRxError
@@ -114,7 +116,7 @@ export class RxCouchDBReplicationStateBase {
      */
     cancel(): Promise<boolean> {
         if (this.canceled) {
-            return Promise.resolve(false);
+            return PROMISE_RESOLVE_FALSE;
         }
         this.canceled = true;
         this.collection._repStates.delete(this as any);
@@ -123,7 +125,7 @@ export class RxCouchDBReplicationStateBase {
         }
         this._subs.forEach(sub => sub.unsubscribe());
 
-        return Promise.resolve(true);
+        return PROMISE_RESOLVE_TRUE;
     }
 }
 

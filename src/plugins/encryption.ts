@@ -20,7 +20,7 @@ import type {
     RxDatabase,
     RxLocalDocumentData
 } from '../types';
-import { hash } from '../util';
+import { hash, PROMISE_RESOLVE_FALSE } from '../util';
 import { findLocalDocument } from '../rx-storage-helper';
 
 const minPassLength = 8;
@@ -58,7 +58,7 @@ export async function storePasswordHashIntoDatabase(
     rxDatabase: RxDatabase
 ): Promise<boolean> {
     if (!rxDatabase.password) {
-        return Promise.resolve(false);
+        return PROMISE_RESOLVE_FALSE;
     }
     const pwHash = hash(rxDatabase.password);
     const pwHashDocumentId = 'pwHash';

@@ -29,10 +29,16 @@ import {
     flatClone,
     getHeightOfRevision,
     lastOfArray,
-    promiseWait
+    promiseWait,
+    PROMISE_RESOLVE_FALSE,
+    PROMISE_RESOLVE_TRUE,
+    PROMISE_RESOLVE_VOID
 } from '../../util';
 import { overwritable } from '../../overwritable';
-import { createRevisionForPulledDocument, wasRevisionfromPullReplication } from './revision-flag';
+import {
+    createRevisionForPulledDocument,
+    wasRevisionfromPullReplication
+} from './revision-flag';
 import { _handleToStorageInstance } from '../../rx-collection-helper';
 import { newRxError } from '../../rx-error';
 import { getDocumentDataOfRxChangeEvent } from '../../rx-change-event';
@@ -51,7 +57,7 @@ export class RxReplicationStateBase<RxDocType> {
         initialReplicationComplete: new BehaviorSubject(false) // true the initial replication-cycle is over
     };
 
-    private runningPromise: Promise<void> = Promise.resolve();
+    private runningPromise: Promise<void> = PROMISE_RESOLVE_VOID;
     private runQueueCount: number = 0;
     /**
      * Counts how many times the run() method
@@ -108,11 +114,11 @@ export class RxReplicationStateBase<RxDocType> {
 
     cancel(): Promise<any> {
         if (this.isStopped()) {
-            return Promise.resolve(false);
+            return PROMISE_RESOLVE_FALSE;
         }
         this.subs.forEach(sub => sub.unsubscribe());
         this.subjects.canceled.next(true);
-        return Promise.resolve(true);
+        return PROMISE_RESOLVE_TRUE;
     }
 
     /**
@@ -187,7 +193,7 @@ export class RxReplicationStateBase<RxDocType> {
             throw newRxError('SNH');
         }
         if (this.isStopped()) {
-            return Promise.resolve(false);
+            return PROMISE_RESOLVE_FALSE;
         }
 
         const latestDocument = await getLastPullDocument(this.collection, this.replicationIdentifier);

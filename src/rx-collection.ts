@@ -14,7 +14,9 @@ import {
     pluginMissing,
     ensureNotFalsy,
     getFromMapOrThrow,
-    clone
+    clone,
+    PROMISE_RESOLVE_FALSE,
+    PROMISE_RESOLVE_VOID
 } from './util';
 import {
     _handleToStorageInstance,
@@ -295,7 +297,7 @@ export class RxCollectionBase<
     // overwritte by migration-plugin
     migrationNeeded(): Promise<boolean> {
         if (this.schema.version === 0) {
-            return Promise.resolve(false);
+            return PROMISE_RESOLVE_FALSE;
         }
         throw pluginMissing('migration');
     }
@@ -562,7 +564,7 @@ export class RxCollectionBase<
         // ensure that it wont try 2 parallel runs
         let queue;
         if (!this._atomicUpsertQueues.has(primary)) {
-            queue = Promise.resolve();
+            queue = PROMISE_RESOLVE_VOID;
         } else {
             queue = this._atomicUpsertQueues.get(primary);
         }
@@ -831,7 +833,9 @@ export class RxCollectionBase<
 
     _runHooks(when: string, key: string, data: any, instance?: any): Promise<any> {
         const hooks = this.getHooks(when, key);
-        if (!hooks) return Promise.resolve();
+        if (!hooks) {
+            return PROMISE_RESOLVE_VOID;
+        }
 
         // run parallel: false
         const tasks = hooks.series.map((hook: any) => () => hook(data, instance));
@@ -870,7 +874,7 @@ export class RxCollectionBase<
 
     destroy(): Promise<boolean> {
         if (this.destroyed) {
-            return Promise.resolve(false);
+            return PROMISE_RESOLVE_FALSE;
         }
         if (this._onDestroyCall) {
             this._onDestroyCall();
@@ -1024,7 +1028,7 @@ export function createRxCollection(
                     });
                 });
 
-            let ret = Promise.resolve();
+            let ret = PROMISE_RESOLVE_VOID;
             if (autoMigrate && collection.schema.version !== 0) {
                 ret = collection.migratePromise();
             }

@@ -17,7 +17,8 @@ import {
     clone,
     overwriteGetterForCaching,
     now,
-    promiseWait
+    promiseWait,
+    PROMISE_RESOLVE_FALSE
 } from './util';
 import {
     newRxError,
@@ -143,8 +144,8 @@ export class RxQueryBase<
     }
 
 
-    // stores the changeEvent-Number of the last handled change-event
-    public _latestChangeEvent: -1 | any = -1;
+    // stores the changeEvent-number of the last handled change-event
+    public _latestChangeEvent: -1 | number = -1;
 
     // contains the results as plain json-data
     public _resultsData: any = null;
@@ -162,7 +163,7 @@ export class RxQueryBase<
      * ensures that the exec-runs
      * are not run in parallel
      */
-    public _ensureEqualQueue: Promise<boolean> = Promise.resolve(false);
+    public _ensureEqualQueue: Promise<boolean> = PROMISE_RESOLVE_FALSE;
 
     /**
      * Returns an observable that emits the results
@@ -239,7 +240,6 @@ export class RxQueryBase<
     public exec(throwIfMissing: true): Promise<RxDocument<RxDocumentType>>;
     public exec(): Promise<RxQueryResult>;
     public exec(throwIfMissing?: boolean): Promise<any> {
-
         // TODO this should be ensured by typescript
         if (throwIfMissing && this.op !== 'findOne') {
             throw newRxError('QU9', {
@@ -443,13 +443,17 @@ export function createRxQuery(
 }
 
 /**
- * check if the current results-state is in sync with the database
+ * Check if the current results-state is in sync with the database
+ * which means that no write event happened since the last run.
  * @return false if not which means it should re-execute
  */
 function _isResultsInSync(rxQuery: RxQueryBase): boolean {
-    if (rxQuery._latestChangeEvent >= (rxQuery as any).collection._changeEventBuffer.counter) {
+    const currentLatestEventNumber = rxQuery.asRxQuery.collection._changeEventBuffer.counter;
+    if (rxQuery._latestChangeEvent >= currentLatestEventNumber) {
         return true;
-    } else return false;
+    } else {
+        return false;
+    }
 }
 
 
@@ -459,12 +463,16 @@ function _isResultsInSync(rxQuery: RxQueryBase): boolean {
  * @return true if has changed, false if not
  */
 function _ensureEqual(rxQuery: RxQueryBase): Promise<boolean> {
+    // Optimisation shortcut
+    if (
+        rxQuery.collection.database.destroyed ||
+        _isResultsInSync(rxQuery)
+    ) {
+        return PROMISE_RESOLVE_FALSE;
+    }
+
     rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue
-        .then(() => promiseWait(0))
-        .then(() => __ensureEqual(rxQuery))
-        .then(ret => {
-            return promiseWait(0).then(() => ret);
-        });
+        .then(() => __ensureEqual(rxQuery));
     return rxQuery._ensureEqualQueue;
 }
 
@@ -474,13 +482,17 @@ function _ensureEqual(rxQuery: RxQueryBase): Promise<boolean> {
  */
 function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
     rxQuery._lastEnsureEqual = now();
-    if (rxQuery.collection.database.destroyed) {
+
+    /**
+     * Optimisation shortcuts
+     */
+    if (
         // db is closed
-        return false;
-    }
-    if (_isResultsInSync(rxQuery)) {
-        // nothing happend
-        return false;
+        rxQuery.collection.database.destroyed ||
+        // nothing happend since last run
+        _isResultsInSync(rxQuery)
+    ) {
+        return PROMISE_RESOLVE_FALSE;
     }
 
     let ret = false;
@@ -494,12 +506,12 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
      * try to use the queryChangeDetector to calculate the new results
      */
     if (!mustReExec) {
-        let missedChangeEvents = (rxQuery as any).collection._changeEventBuffer.getFrom(rxQuery._latestChangeEvent + 1);
+        let missedChangeEvents = rxQuery.asRxQuery.collection._changeEventBuffer.getFrom(rxQuery._latestChangeEvent + 1);
         if (missedChangeEvents === null) {
             // changeEventBuffer is of bounds -> we must re-execute over the database
             mustReExec = true;
         } else {
-            rxQuery._latestChangeEvent = (rxQuery as any).collection._changeEventBuffer.counter;
+            rxQuery._latestChangeEvent = rxQuery.asRxQuery.collection._changeEventBuffer.counter;
 
             /**
              * because pouchdb prefers writes over reads,
@@ -510,7 +522,7 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
                 return !cE.startTime || cE.startTime > rxQuery._lastExecStart;
             });
 
-            const runChangeEvents: RxChangeEvent<any>[] = ((rxQuery as any).collection as RxCollection)
+            const runChangeEvents: RxChangeEvent<any>[] = rxQuery.asRxQuery.collection
                 ._changeEventBuffer
                 .reduceByLastOfDoc(missedChangeEvents);
 
@@ -540,8 +552,7 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
     // oh no we have to re-execute the whole query over the database
     if (mustReExec) {
         // counter can change while _execOverDatabase() is running so we save it here
-        const latestAfter = (rxQuery as any).collection._changeEventBuffer.counter;
-
+        const latestAfter: number = (rxQuery as any).collection._changeEventBuffer.counter;
         return rxQuery._execOverDatabase()
             .then(newResultData => {
                 rxQuery._latestChangeEvent = latestAfter;
@@ -552,6 +563,7 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
                 return ret;
             });
     }
+
     return ret; // true if results have changed
 }
 

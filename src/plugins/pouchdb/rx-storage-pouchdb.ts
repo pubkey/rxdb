@@ -50,7 +50,8 @@ import {
     getHeightOfRevision,
     promiseWait,
     blobBufferUtil,
-    now
+    now,
+    PROMISE_RESOLVE_VOID
 } from '../../util';
 import type {
     SortComparator,
@@ -109,7 +110,7 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
         OPEN_POUCHDB_STORAGE_INSTANCES.delete(this);
         // TODO this did not work because a closed pouchdb cannot be recreated in the same process run
         // await this.internals.pouch.close();
-        return Promise.resolve();
+        return PROMISE_RESOLVE_VOID;
     }
 
     async remove() {
@@ -545,7 +546,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
 
         // TODO this did not work because a closed pouchdb cannot be recreated in the same process run
         // await this.internals.pouch.close();
-        return Promise.resolve();
+        return PROMISE_RESOLVE_VOID;
     }
 
     async remove() {
@@ -835,6 +836,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                 return useDoc;
             })
         };
+
         return ret;
     }
 

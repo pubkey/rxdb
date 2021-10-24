@@ -7,6 +7,7 @@ import {
 } from './pouch-db';
 import {
     adapterObject,
+    PROMISE_RESOLVE_FALSE,
     randomCouchString
 } from '../../util';
 import type {
@@ -29,12 +30,12 @@ export function checkAdapter(adapter: any): Promise<any> {
         pouch = new (PouchDB as any)(
             POUCHDB_LOCATION,
             adapterObject(adapter), {
-                auto_compaction: true,
-                revs_limit: 1
-            }
+            auto_compaction: true,
+            revs_limit: 1
+        }
         );
     } catch (err) {
-        return Promise.resolve(false);
+        return PROMISE_RESOLVE_FALSE;
     }
 
     let recoveredDoc: any;

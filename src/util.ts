@@ -76,6 +76,10 @@ export function hash(msg: string | any): string {
  * because it might return 'the future'
  */
 let _lastNow: number = 0;
+/**
+ * Returns the current time in milliseconds,
+ * also ensures to not return the same value twice.
+ */
 export function now(): number {
     let ret = new Date().getTime();
     if (ret <= _lastNow) {
@@ -105,6 +109,11 @@ export function toPromise<T>(maybePromise: Promise<T> | T): Promise<T> {
     }
 }
 
+export const PROMISE_RESOLVE_TRUE: Promise<true> = Promise.resolve(true);
+export const PROMISE_RESOLVE_FALSE: Promise<false> = Promise.resolve(false);
+export const PROMISE_RESOLVE_NULL: Promise<null> = Promise.resolve(null);
+export const PROMISE_RESOLVE_VOID: Promise<void> = Promise.resolve();
+
 export function requestIdlePromise(timeout = null) {
     if (
         typeof window === 'object' &&
@@ -115,8 +124,9 @@ export function requestIdlePromise(timeout = null) {
                 timeout
             })
         );
-    } else
-        return Promise.resolve();
+    } else {
+        return PROMISE_RESOLVE_VOID;
+    }
 }
 
 

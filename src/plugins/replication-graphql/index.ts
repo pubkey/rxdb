@@ -18,7 +18,10 @@ import objectPath from 'object-path';
 import {
     promiseWait,
     getHeightOfRevision,
-    flatClone
+    flatClone,
+    PROMISE_RESOLVE_FALSE,
+    PROMISE_RESOLVE_TRUE,
+    PROMISE_RESOLVE_VOID
 } from '../../util';
 
 import {
@@ -94,7 +97,7 @@ export class RxGraphQLReplicationState<RxDocType> {
         active: new BehaviorSubject(false), // true when something is running, false when not
         initialReplicationComplete: new BehaviorSubject(false) // true the initial replication-cycle is over
     };
-    public _runningPromise: Promise<void> = Promise.resolve();
+    public _runningPromise: Promise<void> = PROMISE_RESOLVE_VOID;
     public _subs: Subscription[] = [];
 
     public _runQueueCount: number = 0;
@@ -214,7 +217,7 @@ export class RxGraphQLReplicationState<RxDocType> {
      */
     async runPull(): Promise<boolean> {
         if (this.isStopped()) {
-            return Promise.resolve(false);
+            return PROMISE_RESOLVE_FALSE;
         }
 
         const latestDocument = await getLastPullDocument(this.collection, this.endpointHash);
@@ -451,11 +454,11 @@ export class RxGraphQLReplicationState<RxDocType> {
 
     cancel(): Promise<any> {
         if (this.isStopped()) {
-            return Promise.resolve(false);
+            return PROMISE_RESOLVE_FALSE;
         }
         this._subs.forEach(sub => sub.unsubscribe());
         this._subjects.canceled.next(true);
-        return Promise.resolve(true);
+        return PROMISE_RESOLVE_TRUE;
     }
 
     setHeaders(headers: { [k: string]: string }): void {
