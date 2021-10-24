@@ -140,7 +140,7 @@
     "@babel/preset-typescript": "7.15.0",
     "@babel/types": "7.15.6",
     "@types/core-js": "2.5.5",
-    "@types/faker": "5.5.8",
+    "@types/faker": "5.5.9",
     "@types/memdown": "3.0.0",
     "@types/mocha": "8.2.3",
     "@types/node": "14.17.27",
