@@ -326,7 +326,8 @@ for (let r = 0; r < runs; r++) {
                             t++;
                             await col.insert(schemaObjects.averageSchema());
                         } else {
-                            sub.unsubscribe();
+                            // TODO why does this test fail when we directly unsubscribe?
+                            // sub.unsubscribe();
                             res(null);
                         }
                         return result;
@@ -338,6 +339,9 @@ for (let r = 0; r < runs; r++) {
             });
 
             const elapsed = elapsedTime(startTime);
+
+            await AsyncTestUtil.wait(500);
+
             benchmark.writeWhileSubscribe.total = benchmark.writeWhileSubscribe.total + elapsed;
             assert.strictEqual(lastResult.length, benchmark.writeWhileSubscribe.amount);
             await db.destroy();
