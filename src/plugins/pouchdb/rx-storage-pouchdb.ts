@@ -1198,25 +1198,23 @@ export function rxDocumentDataToPouchDocumentData<T>(
 }
 
 
+/**
+ * Swaps the primaryKey of the document
+ * to the _id property.
+ */
 export function pouchSwapPrimaryToId<RxDocType>(
     primaryKey: keyof RxDocType,
     docData: any
 ): any {
+    // optimisation shortcut
     if (primaryKey === '_id') {
         return docData;
     }
-    const ret: any = {};
-    /**
-     * TODO
-     * wtf why do we iterate here?
-     * Just flat clone and swap the id!
-     */
-    Object
-        .entries(docData)
-        .forEach(entry => {
-            const newKey = entry[0] === primaryKey ? '_id' : entry[0];
-            ret[newKey] = entry[1];
-        });
+
+    const idValue = docData[primaryKey];
+    const ret = flatClone(docData);
+    delete ret[primaryKey];
+    ret._id = idValue;
     return ret;
 }
 
