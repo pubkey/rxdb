@@ -1,6 +1,6 @@
 # Changelog
 
-### X.X.X (coming soon)
+### 10.2.2 (25 October 2021)
 
 Bugfixes:
   - Migration with attachments removes attachment mime types [#3460](https://github.com/pubkey/rxdb/issues/3460) Thanks [@swnf](https://github.com/swnf)
