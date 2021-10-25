@@ -480,6 +480,29 @@ config.parallel('rx-query.test.js', () => {
 
             db.destroy();
         });
+        it('querying after insert should always return the correct amount', async () => {
+            const col = await humansCollection.create(0);
+
+            const amount = 100;
+            const query = col.find({
+                selector: {
+                    age: {
+                        $gt: 1
+                    }
+                }
+            });
+            let inserted = 0;
+            while (inserted < amount) {
+                const docData = schemaObjects.human();
+                docData.age = 10;
+                await col.insert(docData);
+                inserted = inserted + 1;
+                const results = await query.exec();
+                assert.strictEqual(results.length, inserted);
+            }
+
+            col.database.destroy();
+        });
         it('should not make more requests then needed', async () => {
             const col = await humansCollection.createPrimary(0);
             const docData = schemaObjects.simpleHuman();
