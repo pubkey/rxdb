@@ -14,6 +14,7 @@ import {
     RxError,
     clone,
     getHeightOfRevision,
+    blobBufferUtil,
     PouchDBInstance,
 } from '../../plugins/core';
 
@@ -965,6 +966,41 @@ config.parallel('data-migration.test.js', () => {
                 assert.strictEqual(docs[0].color, 'black');
                 db2.destroy();
             });
+        });
+        it('#3460 migrate attachments', async () => {
+            const attachmentData = AsyncTestUtil.randomString(20);
+            const dataBlobBuffer = blobBufferUtil.createBlobBuffer(
+                attachmentData,
+                'text/plain'
+            );
+            const attachmentHash = await getRxStoragePouch('memory').hash(dataBlobBuffer);
+
+            const col = await humansCollection.createMigrationCollection(10, {
+                3: (doc: any) => {
+                    doc.age = parseInt(doc.age, 10);
+                    return doc;
+                }
+            }, randomCouchString(10), false, {
+                id: 'foo',
+                data: dataBlobBuffer,
+                type: 'text/plain'
+            });
+            const olds = await _getOldCollections(col.getDataMigrator());
+            const oldCol = olds.pop();
+
+            const oldDocs = await getBatchOfOldCollection(oldCol as any, 10);
+            const tryDoc = oldDocs.shift();
+            const actions = await _migrateDocuments(oldCol as any, [tryDoc]);
+            assert.strictEqual(actions[0].type, 'success');
+
+            const docs = await col.find().exec();
+            const attachment = docs[0].getAttachment('foo');
+            assert.ok(attachment);
+            assert.strictEqual(attachment.type, 'text/plain');
+            assert.strictEqual(attachment.digest, attachmentHash);
+            assert.strictEqual(attachment.length, attachmentData.length);
+
+            col.database.destroy();
         });
     });
 });

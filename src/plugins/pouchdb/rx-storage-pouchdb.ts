@@ -724,7 +724,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         }
 
         const writeData = documents.map(doc => {
-            return pouchSwapPrimaryToId(
+            return rxDocumentDataToPouchDocumentData(
                 this.primaryPath,
                 doc
             );
@@ -1206,6 +1206,11 @@ export function pouchSwapPrimaryToId<RxDocType>(
         return docData;
     }
     const ret: any = {};
+    /**
+     * TODO
+     * wtf why do we iterate here?
+     * Just flat clone and swap the id!
+     */
     Object
         .entries(docData)
         .forEach(entry => {
