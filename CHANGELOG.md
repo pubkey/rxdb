@@ -2,6 +2,9 @@
 
 ### X.X.X (coming soon)
 
+Bugfixes:
+  - Migration with attachments removes attachment mime types [#3460](https://github.com/pubkey/rxdb/issues/3460) Thanks [@swnf](https://github.com/swnf)
+
 Other:
   - Improved performance when many queries are created in a short timespan.
 
