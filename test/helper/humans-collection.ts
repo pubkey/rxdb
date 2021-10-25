@@ -19,7 +19,7 @@ import {
 import {
     HumanDocumentType
 } from './schema-objects';
-import { MigrationStrategies } from '../../src/types';
+import { MigrationStrategies, RxAttachmentCreator } from '../../src/types';
 
 export async function create(
     size: number = 20,
@@ -449,7 +449,8 @@ export async function createMigrationCollection(
     amount = 0,
     addMigrationStrategies: MigrationStrategies = {},
     name = randomCouchString(10),
-    autoMigrate = false
+    autoMigrate = false,
+    attachment?: RxAttachmentCreator
 ): Promise<RxCollection<schemaObjects.SimpleHumanV3DocumentType>> {
 
     const migrationStrategies: any = {
@@ -472,7 +473,7 @@ export async function createMigrationCollection(
     });
     const cols = await db.addCollections({
         [colName]: {
-            schema: schemas.simpleHuman,
+            schema: attachment !== undefined ? {...schemas.simpleHuman, attachments: {}} : schemas.simpleHuman,
             autoMigrate: false
         }
     });
@@ -480,7 +481,11 @@ export async function createMigrationCollection(
     await Promise.all(
         new Array(amount)
             .fill(0)
-            .map(() => cols[colName].insert(schemaObjects.simpleHumanAge()))
+            .map(() => cols[colName].insert(schemaObjects.simpleHumanAge()).then(doc => {
+                if (attachment !== undefined) {
+                    return doc.putAttachment(attachment, true);
+                }
+            }))
     );
 
     cols[colName].destroy();
@@ -494,7 +499,7 @@ export async function createMigrationCollection(
     });
     const cols2 = await db2.addCollections({
         [colName]: {
-            schema: schemas.simpleHumanV3,
+            schema: attachment !== undefined ? {...schemas.simpleHumanV3, attachments: {}} : schemas.simpleHumanV3,
             autoMigrate,
             migrationStrategies
         }
