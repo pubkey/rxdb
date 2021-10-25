@@ -160,7 +160,7 @@ var InMemoryRxCollection = /*#__PURE__*/function (_RxCollectionBase) {
     var _this3 = this;
 
     if (this._nonPersistentRevisions.size === 0) {
-      return Promise.resolve();
+      return _util.PROMISE_RESOLVE_VOID;
     }
 
     return (0, _rxjs.firstValueFrom)(this._nonPersistentRevisionsSubject.pipe((0, _operators.filter)(function () {
@@ -266,8 +266,11 @@ function replicateExistingDocuments(fromCollection, toCollection) {
       var primaryKey = fromCollection.schema.primaryPath;
       return (0, _pouchdb.pouchSwapPrimaryToId)(primaryKey, doc);
     });
-    if (docs.length === 0) return Promise.resolve([]); // nothing to replicate
-    else {
+
+    if (docs.length === 0) {
+      // nothing to replicate
+      return Promise.resolve([]);
+    } else {
       return toCollection.storageInstance.internals.pouch.bulkDocs({
         docs: docs
       }, BULK_DOC_OPTIONS_FALSE).then(function () {

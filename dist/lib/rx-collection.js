@@ -179,7 +179,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
 
   _proto.migrationNeeded = function migrationNeeded() {
     if (this.schema.version === 0) {
-      return Promise.resolve(false);
+      return _util.PROMISE_RESOLVE_FALSE;
     }
 
     throw (0, _util.pluginMissing)('migration');
@@ -559,7 +559,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
     var queue;
 
     if (!this._atomicUpsertQueues.has(primary)) {
-      queue = Promise.resolve();
+      queue = _util.PROMISE_RESOLVE_VOID;
     } else {
       queue = this._atomicUpsertQueues.get(primary);
     }
@@ -894,7 +894,11 @@ var RxCollectionBase = /*#__PURE__*/function () {
 
   _proto._runHooks = function _runHooks(when, key, data, instance) {
     var hooks = this.getHooks(when, key);
-    if (!hooks) return Promise.resolve(); // run parallel: false
+
+    if (!hooks) {
+      return _util.PROMISE_RESOLVE_VOID;
+    } // run parallel: false
+
 
     var tasks = hooks.series.map(function (hook) {
       return function () {
@@ -940,7 +944,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
     var _this9 = this;
 
     if (this.destroyed) {
-      return Promise.resolve(false);
+      return _util.PROMISE_RESOLVE_FALSE;
     }
 
     if (this._onDestroyCall) {
@@ -1141,7 +1145,7 @@ function createRxCollection(_ref4, wasCreatedBefore) {
         }
       });
     });
-    var ret = Promise.resolve();
+    var ret = _util.PROMISE_RESOLVE_VOID;
 
     if (autoMigrate && collection.schema.version !== 0) {
       ret = collection.migratePromise();

@@ -52,6 +52,8 @@ Other criterias a subjective. It depends on who is looking on them:
 
 ### WatermelonDB
 
+- No cross tab support
+- Experimental operators like `limit` `skip` and `orderBy` do not work with lokijs indexeddb.
 
 ### AWS Datastore & AWS Amplify
 ### RethinkDB & Horizon

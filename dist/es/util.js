@@ -70,6 +70,11 @@ export function hash(msg) {
  */
 
 var _lastNow = 0;
+/**
+ * Returns the current time in milliseconds,
+ * also ensures to not return the same value twice.
+ */
+
 export function now() {
   var ret = new Date().getTime();
 
@@ -103,6 +108,10 @@ export function toPromise(maybePromise) {
     return Promise.resolve(maybePromise);
   }
 }
+export var PROMISE_RESOLVE_TRUE = Promise.resolve(true);
+export var PROMISE_RESOLVE_FALSE = Promise.resolve(false);
+export var PROMISE_RESOLVE_NULL = Promise.resolve(null);
+export var PROMISE_RESOLVE_VOID = Promise.resolve();
 export function requestIdlePromise() {
   var timeout = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 
@@ -112,7 +121,9 @@ export function requestIdlePromise() {
         timeout: timeout
       });
     });
-  } else return Promise.resolve();
+  } else {
+    return PROMISE_RESOLVE_VOID;
+  }
 }
 /**
  * like Promise.all() but runs in series instead of parallel

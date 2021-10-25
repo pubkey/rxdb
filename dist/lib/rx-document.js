@@ -195,7 +195,7 @@ var basePrototype = {
     var value = this.get(path);
 
     if (!value) {
-      return Promise.resolve(null);
+      return _util.PROMISE_RESOLVE_NULL;
     }
 
     if (!schemaObj) {
@@ -549,7 +549,7 @@ function createRxDocumentConstructor() {
 
     this._dataSync$ = new _rxjs.BehaviorSubject(jsonData);
     this._isDeleted$ = new _rxjs.BehaviorSubject(false);
-    this._atomicQueue = Promise.resolve();
+    this._atomicQueue = _util.PROMISE_RESOLVE_VOID;
     /**
      * because of the prototype-merge,
      * we can not use the native instanceof operator

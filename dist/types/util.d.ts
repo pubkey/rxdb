@@ -13,6 +13,10 @@ export declare function pluginMissing(pluginKey: string): Error;
 export declare function fastUnsecureHash(obj: any): number;
 export declare const RXDB_HASH_SALT = "rxdb-specific-hash-salt";
 export declare function hash(msg: string | any): string;
+/**
+ * Returns the current time in milliseconds,
+ * also ensures to not return the same value twice.
+ */
 export declare function now(): number;
 /**
  * returns a promise that resolves on the next tick
@@ -20,6 +24,10 @@ export declare function now(): number;
 export declare function nextTick(): Promise<void>;
 export declare function promiseWait(ms?: number): Promise<void>;
 export declare function toPromise<T>(maybePromise: Promise<T> | T): Promise<T>;
+export declare const PROMISE_RESOLVE_TRUE: Promise<true>;
+export declare const PROMISE_RESOLVE_FALSE: Promise<false>;
+export declare const PROMISE_RESOLVE_NULL: Promise<null>;
+export declare const PROMISE_RESOLVE_VOID: Promise<void>;
 export declare function requestIdlePromise(timeout?: null): Promise<unknown>;
 /**
  * like Promise.all() but runs in series instead of parallel

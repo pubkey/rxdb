@@ -14,7 +14,7 @@ import _regeneratorRuntime from "@babel/runtime/regenerator";
  */
 import { Subject } from 'rxjs';
 import deepEqual from 'deep-equal';
-import { clone, toPromise, flatClone, getHeightOfRevision, createRevision } from '../../util';
+import { clone, toPromise, flatClone, getHeightOfRevision, createRevision, PROMISE_RESOLVE_VOID, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_NULL } from '../../util';
 import { createRxSchema } from '../../rx-schema';
 import { newRxError } from '../../rx-error';
 import { runAsyncPluginHooks, runPluginHooks } from '../../hooks';
@@ -95,7 +95,7 @@ export var DataMigrator = /*#__PURE__*/function () {
           state: flatClone(state)
         });
         var currentCol = oldCols.shift();
-        var currentPromise = Promise.resolve();
+        var currentPromise = PROMISE_RESOLVE_VOID;
 
         var _loop = function _loop() {
           var migrationState$ = migrateOldCollection(currentCol, batchSize);
@@ -148,7 +148,7 @@ export var DataMigrator = /*#__PURE__*/function () {
     if (!this._migratePromise) {
       this._migratePromise = mustMigrate(this).then(function (must) {
         if (!must) {
-          return Promise.resolve(false);
+          return PROMISE_RESOLVE_FALSE;
         } else {
           return new Promise(function (res, rej) {
             var state$ = _this2.migrate(batchSize);
@@ -261,7 +261,7 @@ function _getOldCollections2() {
 
 export function mustMigrate(dataMigrator) {
   if (dataMigrator.currentSchema.version === 0) {
-    return Promise.resolve(false);
+    return PROMISE_RESOLVE_FALSE;
   }
 
   return _getOldCollections(dataMigrator).then(function (oldCols) {
@@ -270,7 +270,7 @@ export function mustMigrate(dataMigrator) {
 }
 export function runStrategyIfNotNull(oldCollection, version, docOrNull) {
   if (docOrNull === null) {
-    return Promise.resolve(null);
+    return PROMISE_RESOLVE_NULL;
   } else {
     var ret = oldCollection.dataMigrator.migrationStrategies[version](docOrNull, oldCollection);
     var retPromise = toPromise(ret);
@@ -320,7 +320,7 @@ export function migrateDocumentData(oldCollection, docData) {
 
   return currentPromise.then(function (doc) {
     if (doc === null) {
-      return Promise.resolve(null);
+      return PROMISE_RESOLVE_NULL;
     } // check final schema
 
 

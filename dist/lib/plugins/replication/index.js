@@ -88,7 +88,7 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
       initialReplicationComplete: new _rxjs.BehaviorSubject(false) // true the initial replication-cycle is over
 
     };
-    this.runningPromise = Promise.resolve();
+    this.runningPromise = _util.PROMISE_RESOLVE_VOID;
     this.runQueueCount = 0;
     this.runCount = 0;
     this.replicationIdentifier = replicationIdentifier;
@@ -138,14 +138,14 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
 
   _proto.cancel = function cancel() {
     if (this.isStopped()) {
-      return Promise.resolve(false);
+      return _util.PROMISE_RESOLVE_FALSE;
     }
 
     this.subs.forEach(function (sub) {
       return sub.unsubscribe();
     });
     this.subjects.canceled.next(true);
-    return Promise.resolve(true);
+    return _util.PROMISE_RESOLVE_TRUE;
   }
   /**
    * Ensures that this._run() does not run in parallel
@@ -351,7 +351,7 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
                 break;
               }
 
-              return _context4.abrupt("return", Promise.resolve(false));
+              return _context4.abrupt("return", _util.PROMISE_RESOLVE_FALSE);
 
             case 4:
               _context4.next = 6;

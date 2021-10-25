@@ -6,7 +6,7 @@ import express from 'express';
 import corsFn from 'cors';
 import { addPouchPlugin, PouchDB } from '../plugins/pouchdb';
 import { newRxError } from '../rx-error';
-import { addRxPlugin, flatClone } from '../core';
+import { addRxPlugin, flatClone, PROMISE_RESOLVE_VOID } from '../core';
 import { RxDBReplicationCouchDBPlugin } from './replication-couchdb';
 addRxPlugin(RxDBReplicationCouchDBPlugin);
 import PouchAdapterHttp from 'pouchdb-adapter-http';
@@ -187,7 +187,7 @@ function _spawnServer() {
             pouchApp = ExpressPouchDB(pseudo, usePouchExpressOptions);
             app.use(collectionsPath, pouchApp);
             server = null;
-            startupPromise = Promise.resolve();
+            startupPromise = PROMISE_RESOLVE_VOID;
 
             if (startServer) {
               /**

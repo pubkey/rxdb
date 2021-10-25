@@ -12,6 +12,8 @@ exports.waitForLeadership = waitForLeadership;
 
 var _broadcastChannel = require("broadcast-channel");
 
+var _util = require("../util");
+
 /**
  * this plugin adds the leader-election-capabilities to rxdb
  */
@@ -74,7 +76,7 @@ function isLeader() {
 
 function waitForLeadership() {
   if (!this.multiInstance) {
-    return Promise.resolve(true);
+    return _util.PROMISE_RESOLVE_TRUE;
   } else {
     return this.leaderElector().waitForLeadership();
   }

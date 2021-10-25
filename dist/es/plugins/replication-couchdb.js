@@ -8,7 +8,7 @@ import _regeneratorRuntime from "@babel/runtime/regenerator";
 import PouchReplicationPlugin from 'pouchdb-replication';
 import { BehaviorSubject, Subject, fromEvent, firstValueFrom } from 'rxjs';
 import { skipUntil, filter, first, mergeMap } from 'rxjs/operators';
-import { promiseWait, flatClone } from '../util';
+import { promiseWait, flatClone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE } from '../util';
 import { newRxError } from '../rx-error';
 import { pouchReplicationFunction, isInstanceOf as isInstanceOfPouchDB, addPouchPlugin } from '../plugins/pouchdb';
 import { isRxCollection } from '../rx-collection';
@@ -78,7 +78,7 @@ export var RxCouchDBReplicationStateBase = /*#__PURE__*/function () {
 
   _proto.cancel = function cancel() {
     if (this.canceled) {
-      return Promise.resolve(false);
+      return PROMISE_RESOLVE_FALSE;
     }
 
     this.canceled = true;
@@ -93,7 +93,7 @@ export var RxCouchDBReplicationStateBase = /*#__PURE__*/function () {
       return sub.unsubscribe();
     });
 
-    return Promise.resolve(true);
+    return PROMISE_RESOLVE_TRUE;
   };
 
   return RxCouchDBReplicationStateBase;

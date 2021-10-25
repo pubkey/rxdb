@@ -9,7 +9,7 @@ import _regeneratorRuntime from "@babel/runtime/regenerator";
 import AES from 'crypto-js/aes';
 import * as cryptoEnc from 'crypto-js/enc-utf8';
 import { newRxTypeError, newRxError } from '../rx-error';
-import { hash } from '../util';
+import { hash, PROMISE_RESOLVE_FALSE } from '../util';
 import { findLocalDocument } from '../rx-storage-helper';
 var minPassLength = 8;
 export function encrypt(value, password) {
@@ -51,7 +51,7 @@ function _storePasswordHashIntoDatabase() {
               break;
             }
 
-            return _context.abrupt("return", Promise.resolve(false));
+            return _context.abrupt("return", PROMISE_RESOLVE_FALSE);
 
           case 2:
             pwHash = hash(rxDatabase.password);

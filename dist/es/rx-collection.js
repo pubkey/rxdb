@@ -2,7 +2,7 @@ import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _createClass from "@babel/runtime/helpers/createClass";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { filter, startWith, mergeMap, shareReplay, map } from 'rxjs/operators';
-import { ucfirst, nextTick, flatClone, promiseSeries, pluginMissing, ensureNotFalsy, getFromMapOrThrow, clone } from './util';
+import { ucfirst, nextTick, flatClone, promiseSeries, pluginMissing, ensureNotFalsy, getFromMapOrThrow, clone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID } from './util';
 import { _handleToStorageInstance, _handleFromStorageInstance, fillObjectDataBeforeInsert, writeToStorageInstance, createRxCollectionStorageInstances } from './rx-collection-helper';
 import { createRxQuery, _getDefaultQuery } from './rx-query';
 import { isInstanceOf as isInstanceOfRxSchema, createRxSchema } from './rx-schema';
@@ -149,7 +149,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
 
   _proto.migrationNeeded = function migrationNeeded() {
     if (this.schema.version === 0) {
-      return Promise.resolve(false);
+      return PROMISE_RESOLVE_FALSE;
     }
 
     throw pluginMissing('migration');
@@ -529,7 +529,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     var queue;
 
     if (!this._atomicUpsertQueues.has(primary)) {
-      queue = Promise.resolve();
+      queue = PROMISE_RESOLVE_VOID;
     } else {
       queue = this._atomicUpsertQueues.get(primary);
     }
@@ -864,7 +864,11 @@ export var RxCollectionBase = /*#__PURE__*/function () {
 
   _proto._runHooks = function _runHooks(when, key, data, instance) {
     var hooks = this.getHooks(when, key);
-    if (!hooks) return Promise.resolve(); // run parallel: false
+
+    if (!hooks) {
+      return PROMISE_RESOLVE_VOID;
+    } // run parallel: false
+
 
     var tasks = hooks.series.map(function (hook) {
       return function () {
@@ -910,7 +914,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     var _this9 = this;
 
     if (this.destroyed) {
-      return Promise.resolve(false);
+      return PROMISE_RESOLVE_FALSE;
     }
 
     if (this._onDestroyCall) {
@@ -1109,7 +1113,7 @@ export function createRxCollection(_ref4, wasCreatedBefore) {
         }
       });
     });
-    var ret = Promise.resolve();
+    var ret = PROMISE_RESOLVE_VOID;
 
     if (autoMigrate && collection.schema.version !== 0) {
       ret = collection.migratePromise();

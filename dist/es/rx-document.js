@@ -3,7 +3,7 @@ import _regeneratorRuntime from "@babel/runtime/regenerator";
 import objectPath from 'object-path';
 import { BehaviorSubject } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
-import { clone, trimDots, getHeightOfRevision, pluginMissing, now, nextTick, flatClone } from './util';
+import { clone, trimDots, getHeightOfRevision, pluginMissing, now, nextTick, flatClone, PROMISE_RESOLVE_NULL, PROMISE_RESOLVE_VOID } from './util';
 import { newRxError, newRxTypeError, isPouchdbConflictError } from './rx-error';
 import { runPluginHooks } from './hooks';
 import { getDocumentDataOfRxChangeEvent } from './rx-change-event';
@@ -170,7 +170,7 @@ export var basePrototype = {
     var value = this.get(path);
 
     if (!value) {
-      return Promise.resolve(null);
+      return PROMISE_RESOLVE_NULL;
     }
 
     if (!schemaObj) {
@@ -519,7 +519,7 @@ export function createRxDocumentConstructor() {
 
     this._dataSync$ = new BehaviorSubject(jsonData);
     this._isDeleted$ = new BehaviorSubject(false);
-    this._atomicQueue = Promise.resolve();
+    this._atomicQueue = PROMISE_RESOLVE_VOID;
     /**
      * because of the prototype-merge,
      * we can not use the native instanceof operator

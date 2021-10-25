@@ -102,6 +102,10 @@ export declare function pouchDocumentDataToRxDocumentData<T>(primaryKey: keyof T
 export declare function rxDocumentDataToPouchDocumentData<T>(primaryKey: keyof T, doc: RxDocumentData<T> | RxDocumentWriteData<T>): WithAttachments<T & {
     _id: string;
 }>;
+/**
+ * Swaps the primaryKey of the document
+ * to the _id property.
+ */
 export declare function pouchSwapPrimaryToId<RxDocType>(primaryKey: keyof RxDocType, docData: any): any;
 /**
  * in:  '_local/foobar'

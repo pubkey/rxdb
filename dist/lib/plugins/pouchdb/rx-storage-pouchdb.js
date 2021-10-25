@@ -80,7 +80,7 @@ var RxStorageKeyObjectInstancePouch = /*#__PURE__*/function () {
     OPEN_POUCHDB_STORAGE_INSTANCES["delete"](this); // TODO this did not work because a closed pouchdb cannot be recreated in the same process run
     // await this.internals.pouch.close();
 
-    return Promise.resolve();
+    return _util.PROMISE_RESOLVE_VOID;
   };
 
   _proto.remove = /*#__PURE__*/function () {
@@ -696,7 +696,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
     OPEN_POUCHDB_STORAGE_INSTANCES["delete"](this); // TODO this did not work because a closed pouchdb cannot be recreated in the same process run
     // await this.internals.pouch.close();
 
-    return Promise.resolve();
+    return _util.PROMISE_RESOLVE_VOID;
   };
 
   _proto2.remove = /*#__PURE__*/function () {
@@ -907,7 +907,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
             case 2:
               writeData = documents.map(function (doc) {
-                return pouchSwapPrimaryToId(_this6.primaryPath, doc);
+                return rxDocumentDataToPouchDocumentData(_this6.primaryPath, doc);
               }); // we do not need the response here because pouchdb returns an empty array on new_edits: false
 
               _context10.next = 5;
@@ -1620,17 +1620,22 @@ function rxDocumentDataToPouchDocumentData(primaryKey, doc) {
 
   return pouchDoc;
 }
+/**
+ * Swaps the primaryKey of the document
+ * to the _id property.
+ */
+
 
 function pouchSwapPrimaryToId(primaryKey, docData) {
+  // optimisation shortcut
   if (primaryKey === '_id') {
     return docData;
   }
 
-  var ret = {};
-  Object.entries(docData).forEach(function (entry) {
-    var newKey = entry[0] === primaryKey ? '_id' : entry[0];
-    ret[newKey] = entry[1];
-  });
+  var idValue = docData[primaryKey];
+  var ret = (0, _util.flatClone)(docData);
+  delete ret[primaryKey];
+  ret._id = idValue;
   return ret;
 }
 /**

@@ -214,7 +214,7 @@ function _spawnServer() {
             pouchApp = ExpressPouchDB(pseudo, usePouchExpressOptions);
             app.use(collectionsPath, pouchApp);
             server = null;
-            startupPromise = Promise.resolve();
+            startupPromise = _core.PROMISE_RESOLVE_VOID;
 
             if (startServer) {
               /**

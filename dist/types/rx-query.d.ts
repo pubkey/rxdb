@@ -17,7 +17,7 @@ export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumen
     refCount$: BehaviorSubject<null>;
     constructor(op: RxQueryOP, mangoQuery: Readonly<MangoQuery>, collection: RxCollection<RxDocumentType>);
     get $(): BehaviorSubject<RxQueryResult>;
-    _latestChangeEvent: -1 | any;
+    _latestChangeEvent: -1 | number;
     _resultsData: any;
     _resultsDataMap: Map<string, RxDocumentType>;
     _lastExecStart: number;

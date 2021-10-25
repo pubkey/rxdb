@@ -12,7 +12,7 @@ import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { Subject, fromEvent as ObservableFromEvent, firstValueFrom } from 'rxjs';
 import { filter, map, mergeMap, delay } from 'rxjs/operators';
 import { RxCollectionBase } from '../rx-collection';
-import { clone, randomCouchString } from '../util';
+import { clone, PROMISE_RESOLVE_VOID, randomCouchString } from '../util';
 import { PouchDB, getRxStoragePouch, pouchSwapIdToPrimary, pouchSwapPrimaryToId } from '../plugins/pouchdb';
 import { createCrypter } from '../crypter';
 import { createChangeEventBuffer } from '../change-event-buffer';
@@ -128,7 +128,7 @@ export var InMemoryRxCollection = /*#__PURE__*/function (_RxCollectionBase) {
     var _this3 = this;
 
     if (this._nonPersistentRevisions.size === 0) {
-      return Promise.resolve();
+      return PROMISE_RESOLVE_VOID;
     }
 
     return firstValueFrom(this._nonPersistentRevisionsSubject.pipe(filter(function () {
@@ -231,8 +231,11 @@ export function replicateExistingDocuments(fromCollection, toCollection) {
       var primaryKey = fromCollection.schema.primaryPath;
       return pouchSwapPrimaryToId(primaryKey, doc);
     });
-    if (docs.length === 0) return Promise.resolve([]); // nothing to replicate
-    else {
+
+    if (docs.length === 0) {
+      // nothing to replicate
+      return Promise.resolve([]);
+    } else {
       return toCollection.storageInstance.internals.pouch.bulkDocs({
         docs: docs
       }, BULK_DOC_OPTIONS_FALSE).then(function () {

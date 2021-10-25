@@ -152,7 +152,7 @@ var RxBackupState = /*#__PURE__*/function () {
   function RxBackupState(database, options) {
     this.isStopped = false;
     this.subs = [];
-    this.persistRunning = Promise.resolve();
+    this.persistRunning = _util.PROMISE_RESOLVE_VOID;
     this.initialReplicationDone$ = new _rxjs.BehaviorSubject(false);
     this.internalWriteEvents$ = new _rxjs.Subject();
     this.writeEvents$ = this.internalWriteEvents$.asObservable();
@@ -468,14 +468,14 @@ var RxBackupState = /*#__PURE__*/function () {
 
   _proto.cancel = function cancel() {
     if (this.isStopped) {
-      return Promise.resolve(false);
+      return _util.PROMISE_RESOLVE_FALSE;
     }
 
     this.isStopped = true;
     this.subs.forEach(function (sub) {
       return sub.unsubscribe();
     });
-    return Promise.resolve(true);
+    return _util.PROMISE_RESOLVE_TRUE;
   };
 
   return RxBackupState;

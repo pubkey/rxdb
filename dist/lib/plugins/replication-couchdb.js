@@ -101,7 +101,7 @@ var RxCouchDBReplicationStateBase = /*#__PURE__*/function () {
 
   _proto.cancel = function cancel() {
     if (this.canceled) {
-      return Promise.resolve(false);
+      return _util.PROMISE_RESOLVE_FALSE;
     }
 
     this.canceled = true;
@@ -116,7 +116,7 @@ var RxCouchDBReplicationStateBase = /*#__PURE__*/function () {
       return sub.unsubscribe();
     });
 
-    return Promise.resolve(true);
+    return _util.PROMISE_RESOLVE_TRUE;
   };
 
   return RxCouchDBReplicationStateBase;

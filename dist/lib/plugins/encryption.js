@@ -78,7 +78,7 @@ function _storePasswordHashIntoDatabase() {
               break;
             }
 
-            return _context.abrupt("return", Promise.resolve(false));
+            return _context.abrupt("return", _util.PROMISE_RESOLVE_FALSE);
 
           case 2:
             pwHash = (0, _util.hash)(rxDatabase.password);

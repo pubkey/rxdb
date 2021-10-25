@@ -2,7 +2,7 @@ import _createClass from "@babel/runtime/helpers/createClass";
 import deepEqual from 'deep-equal';
 import { merge, BehaviorSubject, firstValueFrom } from 'rxjs';
 import { mergeMap, filter, map, tap } from 'rxjs/operators';
-import { sortObject, stringifyFilter, pluginMissing, clone, overwriteGetterForCaching, now, promiseWait } from './util';
+import { sortObject, stringifyFilter, pluginMissing, clone, overwriteGetterForCaching, now, PROMISE_RESOLVE_FALSE } from './util';
 import { newRxError, newRxTypeError } from './rx-error';
 import { runPluginHooks } from './hooks';
 import { createRxDocuments } from './rx-document-prototype-merge';
@@ -35,7 +35,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
     this._lastExecStart = 0;
     this._lastExecEnd = 0;
     this._resultsDocs$ = new BehaviorSubject(null);
-    this._ensureEqualQueue = Promise.resolve(false);
+    this._ensureEqualQueue = PROMISE_RESOLVE_FALSE;
     this.op = op;
     this.mangoQuery = mangoQuery;
     this.collection = collection;
@@ -319,7 +319,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
       }
 
       return this._$;
-    } // stores the changeEvent-Number of the last handled change-event
+    } // stores the changeEvent-number of the last handled change-event
 
   }, {
     key: "queryMatcher",
@@ -376,14 +376,19 @@ export function createRxQuery(op, queryObj, collection) {
   return ret;
 }
 /**
- * check if the current results-state is in sync with the database
+ * Check if the current results-state is in sync with the database
+ * which means that no write event happened since the last run.
  * @return false if not which means it should re-execute
  */
 
 function _isResultsInSync(rxQuery) {
-  if (rxQuery._latestChangeEvent >= rxQuery.collection._changeEventBuffer.counter) {
+  var currentLatestEventNumber = rxQuery.asRxQuery.collection._changeEventBuffer.counter;
+
+  if (rxQuery._latestChangeEvent >= currentLatestEventNumber) {
     return true;
-  } else return false;
+  } else {
+    return false;
+  }
 }
 /**
  * wraps __ensureEqual()
@@ -393,14 +398,13 @@ function _isResultsInSync(rxQuery) {
 
 
 function _ensureEqual(rxQuery) {
+  // Optimisation shortcut
+  if (rxQuery.collection.database.destroyed || _isResultsInSync(rxQuery)) {
+    return PROMISE_RESOLVE_FALSE;
+  }
+
   rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue.then(function () {
-    return promiseWait(0);
-  }).then(function () {
     return __ensureEqual(rxQuery);
-  }).then(function (ret) {
-    return promiseWait(0).then(function () {
-      return ret;
-    });
   });
   return rxQuery._ensureEqualQueue;
 }
@@ -412,15 +416,14 @@ function _ensureEqual(rxQuery) {
 
 function __ensureEqual(rxQuery) {
   rxQuery._lastEnsureEqual = now();
+  /**
+   * Optimisation shortcuts
+   */
 
-  if (rxQuery.collection.database.destroyed) {
-    // db is closed
-    return false;
-  }
-
-  if (_isResultsInSync(rxQuery)) {
-    // nothing happend
-    return false;
+  if ( // db is closed
+  rxQuery.collection.database.destroyed || // nothing happend since last run
+  _isResultsInSync(rxQuery)) {
+    return PROMISE_RESOLVE_FALSE;
   }
 
   var ret = false;
@@ -436,13 +439,13 @@ function __ensureEqual(rxQuery) {
 
 
   if (!mustReExec) {
-    var missedChangeEvents = rxQuery.collection._changeEventBuffer.getFrom(rxQuery._latestChangeEvent + 1);
+    var missedChangeEvents = rxQuery.asRxQuery.collection._changeEventBuffer.getFrom(rxQuery._latestChangeEvent + 1);
 
     if (missedChangeEvents === null) {
       // changeEventBuffer is of bounds -> we must re-execute over the database
       mustReExec = true;
     } else {
-      rxQuery._latestChangeEvent = rxQuery.collection._changeEventBuffer.counter;
+      rxQuery._latestChangeEvent = rxQuery.asRxQuery.collection._changeEventBuffer.counter;
       /**
        * because pouchdb prefers writes over reads,
        * we have to filter out the events that happend before the read has started
@@ -453,7 +456,7 @@ function __ensureEqual(rxQuery) {
         return !cE.startTime || cE.startTime > rxQuery._lastExecStart;
       });
 
-      var runChangeEvents = rxQuery.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
+      var runChangeEvents = rxQuery.asRxQuery.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
       /*
       console.log('calculateNewResults() ' + new Date().getTime());
       console.log(rxQuery._lastExecStart + ' - ' + rxQuery._lastExecEnd);

@@ -5,7 +5,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RXDB_HASH_SALT = exports.RANDOM_STRING = void 0;
+exports.RXDB_HASH_SALT = exports.RANDOM_STRING = exports.PROMISE_RESOLVE_VOID = exports.PROMISE_RESOLVE_TRUE = exports.PROMISE_RESOLVE_NULL = exports.PROMISE_RESOLVE_FALSE = void 0;
 exports.adapterObject = adapterObject;
 exports.batchArray = batchArray;
 exports.clone = exports.blobBufferUtil = void 0;
@@ -121,6 +121,10 @@ function hash(msg) {
 
 
 var _lastNow = 0;
+/**
+ * Returns the current time in milliseconds,
+ * also ensures to not return the same value twice.
+ */
 
 function now() {
   var ret = new Date().getTime();
@@ -159,6 +163,15 @@ function toPromise(maybePromise) {
   }
 }
 
+var PROMISE_RESOLVE_TRUE = Promise.resolve(true);
+exports.PROMISE_RESOLVE_TRUE = PROMISE_RESOLVE_TRUE;
+var PROMISE_RESOLVE_FALSE = Promise.resolve(false);
+exports.PROMISE_RESOLVE_FALSE = PROMISE_RESOLVE_FALSE;
+var PROMISE_RESOLVE_NULL = Promise.resolve(null);
+exports.PROMISE_RESOLVE_NULL = PROMISE_RESOLVE_NULL;
+var PROMISE_RESOLVE_VOID = Promise.resolve();
+exports.PROMISE_RESOLVE_VOID = PROMISE_RESOLVE_VOID;
+
 function requestIdlePromise() {
   var timeout = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 
@@ -168,7 +181,9 @@ function requestIdlePromise() {
         timeout: timeout
       });
     });
-  } else return Promise.resolve();
+  } else {
+    return PROMISE_RESOLVE_VOID;
+  }
 }
 /**
  * like Promise.all() but runs in series instead of parallel

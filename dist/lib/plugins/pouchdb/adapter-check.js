@@ -35,7 +35,7 @@ function checkAdapter(adapter) {
       revs_limit: 1
     });
   } catch (err) {
-    return Promise.resolve(false);
+    return _util.PROMISE_RESOLVE_FALSE;
   }
 
   var recoveredDoc;

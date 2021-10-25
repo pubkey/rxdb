@@ -10,7 +10,7 @@ import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { BehaviorSubject, firstValueFrom, Subject } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { getChangesSinceLastPushSequence, getLastPullDocument, setLastPullDocument, setLastPushSequence } from './replication-checkpoint';
-import { flatClone, getHeightOfRevision, lastOfArray, promiseWait } from '../../util';
+import { flatClone, getHeightOfRevision, lastOfArray, promiseWait, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID } from '../../util';
 import { overwritable } from '../../overwritable';
 import { createRevisionForPulledDocument, wasRevisionfromPullReplication } from './revision-flag';
 import { _handleToStorageInstance } from '../../rx-collection-helper';
@@ -40,7 +40,7 @@ export var RxReplicationStateBase = /*#__PURE__*/function () {
       initialReplicationComplete: new BehaviorSubject(false) // true the initial replication-cycle is over
 
     };
-    this.runningPromise = Promise.resolve();
+    this.runningPromise = PROMISE_RESOLVE_VOID;
     this.runQueueCount = 0;
     this.runCount = 0;
     this.replicationIdentifier = replicationIdentifier;
@@ -90,14 +90,14 @@ export var RxReplicationStateBase = /*#__PURE__*/function () {
 
   _proto.cancel = function cancel() {
     if (this.isStopped()) {
-      return Promise.resolve(false);
+      return PROMISE_RESOLVE_FALSE;
     }
 
     this.subs.forEach(function (sub) {
       return sub.unsubscribe();
     });
     this.subjects.canceled.next(true);
-    return Promise.resolve(true);
+    return PROMISE_RESOLVE_TRUE;
   }
   /**
    * Ensures that this._run() does not run in parallel
@@ -303,7 +303,7 @@ export var RxReplicationStateBase = /*#__PURE__*/function () {
                 break;
               }
 
-              return _context4.abrupt("return", Promise.resolve(false));
+              return _context4.abrupt("return", PROMISE_RESOLVE_FALSE);
 
             case 4:
               _context4.next = 6;

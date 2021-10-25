@@ -126,7 +126,7 @@ var DataMigrator = /*#__PURE__*/function () {
           state: (0, _util.flatClone)(state)
         });
         var currentCol = oldCols.shift();
-        var currentPromise = Promise.resolve();
+        var currentPromise = _util.PROMISE_RESOLVE_VOID;
 
         var _loop = function _loop() {
           var migrationState$ = migrateOldCollection(currentCol, batchSize);
@@ -179,7 +179,7 @@ var DataMigrator = /*#__PURE__*/function () {
     if (!this._migratePromise) {
       this._migratePromise = mustMigrate(this).then(function (must) {
         if (!must) {
-          return Promise.resolve(false);
+          return _util.PROMISE_RESOLVE_FALSE;
         } else {
           return new Promise(function (res, rej) {
             var state$ = _this2.migrate(batchSize);
@@ -297,7 +297,7 @@ function _getOldCollections2() {
 
 function mustMigrate(dataMigrator) {
   if (dataMigrator.currentSchema.version === 0) {
-    return Promise.resolve(false);
+    return _util.PROMISE_RESOLVE_FALSE;
   }
 
   return _getOldCollections(dataMigrator).then(function (oldCols) {
@@ -307,7 +307,7 @@ function mustMigrate(dataMigrator) {
 
 function runStrategyIfNotNull(oldCollection, version, docOrNull) {
   if (docOrNull === null) {
-    return Promise.resolve(null);
+    return _util.PROMISE_RESOLVE_NULL;
   } else {
     var ret = oldCollection.dataMigrator.migrationStrategies[version](docOrNull, oldCollection);
     var retPromise = (0, _util.toPromise)(ret);
@@ -359,7 +359,7 @@ function migrateDocumentData(oldCollection, docData) {
 
   return currentPromise.then(function (doc) {
     if (doc === null) {
-      return Promise.resolve(null);
+      return _util.PROMISE_RESOLVE_NULL;
     } // check final schema
 
 

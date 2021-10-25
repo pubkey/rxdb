@@ -125,7 +125,7 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
       initialReplicationComplete: new _rxjs.BehaviorSubject(false) // true the initial replication-cycle is over
 
     };
-    this._runningPromise = Promise.resolve();
+    this._runningPromise = _util.PROMISE_RESOLVE_VOID;
     this._subs = [];
     this._runQueueCount = 0;
     this._runCount = 0;
@@ -387,7 +387,7 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
                 break;
               }
 
-              return _context5.abrupt("return", Promise.resolve(false));
+              return _context5.abrupt("return", _util.PROMISE_RESOLVE_FALSE);
 
             case 2:
               _context5.next = 4;
@@ -838,7 +838,7 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
 
   _proto.cancel = function cancel() {
     if (this.isStopped()) {
-      return Promise.resolve(false);
+      return _util.PROMISE_RESOLVE_FALSE;
     }
 
     this._subs.forEach(function (sub) {
@@ -847,7 +847,7 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
 
     this._subjects.canceled.next(true);
 
-    return Promise.resolve(true);
+    return _util.PROMISE_RESOLVE_TRUE;
   };
 
   _proto.setHeaders = function setHeaders(headers) {

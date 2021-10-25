@@ -4,7 +4,7 @@ import _regeneratorRuntime from "@babel/runtime/regenerator";
 import randomToken from 'random-token';
 import { IdleQueue } from 'custom-idle-queue';
 import { BroadcastChannel } from 'broadcast-channel';
-import { pluginMissing, flatClone } from './util';
+import { pluginMissing, flatClone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID } from './util';
 import { newRxError } from './rx-error';
 import { createRxSchema, getPrimaryFieldOfPrimaryKey } from './rx-schema';
 import { isRxChangeEventIntern } from './rx-change-event';
@@ -424,7 +424,10 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
   _proto.destroy = function destroy() {
     var _this4 = this;
 
-    if (this.destroyed) return Promise.resolve(false);
+    if (this.destroyed) {
+      return PROMISE_RESOLVE_FALSE;
+    }
+
     runPluginHooks('preDestroyRxDatabase', this);
     DB_COUNT--;
     this.destroyed = true;
@@ -446,7 +449,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
       return _this4.internalStore.close ? _this4.internalStore.close() : null;
     }) // close broadcastChannel if exists
     .then(function () {
-      return _this4.broadcastChannel ? _this4.broadcastChannel.close() : Promise.resolve();
+      return _this4.broadcastChannel ? _this4.broadcastChannel.close() : PROMISE_RESOLVE_VOID;
     }) // remove combination from USED_COMBINATIONS-map
     .then(function () {
       return USED_DATABASE_NAMES["delete"](_this4.name);
@@ -552,7 +555,7 @@ function _ensureStorageTokenExists2() {
 
 export function writeToSocket(rxDatabase, changeEvent) {
   if (rxDatabase.destroyed) {
-    return Promise.resolve(false);
+    return PROMISE_RESOLVE_FALSE;
   }
 
   if (rxDatabase.multiInstance && !isRxChangeEventIntern(changeEvent) && rxDatabase.broadcastChannel) {
@@ -563,7 +566,9 @@ export function writeToSocket(rxDatabase, changeEvent) {
     return rxDatabase.broadcastChannel.postMessage(sendOverChannel).then(function () {
       return true;
     });
-  } else return Promise.resolve(false);
+  } else {
+    return PROMISE_RESOLVE_FALSE;
+  }
 }
 /**
  * returns the primary for a given collection-data

@@ -457,7 +457,10 @@ var RxDatabaseBase = /*#__PURE__*/function () {
   _proto.destroy = function destroy() {
     var _this4 = this;
 
-    if (this.destroyed) return Promise.resolve(false);
+    if (this.destroyed) {
+      return _util.PROMISE_RESOLVE_FALSE;
+    }
+
     (0, _hooks.runPluginHooks)('preDestroyRxDatabase', this);
     DB_COUNT--;
     this.destroyed = true;
@@ -479,7 +482,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
       return _this4.internalStore.close ? _this4.internalStore.close() : null;
     }) // close broadcastChannel if exists
     .then(function () {
-      return _this4.broadcastChannel ? _this4.broadcastChannel.close() : Promise.resolve();
+      return _this4.broadcastChannel ? _this4.broadcastChannel.close() : _util.PROMISE_RESOLVE_VOID;
     }) // remove combination from USED_COMBINATIONS-map
     .then(function () {
       return USED_DATABASE_NAMES["delete"](_this4.name);
@@ -588,7 +591,7 @@ function _ensureStorageTokenExists2() {
 
 function writeToSocket(rxDatabase, changeEvent) {
   if (rxDatabase.destroyed) {
-    return Promise.resolve(false);
+    return _util.PROMISE_RESOLVE_FALSE;
   }
 
   if (rxDatabase.multiInstance && !(0, _rxChangeEvent.isRxChangeEventIntern)(changeEvent) && rxDatabase.broadcastChannel) {
@@ -599,7 +602,9 @@ function writeToSocket(rxDatabase, changeEvent) {
     return rxDatabase.broadcastChannel.postMessage(sendOverChannel).then(function () {
       return true;
     });
-  } else return Promise.resolve(false);
+  } else {
+    return _util.PROMISE_RESOLVE_FALSE;
+  }
 }
 /**
  * returns the primary for a given collection-data

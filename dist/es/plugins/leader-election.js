@@ -2,6 +2,7 @@
  * this plugin adds the leader-election-capabilities to rxdb
  */
 import { createLeaderElection } from 'broadcast-channel';
+import { PROMISE_RESOLVE_TRUE } from '../util';
 var LEADER_ELECTORS_OF_DB = new WeakMap();
 export var LeaderElector = /*#__PURE__*/function () {
   function LeaderElector(database) {
@@ -55,7 +56,7 @@ export function isLeader() {
 }
 export function waitForLeadership() {
   if (!this.multiInstance) {
-    return Promise.resolve(true);
+    return PROMISE_RESOLVE_TRUE;
   } else {
     return this.leaderElector().waitForLeadership();
   }

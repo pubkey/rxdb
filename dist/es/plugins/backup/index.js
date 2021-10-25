@@ -5,7 +5,7 @@ import { BehaviorSubject, firstValueFrom, Subject } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { newRxError } from '../../rx-error';
 import { getNewestSequence } from '../../rx-storage-helper';
-import { getFromMapOrThrow } from '../../util';
+import { getFromMapOrThrow, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID } from '../../util';
 import { clearFolder, deleteFolder, documentFolder, ensureFolderExists, getMeta, prepareFolders, setMeta, writeJsonToFile, writeToFile } from './file-util';
 /**
  * Backups a single documents,
@@ -111,7 +111,7 @@ export var RxBackupState = /*#__PURE__*/function () {
   function RxBackupState(database, options) {
     this.isStopped = false;
     this.subs = [];
-    this.persistRunning = Promise.resolve();
+    this.persistRunning = PROMISE_RESOLVE_VOID;
     this.initialReplicationDone$ = new BehaviorSubject(false);
     this.internalWriteEvents$ = new Subject();
     this.writeEvents$ = this.internalWriteEvents$.asObservable();
@@ -427,14 +427,14 @@ export var RxBackupState = /*#__PURE__*/function () {
 
   _proto.cancel = function cancel() {
     if (this.isStopped) {
-      return Promise.resolve(false);
+      return PROMISE_RESOLVE_FALSE;
     }
 
     this.isStopped = true;
     this.subs.forEach(function (sub) {
       return sub.unsubscribe();
     });
-    return Promise.resolve(true);
+    return PROMISE_RESOLVE_TRUE;
   };
 
   return RxBackupState;
