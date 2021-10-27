@@ -5,7 +5,6 @@ import type {
 import type {
     BulkWriteLocalRow,
     BulkWriteRow,
-    ChangeStreamEvent,
     ChangeStreamOnceOptions,
     PreparedQuery,
     RxDocumentData,
@@ -69,7 +68,7 @@ export interface RxStorage<Internals, InstanceCreationOptions> {
 
     /**
      * Creates the internal storage instance
-     * that is only cappable of saving schemaless key-object relations.
+     * that is only cappable of saving schemaless key-object sets.
      */
     createKeyObjectStorageInstance(
         databaseName: string,

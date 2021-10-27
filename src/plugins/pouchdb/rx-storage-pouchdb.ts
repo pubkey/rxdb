@@ -1034,6 +1034,11 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
         useOptions.auto_compaction = false;
         useOptions.revs_limit = 1;
 
+        /**
+         * TODO shouldnt we use a different location
+         * for the local storage? Or at least make sure we
+         * reuse the same pouchdb instance?
+         */
         const pouchLocation = getPouchLocation(
             databaseName,
             collectionName,
