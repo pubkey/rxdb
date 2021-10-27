@@ -556,6 +556,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     getSortComparator(
         query: MangoQuery<RxDocType>
     ): SortComparator<RxDocType> {
+        // TODO get primaryPath once and save it in the constructor
         const primaryKey = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
         const sortOptions: MangoQuerySortPart[] = query.sort ? query.sort : [{
             [this.primaryPath]: 'asc'

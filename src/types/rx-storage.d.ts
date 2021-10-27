@@ -239,8 +239,6 @@ export type RxStorageQueryResult<RxDocType> = {
     documents: RxDocumentData<RxDocType>[];
 }
 
-
-
 export type RxStorageInstanceCreationParams<DocumentData, InstanceCreationOptions> = {
     databaseName: string;
     collectionName: string;

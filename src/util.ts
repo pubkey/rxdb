@@ -277,7 +277,7 @@ export function shuffleArray<T>(arr: T[]): T[] {
  * Split array with items into smaller arrays with items
  * @link https://stackoverflow.com/a/7273794/3443137
  */
- export function batchArray<T>(array: T[], batchSize: number): T[][] {
+export function batchArray<T>(array: T[], batchSize: number): T[][] {
     array = array.slice(0);
     const ret: T[][] = [];
     while (array.length) {
@@ -365,9 +365,17 @@ export function flattenObject(ob: any) {
     return toReturn;
 }
 
-export function getHeightOfRevision(revString: string): number {
-    const first = revString.split('-')[0];
-    return parseInt(first, 10);
+
+export function parseRevision(revision: string): { height: number; hash: string } {
+    const split = revision.split('-');
+    return {
+        height: parseInt(split[0], 10),
+        hash: split[1]
+    }
+}
+
+export function getHeightOfRevision(revision: string): number {
+    return parseRevision(revision).height;
 }
 
 import { stringMd5 } from 'pouchdb-md5';
