@@ -514,7 +514,7 @@ export function syncGraphQL(
     const waitTillRun: any = (
         waitForLeadership &&
         this.database.multiInstance // do not await leadership if not multiInstance
-    ) ? this.database.waitForLeadership() : promiseWait(0);
+    ) ? this.database.waitForLeadership() : PROMISE_RESOLVE_VOID;
     waitTillRun.then(() => {
         if (collection.destroyed) {
             return;

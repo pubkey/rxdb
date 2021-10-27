@@ -812,14 +812,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             })
         );
 
-
-        /**
-         * We have to always await two ticks
-         * to ensure pouchdb fires the write to the event stream
-         * and does not miss out when multiple writes happen to the same document.
-         */
-        await promiseWait(0).then(() => promiseWait(0));
-
         return ret;
     }
 

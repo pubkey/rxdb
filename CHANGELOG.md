@@ -1,5 +1,12 @@
 # Changelog
 
+
+### X.X.X (comming soon)
+
+Other:
+  - Improved performance of write operations.
+
+
 ### 10.2.2 (25 October 2021)
 
 Bugfixes:
