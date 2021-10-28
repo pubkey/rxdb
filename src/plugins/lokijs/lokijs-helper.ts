@@ -1,5 +1,9 @@
 import type { RxStorageInstanceLoki } from './rx-storage-instance-loki';
-import type { RxStorageKeyObjectInstanceLoki } from './rx-storage-lokijs';
+import type { RxStorageKeyObjectInstanceLoki } from './rx-storage-key-object-instance-loki';
+
+
+export const CHANGES_COLLECTION_SUFFIX = '-rxdb-changes';
+export const CHANGES_LOCAL_SUFFIX = '-rxdb-local';
 
 export function getLokiEventKey(
     isLocal: boolean,

@@ -226,7 +226,6 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
                      * do not emit an event.
                      */
                 } else {
-
                     const doc: RxLocalDocumentData<D> = event.operation === 'DELETE' ? event.previous as any : event.doc as any;
                     const eventId = getEventKey(true, doc._id, doc._rev ? doc._rev : '');
 
@@ -238,17 +237,10 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
                         endTime
                     };
 
-
                     this.changes$.next(storageChangeEvent);
                 }
-
             }
-
-
         });
-
-
-
         return ret;
     }
 

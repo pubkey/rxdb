@@ -34,7 +34,7 @@ import type {
 import type {
     CompareFunction
 } from 'array-push-at-sort-position';
-import { getLokiEventKey, OPEN_LOKIJS_STORAGE_INSTANCES } from './lokijs-helper';
+import { CHANGES_COLLECTION_SUFFIX, getLokiEventKey, OPEN_LOKIJS_STORAGE_INSTANCES } from './lokijs-helper';
 
 export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
     RxDocType,
@@ -75,7 +75,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         }
 
         const nextFeedSequence = this.lastChangefeedSequence + 1;
-        console.log('addChangeDocumentMeta(' + id + ') ' + nextFeedSequence);
         this.internals.changesCollection.insert({
             id,
             sequence: nextFeedSequence
@@ -154,8 +153,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         return fun;
     }
     async bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>> {
-        console.log('bulkWrite()');
-        console.log(JSON.stringify(documentWrites, null, 4));
         if (documentWrites.length === 0) {
             throw newRxError('P2', {
                 args: {
@@ -284,8 +281,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         return ret;
     }
     async bulkAddRevisions(documents: RxDocumentData<RxDocType>[]): Promise<void> {
-        console.log('bulkAddRevisions()');
-        console.log(JSON.stringify(documents, null, 4));
         if (documents.length === 0) {
             throw newRxError('P3', {
                 args: {
@@ -306,7 +301,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             const id: string = docData[this.primaryPath] as any;
             const documentInDb = collection.by(this.primaryPath, id);
             if (!documentInDb) {
-                console.log('BBBBBBBBBBB');
                 // document not here, so we can directly insert
                 collection.insert(docData);
                 this.changes$.next({
@@ -340,17 +334,8 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                     const storeAtLoki = flatClone(docData) as any;
                     storeAtLoki.$loki = documentInDb.$loki;
                     collection.update(storeAtLoki);
-
                     let change: ChangeEvent<RxDocumentData<RxDocType>> | null = null;
-
-                    console.log('AAA');
-                    console.log(JSON.stringify(documentInDb, null, 4));
-                    console.log(JSON.stringify(docData, null, 4));
-
                     if (documentInDb._deleted && !docData._deleted) {
-
-                        console.log('XXX');
-
                         change = {
                             id,
                             operation: 'INSERT',
@@ -430,11 +415,8 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         changedDocuments: RxStorageChangedDocumentMeta[];
         lastSequence: number;
     }> {
-        console.log('getChangedDocuments()');
-
         const desc = options.order === 'desc';
         const operator = options.order === 'asc' ? '$gt' : '$lt';
-        console.log('operator: ' + operator + ' ' + options.startSequence);
         let query = this.internals.changesCollection
             .chain()
             .find({
@@ -474,8 +456,9 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
     async close(): Promise<void> {
         // TODO close loki database if all collections are removed already
     }
-    remove(): Promise<void> {
-        throw new Error('Method not implemented.');
+    async remove(): Promise<void> {
+        this.internals.loki.removeCollection(this.collectionName);
+        this.internals.loki.removeCollection(this.collectionName + CHANGES_COLLECTION_SUFFIX);
     }
 
 }

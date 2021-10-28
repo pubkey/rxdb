@@ -617,7 +617,6 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                     storageInstance.close();
                 });
                 it('should emit the correct events when a deleted document is overwritten with another deleted via bulkAddRevisions()', async () => {
-                    console.log('####################################');
                     const storageInstance = await rxStorageImplementation.getStorage().createStorageInstance<TestDocType>({
                         databaseName: randomCouchString(12),
                         collectionName: randomCouchString(12),
@@ -823,6 +822,40 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                     storageInstance.close();
                 });
             });
+            describe('.remove()', () => {
+                it('should have deleted all data', async () => {
+                    const databaseName = randomCouchString(12);
+                    const collectionName = randomCouchString(12);
+                    const storageInstance = await rxStorageImplementation.getStorage().createStorageInstance<TestDocType>({
+                        databaseName,
+                        collectionName,
+                        schema: getPseudoSchemaForVersion(0, 'key'),
+                        options: {}
+                    });
+                    await storageInstance.bulkWrite([
+                        {
+                            document: {
+                                key: 'foobar',
+                                value: 'barfoo',
+                                _deleted: false,
+                                _attachments: {}
+                            }
+                        }
+                    ]);
+                    await storageInstance.remove();
+
+                    const storageInstance2 = await rxStorageImplementation.getStorage().createStorageInstance<TestDocType>({
+                        databaseName,
+                        collectionName,
+                        schema: getPseudoSchemaForVersion(0, 'key'),
+                        options: {}
+                    });
+                    const docs = await storageInstance2.findDocumentsById(['foobar'], false);
+                    assert.strictEqual(docs.size, 0);
+
+                    storageInstance.close();
+                });
+            });
         });
         describe('RxStorageKeyObjectInstance', () => {
             describe('RxStorageKeyObjectInstance.bulkWrite()', () => {
@@ -847,6 +880,40 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                     const first = getFromMapOrThrow(writeResponse.success, 'foobar');
                     assert.strictEqual(first._id, 'foobar');
                     assert.strictEqual(first.value, 'barfoo');
+
+                    storageInstance.close();
+                });
+                it('should update the document', async () => {
+                    const storageInstance = await rxStorageImplementation.getStorage().createKeyObjectStorageInstance(
+                        randomCouchString(12),
+                        randomCouchString(12),
+                        {}
+                    );
+
+                    const writeResponse = await storageInstance.bulkWrite(
+                        [{
+                            document: {
+                                _id: 'foobar',
+                                value: 'barfoo',
+                                _attachments: {}
+                            }
+                        }]
+                    );
+                    const first = getFromMapOrThrow(writeResponse.success, 'foobar');
+                    await storageInstance.bulkWrite([
+                        {
+                            previous: first,
+                            document: {
+                                _id: 'foobar',
+                                value: 'barfoo2',
+                                _attachments: {}
+                            }
+                        }
+                    ]);
+
+                    const afterUpdate = await storageInstance.findLocalDocumentsById(['foobar']);
+                    assert.ok(afterUpdate.get('foobar'));
+                    assert.strictEqual(afterUpdate.get('foobar').value, 'barfoo2');
 
                     storageInstance.close();
                 });
@@ -902,12 +969,18 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                     );
                     const writeDocResult = getFromMapOrThrow(firstWriteResult.success, writeDoc._id);
                     writeDoc._rev = writeDocResult._rev;
+                    writeDoc.value = writeDoc.value + '2';
                     writeDoc._deleted = true;
-                    await storageInstance.bulkWrite(
+
+                    const updateResponse = await storageInstance.bulkWrite(
                         [{
+                            previous: writeDocResult,
                             document: writeDoc
                         }]
                     );
+                    if (updateResponse.error.size !== 0) {
+                        throw new Error('could not update');
+                    }
 
                     // should not find the document
                     const res = await storageInstance.findLocalDocumentsById([writeDoc._id]);
@@ -1031,6 +1104,39 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                     assert.ok(last.change.previous);
 
                     sub.unsubscribe();
+                    storageInstance.close();
+                });
+            });
+            describe('.remove()', () => {
+                it('should have deleted all data', async () => {
+                    const databaseName = randomCouchString(12);
+                    const collectionName = randomCouchString(12);
+                    const storageInstance = await rxStorageImplementation.getStorage().createKeyObjectStorageInstance(
+                        databaseName,
+                        collectionName,
+                        {}
+                    );
+                    await storageInstance.bulkWrite([
+                        {
+                            document: {
+                                _id: 'foobar',
+                                value: 'barfoo',
+                                _deleted: false,
+                                _attachments: {}
+
+                            }
+                        }
+                    ]);
+                    await storageInstance.remove();
+
+                    const storageInstance2 = await rxStorageImplementation.getStorage().createKeyObjectStorageInstance(
+                        databaseName,
+                        collectionName,
+                        {}
+                    );
+                    const docs = await storageInstance2.findLocalDocumentsById(['foobar']);
+                    assert.strictEqual(docs.size, 0);
+
                     storageInstance.close();
                 });
             });
