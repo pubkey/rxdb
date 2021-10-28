@@ -293,6 +293,10 @@ export type ChangeStreamEvent<DocumentData> = ChangeEvent<RxDocumentData<Documen
     id: string;
 };
 
+export type RxStorageChangedDocumentMeta = {
+    id: string;
+    sequence: number;
+}
 
 
 export type RxStorageChangeEvent<DocType> = {

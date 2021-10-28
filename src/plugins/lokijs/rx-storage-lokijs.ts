@@ -5,6 +5,7 @@ import {
     ChangeStreamOnceOptions,
     LokiDatabaseSettings,
     LokiSettings,
+    LokiStorageInternals,
     MangoQuery,
     MangoQuerySortDirection,
     MangoQuerySortPart,
@@ -25,29 +26,16 @@ import lokijs, {
     LokiMemoryAdapter,
     Collection
 } from 'lokijs';
-import type {
-    CompareFunction
-} from 'array-push-at-sort-position';
-import { createRevision, getHeightOfRevision, hash, parseRevision, promiseWait } from '../../util';
-import { SortComparator, QueryMatcher } from 'event-reduce-js';
-import { Observable } from 'rxjs';
+import { createRevision, flatClone, getHeightOfRevision, hash, now, parseRevision, promiseWait } from '../../util';
+import type { SortComparator, QueryMatcher, ChangeEvent } from 'event-reduce-js';
+import { Observable, Subject } from 'rxjs';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import { newRxError } from '../../rx-error';
+import { getLokiEventKey, OPEN_LOKIJS_STORAGE_INSTANCES } from './lokijs-helper';
+import { RxStorageInstanceLoki } from './rx-storage-instance-loki';
 
 // TODO import instead of require
 // const LokiIndexedAdapter = require('lokijs/src/loki-indexed-adapter');
-
-/**
- * Used to check in tests if all instances have been cleaned up.
- */
-export const OPEN_LOKIJS_STORAGE_INSTANCES: Set<RxStorageKeyObjectInstanceLoki | RxStorageInstanceLoki<any>> = new Set();
-
-export type LokiStorageInternals = {
-    loki: Loki;
-    collection: Collection
-};
-
-
 
 const LOKI_DATABASE_BY_NAME: Map<string, Loki> = new Map();
 function getLokiDatabase(databaseName: string, settings: Partial<LokiConstructorOptions>): Loki {
@@ -117,7 +105,9 @@ export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettin
             params.options.collection,
             {
                 indices: indices as string[],
-                unique: [primaryKey]
+                unique: [primaryKey],
+                disableChangesApi: true,
+                disableMeta: true
             } as any
         );
 
@@ -126,13 +116,23 @@ export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettin
             collectionOptions as any
         );
 
+        const changesCollection: Collection = db.addCollection(
+            params.collectionName + '-changes',
+            {
+                unique: ['eventId'],
+                indices: ['sequence'],
+                disableMeta: true
+            }
+        );
+
         const instance = new RxStorageInstanceLoki(
             params.databaseName,
             params.collectionName,
             params.schema,
             {
                 loki: db,
-                collection
+                collection,
+                changesCollection
             },
             params.options
         );
@@ -154,7 +154,9 @@ export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettin
             options.collection,
             {
                 indices: [],
-                unique: ['_id']
+                unique: ['_id'],
+                disableChangesApi: true,
+                disableMeta: true
             } as any
         );
 
@@ -162,104 +164,42 @@ export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettin
             lokiCollectionName,
             collectionOptions
         );
+        const changesCollection: Collection = db.addCollection(
+            lokiCollectionName + '-changes',
+            {
+                unique: ['eventId'],
+                indices: ['sequence'],
+                disableMeta: true
+            }
+        );
 
         return new RxStorageKeyObjectInstanceLoki(
             databaseName,
             collectionName,
             {
                 loki: db,
-                collection
+                collection,
+                changesCollection
             },
             options
         );
     }
 }
 
-export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
-    RxDocType,
-    LokiStorageInternals,
-    LokiSettings
-> {
+export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstance<LokiStorageInternals, LokiSettings> {
 
-    public readonly primaryPath: keyof RxDocType;
+    private changes$: Subject<RxStorageChangeEvent<RxLocalDocumentData>> = new Subject();
 
     constructor(
         public readonly databaseName: string,
         public readonly collectionName: string,
-        public readonly schema: Readonly<RxJsonSchema<RxDocType>>,
         public readonly internals: Readonly<LokiStorageInternals>,
         public readonly options: Readonly<LokiSettings>
     ) {
-        this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
         OPEN_LOKIJS_STORAGE_INSTANCES.add(this);
     }
 
-    prepareQuery(mutateableQuery: MangoQuery<RxDocType>) {
-        throw new Error('Method not implemented.');
-    }
-    getSortComparator(query: MangoQuery<RxDocType>): SortComparator<RxDocType> {
-        if (!query.sort) {
-            throw new Error('sort missing, we should at least sort by primaryKey');
-        }
-
-        const sort: MangoQuerySortPart<RxDocType>[] = query.sort;
-
-        const fun: CompareFunction<RxDocType> = (a: RxDocType, b: RxDocType) => {
-            let compareResult: number = 0; // 1 | -1
-            sort.find(sortPart => {
-                const fieldName: string = Object.keys(sortPart)[0];
-                const direction: MangoQuerySortDirection = Object.values(sortPart)[0];
-                const directionMultiplier = direction === 'asc' ? 1 : -1;
-                const valueA: any = (a as any)[fieldName];
-                const valueB: any = (b as any)[fieldName];
-                if (valueA === valueB) {
-                    return false;
-                } else {
-                    if (valueA > valueB) {
-                        compareResult = 1 * directionMultiplier;
-                        return true;
-                    } else {
-                        compareResult = -1 * directionMultiplier;
-                        return true;
-                    }
-                }
-            });
-            if (!compareResult) {
-                throw new Error('no compareResult');
-            }
-            return compareResult as any;
-        }
-        return fun;
-    }
-
-    /**
-     * Returns a function that determines if a document matches a query selector.
-     * It is important to have the exact same logix as lokijs uses, to be sure
-     * that the event-reduce algorithm works correct.
-     * But LokisJS does not export such a function, the query logic is deep inside of
-     * the Resultset prototype.
-     * Because I am lazy, I do not copy paste and maintain that code.
-     * Instead we create a fake Resultset and apply the prototype method Resultset.prototype.find()
-     */
-    getQueryMatcher(query: MangoQuery<RxDocType>): QueryMatcher<RxDocType> {
-        const fun: QueryMatcher<RxDocType> = (doc: RxDocType) => {
-            const fakeResultSet: any = {
-                collection: {
-                    data: [doc],
-                    binaryIndices: {}
-                }
-            };
-            Object.setPrototypeOf(fakeResultSet, (lokijs as any).Resultset.prototype);
-            fakeResultSet.find(query.selector, true);
-            const ret = fakeResultSet.filteredrows.length > 0;
-            return ret;
-        }
-        return fun;
-
-
-        throw new Error('Method not implemented.');
-    }
-    async bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>> {
+    async bulkWrite<D = any>(documentWrites: BulkWriteLocalRow<D>[]): Promise<RxLocalStorageBulkWriteResponse<D>> {
         if (documentWrites.length === 0) {
             throw newRxError('P2', {
                 args: {
@@ -268,174 +208,100 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             });
         }
 
-        /**
-         * lokijs is in memory and non-async, so we emulate async behavior
-         * to ensure all RxStorage implementations behave equal.
-         */
+        const collection = this.internals.collection;
+        const startTime = now();
         await promiseWait(0);
 
-        const collection = this.internals.collection;
-
-
-        const ret: RxStorageBulkWriteResponse<RxDocType> = {
+        const ret: RxLocalStorageBulkWriteResponse<D> = {
             success: new Map(),
             error: new Map()
         };
-
+        const writeRowById: Map<string, BulkWriteLocalRow<D>> = new Map();
         documentWrites.forEach(writeRow => {
-            const id: string = writeRow.document[this.primaryPath] as any;
-            const documentInDb = collection.by(this.primaryPath, id);
+            const id = writeRow.document._id;
+            writeRowById.set(id, writeRow);
+            const writeDoc = flatClone(writeRow.document);
+            const docInDb = collection.by('_id', id);
+            const previous = writeRow.previous ? writeRow.previous : collection.by('_id', id);
+            const newRevHeight = previous ? parseRevision(previous._rev).height + 1 : 1;
+            const newRevision = newRevHeight + '-' + createRevision(writeRow.document, true);
+            writeDoc._rev = newRevision;
+            collection.insert(writeDoc);
 
-            if (!documentInDb) {
-                // insert new document
-                const writeDoc = Object.assign(
-                    {
-                        _rev: '1-' + createRevision(writeRow.document, true),
-                        _deleted: false
-                    },
-                    writeRow.document,
-                    {
-                        // TODO attachments are currently not working with lokijs
-                        _attachments: {}
-                    }
-                );
-                collection.insert(writeDoc);
-                ret.success.set(id, writeDoc as any);
+            ret.success.set(id, writeDoc);
+
+            const endTime = now();
+
+            let event: ChangeEvent<RxLocalDocumentData<D>>;
+            if (!writeRow.previous) {
+                // was insert
+                event = {
+                    operation: 'INSERT',
+                    doc: writeDoc,
+                    id: id,
+                    previous: null
+                };
+            } else if (writeRow.document._deleted) {
+                // was delete
+
+                // we need to add the new revision to the previous doc
+                // so that the eventkey is calculated correctly.
+                // Is this a hack? idk.
+                const previousDoc = flatClone(writeRow.previous);
+                previousDoc._rev = newRevision;
+
+                event = {
+                    operation: 'DELETE',
+                    doc: null,
+                    id,
+                    previous: previousDoc
+                };
             } else {
-                // update existing document
-                const revInDb: string = documentInDb._rev;
-                if (
-                    !writeRow.previous ||
-                    revInDb !== writeRow.previous._rev
-                ) {
-                    // conflict error
-                    const err: RxStorageBulkWriteError<RxDocType> = {
-                        isError: true,
-                        status: 409,
-                        documentId: id,
-                        writeRow: writeRow
-                    };
-                    ret.error.set(id, err);
-                } else {
-                    const newRevHeight = getHeightOfRevision(revInDb) + 1;
-                    const writeDoc = Object.assign(
-                        {},
-                        documentInDb,
-                        writeRow.document,
-                        {
-                            _rev: newRevHeight + '-' + createRevision(writeRow.document, true),
-                            // TODO attachments are currently not working with lokijs
-                            _attachments: {}
-                        }
-                    );
-                    collection.insert(writeDoc);
-                    ret.success.set(id, writeDoc as any);
-                }
+                // was update
+                event = {
+                    operation: 'UPDATE',
+                    doc: writeDoc,
+                    id: id,
+                    previous: writeRow.previous
+                };
             }
 
-        });
-
-        return ret;
-    }
-    async bulkAddRevisions(documents: RxDocumentData<RxDocType>[]): Promise<void> {
-        if (documents.length === 0) {
-            throw newRxError('P3', {
-                args: {
-                    documents
-                }
-            });
-        }
-
-        /**
-         * lokijs is in memory and non-async, so we emulate async behavior
-         * to ensure all RxStorage implementations behave equal.
-         */
-        await promiseWait(0);
-        const collection = this.internals.collection;
-
-
-        documents.forEach(docData => {
-            const id: string = docData[this.primaryPath] as any;
-            const documentInDb = collection.by(this.primaryPath, id);
-            if (!documentInDb) {
-                // document not here, so we can directly insert
-                collection.insert(docData);
-            } else {
-                const newWriteRevision = parseRevision(docData._rev);
-                const oldRevision = parseRevision(documentInDb._rev);
-
-                let mustUpdate: boolean = false;
-                if (newWriteRevision.height !== oldRevision.height) {
-                    // height not equal, compare base on height
-                    if (newWriteRevision.height > oldRevision.height) {
-                        mustUpdate = true;
-                    }
-                } else if (newWriteRevision.hash > oldRevision.hash) {
-                    // equal height but new write has the 'winning' hash
-                    mustUpdate = true;
-                }
-                if (mustUpdate) {
-                    collection.insert(docData);
-                }
-            }
-        });
-    }
-    async findDocumentsById(ids: string[], deleted: boolean): Promise<Map<string, RxDocumentData<RxDocType>>> {
-        await promiseWait(0);
-        const collection = this.internals.collection;
-
-        const ret: Map<string, RxDocumentData<RxDocType>> = new Map();
-        ids.forEach(id => {
-            const documentInDb = collection.by(this.primaryPath, id);
             if (
-                documentInDb &&
-                (!documentInDb._deleted || deleted)
+                writeRow.document._deleted &&
+                (
+                    !writeRow.previous ||
+                    writeRow.previous._deleted
+                )
             ) {
-                ret.set(id, documentInDb);
+                /**
+                 * A deleted document was newly added to the storage engine,
+                 * do not emit an event.
+                 */
+            } else {
+
+                const doc: RxLocalDocumentData<D> = event.operation === 'DELETE' ? event.previous as any : event.doc as any;
+                const eventId = getLokiEventKey(true, doc._id, doc._rev ? doc._rev : '');
+
+                const storageChangeEvent: RxStorageChangeEvent<RxLocalDocumentData<D>> = {
+                    eventId,
+                    documentId: id,
+                    change: event,
+                    startTime,
+                    endTime
+                };
+                this.changes$.next(storageChangeEvent);
             }
+
         });
+
+
         return ret;
-    }
-    query(preparedQuery: any): Promise<RxStorageQueryResult<RxDocType>> {
-        throw new Error('Method not implemented.');
-    }
-    getAttachmentData(documentId: string, attachmentId: string): Promise<BlobBuffer> {
-        throw new Error('Method not implemented.');
-    }
-    getChangedDocuments(options: ChangeStreamOnceOptions): Promise<{ changedDocuments: { id: string; sequence: number; }[]; lastSequence: number; }> {
-        throw new Error('Method not implemented.');
-    }
-    changeStream(): Observable<RxStorageChangeEvent<RxDocumentData<RxDocType>>> {
-        throw new Error('Method not implemented.');
-    }
-    async close(): Promise<void> {
-        // TODO close loki database if all collections are removed already
-    }
-    remove(): Promise<void> {
-        throw new Error('Method not implemented.');
-    }
-
-}
-
-export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstance<LokiStorageInternals, LokiSettings> {
-
-    constructor(
-        public readonly databaseName: string,
-        public readonly collectionName: string,
-        public readonly internals: Readonly<LokiStorageInternals>,
-        public readonly options: Readonly<LokiSettings>
-    ) {
-        OPEN_LOKIJS_STORAGE_INSTANCES.add(this);
-    }
-
-    bulkWrite<D = any>(documentWrites: BulkWriteLocalRow<D>[]): Promise<RxLocalStorageBulkWriteResponse<D>> {
-        throw new Error('Method not implemented.');
     }
     findLocalDocumentsById<D = any>(ids: string[]): Promise<Map<string, RxLocalDocumentData<D>>> {
         throw new Error('Method not implemented.');
     }
     changeStream(): Observable<RxStorageChangeEvent<RxLocalDocumentData<{ [key: string]: any; }>>> {
-        throw new Error('Method not implemented.');
+        return this.changes$.asObservable();
     }
     close(): Promise<void> {
         throw new Error('Method not implemented.');
@@ -443,7 +309,6 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
     remove(): Promise<void> {
         throw new Error('Method not implemented.');
     }
-
 }
 
 export function getRxStorageLoki(

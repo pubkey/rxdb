@@ -48,14 +48,18 @@ declare type TestDocType = { key: string; value: string; };
 const rxStorageImplementations: {
     name: string;
     getStorage: () => RxStorage<any, any>;
+    // true if the storage supports attachments
+    hasAttachments: boolean;
 }[] = [
         {
             name: 'pouchdb',
-            getStorage: () => getRxStoragePouch('memory')
+            getStorage: () => getRxStoragePouch('memory'),
+            hasAttachments: true
         },
         {
             name: 'lokijs',
-            getStorage: () => getRxStorageLoki()
+            getStorage: () => getRxStorageLoki(),
+            hasAttachments: false
         }
     ];
 
@@ -399,10 +403,9 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                         throw new Error('missing change');
                     }
                     assert.ok(firstChangeAfterDelete.id === 'foobar');
+
                     assert.strictEqual(firstChangeAfterDelete.sequence, 3);
-
                     assert.strictEqual(changesAfterDelete.lastSequence, 3);
-
 
                     storageInstance.close();
                 });
@@ -445,13 +448,6 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                             _deleted: true
                         }
                     }]);
-
-                    await storageInstance.internals.pouch.changes({
-                        live: false,
-                        limit: 10,
-                        include_docs: true,
-                        since: 2
-                    });
 
                     const changesAfterDelete = await storageInstance.getChangedDocuments({
                         order: 'asc',
@@ -621,6 +617,7 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                     storageInstance.close();
                 });
                 it('should emit the correct events when a deleted document is overwritten with another deleted via bulkAddRevisions()', async () => {
+                    console.log('####################################');
                     const storageInstance = await rxStorageImplementation.getStorage().createStorageInstance<TestDocType>({
                         databaseName: randomCouchString(12),
                         collectionName: randomCouchString(12),
@@ -666,6 +663,10 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                     }]);
 
                     const resultAfterBulkWriteDelete = await storageInstance.query(preparedQuery);
+
+                    console.log('resultAfterBulkWriteDelete()');
+                    console.log(JSON.stringify(resultAfterBulkWriteDelete, null, 4));
+
                     assert.strictEqual(resultAfterBulkWriteDelete.documents.length, 0);
 
 
@@ -690,6 +691,9 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                 });
             });
             describe('attachments', () => {
+                if (!rxStorageImplementation.hasAttachments) {
+                    return;
+                }
                 it('should return the correct attachment object on all document fetch methods', async () => {
                     const storageInstance = await rxStorageImplementation.getStorage().createStorageInstance<TestDocType>({
                         databaseName: randomCouchString(12),

@@ -11,6 +11,7 @@ import type {
     RxLocalDocumentData,
     RxLocalStorageBulkWriteResponse,
     RxStorageBulkWriteResponse,
+    RxStorageChangedDocumentMeta,
     RxStorageChangeEvent,
     RxStorageInstanceCreationParams,
     RxStorageQueryResult
@@ -292,10 +293,7 @@ export interface RxStorageInstance<
     getChangedDocuments(
         options: ChangeStreamOnceOptions
     ): Promise<{
-        changedDocuments: {
-            id: string;
-            sequence: number;
-        }[],
+        changedDocuments: RxStorageChangedDocumentMeta[],
         /**
          * The last sequence number is returned in a separate field
          * because the storage instance might have left out some events
