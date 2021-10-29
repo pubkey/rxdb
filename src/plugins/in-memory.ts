@@ -79,7 +79,7 @@ export
             parentCollection.name,
             toCleanSchema(parentCollection.schema),
             pouchSettings, // pouchSettings
-            {},
+            {} as any,
             (parentCollection as any)._methods);
         this._isInMemory = true;
 
