@@ -21,7 +21,8 @@ import {
 
 import {
     getPouchLocation,
-    getRxStoragePouch
+    getRxStoragePouch,
+    OPEN_POUCHDB_STORAGE_INSTANCES
 } from '../../plugins/pouchdb';
 
 import AsyncTestUtil from 'async-test-util';

@@ -338,7 +338,7 @@ config.parallel('plugin.test.js', () => {
             const col = await humansCollection.create(5);
             const doc: any = await col.findOne().exec();
             assert.strictEqual(doc.fooPostCreate, 'bar_postCreateRxDocument');
-            col.database.destroy();
+            await col.database.destroy();
             _clearHook('postCreateRxDocument', postCreateRxDocument);
         });
     });

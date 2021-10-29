@@ -17,7 +17,7 @@ import {
 } from '../../plugins/core';
 
 import {
-    getRxStoragePouch
+    getRxStoragePouch, OPEN_POUCHDB_STORAGE_INSTANCES
 } from '../../plugins/pouchdb';
 
 

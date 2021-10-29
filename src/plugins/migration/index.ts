@@ -12,6 +12,7 @@ import type {
     RxDatabase,
     AllMigrationStates
 } from '../../types';
+import { PROMISE_RESOLVE_FALSE } from '../../util';
 import {
     mustMigrate,
     DataMigrator
@@ -56,6 +57,9 @@ export const RxDBMigrationPlugin: RxPlugin = {
                 return DATA_MIGRATOR_BY_COLLECTION.get(this) as any;
             };
             proto.migrationNeeded = function (this: RxCollection) {
+                if (this.schema.version === 0) {
+                    return PROMISE_RESOLVE_FALSE;
+                }        
                 return mustMigrate(this.getDataMigrator());
             };
         }
