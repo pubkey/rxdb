@@ -1,67 +1,20 @@
 import {
-    BlobBuffer,
-    BulkWriteLocalRow,
-    BulkWriteRow,
-    ChangeStreamOnceOptions,
     LokiDatabaseSettings,
     LokiSettings,
     LokiStorageInternals,
-    MangoQuery,
-    MangoQuerySortDirection,
-    MangoQuerySortPart,
     RxDocumentData,
-    RxJsonSchema,
     RxLocalDocumentData,
-    RxLocalStorageBulkWriteResponse,
     RxStorage,
-    RxStorageBulkWriteError,
-    RxStorageBulkWriteResponse,
-    RxStorageChangeEvent,
-    RxStorageInstance,
-    RxStorageInstanceCreationParams,
-    RxStorageKeyObjectInstance,
-    RxStorageQueryResult
+    RxStorageInstanceCreationParams
 } from '../../types';
 import lokijs, {
-    LokiMemoryAdapter,
     Collection
 } from 'lokijs';
-import { createRevision, flatClone, getHeightOfRevision, hash, now, parseRevision, promiseWait } from '../../util';
-import type { SortComparator, QueryMatcher, ChangeEvent } from 'event-reduce-js';
-import { Observable, Subject } from 'rxjs';
+import { hash } from '../../util';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
-import { newRxError } from '../../rx-error';
-import { CHANGES_COLLECTION_SUFFIX, CHANGES_LOCAL_SUFFIX, getLokiEventKey, OPEN_LOKIJS_STORAGE_INSTANCES } from './lokijs-helper';
+import { CHANGES_COLLECTION_SUFFIX, CHANGES_LOCAL_SUFFIX, getLokiDatabase } from './lokijs-helper';
 import { RxStorageInstanceLoki } from './rx-storage-instance-loki';
 import { RxStorageKeyObjectInstanceLoki } from './rx-storage-key-object-instance-loki';
-
-// TODO import instead of require
-// const LokiIndexedAdapter = require('lokijs/src/loki-indexed-adapter');
-
-const LOKI_DATABASE_BY_NAME: Map<string, Loki> = new Map();
-function getLokiDatabase(databaseName: string, settings: Partial<LokiConstructorOptions>): Loki {
-    let db = LOKI_DATABASE_BY_NAME.get(databaseName);
-
-    // TODO call loadDatabase() to ensure everything is loaded from persistence adapters.
-
-    if (!db) {
-        const useSettings = Object.assign(
-            // defaults
-            {
-                autosave: true,
-                autosaveInterval: 500,
-                verbose: true
-            },
-            settings
-        );
-        db = new lokijs(
-            databaseName + '.db',
-            useSettings
-        );
-        LOKI_DATABASE_BY_NAME.set(databaseName, db);
-    }
-    return db;
-}
 
 export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettings> {
     public name = 'lokijs';
@@ -77,7 +30,7 @@ export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettin
     async createStorageInstance<RxDocType>(
         params: RxStorageInstanceCreationParams<RxDocType, LokiSettings>
     ): Promise<RxStorageInstanceLoki<RxDocType>> {
-        const db = getLokiDatabase(params.databaseName, params.options.database);
+        const databaseState = await getLokiDatabase(params.databaseName, params.options.database);
 
         /**
          * Construct loki indexes from RxJsonSchema indexes.
@@ -112,26 +65,29 @@ export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettin
             } as any
         );
 
-        const collection: Collection = db.addCollection(
+        const collection: Collection = databaseState.database.addCollection(
             params.collectionName,
             collectionOptions as any
         );
+        databaseState.openCollections[params.collectionName] = collection;
 
-        const changesCollection: Collection = db.addCollection(
-            params.collectionName + CHANGES_COLLECTION_SUFFIX,
+        const changesCollectionName = params.collectionName + CHANGES_COLLECTION_SUFFIX;
+        const changesCollection: Collection = databaseState.database.addCollection(
+            changesCollectionName,
             {
                 unique: ['eventId'],
                 indices: ['sequence'],
                 disableMeta: true
             }
         );
+        databaseState.openCollections[changesCollectionName] = changesCollection;
 
         const instance = new RxStorageInstanceLoki(
             params.databaseName,
             params.collectionName,
             params.schema,
             {
-                loki: db,
+                loki: databaseState.database,
                 collection,
                 changesCollection
             },
@@ -146,7 +102,7 @@ export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettin
         collectionName: string,
         options: LokiSettings
     ): Promise<RxStorageKeyObjectInstanceLoki> {
-        const db = getLokiDatabase(databaseName, options.database);
+        const databaseState = await getLokiDatabase(databaseName, options.database);
 
         // TODO disable stuff we do not need from CollectionOptions
         const collectionOptions: Partial<CollectionOptions<RxLocalDocumentData>> = Object.assign(
@@ -160,24 +116,29 @@ export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettin
             } as any
         );
 
-        const collection: Collection = db.addCollection(
-            collectionName + CHANGES_LOCAL_SUFFIX,
+        const localCollectionName = collectionName + CHANGES_LOCAL_SUFFIX;
+        const collection: Collection = databaseState.database.addCollection(
+            localCollectionName,
             collectionOptions
         );
-        const changesCollection: Collection = db.addCollection(
-            collectionName + CHANGES_LOCAL_SUFFIX + CHANGES_COLLECTION_SUFFIX,
+        databaseState.openCollections[localCollectionName] = collection;
+
+        const changesCollectionName = collectionName + CHANGES_LOCAL_SUFFIX + CHANGES_COLLECTION_SUFFIX;
+        const changesCollection: Collection = databaseState.database.addCollection(
+            changesCollectionName,
             {
                 unique: ['eventId'],
                 indices: ['sequence'],
                 disableMeta: true
             }
         );
+        databaseState.openCollections[changesCollectionName] = changesCollection;
 
         return new RxStorageKeyObjectInstanceLoki(
             databaseName,
             collectionName,
             {
-                loki: db,
+                loki: databaseState.database,
                 collection,
                 changesCollection
             },

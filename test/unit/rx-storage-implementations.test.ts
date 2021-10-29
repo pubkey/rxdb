@@ -18,8 +18,6 @@ import {
 import {
     getRxStoragePouch
 } from '../../plugins/pouchdb';
-import { getRxStorageLoki } from '../../plugins/lokijs';
-
 
 import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
 addRxPlugin(RxDBKeyCompressionPlugin);
@@ -39,10 +37,25 @@ import {
     RxStorage,
     RxStorageChangeEvent
 } from '../../src/types';
+import { getRxStorageLoki } from '../../plugins/lokijs';
 
 addRxPlugin(RxDBQueryBuilderPlugin);
 
 declare type TestDocType = { key: string; value: string; };
+
+
+function getWriteData(
+    ownParams: Partial<RxDocumentWriteData<TestDocType>> = {}
+): RxDocumentWriteData<TestDocType> {
+    return Object.assign(
+        {
+            key: randomString(10),
+            value: 'barfoo',
+            _attachments: {}
+        },
+        ownParams
+    );
+}
 
 
 const rxStorageImplementations: {
@@ -235,12 +248,14 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
             });
             describe('.query()', () => {
                 it('should find all documents', async () => {
-                    const storageInstance = await rxStorageImplementation.getStorage().createStorageInstance<{ key: string; value: string; }>({
-                        databaseName: randomCouchString(12),
-                        collectionName: randomCouchString(12),
-                        schema: getPseudoSchemaForVersion(0, 'key'),
-                        options: {}
-                    });
+                    const storageInstance = await rxStorageImplementation
+                        .getStorage()
+                        .createStorageInstance<{ key: string; value: string; }>({
+                            databaseName: randomCouchString(12),
+                            collectionName: randomCouchString(12),
+                            schema: getPseudoSchemaForVersion(0, 'key'),
+                            options: {}
+                        });
 
                     const writeData = {
                         key: 'foobar',
@@ -262,6 +277,42 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                     const first = allDocs.documents[0];
                     assert.ok(first);
                     assert.strictEqual(first.value, 'barfoo');
+
+                    storageInstance.close();
+                });
+                it('should not find deleted documents', async () => {
+                    const storageInstance = await rxStorageImplementation
+                        .getStorage()
+                        .createStorageInstance<{ key: string; value: string; }>({
+                            databaseName: randomCouchString(12),
+                            collectionName: randomCouchString(12),
+                            schema: getPseudoSchemaForVersion(0, 'key'),
+                            options: {}
+                        });
+
+                    const value = 'foobar';
+                    await storageInstance.bulkWrite([
+                        {
+                            document: getWriteData({ value })
+                        },
+                        {
+                            document: getWriteData({ value })
+                        },
+                        {
+                            document: getWriteData({ value, _deleted: true })
+                        },
+                    ]);
+
+                    const preparedQuery = storageInstance.prepareQuery({
+                        selector: {
+                            value: {
+                                $eq: value
+                            }
+                        }
+                    });
+
+                    const allDocs = await storageInstance.query(preparedQuery);
+                    assert.strictEqual(allDocs.documents.length, 2);
 
                     storageInstance.close();
                 });
@@ -662,12 +713,7 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                     }]);
 
                     const resultAfterBulkWriteDelete = await storageInstance.query(preparedQuery);
-
-                    console.log('resultAfterBulkWriteDelete()');
-                    console.log(JSON.stringify(resultAfterBulkWriteDelete, null, 4));
-
                     assert.strictEqual(resultAfterBulkWriteDelete.documents.length, 0);
-
 
                     // delete again via bulkAddRevisions()
                     await storageInstance.bulkAddRevisions([{
@@ -678,9 +724,8 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                         _rev: '4-c4195e76073f75farxdbreplicationgraphql'
                     }]);
 
-                    await wait(1000);
+                    await waitUntil(() => emitted.length === 3);
 
-                    assert.strictEqual(emitted.length, 3);
                     assert.ok(emitted[0].change.operation === 'INSERT');
                     assert.ok(emitted[1].change.operation === 'UPDATE');
                     assert.ok(emitted[2].change.operation === 'DELETE');
@@ -859,7 +904,7 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
             });
         });
         describe('RxStorageKeyObjectInstance', () => {
-            describe('RxStorageKeyObjectInstance.bulkWrite()', () => {
+            describe('.bulkWrite()', () => {
                 it('should write the documents', async () => {
                     const storageInstance = await rxStorageImplementation.getStorage().createKeyObjectStorageInstance(
                         randomCouchString(12),

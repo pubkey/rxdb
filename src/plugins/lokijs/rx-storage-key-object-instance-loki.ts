@@ -22,6 +22,7 @@ import {
 import {
     CHANGES_COLLECTION_SUFFIX,
     CHANGES_LOCAL_SUFFIX,
+    closeLokiCollections,
     getLokiEventKey,
     OPEN_LOKIJS_STORAGE_INSTANCES
 } from './lokijs-helper';
@@ -177,10 +178,18 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
         return this.changes$.asObservable();
     }
     async close(): Promise<void> {
-        // TODO close loki database if all collections are removed already
+        this.changes$.complete();
+        OPEN_LOKIJS_STORAGE_INSTANCES.delete(this);
+        await closeLokiCollections(
+            this.databaseName,
+            [
+                this.internals.collection,
+                this.internals.changesCollection
+            ]
+        );
     }
     async remove(): Promise<void> {
         this.internals.loki.removeCollection(this.collectionName + CHANGES_LOCAL_SUFFIX);
-        this.internals.loki.removeCollection(this.collectionName + CHANGES_LOCAL_SUFFIX + CHANGES_COLLECTION_SUFFIX);
+        this.internals.loki.removeCollection(this.internals.changesCollection.name);
     }
 }

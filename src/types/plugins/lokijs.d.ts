@@ -23,3 +23,8 @@ export type LokiStorageInternals = {
      */
     changesCollection: Collection<RxStorageChangedDocumentMeta>;
 };
+
+export type LokiDatabaseState = {
+    database: Loki;
+    openCollections: { [collectionName: string]: Collection };
+};

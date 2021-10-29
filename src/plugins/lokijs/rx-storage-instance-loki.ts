@@ -1,4 +1,8 @@
-import type { SortComparator, QueryMatcher, ChangeEvent } from 'event-reduce-js';
+import type {
+    SortComparator,
+    QueryMatcher,
+    ChangeEvent
+} from 'event-reduce-js';
 import lokijs from 'lokijs';
 import { Subject, Observable } from 'rxjs';
 import {
@@ -28,13 +32,16 @@ import type {
     MangoQuerySortPart,
     MangoQuerySortDirection,
     LokiStorageInternals,
-    RxStorageChangedDocumentMeta,
-    ChangeStreamEvent
+    RxStorageChangedDocumentMeta
 } from '../../types';
 import type {
     CompareFunction
 } from 'array-push-at-sort-position';
-import { CHANGES_COLLECTION_SUFFIX, getLokiEventKey, OPEN_LOKIJS_STORAGE_INSTANCES } from './lokijs-helper';
+import {
+    closeLokiCollections,
+    getLokiEventKey,
+    OPEN_LOKIJS_STORAGE_INSTANCES
+} from './lokijs-helper';
 
 export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
     RxDocType,
@@ -182,30 +189,39 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             if (!documentInDb) {
                 // insert new document
                 const newRevision = '1-' + createRevision(writeRow.document, true);
+
+                /**
+                 * It is possible to insert already deleted documents,
+                 * this can happen on replication.
+                 */
+                const insertedIsDeleted = writeRow.document._deleted ? true : false;
+
                 const writeDoc = Object.assign(
                     {},
                     writeRow.document,
                     {
                         _rev: newRevision,
-                        _deleted: false,
+                        _deleted: insertedIsDeleted,
                         // TODO attachments are currently not working with lokijs
                         _attachments: {} as any
                     }
                 );
                 collection.insert(writeDoc);
-                this.addChangeDocumentMeta(id);
-                this.changes$.next({
-                    eventId: getLokiEventKey(false, id, newRevision),
-                    documentId: id,
-                    change: {
-                        doc: writeDoc,
-                        id,
-                        operation: 'INSERT',
-                        previous: null
-                    },
-                    startTime,
-                    endTime: now()
-                });
+                if (!insertedIsDeleted) {
+                    this.addChangeDocumentMeta(id);
+                    this.changes$.next({
+                        eventId: getLokiEventKey(false, id, newRevision),
+                        documentId: id,
+                        change: {
+                            doc: writeDoc,
+                            id,
+                            operation: 'INSERT',
+                            previous: null
+                        },
+                        startTime,
+                        endTime: now()
+                    });
+                }
                 ret.success.set(id, writeDoc as any);
             } else {
                 // update existing document
@@ -399,15 +415,13 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         if (preparedQuery.skip) {
             query = query.offset(preparedQuery.skip);
         }
-
         const foundDocuments = query.data();
-
         return {
             documents: foundDocuments
         };
     }
-    getAttachmentData(documentId: string, attachmentId: string): Promise<BlobBuffer> {
-        throw new Error('Method not implemented.');
+    getAttachmentData(_documentId: string, _attachmentId: string): Promise<BlobBuffer> {
+        throw new Error('Attachments are not implemented in the lokijs RxStorage. Make a pull request.');
     }
     async getChangedDocuments(
         options: ChangeStreamOnceOptions
@@ -454,11 +468,19 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         return this.changes$.asObservable();
     }
     async close(): Promise<void> {
-        // TODO close loki database if all collections are removed already
+        this.changes$.complete();
+        OPEN_LOKIJS_STORAGE_INSTANCES.delete(this);
+        await closeLokiCollections(
+            this.databaseName,
+            [
+                this.internals.collection,
+                this.internals.changesCollection
+            ]
+        );
     }
     async remove(): Promise<void> {
         this.internals.loki.removeCollection(this.collectionName);
-        this.internals.loki.removeCollection(this.collectionName + CHANGES_COLLECTION_SUFFIX);
+        this.internals.loki.removeCollection(this.internals.changesCollection.name);
     }
 
 }
