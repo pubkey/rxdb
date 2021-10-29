@@ -610,13 +610,11 @@ async function createRxDatabaseStorageInstances<Internals, InstanceCreationOptio
         }
     );
 
-    const localDocumentsStore = await storage.createKeyObjectStorageInstance(
+    const localDocumentsStore = await storage.createKeyObjectStorageInstance({
         databaseName,
-        // TODO having to set an empty string here is ugly.
-        // we should change the rx-storage interface to account for non-collection storage instances.
-        '',
+        collectionName: '',
         options
-    );
+    });
 
     return {
         internalStore,
@@ -746,13 +744,12 @@ export async function removeRxDatabase(
                             options: {}
                         }
                     ),
-                    storage.createKeyObjectStorageInstance(
+                    storage.createKeyObjectStorageInstance({
                         databaseName,
-                        getCollectionLocalInstanceName(collectionName),
-                        {}
-                    )
+                        collectionName: getCollectionLocalInstanceName(collectionName),
+                        options: {}
+                    })
                 ]);
-
                 await Promise.all([instance.remove(), localInstance.remove()]);
             })
     );

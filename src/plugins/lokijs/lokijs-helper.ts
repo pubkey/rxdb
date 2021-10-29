@@ -23,14 +23,17 @@ export function getLokiEventKey(
 export const OPEN_LOKIJS_STORAGE_INSTANCES: Set<RxStorageKeyObjectInstanceLoki | RxStorageInstanceLoki<any>> = new Set();
 
 const LOKI_DATABASE_STATE_BY_NAME: Map<string, Promise<LokiDatabaseState>> = new Map();
-export function getLokiDatabase(databaseName: string, settings: Partial<LokiConstructorOptions>): Promise<LokiDatabaseState> {
+export function getLokiDatabase(
+    databaseName: string,
+    settings: Partial<LokiConstructorOptions>
+): Promise<LokiDatabaseState> {
     let databaseState: Promise<LokiDatabaseState> | undefined = LOKI_DATABASE_STATE_BY_NAME.get(databaseName);
     if (!databaseState) {
         databaseState = (async () => {
             const useSettings = Object.assign(
                 // defaults
                 {
-                    autosave: true,
+                    autosave: false,
                     autosaveInterval: 500,
                     verbose: true
                 },

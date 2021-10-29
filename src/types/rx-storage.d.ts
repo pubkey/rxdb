@@ -2,6 +2,9 @@ import type { ChangeEvent } from 'event-reduce-js';
 import { BlobBuffer } from './pouch';
 import { MangoQuery } from './rx-query';
 import { RxJsonSchema } from './rx-schema';
+import type {
+    LeaderElector
+} from 'broadcast-channel';
 
 
 /**
@@ -244,7 +247,30 @@ export type RxStorageInstanceCreationParams<DocumentData, InstanceCreationOption
     collectionName: string;
     schema: RxJsonSchema<DocumentData>;
     options: InstanceCreationOptions;
+    /**
+     * The leader elector is passed
+     * to the storage instance,
+     * so it can reuse the same leader elector
+     * as the RxDatabase instance uses.
+     * Is not given if multiInstance: false.
+     */
+    leaderElector?: LeaderElector
 }
+
+export type RxKeyObjectStorageInstanceCreationParams<InstanceCreationOptions> = {
+    databaseName: string;
+    collectionName: string;
+    options: InstanceCreationOptions;
+    /**
+     * The leader elector is passed
+     * to the storage instance,
+     * so it can reuse the same leader elector
+     * as the RxDatabase instance uses.
+     * Is not given if multiInstance: false.
+     */
+    leaderElector?: LeaderElector
+}
+
 
 export type ChangeStreamOptions = {
 

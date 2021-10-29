@@ -906,11 +906,13 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
         describe('RxStorageKeyObjectInstance', () => {
             describe('.bulkWrite()', () => {
                 it('should write the documents', async () => {
-                    const storageInstance = await rxStorageImplementation.getStorage().createKeyObjectStorageInstance(
-                        randomCouchString(12),
-                        randomCouchString(12),
-                        {}
-                    );
+                    const storageInstance = await rxStorageImplementation
+                        .getStorage()
+                        .createKeyObjectStorageInstance({
+                            databaseName: randomCouchString(12),
+                            collectionName: randomCouchString(12),
+                            options: {}
+                        });
 
                     const writeResponse = await storageInstance.bulkWrite(
                         [{
@@ -930,11 +932,13 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                     storageInstance.close();
                 });
                 it('should update the document', async () => {
-                    const storageInstance = await rxStorageImplementation.getStorage().createKeyObjectStorageInstance(
-                        randomCouchString(12),
-                        randomCouchString(12),
-                        {}
-                    );
+                    const storageInstance = await rxStorageImplementation
+                        .getStorage()
+                        .createKeyObjectStorageInstance({
+                            databaseName: randomCouchString(12),
+                            collectionName: randomCouchString(12),
+                            options: {}
+                        });
 
                     const writeResponse = await storageInstance.bulkWrite(
                         [{
@@ -964,11 +968,13 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                     storageInstance.close();
                 });
                 it('should error on conflict', async () => {
-                    const storageInstance = await rxStorageImplementation.getStorage().createKeyObjectStorageInstance(
-                        randomCouchString(12),
-                        randomCouchString(12),
-                        {}
-                    );
+                    const storageInstance = await rxStorageImplementation
+                        .getStorage()
+                        .createKeyObjectStorageInstance({
+                            databaseName: randomCouchString(12),
+                            collectionName: randomCouchString(12),
+                            options: {}
+                        });
 
                     const writeData = [{
                         document: {
@@ -994,11 +1000,13 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                     storageInstance.close();
                 });
                 it('should be able to delete', async () => {
-                    const storageInstance = await rxStorageImplementation.getStorage().createKeyObjectStorageInstance(
-                        randomCouchString(12),
-                        randomCouchString(12),
-                        {}
-                    );
+                    const storageInstance = await rxStorageImplementation
+                        .getStorage()
+                        .createKeyObjectStorageInstance({
+                            databaseName: randomCouchString(12),
+                            collectionName: randomCouchString(12),
+                            options: {}
+                        });
 
                     const writeDoc = {
                         _id: 'foobar',
@@ -1037,11 +1045,13 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
             });
             describe('.findLocalDocumentsById()', () => {
                 it('should find the documents', async () => {
-                    const storageInstance = await rxStorageImplementation.getStorage().createKeyObjectStorageInstance(
-                        randomCouchString(12),
-                        randomCouchString(12),
-                        {}
-                    );
+                    const storageInstance = await rxStorageImplementation
+                        .getStorage()
+                        .createKeyObjectStorageInstance({
+                            databaseName: randomCouchString(12),
+                            collectionName: randomCouchString(12),
+                            options: {}
+                        });
 
                     const writeData = {
                         _id: 'foobar',
@@ -1067,11 +1077,13 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
             });
             describe('.changeStream()', () => {
                 it('should emit exactly one event on write', async () => {
-                    const storageInstance = await rxStorageImplementation.getStorage().createKeyObjectStorageInstance(
-                        randomCouchString(12),
-                        randomCouchString(12),
-                        {}
-                    );
+                    const storageInstance = await rxStorageImplementation
+                        .getStorage()
+                        .createKeyObjectStorageInstance({
+                            databaseName: randomCouchString(12),
+                            collectionName: randomCouchString(12),
+                            options: {}
+                        });
 
                     const emitted: RxStorageChangeEvent<RxLocalDocumentData>[] = [];
                     const sub = storageInstance.changeStream().subscribe(x => {
@@ -1098,11 +1110,13 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                     storageInstance.close();
                 });
                 it('should emit all events', async () => {
-                    const storageInstance = await rxStorageImplementation.getStorage().createKeyObjectStorageInstance(
-                        randomCouchString(12),
-                        randomCouchString(12),
-                        {}
-                    );
+                    const storageInstance = await rxStorageImplementation
+                        .getStorage()
+                        .createKeyObjectStorageInstance({
+                            databaseName: randomCouchString(12),
+                            collectionName: randomCouchString(12),
+                            options: {}
+                        });
 
                     const emitted: RxStorageChangeEvent<RxLocalDocumentData>[] = [];
                     const sub = storageInstance.changeStream().subscribe(x => {
@@ -1157,11 +1171,13 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                 it('should have deleted all data', async () => {
                     const databaseName = randomCouchString(12);
                     const collectionName = randomCouchString(12);
-                    const storageInstance = await rxStorageImplementation.getStorage().createKeyObjectStorageInstance(
-                        databaseName,
-                        collectionName,
-                        {}
-                    );
+                    const storageInstance = await rxStorageImplementation
+                        .getStorage()
+                        .createKeyObjectStorageInstance({
+                            databaseName,
+                            collectionName,
+                            options: {}
+                        });
                     await storageInstance.bulkWrite([
                         {
                             document: {
@@ -1175,11 +1191,11 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                     ]);
                     await storageInstance.remove();
 
-                    const storageInstance2 = await rxStorageImplementation.getStorage().createKeyObjectStorageInstance(
+                    const storageInstance2 = await rxStorageImplementation.getStorage().createKeyObjectStorageInstance({
                         databaseName,
                         collectionName,
-                        {}
-                    );
+                        options: {}
+                    });
                     const docs = await storageInstance2.findLocalDocumentsById(['foobar']);
                     assert.strictEqual(docs.size, 0);
 

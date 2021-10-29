@@ -8,6 +8,7 @@ import type {
     ChangeStreamOnceOptions,
     PreparedQuery,
     RxDocumentData,
+    RxKeyObjectStorageInstanceCreationParams,
     RxLocalDocumentData,
     RxLocalStorageBulkWriteResponse,
     RxStorageBulkWriteResponse,
@@ -72,9 +73,7 @@ export interface RxStorage<Internals, InstanceCreationOptions> {
      * that is only cappable of saving schemaless key-object sets.
      */
     createKeyObjectStorageInstance(
-        databaseName: string,
-        collectionName: string,
-        options: InstanceCreationOptions
+        params: RxKeyObjectStorageInstanceCreationParams<InstanceCreationOptions>
     ): Promise<RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>>;
 }
 

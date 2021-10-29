@@ -5,6 +5,7 @@ import type {
     RxJsonSchema,
     RxStorageInstanceCreationParams,
     RxStorage,
+    RxKeyObjectStorageInstanceCreationParams,
 } from '../../types';
 
 import {
@@ -97,11 +98,9 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
     }
 
     public async createKeyObjectStorageInstance(
-        databaseName: string,
-        collectionName: string,
-        options: PouchSettings
+        params: RxKeyObjectStorageInstanceCreationParams<PouchSettings>
     ): Promise<RxStorageKeyObjectInstancePouch> {
-        const useOptions = flatClone(options);
+        const useOptions = flatClone(params.options);
         // no compaction because this only stores local documents
         useOptions.auto_compaction = false;
         useOptions.revs_limit = 1;
@@ -112,22 +111,22 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
          * reuse the same pouchdb instance?
          */
         const pouchLocation = getPouchLocation(
-            databaseName,
-            collectionName,
+            params.databaseName,
+            params.collectionName,
             0
         );
         const pouch = await this.createPouch(
             pouchLocation,
-            options
+            params.options
         );
 
         return new RxStorageKeyObjectInstancePouch(
-            databaseName,
-            collectionName,
+            params.databaseName,
+            params.collectionName,
             {
                 pouch
             },
-            options
+            params.options
         );
     }
 }

@@ -159,16 +159,16 @@ export async function createRxCollectionStorageInstances<RxDocumentType, Interna
         rxDatabase.storage.createStorageInstance<RxDocumentType>(
             storageInstanceCreationParams
         ),
-        rxDatabase.storage.createKeyObjectStorageInstance(
-            rxDatabase.name,
+        rxDatabase.storage.createKeyObjectStorageInstance({
+            databaseName: rxDatabase.name,
             /**
              * Use a different collection name for the local documents instance
              * so that the local docs can be kept while deleting the normal instance
              * after migration.
              */
-            getCollectionLocalInstanceName(collectionName),
-            instanceCreationOptions
-        )
+            collectionName: getCollectionLocalInstanceName(collectionName),
+            options: instanceCreationOptions
+        })
     ]);
 
     return {
