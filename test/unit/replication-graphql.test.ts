@@ -2605,7 +2605,8 @@ describe('replication-graphql.test.js', () => {
                 const ret = await getLastPullDocument(c2, endpointHash);
                 assert.strictEqual(ret, null);
 
-                c2.database.destroy();
+                await c.database.destroy();
+                await c2.database.destroy();
             });
         });
     });

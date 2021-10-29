@@ -26,8 +26,7 @@ import type {
 import {
     pluginMissing,
     flatClone,
-    PROMISE_RESOLVE_FALSE,
-    PROMISE_RESOLVE_VOID
+    PROMISE_RESOLVE_FALSE
 } from './util';
 import {
     newRxError
@@ -89,16 +88,6 @@ export class RxDatabaseBase<
     Internals, InstanceCreationOptions,
     Collections = CollectionsOfDatabase,
     > {
-
-    /**
-     * Stores information documents about the collections of the database
-     */
-    public internalStore: RxStorageInstance<InternalStoreDocumentData, Internals, InstanceCreationOptions> = {} as any;
-    /**
-     * Stores the local documents which are attached to this database.
-     */
-    public localDocumentsStore: RxStorageKeyObjectInstance<Internals, InstanceCreationOptions> = {} as any;
-
     constructor(
         public name: string,
         public storage: RxStorage<Internals, InstanceCreationOptions>,
@@ -107,6 +96,14 @@ export class RxDatabaseBase<
         public multiInstance: boolean,
         public eventReduce: boolean = false,
         public options: any = {},
+        /**
+         * Stores information documents about the collections of the database
+         */
+        public internalStore: RxStorageInstance<InternalStoreDocumentData, Internals, InstanceCreationOptions>,
+        /**
+         * Stores the local documents which are attached to this database.
+         */
+        public localDocumentsStore: RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>
     ) {
         this.collections = {} as any;
         DB_COUNT++;
@@ -212,42 +209,53 @@ export class RxDatabaseBase<
 
         const schemaHashByName: { [key in keyof CreatedCollections]: string } = {} as any;
         const collections = await Promise.all(
-            Object.entries(collectionCreators).map(([name, args]) => {
-                const useName: keyof CreatedCollections = name as any;
-                const internalDoc = internalDocByCollectionName[_collectionNamePrimary(name, collectionCreators[useName].schema)];
-                const useArgs: RxCollectionCreator & { name: keyof CreatedCollections; } = flatClone(args) as any;
-                useArgs.name = useName;
-                const schema = createRxSchema((args as RxCollectionCreator).schema);
-                schemaHashByName[useName] = schema.hash;
-                (useArgs as any).schema = schema;
-                (useArgs as any).database = this;
+            Object.entries(collectionCreators)
+                .map(([name, args]) => {
+                    const useName: keyof CreatedCollections = name as any;
+                    const internalDoc = internalDocByCollectionName[_collectionNamePrimary(name, collectionCreators[useName].schema)];
+                    const useArgs: RxCollectionCreator & { name: keyof CreatedCollections; } = flatClone(args) as any;
+                    useArgs.name = useName;
+                    const schema = createRxSchema((args as RxCollectionCreator).schema);
+                    schemaHashByName[useName] = schema.hash;
+                    (useArgs as any).schema = schema;
+                    (useArgs as any).database = this;
 
-                // TODO check if already exists and schema hash has changed
+                    // TODO check if already exists and schema hash has changed
 
-                // collection already exists
-                if ((this.collections as any)[name]) {
-                    throw newRxError('DB3', {
-                        name
-                    });
-                }
+                    // crypt=true but no password given
+                    if (
+                        schema.crypt &&
+                        !this.password
+                    ) {
+                        throw newRxError('DB7', {
+                            name: name as string
+                        });
+                    }
 
-                // collection already exists but has different schema
-                if (internalDoc && internalDoc.schemaHash !== schemaHashByName[useName]) {
-                    throw newRxError('DB6', {
-                        name: name,
-                        previousSchemaHash: internalDoc.schemaHash,
-                        schemaHash: schemaHashByName[useName]
-                    });
-                }
+                    // collection already exists
+                    if ((this.collections as any)[name]) {
+                        throw newRxError('DB3', {
+                            name
+                        });
+                    }
 
-                // run hooks
-                const hookData: RxCollectionCreator & { name: string; } = flatClone(args) as any;
-                (hookData as any).database = this;
-                hookData.name = name;
-                runPluginHooks('preCreateRxCollection', hookData);
+                    // collection already exists but has different schema
+                    if (internalDoc && internalDoc.schemaHash !== schemaHashByName[useName]) {
+                        throw newRxError('DB6', {
+                            name: name,
+                            previousSchemaHash: internalDoc.schemaHash,
+                            schemaHash: schemaHashByName[useName]
+                        });
+                    }
 
-                return createRxCollection(useArgs, !!internalDoc);
-            })
+                    // run hooks
+                    const hookData: RxCollectionCreator & { name: string; } = flatClone(args) as any;
+                    (hookData as any).database = this;
+                    hookData.name = name;
+                    runPluginHooks('preCreateRxCollection', hookData);
+
+                    return createRxCollection(useArgs, !!internalDoc);
+                })
         );
 
         const bulkPutDocs: BulkWriteRow<InternalStoreDocumentData>[] = [];
@@ -255,14 +263,6 @@ export class RxDatabaseBase<
         collections.forEach(collection => {
             const name: keyof CreatedCollections = collection.name as any;
             ret[name] = collection;
-            if (
-                collection.schema.crypt &&
-                !this.password
-            ) {
-                throw newRxError('DB7', {
-                    name: name as string
-                });
-            }
 
             // add to bulk-docs list
             if (!internalDocByCollectionName[name]) {
@@ -413,6 +413,17 @@ export class RxDatabaseBase<
 
         this._subs.map(sub => sub.unsubscribe());
 
+
+        /**
+         * Destroying the pseudo instance will throw
+         * because stulff is missing
+         * TODO we should not need the pseudo instance on runtime.
+         * we should generate the property list on build time.
+         */
+        if (this.name === 'pseudoInstance') {
+            return PROMISE_RESOLVE_FALSE;
+        }
+
         // first wait until db is idle
         return this.requestIdlePromise()
             // destroy all collections
@@ -422,9 +433,10 @@ export class RxDatabaseBase<
                     .map(col => col.destroy())
             ))
             // destroy internal storage instances
-            .then(() => this.internalStore.close ? this.internalStore.close() : null)
+            .then(() => this.internalStore.close())
+            .then(() => this.localDocumentsStore.close())
             // close broadcastChannel if exists
-            .then(() => this.broadcastChannel ? this.broadcastChannel.close() : PROMISE_RESOLVE_VOID)
+            .then(() => this.broadcastChannel ? this.broadcastChannel.close() : null)
             // remove combination from USED_COMBINATIONS-map
             .then(() => USED_DATABASE_NAMES.delete(this.name))
             .then(() => true);
@@ -618,18 +630,6 @@ async function createRxDatabaseStorageInstances<Internals, InstanceCreationOptio
 async function prepare<Internals, InstanceCreationOptions, Collections>(
     rxDatabase: RxDatabaseBase<Internals, InstanceCreationOptions, Collections>
 ): Promise<void> {
-    const storageInstances = await createRxDatabaseStorageInstances<
-        Internals,
-        InstanceCreationOptions
-    >(
-        rxDatabase.storage,
-        rxDatabase.name,
-        rxDatabase.instanceCreationOptions
-    );
-
-    rxDatabase.internalStore = storageInstances.internalStore as any;
-    rxDatabase.localDocumentsStore = storageInstances.localDocumentsStore as any;
-
     const localDocsSub = rxDatabase.localDocumentsStore.changeStream().subscribe(
         rxStorageChangeEvent => {
             rxDatabase.$emit(
@@ -688,19 +688,29 @@ export function createRxDatabase<
     }
     USED_DATABASE_NAMES.add(name);
 
-    const rxDatabase: RxDatabase<Collections> = new RxDatabaseBase(
-        name,
+    return createRxDatabaseStorageInstances<
+        Internals,
+        InstanceCreationOptions
+    >(
         storage,
-        instanceCreationOptions,
-        password,
-        multiInstance,
-        eventReduce,
-        options,
-    ) as any;
-
-    return prepare(rxDatabase)
-        .then(() => runAsyncPluginHooks('createRxDatabase', rxDatabase))
-        .then(() => rxDatabase);
+        name,
+        instanceCreationOptions as any
+    ).then(storageInstances => {
+        const rxDatabase: RxDatabase<Collections> = new RxDatabaseBase(
+            name,
+            storage,
+            instanceCreationOptions,
+            password,
+            multiInstance,
+            eventReduce,
+            options,
+            storageInstances.internalStore,
+            storageInstances.localDocumentsStore
+        ) as any;
+        return prepare(rxDatabase)
+            .then(() => runAsyncPluginHooks('createRxDatabase', rxDatabase))
+            .then(() => rxDatabase);
+    });
 }
 
 /**

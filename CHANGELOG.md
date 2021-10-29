@@ -1,5 +1,15 @@
 # Changelog
 
+
+### X.X.X (comming soon)
+
+Bugfixes:
+  - Fixed missing closings of `RxStorage` instances when the database or collection is destroyed.
+
+Other:
+  - Improved performance of write operations.
+
+
 ### 10.2.2 (25 October 2021)
 
 Bugfixes:

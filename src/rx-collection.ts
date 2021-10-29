@@ -114,6 +114,7 @@ import {
 } from './rx-document-prototype-merge';
 import { storageChangeEventToRxChangeEvent } from './rx-storage-helper';
 import { validateDatabaseName } from './plugins/dev-mode/check-names';
+import { overwritable } from './overwritable';
 
 const HOOKS_WHEN = ['pre', 'post'];
 const HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
@@ -130,6 +131,15 @@ export class RxCollectionBase<
         public database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions>,
         public name: string,
         public schema: RxSchema<RxDocumentType>,
+        /**
+         * Stores all 'normal' documents
+         */
+        public storageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>,
+        /**
+         * Stores the local documents so that they are not deleted
+         * when a migration runs.
+         */
+        public localDocumentsStore: RxStorageKeyObjectInstance<any, InstanceCreationOptions>,
         public instanceCreationOptions: InstanceCreationOptions = {} as any,
         public migrationStrategies: KeyFunctionMap = {},
         public methods: KeyFunctionMap = {},
@@ -181,16 +191,6 @@ export class RxCollectionBase<
     // TODO move _repStates into migration plugin
     public _repStates: Set<RxCouchDBReplicationState> = new Set();
 
-    // TODO use type RxStorageInstance when rx-storage is implemented
-    public storageInstance: RxStorageInstance<RxDocumentType, any, any> = {} as any;
-
-    /**
-     * Stores the local documents so that they are not deleted
-     * when a migration runs.
-     */
-    public localDocumentsStore: RxStorageKeyObjectInstance<any, any> = {} as any;
-
-
     public _docCache: DocCache<
         RxDocument<RxDocumentType, OrmMethods>
     > = createDocCache();
@@ -211,34 +211,7 @@ export class RxCollectionBase<
          * set to true if the collection data already exists on this storage adapter
          */
         wasCreatedBefore: boolean
-    ): Promise<any> {
-
-
-        const storageInstanceCreationParams: RxStorageInstanceCreationParams<RxDocumentType, InstanceCreationOptions> = {
-            databaseName: this.database.name,
-            collectionName: this.name,
-            schema: this.schema.jsonSchema,
-            options: this.instanceCreationOptions
-        };
-
-        runPluginHooks(
-            'preCreateRxStorageInstance',
-            storageInstanceCreationParams
-        );
-
-
-        const {
-            storageInstance,
-            localDocumentsStore
-        } = await createRxCollectionStorageInstances<RxDocumentType, any, InstanceCreationOptions>(
-            this.name,
-            this.database,
-            storageInstanceCreationParams,
-            this.instanceCreationOptions
-        );
-        this.storageInstance = storageInstance;
-        this.localDocumentsStore = localDocumentsStore;
-
+    ): Promise<void> {
         // we trigger the non-blocking things first and await them later so we can do stuff in the mean time
 
         this._crypter = createCrypter(this.database.password, this.schema);
@@ -251,7 +224,7 @@ export class RxCollectionBase<
         this._changeEventBuffer = createChangeEventBuffer(this.asRxCollection);
 
 
-        const subDocs = storageInstance.changeStream().pipe(
+        const subDocs = this.storageInstance.changeStream().pipe(
             map(storageEvent => storageChangeEventToRxChangeEvent(
                 false,
                 storageEvent,
@@ -296,9 +269,6 @@ export class RxCollectionBase<
 
     // overwritte by migration-plugin
     migrationNeeded(): Promise<boolean> {
-        if (this.schema.version === 0) {
-            return PROMISE_RESOLVE_FALSE;
-        }
         throw pluginMissing('migration');
     }
     getDataMigrator(): DataMigrator {
@@ -885,12 +855,16 @@ export class RxCollectionBase<
         }
         Array.from(this._repStates).forEach(replicationState => replicationState.cancel());
 
-        return this.storageInstance.close().then(() => {
-            delete this.database.collections[this.name];
-            this.destroyed = true;
-
-            return runAsyncPluginHooks('postDestroyRxCollection', this).then(() => true);
-        });
+        return Promise
+            .all([
+                this.storageInstance.close(),
+                this.localDocumentsStore.close()
+            ])
+            .then(() => {
+                delete this.database.collections[this.name];
+                this.destroyed = true;
+                return runAsyncPluginHooks('postDestroyRxCollection', this).then(() => true);
+            });
     }
 
     /**
@@ -990,54 +964,85 @@ export function createRxCollection(
 ): Promise<RxCollection> {
     validateDatabaseName(name);
 
-    // ensure it is a schema-object
-    if (!isInstanceOfRxSchema(schema)) {
-        schema = createRxSchema(schema);
+    // TODO move this check to dev-mode plugin
+    if (overwritable.isDevMode()) {
+        Object.keys(methods)
+            .filter(funName => schema.topLevelFields.includes(funName))
+            .forEach(funName => {
+                throw newRxError('COL18', {
+                    funName
+                });
+            });
     }
 
-    Object.keys(methods)
-        .filter(funName => schema.topLevelFields.includes(funName))
-        .forEach(funName => {
-            throw newRxError('COL18', {
-                funName
-            });
-        });
+    const storageInstanceCreationParams: RxStorageInstanceCreationParams<any, any> = {
+        databaseName: database.name,
+        collectionName: name,
+        schema: schema.jsonSchema,
+        options: instanceCreationOptions
+    };
 
-    const collection = new RxCollectionBase(
-        database,
-        name,
-        schema,
-        instanceCreationOptions,
-        migrationStrategies,
-        methods,
-        attachments,
-        options,
-        cacheReplacementPolicy,
-        statics
+    runPluginHooks(
+        'preCreateRxStorageInstance',
+        storageInstanceCreationParams
     );
 
-    return collection.prepare(wasCreatedBefore)
-        .then(() => {
+    return createRxCollectionStorageInstances(
+        name,
+        database,
+        storageInstanceCreationParams,
+        instanceCreationOptions
+    ).then(storageInstances => {
+        const collection = new RxCollectionBase(
+            database,
+            name,
+            schema,
+            storageInstances.storageInstance,
+            storageInstances.localDocumentsStore,
+            instanceCreationOptions,
+            migrationStrategies,
+            methods,
+            attachments,
+            options,
+            cacheReplacementPolicy,
+            statics
+        );
 
-            // ORM add statics
-            Object
-                .entries(statics)
-                .forEach(([funName, fun]) => {
-                    Object.defineProperty(collection, funName, {
-                        get: () => (fun as any).bind(collection)
+        return collection
+            .prepare(wasCreatedBefore)
+            .then(() => {
+                // ORM add statics
+                Object
+                    .entries(statics)
+                    .forEach(([funName, fun]) => {
+                        Object.defineProperty(collection, funName, {
+                            get: () => (fun as any).bind(collection)
+                        });
                     });
-                });
 
-            let ret = PROMISE_RESOLVE_VOID;
-            if (autoMigrate && collection.schema.version !== 0) {
-                ret = collection.migratePromise();
-            }
-            return ret;
-        })
-        .then(() => {
-            runPluginHooks('createRxCollection', collection);
-            return collection as any;
-        });
+                let ret = PROMISE_RESOLVE_VOID;
+                if (autoMigrate && collection.schema.version !== 0) {
+                    ret = collection.migratePromise();
+                }
+                return ret;
+            })
+            .then(() => {
+                runPluginHooks('createRxCollection', collection);
+                return collection as any;
+            })
+            /**
+             * If the collection creation fails,
+             * we yet have to close the storage instances.
+             */
+            .catch(err => {
+                return Promise
+                    .all([
+                        storageInstances.storageInstance.close(),
+                        storageInstances.localDocumentsStore.close()
+                    ])
+                    .then(() => Promise.reject(err));
+            });
+    });
 }
 
 export function isRxCollection(obj: any): boolean {

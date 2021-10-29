@@ -854,6 +854,7 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                     assert.strictEqual(docs.size, 0);
 
                     storageInstance.close();
+                    storageInstance2.close();
                 });
             });
         });
@@ -1138,6 +1139,7 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                     assert.strictEqual(docs.size, 0);
 
                     storageInstance.close();
+                    storageInstance2.close();
                 });
             });
         });

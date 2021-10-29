@@ -21,7 +21,8 @@ import {
     createRevision,
     PROMISE_RESOLVE_VOID,
     PROMISE_RESOLVE_FALSE,
-    PROMISE_RESOLVE_NULL
+    PROMISE_RESOLVE_NULL,
+    ensureNotFalsy
 } from '../../util';
 import {
     createRxSchema
@@ -31,7 +32,8 @@ import {
     newRxError
 } from '../../rx-error';
 import {
-    runAsyncPluginHooks, runPluginHooks
+    runAsyncPluginHooks,
+    runPluginHooks
 } from '../../hooks';
 import type {
     RxCollection,
@@ -61,7 +63,10 @@ import {
     getSingleDocument
 } from '../../rx-storage-helper';
 import { InternalStoreDocumentData } from '../../rx-database';
-import { _handleFromStorageInstance, _handleToStorageInstance } from '../../rx-collection-helper';
+import {
+    _handleFromStorageInstance,
+    _handleToStorageInstance
+} from '../../rx-collection-helper';
 
 export class DataMigrator {
 
@@ -81,6 +86,8 @@ export class DataMigrator {
 
     private _migrated: boolean = false;
     private _migratePromise?: Promise<any>;
+    private nonMigratedOldCollections: OldRxCollection[] = [];
+    private allOldCollections: OldRxCollection[] = [];
     migrate(batchSize: number = 10): Observable<MigrationState> {
         if (this._migrated) {
             throw newRxError('DM1');
@@ -114,12 +121,12 @@ export class DataMigrator {
          * so we do not have this problem.
          */
         (() => {
-            let oldCols: OldRxCollection[];
             return _getOldCollections(this)
                 .then(ret => {
-                    oldCols = ret;
+                    this.nonMigratedOldCollections = ret;
+                    this.allOldCollections = this.nonMigratedOldCollections.slice(0);
                     const countAll: Promise<number[]> = Promise.all(
-                        oldCols.map(oldCol => countAllUndeleted(oldCol.storageInstance))
+                        this.nonMigratedOldCollections.map(oldCol => countAllUndeleted(oldCol.storageInstance))
                     );
                     return countAll;
                 })
@@ -131,8 +138,7 @@ export class DataMigrator {
                         collection: this.newestCollection,
                         state: flatClone(state)
                     });
-                    let currentCol = oldCols.shift();
-
+                    let currentCol = this.nonMigratedOldCollections.shift();
                     let currentPromise = PROMISE_RESOLVE_VOID;
                     while (currentCol) {
                         const migrationState$ = migrateOldCollection(
@@ -153,14 +159,18 @@ export class DataMigrator {
                                     },
                                     (e: any) => {
                                         sub.unsubscribe();
+                                        this.allOldCollections.forEach(c => c.storageInstance.close());
                                         stateSubject.error(e);
                                     }, () => {
+                                        if (currentCol) {
+                                            currentCol.storageInstance.close();
+                                        }
                                         sub.unsubscribe();
                                         res();
                                     });
                             });
                         });
-                        currentCol = oldCols.shift();
+                        currentCol = this.nonMigratedOldCollections.shift();
                     }
                     return currentPromise;
                 })
@@ -191,7 +201,12 @@ export class DataMigrator {
                         return new Promise((res, rej) => {
                             const state$ = this.migrate(batchSize);
                             (state$ as any).subscribe(null, rej, res);
-                        });
+                            this.allOldCollections.forEach(c => c.storageInstance.close());
+                        })
+                            .catch(err => {
+                                this.allOldCollections.forEach(c => c.storageInstance.close());
+                                throw err;
+                            });
                     }
                 });
         }
@@ -237,17 +252,25 @@ export async function createOldCollection(
     return ret;
 }
 
+
+export async function getOldCollectionDocs(
+    dataMigrator: DataMigrator
+): Promise<RxDocumentData<InternalStoreDocumentData>[]> {
+    return Promise.all(
+        getPreviousVersions(dataMigrator.currentSchema.jsonSchema)
+            .map(v => getSingleDocument<InternalStoreDocumentData>(dataMigrator.database.internalStore, dataMigrator.name + '-' + v))
+            .map(fun => fun.catch(() => null)) // auto-catch so Promise.all continues
+    )
+        .then(oldCollectionDocs => (oldCollectionDocs as any).filter((d: any) => !!d));
+}
+
 /**
  * get an array with OldCollection-instances from all existing old storage-instances
  */
 export async function _getOldCollections(
     dataMigrator: DataMigrator
 ): Promise<OldRxCollection[]> {
-    const oldColDocs: (RxDocumentData<InternalStoreDocumentData> | null)[] = await Promise.all(
-        getPreviousVersions(dataMigrator.currentSchema.jsonSchema)
-            .map(v => getSingleDocument<InternalStoreDocumentData>(dataMigrator.database.internalStore, dataMigrator.name + '-' + v))
-            .map(fun => fun.catch(() => null)) // auto-catch so Promise.all continues
-    );
+    const oldColDocs = await getOldCollectionDocs(dataMigrator);
 
     return Promise.all(
         oldColDocs
@@ -273,10 +296,13 @@ export function mustMigrate(dataMigrator: DataMigrator): Promise<boolean> {
     if (dataMigrator.currentSchema.version === 0) {
         return PROMISE_RESOLVE_FALSE;
     }
-    return _getOldCollections(dataMigrator)
-        .then(oldCols => {
-            if (oldCols.length === 0) return false;
-            else return true;
+    return getOldCollectionDocs(dataMigrator)
+        .then(oldColDocs => {
+            if (oldColDocs.length === 0) {
+                return false;
+            } else {
+                return true;
+            }
         });
 }
 
