@@ -29,13 +29,18 @@ export function getLokiDatabase(
 ): Promise<LokiDatabaseState> {
     let databaseState: Promise<LokiDatabaseState> | undefined = LOKI_DATABASE_STATE_BY_NAME.get(databaseName);
     if (!databaseState) {
+        /**
+         * We assume that as soon as an adapter is passed,
+         * the database has to be persistend.
+         */
+        const hasPersistence = settings.adapter;
         databaseState = (async () => {
             const useSettings = Object.assign(
                 // defaults
                 {
-                    autosave: !!settings.adapter,
-                    persistenceMethod: settings.adapter ? null : 'memory',
-                    autosaveInterval: settings.adapter ? 500 : undefined,
+                    autosave: !!hasPersistence,
+                    persistenceMethod: hasPersistence ? null : 'memory',
+                    autosaveInterval: hasPersistence ? 500 : undefined,
                     verbose: true
                 },
                 settings
@@ -46,11 +51,13 @@ export function getLokiDatabase(
             );
 
             // Wait until all data is load from persistence adapter.
-            await new Promise<void>(res => {
-                database.loadDatabase({}, (_result) => {
-                    res();
+            if (hasPersistence) {
+                await new Promise<void>(res => {
+                    database.loadDatabase({}, (_result) => {
+                        res();
+                    });
                 });
-            });
+            }
 
             const state: LokiDatabaseState = {
                 database,
