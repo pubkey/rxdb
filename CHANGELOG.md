@@ -8,6 +8,7 @@ Bugfixes:
 
 Other:
   - Improved performance of write operations.
+  - Removed unnecessary abstraction layer of `LeaderElector`
 
 
 ### 10.2.2 (25 October 2021)

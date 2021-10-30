@@ -2,7 +2,7 @@ import randomToken from 'random-token';
 import { IdleQueue } from 'custom-idle-queue';
 import { BroadcastChannel } from 'broadcast-channel';
 
-import type { LeaderElector } from './plugins/leader-election';
+import type { LeaderElector } from 'broadcast-channel';
 import type {
     CollectionsOfDatabase,
     RxDatabase,
