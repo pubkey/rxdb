@@ -42,6 +42,7 @@ import {
     getLokiEventKey,
     OPEN_LOKIJS_STORAGE_INSTANCES
 } from './lokijs-helper';
+import type { BroadcastChannel } from 'broadcast-channel';
 
 export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
     RxDocType,
@@ -58,7 +59,8 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         public readonly collectionName: string,
         public readonly schema: Readonly<RxJsonSchema<RxDocType>>,
         public readonly internals: Readonly<LokiStorageInternals>,
-        public readonly options: Readonly<LokiSettings>
+        public readonly options: Readonly<LokiSettings>,
+        public readonly broadcastChannel?: BroadcastChannel
     ) {
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
         OPEN_LOKIJS_STORAGE_INSTANCES.add(this);

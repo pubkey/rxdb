@@ -2,7 +2,9 @@ console.log('######## init.test.js ########');
 require('source-map-support').install();
 import '@babel/polyfill';
 import config from './config';
-import BroadcastChannel from 'broadcast-channel';
+import {
+    clearNodeFolder
+} from 'broadcast-channel';
 
 // set faker seed
 import faker from 'faker';
@@ -59,6 +61,6 @@ if (config.platform.name === 'firefox') {
 
 describe('init.test.js', () => {
     it('clear BroadcastChannel tmp folder', async () => {
-        await BroadcastChannel.clearNodeFolder();
+        await clearNodeFolder();
     });
 });

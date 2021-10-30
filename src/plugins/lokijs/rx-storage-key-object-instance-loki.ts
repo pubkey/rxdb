@@ -1,13 +1,13 @@
 import type { ChangeEvent } from 'event-reduce-js';
 import { Observable, Subject } from 'rxjs';
 import { newRxError } from '../../rx-error';
+import type { BroadcastChannel } from 'broadcast-channel';
 import type {
     BulkWriteLocalRow,
     LokiSettings,
     LokiStorageInternals,
     RxLocalDocumentData,
     RxLocalStorageBulkWriteResponse,
-    RxStorageBulkWriteError,
     RxStorageBulkWriteLocalError,
     RxStorageChangeEvent,
     RxStorageKeyObjectInstance
@@ -20,13 +20,11 @@ import {
     promiseWait
 } from '../../util';
 import {
-    CHANGES_COLLECTION_SUFFIX,
     CHANGES_LOCAL_SUFFIX,
     closeLokiCollections,
     getLokiEventKey,
     OPEN_LOKIJS_STORAGE_INSTANCES
 } from './lokijs-helper';
-
 
 export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstance<LokiStorageInternals, LokiSettings> {
 
@@ -36,7 +34,8 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
         public readonly databaseName: string,
         public readonly collectionName: string,
         public readonly internals: Readonly<LokiStorageInternals>,
-        public readonly options: Readonly<LokiSettings>
+        public readonly options: Readonly<LokiSettings>,
+        public readonly broadcastChannel?: BroadcastChannel
     ) {
         OPEN_LOKIJS_STORAGE_INSTANCES.add(this);
     }

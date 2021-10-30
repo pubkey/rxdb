@@ -3,7 +3,7 @@ import { BlobBuffer } from './pouch';
 import { MangoQuery } from './rx-query';
 import { RxJsonSchema } from './rx-schema';
 import type {
-    LeaderElector
+    BroadcastChannel
 } from 'broadcast-channel';
 
 
@@ -248,13 +248,14 @@ export type RxStorageInstanceCreationParams<DocumentData, InstanceCreationOption
     schema: RxJsonSchema<DocumentData>;
     options: InstanceCreationOptions;
     /**
-     * The leader elector is passed
+     * The broadcastChannel is passed
      * to the storage instance,
      * so it can reuse the same leader elector
      * as the RxDatabase instance uses.
+     * Or send data between instnaces.
      * Is not given if multiInstance: false.
      */
-    leaderElector?: LeaderElector
+    broadcastChannel?: BroadcastChannel;
 }
 
 export type RxKeyObjectStorageInstanceCreationParams<InstanceCreationOptions> = {
@@ -262,13 +263,14 @@ export type RxKeyObjectStorageInstanceCreationParams<InstanceCreationOptions> = 
     collectionName: string;
     options: InstanceCreationOptions;
     /**
-     * The leader elector is passed
+     * The broadcastChannel is passed
      * to the storage instance,
      * so it can reuse the same leader elector
      * as the RxDatabase instance uses.
+     * Or send data between instnaces.
      * Is not given if multiInstance: false.
      */
-    leaderElector?: LeaderElector
+    broadcastChannel?: BroadcastChannel;
 }
 
 

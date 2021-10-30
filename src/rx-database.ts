@@ -89,21 +89,26 @@ export class RxDatabaseBase<
     Collections = CollectionsOfDatabase,
     > {
     constructor(
-        public name: string,
-        public storage: RxStorage<Internals, InstanceCreationOptions>,
-        public instanceCreationOptions: InstanceCreationOptions,
-        public password: any,
-        public multiInstance: boolean,
-        public eventReduce: boolean = false,
+        public readonly name: string,
+        public readonly storage: RxStorage<Internals, InstanceCreationOptions>,
+        public readonly instanceCreationOptions: InstanceCreationOptions,
+        public readonly password: any,
+        public readonly multiInstance: boolean,
+        public readonly eventReduce: boolean = false,
         public options: any = {},
         /**
          * Stores information documents about the collections of the database
          */
-        public internalStore: RxStorageInstance<InternalStoreDocumentData, Internals, InstanceCreationOptions>,
+        public readonly internalStore: RxStorageInstance<InternalStoreDocumentData, Internals, InstanceCreationOptions>,
         /**
          * Stores the local documents which are attached to this database.
          */
-        public localDocumentsStore: RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>
+        public readonly localDocumentsStore: RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>,
+        /**
+         * If multiInstance: true
+         * we need the broadcast channel for the database.
+         */
+        public readonly broadcastChannel?: BroadcastChannel
     ) {
         this.collections = {} as any;
         DB_COUNT++;
@@ -120,7 +125,6 @@ export class RxDatabaseBase<
     public collections: Collections;
     private subject: Subject<RxChangeEvent> = new Subject();
     private observable$: Observable<RxChangeEvent> = this.subject.asObservable();
-    public broadcastChannel?: BroadcastChannel;
     public storageToken?: string;
     public broadcastChannel$?: Subject<RxChangeEvent>;
 
@@ -566,12 +570,9 @@ export async function _removeAllOfCollection(
 }
 
 function _prepareBroadcastChannel<Collections>(rxDatabase: RxDatabase<Collections>): void {
-    // broadcastChannel
-    rxDatabase.broadcastChannel = new BroadcastChannel(
-        'RxDB:' +
-        rxDatabase.name + ':' +
-        'socket'
-    );
+    if (!rxDatabase.broadcastChannel) {
+        return;
+    }
     rxDatabase.broadcastChannel$ = new Subject();
     rxDatabase.broadcastChannel.onmessage = (msg: RxChangeEventBroadcastChannelData) => {
         if (msg.storageToken !== rxDatabase.storageToken) return; // not same storage-state
@@ -596,7 +597,8 @@ function _prepareBroadcastChannel<Collections>(rxDatabase: RxDatabase<Collection
 async function createRxDatabaseStorageInstances<Internals, InstanceCreationOptions>(
     storage: RxStorage<Internals, InstanceCreationOptions>,
     databaseName: string,
-    options: InstanceCreationOptions
+    options: InstanceCreationOptions,
+    broadcastChannel?: BroadcastChannel
 ): Promise<{
     internalStore: RxStorageInstance<InternalStoreDocumentData, Internals, InstanceCreationOptions>,
     localDocumentsStore: RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>
@@ -606,14 +608,16 @@ async function createRxDatabaseStorageInstances<Internals, InstanceCreationOptio
             databaseName,
             collectionName: INTERNAL_STORAGE_NAME,
             schema: getPseudoSchemaForVersion(0, 'collectionName'),
-            options
+            options,
+            broadcastChannel
         }
     );
 
     const localDocumentsStore = await storage.createKeyObjectStorageInstance({
         databaseName,
         collectionName: '',
-        options
+        options,
+        broadcastChannel
     });
 
     return {
@@ -686,6 +690,15 @@ export function createRxDatabase<
     }
     USED_DATABASE_NAMES.add(name);
 
+    let broadcastChannel: BroadcastChannel;
+    if (multiInstance) {
+        broadcastChannel = new BroadcastChannel(
+            'RxDB:' +
+            name + ':' +
+            'socket'
+        );
+    }
+
     return createRxDatabaseStorageInstances<
         Internals,
         InstanceCreationOptions
@@ -703,7 +716,8 @@ export function createRxDatabase<
             eventReduce,
             options,
             storageInstances.internalStore,
-            storageInstances.localDocumentsStore
+            storageInstances.localDocumentsStore,
+            broadcastChannel
         ) as any;
         return prepare(rxDatabase)
             .then(() => runAsyncPluginHooks('createRxDatabase', rxDatabase))
@@ -730,7 +744,7 @@ export async function removeRxDatabase(
         docs
             .map(async (colDoc) => {
                 const id = colDoc.collectionName;
-                const schema = colDoc.schema
+                const schema = colDoc.schema;
                 const split = id.split('-');
                 const collectionName = split[0];
                 const version = parseInt(split[1], 10);
