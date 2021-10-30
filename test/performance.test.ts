@@ -110,6 +110,9 @@ for (let r = 0; r < runs; r++) {
         it('clear broadcast-channel tmp-folder', async () => {
             await BroadcastChannel.clearNodeFolder();
         });
+        it('ensure garbage collector can be used', async () => {
+            await global.gc();
+        });
         it('wait a bit for jit', async () => {
             await AsyncTestUtil.wait(2000);
         });
