@@ -93,7 +93,7 @@ config.parallel('validate-z-schema.node.js', () => {
                 }
 
                 assert.ok(error);
-                assert.ok(error.parameters.errors.length > 0);
+                assert.ok((error as any).parameters.errors.length > 0);
                 db.destroy();
             });
         });

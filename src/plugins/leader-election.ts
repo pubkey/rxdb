@@ -4,54 +4,26 @@
 
 import {
     createLeaderElection,
-    LeaderElector as BroadcastChannelLeaderElector
+    LeaderElector
 } from 'broadcast-channel';
 
 import type {
     RxDatabase,
     RxPlugin
 } from '../types';
-import { PROMISE_RESOLVE_TRUE } from '../util';
+import {
+    ensureNotFalsy,
+    PROMISE_RESOLVE_TRUE
+} from '../util';
 
 const LEADER_ELECTORS_OF_DB: WeakMap<RxDatabase, LeaderElector> = new WeakMap();
 
-export class LeaderElector {
-    public destroyed: boolean = false;
-    public isLeader: boolean = false;
-    public isDead: boolean = false;
-    public elector: BroadcastChannelLeaderElector;
-    constructor(
-        public database: RxDatabase
-    ) {
-        this.elector = createLeaderElection(database.broadcastChannel as any);
-    }
-
-    die() {
-        return this.elector.die();
-    }
-
-    waitForLeadership(): Promise<boolean> {
-        return this.elector.awaitLeadership().then(() => {
-            this.isLeader = true;
-            return true;
-        });
-    }
-
-    destroy() {
-        if (this.destroyed) {
-            return;
-        }
-        this.destroyed = true;
-        this.isDead = true;
-        return this.die();
-    }
-}
-
 export function getForDatabase(this: RxDatabase): LeaderElector {
     if (!LEADER_ELECTORS_OF_DB.has(this)) {
+        const broadcastChannel = ensureNotFalsy(this.broadcastChannel);
         LEADER_ELECTORS_OF_DB.set(
             this,
-            new LeaderElector(this)
+            createLeaderElection(broadcastChannel)
         );
     }
     return LEADER_ELECTORS_OF_DB.get(this) as LeaderElector;
@@ -68,7 +40,9 @@ export function waitForLeadership(this: RxDatabase): Promise<boolean> {
     if (!this.multiInstance) {
         return PROMISE_RESOLVE_TRUE;
     } else {
-        return this.leaderElector().waitForLeadership();
+        return this.leaderElector()
+            .awaitLeadership()
+            .then(() => true);
     }
 }
 
@@ -78,7 +52,7 @@ export function waitForLeadership(this: RxDatabase): Promise<boolean> {
 export function onDestroy(db: RxDatabase) {
     const has = LEADER_ELECTORS_OF_DB.get(db);
     if (has) {
-        has.destroy();
+        has.die();
     }
 }
 

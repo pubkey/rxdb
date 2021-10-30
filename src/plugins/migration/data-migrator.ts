@@ -379,7 +379,7 @@ export function migrateDocumentData(
         try {
             oldCollection.newestCollection.schema.validate(doc);
         } catch (err) {
-            const asRxError: RxError = err;
+            const asRxError: RxError = err as any;
             throw newRxError('DM2', {
                 fromVersion: oldCollection.version,
                 toVersion: oldCollection.newestCollection.schema.version,

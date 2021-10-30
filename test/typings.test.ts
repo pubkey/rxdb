@@ -810,7 +810,7 @@ describe('typings.test.js', function () {
                     try{
                         await myCollections.humans.insert({ age: 4});
                     } catch(err) {
-                        if (err.rxdb) {
+                        if ((err as any).rxdb) {
                             (err as RxError).parameters.errors;
                         } else {
                             // handle regular Error class

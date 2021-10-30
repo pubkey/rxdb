@@ -308,7 +308,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         query: MangoQuery<RxDocType>
     ): SortComparator<RxDocType> {
         const primaryKey = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
-        const sortOptions: MangoQuerySortPart[] = query.sort ? query.sort : [{
+        const sortOptions: MangoQuerySortPart[] = query.sort ? (query.sort as any) : [{
             [this.primaryPath]: 'asc'
         }];
         const massagedSelector = massageSelector(query.selector);

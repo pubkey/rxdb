@@ -28,11 +28,11 @@ config.parallel('leader-election.test.js', () => {
             const c = await humansCollection.createMultiInstance(name);
             const leaderElector = c.database.leaderElector();
 
-            await leaderElector.waitForLeadership();
+            await c.database.waitForLeadership();
             await leaderElector.die();
 
             const c2 = await humansCollection.createMultiInstance(name);
-            await c2.database.leaderElector().waitForLeadership();
+            await c2.database.waitForLeadership();
 
             c.database.destroy();
             c2.database.destroy();
@@ -43,7 +43,7 @@ config.parallel('leader-election.test.js', () => {
         it('a single instance should always elect itself as leader', async () => {
             const c1 = await humansCollection.createMultiInstance(randomCouchString(10));
             const db1 = c1.database;
-            await db1.leaderElector().waitForLeadership();
+            await db1.waitForLeadership();
             c1.database.destroy();
         });
         it('should not elect as leader if other instance is leader', async () => {
@@ -53,7 +53,7 @@ config.parallel('leader-election.test.js', () => {
             const db1 = c1.database;
             const db2 = c2.database;
 
-            await db1.leaderElector().waitForLeadership();
+            await db1.waitForLeadership();
             await AsyncTestUtil.wait(150);
             assert.strictEqual(db2.isLeader(), false);
 
@@ -73,8 +73,8 @@ config.parallel('leader-election.test.js', () => {
                 const le1 = c1.database.leaderElector();
                 const le2 = c2.database.leaderElector();
 
-                le1.waitForLeadership();
-                le2.waitForLeadership();
+                c1.database.waitForLeadership();
+                c2.database.waitForLeadership();
 
                 await AsyncTestUtil.waitUntil(() => {
                     const leaders = [
@@ -98,7 +98,7 @@ config.parallel('leader-election.test.js', () => {
                 const c = await humansCollection.createMultiInstance(name);
                 dbs.push(c.database);
             }
-            dbs.forEach(db => db.leaderElector().waitForLeadership());
+            dbs.forEach(db => db.waitForLeadership());
 
             await AsyncTestUtil.waitUntil(() => {
                 const count = dbs
@@ -124,7 +124,7 @@ config.parallel('leader-election.test.js', () => {
                 const c = await humansCollection.createMultiInstance(name);
                 dbs.push(c.database);
             }
-            dbs.forEach(db => db.leaderElector().waitForLeadership());
+            dbs.forEach(db => db.waitForLeadership());
 
             await AsyncTestUtil.waitUntil(async () => {
                 const count = dbs
