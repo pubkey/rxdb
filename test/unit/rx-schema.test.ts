@@ -641,7 +641,7 @@ config.parallel('rx-schema.test.js', () => {
                     try {
                         schema.validate(obj);
                     } catch (err) {
-                        const message = err.parameters.errors[0].message;
+                        const message = (err as any).parameters.errors[0].message;
                         assert.ok(message.includes('additional'));
                         hasThrown = true;
                     }
@@ -666,7 +666,7 @@ config.parallel('rx-schema.test.js', () => {
                     try {
                         schema.validate(obj);
                     } catch (err) {
-                        const message = err.parameters.errors[0].message;
+                        const message = (err as any).parameters.errors[0].message;
                         assert.strictEqual(message, 'has additional properties');
                         hasThrown = true;
                     }
@@ -683,7 +683,7 @@ config.parallel('rx-schema.test.js', () => {
                     try {
                         schema.validate(obj);
                     } catch (err) {
-                        const deepParam = err.parameters.errors[0].field;
+                        const deepParam = (err as any).parameters.errors[0].field;
                         assert.strictEqual(deepParam, 'data.age');
                         hasThrown = true;
                     }
@@ -702,8 +702,8 @@ config.parallel('rx-schema.test.js', () => {
                         error = err;
                     }
                     assert.ok(error);
-                    assert.deepStrictEqual(error.parameters.obj.noval, undefined);
-                    const text = error.toString();
+                    assert.deepStrictEqual((error as any).parameters.obj.noval, undefined);
+                    const text = (error as any).toString();
                     assert.ok(text.includes('noval'));
                 });
             });
