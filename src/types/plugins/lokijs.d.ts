@@ -5,7 +5,7 @@ import lokijs, {
 import { RxStorageChangedDocumentMeta } from '../rx-storage';
 
 
-export type LokiDatabaseSettings = Partial<LokiConstructorOptions>;
+export type LokiDatabaseSettings = Partial<LokiConstructorOptions & LokiConfigOptions>;
 export type LokiCollectionSettings = Partial<CollectionOptions<any>>;
 
 export type LokiSettings = {

@@ -25,7 +25,7 @@ export const OPEN_LOKIJS_STORAGE_INSTANCES: Set<RxStorageKeyObjectInstanceLoki |
 const LOKI_DATABASE_STATE_BY_NAME: Map<string, Promise<LokiDatabaseState>> = new Map();
 export function getLokiDatabase(
     databaseName: string,
-    settings: Partial<LokiConstructorOptions>
+    settings: Partial<LokiConstructorOptions & LokiConfigOptions> = {}
 ): Promise<LokiDatabaseState> {
     let databaseState: Promise<LokiDatabaseState> | undefined = LOKI_DATABASE_STATE_BY_NAME.get(databaseName);
     if (!databaseState) {
@@ -33,8 +33,9 @@ export function getLokiDatabase(
             const useSettings = Object.assign(
                 // defaults
                 {
-                    autosave: false,
-                    autosaveInterval: 500,
+                    autosave: !!settings.adapter,
+                    persistenceMethod: settings.adapter ? null : 'memory',
+                    autosaveInterval: settings.adapter ? 500 : undefined,
                     verbose: true
                 },
                 settings
