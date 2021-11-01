@@ -38,7 +38,7 @@
     "mini-css-extract-plugin": "2.4.3",
     "ncp": "2.0.0",
     "rimraf": "3.0.2",
-    "style-loader": "3.3.0",
+    "style-loader": "3.3.1",
     "testcafe": "1.16.1",
     "testcafe-hammerhead": "24.5.6",
     "webpack": "5.58.2",
