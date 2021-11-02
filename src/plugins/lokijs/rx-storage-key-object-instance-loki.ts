@@ -6,6 +6,7 @@ import type {
     BulkWriteLocalRow,
     LokiSettings,
     LokiStorageInternals,
+    RxKeyObjectStorageInstanceCreationParams,
     RxLocalDocumentData,
     RxLocalStorageBulkWriteResponse,
     RxStorageBulkWriteLocalError,
@@ -20,11 +21,16 @@ import {
     promiseWait
 } from '../../util';
 import {
+    CHANGES_COLLECTION_SUFFIX,
     CHANGES_LOCAL_SUFFIX,
     closeLokiCollections,
+    getLokiDatabase,
     getLokiEventKey,
     OPEN_LOKIJS_STORAGE_INSTANCES
 } from './lokijs-helper';
+import type {
+    Collection
+} from 'lokijs';
 
 export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstance<LokiStorageInternals, LokiSettings> {
 
@@ -191,4 +197,52 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
         this.internals.loki.removeCollection(this.collectionName + CHANGES_LOCAL_SUFFIX);
         this.internals.loki.removeCollection(this.internals.changesCollection.name);
     }
+}
+
+
+export async function createLokiKeyObjectStorageInstance(
+    params: RxKeyObjectStorageInstanceCreationParams<LokiSettings>
+): Promise<RxStorageKeyObjectInstanceLoki> {
+    const databaseState = await getLokiDatabase(params.databaseName, params.options.database);
+
+    // TODO disable stuff we do not need from CollectionOptions
+    const collectionOptions: Partial<CollectionOptions<RxLocalDocumentData>> = Object.assign(
+        {},
+        params.options.collection,
+        {
+            indices: [],
+            unique: ['_id'],
+            disableChangesApi: true,
+            disableMeta: true
+        } as any
+    );
+
+    const localCollectionName = params.collectionName + CHANGES_LOCAL_SUFFIX;
+    const collection: Collection = databaseState.database.addCollection(
+        localCollectionName,
+        collectionOptions
+    );
+    databaseState.openCollections[localCollectionName] = collection;
+
+    const changesCollectionName = params.collectionName + CHANGES_LOCAL_SUFFIX + CHANGES_COLLECTION_SUFFIX;
+    const changesCollection: Collection = databaseState.database.addCollection(
+        changesCollectionName,
+        {
+            unique: ['eventId'],
+            indices: ['sequence'],
+            disableMeta: true
+        }
+    );
+    databaseState.openCollections[changesCollectionName] = changesCollection;
+
+    return new RxStorageKeyObjectInstanceLoki(
+        params.databaseName,
+        params.collectionName,
+        {
+            loki: databaseState.database,
+            collection,
+            changesCollection
+        },
+        params.options
+    );
 }

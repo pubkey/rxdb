@@ -75,7 +75,11 @@ export async function closeLokiCollections(
     databaseName: string,
     collections: Collection[]
 ) {
-    const databaseState = await ensureNotFalsy(LOKI_DATABASE_STATE_BY_NAME.get(databaseName));
+    const databaseState = await LOKI_DATABASE_STATE_BY_NAME.get(databaseName);
+    if (!databaseState) {
+        // already closed
+        return;
+    }
     collections.forEach(collection => {
         const collectionName = collection.name;
         delete databaseState.openCollections[collectionName];

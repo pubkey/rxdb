@@ -1,25 +1,31 @@
 import {
+    BlobBuffer,
+    BulkWriteRow,
+    ChangeStreamOnceOptions,
     LokiDatabaseSettings,
     LokiSettings,
     LokiStorageInternals,
+    MangoQuery,
     RxDocumentData,
+    RxJsonSchema,
     RxKeyObjectStorageInstanceCreationParams,
     RxLocalDocumentData,
     RxStorage,
-    RxStorageInstanceCreationParams
+    RxStorageBulkWriteResponse,
+    RxStorageChangedDocumentMeta,
+    RxStorageChangeEvent,
+    RxStorageInstance,
+    RxStorageInstanceCreationParams,
+    RxStorageQueryResult
 } from '../../types';
 import {
     Collection
 } from 'lokijs';
 import { hash } from '../../util';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
-import {
-    CHANGES_COLLECTION_SUFFIX,
-    CHANGES_LOCAL_SUFFIX,
-    getLokiDatabase
-} from './lokijs-helper';
-import { RxStorageInstanceLoki } from './rx-storage-instance-loki';
-import { RxStorageKeyObjectInstanceLoki } from './rx-storage-key-object-instance-loki';
+import { createLokiStorageInstance, RxStorageInstanceLoki } from './rx-storage-instance-loki';
+import { createLokiKeyObjectStorageInstance, RxStorageKeyObjectInstanceLoki } from './rx-storage-key-object-instance-loki';
+import { SortComparator, QueryMatcher } from 'event-reduce-js';
+import { Observable } from 'rxjs';
 
 export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettings> {
     public name = 'lokijs';
@@ -35,119 +41,66 @@ export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettin
     async createStorageInstance<RxDocType>(
         params: RxStorageInstanceCreationParams<RxDocType, LokiSettings>
     ): Promise<RxStorageInstanceLoki<RxDocType>> {
-        const databaseState = await getLokiDatabase(params.databaseName, params.options.database);
-
-        /**
-         * Construct loki indexes from RxJsonSchema indexes.
-         * TODO what about compound indexes? Are they possible in lokijs?
-         */
-        const indices: string[] = [];
-        if (params.schema.indexes) {
-            params.schema.indexes.forEach(idx => {
-                if (!Array.isArray(idx)) {
-                    indices.push(idx);
-                }
-            });
-        }
-        /**
-         * LokiJS has no concept of custom primary key, they use a number-id that is generated.
-         * To be able to query fast by primary key, we always add an index to the primary.
-         */
-        const primaryKey = getPrimaryFieldOfPrimaryKey(params.schema.primaryKey);
-        indices.push(primaryKey as string);
-
-        /**
-         * TODO disable stuff we do not need from CollectionOptions
-         */
-        const collectionOptions: Partial<CollectionOptions<RxDocumentData<RxDocType>>> = Object.assign(
-            {},
-            params.options.collection,
-            {
-                indices: indices as string[],
-                unique: [primaryKey],
-                disableChangesApi: true,
-                disableMeta: true
-            } as any
-        );
-
-        const collection: Collection = databaseState.database.addCollection(
-            params.collectionName,
-            collectionOptions as any
-        );
-        databaseState.openCollections[params.collectionName] = collection;
-
-        const changesCollectionName = params.collectionName + CHANGES_COLLECTION_SUFFIX;
-        const changesCollection: Collection = databaseState.database.addCollection(
-            changesCollectionName,
-            {
-                unique: ['eventId'],
-                indices: ['sequence'],
-                disableMeta: true
-            }
-        );
-        databaseState.openCollections[changesCollectionName] = changesCollection;
-
-        const instance = new RxStorageInstanceLoki(
-            params.databaseName,
-            params.collectionName,
-            params.schema,
-            {
-                loki: databaseState.database,
-                collection,
-                changesCollection
-            },
-            params.options
-        );
-
-        return instance;
+        return createLokiStorageInstance(params);
     }
 
     public async createKeyObjectStorageInstance(
         params: RxKeyObjectStorageInstanceCreationParams<LokiSettings>
     ): Promise<RxStorageKeyObjectInstanceLoki> {
-        const databaseState = await getLokiDatabase(params.databaseName, params.options.database);
-
-        // TODO disable stuff we do not need from CollectionOptions
-        const collectionOptions: Partial<CollectionOptions<RxLocalDocumentData>> = Object.assign(
-            {},
-            params.options.collection,
-            {
-                indices: [],
-                unique: ['_id'],
-                disableChangesApi: true,
-                disableMeta: true
-            } as any
-        );
-
-        const localCollectionName = params.collectionName + CHANGES_LOCAL_SUFFIX;
-        const collection: Collection = databaseState.database.addCollection(
-            localCollectionName,
-            collectionOptions
-        );
-        databaseState.openCollections[localCollectionName] = collection;
-
-        const changesCollectionName = params.collectionName + CHANGES_LOCAL_SUFFIX + CHANGES_COLLECTION_SUFFIX;
-        const changesCollection: Collection = databaseState.database.addCollection(
-            changesCollectionName,
-            {
-                unique: ['eventId'],
-                indices: ['sequence'],
-                disableMeta: true
-            }
-        );
-        databaseState.openCollections[changesCollectionName] = changesCollection;
-
-        return new RxStorageKeyObjectInstanceLoki(
-            params.databaseName,
-            params.collectionName,
-            {
-                loki: databaseState.database,
-                collection,
-                changesCollection
-            },
-            params.options
-        );
+        return createLokiKeyObjectStorageInstance(params);
     }
+}
+
+
+export class RxStorageInstanceLokiProxy<RxDocType> implements RxStorageInstance<RxDocType, LokiStorageInternals, LokiSettings> {
+    constructor(
+        public readonly databaseName: string,
+        public readonly collectionName: string,
+        public readonly schema: Readonly<RxJsonSchema<RxDocType>>,
+        public readonly internals: Readonly<LokiStorageInternals>,
+        public readonly options: Readonly<LokiSettings>,
+        public readonly broadcastChannel?: BroadcastChannel
+    ) {
+
+    }
+    prepareQuery(mutateableQuery: MangoQuery<RxDocType>) {
+        throw new Error('Method not implemented.');
+    }
+    getSortComparator(query: MangoQuery<RxDocType>): SortComparator<RxDocType> {
+        throw new Error('Method not implemented.');
+    }
+    getQueryMatcher(query: MangoQuery<RxDocType>): QueryMatcher<RxDocType> {
+        throw new Error('Method not implemented.');
+    }
+    bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>> {
+        throw new Error('Method not implemented.');
+    }
+    bulkAddRevisions(documents: RxDocumentData<RxDocType>[]): Promise<void> {
+        throw new Error('Method not implemented.');
+    }
+    findDocumentsById(ids: string[], deleted: boolean): Promise<Map<string, RxDocumentData<RxDocType>>> {
+        throw new Error('Method not implemented.');
+    }
+    query(preparedQuery: any): Promise<RxStorageQueryResult<RxDocType>> {
+        throw new Error('Method not implemented.');
+    }
+    getAttachmentData(documentId: string, attachmentId: string): Promise<BlobBuffer> {
+        throw new Error('Method not implemented.');
+    }
+    getChangedDocuments(options: ChangeStreamOnceOptions): Promise<{ changedDocuments: RxStorageChangedDocumentMeta[]; lastSequence: number; }> {
+        throw new Error('Method not implemented.');
+    }
+    changeStream(): Observable<RxStorageChangeEvent<RxDocumentData<RxDocType>>> {
+        throw new Error('Method not implemented.');
+    }
+    close(): Promise<void> {
+        throw new Error('Method not implemented.');
+    }
+    remove(): Promise<void> {
+        throw new Error('Method not implemented.');
+    }
+
+
 }
 
 export function getRxStorageLoki(

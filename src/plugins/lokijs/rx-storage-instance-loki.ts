@@ -4,7 +4,10 @@ import type {
     ChangeEvent
 } from 'event-reduce-js';
 import lokijs from 'lokijs';
-import { Subject, Observable } from 'rxjs';
+import {
+    Subject,
+    Observable
+} from 'rxjs';
 import {
     promiseWait,
     createRevision,
@@ -32,16 +35,22 @@ import type {
     MangoQuerySortPart,
     MangoQuerySortDirection,
     LokiStorageInternals,
-    RxStorageChangedDocumentMeta
+    RxStorageChangedDocumentMeta,
+    RxStorageInstanceCreationParams
 } from '../../types';
 import type {
     CompareFunction
 } from 'array-push-at-sort-position';
 import {
+    CHANGES_COLLECTION_SUFFIX,
     closeLokiCollections,
+    getLokiDatabase,
     getLokiEventKey,
     OPEN_LOKIJS_STORAGE_INSTANCES
 } from './lokijs-helper';
+import type {
+    Collection
+} from 'lokijs';
 import type { BroadcastChannel } from 'broadcast-channel';
 
 export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
@@ -432,7 +441,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         lastSequence: number;
     }> {
         const desc = options.order === 'desc';
-        const operator = options.order === 'asc' ? '$gt' : '$lt';
+        const operator = options.order === 'asc' ? '$gte' : '$lte';
         let query = this.internals.changesCollection
             .chain()
             .find({
@@ -485,4 +494,75 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         this.internals.loki.removeCollection(this.internals.changesCollection.name);
     }
 
+}
+
+
+export async function createLokiStorageInstance<RxDocType>(
+    params: RxStorageInstanceCreationParams<RxDocType, LokiSettings>
+): Promise<RxStorageInstanceLoki<RxDocType>> {
+    const databaseState = await getLokiDatabase(params.databaseName, params.options.database);
+
+    /**
+     * Construct loki indexes from RxJsonSchema indexes.
+     * TODO what about compound indexes? Are they possible in lokijs?
+     */
+    const indices: string[] = [];
+    if (params.schema.indexes) {
+        params.schema.indexes.forEach(idx => {
+            if (!Array.isArray(idx)) {
+                indices.push(idx);
+            }
+        });
+    }
+    /**
+     * LokiJS has no concept of custom primary key, they use a number-id that is generated.
+     * To be able to query fast by primary key, we always add an index to the primary.
+     */
+    const primaryKey = getPrimaryFieldOfPrimaryKey(params.schema.primaryKey);
+    indices.push(primaryKey as string);
+
+    /**
+     * TODO disable stuff we do not need from CollectionOptions
+     */
+    const collectionOptions: Partial<CollectionOptions<RxDocumentData<RxDocType>>> = Object.assign(
+        {},
+        params.options.collection,
+        {
+            indices: indices as string[],
+            unique: [primaryKey],
+            disableChangesApi: true,
+            disableMeta: true
+        } as any
+    );
+
+    const collection: Collection = databaseState.database.addCollection(
+        params.collectionName,
+        collectionOptions as any
+    );
+    databaseState.openCollections[params.collectionName] = collection;
+
+    const changesCollectionName = params.collectionName + CHANGES_COLLECTION_SUFFIX;
+    const changesCollection: Collection = databaseState.database.addCollection(
+        changesCollectionName,
+        {
+            unique: ['eventId'],
+            indices: ['sequence'],
+            disableMeta: true
+        }
+    );
+    databaseState.openCollections[changesCollectionName] = changesCollection;
+
+    const instance = new RxStorageInstanceLoki(
+        params.databaseName,
+        params.collectionName,
+        params.schema,
+        {
+            loki: databaseState.database,
+            collection,
+            changesCollection
+        },
+        params.options
+    );
+
+    return instance;
 }

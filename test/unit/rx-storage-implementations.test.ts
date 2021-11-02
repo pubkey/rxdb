@@ -20,6 +20,7 @@ import {
 } from '../../plugins/pouchdb';
 
 import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
+import { BroadcastChannel, createLeaderElection, LeaderElector } from 'broadcast-channel';
 addRxPlugin(RxDBKeyCompressionPlugin);
 import { RxDBValidatePlugin } from '../../plugins/validate';
 addRxPlugin(RxDBValidatePlugin);
@@ -31,17 +32,29 @@ import {
     waitUntil
 } from 'async-test-util';
 import {
+    PreparedQuery,
     RxDocumentData,
     RxDocumentWriteData,
     RxLocalDocumentData,
     RxStorage,
-    RxStorageChangeEvent
+    RxStorageChangeEvent,
+    RxStorageInstance
 } from '../../src/types';
 import { getRxStorageLoki } from '../../plugins/lokijs';
+import { HumanDocumentType } from '../helper/schema-objects';
+import { getLeaderElectorByBroadcastChannel } from '../../plugins/leader-election';
 
 addRxPlugin(RxDBQueryBuilderPlugin);
 
 declare type TestDocType = { key: string; value: string; };
+declare type MultiInstanceInstances = {
+    broadcastChannelA: BroadcastChannel,
+    broadcastChannelB: BroadcastChannel,
+    leaderElectorA: LeaderElector,
+    leaderElectorB: LeaderElector,
+    a: RxStorageInstance<TestDocType, any, any>,
+    b: RxStorageInstance<TestDocType, any, any>
+};
 
 
 function getWriteData(
@@ -1207,7 +1220,7 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
         describe('helper', () => {
             describe('.getNewestSequence()', () => {
                 it('should get the latest sequence', async () => {
-                    const storageInstance = await getRxStoragePouch('memory').createStorageInstance<{ key: string }>({
+                    const storageInstance = await rxStorageImplementation.getStorage().createStorageInstance<{ key: string }>({
                         databaseName: randomCouchString(12),
                         collectionName: randomCouchString(12),
                         schema: getPseudoSchemaForVersion(0, 'key'),
@@ -1233,8 +1246,84 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                     ]);
                     const latestAfter = await getNewestSequence(storageInstance);
                     assert.ok(latestAfter > latestBefore);
-
                     storageInstance.close();
+                });
+            });
+        });
+        describe('multiInstance', () => {
+            async function getMultiInstaneRxStorageInstance(): Promise<MultiInstanceInstances> {
+                const databaseName = randomCouchString(12);
+                const collectionName = randomCouchString(12);
+                const channelName = randomCouchString(12);
+                const broadcastChannelA = new BroadcastChannel(channelName);
+                const broadcastChannelB = new BroadcastChannel(channelName);
+                const leaderElectorA = getLeaderElectorByBroadcastChannel(broadcastChannelA);
+                const leaderElectorB = getLeaderElectorByBroadcastChannel(broadcastChannelB);
+                const a = await rxStorageImplementation.getStorage().createStorageInstance<TestDocType>({
+                    databaseName,
+                    collectionName,
+                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    options: {},
+                    broadcastChannel: broadcastChannelA
+                });
+                const b = await rxStorageImplementation.getStorage().createStorageInstance<TestDocType>({
+                    databaseName,
+                    collectionName,
+                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    options: {},
+                    broadcastChannel: broadcastChannelB
+                });
+                return {
+                    broadcastChannelA,
+                    broadcastChannelB,
+                    leaderElectorA,
+                    leaderElectorB,
+                    a,
+                    b
+                };
+            }
+            async function closeMultiInstaneRxStorageInstance(instances: MultiInstanceInstances) {
+                await instances.broadcastChannelA.close();
+                await instances.broadcastChannelB.close();
+                await instances.a.close();
+                await instances.b.close();
+            }
+            describe('RxStorageInstance', () => {
+                it('should be able to write and read documents', async () => {
+                    const instances = await getMultiInstaneRxStorageInstance();
+
+                    const emittedB: RxStorageChangeEvent<RxDocumentData<TestDocType>>[] = [];
+                    instances.b.changeStream().subscribe(ev => emittedB.push(ev));
+                    const emittedA: RxStorageChangeEvent<RxDocumentData<TestDocType>>[] = [];
+                    instances.a.changeStream().subscribe(ev => emittedA.push(ev));
+
+                    // insert a document on A
+                    const writeData = getWriteData();
+                    await instances.a.bulkWrite([{ document: writeData }]);
+
+                    // find the document on B
+                    await waitUntil(async () => {
+                        try {
+                            const foundAgain = await instances.b.findDocumentsById([writeData.key], false);
+                            const foundDoc = getFromMapOrThrow(foundAgain, writeData.key);
+                            assert.strictEqual(foundDoc.key, writeData.key);
+                            return true;
+                        } catch (err) {
+                            return false;
+                        }
+                    });
+
+                    // find via query
+                    const preparedQuery: PreparedQuery<TestDocType> = instances.b.prepareQuery({
+                        selector: {},
+                        limit: 1
+                    });
+                    const foundViaQuery = await instances.b.query(preparedQuery);
+                    const foundViaQueryDoc = foundViaQuery.documents.find(doc => doc.key === writeData.key);
+                    assert.ok(foundViaQueryDoc);
+
+                    // close both
+                    await closeMultiInstaneRxStorageInstance(instances);
                 });
             });
         });

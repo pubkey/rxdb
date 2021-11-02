@@ -146,7 +146,7 @@ export async function getNewestSequence(
     storageInstance: RxStorageInstance<any, any, any>
 ): Promise<number> {
     const changesResult = await storageInstance.getChangedDocuments({
-        order: 'desc',
+        order: 'asc',
         limit: 1,
         startSequence: 0
     });
