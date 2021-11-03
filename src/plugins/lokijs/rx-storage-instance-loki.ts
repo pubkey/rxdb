@@ -104,12 +104,20 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                     }
                     const operation = (msg as any).operation;
                     const params = (msg as any).params;
-                    const result = await (this as any)[operation](...params);
+                    let result: any;
+                    let isError = false;
+                    try {
+                        result = await (this as any)[operation](...params);
+                    } catch (err) {
+                        result = err;
+                        isError = true;
+                    }
                     const response: LokiRemoteResponseBroadcastMessage = {
                         response: true,
                         requestId: msg.requestId,
                         databaseName: this.databaseName,
                         result,
+                        isError,
                         type: msg.type
                     };
                     ensureNotFalsy(this.broadcastChannel).postMessage(response);
@@ -171,16 +179,23 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
     ): Promise<any | any[]> {
         const broadcastChannel = ensureNotFalsy(this.broadcastChannel);
         const requestId = randomCouchString(12);
-        const responsePromise = new Promise<any>(res => {
-            broadcastChannel.addEventListener('message', (msg) => {
+        const responsePromise = new Promise<any>((res, rej) => {
+            const listener = (msg: any) => {
                 if (
                     msg.type === BROADCAST_CHANNEL_MESSAGE_TYPE &&
-                    (msg as any).response === true &&
+                    msg.response === true &&
                     msg.requestId === requestId
                 ) {
-                    res((msg as any).result);
+                    if (msg.isError) {
+                        broadcastChannel.removeEventListener('message', listener);
+                        rej(msg.result);
+                    } else {
+                        broadcastChannel.removeEventListener('message', listener);
+                        res(msg.result);
+                    }
                 }
-            });
+            };
+            broadcastChannel.addEventListener('message', listener);
         });
         broadcastChannel.postMessage({
             type: BROADCAST_CHANNEL_MESSAGE_TYPE,

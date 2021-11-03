@@ -139,16 +139,23 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
     ): Promise<any | any[]> {
         const broadcastChannel = ensureNotFalsy(this.broadcastChannel);
         const requestId = randomCouchString(12);
-        const responsePromise = new Promise<any>(res => {
-            broadcastChannel.addEventListener('message', (msg) => {
+        const responsePromise = new Promise<any>((res, rej) => {
+            const listener = (msg: any) => {
                 if (
                     msg.type === BROADCAST_CHANNEL_MESSAGE_TYPE &&
-                    (msg as any).response === true &&
+                    msg.response === true &&
                     msg.requestId === requestId
                 ) {
-                    res((msg as any).result);
+                    if (msg.isError) {
+                        broadcastChannel.removeEventListener('message', listener);
+                        rej(msg.result);
+                    } else {
+                        broadcastChannel.removeEventListener('message', listener);
+                        res(msg.result);
+                    }
                 }
-            });
+            };
+            broadcastChannel.addEventListener('message', listener);
         });
         broadcastChannel.postMessage({
             type: BROADCAST_CHANNEL_MESSAGE_TYPE,
