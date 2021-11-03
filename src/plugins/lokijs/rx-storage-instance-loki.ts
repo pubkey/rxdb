@@ -48,7 +48,7 @@ import type {
     CompareFunction
 } from 'array-push-at-sort-position';
 import {
-    BROADCAST_CHANNEL_MESSAGE_TYPE,
+    LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE,
     CHANGES_COLLECTION_SUFFIX,
     closeLokiCollections,
     getLokiDatabase,
@@ -90,35 +90,41 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         if (broadcastChannel) {
             this.leaderElector = getLeaderElectorByBroadcastChannel(broadcastChannel);
             this.leaderElector.awaitLeadership().then(() => {
+                console.log('- is leader now ' + ensureNotFalsy(this.broadcastChannel).name);
                 // this instance is leader now, so it has to reply to queries from other instances
-                ensureNotFalsy(this.broadcastChannel).onmessage = async (msg) => {
+                ensureNotFalsy(this.broadcastChannel).addEventListener('message', async (msg) => {
+                    console.log('got bc message:');
+                    console.dir(msg);
                     if (
-                        msg.type !== BROADCAST_CHANNEL_MESSAGE_TYPE ||
-                        !msg.requestId ||
-                        (msg.databaseName && msg.databaseName !== this.databaseName)
+                        msg.type === LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE &&
+                        msg.requestId &&
+                        msg.databaseName === this.databaseName &&
+                        msg.collectionName === this.collectionName &&
+                        !msg.response
                     ) {
-                        return;
+
+                        const operation = (msg as any).operation;
+                        const params = (msg as any).params;
+                        let result: any;
+                        let isError = false;
+                        try {
+                            result = await (this as any)[operation](...params);
+                        } catch (err) {
+                            result = err;
+                            isError = true;
+                        }
+                        const response: LokiRemoteResponseBroadcastMessage = {
+                            response: true,
+                            requestId: msg.requestId,
+                            databaseName: this.databaseName,
+                            collectionName: this.collectionName,
+                            result,
+                            isError,
+                            type: msg.type
+                        };
+                        ensureNotFalsy(this.broadcastChannel).postMessage(response);
                     }
-                    const operation = (msg as any).operation;
-                    const params = (msg as any).params;
-                    let result: any;
-                    let isError = false;
-                    try {
-                        result = await (this as any)[operation](...params);
-                    } catch (err) {
-                        result = err;
-                        isError = true;
-                    }
-                    const response: LokiRemoteResponseBroadcastMessage = {
-                        response: true,
-                        requestId: msg.requestId,
-                        databaseName: this.databaseName,
-                        result,
-                        isError,
-                        type: msg.type
-                    };
-                    ensureNotFalsy(this.broadcastChannel).postMessage(response);
-                };
+                });
             });
         }
     }
@@ -155,6 +161,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             leaderElector.isLeader &&
             !this.internals.localState
         ) {
+            console.log('own is leader -> use local instance');
             // own is leader, use local instance
             this.internals.localState = createLokiLocalState({
                 databaseName: this.databaseName,
@@ -174,12 +181,13 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         operation: string,
         params: any[]
     ): Promise<any | any[]> {
+        console.log('requestRemoteInstance() ' + operation + ' - ' + ensureNotFalsy(this.broadcastChannel).name);
         const broadcastChannel = ensureNotFalsy(this.broadcastChannel);
         const requestId = randomCouchString(12);
         const responsePromise = new Promise<any>((res, rej) => {
             const listener = (msg: any) => {
                 if (
-                    msg.type === BROADCAST_CHANNEL_MESSAGE_TYPE &&
+                    msg.type === LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE &&
                     msg.response === true &&
                     msg.requestId === requestId
                 ) {
@@ -194,8 +202,10 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             };
             broadcastChannel.addEventListener('message', listener);
         });
+
         broadcastChannel.postMessage({
-            type: BROADCAST_CHANNEL_MESSAGE_TYPE,
+            response: false,
+            type: LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE,
             operation,
             params,
             requestId,
@@ -248,13 +258,14 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
     }
 
     getSortComparator(query: MangoQuery<RxDocType>): SortComparator<RxDocType> {
-        if (!query.sort) {
-            throw new Error('sort missing, we should at least sort by primaryKey');
-        }
-        const sort: MangoQuerySortPart<RxDocType>[] = query.sort;
+        // TODO if no sort is given, use sort by primary.
+        // This should be done inside of RxDB and not in the storage implementations.
+        const sortOptions: MangoQuerySortPart<RxDocType>[] = query.sort ? (query.sort as any) : [{
+            [this.primaryPath]: 'asc'
+        }];
         const fun: CompareFunction<RxDocType> = (a: RxDocType, b: RxDocType) => {
             let compareResult: number = 0; // 1 | -1
-            sort.find(sortPart => {
+            sortOptions.find(sortPart => {
                 const fieldName: string = Object.keys(sortPart)[0];
                 const direction: MangoQuerySortDirection = Object.values(sortPart)[0];
                 const directionMultiplier = direction === 'asc' ? 1 : -1;

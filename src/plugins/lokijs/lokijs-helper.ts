@@ -6,7 +6,8 @@ import { ensureNotFalsy } from '../../util';
 
 export const CHANGES_COLLECTION_SUFFIX = '-rxdb-changes';
 export const CHANGES_LOCAL_SUFFIX = '-rxdb-local';
-export const BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request';
+export const LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request';
+export const LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request-key-object';
 
 export function getLokiEventKey(
     isLocal: boolean,

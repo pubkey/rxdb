@@ -6,6 +6,7 @@ import type {
     BulkWriteLocalRow,
     LokiDatabaseSettings,
     LokiLocalState,
+    LokiRemoteRequestBroadcastMessage,
     LokiRemoteResponseBroadcastMessage,
     LokiSettings,
     LokiStorageInternals,
@@ -26,12 +27,12 @@ import {
     randomCouchString
 } from '../../util';
 import {
-    BROADCAST_CHANNEL_MESSAGE_TYPE,
     CHANGES_COLLECTION_SUFFIX,
     CHANGES_LOCAL_SUFFIX,
     closeLokiCollections,
     getLokiDatabase,
     getLokiEventKey,
+    LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE,
     OPEN_LOKIJS_STORAGE_INSTANCES
 } from './lokijs-helper';
 import type {
@@ -50,41 +51,43 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
         public readonly internals: LokiStorageInternals,
         public readonly options: Readonly<LokiSettings>,
         public readonly databaseSettings: LokiDatabaseSettings,
-        public readonly broadcastChannel?: BroadcastChannel
+        public readonly broadcastChannel?: BroadcastChannel<LokiRemoteRequestBroadcastMessage | LokiRemoteResponseBroadcastMessage>
     ) {
         OPEN_LOKIJS_STORAGE_INSTANCES.add(this);
         if (broadcastChannel) {
             this.leaderElector = getLeaderElectorByBroadcastChannel(broadcastChannel);
             this.leaderElector.awaitLeadership().then(() => {
                 // this instance is leader now, so it has to reply to queries from other instances
-                ensureNotFalsy(this.broadcastChannel).onmessage = async (msg) => {
+                ensureNotFalsy(this.broadcastChannel).addEventListener('message', async (msg) => {
                     if (
-                        msg.type !== BROADCAST_CHANNEL_MESSAGE_TYPE ||
-                        !msg.requestId ||
-                        (msg.databaseName && msg.databaseName !== this.databaseName)
+                        msg.type === LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE &&
+                        msg.requestId &&
+                        msg.databaseName === this.databaseName &&
+                        msg.collectionName === this.collectionName &&
+                        !msg.response
                     ) {
-                        return;
+                        const operation = (msg as any).operation;
+                        const params = (msg as any).params;
+                        let result: any;
+                        let isError = false;
+                        try {
+                            result = await (this as any)[operation](...params);
+                        } catch (err) {
+                            isError = true;
+                            result = err;
+                        }
+                        const response: LokiRemoteResponseBroadcastMessage = {
+                            response: true,
+                            requestId: msg.requestId,
+                            databaseName: this.databaseName,
+                            collectionName: this.collectionName,
+                            result,
+                            isError,
+                            type: msg.type
+                        };
+                        ensureNotFalsy(this.broadcastChannel).postMessage(response);
                     }
-                    const operation = (msg as any).operation;
-                    const params = (msg as any).params;
-                    let result: any;
-                    let isError = false;
-                    try {
-                        result = await (this as any)[operation](...params);
-                    } catch (err) {
-                        isError = true;
-                        result = err;
-                    }
-                    const response: LokiRemoteResponseBroadcastMessage = {
-                        response: true,
-                        requestId: msg.requestId,
-                        databaseName: this.databaseName,
-                        result,
-                        isError,
-                        type: msg.type
-                    };
-                    ensureNotFalsy(this.broadcastChannel).postMessage(response);
-                };
+                });
             });
         }
     }
@@ -144,7 +147,7 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
         const responsePromise = new Promise<any>((res, rej) => {
             const listener = (msg: any) => {
                 if (
-                    msg.type === BROADCAST_CHANNEL_MESSAGE_TYPE &&
+                    msg.type === LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE &&
                     msg.response === true &&
                     msg.requestId === requestId
                 ) {
@@ -160,7 +163,8 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
             broadcastChannel.addEventListener('message', listener);
         });
         broadcastChannel.postMessage({
-            type: BROADCAST_CHANNEL_MESSAGE_TYPE,
+            response: false,
+            type: LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE,
             operation,
             params,
             requestId,

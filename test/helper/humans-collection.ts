@@ -358,13 +358,14 @@ export async function createEncrypted(
 export async function createMultiInstance(
     name: string,
     amount = 0,
-    password = null
+    password = null,
+    storage: RxStorage<any, any> = getRxStoragePouch('memory')
 ): Promise<RxCollection<schemaObjects.HumanDocumentType, {}, {}>> {
     PouchDB.plugin(require('pouchdb-adapter-memory'));
 
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.HumanDocumentType> }>({
         name,
-        storage: getRxStoragePouch('memory'),
+        storage,
         password,
         multiInstance: true,
         eventReduce: true,

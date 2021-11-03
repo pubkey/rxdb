@@ -9,10 +9,13 @@ import {
 } from '../../plugins/core';
 
 import {
-    getRxStorageLoki, RxStorageInstanceLoki, RxStorageKeyObjectInstanceLoki
+    getRxStorageLoki,
+    RxStorageInstanceLoki,
+    RxStorageKeyObjectInstanceLoki
 } from '../../plugins/lokijs';
 
 import * as humansCollections from '../helper/humans-collection';
+import * as schemaObjects from '../helper/schema-objects';
 
 import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
 addRxPlugin(RxDBKeyCompressionPlugin);
@@ -51,6 +54,30 @@ config.parallel('rx-storage-lokijs.test.js', () => {
             assert.ok(storageInstance.leaderElector);
 
             await collection.database.destroy();
+        });
+        it('should work with 2 instances', async () => {
+            const databaseName = randomCouchString(12);
+            const col1 = await humansCollections.createMultiInstance(
+                databaseName,
+                0,
+                null,
+                getRxStorageLoki()
+            );
+            await col1.database.waitForLeadership();
+            const col2 = await humansCollections.createMultiInstance(
+                databaseName,
+                0,
+                null,
+                getRxStorageLoki()
+            );
+            await col1.insert(schemaObjects.human());
+            const doc2 = await col2.findOne().exec(true);
+            assert.ok(doc2);
+            const doc3 = await col1.findOne().exec(true);
+            assert.ok(doc3);
+
+            col1.database.destroy();
+            col2.database.destroy();
         });
         it('should use the given adapter', async () => {
             if (!config.platform.isNode()) {

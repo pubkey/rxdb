@@ -27,7 +27,8 @@ export type LokiStorageInternals = {
 };
 
 export type LokiRemoteRequestBroadcastMessage = {
-    type: string,
+    response: false;
+    type: string;
     databaseName: string;
     collectionName: string;
     operation: string;
@@ -39,6 +40,7 @@ export type LokiRemoteResponseBroadcastMessage = {
     response: true;
     type: string,
     databaseName: string;
+    collectionName: string;
     requestId: string;
     result: any | any[];
     // if true, the result property will contain an error state
