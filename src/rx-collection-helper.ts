@@ -152,6 +152,8 @@ export async function createRxCollectionStorageInstances<RxDocumentType, Interna
     localDocumentsStore: RxStorageKeyObjectInstance<any, InstanceCreationOptions>
 }> {
 
+    storageInstanceCreationParams.broadcastChannel = rxDatabase.broadcastChannel;
+
     const [
         storageInstance,
         localDocumentsStore
@@ -167,7 +169,8 @@ export async function createRxCollectionStorageInstances<RxDocumentType, Interna
              * after migration.
              */
             collectionName: getCollectionLocalInstanceName(collectionName),
-            options: instanceCreationOptions
+            options: instanceCreationOptions,
+            broadcastChannel: rxDatabase.broadcastChannel
         })
     ]);
 

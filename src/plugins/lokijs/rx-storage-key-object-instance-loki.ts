@@ -42,7 +42,7 @@ import { getLeaderElectorByBroadcastChannel } from '../leader-election';
 export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstance<LokiStorageInternals, LokiSettings> {
 
     private changes$: Subject<RxStorageChangeEvent<RxLocalDocumentData>> = new Subject();
-    private leaderElector?: LeaderElector;
+    public readonly leaderElector?: LeaderElector;
 
     constructor(
         public readonly databaseName: string,

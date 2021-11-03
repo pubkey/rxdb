@@ -64,8 +64,6 @@ import type {
 } from 'broadcast-channel';
 import { getLeaderElectorByBroadcastChannel } from '../leader-election';
 
-let instanceId = 1;
-
 export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
     RxDocType,
     LokiStorageInternals,
@@ -76,10 +74,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
     private changes$: Subject<RxStorageChangeEvent<RxDocumentData<RxDocType>>> = new Subject();
     private lastChangefeedSequence: number = 0;
 
-    private leaderElector?: LeaderElector;
-
-    // used for debugging
-    private readonly instanceId: number = instanceId++;
+    public readonly leaderElector?: LeaderElector;
 
     constructor(
         public readonly databaseName: string,
@@ -574,9 +569,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         if (!localState) {
             return this.requestRemoteInstance('query', [preparedQuery]);
         }
-
-        console.log('AAA');
-        console.log(JSON.stringify(preparedQuery, null, 4));
         let query = localState.collection
             .chain()
             .find(preparedQuery.selector);

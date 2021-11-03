@@ -9,7 +9,7 @@ import {
 } from '../../plugins/core';
 
 import {
-    getRxStorageLoki
+    getRxStorageLoki, RxStorageInstanceLoki, RxStorageKeyObjectInstanceLoki
 } from '../../plugins/lokijs';
 
 import * as humansCollections from '../helper/humans-collection';
@@ -17,6 +17,7 @@ import * as humansCollections from '../helper/humans-collection';
 import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
 addRxPlugin(RxDBKeyCompressionPlugin);
 import { RxDBValidatePlugin } from '../../plugins/validate';
+import { HumanDocumentType } from '../helper/schema-objects';
 addRxPlugin(RxDBValidatePlugin);
 
 /**
@@ -35,8 +36,21 @@ config.parallel('rx-storage-lokijs.test.js', () => {
             );
             const doc = await collection.findOne().exec(true);
             assert.ok(doc);
-            await collection.database.destroy();
 
+            // should have the same broadcastChannel as the database
+            const databaseBc = collection.database.broadcastChannel;
+            const storageInstance: RxStorageInstanceLoki<HumanDocumentType> = collection.storageInstance as any;
+            const localStorageInstance: RxStorageKeyObjectInstanceLoki = collection.localDocumentsStore as any;
+            const storageBc = storageInstance.broadcastChannel;
+            assert.ok(databaseBc);
+            assert.ok(storageBc);
+            assert.ok(localStorageInstance.broadcastChannel);
+
+            assert.ok(databaseBc === storageBc);
+            assert.ok(databaseBc === localStorageInstance.broadcastChannel);
+            assert.ok(storageInstance.leaderElector);
+
+            await collection.database.destroy();
         });
         it('should use the given adapter', async () => {
             if (!config.platform.isNode()) {
