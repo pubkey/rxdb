@@ -4,6 +4,7 @@ import { newRxError } from '../../rx-error';
 import type { BroadcastChannel, LeaderElector } from 'broadcast-channel';
 import type {
     BulkWriteLocalRow,
+    LokiDatabaseSettings,
     LokiLocalState,
     LokiRemoteResponseBroadcastMessage,
     LokiSettings,
@@ -48,6 +49,7 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
         public readonly collectionName: string,
         public readonly internals: LokiStorageInternals,
         public readonly options: Readonly<LokiSettings>,
+        public readonly databaseSettings: LokiDatabaseSettings,
         public readonly broadcastChannel?: BroadcastChannel
     ) {
         OPEN_LOKIJS_STORAGE_INSTANCES.add(this);
@@ -125,7 +127,7 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
                 collectionName: this.collectionName,
                 options: this.options,
                 broadcastChannel: this.broadcastChannel
-            });
+            }, this.databaseSettings);
             return this.getLocalState();
         } else {
             // other is leader, send message to remote leading instance
@@ -341,12 +343,13 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
 
 
 export async function createLokiKeyValueLocalState(
-    params: RxKeyObjectStorageInstanceCreationParams<LokiSettings>
+    params: RxKeyObjectStorageInstanceCreationParams<LokiSettings>,
+    databaseSettings: LokiDatabaseSettings
 ): Promise<LokiLocalState> {
-    if(!params.options){
+    if (!params.options) {
         params.options = {};
     }
-    const databaseState = await getLokiDatabase(params.databaseName, params.options.database);
+    const databaseState = await getLokiDatabase(params.databaseName, databaseSettings);
 
     // TODO disable stuff we do not need from CollectionOptions
     const collectionOptions: Partial<CollectionOptions<RxLocalDocumentData>> = Object.assign(
@@ -385,13 +388,15 @@ export async function createLokiKeyValueLocalState(
 }
 
 export async function createLokiKeyObjectStorageInstance(
-    params: RxKeyObjectStorageInstanceCreationParams<LokiSettings>
+    params: RxKeyObjectStorageInstanceCreationParams<LokiSettings>,
+    databaseSettings: LokiDatabaseSettings
 ): Promise<RxStorageKeyObjectInstanceLoki> {
 
     const internals: LokiStorageInternals = {};
     // optimisation shortcut, directly create db is non multi instance.
     if (!params.broadcastChannel) {
-        internals.localState = createLokiKeyValueLocalState(params);
+        internals.localState = createLokiKeyValueLocalState(params, databaseSettings);
+        await internals.localState;
     }
 
     return new RxStorageKeyObjectInstanceLoki(
@@ -399,6 +404,7 @@ export async function createLokiKeyObjectStorageInstance(
         params.collectionName,
         internals,
         params.options,
+        databaseSettings,
         params.broadcastChannel
     );
 }

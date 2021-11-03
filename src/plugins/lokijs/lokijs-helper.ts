@@ -1,7 +1,7 @@
 import type { RxStorageInstanceLoki } from './rx-storage-instance-loki';
 import type { RxStorageKeyObjectInstanceLoki } from './rx-storage-key-object-instance-loki';
 import lokijs, { Collection } from 'lokijs';
-import type { LokiDatabaseState } from '../../types';
+import type { LokiDatabaseSettings, LokiDatabaseState } from '../../types';
 import { ensureNotFalsy } from '../../util';
 
 export const CHANGES_COLLECTION_SUFFIX = '-rxdb-changes';
@@ -26,26 +26,36 @@ export const OPEN_LOKIJS_STORAGE_INSTANCES: Set<RxStorageKeyObjectInstanceLoki |
 const LOKI_DATABASE_STATE_BY_NAME: Map<string, Promise<LokiDatabaseState>> = new Map();
 export function getLokiDatabase(
     databaseName: string,
-    settings: Partial<LokiConstructorOptions & LokiConfigOptions> = {}
+    databaseSettings: LokiDatabaseSettings
 ): Promise<LokiDatabaseState> {
     let databaseState: Promise<LokiDatabaseState> | undefined = LOKI_DATABASE_STATE_BY_NAME.get(databaseName);
     if (!databaseState) {
+        console.log('getLokiDatabase()');
+        console.dir(databaseSettings);
         /**
          * We assume that as soon as an adapter is passed,
          * the database has to be persistend.
          */
-        const hasPersistence = settings.adapter;
+        const hasPersistence = !!databaseSettings.adapter;
         databaseState = (async () => {
+
+            let persistenceMethod = hasPersistence ? 'adapter' : 'memory';
+            if (databaseSettings.persistenceMethod) {
+                persistenceMethod = databaseSettings.persistenceMethod;
+            }
             const useSettings = Object.assign(
                 // defaults
                 {
-                    autosave: !!hasPersistence,
-                    persistenceMethod: hasPersistence ? null : 'memory',
+                    autoload: hasPersistence,
+                    autosave: hasPersistence,
+                    persistenceMethod,
                     autosaveInterval: hasPersistence ? 500 : undefined,
                     verbose: true
                 },
-                settings
+                databaseSettings
             );
+            console.log('useSettings:');
+            console.dir(useSettings);
             const database = new lokijs(
                 databaseName + '.db',
                 useSettings

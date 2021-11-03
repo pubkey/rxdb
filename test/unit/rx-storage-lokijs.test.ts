@@ -3,6 +3,8 @@ import assert from 'assert';
 import config from './config';
 import {
     addRxPlugin,
+    ensureNotFalsy,
+    getPseudoSchemaForVersion,
     randomCouchString
 } from '../../plugins/core';
 
@@ -35,7 +37,33 @@ config.parallel('rx-storage-lokijs.test.js', () => {
             assert.ok(doc);
             await collection.database.destroy();
 
-//            process.exit();
+        });
+        it('should use the given adapter', async () => {
+            if (!config.platform.isNode()) {
+                return;
+            }
+            /**
+             * @link https://github.com/techfort/LokiJS/blob/master/tutorials/Persistence%20Adapters.md#an-example-using-fastest-and-most-scalable-lokifsstructuredadapter-for-nodejs-might-look-like-
+             */
+            const lfsa = require('lokijs/src/loki-fs-structured-adapter.js');
+            const adapter = new lfsa();
+            const storage = getRxStorageLoki({
+                adapter
+            });
+            const storageInstance = await storage.createStorageInstance<{ key: string }>({
+                databaseName: randomCouchString(12),
+                collectionName: randomCouchString(12),
+                schema: getPseudoSchemaForVersion(0, 'key'),
+                options: {
+                    database: {}
+                }
+            });
+
+            const localState = await storageInstance.internals.localState;
+
+            assert.ok(ensureNotFalsy(localState).database.persistenceAdapter === adapter);
+            await storageInstance.bulkWrite([{ document: { key: 'foobar', _attachments: {} } }]);
+            storageInstance.close();
         });
     });
 

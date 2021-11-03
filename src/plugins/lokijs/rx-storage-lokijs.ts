@@ -20,7 +20,7 @@ export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettin
     public name = 'lokijs';
 
     constructor(
-        public databseSettings: LokiDatabaseSettings = {}
+        public databaseSettings: LokiDatabaseSettings
     ) { }
 
     hash(data: Buffer | Blob | string): Promise<string> {
@@ -30,18 +30,18 @@ export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettin
     async createStorageInstance<RxDocType>(
         params: RxStorageInstanceCreationParams<RxDocType, LokiSettings>
     ): Promise<RxStorageInstanceLoki<RxDocType>> {
-        return createLokiStorageInstance(params);
+        return createLokiStorageInstance(params, this.databaseSettings);
     }
 
     public async createKeyObjectStorageInstance(
         params: RxKeyObjectStorageInstanceCreationParams<LokiSettings>
     ): Promise<RxStorageKeyObjectInstanceLoki> {
-        return createLokiKeyObjectStorageInstance(params);
+        return createLokiKeyObjectStorageInstance(params, this.databaseSettings);
     }
 }
 
 export function getRxStorageLoki(
-    databaseSettings?: LokiDatabaseSettings
+    databaseSettings: LokiDatabaseSettings = {}
 ): RxStorageLoki {
     const storage = new RxStorageLoki(databaseSettings);
     return storage;

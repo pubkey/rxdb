@@ -41,7 +41,8 @@ import type {
     RxStorageInstanceCreationParams,
     LokiRemoteRequestBroadcastMessage,
     LokiRemoteResponseBroadcastMessage,
-    LokiLocalState
+    LokiLocalState,
+    LokiDatabaseSettings
 } from '../../types';
 import type {
     CompareFunction
@@ -86,6 +87,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         public readonly schema: Readonly<RxJsonSchema<RxDocType>>,
         public readonly internals: LokiStorageInternals,
         public readonly options: Readonly<LokiSettings>,
+        public readonly databaseSettings: LokiDatabaseSettings,
         public readonly broadcastChannel?: BroadcastChannel<LokiRemoteRequestBroadcastMessage | LokiRemoteResponseBroadcastMessage>
     ) {
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
@@ -165,7 +167,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 options: this.options,
                 schema: this.schema,
                 broadcastChannel: this.broadcastChannel
-            });
+            }, this.databaseSettings);
             return this.getLocalState();
         } else {
             // other is leader, send message to remote leading instance
@@ -666,12 +668,18 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
 }
 
 export async function createLokiLocalState<RxDocType>(
-    params: RxStorageInstanceCreationParams<RxDocType, LokiSettings>
+    params: RxStorageInstanceCreationParams<RxDocType, LokiSettings>,
+    databaseSettings: LokiDatabaseSettings
 ): Promise<LokiLocalState> {
     if (!params.options) {
         params.options = {};
     }
-    const databaseState = await getLokiDatabase(params.databaseName, params.options.database);
+
+
+    console.log('createLokiLocalState():');
+    console.dir(databaseSettings);
+
+    const databaseState = await getLokiDatabase(params.databaseName, databaseSettings);
 
     /**
      * Construct loki indexes from RxJsonSchema indexes.
@@ -732,12 +740,14 @@ export async function createLokiLocalState<RxDocType>(
 
 
 export async function createLokiStorageInstance<RxDocType>(
-    params: RxStorageInstanceCreationParams<RxDocType, LokiSettings>
+    params: RxStorageInstanceCreationParams<RxDocType, LokiSettings>,
+    databaseSettings: LokiDatabaseSettings
 ): Promise<RxStorageInstanceLoki<RxDocType>> {
     const internals: LokiStorageInternals = {};
     // optimisation shortcut, directly create db is non multi instance.
     if (!params.broadcastChannel) {
-        internals.localState = createLokiLocalState(params);
+        internals.localState = createLokiLocalState(params, databaseSettings);
+        await internals.localState;
     }
 
     const instance = new RxStorageInstanceLoki(
@@ -746,6 +756,7 @@ export async function createLokiStorageInstance<RxDocType>(
         params.schema,
         internals,
         params.options,
+        databaseSettings,
         params.broadcastChannel
     );
 
