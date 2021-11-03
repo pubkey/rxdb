@@ -8,7 +8,7 @@ This can be either done with complex caching strategies, or by using an offline 
 
 While in the past, internet connection was an unstable, things are changing especially for mobile devices.
 Mobile networks become better and having no internet becomes less common even in remote locations.
-So if we did no care about offline first applications in the past, why should we even care now?
+So if we did not care about offline first applications in the past, why should we even care now?
 In the following I will point out why offline first applications are better, not because they support offline usage, but because of other reasons.
 
 ## UX is better without loading spinners
