@@ -96,7 +96,7 @@ const dumpRxCollection = function (
         json.encrypted = true;
     }
 
-    const query = createRxQuery('find', _getDefaultQuery(this), this);
+    const query = createRxQuery('find', _getDefaultQuery(), this);
     return this._queryStorageInstance(query, undefined, encrypted)
         .then((docs: any) => {
             json.docs = docs.map((docData: any) => {

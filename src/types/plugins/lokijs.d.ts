@@ -7,8 +7,8 @@ export type LokiDatabaseSettings = Partial<LokiConstructorOptions & LokiConfigOp
 export type LokiCollectionSettings = Partial<CollectionOptions<any>>;
 
 export type LokiSettings = {
-    database: LokiDatabaseSettings;
-    collection: LokiCollectionSettings;
+    database?: LokiDatabaseSettings;
+    collection?: LokiCollectionSettings;
 };
 
 export type LokiLocalState = {

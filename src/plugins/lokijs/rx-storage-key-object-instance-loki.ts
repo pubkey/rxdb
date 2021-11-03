@@ -343,6 +343,9 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
 export async function createLokiKeyValueLocalState(
     params: RxKeyObjectStorageInstanceCreationParams<LokiSettings>
 ): Promise<LokiLocalState> {
+    if(!params.options){
+        params.options = {};
+    }
     const databaseState = await getLokiDatabase(params.databaseName, params.options.database);
 
     // TODO disable stuff we do not need from CollectionOptions

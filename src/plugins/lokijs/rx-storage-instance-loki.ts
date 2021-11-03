@@ -236,6 +236,8 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
     }
 
     prepareQuery(mutateableQuery: MangoQuery<RxDocType>) {
+        console.log('prepareQuery:');
+        console.log(JSON.stringify(mutateableQuery, null, 4));
         mutateableQuery.selector = {
             $and: [
                 {
@@ -244,6 +246,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 mutateableQuery.selector
             ]
         };
+        console.log(JSON.stringify(mutateableQuery, null, 4));
         return mutateableQuery;
     }
 
@@ -570,6 +573,8 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             return this.requestRemoteInstance('query', [preparedQuery]);
         }
 
+        console.log('AAA');
+        console.log(JSON.stringify(preparedQuery, null, 4));
         let query = localState.collection
             .chain()
             .find(preparedQuery.selector);
@@ -663,6 +668,9 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
 export async function createLokiLocalState<RxDocType>(
     params: RxStorageInstanceCreationParams<RxDocType, LokiSettings>
 ): Promise<LokiLocalState> {
+    if (!params.options) {
+        params.options = {};
+    }
     const databaseState = await getLokiDatabase(params.databaseName, params.options.database);
 
     /**

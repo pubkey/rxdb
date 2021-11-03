@@ -1,23 +1,13 @@
 import assert from 'assert';
 
 import config from './config';
-import * as schemaObjects from '../helper/schema-objects';
 import {
     addRxPlugin,
     randomCouchString,
-    getPseudoSchemaForVersion,
-    getFromMapOrThrow,
-    getNewestSequence,
-    lastOfArray,
-    writeSingle,
-    blobBufferUtil,
-    flatClone,
-    MangoQuery,
     PouchDBInstance
 } from '../../plugins/core';
 
 import {
-    getRxStoragePouch,
     addCustomEventsPluginToPouch,
     getCustomEventEmitterByPouch,
     PouchDB
@@ -30,13 +20,7 @@ import { RxDBValidatePlugin } from '../../plugins/validate';
 addRxPlugin(RxDBValidatePlugin);
 
 import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder';
-import { randomString, wait, waitUntil } from 'async-test-util';
-import {
-    RxDocumentData,
-    RxDocumentWriteData,
-    RxLocalDocumentData,
-    RxStorageChangeEvent
-} from '../../src/types';
+import { waitUntil } from 'async-test-util';
 
 addRxPlugin(RxDBQueryBuilderPlugin);
 
