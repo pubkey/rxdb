@@ -15,7 +15,9 @@ import {
     parseRevision,
     lastOfArray,
     flatClone,
-    now
+    now,
+    ensureNotFalsy,
+    randomCouchString
 } from '../../util';
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
@@ -36,12 +38,16 @@ import type {
     MangoQuerySortDirection,
     LokiStorageInternals,
     RxStorageChangedDocumentMeta,
-    RxStorageInstanceCreationParams
+    RxStorageInstanceCreationParams,
+    LokiRemoteRequestBroadcastMessage,
+    LokiRemoteResponseBroadcastMessage,
+    LokiLocalState
 } from '../../types';
 import type {
     CompareFunction
 } from 'array-push-at-sort-position';
 import {
+    BROADCAST_CHANNEL_MESSAGE_TYPE,
     CHANGES_COLLECTION_SUFFIX,
     closeLokiCollections,
     getLokiDatabase,
@@ -51,7 +57,13 @@ import {
 import type {
     Collection
 } from 'lokijs';
-import type { BroadcastChannel } from 'broadcast-channel';
+import type {
+    BroadcastChannel,
+    LeaderElector
+} from 'broadcast-channel';
+import { getLeaderElectorByBroadcastChannel } from '../leader-election';
+
+let instanceId = 1;
 
 export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
     RxDocType,
@@ -63,16 +75,123 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
     private changes$: Subject<RxStorageChangeEvent<RxDocumentData<RxDocType>>> = new Subject();
     private lastChangefeedSequence: number = 0;
 
+    private leaderElector?: LeaderElector;
+
+    // used for debugging
+    private readonly instanceId: number = instanceId++;
+
     constructor(
         public readonly databaseName: string,
         public readonly collectionName: string,
         public readonly schema: Readonly<RxJsonSchema<RxDocType>>,
-        public readonly internals: Readonly<LokiStorageInternals>,
+        public readonly internals: LokiStorageInternals,
         public readonly options: Readonly<LokiSettings>,
-        public readonly broadcastChannel?: BroadcastChannel
+        public readonly broadcastChannel?: BroadcastChannel<LokiRemoteRequestBroadcastMessage | LokiRemoteResponseBroadcastMessage>
     ) {
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
         OPEN_LOKIJS_STORAGE_INSTANCES.add(this);
+        if (broadcastChannel) {
+            this.leaderElector = getLeaderElectorByBroadcastChannel(broadcastChannel);
+            this.leaderElector.awaitLeadership().then(() => {
+                // this instance is leader now, so it has to reply to queries from other instances
+                ensureNotFalsy(this.broadcastChannel).onmessage = async (msg) => {
+                    if (
+                        msg.type !== BROADCAST_CHANNEL_MESSAGE_TYPE ||
+                        !msg.requestId ||
+                        (msg.databaseName && msg.databaseName !== this.databaseName)
+                    ) {
+                        return;
+                    }
+                    const operation = (msg as any).operation;
+                    const params = (msg as any).params;
+                    const result = await (this as any)[operation](...params);
+                    const response: LokiRemoteResponseBroadcastMessage = {
+                        response: true,
+                        requestId: msg.requestId,
+                        databaseName: this.databaseName,
+                        result,
+                        type: msg.type
+                    };
+                    ensureNotFalsy(this.broadcastChannel).postMessage(response);
+                };
+            });
+        }
+    }
+
+    private getLocalState() {
+        const ret = ensureNotFalsy(this.internals.localState);
+        return ret;
+    }
+
+    /**
+     * If the local state must be used, that one is returned.
+     * Returns false if a remote instance must be used.
+     */
+    private async mustUseLocalState(): Promise<LokiLocalState | false> {
+        if (this.internals.localState) {
+            return this.internals.localState;
+        }
+        const leaderElector = ensureNotFalsy(this.leaderElector);
+        while (
+            !leaderElector.hasLeader
+        ) {
+            await leaderElector.applyOnce();
+
+            // TODO why do we need this line to pass the tests?
+            // otherwise we somehow do never get a leader.
+            /**
+             * TODO why do we need this line to pass the tests?
+             * Without it, we somehow do never get a leader.
+             * Does applyOnce() fully block the cpu?
+             */
+            await promiseWait(0); // TODO remove this line
+        }
+        if (
+            leaderElector.isLeader &&
+            !this.internals.localState
+        ) {
+            // own is leader, use local instance
+            this.internals.localState = createLokiLocalState({
+                databaseName: this.databaseName,
+                collectionName: this.collectionName,
+                options: this.options,
+                schema: this.schema,
+                broadcastChannel: this.broadcastChannel
+            });
+            return this.getLocalState();
+        } else {
+            // other is leader, send message to remote leading instance
+            return false;
+        }
+    }
+
+    private async requestRemoteInstance(
+        operation: string,
+        params: any[]
+    ): Promise<any | any[]> {
+        const broadcastChannel = ensureNotFalsy(this.broadcastChannel);
+        const requestId = randomCouchString(12);
+        const responsePromise = new Promise<any>(res => {
+            broadcastChannel.addEventListener('message', (msg) => {
+                if (
+                    msg.type === BROADCAST_CHANNEL_MESSAGE_TYPE &&
+                    (msg as any).response === true &&
+                    msg.requestId === requestId
+                ) {
+                    res((msg as any).result);
+                }
+            });
+        });
+        broadcastChannel.postMessage({
+            type: BROADCAST_CHANNEL_MESSAGE_TYPE,
+            operation,
+            params,
+            requestId,
+            databaseName: this.databaseName,
+            collectionName: this.collectionName
+        });
+        const result = await responsePromise;
+        return result;
     }
 
     /**
@@ -80,9 +199,10 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
      * that can be queried to check which documents have been
      * changed since sequence X.
      */
-    private addChangeDocumentMeta(id: string) {
+    private async addChangeDocumentMeta(id: string) {
+        const localState = await this.getLocalState();
         if (!this.lastChangefeedSequence) {
-            const lastDoc = this.internals.changesCollection
+            const lastDoc = localState.changesCollection
                 .chain()
                 .simplesort('sequence', true)
                 .limit(1)
@@ -93,7 +213,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         }
 
         const nextFeedSequence = this.lastChangefeedSequence + 1;
-        this.internals.changesCollection.insert({
+        localState.changesCollection.insert({
             id,
             sequence: nextFeedSequence
         });
@@ -111,13 +231,12 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         };
         return mutateableQuery;
     }
+
     getSortComparator(query: MangoQuery<RxDocType>): SortComparator<RxDocType> {
         if (!query.sort) {
             throw new Error('sort missing, we should at least sort by primaryKey');
         }
-
         const sort: MangoQuerySortPart<RxDocType>[] = query.sort;
-
         const fun: CompareFunction<RxDocType> = (a: RxDocType, b: RxDocType) => {
             let compareResult: number = 0; // 1 | -1
             sort.find(sortPart => {
@@ -170,6 +289,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         }
         return fun;
     }
+
     async bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         if (documentWrites.length === 0) {
             throw newRxError('P2', {
@@ -179,13 +299,18 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             });
         }
 
+        const localState = await this.mustUseLocalState();
+        if (!localState) {
+            return this.requestRemoteInstance('bulkWrite', [documentWrites]);
+        }
+
         /**
          * lokijs is in memory and non-async, so we emulate async behavior
          * to ensure all RxStorage implementations behave equal.
          */
         await promiseWait(0);
 
-        const collection = this.internals.collection;
+        const collection = localState.collection;
 
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
             success: new Map(),
@@ -302,11 +427,10 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                     ret.success.set(id, writeDoc as any);
                 }
             }
-
         });
-
         return ret;
     }
+
     async bulkAddRevisions(documents: RxDocumentData<RxDocType>[]): Promise<void> {
         if (documents.length === 0) {
             throw newRxError('P3', {
@@ -316,13 +440,18 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             });
         }
 
+        const localState = await this.mustUseLocalState();
+        if (!localState) {
+            return this.requestRemoteInstance('bulkAddRevisions', [documents]);
+        }
+
         /**
          * lokijs is in memory and non-async, so we emulate async behavior
          * to ensure all RxStorage implementations behave equal.
          */
         await promiseWait(0);
         const startTime = now();
-        const collection = this.internals.collection;
+        const collection = localState.collection;
 
         documents.forEach(docData => {
             const id: string = docData[this.primaryPath] as any;
@@ -401,8 +530,12 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         });
     }
     async findDocumentsById(ids: string[], deleted: boolean): Promise<Map<string, RxDocumentData<RxDocType>>> {
-        await promiseWait(0);
-        const collection = this.internals.collection;
+        const localState = await this.mustUseLocalState();
+        if (!localState) {
+            return this.requestRemoteInstance('findDocumentsById', [ids, deleted]);
+        }
+
+        const collection = localState.collection;
 
         const ret: Map<string, RxDocumentData<RxDocType>> = new Map();
         ids.forEach(id => {
@@ -417,7 +550,12 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         return ret;
     }
     async query(preparedQuery: MangoQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>> {
-        let query = this.internals.collection
+        const localState = await this.mustUseLocalState();
+        if (!localState) {
+            return this.requestRemoteInstance('query', [preparedQuery]);
+        }
+
+        let query = localState.collection
             .chain()
             .find(preparedQuery.selector);
         if (preparedQuery.limit) {
@@ -440,9 +578,14 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         changedDocuments: RxStorageChangedDocumentMeta[];
         lastSequence: number;
     }> {
+        const localState = await this.mustUseLocalState();
+        if (!localState) {
+            return this.requestRemoteInstance('getChangedDocuments', [options]);
+        }
+
         const desc = options.order === 'desc';
         const operator = options.order === 'asc' ? '$gte' : '$lte';
-        let query = this.internals.changesCollection
+        let query = localState.changesCollection
             .chain()
             .find({
                 sequence: {
@@ -481,25 +624,30 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
     async close(): Promise<void> {
         this.changes$.complete();
         OPEN_LOKIJS_STORAGE_INSTANCES.delete(this);
-        await closeLokiCollections(
-            this.databaseName,
-            [
-                this.internals.collection,
-                this.internals.changesCollection
-            ]
-        );
+        if (this.internals.localState) {
+            const localState = await this.getLocalState();
+            await closeLokiCollections(
+                this.databaseName,
+                [
+                    localState.collection,
+                    localState.changesCollection
+                ]
+            );
+        }
     }
     async remove(): Promise<void> {
-        this.internals.loki.removeCollection(this.collectionName);
-        this.internals.loki.removeCollection(this.internals.changesCollection.name);
+        const localState = await this.mustUseLocalState();
+        if (!localState) {
+            return this.requestRemoteInstance('remove', []);
+        }
+        localState.database.removeCollection(this.collectionName);
+        localState.database.removeCollection(localState.changesCollection.name);
     }
-
 }
 
-
-export async function createLokiStorageInstance<RxDocType>(
+export async function createLokiLocalState<RxDocType>(
     params: RxStorageInstanceCreationParams<RxDocType, LokiSettings>
-): Promise<RxStorageInstanceLoki<RxDocType>> {
+): Promise<LokiLocalState> {
     const databaseState = await getLokiDatabase(params.databaseName, params.options.database);
 
     /**
@@ -552,16 +700,30 @@ export async function createLokiStorageInstance<RxDocType>(
     );
     databaseState.openCollections[changesCollectionName] = changesCollection;
 
+    return {
+        database: databaseState.database,
+        collection,
+        changesCollection
+    }
+}
+
+
+export async function createLokiStorageInstance<RxDocType>(
+    params: RxStorageInstanceCreationParams<RxDocType, LokiSettings>
+): Promise<RxStorageInstanceLoki<RxDocType>> {
+    const internals: LokiStorageInternals = {};
+    // optimisation shortcut, directly create db is non multi instance.
+    if (!params.broadcastChannel) {
+        internals.localState = createLokiLocalState(params);
+    }
+
     const instance = new RxStorageInstanceLoki(
         params.databaseName,
         params.collectionName,
         params.schema,
-        {
-            loki: databaseState.database,
-            collection,
-            changesCollection
-        },
-        params.options
+        internals,
+        params.options,
+        params.broadcastChannel
     );
 
     return instance;

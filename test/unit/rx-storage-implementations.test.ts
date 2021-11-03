@@ -20,13 +20,14 @@ import {
 } from '../../plugins/pouchdb';
 
 import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
-import { BroadcastChannel, createLeaderElection, LeaderElector } from 'broadcast-channel';
+import { BroadcastChannel, LeaderElector } from 'broadcast-channel';
 addRxPlugin(RxDBKeyCompressionPlugin);
 import { RxDBValidatePlugin } from '../../plugins/validate';
 addRxPlugin(RxDBValidatePlugin);
 
 import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder';
 import {
+    clone,
     randomString,
     wait,
     waitUntil
@@ -38,22 +39,30 @@ import {
     RxLocalDocumentData,
     RxStorage,
     RxStorageChangeEvent,
-    RxStorageInstance
+    RxStorageInstance,
+    RxStorageKeyObjectInstance
 } from '../../src/types';
 import { getRxStorageLoki } from '../../plugins/lokijs';
-import { HumanDocumentType } from '../helper/schema-objects';
 import { getLeaderElectorByBroadcastChannel } from '../../plugins/leader-election';
 
 addRxPlugin(RxDBQueryBuilderPlugin);
 
 declare type TestDocType = { key: string; value: string; };
 declare type MultiInstanceInstances = {
-    broadcastChannelA: BroadcastChannel,
-    broadcastChannelB: BroadcastChannel,
-    leaderElectorA: LeaderElector,
-    leaderElectorB: LeaderElector,
-    a: RxStorageInstance<TestDocType, any, any>,
-    b: RxStorageInstance<TestDocType, any, any>
+    broadcastChannelA: BroadcastChannel;
+    broadcastChannelB: BroadcastChannel;
+    leaderElectorA: LeaderElector;
+    leaderElectorB: LeaderElector;
+    a: RxStorageInstance<TestDocType, any, any>;
+    b: RxStorageInstance<TestDocType, any, any>;
+};
+declare type MultiInstanceKeyObjectInstances = {
+    broadcastChannelA: BroadcastChannel;
+    broadcastChannelB: BroadcastChannel;
+    leaderElectorA: LeaderElector;
+    leaderElectorB: LeaderElector;
+    a: RxStorageKeyObjectInstance<any, any>;
+    b: RxStorageKeyObjectInstance<any, any>;
 };
 
 
@@ -64,6 +73,20 @@ function getWriteData(
         {
             key: randomString(10),
             value: 'barfoo',
+            _attachments: {}
+        },
+        ownParams
+    );
+}
+
+function getLocalWriteData(
+    ownParams: Partial<RxLocalDocumentData<{ value: string }>> = {}
+): RxLocalDocumentData<{ value: string }> {
+    return Object.assign(
+        {
+            _id: randomString(10),
+            value: 'barfoo',
+            _deleted: false,
             _attachments: {}
         },
         ownParams
@@ -1258,6 +1281,10 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                 const broadcastChannelA = new BroadcastChannel(channelName);
                 const broadcastChannelB = new BroadcastChannel(channelName);
                 const leaderElectorA = getLeaderElectorByBroadcastChannel(broadcastChannelA);
+
+                // ensure A is always leader
+                await leaderElectorA.awaitLeadership();
+
                 const leaderElectorB = getLeaderElectorByBroadcastChannel(broadcastChannelB);
                 const a = await rxStorageImplementation.getStorage().createStorageInstance<TestDocType>({
                     databaseName,
@@ -1283,6 +1310,45 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                 };
             }
             async function closeMultiInstaneRxStorageInstance(instances: MultiInstanceInstances) {
+                await instances.broadcastChannelA.close();
+                await instances.broadcastChannelB.close();
+                await instances.a.close();
+                await instances.b.close();
+            }
+            async function getMultiInstaneRxKeyObjectInstance(): Promise<MultiInstanceKeyObjectInstances> {
+                const databaseName = randomCouchString(12);
+                const collectionName = randomCouchString(12);
+                const channelName = randomCouchString(12);
+                const broadcastChannelA = new BroadcastChannel(channelName);
+                const broadcastChannelB = new BroadcastChannel(channelName);
+                const leaderElectorA = getLeaderElectorByBroadcastChannel(broadcastChannelA);
+
+                // ensure A is always leader
+                await leaderElectorA.awaitLeadership();
+
+                const leaderElectorB = getLeaderElectorByBroadcastChannel(broadcastChannelB);
+                const a = await rxStorageImplementation.getStorage().createKeyObjectStorageInstance({
+                    databaseName,
+                    collectionName,
+                    options: {},
+                    broadcastChannel: broadcastChannelA
+                });
+                const b = await rxStorageImplementation.getStorage().createKeyObjectStorageInstance({
+                    databaseName,
+                    collectionName,
+                    options: {},
+                    broadcastChannel: broadcastChannelB
+                });
+                return {
+                    broadcastChannelA,
+                    broadcastChannelB,
+                    leaderElectorA,
+                    leaderElectorB,
+                    a,
+                    b
+                };
+            }
+            async function closeMultiInstaneRxKeyObjectInstance(instances: MultiInstanceKeyObjectInstances) {
                 await instances.broadcastChannelA.close();
                 await instances.broadcastChannelB.close();
                 await instances.a.close();
@@ -1319,11 +1385,58 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                         limit: 1
                     });
                     const foundViaQuery = await instances.b.query(preparedQuery);
+                    assert.strictEqual(foundViaQuery.documents.length, 1);
                     const foundViaQueryDoc = foundViaQuery.documents.find(doc => doc.key === writeData.key);
                     assert.ok(foundViaQueryDoc);
 
+                    // add a document via bulkAddRevisions()
+                    const writeDataViaRevision: RxDocumentData<TestDocType> = {
+                        key: 'foobar',
+                        value: 'barfoo',
+                        _attachments: {},
+                        _rev: '1-a723631364fbfa906c5ffb8203ac9725'
+                    };
+                    await instances.b.bulkAddRevisions([writeDataViaRevision]);
+
+                    // should return an error on conflict write
+                    const brokenDoc = clone(writeData);
+                    const brokenResponse = await instances.b.bulkWrite([{
+                        document: brokenDoc
+                    }]);
+                    assert.strictEqual(brokenResponse.error.size, 1);
+                    assert.strictEqual(brokenResponse.success.size, 0);
+
+                    // find by id
+                    const foundAgainViaRev = await instances.b.findDocumentsById([writeDataViaRevision.key], false);
+                    const foundDocViaRev = getFromMapOrThrow(foundAgainViaRev, writeDataViaRevision.key);
+                    assert.strictEqual(foundDocViaRev.key, writeDataViaRevision.key);
+
                     // close both
                     await closeMultiInstaneRxStorageInstance(instances);
+                });
+            });
+            describe('RxStorageKeyObjectInstance', () => {
+                it('should be able to write and read documents', async () => {
+                    const instances = await getMultiInstaneRxKeyObjectInstance();
+
+                    // insert a document on A
+                    const writeData = getLocalWriteData();
+                    await instances.a.bulkWrite([{ document: writeData }]);
+
+                    // find the document on B
+                    await waitUntil(async () => {
+                        try {
+                            const foundAgain = await instances.b.findLocalDocumentsById([writeData._id]);
+                            const foundDoc = getFromMapOrThrow(foundAgain, writeData._id);
+                            assert.strictEqual(foundDoc._id, writeData._id);
+                            return true;
+                        } catch (err) {
+                            return false;
+                        }
+                    });
+
+                    // close both
+                    await closeMultiInstaneRxKeyObjectInstance(instances);
                 });
             });
         });
