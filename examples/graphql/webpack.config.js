@@ -25,6 +25,11 @@ module.exports = {
     module: {
         rules: [
             {
+                test: /\.js$/,
+                enforce: 'pre',
+                use: ['source-map-loader'],
+            },
+            {
                 test: /\.css$/,
                 use: [
                     {
@@ -58,5 +63,15 @@ module.exports = {
         compress: true,
         port: 8888
     },
-    mode: 'development'
+    mode: 'development',
+    /**
+     * We need this because lokijs requires the fs node module
+     * which is not there in the browser.
+     * @link https://stackoverflow.com/a/64428818/3443137
+     */
+    resolve: {
+        fallback: {
+            fs: false
+        }
+    }
 };

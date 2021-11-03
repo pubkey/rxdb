@@ -15,6 +15,11 @@ import {
 } from 'rxdb/plugins/pouchdb';
 
 import {
+    getRxStorageLoki
+} from 'rxdb/plugins/lokijs';
+
+
+import {
     filter
 } from 'rxjs/operators';
 
@@ -38,6 +43,13 @@ addRxPlugin(RxDBUpdatePlugin);
 
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
 addRxPlugin(RxDBQueryBuilderPlugin);
+
+const LokiIndexedAdapter = require('lokijs/src/loki-indexed-adapter');
+//import * as LokiIndexedAdapter from 'lokijs/src/loki-indexed-adapter';
+
+
+console.log('!!!');
+console.dir(LokiIndexedAdapter);
 
 import {
     GRAPHQL_PORT,
@@ -86,12 +98,36 @@ function getDatabaseName() {
     return ret;
 }
 
+/**
+ * Easy toggle of the storage engine via query parameter.
+ */
+function getStorage() {
+    const url_string = window.location.href;
+    const url = new URL(url_string);
+    const storageKey = url.searchParams.get('storage');
+
+    if (storageKey === 'pouchdb' || storageKey === null) {
+        return getRxStoragePouch('idb');
+    } else if (storageKey === 'lokijs') {
+        return getRxStorageLoki({
+            database: {
+                adapter: new LokiIndexedAdapter()
+            },
+            collection: {
+                adapter: new LokiIndexedAdapter()
+            }
+        });
+    } else {
+        throw new Error('storage key not defined ' + storageKey);
+    }
+}
+
 
 async function run() {
     heroesList.innerHTML = 'Create database..';
     const db = await createRxDatabase({
         name: getDatabaseName(),
-        storage: getRxStoragePouch('idb')
+        storage: getStorage()
     });
     window.db = db;
 
@@ -142,60 +178,62 @@ async function run() {
 
 
     // setup graphql-subscriptions for pull-trigger
-    heroesList.innerHTML = 'Create SubscriptionClient..';
-    const endpointUrl = 'ws://localhost:' + GRAPHQL_SUBSCRIPTION_PORT + GRAPHQL_SUBSCRIPTION_PATH;
-    const wsClient = new SubscriptionClient(
-        endpointUrl,
-        {
-            reconnect: true,
-            timeout: 1000 * 60,
-            onConnect: () => {
-                console.log('SubscriptionClient.onConnect()');
-            },
-            connectionCallback: () => {
-                console.log('SubscriptionClient.connectionCallback:');
-            },
-            reconnectionAttempts: 10000,
-            inactivityTimeout: 10 * 1000,
-            lazy: true
-        });
-    heroesList.innerHTML = 'Subscribe to GraphQL Subscriptions..';
-    const query = `
+    db.waitForLeadership().then(() => {
+        // heroesList.innerHTML = 'Create SubscriptionClient..';
+        const endpointUrl = 'ws://localhost:' + GRAPHQL_SUBSCRIPTION_PORT + GRAPHQL_SUBSCRIPTION_PATH;
+        const wsClient = new SubscriptionClient(
+            endpointUrl,
+            {
+                reconnect: true,
+                timeout: 1000 * 60,
+                onConnect: () => {
+                    console.log('SubscriptionClient.onConnect()');
+                },
+                connectionCallback: () => {
+                    console.log('SubscriptionClient.connectionCallback:');
+                },
+                reconnectionAttempts: 10000,
+                inactivityTimeout: 10 * 1000,
+                lazy: true
+            });
+        // heroesList.innerHTML = 'Subscribe to GraphQL Subscriptions..';
+        const query = `
         subscription onChangedHero($token: String!) {
             changedHero(token: $token) {
                 id
             }
         }
-    `;
-    const ret = wsClient.request(
-        {
-            query,
-            /**
-             * there is no method in javascript to set custom auth headers
-             * at websockets. So we send the auth header directly as variable
-             * @link https://stackoverflow.com/a/4361358/3443137
-             */
-            variables: {
-                token: JWT_BEARER_TOKEN
+        `;
+        const ret = wsClient.request(
+            {
+                query,
+                /**
+                 * there is no method in javascript to set custom auth headers
+                 * at websockets. So we send the auth header directly as variable
+                 * @link https://stackoverflow.com/a/4361358/3443137
+                 */
+                variables: {
+                    token: JWT_BEARER_TOKEN
+                }
             }
-        }
-    );
-    ret.subscribe({
-        next: async (data) => {
-            console.log('subscription emitted => trigger run()');
-            console.dir(data);
-            await replicationState.run();
-            console.log('run() done');
-        },
-        error(error) {
-            console.log('run() got error:');
-            console.dir(error);
-        }
+        );
+        ret.subscribe({
+            next: async (data) => {
+                console.log('subscription emitted => trigger run()');
+                console.dir(data);
+                await replicationState.run();
+                console.log('run() done');
+            },
+            error(error) {
+                console.log('run() got error:');
+                console.dir(error);
+            }
+        });
     });
 
     // log all collection events for debugging
     db.hero.$.pipe(filter(ev => !ev.isLocal)).subscribe(ev => {
-        console.log('colection.$ emitted:');
+        console.log('collection.$ emitted:');
         console.dir(ev);
     });
 
