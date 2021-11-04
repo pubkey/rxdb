@@ -256,17 +256,35 @@ config.parallel('cache-replacement-policy.test.js', () => {
                 triggerCacheReplacement(col);
             });
 
-            await waitUntil(() => runs === 1);
+            await waitUntil(() => {
+                if (runs > 1) {
+                    throw new Error('too many runs ' + runs);
+                }
+                if (runs === 1) {
+                    return true;
+                } else {
+                    return false;
+                }
+            });
             await wait(50);
             assert.strictEqual(runs, 1);
 
             // run again when first was done
             triggerCacheReplacement(col);
-            await waitUntil(() => runs === 2);
+            await waitUntil(() => {
+                if (runs > 2) {
+                    throw new Error('too many runs ' + runs);
+                }
+                if (runs === 2) {
+                    return true;
+                } else {
+                    return false;
+                }
+            });
             await wait(50);
             assert.strictEqual(runs, 2);
 
-            
+
             col.database.destroy();
         });
     });
