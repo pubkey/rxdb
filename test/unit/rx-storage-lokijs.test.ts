@@ -21,6 +21,7 @@ import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
 addRxPlugin(RxDBKeyCompressionPlugin);
 import { RxDBValidatePlugin } from '../../plugins/validate';
 import { HumanDocumentType } from '../helper/schema-objects';
+import { waitUntil } from 'async-test-util';
 addRxPlugin(RxDBValidatePlugin);
 
 /**
@@ -76,6 +77,60 @@ config.parallel('rx-storage-lokijs.test.js', () => {
             const doc3 = await col1.findOne().exec(true);
             assert.ok(doc3);
 
+            // the database storage of col2 should not have internal localState
+            assert.ok(col1.database.internalStore.internals.localState);
+            assert.ok(col1.database.localDocumentsStore.internals.localState);
+            assert.ok(!col2.database.internalStore.internals.localState);
+            assert.ok(!col2.database.localDocumentsStore.internals.localState);
+
+            /**
+             * Only col1 should be leader
+             * and so only col1 should have a localState.
+             */
+            assert.ok(col1.storageInstance.internals.localState);
+            assert.ok(!col2.storageInstance.internals.localState);
+
+            await col2.insert(schemaObjects.human());
+            await col1.insert(schemaObjects.human());
+            await waitUntil(async () => {
+                const res = await col2.find().exec();
+                if (res.length > 3) {
+                    throw new Error('got too much docs');
+                }
+                return res.length === 3;
+            });
+
+            col1.database.destroy();
+            col2.database.destroy();
+        });
+        it('listening to queries must work', async () => {
+            const databaseName = randomCouchString(12);
+            const col1 = await humansCollections.createMultiInstance(
+                databaseName,
+                0,
+                null,
+                getRxStorageLoki()
+            );
+            await col1.database.waitForLeadership();
+            const col2 = await humansCollections.createMultiInstance(
+                databaseName,
+                0,
+                null,
+                getRxStorageLoki()
+            );
+            let lastResult1: any[];
+            let lastResult2: any[];
+
+            const sub1 = col1.find().$.subscribe(res => lastResult1 = res);
+            const sub2 = col1.find().$.subscribe(res => lastResult2 = res);
+
+            await waitUntil(() => !!lastResult1 && !!lastResult2);
+
+            await col2.insert(schemaObjects.human());
+            await waitUntil(() => lastResult1.length === 1 && lastResult2.length === 1);
+
+            sub1.unsubscribe();
+            sub2.unsubscribe();
             col1.database.destroy();
             col2.database.destroy();
         });

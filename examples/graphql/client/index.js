@@ -98,6 +98,17 @@ function getDatabaseName() {
     return ret;
 }
 
+function doSync() {
+    const url_string = window.location.href;
+    const url = new URL(url_string);
+    const shouldSync = url.searchParams.get('sync');
+    if (shouldSync === 'false') {
+        return false;
+    } else {
+        return true;
+    }
+}
+
 /**
  * Easy toggle of the storage engine via query parameter.
  */
@@ -110,12 +121,10 @@ function getStorage() {
         return getRxStoragePouch('idb');
     } else if (storageKey === 'lokijs') {
         return getRxStorageLoki({
-            database: {
-                adapter: new LokiIndexedAdapter()
-            },
-            collection: {
-                adapter: new LokiIndexedAdapter()
-            }
+            adapter: new LokiIndexedAdapter(),
+            autoload: true,
+            autosave: true,
+            autosaveInterval: 500
         });
     } else {
         throw new Error('storage key not defined ' + storageKey);
@@ -129,6 +138,8 @@ async function run() {
         name: getDatabaseName(),
         storage: getStorage()
     });
+    console.log('db.token: ' + db.token);
+    console.log('db.storageToken: ' + db.storageToken);
     window.db = db;
 
     // display crown when tab is leader
@@ -146,90 +157,93 @@ async function run() {
 
 
     // set up replication
-    heroesList.innerHTML = 'Start replication..';
-    const replicationState = db.hero.syncGraphQL({
-        url: syncURL,
-        headers: {
-            /* optional, set an auth header */
-            Authorization: 'Bearer ' + JWT_BEARER_TOKEN
-        },
-        push: {
-            batchSize,
-            queryBuilder: pushQueryBuilder
-        },
-        pull: {
-            queryBuilder: pullQueryBuilder
-        },
-        live: true,
-        /**
-         * Because the websocket is used to inform the client
-         * when something has changed,
-         * we can set the liveIntervall to a high value
-         */
-        liveInterval: 1000 * 60 * 10, // 10 minutes
-        deletedFlag: 'deleted'
-    });
-    // show replication-errors in logs
-    heroesList.innerHTML = 'Subscribe to errors..';
-    replicationState.error$.subscribe(err => {
-        console.error('replication error:');
-        console.dir(err);
-    });
+    if (doSync()) {
+        heroesList.innerHTML = 'Start replication..';
+        const replicationState = db.hero.syncGraphQL({
+            url: syncURL,
+            headers: {
+                /* optional, set an auth header */
+                Authorization: 'Bearer ' + JWT_BEARER_TOKEN
+            },
+            push: {
+                batchSize,
+                queryBuilder: pushQueryBuilder
+            },
+            pull: {
+                queryBuilder: pullQueryBuilder
+            },
+            live: true,
+            /**
+             * Because the websocket is used to inform the client
+             * when something has changed,
+             * we can set the liveIntervall to a high value
+             */
+            liveInterval: 1000 * 60 * 10, // 10 minutes
+            deletedFlag: 'deleted'
+        });
+        // show replication-errors in logs
+        heroesList.innerHTML = 'Subscribe to errors..';
+        replicationState.error$.subscribe(err => {
+            console.error('replication error:');
+            console.dir(err);
+        });
 
 
-    // setup graphql-subscriptions for pull-trigger
-    db.waitForLeadership().then(() => {
-        // heroesList.innerHTML = 'Create SubscriptionClient..';
-        const endpointUrl = 'ws://localhost:' + GRAPHQL_SUBSCRIPTION_PORT + GRAPHQL_SUBSCRIPTION_PATH;
-        const wsClient = new SubscriptionClient(
-            endpointUrl,
-            {
-                reconnect: true,
-                timeout: 1000 * 60,
-                onConnect: () => {
-                    console.log('SubscriptionClient.onConnect()');
-                },
-                connectionCallback: () => {
-                    console.log('SubscriptionClient.connectionCallback:');
-                },
-                reconnectionAttempts: 10000,
-                inactivityTimeout: 10 * 1000,
-                lazy: true
-            });
-        // heroesList.innerHTML = 'Subscribe to GraphQL Subscriptions..';
-        const query = `
+        // setup graphql-subscriptions for pull-trigger
+        db.waitForLeadership().then(() => {
+            // heroesList.innerHTML = 'Create SubscriptionClient..';
+            const endpointUrl = 'ws://localhost:' + GRAPHQL_SUBSCRIPTION_PORT + GRAPHQL_SUBSCRIPTION_PATH;
+            const wsClient = new SubscriptionClient(
+                endpointUrl,
+                {
+                    reconnect: true,
+                    timeout: 1000 * 60,
+                    onConnect: () => {
+                        console.log('SubscriptionClient.onConnect()');
+                    },
+                    connectionCallback: () => {
+                        console.log('SubscriptionClient.connectionCallback:');
+                    },
+                    reconnectionAttempts: 10000,
+                    inactivityTimeout: 10 * 1000,
+                    lazy: true
+                });
+            // heroesList.innerHTML = 'Subscribe to GraphQL Subscriptions..';
+            const query = `
         subscription onChangedHero($token: String!) {
             changedHero(token: $token) {
                 id
             }
         }
         `;
-        const ret = wsClient.request(
-            {
-                query,
-                /**
-                 * there is no method in javascript to set custom auth headers
-                 * at websockets. So we send the auth header directly as variable
-                 * @link https://stackoverflow.com/a/4361358/3443137
-                 */
-                variables: {
-                    token: JWT_BEARER_TOKEN
+            const ret = wsClient.request(
+                {
+                    query,
+                    /**
+                     * there is no method in javascript to set custom auth headers
+                     * at websockets. So we send the auth header directly as variable
+                     * @link https://stackoverflow.com/a/4361358/3443137
+                     */
+                    variables: {
+                        token: JWT_BEARER_TOKEN
+                    }
                 }
-            }
-        );
-        ret.subscribe({
-            next: async (data) => {
-                console.log('subscription emitted => trigger run()');
-                console.dir(data);
-                await replicationState.run();
-                console.log('run() done');
-            },
-            error(error) {
-                console.log('run() got error:');
-                console.dir(error);
-            }
+            );
+            ret.subscribe({
+                next: async (data) => {
+                    console.log('subscription emitted => trigger run()');
+                    console.dir(data);
+                    await replicationState.run();
+                    console.log('run() done');
+                },
+                error(error) {
+                    console.log('run() got error:');
+                    console.dir(error);
+                }
+            });
         });
-    });
+    }
+
 
     // log all collection events for debugging
     db.hero.$.pipe(filter(ev => !ev.isLocal)).subscribe(ev => {

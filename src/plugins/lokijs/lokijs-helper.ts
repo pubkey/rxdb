@@ -2,7 +2,7 @@ import type { RxStorageInstanceLoki } from './rx-storage-instance-loki';
 import type { RxStorageKeyObjectInstanceLoki } from './rx-storage-key-object-instance-loki';
 import lokijs, { Collection } from 'lokijs';
 import type { LokiDatabaseSettings, LokiDatabaseState } from '../../types';
-import { ensureNotFalsy } from '../../util';
+import unload from 'unload';
 
 export const CHANGES_COLLECTION_SUFFIX = '-rxdb-changes';
 export const CHANGES_LOCAL_SUFFIX = '-rxdb-local';
@@ -31,8 +31,6 @@ export function getLokiDatabase(
 ): Promise<LokiDatabaseState> {
     let databaseState: Promise<LokiDatabaseState> | undefined = LOKI_DATABASE_STATE_BY_NAME.get(databaseName);
     if (!databaseState) {
-        console.log('getLokiDatabase()');
-        console.dir(databaseSettings);
         /**
          * We assume that as soon as an adapter is passed,
          * the database has to be persistend.
@@ -55,8 +53,6 @@ export function getLokiDatabase(
                 },
                 databaseSettings
             );
-            console.log('useSettings:');
-            console.dir(useSettings);
             const database = new lokijs(
                 databaseName + '.db',
                 useSettings
@@ -70,6 +66,15 @@ export function getLokiDatabase(
                     });
                 });
             }
+
+            /**
+             * Autosave database on process end
+             */
+            if (hasPersistence) {
+                unload.add(() => database.saveDatabase());
+            }
+
+
 
             const state: LokiDatabaseState = {
                 database,

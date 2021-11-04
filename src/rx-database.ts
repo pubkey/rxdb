@@ -574,13 +574,20 @@ function _prepareBroadcastChannel<Collections>(rxDatabase: RxDatabase<Collection
         return;
     }
     rxDatabase.broadcastChannel$ = new Subject();
-    rxDatabase.broadcastChannel.onmessage = (msg: RxChangeEventBroadcastChannelData) => {
-        if (msg.storageToken !== rxDatabase.storageToken) return; // not same storage-state
-        if (msg.cE.databaseToken === rxDatabase.token) return; // same db
+
+    rxDatabase.broadcastChannel.addEventListener('message', (msg: RxChangeEventBroadcastChannelData) => {
+        if (msg.storageToken !== rxDatabase.storageToken) {
+            // not same storage-state
+            return;
+        }
+        if (msg.cE.databaseToken === rxDatabase.token) {
+            // this db was sender
+            return;
+        }
         const changeEvent = msg.cE;
 
         (rxDatabase.broadcastChannel$ as any).next(changeEvent);
-    };
+    });
 
     rxDatabase._subs.push(
         rxDatabase.broadcastChannel$.subscribe((cE: RxChangeEvent) => {
@@ -690,7 +697,7 @@ export function createRxDatabase<
     }
     USED_DATABASE_NAMES.add(name);
 
-    let broadcastChannel: BroadcastChannel;
+    let broadcastChannel: BroadcastChannel | undefined;
     if (multiInstance) {
         broadcastChannel = new BroadcastChannel(
             'RxDB:' +
@@ -705,7 +712,8 @@ export function createRxDatabase<
     >(
         storage,
         name,
-        instanceCreationOptions as any
+        instanceCreationOptions as any,
+        broadcastChannel
     ).then(storageInstances => {
         const rxDatabase: RxDatabase<Collections> = new RxDatabaseBase(
             name,

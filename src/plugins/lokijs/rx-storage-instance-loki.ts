@@ -64,6 +64,8 @@ import type {
 } from 'broadcast-channel';
 import { getLeaderElectorByBroadcastChannel } from '../leader-election';
 
+let instanceId = 1;
+
 export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
     RxDocType,
     LokiStorageInternals,
@@ -73,6 +75,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
     public readonly primaryPath: keyof RxDocType;
     private changes$: Subject<RxStorageChangeEvent<RxDocumentData<RxDocType>>> = new Subject();
     private lastChangefeedSequence: number = 0;
+    public readonly instanceId = instanceId++;
 
     public readonly leaderElector?: LeaderElector;
 
@@ -90,11 +93,8 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         if (broadcastChannel) {
             this.leaderElector = getLeaderElectorByBroadcastChannel(broadcastChannel);
             this.leaderElector.awaitLeadership().then(() => {
-                console.log('- is leader now ' + ensureNotFalsy(this.broadcastChannel).name);
                 // this instance is leader now, so it has to reply to queries from other instances
                 ensureNotFalsy(this.broadcastChannel).addEventListener('message', async (msg) => {
-                    console.log('got bc message:');
-                    console.dir(msg);
                     if (
                         msg.type === LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE &&
                         msg.requestId &&
@@ -161,7 +161,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             leaderElector.isLeader &&
             !this.internals.localState
         ) {
-            console.log('own is leader -> use local instance');
             // own is leader, use local instance
             this.internals.localState = createLokiLocalState({
                 databaseName: this.databaseName,
@@ -181,7 +180,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         operation: string,
         params: any[]
     ): Promise<any | any[]> {
-        console.log('requestRemoteInstance() ' + operation + ' - ' + ensureNotFalsy(this.broadcastChannel).name);
         const broadcastChannel = ensureNotFalsy(this.broadcastChannel);
         const requestId = randomCouchString(12);
         const responsePromise = new Promise<any>((res, rej) => {
@@ -243,8 +241,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
     }
 
     prepareQuery(mutateableQuery: MangoQuery<RxDocType>) {
-        console.log('prepareQuery:');
-        console.log(JSON.stringify(mutateableQuery, null, 4));
         mutateableQuery.selector = {
             $and: [
                 {
@@ -253,7 +249,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 mutateableQuery.selector
             ]
         };
-        console.log(JSON.stringify(mutateableQuery, null, 4));
         return mutateableQuery;
     }
 
@@ -298,15 +293,18 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
      * But LokisJS does not export such a function, the query logic is deep inside of
      * the Resultset prototype.
      * Because I am lazy, I do not copy paste and maintain that code.
-     * Instead we create a fake Resultset and apply the prototype method Resultset.prototype.find()
+     * Instead we create a fake Resultset and apply the prototype method Resultset.prototype.find(),
+     * same with Collection.
      */
     getQueryMatcher(query: MangoQuery<RxDocType>): QueryMatcher<RxDocType> {
         const fun: QueryMatcher<RxDocType> = (doc: RxDocType) => {
+            const fakeCollection = {
+                data: [doc],
+                binaryIndices: {}
+            };
+            Object.setPrototypeOf(fakeCollection, (lokijs as any).Collection.prototype);
             const fakeResultSet: any = {
-                collection: {
-                    data: [doc],
-                    binaryIndices: {}
-                }
+                collection: fakeCollection
             };
             Object.setPrototypeOf(fakeResultSet, (lokijs as any).Resultset.prototype);
             fakeResultSet.find(query.selector, true);
@@ -677,10 +675,6 @@ export async function createLokiLocalState<RxDocType>(
     if (!params.options) {
         params.options = {};
     }
-
-
-    console.log('createLokiLocalState():');
-    console.dir(databaseSettings);
 
     const databaseState = await getLokiDatabase(params.databaseName, databaseSettings);
 

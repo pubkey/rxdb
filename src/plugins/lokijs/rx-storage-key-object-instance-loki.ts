@@ -40,10 +40,14 @@ import type {
 } from 'lokijs';
 import { getLeaderElectorByBroadcastChannel } from '../leader-election';
 
+let instanceId = 1;
+
 export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstance<LokiStorageInternals, LokiSettings> {
 
     private changes$: Subject<RxStorageChangeEvent<RxLocalDocumentData>> = new Subject();
     public readonly leaderElector?: LeaderElector;
+
+    public instanceId = instanceId++;
 
     constructor(
         public readonly databaseName: string,
@@ -120,6 +124,7 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
              */
             await promiseWait(0); // TODO remove this line
         }
+
         if (
             leaderElector.isLeader &&
             !this.internals.localState
@@ -395,7 +400,6 @@ export async function createLokiKeyObjectStorageInstance(
     params: RxKeyObjectStorageInstanceCreationParams<LokiSettings>,
     databaseSettings: LokiDatabaseSettings
 ): Promise<RxStorageKeyObjectInstanceLoki> {
-
     const internals: LokiStorageInternals = {};
     // optimisation shortcut, directly create db is non multi instance.
     if (!params.broadcastChannel) {
@@ -403,7 +407,7 @@ export async function createLokiKeyObjectStorageInstance(
         await internals.localState;
     }
 
-    return new RxStorageKeyObjectInstanceLoki(
+    const instance = new RxStorageKeyObjectInstanceLoki(
         params.databaseName,
         params.collectionName,
         internals,
@@ -411,4 +415,5 @@ export async function createLokiKeyObjectStorageInstance(
         databaseSettings,
         params.broadcastChannel
     );
+    return instance;
 }
