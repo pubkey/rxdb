@@ -649,6 +649,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         OPEN_LOKIJS_STORAGE_INSTANCES.delete(this);
         if (this.internals.localState) {
             const localState = await this.getLocalState();
+            localState.database.saveDatabase();
             await closeLokiCollections(
                 this.databaseName,
                 [

@@ -1,8 +1,14 @@
 import type { RxStorageInstanceLoki } from './rx-storage-instance-loki';
 import type { RxStorageKeyObjectInstanceLoki } from './rx-storage-key-object-instance-loki';
 import lokijs, { Collection } from 'lokijs';
-import type { LokiDatabaseSettings, LokiDatabaseState } from '../../types';
-import unload from 'unload';
+import type {
+    LokiDatabaseSettings,
+    LokiDatabaseState
+} from '../../types';
+import {
+    add as unloadAdd
+} from 'unload';
+import { flatClone } from '../../util';
 
 export const CHANGES_COLLECTION_SUFFIX = '-rxdb-changes';
 export const CHANGES_LOCAL_SUFFIX = '-rxdb-local';
@@ -53,6 +59,8 @@ export function getLokiDatabase(
                 },
                 databaseSettings
             );
+            console.log('useSettings:');
+            console.dir(flatClone(useSettings));
             const database = new lokijs(
                 databaseName + '.db',
                 useSettings
@@ -71,7 +79,7 @@ export function getLokiDatabase(
              * Autosave database on process end
              */
             if (hasPersistence) {
-                unload.add(() => database.saveDatabase());
+                unloadAdd(() => database.saveDatabase());
             }
 
 
