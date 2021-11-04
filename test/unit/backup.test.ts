@@ -7,7 +7,8 @@ import config from './config';
 
 import * as schemaObjects from '../helper/schema-objects';
 import {
-    addRxPlugin, blobBufferUtil
+    addRxPlugin,
+    blobBufferUtil
 } from '../../plugins/core';
 import { createAttachments } from '../helper/humans-collection';
 import {
@@ -18,7 +19,7 @@ import {
 } from '../../plugins/backup';
 import { BackupMetaFileContent, RxBackupWriteEvent } from '../../src/types';
 
-describe('backup.test.js', () => {
+describe('backup.test.ts', () => {
 
     if (!config.platform.isNode()) {
         // backup to filesystem only works on node.js not in browsers

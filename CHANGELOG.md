@@ -3,6 +3,8 @@
 
 ### X.X.X (comming soon)
 
+### 10.3.0 (4 November 2021)
+
 Features:
   - Added LokiJS `RxStorage` plugin.
 
