@@ -23,6 +23,8 @@ import { RxDBValidatePlugin } from '../../plugins/validate';
 import { HumanDocumentType } from '../helper/schema-objects';
 import { waitUntil } from 'async-test-util';
 addRxPlugin(RxDBValidatePlugin);
+import * as path from 'path';
+import * as fs from 'fs';
 
 /**
  * RxStoragePouch specific tests
@@ -146,20 +148,30 @@ config.parallel('rx-storage-lokijs.test.js', () => {
             const storage = getRxStorageLoki({
                 adapter
             });
+
+            const databaseName = 'lokijs-fs-adapter-test-' + randomCouchString(12);
+            const dbLocation = path.join(
+                __dirname,
+                '../',
+                databaseName
+            );
+
             const storageInstance = await storage.createStorageInstance<{ key: string }>({
-                databaseName: randomCouchString(12),
+                databaseName: dbLocation,
                 collectionName: randomCouchString(12),
                 schema: getPseudoSchemaForVersion(0, 'key'),
-                options: {
-                    database: {}
-                }
+                options: {}
             });
 
             const localState = await storageInstance.internals.localState;
 
             assert.ok(ensureNotFalsy(localState).database.persistenceAdapter === adapter);
             await storageInstance.bulkWrite([{ document: { key: 'foobar', _attachments: {} } }]);
-            storageInstance.close();
+            await storageInstance.close();
+
+            // it should have written the file to the filesystem
+            const exists = fs.existsSync(dbLocation + '.db');
+            assert.ok(exists);
         });
     });
 
