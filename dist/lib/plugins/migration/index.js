@@ -58,6 +58,8 @@ var _rxjs = require("rxjs");
 
 var _operators = require("rxjs/operators");
 
+var _util = require("../../util");
+
 var _dataMigrator = require("./data-migrator");
 
 var _migrationState = require("./migration-state");
@@ -91,6 +93,10 @@ var RxDBMigrationPlugin = {
       };
 
       proto.migrationNeeded = function () {
+        if (this.schema.version === 0) {
+          return _util.PROMISE_RESOLVE_FALSE;
+        }
+
         return (0, _dataMigrator.mustMigrate)(this.getDataMigrator());
       };
     }

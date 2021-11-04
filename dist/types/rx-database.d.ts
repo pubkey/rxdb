@@ -1,6 +1,6 @@
 import { IdleQueue } from 'custom-idle-queue';
 import { BroadcastChannel } from 'broadcast-channel';
-import type { LeaderElector } from './plugins/leader-election';
+import type { LeaderElector } from 'broadcast-channel';
 import type { CollectionsOfDatabase, RxDatabase, RxCollectionCreator, RxJsonSchema, RxCollection, ServerOptions, RxDumpDatabase, RxDumpDatabaseAny, AllMigrationStates, ServerResponse, BackupOptions, RxStorage, RxStorageKeyObjectInstance, RxStorageInstance, RxChangeEvent, RxDatabaseCreator } from './types';
 import { Subject, Subscription, Observable } from 'rxjs';
 import type { RxBackupState } from './plugins/backup';
@@ -11,22 +11,40 @@ export declare type InternalStoreDocumentData = {
     version: number;
 };
 export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collections = CollectionsOfDatabase> {
-    name: string;
-    storage: RxStorage<Internals, InstanceCreationOptions>;
-    instanceCreationOptions: InstanceCreationOptions;
-    password: any;
-    multiInstance: boolean;
-    eventReduce: boolean;
+    readonly name: string;
+    readonly storage: RxStorage<Internals, InstanceCreationOptions>;
+    readonly instanceCreationOptions: InstanceCreationOptions;
+    readonly password: any;
+    readonly multiInstance: boolean;
+    readonly eventReduce: boolean;
     options: any;
     /**
      * Stores information documents about the collections of the database
      */
-    internalStore: RxStorageInstance<InternalStoreDocumentData, Internals, InstanceCreationOptions>;
+    readonly internalStore: RxStorageInstance<InternalStoreDocumentData, Internals, InstanceCreationOptions>;
     /**
      * Stores the local documents which are attached to this database.
      */
-    localDocumentsStore: RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>;
-    constructor(name: string, storage: RxStorage<Internals, InstanceCreationOptions>, instanceCreationOptions: InstanceCreationOptions, password: any, multiInstance: boolean, eventReduce?: boolean, options?: any);
+    readonly localDocumentsStore: RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>;
+    /**
+     * If multiInstance: true
+     * we need the broadcast channel for the database.
+     */
+    readonly broadcastChannel?: BroadcastChannel<any> | undefined;
+    constructor(name: string, storage: RxStorage<Internals, InstanceCreationOptions>, instanceCreationOptions: InstanceCreationOptions, password: any, multiInstance: boolean, eventReduce: boolean, options: any, 
+    /**
+     * Stores information documents about the collections of the database
+     */
+    internalStore: RxStorageInstance<InternalStoreDocumentData, Internals, InstanceCreationOptions>, 
+    /**
+     * Stores the local documents which are attached to this database.
+     */
+    localDocumentsStore: RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>, 
+    /**
+     * If multiInstance: true
+     * we need the broadcast channel for the database.
+     */
+    broadcastChannel?: BroadcastChannel<any> | undefined);
     get $(): Observable<RxChangeEvent<any>>;
     idleQueue: IdleQueue;
     readonly token: string;
@@ -35,7 +53,6 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
     collections: Collections;
     private subject;
     private observable$;
-    broadcastChannel?: BroadcastChannel;
     storageToken?: string;
     broadcastChannel$?: Subject<RxChangeEvent>;
     /**

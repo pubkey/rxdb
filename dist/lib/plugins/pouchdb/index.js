@@ -56,4 +56,43 @@ Object.keys(_customEventsPlugin).forEach(function (key) {
   });
 });
 
+var _pouchdbHelper = require("./pouchdb-helper");
+
+Object.keys(_pouchdbHelper).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _pouchdbHelper[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _pouchdbHelper[key];
+    }
+  });
+});
+
+var _rxStorageInstancePouch = require("./rx-storage-instance-pouch");
+
+Object.keys(_rxStorageInstancePouch).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _rxStorageInstancePouch[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _rxStorageInstancePouch[key];
+    }
+  });
+});
+
+var _rxStorageKeyObjectInstancePouch = require("./rx-storage-key-object-instance-pouch");
+
+Object.keys(_rxStorageKeyObjectInstancePouch).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _rxStorageKeyObjectInstancePouch[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _rxStorageKeyObjectInstancePouch[key];
+    }
+  });
+});
+
 //# sourceMappingURL=index.js.map

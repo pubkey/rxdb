@@ -101,7 +101,11 @@ export declare const isElectronRenderer: boolean;
  * @link https://gist.github.com/penguinboy/762197
  */
 export declare function flattenObject(ob: any): any;
-export declare function getHeightOfRevision(revString: string): number;
+export declare function parseRevision(revision: string): {
+    height: number;
+    hash: string;
+};
+export declare function getHeightOfRevision(revision: string): number;
 /**
  * Creates a revision string that does NOT include the revision height
  * Copied and adapted from pouchdb-utils/src/rev.js

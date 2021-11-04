@@ -352,9 +352,15 @@ export function flattenObject(ob) {
 
   return toReturn;
 }
-export function getHeightOfRevision(revString) {
-  var first = revString.split('-')[0];
-  return parseInt(first, 10);
+export function parseRevision(revision) {
+  var split = revision.split('-');
+  return {
+    height: parseInt(split[0], 10),
+    hash: split[1]
+  };
+}
+export function getHeightOfRevision(revision) {
+  return parseRevision(revision).height;
 }
 import { stringMd5 } from 'pouchdb-md5';
 import { rev as pouchUtilsRev } from 'pouchdb-utils';

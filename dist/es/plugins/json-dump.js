@@ -79,7 +79,7 @@ var dumpRxCollection = function dumpRxCollection() {
     json.encrypted = true;
   }
 
-  var query = createRxQuery('find', _getDefaultQuery(this), this);
+  var query = createRxQuery('find', _getDefaultQuery(), this);
   return this._queryStorageInstance(query, undefined, encrypted).then(function (docs) {
     json.docs = docs.map(function (docData) {
       delete docData._rev;

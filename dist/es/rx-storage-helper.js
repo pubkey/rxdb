@@ -296,7 +296,7 @@ function _getNewestSequence() {
           case 0:
             _context8.next = 2;
             return storageInstance.getChangedDocuments({
-              order: 'desc',
+              order: 'asc',
               limit: 1,
               startSequence: 0
             });

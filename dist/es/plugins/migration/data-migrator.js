@@ -27,6 +27,8 @@ import { _handleFromStorageInstance, _handleToStorageInstance } from '../../rx-c
 export var DataMigrator = /*#__PURE__*/function () {
   function DataMigrator(newestCollection, migrationStrategies) {
     this._migrated = false;
+    this.nonMigratedOldCollections = [];
+    this.allOldCollections = [];
     this.newestCollection = newestCollection;
     this.migrationStrategies = migrationStrategies;
     this.currentSchema = newestCollection.schema;
@@ -78,10 +80,10 @@ export var DataMigrator = /*#__PURE__*/function () {
      */
 
     (function () {
-      var oldCols;
       return _getOldCollections(_this).then(function (ret) {
-        oldCols = ret;
-        var countAll = Promise.all(oldCols.map(function (oldCol) {
+        _this.nonMigratedOldCollections = ret;
+        _this.allOldCollections = _this.nonMigratedOldCollections.slice(0);
+        var countAll = Promise.all(_this.nonMigratedOldCollections.map(function (oldCol) {
           return countAllUndeleted(oldCol.storageInstance);
         }));
         return countAll;
@@ -94,7 +96,9 @@ export var DataMigrator = /*#__PURE__*/function () {
           collection: _this.newestCollection,
           state: flatClone(state)
         });
-        var currentCol = oldCols.shift();
+
+        var currentCol = _this.nonMigratedOldCollections.shift();
+
         var currentPromise = PROMISE_RESOLVE_VOID;
 
         var _loop = function _loop() {
@@ -111,14 +115,23 @@ export var DataMigrator = /*#__PURE__*/function () {
                 });
               }, function (e) {
                 sub.unsubscribe();
+
+                _this.allOldCollections.forEach(function (c) {
+                  return c.storageInstance.close();
+                });
+
                 stateSubject.error(e);
               }, function () {
+                if (currentCol) {
+                  currentCol.storageInstance.close();
+                }
+
                 sub.unsubscribe();
                 res();
               });
             });
           });
-          currentCol = oldCols.shift();
+          currentCol = _this.nonMigratedOldCollections.shift();
         };
 
         while (currentCol) {
@@ -154,6 +167,16 @@ export var DataMigrator = /*#__PURE__*/function () {
             var state$ = _this2.migrate(batchSize);
 
             state$.subscribe(null, rej, res);
+
+            _this2.allOldCollections.forEach(function (c) {
+              return c.storageInstance.close();
+            });
+          })["catch"](function (err) {
+            _this2.allOldCollections.forEach(function (c) {
+              return c.storageInstance.close();
+            });
+
+            throw err;
           });
         }
       });
@@ -167,9 +190,6 @@ export var DataMigrator = /*#__PURE__*/function () {
 export function createOldCollection(_x, _x2, _x3) {
   return _createOldCollection.apply(this, arguments);
 }
-/**
- * get an array with OldCollection-instances from all existing old storage-instances
- */
 
 function _createOldCollection() {
   _createOldCollection = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(version, schemaObj, dataMigrator) {
@@ -213,7 +233,43 @@ function _createOldCollection() {
   return _createOldCollection.apply(this, arguments);
 }
 
-export function _getOldCollections(_x4) {
+export function getOldCollectionDocs(_x4) {
+  return _getOldCollectionDocs.apply(this, arguments);
+}
+/**
+ * get an array with OldCollection-instances from all existing old storage-instances
+ */
+
+function _getOldCollectionDocs() {
+  _getOldCollectionDocs = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(dataMigrator) {
+    return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+      while (1) {
+        switch (_context2.prev = _context2.next) {
+          case 0:
+            return _context2.abrupt("return", Promise.all(getPreviousVersions(dataMigrator.currentSchema.jsonSchema).map(function (v) {
+              return getSingleDocument(dataMigrator.database.internalStore, dataMigrator.name + '-' + v);
+            }).map(function (fun) {
+              return fun["catch"](function () {
+                return null;
+              });
+            }) // auto-catch so Promise.all continues
+            ).then(function (oldCollectionDocs) {
+              return oldCollectionDocs.filter(function (d) {
+                return !!d;
+              });
+            }));
+
+          case 1:
+          case "end":
+            return _context2.stop();
+        }
+      }
+    }, _callee2);
+  }));
+  return _getOldCollectionDocs.apply(this, arguments);
+}
+
+export function _getOldCollections(_x5) {
   return _getOldCollections2.apply(this, arguments);
 }
 /**
@@ -221,25 +277,18 @@ export function _getOldCollections(_x4) {
  */
 
 function _getOldCollections2() {
-  _getOldCollections2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(dataMigrator) {
+  _getOldCollections2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3(dataMigrator) {
     var oldColDocs;
-    return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+    return _regeneratorRuntime.wrap(function _callee3$(_context3) {
       while (1) {
-        switch (_context2.prev = _context2.next) {
+        switch (_context3.prev = _context3.next) {
           case 0:
-            _context2.next = 2;
-            return Promise.all(getPreviousVersions(dataMigrator.currentSchema.jsonSchema).map(function (v) {
-              return getSingleDocument(dataMigrator.database.internalStore, dataMigrator.name + '-' + v);
-            }).map(function (fun) {
-              return fun["catch"](function () {
-                return null;
-              });
-            }) // auto-catch so Promise.all continues
-            );
+            _context3.next = 2;
+            return getOldCollectionDocs(dataMigrator);
 
           case 2:
-            oldColDocs = _context2.sent;
-            return _context2.abrupt("return", Promise.all(oldColDocs.map(function (colDoc) {
+            oldColDocs = _context3.sent;
+            return _context3.abrupt("return", Promise.all(oldColDocs.map(function (colDoc) {
               if (!colDoc) {
                 return null;
               }
@@ -251,10 +300,10 @@ function _getOldCollections2() {
 
           case 4:
           case "end":
-            return _context2.stop();
+            return _context3.stop();
         }
       }
-    }, _callee2);
+    }, _callee3);
   }));
   return _getOldCollections2.apply(this, arguments);
 }
@@ -264,8 +313,12 @@ export function mustMigrate(dataMigrator) {
     return PROMISE_RESOLVE_FALSE;
   }
 
-  return _getOldCollections(dataMigrator).then(function (oldCols) {
-    if (oldCols.length === 0) return false;else return true;
+  return getOldCollectionDocs(dataMigrator).then(function (oldColDocs) {
+    if (oldColDocs.length === 0) {
+      return false;
+    } else {
+      return true;
+    }
   });
 }
 export function runStrategyIfNotNull(oldCollection, version, docOrNull) {
@@ -362,7 +415,7 @@ export function isDocumentDataWithoutRevisionEqual(doc1, doc2) {
  * @return status-action with status and migrated document
  */
 
-export function _migrateDocuments(_x5, _x6) {
+export function _migrateDocuments(_x6, _x7) {
   return _migrateDocuments2.apply(this, arguments);
 }
 /**
@@ -370,13 +423,13 @@ export function _migrateDocuments(_x5, _x6) {
  */
 
 function _migrateDocuments2() {
-  _migrateDocuments2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3(oldCollection, documentsData) {
+  _migrateDocuments2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4(oldCollection, documentsData) {
     var migratedDocuments, bulkWriteToStorageInput, actions, bulkDeleteInputData;
-    return _regeneratorRuntime.wrap(function _callee3$(_context3) {
+    return _regeneratorRuntime.wrap(function _callee4$(_context4) {
       while (1) {
-        switch (_context3.prev = _context3.next) {
+        switch (_context4.prev = _context4.next) {
           case 0:
-            _context3.next = 2;
+            _context4.next = 2;
             return Promise.all(documentsData.map(function (docData) {
               return runAsyncPluginHooks('preMigrateDocument', {
                 docData: docData,
@@ -385,13 +438,13 @@ function _migrateDocuments2() {
             }));
 
           case 2:
-            _context3.next = 4;
+            _context4.next = 4;
             return Promise.all(documentsData.map(function (docData) {
               return migrateDocumentData(oldCollection, docData);
             }));
 
           case 4:
-            migratedDocuments = _context3.sent;
+            migratedDocuments = _context4.sent;
             bulkWriteToStorageInput = [];
             actions = [];
             documentsData.forEach(function (docData, idx) {
@@ -459,15 +512,15 @@ function _migrateDocuments2() {
              */
 
             if (!bulkWriteToStorageInput.length) {
-              _context3.next = 11;
+              _context4.next = 11;
               break;
             }
 
-            _context3.next = 11;
+            _context4.next = 11;
             return oldCollection.newestCollection.storageInstance.bulkAddRevisions(bulkWriteToStorageInput);
 
           case 11:
-            _context3.next = 13;
+            _context4.next = 13;
             return Promise.all(actions.map(function (action) {
               return runAsyncPluginHooks('postMigrateDocument', action);
             }));
@@ -484,22 +537,22 @@ function _migrateDocuments2() {
             });
 
             if (!bulkDeleteInputData.length) {
-              _context3.next = 17;
+              _context4.next = 17;
               break;
             }
 
-            _context3.next = 17;
+            _context4.next = 17;
             return oldCollection.storageInstance.bulkWrite(bulkDeleteInputData);
 
           case 17:
-            return _context3.abrupt("return", actions);
+            return _context4.abrupt("return", actions);
 
           case 18:
           case "end":
-            return _context3.stop();
+            return _context4.stop();
         }
       }
-    }, _callee3);
+    }, _callee4);
   }));
   return _migrateDocuments2.apply(this, arguments);
 }

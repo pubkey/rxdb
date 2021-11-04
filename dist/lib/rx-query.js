@@ -65,7 +65,7 @@ var RxQueryBase = /*#__PURE__*/function () {
     this.collection = collection;
 
     if (!mangoQuery) {
-      mangoQuery = _getDefaultQuery(this.collection);
+      mangoQuery = _getDefaultQuery();
     }
   }
 
@@ -361,11 +361,9 @@ var RxQueryBase = /*#__PURE__*/function () {
 
 exports.RxQueryBase = RxQueryBase;
 
-function _getDefaultQuery(collection) {
-  var _selector;
-
+function _getDefaultQuery() {
   return {
-    selector: (_selector = {}, _selector[collection.schema.primaryPath] = {}, _selector)
+    selector: {}
   };
 }
 /**

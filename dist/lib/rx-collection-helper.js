@@ -216,16 +216,22 @@ function _createRxCollectionStorageInstances() {
       while (1) {
         switch (_context3.prev = _context3.next) {
           case 0:
-            _context3.next = 2;
-            return Promise.all([rxDatabase.storage.createStorageInstance(storageInstanceCreationParams), rxDatabase.storage.createKeyObjectStorageInstance(rxDatabase.name,
-            /**
-             * Use a different collection name for the local documents instance
-             * so that the local docs can be kept while deleting the normal instance
-             * after migration.
-             */
-            getCollectionLocalInstanceName(collectionName), instanceCreationOptions)]);
+            storageInstanceCreationParams.broadcastChannel = rxDatabase.broadcastChannel;
+            _context3.next = 3;
+            return Promise.all([rxDatabase.storage.createStorageInstance(storageInstanceCreationParams), rxDatabase.storage.createKeyObjectStorageInstance({
+              databaseName: rxDatabase.name,
 
-          case 2:
+              /**
+               * Use a different collection name for the local documents instance
+               * so that the local docs can be kept while deleting the normal instance
+               * after migration.
+               */
+              collectionName: getCollectionLocalInstanceName(collectionName),
+              options: instanceCreationOptions,
+              broadcastChannel: rxDatabase.broadcastChannel
+            })]);
+
+          case 3:
             _yield$Promise$all = _context3.sent;
             storageInstance = _yield$Promise$all[0];
             localDocumentsStore = _yield$Promise$all[1];
@@ -234,7 +240,7 @@ function _createRxCollectionStorageInstances() {
               localDocumentsStore: localDocumentsStore
             });
 
-          case 6:
+          case 7:
           case "end":
             return _context3.stop();
         }

@@ -1,5 +1,6 @@
 import { combineLatest } from 'rxjs';
 import { shareReplay, switchMap } from 'rxjs/operators';
+import { PROMISE_RESOLVE_FALSE } from '../../util';
 import { mustMigrate, DataMigrator } from './data-migrator';
 import { getMigrationStateByDatabase, onDatabaseDestroy } from './migration-state';
 export var DATA_MIGRATOR_BY_COLLECTION = new WeakMap();
@@ -30,6 +31,10 @@ export var RxDBMigrationPlugin = {
       };
 
       proto.migrationNeeded = function () {
+        if (this.schema.version === 0) {
+          return PROMISE_RESOLVE_FALSE;
+        }
+
         return mustMigrate(this.getDataMigrator());
       };
     }

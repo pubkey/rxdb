@@ -16,6 +16,15 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions>;
     name: string;
     schema: RxSchema<RxDocumentType>;
+    /**
+     * Stores all 'normal' documents
+     */
+    storageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>;
+    /**
+     * Stores the local documents so that they are not deleted
+     * when a migration runs.
+     */
+    localDocumentsStore: RxStorageKeyObjectInstance<any, InstanceCreationOptions>;
     instanceCreationOptions: InstanceCreationOptions;
     migrationStrategies: KeyFunctionMap;
     methods: KeyFunctionMap;
@@ -23,7 +32,16 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     options: any;
     cacheReplacementPolicy: RxCacheReplacementPolicy;
     statics: KeyFunctionMap;
-    constructor(database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions>, name: string, schema: RxSchema<RxDocumentType>, instanceCreationOptions?: InstanceCreationOptions, migrationStrategies?: KeyFunctionMap, methods?: KeyFunctionMap, attachments?: KeyFunctionMap, options?: any, cacheReplacementPolicy?: RxCacheReplacementPolicy, statics?: KeyFunctionMap);
+    constructor(database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions>, name: string, schema: RxSchema<RxDocumentType>, 
+    /**
+     * Stores all 'normal' documents
+     */
+    storageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>, 
+    /**
+     * Stores the local documents so that they are not deleted
+     * when a migration runs.
+     */
+    localDocumentsStore: RxStorageKeyObjectInstance<any, InstanceCreationOptions>, instanceCreationOptions?: InstanceCreationOptions, migrationStrategies?: KeyFunctionMap, methods?: KeyFunctionMap, attachments?: KeyFunctionMap, options?: any, cacheReplacementPolicy?: RxCacheReplacementPolicy, statics?: KeyFunctionMap);
     /**
      * returns observable
      */
@@ -39,12 +57,6 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     hooks: any;
     _subs: Subscription[];
     _repStates: Set<RxCouchDBReplicationState>;
-    storageInstance: RxStorageInstance<RxDocumentType, any, any>;
-    /**
-     * Stores the local documents so that they are not deleted
-     * when a migration runs.
-     */
-    localDocumentsStore: RxStorageKeyObjectInstance<any, any>;
     _docCache: DocCache<RxDocument<RxDocumentType, OrmMethods>>;
     _queryCache: QueryCache;
     _crypter: Crypter;
@@ -59,7 +71,7 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     /**
      * set to true if the collection data already exists on this storage adapter
      */
-    wasCreatedBefore: boolean): Promise<any>;
+    wasCreatedBefore: boolean): Promise<void>;
     migrationNeeded(): Promise<boolean>;
     getDataMigrator(): DataMigrator;
     migrate(batchSize?: number): Observable<MigrationState>;

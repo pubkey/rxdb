@@ -96,7 +96,7 @@ export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumen
     skip(_amount: number | null): RxQuery<RxDocumentType, RxQueryResult>;
     limit(_amount: number | null): RxQuery<RxDocumentType, RxQueryResult>;
 }
-export declare function _getDefaultQuery(collection: RxCollection): MangoQuery;
+export declare function _getDefaultQuery(): MangoQuery;
 /**
  * run this query through the QueryCache
  */

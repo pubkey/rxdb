@@ -1,19 +1,13 @@
 /**
  * this plugin adds the leader-election-capabilities to rxdb
  */
-import { LeaderElector as BroadcastChannelLeaderElector } from 'broadcast-channel';
+import { LeaderElector, BroadcastChannel } from 'broadcast-channel';
 import type { RxDatabase, RxPlugin } from '../types';
-export declare class LeaderElector {
-    database: RxDatabase;
-    destroyed: boolean;
-    isLeader: boolean;
-    isDead: boolean;
-    elector: BroadcastChannelLeaderElector;
-    constructor(database: RxDatabase);
-    die(): Promise<void>;
-    waitForLeadership(): Promise<boolean>;
-    destroy(): Promise<void> | undefined;
-}
+/**
+ * Returns the leader elector of a broadcast channel.
+ * Used to ensure we reuse the same elector for the channel each time.
+ */
+export declare function getLeaderElectorByBroadcastChannel(broadcastChannel: BroadcastChannel): LeaderElector;
 export declare function getForDatabase(this: RxDatabase): LeaderElector;
 export declare function isLeader(this: RxDatabase): boolean;
 export declare function waitForLeadership(this: RxDatabase): Promise<boolean>;

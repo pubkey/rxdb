@@ -2,7 +2,6 @@
  * this is the main entry-point for custom builds
  * it can be used as standalone but is also used in the batteries-included main-export
  */
-import './types/modules/crypto-js.d';
 import './types/modules/graphql-client.d';
 import './types/modules/mocha.parallel.d';
 import './types/modules/modifiyjs.d';

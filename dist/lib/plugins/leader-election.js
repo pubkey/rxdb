@@ -3,8 +3,9 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RxDBLeaderElectionPlugin = exports.LeaderElector = void 0;
+exports.RxDBLeaderElectionPlugin = void 0;
 exports.getForDatabase = getForDatabase;
+exports.getLeaderElectorByBroadcastChannel = getLeaderElectorByBroadcastChannel;
 exports.isLeader = isLeader;
 exports.onDestroy = onDestroy;
 exports.rxdb = exports.prototypes = void 0;
@@ -18,52 +19,33 @@ var _util = require("../util");
  * this plugin adds the leader-election-capabilities to rxdb
  */
 var LEADER_ELECTORS_OF_DB = new WeakMap();
+var LEADER_ELECTOR_BY_BROADCAST_CHANNEL = new WeakMap();
+/**
+ * Returns the leader elector of a broadcast channel.
+ * Used to ensure we reuse the same elector for the channel each time.
+ */
 
-var LeaderElector = /*#__PURE__*/function () {
-  function LeaderElector(database) {
-    this.destroyed = false;
-    this.isLeader = false;
-    this.isDead = false;
-    this.database = database;
-    this.elector = (0, _broadcastChannel.createLeaderElection)(database.broadcastChannel);
+function getLeaderElectorByBroadcastChannel(broadcastChannel) {
+  var elector = LEADER_ELECTOR_BY_BROADCAST_CHANNEL.get(broadcastChannel);
+
+  if (!elector) {
+    elector = (0, _broadcastChannel.createLeaderElection)(broadcastChannel);
+    LEADER_ELECTOR_BY_BROADCAST_CHANNEL.set(broadcastChannel, elector);
   }
 
-  var _proto = LeaderElector.prototype;
-
-  _proto.die = function die() {
-    return this.elector.die();
-  };
-
-  _proto.waitForLeadership = function waitForLeadership() {
-    var _this = this;
-
-    return this.elector.awaitLeadership().then(function () {
-      _this.isLeader = true;
-      return true;
-    });
-  };
-
-  _proto.destroy = function destroy() {
-    if (this.destroyed) {
-      return;
-    }
-
-    this.destroyed = true;
-    this.isDead = true;
-    return this.die();
-  };
-
-  return LeaderElector;
-}();
-
-exports.LeaderElector = LeaderElector;
+  return elector;
+}
 
 function getForDatabase() {
-  if (!LEADER_ELECTORS_OF_DB.has(this)) {
-    LEADER_ELECTORS_OF_DB.set(this, new LeaderElector(this));
+  var broadcastChannel = (0, _util.ensureNotFalsy)(this.broadcastChannel);
+  var elector = getLeaderElectorByBroadcastChannel(broadcastChannel);
+
+  if (!elector) {
+    elector = getLeaderElectorByBroadcastChannel(broadcastChannel);
+    LEADER_ELECTORS_OF_DB.set(this, elector);
   }
 
-  return LEADER_ELECTORS_OF_DB.get(this);
+  return elector;
 }
 
 function isLeader() {
@@ -78,7 +60,9 @@ function waitForLeadership() {
   if (!this.multiInstance) {
     return _util.PROMISE_RESOLVE_TRUE;
   } else {
-    return this.leaderElector().waitForLeadership();
+    return this.leaderElector().awaitLeadership().then(function () {
+      return true;
+    });
   }
 }
 /**
@@ -90,7 +74,7 @@ function onDestroy(db) {
   var has = LEADER_ELECTORS_OF_DB.get(db);
 
   if (has) {
-    has.destroy();
+    has.die();
   }
 }
 

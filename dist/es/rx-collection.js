@@ -5,7 +5,6 @@ import { filter, startWith, mergeMap, shareReplay, map } from 'rxjs/operators';
 import { ucfirst, nextTick, flatClone, promiseSeries, pluginMissing, ensureNotFalsy, getFromMapOrThrow, clone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID } from './util';
 import { _handleToStorageInstance, _handleFromStorageInstance, fillObjectDataBeforeInsert, writeToStorageInstance, createRxCollectionStorageInstances } from './rx-collection-helper';
 import { createRxQuery, _getDefaultQuery } from './rx-query';
-import { isInstanceOf as isInstanceOfRxSchema, createRxSchema } from './rx-schema';
 import { newRxError, newRxTypeError } from './rx-error';
 import { createCrypter } from './crypter';
 import { createDocCache } from './doc-cache';
@@ -16,18 +15,28 @@ import { createWithConstructor as createRxDocumentWithConstructor, isRxDocument 
 import { createRxDocument, getRxDocumentConstructor } from './rx-document-prototype-merge';
 import { storageChangeEventToRxChangeEvent } from './rx-storage-helper';
 import { validateDatabaseName } from './plugins/dev-mode/check-names';
+import { overwritable } from './overwritable';
 var HOOKS_WHEN = ['pre', 'post'];
 var HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
 var hooksApplied = false;
 export var RxCollectionBase = /*#__PURE__*/function () {
-  function RxCollectionBase(database, name, schema) {
-    var instanceCreationOptions = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
-    var migrationStrategies = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
-    var methods = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
-    var attachments = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : {};
-    var options = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : {};
-    var cacheReplacementPolicy = arguments.length > 8 && arguments[8] !== undefined ? arguments[8] : defaultCacheReplacementPolicy;
-    var statics = arguments.length > 9 && arguments[9] !== undefined ? arguments[9] : {};
+  function RxCollectionBase(database, name, schema,
+  /**
+   * Stores all 'normal' documents
+   */
+  storageInstance,
+  /**
+   * Stores the local documents so that they are not deleted
+   * when a migration runs.
+   */
+  localDocumentsStore) {
+    var instanceCreationOptions = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
+    var migrationStrategies = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : {};
+    var methods = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : {};
+    var attachments = arguments.length > 8 && arguments[8] !== undefined ? arguments[8] : {};
+    var options = arguments.length > 9 && arguments[9] !== undefined ? arguments[9] : {};
+    var cacheReplacementPolicy = arguments.length > 10 && arguments[10] !== undefined ? arguments[10] : defaultCacheReplacementPolicy;
+    var statics = arguments.length > 11 && arguments[11] !== undefined ? arguments[11] : {};
     this._isInMemory = false;
     this.destroyed = false;
     this._atomicUpsertQueues = new Map();
@@ -35,8 +44,6 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     this.hooks = {};
     this._subs = [];
     this._repStates = new Set();
-    this.storageInstance = {};
-    this.localDocumentsStore = {};
     this._docCache = createDocCache();
     this._queryCache = createQueryCache();
     this._crypter = {};
@@ -45,6 +52,8 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     this.database = database;
     this.name = name;
     this.schema = schema;
+    this.storageInstance = storageInstance;
+    this.localDocumentsStore = localDocumentsStore;
     this.instanceCreationOptions = instanceCreationOptions;
     this.migrationStrategies = migrationStrategies;
     this.methods = methods;
@@ -70,35 +79,18 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     wasCreatedBefore) {
       var _this = this;
 
-      var storageInstanceCreationParams, _yield$createRxCollec, storageInstance, localDocumentsStore, subDocs, subLocalDocs;
-
+      var subDocs, subLocalDocs;
       return _regeneratorRuntime.wrap(function _callee$(_context) {
         while (1) {
           switch (_context.prev = _context.next) {
             case 0:
-              storageInstanceCreationParams = {
-                databaseName: this.database.name,
-                collectionName: this.name,
-                schema: this.schema.jsonSchema,
-                options: this.instanceCreationOptions
-              };
-              runPluginHooks('preCreateRxStorageInstance', storageInstanceCreationParams);
-              _context.next = 4;
-              return createRxCollectionStorageInstances(this.name, this.database, storageInstanceCreationParams, this.instanceCreationOptions);
-
-            case 4:
-              _yield$createRxCollec = _context.sent;
-              storageInstance = _yield$createRxCollec.storageInstance;
-              localDocumentsStore = _yield$createRxCollec.localDocumentsStore;
-              this.storageInstance = storageInstance;
-              this.localDocumentsStore = localDocumentsStore; // we trigger the non-blocking things first and await them later so we can do stuff in the mean time
-
+              // we trigger the non-blocking things first and await them later so we can do stuff in the mean time
               this._crypter = createCrypter(this.database.password, this.schema);
               this._observable$ = this.database.$.pipe(filter(function (event) {
                 return event.collectionName === _this.name;
               }));
               this._changeEventBuffer = createChangeEventBuffer(this.asRxCollection);
-              subDocs = storageInstance.changeStream().pipe(map(function (storageEvent) {
+              subDocs = this.storageInstance.changeStream().pipe(map(function (storageEvent) {
                 return storageChangeEventToRxChangeEvent(false, storageEvent, _this.database, _this);
               })).subscribe(function (cE) {
                 _this.$emit(cE);
@@ -131,7 +123,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
                 }
               }));
 
-            case 17:
+            case 8:
             case "end":
               return _context.stop();
           }
@@ -148,10 +140,6 @@ export var RxCollectionBase = /*#__PURE__*/function () {
   ;
 
   _proto.migrationNeeded = function migrationNeeded() {
-    if (this.schema.version === 0) {
-      return PROMISE_RESOLVE_FALSE;
-    }
-
     throw pluginMissing('migration');
   };
 
@@ -568,7 +556,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     }
 
     if (!queryObj) {
-      queryObj = _getDefaultQuery(this);
+      queryObj = _getDefaultQuery();
     }
 
     var query = createRxQuery('find', queryObj, this);
@@ -586,7 +574,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
       }, this);
     } else {
       if (!queryObj) {
-        queryObj = _getDefaultQuery(this);
+        queryObj = _getDefaultQuery();
       } // cannot have limit on findOne queries
 
 
@@ -932,7 +920,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     Array.from(this._repStates).forEach(function (replicationState) {
       return replicationState.cancel();
     });
-    return this.storageInstance.close().then(function () {
+    return Promise.all([this.storageInstance.close(), this.localDocumentsStore.close()]).then(function () {
       delete _this9.database.collections[_this9.name];
       _this9.destroyed = true;
       return runAsyncPluginHooks('postDestroyRxCollection', _this9).then(function () {
@@ -1088,41 +1076,58 @@ export function createRxCollection(_ref4, wasCreatedBefore) {
       options = _ref4$options === void 0 ? {} : _ref4$options,
       _ref4$cacheReplacemen = _ref4.cacheReplacementPolicy,
       cacheReplacementPolicy = _ref4$cacheReplacemen === void 0 ? defaultCacheReplacementPolicy : _ref4$cacheReplacemen;
-  validateDatabaseName(name); // ensure it is a schema-object
+  validateDatabaseName(name); // TODO move this check to dev-mode plugin
 
-  if (!isInstanceOfRxSchema(schema)) {
-    schema = createRxSchema(schema);
-  }
-
-  Object.keys(methods).filter(function (funName) {
-    return schema.topLevelFields.includes(funName);
-  }).forEach(function (funName) {
-    throw newRxError('COL18', {
-      funName: funName
-    });
-  });
-  var collection = new RxCollectionBase(database, name, schema, instanceCreationOptions, migrationStrategies, methods, attachments, options, cacheReplacementPolicy, statics);
-  return collection.prepare(wasCreatedBefore).then(function () {
-    // ORM add statics
-    Object.entries(statics).forEach(function (_ref5) {
-      var funName = _ref5[0],
-          fun = _ref5[1];
-      Object.defineProperty(collection, funName, {
-        get: function get() {
-          return fun.bind(collection);
-        }
+  if (overwritable.isDevMode()) {
+    Object.keys(methods).filter(function (funName) {
+      return schema.topLevelFields.includes(funName);
+    }).forEach(function (funName) {
+      throw newRxError('COL18', {
+        funName: funName
       });
     });
-    var ret = PROMISE_RESOLVE_VOID;
+  }
 
-    if (autoMigrate && collection.schema.version !== 0) {
-      ret = collection.migratePromise();
-    }
+  var storageInstanceCreationParams = {
+    databaseName: database.name,
+    collectionName: name,
+    schema: schema.jsonSchema,
+    options: instanceCreationOptions
+  };
+  runPluginHooks('preCreateRxStorageInstance', storageInstanceCreationParams);
+  return createRxCollectionStorageInstances(name, database, storageInstanceCreationParams, instanceCreationOptions).then(function (storageInstances) {
+    var collection = new RxCollectionBase(database, name, schema, storageInstances.storageInstance, storageInstances.localDocumentsStore, instanceCreationOptions, migrationStrategies, methods, attachments, options, cacheReplacementPolicy, statics);
+    return collection.prepare(wasCreatedBefore).then(function () {
+      // ORM add statics
+      Object.entries(statics).forEach(function (_ref5) {
+        var funName = _ref5[0],
+            fun = _ref5[1];
+        Object.defineProperty(collection, funName, {
+          get: function get() {
+            return fun.bind(collection);
+          }
+        });
+      });
+      var ret = PROMISE_RESOLVE_VOID;
 
-    return ret;
-  }).then(function () {
-    runPluginHooks('createRxCollection', collection);
-    return collection;
+      if (autoMigrate && collection.schema.version !== 0) {
+        ret = collection.migratePromise();
+      }
+
+      return ret;
+    }).then(function () {
+      runPluginHooks('createRxCollection', collection);
+      return collection;
+    })
+    /**
+     * If the collection creation fails,
+     * we yet have to close the storage instances.
+     */
+    ["catch"](function (err) {
+      return Promise.all([storageInstances.storageInstance.close(), storageInstances.localDocumentsStore.close()]).then(function () {
+        return Promise.reject(err);
+      });
+    });
   });
 }
 export function isRxCollection(obj) {

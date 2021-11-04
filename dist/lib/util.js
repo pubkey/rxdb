@@ -23,6 +23,7 @@ exports.lastOfArray = lastOfArray;
 exports.nextTick = nextTick;
 exports.now = now;
 exports.overwriteGetterForCaching = overwriteGetterForCaching;
+exports.parseRevision = parseRevision;
 exports.pluginMissing = pluginMissing;
 exports.promiseSeries = promiseSeries;
 exports.promiseWait = promiseWait;
@@ -432,9 +433,16 @@ function flattenObject(ob) {
   return toReturn;
 }
 
-function getHeightOfRevision(revString) {
-  var first = revString.split('-')[0];
-  return parseInt(first, 10);
+function parseRevision(revision) {
+  var split = revision.split('-');
+  return {
+    height: parseInt(split[0], 10),
+    hash: split[1]
+  };
+}
+
+function getHeightOfRevision(revision) {
+  return parseRevision(revision).height;
 }
 
 /**

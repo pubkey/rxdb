@@ -258,8 +258,6 @@ Object.defineProperty(exports, "writeSingleLocal", {
   }
 });
 
-require("./types/modules/crypto-js.d");
-
 require("./types/modules/graphql-client.d");
 
 require("./types/modules/mocha.parallel.d");
