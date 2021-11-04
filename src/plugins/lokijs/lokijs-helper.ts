@@ -30,6 +30,19 @@ export function getLokiEventKey(
  */
 export const OPEN_LOKIJS_STORAGE_INSTANCES: Set<RxStorageKeyObjectInstanceLoki | RxStorageInstanceLoki<any>> = new Set();
 
+
+export const LOKIJS_COLLECTION_DEFAULT_OPTIONS: Partial<CollectionOptions<any>> = {
+    disableChangesApi: true,
+    disableMeta: true,
+    disableDeltaChangesApi: true,
+    disableFreeze: true,
+    // TODO use 'immutable' like WatermelonDB does it
+    cloneMethod: 'shallow-assign',
+    clone: false,
+    transactional: false,
+    autoupdate: false
+}
+
 const LOKI_DATABASE_STATE_BY_NAME: Map<string, Promise<LokiDatabaseState>> = new Map();
 export function getLokiDatabase(
     databaseName: string,
@@ -41,7 +54,7 @@ export function getLokiDatabase(
          * We assume that as soon as an adapter is passed,
          * the database has to be persistend.
          */
-        const hasPersistence = !!databaseSettings.adapter;
+        const hasPersistence: boolean = !!databaseSettings.adapter;
         databaseState = (async () => {
 
             let persistenceMethod = hasPersistence ? 'adapter' : 'memory';
@@ -55,7 +68,10 @@ export function getLokiDatabase(
                     autosave: hasPersistence,
                     persistenceMethod,
                     autosaveInterval: hasPersistence ? 500 : undefined,
-                    verbose: true
+                    verbose: true,
+                    throttledSaves: false,
+                    // TODO remove this log
+                    autosaveCallback: hasPersistence ? () => console.log('LokiJS autosave done!') : undefined
                 },
                 databaseSettings
             );

@@ -17,7 +17,7 @@ import {
 import {
     getRxStorageLoki
 } from 'rxdb/plugins/lokijs';
-
+const LokiIncrementalIndexedDBAdapter = require('lokijs/src/incremental-indexeddb-adapter');
 
 import {
     filter
@@ -33,6 +33,7 @@ addRxPlugin(RxDBReplicationGraphQLPlugin);
 
 
 // TODO import these only in non-production build
+
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 addRxPlugin(RxDBDevModePlugin);
 import { RxDBValidatePlugin } from 'rxdb/plugins/validate';
@@ -44,12 +45,6 @@ addRxPlugin(RxDBUpdatePlugin);
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
 addRxPlugin(RxDBQueryBuilderPlugin);
 
-const LokiIndexedAdapter = require('lokijs/src/loki-indexed-adapter');
-//import * as LokiIndexedAdapter from 'lokijs/src/loki-indexed-adapter';
-
-
-console.log('!!!');
-console.dir(LokiIndexedAdapter);
 
 import {
     GRAPHQL_PORT,
@@ -121,7 +116,7 @@ function getStorage() {
         return getRxStoragePouch('idb');
     } else if (storageKey === 'lokijs') {
         return getRxStorageLoki({
-            adapter: new LokiIndexedAdapter(),
+            adapter: new LokiIncrementalIndexedDBAdapter(),
             autoload: true,
             autosave: true,
             autosaveInterval: 500

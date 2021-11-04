@@ -53,7 +53,8 @@ import {
     closeLokiCollections,
     getLokiDatabase,
     getLokiEventKey,
-    OPEN_LOKIJS_STORAGE_INSTANCES
+    OPEN_LOKIJS_STORAGE_INSTANCES,
+    LOKIJS_COLLECTION_DEFAULT_OPTIONS
 } from './lokijs-helper';
 import type {
     Collection
@@ -706,10 +707,9 @@ export async function createLokiLocalState<RxDocType>(
         params.options.collection,
         {
             indices: indices as string[],
-            unique: [primaryKey],
-            disableChangesApi: true,
-            disableMeta: true
-        } as any
+            unique: [primaryKey]
+        } as any,
+        LOKIJS_COLLECTION_DEFAULT_OPTIONS
     );
 
     const collection: Collection = databaseState.database.addCollection(
@@ -719,13 +719,13 @@ export async function createLokiLocalState<RxDocType>(
     databaseState.openCollections[params.collectionName] = collection;
 
     const changesCollectionName = params.collectionName + CHANGES_COLLECTION_SUFFIX;
+    const changesCollectionOptions = Object.assign({
+        unique: ['eventId'],
+        indices: ['sequence']
+    }, LOKIJS_COLLECTION_DEFAULT_OPTIONS)
     const changesCollection: Collection = databaseState.database.addCollection(
         changesCollectionName,
-        {
-            unique: ['eventId'],
-            indices: ['sequence'],
-            disableMeta: true
-        }
+        changesCollectionOptions
     );
     databaseState.openCollections[changesCollectionName] = changesCollection;
 

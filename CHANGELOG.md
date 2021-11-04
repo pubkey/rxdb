@@ -3,6 +3,9 @@
 
 ### X.X.X (comming soon)
 
+Features:
+  - Added LokiJS `RxStorage` plugin.
+
 Bugfixes:
   - Fixed missing closings of `RxStorage` instances when the database or collection is destroyed.
 

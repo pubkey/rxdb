@@ -32,6 +32,7 @@ import {
     closeLokiCollections,
     getLokiDatabase,
     getLokiEventKey,
+    LOKIJS_COLLECTION_DEFAULT_OPTIONS,
     LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE,
     OPEN_LOKIJS_STORAGE_INSTANCES
 } from './lokijs-helper';
@@ -360,16 +361,14 @@ export async function createLokiKeyValueLocalState(
     }
     const databaseState = await getLokiDatabase(params.databaseName, databaseSettings);
 
-    // TODO disable stuff we do not need from CollectionOptions
     const collectionOptions: Partial<CollectionOptions<RxLocalDocumentData>> = Object.assign(
         {},
         params.options.collection,
         {
             indices: [],
-            unique: ['_id'],
-            disableChangesApi: true,
-            disableMeta: true
-        } as any
+            unique: ['_id']
+        } as any,
+        LOKIJS_COLLECTION_DEFAULT_OPTIONS
     );
 
     const localCollectionName = params.collectionName + CHANGES_LOCAL_SUFFIX;
@@ -380,13 +379,13 @@ export async function createLokiKeyValueLocalState(
     databaseState.openCollections[localCollectionName] = collection;
 
     const changesCollectionName = params.collectionName + CHANGES_LOCAL_SUFFIX + CHANGES_COLLECTION_SUFFIX;
+    const changesCollectionOptions = Object.assign({
+        unique: ['eventId'],
+        indices: ['sequence']
+    }, LOKIJS_COLLECTION_DEFAULT_OPTIONS);
     const changesCollection: Collection = databaseState.database.addCollection(
         changesCollectionName,
-        {
-            unique: ['eventId'],
-            indices: ['sequence'],
-            disableMeta: true
-        }
+        changesCollectionOptions
     );
     databaseState.openCollections[changesCollectionName] = changesCollection;
     return {
