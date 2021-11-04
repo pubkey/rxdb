@@ -336,13 +336,14 @@ jobs:
           node-version: 16.5.0
       - name: prepare core
         run: |
-          npm run preinstall
           npm install --legacy-peer-deps
           npm run build
 
       - name: install
         working-directory: ./examples/graphql
-        run: npm install --legacy-peer-deps
+        run: |
+          npm run preinstall
+          npm install --legacy-peer-deps
       - name: build
         working-directory: ./examples/graphql
         run: npm run build
