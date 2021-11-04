@@ -5,6 +5,7 @@ import type {
     RxJsonSchema,
     RxStorageInstanceCreationParams,
     RxStorage,
+    RxKeyObjectStorageInstanceCreationParams,
 } from '../../types';
 
 import {
@@ -21,7 +22,6 @@ import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import { RxStorageInstancePouch } from './rx-storage-instance-pouch';
 import { RxStorageKeyObjectInstancePouch } from './rx-storage-key-object-instance-pouch';
 import { pouchHash, PouchStorageInternals } from './pouchdb-helper';
-
 
 export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSettings> {
     public name: string = 'pouchdb';
@@ -45,8 +45,6 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
         location: string,
         options: PouchSettings
     ): Promise<PouchDBInstance> {
-
-
         const pouchDbParameters = {
             location: location,
             adapter: adapterObject(this.adapter),
@@ -100,32 +98,35 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
     }
 
     public async createKeyObjectStorageInstance(
-        databaseName: string,
-        collectionName: string,
-        options: PouchSettings
+        params: RxKeyObjectStorageInstanceCreationParams<PouchSettings>
     ): Promise<RxStorageKeyObjectInstancePouch> {
-        const useOptions = flatClone(options);
+        const useOptions = flatClone(params.options);
         // no compaction because this only stores local documents
         useOptions.auto_compaction = false;
         useOptions.revs_limit = 1;
 
+        /**
+         * TODO shouldnt we use a different location
+         * for the local storage? Or at least make sure we
+         * reuse the same pouchdb instance?
+         */
         const pouchLocation = getPouchLocation(
-            databaseName,
-            collectionName,
+            params.databaseName,
+            params.collectionName,
             0
         );
         const pouch = await this.createPouch(
             pouchLocation,
-            options
+            params.options
         );
 
         return new RxStorageKeyObjectInstancePouch(
-            databaseName,
-            collectionName,
+            params.databaseName,
+            params.collectionName,
             {
                 pouch
             },
-            options
+            params.options
         );
     }
 }

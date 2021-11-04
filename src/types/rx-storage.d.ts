@@ -2,6 +2,9 @@ import type { ChangeEvent } from 'event-reduce-js';
 import { BlobBuffer } from './pouch';
 import { MangoQuery } from './rx-query';
 import { RxJsonSchema } from './rx-schema';
+import type {
+    BroadcastChannel
+} from 'broadcast-channel';
 
 
 /**
@@ -239,14 +242,37 @@ export type RxStorageQueryResult<RxDocType> = {
     documents: RxDocumentData<RxDocType>[];
 }
 
-
-
 export type RxStorageInstanceCreationParams<DocumentData, InstanceCreationOptions> = {
     databaseName: string;
     collectionName: string;
     schema: RxJsonSchema<DocumentData>;
     options: InstanceCreationOptions;
+    /**
+     * The broadcastChannel is passed
+     * to the storage instance,
+     * so it can reuse the same leader elector
+     * as the RxDatabase instance uses.
+     * Or send data between instnaces.
+     * Is not given if multiInstance: false.
+     */
+    broadcastChannel?: BroadcastChannel;
 }
+
+export type RxKeyObjectStorageInstanceCreationParams<InstanceCreationOptions> = {
+    databaseName: string;
+    collectionName: string;
+    options: InstanceCreationOptions;
+    /**
+     * The broadcastChannel is passed
+     * to the storage instance,
+     * so it can reuse the same leader elector
+     * as the RxDatabase instance uses.
+     * Or send data between instnaces.
+     * Is not given if multiInstance: false.
+     */
+    broadcastChannel?: BroadcastChannel;
+}
+
 
 export type ChangeStreamOptions = {
 
@@ -295,6 +321,10 @@ export type ChangeStreamEvent<DocumentData> = ChangeEvent<RxDocumentData<Documen
     id: string;
 };
 
+export type RxStorageChangedDocumentMeta = {
+    id: string;
+    sequence: number;
+}
 
 
 export type RxStorageChangeEvent<DocType> = {

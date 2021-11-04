@@ -2,7 +2,7 @@
 
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
-import BroadcastChannel from 'broadcast-channel';
+import { clearNodeFolder } from 'broadcast-channel';
 import convertHrtime from 'convert-hrtime';
 import * as schemas from './helper/schemas';
 import * as schemaObjects from './helper/schema-objects';
@@ -108,7 +108,7 @@ for (let r = 0; r < runs; r++) {
     describe('performance.test.js', function () {
         this.timeout(90 * 1000);
         it('clear broadcast-channel tmp-folder', async () => {
-            await BroadcastChannel.clearNodeFolder();
+            await clearNodeFolder();
         });
         it('ensure garbage collector can be used', async () => {
             await global.gc();

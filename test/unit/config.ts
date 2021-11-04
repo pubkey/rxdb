@@ -5,7 +5,6 @@ const {
 import BroadcastChannel from 'broadcast-channel';
 import * as path from 'path';
 import parallel from 'mocha.parallel';
-import { now } from '../../plugins/core';
 
 function isFastMode(): boolean {
     try {

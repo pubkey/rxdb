@@ -71,7 +71,7 @@ config.parallel('rx-query.test.js', () => {
                 .limit(10)
                 .sort('-age');
             const str = q.toString();
-            const mustString = '{"op":"find","other":{"queryBuilderPath":"age"},"query":{"limit":10,"selector":{"age":{"$gt":18,"$lt":67},"name":{"$ne":"Alice"},"passportId":{}},"sort":[{"age":"desc"}]}}';
+            const mustString = '{"op":"find","other":{"queryBuilderPath":"age"},"query":{"limit":10,"selector":{"age":{"$gt":18,"$lt":67},"name":{"$ne":"Alice"}},"sort":[{"age":"desc"}]}}';
             assert.strictEqual(str, mustString);
             const str2 = q.toString();
             assert.strictEqual(str2, mustString);
@@ -84,7 +84,7 @@ config.parallel('rx-query.test.js', () => {
                 passportId: 'desc', age: 'desc'
             });
             const str = q.toString();
-            const mustString = '{"op":"find","other":{},"query":{"selector":{"passportId":{}},"sort":[{"passportId":"desc"},{"age":"desc"}]}}';
+            const mustString = '{"op":"find","other":{},"query":{"selector":{},"sort":[{"passportId":"desc"},{"age":"desc"}]}}';
             assert.strictEqual(str, mustString);
             const str2 = q.toString();
             assert.strictEqual(str2, mustString);

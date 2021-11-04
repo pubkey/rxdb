@@ -341,7 +341,9 @@ jobs:
 
       - name: install
         working-directory: ./examples/graphql
-        run: npm install --legacy-peer-deps
+        run: |
+          npm run preinstall
+          npm install --legacy-peer-deps
       - name: build
         working-directory: ./examples/graphql
         run: npm run build

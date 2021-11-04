@@ -569,7 +569,7 @@ export class RxCollectionBase<
         }
 
         if (!queryObj) {
-            queryObj = _getDefaultQuery(this as any);
+            queryObj = _getDefaultQuery();
         }
 
         const query = createRxQuery('find', queryObj, this as any);
@@ -591,7 +591,7 @@ export class RxCollectionBase<
             }, this as any);
         } else {
             if (!queryObj) {
-                queryObj = _getDefaultQuery(this as any);
+                queryObj = _getDefaultQuery();
             }
 
             // cannot have limit on findOne queries

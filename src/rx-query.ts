@@ -81,7 +81,7 @@ export class RxQueryBase<
         public collection: RxCollection<RxDocumentType>
     ) {
         if (!mangoQuery) {
-            mangoQuery = _getDefaultQuery(this.collection);
+            mangoQuery = _getDefaultQuery();
         }
     }
     get $(): BehaviorSubject<RxQueryResult> {
@@ -390,11 +390,9 @@ export class RxQueryBase<
     }
 }
 
-export function _getDefaultQuery(collection: RxCollection): MangoQuery {
+export function _getDefaultQuery(): MangoQuery {
     return {
-        selector: {
-            [collection.schema.primaryPath]: {}
-        }
+        selector: {}
     };
 }
 

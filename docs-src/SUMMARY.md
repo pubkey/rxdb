@@ -106,6 +106,8 @@
 
 * [LeaderElection](./leader-election.md)
 
+* [RxStorage LokiJS](./rx-storage-lokijs.md)
+
 * [Replication CouchDB](./replication-couchdb.md)
 
 * [Replication GraphQL](./replication-graphql.md)

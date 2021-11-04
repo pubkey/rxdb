@@ -4,7 +4,8 @@
 
 import {
     createLeaderElection,
-    LeaderElector
+    LeaderElector,
+    BroadcastChannel
 } from 'broadcast-channel';
 
 import type {
@@ -17,16 +18,33 @@ import {
 } from '../util';
 
 const LEADER_ELECTORS_OF_DB: WeakMap<RxDatabase, LeaderElector> = new WeakMap();
+const LEADER_ELECTOR_BY_BROADCAST_CHANNEL: WeakMap<BroadcastChannel, LeaderElector> = new WeakMap();
+
+/**
+ * Returns the leader elector of a broadcast channel.
+ * Used to ensure we reuse the same elector for the channel each time.
+ */
+export function getLeaderElectorByBroadcastChannel(broadcastChannel: BroadcastChannel): LeaderElector {
+    let elector = LEADER_ELECTOR_BY_BROADCAST_CHANNEL.get(broadcastChannel);
+    if (!elector) {
+        elector = createLeaderElection(broadcastChannel);
+        LEADER_ELECTOR_BY_BROADCAST_CHANNEL.set(broadcastChannel, elector);
+    }
+    return elector;
+}
+
 
 export function getForDatabase(this: RxDatabase): LeaderElector {
-    if (!LEADER_ELECTORS_OF_DB.has(this)) {
-        const broadcastChannel = ensureNotFalsy(this.broadcastChannel);
+    const broadcastChannel = ensureNotFalsy(this.broadcastChannel);
+    let elector = getLeaderElectorByBroadcastChannel(broadcastChannel);
+    if (!elector) {
+        elector = getLeaderElectorByBroadcastChannel(broadcastChannel);
         LEADER_ELECTORS_OF_DB.set(
             this,
-            createLeaderElection(broadcastChannel)
+            elector
         );
     }
-    return LEADER_ELECTORS_OF_DB.get(this) as LeaderElector;
+    return elector;
 }
 
 export function isLeader(this: RxDatabase): boolean {

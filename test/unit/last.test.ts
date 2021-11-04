@@ -15,7 +15,7 @@ describe('last.test.js', () => {
             // until everything is closed.
             await waitUntil(() => {
                 return OPEN_POUCHDB_STORAGE_INSTANCES.size === 0;
-            }, 20 * 1000, 500);
+            }, 5 * 1000, 500);
         } catch (err) {
             console.dir(OPEN_POUCHDB_STORAGE_INSTANCES);
             throw new Error('no all storage instances have been closed');

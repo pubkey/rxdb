@@ -184,10 +184,8 @@ This means with two browser-windows the change of window #1 will automatically a
 <summary>
   <b>Replication</b>
   <p>
-
-Because RxDB relies on glorious [PouchDB](https://github.com/pouchdb/pouchdb), it is easy to replicate
-the data between devices and servers. And yes, the changeEvents are also synced.</p>
-
+    RxDB supports realtime replication with CouchDB compatible endpoints, or via GraphQL with custom endpoints. Also there is the replication primitives plugin that lets you implement replication via REST, Websockets, P2P or any other layer that can transmit data.
+  </p>
 </summary>
 
 ![sync.gif](docs-src/files/sync.gif)
@@ -345,22 +343,54 @@ By setting a schema-field to `encrypted`, the value of this field will be stored
 
 <details>
 <summary>
-  <b>Level-adapters</b>
+  <b>Adapters and Storage</b>
   <p>
-
-The underlying pouchdb can use different <a href="https://pouchdb.com/adapters.html">adapters</a> as storage engine. So you can use RxDB in different environments by just switching the adapter.
-For example you can use websql in the browser, localstorage in mobile-browsers and a leveldown-adapter in nodejs.</p>
+    RxDB is not a self contained database. It is a wrapper arround another database that implements the `RxStorage` interface. At the moment you can either use PouchDB or <a href="https://rxdb.info/rx-storage-lokijs.html">LokiJS</a> as underlaying storage. Each of them respectively has it's own adapters that can be swapped out, depending on your needs. For example you can use and IndexedDB based storage in the browser, and an SQLite storage in your hybrid app.
+  </p>
 
 </summary>
 
-```js
-// this requires the indexeddb-adapter
-RxDB.plugin(require('pouchdb-adapter-idb'));
-// this creates a database with the indexeddb-adapter
-const database = await RxDB.create({
+```ts
+
+import { 
+  createRxDatabase
+} from 'rxdb/plugins/core';
+
+
+/**
+ * Create a PouchDB based RxDB instance
+ * that stores data in IndexedDB
+ */
+
+import { 
+  addPouchPlugin,
+  getRxStoragePouch
+} from 'rxdb/plugins/pouchdb';
+addPouchPlugin(require('pouchdb-adapter-idb'));
+const pouchBasedRxDB = await createRxDatabase({
     name: 'mydatabase',
-    adapter: 'indexeddb' // the name of your adapter
+    storage: getRxStoragePouch('idb')
 });
+
+/**
+ * Create a LokiJS based RxDB instance
+ * that stores data in IndexedDB
+ */
+
+import { 
+  getRxStorageLoki
+} from 'rxdb/plugins/lokijs';
+const LokiIncrementalIndexedDBAdapter = require('lokijs/src/incremental-indexeddb-adapter');
+const lokiBasedRxDB = await createRxDatabase({
+    name: 'mydatabase',
+    storage: getRxStorageLoki({
+        adapter: new LokiIncrementalIndexedDBAdapter(),
+        autoload: true,
+        autosave: true,
+        autosaveInterval: 500
+    })
+});
+
 ```
 
 There is a [big ecosystem](https://rxdb.info/adapters.html) of adapters you can use.

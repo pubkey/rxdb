@@ -19,13 +19,15 @@ import {
 import {
     HumanDocumentType
 } from './schema-objects';
-import { MigrationStrategies, RxAttachmentCreator } from '../../src/types';
+import { MigrationStrategies, RxAttachmentCreator, RxStorage } from '../../src/types';
 
 export async function create(
     size: number = 20,
     name: string = 'human',
     multiInstance: boolean = true,
-    eventReduce: boolean = true
+    eventReduce: boolean = true,
+    storage: RxStorage<any, any> = getRxStoragePouch('memory')
+
 ): Promise<RxCollection<HumanDocumentType, {}, {}>> {
     if (!name) {
         name = 'human';
@@ -33,7 +35,7 @@ export async function create(
     PouchDB.plugin(require('pouchdb-adapter-memory'));
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.HumanDocumentType> }>({
         name: randomCouchString(10),
-        storage: getRxStoragePouch('memory'),
+        storage,
         multiInstance,
         eventReduce,
         ignoreDuplicate: true
@@ -356,13 +358,14 @@ export async function createEncrypted(
 export async function createMultiInstance(
     name: string,
     amount = 0,
-    password = null
+    password = null,
+    storage: RxStorage<any, any> = getRxStoragePouch('memory')
 ): Promise<RxCollection<schemaObjects.HumanDocumentType, {}, {}>> {
     PouchDB.plugin(require('pouchdb-adapter-memory'));
 
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.HumanDocumentType> }>({
         name,
-        storage: getRxStoragePouch('memory'),
+        storage,
         password,
         multiInstance: true,
         eventReduce: true,
@@ -473,7 +476,7 @@ export async function createMigrationCollection(
     });
     const cols = await db.addCollections({
         [colName]: {
-            schema: attachment !== undefined ? {...schemas.simpleHuman, attachments: {}} : schemas.simpleHuman,
+            schema: attachment !== undefined ? { ...schemas.simpleHuman, attachments: {} } : schemas.simpleHuman,
             autoMigrate: false
         }
     });
@@ -499,7 +502,7 @@ export async function createMigrationCollection(
     });
     const cols2 = await db2.addCollections({
         [colName]: {
-            schema: attachment !== undefined ? {...schemas.simpleHumanV3, attachments: {}} : schemas.simpleHumanV3,
+            schema: attachment !== undefined ? { ...schemas.simpleHumanV3, attachments: {} } : schemas.simpleHumanV3,
             autoMigrate,
             migrationStrategies
         }

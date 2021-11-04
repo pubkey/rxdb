@@ -6,11 +6,21 @@ import {
 import { newRxError } from '../../rx-error';
 import type {
     RxStorageKeyObjectInstance,
-    RxStorageChangeEvent, RxLocalDocumentData, BulkWriteLocalRow,
-    RxLocalStorageBulkWriteResponse, PouchWriteError,
-    RxStorageBulkWriteLocalError, PouchBulkDocResultRow, PouchSettings
+    RxStorageChangeEvent,
+    RxLocalDocumentData,
+    BulkWriteLocalRow,
+    RxLocalStorageBulkWriteResponse,
+    PouchWriteError,
+    RxStorageBulkWriteLocalError,
+    PouchBulkDocResultRow,
+    PouchSettings
 } from '../../types';
-import { flatClone, getFromMapOrThrow, now, PROMISE_RESOLVE_VOID } from '../../util';
+import {
+    flatClone,
+    getFromMapOrThrow,
+    now,
+    PROMISE_RESOLVE_VOID
+} from '../../util';
 import {
     getEventKey,
     OPEN_POUCHDB_STORAGE_INSTANCES,
