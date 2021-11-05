@@ -132,9 +132,9 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
     while (retry) {
 
         const changesResults = await collection.storageInstance.getChangedDocuments({
-            startSequence: lastPushSequence,
+            sinceSequence: lastPushSequence,
             limit: batchSize,
-            order: 'asc'
+            direction: 'after'
         });
         lastSequence = changesResults.lastSequence;
 

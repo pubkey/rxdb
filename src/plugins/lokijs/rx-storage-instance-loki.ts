@@ -607,13 +607,14 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             return this.requestRemoteInstance('getChangedDocuments', [options]);
         }
 
-        const desc = options.order === 'desc';
-        const operator = options.order === 'asc' ? '$gte' : '$lte';
+        const desc = options.direction === 'before';
+        const operator = options.direction === 'after' ? '$gt' : '$lt';
+
         let query = localState.changesCollection
             .chain()
             .find({
                 sequence: {
-                    [operator]: options.startSequence
+                    [operator]: options.sinceSequence
                 }
             })
             .simplesort(
@@ -637,7 +638,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             lastSequence: number;
         } = {
             changedDocuments,
-            lastSequence: useForLastSequence ? useForLastSequence.sequence : options.startSequence
+            lastSequence: useForLastSequence ? useForLastSequence.sequence : options.sinceSequence
         }
 
         return ret;

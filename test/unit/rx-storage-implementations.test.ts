@@ -418,6 +418,53 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                 });
             });
             describe('.getChangedDocuments()', () => {
+                it('should get the latest sequence', async () => {
+                    const storageInstance = await rxStorageImplementation.getStorage().createStorageInstance<{ key: string }>({
+                        databaseName: randomCouchString(12),
+                        collectionName: randomCouchString(12),
+                        schema: getPseudoSchemaForVersion(0, 'key'),
+                        options: {
+                            auto_compaction: false
+                        }
+                    });
+
+                    async function getSequenceAfter(since: number): Promise<number> {
+                        const changesResult = await storageInstance.getChangedDocuments({
+                            direction: 'after',
+                            limit: 1,
+                            sinceSequence: since
+                        });
+                        return changesResult.lastSequence;
+                    }
+
+                    const latestBefore = await getSequenceAfter(0);
+
+                    await storageInstance.bulkWrite([
+                        {
+                            document: {
+                                key: 'foobar',
+                                _attachments: {}
+                            }
+                        }
+                    ]);
+                    const latestMiddle = await getSequenceAfter(0);
+
+                    await storageInstance.bulkWrite([
+                        {
+                            document: {
+                                key: 'foobar2',
+                                _attachments: {}
+                            }
+                        }
+                    ]);
+                    const latestAfter = await getSequenceAfter(1);
+
+                    assert.strictEqual(latestBefore, 0);
+                    assert.strictEqual(latestMiddle, 1);
+                    assert.strictEqual(latestAfter, 2);
+
+                    storageInstance.close();
+                });
                 it('should get the correct changes', async () => {
                     const storageInstance = await rxStorageImplementation.getStorage().createStorageInstance<TestDocType>({
                         databaseName: randomCouchString(12),
@@ -445,8 +492,8 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                     previous = getFromMapOrThrow(firstWriteResult.success, writeData.key);
 
                     const changesAfterWrite = await storageInstance.getChangedDocuments({
-                        order: 'asc',
-                        startSequence: 0
+                        direction: 'after',
+                        sinceSequence: 0
                     });
                     const firstChangeAfterWrite = changesAfterWrite.changedDocuments[0];
                     if (!firstChangeAfterWrite) {
@@ -464,8 +511,8 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                     }]);
                     previous = getFromMapOrThrow(updateResult.success, writeData.key);
                     const changesAfterUpdate = await storageInstance.getChangedDocuments({
-                        order: 'asc',
-                        startSequence: 0
+                        direction: 'after',
+                        sinceSequence: 0
                     });
                     const firstChangeAfterUpdate = changesAfterUpdate.changedDocuments[0];
                     if (!firstChangeAfterUpdate) {
@@ -482,8 +529,8 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                         document: writeData
                     }]);
                     const changesAfterDelete = await storageInstance.getChangedDocuments({
-                        order: 'asc',
-                        startSequence: 0
+                        direction: 'after',
+                        sinceSequence: 0
                     });
                     const firstChangeAfterDelete = changesAfterDelete.changedDocuments[0];
                     if (!firstChangeAfterDelete) {
@@ -493,6 +540,23 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
 
                     assert.strictEqual(firstChangeAfterDelete.sequence, 3);
                     assert.strictEqual(changesAfterDelete.lastSequence, 3);
+
+                    // itterate over the sequences
+                    let done = false;
+                    let lastSequence = 0;
+                    while (!done) {
+                        const changesResults = await storageInstance.getChangedDocuments({
+                            sinceSequence: lastSequence,
+                            limit: 1,
+                            direction: 'after'
+                        });
+                        if (changesResults.changedDocuments.length === 0) {
+                            done = true;
+                            continue;
+                        }
+                        lastSequence = changesResults.lastSequence;
+                    }
+                    assert.strictEqual(lastSequence, 3);
 
                     storageInstance.close();
                 });
@@ -537,8 +601,8 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                     }]);
 
                     const changesAfterDelete = await storageInstance.getChangedDocuments({
-                        order: 'asc',
-                        startSequence: 1
+                        direction: 'after',
+                        sinceSequence: 1
                     });
                     const firstChangeAfterDelete = changesAfterDelete.changedDocuments[0];
                     if (!firstChangeAfterDelete) {
@@ -1237,39 +1301,6 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
 
                     storageInstance.close();
                     storageInstance2.close();
-                });
-            });
-        });
-        describe('helper', () => {
-            describe('.getNewestSequence()', () => {
-                it('should get the latest sequence', async () => {
-                    const storageInstance = await rxStorageImplementation.getStorage().createStorageInstance<{ key: string }>({
-                        databaseName: randomCouchString(12),
-                        collectionName: randomCouchString(12),
-                        schema: getPseudoSchemaForVersion(0, 'key'),
-                        options: {
-                            auto_compaction: false
-                        }
-                    });
-
-                    const latestBefore = await getNewestSequence(storageInstance);
-                    await storageInstance.bulkWrite([
-                        {
-                            document: {
-                                key: 'foobar',
-                                _attachments: {}
-                            }
-                        },
-                        {
-                            document: {
-                                key: 'foobar2',
-                                _attachments: {}
-                            }
-                        }
-                    ]);
-                    const latestAfter = await getNewestSequence(storageInstance);
-                    assert.ok(latestAfter > latestBefore);
-                    storageInstance.close();
                 });
             });
         });

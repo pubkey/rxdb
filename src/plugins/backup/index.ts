@@ -113,7 +113,7 @@ export class RxBackupState {
 
     /**
      * Persists all data from all collections,
-     * beginning from the last sequence checkpoint
+     * beginning from the oldest sequence checkpoint
      * to the newest one.
      * Do not call this while it is already running.
      * Returns true if there are more documents to process
@@ -133,11 +133,9 @@ export class RxBackupState {
                     const collection: RxCollection = this.database.collections[collectionName];
 
                     await this.database.requestIdlePromise();
-                    const newestSeq = await getNewestSequence(collection.storageInstance);
 
                     if (!meta.collectionStates[collectionName]) {
                         meta.collectionStates[collectionName] = {
-                            newestKnownSequence: newestSeq,
                             lastSequence: 0
                         };
                     }
@@ -148,9 +146,9 @@ export class RxBackupState {
                         await this.database.requestIdlePromise();
 
                         const changesResult = await collection.storageInstance.getChangedDocuments({
-                            startSequence: lastSequence,
+                            sinceSequence: lastSequence,
                             limit: this.options.batchSize,
-                            order: 'asc'
+                            direction: 'after'
                         });
                         lastSequence = changesResult.lastSequence;
 
@@ -159,8 +157,7 @@ export class RxBackupState {
                         const docIds: string[] = changesResult.changedDocuments
                             .filter(changedDocument => {
                                 if (
-                                    processedDocuments.has(changedDocument.id) &&
-                                    changedDocument.sequence < newestSeq
+                                    processedDocuments.has(changedDocument.id)
                                 ) {
                                     return false;
                                 } else {

@@ -142,17 +142,6 @@ export async function findLocalDocument<DocType>(
     }
 }
 
-export async function getNewestSequence(
-    storageInstance: RxStorageInstance<any, any, any>
-): Promise<number> {
-    const changesResult = await storageInstance.getChangedDocuments({
-        order: 'asc',
-        limit: 1,
-        startSequence: 0
-    });
-    return changesResult.lastSequence;
-}
-
 export function storageChangeEventToRxChangeEvent<DocType>(
     isLocal: boolean,
     rxStorageChangeEvent: RxStorageChangeEvent<DocType>,

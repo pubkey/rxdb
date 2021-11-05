@@ -69,6 +69,17 @@ You can fix that by telling webpack to not resolve the `fs` module with the foll
     }
     /* ... */
 }
+
+// Or if you do not have a webpack.config.js like you do with angular,
+// you might fix it by setting the browser field in the package.json
+{
+  /* ... */
+  "browser": {
+    "fs": false
+  }
+  /* ... */
+}
+
 ```
 
 

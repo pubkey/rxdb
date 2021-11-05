@@ -671,8 +671,8 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             live: false,
             limit: options.limit,
             include_docs: false,
-            since: options.startSequence,
-            descending: options.order === 'desc' ? true : false
+            since: options.sinceSequence,
+            descending: options.direction === 'before' ? true : false
         };
         const pouchResults = await this.internals.pouch.changes(pouchChangesOpts);
         const changedDocuments = pouchResults.results

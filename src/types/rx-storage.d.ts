@@ -293,17 +293,20 @@ export type ChangeStreamOptions = {
 
 export type ChangeStreamOnceOptions = ChangeStreamOptions & {
     /**
-     * Start sequence is not optional
+     * sinceSequence is not optional
      * on one time changes.
      */
-    startSequence: number;
+    sinceSequence: number;
 
     /**
      * On one-time change stream results,
      * we can define the sort order
-     * to either get the newest or the oldest events.
+     * to either get events before sinceSequence
+     * or events after sinceSequence.
      */
-    order: 'asc' | 'desc';
+    direction: 'before' | 'after';
+
+    limit?: number;
 };
 
 export type ChangeStreamEvent<DocumentData> = ChangeEvent<RxDocumentData<DocumentData>> & {
