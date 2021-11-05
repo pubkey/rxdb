@@ -904,8 +904,8 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
 
 
                     const changesResult = await storageInstance.getChangedDocuments({
-                        startSequence: 0,
-                        order: 'asc'
+                        sinceSequence: 0,
+                        direction: 'after'
                     });
                     const firstChange = changesResult.changedDocuments[0];
                     if (!firstChange) {
