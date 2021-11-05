@@ -582,6 +582,11 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         let query = localState.collection
             .chain()
             .find(preparedQuery.selector);
+
+        if (preparedQuery.sort) {
+            query = query.sort(this.getSortComparator(preparedQuery));
+        }
+
         if (preparedQuery.limit) {
             query = query.limit(preparedQuery.limit);
         }

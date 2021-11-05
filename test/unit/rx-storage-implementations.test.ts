@@ -11,7 +11,8 @@ import {
     writeSingle,
     blobBufferUtil,
     flatClone,
-    MangoQuery
+    MangoQuery,
+    RxJsonSchema
 } from '../../plugins/core';
 
 import {
@@ -76,6 +77,29 @@ function getWriteData(
         },
         ownParams
     );
+}
+
+function getTestDataSchema(): RxJsonSchema<TestDocType> {
+    return {
+        version: 0,
+        type: 'object',
+        primaryKey: 'key',
+        properties: {
+            key: {
+                type: 'string'
+            },
+            value: {
+                type: 'string'
+            }
+        },
+        required: [
+            'key',
+            'value'
+        ],
+        indexes: [
+            'value'
+        ]
+    };
 }
 
 function getLocalWriteData(
@@ -348,6 +372,42 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
 
                     const allDocs = await storageInstance.query(preparedQuery);
                     assert.strictEqual(allDocs.documents.length, 2);
+
+                    storageInstance.close();
+                });
+                it('should sort in the correct order', async () => {
+                    const storageInstance = await rxStorageImplementation
+                        .getStorage()
+                        .createStorageInstance<{ key: string; value: string; }>({
+                            databaseName: randomCouchString(12),
+                            collectionName: randomCouchString(12),
+                            schema: getTestDataSchema(),
+                            options: {}
+                        });
+
+                    await storageInstance.bulkWrite([
+                        {
+                            document: getWriteData({ value: 'a' })
+                        },
+                        {
+                            document: getWriteData({ value: 'b' })
+                        },
+                        {
+                            document: getWriteData({ value: 'c' })
+                        },
+                    ]);
+
+                    const preparedQuery = storageInstance.prepareQuery({
+                        selector: {},
+                        sort: [
+                            { value: 'desc' }
+                        ]
+                    });
+                    const allDocs = await storageInstance.query(preparedQuery);
+
+                    assert.strictEqual(allDocs.documents[0].value, 'c');
+                    assert.strictEqual(allDocs.documents[1].value, 'b');
+                    assert.strictEqual(allDocs.documents[2].value, 'a');
 
                     storageInstance.close();
                 });
