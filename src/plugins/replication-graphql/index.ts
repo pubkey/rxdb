@@ -345,7 +345,7 @@ export class RxGraphQLReplicationState<RxDocType> {
 
                 // TODO _deleted should be required on type RxDocumentData
                 // so we do not need this check here
-                if (!changeWithDoc.doc.hasOwnProperty(this.deletedFlag)) {
+                if (!changeWithDoc.doc.hasOwnProperty('_deleted')) {
                     changeWithDoc.doc[this.deletedFlag] = false;
                 }
 
