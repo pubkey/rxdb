@@ -23,7 +23,6 @@ export type BackupMetaFileContent = {
     collectionStates: {
         [collectionName: string]: {
             lastSequence: number;
-            newestKnownSequence: number;
         }
     }
 }

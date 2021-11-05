@@ -287,7 +287,7 @@ export interface RxStorageInstance<
 
     /**
      * Returns the ids of all documents that have been
-     * changed since the given startSequence.
+     * changed since the given sinceSequence.
      */
     getChangedDocuments(
         options: ChangeStreamOnceOptions

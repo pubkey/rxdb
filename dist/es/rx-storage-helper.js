@@ -283,38 +283,6 @@ function _findLocalDocument() {
   return _findLocalDocument.apply(this, arguments);
 }
 
-export function getNewestSequence(_x13) {
-  return _getNewestSequence.apply(this, arguments);
-}
-
-function _getNewestSequence() {
-  _getNewestSequence = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee8(storageInstance) {
-    var changesResult;
-    return _regeneratorRuntime.wrap(function _callee8$(_context8) {
-      while (1) {
-        switch (_context8.prev = _context8.next) {
-          case 0:
-            _context8.next = 2;
-            return storageInstance.getChangedDocuments({
-              order: 'asc',
-              limit: 1,
-              startSequence: 0
-            });
-
-          case 2:
-            changesResult = _context8.sent;
-            return _context8.abrupt("return", changesResult.lastSequence);
-
-          case 4:
-          case "end":
-            return _context8.stop();
-        }
-      }
-    }, _callee8);
-  }));
-  return _getNewestSequence.apply(this, arguments);
-}
-
 export function storageChangeEventToRxChangeEvent(isLocal, rxStorageChangeEvent, rxDatabase, rxCollection) {
   var documentData;
 

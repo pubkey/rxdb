@@ -28,5 +28,4 @@ export declare function writeSingle<RxDocType>(instance: RxStorageInstance<RxDoc
  */
 export declare function writeSingleLocal<DocumentData>(instance: RxStorageKeyObjectInstance<any, any>, writeRow: BulkWriteLocalRow<DocumentData>): Promise<RxDocumentData<RxLocalDocumentData>>;
 export declare function findLocalDocument<DocType>(instance: RxStorageKeyObjectInstance<any, any>, id: string): Promise<RxDocumentData<RxLocalDocumentData<DocType>> | null>;
-export declare function getNewestSequence(storageInstance: RxStorageInstance<any, any, any>): Promise<number>;
 export declare function storageChangeEventToRxChangeEvent<DocType>(isLocal: boolean, rxStorageChangeEvent: RxStorageChangeEvent<DocType>, rxDatabase: RxDatabase, rxCollection?: RxCollection): RxChangeEvent<DocType>;

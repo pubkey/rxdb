@@ -932,8 +932,8 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
                 live: false,
                 limit: options.limit,
                 include_docs: false,
-                since: options.startSequence,
-                descending: options.order === 'desc' ? true : false
+                since: options.sinceSequence,
+                descending: options.direction === 'before' ? true : false
               };
               _context13.next = 3;
               return this.internals.pouch.changes(pouchChangesOpts);

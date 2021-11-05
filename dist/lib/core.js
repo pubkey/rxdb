@@ -32,7 +32,6 @@ var _exportNames = {
   getSchemaByObjectPath: true,
   findLocalDocument: true,
   getSingleDocument: true,
-  getNewestSequence: true,
   getAllDocuments: true,
   writeSingleLocal: true,
   writeSingle: true,
@@ -165,12 +164,6 @@ Object.defineProperty(exports, "getIndexes", {
   enumerable: true,
   get: function get() {
     return _rxSchema.getIndexes;
-  }
-});
-Object.defineProperty(exports, "getNewestSequence", {
-  enumerable: true,
-  get: function get() {
-    return _rxStorageHelper.getNewestSequence;
   }
 });
 Object.defineProperty(exports, "getPreviousVersions", {

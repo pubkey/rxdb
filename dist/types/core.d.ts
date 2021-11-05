@@ -16,7 +16,7 @@ export { getDocumentOrmPrototype, getDocumentPrototype } from './rx-document-pro
 export { isInstanceOf as isRxQuery } from './rx-query';
 export { isInstanceOf as isRxSchema, createRxSchema, RxSchema, getIndexes, normalize, getFinalFields, getPreviousVersions } from './rx-schema';
 export { getPseudoSchemaForVersion, getSchemaByObjectPath } from './rx-schema-helper';
-export { findLocalDocument, getSingleDocument, getNewestSequence, getAllDocuments, writeSingleLocal, writeSingle, countAllUndeleted, getBatch } from './rx-storage-helper';
+export { findLocalDocument, getSingleDocument, getAllDocuments, writeSingleLocal, writeSingle, countAllUndeleted, getBatch } from './rx-storage-helper';
 export { _clearHook } from './hooks';
 export { createCrypter } from './crypter';
 export * from './query-cache';

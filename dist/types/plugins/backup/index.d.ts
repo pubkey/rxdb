@@ -17,7 +17,7 @@ export declare class RxBackupState {
     constructor(database: RxDatabase, options: BackupOptions);
     /**
      * Persists all data from all collections,
-     * beginning from the last sequence checkpoint
+     * beginning from the oldest sequence checkpoint
      * to the newest one.
      * Do not call this while it is already running.
      * Returns true if there are more documents to process

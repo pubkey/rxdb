@@ -165,9 +165,9 @@ function _getChangesSinceLastPushSequence() {
                     case 0:
                       _context3.next = 2;
                       return collection.storageInstance.getChangedDocuments({
-                        startSequence: lastPushSequence,
+                        sinceSequence: lastPushSequence,
                         limit: batchSize,
-                        order: 'asc'
+                        direction: 'after'
                       });
 
                     case 2:

@@ -209,7 +209,6 @@ var _exportNames = {
   getSchemaByObjectPath: true,
   findLocalDocument: true,
   getSingleDocument: true,
-  getNewestSequence: true,
   getAllDocuments: true,
   writeSingleLocal: true,
   writeSingle: true,
@@ -342,12 +341,6 @@ Object.defineProperty(exports, "getIndexes", {
   enumerable: true,
   get: function get() {
     return _rxSchema.getIndexes;
-  }
-});
-Object.defineProperty(exports, "getNewestSequence", {
-  enumerable: true,
-  get: function get() {
-    return _rxStorageHelper.getNewestSequence;
   }
 });
 Object.defineProperty(exports, "getPreviousVersions", {
@@ -7145,8 +7138,8 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
                 live: false,
                 limit: options.limit,
                 include_docs: false,
-                since: options.startSequence,
-                descending: options.order === 'desc' ? true : false
+                since: options.sinceSequence,
+                descending: options.direction === 'before' ? true : false
               };
               _context13.next = 3;
               return this.internals.pouch.changes(pouchChangesOpts);
@@ -13448,7 +13441,6 @@ exports.countAllUndeleted = countAllUndeleted;
 exports.findLocalDocument = findLocalDocument;
 exports.getAllDocuments = getAllDocuments;
 exports.getBatch = getBatch;
-exports.getNewestSequence = getNewestSequence;
 exports.getSingleDocument = getSingleDocument;
 exports.storageChangeEventToRxChangeEvent = storageChangeEventToRxChangeEvent;
 exports.writeSingle = writeSingle;
@@ -13747,38 +13739,6 @@ function _findLocalDocument() {
     }, _callee7);
   }));
   return _findLocalDocument.apply(this, arguments);
-}
-
-function getNewestSequence(_x13) {
-  return _getNewestSequence.apply(this, arguments);
-}
-
-function _getNewestSequence() {
-  _getNewestSequence = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee8(storageInstance) {
-    var changesResult;
-    return _regenerator["default"].wrap(function _callee8$(_context8) {
-      while (1) {
-        switch (_context8.prev = _context8.next) {
-          case 0:
-            _context8.next = 2;
-            return storageInstance.getChangedDocuments({
-              order: 'asc',
-              limit: 1,
-              startSequence: 0
-            });
-
-          case 2:
-            changesResult = _context8.sent;
-            return _context8.abrupt("return", changesResult.lastSequence);
-
-          case 4:
-          case "end":
-            return _context8.stop();
-        }
-      }
-    }, _callee8);
-  }));
-  return _getNewestSequence.apply(this, arguments);
 }
 
 function storageChangeEventToRxChangeEvent(isLocal, rxStorageChangeEvent, rxDatabase, rxCollection) {

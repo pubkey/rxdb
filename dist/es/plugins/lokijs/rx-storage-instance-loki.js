@@ -795,10 +795,10 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
               return _context9.abrupt("return", this.requestRemoteInstance('getChangedDocuments', [options]));
 
             case 5:
-              desc = options.order === 'desc';
-              operator = options.order === 'asc' ? '$gte' : '$lte';
+              desc = options.direction === 'before';
+              operator = options.direction === 'after' ? '$gt' : '$lt';
               query = localState.changesCollection.chain().find({
-                sequence: (_sequence = {}, _sequence[operator] = options.startSequence, _sequence)
+                sequence: (_sequence = {}, _sequence[operator] = options.sinceSequence, _sequence)
               }).simplesort('sequence', !desc);
 
               if (options.limit) {
@@ -814,7 +814,7 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
               useForLastSequence = desc ? lastOfArray(changedDocuments) : changedDocuments[0];
               ret = {
                 changedDocuments: changedDocuments,
-                lastSequence: useForLastSequence ? useForLastSequence.sequence : options.startSequence
+                lastSequence: useForLastSequence ? useForLastSequence.sequence : options.sinceSequence
               };
               return _context9.abrupt("return", ret);
 

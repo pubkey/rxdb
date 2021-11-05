@@ -27,8 +27,6 @@ var _operators = require("rxjs/operators");
 
 var _rxError = require("../../rx-error");
 
-var _rxStorageHelper = require("../../rx-storage-helper");
-
 var _util = require("../../util");
 
 var _fileUtil = require("./file-util");
@@ -168,7 +166,7 @@ var RxBackupState = /*#__PURE__*/function () {
   }
   /**
    * Persists all data from all collections,
-   * beginning from the last sequence checkpoint
+   * beginning from the oldest sequence checkpoint
    * to the newest one.
    * Do not call this while it is already running.
    * Returns true if there are more documents to process
@@ -223,7 +221,7 @@ var RxBackupState = /*#__PURE__*/function () {
               _context6.next = 5;
               return Promise.all(Object.keys(this.database.collections).map( /*#__PURE__*/function () {
                 var _ref = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(collectionName) {
-                  var processedDocuments, collection, newestSeq, lastSequence, hasMore, _loop, _ret;
+                  var processedDocuments, collection, lastSequence, hasMore, _loop, _ret;
 
                   return _regenerator["default"].wrap(function _callee4$(_context5) {
                     while (1) {
@@ -235,15 +233,8 @@ var RxBackupState = /*#__PURE__*/function () {
                           return _this2.database.requestIdlePromise();
 
                         case 4:
-                          _context5.next = 6;
-                          return (0, _rxStorageHelper.getNewestSequence)(collection.storageInstance);
-
-                        case 6:
-                          newestSeq = _context5.sent;
-
                           if (!meta.collectionStates[collectionName]) {
                             meta.collectionStates[collectionName] = {
-                              newestKnownSequence: newestSeq,
                               lastSequence: 0
                             };
                           }
@@ -262,9 +253,9 @@ var RxBackupState = /*#__PURE__*/function () {
                                   case 2:
                                     _context4.next = 4;
                                     return collection.storageInstance.getChangedDocuments({
-                                      startSequence: lastSequence,
+                                      sinceSequence: lastSequence,
                                       limit: _this2.options.batchSize,
-                                      order: 'asc'
+                                      direction: 'after'
                                     });
 
                                   case 4:
@@ -272,7 +263,7 @@ var RxBackupState = /*#__PURE__*/function () {
                                     lastSequence = changesResult.lastSequence;
                                     meta.collectionStates[collectionName].lastSequence = lastSequence;
                                     docIds = changesResult.changedDocuments.filter(function (changedDocument) {
-                                      if (processedDocuments.has(changedDocument.id) && changedDocument.sequence < newestSeq) {
+                                      if (processedDocuments.has(changedDocument.id)) {
                                         return false;
                                       } else {
                                         processedDocuments.add(changedDocument.id);
@@ -379,34 +370,34 @@ var RxBackupState = /*#__PURE__*/function () {
                             }, _loop);
                           });
 
-                        case 11:
+                        case 8:
                           if (!(hasMore && !_this2.isStopped)) {
-                            _context5.next = 18;
+                            _context5.next = 15;
                             break;
                           }
 
-                          return _context5.delegateYield(_loop(), "t0", 13);
+                          return _context5.delegateYield(_loop(), "t0", 10);
 
-                        case 13:
+                        case 10:
                           _ret = _context5.t0;
 
                           if (!(_ret === "continue")) {
-                            _context5.next = 16;
+                            _context5.next = 13;
                             break;
                           }
 
-                          return _context5.abrupt("continue", 11);
+                          return _context5.abrupt("continue", 8);
 
-                        case 16:
-                          _context5.next = 11;
+                        case 13:
+                          _context5.next = 8;
                           break;
 
-                        case 18:
+                        case 15:
                           meta.collectionStates[collectionName].lastSequence = lastSequence;
-                          _context5.next = 21;
+                          _context5.next = 18;
                           return (0, _fileUtil.setMeta)(_this2.options, meta);
 
-                        case 21:
+                        case 18:
                         case "end":
                           return _context5.stop();
                       }
