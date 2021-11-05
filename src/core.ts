@@ -65,7 +65,6 @@ export {
 export {
     findLocalDocument,
     getSingleDocument,
-    getNewestSequence,
     getAllDocuments,
     writeSingleLocal,
     writeSingle,

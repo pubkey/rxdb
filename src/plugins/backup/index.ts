@@ -11,7 +11,6 @@ import {
     map
 } from 'rxjs/operators';
 import { newRxError } from '../../rx-error';
-import { getNewestSequence } from '../../rx-storage-helper';
 import type {
     BackupOptions,
     RxBackupWriteEvent,
