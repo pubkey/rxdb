@@ -3,6 +3,8 @@
 
 ### X.X.X (comming soon)
 
+### 10.3.1 (5 November 2021)
+
 Bugfixes:
   - Fix endless loop when using GrapQL-replication & LokiJS RxStorage.
 
