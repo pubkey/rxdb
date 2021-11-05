@@ -762,6 +762,10 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
             case 5:
               query = localState.collection.chain().find(preparedQuery.selector);
 
+              if (preparedQuery.sort) {
+                query = query.sort(this.getSortComparator(preparedQuery));
+              }
+
               if (preparedQuery.limit) {
                 query = query.limit(preparedQuery.limit);
               }
@@ -775,7 +779,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
                 documents: foundDocuments
               });
 
-            case 10:
+            case 11:
             case "end":
               return _context8.stop();
           }
