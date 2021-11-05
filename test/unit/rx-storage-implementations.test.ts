@@ -7,7 +7,6 @@ import {
     randomCouchString,
     getPseudoSchemaForVersion,
     getFromMapOrThrow,
-    getNewestSequence,
     lastOfArray,
     writeSingle,
     blobBufferUtil,
