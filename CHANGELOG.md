@@ -3,6 +3,8 @@
 
 ### X.X.X (comming soon)
 
+### 10.3.2 (5 November 2021)
+
 Bugfixes:
   - Sort queries broken with LokiJS RxStorage.
 
