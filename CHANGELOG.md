@@ -3,6 +3,8 @@
 
 ### X.X.X (comming soon)
 
+### 10.3.3 (6 November 2021)
+
 Bugfixes:
   - LokiJS Storate must have a deterministic sort order.
 ### 10.3.2 (5 November 2021)
