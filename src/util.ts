@@ -336,6 +336,12 @@ export function flatClone<T>(obj: T | DeepReadonlyObject<T>): T {
     return Object.assign({}, obj) as any;
 }
 
+/**
+ * @link https://stackoverflow.com/a/11509718/3443137
+ */
+export function firstPropertyNameOfObject(obj: any): string {
+    return obj[Object.keys(obj)[0]];
+}
 
 import isElectron from 'is-electron';
 export const isElectronRenderer = isElectron();

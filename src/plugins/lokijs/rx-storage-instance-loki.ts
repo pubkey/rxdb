@@ -17,7 +17,8 @@ import {
     flatClone,
     now,
     ensureNotFalsy,
-    randomCouchString
+    randomCouchString,
+    firstPropertyNameOfObject
 } from '../../util';
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
@@ -250,6 +251,22 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 mutateableQuery.selector
             ]
         };
+
+        /**
+         * To ensure a deterministic sorting,
+         * we have to ensure the primary key is always part
+         * of the sort query.
+         */
+        if (!mutateableQuery.sort) {
+            mutateableQuery.sort = [{ [this.primaryPath]: 'asc' }] as any;
+        } else {
+            const isPrimaryInSort = mutateableQuery.sort
+                .find(p => firstPropertyNameOfObject(p) === this.primaryPath);
+            if (!isPrimaryInSort) {
+                mutateableQuery.sort.push({ [this.primaryPath]: 'asc' } as any);
+            }
+        }
+
         return mutateableQuery;
     }
 
@@ -279,9 +296,16 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                     }
                 }
             });
+
+            /**
+             * Two different objects should never have the same sort position.
+             * We ensure this by having the unique primaryKey in the sort params
+             * at this.prepareQuery()
+             */
             if (!compareResult) {
-                throw new Error('no compareResult');
+                throw newRxError('SNH', { args: { query } });
             }
+
             return compareResult as any;
         }
         return fun;

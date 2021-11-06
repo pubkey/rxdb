@@ -38,6 +38,7 @@ import {
     RxDocumentWriteData,
     RxLocalDocumentData,
     RxStorage,
+    RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
     RxStorageInstance,
     RxStorageKeyObjectInstance
@@ -116,6 +117,12 @@ function getLocalWriteData(
     );
 }
 
+declare type RandomDoc = {
+    id: string;
+    equal: string;
+    random: string;
+    increment: number;
+};
 
 const rxStorageImplementations: {
     name: string;
@@ -408,6 +415,114 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                     assert.strictEqual(allDocs.documents[0].value, 'c');
                     assert.strictEqual(allDocs.documents[1].value, 'b');
                     assert.strictEqual(allDocs.documents[2].value, 'a');
+
+                    storageInstance.close();
+                });
+                /**
+                 * For event-reduce to work,
+                 * we must ensure we there is always a deterministic sort order.
+                 */
+                it('should have the same deterministic order of .query() and .getSortComparator()', async () => {
+                    const schema: RxJsonSchema<RandomDoc> = {
+                        version: 0,
+                        primaryKey: 'id',
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string'
+                            },
+                            equal: {
+                                type: 'string',
+                                enum: ['foobar']
+                            },
+                            increment: {
+                                type: 'number'
+                            },
+                            random: {
+                                type: 'string'
+                            }
+                        },
+                        indexes: [
+                            'id',
+                            'equal',
+                            'increment',
+                            'random',
+                            [
+                                'equal',
+                                'increment'
+                            ]
+                        ],
+                        required: [
+                            'id',
+                            'equal',
+                            'increment',
+                            'random'
+                        ]
+                    }
+                    const storageInstance = await rxStorageImplementation
+                        .getStorage()
+                        .createStorageInstance<RandomDoc>({
+                            databaseName: randomCouchString(12),
+                            collectionName: randomCouchString(12),
+                            schema,
+                            options: {}
+                        });
+
+
+                    const docData: RxDocumentWriteData<RandomDoc>[] = new Array(10)
+                        .fill(0)
+                        .map((_x, idx) => ({
+                            id: randomString(10),
+                            equal: 'foobar',
+                            random: randomString(10),
+                            increment: idx + 1,
+                            _attachments: {}
+                        }));
+                    const writeResponse: RxStorageBulkWriteResponse<RandomDoc> = await storageInstance.bulkWrite(
+                        docData.map(d => ({ document: d }))
+                    );
+                    if (writeResponse.error.size > 0) {
+                        throw new Error('could not save');
+                    }
+                    const docs = Array.from(writeResponse.success.values());
+
+                    async function testQuery(query: MangoQuery<RandomDoc>): Promise<void> {
+                        const preparedQuery = storageInstance.prepareQuery(query);
+                        const docsViaQuery = (await storageInstance.query(preparedQuery)).documents;
+                        const sortComparator = storageInstance.getSortComparator(preparedQuery);
+                        const docsViaSort = docs.sort(sortComparator);
+                        assert.deepStrictEqual(docsViaQuery, docsViaSort);
+                    }
+                    const queries: MangoQuery<RandomDoc>[] = [
+                        {
+                            selector: {},
+                            sort: [
+                                { id: 'asc' }
+                            ]
+                        },
+                        {
+                            selector: {},
+                            sort: [
+                                { equal: 'asc' }
+                            ]
+                        },
+                        {
+                            selector: {},
+                            sort: [
+                                { increment: 'desc' }
+                            ]
+                        },
+                        {
+                            selector: {},
+                            sort: [
+                                { equal: 'asc' },
+                                { increment: 'desc' }
+                            ]
+                        }
+                    ];
+                    for (const query of queries) {
+                        await testQuery(query);
+                    }
 
                     storageInstance.close();
                 });
