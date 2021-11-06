@@ -28,10 +28,6 @@ export const Heroes = () => {
         const color = getRandomColor();
         console.log('color: ' + color);
         if (heroCollection) {
-            console.log(
-                '🚀 ~ file: Heroes.js ~ line 57 ~ heroCollection',
-                !!heroCollection
-            );
             await heroCollection.insert({ name, color });
         }
         setName('');
