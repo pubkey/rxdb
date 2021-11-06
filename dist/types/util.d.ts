@@ -95,6 +95,10 @@ export declare const clone: typeof recursiveDeepCopy;
  * @link https://jsperf.com/object-rest-spread-vs-clone/2
  */
 export declare function flatClone<T>(obj: T | DeepReadonlyObject<T>): T;
+/**
+ * @link https://stackoverflow.com/a/11509718/3443137
+ */
+export declare function firstPropertyNameOfObject(obj: any): string;
 export declare const isElectronRenderer: boolean;
 /**
  * returns a flattened object

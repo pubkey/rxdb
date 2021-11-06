@@ -13822,6 +13822,7 @@ exports.clone = exports.blobBufferUtil = void 0;
 exports.createRevision = createRevision;
 exports.ensureNotFalsy = ensureNotFalsy;
 exports.fastUnsecureHash = fastUnsecureHash;
+exports.firstPropertyNameOfObject = firstPropertyNameOfObject;
 exports.flatClone = flatClone;
 exports.flattenObject = flattenObject;
 exports.getFromMapOrThrow = getFromMapOrThrow;
@@ -14212,6 +14213,14 @@ exports.clone = clone;
 
 function flatClone(obj) {
   return Object.assign({}, obj);
+}
+/**
+ * @link https://stackoverflow.com/a/11509718/3443137
+ */
+
+
+function firstPropertyNameOfObject(obj) {
+  return obj[Object.keys(obj)[0]];
 }
 
 var isElectronRenderer = (0, _isElectron["default"])();

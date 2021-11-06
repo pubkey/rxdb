@@ -2,7 +2,7 @@ import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
 import lokijs from 'lokijs';
 import { Subject } from 'rxjs';
-import { promiseWait, createRevision, getHeightOfRevision, parseRevision, lastOfArray, flatClone, now, ensureNotFalsy, randomCouchString } from '../../util';
+import { promiseWait, createRevision, getHeightOfRevision, parseRevision, lastOfArray, flatClone, now, ensureNotFalsy, randomCouchString, firstPropertyNameOfObject } from '../../util';
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import { LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE, CHANGES_COLLECTION_SUFFIX, closeLokiCollections, getLokiDatabase, getLokiEventKey, OPEN_LOKIJS_STORAGE_INSTANCES, LOKIJS_COLLECTION_DEFAULT_OPTIONS } from './lokijs-helper';
@@ -277,20 +277,44 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
   }();
 
   _proto.prepareQuery = function prepareQuery(mutateableQuery) {
+    var _this2 = this;
+
     mutateableQuery.selector = {
       $and: [{
         _deleted: false
       }, mutateableQuery.selector]
     };
+    /**
+     * To ensure a deterministic sorting,
+     * we have to ensure the primary key is always part
+     * of the sort query.
+     */
+
+    if (!mutateableQuery.sort) {
+      var _ref3;
+
+      mutateableQuery.sort = [(_ref3 = {}, _ref3[this.primaryPath] = 'asc', _ref3)];
+    } else {
+      var isPrimaryInSort = mutateableQuery.sort.find(function (p) {
+        return firstPropertyNameOfObject(p) === _this2.primaryPath;
+      });
+
+      if (!isPrimaryInSort) {
+        var _mutateableQuery$sort;
+
+        mutateableQuery.sort.push((_mutateableQuery$sort = {}, _mutateableQuery$sort[this.primaryPath] = 'asc', _mutateableQuery$sort));
+      }
+    }
+
     return mutateableQuery;
   };
 
   _proto.getSortComparator = function getSortComparator(query) {
-    var _ref3;
+    var _ref4;
 
     // TODO if no sort is given, use sort by primary.
     // This should be done inside of RxDB and not in the storage implementations.
-    var sortOptions = query.sort ? query.sort : [(_ref3 = {}, _ref3[this.primaryPath] = 'asc', _ref3)];
+    var sortOptions = query.sort ? query.sort : [(_ref4 = {}, _ref4[this.primaryPath] = 'asc', _ref4)];
 
     var fun = function fun(a, b) {
       var compareResult = 0; // 1 | -1
@@ -314,9 +338,18 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
           }
         }
       });
+      /**
+       * Two different objects should never have the same sort position.
+       * We ensure this by having the unique primaryKey in the sort params
+       * at this.prepareQuery()
+       */
 
       if (!compareResult) {
-        throw new Error('no compareResult');
+        throw newRxError('SNH', {
+          args: {
+            query: query
+          }
+        });
       }
 
       return compareResult;
@@ -357,7 +390,7 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
 
   _proto.bulkWrite = /*#__PURE__*/function () {
     var _bulkWrite = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee5(documentWrites) {
-      var _this2 = this;
+      var _this3 = this;
 
       var localState, collection, ret, startTime;
       return _regeneratorRuntime.wrap(function _callee5$(_context5) {
@@ -401,8 +434,8 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
               };
               startTime = now();
               documentWrites.forEach(function (writeRow) {
-                var id = writeRow.document[_this2.primaryPath];
-                var documentInDb = collection.by(_this2.primaryPath, id);
+                var id = writeRow.document[_this3.primaryPath];
+                var documentInDb = collection.by(_this3.primaryPath, id);
 
                 if (!documentInDb) {
                   // insert new document
@@ -422,9 +455,9 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
                   collection.insert(writeDoc);
 
                   if (!insertedIsDeleted) {
-                    _this2.addChangeDocumentMeta(id);
+                    _this3.addChangeDocumentMeta(id);
 
-                    _this2.changes$.next({
+                    _this3.changes$.next({
                       eventId: getLokiEventKey(false, id, newRevision),
                       documentId: id,
                       change: {
@@ -465,7 +498,7 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
 
                     collection.update(_writeDoc);
 
-                    _this2.addChangeDocumentMeta(id);
+                    _this3.addChangeDocumentMeta(id);
 
                     var change = null;
 
@@ -500,7 +533,7 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
                       });
                     }
 
-                    _this2.changes$.next({
+                    _this3.changes$.next({
                       eventId: getLokiEventKey(false, id, _newRevision),
                       documentId: id,
                       change: change,
@@ -531,7 +564,7 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
 
   _proto.bulkAddRevisions = /*#__PURE__*/function () {
     var _bulkAddRevisions = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee6(documents) {
-      var _this3 = this;
+      var _this4 = this;
 
       var localState, startTime, collection;
       return _regeneratorRuntime.wrap(function _callee6$(_context6) {
@@ -571,14 +604,14 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
               startTime = now();
               collection = localState.collection;
               documents.forEach(function (docData) {
-                var id = docData[_this3.primaryPath];
-                var documentInDb = collection.by(_this3.primaryPath, id);
+                var id = docData[_this4.primaryPath];
+                var documentInDb = collection.by(_this4.primaryPath, id);
 
                 if (!documentInDb) {
                   // document not here, so we can directly insert
                   collection.insert(docData);
 
-                  _this3.changes$.next({
+                  _this4.changes$.next({
                     documentId: id,
                     eventId: getLokiEventKey(false, id, docData._rev),
                     change: {
@@ -591,7 +624,7 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
                     endTime: now()
                   });
 
-                  _this3.addChangeDocumentMeta(id);
+                  _this4.addChangeDocumentMeta(id);
                 } else {
                   var newWriteRevision = parseRevision(docData._rev);
                   var oldRevision = parseRevision(documentInDb._rev);
@@ -639,7 +672,7 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
                     }
 
                     if (change) {
-                      _this3.changes$.next({
+                      _this4.changes$.next({
                         documentId: id,
                         eventId: getLokiEventKey(false, id, docData._rev),
                         change: change,
@@ -647,7 +680,7 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
                         endTime: now()
                       });
 
-                      _this3.addChangeDocumentMeta(id);
+                      _this4.addChangeDocumentMeta(id);
                     }
                   }
                 }
@@ -670,7 +703,7 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
 
   _proto.findDocumentsById = /*#__PURE__*/function () {
     var _findDocumentsById = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee7(ids, deleted) {
-      var _this4 = this;
+      var _this5 = this;
 
       var localState, collection, ret;
       return _regeneratorRuntime.wrap(function _callee7$(_context7) {
@@ -694,7 +727,7 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
               collection = localState.collection;
               ret = new Map();
               ids.forEach(function (id) {
-                var documentInDb = collection.by(_this4.primaryPath, id);
+                var documentInDb = collection.by(_this5.primaryPath, id);
 
                 if (documentInDb && (!documentInDb._deleted || deleted)) {
                   ret.set(id, documentInDb);

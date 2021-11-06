@@ -325,6 +325,13 @@ export var clone = recursiveDeepCopy;
 export function flatClone(obj) {
   return Object.assign({}, obj);
 }
+/**
+ * @link https://stackoverflow.com/a/11509718/3443137
+ */
+
+export function firstPropertyNameOfObject(obj) {
+  return obj[Object.keys(obj)[0]];
+}
 import isElectron from 'is-electron';
 export var isElectronRenderer = isElectron();
 /**
