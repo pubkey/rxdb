@@ -3,6 +3,9 @@
 
 ### X.X.X (comming soon)
 
+Bugfixes:
+  - LokiJS `findDocumentsById()` returned additional `$loki` property.
+
 ### 10.3.4 (7 November 2021)
 
 Bugfixes:

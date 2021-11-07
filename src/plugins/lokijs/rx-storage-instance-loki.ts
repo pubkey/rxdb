@@ -601,7 +601,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 documentInDb &&
                 (!documentInDb._deleted || deleted)
             ) {
-                ret.set(id, documentInDb);
+                ret.set(id, stripLokiKey(documentInDb));
             }
         });
         return ret;

@@ -582,18 +582,22 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                         options: {}
                     });
 
+                    const docData = {
+                        key: 'foobar',
+                        value: 'barfoo',
+                        _attachments: {}
+                    };
                     await storageInstance.bulkWrite(
                         [{
-                            document: {
-                                key: 'foobar',
-                                value: 'barfoo',
-                                _attachments: {}
-                            }
+                            document: docData
                         }]
                     );
 
                     const found = await storageInstance.findDocumentsById(['foobar'], false);
-                    assert.ok(found.get('foobar'));
+                    const foundDoc = getFromMapOrThrow(found, 'foobar');
+                    delete (foundDoc as any)._rev;
+                    delete (foundDoc as any)._deleted;
+                    assert.deepStrictEqual(foundDoc, docData);
 
                     storageInstance.close();
                 });
@@ -615,6 +619,7 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                         }]
                     );
                     const previous = getFromMapOrThrow(insertResult.success, 'foobar');
+
                     await storageInstance.bulkWrite(
                         [{
                             previous,

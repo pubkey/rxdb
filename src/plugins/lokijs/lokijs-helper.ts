@@ -21,6 +21,9 @@ export const LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remot
  * which must be removed before returning the data back to RxDB.
  */
 export function stripLokiKey<T>(docData: T & { $loki?: number }): T {
+    if (!docData.$loki) {
+        return docData;
+    }
     const cloned = flatClone(docData);
     delete cloned.$loki;
     return cloned;
@@ -86,8 +89,6 @@ export function getLokiDatabase(
                 },
                 databaseSettings
             );
-            console.log('useSettings:');
-            console.dir(flatClone(useSettings));
             const database = new lokijs(
                 databaseName + '.db',
                 useSettings

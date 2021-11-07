@@ -34,7 +34,8 @@ import {
     getLokiEventKey,
     LOKIJS_COLLECTION_DEFAULT_OPTIONS,
     LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE,
-    OPEN_LOKIJS_STORAGE_INSTANCES
+    OPEN_LOKIJS_STORAGE_INSTANCES,
+    stripLokiKey
 } from './lokijs-helper';
 import type {
     Collection
@@ -236,7 +237,7 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
                 collection.insert(writeDoc);
             }
 
-            ret.success.set(id, writeDoc);
+            ret.success.set(id, stripLokiKey(writeDoc));
 
             const endTime = now();
 
@@ -319,7 +320,7 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
                 documentInDb &&
                 !documentInDb._deleted
             ) {
-                ret.set(id, documentInDb);
+                ret.set(id, stripLokiKey(documentInDb));
             }
         });
         return ret;
