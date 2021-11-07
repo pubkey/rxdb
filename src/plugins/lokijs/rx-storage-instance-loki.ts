@@ -55,7 +55,8 @@ import {
     getLokiDatabase,
     getLokiEventKey,
     OPEN_LOKIJS_STORAGE_INSTANCES,
-    LOKIJS_COLLECTION_DEFAULT_OPTIONS
+    LOKIJS_COLLECTION_DEFAULT_OPTIONS,
+    stripLokiKey
 } from './lokijs-helper';
 import type {
     Collection
@@ -391,7 +392,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                         _attachments: {} as any
                     }
                 );
-                collection.insert(writeDoc);
+                collection.insert(flatClone(writeDoc));
                 if (!insertedIsDeleted) {
                     this.addChangeDocumentMeta(id);
                     this.changes$.next({
@@ -624,7 +625,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         if (preparedQuery.skip) {
             query = query.offset(preparedQuery.skip);
         }
-        const foundDocuments = query.data();
+        const foundDocuments = query.data().map(lokiDoc => stripLokiKey(lokiDoc));
         return {
             documents: foundDocuments
         };

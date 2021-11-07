@@ -155,22 +155,25 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                         options: {}
                     });
 
+                    const docData = {
+                        key: 'foobar',
+                        value: 'barfoo1',
+                        _attachments: {}
+                    };
                     const writeResponse = await storageInstance.bulkWrite(
                         [{
-                            document: {
-                                key: 'foobar',
-                                value: 'barfoo1',
-                                _attachments: {}
-                            }
+                            document: clone(docData)
                         }]
                     );
 
                     assert.strictEqual(writeResponse.error.size, 0);
                     const first = getFromMapOrThrow(writeResponse.success, 'foobar');
-                    assert.strictEqual(first.key, 'foobar');
-                    assert.strictEqual(first.value, 'barfoo1');
-                    assert.ok(first._rev);
 
+                    assert.ok(first._rev);
+                    (docData as any)._rev = first._rev;
+                    delete first._deleted;
+
+                    assert.deepStrictEqual(docData, first);
                     storageInstance.close();
                 });
                 it('should error on conflict', async () => {

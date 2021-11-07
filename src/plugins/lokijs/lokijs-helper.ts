@@ -15,6 +15,17 @@ export const CHANGES_LOCAL_SUFFIX = '-rxdb-local';
 export const LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request';
 export const LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request-key-object';
 
+
+/**
+ * Loki attaches a $loki property to all data
+ * which must be removed before returning the data back to RxDB.
+ */
+export function stripLokiKey<T>(docData: T & { $loki?: number }): T {
+    const cloned = flatClone(docData);
+    delete cloned.$loki;
+    return cloned;
+}
+
 export function getLokiEventKey(
     isLocal: boolean,
     primary: string,

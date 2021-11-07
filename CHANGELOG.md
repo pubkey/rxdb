@@ -5,6 +5,7 @@
 
 Bugfixes:
   - LokiJS: Upserting a deleted document did not work.
+  - LokiJS: Storage queries returned additional `$loki` property.
 
 ### 10.3.3 (6 November 2021)
 
