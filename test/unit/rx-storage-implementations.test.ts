@@ -267,21 +267,24 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                         key: 'foobar',
                         value: 'barfoo',
                         _attachments: {},
-                        _rev: '1-a723631364fbfa906c5ffa8203ac9725'
+                        _rev: '1-a623631364fbfa906c5ffa8203ac9725'
                     };
-
+                    const originalWriteData = clone(writeData);
                     await storageInstance.bulkAddRevisions(
                         [
                             writeData
                         ]
                     );
 
-                    const found = await storageInstance.findDocumentsById([writeData.key], false);
-                    const doc = getFromMapOrThrow(found, writeData.key);
+                    // should not have mutated the input
+                    assert.deepStrictEqual(originalWriteData, writeData);
+
+                    const found = await storageInstance.findDocumentsById([originalWriteData.key], false);
+                    const doc = getFromMapOrThrow(found, originalWriteData.key);
                     assert.ok(doc);
-                    assert.strictEqual(doc.value, writeData.value);
+                    assert.strictEqual(doc.value, originalWriteData.value);
                     // because overwrite=true, the _rev from the input data must be used.
-                    assert.strictEqual(doc._rev, writeData._rev);
+                    assert.strictEqual(doc._rev, originalWriteData._rev);
 
                     storageInstance.close();
                 });

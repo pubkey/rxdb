@@ -515,7 +515,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             const documentInDb = collection.by(this.primaryPath, id);
             if (!documentInDb) {
                 // document not here, so we can directly insert
-                collection.insert(docData);
+                collection.insert(flatClone(docData));
                 this.changes$.next({
                     documentId: id,
                     eventId: getLokiEventKey(false, id, docData._rev),
