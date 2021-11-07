@@ -507,10 +507,13 @@ export class RxCollectionBase<
         }
 
         return this.findOne(primary).exec()
-            .then((existing: any) => {
-                if (existing) {
-                    useJson._rev = existing['_rev'];
+            .then((existing: RxDocument<RxDocumentType, OrmMethods> | null) => {
 
+                console.log('existing:');
+                console.dir(existing);
+
+                if (existing && !existing.deleted) {
+                    useJson._rev = (existing as any)['_rev'];
                     return existing.atomicUpdate(() => useJson as any)
                         .then(() => existing);
                 } else {

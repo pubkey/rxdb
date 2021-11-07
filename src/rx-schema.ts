@@ -143,7 +143,7 @@ export class RxSchema<T = any> {
      * fills all unset fields with default-values if set
      */
     fillObjectWithDefaults(obj: any): any {
-        obj = clone(obj);
+        obj = flatClone(obj);
         Object
             .entries(this.defaultValues)
             .filter(([k]) => !obj.hasOwnProperty(k) || typeof obj[k] === 'undefined')

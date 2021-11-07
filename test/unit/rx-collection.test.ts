@@ -1274,6 +1274,29 @@ config.parallel('rx-collection.test.js', () => {
                     assert.strictEqual(doc.firstName, 'foobar2');
                     db.destroy();
                 });
+                it('overwrite deleted', async () => {
+                    const db = await createRxDatabase({
+                        name: randomCouchString(10),
+                        storage: getRxStoragePouch('memory'),
+                    });
+                    const collections = await db.addCollections({
+                        human: {
+                            schema: schemas.primaryHuman
+                        }
+                    });
+                    const collection = collections.human;
+                    const objData = schemaObjects.simpleHuman();
+                    const doc = await collection.insert(objData);
+                    await doc.remove();
+
+                    objData.firstName = 'foobar';
+                    await collection.upsert(objData);
+
+                    const docAfter = await collection.findOne(objData.passportId).exec(true);
+                    assert.strictEqual(docAfter.firstName, 'foobar');
+
+                    db.destroy();
+                });
             });
             describe('negative', () => {
                 it('throw when primary missing', async () => {

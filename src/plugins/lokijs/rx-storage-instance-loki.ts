@@ -411,6 +411,13 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             } else {
                 // update existing document
                 const revInDb: string = documentInDb._rev;
+
+                // inserting a deleted document is possible
+                // without sending the previous data.
+                if (!writeRow.previous && documentInDb._deleted) {
+                    writeRow.previous = documentInDb;
+                }
+
                 if (
                     !writeRow.previous ||
                     revInDb !== writeRow.previous._rev

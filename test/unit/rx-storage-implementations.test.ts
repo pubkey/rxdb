@@ -206,6 +206,50 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
 
                     storageInstance.close();
                 });
+                it('should be able to overwrite a deleted the document', async () => {
+                    const storageInstance = await rxStorageImplementation.getStorage().createStorageInstance<TestDocType>({
+                        databaseName: randomCouchString(12),
+                        collectionName: randomCouchString(12),
+                        schema: getPseudoSchemaForVersion(0, 'key'),
+                        options: {}
+                    });
+
+                    const writeResponse = await storageInstance.bulkWrite(
+                        [{
+                            document: {
+                                key: 'foobar',
+                                value: 'barfoo1',
+                                _attachments: {}
+                            }
+                        }]
+                    );
+                    assert.strictEqual(writeResponse.error.size, 0);
+                    const first = getFromMapOrThrow(writeResponse.success, 'foobar');
+
+
+                    const writeResponse2 = await storageInstance.bulkWrite(
+                        [{
+                            previous: first,
+                            document: Object.assign({}, first, { _deleted: true })
+                        }]
+                    );
+                    assert.strictEqual(writeResponse2.error.size, 0);
+                    const second = getFromMapOrThrow(writeResponse2.success, 'foobar');
+
+
+                    const writeResponse3 = await storageInstance.bulkWrite(
+                        [{
+                            // No previous doc data is send here. Because we 'undelete' the document
+                            // which can be done via .insert()
+                            document: Object.assign({}, second, { _deleted: false, value: 'aaa' })
+                        }]
+                    );
+                    assert.strictEqual(writeResponse3.error.size, 0);
+                    const third = getFromMapOrThrow(writeResponse3.success, 'foobar');
+                    assert.strictEqual(third.value, 'aaa');
+
+                    storageInstance.close();
+                });
             });
             describe('.bulkAddRevisions()', () => {
                 it('should add the revisions for new documents', async () => {
@@ -467,7 +511,6 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                             schema,
                             options: {}
                         });
-
 
                     const docData: RxDocumentWriteData<RandomDoc>[] = new Array(10)
                         .fill(0)
