@@ -95,9 +95,9 @@ export function getLokiDatabase(
 
             // Wait until all data is load from persistence adapter.
             if (hasPersistence) {
-                await new Promise<void>(res => {
-                    database.loadDatabase({}, (_result) => {
-                        res();
+                await new Promise<void>((res, rej) => {
+                    database.loadDatabase({}, (err) => {
+                        err ? rej(err) : res();
                     });
                 });
             }
@@ -139,8 +139,10 @@ export async function closeLokiCollections(
     if (Object.keys(databaseState.openCollections).length === 0) {
         // all collections closed -> also close database
         LOKI_DATABASE_STATE_BY_NAME.delete(databaseName);
-        await new Promise<void>(res => {
-            databaseState.database.close(res);
+        await new Promise<void>((res, rej) => {
+            databaseState.database.close(err => {
+                err ? rej(err) : res();
+            });
         });
     }
 }
