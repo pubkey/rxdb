@@ -484,7 +484,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     }
 
     return this.findOne(primary).exec().then(function (existing) {
-      if (existing) {
+      if (existing && !existing.deleted) {
         useJson._rev = existing['_rev'];
         return existing.atomicUpdate(function () {
           return useJson;

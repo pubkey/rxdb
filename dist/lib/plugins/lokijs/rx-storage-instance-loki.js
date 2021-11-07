@@ -474,7 +474,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
                     // TODO attachments are currently not working with lokijs
                     _attachments: {}
                   });
-                  collection.insert(writeDoc);
+                  collection.insert((0, _util.flatClone)(writeDoc));
 
                   if (!insertedIsDeleted) {
                     _this3.addChangeDocumentMeta(id);
@@ -496,7 +496,12 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
                   ret.success.set(id, writeDoc);
                 } else {
                   // update existing document
-                  var revInDb = documentInDb._rev;
+                  var revInDb = documentInDb._rev; // inserting a deleted document is possible
+                  // without sending the previous data.
+
+                  if (!writeRow.previous && documentInDb._deleted) {
+                    writeRow.previous = documentInDb;
+                  }
 
                   if (!writeRow.previous || revInDb !== writeRow.previous._rev) {
                     // conflict error
@@ -807,7 +812,9 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
                 query = query.offset(preparedQuery.skip);
               }
 
-              foundDocuments = query.data();
+              foundDocuments = query.data().map(function (lokiDoc) {
+                return (0, _lokijsHelper.stripLokiKey)(lokiDoc);
+              });
               return _context8.abrupt("return", {
                 documents: foundDocuments
               });

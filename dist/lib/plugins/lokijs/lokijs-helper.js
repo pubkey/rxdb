@@ -9,6 +9,7 @@ exports.OPEN_LOKIJS_STORAGE_INSTANCES = exports.LOKI_KEY_OBJECT_BROADCAST_CHANNE
 exports.closeLokiCollections = closeLokiCollections;
 exports.getLokiDatabase = getLokiDatabase;
 exports.getLokiEventKey = getLokiEventKey;
+exports.stripLokiKey = stripLokiKey;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
@@ -27,7 +28,18 @@ exports.CHANGES_LOCAL_SUFFIX = CHANGES_LOCAL_SUFFIX;
 var LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request';
 exports.LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE;
 var LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request-key-object';
+/**
+ * Loki attaches a $loki property to all data
+ * which must be removed before returning the data back to RxDB.
+ */
+
 exports.LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE = LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE;
+
+function stripLokiKey(docData) {
+  var cloned = (0, _util.flatClone)(docData);
+  delete cloned.$loki;
+  return cloned;
+}
 
 function getLokiEventKey(isLocal, primary, revision) {
   var prefix = isLocal ? 'local' : 'non-local';
@@ -99,9 +111,9 @@ function getLokiDatabase(databaseName, databaseSettings) {
               }
 
               _context.next = 9;
-              return new Promise(function (res) {
-                database.loadDatabase({}, function (_result) {
-                  res();
+              return new Promise(function (res, rej) {
+                database.loadDatabase({}, function (err) {
+                  err ? rej(err) : res();
                 });
               });
 
@@ -172,8 +184,10 @@ function _closeLokiCollections() {
             // all collections closed -> also close database
             LOKI_DATABASE_STATE_BY_NAME["delete"](databaseName);
             _context2.next = 10;
-            return new Promise(function (res) {
-              databaseState.database.close(res);
+            return new Promise(function (res, rej) {
+              databaseState.database.close(function (err) {
+                err ? rej(err) : res();
+              });
             });
 
           case 10:

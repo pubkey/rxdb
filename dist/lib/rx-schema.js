@@ -86,7 +86,7 @@ var RxSchema = /*#__PURE__*/function () {
   ;
 
   _proto.fillObjectWithDefaults = function fillObjectWithDefaults(obj) {
-    obj = (0, _util.clone)(obj);
+    obj = (0, _util.flatClone)(obj);
     Object.entries(this.defaultValues).filter(function (_ref) {
       var k = _ref[0];
       return !obj.hasOwnProperty(k) || typeof obj[k] === 'undefined';
