@@ -3,6 +3,8 @@
 
 ### X.X.X (comming soon)
 
+### 10.3.4 (7 November 2021)
+
 Bugfixes:
   - LokiJS: Upserting a deleted document did not work.
   - LokiJS: Storage queries returned additional `$loki` property.
