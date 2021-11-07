@@ -34,6 +34,10 @@
     />
 
     <script>
+        var url_string = window.location.href;
+        var url = new URL(url_string);
+        var storageKey = url.searchParams.get('storage');
+
         var amount = parseInt(window.location.search.split('=')[1], 10);
         if (isNaN(amount))
             amount = 2;
@@ -42,7 +46,7 @@
         while (t < amount) {
             var randomString = new Date().getTime() + '_' + t;
             var ifrm = document.createElement('iframe');
-            ifrm.setAttribute('src', 'http://localhost:8888/index.html?database=' + randomString);
+            ifrm.setAttribute('src', 'http://localhost:8888/index.html?database=' + randomString + '&storage=' + storageKey);
             ifrm.id = 'frame_' + t;
             document.body.appendChild(ifrm);
             t++;

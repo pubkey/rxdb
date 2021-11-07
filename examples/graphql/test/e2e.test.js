@@ -7,8 +7,13 @@ import {
     GRAPHQL_PORT
 } from '../shared';
 
+const storage = process.env.STORAGE;
+if (!storage) {
+    throw new Error('no storage set');
+}
+
 fixture`Example page`
-    .page`http://localhost:8888/`;
+    .page`http://localhost:8888/?storage=${storage}`;
 
 
 /**
@@ -120,7 +125,7 @@ test('insert/remove a hero', async t => {
 
 
 test.page(
-    'http://localhost:' + GRAPHQL_PORT + '/static/multitab.html?frames=2'
+    'http://localhost:' + GRAPHQL_PORT + '/static/multitab.html?frames=2&storage=' + storage
 )(
     'replication: insert/delete hero and check other tab',
     async t => {

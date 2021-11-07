@@ -59,6 +59,7 @@ import {
 const insertButton = document.querySelector('#insert-button');
 const heroesList = document.querySelector('#heroes-list');
 const leaderIcon = document.querySelector('#leader-icon');
+const storageField = document.querySelector('#storage-key');
 
 console.log('hostname: ' + window.location.hostname);
 const syncURL = 'http://' + window.location.hostname + ':' + GRAPHQL_PORT + GRAPHQL_PATH;
@@ -104,15 +105,24 @@ function doSync() {
     }
 }
 
+
+function getStorageKey() {
+    const url_string = window.location.href;
+    const url = new URL(url_string);
+    let storageKey = url.searchParams.get('storage');
+    if (!storageKey) {
+        storageKey = 'pouchdb';
+    }
+    return storageKey;
+}
+
 /**
  * Easy toggle of the storage engine via query parameter.
  */
 function getStorage() {
-    const url_string = window.location.href;
-    const url = new URL(url_string);
-    const storageKey = url.searchParams.get('storage');
+    const storageKey = getStorageKey();
 
-    if (storageKey === 'pouchdb' || storageKey === null) {
+    if (storageKey === 'pouchdb') {
         return getRxStoragePouch('idb');
     } else if (storageKey === 'lokijs') {
         return getRxStorageLoki({
@@ -128,6 +138,7 @@ function getStorage() {
 
 
 async function run() {
+    storageField.innerHTML = getStorageKey();
     heroesList.innerHTML = 'Create database..';
     const db = await createRxDatabase({
         name: getDatabaseName(),
