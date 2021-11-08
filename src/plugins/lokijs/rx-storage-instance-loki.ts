@@ -244,14 +244,20 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
     }
 
     prepareQuery(mutateableQuery: MangoQuery<RxDocType>) {
-        mutateableQuery.selector = {
-            $and: [
-                {
-                    _deleted: false
-                },
-                mutateableQuery.selector
-            ]
-        };
+        if (Object.keys(mutateableQuery.selector).length > 0) {
+            mutateableQuery.selector = {
+                $and: [
+                    {
+                        _deleted: false
+                    },
+                    mutateableQuery.selector
+                ]
+            };
+        } else {
+            mutateableQuery.selector = {
+                _deleted: false
+            };
+        }
 
         /**
          * To ensure a deterministic sorting,
@@ -304,7 +310,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
              * at this.prepareQuery()
              */
             if (!compareResult) {
-                throw newRxError('SNH', { args: { query } });
+                throw newRxError('SNH', { args: { query, a, b } });
             }
 
             return compareResult as any;
@@ -626,11 +632,16 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             query = query.sort(this.getSortComparator(preparedQuery));
         }
 
-        if (preparedQuery.limit) {
-            query = query.limit(preparedQuery.limit);
-        }
+        /**
+         * Offset must be used before limit in LokiJS
+         * @link https://github.com/techfort/LokiJS/issues/570
+         */
         if (preparedQuery.skip) {
             query = query.offset(preparedQuery.skip);
+        }
+
+        if (preparedQuery.limit) {
+            query = query.limit(preparedQuery.limit);
         }
         const foundDocuments = query.data().map(lokiDoc => stripLokiKey(lokiDoc));
         return {

@@ -5,6 +5,7 @@
 
 Bugfixes:
   - LokiJS: Ensure events emit exact the same data as with PouchDB.
+  - LokiJS: Queries with limit and skip where broken.
 
 ### 10.3.5 (8 November 2021)
 
