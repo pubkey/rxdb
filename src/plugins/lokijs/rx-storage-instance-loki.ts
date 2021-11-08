@@ -434,6 +434,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 } else {
                     const newRevHeight = getHeightOfRevision(revInDb) + 1;
                     const newRevision = newRevHeight + '-' + createRevision(writeRow.document, true);
+
                     const writeDoc = Object.assign(
                         {},
                         documentInDb,
@@ -454,20 +455,26 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                             id,
                             operation: 'INSERT',
                             previous: null,
-                            doc: writeDoc
+                            doc: stripLokiKey(writeDoc)
                         };
                     } else if (!writeRow.previous._deleted && !writeDoc._deleted) {
                         change = {
                             id,
                             operation: 'UPDATE',
                             previous: writeRow.previous,
-                            doc: writeDoc
+                            doc: stripLokiKey(writeDoc)
                         };
                     } else if (!writeRow.previous._deleted && writeDoc._deleted) {
+                        /**
+                         * On delete, we send the 'new' rev in the previous property,
+                         * to have the equal behavior as pouchdb.
+                         */
+                        const previous = flatClone(writeRow.previous);
+                        previous._rev = newRevision;
                         change = {
                             id,
                             operation: 'DELETE',
-                            previous: writeRow.previous,
+                            previous,
                             doc: null
                         };
                     }
@@ -481,7 +488,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                         startTime,
                         endTime: now()
                     });
-                    ret.success.set(id, writeDoc as any);
+                    ret.success.set(id, stripLokiKey(writeDoc));
                 }
             }
         });

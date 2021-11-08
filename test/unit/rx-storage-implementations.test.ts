@@ -13,7 +13,8 @@ import {
     flatClone,
     MangoQuery,
     RxJsonSchema,
-    parseRevision
+    parseRevision,
+    ensureNotFalsy
 } from '../../plugins/core';
 
 import {
@@ -902,7 +903,7 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                         }
                     });
 
-                    const emitted: RxStorageChangeEvent<TestDocType>[] = [];
+                    const emitted: RxStorageChangeEvent<RxDocumentData<TestDocType>>[] = [];
                     const sub = storageInstance.changeStream().subscribe(x => {
                         emitted.push(x);
                     });
@@ -924,11 +925,16 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                     previous = getFromMapOrThrow(firstWriteResult.success, writeData.key);
 
                     // update
+                    const originalBeforeUpdate = clone(writeData);
                     const updateResult = await storageInstance.bulkWrite([{
                         previous,
                         document: writeData
                     }]);
                     previous = getFromMapOrThrow(updateResult.success, writeData.key);
+
+                    // should not mutate the input or add additional properties to output
+                    originalBeforeUpdate._rev = (previous as any)._rev;
+                    assert.deepStrictEqual(originalBeforeUpdate, previous);
 
                     // delete
                     writeData._deleted = true;
@@ -943,6 +949,19 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                     if (!last) {
                         throw new Error('missing last event');
                     }
+
+                    /**
+                     * When a doc is deleted, the 'new' revision
+                     * is in the .previous property.
+                     * This is a hack because of pouchdb's strange behavior.
+                     * We might want to change that.
+                     */
+                    const lastRevision = parseRevision((last as any).change.previous._rev);
+                    assert.strictEqual(lastRevision.height, 3);
+
+
+                    console.log(JSON.stringify(emitted, null, 4));
+                    // process.exit();
 
                     assert.strictEqual(last.change.operation, 'DELETE');
                     assert.ok(last.change.previous);

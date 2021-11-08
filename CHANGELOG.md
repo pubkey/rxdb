@@ -6,6 +6,7 @@
 Bugfixes:
   - LokiJS `findDocumentsById()` returned additional `$loki` property.
   - LokiJS `bulkAddRevisions()` must not mutate the input.
+  - LokiJS deletes on GraphQL replication must work.
 
 ### 10.3.4 (7 November 2021)
 

@@ -38,7 +38,7 @@ const db = await createRxDatabase({
         adapter: new LokiIncrementalIndexedDBAdapter(),
         autoload: true,
         autosave: true,
-        autosaveInterval: 500
+        autosaveInterval: 2000
     })
 });
 ```

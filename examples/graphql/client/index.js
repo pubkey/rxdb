@@ -131,7 +131,8 @@ function getStorage() {
             adapter: new LokiIncrementalIndexedDBAdapter(),
             autoload: true,
             autosave: true,
-            autosaveInterval: 500
+            autosaveInterval: 2000,
+            throttledSaves: true
         });
     } else {
         throw new Error('storage key not defined ' + storageKey);
