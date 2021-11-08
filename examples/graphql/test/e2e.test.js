@@ -181,7 +181,7 @@ test.page(
             const heroElements = Selector('#heroes-list .hero-item');
             const amount = await heroElements.count;
             return amount === 0;
-        }, 0, 500);
+        }, 1000 * 60, 500);
         console.log('wait until the hero is deleted on the other frame: done');
 
         await assertNoErrors(t);

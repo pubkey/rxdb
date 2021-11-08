@@ -234,7 +234,7 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
                     collection.update(toLoki);
                 }
             } else {
-                collection.insert(writeDoc);
+                collection.insert(flatClone(writeDoc));
             }
 
             ret.success.set(id, stripLokiKey(writeDoc));
@@ -298,9 +298,7 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
                 };
                 this.changes$.next(storageChangeEvent);
             }
-
         });
-
 
         return ret;
     }

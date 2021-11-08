@@ -12,7 +12,8 @@ import {
     blobBufferUtil,
     flatClone,
     MangoQuery,
-    RxJsonSchema
+    RxJsonSchema,
+    parseRevision
 } from '../../plugins/core';
 
 import {
@@ -655,7 +656,6 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                             auto_compaction: false
                         }
                     });
-
                     async function getSequenceAfter(since: number): Promise<number> {
                         const changesResult = await storageInstance.getChangedDocuments({
                             direction: 'after',
@@ -664,9 +664,7 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                         });
                         return changesResult.lastSequence;
                     }
-
                     const latestBefore = await getSequenceAfter(0);
-
                     await storageInstance.bulkWrite([
                         {
                             document: {
@@ -687,9 +685,27 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                     ]);
                     const latestAfter = await getSequenceAfter(1);
 
+
+                    const docsInDbResult = await storageInstance.findDocumentsById(['foobar'], true);
+                    const docInDb = getFromMapOrThrow(docsInDbResult, 'foobar');
+
+                    const oldRev = parseRevision(docInDb._rev);
+                    const nextRevHeight = oldRev.height + 1;
+
+                    // write one via bulkAddRevisions
+                    await storageInstance.bulkAddRevisions([
+                        {
+                            key: 'foobar2',
+                            _attachments: {},
+                            _rev: nextRevHeight + '-' + oldRev.hash
+                        }
+                    ]);
+                    const latestAfterBulkAddRevision = await getSequenceAfter(2);
+
                     assert.strictEqual(latestBefore, 0);
                     assert.strictEqual(latestMiddle, 1);
                     assert.strictEqual(latestAfter, 2);
+                    assert.strictEqual(latestAfterBulkAddRevision, 3);
 
                     storageInstance.close();
                 });
@@ -1242,20 +1258,27 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                             options: {}
                         });
 
+                    const writeData = {
+                        _id: 'foobar',
+                        value: 'barfoo',
+                        _attachments: {}
+                    };
+                    const originalWriteData = clone(writeData);
                     const writeResponse = await storageInstance.bulkWrite(
                         [{
-                            document: {
-                                _id: 'foobar',
-                                value: 'barfoo',
-                                _attachments: {}
-                            }
+                            document: writeData
                         }]
                     );
 
+                    // should not have mutated the input
+                    assert.deepStrictEqual(originalWriteData, writeData);
+
                     assert.strictEqual(writeResponse.error.size, 0);
                     const first = getFromMapOrThrow(writeResponse.success, 'foobar');
-                    assert.strictEqual(first._id, 'foobar');
-                    assert.strictEqual(first.value, 'barfoo');
+                    delete (first as any)._rev;
+                    delete (first as any)._deleted;
+
+                    assert.deepStrictEqual(writeData, first);
 
                     storageInstance.close();
                 });

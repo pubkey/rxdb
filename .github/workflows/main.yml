@@ -351,12 +351,12 @@ jobs:
         uses: GabrielBB/xvfb-action@v1.5
         with:
           working-directory: ./examples/graphql
-          run: npm run test:ci:pouchdb
+          run: npm run test:pouchdb
       - name: test lokijs
         uses: GabrielBB/xvfb-action@v1.5
         with:
           working-directory: ./examples/graphql
-          run: npm run test:ci:lokijs
+          run: npm run test:lokijs
 
 
   test-browser-couch:

@@ -10,9 +10,8 @@
     "build": "webpack",
     "build:serve": "ws -p 8888 -d dist/",
     "test:e2e": "testcafe chrome -e test/ --hostname localhost",
-    "test": "concurrently \"npm run server\" \"npm run build:serve\" \"sleep 10 && npm run test:e2e\" --kill-others --success first",
-    "test:ci:pouchdb": "STORAGE=pouchdb concurrently \"npm run server\" \"npm run build:serve\" \"sleep 10 && npm run test:e2e\" --kill-others --success first",
-    "test:ci:lokijs": "STORAGE=lokijs concurrently \"npm run server\" \"npm run build:serve\" \"sleep 10 && npm run test:e2e\" --kill-others --success first"
+    "test:pouchdb": "STORAGE=pouchdb concurrently \"npm run server\" \"npm run build:serve\" \"sleep 10 && npm run test:e2e\" --kill-others --success first",
+    "test:lokijs": "STORAGE=lokijs concurrently \"npm run server\" \"npm run build:serve\" \"sleep 10 && npm run test:e2e\" --kill-others --success first"
   },
   "browser": {
     "fs": false

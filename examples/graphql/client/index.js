@@ -27,7 +27,8 @@ addPouchPlugin(require('pouchdb-adapter-idb'));
 import {
     RxDBReplicationGraphQLPlugin,
     pullQueryBuilderFromRxSchema,
-    pushQueryBuilderFromRxSchema
+    pushQueryBuilderFromRxSchema,
+    getLastPushSequence
 } from 'rxdb/plugins/replication-graphql';
 addRxPlugin(RxDBReplicationGraphQLPlugin);
 
@@ -60,6 +61,7 @@ const insertButton = document.querySelector('#insert-button');
 const heroesList = document.querySelector('#heroes-list');
 const leaderIcon = document.querySelector('#leader-icon');
 const storageField = document.querySelector('#storage-key');
+const databaseNameField = document.querySelector('#database-name');
 
 console.log('hostname: ' + window.location.hostname);
 const syncURL = 'http://' + window.location.hostname + ':' + GRAPHQL_PORT + GRAPHQL_PATH;
@@ -139,6 +141,7 @@ function getStorage() {
 
 async function run() {
     storageField.innerHTML = getStorageKey();
+    databaseNameField.innerHTML = getDatabaseName();
     heroesList.innerHTML = 'Create database..';
     const db = await createRxDatabase({
         name: getDatabaseName(),
@@ -187,6 +190,16 @@ async function run() {
             liveInterval: 1000 * 60 * 10, // 10 minutes
             deletedFlag: 'deleted'
         });
+
+        setInterval(async () => {
+            var last = await getLastPushSequence(
+                db.hero,
+                replicationState.endpointHash
+            );
+            console.log('last endpoint hash: ' + last);
+        }, 1000);
+
+
         // show replication-errors in logs
         heroesList.innerHTML = 'Subscribe to errors..';
         replicationState.error$.subscribe(err => {
