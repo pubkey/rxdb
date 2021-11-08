@@ -3,6 +3,8 @@
 
 ### X.X.X (comming soon)
 
+### 10.3.5 (8 November 2021)
+
 Bugfixes:
   - LokiJS `findDocumentsById()` returned additional `$loki` property.
   - LokiJS `bulkAddRevisions()` must not mutate the input.
