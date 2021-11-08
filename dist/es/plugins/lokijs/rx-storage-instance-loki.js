@@ -512,20 +512,26 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
                         id: id,
                         operation: 'INSERT',
                         previous: null,
-                        doc: _writeDoc
+                        doc: stripLokiKey(_writeDoc)
                       };
                     } else if (!writeRow.previous._deleted && !_writeDoc._deleted) {
                       change = {
                         id: id,
                         operation: 'UPDATE',
                         previous: writeRow.previous,
-                        doc: _writeDoc
+                        doc: stripLokiKey(_writeDoc)
                       };
                     } else if (!writeRow.previous._deleted && _writeDoc._deleted) {
+                      /**
+                       * On delete, we send the 'new' rev in the previous property,
+                       * to have the equal behavior as pouchdb.
+                       */
+                      var previous = flatClone(writeRow.previous);
+                      previous._rev = _newRevision;
                       change = {
                         id: id,
                         operation: 'DELETE',
-                        previous: writeRow.previous,
+                        previous: previous,
                         doc: null
                       };
                     }
@@ -546,7 +552,7 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
                       endTime: now()
                     });
 
-                    ret.success.set(id, _writeDoc);
+                    ret.success.set(id, stripLokiKey(_writeDoc));
                   }
                 }
               });
@@ -614,7 +620,7 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
 
                 if (!documentInDb) {
                   // document not here, so we can directly insert
-                  collection.insert(docData);
+                  collection.insert(flatClone(docData));
 
                   _this4.changes$.next({
                     documentId: id,
@@ -735,7 +741,7 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
                 var documentInDb = collection.by(_this5.primaryPath, id);
 
                 if (documentInDb && (!documentInDb._deleted || deleted)) {
-                  ret.set(id, documentInDb);
+                  ret.set(id, stripLokiKey(documentInDb));
                 }
               });
               return _context7.abrupt("return", ret);

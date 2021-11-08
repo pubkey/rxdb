@@ -312,10 +312,10 @@ var RxStorageKeyObjectInstanceLoki = /*#__PURE__*/function () {
                     collection.update(toLoki);
                   }
                 } else {
-                  collection.insert(writeDoc);
+                  collection.insert((0, _util.flatClone)(writeDoc));
                 }
 
-                ret.success.set(id, writeDoc);
+                ret.success.set(id, (0, _lokijsHelper.stripLokiKey)(writeDoc));
                 var endTime = (0, _util.now)();
                 var event;
 
@@ -417,7 +417,7 @@ var RxStorageKeyObjectInstanceLoki = /*#__PURE__*/function () {
                 var documentInDb = collection.by('_id', id);
 
                 if (documentInDb && !documentInDb._deleted) {
-                  ret.set(id, documentInDb);
+                  ret.set(id, (0, _lokijsHelper.stripLokiKey)(documentInDb));
                 }
               });
               return _context5.abrupt("return", ret);

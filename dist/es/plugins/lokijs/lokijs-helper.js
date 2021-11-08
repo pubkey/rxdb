@@ -13,6 +13,10 @@ export var LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-
  */
 
 export function stripLokiKey(docData) {
+  if (!docData.$loki) {
+    return docData;
+  }
+
   var cloned = flatClone(docData);
   delete cloned.$loki;
   return cloned;
@@ -73,23 +77,21 @@ export function getLokiDatabase(databaseName, databaseSettings) {
                   return console.log('LokiJS autosave done!');
                 } : undefined
               }, databaseSettings);
-              console.log('useSettings:');
-              console.dir(flatClone(useSettings));
               database = new lokijs(databaseName + '.db', useSettings); // Wait until all data is load from persistence adapter.
 
               if (!hasPersistence) {
-                _context.next = 9;
+                _context.next = 7;
                 break;
               }
 
-              _context.next = 9;
+              _context.next = 7;
               return new Promise(function (res, rej) {
                 database.loadDatabase({}, function (err) {
                   err ? rej(err) : res();
                 });
               });
 
-            case 9:
+            case 7:
               /**
                * Autosave database on process end
                */
@@ -105,7 +107,7 @@ export function getLokiDatabase(databaseName, databaseSettings) {
               };
               return _context.abrupt("return", state);
 
-            case 12:
+            case 10:
             case "end":
               return _context.stop();
           }

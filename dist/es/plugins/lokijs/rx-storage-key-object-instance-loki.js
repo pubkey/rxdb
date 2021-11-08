@@ -3,7 +3,7 @@ import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { Subject } from 'rxjs';
 import { newRxError } from '../../rx-error';
 import { createRevision, ensureNotFalsy, flatClone, now, parseRevision, promiseWait, randomCouchString } from '../../util';
-import { CHANGES_COLLECTION_SUFFIX, CHANGES_LOCAL_SUFFIX, closeLokiCollections, getLokiDatabase, getLokiEventKey, LOKIJS_COLLECTION_DEFAULT_OPTIONS, LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE, OPEN_LOKIJS_STORAGE_INSTANCES } from './lokijs-helper';
+import { CHANGES_COLLECTION_SUFFIX, CHANGES_LOCAL_SUFFIX, closeLokiCollections, getLokiDatabase, getLokiEventKey, LOKIJS_COLLECTION_DEFAULT_OPTIONS, LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE, OPEN_LOKIJS_STORAGE_INSTANCES, stripLokiKey } from './lokijs-helper';
 import { getLeaderElectorByBroadcastChannel } from '../leader-election';
 var instanceId = 1;
 export var RxStorageKeyObjectInstanceLoki = /*#__PURE__*/function () {
@@ -292,10 +292,10 @@ export var RxStorageKeyObjectInstanceLoki = /*#__PURE__*/function () {
                     collection.update(toLoki);
                   }
                 } else {
-                  collection.insert(writeDoc);
+                  collection.insert(flatClone(writeDoc));
                 }
 
-                ret.success.set(id, writeDoc);
+                ret.success.set(id, stripLokiKey(writeDoc));
                 var endTime = now();
                 var event;
 
@@ -397,7 +397,7 @@ export var RxStorageKeyObjectInstanceLoki = /*#__PURE__*/function () {
                 var documentInDb = collection.by('_id', id);
 
                 if (documentInDb && !documentInDb._deleted) {
-                  ret.set(id, documentInDb);
+                  ret.set(id, stripLokiKey(documentInDb));
                 }
               });
               return _context5.abrupt("return", ret);
