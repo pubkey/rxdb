@@ -566,14 +566,14 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                         change = {
                             id,
                             operation: 'UPDATE',
-                            previous: documentInDb,
+                            previous: stripLokiKey(documentInDb),
                             doc: docData
                         };
                     } else if (!documentInDb._deleted && docData._deleted) {
                         change = {
                             id,
                             operation: 'DELETE',
-                            previous: documentInDb,
+                            previous: stripLokiKey(documentInDb),
                             doc: null
                         };
                     } else if (documentInDb._deleted && docData._deleted) {

@@ -108,7 +108,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                         }
 
                         let event: ChangeEvent<RxDocumentData<RxDocType>>;
-                        if (!previousDoc && !writeDoc._deleted) {
+                        if ((!previousDoc || previousDoc._deleted) && !writeDoc._deleted) {
                             // was insert
                             event = {
                                 operation: 'INSERT',
@@ -199,7 +199,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                     newDoc._rev = (resultRow as PouchBulkDocResultRow).rev;
 
                     let event: ChangeEvent<RxDocumentData<RxDocType>>;
-                    if (!writeRow.previous) {
+                    if (!writeRow.previous || writeRow.previous._deleted) {
                         // was insert
                         event = {
                             operation: 'INSERT',

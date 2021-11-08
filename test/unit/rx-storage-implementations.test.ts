@@ -959,10 +959,6 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                     const lastRevision = parseRevision((last as any).change.previous._rev);
                     assert.strictEqual(lastRevision.height, 3);
 
-
-                    console.log(JSON.stringify(emitted, null, 4));
-                    // process.exit();
-
                     assert.strictEqual(last.change.operation, 'DELETE');
                     assert.ok(last.change.previous);
 
@@ -1057,7 +1053,7 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                     // insert again via bulkAddRevisions()
                     const bulkInsertAgain = {
                         key: id,
-                        value: 'one',
+                        value: 'two',
                         _deleted: false,
                         _attachments: {},
                         _rev: '2-a6e639f1073f75farxdbreplicationgraphql'
@@ -1087,11 +1083,41 @@ rxStorageImplementations.forEach(rxStorageImplementation => {
                         _rev: '4-c4195e76073f75farxdbreplicationgraphql'
                     }]);
 
-                    await waitUntil(() => emitted.length === 3);
+                    // insert should overwrite the deleted one
+                    const afterDelete = await storageInstance.findDocumentsById([id], true);
+                    const afterDeleteDoc = getFromMapOrThrow(afterDelete, id);
+                    await storageInstance.bulkWrite([{
+                        document: {
+                            key: id,
+                            value: 'three',
+                            _deleted: false,
+                            _attachments: {}
+                        },
+                        previous: afterDeleteDoc
+                    }]);
+
+
+
+                    await waitUntil(() => emitted.length === 4);
+
 
                     assert.ok(emitted[0].change.operation === 'INSERT');
+
                     assert.ok(emitted[1].change.operation === 'UPDATE');
+                    const updatePrev = flatClone(ensureNotFalsy(emitted[1].change.previous));
+                    delete (updatePrev as any)._deleted;
+                    assert.deepStrictEqual(
+                        updatePrev,
+                        {
+                            key: id,
+                            value: 'one',
+                            _rev: (updatePrev as any)._rev,
+                            _attachments: {}
+                        }
+                    );
+
                     assert.ok(emitted[2].change.operation === 'DELETE');
+                    assert.ok(emitted[3].change.operation === 'INSERT');
 
                     sub.unsubscribe();
                     storageInstance.close();
