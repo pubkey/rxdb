@@ -36,8 +36,20 @@ let storage: {
     readonly hasCouchDBReplication: boolean;
     readonly hasAttachments: boolean;
 };
-console.log('process.env.DEFAULT_STORAGE: ' + process.env.DEFAULT_STORAGE);
-switch (process.env.DEFAULT_STORAGE) {
+
+let DEFAULT_STORAGE: string | undefined;
+if (detect().name === 'node') {
+    DEFAULT_STORAGE = process.env.DEFAULT_STORAGE;
+} else {
+    /**
+     * Enforce pouchdb in browser tests.
+     * TODO also run lokijs storage there.
+     */
+    DEFAULT_STORAGE = 'pouchdb';
+}
+
+console.log('DEFAULT_STORAGE: ' + DEFAULT_STORAGE);
+switch (DEFAULT_STORAGE) {
     case 'pouchdb':
         storage = {
             name: 'pouchdb',
@@ -58,7 +70,7 @@ switch (process.env.DEFAULT_STORAGE) {
         };
         break;
     default:
-        throw new Error('do DEFAULT_STORAGE_SET');
+        throw new Error('no DEFAULT_STORAGE set');
 }
 
 const config = {

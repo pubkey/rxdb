@@ -48,7 +48,7 @@
     "test:node:lokijs": "npm run pretest && cross-env DEFAULT_STORAGE=lokijs mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
     "// test:node:loop": "runs tests in node in a loop. Use this to debug tests that only fail sometimes",
     "test:node:loop": "npm run test:node && npm run test:node:loop",
-    "test:browser": "npm run pretest && karma start ./config/karma.conf.js --single-run",
+    "test:browser": "npm run pretest && cross-env DEFAULT_STORAGE=pouchdb karma start ./config/karma.conf.js --single-run",
     "test:core": "npm run pretest && mocha ./test_tmp/unit/core.node.js",
     "test:typings": "npm run pretest && cross-env DEFAULT_STORAGE=pouchdb NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/typings.test.js",
     "test:typings:ci": "npm run pretest && mocha --config ./config/.mocharc.js ./test_tmp/typings.test.js",

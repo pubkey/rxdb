@@ -991,20 +991,24 @@ config.parallel('rx-collection.test.js', () => {
                         assert.strictEqual(noFirst[0]._data.passportId, docs[1]._data.passportId);
                         c.database.destroy();
                     });
-                    it('skip first and limit', async () => {
-                        const c = await humansCollection.create(5);
-                        const docs = await c.find().sort('passportId').exec();
-                        const second = await c.find().sort('passportId').skip(1).limit(1).exec();
+                    // his test failed randomly, so we run it more often.
+                    new Array(config.isFastMode() ? 3 : 10)
+                        .fill(0).forEach(() => {
+                            it('skip first and limit with ' + config.storage.name, async () => {
+                                const c = await humansCollection.create(5);
+                                const docs = await c.find().sort('passportId').exec();
+                                const second = await c.find().sort('passportId').skip(1).limit(1).exec();
 
-                        try {
-                            assert.deepStrictEqual(docs[1].toJSON(), second[0].toJSON());
-                        } catch (err) {
-                            console.log(docs);
-                            console.log(second);
-                            throw err;
-                        }
-                        c.database.destroy();
-                    });
+                                try {
+                                    assert.deepStrictEqual(docs[1].toJSON(), second[0].toJSON());
+                                } catch (err) {
+                                    console.log(docs.map(d => d.toJSON()));
+                                    console.log(second.map(d => d.toJSON()));
+                                    throw err;
+                                }
+                                c.database.destroy();
+                            });
+                        });
                     it('reset skip with .skip(null)', async () => {
                         const c = await humansCollection.create();
                         const docs = await c.find().exec();
