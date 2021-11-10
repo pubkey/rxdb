@@ -114,6 +114,11 @@ function getLocalWriteData(
     );
 }
 
+declare type IdAgeDoc = {
+    id: string;
+    age: number;
+}
+
 declare type RandomDoc = {
     id: string;
     equal: string;
@@ -491,6 +496,106 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 assert.strictEqual(allDocs.documents[0].value, 'c');
                 assert.strictEqual(allDocs.documents[1].value, 'b');
                 assert.strictEqual(allDocs.documents[2].value, 'a');
+
+                storageInstance.close();
+            });
+            it('should return the correct values with sort and limit', async () => {
+                const schema: RxJsonSchema<IdAgeDoc> = {
+                    version: 0,
+                    primaryKey: 'id',
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string'
+                        },
+                        age: {
+                            type: 'number'
+                        }
+                    },
+                    indexes: [
+                        'id',
+                        'age'
+                    ],
+                    required: [
+                        'id',
+                        'age'
+                    ]
+                }
+                const storageInstance = await config.storage
+                    .getStorage()
+                    .createStorageInstance<IdAgeDoc>({
+                        databaseName: randomCouchString(12),
+                        collectionName: randomCouchString(12),
+                        schema,
+                        options: {}
+                    });
+                const docsData: RxDocumentWriteData<IdAgeDoc>[] = [
+                    {
+                        id: 'ri2h5pwc4dm0',
+                        age: 11,
+                        _attachments: {}
+                    },
+                    {
+                        id: 'ce9k2uaj59sk',
+                        age: 21,
+                        _attachments: {}
+                    },
+                    {
+                        id: '7payy3v4n8n0',
+                        age: 23,
+                        _attachments: {}
+                    },
+                    {
+                        id: 'luv57wqvhefp',
+                        age: 25,
+                        _attachments: {}
+                    },
+                    {
+                        id: 'ji26r00w8q1h',
+                        age: 27,
+                        _attachments: {}
+                    },
+                    {
+                        id: '5p6a1aupc5ow',
+                        age: 44,
+                        _attachments: {}
+                    },
+                    {
+                        id: 'ipt7w8aqiafc',
+                        age: 45,
+                        _attachments: {}
+                    },
+                    {
+                        id: 'b6cq0jilvcrp',
+                        age: 47,
+                        _attachments: {}
+                    },
+                    {
+                        id: 's3yked517n7h',
+                        age: 47,
+                        _attachments: {}
+                    }
+                ];
+                await storageInstance.bulkWrite(
+                    docsData.map(d => ({ document: d }))
+                );
+                const queryFirst = await storageInstance.query(
+                    storageInstance.prepareQuery({
+                        selector: {},
+                        limit: 8,
+                        sort: [{ id: 'asc' }]
+                    })
+                );
+                const queryLast = await storageInstance.query(
+                    storageInstance.prepareQuery({
+                        selector: {},
+                        limit: 1,
+                        sort: [{ id: 'desc' }]
+                    })
+                );
+
+                console.dir(queryFirst);
+                console.dir(queryLast);
 
                 storageInstance.close();
             });
