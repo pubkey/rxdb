@@ -203,6 +203,8 @@ config.parallel('reactive-query.test.js', () => {
                     // ensure the query is correct and the doc is really not in results.
                     const isDocInPrevResults = !!valuesAr[0].find(d => d.passportId === lastDoc.primary);
                     if (isDocInPrevResults) {
+                        console.log(JSON.stringify(valuesAr[0], null, 4));
+                        console.log(JSON.stringify(lastDoc.toJSON(), null, 4));
                         throw new Error('lastDoc (' + lastDoc.primary + ') was in previous results');
                     }
 
