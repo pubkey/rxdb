@@ -405,13 +405,6 @@ export const basePrototype = {
         await this.collection._runHooks('pre', 'save', newData, this);
 
         this.collection.schema.validate(newData);
-
-        console.log('_saveData');
-        console.dir({
-            previous: oldData,
-            document: newData
-        });
-
         await writeToStorageInstance(
             this.collection,
             {

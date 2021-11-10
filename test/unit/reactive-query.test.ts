@@ -169,47 +169,56 @@ config.parallel('reactive-query.test.js', () => {
         });
     });
     describe('ISSUES', () => {
-        it('#31 do not fire on doc-change when result-doc not affected', async () => {
-            const c = await humansCollection.createAgeIndex(10);
-            // take only 9 of 10
-            const valuesAr: HumanDocumentType[][] = [];
-            const pw8 = AsyncTestUtil.waitResolveable(300);
-            const querySub = c.find()
-                .limit(9)
-                .sort('age')
-                .$
-                .pipe(
-                    tap(() => pw8.resolve()),
-                    filter(x => x !== null)
-                )
-                .subscribe(newV => valuesAr.push(newV.map(d => d.toJSON())));
 
-            // get the 10th
-            const doc = await c.findOne()
-                .sort({
-                    age: 'desc'
-                })
-                .exec(true);
+        /**
+         * This test failed randomly,
+         * so we run it more often.
+         */
+        new Array(config.isFastMode() ? 3 : 10)
+            .fill(0).forEach(() => {
+                it('#31 do not fire on doc-change when result-doc not affected', async () => {
+                    const c = await humansCollection.createAgeIndex(10);
+                    // take only 9 of 10
+                    const valuesAr: HumanDocumentType[][] = [];
+                    const pw8 = AsyncTestUtil.waitResolveable(300);
+                    const querySub = c.find()
+                        .limit(9)
+                        .sort('age')
+                        .$
+                        .pipe(
+                            tap(() => pw8.resolve()),
+                            filter(x => x !== null)
+                        )
+                        .subscribe(newV => valuesAr.push(newV.map(d => d.toJSON())));
 
-            await pw8.promise;
-            assert.strictEqual(valuesAr.length, 1);
+                    // get the 10th
+                    const doc = await c.findOne()
+                        .sort({
+                            age: 'desc'
+                        })
+                        .exec(true);
 
-            // edit+save doc
-            const newPromiseWait = AsyncTestUtil.waitResolveable(300);
+                    await pw8.promise;
+                    assert.strictEqual(valuesAr.length, 1);
+
+                    // edit+save doc
+                    const newPromiseWait = AsyncTestUtil.waitResolveable(300);
 
 
-            await promiseWait(20);
-            await doc.atomicPatch({ firstName: 'foobar' });
-            await newPromiseWait.promise;
+                    await promiseWait(20);
+                    await doc.atomicPatch({ firstName: 'foobar' });
+                    await newPromiseWait.promise;
 
-            await promiseWait(20);
+                    await promiseWait(20);
 
-            console.dir(valuesAr);
+                    console.dir(valuesAr);
 
-            assert.strictEqual(valuesAr.length, 1);
-            querySub.unsubscribe();
-            c.database.destroy();
-        });
+                    assert.strictEqual(valuesAr.length, 1);
+                    querySub.unsubscribe();
+                    c.database.destroy();
+                });
+            });
+
         it('ISSUE: should have the document in DocCache when getting it from observe', async () => {
             const name = randomCouchString(10);
             const c = await humansCollection.createPrimary(1, name);
