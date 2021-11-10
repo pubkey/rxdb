@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { createContext, useEffect, useState } from 'react';
 import { addPouchPlugin } from 'rxdb';
-import { Provider } from 'rxdb-hooks';
 import Heroes from './Heroes';
 import initializeDb from './initializeDb';
 
 addPouchPlugin(require('pouchdb-adapter-asyncstorage').default);
 addPouchPlugin(require('pouchdb-adapter-http'));
+
+export const AppContext = createContext();
 
 export const App = () => {
     const [db, setDb] = useState(null);
@@ -19,9 +20,9 @@ export const App = () => {
     }, []);
 
     return (
-        <Provider db={db}>
+        <AppContext.Provider value={{ db }}>
             <Heroes />
-        </Provider>
+        </AppContext.Provider>
     );
 };
 

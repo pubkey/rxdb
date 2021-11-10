@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
     Dimensions,
     Image,
@@ -10,35 +10,41 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { useRxCollection, useRxData } from 'rxdb-hooks';
+import { AppContext } from './App';
 
 const { width, height } = Dimensions.get('window');
 
-const queryConstructor = (collection) => collection.find();
+const getRandomColor = () => {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    while (color.length < 7) color += letters[Math.floor(Math.random() * 16)];
+    return color;
+};
 
 export const Heroes = () => {
-    const { result: heroes } = useRxData('heroes', queryConstructor);
-
+    const { db } = useContext(AppContext);
     const [name, setName] = useState('');
-    const [color, setColor] = useState('steelBlue');
-    const heroCollection = useRxCollection('heroes');
+    const [heroes, setHeroes] = useState([]);
+
+    useEffect(() => {
+        let sub;
+        if (db && db.heroes) {
+            sub = db.heroes
+                .find()
+                .sort({ name: 1 })
+                .$.subscribe((rxdbHeroes) => setHeroes(rxdbHeroes));
+        }
+        return () => {
+            if (sub && sub.unsubscribe) sub.unsubscribe();
+        };
+    }, [db]);
 
     const addHero = async () => {
         console.log('addHero: ' + name);
         const color = getRandomColor();
         console.log('color: ' + color);
-        if (heroCollection) {
-            await heroCollection.insert({ name, color });
-        }
+        await db.heroes.insert({ name, color });
         setName('');
-        setColor('');
-    };
-    const getRandomColor = () => {
-        const letters = '0123456789ABCDEF';
-        let color = '#';
-        while (color.length < 7)
-            color += letters[Math.floor(Math.random() * 16)];
-        return color;
     };
 
     return (
