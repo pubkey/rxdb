@@ -4,7 +4,7 @@
  * @link https://graphql.org/graphql-js/running-an-express-graphql-server/
  */
 
-import graphQlClient from 'graphql-client';
+import graphQlClient from '../../graphql-client';
 import { PubSub } from 'graphql-subscriptions';
 import {
     buildSchema,

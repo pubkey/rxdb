@@ -13,7 +13,7 @@ import {
 import {
     filter
 } from 'rxjs/operators';
-import GraphQLClient from 'graphql-client';
+import GraphQLClient from '../../graphql-client';
 import objectPath from 'object-path';
 import {
     promiseWait,

@@ -2,7 +2,7 @@ import assert from 'assert';
 import AsyncTestUtil, {
     clone, wait
 } from 'async-test-util';
-import GraphQLClient from 'graphql-client';
+import GraphQLClient from '../../graphql-client';
 
 import {
     first

@@ -2,7 +2,7 @@ import {
     Selector
 } from 'testcafe';
 import AsyncTestUtil from 'async-test-util';
-import GraphQLClient from 'graphql-client';
+import GraphQLClient from 'rxdb/graphql-client';
 import {
     GRAPHQL_PORT
 } from '../shared';
