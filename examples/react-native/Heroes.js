@@ -81,6 +81,13 @@ export const Heroes = () => {
 
             <ScrollView style={styles.heroesList}>
                 <View style={styles.card}>
+                    <TextInput
+                        style={styles.input}
+                        value={name}
+                        onChangeText={(name) => setName(name)}
+                        placeholder="Type to add a hero..."
+                        onSubmitEditing={addHero}
+                    />
                     {name.length > 1 && (
                         <TouchableOpacity onPress={addHero}>
                             <Image
@@ -89,12 +96,6 @@ export const Heroes = () => {
                             />
                         </TouchableOpacity>
                     )}
-                    <TextInput
-                        style={styles.input}
-                        value={name}
-                        onChangeText={(name) => setName(name)}
-                        placeholder="Type to add a hero..."
-                    />
                 </View>
                 {heroes.length === 0 && <Text>No heroes to display ...</Text>}
                 {heroes.map((hero, index) => (
@@ -148,6 +149,7 @@ const styles = StyleSheet.create({
         width: 30,
         height: 30,
         marginRight: 15,
+        marginLeft: 'auto',
     },
     deleteImage: {
         width: 30,
