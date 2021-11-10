@@ -173,25 +173,43 @@ config.parallel('reactive-query.test.js', () => {
         new Array(config.isFastMode() ? 3 : 10)
             .fill(0).forEach(() => {
                 it('#31 do not fire on doc-change when result-doc not affected ' + config.storage.name, async () => {
-                    const c = await humansCollection.createAgeIndex(10);
+
+                    console.log('---------------------------------------------------');
+                    console.log('---------------------------------------------------');
+                    console.log('---------------------------------------------------');
+
+                    const docAmount = config.isFastMode() ? 2 : 10;
+                    const c = await humansCollection.createAgeIndex(docAmount);
                     // take only 9 of 10
                     const valuesAr: HumanDocumentType[][] = [];
-                    const querySub = c.find()
-                        .limit(9)
-                        .sort('age')
-                        .$
-                        .pipe(
+                    const querySub = c
+                        .find({
+                            selector: {},
+                            limit: docAmount - 1,
+                            sort: [
+                                { age: 'asc' }
+                            ]
+                        }).$.pipe(
                             filter(x => x !== null)
                         )
                         .subscribe(newV => valuesAr.push(newV.map(d => d.toJSON())));
+                    await waitUntil(() => valuesAr.length === 1);
 
-                    // get the 10th
-                    const doc = await c.findOne()
-                        .sort({
-                            age: 'desc'
+                    // get the last document that is not part of the previous query result
+                    const doc = await c
+                        .findOne({
+                            selector: {},
+                            sort: [
+                                { age: 'desc' }
+                            ]
                         })
                         .exec(true);
-                    await waitUntil(() => valuesAr.length === 1);
+
+                    // ensure the query is correct and the doc is really not in results.
+                    const isDocInPrevResults = !!valuesAr[0].find(d => d.passportId === doc.primary);
+                    assert.strictEqual(isDocInPrevResults, false);
+
+                    console.log('lastDocId: ' + doc.primary);
 
                     // edit+save doc
                     const newPromiseWait = AsyncTestUtil.waitResolveable(300);
@@ -208,6 +226,11 @@ config.parallel('reactive-query.test.js', () => {
                     assert.strictEqual(valuesAr.length, 1);
                     querySub.unsubscribe();
                     c.database.destroy();
+
+                    console.log('---------------------------------------------------');
+                    console.log('-----------------END-------------------------------');
+                    console.log('---------------------------------------------------');
+
                 });
             });
 
