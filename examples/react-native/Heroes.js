@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import {
+    Alert,
     Dimensions,
     Image,
     ScrollView,
@@ -32,7 +33,9 @@ export const Heroes = () => {
             sub = db.heroes
                 .find()
                 .sort({ name: 1 })
-                .$.subscribe((rxdbHeroes) => setHeroes(rxdbHeroes));
+                .$.subscribe((rxdbHeroes) => {
+                    setHeroes(rxdbHeroes);
+                });
         }
         return () => {
             if (sub && sub.unsubscribe) sub.unsubscribe();
@@ -45,6 +48,30 @@ export const Heroes = () => {
         console.log('color: ' + color);
         await db.heroes.insert({ name, color });
         setName('');
+    };
+
+    const removeHero = async (hero) => {
+        Alert.alert(
+            'Delete hero?',
+            `Are you sure you want to delete ${hero.get('name')}`,
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'OK',
+                    onPress: async () => {
+                        const doc = db.heroes.findOne({
+                            selector: {
+                                name: hero.get('name'),
+                            },
+                        });
+                        await doc.remove();
+                    },
+                },
+            ]
+        );
     };
 
     return (
@@ -81,6 +108,15 @@ export const Heroes = () => {
                             ]}
                         />
                         <Text style={styles.heroName}>{hero.get('name')}</Text>
+                        <TouchableOpacity
+                            onPress={() => removeHero(hero)}
+                            style={styles.alignRight}
+                        >
+                            <Image
+                                style={styles.deleteImage}
+                                source={require('./assets/deleteIcon.png')}
+                            />
+                        </TouchableOpacity>
                     </View>
                 ))}
             </ScrollView>
@@ -112,6 +148,14 @@ const styles = StyleSheet.create({
         width: 30,
         height: 30,
         marginRight: 15,
+    },
+    deleteImage: {
+        width: 30,
+        height: 30,
+        marginRight: 15,
+    },
+    alignRight: {
+        marginLeft: 'auto',
     },
     input: {
         flex: 1,
