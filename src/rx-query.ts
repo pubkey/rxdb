@@ -37,7 +37,8 @@ import type {
     MangoQuerySortPart,
     MangoQuerySelector,
     PreparedQuery,
-    RxChangeEvent
+    RxChangeEvent,
+    RxDocumentWriteData
 } from './types';
 
 import {
@@ -276,7 +277,7 @@ export class RxQueryBase<
      * cached call to get the queryMatcher
      * @overwrites itself with the actual value
      */
-    get queryMatcher(): QueryMatcher<RxDocumentType> {
+    get queryMatcher(): QueryMatcher<RxDocumentWriteData<RxDocumentType>> {
         return overwriteGetterForCaching(
             this,
             'queryMatcher',

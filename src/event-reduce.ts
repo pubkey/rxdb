@@ -6,7 +6,7 @@ import {
     QueryMatcher,
     DeterministicSortComparator
 } from 'event-reduce-js';
-import type { RxQuery, MangoQuery, RxChangeEvent } from './types';
+import type { RxQuery, MangoQuery, RxChangeEvent, RxDocumentWriteData } from './types';
 import { runPluginHooks } from './hooks';
 import { rxChangeEventToEventReduceChangeEvent } from './rx-change-event';
 
@@ -67,8 +67,7 @@ export function getQueryParams<RxDocType>(
          * we send for example compressed documents to match compressed queries.
          */
         const queryMatcher = collection.storageInstance.getQueryMatcher(queryJson);
-        const useQueryMatcher: QueryMatcher<RxDocType> = (doc: RxDocType) => {
-
+        const useQueryMatcher: QueryMatcher<RxDocumentWriteData<RxDocType>> = (doc: RxDocumentWriteData<RxDocType>) => {
             const queryMatcherData = {
                 doc,
                 rxQuery
