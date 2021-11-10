@@ -55,9 +55,13 @@ jobs:
       - name: build
         run: npm run build
 
-      - name: npm run test:node
-        run: npm run test:node
-  
+      - name: npm run test:node:pouchdb
+        run: npm run test:node:pouchdb
+
+      - name: npm run test:node:lokijs
+        run: npm run test:node:lokijs
+
+
       - name: npm run test:fast
         run: npm run test:fast
         

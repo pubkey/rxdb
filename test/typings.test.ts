@@ -391,35 +391,6 @@ describe('typings.test.js', function () {
                 `;
                 await transpileCode(code);
             });
-            it('start CouchDB replication', async () => {
-                const code = codeBase + `
-                    (async() => {
-                        const myDb: RxDatabase = await createRxDatabase({
-                            name: 'mydb',
-                            storage: getRxStoragePouch('memory'),
-                            multiInstance: false,
-                            ignoreDuplicate: false,
-                            options: {
-                                foo1: 'bar1'
-                            }
-                        });
-                        const mySchema: RxJsonSchema<any> = ${JSON.stringify(schemas.human)};
-                        type docType = {
-                                foo: string
-                        };
-                        const cols = await myDb.addCollections({
-                            humans: {
-                                schema: mySchema
-                            }
-                        });
-                        const myCollection: RxCollection<docType> = cols.humans;
-                        const replicationState = myCollection.syncCouchDB({
-                            remote: 'http://localhost:9090/'
-                        });
-                    })();
-                `;
-                await transpileCode(code);
-            });
         });
         describe('negative', () => {
             it('should not allow wrong collection-settings', async () => {

@@ -996,7 +996,13 @@ config.parallel('rx-collection.test.js', () => {
                         const docs = await c.find().sort('passportId').exec();
                         const second = await c.find().sort('passportId').skip(1).limit(1).exec();
 
-                        assert.deepStrictEqual(docs[1].toJSON(), second[0].toJSON());
+                        try {
+                            assert.deepStrictEqual(docs[1].toJSON(), second[0].toJSON());
+                        } catch (err) {
+                            console.log(docs);
+                            console.log(second);
+                            throw err;
+                        }
                         c.database.destroy();
                     });
                     it('reset skip with .skip(null)', async () => {
