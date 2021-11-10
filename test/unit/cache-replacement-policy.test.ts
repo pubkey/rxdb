@@ -250,12 +250,14 @@ config.parallel('cache-replacement-policy.test.js', () => {
                 runs = runs + 1;
                 policy(collection, queryCache);
             }
+            console.log('--- 1');
             col.cacheReplacementPolicy = trackingPolicy;
 
             new Array(5).fill(0).forEach(() => {
                 triggerCacheReplacement(col);
             });
 
+            console.log('--- 2');
             await waitUntil(() => {
                 if (runs > 1) {
                     throw new Error('too many runs ' + runs);
@@ -267,10 +269,13 @@ config.parallel('cache-replacement-policy.test.js', () => {
                 }
             });
             await wait(50);
+            console.log('--- 3');
             assert.strictEqual(runs, 1);
 
             // run again when first was done
+            console.log('--- 4');
             triggerCacheReplacement(col);
+            console.log('--- 5');
             await waitUntil(() => {
                 if (runs > 2) {
                     throw new Error('too many runs ' + runs);
@@ -281,9 +286,12 @@ config.parallel('cache-replacement-policy.test.js', () => {
                     return false;
                 }
             });
+            console.log('--- 6');
             await wait(50);
+            console.log('--- 7');
             assert.strictEqual(runs, 2);
 
+            console.log('--- 8');
 
             col.database.destroy();
         });
