@@ -1,4 +1,8 @@
-import type { ChangeEvent, SortComparator, QueryMatcher } from 'event-reduce-js';
+import type {
+    ChangeEvent,
+    DeterministicSortComparator,
+    QueryMatcher
+} from 'event-reduce-js';
 import { ObliviousSet } from 'oblivious-set';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { newRxError } from '../../rx-error';
@@ -8,12 +12,9 @@ import type {
     BulkWriteRow, ChangeStreamOnceOptions, MangoQuery, MangoQuerySortDirection,
     MangoQuerySortPart, PouchBulkDocResultRow,
     PouchChangesOptionsNonLive, PouchSettings,
-    PouchWriteError, PreparedQuery, RxDocumentData, RxJsonSchema, RxStorageBulkWriteError,
+    PouchWriteError, PreparedQuery, RxDocumentData, RxDocumentWriteData, RxJsonSchema, RxStorageBulkWriteError,
     RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageInstance, RxStorageQueryResult
 } from '../../types';
-import type {
-    CompareFunction
-} from 'array-push-at-sort-position';
 import {
     getEventKey,
     OPEN_POUCHDB_STORAGE_INSTANCES,
@@ -32,7 +33,7 @@ import {
     filterInMemoryFields,
     massageSelector
 } from 'pouchdb-selector-core';
-import { flatClone, getFromMapOrThrow, getHeightOfRevision, PROMISE_RESOLVE_VOID } from '../../util';
+import { firstPropertyNameOfObject, flatClone, getFromMapOrThrow, getHeightOfRevision, PROMISE_RESOLVE_VOID } from '../../util';
 import {
     getCustomEventEmitterByPouch
 } from './custom-events-plugin';
@@ -306,21 +307,30 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
 
     getSortComparator(
         query: MangoQuery<RxDocType>
-    ): SortComparator<RxDocType> {
-        const primaryKey = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
+    ): DeterministicSortComparator<RxDocType> {
+        const primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
         const sortOptions: MangoQuerySortPart[] = query.sort ? (query.sort as any) : [{
-            [this.primaryPath]: 'asc'
+            [primaryPath]: 'asc'
         }];
         const massagedSelector = massageSelector(query.selector);
         const inMemoryFields = Object.keys(query.selector);
-        const fun: CompareFunction<RxDocType> = (a: RxDocType, b: RxDocType) => {
+        const fun: DeterministicSortComparator<RxDocType> = (a: RxDocType, b: RxDocType) => {
+
+            /**
+             * Sorting on two documents with the same primary is not allows
+             * because it might end up in a non-deterministic result.
+             */
+            if (a[primaryPath] === b[primaryPath]) {
+                throw newRxError('SNH', { args: { a, b }, primaryPath: primaryPath as any });
+            }
+
             // TODO use createFieldSorter
             // TODO make a performance test
             const rows = [a, b].map(doc => {
                 // swap primary to _id
                 const cloned: any = flatClone(doc);
-                const primaryValue = cloned[primaryKey];
-                delete cloned[primaryKey];
+                const primaryValue = cloned[primaryPath];
+                delete cloned[primaryPath];
                 cloned._id = primaryValue;
                 return {
                     doc: cloned
@@ -349,10 +359,10 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
      */
     getQueryMatcher(
         query: MangoQuery<RxDocType>
-    ): QueryMatcher<RxDocType> {
+    ): QueryMatcher<RxDocumentWriteData<RxDocType>> {
         const massagedSelector = massageSelector(query.selector);
 
-        const fun: QueryMatcher<RxDocType> = (doc: RxDocType) => {
+        const fun: QueryMatcher<RxDocumentWriteData<RxDocType>> = (doc: RxDocType) => {
             const cloned = pouchSwapPrimaryToId(this.primaryPath, doc);
             const row = {
                 doc: cloned
@@ -459,6 +469,28 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         });
 
         query.selector = primarySwapPouchDbQuerySelector(query.selector, this.primaryPath);
+
+        /**
+         * To ensure a deterministic sorting,
+         * we have to ensure the primary key is always part
+         * of the sort query.
+
+        * TODO This should be done but will not work with pouchdb
+         * because it will throw
+         * 'Cannot sort on field(s) "key" when using the default index'
+         * So we likely have to modify the indexes so that this works. 
+         */
+        /*
+        if (!mutateableQuery.sort) {
+            mutateableQuery.sort = [{ [this.primaryPath]: 'asc' }] as any;
+        } else {
+            const isPrimaryInSort = mutateableQuery.sort
+                .find(p => firstPropertyNameOfObject(p) === this.primaryPath);
+            if (!isPrimaryInSort) {
+                mutateableQuery.sort.push({ [this.primaryPath]: 'asc' } as any);
+            }
+        }
+        */
 
         return query;
     }

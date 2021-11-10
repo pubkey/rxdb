@@ -428,13 +428,13 @@ describe('typings.test.js', function () {
                         });
                         const syncHandler = replicationState._pouchEventEmitterObject;
                         if(!syncHandler) {
-                            process.exit();
+                            process.exit(1);
                         }
                         syncHandler.on('paused', (anything: any) => {
 
                         });
                         console.log('.4');
-                        process.exit();
+                        process.exit(1);
                     })();
                 `;
                 await transpileCode(code);

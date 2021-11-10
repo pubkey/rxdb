@@ -18,7 +18,8 @@ import {
     overwriteGetterForCaching,
     now,
     promiseWait,
-    PROMISE_RESOLVE_FALSE
+    PROMISE_RESOLVE_FALSE,
+    flatClone
 } from './util';
 import {
     newRxError,
@@ -280,7 +281,7 @@ export class RxQueryBase<
             this,
             'queryMatcher',
             this.collection.storageInstance.getQueryMatcher(
-                this.toJSON()
+                this.getPreparedQuery()
             )
         );
     }
@@ -303,11 +304,9 @@ export class RxQueryBase<
     /**
      * returns the prepared query
      * which can be send to the storage instance to query for documents.
-     * @overwrites itself with the actual value
-     * TODO rename this function, toJSON is missleading
-     * because we do not return the plain mango query object.
+     * @overwrites itself with the actual value.
      */
-    toJSON(): PreparedQuery<RxDocumentType> {
+    getPreparedQuery(): PreparedQuery<RxDocumentType> {
         const hookInput = {
             rxQuery: this,
             // can be mutated by the hooks so we have to deep clone first.
@@ -318,7 +317,7 @@ export class RxQueryBase<
         const value = this.collection.storageInstance.prepareQuery(
             hookInput.mangoQuery
         );
-        this.toJSON = () => value;
+        this.getPreparedQuery = () => value;
         return value;
     }
 
@@ -511,25 +510,36 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
         } else {
             rxQuery._latestChangeEvent = rxQuery.asRxQuery.collection._changeEventBuffer.counter;
 
+            console.log('++++++++++++++++ calculateNewResults() ' + now());
+            console.dir(missedChangeEvents);
+
+
             /**
              * because pouchdb prefers writes over reads,
              * we have to filter out the events that happend before the read has started
              * so that we do not fill event-reduce with the wrong data
              */
             missedChangeEvents = missedChangeEvents.filter((cE: RxChangeEvent<any>) => {
-                return !cE.startTime || cE.startTime > rxQuery._lastExecStart;
+                return (
+                    !cE.startTime ||
+                    rxQuery._lastExecStart < cE.startTime &&
+                    (
+                        !cE.endTime ||
+                        rxQuery._lastExecEnd < cE.endTime
+                    )
+                );
             });
 
             const runChangeEvents: RxChangeEvent<any>[] = rxQuery.asRxQuery.collection
                 ._changeEventBuffer
                 .reduceByLastOfDoc(missedChangeEvents);
 
-            /*
-            console.log('calculateNewResults() ' + new Date().getTime());
-            console.log(rxQuery._lastExecStart + ' - ' + rxQuery._lastExecEnd);
+            console.log('rxQuery._lastExecStart: ' + rxQuery._lastExecStart + ' - rxQuery._lastExecEnd: ' + rxQuery._lastExecEnd);
             console.dir(rxQuery._resultsData.slice());
+
+            console.log('runChangeEvents:');
             console.dir(runChangeEvents);
-            */
+            console.log('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++');
 
             const eventReduceResult = calculateNewResults(
                 rxQuery as any,

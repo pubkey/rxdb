@@ -133,6 +133,9 @@ describe('replication-graphql.test.js', () => {
          * which is ensured with these tests
          */
         config.parallel('assumptions', () => {
+            if (config.storage.name !== 'pouchdb') {
+                return;
+            }
             it('should be possible to retrieve deleted documents in pouchdb', async () => {
                 const c = await humansCollection.createHumanWithTimestamp(2);
                 const pouch = c.storageInstance.internals.pouch;
@@ -541,6 +544,9 @@ describe('replication-graphql.test.js', () => {
                     c.database.destroy();
                 });
                 it('should have filtered out replicated docs from the endpoint', async () => {
+                    if (config.storage.name !== 'pouchdb') {
+                        return;
+                    }
                     const amount = 5;
                     const c = await humansCollection.createHumanWithTimestamp(amount);
                     let toPouch: any = schemaObjects.humanWithTimestamp();
@@ -2088,6 +2094,9 @@ describe('replication-graphql.test.js', () => {
         });
         config.parallel('integrations', () => {
             it('should work with encryption', async () => {
+                if (config.storage.name !== 'pouchdb') {
+                    return;
+                }
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
                     storage: getRxStoragePouch('memory'),
@@ -2130,6 +2139,9 @@ describe('replication-graphql.test.js', () => {
                 db.destroy();
             });
             it('pull should work with keyCompression', async () => {
+                if (config.storage.name !== 'pouchdb') {
+                    return;
+                }
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
                     storage: getRxStoragePouch('memory'),

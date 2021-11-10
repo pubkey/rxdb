@@ -5,6 +5,9 @@ const {
 import BroadcastChannel from 'broadcast-channel';
 import * as path from 'path';
 import parallel from 'mocha.parallel';
+import { RxStorage } from '../../src/types';
+import { getRxStoragePouch, addPouchPlugin } from '../../plugins/pouchdb';
+import { getRxStorageLoki } from '../../plugins/lokijs';
 
 function isFastMode(): boolean {
     try {
@@ -26,11 +29,44 @@ try {
 
 }
 
+
+let storage: {
+    readonly name: string;
+    readonly getStorage: () => RxStorage<any, any>;
+    readonly hasCouchDBReplication: boolean;
+    readonly hasAttachments: boolean;
+};
+console.log('process.env.DEFAULT_STORAGE: ' + process.env.DEFAULT_STORAGE);
+switch (process.env.DEFAULT_STORAGE) {
+    case 'pouchdb':
+        storage = {
+            name: 'pouchdb',
+            getStorage: () => {
+                addPouchPlugin(require('pouchdb-adapter-memory'));
+                return getRxStoragePouch('memory');
+            },
+            hasCouchDBReplication: true,
+            hasAttachments: true
+        };
+        break;
+    case 'lokijs':
+        storage = {
+            name: 'lokijs',
+            getStorage: () => getRxStorageLoki(),
+            hasCouchDBReplication: false,
+            hasAttachments: false
+        };
+        break;
+    default:
+        throw new Error('do DEFAULT_STORAGE_SET');
+}
+
 const config = {
     platform: detect(),
     parallel: useParallel,
     rootPath: '',
-    isFastMode
+    isFastMode,
+    storage
 };
 
 if (config.platform.name === 'node') {

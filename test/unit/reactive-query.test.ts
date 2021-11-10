@@ -26,6 +26,7 @@ import {
     first,
     tap
 } from 'rxjs/operators';
+import { HumanDocumentType } from '../helper/schema-objects';
 
 config.parallel('reactive-query.test.js', () => {
     describe('positive', () => {
@@ -171,7 +172,7 @@ config.parallel('reactive-query.test.js', () => {
         it('#31 do not fire on doc-change when result-doc not affected', async () => {
             const c = await humansCollection.createAgeIndex(10);
             // take only 9 of 10
-            const valuesAr = [];
+            const valuesAr: HumanDocumentType[][] = [];
             const pw8 = AsyncTestUtil.waitResolveable(300);
             const querySub = c.find()
                 .limit(9)
@@ -181,7 +182,7 @@ config.parallel('reactive-query.test.js', () => {
                     tap(() => pw8.resolve()),
                     filter(x => x !== null)
                 )
-                .subscribe(newV => valuesAr.push(newV));
+                .subscribe(newV => valuesAr.push(newV.map(d => d.toJSON())));
 
             // get the 10th
             const doc = await c.findOne()
@@ -200,6 +201,9 @@ config.parallel('reactive-query.test.js', () => {
             await newPromiseWait.promise;
 
             await promiseWait(20);
+
+            console.dir(valuesAr);
+
             assert.strictEqual(valuesAr.length, 1);
             querySub.unsubscribe();
             c.database.destroy();

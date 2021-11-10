@@ -4,7 +4,7 @@ import {
     runAction,
     QueryParams,
     QueryMatcher,
-    SortComparator
+    DeterministicSortComparator
 } from 'event-reduce-js';
 import type { RxQuery, MangoQuery, RxChangeEvent } from './types';
 import { runPluginHooks } from './hooks';
@@ -40,7 +40,7 @@ export function getQueryParams<RxDocType>(
 ): QueryParams<RxDocType> {
     if (!RXQUERY_QUERY_PARAMS_CACHE.has(rxQuery)) {
         const collection = rxQuery.collection;
-        const queryJson: MangoQuery<RxDocType> = rxQuery.toJSON();
+        const queryJson: MangoQuery<RxDocType> = rxQuery.getPreparedQuery();
         const primaryKey = collection.schema.primaryPath;
 
 
@@ -50,7 +50,7 @@ export function getQueryParams<RxDocType>(
          * we send for example compressed documents to be sorted by compressed queries.
          */
         const sortComparator = collection.storageInstance.getSortComparator(queryJson);
-        const useSortComparator: SortComparator<RxDocType> = (docA: RxDocType, docB: RxDocType) => {
+        const useSortComparator: DeterministicSortComparator<RxDocType> = (docA: RxDocType, docB: RxDocType) => {
             const sortComparatorData = {
                 docA,
                 docB,
@@ -105,6 +105,12 @@ export function calculateNewResults<RxDocumentType>(
     }
     const queryParams = getQueryParams(rxQuery);
     const previousResults: RxDocumentType[] = rxQuery._resultsData.slice();
+
+    console.log; ('----------------------------- calculateNewResults()')
+    console.dir(previousResults);
+    console.dir(rxChangeEvents);
+    console.log; ('-----------------------------')
+
     const previousResultsMap: Map<string, RxDocumentType> = rxQuery._resultsDataMap;
     let changed: boolean = false;
 

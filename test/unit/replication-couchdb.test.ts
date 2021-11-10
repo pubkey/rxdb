@@ -51,7 +51,10 @@ if (config.platform.isNode()) {
 }
 
 describe('replication-couchdb.test.js', () => {
-    if (!config.platform.isNode()) {
+    if (
+        !config.platform.isNode() ||
+        !config.storage.hasCouchDBReplication
+    ) {
         return;
     }
     addRxPlugin(RxDBReplicationCouchDBPlugin);

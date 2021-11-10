@@ -5,6 +5,7 @@ import {
     BackupOptions,
     RxDatabase
 } from '../../types';
+import { now } from '../../util';
 
 /**
  * ensure that the given folder exists
@@ -39,10 +40,10 @@ export function prepareFolders(
     const metaLoc = metaFileLocation(options);
 
     if (!fs.existsSync(metaLoc)) {
-        const now = new Date().getTime();
+        const currentTime = now();
         const metaData: BackupMetaFileContent = {
-            createdAt: now,
-            updatedAt: now,
+            createdAt: currentTime,
+            updatedAt: currentTime,
             collectionStates: {}
         };
         fs.writeFileSync(metaLoc, JSON.stringify(metaData), 'utf-8');

@@ -25,28 +25,35 @@ config.parallel('key-compression.test.js', () => {
             const c = await humansCollection.create(0);
             const query: any = c.find()
                 .where('firstName').eq('myFirstName')
-                .toJSON();
+                .getPreparedQuery();
             const jsonString = JSON.stringify(query);
             assert.ok(!jsonString.includes('firstName'));
             assert.ok(jsonString.includes('myFirstName'));
             c.database.destroy();
         });
         it('primary', async () => {
+            if (config.storage.name !== 'pouchdb') {
+                return;
+            }
             const c = await humansCollection.createPrimary(0);
             const query: any = c.find()
                 .where('passportId').eq('myPassportId')
-                .toJSON();
+                .getPreparedQuery();
             const jsonString = JSON.stringify(query);
+
             assert.ok(!jsonString.includes('passportId'));
             assert.ok(jsonString.includes('myPassportId'));
             assert.strictEqual(query.selector._id, 'myPassportId');
             c.database.destroy();
         });
         it('additional attribute', async () => {
+            if (config.storage.name !== 'pouchdb') {
+                return;
+            }
             const c = await humansCollection.create(0);
             const query: any = c.find()
                 .where('foobar').eq(5)
-                .toJSON();
+                .getPreparedQuery();
 
             assert.strictEqual(query.selector.foobar, 5);
             c.database.destroy();
@@ -54,6 +61,10 @@ config.parallel('key-compression.test.js', () => {
     });
     describe('integration into pouchDB', () => {
         it('should have saved a compressed document', async () => {
+            if (config.storage.name !== 'pouchdb') {
+                return;
+            }
+
             const c = await humansCollection.createPrimary(0);
             const docData = schemaObjects.simpleHuman();
             await c.insert(docData);

@@ -43,7 +43,7 @@ config.parallel('rx-query.test.js', () => {
                 .where('age').gt(18).lt(67)
                 .limit(10)
                 .sort('-age');
-            const queryObj = q.toJSON();
+            const queryObj = q.mangoQuery;
             assert.deepStrictEqual(queryObj, {
                 selector: {
                     name: {
@@ -972,6 +972,10 @@ config.parallel('rx-query.test.js', () => {
             db.destroy();
         });
         it('#609 default index on primaryKey when better possible', async () => {
+            if (config.storage.name !== 'pouchdb') {
+                return;
+            }
+
             const mySchema: RxJsonSchema<{ name: string; passportId: string; }> = {
                 version: 0,
                 keyCompression: false,
@@ -1000,7 +1004,7 @@ config.parallel('rx-query.test.js', () => {
                     passportId: 'foofbar'
                 }
             });
-            const explained1 = await collection.storageInstance.internals.pouch.explain(q1.toJSON());
+            const explained1 = await collection.storageInstance.internals.pouch.explain(q1.getPreparedQuery());
             assert.ok(explained1.index.ddoc);
             assert.ok(explained1.index.ddoc.startsWith('_design/idx-'));
 
@@ -1010,7 +1014,7 @@ config.parallel('rx-query.test.js', () => {
                     passportId: 'foofbar'
                 }
             }).sort('passportId');
-            const explained2 = await collection.storageInstance.internals.pouch.explain(q2.toJSON());
+            const explained2 = await collection.storageInstance.internals.pouch.explain(q2.getPreparedQuery());
             assert.ok(explained2.index.ddoc);
             assert.ok(explained2.index.ddoc.startsWith('_design/idx-'));
 
@@ -1194,6 +1198,10 @@ config.parallel('rx-query.test.js', () => {
             db.destroy();
         });
         it('#815 Allow null value for strings', async () => {
+            if (config.storage.name !== 'pouchdb') {
+                return;
+            }
+
             // create a schema
             const mySchema = {
                 version: 0,

@@ -30,7 +30,6 @@ import * as fs from 'fs';
  * RxStoragePouch specific tests
  */
 config.parallel('rx-storage-lokijs.test.js', () => {
-
     describe('RxDatabase', () => {
         it('create write remove', async () => {
             const collection = await humansCollections.create(
