@@ -387,8 +387,8 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             error: new Map()
         };
 
-        const startTime = now();
         documentWrites.forEach(writeRow => {
+            const startTime = now();
             const id: string = writeRow.document[this.primaryPath] as any;
             const documentInDb = collection.by(this.primaryPath, id);
 
@@ -560,10 +560,10 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
          * to ensure all RxStorage implementations behave equal.
          */
         await promiseWait(0);
-        const startTime = now();
         const collection = localState.collection;
-
+        
         documents.forEach(docData => {
+            const startTime = now();
             const id: string = docData[this.primaryPath] as any;
             const documentInDb = collection.by(this.primaryPath, id);
             if (!documentInDb) {

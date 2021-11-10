@@ -228,22 +228,12 @@ describe('typings.test.js', function () {
                             ignoreDuplicate: false
                         };
                         const myDb: RxDatabase = await createRxDatabase(databaseCreator);
-
-
                         const minimalHuman: RxJsonSchema<DefaultDocType> = ${JSON.stringify(schemas.humanMinimal)};
-
-
                         const myCollections = await myDb.addCollections({
                             humans: {
                                 schema: minimalHuman,
                             }
                         });
-
-
-
-
-
-
                         await myDb.destroy();
                     })();
                 `;
@@ -401,7 +391,7 @@ describe('typings.test.js', function () {
                 `;
                 await transpileCode(code);
             });
-            it('access PouchSyncHandler', async () => {
+            it('start CouchDB replication', async () => {
                 const code = codeBase + `
                     (async() => {
                         const myDb: RxDatabase = await createRxDatabase({
@@ -426,15 +416,6 @@ describe('typings.test.js', function () {
                         const replicationState = myCollection.syncCouchDB({
                             remote: 'http://localhost:9090/'
                         });
-                        const syncHandler = replicationState._pouchEventEmitterObject;
-                        if(!syncHandler) {
-                            process.exit(1);
-                        }
-                        syncHandler.on('paused', (anything: any) => {
-
-                        });
-                        console.log('.4');
-                        process.exit(1);
                     })();
                 `;
                 await transpileCode(code);
