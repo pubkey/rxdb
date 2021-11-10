@@ -268,7 +268,6 @@ config.parallel('cache-replacement-policy.test.js', () => {
                     return false;
                 }
             });
-            await wait(50);
             console.log('--- 3');
             assert.strictEqual(runs, 1);
 
@@ -287,7 +286,6 @@ config.parallel('cache-replacement-policy.test.js', () => {
                 }
             });
             console.log('--- 6');
-            await wait(50);
             console.log('--- 7');
             assert.strictEqual(runs, 2);
 

@@ -513,7 +513,6 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         }
                     },
                     indexes: [
-                        'id',
                         'age'
                     ],
                     required: [
@@ -531,48 +530,54 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     });
                 const docsData: RxDocumentWriteData<IdAgeDoc>[] = [
                     {
-                        id: 'ri2h5pwc4dm0',
-                        age: 11,
+                        id: '1w5ohavmtt72',
+                        age: 24,
                         _attachments: {}
                     },
                     {
-                        id: 'ce9k2uaj59sk',
-                        age: 21,
+                        id: '607i21yd5vya',
+                        age: 50,
                         _attachments: {}
                     },
                     {
-                        id: '7payy3v4n8n0',
-                        age: 23,
+                        id: 'atf18ur3pahe',
+                        age: 31,
                         _attachments: {}
                     },
                     {
-                        id: 'luv57wqvhefp',
-                        age: 25,
+                        id: 'br6fh5qgktds',
+                        age: 18,
                         _attachments: {}
                     },
                     {
-                        id: 'ji26r00w8q1h',
-                        age: 27,
+                        id: 'eldp9xpp5b1k',
+                        age: 28,
                         _attachments: {}
                     },
                     {
-                        id: '5p6a1aupc5ow',
-                        age: 44,
+                        id: 'farta1fs24wc',
+                        age: 50,
                         _attachments: {}
                     },
                     {
-                        id: 'ipt7w8aqiafc',
-                        age: 45,
+                        id: 'j28lei01tyl7',
+                        age: 33,
                         _attachments: {}
                     },
                     {
-                        id: 'b6cq0jilvcrp',
-                        age: 47,
+                        id: 'ktxffmy2vip8',
+                        age: 16,
                         _attachments: {}
                     },
                     {
-                        id: 's3yked517n7h',
-                        age: 47,
+                        id: 'me354sspiaj0',
+                        age: 42,
+                        _attachments: {}
+
+                    },
+                    {
+                        id: 'xlc3x8tpcdy6',
+                        age: 24,
                         _attachments: {}
                     }
                 ];
@@ -596,6 +601,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 console.dir(queryFirst);
                 console.dir(queryLast);
+
+                process.exit();
 
                 storageInstance.close();
             });

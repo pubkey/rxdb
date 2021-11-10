@@ -174,7 +174,12 @@ config.parallel('reactive-query.test.js', () => {
             .fill(0).forEach(() => {
                 it('#31 do not fire on doc-change when result-doc not affected ' + config.storage.name, async () => {
                     const docAmount = config.isFastMode() ? 2 : 10;
-                    const c = await humansCollection.createAgeIndex(docAmount);
+                    const c = await humansCollection.createAgeIndex(0);
+                    const docsData = new Array(docAmount)
+                        .fill(0)
+                        .map(() => schemaObjects.human());
+                    await c.bulkInsert(docsData);
+
                     // take only 9 of 10
                     const valuesAr: HumanDocumentType[][] = [];
                     const querySub = c
@@ -204,7 +209,7 @@ config.parallel('reactive-query.test.js', () => {
                     const isDocInPrevResults = !!valuesAr[0].find(d => d.passportId === lastDoc.primary);
                     if (isDocInPrevResults) {
                         const allDocs = await c.find().exec();
-                        console.log(JSON.stringify(allDocs.map(d => d.toJSON()), null, 4));
+                        console.log(JSON.stringify(docsData, null, 4));
                         console.log(JSON.stringify(valuesAr[0], null, 4));
                         console.log(JSON.stringify(lastDoc.toJSON(), null, 4));
                         throw new Error('lastDoc (' + lastDoc.primary + ') was in previous results');

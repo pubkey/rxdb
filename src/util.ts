@@ -125,7 +125,7 @@ export function requestIdlePromise(timeout = null) {
             })
         );
     } else {
-        return PROMISE_RESOLVE_VOID;
+        return promiseWait(0);
     }
 }
 
