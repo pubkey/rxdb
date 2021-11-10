@@ -611,12 +611,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                 return useDoc;
             })
         };
-
-        console.log('pouchdb.query()');
-        console.dir(preparedQuery);
-        console.dir(ret.documents);
-        console.log('------------------------------');
-
         return ret;
     }
 

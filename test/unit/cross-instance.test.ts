@@ -99,7 +99,6 @@ config.parallel('cross-instance.test.js', () => {
 
                 await AsyncTestUtil.waitUntil(async () => {
                     if (emitted.length > 1) {
-                        console.dir(emitted);
                         throw new Error('got too many events ' + emitted.length);
                     }
                     return emitted.length === 1;

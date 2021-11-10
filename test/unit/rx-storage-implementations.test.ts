@@ -224,7 +224,6 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         document: Object.assign({}, second, { _deleted: false, value: 'aaa' })
                     }]
                 );
-                console.dir(undeleteResponse.error);
 
                 assert.strictEqual(undeleteResponse.error.size, 0);
                 const third = getFromMapOrThrow(undeleteResponse.success, 'foobar');
@@ -841,16 +840,11 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 const first5Ids = insertDocs.slice(0, 5).map(d => d.key);
 
-                console.dir(insertDocs);
-
                 const changesResults = await storageInstance.getChangedDocuments({
                     sinceSequence: 0,
                     limit: 5,
                     direction: 'after'
                 });
-
-                console.dir(changesResults);
-
                 const resultIds = Array.from(changesResults.changedDocuments.values()).map(d => d.id);
                 assert.deepStrictEqual(first5Ids[0], resultIds[0]);
 

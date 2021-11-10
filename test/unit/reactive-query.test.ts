@@ -173,11 +173,6 @@ config.parallel('reactive-query.test.js', () => {
         new Array(config.isFastMode() ? 3 : 10)
             .fill(0).forEach(() => {
                 it('#31 do not fire on doc-change when result-doc not affected ' + config.storage.name, async () => {
-
-                    console.log('---------------------------------------------------');
-                    console.log('---------------------------------------------------');
-                    console.log('---------------------------------------------------');
-
                     const docAmount = config.isFastMode() ? 2 : 10;
                     const c = await humansCollection.createAgeIndex(docAmount);
                     // take only 9 of 10
@@ -196,7 +191,7 @@ config.parallel('reactive-query.test.js', () => {
                     await waitUntil(() => valuesAr.length === 1);
 
                     // get the last document that is not part of the previous query result
-                    const doc = await c
+                    const lastDoc = await c
                         .findOne({
                             selector: {},
                             sort: [
@@ -206,31 +201,19 @@ config.parallel('reactive-query.test.js', () => {
                         .exec(true);
 
                     // ensure the query is correct and the doc is really not in results.
-                    const isDocInPrevResults = !!valuesAr[0].find(d => d.passportId === doc.primary);
-                    assert.strictEqual(isDocInPrevResults, false);
-
-                    console.log('lastDocId: ' + doc.primary);
+                    const isDocInPrevResults = !!valuesAr[0].find(d => d.passportId === lastDoc.primary);
+                    if (isDocInPrevResults) {
+                        throw new Error('lastDoc (' + lastDoc.primary + ') was in previous results');
+                    }
 
                     // edit+save doc
-                    const newPromiseWait = AsyncTestUtil.waitResolveable(300);
-
-
                     await promiseWait(20);
-                    await doc.atomicPatch({ firstName: 'foobar' });
-                    await newPromiseWait.promise;
-
-                    await promiseWait(20);
-
-                    console.dir(valuesAr);
+                    await lastDoc.atomicPatch({ firstName: 'foobar' });
+                    await promiseWait(100);
 
                     assert.strictEqual(valuesAr.length, 1);
                     querySub.unsubscribe();
                     c.database.destroy();
-
-                    console.log('---------------------------------------------------');
-                    console.log('-----------------END-------------------------------');
-                    console.log('---------------------------------------------------');
-
                 });
             });
 

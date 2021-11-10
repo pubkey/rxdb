@@ -511,10 +511,6 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
         } else {
             rxQuery._latestChangeEvent = rxQuery.asRxQuery.collection._changeEventBuffer.counter;
 
-            console.log('++++++++++++++++ calculateNewResults() ' + now());
-            console.dir(missedChangeEvents);
-
-
             /**
              * because pouchdb prefers writes over reads,
              * we have to filter out the events that happend before the read has started
@@ -535,12 +531,12 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
                 ._changeEventBuffer
                 .reduceByLastOfDoc(missedChangeEvents);
 
+            /*
             console.log('rxQuery._lastExecStart: ' + rxQuery._lastExecStart + ' - rxQuery._lastExecEnd: ' + rxQuery._lastExecEnd);
             console.dir(rxQuery._resultsData.slice());
-
             console.log('runChangeEvents:');
             console.dir(runChangeEvents);
-            console.log('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++');
+            */
 
             const eventReduceResult = calculateNewResults(
                 rxQuery as any,

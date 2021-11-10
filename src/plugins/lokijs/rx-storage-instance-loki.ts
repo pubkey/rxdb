@@ -345,13 +345,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             Object.setPrototypeOf(fakeResultSet, (lokijs as any).Resultset.prototype);
             fakeResultSet.find(query.selector, true);
 
-            console.log('getQueryMatcher() RUN');
-            console.log(JSON.stringify(query, null, 4));
-            console.log(JSON.stringify(docWithResetDeleted, null, 4));
-            console.log(JSON.stringify(fakeResultSet.filteredrows, null, 4));
-
-            console.log('/getQueryMatcher() RUN');
-
             const ret = fakeResultSet.filteredrows.length > 0;
             return ret;
         }
@@ -359,8 +352,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
     }
 
     async bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>> {
-        console.log('loki bulkWrite()');
-        console.log(JSON.stringify(documentWrites, null, 4));
         if (documentWrites.length === 0) {
             throw newRxError('P2', {
                 args: {
@@ -449,24 +440,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                         revInDb !== writeRow.previous._rev
                     )
                 ) {
-                    console.log(
-                        (
-                            !writeRow.previous &&
-                            !documentInDb._deleted
-                        )
-                    );
-                    console.log(
-                        (
-                            !!writeRow.previous &&
-                            revInDb !== writeRow.previous._rev
-                        )
-                    );
-                    console.log('CONFLICT');
-                    console.log(!documentInDb._deleted);
-                    console.dir(writeRow);
-                    console.dir(documentInDb);
-                    console.log('/CONFLICT');
-
                     // conflict error
                     const err: RxStorageBulkWriteError<RxDocType> = {
                         isError: true,
@@ -490,8 +463,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                             _attachments: {}
                         }
                     );
-                    console.log('writeDoc:');
-                    console.dir(writeDoc);
                     collection.update(writeDoc);
                     this.addChangeDocumentMeta(id);
 
@@ -684,10 +655,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             query = query.limit(preparedQuery.limit);
         }
 
-
-        console.log('LokiRxStorageInstance.query(): ');
-        console.log(JSON.stringify(preparedQuery, null, 4));
-
         const foundDocuments = query.data().map(lokiDoc => stripLokiKey(lokiDoc));
         return {
             documents: foundDocuments
@@ -702,9 +669,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         changedDocuments: RxStorageChangedDocumentMeta[];
         lastSequence: number;
     }> {
-        console.log('getChangedDocuments()');
-        console.dir(options);
-
         const localState = await this.mustUseLocalState();
         if (!localState) {
             return this.requestRemoteInstance('getChangedDocuments', [options]);
@@ -734,9 +698,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 sequence: result.sequence
             }));
 
-        console.log('changedDocuments:');
-        console.dir(changedDocuments);
-
         const useForLastSequence = !desc ? lastOfArray(changedDocuments) : changedDocuments[0];
 
         const ret: {
@@ -746,8 +707,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             changedDocuments,
             lastSequence: useForLastSequence ? useForLastSequence.sequence : options.sinceSequence
         }
-
-        console.dir(ret);
 
         return ret;
     }

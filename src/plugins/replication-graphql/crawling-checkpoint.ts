@@ -197,10 +197,6 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
         }
     }
 
-
-    console.log('getChangesSinceLastPushSequence()');
-    console.dir(changedDocs);
-
     return {
         changedDocs,
         lastSequence

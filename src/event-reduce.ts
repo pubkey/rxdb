@@ -105,11 +105,6 @@ export function calculateNewResults<RxDocumentType>(
     const queryParams = getQueryParams(rxQuery);
     const previousResults: RxDocumentType[] = rxQuery._resultsData.slice();
 
-    console.log; ('----------------------------- calculateNewResults()')
-    console.dir(previousResults);
-    console.dir(rxChangeEvents);
-    console.log; ('-----------------------------')
-
     const previousResultsMap: Map<string, RxDocumentType> = rxQuery._resultsDataMap;
     let changed: boolean = false;
 
