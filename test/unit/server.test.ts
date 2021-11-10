@@ -20,7 +20,10 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from '../helper/schemas';
 
 config.parallel('server.test.js', () => {
-    if (!config.platform.isNode()) {
+    if (
+        !config.platform.isNode() ||
+        config.storage.name !== 'pouchdb'
+    ) {
         return;
     }
 

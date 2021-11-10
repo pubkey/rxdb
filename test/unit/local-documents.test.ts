@@ -497,6 +497,9 @@ config.parallel('local-documents.test.js', () => {
     });
     describe('issues', () => {
         it('PouchDB: Create and remove local doc', async () => {
+            if (config.storage.name !== 'pouchdb') {
+                return;
+            }
             const c = await humansCollection.create();
             const pouch = c.storageInstance.internals.pouch;
 

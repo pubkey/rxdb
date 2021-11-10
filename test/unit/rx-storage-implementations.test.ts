@@ -17,10 +17,6 @@ import {
     ensureNotFalsy
 } from '../../plugins/core';
 
-import {
-    getRxStoragePouch
-} from '../../plugins/pouchdb';
-
 import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
 import { BroadcastChannel, LeaderElector } from 'broadcast-channel';
 addRxPlugin(RxDBKeyCompressionPlugin);
@@ -39,13 +35,11 @@ import {
     RxDocumentData,
     RxDocumentWriteData,
     RxLocalDocumentData,
-    RxStorage,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
     RxStorageInstance,
     RxStorageKeyObjectInstance
 } from '../../src/types';
-import { getRxStorageLoki } from '../../plugins/lokijs';
 import { getLeaderElectorByBroadcastChannel } from '../../plugins/leader-election';
 
 addRxPlugin(RxDBQueryBuilderPlugin);
@@ -684,9 +678,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
-                    options: {
-                        auto_compaction: false
-                    }
+                    options: {}
                 });
                 async function getSequenceAfter(since: number): Promise<number> {
                     const changesResult = await storageInstance.getChangedDocuments({
@@ -746,9 +738,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
-                    options: {
-                        auto_compaction: false
-                    }
+                    options: {}
                 });
 
                 let previous: RxDocumentData<TestDocType> | undefined;
@@ -788,7 +778,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 previous = getFromMapOrThrow(updateResult.success, writeData.key);
                 const changesAfterUpdate = await storageInstance.getChangedDocuments({
                     direction: 'after',
-                    sinceSequence: 0
+                    sinceSequence: 1
                 });
                 const firstChangeAfterUpdate = changesAfterUpdate.changedDocuments[0];
                 if (!firstChangeAfterUpdate) {
@@ -806,7 +796,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 }]);
                 const changesAfterDelete = await storageInstance.getChangedDocuments({
                     direction: 'after',
-                    sinceSequence: 0
+                    sinceSequence: 2
                 });
                 const firstChangeAfterDelete = changesAfterDelete.changedDocuments[0];
                 if (!firstChangeAfterDelete) {
@@ -833,6 +823,36 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     lastSequence = changesResults.lastSequence;
                 }
                 assert.strictEqual(lastSequence, 3);
+
+                storageInstance.close();
+            });
+            it('should sort correctly by sequence', async () => {
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getTestDataSchema(),
+                    options: {}
+                });
+
+                const insertDocs = new Array(10).fill(0).map(() => getWriteData());
+                await storageInstance.bulkWrite(
+                    insertDocs.map(d => ({ document: d }))
+                );
+
+                const first5Ids = insertDocs.slice(0, 5).map(d => d.key);
+
+                console.dir(insertDocs);
+
+                const changesResults = await storageInstance.getChangedDocuments({
+                    sinceSequence: 0,
+                    limit: 5,
+                    direction: 'after'
+                });
+
+                console.dir(changesResults);
+
+                const resultIds = Array.from(changesResults.changedDocuments.values()).map(d => d.id);
+                assert.deepStrictEqual(first5Ids[0], resultIds[0]);
 
                 storageInstance.close();
             });

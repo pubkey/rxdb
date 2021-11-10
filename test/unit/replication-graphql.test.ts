@@ -1819,6 +1819,9 @@ describe('replication-graphql.test.js', () => {
                 c.database.destroy();
             });
             it('should emit the send documents when pushing', async () => {
+
+                console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
+
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(batchSize),
                     SpawnServer.spawn()

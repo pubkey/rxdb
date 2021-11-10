@@ -687,6 +687,9 @@ config.parallel('import-export.test.js', () => {
             db2.destroy();
         });
         it('#1396 import/export should work with attachments', async () => {
+            if (!config.storage.hasAttachments) {
+                return;
+            }
             const sourceCol = await humansCollection.createAttachments(1);
             const doc = await sourceCol.findOne().exec(true);
             await doc.putAttachment({

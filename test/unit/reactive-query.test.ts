@@ -197,6 +197,8 @@ config.parallel('reactive-query.test.js', () => {
             // edit+save doc
             const newPromiseWait = AsyncTestUtil.waitResolveable(300);
 
+
+            await promiseWait(20);
             await doc.atomicPatch({ firstName: 'foobar' });
             await newPromiseWait.promise;
 

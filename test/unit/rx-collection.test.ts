@@ -993,8 +993,8 @@ config.parallel('rx-collection.test.js', () => {
                     });
                     it('skip first and limit', async () => {
                         const c = await humansCollection.create(5);
-                        const docs = await c.find().exec();
-                        const second = await c.find().skip(1).limit(1).exec();
+                        const docs = await c.find().sort('passportId').exec();
+                        const second = await c.find().sort('passportId').skip(1).limit(1).exec();
 
                         assert.deepStrictEqual(docs[1].toJSON(), second[0].toJSON());
                         c.database.destroy();

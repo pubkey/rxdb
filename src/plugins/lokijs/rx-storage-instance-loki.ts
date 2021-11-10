@@ -561,7 +561,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
          */
         await promiseWait(0);
         const collection = localState.collection;
-        
+
         documents.forEach(docData => {
             const startTime = now();
             const id: string = docData[this.primaryPath] as any;
@@ -702,6 +702,9 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         changedDocuments: RxStorageChangedDocumentMeta[];
         lastSequence: number;
     }> {
+        console.log('getChangedDocuments()');
+        console.dir(options);
+
         const localState = await this.mustUseLocalState();
         if (!localState) {
             return this.requestRemoteInstance('getChangedDocuments', [options]);
@@ -719,7 +722,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             })
             .simplesort(
                 'sequence',
-                !desc
+                desc
             );
         if (options.limit) {
             query = query.limit(options.limit);
@@ -731,7 +734,10 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 sequence: result.sequence
             }));
 
-        const useForLastSequence = desc ? lastOfArray(changedDocuments) : changedDocuments[0];
+        console.log('changedDocuments:');
+        console.dir(changedDocuments);
+
+        const useForLastSequence = !desc ? lastOfArray(changedDocuments) : changedDocuments[0];
 
         const ret: {
             changedDocuments: RxStorageChangedDocumentMeta[];
@@ -740,6 +746,8 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             changedDocuments,
             lastSequence: useForLastSequence ? useForLastSequence.sequence : options.sinceSequence
         }
+
+        console.dir(ret);
 
         return ret;
     }

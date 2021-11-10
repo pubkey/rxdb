@@ -707,6 +707,13 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             descending: options.direction === 'before' ? true : false
         };
         const pouchResults = await this.internals.pouch.changes(pouchChangesOpts);
+
+        /**
+         * TODO stripping the internal docs
+         * results in having a non-full result set that maybe no longer
+         * reaches the options.limit. We should fill up again
+         * to ensure pagination works correctly.
+         */
         const changedDocuments = pouchResults.results
             .filter(row => !row.id.startsWith(POUCHDB_DESIGN_PREFIX))
             .map(row => ({

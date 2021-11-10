@@ -130,6 +130,9 @@ config.parallel('cross-instance.test.js', () => {
             c2.database.destroy();
         });
         it('get no changes via pouchdb on different dbs', async () => {
+            if (config.storage.name !== 'pouchdb') {
+                return;
+            }
             const c1 = await humansCollection.create(0);
             const c2 = await humansCollection.create(0);
             let got;
