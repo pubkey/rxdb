@@ -635,6 +635,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         if (!localState) {
             return this.requestRemoteInstance('query', [preparedQuery]);
         }
+
         let query = localState.collection
             .chain()
             .find(preparedQuery.selector);

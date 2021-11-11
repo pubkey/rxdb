@@ -20,8 +20,11 @@ import request from 'request-promise-native';
 
 import * as humansCollection from './helper/humans-collection';
 import * as schemaObjects from './helper/schema-objects';
+import { setDefaultStorage } from './unit/config';
 
 describe('couchdb-db-integration.test.js', () => {
+    setDefaultStorage('pouchdb');
+
     const COUCHDB_URL = 'http://127.0.0.1:5984/';
 
     it('reach couchdb server', async function () {

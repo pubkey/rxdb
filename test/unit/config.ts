@@ -37,9 +37,9 @@ let storage: {
     readonly hasAttachments: boolean;
 };
 
-let DEFAULT_STORAGE: string | undefined;
+let DEFAULT_STORAGE: string;
 if (detect().name === 'node') {
-    DEFAULT_STORAGE = process.env.DEFAULT_STORAGE;
+    DEFAULT_STORAGE = process.env.DEFAULT_STORAGE as any;
 } else {
     /**
      * Enforce pouchdb in browser tests.
@@ -48,30 +48,34 @@ if (detect().name === 'node') {
     DEFAULT_STORAGE = 'pouchdb';
 }
 
-console.log('DEFAULT_STORAGE: ' + DEFAULT_STORAGE);
-switch (DEFAULT_STORAGE) {
-    case 'pouchdb':
-        storage = {
-            name: 'pouchdb',
-            getStorage: () => {
-                addPouchPlugin(require('pouchdb-adapter-memory'));
-                return getRxStoragePouch('memory');
-            },
-            hasCouchDBReplication: true,
-            hasAttachments: true
-        };
-        break;
-    case 'lokijs':
-        storage = {
-            name: 'lokijs',
-            getStorage: () => getRxStorageLoki(),
-            hasCouchDBReplication: false,
-            hasAttachments: false
-        };
-        break;
-    default:
-        throw new Error('no DEFAULT_STORAGE set');
+export function setDefaultStorage(storageKey: string) {
+    switch (storageKey) {
+        case 'pouchdb':
+            storage = {
+                name: 'pouchdb',
+                getStorage: () => {
+                    addPouchPlugin(require('pouchdb-adapter-memory'));
+                    return getRxStoragePouch('memory');
+                },
+                hasCouchDBReplication: true,
+                hasAttachments: true
+            };
+            break;
+        case 'lokijs':
+            storage = {
+                name: 'lokijs',
+                getStorage: () => getRxStorageLoki(),
+                hasCouchDBReplication: false,
+                hasAttachments: false
+            };
+            break;
+        default:
+            throw new Error('no DEFAULT_STORAGE set');
+    }
 }
+
+console.log('DEFAULT_STORAGE: ' + DEFAULT_STORAGE);
+setDefaultStorage(DEFAULT_STORAGE);
 
 const config = {
     platform: detect(),
