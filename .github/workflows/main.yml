@@ -424,7 +424,7 @@ jobs:
           npm install
           npm test
 
-  test-multiple-times:
+  test-multiple-times-pouchdb:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
@@ -439,4 +439,21 @@ jobs:
        # in the past we had tests that failed randomly
        # to prevent this we run the tests in fast-mode 10 times
       - name: unit tests 10 times
-        run: for i in `seq 10`; do npm run test:fast; done
+        run: for i in `seq 10`; do npm run test:fast:pouchdb; done
+
+  test-multiple-times-lokijs:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.4.1
+        with:
+          node-version: 16.5.0
+      - name: prepare core
+        run: |
+          npm install
+          npm run build
+       # in the past we had tests that failed randomly
+       # to prevent this we run the tests in fast-mode 10 times
+      - name: unit tests 10 times
+        run: for i in `seq 10`; do npm run test:fast:lokijs; done
