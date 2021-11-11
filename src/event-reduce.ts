@@ -4,11 +4,18 @@ import {
     runAction,
     QueryParams,
     QueryMatcher,
-    DeterministicSortComparator
+    DeterministicSortComparator,
+    StateResolveFunctionInput,
+    getStateSet,
+    logStateSet,
+    StateResolveFunction,
+    UNKNOWN_VALUE
 } from 'event-reduce-js';
 import type { RxQuery, MangoQuery, RxChangeEvent, RxDocumentWriteData } from './types';
 import { runPluginHooks } from './hooks';
 import { rxChangeEventToEventReduceChangeEvent } from './rx-change-event';
+import objectPath from 'object-path';
+import { newRxError } from './rx-error';
 
 export type EventReduceResultNeg = {
     runFullQueryAgain: true,
@@ -24,9 +31,9 @@ export type EventReduceResult<RxDocumentType> = EventReduceResultNeg | EventRedu
 export function getSortFieldsOfQuery<RxDocType>(
     primaryKey: keyof RxDocType,
     query: MangoQuery<RxDocType>
-): string[] {
+): (string | keyof RxDocType)[] {
     if (!query.sort || query.sort.length === 0) {
-        return [primaryKey as any];
+        return [primaryKey];
     } else {
         return query.sort.map(part => Object.keys(part)[0]);
     }
@@ -43,7 +50,6 @@ export function getQueryParams<RxDocType>(
         const queryJson: MangoQuery<RxDocType> = rxQuery.getPreparedQuery();
         const primaryKey = collection.schema.primaryPath;
 
-
         /**
          * Create a custom sort comparator
          * that uses the hooks to ensure
@@ -59,7 +65,6 @@ export function getQueryParams<RxDocType>(
             runPluginHooks('preSortComparator', sortComparatorData);
             return sortComparator(sortComparatorData.docA, sortComparatorData.docB);
         };
-
 
         /**
          * Create a custom query matcher
@@ -81,7 +86,7 @@ export function getQueryParams<RxDocType>(
             primaryKey: rxQuery.collection.schema.primaryPath as any,
             skip: queryJson.skip,
             limit: queryJson.limit,
-            sortFields: getSortFieldsOfQuery(primaryKey, queryJson),
+            sortFields: getSortFieldsOfQuery(primaryKey, rxQuery.mangoQuery) as string[],
             sortComparator: useSortComparator,
             queryMatcher: useQueryMatcher
         };
@@ -110,12 +115,24 @@ export function calculateNewResults<RxDocumentType>(
 
     const foundNonOptimizeable = rxChangeEvents.find(cE => {
         const eventReduceEvent = rxChangeEventToEventReduceChangeEvent(cE);
-        const actionName: ActionName = calculateActionName({
+
+        const stateResolveFunctionInput: StateResolveFunctionInput<RxDocumentType> = {
             queryParams,
             changeEvent: eventReduceEvent,
             previousResults,
             keyDocumentMap: previousResultsMap
-        });
+        }
+
+
+        /*
+        // use this to check if all states are calculated correctly
+        const stateSet = getStateSet(stateResolveFunctionInput);
+        console.dir(stateResolveFunctionInput);
+        console.log('state set:');
+        logStateSet(stateSet);
+        */
+
+        const actionName: ActionName = calculateActionName(stateResolveFunctionInput);
         if (actionName === 'runFullQueryAgain') {
             return true;
         } else if (actionName !== 'doNothing') {

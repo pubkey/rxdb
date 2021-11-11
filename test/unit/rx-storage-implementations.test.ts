@@ -351,6 +351,50 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 storageInstance.close();
             });
+            it('should still sort in correct order when docs do not match the selector', async () => {
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getTestDataSchema(),
+                    options: {}
+                });
+
+                const matchingValue = 'foobar';
+                const query: MangoQuery<TestDocType> = {
+                    selector: {
+                        value: {
+                            $eq: matchingValue
+                        }
+                    },
+                    sort: [
+                        { key: 'asc' }
+                    ]
+                };
+
+                const comparator = storageInstance.getSortComparator(
+                    query
+                );
+
+                const docs: TestDocType[] = [
+                    {
+                        value: matchingValue,
+                        key: 'aaa'
+                    },
+                    {
+                        value: 'barfoo',
+                        key: 'bbb'
+                    }
+                ];
+
+                const result = comparator(
+                    docs[0],
+                    docs[1]
+
+                );
+                assert.strictEqual(result, -1);
+
+                storageInstance.close();
+            });
         });
         describe('.getQueryMatcher()', () => {
             it('should match the right docs', async () => {

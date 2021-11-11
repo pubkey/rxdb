@@ -7,9 +7,11 @@ Bugfixes:
   - LokiJS: Ensure events emit exact the same data as with PouchDB.
   - LokiJS: Queries with limit and skip where broken.
   - LokiJS: Fix all bugs and run the whole test suite with LokiJS Storage
+  - Fix PouchDB RxStorage returned sometimes wrong sort comparison results.
 
 Other:
   - Updated [event-reduce](https://github.com/pubkey/event-reduce) for more optimizations.
+  - Allow dash character `-` in collection and database names.
 
 ### 10.3.5 (8 November 2021)
 
@@ -58,6 +60,7 @@ Bugfixes:
 
 Other:
   - Improved performance when many queries are created in a short timespan.
+  - Database- and collection names can now contain the minus char `-`.
 
 ### 10.2.1 (20 October 2021)
 

@@ -25,9 +25,7 @@ try {
             type: 'simulate'
         });
     }
-} catch (err) {
-
-}
+} catch (err) { }
 
 declare type Storage = {
     readonly name: string;

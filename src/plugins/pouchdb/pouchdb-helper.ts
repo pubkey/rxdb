@@ -137,7 +137,7 @@ export function rxDocumentDataToPouchDocumentData<T>(
 export function pouchSwapPrimaryToId<RxDocType>(
     primaryKey: keyof RxDocType,
     docData: any
-): any {
+): RxDocType & { _id: string } {
     // optimisation shortcut
     if (primaryKey === '_id') {
         return docData;

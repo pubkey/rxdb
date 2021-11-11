@@ -4,16 +4,33 @@ import type {
     QueryMatcher
 } from 'event-reduce-js';
 import { ObliviousSet } from 'oblivious-set';
-import { Observable, Subject, Subscription } from 'rxjs';
+import {
+    Observable,
+    Subject,
+    Subscription
+} from 'rxjs';
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import type {
     BlobBuffer,
-    BulkWriteRow, ChangeStreamOnceOptions, MangoQuery, MangoQuerySortDirection,
-    MangoQuerySortPart, PouchBulkDocResultRow,
-    PouchChangesOptionsNonLive, PouchSettings,
-    PouchWriteError, PreparedQuery, RxDocumentData, RxDocumentWriteData, RxJsonSchema, RxStorageBulkWriteError,
-    RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageInstance, RxStorageQueryResult
+    BulkWriteRow,
+    ChangeStreamOnceOptions,
+    MangoQuery,
+    MangoQuerySortDirection,
+    MangoQuerySortPart,
+    PouchBulkDocResultRow,
+    PouchChangesOptionsNonLive,
+    PouchSettings,
+    PouchWriteError,
+    PreparedQuery,
+    RxDocumentData,
+    RxDocumentWriteData,
+    RxJsonSchema,
+    RxStorageBulkWriteError,
+    RxStorageBulkWriteResponse,
+    RxStorageChangeEvent,
+    RxStorageInstance,
+    RxStorageQueryResult
 } from '../../types';
 import {
     getEventKey,
@@ -33,7 +50,12 @@ import {
     filterInMemoryFields,
     massageSelector
 } from 'pouchdb-selector-core';
-import { firstPropertyNameOfObject, flatClone, getFromMapOrThrow, getHeightOfRevision, PROMISE_RESOLVE_VOID } from '../../util';
+import {
+    flatClone,
+    getFromMapOrThrow,
+    getHeightOfRevision,
+    PROMISE_RESOLVE_VOID
+} from '../../util';
 import {
     getCustomEventEmitterByPouch
 } from './custom-events-plugin';
@@ -59,7 +81,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     ) {
         OPEN_POUCHDB_STORAGE_INSTANCES.add(this);
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
-
 
         /**
          * Instead of listening to pouch.changes,
@@ -312,12 +333,10 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         const sortOptions: MangoQuerySortPart[] = query.sort ? (query.sort as any) : [{
             [primaryPath]: 'asc'
         }];
-        const massagedSelector = massageSelector(query.selector);
         const inMemoryFields = Object.keys(query.selector);
         const fun: DeterministicSortComparator<RxDocType> = (a: RxDocType, b: RxDocType) => {
-
             /**
-             * Sorting on two documents with the same primary is not allows
+             * Sorting on two documents with the same primary is not allowed
              * because it might end up in a non-deterministic result.
              */
             if (a[primaryPath] === b[primaryPath]) {
@@ -326,24 +345,27 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
 
             // TODO use createFieldSorter
             // TODO make a performance test
-            const rows = [a, b].map(doc => {
-                // swap primary to _id
-                const cloned: any = flatClone(doc);
-                const primaryValue = cloned[primaryPath];
-                delete cloned[primaryPath];
-                cloned._id = primaryValue;
-                return {
-                    doc: cloned
-                };
-            });
+            const rows = [a, b].map(doc => ({
+                doc: pouchSwapPrimaryToId<RxDocType>(this.primaryPath, doc)
+            }));
             const sortedRows: { doc: any }[] = filterInMemoryFields(
                 rows,
                 {
-                    selector: massagedSelector,
+                    selector: {},
                     sort: sortOptions
                 },
                 inMemoryFields
             );
+            if (sortedRows.length !== 2) {
+                throw newRxError('SNH', {
+                    query,
+                    primaryPath: this.primaryPath as any,
+                    args: {
+                        rows,
+                        sortedRows
+                    }
+                });
+            }
             if (sortedRows[0].doc._id === rows[0].doc._id) {
                 return -1;
             } else {
@@ -404,6 +426,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                     const schemaObj = getSchemaByObjectPath(this.schema, key);
                     if (!schemaObj) {
                         throw newRxError('QU5', {
+                            query,
                             key
                         });
                     }

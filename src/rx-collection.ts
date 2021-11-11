@@ -31,10 +31,6 @@ import {
     _getDefaultQuery
 } from './rx-query';
 import {
-    isInstanceOf as isInstanceOfRxSchema,
-    createRxSchema
-} from './rx-schema';
-import {
     newRxError,
     newRxTypeError
 } from './rx-error';

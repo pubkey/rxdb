@@ -46,7 +46,7 @@ import {
 } from './rx-document-prototype-merge';
 import { calculateNewResults } from './event-reduce';
 import { triggerCacheReplacement } from './query-cache';
-import type { QueryMatcher } from 'event-reduce-js';
+import { getStateSet, QueryMatcher } from 'event-reduce-js';
 import { _handleToStorageInstance } from './rx-collection-helper';
 
 let _queryCount = 0;
@@ -505,6 +505,7 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
      */
     if (!mustReExec) {
         let missedChangeEvents = rxQuery.asRxQuery.collection._changeEventBuffer.getFrom(rxQuery._latestChangeEvent + 1);
+
         if (missedChangeEvents === null) {
             // changeEventBuffer is of bounds -> we must re-execute over the database
             mustReExec = true;
@@ -526,17 +527,9 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
                     )
                 );
             });
-
             const runChangeEvents: RxChangeEvent<any>[] = rxQuery.asRxQuery.collection
                 ._changeEventBuffer
                 .reduceByLastOfDoc(missedChangeEvents);
-
-            /*
-            console.log('rxQuery._lastExecStart: ' + rxQuery._lastExecStart + ' - rxQuery._lastExecEnd: ' + rxQuery._lastExecEnd);
-            console.dir(rxQuery._resultsData.slice());
-            console.log('runChangeEvents:');
-            console.dir(runChangeEvents);
-            */
 
             const eventReduceResult = calculateNewResults(
                 rxQuery as any,

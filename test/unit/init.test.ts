@@ -20,10 +20,12 @@ config.platform.isNode = function () {
 };
 
 console.log('###### PLATFORM: ######');
-if (typeof window !== 'undefined')
+if (typeof window !== 'undefined') {
     console.log('USER-AGENT: ' + window.navigator.userAgent);
+}
 console.log('PLATFORM-NAME: ' + config.platform.name);
 console.log('PLATFORM-VERSION: ' + config.platform.version);
+console.log('STORAGE: ' + config.storage.name);
 
 if (config.platform.name !== 'node') {
     console.dir = (d: any) => {
