@@ -29,12 +29,24 @@ try {
 
 }
 
-
-let storage: {
+declare type Storage = {
     readonly name: string;
     readonly getStorage: () => RxStorage<any, any>;
     readonly hasCouchDBReplication: boolean;
     readonly hasAttachments: boolean;
+}
+const config: {
+    platform: any;
+    parallel: typeof useParallel;
+    rootPath: string;
+    isFastMode: () => boolean;
+    storage: Storage;
+} = {
+    platform: detect(),
+    parallel: useParallel,
+    rootPath: '',
+    isFastMode,
+    storage: {} as any
 };
 
 let DEFAULT_STORAGE: string;
@@ -51,7 +63,7 @@ if (detect().name === 'node') {
 export function setDefaultStorage(storageKey: string) {
     switch (storageKey) {
         case 'pouchdb':
-            storage = {
+            config.storage = {
                 name: 'pouchdb',
                 getStorage: () => {
                     addPouchPlugin(require('pouchdb-adapter-memory'));
@@ -62,7 +74,7 @@ export function setDefaultStorage(storageKey: string) {
             };
             break;
         case 'lokijs':
-            storage = {
+            config.storage = {
                 name: 'lokijs',
                 getStorage: () => getRxStorageLoki(),
                 hasCouchDBReplication: false,
@@ -76,14 +88,6 @@ export function setDefaultStorage(storageKey: string) {
 
 console.log('DEFAULT_STORAGE: ' + DEFAULT_STORAGE);
 setDefaultStorage(DEFAULT_STORAGE);
-
-const config = {
-    platform: detect(),
-    parallel: useParallel,
-    rootPath: '',
-    isFastMode,
-    storage
-};
 
 if (config.platform.name === 'node') {
     process.setMaxListeners(100);
