@@ -1,6 +1,7 @@
 import clone from 'clone';
 import * as schemas from './schemas';
 import * as schemaObjects from './schema-objects';
+import config from '../unit/config';
 
 import {
     createRxDatabase,
@@ -26,13 +27,16 @@ export async function create(
     name: string = 'human',
     multiInstance: boolean = true,
     eventReduce: boolean = true,
-    storage: RxStorage<any, any> = getRxStoragePouch('memory')
+    storage?: RxStorage<any, any>
 
 ): Promise<RxCollection<HumanDocumentType, {}, {}>> {
     if (!name) {
         name = 'human';
     }
-    PouchDB.plugin(require('pouchdb-adapter-memory'));
+    if (!storage) {
+        storage = config.storage.getStorage();
+    }
+
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.HumanDocumentType> }>({
         name: randomCouchString(10),
         storage,
@@ -61,11 +65,9 @@ export async function createBySchema<RxDocumentType = {}>(
     schema: RxJsonSchema<RxDocumentType>,
     name = 'human'
 ): Promise<RxCollection<RxDocumentType, {}, {}>> {
-    PouchDB.plugin(require('pouchdb-adapter-memory'));
-
     const db = await createRxDatabase<{ [prop: string]: RxCollection<RxDocumentType> }>({
         name: randomCouchString(10),
-        storage: getRxStoragePouch('memory'),
+        storage: config.storage.getStorage(),
         multiInstance: true,
         eventReduce: true,
         ignoreDuplicate: true
@@ -85,12 +87,10 @@ export async function createAttachments(
     name = 'human',
     multiInstance = true
 ): Promise<RxCollection<schemaObjects.HumanDocumentType, {}, {}>> {
-
     if (!name) name = 'human';
-    PouchDB.plugin(require('pouchdb-adapter-memory'));
     const db = await createRxDatabase<{ [prop: string]: RxCollection<schemaObjects.HumanDocumentType> }>({
         name: randomCouchString(10),
-        storage: getRxStoragePouch('memory'),
+        storage: config.storage.getStorage(),
         multiInstance,
         eventReduce: true,
         ignoreDuplicate: true
@@ -123,12 +123,11 @@ export async function createEncryptedAttachments(
 ): Promise<RxCollection<schemaObjects.HumanDocumentType, {}, {}>> {
 
     if (!name) name = 'human';
-    PouchDB.plugin(require('pouchdb-adapter-memory'));
 
     const db = await createRxDatabase<{ [prop: string]: RxCollection<schemaObjects.HumanDocumentType> }>({
         name: randomCouchString(10),
         password: 'foooooobaaaar',
-        storage: getRxStoragePouch('memory'),
+        storage: config.storage.getStorage(),
         multiInstance,
         eventReduce: true,
         ignoreDuplicate: true
@@ -160,11 +159,9 @@ export async function createNoCompression(
     size = 20,
     name = 'human'
 ): Promise<RxCollection<schemaObjects.HumanDocumentType>> {
-    PouchDB.plugin(require('pouchdb-adapter-memory'));
-
     const db = await createRxDatabase<{ [prop: string]: RxCollection<schemaObjects.HumanDocumentType> }>({
         name: randomCouchString(10),
-        storage: getRxStoragePouch('memory'),
+        storage: config.storage.getStorage(),
         eventReduce: true,
         ignoreDuplicate: true
     });
@@ -191,11 +188,9 @@ export async function createNoCompression(
 export async function createAgeIndex(
     amount = 20
 ): Promise<RxCollection<schemaObjects.HumanDocumentType>> {
-    PouchDB.plugin(require('pouchdb-adapter-memory'));
-
     const db = await createRxDatabase<{ humana: RxCollection<schemaObjects.HumanDocumentType> }>({
         name: randomCouchString(10),
-        storage: getRxStoragePouch('memory'),
+        storage: config.storage.getStorage(),
         eventReduce: true,
         ignoreDuplicate: true
     });
@@ -227,14 +222,12 @@ export async function multipleOnSameDB(
     collection: RxCollection<schemaObjects.HumanDocumentType>
     collection2: RxCollection<schemaObjects.HumanDocumentType>
 }> {
-    PouchDB.plugin(require('pouchdb-adapter-memory'));
-
     const db = await createRxDatabase<{
         human: RxCollection<schemaObjects.HumanDocumentType>,
         human2: RxCollection<schemaObjects.HumanDocumentType>
     }>({
         name: randomCouchString(10),
-        storage: getRxStoragePouch('memory'),
+        storage: config.storage.getStorage(),
         eventReduce: true,
         ignoreDuplicate: true
     });
@@ -269,14 +262,11 @@ export async function multipleOnSameDB(
 }
 
 export async function createNested(
-    amount = 5,
-    adapter = 'memory'
+    amount = 5
 ): Promise<RxCollection<schemaObjects.NestedHumanDocumentType>> {
-    PouchDB.plugin(require('pouchdb-adapter-memory'));
-
     const db = await createRxDatabase<{ nestedhuman: RxCollection<schemaObjects.NestedHumanDocumentType> }>({
         name: randomCouchString(10),
-        storage: getRxStoragePouch('memory'),
+        storage: config.storage.getStorage(),
         eventReduce: true,
         ignoreDuplicate: true
     });
@@ -299,14 +289,11 @@ export async function createNested(
 }
 
 export async function createDeepNested(
-    amount = 5,
-    adapter = 'memory'
+    amount = 5
 ): Promise<RxCollection<schemaObjects.DeepNestedHumanDocumentType>> {
-    PouchDB.plugin(require('pouchdb-adapter-memory'));
-
     const db = await createRxDatabase<{ nestedhuman: RxCollection<schemaObjects.DeepNestedHumanDocumentType> }>({
         name: randomCouchString(10),
-        storage: getRxStoragePouch('memory'),
+        storage: config.storage.getStorage(),
         eventReduce: true,
     });
     // setTimeout(() => db.destroy(), dbLifetime);
@@ -333,7 +320,7 @@ export async function createEncrypted(
 
     const db = await createRxDatabase<{ encryptedhuman: RxCollection<schemaObjects.EncryptedHumanDocumentType> }>({
         name: randomCouchString(10),
-        storage: getRxStoragePouch('memory'),
+        storage: config.storage.getStorage(),
         eventReduce: true,
         password: randomCouchString(10)
     });
@@ -359,10 +346,8 @@ export async function createMultiInstance(
     name: string,
     amount = 0,
     password = null,
-    storage: RxStorage<any, any> = getRxStoragePouch('memory')
+    storage: RxStorage<any, any> = config.storage.getStorage()
 ): Promise<RxCollection<schemaObjects.HumanDocumentType, {}, {}>> {
-    PouchDB.plugin(require('pouchdb-adapter-memory'));
-
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.HumanDocumentType> }>({
         name,
         storage,
@@ -395,7 +380,7 @@ export async function createPrimary(
 
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.SimpleHumanDocumentType> }>({
         name,
-        storage: getRxStoragePouch('memory'),
+        storage: config.storage.getStorage(),
         multiInstance: true,
         eventReduce: true,
         ignoreDuplicate: true
@@ -425,7 +410,7 @@ export async function createHumanWithTimestamp(
 
     const db = await createRxDatabase<{ humans: RxCollection<schemaObjects.HumanWithTimestampDocumentType> }>({
         name,
-        storage: getRxStoragePouch('memory'),
+        storage: config.storage.getStorage(),
         multiInstance: true,
         eventReduce: true,
         ignoreDuplicate: true
@@ -470,7 +455,7 @@ export async function createMigrationCollection(
     const colName = 'human';
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.SimpleHumanAgeDocumentType> }>({
         name,
-        storage: getRxStoragePouch('memory'),
+        storage: config.storage.getStorage(),
         eventReduce: true,
         ignoreDuplicate: true
     });
@@ -492,11 +477,11 @@ export async function createMigrationCollection(
     );
 
     cols[colName].destroy();
-    db.destroy();
+    await db.destroy();
 
     const db2 = await createRxDatabase<{ human: RxCollection<schemaObjects.SimpleHumanV3DocumentType> }>({
         name,
-        storage: getRxStoragePouch('memory'),
+        storage: config.storage.getStorage(),
         eventReduce: true,
         ignoreDuplicate: true
     });
@@ -518,7 +503,7 @@ export async function createRelated(
 
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.RefHumanDocumentType> }>({
         name,
-        storage: getRxStoragePouch('memory'),
+        storage: config.storage.getStorage(),
         multiInstance: true,
         eventReduce: true,
         ignoreDuplicate: true
@@ -546,7 +531,7 @@ export async function createRelatedNested(
 
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.RefHumanNestedDocumentType> }>({
         name,
-        storage: getRxStoragePouch('memory'),
+        storage: config.storage.getStorage(),
         multiInstance: true,
         eventReduce: true,
         ignoreDuplicate: true
@@ -571,11 +556,9 @@ export async function createRelatedNested(
 export async function createIdAndAgeIndex(
     amount = 20
 ): Promise<RxCollection<schemaObjects.HumanWithIdAndAgeIndexDocumentType>> {
-    PouchDB.plugin(require('pouchdb-adapter-memory'));
-
     const db = await createRxDatabase<{ humana: RxCollection<schemaObjects.HumanWithIdAndAgeIndexDocumentType> }>({
         name: randomCouchString(10),
-        storage: getRxStoragePouch('memory'),
+        storage: config.storage.getStorage(),
         eventReduce: true,
         ignoreDuplicate: true
     });

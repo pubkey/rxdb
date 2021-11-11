@@ -63,6 +63,11 @@ Rename the paths in the `exports` field in the `package.json` so that users can 
 
 Atm we have duplicate code. Most of the graphql replication code can be switched out with the general replication plugin. Also we then could support bulk-push methods and replicate multiple changes from the local to the remote in the push replication.
 
+
+## Ensure deterministic sorting.
+The PouchDB RxStorage does not automatically add the primary key to a queries sort options.
+But this must be done to ensure deterministic sorting and to ensure the event-reduce algorithm works exactly the same on each storage. Adding the sort field creates errors because we cannot sort over non-indexes stuff. So maybe we should fix this at the index creation.
+
 # Maybe
 
 ## Use Proxy instead of getters/setter on RxDocument

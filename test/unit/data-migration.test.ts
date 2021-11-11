@@ -40,6 +40,18 @@ import {
 } from '../helper/schema-objects';
 
 config.parallel('data-migration.test.js', () => {
+
+    /**
+     * TODO these tests do not run with the lokijs storage
+     * because on closing the in-memory database, all data is lost.
+     * So our config.storage should include a method getPersistentStorage()
+     * which returns a storage that saves the data and still has it when opening
+     * the database again.
+     */
+    if (config.storage.name === 'lokijs') {
+        return;
+    }
+
     describe('.create() with migrationStrategies', () => {
         describe('positive', () => {
             it('ok to create with strategies', async () => {

@@ -43,6 +43,9 @@ describe('backup.test.ts', () => {
 
     describe('.backupSingleDocument()', () => {
         it('should backup a single document', async () => {
+            if (!config.storage.hasAttachments) {
+                return;
+            }
             const collection = await createAttachments(1);
             const firstDoc = await collection.findOne().exec(true);
             await firstDoc.putAttachment({
@@ -75,6 +78,9 @@ describe('backup.test.ts', () => {
     });
     describe('RxDatabase.backup() live=false', () => {
         it('should backup all docs with attachments', async () => {
+            if (!config.storage.hasAttachments) {
+                return;
+            }
             const collection = await createAttachments(1);
             const firstDoc = await collection.findOne().exec(true);
             await firstDoc.putAttachment({
@@ -105,6 +111,9 @@ describe('backup.test.ts', () => {
             collection.database.destroy();
         });
         it('should emit write events', async () => {
+            if (!config.storage.hasAttachments) {
+                return;
+            }
             const collection = await createAttachments(1);
             const directory = getBackupDir();
             const options = {
@@ -126,6 +135,9 @@ describe('backup.test.ts', () => {
     });
     describe('RxDatabase.backup() live=true', () => {
         it('should backup ongoing writes', async () => {
+            if (!config.storage.hasAttachments) {
+                return;
+            }
             const collection = await createAttachments(1);
             const firstDoc = await collection.findOne().exec(true);
             await firstDoc.putAttachment({

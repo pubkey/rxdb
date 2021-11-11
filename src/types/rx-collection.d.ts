@@ -1,6 +1,5 @@
 import type {
     RxJsonSchema,
-    PouchSettings,
     RxDocument,
     MigrationStrategies
 } from './';

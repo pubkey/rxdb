@@ -308,7 +308,7 @@ export function syncCouchDB(
 
     const syncFun = pouchReplicationFunction(this.storageInstance.internals.pouch, direction);
     if (query) {
-        useOptions.selector = (query as any).toJSON().selector;
+        useOptions.selector = query.getPreparedQuery().selector;
     }
 
     const repState: any = createRxCouchDBReplicationState(

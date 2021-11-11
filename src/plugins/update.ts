@@ -13,14 +13,13 @@ import type {
 export function update(this: RxDocument, updateObj: any) {
     const oldDocData = this._data;
     const newDocData = modifyjs(oldDocData, updateObj);
-
     return this._saveData(newDocData, oldDocData);
 }
 
 export function RxQueryUpdate(
     this: RxQuery,
     updateObj: any
-    ): Promise<any> {
+): Promise<any> {
     return this.exec()
         .then(docs => {
             if (!docs) {

@@ -7,7 +7,7 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
 
-import AsyncTestUtil from 'async-test-util';
+import AsyncTestUtil, { waitUntil } from 'async-test-util';
 import {
     createRxDatabase,
     RxDocument,
@@ -26,6 +26,7 @@ import {
     first,
     tap
 } from 'rxjs/operators';
+import { HumanDocumentType } from '../helper/schema-objects';
 
 config.parallel('reactive-query.test.js', () => {
     describe('positive', () => {
@@ -168,42 +169,67 @@ config.parallel('reactive-query.test.js', () => {
         });
     });
     describe('ISSUES', () => {
-        it('#31 do not fire on doc-change when result-doc not affected', async () => {
-            const c = await humansCollection.createAgeIndex(10);
-            // take only 9 of 10
-            const valuesAr = [];
-            const pw8 = AsyncTestUtil.waitResolveable(300);
-            const querySub = c.find()
-                .limit(9)
-                .sort('age')
-                .$
-                .pipe(
-                    tap(() => pw8.resolve()),
-                    filter(x => x !== null)
-                )
-                .subscribe(newV => valuesAr.push(newV));
+        // his test failed randomly, so we run it more often.
+        new Array(config.isFastMode() ? 3 : 10)
+            .fill(0).forEach(() => {
+                it('#31 do not fire on doc-change when result-doc not affected ' + config.storage.name, async () => {
+                    const docAmount = config.isFastMode() ? 2 : 10;
+                    const c = await humansCollection.createAgeIndex(0);
+                    const docsData = new Array(docAmount)
+                        .fill(0)
+                        .map((_x, idx) => {
+                            const docData = schemaObjects.human();
+                            docData.age = idx + 10;
+                            return docData;
+                        });
+                    await c.bulkInsert(docsData);
 
-            // get the 10th
-            const doc = await c.findOne()
-                .sort({
-                    age: 'desc'
-                })
-                .exec(true);
+                    // take only 9 of 10
+                    const valuesAr: HumanDocumentType[][] = [];
+                    const querySub = c
+                        .find({
+                            selector: {},
+                            limit: docAmount - 1,
+                            sort: [
+                                { age: 'asc' }
+                            ]
+                        }).$.pipe(
+                            filter(x => x !== null)
+                        )
+                        .subscribe(newV => valuesAr.push(newV.map(d => d.toJSON())));
+                    await waitUntil(() => valuesAr.length === 1);
 
-            await pw8.promise;
-            assert.strictEqual(valuesAr.length, 1);
+                    // get the last document that is not part of the previous query result
+                    const lastDoc = await c
+                        .findOne({
+                            selector: {},
+                            sort: [
+                                { age: 'desc' }
+                            ]
+                        })
+                        .exec(true);
 
-            // edit+save doc
-            const newPromiseWait = AsyncTestUtil.waitResolveable(300);
+                    // ensure the query is correct and the doc is really not in results.
+                    const isDocInPrevResults = !!valuesAr[0].find(d => d.passportId === lastDoc.primary);
+                    if (isDocInPrevResults) {
+                        console.log(JSON.stringify(docsData, null, 4));
+                        console.log(JSON.stringify(valuesAr[0], null, 4));
+                        console.log(JSON.stringify(lastDoc.toJSON(), null, 4));
+                        throw new Error('lastDoc (' + lastDoc.primary + ') was in previous results');
+                    }
 
-            await doc.atomicPatch({ firstName: 'foobar' });
-            await newPromiseWait.promise;
+                    // edit+save doc
+                    await promiseWait(20);
+                    await lastDoc.atomicPatch({ firstName: 'foobar' });
+                    await promiseWait(100);
 
-            await promiseWait(20);
-            assert.strictEqual(valuesAr.length, 1);
-            querySub.unsubscribe();
-            c.database.destroy();
-        });
+                    // query must not have emitted because an unrelated document got changed.
+                    assert.strictEqual(valuesAr.length, 1);
+                    querySub.unsubscribe();
+                    c.database.destroy();
+                });
+            });
+
         it('ISSUE: should have the document in DocCache when getting it from observe', async () => {
             const name = randomCouchString(10);
             const c = await humansCollection.createPrimary(1, name);

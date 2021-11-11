@@ -1,7 +1,5 @@
 # Backup
 
-**(beta)**
-
 With the backup plugin you can write the current database state and ongoing changes into folders on the filesystem.
 The files are written in plain json together with their attachments.
 

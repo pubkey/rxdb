@@ -7,6 +7,7 @@ import {
 } from './pouch-db';
 import {
     adapterObject,
+    now,
     PROMISE_RESOLVE_FALSE,
     randomCouchString
 } from '../../util';
@@ -45,7 +46,7 @@ export function checkAdapter(adapter: any): Promise<any> {
             _id,
             value: {
                 ok: true,
-                time: new Date().getTime()
+                time: now()
             }
         }))
         // ensure read works

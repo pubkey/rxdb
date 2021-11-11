@@ -5,6 +5,9 @@ const {
 import BroadcastChannel from 'broadcast-channel';
 import * as path from 'path';
 import parallel from 'mocha.parallel';
+import { RxStorage } from '../../src/types';
+import { getRxStoragePouch, addPouchPlugin } from '../../plugins/pouchdb';
+import { getRxStorageLoki } from '../../plugins/lokijs';
 
 function isFastMode(): boolean {
     try {
@@ -26,12 +29,65 @@ try {
 
 }
 
-const config = {
+declare type Storage = {
+    readonly name: string;
+    readonly getStorage: () => RxStorage<any, any>;
+    readonly hasCouchDBReplication: boolean;
+    readonly hasAttachments: boolean;
+}
+const config: {
+    platform: any;
+    parallel: typeof useParallel;
+    rootPath: string;
+    isFastMode: () => boolean;
+    storage: Storage;
+} = {
     platform: detect(),
     parallel: useParallel,
     rootPath: '',
-    isFastMode
+    isFastMode,
+    storage: {} as any
 };
+
+let DEFAULT_STORAGE: string;
+if (detect().name === 'node') {
+    DEFAULT_STORAGE = process.env.DEFAULT_STORAGE as any;
+} else {
+    /**
+     * Enforce pouchdb in browser tests.
+     * TODO also run lokijs storage there.
+     */
+    DEFAULT_STORAGE = 'pouchdb';
+}
+
+export function setDefaultStorage(storageKey: string) {
+    switch (storageKey) {
+        case 'pouchdb':
+            config.storage = {
+                name: 'pouchdb',
+                getStorage: () => {
+                    addPouchPlugin(require('pouchdb-adapter-memory'));
+                    return getRxStoragePouch('memory');
+                },
+                hasCouchDBReplication: true,
+                hasAttachments: true
+            };
+            break;
+        case 'lokijs':
+            config.storage = {
+                name: 'lokijs',
+                getStorage: () => getRxStorageLoki(),
+                hasCouchDBReplication: false,
+                hasAttachments: false
+            };
+            break;
+        default:
+            throw new Error('no DEFAULT_STORAGE set');
+    }
+}
+
+console.log('DEFAULT_STORAGE: ' + DEFAULT_STORAGE);
+setDefaultStorage(DEFAULT_STORAGE);
 
 if (config.platform.name === 'node') {
     process.setMaxListeners(100);

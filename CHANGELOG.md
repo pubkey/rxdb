@@ -6,6 +6,10 @@
 Bugfixes:
   - LokiJS: Ensure events emit exact the same data as with PouchDB.
   - LokiJS: Queries with limit and skip where broken.
+  - LokiJS: Fix all bugs and run the whole test suite with LokiJS Storage
+
+Other:
+  - Updated [event-reduce](https://github.com/pubkey/event-reduce) for more optimizations.
 
 ### 10.3.5 (8 November 2021)
 

@@ -17,11 +17,15 @@ import {
 } from '../../plugins/core';
 
 import {
-    getRxStoragePouch, OPEN_POUCHDB_STORAGE_INSTANCES
+    getRxStoragePouch
 } from '../../plugins/pouchdb';
 
 
 config.parallel('attachments.test.ts', () => {
+    if (!config.storage.hasAttachments) {
+        return;
+    }
+
     describe('.putAttachment()', () => {
         it('should insert one attachment', async () => {
             const c = await humansCollection.createAttachments(1);

@@ -1,4 +1,4 @@
-# RxStorage LokiJS (beta)
+# RxStorage LokiJS
 
 Instead of using PouchDB as underlying storage engine, you can also use [LokiJS](https://github.com/techfort/LokiJS).
 LokiJS has the main benefit of having a better performance. It can do this because it is an **in-memory** database that processes all data in memory and only saves to disc when the app is closed or an interval is reached.

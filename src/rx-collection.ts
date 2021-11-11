@@ -289,7 +289,7 @@ export class RxCollectionBase<
         limit?: number,
         noDecrypt: boolean = false
     ): Promise<any[]> {
-        const preparedQuery = rxQuery.toJSON();
+        const preparedQuery = rxQuery.getPreparedQuery();
         if (limit) {
             preparedQuery['limit'] = limit;
         }
@@ -523,7 +523,7 @@ export class RxCollectionBase<
      */
     atomicUpsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
         const useJson = fillObjectDataBeforeInsert(this as any, json);
-        const primary = (useJson as any)[this.schema.primaryPath];
+        const primary = useJson[this.schema.primaryPath];
         if (!primary) {
             throw newRxError('COL4', {
                 data: json
@@ -550,8 +550,9 @@ export class RxCollectionBase<
                         .then(() => nextTick())
                         .then(() => nextTick())
                         .then(() => wasInserted.doc);
-                } else
+                } else {
                     return wasInserted.doc;
+                }
             });
         this._atomicUpsertQueues.set(primary, queue);
         return queue;
@@ -914,7 +915,12 @@ function _atomicUpsertEnsureRxDocumentExists(
     rxCollection: RxCollection,
     primary: string,
     json: any
-): Promise<{ doc: RxDocument, inserted: boolean }> {
+): Promise<
+    {
+        doc: RxDocument,
+        inserted: boolean
+    }
+> {
     /**
      * Optimisation shortcut,
      * first try to find the document in the doc-cache

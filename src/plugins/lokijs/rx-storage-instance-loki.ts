@@ -1,5 +1,5 @@
 import type {
-    SortComparator,
+    DeterministicSortComparator,
     QueryMatcher,
     ChangeEvent
 } from 'event-reduce-js';
@@ -43,7 +43,8 @@ import type {
     LokiRemoteRequestBroadcastMessage,
     LokiRemoteResponseBroadcastMessage,
     LokiLocalState,
-    LokiDatabaseSettings
+    LokiDatabaseSettings,
+    RxDocumentWriteData
 } from '../../types';
 import type {
     CompareFunction
@@ -277,13 +278,13 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         return mutateableQuery;
     }
 
-    getSortComparator(query: MangoQuery<RxDocType>): SortComparator<RxDocType> {
+    getSortComparator(query: MangoQuery<RxDocType>): DeterministicSortComparator<RxDocType> {
         // TODO if no sort is given, use sort by primary.
         // This should be done inside of RxDB and not in the storage implementations.
         const sortOptions: MangoQuerySortPart<RxDocType>[] = query.sort ? (query.sort as any) : [{
             [this.primaryPath]: 'asc'
         }];
-        const fun: CompareFunction<RxDocType> = (a: RxDocType, b: RxDocType) => {
+        const fun: DeterministicSortComparator<RxDocType> = (a: RxDocType, b: RxDocType) => {
             let compareResult: number = 0; // 1 | -1
             sortOptions.find(sortPart => {
                 const fieldName: string = Object.keys(sortPart)[0];
@@ -328,10 +329,13 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
      * Instead we create a fake Resultset and apply the prototype method Resultset.prototype.find(),
      * same with Collection.
      */
-    getQueryMatcher(query: MangoQuery<RxDocType>): QueryMatcher<RxDocType> {
-        const fun: QueryMatcher<RxDocType> = (doc: RxDocType) => {
+    getQueryMatcher(query: MangoQuery<RxDocType>): QueryMatcher<RxDocumentWriteData<RxDocType>> {
+        const fun: QueryMatcher<RxDocumentWriteData<RxDocType>> = (doc: RxDocumentWriteData<RxDocType>) => {
+            const docWithResetDeleted = flatClone(doc);
+            docWithResetDeleted._deleted = !!docWithResetDeleted._deleted;
+
             const fakeCollection = {
-                data: [doc],
+                data: [docWithResetDeleted],
                 binaryIndices: {}
             };
             Object.setPrototypeOf(fakeCollection, (lokijs as any).Collection.prototype);
@@ -340,6 +344,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             };
             Object.setPrototypeOf(fakeResultSet, (lokijs as any).Resultset.prototype);
             fakeResultSet.find(query.selector, true);
+
             const ret = fakeResultSet.filteredrows.length > 0;
             return ret;
         }
@@ -373,8 +378,8 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             error: new Map()
         };
 
-        const startTime = now();
         documentWrites.forEach(writeRow => {
+            const startTime = now();
             const id: string = writeRow.document[this.primaryPath] as any;
             const documentInDb = collection.by(this.primaryPath, id);
 
@@ -426,8 +431,14 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 }
 
                 if (
-                    !writeRow.previous ||
-                    revInDb !== writeRow.previous._rev
+                    (
+                        !writeRow.previous &&
+                        !documentInDb._deleted
+                    ) ||
+                    (
+                        !!writeRow.previous &&
+                        revInDb !== writeRow.previous._rev
+                    )
                 ) {
                     // conflict error
                     const err: RxStorageBulkWriteError<RxDocType> = {
@@ -440,13 +451,14 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 } else {
                     const newRevHeight = getHeightOfRevision(revInDb) + 1;
                     const newRevision = newRevHeight + '-' + createRevision(writeRow.document, true);
-
-                    const writeDoc = Object.assign(
+                    const isDeleted = !!writeRow.document._deleted;
+                    const writeDoc: any = Object.assign(
                         {},
-                        documentInDb,
                         writeRow.document,
                         {
+                            $loki: documentInDb.$loki,
                             _rev: newRevision,
+                            _deleted: isDeleted,
                             // TODO attachments are currently not working with lokijs
                             _attachments: {}
                         }
@@ -454,23 +466,22 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                     collection.update(writeDoc);
                     this.addChangeDocumentMeta(id);
 
-
                     let change: ChangeEvent<RxDocumentData<RxDocType>> | null = null;
-                    if (writeRow.previous._deleted && !writeDoc._deleted) {
+                    if (writeRow.previous && writeRow.previous._deleted && !writeDoc._deleted) {
                         change = {
                             id,
                             operation: 'INSERT',
                             previous: null,
                             doc: stripLokiKey(writeDoc)
                         };
-                    } else if (!writeRow.previous._deleted && !writeDoc._deleted) {
+                    } else if (writeRow.previous && !writeRow.previous._deleted && !writeDoc._deleted) {
                         change = {
                             id,
                             operation: 'UPDATE',
                             previous: writeRow.previous,
                             doc: stripLokiKey(writeDoc)
                         };
-                    } else if (!writeRow.previous._deleted && writeDoc._deleted) {
+                    } else if (writeRow.previous && !writeRow.previous._deleted && writeDoc._deleted) {
                         /**
                          * On delete, we send the 'new' rev in the previous property,
                          * to have the equal behavior as pouchdb.
@@ -520,10 +531,10 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
          * to ensure all RxStorage implementations behave equal.
          */
         await promiseWait(0);
-        const startTime = now();
         const collection = localState.collection;
 
         documents.forEach(docData => {
+            const startTime = now();
             const id: string = docData[this.primaryPath] as any;
             const documentInDb = collection.by(this.primaryPath, id);
             if (!documentInDb) {
@@ -624,6 +635,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         if (!localState) {
             return this.requestRemoteInstance('query', [preparedQuery]);
         }
+
         let query = localState.collection
             .chain()
             .find(preparedQuery.selector);
@@ -643,6 +655,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         if (preparedQuery.limit) {
             query = query.limit(preparedQuery.limit);
         }
+
         const foundDocuments = query.data().map(lokiDoc => stripLokiKey(lokiDoc));
         return {
             documents: foundDocuments
@@ -674,7 +687,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             })
             .simplesort(
                 'sequence',
-                !desc
+                desc
             );
         if (options.limit) {
             query = query.limit(options.limit);
@@ -686,7 +699,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 sequence: result.sequence
             }));
 
-        const useForLastSequence = desc ? lastOfArray(changedDocuments) : changedDocuments[0];
+        const useForLastSequence = !desc ? lastOfArray(changedDocuments) : changedDocuments[0];
 
         const ret: {
             changedDocuments: RxStorageChangedDocumentMeta[];

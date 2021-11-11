@@ -1,5 +1,5 @@
 import type {
-    SortComparator,
+    DeterministicSortComparator,
     QueryMatcher
 } from 'event-reduce-js';
 import type {
@@ -8,6 +8,7 @@ import type {
     ChangeStreamOnceOptions,
     PreparedQuery,
     RxDocumentData,
+    RxDocumentWriteData,
     RxKeyObjectStorageInstanceCreationParams,
     RxLocalDocumentData,
     RxLocalStorageBulkWriteResponse,
@@ -192,7 +193,7 @@ export interface RxStorageInstance<
      */
     getSortComparator(
         query: MangoQuery<DocumentData>
-    ): SortComparator<DocumentData>;
+    ): DeterministicSortComparator<DocumentData>;
 
     /**
      * Returns a function
@@ -202,7 +203,7 @@ export interface RxStorageInstance<
      */
     getQueryMatcher(
         query: MangoQuery<DocumentData>
-    ): QueryMatcher<DocumentData>;
+    ): QueryMatcher<RxDocumentWriteData<DocumentData>>;
 
     /**
      * Writes multiple non-local documents to the storage instance.

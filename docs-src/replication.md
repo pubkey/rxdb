@@ -1,4 +1,4 @@
-# Replication primitives (beta)
+# Replication primitives
 
 With the replication primitives plugin, you can build a realtime replication based on any transport layer like **REST**, **WebRTC** or **websockets**.
 

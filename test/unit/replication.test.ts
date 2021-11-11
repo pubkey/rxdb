@@ -67,6 +67,10 @@ describe('replication.test.js', () => {
                 c.database.destroy();
             });
             it('should be true for pulled revision', async () => {
+                if (config.storage.name !== 'pouchdb') {
+                    return;
+                }
+
                 const c = await humansCollection.createHumanWithTimestamp(0);
                 let toPouch: any = schemaObjects.humanWithTimestamp();
                 toPouch._rev = '1-' + createRevisionForPulledDocument(
@@ -277,6 +281,9 @@ describe('replication.test.js', () => {
                 c.database.destroy();
             });
             it('should have filtered out replicated docs from the endpoint', async () => {
+                if (config.storage.name !== 'pouchdb') {
+                    return;
+                }
                 const amount = 5;
                 const c = await humansCollection.createHumanWithTimestamp(amount);
                 let toPouch: any = schemaObjects.humanWithTimestamp();

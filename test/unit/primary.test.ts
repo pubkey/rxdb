@@ -20,7 +20,8 @@ import {
     randomCouchString,
     promiseWait,
     isRxDocument,
-    RxCollection
+    RxCollection,
+    getFromMapOrThrow
 } from '../../plugins/core';
 import {
     getRxStoragePouch
@@ -101,11 +102,9 @@ config.parallel('primary.test.js', () => {
                     const c = await humansCollection.createPrimary(0);
                     const obj = schemaObjects.simpleHuman();
                     await c.insert(obj);
-                    const all = await c.storageInstance.internals.pouch.allDocs({
-                        include_docs: true
-                    });
-                    const first = all.rows[0].doc;
-                    assert.strictEqual(obj.passportId, first._id);
+                    const docInStorage = await c.storageInstance.findDocumentsById([obj.passportId], false);
+                    const first = getFromMapOrThrow(docInStorage, obj.passportId);
+                    assert.strictEqual(obj.passportId, first.passportId);
                     c.database.destroy();
                 });
             });
@@ -280,10 +279,19 @@ config.parallel('primary.test.js', () => {
                     const name = randomCouchString(10);
                     const c1 = await humansCollection.createPrimary(0, name);
                     const c2 = await humansCollection.createPrimary(0, name);
-                    let docs: any[];
-                    c2.find().$.subscribe(newDocs => docs = newDocs);
+                    let docs: any[] = [];
+                    c2.find().$.subscribe(newDocs => {
+                        docs = newDocs;
+                    });
+                    await promiseWait(50);
                     await c1.insert(schemaObjects.simpleHuman());
-                    await AsyncTestUtil.waitUntil(() => docs && docs.length === 1);
+                    await promiseWait(1000);
+                    await AsyncTestUtil.waitUntil(() => {
+                        if (docs.length > 1) {
+                            throw new Error('got too much documents');
+                        }
+                        return docs.length === 1
+                    });
 
                     c1.database.destroy();
                     c2.database.destroy();
