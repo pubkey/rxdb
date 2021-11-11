@@ -177,7 +177,11 @@ config.parallel('reactive-query.test.js', () => {
                     const c = await humansCollection.createAgeIndex(0);
                     const docsData = new Array(docAmount)
                         .fill(0)
-                        .map(() => schemaObjects.human());
+                        .map((_x, idx) => {
+                            const docData = schemaObjects.human();
+                            docData.age = idx + 10;
+                            return docData;
+                        });
                     await c.bulkInsert(docsData);
 
                     // take only 9 of 10
@@ -208,7 +212,6 @@ config.parallel('reactive-query.test.js', () => {
                     // ensure the query is correct and the doc is really not in results.
                     const isDocInPrevResults = !!valuesAr[0].find(d => d.passportId === lastDoc.primary);
                     if (isDocInPrevResults) {
-                        const allDocs = await c.find().exec();
                         console.log(JSON.stringify(docsData, null, 4));
                         console.log(JSON.stringify(valuesAr[0], null, 4));
                         console.log(JSON.stringify(lastDoc.toJSON(), null, 4));
