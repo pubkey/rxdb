@@ -602,7 +602,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 console.dir(queryFirst);
                 console.dir(queryLast);
 
-                process.exit();
+                // process.exit();
 
                 storageInstance.close();
             });
