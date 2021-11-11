@@ -35,7 +35,10 @@ describe('event-reduce.test.js', () => {
         });
         return collections[collectionName];
     }
-    function ensureResultsEqual(res1: RxDocument[], res2: RxDocument[]) {
+    function ensureResultsEqual<RxDocType>(
+        res1: RxDocument<RxDocType>[],
+        res2: RxDocument<RxDocType>[]
+    ) {
         assert.deepStrictEqual(
             res1.map(d => d.primary),
             res2.map(d => d.primary)

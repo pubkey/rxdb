@@ -161,7 +161,7 @@ export function checkPrimaryKey(
     jsonSchema: RxJsonSchema<any>
 ) {
     if (!jsonSchema.primaryKey) {
-        throw newRxError('SC30', jsonSchema);
+        throw newRxError('SC30', { schema: jsonSchema });
     }
 
     function validatePrimarySchemaPart(
