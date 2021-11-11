@@ -140,7 +140,9 @@ export function validateFieldsDeep(jsonSchema) {
 }
 export function checkPrimaryKey(jsonSchema) {
   if (!jsonSchema.primaryKey) {
-    throw newRxError('SC30', jsonSchema);
+    throw newRxError('SC30', {
+      schema: jsonSchema
+    });
   }
 
   function validatePrimarySchemaPart(schemaPart) {

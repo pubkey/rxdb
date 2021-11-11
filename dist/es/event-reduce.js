@@ -14,7 +14,7 @@ export var RXQUERY_QUERY_PARAMS_CACHE = new WeakMap();
 export function getQueryParams(rxQuery) {
   if (!RXQUERY_QUERY_PARAMS_CACHE.has(rxQuery)) {
     var collection = rxQuery.collection;
-    var queryJson = rxQuery.toJSON();
+    var queryJson = rxQuery.getPreparedQuery();
     var primaryKey = collection.schema.primaryPath;
     /**
      * Create a custom sort comparator
@@ -55,7 +55,7 @@ export function getQueryParams(rxQuery) {
       primaryKey: rxQuery.collection.schema.primaryPath,
       skip: queryJson.skip,
       limit: queryJson.limit,
-      sortFields: getSortFieldsOfQuery(primaryKey, queryJson),
+      sortFields: getSortFieldsOfQuery(primaryKey, rxQuery.mangoQuery),
       sortComparator: useSortComparator,
       queryMatcher: useQueryMatcher
     };
@@ -80,12 +80,21 @@ export function calculateNewResults(rxQuery, rxChangeEvents) {
   var changed = false;
   var foundNonOptimizeable = rxChangeEvents.find(function (cE) {
     var eventReduceEvent = rxChangeEventToEventReduceChangeEvent(cE);
-    var actionName = calculateActionName({
+    var stateResolveFunctionInput = {
       queryParams: queryParams,
       changeEvent: eventReduceEvent,
       previousResults: previousResults,
       keyDocumentMap: previousResultsMap
-    });
+    };
+    /*
+    // use this to check if all states are calculated correctly
+    const stateSet = getStateSet(stateResolveFunctionInput);
+    console.dir(stateResolveFunctionInput);
+    console.log('state set:');
+    logStateSet(stateSet);
+    */
+
+    var actionName = calculateActionName(stateResolveFunctionInput);
 
     if (actionName === 'runFullQueryAgain') {
       return true;

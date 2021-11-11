@@ -159,7 +159,9 @@ function validateFieldsDeep(jsonSchema) {
 
 function checkPrimaryKey(jsonSchema) {
   if (!jsonSchema.primaryKey) {
-    throw (0, _rxError.newRxError)('SC30', jsonSchema);
+    throw (0, _rxError.newRxError)('SC30', {
+      schema: jsonSchema
+    });
   }
 
   function validatePrimarySchemaPart(schemaPart) {

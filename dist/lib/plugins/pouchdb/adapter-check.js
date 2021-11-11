@@ -46,7 +46,7 @@ function checkAdapter(adapter) {
       _id: _id,
       value: {
         ok: true,
-        time: new Date().getTime()
+        time: (0, _util.now)()
       }
     });
   }) // ensure read works

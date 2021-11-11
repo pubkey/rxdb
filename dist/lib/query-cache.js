@@ -139,7 +139,7 @@ function triggerCacheReplacement(rxCollection) {
 
   (0, _util.nextTick)() // wait at least one tick
   .then(function () {
-    return (0, _util.requestIdlePromise)();
+    return (0, _util.requestIdlePromise)(200);
   }) // and then wait for the CPU to be idle
   .then(function () {
     if (!rxCollection.destroyed) {

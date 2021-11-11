@@ -280,7 +280,7 @@ function syncCouchDB(_ref2) {
   var syncFun = (0, _pouchdb.pouchReplicationFunction)(this.storageInstance.internals.pouch, direction);
 
   if (query) {
-    useOptions.selector = query.toJSON().selector;
+    useOptions.selector = query.getPreparedQuery().selector;
   }
 
   var repState = createRxCouchDBReplicationState(this, {

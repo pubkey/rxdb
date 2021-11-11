@@ -45,6 +45,7 @@ export interface RxErrorParameters {
     readonly missingCollections?: string[];
     readonly primaryPath?: string;
     readonly primary?: string;
+    readonly primaryKey?: string;
     readonly have?: any;
     readonly should?: any;
     readonly name?: string;

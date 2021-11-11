@@ -301,16 +301,23 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
   _proto.prepareQuery = function prepareQuery(mutateableQuery) {
     var _this2 = this;
 
-    mutateableQuery.selector = {
-      $and: [{
+    if (Object.keys(mutateableQuery.selector).length > 0) {
+      mutateableQuery.selector = {
+        $and: [{
+          _deleted: false
+        }, mutateableQuery.selector]
+      };
+    } else {
+      mutateableQuery.selector = {
         _deleted: false
-      }, mutateableQuery.selector]
-    };
+      };
+    }
     /**
      * To ensure a deterministic sorting,
      * we have to ensure the primary key is always part
      * of the sort query.
      */
+
 
     if (!mutateableQuery.sort) {
       var _ref3;
@@ -369,7 +376,9 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
       if (!compareResult) {
         throw (0, _rxError.newRxError)('SNH', {
           args: {
-            query: query
+            query: query,
+            a: a,
+            b: b
           }
         });
       }
@@ -393,8 +402,10 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
 
   _proto.getQueryMatcher = function getQueryMatcher(query) {
     var fun = function fun(doc) {
+      var docWithResetDeleted = (0, _util.flatClone)(doc);
+      docWithResetDeleted._deleted = !!docWithResetDeleted._deleted;
       var fakeCollection = {
-        data: [doc],
+        data: [docWithResetDeleted],
         binaryIndices: {}
       };
       Object.setPrototypeOf(fakeCollection, _lokijs["default"].Collection.prototype);
@@ -414,7 +425,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
     var _bulkWrite = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee5(documentWrites) {
       var _this3 = this;
 
-      var localState, collection, ret, startTime;
+      var localState, collection, ret;
       return _regenerator["default"].wrap(function _callee5$(_context5) {
         while (1) {
           switch (_context5.prev = _context5.next) {
@@ -454,8 +465,8 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
                 success: new Map(),
                 error: new Map()
               };
-              startTime = (0, _util.now)();
               documentWrites.forEach(function (writeRow) {
+                var startTime = (0, _util.now)();
                 var id = writeRow.document[_this3.primaryPath];
                 var documentInDb = collection.by(_this3.primaryPath, id);
 
@@ -503,7 +514,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
                     writeRow.previous = documentInDb;
                   }
 
-                  if (!writeRow.previous || revInDb !== writeRow.previous._rev) {
+                  if (!writeRow.previous && !documentInDb._deleted || !!writeRow.previous && revInDb !== writeRow.previous._rev) {
                     // conflict error
                     var err = {
                       isError: true,
@@ -517,8 +528,12 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
 
                     var _newRevision = newRevHeight + '-' + (0, _util.createRevision)(writeRow.document, true);
 
-                    var _writeDoc = Object.assign({}, documentInDb, writeRow.document, {
+                    var isDeleted = !!writeRow.document._deleted;
+
+                    var _writeDoc = Object.assign({}, writeRow.document, {
+                      $loki: documentInDb.$loki,
                       _rev: _newRevision,
+                      _deleted: isDeleted,
                       // TODO attachments are currently not working with lokijs
                       _attachments: {}
                     });
@@ -529,21 +544,21 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
 
                     var change = null;
 
-                    if (writeRow.previous._deleted && !_writeDoc._deleted) {
+                    if (writeRow.previous && writeRow.previous._deleted && !_writeDoc._deleted) {
                       change = {
                         id: id,
                         operation: 'INSERT',
                         previous: null,
                         doc: (0, _lokijsHelper.stripLokiKey)(_writeDoc)
                       };
-                    } else if (!writeRow.previous._deleted && !_writeDoc._deleted) {
+                    } else if (writeRow.previous && !writeRow.previous._deleted && !_writeDoc._deleted) {
                       change = {
                         id: id,
                         operation: 'UPDATE',
                         previous: writeRow.previous,
                         doc: (0, _lokijsHelper.stripLokiKey)(_writeDoc)
                       };
-                    } else if (!writeRow.previous._deleted && _writeDoc._deleted) {
+                    } else if (writeRow.previous && !writeRow.previous._deleted && _writeDoc._deleted) {
                       /**
                        * On delete, we send the 'new' rev in the previous property,
                        * to have the equal behavior as pouchdb.
@@ -580,7 +595,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
               });
               return _context5.abrupt("return", ret);
 
-            case 14:
+            case 13:
             case "end":
               return _context5.stop();
           }
@@ -599,7 +614,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
     var _bulkAddRevisions = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee6(documents) {
       var _this4 = this;
 
-      var localState, startTime, collection;
+      var localState, collection;
       return _regenerator["default"].wrap(function _callee6$(_context6) {
         while (1) {
           switch (_context6.prev = _context6.next) {
@@ -634,9 +649,9 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
               return (0, _util.promiseWait)(0);
 
             case 9:
-              startTime = (0, _util.now)();
               collection = localState.collection;
               documents.forEach(function (docData) {
+                var startTime = (0, _util.now)();
                 var id = docData[_this4.primaryPath];
                 var documentInDb = collection.by(_this4.primaryPath, id);
 
@@ -690,14 +705,14 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
                       change = {
                         id: id,
                         operation: 'UPDATE',
-                        previous: documentInDb,
+                        previous: (0, _lokijsHelper.stripLokiKey)(documentInDb),
                         doc: docData
                       };
                     } else if (!documentInDb._deleted && docData._deleted) {
                       change = {
                         id: id,
                         operation: 'DELETE',
-                        previous: documentInDb,
+                        previous: (0, _lokijsHelper.stripLokiKey)(documentInDb),
                         doc: null
                       };
                     } else if (documentInDb._deleted && docData._deleted) {
@@ -719,7 +734,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
                 }
               });
 
-            case 12:
+            case 11:
             case "end":
               return _context6.stop();
           }
@@ -809,13 +824,18 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
               if (preparedQuery.sort) {
                 query = query.sort(this.getSortComparator(preparedQuery));
               }
+              /**
+               * Offset must be used before limit in LokiJS
+               * @link https://github.com/techfort/LokiJS/issues/570
+               */
 
-              if (preparedQuery.limit) {
-                query = query.limit(preparedQuery.limit);
-              }
 
               if (preparedQuery.skip) {
                 query = query.offset(preparedQuery.skip);
+              }
+
+              if (preparedQuery.limit) {
+                query = query.limit(preparedQuery.limit);
               }
 
               foundDocuments = query.data().map(function (lokiDoc) {
@@ -871,7 +891,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
               operator = options.direction === 'after' ? '$gt' : '$lt';
               query = localState.changesCollection.chain().find({
                 sequence: (_sequence = {}, _sequence[operator] = options.sinceSequence, _sequence)
-              }).simplesort('sequence', !desc);
+              }).simplesort('sequence', desc);
 
               if (options.limit) {
                 query = query.limit(options.limit);
@@ -883,7 +903,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
                   sequence: result.sequence
                 };
               });
-              useForLastSequence = desc ? (0, _util.lastOfArray)(changedDocuments) : changedDocuments[0];
+              useForLastSequence = !desc ? (0, _util.lastOfArray)(changedDocuments) : changedDocuments[0];
               ret = {
                 changedDocuments: changedDocuments,
                 lastSequence: useForLastSequence ? useForLastSequence.sequence : options.sinceSequence

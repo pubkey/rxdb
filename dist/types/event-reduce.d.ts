@@ -9,7 +9,7 @@ export declare type EventReduceResultPos<RxDocumentType> = {
     newResults: RxDocumentType[];
 };
 export declare type EventReduceResult<RxDocumentType> = EventReduceResultNeg | EventReduceResultPos<RxDocumentType>;
-export declare function getSortFieldsOfQuery<RxDocType>(primaryKey: keyof RxDocType, query: MangoQuery<RxDocType>): string[];
+export declare function getSortFieldsOfQuery<RxDocType>(primaryKey: keyof RxDocType, query: MangoQuery<RxDocType>): (string | keyof RxDocType)[];
 export declare const RXQUERY_QUERY_PARAMS_CACHE: WeakMap<RxQuery, QueryParams<any>>;
 export declare function getQueryParams<RxDocType>(rxQuery: RxQuery<RxDocType>): QueryParams<RxDocType>;
 export declare function calculateNewResults<RxDocumentType>(rxQuery: RxQuery<RxDocumentType>, rxChangeEvents: RxChangeEvent<RxDocumentType>[]): EventReduceResult<RxDocumentType>;

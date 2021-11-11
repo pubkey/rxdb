@@ -1,6 +1,6 @@
 import { BehaviorSubject } from 'rxjs';
-import type { RxCollection, RxDocument, RxQueryOP, RxQuery, MangoQuery, MangoQuerySortPart, MangoQuerySelector, PreparedQuery } from './types';
-import type { QueryMatcher } from 'event-reduce-js';
+import type { RxCollection, RxDocument, RxQueryOP, RxQuery, MangoQuery, MangoQuerySortPart, MangoQuerySelector, PreparedQuery, RxDocumentWriteData } from './types';
+import { QueryMatcher } from 'event-reduce-js';
 export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocument<RxDocumentType[]> | RxDocument<RxDocumentType>> {
     op: RxQueryOP;
     mangoQuery: Readonly<MangoQuery>;
@@ -57,7 +57,7 @@ export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumen
      * cached call to get the queryMatcher
      * @overwrites itself with the actual value
      */
-    get queryMatcher(): QueryMatcher<RxDocumentType>;
+    get queryMatcher(): QueryMatcher<RxDocumentWriteData<RxDocumentType>>;
     /**
      * returns a string that is used for equal-comparisons
      * @overwrites itself with the actual value
@@ -66,11 +66,9 @@ export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumen
     /**
      * returns the prepared query
      * which can be send to the storage instance to query for documents.
-     * @overwrites itself with the actual value
-     * TODO rename this function, toJSON is missleading
-     * because we do not return the plain mango query object.
+     * @overwrites itself with the actual value.
      */
-    toJSON(): PreparedQuery<RxDocumentType>;
+    getPreparedQuery(): PreparedQuery<RxDocumentType>;
     /**
      * returns true if the document matches the query,
      * does not use the 'skip' and 'limit'

@@ -9,14 +9,15 @@ var _rxError = require("../../rx-error");
 
 var _util = require("../../util");
 
-var validCouchDBStringRegexStr = '^[a-z][_$a-z0-9]*$';
+var validCouchDBStringRegexStr = '^[a-z][_$a-z0-9\\-]*$';
 var validCouchDBStringRegex = new RegExp(validCouchDBStringRegexStr);
 /**
  * Validates that a given string is ok to be used with couchdb-collection-names.
- * We only allow these strings as database- or collectionnames because it ensures
+ * We only allow these strings as database- or collection names because it ensures
  * that you later do not get in troubble when you want to use the database together witch couchdb.
  *
- * @link https://wiki.apache.org/couchdb/HTTP_database_API
+ * @link https://docs.couchdb.org/en/stable/api/database/common.html
+ * @link https://neighbourhood.ie/blog/2020/10/13/everything-you-need-to-know-about-couchdb-database-names/
  * @throws  {Error}
  */
 

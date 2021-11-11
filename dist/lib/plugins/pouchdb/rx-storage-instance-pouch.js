@@ -108,7 +108,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
                             return _context.abrupt("return");
 
                           case 13:
-                            if (!(!previousDoc && !writeDoc._deleted)) {
+                            if (!((!previousDoc || previousDoc._deleted) && !writeDoc._deleted)) {
                               _context.next = 17;
                               break;
                             }
@@ -266,7 +266,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
                             newDoc._attachments = _context3.sent;
                             newDoc._rev = resultRow.rev;
 
-                            if (writeRow.previous) {
+                            if (!(!writeRow.previous || writeRow.previous._deleted)) {
                               _context3.next = 13;
                               break;
                             }
@@ -420,30 +420,50 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
   }();
 
   _proto.getSortComparator = function getSortComparator(query) {
-    var _ref5;
+    var _ref5,
+        _this2 = this;
 
-    var primaryKey = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(this.schema.primaryKey);
-    var sortOptions = query.sort ? query.sort : [(_ref5 = {}, _ref5[this.primaryPath] = 'asc', _ref5)];
-    var massagedSelector = (0, _pouchdbSelectorCore.massageSelector)(query.selector);
+    var primaryPath = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(this.schema.primaryKey);
+    var sortOptions = query.sort ? query.sort : [(_ref5 = {}, _ref5[primaryPath] = 'asc', _ref5)];
     var inMemoryFields = Object.keys(query.selector);
 
     var fun = function fun(a, b) {
-      // TODO use createFieldSorter
+      /**
+       * Sorting on two documents with the same primary is not allowed
+       * because it might end up in a non-deterministic result.
+       */
+      if (a[primaryPath] === b[primaryPath]) {
+        throw (0, _rxError.newRxError)('SNH', {
+          args: {
+            a: a,
+            b: b
+          },
+          primaryPath: primaryPath
+        });
+      } // TODO use createFieldSorter
       // TODO make a performance test
+
+
       var rows = [a, b].map(function (doc) {
-        // swap primary to _id
-        var cloned = (0, _util.flatClone)(doc);
-        var primaryValue = cloned[primaryKey];
-        delete cloned[primaryKey];
-        cloned._id = primaryValue;
         return {
-          doc: cloned
+          doc: (0, _pouchdbHelper.pouchSwapPrimaryToId)(_this2.primaryPath, doc)
         };
       });
       var sortedRows = (0, _pouchdbSelectorCore.filterInMemoryFields)(rows, {
-        selector: massagedSelector,
+        selector: {},
         sort: sortOptions
       }, inMemoryFields);
+
+      if (sortedRows.length !== 2) {
+        throw (0, _rxError.newRxError)('SNH', {
+          query: query,
+          primaryPath: _this2.primaryPath,
+          args: {
+            rows: rows,
+            sortedRows: sortedRows
+          }
+        });
+      }
 
       if (sortedRows[0].doc._id === rows[0].doc._id) {
         return -1;
@@ -460,12 +480,12 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
   ;
 
   _proto.getQueryMatcher = function getQueryMatcher(query) {
-    var _this2 = this;
+    var _this3 = this;
 
     var massagedSelector = (0, _pouchdbSelectorCore.massageSelector)(query.selector);
 
     var fun = function fun(doc) {
-      var cloned = (0, _pouchdbHelper.pouchSwapPrimaryToId)(_this2.primaryPath, doc);
+      var cloned = (0, _pouchdbHelper.pouchSwapPrimaryToId)(_this3.primaryPath, doc);
       var row = {
         doc: cloned
       };
@@ -486,7 +506,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
   ;
 
   _proto.prepareQuery = function prepareQuery(mutateableQuery) {
-    var _this3 = this;
+    var _this4 = this;
 
     var primaryKey = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(this.schema.primaryKey);
     var query = mutateableQuery;
@@ -505,10 +525,11 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
         }) || false;
 
         if (!keyUsed) {
-          var schemaObj = (0, _rxSchemaHelper.getSchemaByObjectPath)(_this3.schema, key);
+          var schemaObj = (0, _rxSchemaHelper.getSchemaByObjectPath)(_this4.schema, key);
 
           if (!schemaObj) {
             throw (0, _rxError.newRxError)('QU5', {
+              query: query,
               key: key
             });
           }
@@ -578,12 +599,34 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
       }
     });
     query.selector = (0, _pouchdbHelper.primarySwapPouchDbQuerySelector)(query.selector, this.primaryPath);
+    /**
+     * To ensure a deterministic sorting,
+     * we have to ensure the primary key is always part
+     * of the sort query.
+     * TODO This should be done but will not work with pouchdb
+     * because it will throw
+     * 'Cannot sort on field(s) "key" when using the default index'
+     * So we likely have to modify the indexes so that this works. 
+     */
+
+    /*
+    if (!mutateableQuery.sort) {
+        mutateableQuery.sort = [{ [this.primaryPath]: 'asc' }] as any;
+    } else {
+        const isPrimaryInSort = mutateableQuery.sort
+            .find(p => firstPropertyNameOfObject(p) === this.primaryPath);
+        if (!isPrimaryInSort) {
+            mutateableQuery.sort.push({ [this.primaryPath]: 'asc' } as any);
+        }
+    }
+    */
+
     return query;
   };
 
   _proto.bulkAddRevisions = /*#__PURE__*/function () {
     var _bulkAddRevisions = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee6(documents) {
-      var _this4 = this;
+      var _this5 = this;
 
       var writeData;
       return _regenerator["default"].wrap(function _callee6$(_context6) {
@@ -603,7 +646,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
             case 2:
               writeData = documents.map(function (doc) {
-                return (0, _pouchdbHelper.rxDocumentDataToPouchDocumentData)(_this4.primaryPath, doc);
+                return (0, _pouchdbHelper.rxDocumentDataToPouchDocumentData)(_this5.primaryPath, doc);
               }); // we do not need the response here because pouchdb returns an empty array on new_edits: false
 
               _context6.next = 5;
@@ -629,7 +672,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
   _proto.bulkWrite = /*#__PURE__*/function () {
     var _bulkWrite = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee8(documentWrites) {
-      var _this5 = this;
+      var _this6 = this;
 
       var writeRowById, insertDocs, pouchResult, ret;
       return _regenerator["default"].wrap(function _callee8$(_context8) {
@@ -650,9 +693,9 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
             case 2:
               writeRowById = new Map();
               insertDocs = documentWrites.map(function (writeData) {
-                var primary = writeData.document[_this5.primaryPath];
+                var primary = writeData.document[_this6.primaryPath];
                 writeRowById.set(primary, writeData);
-                var storeDocumentData = (0, _pouchdbHelper.rxDocumentDataToPouchDocumentData)(_this5.primaryPath, writeData.document); // if previous document exists, we have to send the previous revision to pouchdb.
+                var storeDocumentData = (0, _pouchdbHelper.rxDocumentDataToPouchDocumentData)(_this6.primaryPath, writeData.document); // if previous document exists, we have to send the previous revision to pouchdb.
 
                 if (writeData.previous) {
                   storeDocumentData._rev = writeData.previous._rev;
@@ -700,7 +743,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
                         case 6:
                           pushObj = (0, _util.flatClone)(writeRow.document);
-                          pushObj = (0, _pouchdbHelper.pouchSwapIdToPrimary)(_this5.primaryPath, pushObj);
+                          pushObj = (0, _pouchdbHelper.pouchSwapIdToPrimary)(_this6.primaryPath, pushObj);
                           pushObj._rev = resultRow.rev; // replace the inserted attachments with their diggest
 
                           // replace the inserted attachments with their diggest
@@ -758,7 +801,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
   _proto.query = /*#__PURE__*/function () {
     var _query = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee9(preparedQuery) {
-      var _this6 = this;
+      var _this7 = this;
 
       var findResult, ret;
       return _regenerator["default"].wrap(function _callee9$(_context9) {
@@ -772,7 +815,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
               findResult = _context9.sent;
               ret = {
                 documents: findResult.docs.map(function (pouchDoc) {
-                  var useDoc = (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(_this6.primaryPath, pouchDoc);
+                  var useDoc = (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(_this7.primaryPath, pouchDoc);
                   return useDoc;
                 })
               };
@@ -824,7 +867,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
   _proto.findDocumentsById = /*#__PURE__*/function () {
     var _findDocumentsById = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee12(ids, deleted) {
-      var _this7 = this;
+      var _this8 = this;
 
       var viaChanges, retDocs, pouchResult, ret;
       return _regenerator["default"].wrap(function _callee12$(_context12) {
@@ -856,7 +899,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
                       switch (_context11.prev = _context11.next) {
                         case 0:
                           _context11.next = 2;
-                          return _this7.internals.pouch.get(result.id, {
+                          return _this8.internals.pouch.get(result.id, {
                             rev: result.changes[0].rev,
                             deleted: 'ok',
                             style: 'all_docs'
@@ -864,7 +907,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
                         case 2:
                           firstDoc = _context11.sent;
-                          useFirstDoc = (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(_this7.primaryPath, firstDoc);
+                          useFirstDoc = (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(_this8.primaryPath, firstDoc);
                           retDocs.set(result.id, useFirstDoc);
 
                         case 5:
@@ -897,7 +940,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
                 return !!row.doc;
               }).forEach(function (row) {
                 var docData = row.doc;
-                docData = (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(_this7.primaryPath, docData);
+                docData = (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(_this8.primaryPath, docData);
                 ret.set(row.id, docData);
               });
               return _context12.abrupt("return", ret);
@@ -940,6 +983,13 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
             case 3:
               pouchResults = _context13.sent;
+
+              /**
+               * TODO stripping the internal docs
+               * results in having a non-full result set that maybe no longer
+               * reaches the options.limit. We should fill up again
+               * to ensure pagination works correctly.
+               */
               changedDocuments = pouchResults.results.filter(function (row) {
                 return !row.id.startsWith(_pouchdbHelper.POUCHDB_DESIGN_PREFIX);
               }).map(function (row) {

@@ -177,13 +177,11 @@ export var RxQueryBase = /*#__PURE__*/function () {
   /**
    * returns the prepared query
    * which can be send to the storage instance to query for documents.
-   * @overwrites itself with the actual value
-   * TODO rename this function, toJSON is missleading
-   * because we do not return the plain mango query object.
+   * @overwrites itself with the actual value.
    */
   ;
 
-  _proto.toJSON = function toJSON() {
+  _proto.getPreparedQuery = function getPreparedQuery() {
     var hookInput = {
       rxQuery: this,
       // can be mutated by the hooks so we have to deep clone first.
@@ -192,7 +190,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
     runPluginHooks('prePrepareQuery', hookInput);
     var value = this.collection.storageInstance.prepareQuery(hookInput.mangoQuery);
 
-    this.toJSON = function () {
+    this.getPreparedQuery = function () {
       return value;
     };
 
@@ -324,7 +322,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
   }, {
     key: "queryMatcher",
     get: function get() {
-      return overwriteGetterForCaching(this, 'queryMatcher', this.collection.storageInstance.getQueryMatcher(this.toJSON()));
+      return overwriteGetterForCaching(this, 'queryMatcher', this.collection.storageInstance.getQueryMatcher(this.getPreparedQuery()));
     }
   }, {
     key: "asRxQuery",
@@ -451,17 +449,10 @@ function __ensureEqual(rxQuery) {
        */
 
       missedChangeEvents = missedChangeEvents.filter(function (cE) {
-        return !cE.startTime || cE.startTime > rxQuery._lastExecStart;
+        return !cE.startTime || rxQuery._lastExecStart < cE.startTime && (!cE.endTime || rxQuery._lastExecEnd < cE.endTime);
       });
 
       var runChangeEvents = rxQuery.asRxQuery.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
-      /*
-      console.log('calculateNewResults() ' + new Date().getTime());
-      console.log(rxQuery._lastExecStart + ' - ' + rxQuery._lastExecEnd);
-      console.dir(rxQuery._resultsData.slice());
-      console.dir(runChangeEvents);
-      */
-
 
       var eventReduceResult = calculateNewResults(rxQuery, runChangeEvents);
 

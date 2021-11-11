@@ -1,6 +1,6 @@
-import type { SortComparator, QueryMatcher } from 'event-reduce-js';
+import type { DeterministicSortComparator, QueryMatcher } from 'event-reduce-js';
 import { Observable } from 'rxjs';
-import type { BlobBuffer, BulkWriteRow, ChangeStreamOnceOptions, MangoQuery, PouchSettings, PreparedQuery, RxDocumentData, RxJsonSchema, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageInstance, RxStorageQueryResult } from '../../types';
+import type { BlobBuffer, BulkWriteRow, ChangeStreamOnceOptions, MangoQuery, PouchSettings, PreparedQuery, RxDocumentData, RxDocumentWriteData, RxJsonSchema, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageInstance, RxStorageQueryResult } from '../../types';
 import { PouchStorageInternals } from './pouchdb-helper';
 export declare class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<RxDocType, PouchStorageInternals, PouchSettings> {
     readonly databaseName: string;
@@ -16,11 +16,11 @@ export declare class RxStorageInstancePouch<RxDocType> implements RxStorageInsta
     private addEventToChangeStream;
     close(): Promise<void>;
     remove(): Promise<void>;
-    getSortComparator(query: MangoQuery<RxDocType>): SortComparator<RxDocType>;
+    getSortComparator(query: MangoQuery<RxDocType>): DeterministicSortComparator<RxDocType>;
     /**
      * @link https://github.com/pouchdb/pouchdb/blob/master/packages/node_modules/pouchdb-selector-core/src/matches-selector.js
      */
-    getQueryMatcher(query: MangoQuery<RxDocType>): QueryMatcher<RxDocType>;
+    getQueryMatcher(query: MangoQuery<RxDocType>): QueryMatcher<RxDocumentWriteData<RxDocType>>;
     /**
      * pouchdb has many bugs and strange behaviors
      * this functions takes a normal mango query

@@ -122,7 +122,7 @@ export function requestIdlePromise() {
       });
     });
   } else {
-    return PROMISE_RESOLVE_VOID;
+    return promiseWait(0);
   }
 }
 /**

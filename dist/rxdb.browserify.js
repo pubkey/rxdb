@@ -691,7 +691,7 @@ exports.RXQUERY_QUERY_PARAMS_CACHE = RXQUERY_QUERY_PARAMS_CACHE;
 function getQueryParams(rxQuery) {
   if (!RXQUERY_QUERY_PARAMS_CACHE.has(rxQuery)) {
     var collection = rxQuery.collection;
-    var queryJson = rxQuery.toJSON();
+    var queryJson = rxQuery.getPreparedQuery();
     var primaryKey = collection.schema.primaryPath;
     /**
      * Create a custom sort comparator
@@ -732,7 +732,7 @@ function getQueryParams(rxQuery) {
       primaryKey: rxQuery.collection.schema.primaryPath,
       skip: queryJson.skip,
       limit: queryJson.limit,
-      sortFields: getSortFieldsOfQuery(primaryKey, queryJson),
+      sortFields: getSortFieldsOfQuery(primaryKey, rxQuery.mangoQuery),
       sortComparator: useSortComparator,
       queryMatcher: useQueryMatcher
     };
@@ -758,12 +758,21 @@ function calculateNewResults(rxQuery, rxChangeEvents) {
   var changed = false;
   var foundNonOptimizeable = rxChangeEvents.find(function (cE) {
     var eventReduceEvent = (0, _rxChangeEvent.rxChangeEventToEventReduceChangeEvent)(cE);
-    var actionName = (0, _eventReduceJs.calculateActionName)({
+    var stateResolveFunctionInput = {
       queryParams: queryParams,
       changeEvent: eventReduceEvent,
       previousResults: previousResults,
       keyDocumentMap: previousResultsMap
-    });
+    };
+    /*
+    // use this to check if all states are calculated correctly
+    const stateSet = getStateSet(stateResolveFunctionInput);
+    console.dir(stateResolveFunctionInput);
+    console.log('state set:');
+    logStateSet(stateSet);
+    */
+
+    var actionName = (0, _eventReduceJs.calculateActionName)(stateResolveFunctionInput);
 
     if (actionName === 'runFullQueryAgain') {
       return true;
@@ -1781,14 +1790,15 @@ var _rxError = require("../../rx-error");
 
 var _util = require("../../util");
 
-var validCouchDBStringRegexStr = '^[a-z][_$a-z0-9]*$';
+var validCouchDBStringRegexStr = '^[a-z][_$a-z0-9\\-]*$';
 var validCouchDBStringRegex = new RegExp(validCouchDBStringRegexStr);
 /**
  * Validates that a given string is ok to be used with couchdb-collection-names.
- * We only allow these strings as database- or collectionnames because it ensures
+ * We only allow these strings as database- or collection names because it ensures
  * that you later do not get in troubble when you want to use the database together witch couchdb.
  *
- * @link https://wiki.apache.org/couchdb/HTTP_database_API
+ * @link https://docs.couchdb.org/en/stable/api/database/common.html
+ * @link https://neighbourhood.ie/blog/2020/10/13/everything-you-need-to-know-about-couchdb-database-names/
  * @throws  {Error}
  */
 
@@ -2070,7 +2080,9 @@ function validateFieldsDeep(jsonSchema) {
 
 function checkPrimaryKey(jsonSchema) {
   if (!jsonSchema.primaryKey) {
-    throw (0, _rxError.newRxError)('SC30', jsonSchema);
+    throw (0, _rxError.newRxError)('SC30', {
+      schema: jsonSchema
+    });
   }
 
   function validatePrimarySchemaPart(schemaPart) {
@@ -2456,7 +2468,7 @@ exports.ERROR_MESSAGES = void 0;
 var ERROR_MESSAGES = {
   // util.js
   UT1: 'given name is no string or empty',
-  UT2: "collection- and database-names must match the regex\n    info: if your database-name specifies a folder, the name must contain the slash-char '/' or '\\'",
+  UT2: "collection- and database-names must match the regex to be compatible with couchdb databases.\n    See https://neighbourhood.ie/blog/2020/10/13/everything-you-need-to-know-about-couchdb-database-names/\n    info: if your database-name specifies a folder, the name must contain the slash-char '/' or '\\'",
   UT3: 'replication-direction must either be push or pull or both. But not none',
   UT4: 'given leveldown is no valid adapter',
   // plugins
@@ -5323,7 +5335,7 @@ function checkAdapter(adapter) {
       _id: _id,
       value: {
         ok: true,
-        time: new Date().getTime()
+        time: (0, _util.now)()
       }
     });
   }) // ensure read works
@@ -6314,7 +6326,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
                             return _context.abrupt("return");
 
                           case 13:
-                            if (!(!previousDoc && !writeDoc._deleted)) {
+                            if (!((!previousDoc || previousDoc._deleted) && !writeDoc._deleted)) {
                               _context.next = 17;
                               break;
                             }
@@ -6472,7 +6484,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
                             newDoc._attachments = _context3.sent;
                             newDoc._rev = resultRow.rev;
 
-                            if (writeRow.previous) {
+                            if (!(!writeRow.previous || writeRow.previous._deleted)) {
                               _context3.next = 13;
                               break;
                             }
@@ -6626,30 +6638,50 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
   }();
 
   _proto.getSortComparator = function getSortComparator(query) {
-    var _ref5;
+    var _ref5,
+        _this2 = this;
 
-    var primaryKey = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(this.schema.primaryKey);
-    var sortOptions = query.sort ? query.sort : [(_ref5 = {}, _ref5[this.primaryPath] = 'asc', _ref5)];
-    var massagedSelector = (0, _pouchdbSelectorCore.massageSelector)(query.selector);
+    var primaryPath = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(this.schema.primaryKey);
+    var sortOptions = query.sort ? query.sort : [(_ref5 = {}, _ref5[primaryPath] = 'asc', _ref5)];
     var inMemoryFields = Object.keys(query.selector);
 
     var fun = function fun(a, b) {
-      // TODO use createFieldSorter
+      /**
+       * Sorting on two documents with the same primary is not allowed
+       * because it might end up in a non-deterministic result.
+       */
+      if (a[primaryPath] === b[primaryPath]) {
+        throw (0, _rxError.newRxError)('SNH', {
+          args: {
+            a: a,
+            b: b
+          },
+          primaryPath: primaryPath
+        });
+      } // TODO use createFieldSorter
       // TODO make a performance test
+
+
       var rows = [a, b].map(function (doc) {
-        // swap primary to _id
-        var cloned = (0, _util.flatClone)(doc);
-        var primaryValue = cloned[primaryKey];
-        delete cloned[primaryKey];
-        cloned._id = primaryValue;
         return {
-          doc: cloned
+          doc: (0, _pouchdbHelper.pouchSwapPrimaryToId)(_this2.primaryPath, doc)
         };
       });
       var sortedRows = (0, _pouchdbSelectorCore.filterInMemoryFields)(rows, {
-        selector: massagedSelector,
+        selector: {},
         sort: sortOptions
       }, inMemoryFields);
+
+      if (sortedRows.length !== 2) {
+        throw (0, _rxError.newRxError)('SNH', {
+          query: query,
+          primaryPath: _this2.primaryPath,
+          args: {
+            rows: rows,
+            sortedRows: sortedRows
+          }
+        });
+      }
 
       if (sortedRows[0].doc._id === rows[0].doc._id) {
         return -1;
@@ -6666,12 +6698,12 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
   ;
 
   _proto.getQueryMatcher = function getQueryMatcher(query) {
-    var _this2 = this;
+    var _this3 = this;
 
     var massagedSelector = (0, _pouchdbSelectorCore.massageSelector)(query.selector);
 
     var fun = function fun(doc) {
-      var cloned = (0, _pouchdbHelper.pouchSwapPrimaryToId)(_this2.primaryPath, doc);
+      var cloned = (0, _pouchdbHelper.pouchSwapPrimaryToId)(_this3.primaryPath, doc);
       var row = {
         doc: cloned
       };
@@ -6692,7 +6724,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
   ;
 
   _proto.prepareQuery = function prepareQuery(mutateableQuery) {
-    var _this3 = this;
+    var _this4 = this;
 
     var primaryKey = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(this.schema.primaryKey);
     var query = mutateableQuery;
@@ -6711,10 +6743,11 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
         }) || false;
 
         if (!keyUsed) {
-          var schemaObj = (0, _rxSchemaHelper.getSchemaByObjectPath)(_this3.schema, key);
+          var schemaObj = (0, _rxSchemaHelper.getSchemaByObjectPath)(_this4.schema, key);
 
           if (!schemaObj) {
             throw (0, _rxError.newRxError)('QU5', {
+              query: query,
               key: key
             });
           }
@@ -6784,12 +6817,34 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
       }
     });
     query.selector = (0, _pouchdbHelper.primarySwapPouchDbQuerySelector)(query.selector, this.primaryPath);
+    /**
+     * To ensure a deterministic sorting,
+     * we have to ensure the primary key is always part
+     * of the sort query.
+     * TODO This should be done but will not work with pouchdb
+     * because it will throw
+     * 'Cannot sort on field(s) "key" when using the default index'
+     * So we likely have to modify the indexes so that this works. 
+     */
+
+    /*
+    if (!mutateableQuery.sort) {
+        mutateableQuery.sort = [{ [this.primaryPath]: 'asc' }] as any;
+    } else {
+        const isPrimaryInSort = mutateableQuery.sort
+            .find(p => firstPropertyNameOfObject(p) === this.primaryPath);
+        if (!isPrimaryInSort) {
+            mutateableQuery.sort.push({ [this.primaryPath]: 'asc' } as any);
+        }
+    }
+    */
+
     return query;
   };
 
   _proto.bulkAddRevisions = /*#__PURE__*/function () {
     var _bulkAddRevisions = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee6(documents) {
-      var _this4 = this;
+      var _this5 = this;
 
       var writeData;
       return _regenerator["default"].wrap(function _callee6$(_context6) {
@@ -6809,7 +6864,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
             case 2:
               writeData = documents.map(function (doc) {
-                return (0, _pouchdbHelper.rxDocumentDataToPouchDocumentData)(_this4.primaryPath, doc);
+                return (0, _pouchdbHelper.rxDocumentDataToPouchDocumentData)(_this5.primaryPath, doc);
               }); // we do not need the response here because pouchdb returns an empty array on new_edits: false
 
               _context6.next = 5;
@@ -6835,7 +6890,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
   _proto.bulkWrite = /*#__PURE__*/function () {
     var _bulkWrite = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee8(documentWrites) {
-      var _this5 = this;
+      var _this6 = this;
 
       var writeRowById, insertDocs, pouchResult, ret;
       return _regenerator["default"].wrap(function _callee8$(_context8) {
@@ -6856,9 +6911,9 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
             case 2:
               writeRowById = new Map();
               insertDocs = documentWrites.map(function (writeData) {
-                var primary = writeData.document[_this5.primaryPath];
+                var primary = writeData.document[_this6.primaryPath];
                 writeRowById.set(primary, writeData);
-                var storeDocumentData = (0, _pouchdbHelper.rxDocumentDataToPouchDocumentData)(_this5.primaryPath, writeData.document); // if previous document exists, we have to send the previous revision to pouchdb.
+                var storeDocumentData = (0, _pouchdbHelper.rxDocumentDataToPouchDocumentData)(_this6.primaryPath, writeData.document); // if previous document exists, we have to send the previous revision to pouchdb.
 
                 if (writeData.previous) {
                   storeDocumentData._rev = writeData.previous._rev;
@@ -6906,7 +6961,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
                         case 6:
                           pushObj = (0, _util.flatClone)(writeRow.document);
-                          pushObj = (0, _pouchdbHelper.pouchSwapIdToPrimary)(_this5.primaryPath, pushObj);
+                          pushObj = (0, _pouchdbHelper.pouchSwapIdToPrimary)(_this6.primaryPath, pushObj);
                           pushObj._rev = resultRow.rev; // replace the inserted attachments with their diggest
 
                           // replace the inserted attachments with their diggest
@@ -6964,7 +7019,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
   _proto.query = /*#__PURE__*/function () {
     var _query = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee9(preparedQuery) {
-      var _this6 = this;
+      var _this7 = this;
 
       var findResult, ret;
       return _regenerator["default"].wrap(function _callee9$(_context9) {
@@ -6978,7 +7033,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
               findResult = _context9.sent;
               ret = {
                 documents: findResult.docs.map(function (pouchDoc) {
-                  var useDoc = (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(_this6.primaryPath, pouchDoc);
+                  var useDoc = (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(_this7.primaryPath, pouchDoc);
                   return useDoc;
                 })
               };
@@ -7030,7 +7085,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
   _proto.findDocumentsById = /*#__PURE__*/function () {
     var _findDocumentsById = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee12(ids, deleted) {
-      var _this7 = this;
+      var _this8 = this;
 
       var viaChanges, retDocs, pouchResult, ret;
       return _regenerator["default"].wrap(function _callee12$(_context12) {
@@ -7062,7 +7117,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
                       switch (_context11.prev = _context11.next) {
                         case 0:
                           _context11.next = 2;
-                          return _this7.internals.pouch.get(result.id, {
+                          return _this8.internals.pouch.get(result.id, {
                             rev: result.changes[0].rev,
                             deleted: 'ok',
                             style: 'all_docs'
@@ -7070,7 +7125,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
                         case 2:
                           firstDoc = _context11.sent;
-                          useFirstDoc = (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(_this7.primaryPath, firstDoc);
+                          useFirstDoc = (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(_this8.primaryPath, firstDoc);
                           retDocs.set(result.id, useFirstDoc);
 
                         case 5:
@@ -7103,7 +7158,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
                 return !!row.doc;
               }).forEach(function (row) {
                 var docData = row.doc;
-                docData = (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(_this7.primaryPath, docData);
+                docData = (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(_this8.primaryPath, docData);
                 ret.set(row.id, docData);
               });
               return _context12.abrupt("return", ret);
@@ -7146,6 +7201,13 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
             case 3:
               pouchResults = _context13.sent;
+
+              /**
+               * TODO stripping the internal docs
+               * results in having a non-full result set that maybe no longer
+               * reaches the options.limit. We should fill up again
+               * to ensure pagination works correctly.
+               */
               changedDocuments = pouchResults.results.filter(function (row) {
                 return !row.id.startsWith(_pouchdbHelper.POUCHDB_DESIGN_PREFIX);
               }).map(function (row) {
@@ -8768,7 +8830,7 @@ function syncCouchDB(_ref2) {
   var syncFun = (0, _pouchdb.pouchReplicationFunction)(this.storageInstance.internals.pouch, direction);
 
   if (query) {
-    useOptions.selector = query.toJSON().selector;
+    useOptions.selector = query.getPreparedQuery().selector;
   }
 
   var repState = createRxCouchDBReplicationState(this, {
@@ -9123,7 +9185,7 @@ function triggerCacheReplacement(rxCollection) {
 
   (0, _util.nextTick)() // wait at least one tick
   .then(function () {
-    return (0, _util.requestIdlePromise)();
+    return (0, _util.requestIdlePromise)(200);
   }) // and then wait for the CPU to be idle
   .then(function () {
     if (!rxCollection.destroyed) {
@@ -9660,7 +9722,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
           switch (_context2.prev = _context2.next) {
             case 0:
               noDecrypt = _args2.length > 2 && _args2[2] !== undefined ? _args2[2] : false;
-              preparedQuery = rxQuery.toJSON();
+              preparedQuery = rxQuery.getPreparedQuery();
 
               if (limit) {
                 preparedQuery['limit'] = limit;
@@ -10023,7 +10085,9 @@ var RxCollectionBase = /*#__PURE__*/function () {
         }).then(function () {
           return wasInserted.doc;
         });
-      } else return wasInserted.doc;
+      } else {
+        return wasInserted.doc;
+      }
     });
 
     this._atomicUpsertQueues.set(primary, queue);
@@ -12694,13 +12758,11 @@ var RxQueryBase = /*#__PURE__*/function () {
   /**
    * returns the prepared query
    * which can be send to the storage instance to query for documents.
-   * @overwrites itself with the actual value
-   * TODO rename this function, toJSON is missleading
-   * because we do not return the plain mango query object.
+   * @overwrites itself with the actual value.
    */
   ;
 
-  _proto.toJSON = function toJSON() {
+  _proto.getPreparedQuery = function getPreparedQuery() {
     var hookInput = {
       rxQuery: this,
       // can be mutated by the hooks so we have to deep clone first.
@@ -12709,7 +12771,7 @@ var RxQueryBase = /*#__PURE__*/function () {
     (0, _hooks.runPluginHooks)('prePrepareQuery', hookInput);
     var value = this.collection.storageInstance.prepareQuery(hookInput.mangoQuery);
 
-    this.toJSON = function () {
+    this.getPreparedQuery = function () {
       return value;
     };
 
@@ -12841,7 +12903,7 @@ var RxQueryBase = /*#__PURE__*/function () {
   }, {
     key: "queryMatcher",
     get: function get() {
-      return (0, _util.overwriteGetterForCaching)(this, 'queryMatcher', this.collection.storageInstance.getQueryMatcher(this.toJSON()));
+      return (0, _util.overwriteGetterForCaching)(this, 'queryMatcher', this.collection.storageInstance.getQueryMatcher(this.getPreparedQuery()));
     }
   }, {
     key: "asRxQuery",
@@ -12973,17 +13035,10 @@ function __ensureEqual(rxQuery) {
        */
 
       missedChangeEvents = missedChangeEvents.filter(function (cE) {
-        return !cE.startTime || cE.startTime > rxQuery._lastExecStart;
+        return !cE.startTime || rxQuery._lastExecStart < cE.startTime && (!cE.endTime || rxQuery._lastExecEnd < cE.endTime);
       });
 
       var runChangeEvents = rxQuery.asRxQuery.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
-      /*
-      console.log('calculateNewResults() ' + new Date().getTime());
-      console.log(rxQuery._lastExecStart + ' - ' + rxQuery._lastExecEnd);
-      console.dir(rxQuery._resultsData.slice());
-      console.dir(runChangeEvents);
-      */
-
 
       var eventReduceResult = (0, _eventReduce.calculateNewResults)(rxQuery, runChangeEvents);
 
@@ -13994,7 +14049,7 @@ function requestIdlePromise() {
       });
     });
   } else {
-    return PROMISE_RESOLVE_VOID;
+    return promiseWait(0);
   }
 }
 /**
@@ -30433,7 +30488,7 @@ if (require('has-symbols')() || require('has-symbols/shams')()) {
 },{"_process":541,"call-bind/callBound":115,"get-intrinsic":452,"has-symbols":454,"has-symbols/shams":455,"is-arguments":466,"is-map":472,"is-set":479,"is-string":480,"isarray":485}],439:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.unknownAction = exports.runFullQueryAgain = exports.removeExistingAndInsertAtSortPosition = exports.insertAtSortPosition = exports.alwaysWrong = exports.replaceExisting = exports.removeExisting = exports.removeLastInsertFirst = exports.removeFirstInsertLast = exports.removeLastItem = exports.removeFirstItem = exports.insertLast = exports.insertFirst = exports.doNothing = void 0;
+exports.unknownAction = exports.runFullQueryAgain = exports.removeExistingAndInsertAtSortPosition = exports.insertAtSortPosition = exports.alwaysWrong = exports.replaceExisting = exports.removeExisting = exports.removeLastInsertLast = exports.removeFirstInsertFirst = exports.removeLastInsertFirst = exports.removeFirstInsertLast = exports.removeLastItem = exports.removeFirstItem = exports.insertLast = exports.insertFirst = exports.doNothing = void 0;
 var array_push_at_sort_position_1 = require("array-push-at-sort-position");
 var doNothing = function (_input) { };
 exports.doNothing = doNothing;
@@ -30466,15 +30521,25 @@ var removeLastItem = function (input) {
 };
 exports.removeLastItem = removeLastItem;
 var removeFirstInsertLast = function (input) {
-    exports.removeFirstItem(input);
-    exports.insertLast(input);
+    (0, exports.removeFirstItem)(input);
+    (0, exports.insertLast)(input);
 };
 exports.removeFirstInsertLast = removeFirstInsertLast;
 var removeLastInsertFirst = function (input) {
-    exports.removeLastItem(input);
-    exports.insertFirst(input);
+    (0, exports.removeLastItem)(input);
+    (0, exports.insertFirst)(input);
 };
 exports.removeLastInsertFirst = removeLastInsertFirst;
+var removeFirstInsertFirst = function (input) {
+    (0, exports.removeFirstItem)(input);
+    (0, exports.insertFirst)(input);
+};
+exports.removeFirstInsertFirst = removeFirstInsertFirst;
+var removeLastInsertLast = function (input) {
+    (0, exports.removeLastItem)(input);
+    (0, exports.insertLast)(input);
+};
+exports.removeLastInsertLast = removeLastInsertLast;
 var removeExisting = function (input) {
     if (input.keyDocumentMap) {
         input.keyDocumentMap.delete(input.changeEvent.id);
@@ -30529,16 +30594,34 @@ var alwaysWrong = function (input) {
 };
 exports.alwaysWrong = alwaysWrong;
 var insertAtSortPosition = function (input) {
+    var docId = input.changeEvent.id;
     var doc = input.changeEvent.doc;
     if (input.keyDocumentMap) {
-        input.keyDocumentMap.set(input.changeEvent.id, doc);
+        if (input.keyDocumentMap.has(docId)) {
+            /**
+             * If document is already in results,
+             * we cannot add it again because it would throw on non-deterministic ordering.
+             */
+            return;
+        }
+        input.keyDocumentMap.set(docId, doc);
     }
-    array_push_at_sort_position_1.pushAtSortPosition(input.previousResults, doc, input.queryParams.sortComparator, true);
+    else {
+        var isDocInResults = input.previousResults.find(function (d) { return d[input.queryParams.primaryKey] === docId; });
+        /**
+         * If document is already in results,
+         * we cannot add it again because it would throw on non-deterministic ordering.
+         */
+        if (isDocInResults) {
+            return;
+        }
+    }
+    (0, array_push_at_sort_position_1.pushAtSortPosition)(input.previousResults, doc, input.queryParams.sortComparator, true);
 };
 exports.insertAtSortPosition = insertAtSortPosition;
 var removeExistingAndInsertAtSortPosition = function (input) {
-    exports.removeExisting(input);
-    exports.insertAtSortPosition(input);
+    (0, exports.removeExisting)(input);
+    (0, exports.insertAtSortPosition)(input);
 };
 exports.removeExistingAndInsertAtSortPosition = removeExistingAndInsertAtSortPosition;
 var runFullQueryAgain = function (_input) {
@@ -30568,6 +30651,8 @@ exports.orderedActionList = [
     'removeLastItem',
     'removeFirstInsertLast',
     'removeLastInsertFirst',
+    'removeFirstInsertFirst',
+    'removeLastInsertLast',
     'removeExisting',
     'replaceExisting',
     'alwaysWrong',
@@ -30584,6 +30669,8 @@ exports.actionFunctions = {
     removeLastItem: action_functions_1.removeLastItem,
     removeFirstInsertLast: action_functions_1.removeFirstInsertLast,
     removeLastInsertFirst: action_functions_1.removeLastInsertFirst,
+    removeFirstInsertFirst: action_functions_1.removeFirstInsertFirst,
+    removeLastInsertLast: action_functions_1.removeLastInsertLast,
     removeExisting: action_functions_1.removeExisting,
     replaceExisting: action_functions_1.replaceExisting,
     alwaysWrong: action_functions_1.alwaysWrong,
@@ -30596,12 +30683,21 @@ exports.actionFunctions = {
 },{"./action-functions":439}],441:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resolveInput = exports.simpleBdd = exports.minimalBddString = void 0;
+exports.resolveInput = exports.getSimpleBdd = exports.minimalBddString = void 0;
 var binary_decision_diagram_1 = require("binary-decision-diagram");
 var states_1 = require("../states");
-exports.minimalBddString = '11a+b0c/d3e.f2g*h-i)j(k4ljk3mkj3nbh,odh,peh,qkj5rkm5sdk5tjk5uok5vfi5wkp5xfk5yxk/zgk/{jt/|jk/}bd1~xy1gz1¡jq1¢bs1£no1¤j{1¥j|1¦jl1§kl1¨jr1©nu1ª|a7«|l7¬d}7­¤a7®~¡7¯h7°s¢7±kj7²o£7³¤§7´k¨7µ¥¦7¶u©7·vg6¸¬d6¹­j6º®¯6»°d6¼wj6½²k6¾³j6¿´µ6À¶k6Á¹ª*Â¾«*ÃjÁ-ÄjÂ-Å·º-Æ¸»-Çi±-È¼¿-É½À-ÊÃc2ËÄk2ÌÅÆ2ÍÈÉ2ÎÊË0ÏÌÍ0ÐÎÏ8ÑjÇ8ÐÑ.';
-exports.simpleBdd = binary_decision_diagram_1.minimalStringToSimpleBdd(exports.minimalBddString);
-var resolveInput = function (input) { return binary_decision_diagram_1.resolveWithSimpleBdd(exports.simpleBdd, states_1.stateResolveFunctionByIndex, input); };
+exports.minimalBddString = '14a2b0c/d,e+f5g1h.i4j*k-l)m(n6oin-pjn-qng-rfn-smn-thn-ukn-vln-wga:xdb:yec:zek:{na:|nb:}nc:~mo:mp:¡sv:¢gf:£gr:¤df:¥dt:¦er:§eu:¨st:©nf:ªqr:«nt:¬nr:­em:®nk:¯ms:°su:±nm:²mi:³mj:´mn:µmt:¶mu:·mv:¸gn0¹dn0ºen0»w{0¼£¬0½x|0¾y}0¿~´0À¯0Á¡¨0Â¢©0Ãfn0Ä£ª0Å¤n0Æ¥«0Ç¦¬0È­±0Ékn0Ê²´0Ë³m0Ì·µ0Í»Â3Î½Å3Ï¾Ç3Ðz§3Ñ®n3ÒÍ¼7ÓÎÆ7Ô¿Á7ÕÂÄ7ÖÅÆ7×nÈ7Ønµ7ÙÊÌ7Úmº9ÛÙ×9ÜËm9ÝËÉ9ÞmØ9ß¶±9àm¶9ámn9â·m9ãÚs/äás/åÛÔ/æÒÕ/çÝÀ/èÏÇ/éß°/êá¯/ëâ·/ìåç8íÞÜ8îæÃ8ïèÉ8ðàm8ñéê8òÙË8ó¶m8ô¸¹2õºe2öîÖ2÷ï§2øãm6ùô¹6úõe6ûäm6üìí6ýöÓ6þ÷Ð6ÿñð6ĀnÑ6āøù4Ăüý4ăĂā*Ąþú*ąëm*Ćÿû*ćĀn*ĈăĆ,ĉĄć,Ċòó,ċĈĉ1ČċĊ(čą·(Čč.';
+var simpleBdd;
+function getSimpleBdd() {
+    if (!simpleBdd) {
+        simpleBdd = (0, binary_decision_diagram_1.minimalStringToSimpleBdd)(exports.minimalBddString);
+    }
+    return simpleBdd;
+}
+exports.getSimpleBdd = getSimpleBdd;
+var resolveInput = function (input) {
+    return (0, binary_decision_diagram_1.resolveWithSimpleBdd)(getSimpleBdd(), states_1.stateResolveFunctionByIndex, input);
+};
 exports.resolveInput = resolveInput;
 
 },{"../states":443,"binary-decision-diagram":85}],442:[function(require,module,exports){
@@ -30624,7 +30720,7 @@ var bdd_generated_1 = require("./bdd/bdd.generated");
 __exportStar(require("./states"), exports);
 __exportStar(require("./util"), exports);
 function calculateActionFromMap(stateSetToActionMap, input) {
-    var stateSet = states_1.getStateSet(input);
+    var stateSet = (0, states_1.getStateSet)(input);
     var actionName = stateSetToActionMap.get(stateSet);
     if (!actionName) {
         return {
@@ -30641,7 +30737,7 @@ function calculateActionFromMap(stateSetToActionMap, input) {
 }
 exports.calculateActionFromMap = calculateActionFromMap;
 function calculateActionName(input) {
-    var resolvedActionId = bdd_generated_1.resolveInput(input);
+    var resolvedActionId = (0, bdd_generated_1.resolveInput)(input);
     return actions_1.orderedActionList[resolvedActionId];
 }
 exports.calculateActionName = calculateActionName;
@@ -30669,9 +30765,20 @@ exports.runAction = runAction;
 
 },{"./actions":440,"./bdd/bdd.generated":441,"./states":443,"./util":445}],443:[function(require,module,exports){
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.logStateSet = exports.getStateSet = exports.resolveState = exports.stateResolveFunctionByIndex = exports.stateResolveFunctions = exports.orderedStateList = void 0;
 var state_resolver_1 = require("./state-resolver");
+__exportStar(require("./state-resolver"), exports);
 /**
  * all states ordered by performance-cost
  * cheapest first
@@ -30687,6 +30794,8 @@ exports.orderedStateList = [
     'wasResultsEmpty',
     'previousUnknown',
     'wasLimitReached',
+    'wasFirst',
+    'wasLast',
     'sortParamsChanged',
     'wasInResult',
     'wasSortedBeforeFirst',
@@ -30706,6 +30815,8 @@ exports.stateResolveFunctions = {
     wasResultsEmpty: state_resolver_1.wasResultsEmpty,
     previousUnknown: state_resolver_1.previousUnknown,
     wasLimitReached: state_resolver_1.wasLimitReached,
+    wasFirst: state_resolver_1.wasFirst,
+    wasLast: state_resolver_1.wasLast,
     sortParamsChanged: state_resolver_1.sortParamsChanged,
     wasInResult: state_resolver_1.wasInResult,
     wasSortedBeforeFirst: state_resolver_1.wasSortedBeforeFirst,
@@ -30725,14 +30836,16 @@ exports.stateResolveFunctionByIndex = {
     6: state_resolver_1.wasResultsEmpty,
     7: state_resolver_1.previousUnknown,
     8: state_resolver_1.wasLimitReached,
-    9: state_resolver_1.sortParamsChanged,
-    10: state_resolver_1.wasInResult,
-    11: state_resolver_1.wasSortedBeforeFirst,
-    12: state_resolver_1.wasSortedAfterLast,
-    13: state_resolver_1.isSortedBeforeFirst,
-    14: state_resolver_1.isSortedAfterLast,
-    15: state_resolver_1.wasMatching,
-    16: state_resolver_1.doesMatchNow
+    9: state_resolver_1.wasFirst,
+    10: state_resolver_1.wasLast,
+    11: state_resolver_1.sortParamsChanged,
+    12: state_resolver_1.wasInResult,
+    13: state_resolver_1.wasSortedBeforeFirst,
+    14: state_resolver_1.wasSortedAfterLast,
+    15: state_resolver_1.isSortedBeforeFirst,
+    16: state_resolver_1.isSortedAfterLast,
+    17: state_resolver_1.wasMatching,
+    18: state_resolver_1.doesMatchNow
 };
 function resolveState(stateName, input) {
     var fn = exports.stateResolveFunctions[stateName];
@@ -30766,7 +30879,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.wasResultsEmpty = exports.doesMatchNow = exports.wasMatching = exports.isSortedAfterLast = exports.isSortedBeforeFirst = exports.wasSortedAfterLast = exports.wasSortedBeforeFirst = exports.wasInResult = exports.sortParamsChanged = exports.wasLimitReached = exports.previousUnknown = exports.isUpdate = exports.isInsert = exports.isDelete = exports.hasSkip = exports.isFindOne = exports.hasLimit = void 0;
+exports.wasResultsEmpty = exports.doesMatchNow = exports.wasMatching = exports.isSortedAfterLast = exports.isSortedBeforeFirst = exports.wasSortedAfterLast = exports.wasSortedBeforeFirst = exports.wasLast = exports.wasFirst = exports.wasInResult = exports.sortParamsChanged = exports.wasLimitReached = exports.previousUnknown = exports.isUpdate = exports.isInsert = exports.isDelete = exports.hasSkip = exports.isFindOne = exports.hasLimit = void 0;
 var object_path_1 = __importDefault(require("object-path"));
 var util_1 = require("../util");
 var hasLimit = function (input) {
@@ -30803,7 +30916,7 @@ var previousUnknown = function (input) {
 };
 exports.previousUnknown = previousUnknown;
 var wasLimitReached = function (input) {
-    return exports.hasLimit(input) && input.previousResults.length >= input.queryParams.limit;
+    return (0, exports.hasLimit)(input) && input.previousResults.length >= input.queryParams.limit;
 };
 exports.wasLimitReached = wasLimitReached;
 var sortParamsChanged = function (input) {
@@ -30846,6 +30959,26 @@ var wasInResult = function (input) {
     }
 };
 exports.wasInResult = wasInResult;
+var wasFirst = function (input) {
+    var first = input.previousResults[0];
+    if (first && first[input.queryParams.primaryKey] === input.changeEvent.id) {
+        return true;
+    }
+    else {
+        return false;
+    }
+};
+exports.wasFirst = wasFirst;
+var wasLast = function (input) {
+    var last = (0, util_1.lastOfArray)(input.previousResults);
+    if (last && last[input.queryParams.primaryKey] === input.changeEvent.id) {
+        return true;
+    }
+    else {
+        return false;
+    }
+};
+exports.wasLast = wasLast;
 var wasSortedBeforeFirst = function (input) {
     var prev = input.changeEvent.previous;
     if (!prev || prev === util_1.UNKNOWN_VALUE) {
@@ -30854,6 +30987,15 @@ var wasSortedBeforeFirst = function (input) {
     var first = input.previousResults[0];
     if (!first) {
         return false;
+    }
+    /**
+     * If the changed document is the same as the first,
+     * we cannot sort-compare them, because it might end in a non-deterministic
+     * sort order. Because both document could be equal.
+     * So instead we have to return true.
+     */
+    if (first[input.queryParams.primaryKey] === input.changeEvent.id) {
+        return true;
     }
     var comp = input.queryParams.sortComparator(prev, first);
     return comp < 0;
@@ -30864,9 +31006,12 @@ var wasSortedAfterLast = function (input) {
     if (!prev || prev === util_1.UNKNOWN_VALUE) {
         return false;
     }
-    var last = util_1.lastOfArray(input.previousResults);
+    var last = (0, util_1.lastOfArray)(input.previousResults);
     if (!last) {
         return false;
+    }
+    if (last[input.queryParams.primaryKey] === input.changeEvent.id) {
+        return true;
     }
     var comp = input.queryParams.sortComparator(prev, last);
     return comp > 0;
@@ -30881,6 +31026,9 @@ var isSortedBeforeFirst = function (input) {
     if (!first) {
         return false;
     }
+    if (first[input.queryParams.primaryKey] === input.changeEvent.id) {
+        return true;
+    }
     var comp = input.queryParams.sortComparator(doc, first);
     return comp < 0;
 };
@@ -30890,9 +31038,12 @@ var isSortedAfterLast = function (input) {
     if (!doc) {
         return false;
     }
-    var last = util_1.lastOfArray(input.previousResults);
+    var last = (0, util_1.lastOfArray)(input.previousResults);
     if (!last) {
         return false;
+    }
+    if (last[input.queryParams.primaryKey] === input.changeEvent.id) {
+        return true;
     }
     var comp = input.queryParams.sortComparator(doc, last);
     return comp > 0;
@@ -30938,13 +31089,17 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.mergeSets = exports.cloneMap = exports.objectToMap = exports.mapToObject = exports.replaceCharAt = exports.getSortFieldsOfQuery = exports.normalizeSortField = exports.tryToFillPreviousDoc = exports.shuffleArray = exports.randomOfArray = exports.lastOfArray = exports.UNKNOWN_VALUE = void 0;
+exports.roundToTwoDecimals = exports.mergeSets = exports.ensureNotFalsy = exports.flatClone = exports.cloneMap = exports.objectToMap = exports.mapToObject = exports.replaceCharAt = exports.getSortFieldsOfQuery = exports.normalizeSortField = exports.tryToFillPreviousDoc = exports.shuffleArray = exports.randomOfArray = exports.lastOfArray = exports.UNKNOWN_VALUE = void 0;
 exports.UNKNOWN_VALUE = 'UNKNOWN';
 function lastOfArray(ar) {
     return ar[ar.length - 1];
@@ -31047,14 +31202,37 @@ function cloneMap(map) {
     return ret;
 }
 exports.cloneMap = cloneMap;
+/**
+ * does a flat copy on the objects,
+ * is about 3 times faster then using deepClone
+ * @link https://jsperf.com/object-rest-spread-vs-clone/2
+ */
+function flatClone(obj) {
+    return Object.assign({}, obj);
+}
+exports.flatClone = flatClone;
+function ensureNotFalsy(obj) {
+    if (!obj) {
+        throw new Error('ensureNotFalsy() is falsy');
+    }
+    return obj;
+}
+exports.ensureNotFalsy = ensureNotFalsy;
 function mergeSets(sets) {
     var ret = new Set();
     sets.forEach(function (set) {
-        ret = new Set(__spreadArray(__spreadArray([], __read(ret)), __read(set)));
+        ret = new Set(__spreadArray(__spreadArray([], __read(ret), false), __read(set), false));
     });
     return ret;
 }
 exports.mergeSets = mergeSets;
+/**
+ * @link https://stackoverflow.com/a/12830454/3443137
+ */
+function roundToTwoDecimals(num) {
+    return parseFloat(num.toFixed(2));
+}
+exports.roundToTwoDecimals = roundToTwoDecimals;
 
 },{}],446:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.

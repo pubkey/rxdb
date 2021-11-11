@@ -1,6 +1,6 @@
-import type { SortComparator, QueryMatcher } from 'event-reduce-js';
+import type { DeterministicSortComparator, QueryMatcher } from 'event-reduce-js';
 import { Observable } from 'rxjs';
-import type { RxStorageInstance, LokiSettings, RxStorageChangeEvent, RxDocumentData, BulkWriteRow, RxStorageBulkWriteResponse, RxStorageQueryResult, BlobBuffer, ChangeStreamOnceOptions, RxJsonSchema, MangoQuery, LokiStorageInternals, RxStorageChangedDocumentMeta, RxStorageInstanceCreationParams, LokiRemoteRequestBroadcastMessage, LokiRemoteResponseBroadcastMessage, LokiLocalState, LokiDatabaseSettings } from '../../types';
+import type { RxStorageInstance, LokiSettings, RxStorageChangeEvent, RxDocumentData, BulkWriteRow, RxStorageBulkWriteResponse, RxStorageQueryResult, BlobBuffer, ChangeStreamOnceOptions, RxJsonSchema, MangoQuery, LokiStorageInternals, RxStorageChangedDocumentMeta, RxStorageInstanceCreationParams, LokiRemoteRequestBroadcastMessage, LokiRemoteResponseBroadcastMessage, LokiLocalState, LokiDatabaseSettings, RxDocumentWriteData } from '../../types';
 import type { BroadcastChannel, LeaderElector } from 'broadcast-channel';
 export declare class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<RxDocType, LokiStorageInternals, LokiSettings> {
     readonly databaseName: string;
@@ -30,7 +30,7 @@ export declare class RxStorageInstanceLoki<RxDocType> implements RxStorageInstan
      */
     private addChangeDocumentMeta;
     prepareQuery(mutateableQuery: MangoQuery<RxDocType>): MangoQuery<RxDocType>;
-    getSortComparator(query: MangoQuery<RxDocType>): SortComparator<RxDocType>;
+    getSortComparator(query: MangoQuery<RxDocType>): DeterministicSortComparator<RxDocType>;
     /**
      * Returns a function that determines if a document matches a query selector.
      * It is important to have the exact same logix as lokijs uses, to be sure
@@ -41,7 +41,7 @@ export declare class RxStorageInstanceLoki<RxDocType> implements RxStorageInstan
      * Instead we create a fake Resultset and apply the prototype method Resultset.prototype.find(),
      * same with Collection.
      */
-    getQueryMatcher(query: MangoQuery<RxDocType>): QueryMatcher<RxDocType>;
+    getQueryMatcher(query: MangoQuery<RxDocType>): QueryMatcher<RxDocumentWriteData<RxDocType>>;
     bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>>;
     bulkAddRevisions(documents: RxDocumentData<RxDocType>[]): Promise<void>;
     findDocumentsById(ids: string[], deleted: boolean): Promise<Map<string, RxDocumentData<RxDocType>>>;

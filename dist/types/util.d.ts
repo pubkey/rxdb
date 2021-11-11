@@ -28,7 +28,7 @@ export declare const PROMISE_RESOLVE_TRUE: Promise<true>;
 export declare const PROMISE_RESOLVE_FALSE: Promise<false>;
 export declare const PROMISE_RESOLVE_NULL: Promise<null>;
 export declare const PROMISE_RESOLVE_VOID: Promise<void>;
-export declare function requestIdlePromise(timeout?: null): Promise<unknown>;
+export declare function requestIdlePromise(timeout?: number | null): Promise<unknown>;
 /**
  * like Promise.all() but runs in series instead of parallel
  * @link https://github.com/egoist/promise.series/blob/master/index.js

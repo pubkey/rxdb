@@ -3,7 +3,7 @@
  * you can use it to check if the given adapter is working in the current environmet
  */
 import { PouchDB } from './pouch-db';
-import { adapterObject, PROMISE_RESOLVE_FALSE, randomCouchString } from '../../util';
+import { adapterObject, now, PROMISE_RESOLVE_FALSE, randomCouchString } from '../../util';
 
 /**
  * The same pouchdb-location is used on each run
@@ -34,7 +34,7 @@ export function checkAdapter(adapter) {
       _id: _id,
       value: {
         ok: true,
-        time: new Date().getTime()
+        time: now()
       }
     });
   }) // ensure read works

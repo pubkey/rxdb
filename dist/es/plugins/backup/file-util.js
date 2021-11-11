@@ -2,10 +2,11 @@ import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
 import * as fs from 'fs';
 import * as path from 'path';
-
+import { now } from '../../util';
 /**
  * ensure that the given folder exists
  */
+
 export function ensureFolderExists(folderPath) {
   if (!fs.existsSync(folderPath)) {
     fs.mkdirSync(folderPath, {
@@ -34,10 +35,10 @@ export function prepareFolders(database, options) {
   var metaLoc = metaFileLocation(options);
 
   if (!fs.existsSync(metaLoc)) {
-    var now = new Date().getTime();
+    var currentTime = now();
     var metaData = {
-      createdAt: now,
-      updatedAt: now,
+      createdAt: currentTime,
+      updatedAt: currentTime,
       collectionStates: {}
     };
     fs.writeFileSync(metaLoc, JSON.stringify(metaData), 'utf-8');

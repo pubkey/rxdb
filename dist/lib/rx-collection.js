@@ -207,7 +207,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
           switch (_context2.prev = _context2.next) {
             case 0:
               noDecrypt = _args2.length > 2 && _args2[2] !== undefined ? _args2[2] : false;
-              preparedQuery = rxQuery.toJSON();
+              preparedQuery = rxQuery.getPreparedQuery();
 
               if (limit) {
                 preparedQuery['limit'] = limit;
@@ -570,7 +570,9 @@ var RxCollectionBase = /*#__PURE__*/function () {
         }).then(function () {
           return wasInserted.doc;
         });
-      } else return wasInserted.doc;
+      } else {
+        return wasInserted.doc;
+      }
     });
 
     this._atomicUpsertQueues.set(primary, queue);

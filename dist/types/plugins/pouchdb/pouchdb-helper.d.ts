@@ -31,7 +31,9 @@ export declare function rxDocumentDataToPouchDocumentData<T>(primaryKey: keyof T
  * Swaps the primaryKey of the document
  * to the _id property.
  */
-export declare function pouchSwapPrimaryToId<RxDocType>(primaryKey: keyof RxDocType, docData: any): any;
+export declare function pouchSwapPrimaryToId<RxDocType>(primaryKey: keyof RxDocType, docData: any): RxDocType & {
+    _id: string;
+};
 /**
  * in:  '_local/foobar'
  * out: 'foobar'
