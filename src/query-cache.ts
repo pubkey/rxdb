@@ -126,7 +126,7 @@ export function triggerCacheReplacement(
      * Do not run directly to not reduce result latency of a new query
      */
     nextTick() // wait at least one tick
-        .then(() => requestIdlePromise()) // and then wait for the CPU to be idle
+        .then(() => requestIdlePromise(200)) // and then wait for the CPU to be idle
         .then(() => {
             if (!rxCollection.destroyed) {
                 rxCollection.cacheReplacementPolicy(rxCollection, rxCollection._queryCache);

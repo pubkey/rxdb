@@ -114,7 +114,7 @@ export const PROMISE_RESOLVE_FALSE: Promise<false> = Promise.resolve(false);
 export const PROMISE_RESOLVE_NULL: Promise<null> = Promise.resolve(null);
 export const PROMISE_RESOLVE_VOID: Promise<void> = Promise.resolve();
 
-export function requestIdlePromise(timeout = null) {
+export function requestIdlePromise(timeout: number | null = null) {
     if (
         typeof window === 'object' &&
         (window as any)['requestIdleCallback']
