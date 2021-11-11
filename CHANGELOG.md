@@ -1,7 +1,7 @@
 # Changelog
 
 
-### X.X.X (comming soon)
+### X.X.X (coming soon)
 
 Bugfixes:
   - LokiJS: Ensure events emit exact the same data as with PouchDB.
