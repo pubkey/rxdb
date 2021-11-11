@@ -106,7 +106,7 @@
     "custom-idle-queue": "3.0.1",
     "deep-equal": "2.0.5",
     "deep-freeze": "0.0.1",
-    "event-reduce-js": "2.0.1",
+    "event-reduce-js": "2.0.0",
     "express": "4.17.1",
     "get-graphql-from-jsonschema": "8.0.16",
     "graphql-client": "2.0.1",
