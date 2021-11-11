@@ -3,6 +3,8 @@
 
 ### X.X.X (coming soon)
 
+### 10.4.0 (11 November 2021)
+
 Bugfixes:
   - LokiJS: Ensure events emit exact the same data as with PouchDB.
   - LokiJS: Queries with limit and skip where broken.
