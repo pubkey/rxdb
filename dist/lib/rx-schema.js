@@ -18,7 +18,7 @@ exports.normalize = normalize;
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 
-var _deepEqual = _interopRequireDefault(require("deep-equal"));
+var _fastDeepEqual = _interopRequireDefault(require("fast-deep-equal"));
 
 var _objectPath = _interopRequireDefault(require("object-path"));
 
@@ -58,7 +58,7 @@ var RxSchema = /*#__PURE__*/function () {
     var _this = this;
 
     this.finalFields.forEach(function (fieldName) {
-      if (!(0, _deepEqual["default"])(dataBefore[fieldName], dataAfter[fieldName])) {
+      if (!(0, _fastDeepEqual["default"])(dataBefore[fieldName], dataAfter[fieldName])) {
         throw (0, _rxError.newRxError)('DOC9', {
           dataBefore: dataBefore,
           dataAfter: dataAfter,
@@ -297,6 +297,8 @@ function normalize(jsonSchema) {
 
 
 function fillWithDefaultSettings(schemaObj) {
+  // TODO we should not have to deep clone here
+  // flat clone the nessescary parts instead.
   schemaObj = (0, _util.clone)(schemaObj); // additionalProperties is always false
 
   schemaObj.additionalProperties = false; // fill with key-compression-state ()

@@ -113,9 +113,11 @@ export declare function getHeightOfRevision(revision: string): number;
 /**
  * Creates a revision string that does NOT include the revision height
  * Copied and adapted from pouchdb-utils/src/rev.js
- * TODO not longer needed when this PR is merged: https://github.com/pouchdb/pouchdb/pull/8274
+ *
+ * We use our own function so RxDB usage without pouchdb RxStorage
+ * does not include pouchdb code in the bundle.
  */
-export declare function createRevision(docData: any, deterministic_revs: boolean): string;
+export declare function createRevision(docData: any): string;
 /**
  * overwrites the getter with the actual value
  * Mostly used for caching stuff on the first run

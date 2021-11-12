@@ -1,10 +1,9 @@
 import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _createClass from "@babel/runtime/helpers/createClass";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
-import randomToken from 'random-token';
 import { IdleQueue } from 'custom-idle-queue';
 import { BroadcastChannel } from 'broadcast-channel';
-import { pluginMissing, flatClone, PROMISE_RESOLVE_FALSE } from './util';
+import { pluginMissing, flatClone, PROMISE_RESOLVE_FALSE, randomCouchString } from './util';
 import { newRxError } from './rx-error';
 import { createRxSchema, getPrimaryFieldOfPrimaryKey } from './rx-schema';
 import { isRxChangeEventIntern } from './rx-change-event';
@@ -44,7 +43,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
      */
     broadcastChannel = arguments.length > 9 ? arguments[9] : undefined;
     this.idleQueue = new IdleQueue();
-    this.token = randomToken(10);
+    this.token = randomCouchString(10);
     this._subs = [];
     this.destroyed = false;
     this.subject = new Subject();
@@ -551,7 +550,7 @@ function _ensureStorageTokenExists2() {
               break;
             }
 
-            storageToken = randomToken(10);
+            storageToken = randomCouchString(10);
             _context4.next = 8;
             return rxDatabase.localDocumentsStore.bulkWrite([{
               document: {

@@ -13,7 +13,7 @@ exports.tunnelQueryCache = tunnelQueryCache;
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 
-var _deepEqual = _interopRequireDefault(require("deep-equal"));
+var _fastDeepEqual = _interopRequireDefault(require("fast-deep-equal"));
 
 var _rxjs = require("rxjs");
 
@@ -504,7 +504,7 @@ function __ensureEqual(rxQuery) {
     return rxQuery._execOverDatabase().then(function (newResultData) {
       rxQuery._latestChangeEvent = latestAfter;
 
-      if (!(0, _deepEqual["default"])(newResultData, rxQuery._resultsData)) {
+      if (!(0, _fastDeepEqual["default"])(newResultData, rxQuery._resultsData)) {
         ret = true; // true because results changed
 
         rxQuery._setResultData(newResultData);

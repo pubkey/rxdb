@@ -450,7 +450,7 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
 
                 if (!documentInDb) {
                   // insert new document
-                  var newRevision = '1-' + createRevision(writeRow.document, true);
+                  var newRevision = '1-' + createRevision(writeRow.document);
                   /**
                    * It is possible to insert already deleted documents,
                    * this can happen on replication.
@@ -504,7 +504,7 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
                   } else {
                     var newRevHeight = getHeightOfRevision(revInDb) + 1;
 
-                    var _newRevision = newRevHeight + '-' + createRevision(writeRow.document, true);
+                    var _newRevision = newRevHeight + '-' + createRevision(writeRow.document);
 
                     var isDeleted = !!writeRow.document._deleted;
 

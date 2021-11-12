@@ -1,5 +1,5 @@
 import _createClass from "@babel/runtime/helpers/createClass";
-import deepEqual from 'deep-equal';
+import deepEqual from 'fast-deep-equal';
 import objectPath from 'object-path';
 import { clone, hash, sortObject, pluginMissing, overwriteGetterForCaching, flatClone } from './util';
 import { newRxError } from './rx-error';
@@ -264,6 +264,8 @@ export function normalize(jsonSchema) {
  */
 
 export function fillWithDefaultSettings(schemaObj) {
+  // TODO we should not have to deep clone here
+  // flat clone the nessescary parts instead.
   schemaObj = clone(schemaObj); // additionalProperties is always false
 
   schemaObj.additionalProperties = false; // fill with key-compression-state ()

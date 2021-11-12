@@ -1,5 +1,5 @@
 import _createClass from "@babel/runtime/helpers/createClass";
-import deepEqual from 'deep-equal';
+import deepEqual from 'fast-deep-equal';
 import { merge, BehaviorSubject, firstValueFrom } from 'rxjs';
 import { mergeMap, filter, map, tap } from 'rxjs/operators';
 import { sortObject, stringifyFilter, pluginMissing, clone, overwriteGetterForCaching, now, PROMISE_RESOLVE_FALSE } from './util';

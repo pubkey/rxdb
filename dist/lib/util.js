@@ -45,10 +45,6 @@ var _sparkMd = _interopRequireDefault(require("spark-md5"));
 
 var _isElectron = _interopRequireDefault(require("is-electron"));
 
-var _pouchdbMd = require("pouchdb-md5");
-
-var _pouchdbUtils = require("pouchdb-utils");
-
 /**
  * Returns an error that indicates that a plugin is missing
  * We do not throw a RxError because this should not be handled
@@ -453,22 +449,21 @@ function parseRevision(revision) {
 function getHeightOfRevision(revision) {
   return parseRevision(revision).height;
 }
-
 /**
  * Creates a revision string that does NOT include the revision height
  * Copied and adapted from pouchdb-utils/src/rev.js
- * TODO not longer needed when this PR is merged: https://github.com/pouchdb/pouchdb/pull/8274
+ * 
+ * We use our own function so RxDB usage without pouchdb RxStorage
+ * does not include pouchdb code in the bundle.
  */
-function createRevision(docData, deterministic_revs) {
-  if (!deterministic_revs) {
-    return (0, _pouchdbUtils.rev)(docData, false);
-  }
 
+
+function createRevision(docData) {
   var docWithoutRev = Object.assign({}, docData, {
-    _rev: undefined,
     _rev_tree: undefined
   });
-  return (0, _pouchdbMd.stringMd5)(JSON.stringify(docWithoutRev));
+  var diggestString = JSON.stringify(docWithoutRev);
+  return _sparkMd["default"].hash(diggestString);
 }
 /**
  * overwrites the getter with the actual value

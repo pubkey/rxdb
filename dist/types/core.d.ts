@@ -5,7 +5,6 @@
 import './types/modules/graphql-client.d';
 import './types/modules/mocha.parallel.d';
 import './types/modules/modifiyjs.d';
-import './types/modules/random-token.d';
 export { addRxPlugin } from './plugin';
 export { createRxDatabase, removeRxDatabase, isRxDatabase, dbCount, _collectionNamePrimary } from './rx-database';
 export { overwritable } from './overwritable';

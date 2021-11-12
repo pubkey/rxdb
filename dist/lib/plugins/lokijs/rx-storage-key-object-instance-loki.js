@@ -292,7 +292,7 @@ var RxStorageKeyObjectInstanceLoki = /*#__PURE__*/function () {
                 var docInDb = collection.by('_id', id);
                 var previous = writeRow.previous ? writeRow.previous : collection.by('_id', id);
                 var newRevHeight = previous ? (0, _util.parseRevision)(previous._rev).height + 1 : 1;
-                var newRevision = newRevHeight + '-' + (0, _util.createRevision)(writeRow.document, true);
+                var newRevision = newRevHeight + '-' + (0, _util.createRevision)(writeRow.document);
                 writeDoc._rev = newRevision;
 
                 if (docInDb) {

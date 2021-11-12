@@ -13,7 +13,7 @@ import _regeneratorRuntime from "@babel/runtime/regenerator";
  *
  */
 import { Subject } from 'rxjs';
-import deepEqual from 'deep-equal';
+import deepEqual from 'fast-deep-equal';
 import { clone, toPromise, flatClone, getHeightOfRevision, createRevision, PROMISE_RESOLVE_VOID, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_NULL } from '../../util';
 import { createRxSchema } from '../../rx-schema';
 import { newRxError } from '../../rx-error';
@@ -477,7 +477,7 @@ function _migrateDocuments2() {
                  * so replicating instances use our new document data
                  */
                 var newHeight = getHeightOfRevision(docData._rev) + 1;
-                var newRevision = newHeight + '-' + createRevision(migratedDocData, true);
+                var newRevision = newHeight + '-' + createRevision(migratedDocData);
                 migratedDocData._rev = newRevision;
               }
 

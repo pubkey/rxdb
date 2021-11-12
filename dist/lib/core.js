@@ -257,8 +257,6 @@ require("./types/modules/mocha.parallel.d");
 
 require("./types/modules/modifiyjs.d");
 
-require("./types/modules/random-token.d");
-
 var _plugin = require("./plugin");
 
 var _rxDatabase = require("./rx-database");

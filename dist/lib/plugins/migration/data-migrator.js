@@ -25,7 +25,7 @@ var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/
 
 var _rxjs = require("rxjs");
 
-var _deepEqual = _interopRequireDefault(require("deep-equal"));
+var _fastDeepEqual = _interopRequireDefault(require("fast-deep-equal"));
 
 var _util = require("../../util");
 
@@ -449,7 +449,7 @@ function isDocumentDataWithoutRevisionEqual(doc1, doc2) {
     _attachments: undefined,
     _rev: undefined
   });
-  return (0, _deepEqual["default"])(doc1NoRev, doc2NoRev);
+  return (0, _fastDeepEqual["default"])(doc1NoRev, doc2NoRev);
 }
 /**
  * transform documents data and save them to the new collection
@@ -520,7 +520,7 @@ function _migrateDocuments2() {
                  * so replicating instances use our new document data
                  */
                 var newHeight = (0, _util.getHeightOfRevision)(docData._rev) + 1;
-                var newRevision = newHeight + '-' + (0, _util.createRevision)(migratedDocData, true);
+                var newRevision = newHeight + '-' + (0, _util.createRevision)(migratedDocData);
                 migratedDocData._rev = newRevision;
               }
 

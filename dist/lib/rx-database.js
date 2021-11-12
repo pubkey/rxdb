@@ -21,8 +21,6 @@ var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 
-var _randomToken = _interopRequireDefault(require("random-token"));
-
 var _customIdleQueue = require("custom-idle-queue");
 
 var _broadcastChannel = require("broadcast-channel");
@@ -77,7 +75,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
      */
     broadcastChannel = arguments.length > 9 ? arguments[9] : undefined;
     this.idleQueue = new _customIdleQueue.IdleQueue();
-    this.token = (0, _randomToken["default"])(10);
+    this.token = (0, _util.randomCouchString)(10);
     this._subs = [];
     this.destroyed = false;
     this.subject = new _rxjs.Subject();
@@ -587,7 +585,7 @@ function _ensureStorageTokenExists2() {
               break;
             }
 
-            storageToken = (0, _randomToken["default"])(10);
+            storageToken = (0, _util.randomCouchString)(10);
             _context4.next = 8;
             return rxDatabase.localDocumentsStore.bulkWrite([{
               document: {
