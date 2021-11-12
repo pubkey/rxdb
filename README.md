@@ -137,7 +137,7 @@ await db.addCollections({
 db.heroes.insert({ name: 'Bob' });                          
 ```
 
-## Feature-Showroom (click to toggle)
+## Features (click to toggle)
 
 <details>
 <summary>
