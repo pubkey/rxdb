@@ -119,7 +119,7 @@ export class RxDatabaseBase<
     }
 
     public idleQueue: IdleQueue = new IdleQueue();
-    public readonly token: string = randomToken(10);
+    public readonly token: string = randomCouchString(10);
     public _subs: Subscription[] = [];
     public destroyed: boolean = false;
     public collections: Collections;
