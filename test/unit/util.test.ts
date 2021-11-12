@@ -8,13 +8,17 @@ import {
     randomCouchString,
     sortObject,
     now,
-    blobBufferUtil
+    blobBufferUtil,
+    createRevision
 } from '../../plugins/core';
 
 import {
     validateDatabaseName,
     deepFreezeWhenDevMode
 } from '../../plugins/dev-mode';
+import {
+    rev as pouchCreateRevisison
+} from 'pouchdb-utils';
 
 describe('util.test.js', () => {
     describe('.fastUnsecureHash()', () => {
@@ -41,6 +45,31 @@ describe('util.test.js', () => {
             const hash = fastUnsecureHash(str);
             assert.strictEqual(typeof hash, 'number');
             assert.ok(hash > 0);
+        });
+    });
+    describe('.createRevision()', () => {
+        it('should return the same values for the same document data', async () => {
+            const hash1 = createRevision({
+                foo: 'bar',
+                bar: 'foo'
+            });
+            const hash2 = createRevision({
+                foo: 'bar',
+                bar: 'foo',
+                // _rev_tree must be ignored from hashing
+                _rev_tree: 'foobar'
+            });
+            assert.strictEqual(hash1, hash2);
+        });
+        it('should return the same value as pouchdb', async () => {
+            const docData = {
+                foo: 'bar',
+                bar: 'foo',
+                _rev_tree: '1-asdfasdf'
+            };
+            const ownRev = createRevision(docData);
+            const pouchRev = pouchCreateRevisison(docData, true);
+            assert.strictEqual(ownRev, pouchRev);
         });
     });
     describe('.sortObject()', () => {

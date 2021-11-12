@@ -2,7 +2,7 @@ import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 
 export default {
-    input: './dist/es/index.js',
+    input: './config/bundle-size.js',
     output: {
         sourcemap: true,
         format: 'iife',

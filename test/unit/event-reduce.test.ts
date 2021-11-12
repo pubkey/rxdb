@@ -165,8 +165,6 @@ describe('event-reduce.test.js', () => {
                     .fill(0)
                     .map(async () => {
                         const doc = schemaObjects.human();
-                        console.log('insert:');
-                        console.dir(doc);
                         await colNoEventReduce.insert(doc);
                         await colWithEventReduce.insert(doc);
                     })

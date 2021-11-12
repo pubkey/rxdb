@@ -384,18 +384,20 @@ export function getHeightOfRevision(revision: string): number {
     return parseRevision(revision).height;
 }
 
-import { stringMd5 } from 'pouchdb-md5';
-
 /**
  * Creates a revision string that does NOT include the revision height
  * Copied and adapted from pouchdb-utils/src/rev.js
+ * 
+ * We use our own function so RxDB usage without pouchdb RxStorage
+ * does not include pouchdb code in the bundle.
  */
 export function createRevision(docData: any): string {
     const docWithoutRev = Object.assign({}, docData, {
-        _rev: undefined,
         _rev_tree: undefined
     });
-    return stringMd5(JSON.stringify(docWithoutRev));
+
+    const diggestString = JSON.stringify(docWithoutRev);
+    return Md5.hash(diggestString);
 }
 
 /**

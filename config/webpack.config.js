@@ -13,7 +13,7 @@ if (process.env.NODE_ENV === 'disc')
 
 module.exports = {
     mode: 'production',
-    entry: './dist/es/index.js',
+    entry: './config/bundle-size.js',
     optimization: {
         minimize: true,
         minimizer: [
