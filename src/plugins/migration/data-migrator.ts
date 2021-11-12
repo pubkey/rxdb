@@ -12,7 +12,7 @@ import {
     Subject,
     Observable
 } from 'rxjs';
-import deepEqual from 'deep-equal';
+import deepEqual from 'fast-deep-equal';
 import {
     clone,
     toPromise,

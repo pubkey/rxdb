@@ -1,4 +1,4 @@
-import deepEqual from 'deep-equal';
+import deepEqual from 'fast-deep-equal';
 import {
     merge,
     BehaviorSubject,
