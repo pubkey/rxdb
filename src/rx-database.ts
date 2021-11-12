@@ -1,4 +1,3 @@
-import randomToken from 'random-token';
 import { IdleQueue } from 'custom-idle-queue';
 import { BroadcastChannel } from 'broadcast-channel';
 
@@ -26,7 +25,8 @@ import type {
 import {
     pluginMissing,
     flatClone,
-    PROMISE_RESOLVE_FALSE
+    PROMISE_RESOLVE_FALSE,
+    randomCouchString
 } from './util';
 import {
     newRxError
@@ -482,7 +482,7 @@ export async function _ensureStorageTokenExists<Collections = any>(rxDatabase: R
     const storageTokenDocumentId = 'storageToken';
     const storageTokenDoc = await findLocalDocument<{ value: string }>(rxDatabase.localDocumentsStore, storageTokenDocumentId);
     if (!storageTokenDoc) {
-        const storageToken = randomToken(10);
+        const storageToken = randomCouchString(10);
         await rxDatabase.localDocumentsStore.bulkWrite([{
             document: {
                 _id: storageTokenDocumentId,

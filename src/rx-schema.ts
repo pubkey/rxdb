@@ -299,6 +299,8 @@ export function normalize<T>(jsonSchema: RxJsonSchema<T>): RxJsonSchema<T> {
 export function fillWithDefaultSettings<T = any>(
     schemaObj: RxJsonSchema<T>
 ): RxJsonSchema<T> {
+    // TODO we should not have to deep clone here
+    // flat clone the nessescary parts instead.
     schemaObj = clone(schemaObj);
 
     // additionalProperties is always false

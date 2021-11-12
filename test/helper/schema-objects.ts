@@ -4,11 +4,9 @@
 
 import faker from 'faker';
 
-// TODO replace this method with corresponding method from async-test-util
-import randomToken from 'random-token';
-
 import {
-    randomNumber
+    randomNumber,
+    randomString
 } from 'async-test-util';
 
 
@@ -23,7 +21,7 @@ export interface AgeHumanDocumentType {
 }
 export interface HumanDocumentType extends SimpleHumanDocumentType, AgeHumanDocumentType { }
 export function human(
-    passportId: string = randomToken(12)
+    passportId: string = randomString(12)
 ): HumanDocumentType {
     return {
         passportId: passportId,
@@ -35,7 +33,7 @@ export function human(
 
 export function simpleHuman(): SimpleHumanDocumentType {
     return {
-        passportId: randomToken(12),
+        passportId: randomString(12),
         firstName: faker.name.firstName(),
         lastName: faker.name.lastName()
     };
@@ -47,7 +45,7 @@ export interface SimpleHumanV3DocumentType {
 }
 export function simpleHumanV3(): SimpleHumanV3DocumentType {
     return {
-        passportId: randomToken(12),
+        passportId: randomString(12),
         age: randomNumber(10, 50)
     };
 }
@@ -58,7 +56,7 @@ export interface SimpleHumanAgeDocumentType {
 }
 export function simpleHumanAge(): SimpleHumanAgeDocumentType {
     return {
-        passportId: randomToken(12),
+        passportId: randomString(12),
         age: randomNumber(10, 50) + ''
     };
 }
@@ -71,7 +69,7 @@ export interface HumanWithSubOtherDocumentType {
 }
 export function humanWithSubOther(): HumanWithSubOtherDocumentType {
     return {
-        passportId: randomToken(12),
+        passportId: randomString(12),
         other: {
             age: randomNumber(10, 50)
         }
@@ -99,10 +97,10 @@ export interface NestedHumanDocumentType {
 }
 export function nestedHuman(): NestedHumanDocumentType {
     return {
-        passportId: randomToken(12),
+        passportId: randomString(12),
         firstName: faker.name.firstName(),
         mainSkill: {
-            name: randomToken(6),
+            name: randomString(6),
             level: 5
         }
     };
@@ -120,9 +118,9 @@ export interface DeepNestedHumanDocumentType {
 }
 export function deepNestedHuman(): DeepNestedHumanDocumentType {
     return {
-        passportId: randomToken(12),
+        passportId: randomString(12),
         mainSkill: {
-            name: randomToken(6),
+            name: randomString(6),
             attack: {
                 good: false,
                 count: 5
@@ -140,8 +138,8 @@ export interface BigHumanDocumentType {
 }
 export function bigHumanDocumentType(): BigHumanDocumentType {
     return {
-        passportId: randomToken(12),
-        dnaHash: randomToken(12),
+        passportId: randomString(12),
+        dnaHash: randomString(12),
         firstName: faker.name.firstName(),
         lastName: faker.name.lastName(),
         age: randomNumber(10, 50)
@@ -157,10 +155,10 @@ export interface HeroArrayDocumentType {
 }
 export function heroArray(): HeroArrayDocumentType {
     return {
-        name: randomToken(6),
+        name: randomString(6),
         skills: new Array(3).fill(0).map(() => {
             return {
-                name: randomToken(6),
+                name: randomString(6),
                 damage: randomNumber(10, 50)
             };
         })
@@ -173,8 +171,8 @@ export interface SimpleHeroArrayDocumentType {
 }
 export function simpleHeroArray(): SimpleHeroArrayDocumentType {
     return {
-        name: randomToken(6),
-        skills: new Array(3).fill(0).map(() => randomToken(6))
+        name: randomString(6),
+        skills: new Array(3).fill(0).map(() => randomString(6))
     };
 }
 
@@ -185,9 +183,9 @@ export interface EncryptedHumanDocumentType {
 }
 export function encryptedHuman(): EncryptedHumanDocumentType {
     return {
-        passportId: randomToken(12),
+        passportId: randomString(12),
         firstName: faker.name.firstName(),
-        secret: randomToken(12)
+        secret: randomString(12)
     };
 }
 
@@ -201,11 +199,11 @@ export interface EncryptedObjectHumanDocumentType {
 }
 export function encryptedObjectHuman(): EncryptedObjectHumanDocumentType {
     return {
-        passportId: randomToken(12),
+        passportId: randomString(12),
         firstName: faker.name.firstName(),
         secret: {
-            name: randomToken(12),
-            subname: randomToken(12)
+            name: randomString(12),
+            subname: randomString(12)
         }
     };
 }
@@ -230,20 +228,20 @@ export interface EncryptedDeepHumanDocumentType {
 }
 export function encryptedDeepHumanDocumentType(): EncryptedDeepHumanDocumentType {
     return {
-        passportId: randomToken(12),
+        passportId: randomString(12),
         firstName: faker.name.firstName(),
-        firstLevelPassword: randomToken(12),
+        firstLevelPassword: randomString(12),
         secretData: {
-            pw: randomToken(12)
+            pw: randomString(12)
         },
         deepSecret: {
             darkhole: {
-                pw: randomToken(12)
+                pw: randomString(12)
             }
         },
         nestedSecret: {
             darkhole: {
-                pw: randomToken(12)
+                pw: randomString(12)
             }
         }
     };
@@ -256,8 +254,8 @@ export interface CompoundIndexDocumentType {
 }
 export function compoundIndex(): CompoundIndexDocumentType {
     return {
-        passportId: randomToken(12),
-        passportCountry: randomToken(12),
+        passportId: randomString(12),
+        passportCountry: randomString(12),
         age: randomNumber(10, 50)
     };
 }
@@ -269,8 +267,8 @@ export interface CompoundIndexNoStringDocumentType {
 }
 export function compoundIndexNoString(): CompoundIndexNoStringDocumentType {
     return {
-        passportId: randomToken(12),
-        passportCountry: { [randomToken(12)]: randomToken(12) },
+        passportId: randomString(12),
+        passportCountry: { [randomString(12)]: randomString(12) },
         age: randomNumber(10, 50)
     };
 }
@@ -292,7 +290,7 @@ export interface RefHumanDocumentType {
 }
 export function refHuman(bestFriend?: string): RefHumanDocumentType {
     return {
-        name: randomToken(12),
+        name: randomString(12),
         bestFriend
     } as any;
 }
@@ -305,7 +303,7 @@ export interface RefHumanNestedDocumentType {
 }
 export function refHumanNested(bestFriend?: string): RefHumanNestedDocumentType {
     return {
-        name: randomToken(12),
+        name: randomString(12),
         foo: {
             bestFriend
         } as any
@@ -321,7 +319,7 @@ export interface HumanWithTimestampDocumentType {
 export function humanWithTimestamp(): HumanWithTimestampDocumentType {
     const now = new Date().getTime() / 1000;
     return {
-        id: randomToken(12),
+        id: randomString(12),
         name: faker.name.firstName(),
         age: randomNumber(1, 100),
         // use some time in the past week
@@ -344,16 +342,16 @@ export interface AverageSchemaDocumentType {
 }
 export function averageSchema(): AverageSchemaDocumentType {
     return {
-        id: randomToken(12),
-        var1: randomToken(12),
+        id: randomString(12),
+        var1: randomString(12),
         var2: randomNumber(100, 50000),
         deep: {
-            deep1: randomToken(5),
-            deep2: randomToken(8)
+            deep1: randomString(5),
+            deep2: randomString(8)
         },
         list: new Array(5).fill(0).map(() => ({
-            deep1: randomToken(5),
-            deep2: randomToken(8)
+            deep1: randomString(5),
+            deep2: randomString(8)
         }))
     };
 }
@@ -365,7 +363,7 @@ export interface PointDocumentType {
 }
 export function point(): PointDocumentType {
     return {
-        id: randomToken(12),
+        id: randomString(12),
         x: faker.datatype.number(),
         y: faker.datatype.number()
     };
@@ -378,7 +376,7 @@ export interface HumanWithIdAndAgeIndexDocumentType {
 }
 export function humanWithIdAndAgeIndexDocumentType(): HumanWithIdAndAgeIndexDocumentType {
     return {
-        id: randomToken(12),
+        id: randomString(12),
         name: faker.name.firstName(),
         age: randomNumber(1, 100)
     };

@@ -3,7 +3,7 @@
  * @link https://github.com/pouchdb/express-pouchdb
  */
 
-import randomToken from 'random-token';
+import { randomString } from 'async-test-util';
 
 const express = require('express');
 const app = express();
@@ -29,7 +29,7 @@ export async function spawn(): Promise<{
     return new Promise(res => {
         const server = app.listen(lastPort, function () {
             res({
-                url: ret + '/' + randomToken(5) + '/',
+                url: ret + '/' + randomString(5) + '/',
                 close(now = false) {
                     if (now) {
                         server.close();

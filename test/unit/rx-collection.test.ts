@@ -1,8 +1,7 @@
 import assert from 'assert';
-import randomToken from 'random-token';
 import clone from 'clone';
 import config from './config';
-import AsyncTestUtil, { randomNumber } from 'async-test-util';
+import AsyncTestUtil, { randomNumber, randomString } from 'async-test-util';
 
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
@@ -614,13 +613,13 @@ config.parallel('rx-collection.test.js', () => {
                     const c = await humansCollection.create(10);
                     // add 2 docs to be found
                     await c.insert({
-                        passportId: randomToken(12),
+                        passportId: randomString(12),
                         firstName: 'foobarAlice',
                         lastName: 'aliceLastName',
                         age: randomNumber(10, 50)
                     });
                     await c.insert({
-                        passportId: randomToken(12),
+                        passportId: randomString(12),
                         firstName: 'foobarBob',
                         lastName: 'bobLastName',
                         age: randomNumber(10, 50)

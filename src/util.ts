@@ -250,8 +250,9 @@ export function randomCouchString(length: number = 10): string {
     let text = '';
     const possible = 'abcdefghijklmnopqrstuvwxyz';
 
-    for (let i = 0; i < length; i++)
+    for (let i = 0; i < length; i++) {
         text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
 
     return text;
 }
