@@ -468,7 +468,7 @@ export async function _migrateDocuments(
              * so replicating instances use our new document data
              */
             const newHeight = getHeightOfRevision(docData._rev) + 1;
-            const newRevision = newHeight + '-' + createRevision(migratedDocData, true);
+            const newRevision = newHeight + '-' + createRevision(migratedDocData);
             migratedDocData._rev = newRevision;
         }
 

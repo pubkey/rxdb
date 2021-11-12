@@ -212,7 +212,7 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
             const docInDb = collection.by('_id', id);
             const previous = writeRow.previous ? writeRow.previous : collection.by('_id', id);
             const newRevHeight = previous ? parseRevision(previous._rev).height + 1 : 1;
-            const newRevision = newRevHeight + '-' + createRevision(writeRow.document, true);
+            const newRevision = newRevHeight + '-' + createRevision(writeRow.document);
             writeDoc._rev = newRevision;
             if (docInDb) {
                 if (

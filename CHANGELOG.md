@@ -1,7 +1,9 @@
 # Changelog
 
-
 ### X.X.X (coming soon)
+
+Other:
+  - Decreased build size by not importing `pouchdb-utils`
 
 ### 10.4.0 (11 November 2021)
 

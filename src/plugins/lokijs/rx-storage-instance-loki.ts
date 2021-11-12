@@ -385,7 +385,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
 
             if (!documentInDb) {
                 // insert new document
-                const newRevision = '1-' + createRevision(writeRow.document, true);
+                const newRevision = '1-' + createRevision(writeRow.document);
 
                 /**
                  * It is possible to insert already deleted documents,
@@ -450,7 +450,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                     ret.error.set(id, err);
                 } else {
                     const newRevHeight = getHeightOfRevision(revInDb) + 1;
-                    const newRevision = newRevHeight + '-' + createRevision(writeRow.document, true);
+                    const newRevision = newRevHeight + '-' + createRevision(writeRow.document);
                     const isDeleted = !!writeRow.document._deleted;
                     const writeDoc: any = Object.assign(
                         {},
