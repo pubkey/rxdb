@@ -2,6 +2,8 @@
 
 ### X.X.X (coming soon)
 
+### 10.4.1 (13 November 2021)
+
 Other:
   - Decreased build size by not importing `pouchdb-utils`
   - Improve build size and performance by replacing [deep-equal](https://www.npmjs.com/package/deep-equal) with [fast-deep-equal](https://github.com/epoberezkin/fast-deep-equal#readme)
