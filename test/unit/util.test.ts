@@ -83,7 +83,7 @@ describe('util.test.js', () => {
             assert.ok(sorted.color.$regex instanceof RegExp);
         });
     });
-    describe('.validateCouchDBString()', () => {
+    describe('.validateDatabaseName()', () => {
         describe('positive', () => {
             it('should validate a normal string', () => {
                 validateDatabaseName('foobar');

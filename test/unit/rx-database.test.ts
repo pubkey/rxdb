@@ -436,7 +436,7 @@ config.parallel('rx-database.test.js', () => {
                         }
                     }),
                     'RxError',
-                    'underscore'
+                    'UT2'
                 );
                 db.destroy();
             });

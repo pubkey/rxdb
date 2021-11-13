@@ -109,7 +109,6 @@ import {
     getRxDocumentConstructor
 } from './rx-document-prototype-merge';
 import { storageChangeEventToRxChangeEvent } from './rx-storage-helper';
-import { validateDatabaseName } from './plugins/dev-mode/check-names';
 import { overwritable } from './overwritable';
 
 const HOOKS_WHEN = ['pre', 'post'];
@@ -963,8 +962,6 @@ export function createRxCollection(
     }: any,
     wasCreatedBefore: boolean
 ): Promise<RxCollection> {
-    validateDatabaseName(name);
-
     // TODO move this check to dev-mode plugin
     if (overwritable.isDevMode()) {
         Object.keys(methods)

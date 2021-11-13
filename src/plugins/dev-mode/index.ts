@@ -23,7 +23,7 @@ import { newRxError } from '../../rx-error';
 import { DeepReadonly } from '../../types/util';
 
 export * from './check-schema';
-export * from './check-names';
+export * from './unallowed-properties';
 
 import deepFreeze from 'deep-freeze';
 
