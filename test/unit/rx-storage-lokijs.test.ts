@@ -25,6 +25,7 @@ import { waitUntil } from 'async-test-util';
 addRxPlugin(RxDBValidatePlugin);
 import * as path from 'path';
 import * as fs from 'fs';
+import { IdleQueue } from 'custom-idle-queue';
 
 /**
  * RxStoragePouch specific tests
@@ -159,18 +160,25 @@ config.parallel('rx-storage-lokijs.test.js', () => {
                 databaseName: dbLocation,
                 collectionName: randomCouchString(12),
                 schema: getPseudoSchemaForVersion(0, 'key'),
-                options: {}
+                options: {},
+                idleQueue: new IdleQueue()
             });
 
-            const localState = await storageInstance.internals.localState;
+            const localState = await ensureNotFalsy(storageInstance.internals.localState);
 
-            assert.ok(ensureNotFalsy(localState).database.persistenceAdapter === adapter);
+            assert.ok(localState.databaseState.database.persistenceAdapter === adapter);
             await storageInstance.bulkWrite([{ document: { key: 'foobar', _attachments: {} } }]);
-            await storageInstance.close();
 
-            // it should have written the file to the filesystem
-            const exists = fs.existsSync(dbLocation + '.db');
-            assert.ok(exists);
+            /**
+             * It should have written the file to the filesystem
+             * on the next autosave
+             */
+            await waitUntil(() => {
+                const exists = fs.existsSync(dbLocation + '.db');
+                return exists;
+            });
+
+            await storageInstance.close();
         });
     });
 

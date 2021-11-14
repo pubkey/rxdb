@@ -6,7 +6,7 @@ import type {
     RxStorage,
     RxStorageInstanceCreationParams
 } from '../../types';
-import { hash } from '../../util';
+import { flatClone, hash } from '../../util';
 import {
     createLokiStorageInstance,
     RxStorageInstanceLoki
@@ -36,6 +36,11 @@ export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettin
     public async createKeyObjectStorageInstance(
         params: RxKeyObjectStorageInstanceCreationParams<LokiSettings>
     ): Promise<RxStorageKeyObjectInstanceLoki> {
+
+        // ensure we never mix up key-object data with normal storage documents.
+        const useParams = flatClone(params);
+        useParams.collectionName = params.collectionName + '-key-object';
+
         return createLokiKeyObjectStorageInstance(params, this.databaseSettings);
     }
 }

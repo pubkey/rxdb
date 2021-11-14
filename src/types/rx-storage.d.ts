@@ -5,6 +5,7 @@ import { RxJsonSchema } from './rx-schema';
 import type {
     BroadcastChannel
 } from 'broadcast-channel';
+import type { IdleQueue } from 'custom-idle-queue';
 
 
 /**
@@ -248,6 +249,13 @@ export type RxStorageInstanceCreationParams<DocumentData, InstanceCreationOption
     schema: RxJsonSchema<DocumentData>;
     options: InstanceCreationOptions;
     /**
+     * The idle queue from the RxDatabase is passed,
+     * so that the storage instance is able to detect
+     * when the database is idle and background stuff
+     * like persistence, replication etc. can be done.
+     */
+    idleQueue: IdleQueue;
+    /**
      * The broadcastChannel is passed
      * to the storage instance,
      * so it can reuse the same leader elector
@@ -262,6 +270,13 @@ export type RxKeyObjectStorageInstanceCreationParams<InstanceCreationOptions> = 
     databaseName: string;
     collectionName: string;
     options: InstanceCreationOptions;
+    /**
+     * The idle queue from the RxDatabase is passed,
+     * so that the storage instance is able to detect
+     * when the database is idle and background stuff
+     * like persistence, replication etc. can be done.
+     */
+    idleQueue: IdleQueue;
     /**
      * The broadcastChannel is passed
      * to the storage instance,

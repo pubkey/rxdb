@@ -5,6 +5,9 @@
 Other:
   - Removed useless runtime check of database name, only check in dev-mode.
 
+Changes:
+  - LokiJS: Use custom save handler instead of setting `autosave: true`
+
 ### 10.4.1 (13 November 2021)
 
 Other:

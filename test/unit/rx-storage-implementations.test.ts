@@ -41,6 +41,7 @@ import {
     RxStorageKeyObjectInstance
 } from '../../src/types';
 import { getLeaderElectorByBroadcastChannel } from '../../plugins/leader-election';
+import { IdleQueue } from 'custom-idle-queue';
 
 addRxPlugin(RxDBQueryBuilderPlugin);
 
@@ -123,13 +124,26 @@ declare type RandomDoc = {
 
 config.parallel('rx-storage-implementations.test.js (implementation: ' + config.storage.name + ')', () => {
     describe('RxStorageInstance', () => {
+        describe('creation', () => {
+            it('open and close', async () => {
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    options: {},
+                    idleQueue: new IdleQueue()
+                });
+                await storageInstance.close();
+            });
+        });
         describe('.bulkWrite()', () => {
             it('should write the document', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
-                    options: {}
+                    options: {},
+                    idleQueue: new IdleQueue()
                 });
 
                 const docData = {
@@ -158,7 +172,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
-                    options: {}
+                    options: {},
+                    idleQueue: new IdleQueue()
                 });
 
                 const writeData: RxDocumentWriteData<TestDocType> = {
@@ -191,7 +206,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
-                    options: {}
+                    options: {},
+                    idleQueue: new IdleQueue()
                 });
 
                 const insertResponse = await storageInstance.bulkWrite(
@@ -240,7 +256,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema,
-                    options: {}
+                    options: {},
+                    idleQueue: new IdleQueue()
                 });
                 const docId = 'foobar';
                 const insertData: RxDocumentData<OptionalValueTestDoc> = {
@@ -286,7 +303,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
-                    options: {}
+                    options: {},
+                    idleQueue: new IdleQueue()
                 });
 
                 const writeData: RxDocumentData<TestDocType> = {
@@ -321,7 +339,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, '_id' as any),
-                    options: {}
+                    options: {},
+                    idleQueue: new IdleQueue()
                 });
 
                 const query: MangoQuery = {
@@ -356,7 +375,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getTestDataSchema(),
-                    options: {}
+                    options: {},
+                    idleQueue: new IdleQueue()
                 });
 
                 const matchingValue = 'foobar';
@@ -402,7 +422,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, '_id' as any),
-                    options: {}
+                    options: {},
+                    idleQueue: new IdleQueue()
                 });
 
                 const query: MangoQuery = {
@@ -440,7 +461,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         databaseName: randomCouchString(12),
                         collectionName: randomCouchString(12),
                         schema: getPseudoSchemaForVersion(0, 'key'),
-                        options: {}
+                        options: {},
+                        idleQueue: new IdleQueue()
                     });
 
                 const writeData = {
@@ -473,7 +495,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         databaseName: randomCouchString(12),
                         collectionName: randomCouchString(12),
                         schema: getPseudoSchemaForVersion(0, 'key'),
-                        options: {}
+                        options: {},
+                        idleQueue: new IdleQueue()
                     });
 
                 const value = 'foobar';
@@ -509,7 +532,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         databaseName: randomCouchString(12),
                         collectionName: randomCouchString(12),
                         schema: getTestDataSchema(),
-                        options: {}
+                        options: {},
+                        idleQueue: new IdleQueue()
                     });
 
                 await storageInstance.bulkWrite([
@@ -585,7 +609,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         databaseName: randomCouchString(12),
                         collectionName: randomCouchString(12),
                         schema,
-                        options: {}
+                        options: {},
+                        idleQueue: new IdleQueue()
                     });
 
                 const docData: RxDocumentWriteData<RandomDoc>[] = new Array(10)
@@ -652,7 +677,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
-                    options: {}
+                    options: {},
+                    idleQueue: new IdleQueue()
                 });
 
                 const docData = {
@@ -679,7 +705,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
-                    options: {}
+                    options: {},
+                    idleQueue: new IdleQueue()
                 });
 
                 const insertResult = await storageInstance.bulkWrite(
@@ -721,7 +748,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
-                    options: {}
+                    options: {},
+                    idleQueue: new IdleQueue()
                 });
                 async function getSequenceAfter(since: number): Promise<number> {
                     const changesResult = await storageInstance.getChangedDocuments({
@@ -781,7 +809,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
-                    options: {}
+                    options: {},
+                    idleQueue: new IdleQueue()
                 });
 
                 let previous: RxDocumentData<TestDocType> | undefined;
@@ -874,7 +903,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getTestDataSchema(),
-                    options: {}
+                    options: {},
+                    idleQueue: new IdleQueue()
                 });
 
                 const insertDocs = new Array(10).fill(0).map(() => getWriteData());
@@ -899,7 +929,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
-                    options: {}
+                    options: {},
+                    idleQueue: new IdleQueue()
                 });
 
                 const key = 'foobar';
@@ -955,7 +986,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     schema: getPseudoSchemaForVersion(0, 'key'),
                     options: {
                         auto_compaction: false
-                    }
+                    },
+                    idleQueue: new IdleQueue()
                 });
 
                 const emitted: RxStorageChangeEvent<TestDocType>[] = [];
@@ -989,7 +1021,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     schema: getPseudoSchemaForVersion(0, 'key'),
                     options: {
                         auto_compaction: false
-                    }
+                    },
+                    idleQueue: new IdleQueue()
                 });
 
                 const emitted: RxStorageChangeEvent<RxDocumentData<TestDocType>>[] = [];
@@ -1061,7 +1094,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     schema: getPseudoSchemaForVersion(0, 'key'),
                     options: {
                         auto_compaction: false
-                    }
+                    },
+                    idleQueue: new IdleQueue()
                 });
 
                 const emitted: RxStorageChangeEvent<TestDocType>[] = [];
@@ -1120,7 +1154,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
-                    options: {}
+                    options: {},
+                    idleQueue: new IdleQueue()
                 });
 
                 const id = 'foobar';
@@ -1223,7 +1258,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     schema: getPseudoSchemaForVersion(0, 'key'),
                     options: {
                         auto_compaction: false
-                    }
+                    },
+                    idleQueue: new IdleQueue()
                 });
 
                 const emitted: RxStorageChangeEvent<any>[] = [];
@@ -1302,7 +1338,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     schema: getPseudoSchemaForVersion(0, 'key'),
                     options: {
                         auto_compaction: false
-                    }
+                    },
+                    idleQueue: new IdleQueue()
                 });
 
                 let previous: RxDocumentData<TestDocType> | undefined;
@@ -1327,6 +1364,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }
                 );
 
+                if (!previous) {
+                    throw new Error('previous missing');
+                }
+
                 writeData._attachments = flatClone(previous._attachments) as any;
                 writeData._attachments.bar = {
                     data: blobBufferUtil.createBlobBuffer(randomString(20), 'text/plain'),
@@ -1340,6 +1381,9 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         document: writeData
                     }
                 );
+                if (!previous) {
+                    throw new Error('previous missing');
+                }
 
                 assert.strictEqual(Object.keys(previous._attachments).length, 2);
                 storageInstance.close();
@@ -1353,7 +1397,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     databaseName,
                     collectionName,
                     schema: getPseudoSchemaForVersion(0, 'key'),
-                    options: {}
+                    options: {},
+                    idleQueue: new IdleQueue()
                 });
                 await storageInstance.bulkWrite([
                     {
@@ -1371,7 +1416,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     databaseName,
                     collectionName,
                     schema: getPseudoSchemaForVersion(0, 'key'),
-                    options: {}
+                    options: {},
+                    idleQueue: new IdleQueue()
                 });
                 const docs = await storageInstance2.findDocumentsById(['foobar'], false);
                 assert.strictEqual(docs.size, 0);
@@ -1389,7 +1435,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     .createKeyObjectStorageInstance({
                         databaseName: randomCouchString(12),
                         collectionName: randomCouchString(12),
-                        options: {}
+                        options: {},
+                        idleQueue: new IdleQueue()
                     });
 
                 const writeData = {
@@ -1422,7 +1469,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     .createKeyObjectStorageInstance({
                         databaseName: randomCouchString(12),
                         collectionName: randomCouchString(12),
-                        options: {}
+                        options: {},
+                        idleQueue: new IdleQueue()
                     });
 
                 const writeResponse = await storageInstance.bulkWrite(
@@ -1458,7 +1506,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     .createKeyObjectStorageInstance({
                         databaseName: randomCouchString(12),
                         collectionName: randomCouchString(12),
-                        options: {}
+                        options: {},
+                        idleQueue: new IdleQueue()
                     });
 
                 const writeData = [{
@@ -1490,7 +1539,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     .createKeyObjectStorageInstance({
                         databaseName: randomCouchString(12),
                         collectionName: randomCouchString(12),
-                        options: {}
+                        options: {},
+                        idleQueue: new IdleQueue()
                     });
 
                 const writeDoc = {
@@ -1535,7 +1585,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     .createKeyObjectStorageInstance({
                         databaseName: randomCouchString(12),
                         collectionName: randomCouchString(12),
-                        options: {}
+                        options: {},
+                        idleQueue: new IdleQueue()
                     });
 
                 const writeData = {
@@ -1567,7 +1618,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     .createKeyObjectStorageInstance({
                         databaseName: randomCouchString(12),
                         collectionName: randomCouchString(12),
-                        options: {}
+                        options: {},
+                        idleQueue: new IdleQueue()
                     });
 
                 const emitted: RxStorageChangeEvent<RxLocalDocumentData>[] = [];
@@ -1600,7 +1652,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     .createKeyObjectStorageInstance({
                         databaseName: randomCouchString(12),
                         collectionName: randomCouchString(12),
-                        options: {}
+                        options: {},
+                        idleQueue: new IdleQueue()
                     });
 
                 const emitted: RxStorageChangeEvent<RxLocalDocumentData>[] = [];
@@ -1661,7 +1714,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     .createKeyObjectStorageInstance({
                         databaseName,
                         collectionName,
-                        options: {}
+                        options: {},
+                        idleQueue: new IdleQueue()
                     });
                 await storageInstance.bulkWrite([
                     {
@@ -1679,7 +1733,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const storageInstance2 = await config.storage.getStorage().createKeyObjectStorageInstance({
                     databaseName,
                     collectionName,
-                    options: {}
+                    options: {},
+                    idleQueue: new IdleQueue()
                 });
                 const docs = await storageInstance2.findLocalDocumentsById(['foobar']);
                 assert.strictEqual(docs.size, 0);
@@ -1707,14 +1762,16 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 collectionName,
                 schema: getPseudoSchemaForVersion(0, 'key'),
                 options: {},
-                broadcastChannel: broadcastChannelA
+                broadcastChannel: broadcastChannelA,
+                idleQueue: new IdleQueue()
             });
             const b = await config.storage.getStorage().createStorageInstance<TestDocType>({
                 databaseName,
                 collectionName,
                 schema: getPseudoSchemaForVersion(0, 'key'),
                 options: {},
-                broadcastChannel: broadcastChannelB
+                broadcastChannel: broadcastChannelB,
+                idleQueue: new IdleQueue()
             });
             return {
                 broadcastChannelA,
@@ -1747,13 +1804,15 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 databaseName,
                 collectionName,
                 options: {},
-                broadcastChannel: broadcastChannelA
+                broadcastChannel: broadcastChannelA,
+                idleQueue: new IdleQueue()
             });
             const b = await config.storage.getStorage().createKeyObjectStorageInstance({
                 databaseName,
                 collectionName,
                 options: {},
-                broadcastChannel: broadcastChannelB
+                broadcastChannel: broadcastChannelB,
+                idleQueue: new IdleQueue()
             });
             return {
                 broadcastChannelA,

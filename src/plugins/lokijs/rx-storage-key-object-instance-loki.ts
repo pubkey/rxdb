@@ -5,7 +5,7 @@ import type { BroadcastChannel, LeaderElector } from 'broadcast-channel';
 import type {
     BulkWriteLocalRow,
     LokiDatabaseSettings,
-    LokiLocalState,
+    LokiLocalDatabaseState,
     LokiRemoteRequestBroadcastMessage,
     LokiRemoteResponseBroadcastMessage,
     LokiSettings,
@@ -28,7 +28,6 @@ import {
 } from '../../util';
 import {
     CHANGES_COLLECTION_SUFFIX,
-    CHANGES_LOCAL_SUFFIX,
     closeLokiCollections,
     getLokiDatabase,
     getLokiEventKey,
@@ -41,6 +40,7 @@ import type {
     Collection
 } from 'lokijs';
 import { getLeaderElectorByBroadcastChannel } from '../leader-election';
+import { IdleQueue } from 'custom-idle-queue';
 
 let instanceId = 1;
 
@@ -57,6 +57,7 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
         public readonly internals: LokiStorageInternals,
         public readonly options: Readonly<LokiSettings>,
         public readonly databaseSettings: LokiDatabaseSettings,
+        public readonly idleQueue: IdleQueue,
         public readonly broadcastChannel?: BroadcastChannel<LokiRemoteRequestBroadcastMessage | LokiRemoteResponseBroadcastMessage>
     ) {
         OPEN_LOKIJS_STORAGE_INSTANCES.add(this);
@@ -107,7 +108,7 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
      * If the local state must be used, that one is returned.
      * Returns false if a remote instance must be used.
      */
-    private async mustUseLocalState(): Promise<LokiLocalState | false> {
+    private async mustUseLocalState(): Promise<LokiLocalDatabaseState | false> {
         if (this.internals.localState) {
             return this.internals.localState;
         }
@@ -136,6 +137,7 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
                 databaseName: this.databaseName,
                 collectionName: this.collectionName,
                 options: this.options,
+                idleQueue: this.idleQueue,
                 broadcastChannel: this.broadcastChannel
             }, this.databaseSettings);
             return this.getLocalState();
@@ -196,7 +198,6 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
             return this.requestRemoteInstance('bulkWrite', [documentWrites]);
         }
 
-        const collection = localState.collection;
         const startTime = now();
         await promiseWait(0);
 
@@ -209,8 +210,8 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
             const id = writeRow.document._id;
             writeRowById.set(id, writeRow);
             const writeDoc = flatClone(writeRow.document);
-            const docInDb = collection.by('_id', id);
-            const previous = writeRow.previous ? writeRow.previous : collection.by('_id', id);
+            const docInDb = localState.collection.by('_id', id);
+            const previous = writeRow.previous ? writeRow.previous : localState.collection.by('_id', id);
             const newRevHeight = previous ? parseRevision(previous._rev).height + 1 : 1;
             const newRevision = newRevHeight + '-' + createRevision(writeRow.document);
             writeDoc._rev = newRevision;
@@ -231,10 +232,10 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
                 } else {
                     const toLoki: any = flatClone(writeDoc);
                     toLoki.$loki = docInDb.$loki;
-                    collection.update(toLoki);
+                    localState.collection.update(toLoki);
                 }
             } else {
-                collection.insert(flatClone(writeDoc));
+                localState.collection.insert(flatClone(writeDoc));
             }
 
             ret.success.set(id, stripLokiKey(writeDoc));
@@ -300,6 +301,8 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
             }
         });
 
+        localState.databaseState.saveQueue.addWrite();
+
         return ret;
     }
     async findLocalDocumentsById<RxDocType = any>(ids: string[]): Promise<Map<string, RxLocalDocumentData<RxDocType>>> {
@@ -309,11 +312,9 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
         }
 
         await promiseWait(0);
-        const collection = localState.collection;
-
         const ret: Map<string, RxLocalDocumentData<RxDocType>> = new Map();
         ids.forEach(id => {
-            const documentInDb = collection.by('_id', id);
+            const documentInDb = localState.collection.by('_id', id);
             if (
                 documentInDb &&
                 !documentInDb._deleted
@@ -334,8 +335,8 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
             await closeLokiCollections(
                 this.databaseName,
                 [
-                    localState.collection,
-                    localState.changesCollection
+                    ensureNotFalsy(localState.collection),
+                    ensureNotFalsy(localState.changesCollection)
                 ]
             );
         }
@@ -345,8 +346,8 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
         if (!localState) {
             return this.requestRemoteInstance('remove', []);
         }
-        localState.database.removeCollection(this.collectionName + CHANGES_LOCAL_SUFFIX);
-        localState.database.removeCollection(localState.changesCollection.name);
+        localState.databaseState.database.removeCollection(localState.collection.name);
+        localState.databaseState.database.removeCollection(localState.changesCollection.name);
     }
 }
 
@@ -354,11 +355,15 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
 export async function createLokiKeyValueLocalState(
     params: RxKeyObjectStorageInstanceCreationParams<LokiSettings>,
     databaseSettings: LokiDatabaseSettings
-): Promise<LokiLocalState> {
+): Promise<LokiLocalDatabaseState> {
     if (!params.options) {
         params.options = {};
     }
-    const databaseState = await getLokiDatabase(params.databaseName, databaseSettings);
+    const databaseState = await getLokiDatabase(
+        params.databaseName,
+        databaseSettings,
+        params.idleQueue
+    );
 
     const collectionOptions: Partial<CollectionOptions<RxLocalDocumentData>> = Object.assign(
         {},
@@ -370,14 +375,13 @@ export async function createLokiKeyValueLocalState(
         LOKIJS_COLLECTION_DEFAULT_OPTIONS
     );
 
-    const localCollectionName = params.collectionName + CHANGES_LOCAL_SUFFIX;
     const collection: Collection = databaseState.database.addCollection(
-        localCollectionName,
+        params.collectionName,
         collectionOptions
     );
-    databaseState.openCollections[localCollectionName] = collection;
+    databaseState.collections[params.collectionName] = collection;
 
-    const changesCollectionName = params.collectionName + CHANGES_LOCAL_SUFFIX + CHANGES_COLLECTION_SUFFIX;
+    const changesCollectionName = params.collectionName + CHANGES_COLLECTION_SUFFIX;
     const changesCollectionOptions = Object.assign({
         unique: ['eventId'],
         indices: ['sequence']
@@ -386,11 +390,12 @@ export async function createLokiKeyValueLocalState(
         changesCollectionName,
         changesCollectionOptions
     );
-    databaseState.openCollections[changesCollectionName] = changesCollection;
+    databaseState.collections[changesCollectionName] = collection;
+
     return {
-        database: databaseState.database,
+        changesCollection,
         collection,
-        changesCollection
+        databaseState
     }
 }
 
@@ -411,6 +416,7 @@ export async function createLokiKeyObjectStorageInstance(
         internals,
         params.options,
         databaseSettings,
+        params.idleQueue,
         params.broadcastChannel
     );
     return instance;

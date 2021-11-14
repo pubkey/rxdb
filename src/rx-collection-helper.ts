@@ -170,6 +170,7 @@ export async function createRxCollectionStorageInstances<RxDocumentType, Interna
              */
             collectionName: getCollectionLocalInstanceName(collectionName),
             options: instanceCreationOptions,
+            idleQueue: rxDatabase.idleQueue,
             broadcastChannel: rxDatabase.broadcastChannel
         })
     ]);

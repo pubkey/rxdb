@@ -42,9 +42,9 @@ import type {
     RxStorageInstanceCreationParams,
     LokiRemoteRequestBroadcastMessage,
     LokiRemoteResponseBroadcastMessage,
-    LokiLocalState,
     LokiDatabaseSettings,
-    RxDocumentWriteData
+    RxDocumentWriteData,
+    LokiLocalDatabaseState
 } from '../../types';
 import type {
     CompareFunction
@@ -67,6 +67,7 @@ import type {
     LeaderElector
 } from 'broadcast-channel';
 import { getLeaderElectorByBroadcastChannel } from '../leader-election';
+import type { IdleQueue } from 'custom-idle-queue';
 
 let instanceId = 1;
 
@@ -90,6 +91,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         public readonly internals: LokiStorageInternals,
         public readonly options: Readonly<LokiSettings>,
         public readonly databaseSettings: LokiDatabaseSettings,
+        public readonly idleQueue: IdleQueue,
         public readonly broadcastChannel?: BroadcastChannel<LokiRemoteRequestBroadcastMessage | LokiRemoteResponseBroadcastMessage>
     ) {
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
@@ -142,7 +144,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
      * If the local state must be used, that one is returned.
      * Returns false if a remote instance must be used.
      */
-    private async mustUseLocalState(): Promise<LokiLocalState | false> {
+    private async mustUseLocalState(): Promise<LokiLocalDatabaseState | false> {
         if (this.internals.localState) {
             return this.internals.localState;
         }
@@ -171,6 +173,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 collectionName: this.collectionName,
                 options: this.options,
                 schema: this.schema,
+                idleQueue: this.idleQueue,
                 broadcastChannel: this.broadcastChannel
             }, this.databaseSettings);
             return this.getLocalState();
@@ -370,9 +373,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
          * to ensure all RxStorage implementations behave equal.
          */
         await promiseWait(0);
-
-        const collection = localState.collection;
-
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
             success: new Map(),
             error: new Map()
@@ -381,7 +381,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         documentWrites.forEach(writeRow => {
             const startTime = now();
             const id: string = writeRow.document[this.primaryPath] as any;
-            const documentInDb = collection.by(this.primaryPath, id);
+            const documentInDb = localState.collection.by(this.primaryPath, id);
 
             if (!documentInDb) {
                 // insert new document
@@ -403,7 +403,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                         _attachments: {} as any
                     }
                 );
-                collection.insert(flatClone(writeDoc));
+                localState.collection.insert(flatClone(writeDoc));
                 if (!insertedIsDeleted) {
                     this.addChangeDocumentMeta(id);
                     this.changes$.next({
@@ -463,7 +463,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                             _attachments: {}
                         }
                     );
-                    collection.update(writeDoc);
+                    localState.collection.update(writeDoc);
                     this.addChangeDocumentMeta(id);
 
                     let change: ChangeEvent<RxDocumentData<RxDocType>> | null = null;
@@ -509,6 +509,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 }
             }
         });
+        localState.databaseState.saveQueue.addWrite();
         return ret;
     }
 
@@ -531,15 +532,14 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
          * to ensure all RxStorage implementations behave equal.
          */
         await promiseWait(0);
-        const collection = localState.collection;
 
         documents.forEach(docData => {
             const startTime = now();
             const id: string = docData[this.primaryPath] as any;
-            const documentInDb = collection.by(this.primaryPath, id);
+            const documentInDb = localState.collection.by(this.primaryPath, id);
             if (!documentInDb) {
                 // document not here, so we can directly insert
-                collection.insert(flatClone(docData));
+                localState.collection.insert(flatClone(docData));
                 this.changes$.next({
                     documentId: id,
                     eventId: getLokiEventKey(false, id, docData._rev),
@@ -570,7 +570,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 if (mustUpdate) {
                     const storeAtLoki = flatClone(docData) as any;
                     storeAtLoki.$loki = documentInDb.$loki;
-                    collection.update(storeAtLoki);
+                    localState.collection.update(storeAtLoki);
                     let change: ChangeEvent<RxDocumentData<RxDocType>> | null = null;
                     if (documentInDb._deleted && !docData._deleted) {
                         change = {
@@ -609,6 +609,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 }
             }
         });
+        localState.databaseState.saveQueue.addWrite();
     }
     async findDocumentsById(ids: string[], deleted: boolean): Promise<Map<string, RxDocumentData<RxDocType>>> {
         const localState = await this.mustUseLocalState();
@@ -616,11 +617,9 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             return this.requestRemoteInstance('findDocumentsById', [ids, deleted]);
         }
 
-        const collection = localState.collection;
-
         const ret: Map<string, RxDocumentData<RxDocType>> = new Map();
         ids.forEach(id => {
-            const documentInDb = collection.by(this.primaryPath, id);
+            const documentInDb = localState.collection.by(this.primaryPath, id);
             if (
                 documentInDb &&
                 (!documentInDb._deleted || deleted)
@@ -717,9 +716,15 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
     async close(): Promise<void> {
         this.changes$.complete();
         OPEN_LOKIJS_STORAGE_INSTANCES.delete(this);
+
         if (this.internals.localState) {
-            const localState = await this.getLocalState();
-            localState.database.saveDatabase();
+            const localState = await this.internals.localState;
+            const dbState = await getLokiDatabase(
+                this.databaseName,
+                this.databaseSettings,
+                this.idleQueue
+            );
+            await dbState.saveQueue.run();
             await closeLokiCollections(
                 this.databaseName,
                 [
@@ -734,20 +739,24 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         if (!localState) {
             return this.requestRemoteInstance('remove', []);
         }
-        localState.database.removeCollection(this.collectionName);
-        localState.database.removeCollection(localState.changesCollection.name);
+        localState.databaseState.database.removeCollection(this.collectionName);
+        localState.databaseState.database.removeCollection(localState.changesCollection.name);
     }
 }
 
 export async function createLokiLocalState<RxDocType>(
     params: RxStorageInstanceCreationParams<RxDocType, LokiSettings>,
     databaseSettings: LokiDatabaseSettings
-): Promise<LokiLocalState> {
+): Promise<LokiLocalDatabaseState> {
     if (!params.options) {
         params.options = {};
     }
 
-    const databaseState = await getLokiDatabase(params.databaseName, databaseSettings);
+    const databaseState = await getLokiDatabase(
+        params.databaseName,
+        databaseSettings,
+        params.idleQueue
+    );
 
     /**
      * Construct loki indexes from RxJsonSchema indexes.
@@ -785,7 +794,7 @@ export async function createLokiLocalState<RxDocType>(
         params.collectionName,
         collectionOptions as any
     );
-    databaseState.openCollections[params.collectionName] = collection;
+    databaseState.collections[params.collectionName] = collection;
 
     const changesCollectionName = params.collectionName + CHANGES_COLLECTION_SUFFIX;
     const changesCollectionOptions = Object.assign({
@@ -796,13 +805,15 @@ export async function createLokiLocalState<RxDocType>(
         changesCollectionName,
         changesCollectionOptions
     );
-    databaseState.openCollections[changesCollectionName] = changesCollection;
+    databaseState.collections[params.collectionName] = changesCollection;
 
-    return {
-        database: databaseState.database,
+    const ret: LokiLocalDatabaseState = {
+        databaseState,
         collection,
         changesCollection
-    }
+    };
+
+    return ret;
 }
 
 
@@ -824,6 +835,7 @@ export async function createLokiStorageInstance<RxDocType>(
         internals,
         params.options,
         databaseSettings,
+        params.idleQueue,
         params.broadcastChannel
     );
 

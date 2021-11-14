@@ -96,6 +96,7 @@ export class RxDatabaseBase<
         public readonly multiInstance: boolean,
         public readonly eventReduce: boolean = false,
         public options: any = {},
+        public readonly idleQueue: IdleQueue,
         /**
          * Stores information documents about the collections of the database
          */
@@ -108,7 +109,7 @@ export class RxDatabaseBase<
          * If multiInstance: true
          * we need the broadcast channel for the database.
          */
-        public readonly broadcastChannel?: BroadcastChannel
+        public readonly broadcastChannel?: BroadcastChannel,
     ) {
         this.collections = {} as any;
         DB_COUNT++;
@@ -118,7 +119,6 @@ export class RxDatabaseBase<
         return this.observable$;
     }
 
-    public idleQueue: IdleQueue = new IdleQueue();
     public readonly token: string = randomCouchString(10);
     public _subs: Subscription[] = [];
     public destroyed: boolean = false;
@@ -319,6 +319,7 @@ export class RxDatabaseBase<
                                 {
                                     databaseName: this.name,
                                     collectionName,
+                                    idleQueue: this.idleQueue,
                                     schema: getPseudoSchemaForVersion<InternalStoreDocumentData>(v, 'collectionName'),
                                     options: this.instanceCreationOptions
                                 },
@@ -605,6 +606,7 @@ async function createRxDatabaseStorageInstances<Internals, InstanceCreationOptio
     storage: RxStorage<Internals, InstanceCreationOptions>,
     databaseName: string,
     options: InstanceCreationOptions,
+    idleQueue: IdleQueue,
     broadcastChannel?: BroadcastChannel
 ): Promise<{
     internalStore: RxStorageInstance<InternalStoreDocumentData, Internals, InstanceCreationOptions>,
@@ -616,6 +618,7 @@ async function createRxDatabaseStorageInstances<Internals, InstanceCreationOptio
             collectionName: INTERNAL_STORAGE_NAME,
             schema: getPseudoSchemaForVersion(0, 'collectionName'),
             options,
+            idleQueue,
             broadcastChannel
         }
     );
@@ -624,6 +627,7 @@ async function createRxDatabaseStorageInstances<Internals, InstanceCreationOptio
         databaseName,
         collectionName: '',
         options,
+        idleQueue,
         broadcastChannel
     });
 
@@ -706,6 +710,8 @@ export function createRxDatabase<
         );
     }
 
+    const idleQueue = new IdleQueue();
+
     return createRxDatabaseStorageInstances<
         Internals,
         InstanceCreationOptions
@@ -713,6 +719,7 @@ export function createRxDatabase<
         storage,
         name,
         instanceCreationOptions as any,
+        idleQueue,
         broadcastChannel
     ).then(storageInstances => {
         const rxDatabase: RxDatabase<Collections> = new RxDatabaseBase(
@@ -723,6 +730,7 @@ export function createRxDatabase<
             multiInstance,
             eventReduce,
             options,
+            idleQueue,
             storageInstances.internalStore,
             storageInstances.localDocumentsStore,
             broadcastChannel
@@ -740,11 +748,13 @@ export async function removeRxDatabase(
     databaseName: string,
     storage: RxStorage<any, any>
 ): Promise<any> {
+    const idleQueue = new IdleQueue();
 
     const storageInstance = await createRxDatabaseStorageInstances(
         storage,
         databaseName,
-        {}
+        {},
+        idleQueue
     );
 
     const docs = await getAllDocuments(storageInstance.internalStore);
@@ -763,13 +773,15 @@ export async function removeRxDatabase(
                             databaseName,
                             collectionName,
                             schema: getPseudoSchemaForVersion(version, primaryPath as any),
-                            options: {}
+                            options: {},
+                            idleQueue
                         }
                     ),
                     storage.createKeyObjectStorageInstance({
                         databaseName,
                         collectionName: getCollectionLocalInstanceName(collectionName),
-                        options: {}
+                        options: {},
+                        idleQueue
                     })
                 ]);
                 await Promise.all([instance.remove(), localInstance.remove()]);

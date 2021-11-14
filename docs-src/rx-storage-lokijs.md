@@ -53,6 +53,11 @@ Find more about the possible adapters at the [LokiJS docs](https://github.com/te
 When you use plain LokiJS, you cannot build an app that can be used in multiple browser tabs. The reason is that LokiJS loads data in bulk and then only regulary persists the in-memory state to disc. When opened in multiple tabs, it would happen that the LokiJS instances overwrite each other and data is lost.
 With the RxDB LokiJS-plugin, this problem is fixed with the [LeaderElection](https://github.com/pubkey/broadcast-channel#using-the-leaderelection) module. Between all open tabs, a leading tab is elected and only in this tab a database is created. All other tabs do not run queries against their own database, but instead call the leading tab to send and retrieve data. When the leading tab is closed, a new leader is elected that reopens the database and processes queries. You can disable this by setting `multiInstance: false` when creating the `RxDatabase`.
 
+## Autosave
+
+When using plain LokiJS, you could set the `autosave` option to `true` to make sure that LokiJS persists the database state after each write into the persistence adapter.
+But RxDB knows better when to persist the database state, so it has its own autosave logic. This will ensure that running the persistence handler does not affect the performance of more important tasks. Instead RxDB will always wait until the database is idle and then runs the persistence handler.
+
 ## Known problems
 
 When you bundle the LokiJS Plugin with webpack, you might get the error `Cannot find module "fs"`. This is because LokiJS uses a `require('fs')` statement that cannot work in the browser.

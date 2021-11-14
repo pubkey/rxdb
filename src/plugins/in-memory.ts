@@ -428,7 +428,8 @@ export async function prepareInMemoryRxCollection(instance: InMemoryRxCollection
         databaseName: 'rxdb-in-memory',
         collectionName: randomCouchString(10),
         schema: instance.schema.jsonSchema,
-        options: instance.pouchSettings
+        options: instance.pouchSettings,
+        idleQueue: instance.database.idleQueue
     });
     (instance as any).pouch = instance.storageInstance.internals.pouch;
 }

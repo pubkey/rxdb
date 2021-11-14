@@ -3,15 +3,17 @@ import type { RxStorageKeyObjectInstanceLoki } from './rx-storage-key-object-ins
 import lokijs, { Collection } from 'lokijs';
 import type {
     LokiDatabaseSettings,
-    LokiDatabaseState
+    LokiDatabaseState,
+    LokiLocalDatabaseState
 } from '../../types';
 import {
-    add as unloadAdd
+    add as unloadAdd, AddReturn
 } from 'unload';
 import { flatClone } from '../../util';
+import { LokiSaveQueue } from './loki-save-queue';
+import type { IdleQueue } from 'custom-idle-queue';
 
 export const CHANGES_COLLECTION_SUFFIX = '-rxdb-changes';
-export const CHANGES_LOCAL_SUFFIX = '-rxdb-local';
 export const LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request';
 export const LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request-key-object';
 
@@ -60,7 +62,8 @@ export const LOKIJS_COLLECTION_DEFAULT_OPTIONS: Partial<CollectionOptions<any>> 
 const LOKI_DATABASE_STATE_BY_NAME: Map<string, Promise<LokiDatabaseState>> = new Map();
 export function getLokiDatabase(
     databaseName: string,
-    databaseSettings: LokiDatabaseSettings
+    databaseSettings: LokiDatabaseSettings,
+    rxDatabaseIdleQueue: IdleQueue
 ): Promise<LokiDatabaseState> {
     let databaseState: Promise<LokiDatabaseState> | undefined = LOKI_DATABASE_STATE_BY_NAME.get(databaseName);
     if (!databaseState) {
@@ -79,19 +82,23 @@ export function getLokiDatabase(
                 // defaults
                 {
                     autoload: hasPersistence,
-                    autosave: hasPersistence,
                     persistenceMethod,
-                    autosaveInterval: hasPersistence ? 500 : undefined,
-                    verbose: true,
-                    throttledSaves: false,
-                    // TODO remove this log
-                    autosaveCallback: hasPersistence ? () => console.log('LokiJS autosave done!') : undefined
+                    verbose: true
                 },
-                databaseSettings
+                databaseSettings,
+                // overwrites
+                {
+                    autosave: false,
+                    throttledSaves: false
+                }
             );
             const database = new lokijs(
                 databaseName + '.db',
                 useSettings
+            );
+            const saveQueue = new LokiSaveQueue(
+                database,
+                rxDatabaseIdleQueue
             );
 
             // Wait until all data is load from persistence adapter.
@@ -106,15 +113,18 @@ export function getLokiDatabase(
             /**
              * Autosave database on process end
              */
+            const unloads: AddReturn[] = [];
             if (hasPersistence) {
-                unloadAdd(() => database.saveDatabase());
+                unloads.push(
+                    unloadAdd(() => saveQueue.run())
+                );
             }
-
-
 
             const state: LokiDatabaseState = {
                 database,
-                openCollections: {}
+                saveQueue,
+                collections: {},
+                unloads
             };
 
             return state;
@@ -133,13 +143,15 @@ export async function closeLokiCollections(
         // already closed
         return;
     }
+    await databaseState.saveQueue.run();
     collections.forEach(collection => {
         const collectionName = collection.name;
-        delete databaseState.openCollections[collectionName];
+        delete databaseState.collections[collectionName];
     });
-    if (Object.keys(databaseState.openCollections).length === 0) {
+    if (Object.keys(databaseState.collections).length === 0) {
         // all collections closed -> also close database
         LOKI_DATABASE_STATE_BY_NAME.delete(databaseName);
+        databaseState.unloads.forEach(u => u.remove());
         await new Promise<void>((res, rej) => {
             databaseState.database.close(err => {
                 err ? rej(err) : res();

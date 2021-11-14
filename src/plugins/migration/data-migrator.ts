@@ -67,6 +67,7 @@ import {
     _handleFromStorageInstance,
     _handleToStorageInstance
 } from '../../rx-collection-helper';
+import { IdleQueue } from 'custom-idle-queue';
 
 export class DataMigrator {
 
@@ -226,6 +227,7 @@ export async function createOldCollection(
         databaseName: database.name,
         collectionName: dataMigrator.newestCollection.name,
         schema: schemaObj,
+        idleQueue: new IdleQueue(),
         options: dataMigrator.newestCollection.instanceCreationOptions
     };
     runPluginHooks(

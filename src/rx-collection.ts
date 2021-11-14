@@ -977,7 +977,8 @@ export function createRxCollection(
         databaseName: database.name,
         collectionName: name,
         schema: schema.jsonSchema,
-        options: instanceCreationOptions
+        options: instanceCreationOptions,
+        idleQueue: database.idleQueue
     };
 
     runPluginHooks(

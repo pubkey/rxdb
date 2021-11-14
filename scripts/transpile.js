@@ -132,6 +132,12 @@ async function run() {
             return true;
         }
     });
+
+    /**
+     * TODO this can be optimized
+     * by not waiting for the full chunk to be processed,
+     * and instead directly run a new task when one is done.
+     */
     const entryChunks = splitArrayInChunks(noneNodeModuleEntries, MAX_PARALLEL_TRANSPILE);
     for (const chunk of entryChunks) {
         await Promise.all(
