@@ -2,10 +2,13 @@
 
 ### X.X.X (coming soon)
 
+### 10.5.1 (15 November 2021)
+
 Bugfixes:
   - GraphQL replication should affect `requestIdlePromise` and while replication IO is running, the database must not be idle.
   - Creating a collection that has existed before must not cause a database write.
   - LokiJS: Fixed error log when reloading while having the database open in multiple browser tabs.
+
 ### 10.5.0 (15 November 2021)
 
 Other:
