@@ -99,8 +99,8 @@ function getDatabaseName() {
 function doSync() {
     const url_string = window.location.href;
     const url = new URL(url_string);
-    const shouldSync = url.searchParams.get('sync').toLowerCase();
-    if (shouldSync === 'false') {
+    const shouldSync = url.searchParams.get('sync');
+    if (shouldSync && shouldSync.toLowerCase() === 'false') {
         return false;
     } else {
         return true;
