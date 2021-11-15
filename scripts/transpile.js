@@ -10,6 +10,7 @@ require('events').EventEmitter.defaultMaxListeners = 0;
 const nconf = require('nconf');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 const walkSync = require('walk-sync');
 const shell = require('shelljs');
 const del = require('delete');
@@ -17,12 +18,13 @@ const existsFile = require('exists-file');
 const basePath = path.join(__dirname, '..');
 
 const confLocation = path.join(basePath, '.transpile_state.json');
+const cpuCount = os.cpus().length;
 
 const DEBUG = false;
 
 /**
  * if this is too height,
- * travis will kill the process when there are too many
+ * the CI os might kill the process when there are too many
  * @link https://docs.travis-ci.com/user/common-build-problems/#parallel-processes
  */
 const MAX_PARALLEL_TRANSPILE = 6;
@@ -55,19 +57,23 @@ function splitArrayInChunks(array, chunkSize) {
 }
 
 
-async function transpileFile(srcLocation, goalLocation) {
-    DEBUG && console.log('transpile: ' + srcLocation);
+async function transpileFile(srcLocations, outDir) {
+    DEBUG && console.log('transpile: ' + srcLocations.join(', '));
     // ensure folder exists
-    const folder = path.join(goalLocation, '..');
-    if (!fs.existsSync(folder)) shell.mkdir('-p', folder);
+    const folder = path.join(outDir);
+    if (!fs.existsSync(folder)) {
+        shell.mkdir('-p', folder);
+    }
 
-    await del.promise([goalLocation]);
+    // const outFilePath = 
+    // await del.promise([outDir]);
     const cmd = 'babel ' +
-        srcLocation +
+        srcLocations.join(' ') +
         ' --source-maps' +
         ' --extensions ".ts,.js"' +
-        ' --out-file ' +
-        goalLocation;
+        ' --out-dir ' +
+        outDir;
+
     DEBUG && console.dir(cmd);
 
     const execRes = shell.exec(cmd, {
@@ -77,83 +83,89 @@ async function transpileFile(srcLocation, goalLocation) {
 
     const exitCode = execRes.exitCode;
     if (exitCode !== 0) {
-        console.error('transpiling ' + srcLocation + ' failed');
+        console.error('transpiling failed with cmd: ' + cmd);
         process.exit(1);
     }
 
-    if (DEBUG) console.log('transpiled: ' + srcLocation);
+    if (DEBUG) {
+        console.log('transpiled files: ' + srcLocations.join(', '));
+    }
 
     return;
 }
 
 async function getFiles() {
-    const unfiltered = await Promise.all(
+    const files = [];
+    await Promise.all(
         Object.entries(transpileFolders)
             .map(entry => entry.map(folder => path.join(basePath, folder)))
             .map(entry => {
                 const srcFolder = entry[0];
                 const toFolder = entry[1];
                 return walkSync.entries(srcFolder)
+                    .filter(entry => !entry.isDirectory())
+                    .filter(entry => entry.relativePath.endsWith('.js') || entry.relativePath.endsWith('.ts'))
+                    .filter(entry => !entry.relativePath.includes('/node_modules/'))
                     .map(fileEntry => {
                         // ensure goal-file-ending is .js
                         const relativePathSplit = fileEntry.relativePath.split('.');
                         relativePathSplit.pop();
                         relativePathSplit.push('js');
 
-                        fileEntry.goalPath = path.join(toFolder, relativePathSplit.join('.'));
-                        return fileEntry;
+                        fileEntry.goalFolder = toFolder;
+                        const goalPath = path.join(toFolder, relativePathSplit.join('.'));
+                        const fullPath = path.join(fileEntry.basePath, fileEntry.relativePath);
+
+                        const file = {
+                            fullPath,
+                            relativePath: fileEntry.relativePath,
+                            basePath: fileEntry.basePath,
+                            mtime: fileEntry.mtime,
+                            goalFolder: path.dirname(goalPath),
+                            goalPath: goalPath,
+                        };
+
+                        const lastTime = parseInt(nconf.get(fileEntry.fullPath), 10);
+                        if (
+                            lastTime !== fileEntry.mtime ||
+                            !existsFile.sync(goalPath)
+                        ) {
+                            files.push(file);
+                        }
                     });
             })
     );
-    const files = unfiltered.reduce((pre, cur) => pre.concat(cur), [])
-        .filter(entry => !entry.isDirectory())
-        .filter(entry => entry.relativePath.endsWith('.js') || entry.relativePath.endsWith('.ts'))
-        .map(entry => {
-            entry.fullPath = path.join(entry.basePath, entry.relativePath);
-            entry.lastTime = nconf.get(entry.fullPath);
-            return entry;
-        })
-        .filter(entry => entry.lastTime !== entry.mtime || !existsFile.sync(entry.goalPath));
 
-    DEBUG && console.dir(files);
+    const filesByGoalFolder = {};
+    files.forEach(file => {
+        if (!filesByGoalFolder[file.goalFolder]) {
+            filesByGoalFolder[file.goalFolder] = [];
+        }
+        filesByGoalFolder[file.goalFolder].push(file);
+    });
 
-    return files;
+    DEBUG && console.dir(filesByGoalFolder);
+
+    return filesByGoalFolder;
 }
 
 async function run() {
     const files = await getFiles();
 
-    const fileEntries = await Promise.all(files);
-    const noneNodeModuleEntries = fileEntries.filter(fileEntry => {
-        if (fileEntry.relativePath.includes('/node_modules/')) {
-            // skip node modules of examples or tests
-            return false;
-        } else {
-            return true;
-        }
-    });
 
-    /**
-     * TODO this can be optimized
-     * by not waiting for the full chunk to be processed,
-     * and instead directly run a new task when one is done.
-     */
-    const entryChunks = splitArrayInChunks(noneNodeModuleEntries, MAX_PARALLEL_TRANSPILE);
-    for (const chunk of entryChunks) {
-        await Promise.all(
-            chunk.map(fileEntry => {
-                return transpileFile(
-                    path.join(fileEntry.basePath, fileEntry.relativePath),
-                    fileEntry.goalPath
-                ).then(() => {
-                    nconf.set(fileEntry.fullPath, fileEntry.mtime);
-                });
-            })
-        );
-    }
+    await Promise.all(
+        Object.values(files).map(async (filesWithSameGoalFolder) => {
+            await transpileFile(
+                filesWithSameGoalFolder.map(file => path.join(file.basePath, file.relativePath)),
+                filesWithSameGoalFolder[0].goalFolder
+            );
+            filesWithSameGoalFolder.forEach(file => nconf.set(file.fullPath, file.mtime));
+        })
+    );
+
     nconf.save(function () {
         DEBUG && console.log('conf saved');
-        console.log('# transpiling DONE');
+        console.log('# transpiling DONE (' + cpuCount + ' CPUs)');
     });
 }
 run();
