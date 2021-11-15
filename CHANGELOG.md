@@ -2,6 +2,9 @@
 
 ### X.X.X (coming soon)
 
+Bugfixes:
+  - GraphQL replication should affect `requestIdlePromise` and while replication IO is running, the database must not be idle.
+
 ### 10.5.0 (15 November 2021)
 
 Other:

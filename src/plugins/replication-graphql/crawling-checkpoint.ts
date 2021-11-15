@@ -43,9 +43,11 @@ export async function getLastPushSequence(
     collection: RxCollection,
     endpointHash: string
 ): Promise<number> {
-    const doc = await findLocalDocument<CheckpointDoc>(
-        collection.localDocumentsStore,
-        pushSequenceId(endpointHash)
+    const doc = await collection.database.lockedRun(
+        () => findLocalDocument<CheckpointDoc>(
+            collection.localDocumentsStore,
+            pushSequenceId(endpointHash)
+        )
     );
     if (!doc) {
         return 0;
@@ -63,35 +65,42 @@ export async function setLastPushSequence(
 ): Promise<CheckpointDoc> {
     const _id = pushSequenceId(endpointHash);
 
-    const doc = await findLocalDocument<CheckpointDoc>(
-        collection.localDocumentsStore,
-        _id
-    );
-    if (!doc) {
-        const res = await writeSingleLocal<CheckpointDoc>(
+    const doc = await collection.database.lockedRun(
+        () => findLocalDocument<CheckpointDoc>(
             collection.localDocumentsStore,
-            {
-                document: {
-                    _id,
-                    value: sequence,
-                    _attachments: {}
+            _id
+        )
+    );
+
+    if (!doc) {
+        const res = await collection.database.lockedRun(
+            () => writeSingleLocal<CheckpointDoc>(
+                collection.localDocumentsStore,
+                {
+                    document: {
+                        _id,
+                        value: sequence,
+                        _attachments: {}
+                    }
                 }
-            }
+            )
         );
         return res as any;
     } else {
         const newDoc = flatClone(doc);
         newDoc.value = sequence;
-        const res = await writeSingleLocal<CheckpointDoc>(
-            collection.localDocumentsStore,
-            {
-                previous: doc,
-                document: {
-                    _id,
-                    value: sequence,
-                    _attachments: {}
+        const res = await collection.database.lockedRun(
+            () => writeSingleLocal<CheckpointDoc>(
+                collection.localDocumentsStore,
+                {
+                    previous: doc,
+                    document: {
+                        _id,
+                        value: sequence,
+                        _attachments: {}
+                    }
                 }
-            }
+            )
         );
         return res as any;
     }
@@ -130,12 +139,13 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
      * until we reach the end of it
      */
     while (retry) {
-
-        const changesResults = await collection.storageInstance.getChangedDocuments({
-            sinceSequence: lastPushSequence,
-            limit: batchSize,
-            direction: 'after'
-        });
+        const changesResults = await collection.database.lockedRun(
+            () => collection.storageInstance.getChangedDocuments({
+                sinceSequence: lastPushSequence,
+                limit: batchSize,
+                direction: 'after'
+            })
+        );
         lastSequence = changesResults.lastSequence;
 
         // optimisation shortcut, do not proceed if there are no changed documents
@@ -144,10 +154,13 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
             continue;
         }
 
-        const plainDocs = await collection.storageInstance.findDocumentsById(
-            changesResults.changedDocuments.map(row => row.id),
-            true
+        const plainDocs = await collection.database.lockedRun(
+            () => collection.storageInstance.findDocumentsById(
+                changesResults.changedDocuments.map(row => row.id),
+                true
+            )
         );
+
         const docs: Map<string, RxDocumentData<RxDocType>> = new Map();
         Array.from(plainDocs.entries()).map(([docId, docData]) => {
             const hookParams = {
@@ -215,10 +228,13 @@ export async function getLastPullDocument<RxDocType>(
     collection: RxCollection<RxDocType>,
     endpointHash: string
 ): Promise<RxDocType | null> {
-    const localDoc = await findLocalDocument<any>(
-        collection.localDocumentsStore,
-        pullLastDocumentId(endpointHash)
+    const localDoc = await collection.database.lockedRun(
+        () => findLocalDocument<any>(
+            collection.localDocumentsStore,
+            pullLastDocumentId(endpointHash)
+        )
     );
+
     if (!localDoc) {
         return null;
     } else {
@@ -233,31 +249,37 @@ export async function setLastPullDocument(
 ): Promise<{ _id: string }> {
     const _id = pullLastDocumentId(endpointHash);
 
-    const localDoc: RxLocalDocumentData = await findLocalDocument<any>(
-        collection.localDocumentsStore,
-        _id
+    const localDoc: RxLocalDocumentData = await collection.database.lockedRun(
+        () => findLocalDocument<any>(
+            collection.localDocumentsStore,
+            _id
+        )
     );
 
     if (!localDoc) {
-        return writeSingleLocal(
-            collection.localDocumentsStore,
-            {
-                document: {
-                    _id,
-                    doc,
-                    _attachments: {}
+        return collection.database.lockedRun(
+            () => writeSingleLocal(
+                collection.localDocumentsStore,
+                {
+                    document: {
+                        _id,
+                        doc,
+                        _attachments: {}
+                    }
                 }
-            }
+            )
         );
     } else {
         const newDoc = flatClone(localDoc);
         newDoc.doc = doc;
-        return writeSingleLocal(
-            collection.localDocumentsStore,
-            {
-                previous: localDoc,
-                document: newDoc
-            }
+        return collection.database.lockedRun(
+            () => writeSingleLocal(
+                collection.localDocumentsStore,
+                {
+                    previous: localDoc,
+                    document: newDoc
+                }
+            )
         );
     }
 }

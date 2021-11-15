@@ -410,7 +410,9 @@ export class RxGraphQLReplicationState<RxDocType> {
 
 
         const docIds: string[] = docs.map(doc => doc[this.collection.schema.primaryPath]);
-        const docsFromLocal = await this.collection.storageInstance.findDocumentsById(docIds, true);
+        const docsFromLocal = await this.collection.database.lockedRun(
+            () => this.collection.storageInstance.findDocumentsById(docIds, true)
+        );
 
         for (const doc of docs) {
             const documentId = doc[this.collection.schema.primaryPath];
@@ -441,11 +443,9 @@ export class RxGraphQLReplicationState<RxDocType> {
 
         if (toStorageDocs.length > 0) {
             await this.collection.database.lockedRun(
-                async () => {
-                    await this.collection.storageInstance.bulkAddRevisions(
-                        toStorageDocs.map(row => _handleToStorageInstance(this.collection, row.doc))
-                    );
-                }
+                () => this.collection.storageInstance.bulkAddRevisions(
+                    toStorageDocs.map(row => _handleToStorageInstance(this.collection, row.doc))
+                )
             );
         }
 
