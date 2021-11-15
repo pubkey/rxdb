@@ -98,6 +98,7 @@ export function getLokiDatabase(
             );
             const saveQueue = new LokiSaveQueue(
                 database,
+                useSettings,
                 rxDatabaseIdleQueue
             );
 
@@ -122,6 +123,7 @@ export function getLokiDatabase(
 
             const state: LokiDatabaseState = {
                 database,
+                databaseSettings: useSettings,
                 saveQueue,
                 collections: {},
                 unloads

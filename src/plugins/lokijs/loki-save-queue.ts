@@ -1,5 +1,6 @@
 import { IdleQueue } from 'custom-idle-queue';
-import { promiseWait, requestIdlePromise } from '../../util';
+import { LokiDatabaseSettings } from '../../types';
+import { now, promiseWait, requestIdlePromise } from '../../util';
 
 /**
  * The autosave feature of lokijs has strange behaviors
@@ -14,6 +15,7 @@ export class LokiSaveQueue {
 
     constructor(
         public readonly lokiDatabase: Loki,
+        public readonly databaseSettings: LokiDatabaseSettings,
         public readonly rxDatabaseIdleQueue: IdleQueue
     ) {
 
@@ -25,8 +27,9 @@ export class LokiSaveQueue {
     }
 
     public async run() {
+        const t = now();
         if (this.writesSinceLastRun === 0) {
-            return;
+            return this.runningSavesIdleQueue.requestIdlePromise();
         }
 
         await Promise.all([
@@ -62,6 +65,9 @@ export class LokiSaveQueue {
                                 this.writesSinceLastRun = this.writesSinceLastRun + writeAmount;
                                 rej(err);
                             } else {
+                                if (this.databaseSettings.autosaveCallback) {
+                                    this.databaseSettings.autosaveCallback();
+                                }
                                 res();
                             }
                         });

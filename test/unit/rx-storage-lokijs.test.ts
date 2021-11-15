@@ -21,7 +21,7 @@ import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
 addRxPlugin(RxDBKeyCompressionPlugin);
 import { RxDBValidatePlugin } from '../../plugins/validate';
 import { HumanDocumentType } from '../helper/schema-objects';
-import { waitUntil } from 'async-test-util';
+import { wait, waitUntil } from 'async-test-util';
 addRxPlugin(RxDBValidatePlugin);
 import * as path from 'path';
 import * as fs from 'fs';
@@ -165,19 +165,46 @@ config.parallel('rx-storage-lokijs.test.js', () => {
             });
 
             const localState = await ensureNotFalsy(storageInstance.internals.localState);
-
             assert.ok(localState.databaseState.database.persistenceAdapter === adapter);
             await storageInstance.bulkWrite([{ document: { key: 'foobar', _attachments: {} } }]);
 
             /**
              * It should have written the file to the filesystem
-             * on the next autosave
+             * on the next autosave which is called on close()
              */
-            await waitUntil(() => {
-                const exists = fs.existsSync(dbLocation + '.db');
-                return exists;
+            await storageInstance.close();
+            const exists = fs.existsSync(dbLocation + '.db');
+            assert.ok(exists);
+        });
+        it('should have called the autosaveCallback', async () => {
+            if (!config.platform.isNode()) {
+                return;
+            }
+            const lfsa = require('lokijs/src/loki-fs-structured-adapter.js');
+            const adapter = new lfsa();
+
+            let callbackCalledCount = 0;
+            const storage = getRxStorageLoki({
+                adapter,
+                autosaveCallback: () => callbackCalledCount = callbackCalledCount + 1
+            });
+            const databaseName = 'lokijs-fs-adapter-test-' + randomCouchString(12);
+            const dbLocation = path.join(
+                __dirname,
+                '../',
+                databaseName
+            );
+            const storageInstance = await storage.createStorageInstance<{ key: string }>({
+                databaseName: dbLocation,
+                collectionName: randomCouchString(12),
+                schema: getPseudoSchemaForVersion(0, 'key'),
+                options: {},
+                idleQueue: new IdleQueue()
             });
 
+            await storageInstance.bulkWrite([{ document: { key: 'foobar', _attachments: {} } }]);
+
+            await waitUntil(() => callbackCalledCount === 1);
             await storageInstance.close();
         });
     });
