@@ -228,6 +228,7 @@ function _createRxCollectionStorageInstances() {
                */
               collectionName: getCollectionLocalInstanceName(collectionName),
               options: instanceCreationOptions,
+              idleQueue: rxDatabase.idleQueue,
               broadcastChannel: rxDatabase.broadcastChannel
             })]);
 

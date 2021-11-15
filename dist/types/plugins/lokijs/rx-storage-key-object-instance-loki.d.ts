@@ -1,17 +1,19 @@
 import { Observable } from 'rxjs';
 import type { BroadcastChannel, LeaderElector } from 'broadcast-channel';
-import type { BulkWriteLocalRow, LokiDatabaseSettings, LokiLocalState, LokiRemoteRequestBroadcastMessage, LokiRemoteResponseBroadcastMessage, LokiSettings, LokiStorageInternals, RxKeyObjectStorageInstanceCreationParams, RxLocalDocumentData, RxLocalStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageKeyObjectInstance } from '../../types';
+import type { BulkWriteLocalRow, LokiDatabaseSettings, LokiLocalDatabaseState, LokiRemoteRequestBroadcastMessage, LokiRemoteResponseBroadcastMessage, LokiSettings, LokiStorageInternals, RxKeyObjectStorageInstanceCreationParams, RxLocalDocumentData, RxLocalStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageKeyObjectInstance } from '../../types';
+import { IdleQueue } from 'custom-idle-queue';
 export declare class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstance<LokiStorageInternals, LokiSettings> {
     readonly databaseName: string;
     readonly collectionName: string;
     readonly internals: LokiStorageInternals;
     readonly options: Readonly<LokiSettings>;
     readonly databaseSettings: LokiDatabaseSettings;
+    readonly idleQueue: IdleQueue;
     readonly broadcastChannel?: BroadcastChannel<LokiRemoteRequestBroadcastMessage | LokiRemoteResponseBroadcastMessage> | undefined;
     private changes$;
     readonly leaderElector?: LeaderElector;
     instanceId: number;
-    constructor(databaseName: string, collectionName: string, internals: LokiStorageInternals, options: Readonly<LokiSettings>, databaseSettings: LokiDatabaseSettings, broadcastChannel?: BroadcastChannel<LokiRemoteRequestBroadcastMessage | LokiRemoteResponseBroadcastMessage> | undefined);
+    constructor(databaseName: string, collectionName: string, internals: LokiStorageInternals, options: Readonly<LokiSettings>, databaseSettings: LokiDatabaseSettings, idleQueue: IdleQueue, broadcastChannel?: BroadcastChannel<LokiRemoteRequestBroadcastMessage | LokiRemoteResponseBroadcastMessage> | undefined);
     private getLocalState;
     /**
      * If the local state must be used, that one is returned.
@@ -27,5 +29,5 @@ export declare class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjec
     close(): Promise<void>;
     remove(): Promise<void>;
 }
-export declare function createLokiKeyValueLocalState(params: RxKeyObjectStorageInstanceCreationParams<LokiSettings>, databaseSettings: LokiDatabaseSettings): Promise<LokiLocalState>;
+export declare function createLokiKeyValueLocalState(params: RxKeyObjectStorageInstanceCreationParams<LokiSettings>, databaseSettings: LokiDatabaseSettings): Promise<LokiLocalDatabaseState>;
 export declare function createLokiKeyObjectStorageInstance(params: RxKeyObjectStorageInstanceCreationParams<LokiSettings>, databaseSettings: LokiDatabaseSettings): Promise<RxStorageKeyObjectInstanceLoki>;

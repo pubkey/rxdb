@@ -5,7 +5,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.OPEN_LOKIJS_STORAGE_INSTANCES = exports.LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE = exports.LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = exports.LOKIJS_COLLECTION_DEFAULT_OPTIONS = exports.CHANGES_LOCAL_SUFFIX = exports.CHANGES_COLLECTION_SUFFIX = void 0;
+exports.OPEN_LOKIJS_STORAGE_INSTANCES = exports.LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE = exports.LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = exports.LOKIJS_COLLECTION_DEFAULT_OPTIONS = exports.CHANGES_COLLECTION_SUFFIX = void 0;
 exports.closeLokiCollections = closeLokiCollections;
 exports.getLokiDatabase = getLokiDatabase;
 exports.getLokiEventKey = getLokiEventKey;
@@ -21,10 +21,10 @@ var _unload = require("unload");
 
 var _util = require("../../util");
 
+var _lokiSaveQueue = require("./loki-save-queue");
+
 var CHANGES_COLLECTION_SUFFIX = '-rxdb-changes';
 exports.CHANGES_COLLECTION_SUFFIX = CHANGES_COLLECTION_SUFFIX;
-var CHANGES_LOCAL_SUFFIX = '-rxdb-local';
-exports.CHANGES_LOCAL_SUFFIX = CHANGES_LOCAL_SUFFIX;
 var LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request';
 exports.LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE;
 var LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request-key-object';
@@ -71,7 +71,7 @@ var LOKIJS_COLLECTION_DEFAULT_OPTIONS = {
 exports.LOKIJS_COLLECTION_DEFAULT_OPTIONS = LOKIJS_COLLECTION_DEFAULT_OPTIONS;
 var LOKI_DATABASE_STATE_BY_NAME = new Map();
 
-function getLokiDatabase(databaseName, databaseSettings) {
+function getLokiDatabase(databaseName, databaseSettings, rxDatabaseIdleQueue) {
   var databaseState = LOKI_DATABASE_STATE_BY_NAME.get(databaseName);
 
   if (!databaseState) {
@@ -81,7 +81,7 @@ function getLokiDatabase(databaseName, databaseSettings) {
      */
     var hasPersistence = !!databaseSettings.adapter;
     databaseState = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
-      var persistenceMethod, useSettings, database, state;
+      var persistenceMethod, useSettings, database, saveQueue, unloads, state;
       return _regenerator["default"].wrap(function _callee$(_context) {
         while (1) {
           switch (_context.prev = _context.next) {
@@ -95,47 +95,50 @@ function getLokiDatabase(databaseName, databaseSettings) {
               useSettings = Object.assign( // defaults
               {
                 autoload: hasPersistence,
-                autosave: hasPersistence,
                 persistenceMethod: persistenceMethod,
-                autosaveInterval: hasPersistence ? 500 : undefined,
-                verbose: true,
-                throttledSaves: false,
-                // TODO remove this log
-                autosaveCallback: hasPersistence ? function () {
-                  return console.log('LokiJS autosave done!');
-                } : undefined
-              }, databaseSettings);
-              database = new _lokijs["default"](databaseName + '.db', useSettings); // Wait until all data is load from persistence adapter.
+                verbose: true
+              }, databaseSettings, // overwrites
+              {
+                autosave: false,
+                throttledSaves: false
+              });
+              database = new _lokijs["default"](databaseName + '.db', useSettings);
+              saveQueue = new _lokiSaveQueue.LokiSaveQueue(database, useSettings, rxDatabaseIdleQueue); // Wait until all data is load from persistence adapter.
 
               if (!hasPersistence) {
-                _context.next = 7;
+                _context.next = 8;
                 break;
               }
 
-              _context.next = 7;
+              _context.next = 8;
               return new Promise(function (res, rej) {
                 database.loadDatabase({}, function (err) {
                   err ? rej(err) : res();
                 });
               });
 
-            case 7:
+            case 8:
               /**
                * Autosave database on process end
                */
+              unloads = [];
+
               if (hasPersistence) {
-                (0, _unload.add)(function () {
-                  return database.saveDatabase();
-                });
+                unloads.push((0, _unload.add)(function () {
+                  return saveQueue.run();
+                }));
               }
 
               state = {
                 database: database,
-                openCollections: {}
+                databaseSettings: useSettings,
+                saveQueue: saveQueue,
+                collections: {},
+                unloads: unloads
               };
               return _context.abrupt("return", state);
 
-            case 10:
+            case 12:
             case "end":
               return _context.stop();
           }
@@ -173,26 +176,33 @@ function _closeLokiCollections() {
             return _context2.abrupt("return");
 
           case 5:
+            _context2.next = 7;
+            return databaseState.saveQueue.run();
+
+          case 7:
             collections.forEach(function (collection) {
               var collectionName = collection.name;
-              delete databaseState.openCollections[collectionName];
+              delete databaseState.collections[collectionName];
             });
 
-            if (!(Object.keys(databaseState.openCollections).length === 0)) {
-              _context2.next = 10;
+            if (!(Object.keys(databaseState.collections).length === 0)) {
+              _context2.next = 13;
               break;
             }
 
             // all collections closed -> also close database
             LOKI_DATABASE_STATE_BY_NAME["delete"](databaseName);
-            _context2.next = 10;
+            databaseState.unloads.forEach(function (u) {
+              return u.remove();
+            });
+            _context2.next = 13;
             return new Promise(function (res, rej) {
               databaseState.database.close(function (err) {
                 err ? rej(err) : res();
               });
             });
 
-          case 10:
+          case 13:
           case "end":
             return _context2.stop();
         }

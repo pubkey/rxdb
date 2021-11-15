@@ -1,6 +1,6 @@
 import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
-import { hash as _hash } from '../../util';
+import { flatClone, hash as _hash } from '../../util';
 import { createLokiStorageInstance } from './rx-storage-instance-loki';
 import { createLokiKeyObjectStorageInstance } from './rx-storage-key-object-instance-loki';
 export var RxStorageLoki = /*#__PURE__*/function () {
@@ -40,13 +40,17 @@ export var RxStorageLoki = /*#__PURE__*/function () {
 
   _proto.createKeyObjectStorageInstance = /*#__PURE__*/function () {
     var _createKeyObjectStorageInstance = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(params) {
+      var useParams;
       return _regeneratorRuntime.wrap(function _callee2$(_context2) {
         while (1) {
           switch (_context2.prev = _context2.next) {
             case 0:
+              // ensure we never mix up key-object data with normal storage documents.
+              useParams = flatClone(params);
+              useParams.collectionName = params.collectionName + '-key-object';
               return _context2.abrupt("return", createLokiKeyObjectStorageInstance(params, this.databaseSettings));
 
-            case 1:
+            case 3:
             case "end":
               return _context2.stop();
           }

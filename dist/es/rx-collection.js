@@ -14,7 +14,6 @@ import { runAsyncPluginHooks, runPluginHooks } from './hooks';
 import { createWithConstructor as createRxDocumentWithConstructor, isRxDocument } from './rx-document';
 import { createRxDocument, getRxDocumentConstructor } from './rx-document-prototype-merge';
 import { storageChangeEventToRxChangeEvent } from './rx-storage-helper';
-import { validateDatabaseName } from './plugins/dev-mode/check-names';
 import { overwritable } from './overwritable';
 var HOOKS_WHEN = ['pre', 'post'];
 var HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
@@ -1078,8 +1077,8 @@ export function createRxCollection(_ref4, wasCreatedBefore) {
       options = _ref4$options === void 0 ? {} : _ref4$options,
       _ref4$cacheReplacemen = _ref4.cacheReplacementPolicy,
       cacheReplacementPolicy = _ref4$cacheReplacemen === void 0 ? defaultCacheReplacementPolicy : _ref4$cacheReplacemen;
-  validateDatabaseName(name); // TODO move this check to dev-mode plugin
 
+  // TODO move this check to dev-mode plugin
   if (overwritable.isDevMode()) {
     Object.keys(methods).filter(function (funName) {
       return schema.topLevelFields.includes(funName);
@@ -1094,7 +1093,8 @@ export function createRxCollection(_ref4, wasCreatedBefore) {
     databaseName: database.name,
     collectionName: name,
     schema: schema.jsonSchema,
-    options: instanceCreationOptions
+    options: instanceCreationOptions,
+    idleQueue: database.idleQueue
   };
   runPluginHooks('preCreateRxStorageInstance', storageInstanceCreationParams);
   return createRxCollectionStorageInstances(name, database, storageInstanceCreationParams, instanceCreationOptions).then(function (storageInstances) {

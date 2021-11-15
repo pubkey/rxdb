@@ -18,6 +18,7 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
     readonly multiInstance: boolean;
     readonly eventReduce: boolean;
     options: any;
+    readonly idleQueue: IdleQueue;
     /**
      * Stores information documents about the collections of the database
      */
@@ -31,7 +32,7 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
      * we need the broadcast channel for the database.
      */
     readonly broadcastChannel?: BroadcastChannel<any> | undefined;
-    constructor(name: string, storage: RxStorage<Internals, InstanceCreationOptions>, instanceCreationOptions: InstanceCreationOptions, password: any, multiInstance: boolean, eventReduce: boolean, options: any, 
+    constructor(name: string, storage: RxStorage<Internals, InstanceCreationOptions>, instanceCreationOptions: InstanceCreationOptions, password: any, multiInstance: boolean, eventReduce: boolean, options: any, idleQueue: IdleQueue, 
     /**
      * Stores information documents about the collections of the database
      */
@@ -46,7 +47,6 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
      */
     broadcastChannel?: BroadcastChannel<any> | undefined);
     get $(): Observable<RxChangeEvent<any>>;
-    idleQueue: IdleQueue;
     readonly token: string;
     _subs: Subscription[];
     destroyed: boolean;

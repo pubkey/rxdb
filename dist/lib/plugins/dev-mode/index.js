@@ -34,23 +34,21 @@ var _checkMigrationStrategies = require("./check-migration-strategies");
 
 var _unallowedProperties = require("./unallowed-properties");
 
-var _checkQuery = require("./check-query");
-
-var _rxError = require("../../rx-error");
-
-var _checkNames = require("./check-names");
-
-Object.keys(_checkNames).forEach(function (key) {
+Object.keys(_unallowedProperties).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
-  if (key in exports && exports[key] === _checkNames[key]) return;
+  if (key in exports && exports[key] === _unallowedProperties[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
     get: function get() {
-      return _checkNames[key];
+      return _unallowedProperties[key];
     }
   });
 });
+
+var _checkQuery = require("./check-query");
+
+var _rxError = require("../../rx-error");
 
 var _deepFreeze = _interopRequireDefault(require("deep-freeze"));
 

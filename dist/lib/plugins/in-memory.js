@@ -470,7 +470,8 @@ function _prepareInMemoryRxCollection() {
               databaseName: 'rxdb-in-memory',
               collectionName: (0, _util.randomCouchString)(10),
               schema: instance.schema.jsonSchema,
-              options: instance.pouchSettings
+              options: instance.pouchSettings,
+              idleQueue: instance.database.idleQueue
             });
 
           case 3:

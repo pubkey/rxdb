@@ -41,8 +41,6 @@ var _rxDocumentPrototypeMerge = require("./rx-document-prototype-merge");
 
 var _rxStorageHelper = require("./rx-storage-helper");
 
-var _checkNames = require("./plugins/dev-mode/check-names");
-
 var _overwritable = require("./overwritable");
 
 var HOOKS_WHEN = ['pre', 'post'];
@@ -1110,8 +1108,8 @@ function createRxCollection(_ref4, wasCreatedBefore) {
       options = _ref4$options === void 0 ? {} : _ref4$options,
       _ref4$cacheReplacemen = _ref4.cacheReplacementPolicy,
       cacheReplacementPolicy = _ref4$cacheReplacemen === void 0 ? _queryCache.defaultCacheReplacementPolicy : _ref4$cacheReplacemen;
-  (0, _checkNames.validateDatabaseName)(name); // TODO move this check to dev-mode plugin
 
+  // TODO move this check to dev-mode plugin
   if (_overwritable.overwritable.isDevMode()) {
     Object.keys(methods).filter(function (funName) {
       return schema.topLevelFields.includes(funName);
@@ -1126,7 +1124,8 @@ function createRxCollection(_ref4, wasCreatedBefore) {
     databaseName: database.name,
     collectionName: name,
     schema: schema.jsonSchema,
-    options: instanceCreationOptions
+    options: instanceCreationOptions,
+    idleQueue: database.idleQueue
   };
   (0, _hooks.runPluginHooks)('preCreateRxStorageInstance', storageInstanceCreationParams);
   return (0, _rxCollectionHelper.createRxCollectionStorageInstances)(name, database, storageInstanceCreationParams, instanceCreationOptions).then(function (storageInstances) {

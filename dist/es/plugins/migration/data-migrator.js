@@ -24,6 +24,7 @@ import { getMigrationStateByDatabase } from './migration-state';
 import { map } from 'rxjs/operators';
 import { countAllUndeleted, getBatch, getSingleDocument } from '../../rx-storage-helper';
 import { _handleFromStorageInstance, _handleToStorageInstance } from '../../rx-collection-helper';
+import { IdleQueue } from 'custom-idle-queue';
 export var DataMigrator = /*#__PURE__*/function () {
   function DataMigrator(newestCollection, migrationStrategies) {
     this._migrated = false;
@@ -204,6 +205,7 @@ function _createOldCollection() {
               databaseName: database.name,
               collectionName: dataMigrator.newestCollection.name,
               schema: schemaObj,
+              idleQueue: new IdleQueue(),
               options: dataMigrator.newestCollection.instanceCreationOptions
             };
             runPluginHooks('preCreateRxStorageInstance', storageInstanceCreationParams);

@@ -1,7 +1,8 @@
 import type { DeterministicSortComparator, QueryMatcher } from 'event-reduce-js';
 import { Observable } from 'rxjs';
-import type { RxStorageInstance, LokiSettings, RxStorageChangeEvent, RxDocumentData, BulkWriteRow, RxStorageBulkWriteResponse, RxStorageQueryResult, BlobBuffer, ChangeStreamOnceOptions, RxJsonSchema, MangoQuery, LokiStorageInternals, RxStorageChangedDocumentMeta, RxStorageInstanceCreationParams, LokiRemoteRequestBroadcastMessage, LokiRemoteResponseBroadcastMessage, LokiLocalState, LokiDatabaseSettings, RxDocumentWriteData } from '../../types';
+import type { RxStorageInstance, LokiSettings, RxStorageChangeEvent, RxDocumentData, BulkWriteRow, RxStorageBulkWriteResponse, RxStorageQueryResult, BlobBuffer, ChangeStreamOnceOptions, RxJsonSchema, MangoQuery, LokiStorageInternals, RxStorageChangedDocumentMeta, RxStorageInstanceCreationParams, LokiRemoteRequestBroadcastMessage, LokiRemoteResponseBroadcastMessage, LokiDatabaseSettings, RxDocumentWriteData, LokiLocalDatabaseState } from '../../types';
 import type { BroadcastChannel, LeaderElector } from 'broadcast-channel';
+import type { IdleQueue } from 'custom-idle-queue';
 export declare class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<RxDocType, LokiStorageInternals, LokiSettings> {
     readonly databaseName: string;
     readonly collectionName: string;
@@ -9,13 +10,14 @@ export declare class RxStorageInstanceLoki<RxDocType> implements RxStorageInstan
     readonly internals: LokiStorageInternals;
     readonly options: Readonly<LokiSettings>;
     readonly databaseSettings: LokiDatabaseSettings;
+    readonly idleQueue: IdleQueue;
     readonly broadcastChannel?: BroadcastChannel<LokiRemoteRequestBroadcastMessage | LokiRemoteResponseBroadcastMessage> | undefined;
     readonly primaryPath: keyof RxDocType;
     private changes$;
     private lastChangefeedSequence;
     readonly instanceId: number;
     readonly leaderElector?: LeaderElector;
-    constructor(databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocType>>, internals: LokiStorageInternals, options: Readonly<LokiSettings>, databaseSettings: LokiDatabaseSettings, broadcastChannel?: BroadcastChannel<LokiRemoteRequestBroadcastMessage | LokiRemoteResponseBroadcastMessage> | undefined);
+    constructor(databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocType>>, internals: LokiStorageInternals, options: Readonly<LokiSettings>, databaseSettings: LokiDatabaseSettings, idleQueue: IdleQueue, broadcastChannel?: BroadcastChannel<LokiRemoteRequestBroadcastMessage | LokiRemoteResponseBroadcastMessage> | undefined);
     private getLocalState;
     /**
      * If the local state must be used, that one is returned.
@@ -55,5 +57,5 @@ export declare class RxStorageInstanceLoki<RxDocType> implements RxStorageInstan
     close(): Promise<void>;
     remove(): Promise<void>;
 }
-export declare function createLokiLocalState<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, LokiSettings>, databaseSettings: LokiDatabaseSettings): Promise<LokiLocalState>;
+export declare function createLokiLocalState<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, LokiSettings>, databaseSettings: LokiDatabaseSettings): Promise<LokiLocalDatabaseState>;
 export declare function createLokiStorageInstance<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, LokiSettings>, databaseSettings: LokiDatabaseSettings): Promise<RxStorageInstanceLoki<RxDocType>>;

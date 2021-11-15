@@ -1,7 +1,7 @@
 import type { RxPlugin } from '../../types';
 import { DeepReadonly } from '../../types/util';
 export * from './check-schema';
-export * from './check-names';
+export * from './unallowed-properties';
 /**
  * Deep freezes and object when in dev-mode.
  * Deep-Freezing has the same performaance as deep-cloning, so we only do that in dev-mode.

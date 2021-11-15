@@ -55,13 +55,17 @@ var RxStorageLoki = /*#__PURE__*/function () {
 
   _proto.createKeyObjectStorageInstance = /*#__PURE__*/function () {
     var _createKeyObjectStorageInstance = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(params) {
+      var useParams;
       return _regenerator["default"].wrap(function _callee2$(_context2) {
         while (1) {
           switch (_context2.prev = _context2.next) {
             case 0:
+              // ensure we never mix up key-object data with normal storage documents.
+              useParams = (0, _util.flatClone)(params);
+              useParams.collectionName = params.collectionName + '-key-object';
               return _context2.abrupt("return", (0, _rxStorageKeyObjectInstanceLoki.createLokiKeyObjectStorageInstance)(params, this.databaseSettings));
 
-            case 1:
+            case 3:
             case "end":
               return _context2.stop();
           }

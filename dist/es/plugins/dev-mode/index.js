@@ -6,7 +6,7 @@ import { ensureCollectionNameValid, ensureDatabaseNameIsValid } from './unallowe
 import { checkQuery } from './check-query';
 import { newRxError } from '../../rx-error';
 export * from './check-schema';
-export * from './check-names';
+export * from './unallowed-properties';
 import deepFreeze from 'deep-freeze';
 /**
  * Deep freezes and object when in dev-mode.

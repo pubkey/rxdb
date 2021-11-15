@@ -26,23 +26,23 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
   function RxDatabaseBase(name, storage, instanceCreationOptions, password, multiInstance) {
     var eventReduce = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : false;
     var options = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : {};
+    var idleQueue = arguments.length > 7 ? arguments[7] : undefined;
     var
     /**
      * Stores information documents about the collections of the database
      */
-    internalStore = arguments.length > 7 ? arguments[7] : undefined;
+    internalStore = arguments.length > 8 ? arguments[8] : undefined;
     var
     /**
      * Stores the local documents which are attached to this database.
      */
-    localDocumentsStore = arguments.length > 8 ? arguments[8] : undefined;
+    localDocumentsStore = arguments.length > 9 ? arguments[9] : undefined;
     var
     /**
      * If multiInstance: true
      * we need the broadcast channel for the database.
      */
-    broadcastChannel = arguments.length > 9 ? arguments[9] : undefined;
-    this.idleQueue = new IdleQueue();
+    broadcastChannel = arguments.length > 10 ? arguments[10] : undefined;
     this.token = randomCouchString(10);
     this._subs = [];
     this.destroyed = false;
@@ -55,6 +55,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
     this.multiInstance = multiInstance;
     this.eventReduce = eventReduce;
     this.options = options;
+    this.idleQueue = idleQueue;
     this.internalStore = internalStore;
     this.localDocumentsStore = localDocumentsStore;
     this.broadcastChannel = broadcastChannel;
@@ -344,6 +345,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
         return createRxCollectionStorageInstances(collectionName, _this3, {
           databaseName: _this3.name,
           collectionName: collectionName,
+          idleQueue: _this3.idleQueue,
           schema: getPseudoSchemaForVersion(v, 'collectionName'),
           options: _this3.instanceCreationOptions
         }, {});
@@ -684,7 +686,7 @@ function _prepareBroadcastChannel(rxDatabase) {
  */
 
 
-function createRxDatabaseStorageInstances(_x7, _x8, _x9, _x10) {
+function createRxDatabaseStorageInstances(_x7, _x8, _x9, _x10, _x11) {
   return _createRxDatabaseStorageInstances.apply(this, arguments);
 }
 /**
@@ -693,7 +695,7 @@ function createRxDatabaseStorageInstances(_x7, _x8, _x9, _x10) {
 
 
 function _createRxDatabaseStorageInstances() {
-  _createRxDatabaseStorageInstances = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee6(storage, databaseName, options, broadcastChannel) {
+  _createRxDatabaseStorageInstances = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee6(storage, databaseName, options, idleQueue, broadcastChannel) {
     var internalStore, localDocumentsStore;
     return _regeneratorRuntime.wrap(function _callee6$(_context6) {
       while (1) {
@@ -705,6 +707,7 @@ function _createRxDatabaseStorageInstances() {
               collectionName: INTERNAL_STORAGE_NAME,
               schema: getPseudoSchemaForVersion(0, 'collectionName'),
               options: options,
+              idleQueue: idleQueue,
               broadcastChannel: broadcastChannel
             });
 
@@ -715,6 +718,7 @@ function _createRxDatabaseStorageInstances() {
               databaseName: databaseName,
               collectionName: '',
               options: options,
+              idleQueue: idleQueue,
               broadcastChannel: broadcastChannel
             });
 
@@ -735,7 +739,7 @@ function _createRxDatabaseStorageInstances() {
   return _createRxDatabaseStorageInstances.apply(this, arguments);
 }
 
-function prepare(_x11) {
+function prepare(_x12) {
   return _prepare.apply(this, arguments);
 }
 
@@ -812,8 +816,9 @@ export function createRxDatabase(_ref3) {
     broadcastChannel = new BroadcastChannel('RxDB:' + name + ':' + 'socket');
   }
 
-  return createRxDatabaseStorageInstances(storage, name, instanceCreationOptions, broadcastChannel).then(function (storageInstances) {
-    var rxDatabase = new RxDatabaseBase(name, storage, instanceCreationOptions, password, multiInstance, eventReduce, options, storageInstances.internalStore, storageInstances.localDocumentsStore, broadcastChannel);
+  var idleQueue = new IdleQueue();
+  return createRxDatabaseStorageInstances(storage, name, instanceCreationOptions, idleQueue, broadcastChannel).then(function (storageInstances) {
+    var rxDatabase = new RxDatabaseBase(name, storage, instanceCreationOptions, password, multiInstance, eventReduce, options, idleQueue, storageInstances.internalStore, storageInstances.localDocumentsStore, broadcastChannel);
     return prepare(rxDatabase).then(function () {
       return runAsyncPluginHooks('createRxDatabase', rxDatabase);
     }).then(function () {
@@ -825,28 +830,29 @@ export function createRxDatabase(_ref3) {
  * removes the database and all its known data
  */
 
-export function removeRxDatabase(_x12, _x13) {
+export function removeRxDatabase(_x13, _x14) {
   return _removeRxDatabase.apply(this, arguments);
 }
 
 function _removeRxDatabase() {
   _removeRxDatabase = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee9(databaseName, storage) {
-    var storageInstance, docs;
+    var idleQueue, storageInstance, docs;
     return _regeneratorRuntime.wrap(function _callee9$(_context9) {
       while (1) {
         switch (_context9.prev = _context9.next) {
           case 0:
-            _context9.next = 2;
-            return createRxDatabaseStorageInstances(storage, databaseName, {});
+            idleQueue = new IdleQueue();
+            _context9.next = 3;
+            return createRxDatabaseStorageInstances(storage, databaseName, {}, idleQueue);
 
-          case 2:
+          case 3:
             storageInstance = _context9.sent;
-            _context9.next = 5;
+            _context9.next = 6;
             return getAllDocuments(storageInstance.internalStore);
 
-          case 5:
+          case 6:
             docs = _context9.sent;
-            _context9.next = 8;
+            _context9.next = 9;
             return Promise.all(docs.map( /*#__PURE__*/function () {
               var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee8(colDoc) {
                 var id, schema, split, collectionName, version, primaryPath, _yield$Promise$all, instance, localInstance;
@@ -866,11 +872,13 @@ function _removeRxDatabase() {
                           databaseName: databaseName,
                           collectionName: collectionName,
                           schema: getPseudoSchemaForVersion(version, primaryPath),
-                          options: {}
+                          options: {},
+                          idleQueue: idleQueue
                         }), storage.createKeyObjectStorageInstance({
                           databaseName: databaseName,
                           collectionName: getCollectionLocalInstanceName(collectionName),
-                          options: {}
+                          options: {},
+                          idleQueue: idleQueue
                         })]);
 
                       case 8:
@@ -888,15 +896,15 @@ function _removeRxDatabase() {
                 }, _callee8);
               }));
 
-              return function (_x14) {
+              return function (_x15) {
                 return _ref4.apply(this, arguments);
               };
             }()));
 
-          case 8:
+          case 9:
             return _context9.abrupt("return", Promise.all([storageInstance.internalStore.remove(), storageInstance.localDocumentsStore.remove()]));
 
-          case 9:
+          case 10:
           case "end":
             return _context9.stop();
         }

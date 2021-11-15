@@ -45,6 +45,8 @@ var _rxStorageHelper = require("../../rx-storage-helper");
 
 var _rxCollectionHelper = require("../../rx-collection-helper");
 
+var _customIdleQueue = require("custom-idle-queue");
+
 /**
  * The DataMigrator handles the documents from collections with older schemas
  * and transforms/saves them into the newest collection
@@ -239,6 +241,7 @@ function _createOldCollection() {
               databaseName: database.name,
               collectionName: dataMigrator.newestCollection.name,
               schema: schemaObj,
+              idleQueue: new _customIdleQueue.IdleQueue(),
               options: dataMigrator.newestCollection.instanceCreationOptions
             };
             (0, _hooks.runPluginHooks)('preCreateRxStorageInstance', storageInstanceCreationParams);

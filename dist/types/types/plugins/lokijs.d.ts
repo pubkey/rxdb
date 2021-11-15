@@ -1,6 +1,8 @@
 import type {
     Collection
 } from 'lokijs';
+import { AddReturn } from 'unload';
+import { LokiSaveQueue } from '../../plugins/lokijs/loki-save-queue';
 import type { RxStorageChangedDocumentMeta } from '../rx-storage';
 
 export type LokiDatabaseSettings = Partial<LokiConstructorOptions & LokiConfigOptions>;
@@ -11,19 +13,8 @@ export type LokiSettings = {
     collection?: LokiCollectionSettings;
 };
 
-export type LokiLocalState = {
-    database: Loki;
-    collection: Collection;
-    /**
-     * LokiJS has no persistend, observable
-     * or queryable changefeed. So we keep our own changefeed
-     * in the changesCollection.
-     */
-    changesCollection: Collection<RxStorageChangedDocumentMeta>;
-};
-
 export type LokiStorageInternals = {
-    localState?: Promise<LokiLocalState>;
+    localState?: Promise<LokiLocalDatabaseState>;
 };
 
 export type LokiRemoteRequestBroadcastMessage = {
@@ -49,5 +40,30 @@ export type LokiRemoteResponseBroadcastMessage = {
 
 export type LokiDatabaseState = {
     database: Loki;
-    openCollections: { [collectionName: string]: Collection };
+    databaseSettings: LokiDatabaseSettings;
+    saveQueue: LokiSaveQueue,
+
+    // all known collections of the database
+    collections: {
+        [collectionName: string]: Collection;
+    };
+
+    /**
+     * Registered unload handlers
+     * so we can remove them on close.
+     */
+    unloads: AddReturn[];
 };
+
+export type LokiLocalDatabaseState = {
+    databaseState: LokiDatabaseState;
+
+    collection: Collection;
+    /**
+     * LokiJS has no persistend, observable
+     * or queryable changefeed. So we keep our own changefeed
+     * in the changesCollection.
+     */
+    changesCollection: Collection<RxStorageChangedDocumentMeta>;
+
+}

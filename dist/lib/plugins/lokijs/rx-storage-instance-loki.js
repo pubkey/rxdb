@@ -30,7 +30,7 @@ var _leaderElection = require("../leader-election");
 var instanceId = 1;
 
 var RxStorageInstanceLoki = /*#__PURE__*/function () {
-  function RxStorageInstanceLoki(databaseName, collectionName, schema, internals, options, databaseSettings, broadcastChannel) {
+  function RxStorageInstanceLoki(databaseName, collectionName, schema, internals, options, databaseSettings, idleQueue, broadcastChannel) {
     var _this = this;
 
     this.changes$ = new _rxjs.Subject();
@@ -42,6 +42,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
     this.internals = internals;
     this.options = options;
     this.databaseSettings = databaseSettings;
+    this.idleQueue = idleQueue;
     this.broadcastChannel = broadcastChannel;
     this.primaryPath = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(this.schema.primaryKey);
 
@@ -170,6 +171,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
                 collectionName: this.collectionName,
                 options: this.options,
                 schema: this.schema,
+                idleQueue: this.idleQueue,
                 broadcastChannel: this.broadcastChannel
               }, this.databaseSettings);
               return _context2.abrupt("return", this.getLocalState());
@@ -425,7 +427,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
     var _bulkWrite = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee5(documentWrites) {
       var _this3 = this;
 
-      var localState, collection, ret;
+      var localState, ret;
       return _regenerator["default"].wrap(function _callee5$(_context5) {
         while (1) {
           switch (_context5.prev = _context5.next) {
@@ -460,7 +462,6 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
               return (0, _util.promiseWait)(0);
 
             case 9:
-              collection = localState.collection;
               ret = {
                 success: new Map(),
                 error: new Map()
@@ -468,7 +469,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
               documentWrites.forEach(function (writeRow) {
                 var startTime = (0, _util.now)();
                 var id = writeRow.document[_this3.primaryPath];
-                var documentInDb = collection.by(_this3.primaryPath, id);
+                var documentInDb = localState.collection.by(_this3.primaryPath, id);
 
                 if (!documentInDb) {
                   // insert new document
@@ -485,7 +486,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
                     // TODO attachments are currently not working with lokijs
                     _attachments: {}
                   });
-                  collection.insert((0, _util.flatClone)(writeDoc));
+                  localState.collection.insert((0, _util.flatClone)(writeDoc));
 
                   if (!insertedIsDeleted) {
                     _this3.addChangeDocumentMeta(id);
@@ -538,7 +539,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
                       _attachments: {}
                     });
 
-                    collection.update(_writeDoc);
+                    localState.collection.update(_writeDoc);
 
                     _this3.addChangeDocumentMeta(id);
 
@@ -593,6 +594,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
                   }
                 }
               });
+              localState.databaseState.saveQueue.addWrite();
               return _context5.abrupt("return", ret);
 
             case 13:
@@ -614,7 +616,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
     var _bulkAddRevisions = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee6(documents) {
       var _this4 = this;
 
-      var localState, collection;
+      var localState;
       return _regenerator["default"].wrap(function _callee6$(_context6) {
         while (1) {
           switch (_context6.prev = _context6.next) {
@@ -649,15 +651,14 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
               return (0, _util.promiseWait)(0);
 
             case 9:
-              collection = localState.collection;
               documents.forEach(function (docData) {
                 var startTime = (0, _util.now)();
                 var id = docData[_this4.primaryPath];
-                var documentInDb = collection.by(_this4.primaryPath, id);
+                var documentInDb = localState.collection.by(_this4.primaryPath, id);
 
                 if (!documentInDb) {
                   // document not here, so we can directly insert
-                  collection.insert((0, _util.flatClone)(docData));
+                  localState.collection.insert((0, _util.flatClone)(docData));
 
                   _this4.changes$.next({
                     documentId: id,
@@ -691,7 +692,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
                   if (mustUpdate) {
                     var storeAtLoki = (0, _util.flatClone)(docData);
                     storeAtLoki.$loki = documentInDb.$loki;
-                    collection.update(storeAtLoki);
+                    localState.collection.update(storeAtLoki);
                     var change = null;
 
                     if (documentInDb._deleted && !docData._deleted) {
@@ -733,6 +734,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
                   }
                 }
               });
+              localState.databaseState.saveQueue.addWrite();
 
             case 11:
             case "end":
@@ -753,7 +755,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
     var _findDocumentsById = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee7(ids, deleted) {
       var _this5 = this;
 
-      var localState, collection, ret;
+      var localState, ret;
       return _regenerator["default"].wrap(function _callee7$(_context7) {
         while (1) {
           switch (_context7.prev = _context7.next) {
@@ -772,10 +774,9 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
               return _context7.abrupt("return", this.requestRemoteInstance('findDocumentsById', [ids, deleted]));
 
             case 5:
-              collection = localState.collection;
               ret = new Map();
               ids.forEach(function (id) {
-                var documentInDb = collection.by(_this5.primaryPath, id);
+                var documentInDb = localState.collection.by(_this5.primaryPath, id);
 
                 if (documentInDb && (!documentInDb._deleted || deleted)) {
                   ret.set(id, (0, _lokijsHelper.stripLokiKey)(documentInDb));
@@ -783,7 +784,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
               });
               return _context7.abrupt("return", ret);
 
-            case 9:
+            case 8:
             case "end":
               return _context7.stop();
           }
@@ -931,7 +932,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
 
   _proto.close = /*#__PURE__*/function () {
     var _close = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee10() {
-      var localState;
+      var localState, dbState;
       return _regenerator["default"].wrap(function _callee10$(_context10) {
         while (1) {
           switch (_context10.prev = _context10.next) {
@@ -941,20 +942,28 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
               _lokijsHelper.OPEN_LOKIJS_STORAGE_INSTANCES["delete"](this);
 
               if (!this.internals.localState) {
-                _context10.next = 9;
+                _context10.next = 13;
                 break;
               }
 
               _context10.next = 5;
-              return this.getLocalState();
+              return this.internals.localState;
 
             case 5:
               localState = _context10.sent;
-              localState.database.saveDatabase();
-              _context10.next = 9;
+              _context10.next = 8;
+              return (0, _lokijsHelper.getLokiDatabase)(this.databaseName, this.databaseSettings, this.idleQueue);
+
+            case 8:
+              dbState = _context10.sent;
+              _context10.next = 11;
+              return dbState.saveQueue.run();
+
+            case 11:
+              _context10.next = 13;
               return (0, _lokijsHelper.closeLokiCollections)(this.databaseName, [localState.collection, localState.changesCollection]);
 
-            case 9:
+            case 13:
             case "end":
               return _context10.stop();
           }
@@ -990,8 +999,8 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
               return _context11.abrupt("return", this.requestRemoteInstance('remove', []));
 
             case 5:
-              localState.database.removeCollection(this.collectionName);
-              localState.database.removeCollection(localState.changesCollection.name);
+              localState.databaseState.database.removeCollection(this.collectionName);
+              localState.databaseState.database.removeCollection(localState.changesCollection.name);
 
             case 7:
             case "end":
@@ -1019,7 +1028,7 @@ function createLokiLocalState(_x11, _x12) {
 
 function _createLokiLocalState() {
   _createLokiLocalState = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee12(params, databaseSettings) {
-    var databaseState, indices, primaryKey, collectionOptions, collection, changesCollectionName, changesCollectionOptions, changesCollection;
+    var databaseState, indices, primaryKey, collectionOptions, collection, changesCollectionName, changesCollectionOptions, changesCollection, ret;
     return _regenerator["default"].wrap(function _callee12$(_context12) {
       while (1) {
         switch (_context12.prev = _context12.next) {
@@ -1029,7 +1038,7 @@ function _createLokiLocalState() {
             }
 
             _context12.next = 3;
-            return (0, _lokijsHelper.getLokiDatabase)(params.databaseName, databaseSettings);
+            return (0, _lokijsHelper.getLokiDatabase)(params.databaseName, databaseSettings, params.idleQueue);
 
           case 3:
             databaseState = _context12.sent;
@@ -1064,21 +1073,22 @@ function _createLokiLocalState() {
               unique: [primaryKey]
             }, _lokijsHelper.LOKIJS_COLLECTION_DEFAULT_OPTIONS);
             collection = databaseState.database.addCollection(params.collectionName, collectionOptions);
-            databaseState.openCollections[params.collectionName] = collection;
+            databaseState.collections[params.collectionName] = collection;
             changesCollectionName = params.collectionName + _lokijsHelper.CHANGES_COLLECTION_SUFFIX;
             changesCollectionOptions = Object.assign({
               unique: ['eventId'],
               indices: ['sequence']
             }, _lokijsHelper.LOKIJS_COLLECTION_DEFAULT_OPTIONS);
             changesCollection = databaseState.database.addCollection(changesCollectionName, changesCollectionOptions);
-            databaseState.openCollections[changesCollectionName] = changesCollection;
-            return _context12.abrupt("return", {
-              database: databaseState.database,
+            databaseState.collections[params.collectionName] = changesCollection;
+            ret = {
+              databaseState: databaseState,
               collection: collection,
               changesCollection: changesCollection
-            });
+            };
+            return _context12.abrupt("return", ret);
 
-          case 16:
+          case 17:
           case "end":
             return _context12.stop();
         }
@@ -1111,7 +1121,7 @@ function _createLokiStorageInstance() {
             return internals.localState;
 
           case 5:
-            instance = new RxStorageInstanceLoki(params.databaseName, params.collectionName, params.schema, internals, params.options, databaseSettings, params.broadcastChannel);
+            instance = new RxStorageInstanceLoki(params.databaseName, params.collectionName, params.schema, internals, params.options, databaseSettings, params.idleQueue, params.broadcastChannel);
             return _context13.abrupt("return", instance);
 
           case 7:
