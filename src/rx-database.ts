@@ -196,14 +196,16 @@ export class RxDatabaseBase<
         [key in keyof CreatedCollections]: RxCollectionCreator
     }): Promise<{ [key in keyof CreatedCollections]: RxCollection }> {
         // get local management docs in bulk request
-        const collectionDocs = await this.internalStore.findDocumentsById(
-            Object
-                .keys(collectionCreators)
-                .map(name => {
-                    const schema: RxJsonSchema<any> = (collectionCreators as any)[name].schema;
-                    return _collectionNamePrimary(name, schema);
-                }),
-            false
+        const collectionDocs = await this.lockedRun(
+            () => this.internalStore.findDocumentsById(
+                Object
+                    .keys(collectionCreators)
+                    .map(name => {
+                        const schema: RxJsonSchema<any> = (collectionCreators as any)[name].schema;
+                        return _collectionNamePrimary(name, schema);
+                    }),
+                false
+            )
         );
 
         const internalDocByCollectionName: any = {};
@@ -269,10 +271,11 @@ export class RxDatabaseBase<
             ret[name] = collection;
 
             // add to bulk-docs list
-            if (!internalDocByCollectionName[name]) {
+            const collectionName = _collectionNamePrimary(name as any, collectionCreators[name].schema);
+            if (!internalDocByCollectionName[collectionName]) {
                 bulkPutDocs.push({
                     document: {
-                        collectionName: _collectionNamePrimary(name as any, collectionCreators[name].schema),
+                        collectionName,
                         schemaHash: schemaHashByName[name],
                         schema: collection.schema.normalized,
                         version: collection.schema.version,
@@ -290,9 +293,11 @@ export class RxDatabaseBase<
             }
         });
 
-        // make a single call to the pouchdb instance
+        // make a single write call to the storage instance
         if (bulkPutDocs.length > 0) {
-            await this.internalStore.bulkWrite(bulkPutDocs);
+            await this.lockedRun(
+                () => this.internalStore.bulkWrite(bulkPutDocs)
+            );
         }
 
         return ret;
@@ -572,10 +577,10 @@ export async function _removeAllOfCollection(
 
 function _prepareBroadcastChannel<Collections>(rxDatabase: RxDatabase<Collections>): void {
     if (!rxDatabase.broadcastChannel) {
-        return;
+        throw newRxError('SNH', { args: { rxDatabase } });
     }
-    rxDatabase.broadcastChannel$ = new Subject();
 
+    rxDatabase.broadcastChannel$ = new Subject();
     rxDatabase.broadcastChannel.addEventListener('message', (msg: RxChangeEventBroadcastChannelData) => {
         if (msg.storageToken !== rxDatabase.storageToken) {
             // not same storage-state
