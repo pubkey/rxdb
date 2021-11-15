@@ -2,6 +2,8 @@
 
 ### X.X.X (coming soon)
 
+### 10.5.0 (15 November 2021)
+
 Other:
   - Removed useless runtime check of database name, only check in dev-mode.
 
