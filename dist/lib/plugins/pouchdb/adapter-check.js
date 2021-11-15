@@ -73,5 +73,4 @@ function checkAdapter(adapter) {
    * calling destroy would possibly crash the other call
    */
 }
-
 //# sourceMappingURL=adapter-check.js.map

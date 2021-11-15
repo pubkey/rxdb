@@ -1023,5 +1023,4 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 }();
 
 exports.RxStorageInstancePouch = RxStorageInstancePouch;
-
 //# sourceMappingURL=rx-storage-instance-pouch.js.map

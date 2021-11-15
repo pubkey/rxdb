@@ -629,5 +629,4 @@ function isRxDocument(obj) {
   if (typeof obj === 'undefined') return false;
   return !!obj.isInstanceOfRxDocument;
 }
-
 //# sourceMappingURL=rx-document.js.map

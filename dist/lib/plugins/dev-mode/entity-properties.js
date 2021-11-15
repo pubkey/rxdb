@@ -68,5 +68,4 @@ function rxDocumentProperties() {
 
   return _rxDocumentProperties;
 }
-
 //# sourceMappingURL=entity-properties.js.map

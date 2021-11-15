@@ -89,5 +89,4 @@ var RxDBValidatePlugin = {
   hooks: hooks
 };
 exports.RxDBValidatePlugin = RxDBValidatePlugin;
-
 //# sourceMappingURL=validate.js.map

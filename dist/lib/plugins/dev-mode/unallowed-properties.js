@@ -78,5 +78,4 @@ function validateDatabaseName(name) {
 
   return true;
 }
-
 //# sourceMappingURL=unallowed-properties.js.map

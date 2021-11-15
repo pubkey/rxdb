@@ -94,5 +94,4 @@ Object.keys(_rxStorageKeyObjectInstancePouch).forEach(function (key) {
     }
   });
 });
-
 //# sourceMappingURL=index.js.map

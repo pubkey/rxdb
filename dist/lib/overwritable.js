@@ -47,5 +47,4 @@ var overwritable = {
   }
 };
 exports.overwritable = overwritable;
-
 //# sourceMappingURL=overwritable.js.map

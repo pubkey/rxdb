@@ -134,5 +134,4 @@ var RxDBDevModePlugin = {
   }
 };
 exports.RxDBDevModePlugin = RxDBDevModePlugin;
-
 //# sourceMappingURL=index.js.map

@@ -35,5 +35,4 @@ function wasRevisionfromPullReplication(replicationIdentifier, revision) {
   var ret = revision.endsWith(useFromHash);
   return ret;
 }
-
 //# sourceMappingURL=revision-flag.js.map

@@ -256,5 +256,4 @@ function addCustomEventsPluginToPouch() {
     bulkDocs: newBulkDocs
   });
 }
-
 //# sourceMappingURL=custom-events-plugin.js.map

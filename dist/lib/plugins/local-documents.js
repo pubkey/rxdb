@@ -498,5 +498,4 @@ var RxDBLocalDocumentsPlugin = {
   overwritable: {}
 };
 exports.RxDBLocalDocumentsPlugin = RxDBLocalDocumentsPlugin;
-
 //# sourceMappingURL=local-documents.js.map

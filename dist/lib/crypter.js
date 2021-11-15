@@ -123,5 +123,4 @@ exports.Crypter = Crypter;
 function createCrypter(password, schema) {
   return new Crypter(password, schema);
 }
-
 //# sourceMappingURL=crypter.js.map

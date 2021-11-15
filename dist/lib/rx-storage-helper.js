@@ -357,5 +357,4 @@ function storageChangeEventToRxChangeEvent(isLocal, rxStorageChangeEvent, rxData
   };
   return ret;
 }
-
 //# sourceMappingURL=rx-storage-helper.js.map

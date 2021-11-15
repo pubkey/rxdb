@@ -609,5 +609,4 @@ function _createLokiKeyObjectStorageInstance() {
   }));
   return _createLokiKeyObjectStorageInstance.apply(this, arguments);
 }
-
 //# sourceMappingURL=rx-storage-key-object-instance-loki.js.map

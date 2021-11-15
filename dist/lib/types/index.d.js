@@ -263,5 +263,4 @@ Object.keys(_lokijs).forEach(function (key) {
     }
   });
 });
-
 //# sourceMappingURL=index.d.js.map

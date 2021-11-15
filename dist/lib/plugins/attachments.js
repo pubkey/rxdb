@@ -507,5 +507,4 @@ var RxDBAttachmentsPlugin = {
   hooks: hooks
 };
 exports.RxDBAttachmentsPlugin = RxDBAttachmentsPlugin;
-
 //# sourceMappingURL=attachments.js.map

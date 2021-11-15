@@ -331,5 +331,4 @@ var RxDBReplicationCouchDBPlugin = {
   hooks: hooks
 };
 exports.RxDBReplicationCouchDBPlugin = RxDBReplicationCouchDBPlugin;
-
 //# sourceMappingURL=replication-couchdb.js.map

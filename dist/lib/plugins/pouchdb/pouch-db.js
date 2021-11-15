@@ -100,5 +100,4 @@ function addPouchPlugin(plugin) {
 
 var PouchDB = _pouchdbCore["default"];
 exports.PouchDB = PouchDB;
-
 //# sourceMappingURL=pouch-db.js.map

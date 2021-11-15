@@ -747,5 +747,4 @@ function _replicateRxCollection() {
   }));
   return _replicateRxCollection.apply(this, arguments);
 }
-
 //# sourceMappingURL=index.js.map

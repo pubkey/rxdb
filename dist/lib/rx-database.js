@@ -236,10 +236,12 @@ var RxDatabaseBase = /*#__PURE__*/function () {
           switch (_context3.prev = _context3.next) {
             case 0:
               _context3.next = 2;
-              return this.internalStore.findDocumentsById(Object.keys(collectionCreators).map(function (name) {
-                var schema = collectionCreators[name].schema;
-                return _collectionNamePrimary(name, schema);
-              }), false);
+              return this.lockedRun(function () {
+                return _this2.internalStore.findDocumentsById(Object.keys(collectionCreators).map(function (name) {
+                  var schema = collectionCreators[name].schema;
+                  return _collectionNamePrimary(name, schema);
+                }), false);
+              });
 
             case 2:
               collectionDocs = _context3.sent;
@@ -309,10 +311,12 @@ var RxDatabaseBase = /*#__PURE__*/function () {
                 var name = collection.name;
                 ret[name] = collection; // add to bulk-docs list
 
-                if (!internalDocByCollectionName[name]) {
+                var collectionName = _collectionNamePrimary(name, collectionCreators[name].schema);
+
+                if (!internalDocByCollectionName[collectionName]) {
                   bulkPutDocs.push({
                     document: {
-                      collectionName: _collectionNamePrimary(name, collectionCreators[name].schema),
+                      collectionName: collectionName,
                       schemaHash: schemaHashByName[name],
                       schema: collection.schema.normalized,
                       version: collection.schema.version,
@@ -331,7 +335,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
                     }
                   });
                 }
-              }); // make a single call to the pouchdb instance
+              }); // make a single write call to the storage instance
 
               if (!(bulkPutDocs.length > 0)) {
                 _context3.next = 15;
@@ -339,7 +343,9 @@ var RxDatabaseBase = /*#__PURE__*/function () {
               }
 
               _context3.next = 15;
-              return this.internalStore.bulkWrite(bulkPutDocs);
+              return this.lockedRun(function () {
+                return _this2.internalStore.bulkWrite(bulkPutDocs);
+              });
 
             case 15:
               return _context3.abrupt("return", ret);
@@ -694,7 +700,11 @@ function _removeAllOfCollection2() {
 
 function _prepareBroadcastChannel(rxDatabase) {
   if (!rxDatabase.broadcastChannel) {
-    return;
+    throw (0, _rxError.newRxError)('SNH', {
+      args: {
+        rxDatabase: rxDatabase
+      }
+    });
   }
 
   rxDatabase.broadcastChannel$ = new _rxjs.Subject();
@@ -959,5 +969,4 @@ function isRxDatabase(obj) {
 function dbCount() {
   return DB_COUNT;
 }
-
 //# sourceMappingURL=rx-database.js.map

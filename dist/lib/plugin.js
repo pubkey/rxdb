@@ -93,5 +93,4 @@ function addRxPlugin(plugin) {
     });
   }
 }
-
 //# sourceMappingURL=plugin.js.map

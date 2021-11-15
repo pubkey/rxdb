@@ -456,5 +456,4 @@ function checkSchema(jsonSchema) {
     });
   }
 }
-
 //# sourceMappingURL=check-schema.js.map

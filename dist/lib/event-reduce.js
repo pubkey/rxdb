@@ -134,5 +134,4 @@ function calculateNewResults(rxQuery, rxChangeEvents) {
     };
   }
 }
-
 //# sourceMappingURL=event-reduce.js.map

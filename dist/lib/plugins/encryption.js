@@ -176,5 +176,4 @@ var RxDBEncryptionPlugin = {
   }
 };
 exports.RxDBEncryptionPlugin = RxDBEncryptionPlugin;
-
 //# sourceMappingURL=encryption.js.map

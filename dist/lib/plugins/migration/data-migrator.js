@@ -681,5 +681,4 @@ function migratePromise(oldCollection, batchSize) {
 
   return oldCollection._migratePromise;
 }
-
 //# sourceMappingURL=data-migrator.js.map

@@ -61,5 +61,4 @@ var RxDBUpdatePlugin = {
   prototypes: prototypes
 };
 exports.RxDBUpdatePlugin = RxDBUpdatePlugin;
-
 //# sourceMappingURL=update.js.map

@@ -250,5 +250,4 @@ function _createRxCollectionStorageInstances() {
   }));
   return _createRxCollectionStorageInstances.apply(this, arguments);
 }
-
 //# sourceMappingURL=rx-collection-helper.js.map

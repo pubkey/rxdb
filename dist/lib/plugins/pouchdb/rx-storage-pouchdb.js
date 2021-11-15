@@ -321,5 +321,4 @@ function getRxStoragePouch(adapter, pouchSettings) {
   var storage = new RxStoragePouch(adapter, pouchSettings);
   return storage;
 }
-
 //# sourceMappingURL=rx-storage-pouchdb.js.map

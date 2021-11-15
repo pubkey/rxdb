@@ -290,5 +290,4 @@ var RxStorageKeyObjectInstancePouch = /*#__PURE__*/function () {
 }();
 
 exports.RxStorageKeyObjectInstancePouch = RxStorageKeyObjectInstancePouch;
-
 //# sourceMappingURL=rx-storage-key-object-instance-pouch.js.map

@@ -48,5 +48,4 @@ function checkOrmMethods(statics) {
     }
   });
 }
-
 //# sourceMappingURL=check-orm.js.map

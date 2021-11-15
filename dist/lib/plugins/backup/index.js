@@ -506,5 +506,4 @@ var RxDBBackupPlugin = {
   }
 };
 exports.RxDBBackupPlugin = RxDBBackupPlugin;
-
 //# sourceMappingURL=index.js.map

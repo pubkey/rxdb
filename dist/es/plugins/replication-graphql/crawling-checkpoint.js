@@ -41,7 +41,9 @@ function _getLastPushSequence() {
         switch (_context.prev = _context.next) {
           case 0:
             _context.next = 2;
-            return findLocalDocument(collection.localDocumentsStore, pushSequenceId(endpointHash));
+            return collection.database.lockedRun(function () {
+              return findLocalDocument(collection.localDocumentsStore, pushSequenceId(endpointHash));
+            });
 
           case 2:
             doc = _context.sent;
@@ -80,7 +82,9 @@ function _setLastPushSequence() {
           case 0:
             _id = pushSequenceId(endpointHash);
             _context2.next = 3;
-            return findLocalDocument(collection.localDocumentsStore, _id);
+            return collection.database.lockedRun(function () {
+              return findLocalDocument(collection.localDocumentsStore, _id);
+            });
 
           case 3:
             doc = _context2.sent;
@@ -91,12 +95,14 @@ function _setLastPushSequence() {
             }
 
             _context2.next = 7;
-            return writeSingleLocal(collection.localDocumentsStore, {
-              document: {
-                _id: _id,
-                value: sequence,
-                _attachments: {}
-              }
+            return collection.database.lockedRun(function () {
+              return writeSingleLocal(collection.localDocumentsStore, {
+                document: {
+                  _id: _id,
+                  value: sequence,
+                  _attachments: {}
+                }
+              });
             });
 
           case 7:
@@ -107,13 +113,15 @@ function _setLastPushSequence() {
             newDoc = flatClone(doc);
             newDoc.value = sequence;
             _context2.next = 15;
-            return writeSingleLocal(collection.localDocumentsStore, {
-              previous: doc,
-              document: {
-                _id: _id,
-                value: sequence,
-                _attachments: {}
-              }
+            return collection.database.lockedRun(function () {
+              return writeSingleLocal(collection.localDocumentsStore, {
+                previous: doc,
+                document: {
+                  _id: _id,
+                  value: sequence,
+                  _attachments: {}
+                }
+              });
             });
 
           case 15:
@@ -174,10 +182,12 @@ function _getChangesSinceLastPushSequence() {
                   switch (_context3.prev = _context3.next) {
                     case 0:
                       _context3.next = 2;
-                      return collection.storageInstance.getChangedDocuments({
-                        sinceSequence: lastPushSequence,
-                        limit: batchSize,
-                        direction: 'after'
+                      return collection.database.lockedRun(function () {
+                        return collection.storageInstance.getChangedDocuments({
+                          sinceSequence: lastPushSequence,
+                          limit: batchSize,
+                          direction: 'after'
+                        });
                       });
 
                     case 2:
@@ -194,9 +204,11 @@ function _getChangesSinceLastPushSequence() {
 
                     case 7:
                       _context3.next = 9;
-                      return collection.storageInstance.findDocumentsById(changesResults.changedDocuments.map(function (row) {
-                        return row.id;
-                      }), true);
+                      return collection.database.lockedRun(function () {
+                        return collection.storageInstance.findDocumentsById(changesResults.changedDocuments.map(function (row) {
+                          return row.id;
+                        }), true);
+                      });
 
                     case 9:
                       plainDocs = _context3.sent;
@@ -314,7 +326,9 @@ function _getLastPullDocument() {
         switch (_context5.prev = _context5.next) {
           case 0:
             _context5.next = 2;
-            return findLocalDocument(collection.localDocumentsStore, pullLastDocumentId(endpointHash));
+            return collection.database.lockedRun(function () {
+              return findLocalDocument(collection.localDocumentsStore, pullLastDocumentId(endpointHash));
+            });
 
           case 2:
             localDoc = _context5.sent;
@@ -353,7 +367,9 @@ function _setLastPullDocument() {
           case 0:
             _id = pullLastDocumentId(endpointHash);
             _context6.next = 3;
-            return findLocalDocument(collection.localDocumentsStore, _id);
+            return collection.database.lockedRun(function () {
+              return findLocalDocument(collection.localDocumentsStore, _id);
+            });
 
           case 3:
             localDoc = _context6.sent;
@@ -363,20 +379,24 @@ function _setLastPullDocument() {
               break;
             }
 
-            return _context6.abrupt("return", writeSingleLocal(collection.localDocumentsStore, {
-              document: {
-                _id: _id,
-                doc: doc,
-                _attachments: {}
-              }
+            return _context6.abrupt("return", collection.database.lockedRun(function () {
+              return writeSingleLocal(collection.localDocumentsStore, {
+                document: {
+                  _id: _id,
+                  doc: doc,
+                  _attachments: {}
+                }
+              });
             }));
 
           case 8:
             newDoc = flatClone(localDoc);
             newDoc.doc = doc;
-            return _context6.abrupt("return", writeSingleLocal(collection.localDocumentsStore, {
-              previous: localDoc,
-              document: newDoc
+            return _context6.abrupt("return", collection.database.lockedRun(function () {
+              return writeSingleLocal(collection.localDocumentsStore, {
+                previous: localDoc,
+                document: newDoc
+              });
             }));
 
           case 11:

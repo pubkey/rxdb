@@ -502,5 +502,4 @@ var RxDBInMemoryPlugin = {
   prototypes: prototypes
 };
 exports.RxDBInMemoryPlugin = RxDBInMemoryPlugin;
-
 //# sourceMappingURL=in-memory.js.map

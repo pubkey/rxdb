@@ -383,5 +383,4 @@ function _setLastPullDocument() {
   }));
   return _setLastPullDocument.apply(this, arguments);
 }
-
 //# sourceMappingURL=replication-checkpoint.js.map

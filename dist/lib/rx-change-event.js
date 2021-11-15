@@ -56,5 +56,4 @@ function rxChangeEventToEventReduceChangeEvent(rxChangeEvent) {
       };
   }
 }
-
 //# sourceMappingURL=rx-change-event.js.map

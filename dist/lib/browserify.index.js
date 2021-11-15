@@ -18,5 +18,4 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
 RxDbPouchPlugin.addPouchPlugin(require('pouchdb-adapter-idb'));
 RxDbPouchPlugin.addPouchPlugin(require('pouchdb-adapter-http'));
 window['RxDB'] = RxDB;
-
 //# sourceMappingURL=browserify.index.js.map

@@ -110,5 +110,4 @@ function createRxDatabase(params) {
   addDefaultRxPlugins();
   return (0, _core.createRxDatabase)(params);
 } // re-export things from core
-
 //# sourceMappingURL=index.js.map

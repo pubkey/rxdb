@@ -674,24 +674,26 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
   }();
 
   _proto.handleDocumentsFromRemote = /*#__PURE__*/function () {
-    var _handleDocumentsFromRemote = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee9(docs) {
+    var _handleDocumentsFromRemote = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee8(docs) {
       var _this6 = this;
 
       var toStorageDocs, docIds, docsFromLocal, _iterator, _step, doc, documentId, deletedValue, docStateInLocalStorageInstance, newRevision, hasHeight, newRevisionHeight;
 
-      return _regeneratorRuntime.wrap(function _callee9$(_context9) {
+      return _regeneratorRuntime.wrap(function _callee8$(_context8) {
         while (1) {
-          switch (_context9.prev = _context9.next) {
+          switch (_context8.prev = _context8.next) {
             case 0:
               toStorageDocs = [];
               docIds = docs.map(function (doc) {
                 return doc[_this6.collection.schema.primaryPath];
               });
-              _context9.next = 4;
-              return this.collection.storageInstance.findDocumentsById(docIds, true);
+              _context8.next = 4;
+              return this.collection.database.lockedRun(function () {
+                return _this6.collection.storageInstance.findDocumentsById(docIds, true);
+              });
 
             case 4:
-              docsFromLocal = _context9.sent;
+              docsFromLocal = _context8.sent;
 
               for (_iterator = _createForOfIteratorHelperLoose(docs); !(_step = _iterator()).done;) {
                 doc = _step.value;
@@ -718,38 +720,26 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
               }
 
               if (!(toStorageDocs.length > 0)) {
-                _context9.next = 9;
+                _context8.next = 9;
                 break;
               }
 
-              _context9.next = 9;
-              return this.collection.database.lockedRun( /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee8() {
-                return _regeneratorRuntime.wrap(function _callee8$(_context8) {
-                  while (1) {
-                    switch (_context8.prev = _context8.next) {
-                      case 0:
-                        _context8.next = 2;
-                        return _this6.collection.storageInstance.bulkAddRevisions(toStorageDocs.map(function (row) {
-                          return _handleToStorageInstance(_this6.collection, row.doc);
-                        }));
-
-                      case 2:
-                      case "end":
-                        return _context8.stop();
-                    }
-                  }
-                }, _callee8);
-              })));
+              _context8.next = 9;
+              return this.collection.database.lockedRun(function () {
+                return _this6.collection.storageInstance.bulkAddRevisions(toStorageDocs.map(function (row) {
+                  return _handleToStorageInstance(_this6.collection, row.doc);
+                }));
+              });
 
             case 9:
-              return _context9.abrupt("return", true);
+              return _context8.abrupt("return", true);
 
             case 10:
             case "end":
-              return _context9.stop();
+              return _context8.stop();
           }
         }
-      }, _callee9, this);
+      }, _callee8, this);
     }));
 
     function handleDocumentsFromRemote(_x3) {
@@ -782,23 +772,23 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
 
   return RxGraphQLReplicationState;
 }();
-export function syncGraphQL(_ref5) {
-  var url = _ref5.url,
-      _ref5$headers = _ref5.headers,
-      headers = _ref5$headers === void 0 ? {} : _ref5$headers,
-      _ref5$waitForLeadersh = _ref5.waitForLeadership,
-      waitForLeadership = _ref5$waitForLeadersh === void 0 ? true : _ref5$waitForLeadersh,
-      pull = _ref5.pull,
-      push = _ref5.push,
-      deletedFlag = _ref5.deletedFlag,
-      _ref5$live = _ref5.live,
-      live = _ref5$live === void 0 ? false : _ref5$live,
-      _ref5$liveInterval = _ref5.liveInterval,
-      liveInterval = _ref5$liveInterval === void 0 ? 1000 * 10 : _ref5$liveInterval,
-      _ref5$retryTime = _ref5.retryTime,
-      retryTime = _ref5$retryTime === void 0 ? 1000 * 5 : _ref5$retryTime,
-      _ref5$autoStart = _ref5.autoStart,
-      autoStart = _ref5$autoStart === void 0 ? true : _ref5$autoStart;
+export function syncGraphQL(_ref4) {
+  var url = _ref4.url,
+      _ref4$headers = _ref4.headers,
+      headers = _ref4$headers === void 0 ? {} : _ref4$headers,
+      _ref4$waitForLeadersh = _ref4.waitForLeadership,
+      waitForLeadership = _ref4$waitForLeadersh === void 0 ? true : _ref4$waitForLeadersh,
+      pull = _ref4.pull,
+      push = _ref4.push,
+      deletedFlag = _ref4.deletedFlag,
+      _ref4$live = _ref4.live,
+      live = _ref4$live === void 0 ? false : _ref4$live,
+      _ref4$liveInterval = _ref4.liveInterval,
+      liveInterval = _ref4$liveInterval === void 0 ? 1000 * 10 : _ref4$liveInterval,
+      _ref4$retryTime = _ref4.retryTime,
+      retryTime = _ref4$retryTime === void 0 ? 1000 * 5 : _ref4$retryTime,
+      _ref4$autoStart = _ref4.autoStart,
+      autoStart = _ref4$autoStart === void 0 ? true : _ref4$autoStart;
   var collection = this; // fill in defaults for pull & push
 
   if (pull) {
@@ -828,43 +818,43 @@ export function syncGraphQL(_ref5) {
 
     if (replicationState.live) {
       if (pull) {
-        _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee10() {
-          return _regeneratorRuntime.wrap(function _callee10$(_context10) {
+        _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee9() {
+          return _regeneratorRuntime.wrap(function _callee9$(_context9) {
             while (1) {
-              switch (_context10.prev = _context10.next) {
+              switch (_context9.prev = _context9.next) {
                 case 0:
                   if (replicationState.isStopped()) {
-                    _context10.next = 9;
+                    _context9.next = 9;
                     break;
                   }
 
-                  _context10.next = 3;
+                  _context9.next = 3;
                   return promiseWait(replicationState.liveInterval);
 
                 case 3:
                   if (!replicationState.isStopped()) {
-                    _context10.next = 5;
+                    _context9.next = 5;
                     break;
                   }
 
-                  return _context10.abrupt("return");
+                  return _context9.abrupt("return");
 
                 case 5:
-                  _context10.next = 7;
+                  _context9.next = 7;
                   return replicationState.run( // do not retry on liveInterval-runs because they might stack up
                   // when failing
                   false);
 
                 case 7:
-                  _context10.next = 0;
+                  _context9.next = 0;
                   break;
 
                 case 9:
                 case "end":
-                  return _context10.stop();
+                  return _context9.stop();
               }
             }
-          }, _callee10);
+          }, _callee9);
         }))();
       }
 

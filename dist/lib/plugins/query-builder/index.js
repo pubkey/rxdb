@@ -79,5 +79,4 @@ var RxDBQueryBuilderPlugin = {
   }
 };
 exports.RxDBQueryBuilderPlugin = RxDBQueryBuilderPlugin;
-
 //# sourceMappingURL=index.js.map

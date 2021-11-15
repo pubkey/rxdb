@@ -126,5 +126,4 @@ function getDocumentOrmPrototype(rxCollection) {
   });
   return proto;
 }
-
 //# sourceMappingURL=rx-document-prototype-merge.js.map
