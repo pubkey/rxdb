@@ -46,9 +46,6 @@ import type {
     RxDocumentWriteData,
     LokiLocalDatabaseState
 } from '../../types';
-import type {
-    CompareFunction
-} from 'array-push-at-sort-position';
 import {
     LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE,
     CHANGES_COLLECTION_SUFFIX,

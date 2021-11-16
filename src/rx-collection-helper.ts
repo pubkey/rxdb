@@ -151,9 +151,7 @@ export async function createRxCollectionStorageInstances<RxDocumentType, Interna
     storageInstance: RxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions>,
     localDocumentsStore: RxStorageKeyObjectInstance<any, InstanceCreationOptions>
 }> {
-
     storageInstanceCreationParams.broadcastChannel = rxDatabase.broadcastChannel;
-
     const [
         storageInstance,
         localDocumentsStore

@@ -26,7 +26,8 @@ import {
     pluginMissing,
     flatClone,
     PROMISE_RESOLVE_FALSE,
-    randomCouchString
+    randomCouchString,
+    ensureNotFalsy
 } from './util';
 import {
     newRxError
@@ -126,7 +127,7 @@ export class RxDatabaseBase<
     private subject: Subject<RxChangeEvent> = new Subject();
     private observable$: Observable<RxChangeEvent> = this.subject.asObservable();
     public storageToken?: string;
-    public broadcastChannel$?: Subject<RxChangeEvent>;
+    public broadcastChannel$: Subject<RxChangeEvent> = new Subject();
 
     /**
      * removes all internal collection-info
@@ -580,7 +581,6 @@ function _prepareBroadcastChannel<Collections>(rxDatabase: RxDatabase<Collection
         throw newRxError('SNH', { args: { rxDatabase } });
     }
 
-    rxDatabase.broadcastChannel$ = new Subject();
     rxDatabase.broadcastChannel.addEventListener('message', (msg: RxChangeEventBroadcastChannelData) => {
         if (msg.storageToken !== rxDatabase.storageToken) {
             // not same storage-state
@@ -592,7 +592,7 @@ function _prepareBroadcastChannel<Collections>(rxDatabase: RxDatabase<Collection
         }
         const changeEvent = msg.cE;
 
-        (rxDatabase.broadcastChannel$ as any).next(changeEvent);
+        rxDatabase.broadcastChannel$.next(changeEvent);
     });
 
     rxDatabase._subs.push(
