@@ -2,6 +2,8 @@
 
 ### X.X.X (coming soon)
 
+### 10.5.2 (18 November 2021)
+
 Other:
   - GraphQL replication must wait for `requestIdlePromise` to not slow down more important tasks.
 
