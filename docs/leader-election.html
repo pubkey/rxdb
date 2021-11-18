@@ -1741,6 +1741,20 @@ db.waitForLeadership()
     }, <span class="hljs-number">1000</span> * <span class="hljs-number">10</span>);
   });
 </code></pre>
+<h2 id="handle-duplicate-leaders">Handle Duplicate Leaders</h2>
+<p>On rare occassions, it can happen that <a href="https://github.com/pubkey/broadcast-channel/blob/master/.github/README.md#handle-duplicate-leaders" target="_blank">more then one leader</a> is elected. This can happen when the CPU is on 100% or for any other reason the JavaScript process is fully blocked for a long time.
+For most cases this is not really problem because on duplicate leaders, both browser tabs replicate with the same backend anyways.
+To handle the duplicate leader event, you can access the leader elector and set a handler:</p>
+<pre><code class="lang-ts"><span class="hljs-keyword">import</span> {
+    getLeaderElectorByBroadcastChannel
+} from <span class="hljs-string">&apos;rxdb/plugins/leader-election&apos;</span>;
+
+<span class="hljs-keyword">const</span> leaderElector = getLeaderElectorByBroadcastChannel(broadcastChannel);
+leaderElector.onduplicate = async () =&gt; {
+    <span class="hljs-comment">// Duplicate leader detected -&gt; reload the page.</span>
+    location.reload();
+}
+</code></pre>
 <h2 id="live-example">Live-Example</h2>
 <p>In this example the leader is marked with the crown &#x265B;</p>
 <p><img src="files/leader-election.gif" alt="reactive.gif"></p>
@@ -1794,7 +1808,7 @@ The leader is elected between different processes on the same javascript-runtime
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"LeaderElection","level":"1.13","depth":1,"next":{"title":"RxStorage LokiJS","level":"1.14","depth":1,"path":"rx-storage-lokijs.md","ref":"./rx-storage-lokijs.md","articles":[]},"previous":{"title":"DataMigration","level":"1.12","depth":1,"path":"data-migration.md","ref":"./data-migration.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"leader-election.md","mtime":"2021-11-15T22:25:50.908Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-11-15T22:30:07.366Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"LeaderElection","level":"1.13","depth":1,"next":{"title":"RxStorage LokiJS","level":"1.14","depth":1,"path":"rx-storage-lokijs.md","ref":"./rx-storage-lokijs.md","articles":[]},"previous":{"title":"DataMigration","level":"1.12","depth":1,"path":"data-migration.md","ref":"./data-migration.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"leader-election.md","mtime":"2021-11-18T10:59:28.557Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-11-18T11:03:55.936Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

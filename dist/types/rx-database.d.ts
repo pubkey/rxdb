@@ -54,7 +54,7 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
     private subject;
     private observable$;
     storageToken?: string;
-    broadcastChannel$?: Subject<RxChangeEvent>;
+    broadcastChannel$: Subject<RxChangeEvent>;
     /**
      * removes all internal collection-info
      * only use this if you have to upgrade from a major rxdb-version

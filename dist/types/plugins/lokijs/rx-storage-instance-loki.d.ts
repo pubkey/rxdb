@@ -17,13 +17,14 @@ export declare class RxStorageInstanceLoki<RxDocType> implements RxStorageInstan
     private lastChangefeedSequence;
     readonly instanceId: number;
     readonly leaderElector?: LeaderElector;
+    private closed;
     constructor(databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocType>>, internals: LokiStorageInternals, options: Readonly<LokiSettings>, databaseSettings: LokiDatabaseSettings, idleQueue: IdleQueue, broadcastChannel?: BroadcastChannel<LokiRemoteRequestBroadcastMessage | LokiRemoteResponseBroadcastMessage> | undefined);
     private getLocalState;
     /**
      * If the local state must be used, that one is returned.
      * Returns false if a remote instance must be used.
      */
-    private mustUseLocalState;
+    mustUseLocalState(): Promise<LokiLocalDatabaseState | false>;
     private requestRemoteInstance;
     /**
      * Adds an entry to the changes feed

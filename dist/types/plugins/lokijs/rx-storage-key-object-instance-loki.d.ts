@@ -13,13 +13,14 @@ export declare class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjec
     private changes$;
     readonly leaderElector?: LeaderElector;
     instanceId: number;
+    private closed;
     constructor(databaseName: string, collectionName: string, internals: LokiStorageInternals, options: Readonly<LokiSettings>, databaseSettings: LokiDatabaseSettings, idleQueue: IdleQueue, broadcastChannel?: BroadcastChannel<LokiRemoteRequestBroadcastMessage | LokiRemoteResponseBroadcastMessage> | undefined);
     private getLocalState;
     /**
      * If the local state must be used, that one is returned.
      * Returns false if a remote instance must be used.
      */
-    private mustUseLocalState;
+    mustUseLocalState(): Promise<LokiLocalDatabaseState | false>;
     private requestRemoteInstance;
     bulkWrite<RxDocType>(documentWrites: BulkWriteLocalRow<RxDocType>[]): Promise<RxLocalStorageBulkWriteResponse<RxDocType>>;
     findLocalDocumentsById<RxDocType = any>(ids: string[]): Promise<Map<string, RxLocalDocumentData<RxDocType>>>;

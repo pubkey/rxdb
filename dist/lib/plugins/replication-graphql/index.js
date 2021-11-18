@@ -297,20 +297,28 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
             case 0:
               retryOnFail = _args3.length > 0 && _args3[0] !== undefined ? _args3[0] : true;
               this._runCount++;
+              /**
+               * The replication happens in the background anyways
+               * so we have to ensure that we do not slow down primary tasks.
+               */
 
+              _context3.next = 4;
+              return this.collection.database.requestIdlePromise();
+
+            case 4:
               if (!this.push) {
-                _context3.next = 9;
+                _context3.next = 11;
                 break;
               }
 
-              _context3.next = 5;
+              _context3.next = 7;
               return this.runPush();
 
-            case 5:
+            case 7:
               ok = _context3.sent;
 
               if (!(!ok && retryOnFail)) {
-                _context3.next = 9;
+                _context3.next = 11;
                 break;
               }
 
@@ -325,20 +333,20 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
 
               return _context3.abrupt("return", true);
 
-            case 9:
+            case 11:
               if (!this.pull) {
-                _context3.next = 16;
+                _context3.next = 18;
                 break;
               }
 
-              _context3.next = 12;
+              _context3.next = 14;
               return this.runPull();
 
-            case 12:
+            case 14:
               _ok = _context3.sent;
 
               if (!(!_ok && retryOnFail)) {
-                _context3.next = 16;
+                _context3.next = 18;
                 break;
               }
 
@@ -347,10 +355,10 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
               }, this.retryTime);
               return _context3.abrupt("return", true);
 
-            case 16:
+            case 18:
               return _context3.abrupt("return", false);
 
-            case 17:
+            case 19:
             case "end":
               return _context3.stop();
           }

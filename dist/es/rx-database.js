@@ -3,7 +3,7 @@ import _createClass from "@babel/runtime/helpers/createClass";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { IdleQueue } from 'custom-idle-queue';
 import { BroadcastChannel } from 'broadcast-channel';
-import { pluginMissing, flatClone, PROMISE_RESOLVE_FALSE, randomCouchString } from './util';
+import { pluginMissing, flatClone, PROMISE_RESOLVE_FALSE, randomCouchString, PROMISE_RESOLVE_VOID } from './util';
 import { newRxError } from './rx-error';
 import { createRxSchema, getPrimaryFieldOfPrimaryKey } from './rx-schema';
 import { isRxChangeEventIntern } from './rx-change-event';
@@ -48,6 +48,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
     this.destroyed = false;
     this.subject = new Subject();
     this.observable$ = this.subject.asObservable();
+    this.broadcastChannel$ = new Subject();
     this.name = name;
     this.storage = storage;
     this.instanceCreationOptions = instanceCreationOptions;
@@ -340,12 +341,16 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
   _proto.removeCollection = function removeCollection(collectionName) {
     var _this3 = this;
 
+    var destroyPromise = PROMISE_RESOLVE_VOID;
+
     if (this.collections[collectionName]) {
-      this.collections[collectionName].destroy();
+      destroyPromise = this.collections[collectionName].destroy();
     } // remove schemas from internal db
 
 
-    return _removeAllOfCollection(this, collectionName) // get all relevant pouchdb-instances
+    return destroyPromise.then(function () {
+      return _removeAllOfCollection(_this3, collectionName);
+    }) // get all relevant pouchdb-instances
     .then(function (knownVersions) {
       return Promise.all(knownVersions.map(function (v) {
         return createRxCollectionStorageInstances(collectionName, _this3, {
@@ -670,7 +675,6 @@ function _prepareBroadcastChannel(rxDatabase) {
     });
   }
 
-  rxDatabase.broadcastChannel$ = new Subject();
   rxDatabase.broadcastChannel.addEventListener('message', function (msg) {
     if (msg.storageToken !== rxDatabase.storageToken) {
       // not same storage-state
