@@ -27,7 +27,8 @@ import {
     flatClone,
     PROMISE_RESOLVE_FALSE,
     randomCouchString,
-    ensureNotFalsy
+    ensureNotFalsy,
+    PROMISE_RESOLVE_VOID
 } from './util';
 import {
     newRxError
@@ -308,12 +309,14 @@ export class RxDatabaseBase<
      * delete all data of the collection and its previous versions
      */
     removeCollection(collectionName: string): Promise<void> {
+        let destroyPromise = PROMISE_RESOLVE_VOID;
         if ((this.collections as any)[collectionName]) {
-            (this.collections as any)[collectionName].destroy();
+            destroyPromise = (this.collections as any)[collectionName].destroy();
         }
 
         // remove schemas from internal db
-        return _removeAllOfCollection(this as any, collectionName)
+        return destroyPromise
+            .then(() => _removeAllOfCollection(this as any, collectionName))
             // get all relevant pouchdb-instances
             .then(knownVersions => {
                 return Promise.all(
