@@ -2,6 +2,12 @@
 
 ### X.X.X (coming soon)
 
+Other:
+  - GraphQL replication must wait for `requestIdlePromise` to not slow down more important tasks.
+
+Bugfixes:
+  - LokiJS: Directly create local state when instance becomes leader.
+
 ### 10.5.1 (15 November 2021)
 
 Bugfixes:

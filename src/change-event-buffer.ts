@@ -38,8 +38,9 @@ export class ChangeEventBuffer {
         this.counter++;
         this.buffer.push(changeEvent);
         this.eventCounterMap.set(changeEvent, this.counter);
-        while (this.buffer.length > this.limit)
+        while (this.buffer.length > this.limit) {
             this.buffer.shift();
+        }
     }
 
     /**

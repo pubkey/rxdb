@@ -186,6 +186,12 @@ export class RxGraphQLReplicationState<RxDocType> {
     async _run(retryOnFail = true): Promise<boolean> {
         this._runCount++;
 
+        /**
+         * The replication happens in the background anyways
+         * so we have to ensure that we do not slow down primary tasks.
+         */
+        await this.collection.database.requestIdlePromise();
+
         if (this.push) {
             const ok = await this.runPush();
             if (!ok && retryOnFail) {

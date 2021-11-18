@@ -1411,7 +1411,6 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }
                 ]);
                 await storageInstance.remove();
-
                 const storageInstance2 = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseName,
                     collectionName,

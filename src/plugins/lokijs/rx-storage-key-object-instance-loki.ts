@@ -50,6 +50,7 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
     public readonly leaderElector?: LeaderElector;
 
     public instanceId = instanceId++;
+    private closed = false;
 
     constructor(
         public readonly databaseName: string,
@@ -108,7 +109,11 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
      * If the local state must be used, that one is returned.
      * Returns false if a remote instance must be used.
      */
-    private async mustUseLocalState(): Promise<LokiLocalDatabaseState | false> {
+    public async mustUseLocalState(): Promise<LokiLocalDatabaseState | false> {
+        if (this.closed) {
+            return false;
+        }
+
         if (this.internals.localState) {
             return this.internals.localState;
         }
@@ -328,6 +333,7 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
         return this.changes$.asObservable();
     }
     async close(): Promise<void> {
+        this.closed = true;
         this.changes$.complete();
         OPEN_LOKIJS_STORAGE_INSTANCES.delete(this);
         if (this.internals.localState) {
@@ -348,6 +354,7 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
         }
         localState.databaseState.database.removeCollection(localState.collection.name);
         localState.databaseState.database.removeCollection(localState.changesCollection.name);
+        this.closed = true;
     }
 }
 
@@ -419,5 +426,15 @@ export async function createLokiKeyObjectStorageInstance(
         params.idleQueue,
         params.broadcastChannel
     );
+
+    /**
+     * Directly create the localState if the db becomes leader.
+     */
+    if (params.broadcastChannel) {
+        const leaderElector = getLeaderElectorByBroadcastChannel(params.broadcastChannel);
+        leaderElector.awaitLeadership().then(() => instance.mustUseLocalState());
+    }
+
+
     return instance;
 }
