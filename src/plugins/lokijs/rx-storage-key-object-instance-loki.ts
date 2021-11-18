@@ -118,6 +118,7 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
             return this.internals.localState;
         }
         const leaderElector = ensureNotFalsy(this.leaderElector);
+
         while (
             !leaderElector.hasLeader
         ) {
@@ -131,6 +132,14 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
              * Does applyOnce() fully block the cpu?
              */
             await promiseWait(0); // TODO remove this line
+        }
+
+        /**
+         * It might already have a localState after the applying
+         * because another subtask also called mustUSeLocalState()
+         */
+        if (this.internals.localState) {
+            return this.internals.localState;
         }
 
         if (

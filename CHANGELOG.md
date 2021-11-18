@@ -7,6 +7,7 @@ Other:
 
 Bugfixes:
   - LokiJS: Directly create local state when instance becomes leader.
+  - LokiJS: `mustUseLocalState()` should not create multiple local states.
 
 ### 10.5.1 (15 November 2021)
 

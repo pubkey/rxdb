@@ -151,6 +151,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             return this.internals.localState;
         }
         const leaderElector = ensureNotFalsy(this.leaderElector);
+
         while (
             !leaderElector.hasLeader
         ) {
@@ -165,6 +166,15 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
              */
             await promiseWait(0); // TODO remove this line
         }
+
+        /**
+         * It might already have a localState after the applying
+         * because another subtask also called mustUSeLocalState()
+         */
+        if (this.internals.localState) {
+            return this.internals.localState;
+        }
+
         if (
             leaderElector.isLeader &&
             !this.internals.localState

@@ -21,7 +21,7 @@ import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
 addRxPlugin(RxDBKeyCompressionPlugin);
 import { RxDBValidatePlugin } from '../../plugins/validate';
 import { HumanDocumentType } from '../helper/schema-objects';
-import { wait, waitUntil } from 'async-test-util';
+import { waitUntil } from 'async-test-util';
 addRxPlugin(RxDBValidatePlugin);
 import * as path from 'path';
 import * as fs from 'fs';
@@ -32,7 +32,7 @@ import { IdleQueue } from 'custom-idle-queue';
  */
 config.parallel('rx-storage-lokijs.test.js', () => {
     describe('RxDatabase', () => {
-        it('create write remove', async () => {
+        it('create/write/remove', async () => {
             const collection = await humansCollections.create(
                 10,
                 randomCouchString(10),
