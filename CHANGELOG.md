@@ -1,6 +1,7 @@
 # Changelog
 
 ### X.X.X (coming soon)
+### 10.5.3 (19 November 2021)
 
 Bugfixes:
   - PouchDB: `getSortComparator()` broken on some complex `$or` query.
