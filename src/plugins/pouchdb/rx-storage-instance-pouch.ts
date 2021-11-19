@@ -333,7 +333,10 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         const sortOptions: MangoQuerySortPart[] = query.sort ? (query.sort as any) : [{
             [primaryPath]: 'asc'
         }];
-        const inMemoryFields = Object.keys(query.selector);
+        const inMemoryFields = Object
+            .keys(query.selector)
+            .filter(key => !key.startsWith('$'));
+
         const fun: DeterministicSortComparator<RxDocType> = (a: RxDocType, b: RxDocType) => {
             /**
              * Sorting on two documents with the same primary is not allowed

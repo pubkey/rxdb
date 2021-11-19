@@ -2,6 +2,9 @@
 
 ### X.X.X (coming soon)
 
+Bugfixes:
+  - PouchDB: `getSortComparator()` broken on some complex `$or` query.
+
 ### 10.5.2 (18 November 2021)
 
 Other:
