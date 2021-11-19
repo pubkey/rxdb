@@ -99,7 +99,7 @@ export function getLokiDatabase(
             );
             const database = new lokijs(
                 databaseName + '.db',
-                useSettings
+                flatClone(useSettings)
             );
             const saveQueue = new LokiSaveQueue(
                 database,
