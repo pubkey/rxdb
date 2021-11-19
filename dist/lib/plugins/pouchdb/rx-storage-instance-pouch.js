@@ -425,7 +425,9 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
     var primaryPath = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(this.schema.primaryKey);
     var sortOptions = query.sort ? query.sort : [(_ref5 = {}, _ref5[primaryPath] = 'asc', _ref5)];
-    var inMemoryFields = Object.keys(query.selector);
+    var inMemoryFields = Object.keys(query.selector).filter(function (key) {
+      return !key.startsWith('$');
+    });
 
     var fun = function fun(a, b) {
       /**

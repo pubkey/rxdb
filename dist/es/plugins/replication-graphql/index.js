@@ -223,25 +223,33 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
               /**
                * The replication happens in the background anyways
                * so we have to ensure that we do not slow down primary tasks.
+               * But not if it is the initial replication, because that might happen
+               * on the first inital loading where it is critical to get the data
+               * as fast as possible to decrease initial page load time.
                */
 
-              _context3.next = 4;
-              return this.collection.database.requestIdlePromise();
-
-            case 4:
-              if (!this.push) {
-                _context3.next = 11;
+              if (!this._subjects.initialReplicationComplete.getValue()) {
+                _context3.next = 5;
                 break;
               }
 
-              _context3.next = 7;
+              _context3.next = 5;
+              return this.collection.database.requestIdlePromise();
+
+            case 5:
+              if (!this.push) {
+                _context3.next = 12;
+                break;
+              }
+
+              _context3.next = 8;
               return this.runPush();
 
-            case 7:
+            case 8:
               ok = _context3.sent;
 
               if (!(!ok && retryOnFail)) {
-                _context3.next = 11;
+                _context3.next = 12;
                 break;
               }
 
@@ -256,20 +264,20 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
 
               return _context3.abrupt("return", true);
 
-            case 11:
+            case 12:
               if (!this.pull) {
-                _context3.next = 18;
+                _context3.next = 19;
                 break;
               }
 
-              _context3.next = 14;
+              _context3.next = 15;
               return this.runPull();
 
-            case 14:
+            case 15:
               _ok = _context3.sent;
 
               if (!(!_ok && retryOnFail)) {
-                _context3.next = 18;
+                _context3.next = 19;
                 break;
               }
 
@@ -278,10 +286,10 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
               }, this.retryTime);
               return _context3.abrupt("return", true);
 
-            case 18:
+            case 19:
               return _context3.abrupt("return", false);
 
-            case 19:
+            case 20:
             case "end":
               return _context3.stop();
           }
