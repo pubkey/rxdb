@@ -341,5 +341,4 @@ var RxDBServerPlugin = {
   }
 };
 exports.RxDBServerPlugin = RxDBServerPlugin;
-
 //# sourceMappingURL=server.js.map

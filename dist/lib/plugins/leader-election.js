@@ -97,5 +97,4 @@ var RxDBLeaderElectionPlugin = {
   }
 };
 exports.RxDBLeaderElectionPlugin = RxDBLeaderElectionPlugin;
-
 //# sourceMappingURL=leader-election.js.map

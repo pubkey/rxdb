@@ -88,13 +88,18 @@ export function getLokiDatabase(
                 databaseSettings,
                 // overwrites
                 {
+                    /**
+                     * RxDB uses its custom load and save handling
+                     * so we disable the LokiJS save/load handlers.
+                     */
+                    autoload: false,
                     autosave: false,
                     throttledSaves: false
                 }
             );
             const database = new lokijs(
                 databaseName + '.db',
-                useSettings
+                flatClone(useSettings)
             );
             const saveQueue = new LokiSaveQueue(
                 database,
@@ -102,13 +107,23 @@ export function getLokiDatabase(
                 rxDatabaseIdleQueue
             );
 
-            // Wait until all data is load from persistence adapter.
+            /**
+             * Wait until all data is loaded from persistence adapter.
+             * Wrap the loading into the saveQueue to ensure that when many
+             * collections are created a the same time, the load-calls do not interfer
+             * with each other and cause error logs.
+             */
             if (hasPersistence) {
-                await new Promise<void>((res, rej) => {
-                    database.loadDatabase({}, (err) => {
-                        err ? rej(err) : res();
-                    });
-                });
+                await saveQueue.runningSavesIdleQueue.wrapCall(
+                    () => new Promise<void>((res, rej) => {
+                        database.loadDatabase({}, (err) => {
+                            if (useSettings.autoloadCallback) {
+                                useSettings.autoloadCallback(err);
+                            }
+                            err ? rej(err) : res();
+                        });
+                    })
+                );
             }
 
             /**

@@ -45,5 +45,4 @@ function getSchemaByObjectPath(rxJsonSchema, path) {
 
   return ret;
 }
-
 //# sourceMappingURL=rx-schema-helper.js.map

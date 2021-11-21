@@ -169,5 +169,4 @@ var RxDBKeyCompressionPlugin = {
   }
 };
 exports.RxDBKeyCompressionPlugin = RxDBKeyCompressionPlugin;
-
 //# sourceMappingURL=key-compression.js.map

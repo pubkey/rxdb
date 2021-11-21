@@ -15,6 +15,7 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
     this.changes$ = new Subject();
     this.lastChangefeedSequence = 0;
     this.instanceId = instanceId++;
+    this.closed = false;
     this.databaseName = databaseName;
     this.collectionName = collectionName;
     this.schema = schema;
@@ -110,36 +111,52 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
         while (1) {
           switch (_context2.prev = _context2.next) {
             case 0:
-              if (!this.internals.localState) {
+              if (!this.closed) {
                 _context2.next = 2;
+                break;
+              }
+
+              return _context2.abrupt("return", false);
+
+            case 2:
+              if (!this.internals.localState) {
+                _context2.next = 4;
                 break;
               }
 
               return _context2.abrupt("return", this.internals.localState);
 
-            case 2:
+            case 4:
               leaderElector = ensureNotFalsy(this.leaderElector);
 
-            case 3:
+            case 5:
               if (leaderElector.hasLeader) {
-                _context2.next = 10;
+                _context2.next = 12;
                 break;
               }
 
-              _context2.next = 6;
+              _context2.next = 8;
               return leaderElector.applyOnce();
 
-            case 6:
-              _context2.next = 8;
+            case 8:
+              _context2.next = 10;
               return promiseWait(0);
 
-            case 8:
-              _context2.next = 3;
+            case 10:
+              _context2.next = 5;
               break;
 
-            case 10:
+            case 12:
+              if (!this.internals.localState) {
+                _context2.next = 14;
+                break;
+              }
+
+              return _context2.abrupt("return", this.internals.localState);
+
+            case 14:
               if (!(leaderElector.isLeader && !this.internals.localState)) {
-                _context2.next = 15;
+                _context2.next = 19;
                 break;
               }
 
@@ -154,10 +171,10 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
               }, this.databaseSettings);
               return _context2.abrupt("return", this.getLocalState());
 
-            case 15:
+            case 19:
               return _context2.abrupt("return", false);
 
-            case 16:
+            case 20:
             case "end":
               return _context2.stop();
           }
@@ -915,32 +932,33 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
         while (1) {
           switch (_context10.prev = _context10.next) {
             case 0:
+              this.closed = true;
               this.changes$.complete();
               OPEN_LOKIJS_STORAGE_INSTANCES["delete"](this);
 
               if (!this.internals.localState) {
-                _context10.next = 13;
+                _context10.next = 14;
                 break;
               }
 
-              _context10.next = 5;
+              _context10.next = 6;
               return this.internals.localState;
 
-            case 5:
+            case 6:
               localState = _context10.sent;
-              _context10.next = 8;
+              _context10.next = 9;
               return getLokiDatabase(this.databaseName, this.databaseSettings, this.idleQueue);
 
-            case 8:
+            case 9:
               dbState = _context10.sent;
-              _context10.next = 11;
+              _context10.next = 12;
               return dbState.saveQueue.run();
 
-            case 11:
-              _context10.next = 13;
+            case 12:
+              _context10.next = 14;
               return closeLokiCollections(this.databaseName, [localState.collection, localState.changesCollection]);
 
-            case 13:
+            case 14:
             case "end":
               return _context10.stop();
           }
@@ -978,8 +996,9 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
             case 5:
               localState.databaseState.database.removeCollection(this.collectionName);
               localState.databaseState.database.removeCollection(localState.changesCollection.name);
+              this.closed = true;
 
-            case 7:
+            case 8:
             case "end":
               return _context11.stop();
           }
@@ -1078,7 +1097,7 @@ export function createLokiStorageInstance(_x13, _x14) {
 
 function _createLokiStorageInstance() {
   _createLokiStorageInstance = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee13(params, databaseSettings) {
-    var internals, instance;
+    var internals, instance, leaderElector;
     return _regeneratorRuntime.wrap(function _callee13$(_context13) {
       while (1) {
         switch (_context13.prev = _context13.next) {
@@ -1096,9 +1115,20 @@ function _createLokiStorageInstance() {
 
           case 5:
             instance = new RxStorageInstanceLoki(params.databaseName, params.collectionName, params.schema, internals, params.options, databaseSettings, params.idleQueue, params.broadcastChannel);
+            /**
+             * Directly create the localState if the db becomes leader.
+             */
+
+            if (params.broadcastChannel) {
+              leaderElector = getLeaderElectorByBroadcastChannel(params.broadcastChannel);
+              leaderElector.awaitLeadership().then(function () {
+                return instance.mustUseLocalState();
+              });
+            }
+
             return _context13.abrupt("return", instance);
 
-          case 7:
+          case 8:
           case "end":
             return _context13.stop();
         }

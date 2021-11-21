@@ -167,5 +167,4 @@ function stripKeysFromSchema(schema, strip) {
 function replaceTopLevelTypeName(str, ucCollectionName) {
   return str.replace(' ' + ucCollectionName + 'T0 ', ' ' + ucCollectionName + ' ');
 }
-
 //# sourceMappingURL=graphql-schema-from-rx-schema.js.map

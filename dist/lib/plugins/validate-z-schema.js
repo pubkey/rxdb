@@ -107,5 +107,4 @@ var RxDBValidateZSchemaPlugin = {
   hooks: hooks
 };
 exports.RxDBValidateZSchemaPlugin = RxDBValidateZSchemaPlugin;
-
 //# sourceMappingURL=validate-z-schema.js.map

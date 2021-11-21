@@ -100,7 +100,7 @@ function doSync() {
     const url_string = window.location.href;
     const url = new URL(url_string);
     const shouldSync = url.searchParams.get('sync');
-    if (shouldSync === 'false') {
+    if (shouldSync && shouldSync.toLowerCase() === 'false') {
         return false;
     } else {
         return true;
@@ -129,10 +129,14 @@ function getStorage() {
     } else if (storageKey === 'lokijs') {
         return getRxStorageLoki({
             adapter: new LokiIncrementalIndexedDBAdapter(),
-            autoload: true,
-            autosave: true,
-            autosaveInterval: 2000,
-            throttledSaves: true
+            autosaveInterval: 999999999,
+            autoload: false,
+            autocallback() {
+                console.log('autoload done');
+            },
+            autosaveCallback() {
+                console.log('Autosave done!');
+            }
         });
     } else {
         throw new Error('storage key not defined ' + storageKey);
@@ -151,6 +155,20 @@ async function run() {
     console.log('db.token: ' + db.token);
     console.log('db.storageToken: ' + db.storageToken);
     window.db = db;
+
+
+
+    db.broadcastChannel.addEventListener('message', msg => {
+        console.log('broadcastChannel.addEventListener() emitted:');
+        console.dir(msg);
+
+    });
+
+    db.broadcastChannel$.subscribe(msg => {
+        console.log('broadcastChannel$ emitted:');
+        console.dir(msg);
+    });
+
 
     // display crown when tab is leader
     db.waitForLeadership().then(function () {

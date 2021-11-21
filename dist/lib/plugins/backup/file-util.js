@@ -194,5 +194,4 @@ function _setMeta() {
 function documentFolder(options, docId) {
   return path.join(options.directory, docId);
 }
-
 //# sourceMappingURL=file-util.js.map

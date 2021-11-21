@@ -35,5 +35,4 @@ function onDatabaseDestroy(database) {
     subject.complete();
   }
 }
-
 //# sourceMappingURL=migration-state.js.map

@@ -1167,5 +1167,4 @@ function createRxCollection(_ref4, wasCreatedBefore) {
 function isRxCollection(obj) {
   return obj instanceof RxCollectionBase;
 }
-
 //# sourceMappingURL=rx-collection.js.map

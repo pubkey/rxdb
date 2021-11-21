@@ -55,5 +55,4 @@ Object.keys(_rxStorageKeyObjectInstanceLoki).forEach(function (key) {
     }
   });
 });
-
 //# sourceMappingURL=index.js.map

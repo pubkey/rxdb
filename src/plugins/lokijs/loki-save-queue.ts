@@ -27,6 +27,9 @@ export class LokiSaveQueue {
     }
 
     public async run() {
+        if (!this.databaseSettings.adapter) {
+            return;
+        }
         const t = now();
         if (this.writesSinceLastRun === 0) {
             return this.runningSavesIdleQueue.requestIdlePromise();

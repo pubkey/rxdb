@@ -95,5 +95,4 @@ function pushQueryBuilderFromRxSchema(collectionName, input) {
 
   return builder;
 }
-
 //# sourceMappingURL=query-builder-from-rx-schema.js.map

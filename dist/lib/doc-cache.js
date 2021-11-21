@@ -34,5 +34,4 @@ exports.DocCache = DocCache;
 function createDocCache() {
   return new DocCache();
 }
-
 //# sourceMappingURL=doc-cache.js.map

@@ -549,5 +549,4 @@ function canMerge(conds) {
 function createQueryBuilder(query) {
   return new NoSqlQueryBuilderClass(query);
 }
-
 //# sourceMappingURL=nosql-query-builder.js.map

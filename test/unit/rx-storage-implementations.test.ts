@@ -415,6 +415,59 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 storageInstance.close();
             });
+            it('should work with a more complex query', async () => {
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getTestDataSchema(),
+                    options: {},
+                    idleQueue: new IdleQueue()
+                });
+
+                const matchingValue = 'aaa';
+                const query: MangoQuery<TestDocType> = {
+                    selector: {
+                        $or: [
+                            {
+                                value: matchingValue,
+                                key: matchingValue
+                            },
+                            {
+                                value: 'barfoo',
+                                key: 'barfoo'
+                            }
+                        ],
+                        key: matchingValue
+                    },
+                    sort: [
+                        { key: 'asc' }
+                    ]
+                };
+
+                const comparator = storageInstance.getSortComparator(
+                    query
+                );
+
+                const docs: TestDocType[] = [
+                    {
+                        value: matchingValue,
+                        key: matchingValue
+                    },
+                    {
+                        value: 'bbb',
+                        key: 'bbb'
+                    }
+                ];
+
+                const result = comparator(
+                    docs[0],
+                    docs[1]
+
+                );
+                assert.strictEqual(result, -1);
+
+                storageInstance.close();
+            });
         });
         describe('.getQueryMatcher()', () => {
             it('should match the right docs', async () => {
@@ -1411,7 +1464,6 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }
                 ]);
                 await storageInstance.remove();
-
                 const storageInstance2 = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseName,
                     collectionName,

@@ -126,7 +126,7 @@ describe('event-reduce.test.js', () => {
      * It generates random data writes and checks if the query result
      * is the same as the result calculated by event-reduce.
      */
-    new Array(config.isFastMode() ? 3 : 10).fill(0).forEach(() => {
+    new Array(config.isFastMode() ? 1 : 5).fill(0).forEach(() => {
         it('random data: should have the same results as without event-reduce', async () => {
             const colNoEventReduce = await createCollection(false);
             const colWithEventReduce = await createCollection(true);

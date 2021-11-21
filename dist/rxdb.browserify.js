@@ -20,7 +20,6 @@ RxDbPouchPlugin.addPouchPlugin(require('pouchdb-adapter-idb'));
 RxDbPouchPlugin.addPouchPlugin(require('pouchdb-adapter-http'));
 window['RxDB'] = RxDB;
 
-
 },{"./index.js":8,"./plugins/pouchdb/index.js":31,"@babel/polyfill":59,"pouchdb-adapter-http":483,"pouchdb-adapter-idb":484}],2:[function(require,module,exports){
 "use strict";
 
@@ -172,7 +171,6 @@ exports.ChangeEventBuffer = ChangeEventBuffer;
 function createChangeEventBuffer(collection) {
   return new ChangeEventBuffer(collection);
 }
-
 
 },{"rxjs/operators":740}],3:[function(require,module,exports){
 "use strict";
@@ -488,7 +486,6 @@ Object.keys(_util).forEach(function (key) {
   });
 });
 
-
 },{"./crypter":4,"./hooks":7,"./overwritable":9,"./plugin":10,"./query-cache":43,"./rx-collection":46,"./rx-collection-helper":45,"./rx-database":47,"./rx-document":49,"./rx-document-prototype-merge":48,"./rx-query":51,"./rx-schema":53,"./rx-schema-helper":52,"./rx-storage-helper":54,"./types/modules/graphql-client.d":55,"./types/modules/mocha.parallel.d":56,"./types/modules/modifiyjs.d":57,"./util":58}],4:[function(require,module,exports){
 "use strict";
 
@@ -616,7 +613,6 @@ function createCrypter(password, schema) {
   return new Crypter(password, schema);
 }
 
-
 },{"./util":58,"@babel/runtime/helpers/interopRequireDefault":67,"object-path":480}],5:[function(require,module,exports){
 "use strict";
 
@@ -654,7 +650,6 @@ exports.DocCache = DocCache;
 function createDocCache() {
   return new DocCache();
 }
-
 
 },{}],6:[function(require,module,exports){
 "use strict";
@@ -793,7 +788,6 @@ function calculateNewResults(rxQuery, rxChangeEvents) {
     };
   }
 }
-
 
 },{"./hooks":7,"./rx-change-event":44,"event-reduce-js":440}],7:[function(require,module,exports){
 "use strict";
@@ -946,7 +940,6 @@ function _clearHook(type, fun) {
   });
 }
 
-
 },{}],8:[function(require,module,exports){
 "use strict";
 
@@ -1061,7 +1054,6 @@ function createRxDatabase(params) {
   return (0, _core.createRxDatabase)(params);
 } // re-export things from core
 
-
 },{"./core":3,"./plugins/attachments":11,"./plugins/dev-mode":18,"./plugins/encryption":20,"./plugins/in-memory":21,"./plugins/json-dump":22,"./plugins/key-compression":23,"./plugins/leader-election":24,"./plugins/local-documents":25,"./plugins/migration":27,"./plugins/pouchdb":31,"./plugins/query-builder":37,"./plugins/replication-couchdb":40,"./plugins/update":41,"./plugins/validate":42}],9:[function(require,module,exports){
 "use strict";
 
@@ -1112,7 +1104,6 @@ var overwritable = {
   }
 };
 exports.overwritable = overwritable;
-
 
 },{"./util":58}],10:[function(require,module,exports){
 "use strict";
@@ -1210,7 +1201,6 @@ function addRxPlugin(plugin) {
     });
   }
 }
-
 
 },{"./crypter":4,"./hooks":7,"./overwritable":9,"./rx-collection":46,"./rx-database":47,"./rx-document":49,"./rx-error":50,"./rx-query":51,"./rx-schema":53}],11:[function(require,module,exports){
 "use strict";
@@ -1723,7 +1713,6 @@ var RxDBAttachmentsPlugin = {
 };
 exports.RxDBAttachmentsPlugin = RxDBAttachmentsPlugin;
 
-
 },{"../rx-collection-helper":45,"../rx-error":50,"../rx-storage-helper":54,"./../util":58,"@babel/runtime/helpers/asyncToGenerator":62,"@babel/runtime/helpers/interopRequireDefault":67,"@babel/runtime/regenerator":72,"rxjs/operators":740}],12:[function(require,module,exports){
 "use strict";
 
@@ -1774,7 +1763,6 @@ function checkMigrationStrategies(schema, migrationStrategies) {
   });
   return true;
 }
-
 
 },{"../../rx-error":50,"../../rx-schema":53}],13:[function(require,module,exports){
 "use strict";
@@ -1828,7 +1816,6 @@ function checkOrmMethods(statics) {
   });
 }
 
-
 },{"../../rx-error":50,"./entity-properties":16}],14:[function(require,module,exports){
 "use strict";
 
@@ -1867,7 +1854,6 @@ function checkQuery(args) {
     }
   });
 }
-
 
 },{"../../rx-error":50}],15:[function(require,module,exports){
 "use strict";
@@ -2329,7 +2315,6 @@ function checkSchema(jsonSchema) {
   }
 }
 
-
 },{"../../rx-error":50,"../../rx-schema-helper":52,"../../util":58,"./entity-properties":16,"@babel/runtime/helpers/interopRequireDefault":67,"object-path":480}],16:[function(require,module,exports){
 "use strict";
 
@@ -2401,7 +2386,6 @@ function rxDocumentProperties() {
 
   return _rxDocumentProperties;
 }
-
 
 },{"../../rx-collection":46,"../../rx-database":47,"../../rx-document":49}],17:[function(require,module,exports){
 "use strict";
@@ -2583,7 +2567,6 @@ var ERROR_MESSAGES = {
 };
 exports.ERROR_MESSAGES = ERROR_MESSAGES;
 
-
 },{}],18:[function(require,module,exports){
 "use strict";
 
@@ -2722,7 +2705,6 @@ var RxDBDevModePlugin = {
 };
 exports.RxDBDevModePlugin = RxDBDevModePlugin;
 
-
 },{"../../rx-error":50,"./check-migration-strategies":12,"./check-orm":13,"./check-query":14,"./check-schema":15,"./error-messages":17,"./unallowed-properties":19,"@babel/runtime/helpers/interopRequireDefault":67,"deep-freeze":434}],19:[function(require,module,exports){
 "use strict";
 
@@ -2804,7 +2786,6 @@ function validateDatabaseName(name) {
 
   return true;
 }
-
 
 },{"../../rx-error":50,"../../util":58,"./entity-properties":16}],20:[function(require,module,exports){
 "use strict";
@@ -2985,7 +2966,6 @@ var RxDBEncryptionPlugin = {
   }
 };
 exports.RxDBEncryptionPlugin = RxDBEncryptionPlugin;
-
 
 },{"../rx-error":50,"../rx-storage-helper":54,"../util":58,"@babel/runtime/helpers/asyncToGenerator":62,"@babel/runtime/helpers/interopRequireDefault":67,"@babel/runtime/regenerator":72,"crypto-js/aes":420,"crypto-js/enc-utf8":424}],21:[function(require,module,exports){
 "use strict";
@@ -3493,7 +3473,6 @@ var RxDBInMemoryPlugin = {
 };
 exports.RxDBInMemoryPlugin = RxDBInMemoryPlugin;
 
-
 },{"../change-event-buffer":2,"../crypter":4,"../plugins/pouchdb":31,"../rx-change-event":44,"../rx-collection":46,"../rx-collection-helper":45,"../rx-error":50,"../rx-schema":53,"../util":58,"@babel/runtime/helpers/assertThisInitialized":61,"@babel/runtime/helpers/asyncToGenerator":62,"@babel/runtime/helpers/inheritsLoose":66,"@babel/runtime/helpers/interopRequireDefault":67,"@babel/runtime/regenerator":72,"rxjs":515,"rxjs/operators":740}],22:[function(require,module,exports){
 "use strict";
 
@@ -3658,7 +3637,6 @@ var RxDBJsonDumpPlugin = {
   overwritable: overwritable
 };
 exports.RxDBJsonDumpPlugin = RxDBJsonDumpPlugin;
-
 
 },{"../rx-collection-helper":45,"../rx-error":50,"../rx-query":51,"../util":58}],23:[function(require,module,exports){
 "use strict";
@@ -3833,7 +3811,6 @@ var RxDBKeyCompressionPlugin = {
 };
 exports.RxDBKeyCompressionPlugin = RxDBKeyCompressionPlugin;
 
-
 },{"../rx-schema":53,"../util":58,"jsonschema-key-compression":477}],24:[function(require,module,exports){
 "use strict";
 
@@ -3934,7 +3911,6 @@ var RxDBLeaderElectionPlugin = {
   }
 };
 exports.RxDBLeaderElectionPlugin = RxDBLeaderElectionPlugin;
-
 
 },{"../util":58,"broadcast-channel":97}],25:[function(require,module,exports){
 "use strict";
@@ -4437,7 +4413,6 @@ var RxDBLocalDocumentsPlugin = {
   overwritable: {}
 };
 exports.RxDBLocalDocumentsPlugin = RxDBLocalDocumentsPlugin;
-
 
 },{"../doc-cache":5,"../overwritable":9,"../rx-collection":46,"../rx-database":47,"../rx-document":49,"../rx-error":50,"../rx-storage-helper":54,"../util":58,"@babel/runtime/helpers/asyncToGenerator":62,"@babel/runtime/helpers/inheritsLoose":66,"@babel/runtime/helpers/interopRequireDefault":67,"@babel/runtime/regenerator":72,"object-path":480,"rxjs/operators":740}],26:[function(require,module,exports){
 "use strict";
@@ -5124,7 +5099,6 @@ function migratePromise(oldCollection, batchSize) {
   return oldCollection._migratePromise;
 }
 
-
 },{"../../crypter":4,"../../hooks":7,"../../rx-collection-helper":45,"../../rx-error":50,"../../rx-schema":53,"../../rx-storage-helper":54,"../../util":58,"./migration-state":28,"@babel/runtime/helpers/asyncToGenerator":62,"@babel/runtime/helpers/interopRequireDefault":67,"@babel/runtime/regenerator":72,"custom-idle-queue":429,"fast-deep-equal":445,"rxjs":515,"rxjs/operators":740}],27:[function(require,module,exports){
 "use strict";
 
@@ -5233,7 +5207,6 @@ var RxDBMigrationPlugin = {
 
 exports.RxDBMigrationPlugin = RxDBMigrationPlugin;
 
-
 },{"../../util":58,"./data-migrator":26,"./migration-state":28,"rxjs":515,"rxjs/operators":740}],28:[function(require,module,exports){
 "use strict";
 
@@ -5272,7 +5245,6 @@ function onDatabaseDestroy(database) {
     subject.complete();
   }
 }
-
 
 },{"../../util":58,"rxjs":515}],29:[function(require,module,exports){
 "use strict";
@@ -5350,7 +5322,6 @@ function checkAdapter(adapter) {
    * calling destroy would possibly crash the other call
    */
 }
-
 
 },{"../../util":58,"./pouch-db":32}],30:[function(require,module,exports){
 "use strict";
@@ -5612,7 +5583,6 @@ function addCustomEventsPluginToPouch() {
   });
 }
 
-
 },{"../../rx-error":50,"../../util":58,"@babel/runtime/helpers/asyncToGenerator":62,"@babel/runtime/helpers/interopRequireDefault":67,"@babel/runtime/regenerator":72,"oblivious-set":481,"pouchdb-core":491,"rxjs":515}],31:[function(require,module,exports){
 "use strict";
 
@@ -5710,7 +5680,6 @@ Object.keys(_rxStorageKeyObjectInstancePouch).forEach(function (key) {
     }
   });
 });
-
 
 },{"./adapter-check":29,"./custom-events-plugin":30,"./pouch-db":32,"./pouchdb-helper":33,"./rx-storage-instance-pouch":34,"./rx-storage-key-object-instance-pouch":35,"./rx-storage-pouchdb":36}],32:[function(require,module,exports){
 "use strict";
@@ -5815,7 +5784,6 @@ function addPouchPlugin(plugin) {
 
 var PouchDB = _pouchdbCore["default"];
 exports.PouchDB = PouchDB;
-
 
 },{"../../rx-error":50,"./custom-events-plugin":30,"@babel/runtime/helpers/interopRequireDefault":67,"pouchdb-core":491,"pouchdb-find":494}],33:[function(require,module,exports){
 "use strict";
@@ -6201,7 +6169,6 @@ function _writeAttachmentsToAttachments() {
   }));
   return _writeAttachmentsToAttachments.apply(this, arguments);
 }
-
 
 },{"../../rx-error":50,"../../util":58,"@babel/runtime/helpers/asyncToGenerator":62,"@babel/runtime/helpers/interopRequireDefault":67,"@babel/runtime/regenerator":72,"pouchdb-md5":498}],34:[function(require,module,exports){
 "use strict";
@@ -6631,7 +6598,9 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
     var primaryPath = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(this.schema.primaryKey);
     var sortOptions = query.sort ? query.sort : [(_ref5 = {}, _ref5[primaryPath] = 'asc', _ref5)];
-    var inMemoryFields = Object.keys(query.selector);
+    var inMemoryFields = Object.keys(query.selector).filter(function (key) {
+      return !key.startsWith('$');
+    });
 
     var fun = function fun(a, b) {
       /**
@@ -7230,7 +7199,6 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
 exports.RxStorageInstancePouch = RxStorageInstancePouch;
 
-
 },{"../../rx-error":50,"../../rx-schema":53,"../../rx-schema-helper":52,"../../util":58,"./custom-events-plugin":30,"./pouchdb-helper":33,"@babel/runtime/helpers/asyncToGenerator":62,"@babel/runtime/helpers/interopRequireDefault":67,"@babel/runtime/regenerator":72,"pouchdb-selector-core":501,"rxjs":515}],35:[function(require,module,exports){
 "use strict";
 
@@ -7524,7 +7492,6 @@ var RxStorageKeyObjectInstancePouch = /*#__PURE__*/function () {
 }();
 
 exports.RxStorageKeyObjectInstancePouch = RxStorageKeyObjectInstancePouch;
-
 
 },{"../../rx-error":50,"../../util":58,"./pouchdb-helper":33,"@babel/runtime/helpers/asyncToGenerator":62,"@babel/runtime/helpers/interopRequireDefault":67,"@babel/runtime/regenerator":72,"rxjs":515}],36:[function(require,module,exports){
 "use strict";
@@ -7851,7 +7818,6 @@ function getRxStoragePouch(adapter, pouchSettings) {
   return storage;
 }
 
-
 },{"../../rx-error":50,"../../rx-schema":53,"../../util":58,"./pouch-db":32,"./pouchdb-helper":33,"./rx-storage-instance-pouch":34,"./rx-storage-key-object-instance-pouch":35,"@babel/runtime/helpers/asyncToGenerator":62,"@babel/runtime/helpers/interopRequireDefault":67,"@babel/runtime/regenerator":72}],37:[function(require,module,exports){
 "use strict";
 
@@ -7935,7 +7901,6 @@ var RxDBQueryBuilderPlugin = {
 };
 exports.RxDBQueryBuilderPlugin = RxDBQueryBuilderPlugin;
 
-
 },{"../../rx-query":51,"../../util":58,"./mquery/nosql-query-builder":39}],38:[function(require,module,exports){
 "use strict";
 
@@ -7979,7 +7944,6 @@ function merge(to, from) {
 function isObject(arg) {
   return '[object Object]' === arg.toString();
 }
-
 
 },{}],39:[function(require,module,exports){
 "use strict";
@@ -8534,7 +8498,6 @@ function createQueryBuilder(query) {
   return new NoSqlQueryBuilderClass(query);
 }
 
-
 },{"../../../rx-error":50,"./mquery-utils":38}],40:[function(require,module,exports){
 "use strict";
 
@@ -8870,7 +8833,6 @@ var RxDBReplicationCouchDBPlugin = {
 };
 exports.RxDBReplicationCouchDBPlugin = RxDBReplicationCouchDBPlugin;
 
-
 },{"../plugins/pouchdb":31,"../rx-collection":46,"../rx-collection-helper":45,"../rx-error":50,"../util":58,"@babel/runtime/helpers/asyncToGenerator":62,"@babel/runtime/helpers/interopRequireDefault":67,"@babel/runtime/regenerator":72,"pouchdb-replication":500,"rxjs":515,"rxjs/operators":740}],41:[function(require,module,exports){
 "use strict";
 
@@ -8935,7 +8897,6 @@ var RxDBUpdatePlugin = {
   prototypes: prototypes
 };
 exports.RxDBUpdatePlugin = RxDBUpdatePlugin;
-
 
 },{"@babel/runtime/helpers/interopRequireDefault":67,"modifyjs":479}],42:[function(require,module,exports){
 "use strict";
@@ -9029,7 +8990,6 @@ var RxDBValidatePlugin = {
   hooks: hooks
 };
 exports.RxDBValidatePlugin = RxDBValidatePlugin;
-
 
 },{"../rx-error":50,"../util":58,"@babel/runtime/helpers/interopRequireDefault":67,"is-my-json-valid":469}],43:[function(require,module,exports){
 "use strict";
@@ -9184,7 +9144,6 @@ function triggerCacheReplacement(rxCollection) {
   });
 }
 
-
 },{"./util":58}],44:[function(require,module,exports){
 "use strict";
 
@@ -9244,7 +9203,6 @@ function rxChangeEventToEventReduceChangeEvent(rxChangeEvent) {
       };
   }
 }
-
 
 },{"./overwritable":9}],45:[function(require,module,exports){
 "use strict";
@@ -9499,7 +9457,6 @@ function _createRxCollectionStorageInstances() {
   }));
   return _createRxCollectionStorageInstances.apply(this, arguments);
 }
-
 
 },{"./hooks":7,"./overwritable":9,"./rx-error":50,"./rx-storage-helper":54,"./util":58,"@babel/runtime/helpers/asyncToGenerator":62,"@babel/runtime/helpers/interopRequireDefault":67,"@babel/runtime/regenerator":72}],46:[function(require,module,exports){
 "use strict";
@@ -10672,7 +10629,6 @@ function isRxCollection(obj) {
   return obj instanceof RxCollectionBase;
 }
 
-
 },{"./change-event-buffer":2,"./crypter":4,"./doc-cache":5,"./hooks":7,"./overwritable":9,"./query-cache":43,"./rx-collection-helper":45,"./rx-document":49,"./rx-document-prototype-merge":48,"./rx-error":50,"./rx-query":51,"./rx-storage-helper":54,"./util":58,"@babel/runtime/helpers/asyncToGenerator":62,"@babel/runtime/helpers/createClass":64,"@babel/runtime/helpers/interopRequireDefault":67,"@babel/runtime/regenerator":72,"rxjs/operators":740}],47:[function(require,module,exports){
 "use strict";
 
@@ -10756,6 +10712,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     this.destroyed = false;
     this.subject = new _rxjs.Subject();
     this.observable$ = this.subject.asObservable();
+    this.broadcastChannel$ = new _rxjs.Subject();
     this.name = name;
     this.storage = storage;
     this.instanceCreationOptions = instanceCreationOptions;
@@ -10912,10 +10869,12 @@ var RxDatabaseBase = /*#__PURE__*/function () {
           switch (_context3.prev = _context3.next) {
             case 0:
               _context3.next = 2;
-              return this.internalStore.findDocumentsById(Object.keys(collectionCreators).map(function (name) {
-                var schema = collectionCreators[name].schema;
-                return _collectionNamePrimary(name, schema);
-              }), false);
+              return this.lockedRun(function () {
+                return _this2.internalStore.findDocumentsById(Object.keys(collectionCreators).map(function (name) {
+                  var schema = collectionCreators[name].schema;
+                  return _collectionNamePrimary(name, schema);
+                }), false);
+              });
 
             case 2:
               collectionDocs = _context3.sent;
@@ -10985,10 +10944,12 @@ var RxDatabaseBase = /*#__PURE__*/function () {
                 var name = collection.name;
                 ret[name] = collection; // add to bulk-docs list
 
-                if (!internalDocByCollectionName[name]) {
+                var collectionName = _collectionNamePrimary(name, collectionCreators[name].schema);
+
+                if (!internalDocByCollectionName[collectionName]) {
                   bulkPutDocs.push({
                     document: {
-                      collectionName: _collectionNamePrimary(name, collectionCreators[name].schema),
+                      collectionName: collectionName,
                       schemaHash: schemaHashByName[name],
                       schema: collection.schema.normalized,
                       version: collection.schema.version,
@@ -11007,7 +10968,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
                     }
                   });
                 }
-              }); // make a single call to the pouchdb instance
+              }); // make a single write call to the storage instance
 
               if (!(bulkPutDocs.length > 0)) {
                 _context3.next = 15;
@@ -11015,7 +10976,9 @@ var RxDatabaseBase = /*#__PURE__*/function () {
               }
 
               _context3.next = 15;
-              return this.internalStore.bulkWrite(bulkPutDocs);
+              return this.lockedRun(function () {
+                return _this2.internalStore.bulkWrite(bulkPutDocs);
+              });
 
             case 15:
               return _context3.abrupt("return", ret);
@@ -11042,12 +11005,16 @@ var RxDatabaseBase = /*#__PURE__*/function () {
   _proto.removeCollection = function removeCollection(collectionName) {
     var _this3 = this;
 
+    var destroyPromise = _util.PROMISE_RESOLVE_VOID;
+
     if (this.collections[collectionName]) {
-      this.collections[collectionName].destroy();
+      destroyPromise = this.collections[collectionName].destroy();
     } // remove schemas from internal db
 
 
-    return _removeAllOfCollection(this, collectionName) // get all relevant pouchdb-instances
+    return destroyPromise.then(function () {
+      return _removeAllOfCollection(_this3, collectionName);
+    }) // get all relevant pouchdb-instances
     .then(function (knownVersions) {
       return Promise.all(knownVersions.map(function (v) {
         return (0, _rxCollectionHelper.createRxCollectionStorageInstances)(collectionName, _this3, {
@@ -11370,10 +11337,13 @@ function _removeAllOfCollection2() {
 
 function _prepareBroadcastChannel(rxDatabase) {
   if (!rxDatabase.broadcastChannel) {
-    return;
+    throw (0, _rxError.newRxError)('SNH', {
+      args: {
+        rxDatabase: rxDatabase
+      }
+    });
   }
 
-  rxDatabase.broadcastChannel$ = new _rxjs.Subject();
   rxDatabase.broadcastChannel.addEventListener('message', function (msg) {
     if (msg.storageToken !== rxDatabase.storageToken) {
       // not same storage-state
@@ -11636,7 +11606,6 @@ function dbCount() {
   return DB_COUNT;
 }
 
-
 },{"./hooks":7,"./overwritable":9,"./rx-change-event":44,"./rx-collection":46,"./rx-collection-helper":45,"./rx-error":50,"./rx-schema":53,"./rx-schema-helper":52,"./rx-storage-helper":54,"./util":58,"@babel/runtime/helpers/asyncToGenerator":62,"@babel/runtime/helpers/createClass":64,"@babel/runtime/helpers/interopRequireDefault":67,"@babel/runtime/regenerator":72,"broadcast-channel":97,"custom-idle-queue":429,"rxjs":515}],48:[function(require,module,exports){
 "use strict";
 
@@ -11766,7 +11735,6 @@ function getDocumentOrmPrototype(rxCollection) {
   });
   return proto;
 }
-
 
 },{"./hooks":7,"./overwritable":9,"./rx-document":49}],49:[function(require,module,exports){
 "use strict";
@@ -12401,7 +12369,6 @@ function isRxDocument(obj) {
   return !!obj.isInstanceOfRxDocument;
 }
 
-
 },{"./hooks":7,"./overwritable":9,"./rx-change-event":44,"./rx-collection-helper":45,"./rx-error":50,"./rx-schema-helper":52,"./util":58,"@babel/runtime/helpers/asyncToGenerator":62,"@babel/runtime/helpers/interopRequireDefault":67,"@babel/runtime/regenerator":72,"object-path":480,"rxjs":515,"rxjs/operators":740}],50:[function(require,module,exports){
 "use strict";
 
@@ -12546,7 +12513,6 @@ function isPouchdbConflictError(err) {
     return false;
   }
 }
-
 
 },{"./overwritable":9,"@babel/runtime/helpers/createClass":64,"@babel/runtime/helpers/inheritsLoose":66,"@babel/runtime/helpers/interopRequireDefault":67,"@babel/runtime/helpers/wrapNativeSuper":71}],51:[function(require,module,exports){
 "use strict";
@@ -13072,7 +13038,6 @@ function isInstanceOf(obj) {
   return obj instanceof RxQueryBase;
 }
 
-
 },{"./event-reduce":6,"./hooks":7,"./query-cache":43,"./rx-collection-helper":45,"./rx-document-prototype-merge":48,"./rx-error":50,"./util":58,"@babel/runtime/helpers/createClass":64,"@babel/runtime/helpers/interopRequireDefault":67,"fast-deep-equal":445,"rxjs":515,"rxjs/operators":740}],52:[function(require,module,exports){
 "use strict";
 
@@ -13121,7 +13086,6 @@ function getSchemaByObjectPath(rxJsonSchema, path) {
 
   return ret;
 }
-
 
 },{"./util":58,"@babel/runtime/helpers/interopRequireDefault":67,"object-path":480}],53:[function(require,module,exports){
 "use strict";
@@ -13477,7 +13441,6 @@ function createRxSchema(jsonSchema) {
 function isInstanceOf(obj) {
   return obj instanceof RxSchema;
 }
-
 
 },{"./hooks":7,"./rx-document":49,"./rx-error":50,"./util":58,"@babel/runtime/helpers/createClass":64,"@babel/runtime/helpers/interopRequireDefault":67,"fast-deep-equal":445,"object-path":480}],54:[function(require,module,exports){
 "use strict";
@@ -13840,18 +13803,14 @@ function storageChangeEventToRxChangeEvent(isLocal, rxStorageChangeEvent, rxData
   return ret;
 }
 
-
 },{"./hooks":7,"./overwritable":9,"./rx-error":50,"@babel/runtime/helpers/asyncToGenerator":62,"@babel/runtime/helpers/interopRequireDefault":67,"@babel/runtime/regenerator":72}],55:[function(require,module,exports){
 "use strict";
-
 
 },{}],56:[function(require,module,exports){
 "use strict";
 
-
 },{}],57:[function(require,module,exports){
 "use strict";
-
 
 },{}],58:[function(require,module,exports){
 (function (Buffer){(function (){
@@ -14429,7 +14388,6 @@ var blobBufferUtil = {
   }
 };
 exports.blobBufferUtil = blobBufferUtil;
-
 
 }).call(this)}).call(this,require("buffer").Buffer)
 },{"@babel/runtime/helpers/interopRequireDefault":67,"buffer":112,"clone":115,"is-electron":465,"spark-md5":741}],59:[function(require,module,exports){

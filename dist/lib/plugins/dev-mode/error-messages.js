@@ -176,5 +176,4 @@ var ERROR_MESSAGES = {
   SNH: 'This should never happen'
 };
 exports.ERROR_MESSAGES = ERROR_MESSAGES;
-
 //# sourceMappingURL=error-messages.js.map

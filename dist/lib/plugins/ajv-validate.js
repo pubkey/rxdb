@@ -88,5 +88,4 @@ var RxDBAjvValidatePlugin = {
   hooks: hooks
 };
 exports.RxDBAjvValidatePlugin = RxDBAjvValidatePlugin;
-
 //# sourceMappingURL=ajv-validate.js.map

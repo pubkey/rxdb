@@ -38,5 +38,4 @@ var RxDBNoValidatePlugin = {
   hooks: hooks
 };
 exports.RxDBNoValidatePlugin = RxDBNoValidatePlugin;
-
 //# sourceMappingURL=no-validate.js.map

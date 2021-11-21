@@ -141,5 +141,4 @@ function isPouchdbConflictError(err) {
     return false;
   }
 }
-
 //# sourceMappingURL=rx-error.js.map

@@ -46,9 +46,6 @@ import type {
     RxDocumentWriteData,
     LokiLocalDatabaseState
 } from '../../types';
-import type {
-    CompareFunction
-} from 'array-push-at-sort-position';
 import {
     LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE,
     CHANGES_COLLECTION_SUFFIX,
@@ -83,6 +80,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
     public readonly instanceId = instanceId++;
 
     public readonly leaderElector?: LeaderElector;
+    private closed = false;
 
     constructor(
         public readonly databaseName: string,
@@ -144,11 +142,16 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
      * If the local state must be used, that one is returned.
      * Returns false if a remote instance must be used.
      */
-    private async mustUseLocalState(): Promise<LokiLocalDatabaseState | false> {
+    public async mustUseLocalState(): Promise<LokiLocalDatabaseState | false> {
+        if (this.closed) {
+            return false;
+        }
+
         if (this.internals.localState) {
             return this.internals.localState;
         }
         const leaderElector = ensureNotFalsy(this.leaderElector);
+
         while (
             !leaderElector.hasLeader
         ) {
@@ -163,10 +166,20 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
              */
             await promiseWait(0); // TODO remove this line
         }
+
+        /**
+         * It might already have a localState after the applying
+         * because another subtask also called mustUSeLocalState()
+         */
+        if (this.internals.localState) {
+            return this.internals.localState;
+        }
+
         if (
             leaderElector.isLeader &&
             !this.internals.localState
         ) {
+
             // own is leader, use local instance
             this.internals.localState = createLokiLocalState({
                 databaseName: this.databaseName,
@@ -714,6 +727,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         return this.changes$.asObservable();
     }
     async close(): Promise<void> {
+        this.closed = true;
         this.changes$.complete();
         OPEN_LOKIJS_STORAGE_INSTANCES.delete(this);
 
@@ -741,6 +755,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         }
         localState.databaseState.database.removeCollection(this.collectionName);
         localState.databaseState.database.removeCollection(localState.changesCollection.name);
+        this.closed = true;
     }
 }
 
@@ -828,6 +843,7 @@ export async function createLokiStorageInstance<RxDocType>(
         await internals.localState;
     }
 
+
     const instance = new RxStorageInstanceLoki(
         params.databaseName,
         params.collectionName,
@@ -838,6 +854,14 @@ export async function createLokiStorageInstance<RxDocType>(
         params.idleQueue,
         params.broadcastChannel
     );
+
+    /**
+     * Directly create the localState if the db becomes leader.
+     */
+    if (params.broadcastChannel) {
+        const leaderElector = getLeaderElectorByBroadcastChannel(params.broadcastChannel);
+        leaderElector.awaitLeadership().then(() => instance.mustUseLocalState());
+    }
 
     return instance;
 }

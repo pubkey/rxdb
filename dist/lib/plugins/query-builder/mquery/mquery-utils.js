@@ -40,5 +40,4 @@ function merge(to, from) {
 function isObject(arg) {
   return '[object Object]' === arg.toString();
 }
-
 //# sourceMappingURL=mquery-utils.js.map

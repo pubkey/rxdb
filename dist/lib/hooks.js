@@ -147,5 +147,4 @@ function _clearHook(type, fun) {
     return h !== fun;
   });
 }
-
 //# sourceMappingURL=hooks.js.map

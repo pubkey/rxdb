@@ -381,5 +381,4 @@ function _writeAttachmentsToAttachments() {
   }));
   return _writeAttachmentsToAttachments.apply(this, arguments);
 }
-
 //# sourceMappingURL=pouchdb-helper.js.map

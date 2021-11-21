@@ -35,5 +35,4 @@ function checkQuery(args) {
     }
   });
 }
-
 //# sourceMappingURL=check-query.js.map

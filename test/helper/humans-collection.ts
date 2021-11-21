@@ -12,8 +12,7 @@ import {
 } from '../../plugins/core';
 
 import {
-    PouchDB,
-    getRxStoragePouch
+    addPouchPlugin
 } from '../../plugins/pouchdb';
 
 
@@ -27,14 +26,11 @@ export async function create(
     name: string = 'human',
     multiInstance: boolean = true,
     eventReduce: boolean = true,
-    storage?: RxStorage<any, any>
+    storage: RxStorage<any, any> = config.storage.getStorage()
 
 ): Promise<RxCollection<HumanDocumentType, {}, {}>> {
     if (!name) {
         name = 'human';
-    }
-    if (!storage) {
-        storage = config.storage.getStorage();
     }
 
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.HumanDocumentType> }>({
@@ -499,7 +495,7 @@ export async function createMigrationCollection(
 export async function createRelated(
     name = randomCouchString(10)
 ): Promise<RxCollection<schemaObjects.RefHumanDocumentType>> {
-    PouchDB.plugin(require('pouchdb-adapter-memory'));
+    addPouchPlugin(require('pouchdb-adapter-memory'));
 
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.RefHumanDocumentType> }>({
         name,

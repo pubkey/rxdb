@@ -25,7 +25,7 @@ import {
     OPEN_POUCHDB_STORAGE_INSTANCES
 } from '../../plugins/pouchdb';
 
-import AsyncTestUtil from 'async-test-util';
+import AsyncTestUtil, { wait } from 'async-test-util';
 import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
@@ -349,6 +349,45 @@ config.parallel('rx-database.test.js', () => {
                 });
                 db1.destroy();
                 db2.destroy();
+            });
+            it('should not do a write to the internalStore when creating a previous existing collection', async () => {
+                const name = randomCouchString(10);
+                const collectionName = 'foobar';
+                const db1 = await createRxDatabase({
+                    name,
+                    storage: getRxStoragePouch('memory'),
+                    ignoreDuplicate: true
+                });
+                await db1.addCollections({
+                    [collectionName]: {
+                        schema: schemas.human
+                    }
+                });
+                await db1.destroy();
+
+                const db2 = await createRxDatabase({
+                    name,
+                    storage: getRxStoragePouch('memory'),
+                    ignoreDuplicate: true
+                });
+
+                // wrap internalStore to track writes
+                const originalBulkWrite = db2.internalStore.bulkWrite.bind(db2.internalStore);
+                let writeCount = 0;
+                db2.internalStore.bulkWrite = (...args) => {
+                    writeCount++;
+                    return originalBulkWrite(...args);
+                }
+
+
+                await db2.addCollections({
+                    [collectionName]: {
+                        schema: schemas.human
+                    }
+                });
+                await db2.destroy();
+
+                assert.strictEqual(writeCount, 0);
             });
         });
         describe('negative', () => {

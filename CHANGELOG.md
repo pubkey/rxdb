@@ -3,7 +3,28 @@
 ### X.X.X (coming soon)
 
 Bugfixes:
+  - LokiJS: Do not call `saveDatabase()` when no persistence adapter is given.
+
+### 10.5.3 (19 November 2021)
+
+Bugfixes:
+  - PouchDB: `getSortComparator()` broken on some complex `$or` query.
+
+### 10.5.2 (18 November 2021)
+
+Other:
+  - GraphQL replication must wait for `requestIdlePromise` to not slow down more important tasks.
+
+Bugfixes:
+  - LokiJS: Directly create local state when instance becomes leader.
+  - LokiJS: `mustUseLocalState()` should not create multiple local states.
+
+### 10.5.1 (15 November 2021)
+
+Bugfixes:
   - GraphQL replication should affect `requestIdlePromise` and while replication IO is running, the database must not be idle.
+  - Creating a collection that has existed before must not cause a database write.
+  - LokiJS: Fixed error log when reloading while having the database open in multiple browser tabs.
 
 ### 10.5.0 (15 November 2021)
 

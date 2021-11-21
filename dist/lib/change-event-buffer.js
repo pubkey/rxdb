@@ -148,5 +148,4 @@ exports.ChangeEventBuffer = ChangeEventBuffer;
 function createChangeEventBuffer(collection) {
   return new ChangeEventBuffer(collection);
 }
-
 //# sourceMappingURL=change-event-buffer.js.map

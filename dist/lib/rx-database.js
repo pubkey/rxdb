@@ -80,6 +80,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     this.destroyed = false;
     this.subject = new _rxjs.Subject();
     this.observable$ = this.subject.asObservable();
+    this.broadcastChannel$ = new _rxjs.Subject();
     this.name = name;
     this.storage = storage;
     this.instanceCreationOptions = instanceCreationOptions;
@@ -236,10 +237,12 @@ var RxDatabaseBase = /*#__PURE__*/function () {
           switch (_context3.prev = _context3.next) {
             case 0:
               _context3.next = 2;
-              return this.internalStore.findDocumentsById(Object.keys(collectionCreators).map(function (name) {
-                var schema = collectionCreators[name].schema;
-                return _collectionNamePrimary(name, schema);
-              }), false);
+              return this.lockedRun(function () {
+                return _this2.internalStore.findDocumentsById(Object.keys(collectionCreators).map(function (name) {
+                  var schema = collectionCreators[name].schema;
+                  return _collectionNamePrimary(name, schema);
+                }), false);
+              });
 
             case 2:
               collectionDocs = _context3.sent;
@@ -309,10 +312,12 @@ var RxDatabaseBase = /*#__PURE__*/function () {
                 var name = collection.name;
                 ret[name] = collection; // add to bulk-docs list
 
-                if (!internalDocByCollectionName[name]) {
+                var collectionName = _collectionNamePrimary(name, collectionCreators[name].schema);
+
+                if (!internalDocByCollectionName[collectionName]) {
                   bulkPutDocs.push({
                     document: {
-                      collectionName: _collectionNamePrimary(name, collectionCreators[name].schema),
+                      collectionName: collectionName,
                       schemaHash: schemaHashByName[name],
                       schema: collection.schema.normalized,
                       version: collection.schema.version,
@@ -331,7 +336,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
                     }
                   });
                 }
-              }); // make a single call to the pouchdb instance
+              }); // make a single write call to the storage instance
 
               if (!(bulkPutDocs.length > 0)) {
                 _context3.next = 15;
@@ -339,7 +344,9 @@ var RxDatabaseBase = /*#__PURE__*/function () {
               }
 
               _context3.next = 15;
-              return this.internalStore.bulkWrite(bulkPutDocs);
+              return this.lockedRun(function () {
+                return _this2.internalStore.bulkWrite(bulkPutDocs);
+              });
 
             case 15:
               return _context3.abrupt("return", ret);
@@ -366,12 +373,16 @@ var RxDatabaseBase = /*#__PURE__*/function () {
   _proto.removeCollection = function removeCollection(collectionName) {
     var _this3 = this;
 
+    var destroyPromise = _util.PROMISE_RESOLVE_VOID;
+
     if (this.collections[collectionName]) {
-      this.collections[collectionName].destroy();
+      destroyPromise = this.collections[collectionName].destroy();
     } // remove schemas from internal db
 
 
-    return _removeAllOfCollection(this, collectionName) // get all relevant pouchdb-instances
+    return destroyPromise.then(function () {
+      return _removeAllOfCollection(_this3, collectionName);
+    }) // get all relevant pouchdb-instances
     .then(function (knownVersions) {
       return Promise.all(knownVersions.map(function (v) {
         return (0, _rxCollectionHelper.createRxCollectionStorageInstances)(collectionName, _this3, {
@@ -694,10 +705,13 @@ function _removeAllOfCollection2() {
 
 function _prepareBroadcastChannel(rxDatabase) {
   if (!rxDatabase.broadcastChannel) {
-    return;
+    throw (0, _rxError.newRxError)('SNH', {
+      args: {
+        rxDatabase: rxDatabase
+      }
+    });
   }
 
-  rxDatabase.broadcastChannel$ = new _rxjs.Subject();
   rxDatabase.broadcastChannel.addEventListener('message', function (msg) {
     if (msg.storageToken !== rxDatabase.storageToken) {
       // not same storage-state
@@ -959,5 +973,4 @@ function isRxDatabase(obj) {
 function dbCount() {
   return DB_COUNT;
 }
-
 //# sourceMappingURL=rx-database.js.map

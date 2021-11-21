@@ -161,5 +161,4 @@ var RxDBJsonDumpPlugin = {
   overwritable: overwritable
 };
 exports.RxDBJsonDumpPlugin = RxDBJsonDumpPlugin;
-
 //# sourceMappingURL=json-dump.js.map

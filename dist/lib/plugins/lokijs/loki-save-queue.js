@@ -126,5 +126,4 @@ var LokiSaveQueue = /*#__PURE__*/function () {
 }();
 
 exports.LokiSaveQueue = LokiSaveQueue;
-
 //# sourceMappingURL=loki-save-queue.js.map

@@ -90,5 +90,4 @@ function getRxStorageLoki() {
   var storage = new RxStorageLoki(databaseSettings);
   return storage;
 }
-
 //# sourceMappingURL=rx-storage-lokijs.js.map

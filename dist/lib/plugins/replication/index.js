@@ -253,20 +253,36 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
             case 0:
               retryOnFail = _args3.length > 0 && _args3[0] !== undefined ? _args3[0] : true;
               this.runCount++;
+              /**
+               * The replication happens in the background anyways
+               * so we have to ensure that we do not slow down primary tasks.
+               * But not if it is the initial replication, because that might happen
+               * on the first inital loading where it is critical to get the data
+               * as fast as possible to decrease initial page load time.
+               */
 
-              if (!this.push) {
-                _context3.next = 9;
+              if (!this.subjects.initialReplicationComplete.getValue()) {
+                _context3.next = 5;
                 break;
               }
 
               _context3.next = 5;
-              return this.runPush();
+              return this.collection.database.requestIdlePromise();
 
             case 5:
+              if (!this.push) {
+                _context3.next = 12;
+                break;
+              }
+
+              _context3.next = 8;
+              return this.runPush();
+
+            case 8:
               ok = _context3.sent;
 
               if (!(!ok && retryOnFail)) {
-                _context3.next = 9;
+                _context3.next = 12;
                 break;
               }
 
@@ -281,20 +297,20 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
 
               return _context3.abrupt("return", true);
 
-            case 9:
+            case 12:
               if (!this.pull) {
-                _context3.next = 16;
+                _context3.next = 19;
                 break;
               }
 
-              _context3.next = 12;
+              _context3.next = 15;
               return this.runPull();
 
-            case 12:
+            case 15:
               _ok = _context3.sent;
 
               if (!(!_ok && retryOnFail)) {
-                _context3.next = 16;
+                _context3.next = 19;
                 break;
               }
 
@@ -303,10 +319,10 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
               }, this.retryTime);
               return _context3.abrupt("return", true);
 
-            case 16:
+            case 19:
               return _context3.abrupt("return", false);
 
-            case 17:
+            case 20:
             case "end":
               return _context3.stop();
           }
@@ -747,5 +763,4 @@ function _replicateRxCollection() {
   }));
   return _replicateRxCollection.apply(this, arguments);
 }
-
 //# sourceMappingURL=index.js.map

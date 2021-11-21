@@ -104,5 +104,4 @@ var RxDBMigrationPlugin = {
 }; // used in tests
 
 exports.RxDBMigrationPlugin = RxDBMigrationPlugin;
-
 //# sourceMappingURL=index.js.map

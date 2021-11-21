@@ -45,6 +45,25 @@ db.waitForLeadership()
   });
 ```
 
+
+## Handle Duplicate Leaders
+
+On rare occassions, it can happen that [more then one leader](https://github.com/pubkey/broadcast-channel/blob/master/.github/README.md#handle-duplicate-leaders) is elected. This can happen when the CPU is on 100% or for any other reason the JavaScript process is fully blocked for a long time.
+For most cases this is not really problem because on duplicate leaders, both browser tabs replicate with the same backend anyways.
+To handle the duplicate leader event, you can access the leader elector and set a handler:
+
+```ts
+import {
+    getLeaderElectorByBroadcastChannel
+} from 'rxdb/plugins/leader-election';
+
+const leaderElector = getLeaderElectorByBroadcastChannel(broadcastChannel);
+leaderElector.onduplicate = async () => {
+    // Duplicate leader detected -> reload the page.
+    location.reload();
+}
+```
+
 ## Live-Example
 
 In this example the leader is marked with the crown ♛

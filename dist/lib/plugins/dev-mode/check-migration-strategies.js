@@ -47,5 +47,4 @@ function checkMigrationStrategies(schema, migrationStrategies) {
   });
   return true;
 }
-
 //# sourceMappingURL=check-migration-strategies.js.map

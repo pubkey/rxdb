@@ -3,7 +3,7 @@ import _createClass from "@babel/runtime/helpers/createClass";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { IdleQueue } from 'custom-idle-queue';
 import { BroadcastChannel } from 'broadcast-channel';
-import { pluginMissing, flatClone, PROMISE_RESOLVE_FALSE, randomCouchString } from './util';
+import { pluginMissing, flatClone, PROMISE_RESOLVE_FALSE, randomCouchString, PROMISE_RESOLVE_VOID } from './util';
 import { newRxError } from './rx-error';
 import { createRxSchema, getPrimaryFieldOfPrimaryKey } from './rx-schema';
 import { isRxChangeEventIntern } from './rx-change-event';
@@ -48,6 +48,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
     this.destroyed = false;
     this.subject = new Subject();
     this.observable$ = this.subject.asObservable();
+    this.broadcastChannel$ = new Subject();
     this.name = name;
     this.storage = storage;
     this.instanceCreationOptions = instanceCreationOptions;
@@ -204,10 +205,12 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
           switch (_context3.prev = _context3.next) {
             case 0:
               _context3.next = 2;
-              return this.internalStore.findDocumentsById(Object.keys(collectionCreators).map(function (name) {
-                var schema = collectionCreators[name].schema;
-                return _collectionNamePrimary(name, schema);
-              }), false);
+              return this.lockedRun(function () {
+                return _this2.internalStore.findDocumentsById(Object.keys(collectionCreators).map(function (name) {
+                  var schema = collectionCreators[name].schema;
+                  return _collectionNamePrimary(name, schema);
+                }), false);
+              });
 
             case 2:
               collectionDocs = _context3.sent;
@@ -277,10 +280,12 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
                 var name = collection.name;
                 ret[name] = collection; // add to bulk-docs list
 
-                if (!internalDocByCollectionName[name]) {
+                var collectionName = _collectionNamePrimary(name, collectionCreators[name].schema);
+
+                if (!internalDocByCollectionName[collectionName]) {
                   bulkPutDocs.push({
                     document: {
-                      collectionName: _collectionNamePrimary(name, collectionCreators[name].schema),
+                      collectionName: collectionName,
                       schemaHash: schemaHashByName[name],
                       schema: collection.schema.normalized,
                       version: collection.schema.version,
@@ -299,7 +304,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
                     }
                   });
                 }
-              }); // make a single call to the pouchdb instance
+              }); // make a single write call to the storage instance
 
               if (!(bulkPutDocs.length > 0)) {
                 _context3.next = 15;
@@ -307,7 +312,9 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
               }
 
               _context3.next = 15;
-              return this.internalStore.bulkWrite(bulkPutDocs);
+              return this.lockedRun(function () {
+                return _this2.internalStore.bulkWrite(bulkPutDocs);
+              });
 
             case 15:
               return _context3.abrupt("return", ret);
@@ -334,12 +341,16 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
   _proto.removeCollection = function removeCollection(collectionName) {
     var _this3 = this;
 
+    var destroyPromise = PROMISE_RESOLVE_VOID;
+
     if (this.collections[collectionName]) {
-      this.collections[collectionName].destroy();
+      destroyPromise = this.collections[collectionName].destroy();
     } // remove schemas from internal db
 
 
-    return _removeAllOfCollection(this, collectionName) // get all relevant pouchdb-instances
+    return destroyPromise.then(function () {
+      return _removeAllOfCollection(_this3, collectionName);
+    }) // get all relevant pouchdb-instances
     .then(function (knownVersions) {
       return Promise.all(knownVersions.map(function (v) {
         return createRxCollectionStorageInstances(collectionName, _this3, {
@@ -657,10 +668,13 @@ function _removeAllOfCollection2() {
 
 function _prepareBroadcastChannel(rxDatabase) {
   if (!rxDatabase.broadcastChannel) {
-    return;
+    throw newRxError('SNH', {
+      args: {
+        rxDatabase: rxDatabase
+      }
+    });
   }
 
-  rxDatabase.broadcastChannel$ = new Subject();
   rxDatabase.broadcastChannel.addEventListener('message', function (msg) {
     if (msg.storageToken !== rxDatabase.storageToken) {
       // not same storage-state

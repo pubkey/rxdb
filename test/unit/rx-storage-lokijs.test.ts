@@ -21,7 +21,7 @@ import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
 addRxPlugin(RxDBKeyCompressionPlugin);
 import { RxDBValidatePlugin } from '../../plugins/validate';
 import { HumanDocumentType } from '../helper/schema-objects';
-import { wait, waitUntil } from 'async-test-util';
+import { waitUntil } from 'async-test-util';
 addRxPlugin(RxDBValidatePlugin);
 import * as path from 'path';
 import * as fs from 'fs';
@@ -32,7 +32,7 @@ import { IdleQueue } from 'custom-idle-queue';
  */
 config.parallel('rx-storage-lokijs.test.js', () => {
     describe('RxDatabase', () => {
-        it('create write remove', async () => {
+        it('create/write/remove', async () => {
             const collection = await humansCollections.create(
                 10,
                 randomCouchString(10),
@@ -92,6 +92,10 @@ config.parallel('rx-storage-lokijs.test.js', () => {
             assert.ok(col1.storageInstance.internals.localState);
             assert.ok(!col2.storageInstance.internals.localState);
 
+            /**
+             * The query on the non-leading instance
+             * must return the correct query results.
+             */
             await col2.insert(schemaObjects.human());
             await col1.insert(schemaObjects.human());
             await waitUntil(async () => {
@@ -104,6 +108,72 @@ config.parallel('rx-storage-lokijs.test.js', () => {
 
             col1.database.destroy();
             col2.database.destroy();
+        });
+        it('should not have localState if not leader', async () => {
+            const databaseName = randomCouchString(12);
+            const cols = await Promise.all(
+                new Array(10).fill(0)
+                    .map(() => humansCollections.createMultiInstance(
+                        databaseName,
+                        0,
+                        null,
+                        getRxStorageLoki()
+                    ))
+            );
+            const getLeaders = () => {
+                return cols.filter(col => col.database.isLeader());
+            }
+
+            // wait until one is leader
+            await waitUntil(() => getLeaders().length === 1);
+
+            // add some collections after leader is elected
+            await Promise.all(
+                new Array(10).fill(0)
+                    .map(async () => {
+                        const col = await humansCollections.createMultiInstance(
+                            databaseName,
+                            0,
+                            null,
+                            getRxStorageLoki()
+                        );
+                        cols.push(col);
+                    })
+            );
+
+            /**
+             * Run some operations on non-leading instance
+             * to emulate real world usage
+             */
+            const firstNonLeading = cols.find(col => !col.database.isLeader());
+            if (!firstNonLeading) {
+                throw new Error('no non leading instance');
+            }
+            await firstNonLeading.insert({
+                passportId: randomCouchString(10),
+                firstName: 'foo',
+                lastName: 'bar',
+                age: 10,
+            });
+            await firstNonLeading.insertLocal(
+                randomCouchString(10),
+                { foo: 'bar' }
+            );
+
+
+            /**
+             * The non-leading instances should not
+             * have localState set in its storage instances.
+             */
+            cols.forEach(col => {
+                const mustHaveLocal = col.database.isLeader();
+                assert.strictEqual(mustHaveLocal, !!col.database.internalStore.internals.localState);
+                assert.strictEqual(mustHaveLocal, !!col.database.localDocumentsStore.internals.localState);
+                assert.strictEqual(mustHaveLocal, !!col.storageInstance.internals.localState);
+                assert.strictEqual(mustHaveLocal, !!col.localDocumentsStore.internals.localState);
+            });
+
+            cols.forEach(col => col.database.destroy());
         });
         it('listening to queries must work', async () => {
             const databaseName = randomCouchString(12);

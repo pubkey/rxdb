@@ -149,5 +149,4 @@ function triggerCacheReplacement(rxCollection) {
     COLLECTIONS_WITH_RUNNING_CLEANUP["delete"](rxCollection);
   });
 }
-
 //# sourceMappingURL=query-cache.js.map
