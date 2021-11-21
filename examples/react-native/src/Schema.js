@@ -6,7 +6,7 @@ const heroSchema = {
     type: 'object',
     properties: {
         name: {
-            type: 'string'
+            type: 'string',
         },
         color: {
             type: 'string',

@@ -8,7 +8,7 @@ For database replication and syncing you will need to input a public ip address 
 
 ## Try it out
 
-1. [follow installation instructions](https://facebook.github.io/react-native/docs/getting-started.html#content) to setup your react-native environment
+1. [follow installation instructions](https://reactnative.dev/docs/environment-setup) to setup your react-native environment (follow instructions for Expo)
 1. clone the whole [RxDB-repo](https://github.com/pubkey/rxdb)
 1. go into project `cd rxdb`
 1. run `npm install`

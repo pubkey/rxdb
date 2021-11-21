@@ -24,14 +24,14 @@
   },
   "main": "node_modules/expo/AppEntry.js",
   "dependencies": {
-    "expo": "37.0.12",
+    "expo": "43.0.2",
     "global": "4.4.0",
     "pouchdb-adapter-asyncstorage": "6.4.1",
     "pouchdb-adapter-http": "7.2.2",
     "random-token": "0.0.8",
     "react": "17.0.2",
-    "react-native": "https://github.com/expo/react-native/archive/sdk-38.0.2.tar.gz",
+    "react-native": "0.64.2",
     "rxdb": "file:rxdb-local.tgz",
-    "rxjs": "7.3.1"
+    "rxjs": "7.4.0"
   }
 }
