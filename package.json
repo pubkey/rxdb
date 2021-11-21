@@ -112,7 +112,7 @@
     "get-graphql-from-jsonschema": "8.0.16",
     "graphql-client": "2.0.1",
     "is-electron": "2.2.0",
-    "is-my-json-valid": "2.20.5",
+    "is-my-json-valid": "2.20.6",
     "jsonschema-key-compression": "1.6.0",
     "lokijs": "1.5.12",
     "modifyjs": "0.3.1",
