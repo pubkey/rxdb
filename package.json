@@ -180,7 +180,7 @@
     "gitbook-cli": "2.3.2",
     "graphql": "15.6.1",
     "graphql-subscriptions": "1.2.1",
-    "gzip-size-cli": "5.0.0",
+    "gzip-size-cli": "5.0.1",
     "karma": "6.3.9",
     "karma-babel-preprocessor": "8.0.1",
     "karma-browserify": "8.1.0",
