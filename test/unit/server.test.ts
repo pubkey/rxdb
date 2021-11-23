@@ -30,6 +30,7 @@ config.parallel('server.test.js', () => {
     // below imports have to be conditionally imported (only for Node) that's why we use require here instead of import:
     const express = require('express');
     const fs = require('fs');
+    const levelDown = require('leveldown');
 
     const NodeWebsqlAdapter = require('pouchdb-adapter-leveldb');
 
@@ -241,7 +242,7 @@ config.parallel('server.test.js', () => {
         });
         col2.database.destroy();
     });
-    it('using node-websql with an absoulte path should work', async () => {
+    it('using node-websql with an absolute path should work', async () => {
         addPouchPlugin(NodeWebsqlAdapter);
         const dbName = config.rootPath + 'test_tmp/' + randomCouchString(10);
         const db1 = await createRxDatabase({
@@ -263,6 +264,35 @@ config.parallel('server.test.js', () => {
         });
 
         await col1.insert(schemaObjects.human());
+
+        db1.destroy();
+    });
+    it('using full leveldown-module should work', async () => {
+        addPouchPlugin(NodeWebsqlAdapter);
+        const db1 = await createRxDatabase({
+            name: config.rootPath + 'test_tmp/' + randomCouchString(10),
+            storage: getRxStoragePouch(levelDown),
+            multiInstance: false
+        });
+        const cols1 = await db1.addCollections({
+            human: {
+                schema: schemas.human
+            }
+        });
+        const col1 = cols1.human;
+
+        await col1.insert(schemaObjects.human());
+
+        await db1.server({
+            port: nexPort()
+        });
+
+        await col1.insert(schemaObjects.human());
+
+        await AsyncTestUtil.waitUntil(async () => {
+            const serverDocs = await col1.find().exec();
+            return (serverDocs.length === 2);
+        });
 
         db1.destroy();
     });
