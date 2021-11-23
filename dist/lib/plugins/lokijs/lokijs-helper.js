@@ -107,7 +107,7 @@ function getLokiDatabase(databaseName, databaseSettings, rxDatabaseIdleQueue) {
                 autosave: false,
                 throttledSaves: false
               });
-              database = new _lokijs["default"](databaseName + '.db', useSettings);
+              database = new _lokijs["default"](databaseName + '.db', (0, _util.flatClone)(useSettings));
               saveQueue = new _lokiSaveQueue.LokiSaveQueue(database, useSettings, rxDatabaseIdleQueue);
               /**
                * Wait until all data is loaded from persistence adapter.

@@ -33171,10 +33171,9 @@ function setter (obj, pointer, value) {
   var part
   var hasNextPart
 
-  if (pointer[1] === 'constructor' && pointer[2] === 'prototype') return obj
-  if (pointer[1] === '__proto__') return obj
-
   for (var p = 1, len = pointer.length; p < len;) {
+    if (pointer[p] === 'constructor' || pointer[p] === 'prototype' || pointer[p] === '__proto__') return obj
+
     part = untilde(pointer[p++])
     hasNextPart = len > p
 
@@ -33207,6 +33206,11 @@ function compilePointer (pointer) {
     if (pointer[0] === '') return pointer
     throw new Error('Invalid JSON pointer.')
   } else if (Array.isArray(pointer)) {
+    for (const part of pointer) {
+      if (typeof part !== 'string' && typeof part !== 'number') {
+        throw new Error('Invalid JSON pointer. Must be of type string or number.')
+      }
+    }
     return pointer
   }
 

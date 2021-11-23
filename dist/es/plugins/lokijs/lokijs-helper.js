@@ -79,7 +79,7 @@ export function getLokiDatabase(databaseName, databaseSettings, rxDatabaseIdleQu
                 autosave: false,
                 throttledSaves: false
               });
-              database = new lokijs(databaseName + '.db', useSettings);
+              database = new lokijs(databaseName + '.db', flatClone(useSettings));
               saveQueue = new LokiSaveQueue(database, useSettings, rxDatabaseIdleQueue);
               /**
                * Wait until all data is loaded from persistence adapter.
