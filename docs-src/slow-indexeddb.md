@@ -73,5 +73,6 @@ Using a leader election is implemented in the [RxDB LokiJS Storage](./rx-storage
 
 ## Further read
 
+- [Offline First Database Comparison](https://github.com/pubkey/client-side-databases)
 - [Speeding up IndexedDB reads and writes](https://nolanlawson.com/2021/08/22/speeding-up-indexeddb-reads-and-writes/)
 - [SQLITE ON THE WEB: ABSURD-SQL](https://hackaday.com/2021/08/24/sqlite-on-the-web-absurd-sql/)
