@@ -23,6 +23,7 @@ I forked the comparison tool [here](https://pubkey.github.io/client-side-databas
   <img src="./files/indexeddb-transaction-throughput.png" alt="IndexedDB transaction throughput" width="700" />
 </p>
 
+
 To fix your IndexedDB performance problems you have to make sure to use as least transactions as possible.
 Sometimes this is easy, as instead of iterating over a documents list and calling single inserts, with RxDB you could use the [bulk methods](https://rxdb.info/rx-collection.html#bulkinsert) to store many document at once.
 But most of the time is not so easy. You user clicks around, data gets replicated from the backend, another browser tab writes data. All these things can happen at random time and you cannot crunch all that data in a single transaction.
@@ -30,7 +31,29 @@ But most of the time is not so easy. You user clicks around, data gets replicate
 Another solution is to just not care about performance at all.
 In a few releases the browser vendors will have optimized IndexedDB and everything is fast again. Well, IndexedDB was slow [in 2013](https://www.researchgate.net/publication/281065948_Performance_Testing_and_Comparison_of_Client_Side_Databases_Versus_Server_Side) and it is still slow today. If this trend continues, it will still be slow in a few years from now. Waiting is not an option.
 
-> Do not use IndexedDB as a database
+Switching to WebSQL (even if it is deprecated) is also not an option because, like [the comparsion tool shows](https://pubkey.github.io/client-side-databases/database-comparison/index.html), it has even slower transactions.
+
+## Do not use IndexedDB as a database
+
+To prevent transaction handling and to fix the performance problems, we need to stop using IndexedDB as a database. Instead all data is loaded into the memory on the inital page load. Here all reads and writes happen in memory which is about 100x faster. Only some time after a write occured, the memory state is persisted into IndexedDB with a **single write transaction**. In this scenario IndexedDB is used as a filesystem, not as a database.
+
+There are some libraries that already do that:
+
+- LokiJS with the [IndexedDB Adapter](https://techfort.github.io/LokiJS/LokiIndexedAdapter.html)
+- [Absurd-SQL](https://github.com/jlongster/absurd-sql)
+- SQL.js with the [empscripten Filesystem API](https://emscripten.org/docs/api_reference/Filesystem-API.html#filesystem-api-idbfs)
+- [DuckDB Wasm](https://duckdb.org/2021/10/29/duckdb-wasm.html)
+
+## Persistence
+
+One downsite of not directly using IndexedDB, is that your data is not persistend all the time. And when the JavaScript process exists without having persisted to IndexedDB, data can be lost. To prevent this from happening, we have to ensure that the in-memory state is written down to the disc. One point is make persisting as fast as possible. LokiJS for example has the `incremental-indexeddb-adapter` which only saves new writes to the disc instead of persisting the whole state. Another point is to run the persisting at the correct point in time. For example the RxDB [LokiJS storage](https://rxdb.info/rx-storage-lokijs.html) persists in the following situations:
+
+- When the database is idle and no write or query is running. In that time we can persist the state if any new writes appeared before.
+- When the `window` fires the [beforeunload event](https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onbeforeunload) we can assume that the JavaScript process is exited any moment and we have to persiste the state. After `beforeunload` there are several seconds time which are sufficient to store all new changes. This has shown to work quite reliable.
+
+The only missing event that can happen is when the browser exists unexpectedly like when it crashes or when the power of the computer is shut of.
+
+
 
 ## Multi Tab Support
 
@@ -50,4 +73,7 @@ The disadvantage is that the leader election process takes some time on the init
 
 Using a leader election is implemented in the [RxDB LokiJS Storage](./rx-storage-lokijs.md).
 
-## Data persistence
+## Read further
+
+- [Speeding up IndexedDB reads and writes](https://nolanlawson.com/2021/08/22/speeding-up-indexeddb-reads-and-writes/)
+- [SQLITE ON THE WEB: ABSURD-SQL](https://hackaday.com/2021/08/24/sqlite-on-the-web-absurd-sql/)
