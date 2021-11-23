@@ -1458,5 +1458,59 @@ config.parallel('rx-query.test.js', () => {
 
             db.destroy();
         });
+        it('#3498 RxQuery returns outdated result in second subscription', async () => {
+            const schema = {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string'
+                    },
+                    field: {
+                        type: 'boolean'
+                    }
+                }
+            };
+            const db = await createRxDatabase({
+                name: randomCouchString(10),
+                storage: getRxStoragePouch('memory'),
+                eventReduce: true,
+                ignoreDuplicate: true
+            });
+            const collection = (await db.addCollections({
+                collection: {
+                    schema
+                }
+            })).collection;
+
+            const doc = await collection.insert({ id: 'testid', field: false });
+
+            // Bug only happens the second time the query is used
+            const result1 = await collection.find({ selector: { field: false } }).exec();
+            assert.strictEqual(result1.length, 1);
+
+            await doc.update({
+                $set: {
+                    field: true
+                }
+            });
+
+            const obs = collection.find({ selector: { field: false } }).$;
+            const result2a: any[][] = [];
+            const result2b: any[][] = [];
+            const sub2 = obs.subscribe((d) => result2b.push(d));
+            const sub1 = obs.subscribe((d) => result2a.push(d));
+
+            await promiseWait(5);
+
+            sub1.unsubscribe();
+            sub2.unsubscribe();
+
+            assert.strictEqual(Math.max(...result2a.map(r => r.length)), 0);
+            assert.strictEqual(Math.max(...result2b.map(r => r.length)), 0);
+
+            db.destroy();
+        });
     });
 });

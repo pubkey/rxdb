@@ -8,7 +8,8 @@ import {
     mergeMap,
     filter,
     map,
-    tap
+    tap,
+    shareReplay
 } from 'rxjs/operators';
 import {
     sortObject,
@@ -46,7 +47,7 @@ import {
 } from './rx-document-prototype-merge';
 import { calculateNewResults } from './event-reduce';
 import { triggerCacheReplacement } from './query-cache';
-import { getStateSet, QueryMatcher } from 'event-reduce-js';
+import type { QueryMatcher } from 'event-reduce-js';
 import { _handleToStorageInstance } from './rx-collection-helper';
 
 let _queryCount = 0;
@@ -105,7 +106,10 @@ export class RxQueryBase<
                                 }
                             });
                     }),
-                    filter((docs: any[]) => !!docs), // not if previous returned false
+                    // not if previous returned false
+                    filter((docs: any[]) => !!docs),
+                    // copy the array so it wont matter if the user modifies it
+                    map((docs: any[]) => docs.slice(0)),
                     map((docs: any[]) => {
                         if (this.op === 'findOne') {
                             // findOne()-queries emit document or null
@@ -116,10 +120,9 @@ export class RxQueryBase<
                             return docs;
                         }
                     }),
-                    map(docs => {
-                        // copy the array so it wont matter if the user modifies it
-                        const ret = Array.isArray(docs) ? docs.slice() : docs;
-                        return ret;
+                    shareReplay({
+                        bufferSize: 1,
+                        refCount: true
                     })
                 ).asObservable();
 

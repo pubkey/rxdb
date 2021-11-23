@@ -10,7 +10,6 @@ import './unit/rx-schema.test.js';
 import './unit/key-compression.test.js';
 import './unit/bug-report.test.js';
 import './unit/rx-database.test.js';
-import './unit/event-reduce.test.js'; // TODO move down under idle queue
 import './unit/rx-collection.test.js';
 import './unit/rx-document.test.js';
 import './unit/primary.test.js';
@@ -20,6 +19,7 @@ import './unit/cache-replacement-policy.test';
 import './unit/rx-query.test.js';
 import './unit/query-builder.test.js';
 import './unit/idle-queue.test.js';
+import './unit/event-reduce.test.js';
 import './unit/reactive-collection.test.js';
 import './unit/reactive-query.test.js';
 import './unit/reactive-document.test.js';

@@ -4,7 +4,7 @@
 
 Bugfixes:
   - LokiJS: Do not call `saveDatabase()` when no persistence adapter is given.
-
+  - Query returns outdated result in second subscription [#3498](https://github.com/pubkey/rxdb/issues/3498) Thanks [@swnf](https://github.com/swnf)
 ### 10.5.3 (19 November 2021)
 
 Bugfixes:
