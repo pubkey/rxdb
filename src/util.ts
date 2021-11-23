@@ -315,7 +315,8 @@ export function adapterObject(adapter: any): any {
     };
     if (typeof adapter === 'string') {
         adapterObj = {
-            adapter
+            adapter,
+            db: undefined,
         };
     }
     return adapterObj;
