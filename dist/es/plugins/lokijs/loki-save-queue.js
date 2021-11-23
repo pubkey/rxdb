@@ -35,45 +35,53 @@ export var LokiSaveQueue = /*#__PURE__*/function () {
         while (1) {
           switch (_context.prev = _context.next) {
             case 0:
-              t = now();
-
-              if (!(this.writesSinceLastRun === 0)) {
-                _context.next = 3;
-                break;
-              }
-
-              return _context.abrupt("return", this.runningSavesIdleQueue.requestIdlePromise());
-
-            case 3:
-              _context.next = 5;
-              return Promise.all([requestIdlePromise(), promiseWait(100)]);
-
-            case 5:
-              if (!((!this.rxDatabaseIdleQueue.isIdle() || !this.runningSavesIdleQueue.isIdle()) && this.writesSinceLastRun !== 0)) {
-                _context.next = 12;
-                break;
-              }
-
-              _context.next = 8;
-              return requestIdlePromise();
-
-            case 8:
-              _context.next = 10;
-              return Promise.all([this.rxDatabaseIdleQueue.requestIdlePromise(), this.runningSavesIdleQueue.requestIdlePromise(), promiseWait(100)]);
-
-            case 10:
-              _context.next = 5;
-              break;
-
-            case 12:
-              if (!(this.writesSinceLastRun === 0)) {
-                _context.next = 14;
+              if (this.databaseSettings.adapter) {
+                _context.next = 2;
                 break;
               }
 
               return _context.abrupt("return");
 
+            case 2:
+              t = now();
+
+              if (!(this.writesSinceLastRun === 0)) {
+                _context.next = 5;
+                break;
+              }
+
+              return _context.abrupt("return", this.runningSavesIdleQueue.requestIdlePromise());
+
+            case 5:
+              _context.next = 7;
+              return Promise.all([requestIdlePromise(), promiseWait(100)]);
+
+            case 7:
+              if (!((!this.rxDatabaseIdleQueue.isIdle() || !this.runningSavesIdleQueue.isIdle()) && this.writesSinceLastRun !== 0)) {
+                _context.next = 14;
+                break;
+              }
+
+              _context.next = 10;
+              return requestIdlePromise();
+
+            case 10:
+              _context.next = 12;
+              return Promise.all([this.rxDatabaseIdleQueue.requestIdlePromise(), this.runningSavesIdleQueue.requestIdlePromise(), promiseWait(100)]);
+
+            case 12:
+              _context.next = 7;
+              break;
+
             case 14:
+              if (!(this.writesSinceLastRun === 0)) {
+                _context.next = 16;
+                break;
+              }
+
+              return _context.abrupt("return");
+
+            case 16:
               writeAmount = this.writesSinceLastRun;
               this.writesSinceLastRun = 0;
               return _context.abrupt("return", this.runningSavesIdleQueue.requestIdlePromise().then(function () {
@@ -95,7 +103,7 @@ export var LokiSaveQueue = /*#__PURE__*/function () {
                 });
               }));
 
-            case 17:
+            case 19:
             case "end":
               return _context.stop();
           }
