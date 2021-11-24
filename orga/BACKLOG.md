@@ -85,6 +85,10 @@ See [#1396](https://github.com/pubkey/rxdb/pull/1396#issuecomment-523014106)
 ## generate typings from schema
 [Writing typescript](https://rxdb.info/tutorials/typescript.html) defintions for rxdb documents and collections could be done by generating them from the schema. 
 
+## refactor middleware to not be based on side effects
+
+[See](https://github.com/pubkey/rxdb/issues/3426)
+
 ## Refactor data-migrator
 
 The current implementation has some flaws and should be completely rewritten.
