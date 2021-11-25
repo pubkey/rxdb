@@ -165,6 +165,9 @@ export function addCustomEventsPluginToPouch() {
                         const splittedRev = doc._rev.split('-');
                         const revHeight = parseInt(splittedRev[0], 10);
                         const revLabel = splittedRev[1];
+
+                        if (!previous._revisions) { previous._revisions = { ids: [] } }
+
                         doc._revisions = {
                             start: revHeight,
                             ids: previous._revisions.ids
