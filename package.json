@@ -125,7 +125,7 @@
     "pouchdb-md5": "7.2.2",
     "pouchdb-replication": "7.2.2",
     "pouchdb-selector-core": "7.2.2",
-    "spark-md5": "3.0.1",
+    "spark-md5": "3.0.2",
     "unload": "2.3.1",
     "url": "^0.11.0",
     "util": "0.12.4",
