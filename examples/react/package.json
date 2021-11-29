@@ -4,7 +4,7 @@
   "dependencies": {
     "async-test-util": "1.7.3",
     "babel-polyfill": "6.26.0",
-    "concurrently": "6.2.1",
+    "concurrently": "6.4.0",
     "pouchdb-adapter-http": "7.2.2",
     "pouchdb-adapter-idb": "7.2.2",
     "pouchdb-replication": "7.2.2",
