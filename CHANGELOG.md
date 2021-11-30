@@ -1,6 +1,6 @@
 # Changelog
 
-### X.X.X (coming soon)
+### 10.5.4 (30 November 2021)
 
 Bugfixes:
   - LokiJS: Do not call `saveDatabase()` when no persistence adapter is given.
@@ -49,7 +49,7 @@ Bugfixes:
   - LokiJS: Ensure events emit exact the same data as with PouchDB.
   - LokiJS: Queries with limit and skip where broken.
   - LokiJS: Fix all bugs and run the whole test suite with LokiJS Storage
-  - Fix PouchDB RxStorage returned sometimes wrong sort comparison results.
+  - Fix PouchDB RxStorage sometimes returned wrong sort comparison results.
 
 Other:
   - Updated [event-reduce](https://github.com/pubkey/event-reduce) for more optimizations.
