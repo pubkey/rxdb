@@ -22,7 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Setup Node.js environment
-        uses: actions/setup-node@v2.4.1
+        uses: actions/setup-node@v2.5.0
         with:
           node-version: 16.5.0
 
@@ -45,7 +45,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Setup Node.js environment
-        uses: actions/setup-node@v2.4.1
+        uses: actions/setup-node@v2.5.0
         with:
           node-version: 16.5.0
 
@@ -79,7 +79,7 @@ jobs:
       #- name: install dependencies
       #  run: sudo apt-get update && sudo apt-get install -y chromium-browser
       - name: Setup Node.js environment
-        uses: actions/setup-node@v2.4.1
+        uses: actions/setup-node@v2.5.0
         with:
           node-version: 16.5.0
 
@@ -127,7 +127,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Setup Node.js environment
-        uses: actions/setup-node@v2.4.1
+        uses: actions/setup-node@v2.5.0
         with:
           node-version: 16.5.0
       - name: prepare core
@@ -147,7 +147,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Setup Node.js environment
-        uses: actions/setup-node@v2.4.1
+        uses: actions/setup-node@v2.5.0
         with:
           node-version: 16.5.0
       - name: prepare core
@@ -171,7 +171,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Setup Node.js environment
-        uses: actions/setup-node@v2.4.1
+        uses: actions/setup-node@v2.5.0
         with:
           node-version: 16.5.0
 
@@ -211,7 +211,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Setup Node.js environment
-        uses: actions/setup-node@v2.4.1
+        uses: actions/setup-node@v2.5.0
         with:
           node-version: 16.5.0
       - name: install dependencies
@@ -239,7 +239,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Setup Node.js environment
-        uses: actions/setup-node@v2.4.1
+        uses: actions/setup-node@v2.5.0
         with:
           node-version: 16.5.0
 
@@ -278,7 +278,7 @@ jobs:
       - name: install dependencies
         run: sudo apt-get update && sudo apt-get install -y chromium-browser
       - name: Setup Node.js environment
-        uses: actions/setup-node@v2.4.1
+        uses: actions/setup-node@v2.5.0
         with:
           node-version: 16.5.0
       - name: prepare core
@@ -307,7 +307,7 @@ jobs:
       - name: install dependencies
         run: sudo apt-get update && sudo apt-get install -y chromium-browser
       - name: Setup Node.js environment
-        uses: actions/setup-node@v2.4.1
+        uses: actions/setup-node@v2.5.0
         with:
           node-version: 16.5.0
       - name: prepare core
@@ -335,7 +335,7 @@ jobs:
       - name: install dependencies
         run: sudo apt-get update && sudo apt-get install -y chromium-browser
       - name: Setup Node.js environment
-        uses: actions/setup-node@v2.4.1
+        uses: actions/setup-node@v2.5.0
         with:
           node-version: 16.5.0
       - name: prepare core
@@ -388,7 +388,7 @@ jobs:
         run: docker run -d -p 5984:5984 --rm --name rxdb-couchdb couchdb:2.1.1
 
       - name: Setup Node.js environment
-        uses: actions/setup-node@v2.4.1
+        uses: actions/setup-node@v2.5.0
         with:
           node-version: 16.5.0
 
@@ -411,7 +411,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Setup Node.js environment
-        uses: actions/setup-node@v2.4.1
+        uses: actions/setup-node@v2.5.0
         with:
           node-version: 16.5.0
       - name: prepare core
@@ -429,7 +429,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Setup Node.js environment
-        uses: actions/setup-node@v2.4.1
+        uses: actions/setup-node@v2.5.0
         with:
           node-version: 16.5.0
       - name: prepare core
@@ -446,7 +446,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Setup Node.js environment
-        uses: actions/setup-node@v2.4.1
+        uses: actions/setup-node@v2.5.0
         with:
           node-version: 16.5.0
       - name: prepare core
