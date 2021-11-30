@@ -307,10 +307,13 @@ var RxQueryBase = /*#__PURE__*/function () {
               return docs;
             }
           });
-        }), (0, _operators.filter)(function (docs) {
-          return !!docs;
         }), // not if previous returned false
+        (0, _operators.filter)(function (docs) {
+          return !!docs;
+        }), // copy the array so it wont matter if the user modifies it
         (0, _operators.map)(function (docs) {
+          return docs.slice(0);
+        }), (0, _operators.map)(function (docs) {
           if (_this4.op === 'findOne') {
             // findOne()-queries emit document or null
             var doc = docs.length === 0 ? null : docs[0];
@@ -319,10 +322,9 @@ var RxQueryBase = /*#__PURE__*/function () {
             // find()-queries emit RxDocument[]
             return docs;
           }
-        }), (0, _operators.map)(function (docs) {
-          // copy the array so it wont matter if the user modifies it
-          var ret = Array.isArray(docs) ? docs.slice() : docs;
-          return ret;
+        }), (0, _operators.shareReplay)({
+          bufferSize: 1,
+          refCount: true
         })).asObservable();
         /**
          * subscribe to the changeEvent-stream so it detects changes if it has subscribers

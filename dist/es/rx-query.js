@@ -1,7 +1,7 @@
 import _createClass from "@babel/runtime/helpers/createClass";
 import deepEqual from 'fast-deep-equal';
 import { merge, BehaviorSubject, firstValueFrom } from 'rxjs';
-import { mergeMap, filter, map, tap } from 'rxjs/operators';
+import { mergeMap, filter, map, tap, shareReplay } from 'rxjs/operators';
 import { sortObject, stringifyFilter, pluginMissing, clone, overwriteGetterForCaching, now, PROMISE_RESOLVE_FALSE } from './util';
 import { newRxError, newRxTypeError } from './rx-error';
 import { runPluginHooks } from './hooks';
@@ -283,10 +283,13 @@ export var RxQueryBase = /*#__PURE__*/function () {
               return docs;
             }
           });
-        }), filter(function (docs) {
-          return !!docs;
         }), // not if previous returned false
+        filter(function (docs) {
+          return !!docs;
+        }), // copy the array so it wont matter if the user modifies it
         map(function (docs) {
+          return docs.slice(0);
+        }), map(function (docs) {
           if (_this4.op === 'findOne') {
             // findOne()-queries emit document or null
             var doc = docs.length === 0 ? null : docs[0];
@@ -295,10 +298,9 @@ export var RxQueryBase = /*#__PURE__*/function () {
             // find()-queries emit RxDocument[]
             return docs;
           }
-        }), map(function (docs) {
-          // copy the array so it wont matter if the user modifies it
-          var ret = Array.isArray(docs) ? docs.slice() : docs;
-          return ret;
+        }), shareReplay({
+          bufferSize: 1,
+          refCount: true
         })).asObservable();
         /**
          * subscribe to the changeEvent-stream so it detects changes if it has subscribers

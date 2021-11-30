@@ -6,7 +6,7 @@ import express from 'express';
 import corsFn from 'cors';
 import { addPouchPlugin, PouchDB } from '../plugins/pouchdb';
 import { newRxError } from '../rx-error';
-import { addRxPlugin, flatClone, PROMISE_RESOLVE_VOID } from '../core';
+import { adapterObject, addRxPlugin, flatClone, PROMISE_RESOLVE_VOID } from '../core';
 import { RxDBReplicationCouchDBPlugin } from './replication-couchdb';
 addRxPlugin(RxDBReplicationCouchDBPlugin);
 import PouchAdapterHttp from 'pouchdb-adapter-http';
@@ -119,7 +119,7 @@ export function spawnServer(_x4) {
 
 function _spawnServer() {
   _spawnServer = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3(_ref2) {
-    var _ref2$path, path, _ref2$port, port, _ref2$cors, cors, _ref2$startServer, startServer, _ref2$pouchdbExpressO, pouchdbExpressOptions, db, collectionsPath, storage, pseudo, app, usePouchExpressOptions, pouchApp, server, startupPromise, response;
+    var _ref2$path, path, _ref2$port, port, _ref2$cors, cors, _ref2$startServer, startServer, _ref2$pouchdbExpressO, pouchdbExpressOptions, db, collectionsPath, storage, adapterObj, pouchDBOptions, pseudo, app, usePouchExpressOptions, pouchApp, server, startupPromise, response;
 
     return _regeneratorRuntime.wrap(function _callee3$(_context3) {
       while (1) {
@@ -143,11 +143,12 @@ function _spawnServer() {
             throw new Error('The RxDB server plugin only works with pouchdb storage.');
 
           case 7:
-            pseudo = PouchDB.defaults({
-              adapter: storage.adapter,
+            adapterObj = adapterObject(storage.adapter);
+            pouchDBOptions = Object.assign({
               prefix: getPrefix(db),
               log: false
-            });
+            }, adapterObj);
+            pseudo = PouchDB.defaults(pouchDBOptions);
             app = express();
             APP_OF_DB.set(db, app);
             Object.keys(db.collections).forEach(function (colName) {
@@ -256,10 +257,10 @@ function _spawnServer() {
               }()));
             }
 
-            _context3.next = 23;
+            _context3.next = 25;
             return startupPromise;
 
-          case 23:
+          case 25:
             response = {
               app: app,
               pouchApp: pouchApp,
@@ -267,7 +268,7 @@ function _spawnServer() {
             };
             return _context3.abrupt("return", response);
 
-          case 25:
+          case 27:
           case "end":
             return _context3.stop();
         }

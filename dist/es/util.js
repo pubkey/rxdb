@@ -303,7 +303,8 @@ export function adapterObject(adapter) {
 
   if (typeof adapter === 'string') {
     adapterObj = {
-      adapter: adapter
+      adapter: adapter,
+      db: undefined
     };
   }
 
