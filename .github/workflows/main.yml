@@ -35,8 +35,10 @@ jobs:
       - name: test:typings
         run: npm run test:typings
 
-      - name: npm run test:performance
-        run: npm run test:performance
+      - name: npm run test:performance:pouchdb
+        run: npm run test:performance:pouchdb
+      - name: npm run test:performance:lokijs
+        run: npm run test:performance:lokijs
 
 
   # run these in a separate job to speed up the CI

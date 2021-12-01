@@ -15,13 +15,17 @@ import {
     addRxPlugin,
     randomCouchString,
     dbCount,
-    RxDatabase
+    RxDatabase,
+    RxStorage
 } from '../plugins/core';
 import {
-    addPouchPlugin, getRxStoragePouch
+    addPouchPlugin,
+    getRxStoragePouch
 } from '../plugins/pouchdb';
+import {
+    getRxStorageLoki
+} from '../plugins/lokijs';
 
-addPouchPlugin(require('pouchdb-adapter-memory'));
 import { RxDBNoValidatePlugin } from '../plugins/no-validate';
 addRxPlugin(RxDBNoValidatePlugin);
 import { RxDBKeyCompressionPlugin } from '../plugins/key-compression';
@@ -29,6 +33,34 @@ addRxPlugin(RxDBKeyCompressionPlugin);
 import { RxDBMigrationPlugin } from '../plugins/migration';
 addRxPlugin(RxDBMigrationPlugin);
 
+declare type Storage = {
+    readonly getStorage: () => RxStorage<any, any>;
+    readonly hasAttachments: boolean;
+}
+
+const STORAGE_KEY = process.env.STORAGE as any;
+let STORAGE: Storage;
+switch (STORAGE_KEY) {
+    case 'pouchdb':
+        STORAGE = {
+            getStorage() {
+                addPouchPlugin(require('pouchdb-adapter-memory'));
+                return getRxStoragePouch('memory');
+            },
+            hasAttachments: true
+        }
+        break;
+    case 'lokijs':
+        STORAGE = {
+            getStorage() {
+                return getRxStorageLoki();
+            },
+            hasAttachments: true
+        }
+        break;
+    default:
+        throw new Error('could not use STORAGE_KEY ' + STORAGE_KEY)
+}
 
 const elapsedTime = (before: any) => {
     try {
@@ -125,7 +157,7 @@ for (let r = 0; r < runs; r++) {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
                     eventReduce: true,
-                    storage: getRxStoragePouch('memory')
+                    storage: STORAGE.getStorage()
                 });
                 dbs.push(db);
 
@@ -152,7 +184,7 @@ for (let r = 0; r < runs; r++) {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
                 eventReduce: true,
-                storage: getRxStoragePouch('memory')
+                storage: STORAGE.getStorage()
             });
             const cols = await db.addCollections({
                 human: {
@@ -193,7 +225,7 @@ for (let r = 0; r < runs; r++) {
             const db = await createRxDatabase({
                 name: dbName,
                 eventReduce: true,
-                storage: getRxStoragePouch('memory')
+                storage: STORAGE.getStorage()
             });
             const cols = await db.addCollections({
                 human: {
@@ -213,7 +245,7 @@ for (let r = 0; r < runs; r++) {
 
             const db2 = await createRxDatabase({
                 name: dbName,
-                storage: getRxStoragePouch('memory'),
+                storage: STORAGE.getStorage(),
                 eventReduce: true,
                 ignoreDuplicate: true
             });
@@ -243,7 +275,7 @@ for (let r = 0; r < runs; r++) {
             const db = await createRxDatabase({
                 name,
                 eventReduce: true,
-                storage: getRxStoragePouch('memory')
+                storage: STORAGE.getStorage()
             });
             const cols = await db.addCollections({
                 human: {
@@ -263,7 +295,7 @@ for (let r = 0; r < runs; r++) {
             const db2 = await createRxDatabase({
                 name,
                 eventReduce: true,
-                storage: getRxStoragePouch('memory'),
+                storage: STORAGE.getStorage(),
                 ignoreDuplicate: true
             });
             const newSchema = schemas.averageSchema();
@@ -298,7 +330,7 @@ for (let r = 0; r < runs; r++) {
             const db = await createRxDatabase({
                 name,
                 eventReduce: true,
-                storage: getRxStoragePouch('memory')
+                storage: STORAGE.getStorage()
             });
             const cols = await db.addCollections({
                 human: {
