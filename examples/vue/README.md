@@ -6,9 +6,9 @@ For easier mapping of observables, [vue-rx](https://github.com/vuejs/vue-rx) is 
 # Try it out
 1. clone the whole [RxDB-repo](https://github.com/pubkey/rxdb)
 2. go into project `cd rxdb`
-3. run `npm install`
+3. run `npm install && npm run build`
 4. go to this folder `cd examples/vue`
-5. run `npm install`
+5. run `npm run preinstall && npm install`
 6. run `npm start`
 7. Open [http://127.0.0.1:8080/](http://127.0.0.1:8080/) **IMPORTANT: do not use localhost**
 
