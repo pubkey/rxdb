@@ -221,7 +221,7 @@
     "rxjs": "7.4.0",
     "shelljs": "0.8.4",
     "source-map-support": "0.5.21",
-    "subscriptions-transport-ws": "0.9.19",
+    "subscriptions-transport-ws": "0.11.0",
     "terser": "5.9.0",
     "terser-webpack-plugin": "5.2.5",
     "ts-node": "10.2.1",
