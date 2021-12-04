@@ -2,6 +2,8 @@
 
 ### X.X.X
 
+Bugfixes:
+  - Do not throw an error when database is destroyed while a GraphQL replication is running.
 
 ### 10.5.4 (30 November 2021)
 

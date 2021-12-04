@@ -184,6 +184,10 @@ export class RxGraphQLReplicationState<RxDocType> {
      * returns true if retry must be done
      */
     async _run(retryOnFail = true): Promise<boolean> {
+        if (this.isStopped()) {
+            return false;
+        }
+
         this._runCount++;
 
         /**
@@ -228,7 +232,7 @@ export class RxGraphQLReplicationState<RxDocType> {
      */
     async runPull(): Promise<boolean> {
         if (this.isStopped()) {
-            return PROMISE_RESOLVE_FALSE;
+            return false;
         }
 
         const latestDocument = await getLastPullDocument(this.collection, this.endpointHash);
@@ -321,6 +325,10 @@ export class RxGraphQLReplicationState<RxDocType> {
      * @return true if successfull, false if not
      */
     async runPush(): Promise<boolean> {
+        if (this.isStopped()) {
+            return false;
+        }
+
         const changesResult = await getChangesSinceLastPushSequence<RxDocType>(
             this.collection,
             this.endpointHash,
