@@ -103,7 +103,7 @@ export interface RxStorageInstanceBase<Internals, InstanceCreationOptions> {
 }
 
 /**
- * A StorateInstance that is only capable of saving key-object relations,
+ * A StorageInstance that is only capable of saving key-object relations,
  * cannot be queried and has no schema.
  * In the past we saved normal and local documents into the same instance of pouchdb.
  * This was bad because it means that on migration or deletion, we always
