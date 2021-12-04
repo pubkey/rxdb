@@ -37,9 +37,9 @@ jobs:
 
       - name: npm run test:performance:pouchdb
         run: npm run test:performance:pouchdb
-      # TODO enable
-      #- name: npm run test:performance:lokijs
-      #  run: npm run test:performance:lokijs
+
+      - name: npm run test:performance:lokijs
+        run: npm run test:performance:lokijs
 
 
   # run these in a separate job to speed up the CI

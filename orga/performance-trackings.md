@@ -676,3 +676,70 @@ AFTER STEP 1:
     "amount": 1000,
     "total": 7828.624684
   },
+
+
+## improve subscribe emit time with lokijs
+
+BEFORE:
+
+{
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 0,
+    "perInstance": 0
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 8082.367692,
+    "perBlock": 4.041183846
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 0,
+    "perDocument": 0
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 1079.906038
+  },
+  "writeWhileSubscribe": {
+    "amount": 1000,
+    "total": 2464.082083
+  }
+}
+
+
+
+
+###
+
+{
+  "storage": "lokijs",
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 7484.257725,
+    "perInstance": 7.484257725
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 7210.454849,
+    "perBlock": 3.6052274244999998
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 362.96669,
+    "perDocument": 0.036296669000000004
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 1187.796861
+  },
+  "writeWhileSubscribe": {
+    "amount": 1000,
+    "total": 2744.249165
+  }
+}

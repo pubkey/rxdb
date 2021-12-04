@@ -18,9 +18,7 @@ import {
     clone,
     overwriteGetterForCaching,
     now,
-    promiseWait,
-    PROMISE_RESOLVE_FALSE,
-    flatClone
+    PROMISE_RESOLVE_FALSE
 } from './util';
 import {
     newRxError,

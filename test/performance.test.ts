@@ -5,6 +5,7 @@ import AsyncTestUtil from 'async-test-util';
 import { clearNodeFolder } from 'broadcast-channel';
 import convertHrtime from 'convert-hrtime';
 import * as schemas from './helper/schemas';
+import * as path from 'path';
 import * as schemaObjects from './helper/schema-objects';
 import { mergeMap } from 'rxjs/operators';
 
@@ -35,6 +36,7 @@ addRxPlugin(RxDBMigrationPlugin);
 
 declare type Storage = {
     readonly getStorage: () => RxStorage<any, any>;
+    readonly getPersistendStorage: () => RxStorage<any, any>;
     readonly hasAttachments: boolean;
 }
 
@@ -47,6 +49,10 @@ switch (STORAGE_KEY) {
                 addPouchPlugin(require('pouchdb-adapter-memory'));
                 return getRxStoragePouch('memory');
             },
+            getPersistendStorage() {
+                addPouchPlugin(require('pouchdb-adapter-leveldb'));
+                return getRxStoragePouch('leveldb');
+            },
             hasAttachments: true
         }
         break;
@@ -54,6 +60,13 @@ switch (STORAGE_KEY) {
         STORAGE = {
             getStorage() {
                 return getRxStorageLoki();
+            },
+            getPersistendStorage() {
+                const lfsa = require('lokijs/src/loki-fs-structured-adapter.js');
+                const adapter = new lfsa();
+                return getRxStorageLoki({
+                    adapter
+                });
             },
             hasAttachments: true
         }
@@ -91,6 +104,7 @@ async function afterTest() {
 
 // each test can take about 10seconds
 const benchmark: any = {
+    storage: STORAGE_KEY,
     spawnDatabases: {
         amount: 1000,
         collections: 5,
@@ -135,18 +149,19 @@ const ormMethods = {
 const runs = 1;
 const waitTimeBetween = 1000;
 
+async function clearStuff() {
+    await clearNodeFolder();
+    await global.gc();
+}
+
 for (let r = 0; r < runs; r++) {
 
     describe('performance.test.js', function () {
         this.timeout(90 * 1000);
-        it('clear broadcast-channel tmp-folder', async () => {
-            await clearNodeFolder();
-        });
-        it('ensure garbage collector can be used', async () => {
-            await global.gc();
-        });
-        it('wait a bit for jit', async () => {
-            await AsyncTestUtil.wait(2000);
+        this.beforeEach(async () => {
+            clearStuff();
+            // wait a bit for jit
+            await AsyncTestUtil.wait(500);
         });
         it('spawnDatabases', async () => {
             // create databases with some collections each
@@ -157,6 +172,14 @@ for (let r = 0; r < runs; r++) {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
                     eventReduce: true,
+                    /**
+                     * A RxStorage implementation (like LokiJS)
+                     * might need a full leader election cycle to be useable.
+                     * So we disable multiInstance here because it would make no sense
+                     * to measure the leader election time instead of the database
+                     * creation time.
+                     */
+                    multiInstance: false,
                     storage: STORAGE.getStorage()
                 });
                 dbs.push(db);
@@ -180,10 +203,15 @@ for (let r = 0; r < runs; r++) {
             await Promise.all(dbs.map(db => db.destroy()));
             await afterTest();
         });
+        it('clear stuff', async () => {
+            await clearStuff();
+        });
+
         it('insertDocuments', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
                 eventReduce: true,
+                multiInstance: false,
                 storage: STORAGE.getStorage()
             });
             const cols = await db.addCollections({
@@ -220,12 +248,20 @@ for (let r = 0; r < runs; r++) {
         });
 
         it('findDocuments', async () => {
-            const dbName = randomCouchString(10);
+            const dbName = path.join(
+                __dirname,
+                '../',
+                'test_tmp',
+                randomCouchString(10)
+            );
+
             const schema = schemas.averageSchema();
+
             const db = await createRxDatabase({
                 name: dbName,
                 eventReduce: true,
-                storage: STORAGE.getStorage()
+                multiInstance: true,
+                storage: STORAGE.getPersistendStorage()
             });
             const cols = await db.addCollections({
                 human: {
@@ -235,20 +271,21 @@ for (let r = 0; r < runs; r++) {
             });
             const col = cols.human;
 
-            await Promise.all(
+            await col.bulkInsert(
                 new Array(benchmark.findDocuments.amount)
                     .fill(0)
                     .map(() => schemaObjects.averageSchema())
-                    .map(data => col.insert(data))
             );
             await db.destroy();
 
             const db2 = await createRxDatabase({
                 name: dbName,
-                storage: STORAGE.getStorage(),
+                storage: STORAGE.getPersistendStorage(),
                 eventReduce: true,
+                multiInstance: true,
                 ignoreDuplicate: true
             });
+
             const cols2 = await db2.addCollections({
                 human: {
                     schema,
