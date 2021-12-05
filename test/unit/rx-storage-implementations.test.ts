@@ -351,7 +351,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     ]
                 };
 
-                const comparator = storageInstance.getSortComparator(
+                const comparator = config.storage.getStorage().getSortComparator(
+                    storageInstance.schema,
                     query
                 );
 
@@ -391,7 +392,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     ]
                 };
 
-                const comparator = storageInstance.getSortComparator(
+                const comparator = config.storage.getStorage().getSortComparator(
+                    storageInstance.schema,
                     query
                 );
 
@@ -444,7 +446,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     ]
                 };
 
-                const comparator = storageInstance.getSortComparator(
+                const comparator = config.storage.getStorage().getSortComparator(
+                    storageInstance.schema,
                     query
                 );
 
@@ -489,7 +492,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 };
 
 
-                const queryMatcher = storageInstance.getQueryMatcher(
+                const queryMatcher = config.storage.getStorage().getQueryMatcher(
+                    storageInstance.schema,
                     query
                 );
 
@@ -530,10 +534,12 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }]
                 );
 
-
-                const preparedQuery = storageInstance.prepareQuery({
-                    selector: {}
-                });
+                const preparedQuery = config.storage.getStorage().prepareQuery(
+                    storageInstance.schema,
+                    {
+                        selector: {}
+                    }
+                );
                 const allDocs = await storageInstance.query(preparedQuery);
                 const first = allDocs.documents[0];
                 assert.ok(first);
@@ -565,13 +571,16 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     },
                 ]);
 
-                const preparedQuery = storageInstance.prepareQuery({
-                    selector: {
-                        value: {
-                            $eq: value
+                const preparedQuery = config.storage.getStorage().prepareQuery(
+                    storageInstance.schema,
+                    {
+                        selector: {
+                            value: {
+                                $eq: value
+                            }
                         }
                     }
-                });
+                );
 
                 const allDocs = await storageInstance.query(preparedQuery);
                 assert.strictEqual(allDocs.documents.length, 2);
@@ -601,12 +610,15 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     },
                 ]);
 
-                const preparedQuery = storageInstance.prepareQuery({
-                    selector: {},
-                    sort: [
-                        { value: 'desc' }
-                    ]
-                });
+                const preparedQuery = config.storage.getStorage().prepareQuery(
+                    storageInstance.schema,
+                    {
+                        selector: {},
+                        sort: [
+                            { value: 'desc' }
+                        ]
+                    }
+                );
                 const allDocs = await storageInstance.query(preparedQuery);
 
                 assert.strictEqual(allDocs.documents[0].value, 'c');
@@ -684,9 +696,15 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const docs = Array.from(writeResponse.success.values());
 
                 async function testQuery(query: MangoQuery<RandomDoc>): Promise<void> {
-                    const preparedQuery = storageInstance.prepareQuery(query);
+                    const preparedQuery = config.storage.getStorage().prepareQuery(
+                        storageInstance.schema,
+                        query
+                    );
                     const docsViaQuery = (await storageInstance.query(preparedQuery)).documents;
-                    const sortComparator = storageInstance.getSortComparator(preparedQuery);
+                    const sortComparator = config.storage.getStorage().getSortComparator(
+                        storageInstance.schema,
+                        preparedQuery
+                    );
                     const docsViaSort = docs.sort(sortComparator);
                     assert.deepStrictEqual(docsViaQuery, docsViaSort);
                 }
@@ -1215,9 +1233,12 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const emitted: RxStorageChangeEvent<RxDocumentData<TestDocType>>[] = [];
                 const sub = storageInstance.changeStream().subscribe(cE => emitted.push(cE));
 
-                const preparedQuery = storageInstance.prepareQuery({
-                    selector: {}
-                });
+                const preparedQuery = config.storage.getStorage().prepareQuery(
+                    storageInstance.schema,
+                    {
+                        selector: {}
+                    }
+                );
 
                 // insert
                 await storageInstance.bulkWrite([{
@@ -1353,9 +1374,12 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 assert.strictEqual(writeResult._attachments.foo.digest, attachmentHash);
 
                 const queryResult = await storageInstance.query(
-                    storageInstance.prepareQuery({
-                        selector: {}
-                    })
+                    config.storage.getStorage().prepareQuery(
+                        storageInstance.schema,
+                        {
+                            selector: {}
+                        }
+                    )
                 );
                 assert.strictEqual(queryResult.documents[0]._attachments.foo.type, 'text/plain');
                 assert.strictEqual(queryResult.documents[0]._attachments.foo.length, attachmentData.length);
@@ -1907,10 +1931,14 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 });
 
                 // find via query
-                const preparedQuery: PreparedQuery<TestDocType> = instances.b.prepareQuery({
-                    selector: {},
-                    limit: 1
-                });
+                const preparedQuery: PreparedQuery<TestDocType> = config.storage.getStorage().prepareQuery(
+                    instances.b.schema,
+                    {
+                        selector: {},
+                        limit: 1
+                    }
+                );
+
                 const foundViaQuery = await instances.b.query(preparedQuery);
                 assert.strictEqual(foundViaQuery.documents.length, 1);
                 const foundViaQueryDoc = foundViaQuery.documents.find(doc => doc.key === writeData.key);

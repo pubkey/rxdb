@@ -348,7 +348,10 @@ config.parallel('data-migration.test.js', () => {
                             );
                     }
 
-                    const amount = await countAllUndeleted(old.storageInstance);
+                    const amount = await countAllUndeleted(
+                        old.database.storage,
+                        old.storageInstance
+                    );
                     assert.strictEqual(amount, 10);
 
                     const pouchLocation = old.storageInstance.internals.pouch.name;

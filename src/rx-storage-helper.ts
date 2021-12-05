@@ -13,6 +13,7 @@ import type {
     RxDatabase,
     RxDocumentData,
     RxLocalDocumentData,
+    RxStorage,
     RxStorageChangeEvent,
     RxStorageInstance,
     RxStorageKeyObjectInstance
@@ -25,10 +26,12 @@ export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
  * TODO this is pouchdb specific should not be needed
  */
 export async function getAllDocuments<RxDocType>(
+    storage: RxStorage<any, any>,
     storageInstance: RxStorageInstance<RxDocType, any, any>
 ): Promise<RxDocumentData<RxDocType>[]> {
 
-    const getAllQueryPrepared = storageInstance.prepareQuery(
+    const getAllQueryPrepared = storage.prepareQuery(
+        storageInstance.schema,
         {
             selector: {}
         }
@@ -56,9 +59,11 @@ export async function getSingleDocument<RxDocType>(
  * get the number of all undeleted documents
  */
 export async function countAllUndeleted<DocType>(
+    storage: RxStorage<any, any>,
     storageInstance: RxStorageInstance<DocType, any, any>
 ): Promise<number> {
     const docs = await getAllDocuments(
+        storage,
         storageInstance
     );
     return docs.length;
@@ -68,6 +73,7 @@ export async function countAllUndeleted<DocType>(
  * get a batch of documents from the storage-instance
  */
 export async function getBatch<DocType>(
+    storage: RxStorage<any, any>,
     storageInstance: RxStorageInstance<DocType, any, any>,
     limit: number
 ): Promise<any[]> {
@@ -77,7 +83,8 @@ export async function getBatch<DocType>(
         });
     }
 
-    const preparedQuery = storageInstance.prepareQuery(
+    const preparedQuery = storage.prepareQuery(
+        storageInstance.schema,
         {
             selector: {},
             limit

@@ -282,7 +282,8 @@ export class RxQueryBase<
         return overwriteGetterForCaching(
             this,
             'queryMatcher',
-            this.collection.storageInstance.getQueryMatcher(
+            this.collection.database.storage.getQueryMatcher(
+                this.collection.storageInstance.schema,
                 this.getPreparedQuery()
             )
         );
@@ -315,8 +316,8 @@ export class RxQueryBase<
             mangoQuery: clone(this.mangoQuery)
         };
         runPluginHooks('prePrepareQuery', hookInput);
-
-        const value = this.collection.storageInstance.prepareQuery(
+        const value = this.collection.database.storage.prepareQuery(
+            this.collection.storageInstance.schema,
             hookInput.mangoQuery
         );
         this.getPreparedQuery = () => value;

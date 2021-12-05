@@ -61,6 +61,50 @@ export interface RxStorage<Internals, InstanceCreationOptions> {
     hash(data: Buffer | Blob | string): Promise<string>;
 
     /**
+     * PouchDB and others have some bugs
+     * and behaviors that must be worked arround
+     * before querying the db.
+     * For performance reason this preparation
+     * runs in a single step so it can be cached
+     * when the query is used multiple times.
+     * 
+     * If your custom storage engine is capable of running
+     * all valid mango queries properly, just return the
+     * mutateableQuery here.
+     * 
+     *
+     * @returns a format of the query that can be used with the storage
+     */
+    prepareQuery<DocumentData>(
+        schema: RxJsonSchema<DocumentData>,
+        /**
+         * a query that can be mutated by the function without side effects.
+         */
+        mutateableQuery: MangoQuery<DocumentData>
+    ): PreparedQuery<DocumentData>;
+
+    /**
+     * Returns the sort-comparator,
+     * which is able to sort documents in the same way
+     * a query over the db would do.
+     */
+     getSortComparator<DocumentData>(
+        schema: RxJsonSchema<DocumentData>,
+        query: MangoQuery<DocumentData>
+    ): DeterministicSortComparator<DocumentData>;
+
+    /**
+     * Returns a function
+     * that can be used to check if a document
+     * matches the query.
+     *  
+     */
+    getQueryMatcher<DocumentData>(
+        schema: RxJsonSchema<DocumentData>,
+        query: MangoQuery<DocumentData>
+    ): QueryMatcher<RxDocumentWriteData<DocumentData>>;    
+
+    /**
      * creates a storage instance
      * that can contain the internal database
      * For example the PouchDB instance
@@ -163,47 +207,6 @@ export interface RxStorageInstance<
 
     readonly schema: Readonly<RxJsonSchema<DocumentData>>;
     readonly collectionName: string;
-
-    /**
-     * pouchdb and others have some bugs
-     * and behaviors that must be worked arround
-     * before querying the db.
-     * For performance reason this preparation
-     * runs in a single step so it can be cached
-     * when the query is used multiple times.
-     * 
-     * If your custom storage engine is capable of running
-     * all valid mango queries properly, just return the
-     * mutateableQuery here.
-     * 
-     *
-     * @returns a format of the query than can be used with the storage
-     */
-    prepareQuery(
-        /**
-         * a query that can be mutated by the function without side effects.
-         */
-        mutateableQuery: MangoQuery<DocumentData>
-    ): PreparedQuery<DocumentData>;
-
-    /**
-     * Returns the sort-comparator,
-     * which is able to sort documents in the same way
-     * a query over the db would do.
-     */
-    getSortComparator(
-        query: MangoQuery<DocumentData>
-    ): DeterministicSortComparator<DocumentData>;
-
-    /**
-     * Returns a function
-     * that can be used to check if a document
-     * matches the query.
-     *  
-     */
-    getQueryMatcher(
-        query: MangoQuery<DocumentData>
-    ): QueryMatcher<RxDocumentWriteData<DocumentData>>;
 
     /**
      * Writes multiple non-local documents to the storage instance.

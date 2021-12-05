@@ -136,7 +136,7 @@ export class RxDatabaseBase<
      * do NEVER use this to change the schema of a collection
      */
     async dangerousRemoveCollectionInfo(): Promise<void> {
-        const allDocs = await getAllDocuments(this.internalStore);
+        const allDocs = await getAllDocuments(this.storage, this.internalStore);
         const writeData: BulkWriteRow<InternalStoreDocumentData>[] = allDocs.map(doc => {
             const deletedDoc = flatClone(doc);
             deletedDoc._deleted = true;
@@ -552,7 +552,7 @@ export async function _removeAllOfCollection(
     collectionName: string
 ): Promise<number[]> {
     const docs = await rxDatabase.lockedRun(
-        () => getAllDocuments(rxDatabase.internalStore)
+        () => getAllDocuments(rxDatabase.storage, rxDatabase.internalStore)
     );
     const relevantDocs = docs
         .filter((doc) => {
@@ -765,7 +765,7 @@ export async function removeRxDatabase(
         idleQueue
     );
 
-    const docs = await getAllDocuments(storageInstance.internalStore);
+    const docs = await getAllDocuments(storage, storageInstance.internalStore);
     await Promise.all(
         docs
             .map(async (colDoc) => {

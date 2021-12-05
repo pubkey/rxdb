@@ -127,7 +127,10 @@ export class DataMigrator {
                     this.nonMigratedOldCollections = ret;
                     this.allOldCollections = this.nonMigratedOldCollections.slice(0);
                     const countAll: Promise<number[]> = Promise.all(
-                        this.nonMigratedOldCollections.map(oldCol => countAllUndeleted(oldCol.storageInstance))
+                        this.nonMigratedOldCollections.map(oldCol => countAllUndeleted(
+                            this.database.storage,
+                            oldCol.storageInstance
+                            ))
                     );
                     return countAll;
                 })
@@ -327,6 +330,7 @@ export function getBatchOfOldCollection(
     batchSize: number
 ): Promise<any[]> {
     return getBatch(
+        oldCollection.database.storage,
         oldCollection.storageInstance,
         batchSize
     )

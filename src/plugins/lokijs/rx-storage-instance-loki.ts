@@ -1,9 +1,6 @@
 import type {
-    DeterministicSortComparator,
-    QueryMatcher,
     ChangeEvent
 } from 'event-reduce-js';
-import lokijs from 'lokijs';
 import {
     Subject,
     Observable
@@ -17,8 +14,7 @@ import {
     flatClone,
     now,
     ensureNotFalsy,
-    randomCouchString,
-    firstPropertyNameOfObject
+    randomCouchString
 } from '../../util';
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
@@ -35,15 +31,12 @@ import type {
     ChangeStreamOnceOptions,
     RxJsonSchema,
     MangoQuery,
-    MangoQuerySortPart,
-    MangoQuerySortDirection,
     LokiStorageInternals,
     RxStorageChangedDocumentMeta,
     RxStorageInstanceCreationParams,
     LokiRemoteRequestBroadcastMessage,
     LokiRemoteResponseBroadcastMessage,
     LokiDatabaseSettings,
-    RxDocumentWriteData,
     LokiLocalDatabaseState
 } from '../../types';
 import {
@@ -54,7 +47,8 @@ import {
     getLokiEventKey,
     OPEN_LOKIJS_STORAGE_INSTANCES,
     LOKIJS_COLLECTION_DEFAULT_OPTIONS,
-    stripLokiKey
+    stripLokiKey,
+    getLokiSortComparator
 } from './lokijs-helper';
 import type {
     Collection
@@ -258,113 +252,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             sequence: nextFeedSequence
         });
         this.lastChangefeedSequence = nextFeedSequence;
-    }
-
-    prepareQuery(mutateableQuery: MangoQuery<RxDocType>) {
-        if (Object.keys(mutateableQuery.selector).length > 0) {
-            mutateableQuery.selector = {
-                $and: [
-                    {
-                        _deleted: false
-                    },
-                    mutateableQuery.selector
-                ]
-            };
-        } else {
-            mutateableQuery.selector = {
-                _deleted: false
-            };
-        }
-
-        /**
-         * To ensure a deterministic sorting,
-         * we have to ensure the primary key is always part
-         * of the sort query.
-         */
-        if (!mutateableQuery.sort) {
-            mutateableQuery.sort = [{ [this.primaryPath]: 'asc' }] as any;
-        } else {
-            const isPrimaryInSort = mutateableQuery.sort
-                .find(p => firstPropertyNameOfObject(p) === this.primaryPath);
-            if (!isPrimaryInSort) {
-                mutateableQuery.sort.push({ [this.primaryPath]: 'asc' } as any);
-            }
-        }
-
-        return mutateableQuery;
-    }
-
-    getSortComparator(query: MangoQuery<RxDocType>): DeterministicSortComparator<RxDocType> {
-        // TODO if no sort is given, use sort by primary.
-        // This should be done inside of RxDB and not in the storage implementations.
-        const sortOptions: MangoQuerySortPart<RxDocType>[] = query.sort ? (query.sort as any) : [{
-            [this.primaryPath]: 'asc'
-        }];
-        const fun: DeterministicSortComparator<RxDocType> = (a: RxDocType, b: RxDocType) => {
-            let compareResult: number = 0; // 1 | -1
-            sortOptions.find(sortPart => {
-                const fieldName: string = Object.keys(sortPart)[0];
-                const direction: MangoQuerySortDirection = Object.values(sortPart)[0];
-                const directionMultiplier = direction === 'asc' ? 1 : -1;
-                const valueA: any = (a as any)[fieldName];
-                const valueB: any = (b as any)[fieldName];
-                if (valueA === valueB) {
-                    return false;
-                } else {
-                    if (valueA > valueB) {
-                        compareResult = 1 * directionMultiplier;
-                        return true;
-                    } else {
-                        compareResult = -1 * directionMultiplier;
-                        return true;
-                    }
-                }
-            });
-
-            /**
-             * Two different objects should never have the same sort position.
-             * We ensure this by having the unique primaryKey in the sort params
-             * at this.prepareQuery()
-             */
-            if (!compareResult) {
-                throw newRxError('SNH', { args: { query, a, b } });
-            }
-
-            return compareResult as any;
-        }
-        return fun;
-    }
-
-    /**
-     * Returns a function that determines if a document matches a query selector.
-     * It is important to have the exact same logix as lokijs uses, to be sure
-     * that the event-reduce algorithm works correct.
-     * But LokisJS does not export such a function, the query logic is deep inside of
-     * the Resultset prototype.
-     * Because I am lazy, I do not copy paste and maintain that code.
-     * Instead we create a fake Resultset and apply the prototype method Resultset.prototype.find(),
-     * same with Collection.
-     */
-    getQueryMatcher(query: MangoQuery<RxDocType>): QueryMatcher<RxDocumentWriteData<RxDocType>> {
-        const fun: QueryMatcher<RxDocumentWriteData<RxDocType>> = (doc: RxDocumentWriteData<RxDocType>) => {
-            const docWithResetDeleted = flatClone(doc);
-            docWithResetDeleted._deleted = !!docWithResetDeleted._deleted;
-
-            const fakeCollection = {
-                data: [docWithResetDeleted],
-                binaryIndices: {}
-            };
-            Object.setPrototypeOf(fakeCollection, (lokijs as any).Collection.prototype);
-            const fakeResultSet: any = {
-                collection: fakeCollection
-            };
-            Object.setPrototypeOf(fakeResultSet, (lokijs as any).Resultset.prototype);
-            fakeResultSet.find(query.selector, true);
-
-            const ret = fakeResultSet.filteredrows.length > 0;
-            return ret;
-        }
-        return fun;
     }
 
     async bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>> {
@@ -653,7 +540,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             .find(preparedQuery.selector);
 
         if (preparedQuery.sort) {
-            query = query.sort(this.getSortComparator(preparedQuery));
+            query = query.sort(getLokiSortComparator(this.schema, preparedQuery));
         }
 
         /**

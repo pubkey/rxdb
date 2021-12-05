@@ -4,7 +4,11 @@ import lokijs, { Collection } from 'lokijs';
 import type {
     LokiDatabaseSettings,
     LokiDatabaseState,
-    LokiLocalDatabaseState
+    LokiLocalDatabaseState,
+    MangoQuery,
+    MangoQuerySortDirection,
+    MangoQuerySortPart,
+    RxJsonSchema
 } from '../../types';
 import {
     add as unloadAdd, AddReturn
@@ -12,6 +16,9 @@ import {
 import { flatClone } from '../../util';
 import { LokiSaveQueue } from './loki-save-queue';
 import type { IdleQueue } from 'custom-idle-queue';
+import type { DeterministicSortComparator } from 'event-reduce-js';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
+import { newRxError } from '../../rx-error';
 
 export const CHANGES_COLLECTION_SUFFIX = '-rxdb-changes';
 export const LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request';
@@ -175,4 +182,53 @@ export async function closeLokiCollections(
             });
         });
     }
+}
+
+/**
+ * This function is at lokijs-helper
+ * because we need it in multiple places.
+ */
+export function getLokiSortComparator<RxDocType>(
+    schema: RxJsonSchema<RxDocType>,
+    query: MangoQuery<RxDocType>
+): DeterministicSortComparator<RxDocType> {
+    const primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
+    // TODO if no sort is given, use sort by primary.
+    // This should be done inside of RxDB and not in the storage implementations.
+    const sortOptions: MangoQuerySortPart<RxDocType>[] = query.sort ? (query.sort as any) : [{
+        [primaryKey]: 'asc'
+    }];
+    const fun: DeterministicSortComparator<RxDocType> = (a: RxDocType, b: RxDocType) => {
+        let compareResult: number = 0; // 1 | -1
+        sortOptions.find(sortPart => {
+            const fieldName: string = Object.keys(sortPart)[0];
+            const direction: MangoQuerySortDirection = Object.values(sortPart)[0];
+            const directionMultiplier = direction === 'asc' ? 1 : -1;
+            const valueA: any = (a as any)[fieldName];
+            const valueB: any = (b as any)[fieldName];
+            if (valueA === valueB) {
+                return false;
+            } else {
+                if (valueA > valueB) {
+                    compareResult = 1 * directionMultiplier;
+                    return true;
+                } else {
+                    compareResult = -1 * directionMultiplier;
+                    return true;
+                }
+            }
+        });
+
+        /**
+         * Two different objects should never have the same sort position.
+         * We ensure this by having the unique primaryKey in the sort params
+         * at this.prepareQuery()
+         */
+        if (!compareResult) {
+            throw newRxError('SNH', { args: { query, a, b } });
+        }
+
+        return compareResult as any;
+    }
+    return fun;
 }
