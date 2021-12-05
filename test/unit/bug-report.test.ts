@@ -12,51 +12,40 @@ import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
 import config from './config';
 
-import {
-    createRxDatabase,
-    randomCouchString
-} from '../../plugins/core';
+import { createRxDatabase, randomCouchString } from '../../plugins/core';
 
-import {
-    getRxStoragePouch,
-} from '../../plugins/pouchdb';
-
+import { getRxStoragePouch } from '../../plugins/pouchdb';
 
 describe('bug-report.test.js', () => {
     it('should fail because it reproduces the bug', async () => {
-
-        /**
-         * If your test should only run in nodejs or only run in the browser,
-         * you should comment in the return operator and addapt the if statement.
-         */
-        if (
-            !config.platform.isNode() // runs only in node
-            // config.platform.isNode() // runs only in the browser
-        ) {
-            // return;
-        }
-
         // create a schema
         const mySchema = {
             version: 0,
-            primaryKey: 'passportId',
+            primaryKey: {
+                key: 'id',
+                fields: ['b_firstName', 'a_lastName'],
+                separator: '|',
+            },
             type: 'object',
             properties: {
+                id: {
+                    type: 'string',
+                },
                 passportId: {
-                    type: 'string'
+                    type: 'string',
                 },
-                firstName: {
-                    type: 'string'
+                b_firstName: {
+                    type: 'string',
                 },
-                lastName: {
-                    type: 'string'
+                a_lastName: {
+                    type: 'string',
                 },
                 age: {
                     type: 'integer',
                     minimum: 0,
-                    maximum: 150
-                }
-            }
+                    maximum: 150,
+                },
+            },
         };
 
         // generate a random database-name
@@ -67,44 +56,83 @@ describe('bug-report.test.js', () => {
             name,
             storage: getRxStoragePouch('memory'),
             eventReduce: true,
-            ignoreDuplicate: true
+            ignoreDuplicate: true,
         });
         // create a collection
         const collections = await db.addCollections({
             mycollection: {
-                schema: mySchema
-            }
+                schema: mySchema,
+            },
         });
 
         // insert a document
         await collections.mycollection.insert({
             passportId: 'foobar',
-            firstName: 'Bob',
-            lastName: 'Kelso',
-            age: 56
+            b_firstName: 'Bob',
+            a_lastName: 'Kelso',
+            age: 56,
         });
 
         /**
          * to simulate the event-propagation over multiple browser-tabs,
          * we create the same database again
          */
+
+        const mySchema1 = {
+            version: 1,
+            primaryKey: {
+                key: 'id',
+                fields: ['b_firstName', 'a_lastName'],
+                separator: '|',
+            },
+            type: 'object',
+            properties: {
+                hey: {
+                    type: 'string',
+                },
+                id: {
+                    type: 'string',
+                },
+                passportId: {
+                    type: 'string',
+                },
+                b_firstName: {
+                    type: 'string',
+                },
+                a_lastName: {
+                    type: 'string',
+                },
+                age: {
+                    type: 'integer',
+                    minimum: 0,
+                    maximum: 150,
+                },
+            },
+        };
+
         const dbInOtherTab = await createRxDatabase({
             name,
             storage: getRxStoragePouch('memory'),
             eventReduce: true,
-            ignoreDuplicate: true
+            ignoreDuplicate: true,
         });
         // create a collection
         const collectionInOtherTab = await dbInOtherTab.addCollections({
             mycollection: {
-                schema: mySchema
-            }
+                schema: mySchema1,
+                migrationStrategies: {
+                    1: (oldDoc) => {
+                        oldDoc.hey = 'hey';
+                        return oldDoc;
+                    },
+                },
+            },
         });
 
         // find the document in the other tab
         const myDocument = await collectionInOtherTab.mycollection
             .findOne()
-            .where('firstName')
+            .where('b_firstName')
             .eq('Bob')
             .exec();
 
@@ -112,13 +140,13 @@ describe('bug-report.test.js', () => {
          * assert things,
          * here your tests should fail to show that there is a bug
          */
-        assert.strictEqual(myDocument.age, 56);
+        assert.strictEqual(myDocument.hey, 'hey');
 
         // you can also wait for events
         const emitted = [];
         const sub = collectionInOtherTab.mycollection
-            .findOne().$
-            .subscribe(doc => emitted.push(doc));
+            .findOne()
+            .$.subscribe((doc) => emitted.push(doc));
         await AsyncTestUtil.waitUntil(() => emitted.length === 1);
 
         // clean up afterwards
