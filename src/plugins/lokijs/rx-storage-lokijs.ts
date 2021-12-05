@@ -1,5 +1,4 @@
-import { DeterministicSortComparator, QueryMatcher } from 'event-reduce-js';
-import { newRxError } from '../../rx-error';
+import type { DeterministicSortComparator, QueryMatcher } from 'event-reduce-js';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import lokijs from 'lokijs';
 import type {

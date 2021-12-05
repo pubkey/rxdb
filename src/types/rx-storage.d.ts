@@ -142,7 +142,6 @@ export type RxAttachmentData = {
     length: number;
 }
 
-
 export type RxLocalDocumentData<
     Data = {
         // local documents are schemaless and contain any data
@@ -249,18 +248,11 @@ export type RxStorageInstanceCreationParams<DocumentData, InstanceCreationOption
     schema: RxJsonSchema<DocumentData>;
     options: InstanceCreationOptions;
     /**
-     * The idle queue from the RxDatabase is passed,
-     * so that the storage instance is able to detect
-     * when the database is idle and background stuff
-     * like persistence, replication etc. can be done.
-     */
-    idleQueue: IdleQueue;
-    /**
      * The broadcastChannel is passed
      * to the storage instance,
      * so it can reuse the same leader elector
      * as the RxDatabase instance uses.
-     * Or send data between instnaces.
+     * Or send data between instances.
      * Is not given if multiInstance: false.
      */
     broadcastChannel?: BroadcastChannel;
@@ -270,13 +262,6 @@ export type RxKeyObjectStorageInstanceCreationParams<InstanceCreationOptions> = 
     databaseName: string;
     collectionName: string;
     options: InstanceCreationOptions;
-    /**
-     * The idle queue from the RxDatabase is passed,
-     * so that the storage instance is able to detect
-     * when the database is idle and background stuff
-     * like persistence, replication etc. can be done.
-     */
-    idleQueue: IdleQueue;
     /**
      * The broadcastChannel is passed
      * to the storage instance,

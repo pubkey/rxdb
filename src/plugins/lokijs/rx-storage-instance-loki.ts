@@ -83,7 +83,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         public readonly internals: LokiStorageInternals,
         public readonly options: Readonly<LokiSettings>,
         public readonly databaseSettings: LokiDatabaseSettings,
-        public readonly idleQueue: IdleQueue,
         public readonly broadcastChannel?: BroadcastChannel<LokiRemoteRequestBroadcastMessage | LokiRemoteResponseBroadcastMessage>
     ) {
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
@@ -180,7 +179,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 collectionName: this.collectionName,
                 options: this.options,
                 schema: this.schema,
-                idleQueue: this.idleQueue,
                 broadcastChannel: this.broadcastChannel
             }, this.databaseSettings);
             return this.getLocalState();
@@ -622,8 +620,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             const localState = await this.internals.localState;
             const dbState = await getLokiDatabase(
                 this.databaseName,
-                this.databaseSettings,
-                this.idleQueue
+                this.databaseSettings
             );
             await dbState.saveQueue.run();
             await closeLokiCollections(
@@ -656,8 +653,7 @@ export async function createLokiLocalState<RxDocType>(
 
     const databaseState = await getLokiDatabase(
         params.databaseName,
-        databaseSettings,
-        params.idleQueue
+        databaseSettings
     );
 
     /**
@@ -738,7 +734,6 @@ export async function createLokiStorageInstance<RxDocType>(
         internals,
         params.options,
         databaseSettings,
-        params.idleQueue,
         params.broadcastChannel
     );
 

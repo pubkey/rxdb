@@ -69,8 +69,7 @@ export const LOKIJS_COLLECTION_DEFAULT_OPTIONS: Partial<CollectionOptions<any>> 
 const LOKI_DATABASE_STATE_BY_NAME: Map<string, Promise<LokiDatabaseState>> = new Map();
 export function getLokiDatabase(
     databaseName: string,
-    databaseSettings: LokiDatabaseSettings,
-    rxDatabaseIdleQueue: IdleQueue
+    databaseSettings: LokiDatabaseSettings
 ): Promise<LokiDatabaseState> {
     let databaseState: Promise<LokiDatabaseState> | undefined = LOKI_DATABASE_STATE_BY_NAME.get(databaseName);
     if (!databaseState) {
@@ -108,10 +107,9 @@ export function getLokiDatabase(
                 databaseName + '.db',
                 flatClone(useSettings)
             );
-            const saveQueue = new LokiSaveQueue(
+            const lokiSaveQueue = new LokiSaveQueue(
                 database,
-                useSettings,
-                rxDatabaseIdleQueue
+                useSettings
             );
 
             /**
@@ -121,8 +119,8 @@ export function getLokiDatabase(
              * with each other and cause error logs.
              */
             if (hasPersistence) {
-                await saveQueue.runningSavesIdleQueue.wrapCall(
-                    () => new Promise<void>((res, rej) => {
+                lokiSaveQueue.saveQueue = lokiSaveQueue.saveQueue.then(() => {
+                    return new Promise<void>((res, rej) => {
                         database.loadDatabase({}, (err) => {
                             if (useSettings.autoloadCallback) {
                                 useSettings.autoloadCallback(err);
@@ -130,7 +128,7 @@ export function getLokiDatabase(
                             err ? rej(err) : res();
                         });
                     })
-                );
+                });
             }
 
             /**
@@ -139,14 +137,14 @@ export function getLokiDatabase(
             const unloads: AddReturn[] = [];
             if (hasPersistence) {
                 unloads.push(
-                    unloadAdd(() => saveQueue.run())
+                    unloadAdd(() => lokiSaveQueue.run())
                 );
             }
 
             const state: LokiDatabaseState = {
                 database,
                 databaseSettings: useSettings,
-                saveQueue,
+                saveQueue: lokiSaveQueue,
                 collections: {},
                 unloads
             };

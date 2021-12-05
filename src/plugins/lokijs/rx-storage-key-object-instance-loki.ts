@@ -58,7 +58,6 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
         public readonly internals: LokiStorageInternals,
         public readonly options: Readonly<LokiSettings>,
         public readonly databaseSettings: LokiDatabaseSettings,
-        public readonly idleQueue: IdleQueue,
         public readonly broadcastChannel?: BroadcastChannel<LokiRemoteRequestBroadcastMessage | LokiRemoteResponseBroadcastMessage>
     ) {
         OPEN_LOKIJS_STORAGE_INSTANCES.add(this);
@@ -377,8 +376,7 @@ export async function createLokiKeyValueLocalState(
     }
     const databaseState = await getLokiDatabase(
         params.databaseName,
-        databaseSettings,
-        params.idleQueue
+        databaseSettings
     );
 
     const collectionOptions: Partial<CollectionOptions<RxLocalDocumentData>> = Object.assign(
@@ -432,7 +430,6 @@ export async function createLokiKeyObjectStorageInstance(
         internals,
         params.options,
         databaseSettings,
-        params.idleQueue,
         params.broadcastChannel
     );
 

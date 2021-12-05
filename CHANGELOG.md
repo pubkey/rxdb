@@ -4,6 +4,7 @@
 
 Changes:
   - RxStorage: The non async functions `prepareQuery`, `getSortComparator` and `getQueryMatcher` have been moved out of `RxStorageInstance` into `RxStorage`. This was needed to have better WebWorker support. This will not affect you do not use a custom `RxStorage` implementation.
+  - LokiJS: Do not use the `IdleQueue` of the RxDatabase to handle calls to saveDatabase(), instead wait for CPU idleness of the JavaScript process.
 
 Bugfixes:
   - Do not throw an error when database is destroyed while a GraphQL replication is running.
