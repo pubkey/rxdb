@@ -158,8 +158,11 @@ for (let r = 0; r < runs; r++) {
 
     describe('performance.test.js', function () {
         this.timeout(90 * 1000);
+        it('clear stuff', async () => {
+            await clearStuff();
+        });
         this.beforeEach(async () => {
-            clearStuff();
+            await global.gc();
             // wait a bit for jit
             await AsyncTestUtil.wait(500);
         });
