@@ -44,6 +44,11 @@ import type {
  * A RxStorage is a module that acts
  * as a factory that can create multiple RxStorageInstance
  * objects.
+ * 
+ * All data inputs and outputs of a StorageInstance must be plain json objects.
+ * Do not use Map, Set or anything else that cannot be JSON.stringify-ed.
+ * This will ensure that the storage can exchange data
+ * when it is a WebWorker or a WASM process or data is send via BroadcastChannel.
  */
 export interface RxStorage<Internals, InstanceCreationOptions> {
     /**
@@ -88,7 +93,7 @@ export interface RxStorage<Internals, InstanceCreationOptions> {
      * which is able to sort documents in the same way
      * a query over the db would do.
      */
-     getSortComparator<DocumentData>(
+    getSortComparator<DocumentData>(
         schema: RxJsonSchema<DocumentData>,
         query: MangoQuery<DocumentData>
     ): DeterministicSortComparator<DocumentData>;
@@ -102,7 +107,7 @@ export interface RxStorage<Internals, InstanceCreationOptions> {
     getQueryMatcher<DocumentData>(
         schema: RxJsonSchema<DocumentData>,
         query: MangoQuery<DocumentData>
-    ): QueryMatcher<RxDocumentWriteData<DocumentData>>;    
+    ): QueryMatcher<RxDocumentWriteData<DocumentData>>;
 
     /**
      * creates a storage instance
@@ -186,7 +191,9 @@ export interface RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>
          * of the documents to find.
          */
         ids: string[]
-    ): Promise<Map<string, RxLocalDocumentData<D>>>;
+    ): Promise<{
+        [documentId: string]: RxLocalDocumentData<D>
+    }>;
 
     /**
      * Emits all changes to the local documents.
@@ -255,7 +262,9 @@ export interface RxStorageInstance<
          * If set to true, deleted documents will also be returned.
          */
         deleted: boolean
-    ): Promise<Map<string, RxDocumentData<DocumentData>>>;
+    ): Promise<{
+        [documentId: string]: RxDocumentData<DocumentData>
+    }>;
 
     /**
      * Runs a NoSQL 'mango' query over the storage

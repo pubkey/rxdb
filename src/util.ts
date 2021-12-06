@@ -342,8 +342,13 @@ export function flatClone<T>(obj: T | DeepReadonlyObject<T>): T {
  * @link https://stackoverflow.com/a/11509718/3443137
  */
 export function firstPropertyNameOfObject(obj: any): string {
-    return obj[Object.keys(obj)[0]];
+    return Object.keys(obj)[0];
 }
+export function firstPropertyValueOfObject<T>(obj: { [k: string]: T }): T {
+    const key = Object.keys(obj)[0];
+    return obj[key];
+}
+
 
 import isElectron from 'is-electron';
 export const isElectronRenderer = isElectron();
@@ -436,6 +441,17 @@ export function getFromMapOrThrow<K, V>(map: Map<K, V> | WeakMap<any, V>, key: K
     const val = map.get(key);
     if (!val) {
         throw new Error('missing value from map ' + key);
+    }
+    return val;
+}
+
+export function getFromObjectOrThrow<V>(
+    obj: { [k: string]: V },
+    key: string
+): V {
+    const val = obj[key];
+    if (!val) {
+        throw new Error('missing value from object ' + key);
     }
     return val;
 }

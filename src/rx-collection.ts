@@ -389,7 +389,7 @@ export class RxCollectionBase<
         );
 
         // create documents
-        const successEntries: [string, RxDocumentData<RxDocumentType>][] = Array.from(results.success.entries());
+        const successEntries: [string, RxDocumentData<RxDocumentType>][] = Object.entries(results.success);
         const rxDocuments: any[] = successEntries
             .map(([key, writtenDocData]) => {
                 const docData: RxDocumentData<RxDocumentType> = getFromMapOrThrow(docsMap, key) as any;
@@ -412,7 +412,7 @@ export class RxCollectionBase<
 
         return {
             success: rxDocuments,
-            error: Array.from(results.error.values())
+            error: Object.values(results.error)
         };
     }
 
@@ -463,7 +463,7 @@ export class RxCollectionBase<
             () => this.storageInstance.bulkWrite(removeDocs)
         );
 
-        const successIds: string[] = Array.from(results.success.keys());
+        const successIds: string[] = Object.keys(results.success);
 
         // run hooks
         await Promise.all(
@@ -483,7 +483,7 @@ export class RxCollectionBase<
 
         return {
             success: rxDocuments,
-            error: Array.from(results.error.values())
+            error: Object.values(results.error)
         };
     }
 
@@ -633,7 +633,7 @@ export class RxCollectionBase<
         // find everything which was not in docCache
         if (mustBeQueried.length > 0) {
             const docs = await this.storageInstance.findDocumentsById(mustBeQueried, false);
-            Array.from(docs.values()).forEach(docData => {
+            Object.values(docs).forEach(docData => {
                 docData = _handleFromStorageInstance(this, docData);
                 const doc = createRxDocument<RxDocumentType, OrmMethods>(this as any, docData);
                 ret.set(doc.primary, doc);
@@ -978,7 +978,7 @@ export function createRxCollection(
         collectionName: name,
         schema: schema.jsonSchema,
         options: instanceCreationOptions,
-        idleQueue: database.idleQueue
+        multiInstance: database.multiInstance
     };
 
     runPluginHooks(

@@ -394,8 +394,8 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         } as any);
 
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
-            success: new Map(),
-            error: new Map()
+            success: {},
+            error: {}
         };
 
         await Promise.all(
@@ -408,7 +408,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                         documentId: resultRow.id,
                         writeRow
                     };
-                    ret.error.set(resultRow.id, err);
+                    ret.error[resultRow.id] = err;
                 } else {
                     let pushObj: RxDocumentData<RxDocType> = flatClone(writeRow.document) as any;
                     pushObj = pouchSwapIdToPrimary(this.primaryPath, pushObj);
@@ -421,7 +421,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                     } else {
                         pushObj._attachments = await writeAttachmentsToAttachments(writeRow.document._attachments);
                     }
-                    ret.success.set(resultRow.id, pushObj);
+                    ret.success[resultRow.id] = pushObj;
                 }
             })
         );
@@ -456,7 +456,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         return attachmentData;
     }
 
-    async findDocumentsById(ids: string[], deleted: boolean): Promise<Map<string, RxDocumentData<RxDocType>>> {
+    async findDocumentsById(ids: string[], deleted: boolean): Promise<{ [documentId: string]: RxDocumentData<RxDocType> }> {
         /**
          * On deleted documents, pouchdb will only return the tombstone.
          * So we have to get the properties directly for each document
@@ -474,7 +474,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                 style: 'all_docs'
             });
 
-            const retDocs = new Map();
+            const retDocs: { [documentId: string]: RxDocumentData<RxDocType> } = {};
             await Promise.all(
                 viaChanges.results.map(async (result) => {
                     const firstDoc = await this.internals.pouch.get(
@@ -489,7 +489,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                         this.primaryPath,
                         firstDoc
                     );
-                    retDocs.set(result.id, useFirstDoc);
+                    retDocs[result.id] = useFirstDoc;
                 })
             );
             return retDocs;
@@ -501,7 +501,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             keys: ids
         });
 
-        const ret = new Map();
+        const ret: { [documentId: string]: RxDocumentData<RxDocType> } = {};
         pouchResult.rows
             .filter(row => !!row.doc)
             .forEach(row => {
@@ -510,7 +510,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                     this.primaryPath,
                     docData
                 );
-                ret.set(row.id, docData);
+                ret[row.id] = docData;
             });
 
         return ret;

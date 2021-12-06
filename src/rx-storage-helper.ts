@@ -13,11 +13,13 @@ import type {
     RxDatabase,
     RxDocumentData,
     RxLocalDocumentData,
+    RxLocalStorageBulkWriteResponse,
     RxStorage,
     RxStorageChangeEvent,
     RxStorageInstance,
     RxStorageKeyObjectInstance
 } from './types';
+import { firstPropertyNameOfObject, firstPropertyValueOfObject } from './util';
 
 export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
 
@@ -46,7 +48,7 @@ export async function getSingleDocument<RxDocType>(
     documentId: string
 ): Promise<RxDocumentData<RxDocType> | null> {
     const results = await storageInstance.findDocumentsById([documentId], false);
-    const doc = results.get(documentId);
+    const doc = results[documentId];
     if (doc) {
         return doc;
     } else {
@@ -106,11 +108,11 @@ export async function writeSingle<RxDocType>(
         [writeRow]
     );
 
-    if (writeResult.error.size > 0) {
-        const error = writeResult.error.values().next().value;
+    if (Object.keys(writeResult.error).length > 0) {
+        const error = firstPropertyValueOfObject(writeResult.error);
         throw error;
     } else {
-        const ret = writeResult.success.values().next().value;
+        const ret = firstPropertyValueOfObject(writeResult.success);
         return ret;
     }
 }
@@ -122,16 +124,16 @@ export async function writeSingle<RxDocType>(
 export async function writeSingleLocal<DocumentData>(
     instance: RxStorageKeyObjectInstance<any, any>,
     writeRow: BulkWriteLocalRow<DocumentData>
-): Promise<RxDocumentData<RxLocalDocumentData>> {
-    const writeResult = await instance.bulkWrite(
+): Promise<RxLocalDocumentData<RxLocalDocumentData>> {
+    const writeResult: RxLocalStorageBulkWriteResponse<DocumentData> = await instance.bulkWrite(
         [writeRow]
     );
 
-    if (writeResult.error.size > 0) {
-        const error = writeResult.error.values().next().value;
+    if (Object.keys(writeResult.error).length > 0) {
+        const error = firstPropertyValueOfObject(writeResult.error);
         throw error;
     } else {
-        const ret = writeResult.success.values().next().value;
+        const ret = firstPropertyValueOfObject(writeResult.success);
         return ret;
     }
 }
@@ -141,7 +143,7 @@ export async function findLocalDocument<DocType>(
     id: string
 ): Promise<RxDocumentData<RxLocalDocumentData<DocType>> | null> {
     const docList = await instance.findLocalDocumentsById([id]);
-    const doc = docList.get(id);
+    const doc = docList[id];
     if (!doc) {
         return null;
     } else {

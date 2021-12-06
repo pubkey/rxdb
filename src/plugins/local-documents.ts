@@ -13,7 +13,8 @@ import {
 } from '../rx-error';
 import {
     flatClone,
-    getFromMapOrThrow
+    getFromMapOrThrow,
+    getFromObjectOrThrow
 } from '../util';
 
 import type {
@@ -211,9 +212,9 @@ const RxLocalDocumentPrototype: any = {
             document: newData
         }])
             .then((res) => {
-                const docResult = res.success.get(newData._id);
+                const docResult = res.success[newData._id];
                 if (!docResult) {
-                    throw getFromMapOrThrow(res.error, newData._id);
+                    throw getFromObjectOrThrow(res.error, newData._id);
                 }
                 newData._rev = docResult._rev;
             });

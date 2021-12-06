@@ -25,7 +25,7 @@ import { waitUntil } from 'async-test-util';
 addRxPlugin(RxDBValidatePlugin);
 import * as path from 'path';
 import * as fs from 'fs';
-import { IdleQueue } from 'custom-idle-queue';
+import { LeaderElector } from 'broadcast-channel';
 
 /**
  * RxStoragePouch specific tests
@@ -43,18 +43,11 @@ config.parallel('rx-storage-lokijs.test.js', () => {
             const doc = await collection.findOne().exec(true);
             assert.ok(doc);
 
-            // should have the same broadcastChannel as the database
-            const databaseBc = collection.database.broadcastChannel;
             const storageInstance: RxStorageInstanceLoki<HumanDocumentType> = collection.storageInstance as any;
             const localStorageInstance: RxStorageKeyObjectInstanceLoki = collection.localDocumentsStore as any;
-            const storageBc = storageInstance.broadcastChannel;
-            assert.ok(databaseBc);
-            assert.ok(storageBc);
-            assert.ok(localStorageInstance.broadcastChannel);
 
-            assert.ok(databaseBc === storageBc);
-            assert.ok(databaseBc === localStorageInstance.broadcastChannel);
-            assert.ok(storageInstance.leaderElector);
+            assert.ok(localStorageInstance.internals.leaderElector);
+            assert.ok(storageInstance.internals.leaderElector);
 
             await collection.database.destroy();
         });
@@ -111,8 +104,9 @@ config.parallel('rx-storage-lokijs.test.js', () => {
         });
         it('should not have localState if not leader', async () => {
             const databaseName = randomCouchString(12);
+            const amount = 5;
             const cols = await Promise.all(
-                new Array(10).fill(0)
+                new Array(amount).fill(0)
                     .map(() => humansCollections.createMultiInstance(
                         databaseName,
                         0,
@@ -121,15 +115,29 @@ config.parallel('rx-storage-lokijs.test.js', () => {
                     ))
             );
             const getLeaders = () => {
-                return cols.filter(col => col.database.isLeader());
+                return cols.filter(col => {
+                    const storageInstance = col.storageInstance;
+                    const leaderElector: LeaderElector = storageInstance.internals.leaderElector;
+                    return leaderElector.isLeader;
+                });
             }
 
             // wait until one is leader
-            await waitUntil(() => getLeaders().length === 1);
+            await waitUntil(() => {
+                const leaderAmount = getLeaders().length;
+                console.log('leaderAmount: ' + leaderAmount);
+                if (leaderAmount > 1) {
+                    throw new Error('duplicate leaders detected');
+                } else if (leaderAmount === 1) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }, 50 * 1000, 200);
 
             // add some collections after leader is elected
             await Promise.all(
-                new Array(10).fill(0)
+                new Array(amount).fill(0)
                     .map(async () => {
                         const col = await humansCollections.createMultiInstance(
                             databaseName,
@@ -166,7 +174,7 @@ config.parallel('rx-storage-lokijs.test.js', () => {
              * have localState set in its storage instances.
              */
             cols.forEach(col => {
-                const mustHaveLocal = col.database.isLeader();
+                const mustHaveLocal = col.storageInstance.internals.leaderElector.isLeader;
                 assert.strictEqual(mustHaveLocal, !!col.database.internalStore.internals.localState);
                 assert.strictEqual(mustHaveLocal, !!col.database.localDocumentsStore.internals.localState);
                 assert.strictEqual(mustHaveLocal, !!col.storageInstance.internals.localState);
@@ -231,7 +239,7 @@ config.parallel('rx-storage-lokijs.test.js', () => {
                 collectionName: randomCouchString(12),
                 schema: getPseudoSchemaForVersion(0, 'key'),
                 options: {},
-                idleQueue: new IdleQueue()
+                multiInstance: false
             });
 
             const localState = await ensureNotFalsy(storageInstance.internals.localState);
@@ -269,7 +277,7 @@ config.parallel('rx-storage-lokijs.test.js', () => {
                 collectionName: randomCouchString(12),
                 schema: getPseudoSchemaForVersion(0, 'key'),
                 options: {},
-                idleQueue: new IdleQueue()
+                multiInstance: false
             });
 
             await storageInstance.bulkWrite([{ document: { key: 'foobar', _attachments: {} } }]);

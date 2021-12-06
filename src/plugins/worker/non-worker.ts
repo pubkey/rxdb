@@ -39,7 +39,7 @@ export class RxStorageWorker implements RxStorage<WorkerStorageInternals, any> {
         public readonly settings: RxStorageWorkerSettings,
         public readonly originalStorage: RxStorage<any, any>
     ) {
-        console.log('this.settings.workerInput: ' + this.settings.workerInput);
+        // console.log('this.settings.workerInput: ' + this.settings.workerInput);
         this.workerPromise = spawn<InWorkerStorage>(new Worker(this.settings.workerInput)) as any;
     }
 
@@ -127,7 +127,7 @@ export class RxStorageInstanceWorker<DocumentData> implements RxStorageInstance<
             documents
         );
     }
-    findDocumentsById(ids: string[], deleted: boolean): Promise<Map<string, RxDocumentData<DocumentData>>> {
+    findDocumentsById(ids: string[], deleted: boolean): Promise<{ [documentId: string]: RxDocumentData<DocumentData> }> {
         return this.internals.worker.findDocumentsById(
             this.internals.instanceId,
             ids,
@@ -189,7 +189,7 @@ export class RxStorageKeyObjectInstanceWorker implements RxStorageKeyObjectInsta
     }
     findLocalDocumentsById<DocumentData>(
         ids: string[]
-    ): Promise<Map<string, RxLocalDocumentData<DocumentData>>> {
+    ): Promise<{ [documentId: string]: RxLocalDocumentData<DocumentData> }> {
         return this.internals.worker.findLocalDocumentsById(
             this.internals.instanceId,
             ids

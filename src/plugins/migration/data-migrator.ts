@@ -43,7 +43,8 @@ import type {
     OldRxCollection,
     WithAttachmentsData,
     RxJsonSchema,
-    RxDocumentData
+    RxDocumentData,
+    RxStorageInstanceCreationParams
 } from '../../types';
 import {
     RxSchema,
@@ -226,12 +227,12 @@ export async function createOldCollection(
     const database = dataMigrator.newestCollection.database;
     const schema = createRxSchema(schemaObj, false);
 
-    const storageInstanceCreationParams = {
+    const storageInstanceCreationParams: RxStorageInstanceCreationParams<any, any> = {
         databaseName: database.name,
         collectionName: dataMigrator.newestCollection.name,
         schema: schemaObj,
-        idleQueue: new IdleQueue(),
-        options: dataMigrator.newestCollection.instanceCreationOptions
+        options: dataMigrator.newestCollection.instanceCreationOptions,
+        multiInstance: database.multiInstance
     };
     runPluginHooks(
         'preCreateRxStorageInstance',

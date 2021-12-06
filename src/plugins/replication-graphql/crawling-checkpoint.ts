@@ -162,7 +162,8 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
         );
 
         const docs: Map<string, RxDocumentData<RxDocType>> = new Map();
-        Array.from(plainDocs.entries()).map(([docId, docData]) => {
+
+        Object.entries(plainDocs).forEach(([docId, docData]) => {
             const hookParams = {
                 collection,
                 doc: docData
@@ -170,7 +171,6 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
             runPluginHooks('postReadFromInstance', hookParams);
             docs.set(docId, hookParams.doc);
         });
-
 
         changesResults.changedDocuments.forEach((row) => {
             const id = row.id;

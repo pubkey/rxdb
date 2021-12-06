@@ -2619,7 +2619,6 @@ describe('replication-graphql.test.js', () => {
                 await setLastPullDocument(c, endpointHash, docData);
                 await c.database.remove();
 
-
                 // recreate the same collection again
                 const c2 = await humansCollection.createHumanWithTimestamp(1, dbName);
                 // there should be no pull document now

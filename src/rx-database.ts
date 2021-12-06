@@ -211,7 +211,7 @@ export class RxDatabaseBase<
         );
 
         const internalDocByCollectionName: any = {};
-        Array.from(collectionDocs.entries()).forEach(([key, doc]) => {
+        Object.entries(collectionDocs).forEach(([key, doc]) => {
             internalDocByCollectionName[key] = doc;
         });
 
@@ -328,9 +328,9 @@ export class RxDatabaseBase<
                                 {
                                     databaseName: this.name,
                                     collectionName,
-                                    idleQueue: this.idleQueue,
                                     schema: getPseudoSchemaForVersion<InternalStoreDocumentData>(v, 'collectionName'),
-                                    options: this.instanceCreationOptions
+                                    options: this.instanceCreationOptions,
+                                    multiInstance: this.multiInstance
                                 },
                                 {}
                             );
@@ -614,8 +614,7 @@ async function createRxDatabaseStorageInstances<Internals, InstanceCreationOptio
     storage: RxStorage<Internals, InstanceCreationOptions>,
     databaseName: string,
     options: InstanceCreationOptions,
-    idleQueue: IdleQueue,
-    broadcastChannel?: BroadcastChannel
+    multiInstance: boolean
 ): Promise<{
     internalStore: RxStorageInstance<InternalStoreDocumentData, Internals, InstanceCreationOptions>,
     localDocumentsStore: RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>
@@ -626,8 +625,7 @@ async function createRxDatabaseStorageInstances<Internals, InstanceCreationOptio
             collectionName: INTERNAL_STORAGE_NAME,
             schema: getPseudoSchemaForVersion(0, 'collectionName'),
             options,
-            idleQueue,
-            broadcastChannel
+            multiInstance
         }
     );
 
@@ -635,8 +633,7 @@ async function createRxDatabaseStorageInstances<Internals, InstanceCreationOptio
         databaseName,
         collectionName: '',
         options,
-        idleQueue,
-        broadcastChannel
+        multiInstance
     });
 
     return {
@@ -727,8 +724,7 @@ export function createRxDatabase<
         storage,
         name,
         instanceCreationOptions as any,
-        idleQueue,
-        broadcastChannel
+        multiInstance
     ).then(storageInstances => {
         const rxDatabase: RxDatabase<Collections> = new RxDatabaseBase(
             name,
@@ -762,7 +758,7 @@ export async function removeRxDatabase(
         storage,
         databaseName,
         {},
-        idleQueue
+        false
     );
 
     const docs = await getAllDocuments(storage, storageInstance.internalStore);
@@ -782,14 +778,14 @@ export async function removeRxDatabase(
                             collectionName,
                             schema: getPseudoSchemaForVersion(version, primaryPath as any),
                             options: {},
-                            idleQueue
+                            multiInstance: false
                         }
                     ),
                     storage.createKeyObjectStorageInstance({
                         databaseName,
                         collectionName: getCollectionLocalInstanceName(collectionName),
                         options: {},
-                        idleQueue
+                        multiInstance: false
                     })
                 ]);
                 await Promise.all([instance.remove(), localInstance.remove()]);

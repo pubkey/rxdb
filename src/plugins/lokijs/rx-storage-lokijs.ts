@@ -22,9 +22,24 @@ import {
     RxStorageKeyObjectInstanceLoki
 } from './rx-storage-key-object-instance-loki';
 import { getLokiSortComparator } from './lokijs-helper';
+import type { LeaderElector } from 'broadcast-channel';
 
 export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettings> {
     public name = 'lokijs';
+
+    /**
+     * Create one leader elector by db name.
+     * This is done inside of the storage, not globally
+     * to make it easier to test multi-tab behavior.
+     */
+    public leaderElectorByLokiDbName: Map<string, {
+        leaderElector: LeaderElector,
+        /**
+         * Count the instances that currently use the elector.
+         * If is goes to zero again, the elector can be closed.
+         */
+        intancesCount: number;
+    }> = new Map();
 
     constructor(
         public databaseSettings: LokiDatabaseSettings
@@ -91,7 +106,7 @@ export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettin
      * same with Collection.
      */
     getQueryMatcher<RxDocType>(
-        schema: RxJsonSchema<RxDocType>,
+        _schema: RxJsonSchema<RxDocType>,
         query: MangoQuery<RxDocType>
     ): QueryMatcher<RxDocumentWriteData<RxDocType>> {
         const fun: QueryMatcher<RxDocumentWriteData<RxDocType>> = (doc: RxDocumentWriteData<RxDocType>) => {
@@ -118,7 +133,7 @@ export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettin
     async createStorageInstance<RxDocType>(
         params: RxStorageInstanceCreationParams<RxDocType, LokiSettings>
     ): Promise<RxStorageInstanceLoki<RxDocType>> {
-        return createLokiStorageInstance(params, this.databaseSettings);
+        return createLokiStorageInstance(this, params, this.databaseSettings);
     }
 
     public async createKeyObjectStorageInstance(
@@ -129,7 +144,7 @@ export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettin
         const useParams = flatClone(params);
         useParams.collectionName = params.collectionName + '-key-object';
 
-        return createLokiKeyObjectStorageInstance(params, this.databaseSettings);
+        return createLokiKeyObjectStorageInstance(this, params, this.databaseSettings);
     }
 }
 

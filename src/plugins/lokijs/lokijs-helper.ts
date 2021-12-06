@@ -4,7 +4,6 @@ import lokijs, { Collection } from 'lokijs';
 import type {
     LokiDatabaseSettings,
     LokiDatabaseState,
-    LokiLocalDatabaseState,
     MangoQuery,
     MangoQuerySortDirection,
     MangoQuerySortPart,
@@ -15,10 +14,11 @@ import {
 } from 'unload';
 import { flatClone } from '../../util';
 import { LokiSaveQueue } from './loki-save-queue';
-import type { IdleQueue } from 'custom-idle-queue';
 import type { DeterministicSortComparator } from 'event-reduce-js';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import { newRxError } from '../../rx-error';
+import { BroadcastChannel, createLeaderElection, LeaderElector } from 'broadcast-channel';
+import type { RxStorageLoki } from './rx-storage-lokijs';
 
 export const CHANGES_COLLECTION_SUFFIX = '-rxdb-changes';
 export const LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request';
@@ -229,4 +229,39 @@ export function getLokiSortComparator<RxDocType>(
         return compareResult as any;
     }
     return fun;
+}
+
+
+export function getLokiLeaderElector(
+    storage: RxStorageLoki,
+    databaseName: string
+): LeaderElector {
+    let electorState = storage.leaderElectorByLokiDbName.get(databaseName);
+    if (!electorState) {
+        const channelName = 'rxdb-lokijs-' + databaseName;
+        const channel = new BroadcastChannel(channelName);
+        const elector = createLeaderElection(channel);
+        electorState = {
+            leaderElector: elector,
+            intancesCount: 1
+        }
+        storage.leaderElectorByLokiDbName.set(databaseName, electorState);
+    } else {
+        electorState.intancesCount = electorState.intancesCount + 1;
+    }
+    return electorState.leaderElector;
+}
+
+export function removeLokiLeaderElectorReference(
+    storage: RxStorageLoki,
+    databaseName: string
+) {
+    const electorState = storage.leaderElectorByLokiDbName.get(databaseName);
+    if (electorState) {
+        electorState.intancesCount = electorState.intancesCount - 1;
+        if (electorState.intancesCount === 0) {
+            electorState.leaderElector.broadcastChannel.close();
+            storage.leaderElectorByLokiDbName.delete(databaseName);
+        }
+    }
 }

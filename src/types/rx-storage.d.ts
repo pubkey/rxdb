@@ -207,13 +207,17 @@ export type RxStorageBulkWriteResponse<DocData> = {
      * A map that is indexed by the documentId
      * contains all succeded writes.
      */
-    success: Map<string, RxDocumentData<DocData>>;
+    success: {
+        [documentId: string]: RxDocumentData<DocData>;
+    };
 
     /**
      * A map that is indexed by the documentId
      * contains all errored writes.
      */
-    error: Map<string, RxStorageBulkWriteError<DocData>>;
+    error: {
+        [documentId: string]: RxStorageBulkWriteError<DocData>;
+    }
 }
 
 export type RxLocalStorageBulkWriteResponse<DocData> = {
@@ -221,13 +225,17 @@ export type RxLocalStorageBulkWriteResponse<DocData> = {
      * A map that is indexed by the documentId
      * contains all succeded writes.
      */
-    success: Map<string, RxLocalDocumentData<DocData>>;
+    success: {
+        [documentId: string]: RxLocalDocumentData<DocData>;
+    };
 
     /**
      * A map that is indexed by the documentId
      * contains all errored writes.
      */
-    error: Map<string, RxStorageBulkWriteLocalError<DocData>>;
+    error: {
+        [documentId: string]: RxStorageBulkWriteLocalError<DocData>;
+    };
 }
 
 
@@ -248,29 +256,19 @@ export type RxStorageInstanceCreationParams<DocumentData, InstanceCreationOption
     schema: RxJsonSchema<DocumentData>;
     options: InstanceCreationOptions;
     /**
-     * The broadcastChannel is passed
-     * to the storage instance,
-     * so it can reuse the same leader elector
-     * as the RxDatabase instance uses.
-     * Or send data between instances.
-     * Is not given if multiInstance: false.
+     * If multiInstance is true, there can be more
+     * then one instance of the database, for example
+     * when multiple browser tabs exist or more then one Node.js
+     * process relies on the same storage.
      */
-    broadcastChannel?: BroadcastChannel;
+    multiInstance: boolean;
 }
 
 export type RxKeyObjectStorageInstanceCreationParams<InstanceCreationOptions> = {
     databaseName: string;
     collectionName: string;
     options: InstanceCreationOptions;
-    /**
-     * The broadcastChannel is passed
-     * to the storage instance,
-     * so it can reuse the same leader elector
-     * as the RxDatabase instance uses.
-     * Or send data between instnaces.
-     * Is not given if multiInstance: false.
-     */
-    broadcastChannel?: BroadcastChannel;
+    multiInstance: boolean;
 }
 
 

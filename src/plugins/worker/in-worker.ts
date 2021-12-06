@@ -38,7 +38,7 @@ export type InWorkerStorage = {
     findDocumentsById<DocumentData>(
         instanceId: number,
         ids: string[], deleted: boolean
-    ): Promise<Map<string, RxDocumentData<DocumentData>>>;
+    ): Promise<{ [documentId: string]: RxDocumentData<DocumentData> }>;
     query<DocumentData>(
         instanceId: number,
         preparedQuery: any
@@ -70,7 +70,7 @@ export type InWorkerStorage = {
     findLocalDocumentsById<DocumentData>(
         instanceId: number,
         ids: string[]
-    ): Promise<Map<string, RxLocalDocumentData<DocumentData>>>;
+    ): Promise<{ [documentId: string]: RxLocalDocumentData<DocumentData> }>;
 }
 
 export function wrappedRxStorage<T, D>(
@@ -107,7 +107,7 @@ export function wrappedRxStorage<T, D>(
             instanceId: number,
             ids: string[],
             deleted: boolean
-        ): Promise<Map<string, RxDocumentData<DocumentData>>> {
+        ): Promise<{ [documentId: string]: RxDocumentData<DocumentData> }> {
             const instance = getFromMapOrThrow(instanceById, instanceId);
             return instance.findDocumentsById(ids, deleted);
         },
@@ -175,7 +175,7 @@ export function wrappedRxStorage<T, D>(
         findLocalDocumentsById<DocumentData>(
             instanceId: number,
             ids: string[]
-        ): Promise<Map<string, RxLocalDocumentData<DocumentData>>> {
+        ): Promise<{ [documentId: string]: RxLocalDocumentData<DocumentData> }> {
             const instance = getFromMapOrThrow(instanceById, instanceId);
             return instance.findLocalDocumentsById(ids);
         }
