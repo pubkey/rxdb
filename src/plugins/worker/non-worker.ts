@@ -1,4 +1,4 @@
-import { Observable } from 'rxjs';
+import { Observable, Subject, Subscription } from 'rxjs';
 import { spawn, Worker } from 'threads';
 import {
     RxJsonSchema,
@@ -107,13 +107,27 @@ export class RxStorageWorker implements RxStorage<WorkerStorageInternals, any> {
 
 export class RxStorageInstanceWorker<DocumentData> implements RxStorageInstance<DocumentData, WorkerStorageInternals, any> {
 
+    /**
+     * threads.js uses observable-fns instead of rxjs
+     * so we have to transform it.
+     */
+    private changes$: Subject<RxStorageChangeEvent<RxDocumentData<DocumentData>>> = new Subject();
+    private subs: Subscription[] = [];
+
     constructor(
         public readonly databaseName: string,
         public readonly collectionName: string,
         public readonly schema: Readonly<RxJsonSchema<DocumentData>>,
         public readonly internals: WorkerStorageInternals,
         public readonly options: Readonly<any>
-    ) { }
+    ) {
+        this.subs.push(
+            this.internals.worker.changeStream(
+                this.internals.instanceId
+            ).subscribe(ev => this.changes$.next(ev))
+        );
+
+    }
 
     bulkWrite(documentWrites: BulkWriteRow<DocumentData>[]): Promise<RxStorageBulkWriteResponse<DocumentData>> {
         return this.internals.worker.bulkWrite(
@@ -154,11 +168,10 @@ export class RxStorageInstanceWorker<DocumentData> implements RxStorageInstance<
         );
     }
     changeStream(): Observable<RxStorageChangeEvent<RxDocumentData<DocumentData>>> {
-        return this.internals.worker.changeStream(
-            this.internals.instanceId
-        );
+        return this.changes$.asObservable();
     }
     close(): Promise<void> {
+        this.subs.forEach(sub => sub.unsubscribe());
         return this.internals.worker.close(
             this.internals.instanceId
         );
@@ -173,12 +186,25 @@ export class RxStorageInstanceWorker<DocumentData> implements RxStorageInstance<
 
 export class RxStorageKeyObjectInstanceWorker implements RxStorageKeyObjectInstance<WorkerStorageInternals, any> {
 
+    /**
+     * threads.js uses observable-fns instead of rxjs
+     * so we have to transform it.
+     */
+    private changes$: Subject<RxStorageChangeEvent<RxLocalDocumentData<{ [key: string]: any; }>>> = new Subject();
+    private subs: Subscription[] = [];
+
     constructor(
         public readonly databaseName: string,
         public readonly collectionName: string,
         public readonly internals: WorkerStorageInternals,
         public readonly options: Readonly<any>
-    ) { }
+    ) {
+        this.subs.push(
+            this.internals.worker.changeStream(
+                this.internals.instanceId
+            ).subscribe(ev => this.changes$.next(ev as any))
+        );
+    }
     bulkWrite<DocumentData>(
         documentWrites: BulkWriteLocalRow<DocumentData>[]
     ): Promise<RxLocalStorageBulkWriteResponse<DocumentData>> {
@@ -196,11 +222,10 @@ export class RxStorageKeyObjectInstanceWorker implements RxStorageKeyObjectInsta
         );
     }
     changeStream(): Observable<RxStorageChangeEvent<RxLocalDocumentData<{ [key: string]: any; }>>> {
-        return this.internals.worker.changeStream(
-            this.internals.instanceId
-        );
+        return this.changes$.asObservable();
     }
     close(): Promise<void> {
+        this.subs.forEach(sub => sub.unsubscribe());
         return this.internals.worker.close(
             this.internals.instanceId
         );

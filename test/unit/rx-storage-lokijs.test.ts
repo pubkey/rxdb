@@ -125,7 +125,6 @@ config.parallel('rx-storage-lokijs.test.js', () => {
             // wait until one is leader
             await waitUntil(() => {
                 const leaderAmount = getLeaders().length;
-                console.log('leaderAmount: ' + leaderAmount);
                 if (leaderAmount > 1) {
                     throw new Error('duplicate leaders detected');
                 } else if (leaderAmount === 1) {

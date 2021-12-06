@@ -42,6 +42,7 @@ import {
     RxStorageKeyObjectInstance
 } from '../../src/types';
 import { getLeaderElectorByBroadcastChannel } from '../../plugins/leader-election';
+import { filter, map } from 'rxjs/operators';
 
 addRxPlugin(RxDBQueryBuilderPlugin);
 
@@ -1077,6 +1078,46 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 sub.unsubscribe();
                 storageInstance.close();
             });
+            it('should be compatible with rxjs operators', async () => {
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    options: {
+                        auto_compaction: false
+                    },
+                    multiInstance: false
+                });
+
+                const emitted: RxStorageChangeEvent<TestDocType>[] = [];
+                const sub = storageInstance.changeStream()
+                    .pipe(
+                        map(x => x),
+                        filter(() => true)
+                    )
+                    .subscribe(x => {
+                        emitted.push(x);
+                    });
+
+                const writeData = {
+                    key: 'foobar',
+                    value: 'one',
+                    _rev: undefined as any,
+                    _deleted: false,
+                    _attachments: {}
+                };
+
+                // insert
+                await storageInstance.bulkWrite([{
+                    document: writeData
+                }]);
+
+                await wait(100);
+                assert.strictEqual(emitted.length, 1);
+
+                sub.unsubscribe();
+                storageInstance.close();
+            });
             it('should emit all events', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
@@ -1883,8 +1924,6 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
         }
         describe('RxStorageInstance', () => {
             it('should be able to write and read documents', async () => {
-                console.log('######################################');
-
                 const instances = await getMultiInstaneRxStorageInstance();
 
                 const emittedB: RxStorageChangeEvent<RxDocumentData<TestDocType>>[] = [];
@@ -1892,20 +1931,12 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const emittedA: RxStorageChangeEvent<RxDocumentData<TestDocType>>[] = [];
                 instances.a.changeStream().subscribe(ev => emittedA.push(ev));
 
-                console.log('----- 1');
-
                 // insert a document on A
                 const writeData = getWriteData();
                 await instances.a.bulkWrite([{ document: writeData }]);
 
-                console.log('----- 2');
-
-
                 // find the document on B
                 await waitUntil(async () => {
-                    console.log('...................');
-                    console.dir(emittedA);
-                    console.dir(emittedB);
                     try {
                         const foundAgain = await instances.b.findDocumentsById([writeData.key], false);
                         const foundDoc = getFromObjectOrThrow(foundAgain, writeData.key);
@@ -1914,10 +1945,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     } catch (err) {
                         return false;
                     }
-                }, 10 * 1000, 500);
-
-                console.log('----- 3');
-
+                }, 10 * 1000, 100);
 
                 // find via query
                 const preparedQuery: PreparedQuery<TestDocType> = config.storage.getStorage().prepareQuery(
@@ -1927,9 +1955,6 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         limit: 1
                     }
                 );
-
-                console.log('----- 4');
-
 
                 const foundViaQuery = await instances.b.query(preparedQuery);
                 assert.strictEqual(foundViaQuery.documents.length, 1);
