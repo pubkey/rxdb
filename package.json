@@ -197,7 +197,7 @@
     "karma-safari-launcher": "1.0.0",
     "leveldown": "6.1.0",
     "madge": "5.0.1",
-    "memdown": "6.0.0",
+    "memdown": "6.1.1",
     "mocha": "9.0.2",
     "mocha.parallel": "0.15.6",
     "nconf": "0.11.3",
