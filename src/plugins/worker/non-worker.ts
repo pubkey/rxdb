@@ -32,6 +32,13 @@ declare type RxStorageWorkerSettings = {
     workerInput: any;
 }
 
+/**
+ * We have no way to detect if a worker is no longer needed.
+ * Instead we reuse open workers so that creating many databases,
+ * does not flood the OS by opening many threads.
+ */
+const WORKER_BY_INPUT: Map<any, Promise<InWorkerStorage>> = new Map();
+
 export class RxStorageWorker implements RxStorage<WorkerStorageInternals, any> {
     public name = 'worker';
 
@@ -40,8 +47,13 @@ export class RxStorageWorker implements RxStorage<WorkerStorageInternals, any> {
         public readonly settings: RxStorageWorkerSettings,
         public readonly originalStorage: RxStorage<any, any>
     ) {
-        // console.log('this.settings.workerInput: ' + this.settings.workerInput);
-        this.workerPromise = spawn<InWorkerStorage>(new Worker(this.settings.workerInput)) as any;
+        const workerInput = this.settings.workerInput;
+        let workerPromise = WORKER_BY_INPUT.get(workerInput);
+        if (!workerPromise) {
+            workerPromise = spawn<InWorkerStorage>(new Worker(this.settings.workerInput)) as any;
+            WORKER_BY_INPUT.set(workerInput, workerPromise as any);
+        }
+        this.workerPromise = workerPromise as any;
     }
 
     hash(data: Buffer | Blob | string): Promise<string> {
