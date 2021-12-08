@@ -15,7 +15,7 @@
     "@rollup/plugin-node-resolve": "13.0.6",
     "async-test-util": "1.7.3",
     "pouchdb-adapter-idb": "7.2.2",
-    "rollup": "2.57.0",
+    "rollup": "2.60.2",
     "rollup-plugin-css-only": "3.1.0",
     "rollup-plugin-livereload": "2.0.5",
     "rollup-plugin-node-builtins": "2.1.2",
