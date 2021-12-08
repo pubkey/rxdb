@@ -147,7 +147,6 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
             this.pouchSettings,
             pouchDbParameters.settings
         );
-
         const pouch = new PouchDB(
             pouchDbParameters.location,
             pouchDBOptions

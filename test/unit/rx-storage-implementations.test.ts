@@ -10,6 +10,7 @@ import {
     lastOfArray,
     writeSingle,
     blobBufferUtil,
+    flattenEvents,
     flatClone,
     MangoQuery,
     RxJsonSchema,
@@ -19,7 +20,6 @@ import {
 } from '../../plugins/core';
 
 import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
-import { BroadcastChannel, LeaderElector } from 'broadcast-channel';
 addRxPlugin(RxDBKeyCompressionPlugin);
 import { RxDBValidatePlugin } from '../../plugins/validate';
 addRxPlugin(RxDBValidatePlugin);
@@ -32,6 +32,7 @@ import {
     waitUntil
 } from 'async-test-util';
 import {
+    EventBulk,
     PreparedQuery,
     RxDocumentData,
     RxDocumentWriteData,
@@ -41,7 +42,6 @@ import {
     RxStorageInstance,
     RxStorageKeyObjectInstance
 } from '../../src/types';
-import { getLeaderElectorByBroadcastChannel } from '../../plugins/leader-election';
 import { filter, map } from 'rxjs/operators';
 
 addRxPlugin(RxDBQueryBuilderPlugin);
@@ -1054,7 +1054,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     multiInstance: false
                 });
 
-                const emitted: RxStorageChangeEvent<TestDocType>[] = [];
+                const emitted: EventBulk<RxStorageChangeEvent<TestDocType>>[] = [];
                 const sub = storageInstance.changeStream().subscribe(x => {
                     emitted.push(x);
                 });
@@ -1074,6 +1074,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 await wait(100);
                 assert.strictEqual(emitted.length, 1);
+                assert.strictEqual(emitted[0].events.length, 1);
 
                 sub.unsubscribe();
                 storageInstance.close();
@@ -1089,7 +1090,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     multiInstance: false
                 });
 
-                const emitted: RxStorageChangeEvent<TestDocType>[] = [];
+                const emitted: EventBulk<RxStorageChangeEvent<TestDocType>>[] = [];
                 const sub = storageInstance.changeStream()
                     .pipe(
                         map(x => x),
@@ -1129,7 +1130,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     multiInstance: false
                 });
 
-                const emitted: RxStorageChangeEvent<RxDocumentData<TestDocType>>[] = [];
+                const emitted: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>>[] = [];
                 const sub = storageInstance.changeStream().subscribe(x => {
                     emitted.push(x);
                 });
@@ -1171,8 +1172,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 await waitUntil(() => emitted.length === 3);
 
-                const last = lastOfArray(emitted);
-                if (!last) {
+                const lastEvent = lastOfArray(lastOfArray(emitted).events);
+                if (!lastEvent) {
                     throw new Error('missing last event');
                 }
 
@@ -1182,11 +1183,11 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                  * This is a hack because of pouchdb's strange behavior.
                  * We might want to change that.
                  */
-                const lastRevision = parseRevision((last as any).change.previous._rev);
+                const lastRevision = parseRevision((lastEvent as any).change.previous._rev);
                 assert.strictEqual(lastRevision.height, 3);
 
-                assert.strictEqual(last.change.operation, 'DELETE');
-                assert.ok(last.change.previous);
+                assert.strictEqual(lastEvent.change.operation, 'DELETE');
+                assert.ok(lastEvent.change.previous);
 
                 sub.unsubscribe();
                 storageInstance.close();
@@ -1202,7 +1203,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     multiInstance: false
                 });
 
-                const emitted: RxStorageChangeEvent<TestDocType>[] = [];
+                const emitted: EventBulk<RxStorageChangeEvent<TestDocType>>[] = [];
                 const sub = storageInstance.changeStream().subscribe(x => emitted.push(x));
 
 
@@ -1239,8 +1240,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }]
                 );
 
-                await waitUntil(() => emitted.length === 2);
-                const lastEvent = emitted.pop();
+                await waitUntil(() => {
+                    return flattenEvents(emitted).length === 2;
+                });
+                const lastEvent = flattenEvents(emitted).pop();
                 if (!lastEvent) {
                     throw new Error('last event missing');
                 }
@@ -1263,7 +1266,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 });
 
                 const id = 'foobar';
-                const emitted: RxStorageChangeEvent<RxDocumentData<TestDocType>>[] = [];
+                const emitted: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>>[] = [];
                 const sub = storageInstance.changeStream().subscribe(cE => emitted.push(cE));
 
                 const preparedQuery = config.storage.getStorage().prepareQuery(
@@ -1329,13 +1332,11 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
 
 
-                await waitUntil(() => emitted.length === 4);
+                await waitUntil(() => flattenEvents(emitted).length === 4);
+                assert.ok(flattenEvents(emitted)[0].change.operation === 'INSERT');
 
-
-                assert.ok(emitted[0].change.operation === 'INSERT');
-
-                assert.ok(emitted[1].change.operation === 'UPDATE');
-                const updatePrev = flatClone(ensureNotFalsy(emitted[1].change.previous));
+                assert.ok(flattenEvents(emitted)[1].change.operation === 'UPDATE');
+                const updatePrev = flatClone(ensureNotFalsy(flattenEvents(emitted)[1].change.previous));
                 delete (updatePrev as any)._deleted;
                 assert.deepStrictEqual(
                     updatePrev,
@@ -1347,8 +1348,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }
                 );
 
-                assert.ok(emitted[2].change.operation === 'DELETE');
-                assert.ok(emitted[3].change.operation === 'INSERT');
+                assert.ok(flattenEvents(emitted)[2].change.operation === 'DELETE');
+                assert.ok(flattenEvents(emitted)[3].change.operation === 'INSERT');
 
                 sub.unsubscribe();
                 storageInstance.close();
@@ -1369,7 +1370,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     multiInstance: false
                 });
 
-                const emitted: RxStorageChangeEvent<any>[] = [];
+                const emitted: EventBulk<RxStorageChangeEvent<any>>[] = [];
                 const sub = storageInstance.changeStream().subscribe(x => {
                     emitted.push(x);
                 });
@@ -1401,7 +1402,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }
                 );
 
-                await waitUntil(() => emitted.length === 1);
+                await waitUntil(() => flattenEvents(emitted).length === 1);
 
                 assert.strictEqual(writeResult._attachments.foo.type, 'text/plain');
                 assert.strictEqual(writeResult._attachments.foo.digest, attachmentHash);
@@ -1424,8 +1425,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 assert.strictEqual(byIdDoc._attachments.foo.length, attachmentData.length);
 
                 // test emitted
-                assert.strictEqual(emitted[0].change.doc._attachments.foo.type, 'text/plain');
-                assert.strictEqual(emitted[0].change.doc._attachments.foo.length, attachmentData.length);
+                assert.strictEqual(flattenEvents(emitted)[0].change.doc._attachments.foo.type, 'text/plain');
+                assert.strictEqual(flattenEvents(emitted)[0].change.doc._attachments.foo.length, attachmentData.length);
 
 
                 const changesResult = await storageInstance.getChangedDocuments({
@@ -1731,7 +1732,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         multiInstance: false
                     });
 
-                const emitted: RxStorageChangeEvent<RxLocalDocumentData>[] = [];
+                const emitted: EventBulk<RxStorageChangeEvent<RxLocalDocumentData>>[] = [];
                 const sub = storageInstance.changeStream().subscribe(x => {
                     emitted.push(x);
                 });
@@ -1765,7 +1766,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         multiInstance: false
                     });
 
-                const emitted: RxStorageChangeEvent<RxLocalDocumentData>[] = [];
+                const emitted: EventBulk<RxStorageChangeEvent<RxLocalDocumentData>>[] = [];
                 const sub = storageInstance.changeStream().subscribe(x => {
                     emitted.push(x);
                 });
@@ -1802,7 +1803,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 await waitUntil(() => emitted.length === 3);
 
-                const last = lastOfArray(emitted);
+                const last = lastOfArray(flattenEvents(emitted));
                 if (!last) {
                     throw new Error('missing last event');
                 }
@@ -1926,9 +1927,9 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
             it('should be able to write and read documents', async () => {
                 const instances = await getMultiInstaneRxStorageInstance();
 
-                const emittedB: RxStorageChangeEvent<RxDocumentData<TestDocType>>[] = [];
+                const emittedB: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>>[] = [];
                 instances.b.changeStream().subscribe(ev => emittedB.push(ev));
-                const emittedA: RxStorageChangeEvent<RxDocumentData<TestDocType>>[] = [];
+                const emittedA: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>>[] = [];
                 instances.a.changeStream().subscribe(ev => emittedA.push(ev));
 
                 // insert a document on A

@@ -1,13 +1,12 @@
 import type {
-    ChangeEvent,
-    DeterministicSortComparator,
-    QueryMatcher
+    ChangeEvent
 } from 'event-reduce-js';
 import { ObliviousSet } from 'oblivious-set';
 import {
     Observable,
     Subject,
-    Subscription
+    Subscription,
+    tap
 } from 'rxjs';
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
@@ -15,16 +14,13 @@ import type {
     BlobBuffer,
     BulkWriteRow,
     ChangeStreamOnceOptions,
-    MangoQuery,
-    MangoQuerySortDirection,
-    MangoQuerySortPart,
+    EventBulk,
     PouchBulkDocResultRow,
     PouchChangesOptionsNonLive,
     PouchSettings,
     PouchWriteError,
     PreparedQuery,
     RxDocumentData,
-    RxDocumentWriteData,
     RxJsonSchema,
     RxStorageBulkWriteError,
     RxStorageBulkWriteResponse,
@@ -41,8 +37,6 @@ import {
     pouchDocumentDataToRxDocumentData,
     PouchStorageInternals,
     pouchSwapIdToPrimary,
-    pouchSwapPrimaryToId,
-    primarySwapPouchDbQuerySelector,
     rxDocumentDataToPouchDocumentData,
     writeAttachmentsToAttachments
 } from './pouchdb-helper';
@@ -54,22 +48,25 @@ import {
     flatClone,
     getFromMapOrThrow,
     getHeightOfRevision,
-    PROMISE_RESOLVE_VOID
+    PROMISE_RESOLVE_VOID,
+    randomCouchString
 } from '../../util';
 import {
     getCustomEventEmitterByPouch
 } from './custom-events-plugin';
-import { getSchemaByObjectPath } from '../../rx-schema-helper';
+
+
+let lastId = 0;
 
 export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     RxDocType,
     PouchStorageInternals,
     PouchSettings
 > {
+    public readonly id: number = lastId++;
 
-    private changes$: Subject<RxStorageChangeEvent<RxDocumentData<RxDocType>>> = new Subject();
+    private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>> = new Subject();
     private subs: Subscription[] = [];
-    private emittedEventIds: ObliviousSet<string>;
     private primaryPath: keyof RxDocType;
 
     constructor(
@@ -88,226 +85,43 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
          * and create our own event stream, this will work more relyable
          * and does not mix up with write events from other sources.
          */
-        const emitter = getCustomEventEmitterByPouch(this.internals.pouch);
-        this.emittedEventIds = emitter.obliviousSet;
+        const emitter = getCustomEventEmitterByPouch<RxDocType>(this.internals.pouch);
+
+        /**
+         * Contains all eventIds that of emitted events,
+         * used because multi-instance pouchdbs often will reemit the same
+         * event on the other browser tab so we have to de-duplicate them.
+         */
+        const emittedEventBulkIds: ObliviousSet<string> = new ObliviousSet(60 * 1000);
+
         const eventSub = emitter.subject.subscribe(async (ev) => {
-            if (ev.writeOptions.hasOwnProperty('new_edits') && !ev.writeOptions.new_edits) {
-                await Promise.all(
-                    ev.writeDocs.map(async (writeDoc) => {
-                        const id = writeDoc._id;
-
-                        writeDoc = pouchDocumentDataToRxDocumentData(
-                            this.primaryPath,
-                            writeDoc
-                        );
-
-                        writeDoc._attachments = await writeAttachmentsToAttachments(writeDoc._attachments);
-
-                        let previousDoc = ev.previousDocs.get(id);
-                        if (previousDoc) {
-                            previousDoc = pouchDocumentDataToRxDocumentData(
-                                this.primaryPath,
-                                previousDoc
-                            );
-                        }
-
-                        if (
-                            previousDoc &&
-                            getHeightOfRevision(previousDoc._rev) > getHeightOfRevision(writeDoc._rev)
-                        ) {
-                            // not the newest revision was added
-                            // TODO is comparing the height enough to compare revisions?
-                            return;
-                        }
-                        if (!previousDoc && writeDoc._deleted) {
-                            // deleted document was added as revision
-                            return;
-                        }
-
-                        if (previousDoc && previousDoc._deleted && writeDoc._deleted) {
-                            // delete document was deleted again
-                            return;
-                        }
-
-                        let event: ChangeEvent<RxDocumentData<RxDocType>>;
-                        if ((!previousDoc || previousDoc._deleted) && !writeDoc._deleted) {
-                            // was insert
-                            event = {
-                                operation: 'INSERT',
-                                doc: writeDoc,
-                                id: id,
-                                previous: null
-                            };
-                        } else if (writeDoc._deleted && previousDoc && !previousDoc._deleted) {
-                            // was delete
-                            previousDoc._rev = writeDoc._rev;
-                            event = {
-                                operation: 'DELETE',
-                                doc: null,
-                                id: id,
-                                previous: previousDoc
-                            };
-                        } else if (
-                            previousDoc
-                        ) {
-                            // was update
-                            event = {
-                                operation: 'UPDATE',
-                                doc: writeDoc,
-                                id: id,
-                                previous: previousDoc
-                            };
-                        } else {
-                            throw newRxError('SNH', { args: { writeDoc } });
-                        }
-                        this.addEventToChangeStream(
-                            event,
-                            ev.startTime,
-                            ev.endTime
-                        );
-                    })
-                );
+            if (
+                ev.events.length === 0 ||
+                emittedEventBulkIds.has(ev.id)
+            ) {
                 return;
             }
+            emittedEventBulkIds.add(ev.id);
 
-
-            /**
-             * There is no write map given for internal pouchdb document writes
-             * like it is done with replication.
-             */
-            if (!ev.writeOptions.custom) {
-                const writeDocsById: Map<string, any> = new Map();
-                ev.writeDocs.forEach(writeDoc => writeDocsById.set(writeDoc._id, writeDoc));
-
-                await Promise.all(
-                    ev.writeResult.map(async (resultRow) => {
-                        const id = resultRow.id;
-                        if (
-                            id.startsWith(POUCHDB_DESIGN_PREFIX) ||
-                            id.startsWith(POUCHDB_LOCAL_PREFIX)
-                        ) {
-                            return;
-                        }
-                        let writeDoc = getFromMapOrThrow(writeDocsById, resultRow.id);
-                        writeDoc._attachments = await writeAttachmentsToAttachments(writeDoc._attachments);
-
-                        writeDoc = flatClone(writeDoc);
-                        writeDoc._rev = (resultRow as any).rev;
-                        const event = pouchChangeRowToChangeEvent<RxDocType>(
-                            this.primaryPath,
-                            writeDoc
-                        );
-                        this.addEventToChangeStream(event);
-                    })
-                );
-
-                return;
-            }
-
-            const writeMap: Map<string, BulkWriteRow<RxDocType>> = ev.writeOptions.custom.writeRowById;
-            await Promise.all(
-                ev.writeResult.map(async (resultRow) => {
-                    if ((resultRow as PouchWriteError).error) {
-                        return;
-                    }
-
-                    const id = resultRow.id;
-                    const writeRow = getFromMapOrThrow(writeMap, id);
-                    const newDoc = pouchDocumentDataToRxDocumentData(
+            // rewrite primaryPath of all events
+            ev.events.forEach(event => {
+                if (event.change.doc) {
+                    event.change.doc = pouchSwapIdToPrimary(
                         this.primaryPath,
-                        writeRow.document as any
+                        event.change.doc as any
                     );
-                    newDoc._attachments = await writeAttachmentsToAttachments(newDoc._attachments);
-                    newDoc._rev = (resultRow as PouchBulkDocResultRow).rev;
+                }
+                if (event.change.previous) {
+                    event.change.previous = pouchSwapIdToPrimary(
+                        this.primaryPath,
+                        event.change.previous as any
+                    );
+                }
+            });
 
-                    let event: ChangeEvent<RxDocumentData<RxDocType>>;
-                    if (!writeRow.previous || writeRow.previous._deleted) {
-                        // was insert
-                        event = {
-                            operation: 'INSERT',
-                            doc: newDoc,
-                            id: id,
-                            previous: null
-                        };
-                    } else if (writeRow.document._deleted) {
-                        // was delete
-
-                        // we need to add the new revision to the previous doc
-                        // so that the eventkey is calculated correctly.
-                        // Is this a hack? idk.
-                        const previousDoc = pouchDocumentDataToRxDocumentData(
-                            this.primaryPath,
-                            writeRow.previous as any
-                        );
-                        previousDoc._attachments = await writeAttachmentsToAttachments(previousDoc._attachments);
-                        previousDoc._rev = (resultRow as PouchBulkDocResultRow).rev;
-
-                        event = {
-                            operation: 'DELETE',
-                            doc: null,
-                            id: resultRow.id,
-                            previous: previousDoc
-                        };
-                    } else {
-                        // was update
-                        event = {
-                            operation: 'UPDATE',
-                            doc: newDoc,
-                            id: resultRow.id,
-                            previous: writeRow.previous
-                        };
-                    }
-
-                    if (
-                        writeRow.document._deleted &&
-                        (
-                            !writeRow.previous ||
-                            writeRow.previous._deleted
-                        )
-                    ) {
-                        /**
-                         * A deleted document was newly added to the storage engine,
-                         * do not emit an event.
-                         */
-                    } else {
-                        this.addEventToChangeStream(
-                            event,
-                            ev.startTime,
-                            ev.endTime
-                        );
-                    }
-
-                })
-            );
+            this.changes$.next(ev);
         });
         this.subs.push(eventSub);
-    }
-
-    private addEventToChangeStream(
-        change: ChangeEvent<RxDocumentData<RxDocType>>,
-        startTime?: number,
-        endTime?: number
-    ) {
-        const doc: RxDocumentData<RxDocType> = change.operation === 'DELETE' ? change.previous as any : change.doc as any;
-        const primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
-        const primary: string = (doc as any)[primaryPath];
-
-        const eventId = getEventKey(false, primary, doc._rev);
-
-        if (this.emittedEventIds.has(eventId)) {
-            return;
-        }
-
-        this.emittedEventIds.add(eventId);
-        const storageChangeEvent: RxStorageChangeEvent<RxDocumentData<RxDocType>> = {
-            eventId,
-            documentId: primary,
-            change,
-            startTime,
-            endTime
-        };
-
-        this.changes$.next(storageChangeEvent);
     }
 
     close() {
@@ -368,7 +182,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         }
 
         const writeRowById: Map<string, BulkWriteRow<RxDocType>> = new Map();
-
         const insertDocs: (RxDocType & { _id: string; _rev: string })[] = documentWrites.map(writeData => {
             const primary: string = (writeData.document as any)[this.primaryPath];
             writeRowById.set(primary, writeData);
@@ -377,7 +190,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                 this.primaryPath,
                 writeData.document
             );
-
 
             // if previous document exists, we have to send the previous revision to pouchdb.
             if (writeData.previous) {
@@ -389,6 +201,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
 
         const pouchResult = await this.internals.pouch.bulkDocs(insertDocs, {
             custom: {
+                primaryPath: this.primaryPath,
                 writeRowById
             }
         } as any);
@@ -516,7 +329,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         return ret;
     }
 
-    changeStream(): Observable<RxStorageChangeEvent<RxDocumentData<RxDocType>>> {
+    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>> {
         return this.changes$.asObservable();
     }
 

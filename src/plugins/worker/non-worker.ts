@@ -18,7 +18,8 @@ import {
     BulkWriteLocalRow,
     RxLocalDocumentData,
     RxLocalStorageBulkWriteResponse,
-    RxKeyObjectStorageInstanceCreationParams
+    RxKeyObjectStorageInstanceCreationParams,
+    EventBulk
 } from '../../types';
 import { InWorkerStorage } from './in-worker';
 
@@ -111,7 +112,7 @@ export class RxStorageInstanceWorker<DocumentData> implements RxStorageInstance<
      * threads.js uses observable-fns instead of rxjs
      * so we have to transform it.
      */
-    private changes$: Subject<RxStorageChangeEvent<RxDocumentData<DocumentData>>> = new Subject();
+    private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<DocumentData>>>> = new Subject();
     private subs: Subscription[] = [];
 
     constructor(
@@ -124,7 +125,7 @@ export class RxStorageInstanceWorker<DocumentData> implements RxStorageInstance<
         this.subs.push(
             this.internals.worker.changeStream(
                 this.internals.instanceId
-            ).subscribe(ev => this.changes$.next(ev))
+            ).subscribe(ev => this.changes$.next(ev as any))
         );
 
     }
@@ -167,7 +168,7 @@ export class RxStorageInstanceWorker<DocumentData> implements RxStorageInstance<
             options
         );
     }
-    changeStream(): Observable<RxStorageChangeEvent<RxDocumentData<DocumentData>>> {
+    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<DocumentData>>>> {
         return this.changes$.asObservable();
     }
     close(): Promise<void> {
@@ -190,7 +191,7 @@ export class RxStorageKeyObjectInstanceWorker implements RxStorageKeyObjectInsta
      * threads.js uses observable-fns instead of rxjs
      * so we have to transform it.
      */
-    private changes$: Subject<RxStorageChangeEvent<RxLocalDocumentData<{ [key: string]: any; }>>> = new Subject();
+    private changes$: Subject<EventBulk<RxStorageChangeEvent<RxLocalDocumentData<{ [key: string]: any; }>>>> = new Subject();
     private subs: Subscription[] = [];
 
     constructor(
@@ -221,7 +222,7 @@ export class RxStorageKeyObjectInstanceWorker implements RxStorageKeyObjectInsta
             ids
         );
     }
-    changeStream(): Observable<RxStorageChangeEvent<RxLocalDocumentData<{ [key: string]: any; }>>> {
+    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxLocalDocumentData<{ [key: string]: any; }>>>> {
         return this.changes$.asObservable();
     }
     close(): Promise<void> {

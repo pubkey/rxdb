@@ -6,6 +6,7 @@ import type {
     BulkWriteLocalRow,
     BulkWriteRow,
     ChangeStreamOnceOptions,
+    EventBulk,
     PreparedQuery,
     RxDocumentData,
     RxDocumentWriteData,
@@ -198,7 +199,7 @@ export interface RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>
     /**
      * Emits all changes to the local documents.
      */
-    changeStream(): Observable<RxStorageChangeEvent<RxLocalDocumentData>>;
+    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxLocalDocumentData>>>;
 }
 
 export interface RxStorageInstance<
@@ -321,5 +322,5 @@ export interface RxStorageInstance<
      * storage instance.
      * Do not forget to unsubscribe.
      */
-    changeStream(): Observable<RxStorageChangeEvent<RxDocumentData<DocumentData>>>;
+    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<DocumentData>>>>;
 }

@@ -1,6 +1,6 @@
 import assert from 'assert';
 import AsyncTestUtil, {
-    clone, wait
+    clone, wait, waitUntil
 } from 'async-test-util';
 import GraphQLClient from 'graphql-client';
 
@@ -515,8 +515,17 @@ describe('replication-graphql.test.js', () => {
                     newDocData._rev = '2-23099cb8125d2c79db839ae3f1211cf8';
                     await c.storageInstance.bulkAddRevisions([newDocData]);
 
-
+                    /**
+                     * We wait here because directly after the last write,
+                     * it takes some milliseconds until the change is propagated
+                     * via the event stream.
+                     * This does only happen because we directly access storageInstance.bulkAddRevisions()
+                     * and so RxDB does not know about the change.
+                     * This problem will not happen during normal RxDB usage.
+                     */
+                    await waitUntil(() => oneDoc.age === 100);
                     await oneDoc.remove();
+
                     const changesResult = await getChangesSinceLastPushSequence(
                         c,
                         endpointHash,
@@ -1296,7 +1305,6 @@ describe('replication-graphql.test.js', () => {
                 await c.database.destroy();
             });
             it('should trigger push on db-changes that have not resulted from the replication', async () => {
-                console.log('#########');
                 const amount = batchSize;
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(amount),

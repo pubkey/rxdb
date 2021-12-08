@@ -307,6 +307,23 @@ export type ChangeStreamOnceOptions = ChangeStreamOptions & {
     limit?: number;
 };
 
+/**
+ * In the past we handles each RxChangeEvent by its own.
+ * But it has been shown that this take way more performance then needed,
+ * especially when the events get transfered over a data layer
+ * like with WebWorkers or the BroadcastChannel.
+ * So we now process events as bulks internally.
+ */
+export type EventBulk<EventType> = {
+    /**
+     * Unique id of the bulk,
+     * used to detect duplicate bulks
+     * that have already been processed.
+     */
+    id: string;
+    events: EventType[];
+}
+
 export type ChangeStreamEvent<DocumentData> = ChangeEvent<RxDocumentData<DocumentData>> & {
     /**
      * An integer that is increasing

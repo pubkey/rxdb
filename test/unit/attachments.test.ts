@@ -14,6 +14,7 @@ import {
     blobBufferUtil,
     MigrationStrategies,
     WithAttachmentsData,
+    RxCollection,
 } from '../../plugins/core';
 
 import {
@@ -357,40 +358,46 @@ config.parallel('attachments.test.ts', () => {
     describe('multiInstance', () => {
         it('should emit on other instance', async () => {
             const name = randomCouchString(10);
-            const db = await createRxDatabase({
+            type Collections = { humans: RxCollection<schemaObjects.HumanDocumentType, {}, {}> };
+            type Document = RxDocument<schemaObjects.HumanDocumentType>;
+            const db = await createRxDatabase<Collections>({
                 name,
                 storage: getRxStoragePouch('memory'),
                 multiInstance: true,
                 ignoreDuplicate: true
             });
-            const schemaJson = AsyncTestUtil.clone(schemas.human);
+            const schemaJson: RxJsonSchema<schemaObjects.HumanDocumentType> = AsyncTestUtil.clone(schemas.human);
             schemaJson.attachments = {};
-            const c = await db.addCollections({
+
+
+            const c = await db.addCollections<Collections>({
                 humans: {
                     schema: schemaJson
                 }
             });
 
-            const db2 = await createRxDatabase({
+            const db2 = await createRxDatabase<Collections>({
                 name,
                 storage: getRxStoragePouch('memory'),
                 multiInstance: true,
                 ignoreDuplicate: true
             });
-            const c2 = await db2.addCollections({
+            const c2 = await db2.addCollections<Collections>({
                 humans: {
                     schema: schemaJson
                 }
             });
 
             await c.humans.insert(schemaObjects.human());
-            const doc = await c.humans.findOne().exec();
-            const doc2 = await c2.humans.findOne().exec();
+            const doc: Document = await c.humans.findOne().exec(true);
+            const doc2: Document = await c2.humans.findOne().exec(true);
             assert.strictEqual(doc.age, doc2.age);
 
             const doc2Streamed: any[] = [];
             const sub = doc2.allAttachments$
-                .subscribe((atc: any) => doc2Streamed.push(atc));
+                .subscribe(atc => {
+                    doc2Streamed.push(atc);
+                });
 
             const putAttachment = await doc.putAttachment({
                 id: 'cat.txt',
@@ -398,9 +405,9 @@ config.parallel('attachments.test.ts', () => {
                 type: 'text/plain'
             });
 
-            await AsyncTestUtil.waitUntil(
-                () => doc2Streamed.length === 2
-            );
+            await AsyncTestUtil.waitUntil(() => {
+                return doc2Streamed.length === 2;
+            }, 10 * 1000, 100);
             const attachment = doc2Streamed[1][0];
             const data = await attachment.getStringData();
             assert.strictEqual(data, 'meow I am a kitty');
@@ -411,9 +418,8 @@ config.parallel('attachments.test.ts', () => {
             await AsyncTestUtil.waitUntil(
                 () => doc2Streamed.length === 3
             );
+
             assert.strictEqual(doc2Streamed[2].length, 0);
-
-
             sub.unsubscribe();
             db.destroy();
             db2.destroy();

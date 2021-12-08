@@ -7,6 +7,7 @@ import type {
     BulkWriteLocalRow,
     BulkWriteRow,
     ChangeStreamOnceOptions,
+    EventBulk,
     RxDocumentData,
     RxKeyObjectStorageInstanceCreationParams,
     RxLocalDocumentData,
@@ -57,7 +58,7 @@ export type InWorkerStorage = {
     }>;
     changeStream<DocumentData>(
         instanceById: number
-    ): Observable<RxStorageChangeEvent<RxDocumentData<DocumentData>>>;
+    ): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<DocumentData>>>>;
     close(instanceId: number): Promise<void>;
     remove(instanceId: number): Promise<void>;
 
@@ -143,7 +144,7 @@ export function wrappedRxStorage<T, D>(
         },
         changeStream<DocumentData>(
             instanceId: number
-        ): Observable<RxStorageChangeEvent<RxDocumentData<DocumentData>>> {
+        ): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<DocumentData>>>> {
             const instance = getFromMapOrThrow(instanceById, instanceId);
             return instance.changeStream();
         },

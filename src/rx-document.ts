@@ -456,11 +456,9 @@ export const basePrototype = {
         }
 
         const deletedData = flatClone(this._data);
-        let startTime: number;
         return this.collection._runHooks('pre', 'remove', deletedData, this)
             .then(() => {
                 deletedData._deleted = true;
-                startTime = now();
                 return writeToStorageInstance(
                     this.collection,
                     {

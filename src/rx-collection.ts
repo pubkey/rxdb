@@ -219,25 +219,35 @@ export class RxCollectionBase<
         this._changeEventBuffer = createChangeEventBuffer(this.asRxCollection);
 
 
-        const subDocs = this.storageInstance.changeStream().pipe(
-            map(storageEvent => storageChangeEventToRxChangeEvent(
-                false,
-                storageEvent,
-                this.database,
-                this as any
-            ))
-        ).subscribe(cE => {
-            this.$emit(cE);
+        /**
+         * Instead of resolving the EventBulk array here and spit it into
+         * single events, we should fully work with event bulks internally
+         * to save performance.
+         */
+        const subDocs = this.storageInstance.changeStream().subscribe(eventBulk => {
+            eventBulk.events.forEach(storageEvent => {
+                const changeEvent = storageChangeEventToRxChangeEvent(
+                    false,
+                    storageEvent,
+                    this.database,
+                    this as any
+                );
+                this.$emit(changeEvent);
+            });
         });
+
         this._subs.push(subDocs);
-        const subLocalDocs = this.localDocumentsStore.changeStream().pipe(
-            map(storageEvent => storageChangeEventToRxChangeEvent(
-                true,
-                storageEvent,
-                this.database,
-                this as any
-            ))
-        ).subscribe(cE => this.$emit(cE));
+        const subLocalDocs = this.localDocumentsStore.changeStream().subscribe(eventBulk => {
+            eventBulk.events.forEach(storageEvent => {
+                const changeEvent = storageChangeEventToRxChangeEvent(
+                    true,
+                    storageEvent,
+                    this.database,
+                    this as any
+                );
+                this.$emit(changeEvent);
+            });
+        });
         this._subs.push(subLocalDocs);
 
 

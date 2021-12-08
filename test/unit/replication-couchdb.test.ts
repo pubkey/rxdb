@@ -20,7 +20,8 @@ import {
     SyncOptions,
     addRxPlugin,
     blobBufferUtil,
-    RxChangeEvent
+    RxChangeEvent,
+    flattenEvents
 } from '../../plugins/core';
 
 import {
@@ -524,7 +525,13 @@ describe('replication-couchdb.test.js', () => {
                 const obj = schemaObjects.human();
                 await c.insert(obj);
                 await pw8.promise;
-                await AsyncTestUtil.waitUntil(() => events.length === 1);
+                await AsyncTestUtil.waitUntil(() => {
+                    const amount = events.length;
+                    if (amount > 1) {
+                        throw new Error('too many events');
+                    }
+                    return amount === 1;
+                });
                 assert.ok(events[0]);
 
                 syncC.database.destroy();
@@ -625,12 +632,12 @@ describe('replication-couchdb.test.js', () => {
                     type: 'text/plain'
                 });
 
-                await waitUntil(() => emitted.length >= 1);
-                if (emitted.length > 1) {
+                await waitUntil(() => flattenEvents(emitted).length >= 1);
+                if (flattenEvents(emitted).length > 1) {
                     throw new Error('too much events emitted');
                 }
 
-                const firstEvent = emitted[0];
+                const firstEvent = flattenEvents(emitted)[0];
                 if (!firstEvent || !firstEvent.documentData) {
                     throw new Error('firstEvent event missing');
                 }

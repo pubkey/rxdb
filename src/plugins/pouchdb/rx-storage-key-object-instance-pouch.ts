@@ -13,13 +13,15 @@ import type {
     PouchWriteError,
     RxStorageBulkWriteLocalError,
     PouchBulkDocResultRow,
-    PouchSettings
+    PouchSettings,
+    EventBulk
 } from '../../types';
 import {
     flatClone,
     getFromMapOrThrow,
     now,
-    PROMISE_RESOLVE_VOID
+    PROMISE_RESOLVE_VOID,
+    randomCouchString
 } from '../../util';
 import {
     getEventKey,
@@ -31,7 +33,7 @@ import {
 
 export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstance<PouchStorageInternals, PouchSettings> {
 
-    private changes$: Subject<RxStorageChangeEvent<RxLocalDocumentData>> = new Subject();
+    private changes$: Subject<EventBulk<RxStorageChangeEvent<RxLocalDocumentData>>> = new Subject();
 
     constructor(
         public readonly databaseName: string,
@@ -91,6 +93,11 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
         const ret: RxLocalStorageBulkWriteResponse<D> = {
             success: {},
             error: {}
+        };
+
+        const eventBulk: EventBulk<RxStorageChangeEvent<RxLocalDocumentData>> = {
+            id: randomCouchString(10),
+            events: []
         };
 
         pouchResult.forEach(resultRow => {
@@ -176,7 +183,7 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
                     };
 
 
-                    this.changes$.next(storageChangeEvent);
+                    eventBulk.events.push(storageChangeEvent);
                 }
 
             }
@@ -184,8 +191,7 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
 
         });
 
-
-
+        this.changes$.next(eventBulk);
         return ret;
     }
 
@@ -213,7 +219,7 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
         return ret;
     }
 
-    changeStream(): Observable<RxStorageChangeEvent<RxLocalDocumentData>> {
+    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxLocalDocumentData>>> {
         return this.changes$.asObservable();
     }
 }

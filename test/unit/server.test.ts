@@ -44,7 +44,6 @@ config.parallel('server.test.js', () => {
         this.timeout(12 * 1000);
         const port = nexPort();
         const serverCollection = await humansCollection.create(0, 'human');
-
         await serverCollection.database.server({
             path: '/db',
             port
@@ -83,7 +82,6 @@ config.parallel('server.test.js', () => {
             const serverDocs = await serverCollection.find().exec();
             return serverDocs.length === 2;
         });
-
 
         clientCollection.database.destroy();
         serverCollection.database.destroy();

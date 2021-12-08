@@ -36,7 +36,8 @@ import type {
     RxStorageInstanceCreationParams,
     LokiRemoteResponseBroadcastMessage,
     LokiDatabaseSettings,
-    LokiLocalDatabaseState
+    LokiLocalDatabaseState,
+    EventBulk
 } from '../../types';
 import {
     LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE,
@@ -65,7 +66,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
 > {
 
     public readonly primaryPath: keyof RxDocType;
-    private changes$: Subject<RxStorageChangeEvent<RxDocumentData<RxDocType>>> = new Subject();
+    private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>> = new Subject();
     private lastChangefeedSequence: number = 0;
     public readonly instanceId = instanceId++;
 
@@ -271,6 +272,10 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             error: {}
         };
 
+        const eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>> = {
+            id: randomCouchString(10),
+            events: []
+        };
         documentWrites.forEach(writeRow => {
             const startTime = now();
             const id: string = writeRow.document[this.primaryPath] as any;
@@ -299,7 +304,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 localState.collection.insert(flatClone(writeDoc));
                 if (!insertedIsDeleted) {
                     this.addChangeDocumentMeta(id);
-                    this.changes$.next({
+                    eventBulk.events.push({
                         eventId: getLokiEventKey(false, id, newRevision),
                         documentId: id,
                         change: {
@@ -391,7 +396,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                     if (!change) {
                         throw newRxError('SNH', { args: { writeRow } });
                     }
-                    this.changes$.next({
+                    eventBulk.events.push({
                         eventId: getLokiEventKey(false, id, newRevision),
                         documentId: id,
                         change,
@@ -403,6 +408,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             }
         });
         localState.databaseState.saveQueue.addWrite();
+        this.changes$.next(eventBulk);
         return ret;
     }
 
@@ -426,6 +432,10 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
          */
         await promiseWait(0);
 
+        const eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>> = {
+            id: randomCouchString(10),
+            events: []
+        };
         documents.forEach(docData => {
             const startTime = now();
             const id: string = docData[this.primaryPath] as any;
@@ -433,7 +443,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             if (!documentInDb) {
                 // document not here, so we can directly insert
                 localState.collection.insert(flatClone(docData));
-                this.changes$.next({
+                eventBulk.events.push({
                     documentId: id,
                     eventId: getLokiEventKey(false, id, docData._rev),
                     change: {
@@ -490,7 +500,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                         change = null;
                     }
                     if (change) {
-                        this.changes$.next({
+                        eventBulk.events.push({
                             documentId: id,
                             eventId: getLokiEventKey(false, id, docData._rev),
                             change,
@@ -503,6 +513,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             }
         });
         localState.databaseState.saveQueue.addWrite();
+        this.changes$.next(eventBulk);
     }
     async findDocumentsById(ids: string[], deleted: boolean): Promise<{ [documentId: string]: RxDocumentData<RxDocType> }> {
         const localState = await this.mustUseLocalState();
@@ -603,7 +614,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
 
         return ret;
     }
-    changeStream(): Observable<RxStorageChangeEvent<RxDocumentData<RxDocType>>> {
+    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>> {
         return this.changes$.asObservable();
     }
     async close(): Promise<void> {

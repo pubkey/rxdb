@@ -4,6 +4,7 @@ import { newRxError } from '../../rx-error';
 import type { BroadcastChannel, LeaderElector } from 'broadcast-channel';
 import type {
     BulkWriteLocalRow,
+    EventBulk,
     LokiDatabaseSettings,
     LokiLocalDatabaseState,
     LokiRemoteRequestBroadcastMessage,
@@ -49,7 +50,7 @@ let instanceId = 1;
 
 export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstance<LokiStorageInternals, LokiSettings> {
 
-    private changes$: Subject<RxStorageChangeEvent<RxLocalDocumentData>> = new Subject();
+    private changes$: Subject<EventBulk<RxStorageChangeEvent<RxLocalDocumentData>>> = new Subject();
 
     public instanceId = instanceId++;
     private closed = false;
@@ -219,6 +220,10 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
             error: {}
         };
         const writeRowById: Map<string, BulkWriteLocalRow<RxDocType>> = new Map();
+        const eventBulk: EventBulk<RxStorageChangeEvent<RxLocalDocumentData>> = {
+            id: randomCouchString(10),
+            events: []
+        };
         documentWrites.forEach(writeRow => {
             const id = writeRow.document._id;
             writeRowById.set(id, writeRow);
@@ -310,12 +315,12 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
                     startTime,
                     endTime
                 };
-                this.changes$.next(storageChangeEvent);
+                eventBulk.events.push(storageChangeEvent);
             }
         });
 
         localState.databaseState.saveQueue.addWrite();
-
+        this.changes$.next(eventBulk);
         return ret;
     }
     async findLocalDocumentsById<RxDocType = any>(ids: string[]): Promise<{ [documentId: string]: RxLocalDocumentData<RxDocType> }> {
@@ -337,7 +342,7 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
         });
         return ret;
     }
-    changeStream(): Observable<RxStorageChangeEvent<RxLocalDocumentData<{ [key: string]: any; }>>> {
+    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxLocalDocumentData<{ [key: string]: any; }>>>> {
         return this.changes$.asObservable();
     }
     async close(): Promise<void> {

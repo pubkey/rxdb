@@ -68,6 +68,7 @@ import {
     createRxCollectionStorageInstances,
     getCollectionLocalInstanceName
 } from './rx-collection-helper';
+import { ObliviousSet } from 'oblivious-set';
 
 /**
  * stores the used database names
@@ -129,6 +130,13 @@ export class RxDatabaseBase<
     private observable$: Observable<RxChangeEvent> = this.subject.asObservable();
     public storageToken?: string;
     public broadcastChannel$: Subject<RxChangeEvent> = new Subject();
+    /**
+     * Contains the ids of all event bulks that have been emitted
+     * by the database.
+     * Used to detect duplicates that come in again via BroadcastChannel
+     * or other streams.
+     */
+    public emittedEventIds: ObliviousSet<string> = new ObliviousSet(60 * 1000);
 
     /**
      * removes all internal collection-info
@@ -156,6 +164,10 @@ export class RxDatabaseBase<
      * MultiInstance -> RxDatabase.$emit -> RxCollection -> RxDatabase
      */
     $emit(changeEvent: RxChangeEvent) {
+        if (this.emittedEventIds.has(changeEvent.eventId)) {
+            return;
+        }
+        this.emittedEventIds.add(changeEvent.eventId);
 
         // emit into own stream
         this.subject.next(changeEvent);
@@ -648,8 +660,8 @@ async function createRxDatabaseStorageInstances<Internals, InstanceCreationOptio
 async function prepare<Internals, InstanceCreationOptions, Collections>(
     rxDatabase: RxDatabaseBase<Internals, InstanceCreationOptions, Collections>
 ): Promise<void> {
-    const localDocsSub = rxDatabase.localDocumentsStore.changeStream().subscribe(
-        rxStorageChangeEvent => {
+    const localDocsSub = rxDatabase.localDocumentsStore.changeStream().subscribe(eventBulk => {
+        eventBulk.events.forEach(rxStorageChangeEvent => {
             rxDatabase.$emit(
                 storageChangeEventToRxChangeEvent(
                     true,
@@ -657,8 +669,8 @@ async function prepare<Internals, InstanceCreationOptions, Collections>(
                     rxDatabase as any
                 )
             );
-        }
-    );
+        });
+    });
     rxDatabase._subs.push(localDocsSub);
 
     rxDatabase.storageToken = await _ensureStorageTokenExists<Collections>(rxDatabase as any);
