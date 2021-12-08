@@ -39,11 +39,15 @@ describe('bug-report.test.js', () => {
         // create a schema
         const mySchema = {
             version: 0,
-            primaryKey: 'passportId',
+            primaryKey: '_id',
             type: 'object',
             properties: {
+                _id: {
+                    type: 'string',
+                    primary: true, // do not know if this is needed
+                },
                 passportId: {
-                    type: 'string'
+                    type: 'string',
                 },
                 firstName: {
                     type: 'string'
@@ -78,6 +82,7 @@ describe('bug-report.test.js', () => {
 
         // insert a document
         await collections.mycollection.insert({
+            _id: '123456789',
             passportId: 'foobar',
             firstName: 'Bob',
             lastName: 'Kelso',
