@@ -56,7 +56,7 @@
     "test:core": "npm run pretest && mocha ./test_tmp/unit/core.node.js",
     "test:typings": "npm run pretest && cross-env DEFAULT_STORAGE=pouchdb NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/typings.test.js",
     "test:typings:ci": "npm run pretest && mocha --config ./config/.mocharc.js ./test_tmp/typings.test.js",
-    "test:deps": "npm run build && dependency-check ./package.json ./dist/lib/plugins/replication-graphql/index.js ./dist/lib/plugins/server.js ./dist/lib/plugins/validate-z-schema.js ./dist/lib/plugins/lokijs/index.js --no-dev --ignore-module util --ignore-module url --ignore-module \"@types/*\"",
+    "test:deps": "npm run build && dependency-check ./package.json ./dist/lib/plugins/replication-graphql/index.js ./dist/lib/plugins/server.js ./dist/lib/plugins/validate-z-schema.js ./dist/lib/plugins/lokijs/index.js ./dist/lib/plugins/worker/index.js --no-dev --ignore-module util --ignore-module url --ignore-module \"@types/*\"",
     "test:circular": "npm run build && madge --circular ./dist/es/index.js",
     "test:performance:pouchdb": "npm run pretest && cross-env STORAGE=pouchdb mocha --config ./config/.mocharc.js ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
     "test:performance:lokijs": "npm run pretest && cross-env STORAGE=lokijs mocha --config ./config/.mocharc.js ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
