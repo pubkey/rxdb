@@ -64,6 +64,9 @@ jobs:
       - name: npm run test:node:lokijs
         run: npm run test:node:lokijs
 
+      - name: npm run test:node:lokijs-worker
+        run: npm run test:node:lokijs-worker
+
 
       - name: npm run test:fast
         run: npm run test:fast
