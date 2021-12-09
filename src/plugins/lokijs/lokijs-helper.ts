@@ -119,16 +119,16 @@ export function getLokiDatabase(
              * with each other and cause error logs.
              */
             if (hasPersistence) {
-                lokiSaveQueue.saveQueue = lokiSaveQueue.saveQueue.then(() => {
-                    return new Promise<void>((res, rej) => {
-                        database.loadDatabase({}, (err) => {
-                            if (useSettings.autoloadCallback) {
-                                useSettings.autoloadCallback(err);
-                            }
-                            err ? rej(err) : res();
-                        });
-                    })
+                const loadDatabasePromise = new Promise<void>((res, rej) => {
+                    database.loadDatabase({}, (err) => {
+                        if (useSettings.autoloadCallback) {
+                            useSettings.autoloadCallback(err);
+                        }
+                        err ? rej(err) : res();
+                    });
                 });
+                lokiSaveQueue.saveQueue = lokiSaveQueue.saveQueue.then(() => loadDatabasePromise);
+                await loadDatabasePromise;
             }
 
             /**
