@@ -180,7 +180,7 @@
     "express-pouchdb": "4.2.0",
     "faker": "5.5.3",
     "gitbook-cli": "2.3.2",
-    "graphql": "15.7.2",
+    "graphql": "15.8.0",
     "graphql-subscriptions": "1.2.1",
     "gzip-size-cli": "5.1.0",
     "karma": "6.3.9",
