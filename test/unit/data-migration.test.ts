@@ -48,7 +48,10 @@ config.parallel('data-migration.test.js', () => {
      * which returns a storage that saves the data and still has it when opening
      * the database again.
      */
-    if (config.storage.name === 'lokijs') {
+    if (
+        config.storage.name === 'lokijs' ||
+        config.storage.name === 'lokijs-worker'
+    ) {
         return;
     }
 
