@@ -184,6 +184,10 @@ export function trimDots(str: string): string {
 }
 
 
+export function runXTimes(xTimes: number, fn: (idx: number) => void) {
+    new Array(xTimes).fill(0).forEach((_v, idx) => fn(idx));
+}
+
 export function ensureNotFalsy<T>(obj: T | false | undefined | null): T {
     if (!obj) {
         throw new Error('ensureNotFalsy() is falsy');
