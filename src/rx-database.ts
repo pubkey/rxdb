@@ -47,9 +47,11 @@ import {
 import {
     Subject,
     Subscription,
-    Observable,
-    mergeMap
+    Observable
 } from 'rxjs';
+import {
+    mergeMap
+} from 'rxjs/operators';
 import {
     createRxCollection
 } from './rx-collection';
