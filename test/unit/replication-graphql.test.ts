@@ -1322,37 +1322,28 @@ describe('replication-graphql.test.js', () => {
                     deletedFlag: 'deleted'
                 });
 
-                console.log('--- 1');
                 await replicationState.awaitInitialReplication();
-                console.log('--- 2');
-
 
                 const docsOnServer = server.getDocuments();
                 assert.strictEqual(docsOnServer.length, amount);
 
                 // check for inserts
-                console.log('--- 3');
                 await c.insert(schemaObjects.humanWithTimestamp());
-                console.log('--- 4');
                 await AsyncTestUtil.waitUntil(async () => {
                     const docsOnServer2 = server.getDocuments();
                     return docsOnServer2.length === amount + 1;
                 });
 
                 // check for deletes
-                console.log('--- 5');
                 await c.findOne().remove();
-                console.log('--- 6');
                 await AsyncTestUtil.waitUntil(async () => {
                     const docsOnServer2 = server.getDocuments();
                     const oneShouldBeDeleted = docsOnServer2.find((d: any) => d.deleted === true);
                     return !!oneShouldBeDeleted;
                 });
-                console.log('--- 7');
 
                 server.close();
                 c.database.destroy();
-                console.log('--- 8');
             });
             it('should not send index-documents', async () => {
                 const server = await SpawnServer.spawn();

@@ -2,8 +2,7 @@ import {
     filter,
     startWith,
     mergeMap,
-    shareReplay,
-    map
+    shareReplay
 } from 'rxjs/operators';
 
 import {
@@ -16,7 +15,8 @@ import {
     getFromMapOrThrow,
     clone,
     PROMISE_RESOLVE_FALSE,
-    PROMISE_RESOLVE_VOID
+    PROMISE_RESOLVE_VOID,
+    RXJS_SHARE_REPLAY_DEFAULTS
 } from './util';
 import {
     _handleToStorageInstance,
@@ -90,7 +90,8 @@ import type {
     RxChangeEventUpdate,
     RxChangeEventDelete,
     RxStorageInstance,
-    CollectionsOfDatabase
+    CollectionsOfDatabase,
+    RxChangeEventBulk
 } from './types';
 import type {
     RxGraphQLReplicationState
@@ -203,6 +204,7 @@ export class RxCollectionBase<
     private _onDestroyCall?: () => void;
     public async prepare(
         /**
+         * TODO is this still needed?
          * set to true if the collection data already exists on this storage adapter
          */
         wasCreatedBefore: boolean
@@ -211,10 +213,9 @@ export class RxCollectionBase<
 
         this._crypter = createCrypter(this.database.password, this.schema);
 
-        this._observable$ = this.database.$.pipe(
-            filter((event: RxChangeEvent<any>) => {
-                return event.collectionName === this.name;
-            })
+        this._observable$ = this.database.eventBulks$.pipe(
+            filter(changeEventBulk => changeEventBulk.collectionName === this.name),
+            mergeMap(changeEventBulk => changeEventBulk.events),
         );
         this._changeEventBuffer = createChangeEventBuffer(this.asRxCollection);
 
@@ -225,28 +226,36 @@ export class RxCollectionBase<
          * to save performance.
          */
         const subDocs = this.storageInstance.changeStream().subscribe(eventBulk => {
-            eventBulk.events.forEach(storageEvent => {
-                const changeEvent = storageChangeEventToRxChangeEvent(
+            const changeEventBulk: RxChangeEventBulk = {
+                id: eventBulk.id,
+                internal: false,
+                collectionName: this.name,
+                storageToken: ensureNotFalsy(this.database.storageToken),
+                events: eventBulk.events.map(ev => storageChangeEventToRxChangeEvent(
                     false,
-                    storageEvent,
-                    this.database,
+                    ev,
                     this as any
-                );
-                this.$emit(changeEvent);
-            });
+                )),
+                databaseToken: this.database.token
+            };
+            this.database.$emit(changeEventBulk);
         });
 
         this._subs.push(subDocs);
         const subLocalDocs = this.localDocumentsStore.changeStream().subscribe(eventBulk => {
-            eventBulk.events.forEach(storageEvent => {
-                const changeEvent = storageChangeEventToRxChangeEvent(
+            const changeEventBulk: RxChangeEventBulk = {
+                id: eventBulk.id,
+                internal: false,
+                collectionName: this.name,
+                storageToken: ensureNotFalsy(this.database.storageToken),
+                events: eventBulk.events.map(ev => storageChangeEventToRxChangeEvent(
                     true,
-                    storageEvent,
-                    this.database,
+                    ev,
                     this as any
-                );
-                this.$emit(changeEvent);
-            });
+                )),
+                databaseToken: this.database.token
+            };
+            this.database.$emit(changeEventBulk);
         });
         this._subs.push(subLocalDocs);
 
@@ -307,11 +316,6 @@ export class RxCollectionBase<
             .map((doc: any) => _handleFromStorageInstance(this, doc, noDecrypt));
         return docs;
     }
-
-    $emit(changeEvent: RxChangeEvent<any>) {
-        return this.database.$emit(changeEvent);
-    }
-
 
     /**
      * TODO internally call bulkInsert
@@ -701,10 +705,7 @@ export class RxCollectionBase<
                 return resultMap;
             }),
             filter(x => !!x),
-            shareReplay({
-                bufferSize: 1,
-                refCount: true
-            })
+            shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
         );
     }
 

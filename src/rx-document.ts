@@ -131,13 +131,6 @@ export const basePrototype = {
     },
 
     /**
-     * emits the changeEvent to the upper instance (RxCollection)
-     */
-    $emit(this: RxDocument, changeEvent: RxChangeEvent<any>) {
-        return this.collection.$emit(changeEvent);
-    },
-
-    /**
      * returns observable of the value of the given path
      */
     get$(this: RxDocument, path: string): Observable<any> {

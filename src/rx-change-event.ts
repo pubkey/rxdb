@@ -13,11 +13,6 @@ import type {
     RxChangeEvent
 } from './types';
 
-export type RxChangeEventBroadcastChannelData = {
-    cE: RxChangeEvent<any>,
-    storageToken: string
-};
-
 export function getDocumentDataOfRxChangeEvent<T>(
     rxChangeEvent: RxChangeEvent<T>
 ): T {
@@ -28,17 +23,6 @@ export function getDocumentDataOfRxChangeEvent<T>(
     }
 
 }
-
-export function isRxChangeEventIntern(
-    rxChangeEvent: RxChangeEvent<any>
-): boolean {
-    if (rxChangeEvent.collectionName && rxChangeEvent.collectionName.charAt(0) === '_') {
-        return true;
-    } else {
-        return false;
-    }
-}
-
 
 export function rxChangeEventToEventReduceChangeEvent<DocType>(
     rxChangeEvent: RxChangeEvent<DocType>

@@ -154,16 +154,13 @@ export async function findLocalDocument<DocType>(
 export function storageChangeEventToRxChangeEvent<DocType>(
     isLocal: boolean,
     rxStorageChangeEvent: RxStorageChangeEvent<DocType>,
-    rxDatabase: RxDatabase,
     rxCollection?: RxCollection,
 ): RxChangeEvent<DocType> {
-
     let documentData;
     if (rxStorageChangeEvent.change.operation !== 'DELETE') {
         if (!rxCollection) {
             documentData = rxStorageChangeEvent.change.doc;
         } else {
-
             const hookParams = {
                 collection: rxCollection,
                 doc: rxStorageChangeEvent.change.doc as any
@@ -188,21 +185,16 @@ export function storageChangeEventToRxChangeEvent<DocType>(
             previousDocumentData = rxCollection._crypter.decrypt(previousDocumentData);
         }
     }
-
-
     const ret: RxChangeEvent<DocType> = {
         eventId: rxStorageChangeEvent.eventId,
         documentId: rxStorageChangeEvent.documentId,
-        databaseToken: rxDatabase.token,
         collectionName: rxCollection ? rxCollection.name : undefined,
         startTime: rxStorageChangeEvent.startTime,
         endTime: rxStorageChangeEvent.endTime,
         isLocal,
-
         operation: rxStorageChangeEvent.change.operation,
         documentData: overwritable.deepFreezeWhenDevMode(documentData),
         previousDocumentData: overwritable.deepFreezeWhenDevMode(previousDocumentData)
     };
-
     return ret;
 }

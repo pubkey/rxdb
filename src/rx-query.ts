@@ -18,7 +18,8 @@ import {
     clone,
     overwriteGetterForCaching,
     now,
-    PROMISE_RESOLVE_FALSE
+    PROMISE_RESOLVE_FALSE,
+    RXJS_SHARE_REPLAY_DEFAULTS
 } from './util';
 import {
     newRxError,
@@ -118,10 +119,7 @@ export class RxQueryBase<
                             return docs;
                         }
                     }),
-                    shareReplay({
-                        bufferSize: 1,
-                        refCount: true
-                    })
+                    shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
                 ).asObservable();
 
             /**
@@ -516,6 +514,7 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
             const runChangeEvents: RxChangeEvent<any>[] = rxQuery.asRxQuery.collection
                 ._changeEventBuffer
                 .reduceByLastOfDoc(missedChangeEvents);
+
             const eventReduceResult = calculateNewResults(
                 rxQuery as any,
                 runChangeEvents

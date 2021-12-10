@@ -527,3 +527,15 @@ export const blobBufferUtil = {
         });
     }
 };
+
+import type { ShareReplayConfig } from 'rxjs/internal/operators/shareReplay';
+/**
+ * Using shareReplay() without settings will not unsubscribe
+ * if there are no more subscribers.
+ * So we use these defaults.
+ * @link https://cartant.medium.com/rxjs-whats-changed-with-sharereplay-65c098843e95
+ */
+export const RXJS_SHARE_REPLAY_DEFAULTS: ShareReplayConfig = {
+    bufferSize: 1,
+    refCount: true
+}

@@ -118,6 +118,7 @@ export type {
     RxCollection,
     RxCacheReplacementPolicy,
     RxChangeEvent,
+    RxChangeEventBulk,
     RxCollectionCreator,
     RxCollectionGenerated,
     RxCollectionHookCallback,

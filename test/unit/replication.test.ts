@@ -268,11 +268,6 @@ describe('replication.test.js', () => {
                     REPLICATION_IDENTIFIER_TEST,
                     10
                 );
-
-                console.log('changesResult: ');
-                console.dir(changesResult.changedDocs);
-                console.log(JSON.stringify(changesResult, null, 4));
-
                 assert.strictEqual(changesResult.changedDocs.size, 1);
                 const docFromChange = getFromMapOrThrow(changesResult.changedDocs, id);
                 assert.ok(docFromChange.doc._deleted);

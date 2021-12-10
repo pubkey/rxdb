@@ -70,7 +70,6 @@ config.parallel('orm.test.js', () => {
                     const reserved = [
                         'synced',
                         'migrate',
-                        '$emit',
                         'insert',
                         'preInsert'
                     ];
