@@ -1,8 +1,11 @@
 /**
  * functions that can or should be overwritten by plugins
+ * IMPORTANT: Do not import any big stuff from RxDB here,
+ * the 'overwritable' can be used inside of WebWorkers for the RxStorage only and
+ * we do not want to have the full RxDB lib bundled in them.
  */
 
-import { DeepReadonly } from './types/util';
+import type { DeepReadonly } from './types/util';
 import {
     pluginMissing
 } from './util';
