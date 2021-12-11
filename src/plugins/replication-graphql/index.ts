@@ -87,10 +87,6 @@ export class RxGraphQLReplicationState<RxDocType> {
     public endpointHash: string;
     public _subjects = {
         received: new Subject(), // all documents that are received from the endpoint
-        /**
-         * @deprecated use received instead because it is spelled correctly
-         */
-        recieved: new Subject(), // all documents that are received from the endpoint
         send: new Subject(), // all documents that are send to the endpoint
         error: new Subject(), // all errors that are received from the endpoint, emits new Error() objects
         canceled: new BehaviorSubject(false), // true when the replication was canceled
@@ -106,10 +102,6 @@ export class RxGraphQLReplicationState<RxDocType> {
     public initialReplicationComplete$: Observable<any> = undefined as any;
 
     public received$: Observable<RxDocumentData<RxDocType>> = undefined as any;
-    /**
-     * @deprecated use received instead because it is spelled correctly
-     */
-    public recieved$: Observable<RxDocumentData<RxDocType>> = undefined as any;
     public send$: Observable<any> = undefined as any;
     public error$: Observable<any> = undefined as any;
     public canceled$: Observable<any> = undefined as any;
@@ -289,11 +281,6 @@ export class RxGraphQLReplicationState<RxDocType> {
         }
         await this.handleDocumentsFromRemote(modified);
         modified.map((doc: any) => this._subjects.received.next(doc));
-        /**
-         * @deprecated use received instead because it is spelled correctly
-         */
-        modified.map((doc: any) => this._subjects.recieved.next(doc));
-
 
         if (modified.length === 0) {
             if (this.live) {

@@ -9,6 +9,7 @@ BREAKING:
     - Replaced all `Map` with plain json objects so that they can be `JSON.stringify`-ed
     - Replaced typings of event stream to use `EventBulk` and process events in bulks to save performance.
   - Internally all events are handles via bulks, this saves performance when events are transfered over a WebWorker or a BroadcastChannel.
+  - Removed the deprecated `recieved` methods, use `recieved` instead. [See #3392](https://github.com/pubkey/rxdb/pull/3392)
 
 Bugfixes:
   - Do not throw an error when database is destroyed while a GraphQL replication is running.
