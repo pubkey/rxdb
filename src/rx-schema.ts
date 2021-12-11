@@ -180,12 +180,10 @@ export class RxSchema<T = any> {
         documentData: T
     ): T {
         const cloned = flatClone(documentData);
-
         const newPrimary = getComposedPrimaryKeyOfDocumentData<T>(
             this.jsonSchema,
             documentData
         );
-
         const existingPrimary: string | undefined = documentData[this.primaryPath] as any;
         if (
             existingPrimary &&
@@ -289,6 +287,9 @@ export function normalize<T>(jsonSchema: RxJsonSchema<T>): RxJsonSchema<T> {
     if (jsonSchema.indexes) {
         normalizedSchema.indexes = Array.from(jsonSchema.indexes); // indexes should remain unsorted
     }
+    // primary key must be unsorted
+    normalizedSchema.primaryKey = jsonSchema.primaryKey;
+
     return normalizedSchema;
 }
 

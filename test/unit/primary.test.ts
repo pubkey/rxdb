@@ -417,4 +417,86 @@ config.parallel('primary.test.js', () => {
             col.database.destroy();
         });
     });
+    describe('issues', () => {
+        it('#3546 Compound primary key migration throws "Value of primary key(s) cannot be changed"', async () => {
+            // create a schema
+            const getSchema = (version: number) => ({
+                version,
+                primaryKey: {
+                    key: 'id',
+                    fields: ['b_firstName', 'a_lastName'],
+                    separator: '|',
+                },
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                    },
+                    passportId: {
+                        type: 'string',
+                    },
+                    b_firstName: {
+                        type: 'string',
+                    },
+                    a_lastName: {
+                        type: 'string',
+                    },
+                    age: {
+                        type: 'integer',
+                        minimum: 0,
+                        maximum: 150,
+                    },
+                },
+            });
+
+            // generate a random database-name
+            const name = randomCouchString(10);
+
+            // create a database
+            const db = await createRxDatabase({
+                name,
+                storage: getRxStoragePouch('memory'),
+                eventReduce: true,
+                ignoreDuplicate: true,
+            });
+            const collections = await db.addCollections({
+                mycollection: {
+                    schema: getSchema(0),
+                },
+            });
+
+            await collections.mycollection.insert({
+                passportId: 'foobar',
+                b_firstName: 'Bob',
+                a_lastName: 'Kelso',
+                age: 56,
+            });
+
+            const dbInOtherTab = await createRxDatabase({
+                name,
+                storage: getRxStoragePouch('memory'),
+                eventReduce: true,
+                ignoreDuplicate: true,
+            });
+            const collectionInOtherTab = await dbInOtherTab.addCollections({
+                mycollection: {
+                    schema: getSchema(1),
+                    migrationStrategies: {
+                        1: (oldDoc) => oldDoc,
+                    },
+                },
+            });
+
+            // find document after migration
+            await collectionInOtherTab.mycollection
+                .findOne()
+                .where('b_firstName')
+                .eq('Bob')
+                .exec(true);
+
+
+            db.destroy();
+            dbInOtherTab.destroy();
+        });
+    });
 });
