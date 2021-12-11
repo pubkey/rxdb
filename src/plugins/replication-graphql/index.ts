@@ -440,7 +440,7 @@ export class RxGraphQLReplicationState<RxDocType> {
             doc._deleted = deletedValue;
             delete doc[this.deletedFlag];
 
-            const docStateInLocalStorageInstance = docsFromLocal.get(documentId);
+            const docStateInLocalStorageInstance = docsFromLocal[documentId];
             let newRevision = createRevisionForPulledDocument(
                 this.endpointHash,
                 doc

@@ -9,19 +9,28 @@
  */
 
 import type {
+    BulkWriteRow,
+    EventBulk,
     PouchBulkDocOptions,
     PouchBulkDocResultRow,
     PouchDBInstance,
-    PouchWriteError
+    PouchWriteError,
+    RxDocumentData,
+    RxStorageChangeEvent
 } from '../../types';
 import PouchDBCore from 'pouchdb-core';
 import { Subject } from 'rxjs';
 import {
     flatClone,
-    now
+    getFromMapOrThrow,
+    getHeightOfRevision,
+    now,
+    randomCouchString
 } from '../../util';
 import { newRxError } from '../../rx-error';
 import { ObliviousSet } from 'oblivious-set';
+import { getEventKey, pouchChangeRowToChangeEvent, POUCHDB_DESIGN_PREFIX, POUCHDB_LOCAL_PREFIX, pouchDocumentDataToRxDocumentData, writeAttachmentsToAttachments } from './pouchdb-helper';
+import { ChangeEvent } from 'event-reduce-js';
 
 // ensure only added once
 let addedToPouch = false;
@@ -38,20 +47,14 @@ declare type EmitData = {
 };
 
 
-declare type Emitter = {
-    subject: Subject<EmitData>;
-    /**
-     * Contains all eventIds that of emitted events,
-     * used because multi-instance pouchdbs often will reemit the same
-     * event on the other browser tab.
-     */
-    obliviousSet: ObliviousSet<string>;
+declare type Emitter<RxDocType> = {
+    subject: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>>;
 };
-export const EVENT_EMITTER_BY_POUCH_INSTANCE: Map<string, Emitter> = new Map();
+export const EVENT_EMITTER_BY_POUCH_INSTANCE: Map<string, Emitter<any>> = new Map();
 
-export function getCustomEventEmitterByPouch(
+export function getCustomEventEmitterByPouch<RxDocType>(
     pouch: PouchDBInstance
-): Emitter {
+): Emitter<RxDocType> {
     const key = [
         pouch.name,
         pouch.adapter
@@ -59,8 +62,7 @@ export function getCustomEventEmitterByPouch(
     let emitter = EVENT_EMITTER_BY_POUCH_INSTANCE.get(key);
     if (!emitter) {
         emitter = {
-            subject: new Subject(),
-            obliviousSet: new ObliviousSet(60 * 1000)
+            subject: new Subject()
         };
         EVENT_EMITTER_BY_POUCH_INSTANCE.set(key, emitter);
     }
@@ -194,27 +196,43 @@ export function addCustomEventsPluginToPouch() {
                     throw err;
                 }
             } else {
-                if (!options.isDeeper) {
-                    const endTime = now();
-                    const emitData = {
-                        emitId: t,
-                        writeDocs: docs,
-                        writeOptions: options,
-                        writeResult: result,
-                        previousDocs,
-                        startTime,
-                        endTime
-                    };
+                return (async () => {
 
-                    const emitter = getCustomEventEmitterByPouch(this);
-                    emitter.subject.next(emitData);
-                }
+                    /**
+                     * For calls that came from RxDB,
+                     * we have to ensure that the events are emitted
+                     * before the actual call resolves.
+                     */
+                    if (!options.isDeeper) {
+                        const endTime = now();
+                        const emitData = {
+                            emitId: t,
+                            writeDocs: docs,
+                            writeOptions: options,
+                            writeResult: result,
+                            previousDocs,
+                            startTime,
+                            endTime
+                        };
 
-                if (callback) {
-                    callback(null, result);
-                } else {
-                    return result;
-                }
+                        const events = await eventEmitDataToStorageEvents(
+                            '_id',
+                            emitData
+                        );
+                        const eventBulk: EventBulk<any> = {
+                            id: randomCouchString(10),
+                            events
+                        }
+                        const emitter = getCustomEventEmitterByPouch(this);
+                        emitter.subject.next(eventBulk);
+                    }
+
+                    if (callback) {
+                        callback(null, result);
+                    } else {
+                        return result;
+                    }
+                })();
             }
         });
     };
@@ -225,3 +243,226 @@ export function addCustomEventsPluginToPouch() {
 
 }
 
+export async function eventEmitDataToStorageEvents<RxDocType>(
+    primaryPath: string,
+    emitData: EmitData
+): Promise<RxStorageChangeEvent<RxDocumentData<RxDocType>>[]> {
+    const ret: RxStorageChangeEvent<RxDocumentData<RxDocType>>[] = [];
+
+    if (emitData.writeOptions.hasOwnProperty('new_edits') && !emitData.writeOptions.new_edits) {
+        await Promise.all(
+            emitData.writeDocs.map(async (writeDoc) => {
+                const id = writeDoc._id;
+
+                writeDoc = pouchDocumentDataToRxDocumentData(
+                    primaryPath,
+                    writeDoc
+                );
+
+                writeDoc._attachments = await writeAttachmentsToAttachments(writeDoc._attachments);
+
+                let previousDoc = emitData.previousDocs.get(id);
+                if (previousDoc) {
+                    previousDoc = pouchDocumentDataToRxDocumentData(
+                        primaryPath,
+                        previousDoc
+                    );
+                }
+
+                if (
+                    previousDoc &&
+                    getHeightOfRevision(previousDoc._rev) > getHeightOfRevision(writeDoc._rev)
+                ) {
+                    // not the newest revision was added
+                    // TODO is comparing the height enough to compare revisions?
+                    return;
+                }
+                if (!previousDoc && writeDoc._deleted) {
+                    // deleted document was added as revision
+                    return;
+                }
+
+                if (previousDoc && previousDoc._deleted && writeDoc._deleted) {
+                    // delete document was deleted again
+                    return;
+                }
+
+                let event: ChangeEvent<RxDocumentData<RxDocType>>;
+                if ((!previousDoc || previousDoc._deleted) && !writeDoc._deleted) {
+                    // was insert
+                    event = {
+                        operation: 'INSERT',
+                        doc: writeDoc,
+                        id: id,
+                        previous: null
+                    };
+                } else if (writeDoc._deleted && previousDoc && !previousDoc._deleted) {
+                    // was delete
+                    previousDoc._rev = writeDoc._rev;
+                    event = {
+                        operation: 'DELETE',
+                        doc: null,
+                        id: id,
+                        previous: previousDoc
+                    };
+                } else if (
+                    previousDoc
+                ) {
+                    // was update
+                    event = {
+                        operation: 'UPDATE',
+                        doc: writeDoc,
+                        id: id,
+                        previous: previousDoc
+                    };
+                } else {
+                    throw newRxError('SNH', { args: { writeDoc } });
+                }
+
+                const changeEvent = changeEventToNormal(
+                    primaryPath,
+                    event,
+                    emitData.startTime,
+                    emitData.endTime
+                );
+                ret.push(changeEvent);
+            })
+        );
+    }
+    /**
+     * There is no write map given for internal pouchdb document writes
+     * like it is done with replication.
+     */
+    else if (
+        !emitData.writeOptions.custom ||
+        (emitData.writeOptions.custom && !emitData.writeOptions.custom.writeRowById)
+    ) {
+        const writeDocsById: Map<string, any> = new Map();
+        emitData.writeDocs.forEach(writeDoc => writeDocsById.set(writeDoc._id, writeDoc));
+        await Promise.all(
+            emitData.writeResult.map(async (resultRow) => {
+                const id = resultRow.id;
+                if (
+                    id.startsWith(POUCHDB_DESIGN_PREFIX) ||
+                    id.startsWith(POUCHDB_LOCAL_PREFIX)
+                ) {
+                    return;
+                }
+                let writeDoc = getFromMapOrThrow(writeDocsById, resultRow.id);
+                writeDoc = pouchDocumentDataToRxDocumentData(
+                    primaryPath,
+                    writeDoc
+                );
+
+                writeDoc._attachments = await writeAttachmentsToAttachments(writeDoc._attachments);
+
+                writeDoc = flatClone(writeDoc);
+                writeDoc._rev = (resultRow as any).rev;
+                const event = pouchChangeRowToChangeEvent<RxDocType>(
+                    primaryPath as any,
+                    writeDoc
+                );
+                const changeEvent = changeEventToNormal(primaryPath, event);
+                ret.push(changeEvent);
+            })
+        );
+    } else {
+        const writeMap: Map<string, BulkWriteRow<RxDocType>> = emitData.writeOptions.custom.writeRowById;
+        await Promise.all(
+            emitData.writeResult.map(async (resultRow) => {
+                if ((resultRow as PouchWriteError).error) {
+                    return;
+                }
+
+                const id = resultRow.id;
+                const writeRow = getFromMapOrThrow(writeMap, id);
+                const newDoc = pouchDocumentDataToRxDocumentData(
+                    primaryPath,
+                    writeRow.document as any
+                );
+                newDoc._attachments = await writeAttachmentsToAttachments(newDoc._attachments);
+                newDoc._rev = (resultRow as PouchBulkDocResultRow).rev;
+
+                let event: ChangeEvent<RxDocumentData<RxDocType>>;
+                if (!writeRow.previous || writeRow.previous._deleted) {
+                    // was insert
+                    event = {
+                        operation: 'INSERT',
+                        doc: newDoc,
+                        id: id,
+                        previous: null
+                    };
+                } else if (writeRow.document._deleted) {
+                    // was delete
+
+                    // we need to add the new revision to the previous doc
+                    // so that the eventkey is calculated correctly.
+                    // Is this a hack? idk.
+                    const previousDoc = pouchDocumentDataToRxDocumentData(
+                        primaryPath,
+                        writeRow.previous as any
+                    );
+                    previousDoc._attachments = await writeAttachmentsToAttachments(previousDoc._attachments);
+                    previousDoc._rev = (resultRow as PouchBulkDocResultRow).rev;
+
+                    event = {
+                        operation: 'DELETE',
+                        doc: null,
+                        id: resultRow.id,
+                        previous: previousDoc
+                    };
+                } else {
+                    // was update
+                    event = {
+                        operation: 'UPDATE',
+                        doc: newDoc,
+                        id: resultRow.id,
+                        previous: writeRow.previous
+                    };
+                }
+
+                if (
+                    writeRow.document._deleted &&
+                    (
+                        !writeRow.previous ||
+                        writeRow.previous._deleted
+                    )
+                ) {
+                    /**
+                     * A deleted document was newly added to the storage engine,
+                     * do not emit an event.
+                     */
+                } else {
+                    const changeEvent = changeEventToNormal(
+                        emitData.writeOptions.custom.primaryPath,
+                        event,
+                        emitData.startTime,
+                        emitData.endTime
+                    );
+                    ret.push(changeEvent);
+                }
+            })
+        );
+    }
+
+
+    return ret;
+}
+
+export function changeEventToNormal<RxDocType>(
+    primaryPath: string,
+    change: ChangeEvent<RxDocumentData<RxDocType>>,
+    startTime?: number,
+    endTime?: number
+): RxStorageChangeEvent<RxDocumentData<RxDocType>> {
+    const doc: RxDocumentData<RxDocType> = change.operation === 'DELETE' ? change.previous as any : change.doc as any;
+    const primary: string = (doc as any)[primaryPath];
+    const storageChangeEvent: RxStorageChangeEvent<RxDocumentData<RxDocType>> = {
+        eventId: getEventKey(false, primary, doc._rev),
+        documentId: primary,
+        change,
+        startTime,
+        endTime
+    };
+    return storageChangeEvent;
+}

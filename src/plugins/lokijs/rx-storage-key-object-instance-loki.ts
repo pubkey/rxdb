@@ -4,6 +4,7 @@ import { newRxError } from '../../rx-error';
 import type { BroadcastChannel, LeaderElector } from 'broadcast-channel';
 import type {
     BulkWriteLocalRow,
+    EventBulk,
     LokiDatabaseSettings,
     LokiLocalDatabaseState,
     LokiRemoteRequestBroadcastMessage,
@@ -31,9 +32,11 @@ import {
     closeLokiCollections,
     getLokiDatabase,
     getLokiEventKey,
+    getLokiLeaderElector,
     LOKIJS_COLLECTION_DEFAULT_OPTIONS,
     LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE,
     OPEN_LOKIJS_STORAGE_INSTANCES,
+    removeLokiLeaderElectorReference,
     stripLokiKey
 } from './lokijs-helper';
 import type {
@@ -41,32 +44,30 @@ import type {
 } from 'lokijs';
 import { getLeaderElectorByBroadcastChannel } from '../leader-election';
 import { IdleQueue } from 'custom-idle-queue';
+import { RxStorageLoki } from './rx-storage-lokijs';
 
 let instanceId = 1;
 
 export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstance<LokiStorageInternals, LokiSettings> {
 
-    private changes$: Subject<RxStorageChangeEvent<RxLocalDocumentData>> = new Subject();
-    public readonly leaderElector?: LeaderElector;
+    private changes$: Subject<EventBulk<RxStorageChangeEvent<RxLocalDocumentData>>> = new Subject();
 
     public instanceId = instanceId++;
     private closed = false;
 
     constructor(
+        public readonly storage: RxStorageLoki,
         public readonly databaseName: string,
         public readonly collectionName: string,
         public readonly internals: LokiStorageInternals,
         public readonly options: Readonly<LokiSettings>,
-        public readonly databaseSettings: LokiDatabaseSettings,
-        public readonly idleQueue: IdleQueue,
-        public readonly broadcastChannel?: BroadcastChannel<LokiRemoteRequestBroadcastMessage | LokiRemoteResponseBroadcastMessage>
+        public readonly databaseSettings: LokiDatabaseSettings
     ) {
         OPEN_LOKIJS_STORAGE_INSTANCES.add(this);
-        if (broadcastChannel) {
-            this.leaderElector = getLeaderElectorByBroadcastChannel(broadcastChannel);
-            this.leaderElector.awaitLeadership().then(() => {
+        if (this.internals.leaderElector) {
+            this.internals.leaderElector.awaitLeadership().then(() => {
                 // this instance is leader now, so it has to reply to queries from other instances
-                ensureNotFalsy(this.broadcastChannel).addEventListener('message', async (msg) => {
+                ensureNotFalsy(this.internals.leaderElector).broadcastChannel.addEventListener('message', async (msg) => {
                     if (
                         msg.type === LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE &&
                         msg.requestId &&
@@ -93,7 +94,7 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
                             isError,
                             type: msg.type
                         };
-                        ensureNotFalsy(this.broadcastChannel).postMessage(response);
+                        ensureNotFalsy(this.internals.leaderElector).broadcastChannel.postMessage(response);
                     }
                 });
             });
@@ -117,7 +118,7 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
         if (this.internals.localState) {
             return this.internals.localState;
         }
-        const leaderElector = ensureNotFalsy(this.leaderElector);
+        const leaderElector = ensureNotFalsy(this.internals.leaderElector);
 
         while (
             !leaderElector.hasLeader
@@ -151,8 +152,7 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
                 databaseName: this.databaseName,
                 collectionName: this.collectionName,
                 options: this.options,
-                idleQueue: this.idleQueue,
-                broadcastChannel: this.broadcastChannel
+                multiInstance: this.internals.leaderElector ? true : false
             }, this.databaseSettings);
             return this.getLocalState();
         } else {
@@ -165,7 +165,7 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
         operation: string,
         params: any[]
     ): Promise<any | any[]> {
-        const broadcastChannel = ensureNotFalsy(this.broadcastChannel);
+        const broadcastChannel = ensureNotFalsy(this.internals.leaderElector).broadcastChannel;
         const requestId = randomCouchString(12);
         const responsePromise = new Promise<any>((res, rej) => {
             const listener = (msg: any) => {
@@ -216,10 +216,14 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
         await promiseWait(0);
 
         const ret: RxLocalStorageBulkWriteResponse<RxDocType> = {
-            success: new Map(),
-            error: new Map()
+            success: {},
+            error: {}
         };
         const writeRowById: Map<string, BulkWriteLocalRow<RxDocType>> = new Map();
+        const eventBulk: EventBulk<RxStorageChangeEvent<RxLocalDocumentData>> = {
+            id: randomCouchString(10),
+            events: []
+        };
         documentWrites.forEach(writeRow => {
             const id = writeRow.document._id;
             writeRowById.set(id, writeRow);
@@ -241,7 +245,7 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
                         documentId: id,
                         writeRow: writeRow
                     };
-                    ret.error.set(id, err);
+                    ret.error[id] = err;
                     return;
                 } else {
                     const toLoki: any = flatClone(writeDoc);
@@ -252,7 +256,7 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
                 localState.collection.insert(flatClone(writeDoc));
             }
 
-            ret.success.set(id, stripLokiKey(writeDoc));
+            ret.success[id] = stripLokiKey(writeDoc);
 
             const endTime = now();
 
@@ -311,34 +315,34 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
                     startTime,
                     endTime
                 };
-                this.changes$.next(storageChangeEvent);
+                eventBulk.events.push(storageChangeEvent);
             }
         });
 
         localState.databaseState.saveQueue.addWrite();
-
+        this.changes$.next(eventBulk);
         return ret;
     }
-    async findLocalDocumentsById<RxDocType = any>(ids: string[]): Promise<Map<string, RxLocalDocumentData<RxDocType>>> {
+    async findLocalDocumentsById<RxDocType = any>(ids: string[]): Promise<{ [documentId: string]: RxLocalDocumentData<RxDocType> }> {
         const localState = await this.mustUseLocalState();
         if (!localState) {
             return this.requestRemoteInstance('findLocalDocumentsById', [ids]);
         }
 
         await promiseWait(0);
-        const ret: Map<string, RxLocalDocumentData<RxDocType>> = new Map();
+        const ret: { [documentId: string]: RxLocalDocumentData<RxDocType> } = {};
         ids.forEach(id => {
             const documentInDb = localState.collection.by('_id', id);
             if (
                 documentInDb &&
                 !documentInDb._deleted
             ) {
-                ret.set(id, stripLokiKey(documentInDb));
+                ret[id] = stripLokiKey(documentInDb);
             }
         });
         return ret;
     }
-    changeStream(): Observable<RxStorageChangeEvent<RxLocalDocumentData<{ [key: string]: any; }>>> {
+    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxLocalDocumentData<{ [key: string]: any; }>>>> {
         return this.changes$.asObservable();
     }
     async close(): Promise<void> {
@@ -355,6 +359,7 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
                 ]
             );
         }
+        removeLokiLeaderElectorReference(this.storage, this.databaseName);
     }
     async remove(): Promise<void> {
         const localState = await this.mustUseLocalState();
@@ -363,7 +368,7 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
         }
         localState.databaseState.database.removeCollection(localState.collection.name);
         localState.databaseState.database.removeCollection(localState.changesCollection.name);
-        this.closed = true;
+        this.close();
     }
 }
 
@@ -377,8 +382,7 @@ export async function createLokiKeyValueLocalState(
     }
     const databaseState = await getLokiDatabase(
         params.databaseName,
-        databaseSettings,
-        params.idleQueue
+        databaseSettings
     );
 
     const collectionOptions: Partial<CollectionOptions<RxLocalDocumentData>> = Object.assign(
@@ -416,32 +420,38 @@ export async function createLokiKeyValueLocalState(
 }
 
 export async function createLokiKeyObjectStorageInstance(
+    storage: RxStorageLoki,
     params: RxKeyObjectStorageInstanceCreationParams<LokiSettings>,
     databaseSettings: LokiDatabaseSettings
 ): Promise<RxStorageKeyObjectInstanceLoki> {
     const internals: LokiStorageInternals = {};
-    // optimisation shortcut, directly create db is non multi instance.
-    if (!params.broadcastChannel) {
+
+
+    if (params.multiInstance) {
+        const leaderElector = getLokiLeaderElector(storage, params.databaseName);
+        internals.leaderElector = leaderElector;
+    } else {
+        // optimisation shortcut, directly create db is non multi instance.
         internals.localState = createLokiKeyValueLocalState(params, databaseSettings);
         await internals.localState;
     }
 
     const instance = new RxStorageKeyObjectInstanceLoki(
+        storage,
         params.databaseName,
         params.collectionName,
         internals,
         params.options,
-        databaseSettings,
-        params.idleQueue,
-        params.broadcastChannel
+        databaseSettings
     );
 
     /**
      * Directly create the localState if the db becomes leader.
      */
-    if (params.broadcastChannel) {
-        const leaderElector = getLeaderElectorByBroadcastChannel(params.broadcastChannel);
-        leaderElector.awaitLeadership().then(() => instance.mustUseLocalState());
+    if (params.multiInstance) {
+        ensureNotFalsy(internals.leaderElector)
+            .awaitLeadership()
+            .then(() => instance.mustUseLocalState());
     }
 
 

@@ -1,6 +1,6 @@
 import assert from 'assert';
 import AsyncTestUtil, {
-    clone, wait
+    clone, wait, waitUntil
 } from 'async-test-util';
 import GraphQLClient from 'graphql-client';
 
@@ -515,8 +515,17 @@ describe('replication-graphql.test.js', () => {
                     newDocData._rev = '2-23099cb8125d2c79db839ae3f1211cf8';
                     await c.storageInstance.bulkAddRevisions([newDocData]);
 
-
+                    /**
+                     * We wait here because directly after the last write,
+                     * it takes some milliseconds until the change is propagated
+                     * via the event stream.
+                     * This does only happen because we directly access storageInstance.bulkAddRevisions()
+                     * and so RxDB does not know about the change.
+                     * This problem will not happen during normal RxDB usage.
+                     */
+                    await waitUntil(() => oneDoc.age === 100);
                     await oneDoc.remove();
+
                     const changesResult = await getChangesSinceLastPushSequence(
                         c,
                         endpointHash,
@@ -1296,7 +1305,6 @@ describe('replication-graphql.test.js', () => {
                 await c.database.destroy();
             });
             it('should trigger push on db-changes that have not resulted from the replication', async () => {
-                console.log('#########');
                 const amount = batchSize;
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(amount),
@@ -1314,37 +1322,28 @@ describe('replication-graphql.test.js', () => {
                     deletedFlag: 'deleted'
                 });
 
-                console.log('--- 1');
                 await replicationState.awaitInitialReplication();
-                console.log('--- 2');
-
 
                 const docsOnServer = server.getDocuments();
                 assert.strictEqual(docsOnServer.length, amount);
 
                 // check for inserts
-                console.log('--- 3');
                 await c.insert(schemaObjects.humanWithTimestamp());
-                console.log('--- 4');
                 await AsyncTestUtil.waitUntil(async () => {
                     const docsOnServer2 = server.getDocuments();
                     return docsOnServer2.length === amount + 1;
                 });
 
                 // check for deletes
-                console.log('--- 5');
                 await c.findOne().remove();
-                console.log('--- 6');
                 await AsyncTestUtil.waitUntil(async () => {
                     const docsOnServer2 = server.getDocuments();
                     const oneShouldBeDeleted = docsOnServer2.find((d: any) => d.deleted === true);
                     return !!oneShouldBeDeleted;
                 });
-                console.log('--- 7');
 
                 server.close();
                 c.database.destroy();
-                console.log('--- 8');
             });
             it('should not send index-documents', async () => {
                 const server = await SpawnServer.spawn();
@@ -2618,7 +2617,6 @@ describe('replication-graphql.test.js', () => {
 
                 await setLastPullDocument(c, endpointHash, docData);
                 await c.database.remove();
-
 
                 // recreate the same collection again
                 const c2 = await humansCollection.createHumanWithTimestamp(1, dbName);

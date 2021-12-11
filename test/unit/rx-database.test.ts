@@ -489,8 +489,7 @@ config.parallel('rx-database.test.js', () => {
                     'token',
                     'isLeader',
                     '$emit',
-                    'destroy',
-                    'subject'
+                    'destroy'
                 ];
                 let t = 0;
                 while (t < forbidden.length) {

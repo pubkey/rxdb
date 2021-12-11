@@ -4,14 +4,21 @@ import lokijs, { Collection } from 'lokijs';
 import type {
     LokiDatabaseSettings,
     LokiDatabaseState,
-    LokiLocalDatabaseState
+    MangoQuery,
+    MangoQuerySortDirection,
+    MangoQuerySortPart,
+    RxJsonSchema
 } from '../../types';
 import {
     add as unloadAdd, AddReturn
 } from 'unload';
 import { flatClone } from '../../util';
 import { LokiSaveQueue } from './loki-save-queue';
-import type { IdleQueue } from 'custom-idle-queue';
+import type { DeterministicSortComparator } from 'event-reduce-js';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
+import { newRxError } from '../../rx-error';
+import { BroadcastChannel, createLeaderElection, LeaderElector } from 'broadcast-channel';
+import type { RxStorageLoki } from './rx-storage-lokijs';
 
 export const CHANGES_COLLECTION_SUFFIX = '-rxdb-changes';
 export const LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request';
@@ -62,8 +69,7 @@ export const LOKIJS_COLLECTION_DEFAULT_OPTIONS: Partial<CollectionOptions<any>> 
 const LOKI_DATABASE_STATE_BY_NAME: Map<string, Promise<LokiDatabaseState>> = new Map();
 export function getLokiDatabase(
     databaseName: string,
-    databaseSettings: LokiDatabaseSettings,
-    rxDatabaseIdleQueue: IdleQueue
+    databaseSettings: LokiDatabaseSettings
 ): Promise<LokiDatabaseState> {
     let databaseState: Promise<LokiDatabaseState> | undefined = LOKI_DATABASE_STATE_BY_NAME.get(databaseName);
     if (!databaseState) {
@@ -101,10 +107,9 @@ export function getLokiDatabase(
                 databaseName + '.db',
                 flatClone(useSettings)
             );
-            const saveQueue = new LokiSaveQueue(
+            const lokiSaveQueue = new LokiSaveQueue(
                 database,
-                useSettings,
-                rxDatabaseIdleQueue
+                useSettings
             );
 
             /**
@@ -114,16 +119,16 @@ export function getLokiDatabase(
              * with each other and cause error logs.
              */
             if (hasPersistence) {
-                await saveQueue.runningSavesIdleQueue.wrapCall(
-                    () => new Promise<void>((res, rej) => {
-                        database.loadDatabase({}, (err) => {
-                            if (useSettings.autoloadCallback) {
-                                useSettings.autoloadCallback(err);
-                            }
-                            err ? rej(err) : res();
-                        });
-                    })
-                );
+                const loadDatabasePromise = new Promise<void>((res, rej) => {
+                    database.loadDatabase({}, (err) => {
+                        if (useSettings.autoloadCallback) {
+                            useSettings.autoloadCallback(err);
+                        }
+                        err ? rej(err) : res();
+                    });
+                });
+                lokiSaveQueue.saveQueue = lokiSaveQueue.saveQueue.then(() => loadDatabasePromise);
+                await loadDatabasePromise;
             }
 
             /**
@@ -132,14 +137,14 @@ export function getLokiDatabase(
             const unloads: AddReturn[] = [];
             if (hasPersistence) {
                 unloads.push(
-                    unloadAdd(() => saveQueue.run())
+                    unloadAdd(() => lokiSaveQueue.run())
                 );
             }
 
             const state: LokiDatabaseState = {
                 database,
                 databaseSettings: useSettings,
-                saveQueue,
+                saveQueue: lokiSaveQueue,
                 collections: {},
                 unloads
             };
@@ -174,5 +179,89 @@ export async function closeLokiCollections(
                 err ? rej(err) : res();
             });
         });
+    }
+}
+
+/**
+ * This function is at lokijs-helper
+ * because we need it in multiple places.
+ */
+export function getLokiSortComparator<RxDocType>(
+    schema: RxJsonSchema<RxDocType>,
+    query: MangoQuery<RxDocType>
+): DeterministicSortComparator<RxDocType> {
+    const primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
+    // TODO if no sort is given, use sort by primary.
+    // This should be done inside of RxDB and not in the storage implementations.
+    const sortOptions: MangoQuerySortPart<RxDocType>[] = query.sort ? (query.sort as any) : [{
+        [primaryKey]: 'asc'
+    }];
+    const fun: DeterministicSortComparator<RxDocType> = (a: RxDocType, b: RxDocType) => {
+        let compareResult: number = 0; // 1 | -1
+        sortOptions.find(sortPart => {
+            const fieldName: string = Object.keys(sortPart)[0];
+            const direction: MangoQuerySortDirection = Object.values(sortPart)[0];
+            const directionMultiplier = direction === 'asc' ? 1 : -1;
+            const valueA: any = (a as any)[fieldName];
+            const valueB: any = (b as any)[fieldName];
+            if (valueA === valueB) {
+                return false;
+            } else {
+                if (valueA > valueB) {
+                    compareResult = 1 * directionMultiplier;
+                    return true;
+                } else {
+                    compareResult = -1 * directionMultiplier;
+                    return true;
+                }
+            }
+        });
+
+        /**
+         * Two different objects should never have the same sort position.
+         * We ensure this by having the unique primaryKey in the sort params
+         * at this.prepareQuery()
+         */
+        if (!compareResult) {
+            throw newRxError('SNH', { args: { query, a, b } });
+        }
+
+        return compareResult as any;
+    }
+    return fun;
+}
+
+
+export function getLokiLeaderElector(
+    storage: RxStorageLoki,
+    databaseName: string
+): LeaderElector {
+    let electorState = storage.leaderElectorByLokiDbName.get(databaseName);
+    if (!electorState) {
+        const channelName = 'rxdb-lokijs-' + databaseName;
+        const channel = new BroadcastChannel(channelName);
+        const elector = createLeaderElection(channel);
+        electorState = {
+            leaderElector: elector,
+            intancesCount: 1
+        }
+        storage.leaderElectorByLokiDbName.set(databaseName, electorState);
+    } else {
+        electorState.intancesCount = electorState.intancesCount + 1;
+    }
+    return electorState.leaderElector;
+}
+
+export function removeLokiLeaderElectorReference(
+    storage: RxStorageLoki,
+    databaseName: string
+) {
+    const electorState = storage.leaderElectorByLokiDbName.get(databaseName);
+    if (electorState) {
+        electorState.intancesCount = electorState.intancesCount - 1;
+        if (electorState.intancesCount === 0) {
+            electorState.leaderElector.broadcastChannel.close();
+            storage.leaderElectorByLokiDbName.delete(databaseName);
+        }
     }
 }

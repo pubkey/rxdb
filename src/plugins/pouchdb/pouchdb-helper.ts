@@ -312,9 +312,10 @@ export async function writeAttachmentsToAttachments(
             }
             if ((obj as RxAttachmentWriteData).data) {
                 const asWrite = (obj as RxAttachmentWriteData);
-
-                const hash = await pouchHash(asWrite.data);
-                const asString = await blobBufferUtil.toString(asWrite.data);
+                const [hash, asString] = await Promise.all([
+                    pouchHash(asWrite.data),
+                    blobBufferUtil.toString(asWrite.data)
+                ]);
                 const length = asString.length;
                 ret[key] = {
                     digest: hash,

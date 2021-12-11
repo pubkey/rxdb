@@ -39,6 +39,10 @@ export {
 } from './rx-document';
 
 export {
+    flattenEvents
+} from './rx-change-event';
+
+export {
     getDocumentOrmPrototype,
     getDocumentPrototype
 } from './rx-document-prototype-merge';
@@ -114,6 +118,7 @@ export type {
     RxCollection,
     RxCacheReplacementPolicy,
     RxChangeEvent,
+    RxChangeEventBulk,
     RxCollectionCreator,
     RxCollectionGenerated,
     RxCollectionHookCallback,

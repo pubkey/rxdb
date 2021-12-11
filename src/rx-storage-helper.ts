@@ -13,10 +13,13 @@ import type {
     RxDatabase,
     RxDocumentData,
     RxLocalDocumentData,
+    RxLocalStorageBulkWriteResponse,
+    RxStorage,
     RxStorageChangeEvent,
     RxStorageInstance,
     RxStorageKeyObjectInstance
 } from './types';
+import { firstPropertyNameOfObject, firstPropertyValueOfObject } from './util';
 
 export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
 
@@ -25,10 +28,12 @@ export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
  * TODO this is pouchdb specific should not be needed
  */
 export async function getAllDocuments<RxDocType>(
+    storage: RxStorage<any, any>,
     storageInstance: RxStorageInstance<RxDocType, any, any>
 ): Promise<RxDocumentData<RxDocType>[]> {
 
-    const getAllQueryPrepared = storageInstance.prepareQuery(
+    const getAllQueryPrepared = storage.prepareQuery(
+        storageInstance.schema,
         {
             selector: {}
         }
@@ -43,7 +48,7 @@ export async function getSingleDocument<RxDocType>(
     documentId: string
 ): Promise<RxDocumentData<RxDocType> | null> {
     const results = await storageInstance.findDocumentsById([documentId], false);
-    const doc = results.get(documentId);
+    const doc = results[documentId];
     if (doc) {
         return doc;
     } else {
@@ -56,9 +61,11 @@ export async function getSingleDocument<RxDocType>(
  * get the number of all undeleted documents
  */
 export async function countAllUndeleted<DocType>(
+    storage: RxStorage<any, any>,
     storageInstance: RxStorageInstance<DocType, any, any>
 ): Promise<number> {
     const docs = await getAllDocuments(
+        storage,
         storageInstance
     );
     return docs.length;
@@ -68,6 +75,7 @@ export async function countAllUndeleted<DocType>(
  * get a batch of documents from the storage-instance
  */
 export async function getBatch<DocType>(
+    storage: RxStorage<any, any>,
     storageInstance: RxStorageInstance<DocType, any, any>,
     limit: number
 ): Promise<any[]> {
@@ -77,7 +85,8 @@ export async function getBatch<DocType>(
         });
     }
 
-    const preparedQuery = storageInstance.prepareQuery(
+    const preparedQuery = storage.prepareQuery(
+        storageInstance.schema,
         {
             selector: {},
             limit
@@ -99,11 +108,11 @@ export async function writeSingle<RxDocType>(
         [writeRow]
     );
 
-    if (writeResult.error.size > 0) {
-        const error = writeResult.error.values().next().value;
+    if (Object.keys(writeResult.error).length > 0) {
+        const error = firstPropertyValueOfObject(writeResult.error);
         throw error;
     } else {
-        const ret = writeResult.success.values().next().value;
+        const ret = firstPropertyValueOfObject(writeResult.success);
         return ret;
     }
 }
@@ -115,16 +124,16 @@ export async function writeSingle<RxDocType>(
 export async function writeSingleLocal<DocumentData>(
     instance: RxStorageKeyObjectInstance<any, any>,
     writeRow: BulkWriteLocalRow<DocumentData>
-): Promise<RxDocumentData<RxLocalDocumentData>> {
-    const writeResult = await instance.bulkWrite(
+): Promise<RxLocalDocumentData<RxLocalDocumentData>> {
+    const writeResult: RxLocalStorageBulkWriteResponse<DocumentData> = await instance.bulkWrite(
         [writeRow]
     );
 
-    if (writeResult.error.size > 0) {
-        const error = writeResult.error.values().next().value;
+    if (Object.keys(writeResult.error).length > 0) {
+        const error = firstPropertyValueOfObject(writeResult.error);
         throw error;
     } else {
-        const ret = writeResult.success.values().next().value;
+        const ret = firstPropertyValueOfObject(writeResult.success);
         return ret;
     }
 }
@@ -134,7 +143,7 @@ export async function findLocalDocument<DocType>(
     id: string
 ): Promise<RxDocumentData<RxLocalDocumentData<DocType>> | null> {
     const docList = await instance.findLocalDocumentsById([id]);
-    const doc = docList.get(id);
+    const doc = docList[id];
     if (!doc) {
         return null;
     } else {
@@ -145,16 +154,13 @@ export async function findLocalDocument<DocType>(
 export function storageChangeEventToRxChangeEvent<DocType>(
     isLocal: boolean,
     rxStorageChangeEvent: RxStorageChangeEvent<DocType>,
-    rxDatabase: RxDatabase,
     rxCollection?: RxCollection,
 ): RxChangeEvent<DocType> {
-
     let documentData;
     if (rxStorageChangeEvent.change.operation !== 'DELETE') {
         if (!rxCollection) {
             documentData = rxStorageChangeEvent.change.doc;
         } else {
-
             const hookParams = {
                 collection: rxCollection,
                 doc: rxStorageChangeEvent.change.doc as any
@@ -179,21 +185,16 @@ export function storageChangeEventToRxChangeEvent<DocType>(
             previousDocumentData = rxCollection._crypter.decrypt(previousDocumentData);
         }
     }
-
-
     const ret: RxChangeEvent<DocType> = {
         eventId: rxStorageChangeEvent.eventId,
         documentId: rxStorageChangeEvent.documentId,
-        databaseToken: rxDatabase.token,
         collectionName: rxCollection ? rxCollection.name : undefined,
         startTime: rxStorageChangeEvent.startTime,
         endTime: rxStorageChangeEvent.endTime,
         isLocal,
-
         operation: rxStorageChangeEvent.change.operation,
         documentData: overwritable.deepFreezeWhenDevMode(documentData),
         previousDocumentData: overwritable.deepFreezeWhenDevMode(previousDocumentData)
     };
-
     return ret;
 }

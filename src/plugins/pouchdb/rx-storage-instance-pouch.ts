@@ -1,13 +1,12 @@
 import type {
-    ChangeEvent,
-    DeterministicSortComparator,
-    QueryMatcher
+    ChangeEvent
 } from 'event-reduce-js';
 import { ObliviousSet } from 'oblivious-set';
 import {
     Observable,
     Subject,
-    Subscription
+    Subscription,
+    tap
 } from 'rxjs';
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
@@ -15,16 +14,13 @@ import type {
     BlobBuffer,
     BulkWriteRow,
     ChangeStreamOnceOptions,
-    MangoQuery,
-    MangoQuerySortDirection,
-    MangoQuerySortPart,
+    EventBulk,
     PouchBulkDocResultRow,
     PouchChangesOptionsNonLive,
     PouchSettings,
     PouchWriteError,
     PreparedQuery,
     RxDocumentData,
-    RxDocumentWriteData,
     RxJsonSchema,
     RxStorageBulkWriteError,
     RxStorageBulkWriteResponse,
@@ -41,8 +37,6 @@ import {
     pouchDocumentDataToRxDocumentData,
     PouchStorageInternals,
     pouchSwapIdToPrimary,
-    pouchSwapPrimaryToId,
-    primarySwapPouchDbQuerySelector,
     rxDocumentDataToPouchDocumentData,
     writeAttachmentsToAttachments
 } from './pouchdb-helper';
@@ -54,22 +48,25 @@ import {
     flatClone,
     getFromMapOrThrow,
     getHeightOfRevision,
-    PROMISE_RESOLVE_VOID
+    PROMISE_RESOLVE_VOID,
+    randomCouchString
 } from '../../util';
 import {
     getCustomEventEmitterByPouch
 } from './custom-events-plugin';
-import { getSchemaByObjectPath } from '../../rx-schema-helper';
+
+
+let lastId = 0;
 
 export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     RxDocType,
     PouchStorageInternals,
     PouchSettings
 > {
+    public readonly id: number = lastId++;
 
-    private changes$: Subject<RxStorageChangeEvent<RxDocumentData<RxDocType>>> = new Subject();
+    private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>> = new Subject();
     private subs: Subscription[] = [];
-    private emittedEventIds: ObliviousSet<string>;
     private primaryPath: keyof RxDocType;
 
     constructor(
@@ -88,226 +85,43 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
          * and create our own event stream, this will work more relyable
          * and does not mix up with write events from other sources.
          */
-        const emitter = getCustomEventEmitterByPouch(this.internals.pouch);
-        this.emittedEventIds = emitter.obliviousSet;
+        const emitter = getCustomEventEmitterByPouch<RxDocType>(this.internals.pouch);
+
+        /**
+         * Contains all eventIds that of emitted events,
+         * used because multi-instance pouchdbs often will reemit the same
+         * event on the other browser tab so we have to de-duplicate them.
+         */
+        const emittedEventBulkIds: ObliviousSet<string> = new ObliviousSet(60 * 1000);
+
         const eventSub = emitter.subject.subscribe(async (ev) => {
-            if (ev.writeOptions.hasOwnProperty('new_edits') && !ev.writeOptions.new_edits) {
-                await Promise.all(
-                    ev.writeDocs.map(async (writeDoc) => {
-                        const id = writeDoc._id;
-
-                        writeDoc = pouchDocumentDataToRxDocumentData(
-                            this.primaryPath,
-                            writeDoc
-                        );
-
-                        writeDoc._attachments = await writeAttachmentsToAttachments(writeDoc._attachments);
-
-                        let previousDoc = ev.previousDocs.get(id);
-                        if (previousDoc) {
-                            previousDoc = pouchDocumentDataToRxDocumentData(
-                                this.primaryPath,
-                                previousDoc
-                            );
-                        }
-
-                        if (
-                            previousDoc &&
-                            getHeightOfRevision(previousDoc._rev) > getHeightOfRevision(writeDoc._rev)
-                        ) {
-                            // not the newest revision was added
-                            // TODO is comparing the height enough to compare revisions?
-                            return;
-                        }
-                        if (!previousDoc && writeDoc._deleted) {
-                            // deleted document was added as revision
-                            return;
-                        }
-
-                        if (previousDoc && previousDoc._deleted && writeDoc._deleted) {
-                            // delete document was deleted again
-                            return;
-                        }
-
-                        let event: ChangeEvent<RxDocumentData<RxDocType>>;
-                        if ((!previousDoc || previousDoc._deleted) && !writeDoc._deleted) {
-                            // was insert
-                            event = {
-                                operation: 'INSERT',
-                                doc: writeDoc,
-                                id: id,
-                                previous: null
-                            };
-                        } else if (writeDoc._deleted && previousDoc && !previousDoc._deleted) {
-                            // was delete
-                            previousDoc._rev = writeDoc._rev;
-                            event = {
-                                operation: 'DELETE',
-                                doc: null,
-                                id: id,
-                                previous: previousDoc
-                            };
-                        } else if (
-                            previousDoc
-                        ) {
-                            // was update
-                            event = {
-                                operation: 'UPDATE',
-                                doc: writeDoc,
-                                id: id,
-                                previous: previousDoc
-                            };
-                        } else {
-                            throw newRxError('SNH', { args: { writeDoc } });
-                        }
-                        this.addEventToChangeStream(
-                            event,
-                            ev.startTime,
-                            ev.endTime
-                        );
-                    })
-                );
+            if (
+                ev.events.length === 0 ||
+                emittedEventBulkIds.has(ev.id)
+            ) {
                 return;
             }
+            emittedEventBulkIds.add(ev.id);
 
-
-            /**
-             * There is no write map given for internal pouchdb document writes
-             * like it is done with replication.
-             */
-            if (!ev.writeOptions.custom) {
-                const writeDocsById: Map<string, any> = new Map();
-                ev.writeDocs.forEach(writeDoc => writeDocsById.set(writeDoc._id, writeDoc));
-
-                await Promise.all(
-                    ev.writeResult.map(async (resultRow) => {
-                        const id = resultRow.id;
-                        if (
-                            id.startsWith(POUCHDB_DESIGN_PREFIX) ||
-                            id.startsWith(POUCHDB_LOCAL_PREFIX)
-                        ) {
-                            return;
-                        }
-                        let writeDoc = getFromMapOrThrow(writeDocsById, resultRow.id);
-                        writeDoc._attachments = await writeAttachmentsToAttachments(writeDoc._attachments);
-
-                        writeDoc = flatClone(writeDoc);
-                        writeDoc._rev = (resultRow as any).rev;
-                        const event = pouchChangeRowToChangeEvent<RxDocType>(
-                            this.primaryPath,
-                            writeDoc
-                        );
-                        this.addEventToChangeStream(event);
-                    })
-                );
-
-                return;
-            }
-
-            const writeMap: Map<string, BulkWriteRow<RxDocType>> = ev.writeOptions.custom.writeRowById;
-            await Promise.all(
-                ev.writeResult.map(async (resultRow) => {
-                    if ((resultRow as PouchWriteError).error) {
-                        return;
-                    }
-
-                    const id = resultRow.id;
-                    const writeRow = getFromMapOrThrow(writeMap, id);
-                    const newDoc = pouchDocumentDataToRxDocumentData(
+            // rewrite primaryPath of all events
+            ev.events.forEach(event => {
+                if (event.change.doc) {
+                    event.change.doc = pouchSwapIdToPrimary(
                         this.primaryPath,
-                        writeRow.document as any
+                        event.change.doc as any
                     );
-                    newDoc._attachments = await writeAttachmentsToAttachments(newDoc._attachments);
-                    newDoc._rev = (resultRow as PouchBulkDocResultRow).rev;
+                }
+                if (event.change.previous) {
+                    event.change.previous = pouchSwapIdToPrimary(
+                        this.primaryPath,
+                        event.change.previous as any
+                    );
+                }
+            });
 
-                    let event: ChangeEvent<RxDocumentData<RxDocType>>;
-                    if (!writeRow.previous || writeRow.previous._deleted) {
-                        // was insert
-                        event = {
-                            operation: 'INSERT',
-                            doc: newDoc,
-                            id: id,
-                            previous: null
-                        };
-                    } else if (writeRow.document._deleted) {
-                        // was delete
-
-                        // we need to add the new revision to the previous doc
-                        // so that the eventkey is calculated correctly.
-                        // Is this a hack? idk.
-                        const previousDoc = pouchDocumentDataToRxDocumentData(
-                            this.primaryPath,
-                            writeRow.previous as any
-                        );
-                        previousDoc._attachments = await writeAttachmentsToAttachments(previousDoc._attachments);
-                        previousDoc._rev = (resultRow as PouchBulkDocResultRow).rev;
-
-                        event = {
-                            operation: 'DELETE',
-                            doc: null,
-                            id: resultRow.id,
-                            previous: previousDoc
-                        };
-                    } else {
-                        // was update
-                        event = {
-                            operation: 'UPDATE',
-                            doc: newDoc,
-                            id: resultRow.id,
-                            previous: writeRow.previous
-                        };
-                    }
-
-                    if (
-                        writeRow.document._deleted &&
-                        (
-                            !writeRow.previous ||
-                            writeRow.previous._deleted
-                        )
-                    ) {
-                        /**
-                         * A deleted document was newly added to the storage engine,
-                         * do not emit an event.
-                         */
-                    } else {
-                        this.addEventToChangeStream(
-                            event,
-                            ev.startTime,
-                            ev.endTime
-                        );
-                    }
-
-                })
-            );
+            this.changes$.next(ev);
         });
         this.subs.push(eventSub);
-    }
-
-    private addEventToChangeStream(
-        change: ChangeEvent<RxDocumentData<RxDocType>>,
-        startTime?: number,
-        endTime?: number
-    ) {
-        const doc: RxDocumentData<RxDocType> = change.operation === 'DELETE' ? change.previous as any : change.doc as any;
-        const primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
-        const primary: string = (doc as any)[primaryPath];
-
-        const eventId = getEventKey(false, primary, doc._rev);
-
-        if (this.emittedEventIds.has(eventId)) {
-            return;
-        }
-
-        this.emittedEventIds.add(eventId);
-        const storageChangeEvent: RxStorageChangeEvent<RxDocumentData<RxDocType>> = {
-            eventId,
-            documentId: primary,
-            change,
-            startTime,
-            endTime
-        };
-
-        this.changes$.next(storageChangeEvent);
     }
 
     close() {
@@ -324,201 +138,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
 
         OPEN_POUCHDB_STORAGE_INSTANCES.delete(this);
         await this.internals.pouch.destroy();
-    }
-
-    getSortComparator(
-        query: MangoQuery<RxDocType>
-    ): DeterministicSortComparator<RxDocType> {
-        const primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
-        const sortOptions: MangoQuerySortPart[] = query.sort ? (query.sort as any) : [{
-            [primaryPath]: 'asc'
-        }];
-        const inMemoryFields = Object
-            .keys(query.selector)
-            .filter(key => !key.startsWith('$'));
-
-        const fun: DeterministicSortComparator<RxDocType> = (a: RxDocType, b: RxDocType) => {
-            /**
-             * Sorting on two documents with the same primary is not allowed
-             * because it might end up in a non-deterministic result.
-             */
-            if (a[primaryPath] === b[primaryPath]) {
-                throw newRxError('SNH', { args: { a, b }, primaryPath: primaryPath as any });
-            }
-
-            // TODO use createFieldSorter
-            // TODO make a performance test
-            const rows = [a, b].map(doc => ({
-                doc: pouchSwapPrimaryToId<RxDocType>(this.primaryPath, doc)
-            }));
-            const sortedRows: { doc: any }[] = filterInMemoryFields(
-                rows,
-                {
-                    selector: {},
-                    sort: sortOptions
-                },
-                inMemoryFields
-            );
-            if (sortedRows.length !== 2) {
-                throw newRxError('SNH', {
-                    query,
-                    primaryPath: this.primaryPath as any,
-                    args: {
-                        rows,
-                        sortedRows
-                    }
-                });
-            }
-            if (sortedRows[0].doc._id === rows[0].doc._id) {
-                return -1;
-            } else {
-                return 1;
-            }
-        };
-        return fun;
-    }
-
-
-    /**
-     * @link https://github.com/pouchdb/pouchdb/blob/master/packages/node_modules/pouchdb-selector-core/src/matches-selector.js
-     */
-    getQueryMatcher(
-        query: MangoQuery<RxDocType>
-    ): QueryMatcher<RxDocumentWriteData<RxDocType>> {
-        const massagedSelector = massageSelector(query.selector);
-
-        const fun: QueryMatcher<RxDocumentWriteData<RxDocType>> = (doc: RxDocType) => {
-            const cloned = pouchSwapPrimaryToId(this.primaryPath, doc);
-            const row = {
-                doc: cloned
-            };
-            const rowsMatched = filterInMemoryFields(
-                [row],
-                { selector: massagedSelector },
-                Object.keys(query.selector)
-            );
-            const ret = rowsMatched && rowsMatched.length === 1;
-            return ret;
-        };
-        return fun;
-    }
-
-
-    /**
-     * pouchdb has many bugs and strange behaviors
-     * this functions takes a normal mango query
-     * and transforms it to one that fits for pouchdb
-     */
-    prepareQuery(
-        mutateableQuery: MangoQuery<RxDocType>
-    ): PreparedQuery<RxDocType> {
-        const primaryKey = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
-        const query = mutateableQuery;
-
-        /**
-         * because sort wont work on unused keys we have to workaround
-         * so we add the key to the selector if necessary
-         * @link https://github.com/nolanlawson/pouchdb-find/issues/204
-         */
-        if (query.sort) {
-            query.sort.forEach(sortPart => {
-                const key = Object.keys(sortPart)[0];
-                const comparisonOperators = ['$gt', '$gte', '$lt', '$lte'];
-                const keyUsed = query.selector[key] && Object.keys(query.selector[key]).some(op => comparisonOperators.includes(op)) || false;
-                if (!keyUsed) {
-                    const schemaObj = getSchemaByObjectPath(this.schema, key);
-                    if (!schemaObj) {
-                        throw newRxError('QU5', {
-                            query,
-                            key
-                        });
-                    }
-                    if (!query.selector[key]) {
-                        query.selector[key] = {};
-                    }
-                    switch (schemaObj.type) {
-                        case 'number':
-                        case 'integer':
-                            // TODO change back to -Infinity when issue resolved
-                            // @link https://github.com/pouchdb/pouchdb/issues/6454
-                            // -Infinity does not work since pouchdb 6.2.0
-                            query.selector[key].$gt = -9999999999999999999999999999;
-                            break;
-                        case 'string':
-                            /**
-                             * strings need an empty string, see
-                             * @link https://github.com/pubkey/rxdb/issues/585
-                             */
-                            if (typeof query.selector[key] !== 'string') {
-                                query.selector[key].$gt = '';
-                            }
-                            break;
-                        default:
-                            query.selector[key].$gt = null;
-                            break;
-                    }
-                }
-            });
-        }
-
-        // regex does not work over the primary key
-        // TODO move this to dev mode
-        if (query.selector[primaryKey as any] && query.selector[primaryKey as any].$regex) {
-            throw newRxError('QU4', {
-                path: primaryKey as any,
-                query: mutateableQuery
-            });
-        }
-
-        // primary-swap sorting
-        if (query.sort) {
-            const sortArray: MangoQuerySortPart<RxDocType>[] = query.sort.map(part => {
-                const key = Object.keys(part)[0];
-                const direction: MangoQuerySortDirection = Object.values(part)[0];
-                const useKey = key === primaryKey ? '_id' : key;
-                const newPart = { [useKey]: direction };
-                return newPart as any;
-            });
-            query.sort = sortArray;
-        }
-
-        // strip empty selectors
-        Object.entries(query.selector).forEach(([k, v]) => {
-            if (
-                typeof v === 'object' &&
-                v !== null &&
-                !Array.isArray(v) &&
-                Object.keys((v as any)).length === 0
-            ) {
-                delete query.selector[k];
-            }
-        });
-
-        query.selector = primarySwapPouchDbQuerySelector(query.selector, this.primaryPath);
-
-        /**
-         * To ensure a deterministic sorting,
-         * we have to ensure the primary key is always part
-         * of the sort query.
-
-        * TODO This should be done but will not work with pouchdb
-         * because it will throw
-         * 'Cannot sort on field(s) "key" when using the default index'
-         * So we likely have to modify the indexes so that this works. 
-         */
-        /*
-        if (!mutateableQuery.sort) {
-            mutateableQuery.sort = [{ [this.primaryPath]: 'asc' }] as any;
-        } else {
-            const isPrimaryInSort = mutateableQuery.sort
-                .find(p => firstPropertyNameOfObject(p) === this.primaryPath);
-            if (!isPrimaryInSort) {
-                mutateableQuery.sort.push({ [this.primaryPath]: 'asc' } as any);
-            }
-        }
-        */
-
-        return query;
     }
 
     public async bulkAddRevisions(
@@ -563,7 +182,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         }
 
         const writeRowById: Map<string, BulkWriteRow<RxDocType>> = new Map();
-
         const insertDocs: (RxDocType & { _id: string; _rev: string })[] = documentWrites.map(writeData => {
             const primary: string = (writeData.document as any)[this.primaryPath];
             writeRowById.set(primary, writeData);
@@ -572,7 +190,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                 this.primaryPath,
                 writeData.document
             );
-
 
             // if previous document exists, we have to send the previous revision to pouchdb.
             if (writeData.previous) {
@@ -584,13 +201,14 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
 
         const pouchResult = await this.internals.pouch.bulkDocs(insertDocs, {
             custom: {
+                primaryPath: this.primaryPath,
                 writeRowById
             }
         } as any);
 
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
-            success: new Map(),
-            error: new Map()
+            success: {},
+            error: {}
         };
 
         await Promise.all(
@@ -603,7 +221,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                         documentId: resultRow.id,
                         writeRow
                     };
-                    ret.error.set(resultRow.id, err);
+                    ret.error[resultRow.id] = err;
                 } else {
                     let pushObj: RxDocumentData<RxDocType> = flatClone(writeRow.document) as any;
                     pushObj = pouchSwapIdToPrimary(this.primaryPath, pushObj);
@@ -616,7 +234,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                     } else {
                         pushObj._attachments = await writeAttachmentsToAttachments(writeRow.document._attachments);
                     }
-                    ret.success.set(resultRow.id, pushObj);
+                    ret.success[resultRow.id] = pushObj;
                 }
             })
         );
@@ -651,7 +269,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         return attachmentData;
     }
 
-    async findDocumentsById(ids: string[], deleted: boolean): Promise<Map<string, RxDocumentData<RxDocType>>> {
+    async findDocumentsById(ids: string[], deleted: boolean): Promise<{ [documentId: string]: RxDocumentData<RxDocType> }> {
         /**
          * On deleted documents, pouchdb will only return the tombstone.
          * So we have to get the properties directly for each document
@@ -669,7 +287,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                 style: 'all_docs'
             });
 
-            const retDocs = new Map();
+            const retDocs: { [documentId: string]: RxDocumentData<RxDocType> } = {};
             await Promise.all(
                 viaChanges.results.map(async (result) => {
                     const firstDoc = await this.internals.pouch.get(
@@ -684,7 +302,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                         this.primaryPath,
                         firstDoc
                     );
-                    retDocs.set(result.id, useFirstDoc);
+                    retDocs[result.id] = useFirstDoc;
                 })
             );
             return retDocs;
@@ -696,7 +314,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             keys: ids
         });
 
-        const ret = new Map();
+        const ret: { [documentId: string]: RxDocumentData<RxDocType> } = {};
         pouchResult.rows
             .filter(row => !!row.doc)
             .forEach(row => {
@@ -705,13 +323,13 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                     this.primaryPath,
                     docData
                 );
-                ret.set(row.id, docData);
+                ret[row.id] = docData;
             });
 
         return ret;
     }
 
-    changeStream(): Observable<RxStorageChangeEvent<RxDocumentData<RxDocType>>> {
+    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>> {
         return this.changes$.asObservable();
     }
 

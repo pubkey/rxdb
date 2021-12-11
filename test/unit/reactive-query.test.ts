@@ -50,11 +50,12 @@ config.parallel('reactive-query.test.js', () => {
             const query = c.find();
             let lastValue: any[] = [];
             const pw8 = AsyncTestUtil.waitResolveable(500);
+            const emitted: any[] = [];
             query.$.subscribe(newResults => {
                 lastValue = newResults;
-                if (newResults) pw8.resolve();
+                emitted.push(newResults);
             });
-            await pw8.promise;
+            await waitUntil(() => emitted.length === 1);
             assert.strictEqual(lastValue.length, 1);
 
             const addHuman = schemaObjects.human();
@@ -112,16 +113,18 @@ config.parallel('reactive-query.test.js', () => {
             const pw8 = AsyncTestUtil.waitResolveable(500);
 
             let values: any;
+            const emitted: any[] = [];
             const querySub = c.find({
                 selector: {
                     firstName: doc.get('firstName')
                 }
             }).$.subscribe(newV => {
                 values = newV;
-                if (newV) pw8.resolve();
+                if (newV) {
+                    emitted.push(newV);
+                }
             });
-
-            await pw8.promise;
+            await waitUntil(() => emitted.length === 1);
             assert.strictEqual(values.length, 1);
 
             // change doc so query does not match

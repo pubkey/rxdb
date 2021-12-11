@@ -13,13 +13,15 @@ import type {
     PouchWriteError,
     RxStorageBulkWriteLocalError,
     PouchBulkDocResultRow,
-    PouchSettings
+    PouchSettings,
+    EventBulk
 } from '../../types';
 import {
     flatClone,
     getFromMapOrThrow,
     now,
-    PROMISE_RESOLVE_VOID
+    PROMISE_RESOLVE_VOID,
+    randomCouchString
 } from '../../util';
 import {
     getEventKey,
@@ -31,7 +33,7 @@ import {
 
 export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstance<PouchStorageInternals, PouchSettings> {
 
-    private changes$: Subject<RxStorageChangeEvent<RxLocalDocumentData>> = new Subject();
+    private changes$: Subject<EventBulk<RxStorageChangeEvent<RxLocalDocumentData>>> = new Subject();
 
     constructor(
         public readonly databaseName: string,
@@ -89,8 +91,13 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
         const pouchResult = await this.internals.pouch.bulkDocs(insertDocs);
         const endTime = now();
         const ret: RxLocalStorageBulkWriteResponse<D> = {
-            success: new Map(),
-            error: new Map()
+            success: {},
+            error: {}
+        };
+
+        const eventBulk: EventBulk<RxStorageChangeEvent<RxLocalDocumentData>> = {
+            id: randomCouchString(10),
+            events: []
         };
 
         pouchResult.forEach(resultRow => {
@@ -103,13 +110,13 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
                     documentId: resultRow.id,
                     writeRow
                 };
-                ret.error.set(resultRow.id, err);
+                ret.error[resultRow.id] = err;
             } else {
                 const pushObj: RxLocalDocumentData<D> = flatClone(writeRow.document);
                 pushObj._rev = (resultRow as PouchBulkDocResultRow).rev;
                 // local document cannot have attachments
                 pushObj._attachments = {};
-                ret.success.set(resultRow.id, pushObj as any);
+                ret.success[resultRow.id] = pushObj;
 
                 /**
                  * Emit a write event to the changestream.
@@ -176,7 +183,7 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
                     };
 
 
-                    this.changes$.next(storageChangeEvent);
+                    eventBulk.events.push(storageChangeEvent);
                 }
 
             }
@@ -184,13 +191,12 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
 
         });
 
-
-
+        this.changes$.next(eventBulk);
         return ret;
     }
 
-    async findLocalDocumentsById<D = any>(ids: string[]): Promise<Map<string, RxLocalDocumentData<D>>> {
-        const ret = new Map();
+    async findLocalDocumentsById<D = any>(ids: string[]): Promise<{ [documentId: string]: RxLocalDocumentData<D> }> {
+        const ret: { [documentId: string]: RxLocalDocumentData<D> } = {};
 
         /**
          * Pouchdb is not able to bulk-request local documents
@@ -204,7 +210,7 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
                 try {
                     const docData = await this.internals.pouch.get(prefixedId);
                     docData._id = id;
-                    ret.set(id, docData);
+                    ret[id] = docData;
                 } catch (err) {
                     // do not add to result list on error
                 }
@@ -213,7 +219,7 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
         return ret;
     }
 
-    changeStream(): Observable<RxStorageChangeEvent<RxLocalDocumentData>> {
+    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxLocalDocumentData>>> {
         return this.changes$.asObservable();
     }
 }

@@ -2,8 +2,7 @@ import {
     filter,
     startWith,
     mergeMap,
-    shareReplay,
-    map
+    shareReplay
 } from 'rxjs/operators';
 
 import {
@@ -16,7 +15,8 @@ import {
     getFromMapOrThrow,
     clone,
     PROMISE_RESOLVE_FALSE,
-    PROMISE_RESOLVE_VOID
+    PROMISE_RESOLVE_VOID,
+    RXJS_SHARE_REPLAY_DEFAULTS
 } from './util';
 import {
     _handleToStorageInstance,
@@ -90,7 +90,8 @@ import type {
     RxChangeEventUpdate,
     RxChangeEventDelete,
     RxStorageInstance,
-    CollectionsOfDatabase
+    CollectionsOfDatabase,
+    RxChangeEventBulk
 } from './types';
 import type {
     RxGraphQLReplicationState
@@ -203,6 +204,7 @@ export class RxCollectionBase<
     private _onDestroyCall?: () => void;
     public async prepare(
         /**
+         * TODO is this still needed?
          * set to true if the collection data already exists on this storage adapter
          */
         wasCreatedBefore: boolean
@@ -211,33 +213,50 @@ export class RxCollectionBase<
 
         this._crypter = createCrypter(this.database.password, this.schema);
 
-        this._observable$ = this.database.$.pipe(
-            filter((event: RxChangeEvent<any>) => {
-                return event.collectionName === this.name;
-            })
+        this._observable$ = this.database.eventBulks$.pipe(
+            filter(changeEventBulk => changeEventBulk.collectionName === this.name),
+            mergeMap(changeEventBulk => changeEventBulk.events),
         );
         this._changeEventBuffer = createChangeEventBuffer(this.asRxCollection);
 
 
-        const subDocs = this.storageInstance.changeStream().pipe(
-            map(storageEvent => storageChangeEventToRxChangeEvent(
-                false,
-                storageEvent,
-                this.database,
-                this as any
-            ))
-        ).subscribe(cE => {
-            this.$emit(cE);
+        /**
+         * Instead of resolving the EventBulk array here and spit it into
+         * single events, we should fully work with event bulks internally
+         * to save performance.
+         */
+        const subDocs = this.storageInstance.changeStream().subscribe(eventBulk => {
+            const changeEventBulk: RxChangeEventBulk = {
+                id: eventBulk.id,
+                internal: false,
+                collectionName: this.name,
+                storageToken: ensureNotFalsy(this.database.storageToken),
+                events: eventBulk.events.map(ev => storageChangeEventToRxChangeEvent(
+                    false,
+                    ev,
+                    this as any
+                )),
+                databaseToken: this.database.token
+            };
+            this.database.$emit(changeEventBulk);
         });
+
         this._subs.push(subDocs);
-        const subLocalDocs = this.localDocumentsStore.changeStream().pipe(
-            map(storageEvent => storageChangeEventToRxChangeEvent(
-                true,
-                storageEvent,
-                this.database,
-                this as any
-            ))
-        ).subscribe(cE => this.$emit(cE));
+        const subLocalDocs = this.localDocumentsStore.changeStream().subscribe(eventBulk => {
+            const changeEventBulk: RxChangeEventBulk = {
+                id: eventBulk.id,
+                internal: false,
+                collectionName: this.name,
+                storageToken: ensureNotFalsy(this.database.storageToken),
+                events: eventBulk.events.map(ev => storageChangeEventToRxChangeEvent(
+                    true,
+                    ev,
+                    this as any
+                )),
+                databaseToken: this.database.token
+            };
+            this.database.$emit(changeEventBulk);
+        });
         this._subs.push(subLocalDocs);
 
 
@@ -297,11 +316,6 @@ export class RxCollectionBase<
             .map((doc: any) => _handleFromStorageInstance(this, doc, noDecrypt));
         return docs;
     }
-
-    $emit(changeEvent: RxChangeEvent<any>) {
-        return this.database.$emit(changeEvent);
-    }
-
 
     /**
      * TODO internally call bulkInsert
@@ -389,7 +403,7 @@ export class RxCollectionBase<
         );
 
         // create documents
-        const successEntries: [string, RxDocumentData<RxDocumentType>][] = Array.from(results.success.entries());
+        const successEntries: [string, RxDocumentData<RxDocumentType>][] = Object.entries(results.success);
         const rxDocuments: any[] = successEntries
             .map(([key, writtenDocData]) => {
                 const docData: RxDocumentData<RxDocumentType> = getFromMapOrThrow(docsMap, key) as any;
@@ -412,7 +426,7 @@ export class RxCollectionBase<
 
         return {
             success: rxDocuments,
-            error: Array.from(results.error.values())
+            error: Object.values(results.error)
         };
     }
 
@@ -463,7 +477,7 @@ export class RxCollectionBase<
             () => this.storageInstance.bulkWrite(removeDocs)
         );
 
-        const successIds: string[] = Array.from(results.success.keys());
+        const successIds: string[] = Object.keys(results.success);
 
         // run hooks
         await Promise.all(
@@ -483,7 +497,7 @@ export class RxCollectionBase<
 
         return {
             success: rxDocuments,
-            error: Array.from(results.error.values())
+            error: Object.values(results.error)
         };
     }
 
@@ -633,7 +647,7 @@ export class RxCollectionBase<
         // find everything which was not in docCache
         if (mustBeQueried.length > 0) {
             const docs = await this.storageInstance.findDocumentsById(mustBeQueried, false);
-            Array.from(docs.values()).forEach(docData => {
+            Object.values(docs).forEach(docData => {
                 docData = _handleFromStorageInstance(this, docData);
                 const doc = createRxDocument<RxDocumentType, OrmMethods>(this as any, docData);
                 ret.set(doc.primary, doc);
@@ -691,10 +705,7 @@ export class RxCollectionBase<
                 return resultMap;
             }),
             filter(x => !!x),
-            shareReplay({
-                bufferSize: 1,
-                refCount: true
-            })
+            shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
         );
     }
 
@@ -978,7 +989,7 @@ export function createRxCollection(
         collectionName: name,
         schema: schema.jsonSchema,
         options: instanceCreationOptions,
-        idleQueue: database.idleQueue
+        multiInstance: database.multiInstance
     };
 
     runPluginHooks(

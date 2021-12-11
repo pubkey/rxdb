@@ -43,7 +43,8 @@ import type {
     OldRxCollection,
     WithAttachmentsData,
     RxJsonSchema,
-    RxDocumentData
+    RxDocumentData,
+    RxStorageInstanceCreationParams
 } from '../../types';
 import {
     RxSchema,
@@ -127,7 +128,10 @@ export class DataMigrator {
                     this.nonMigratedOldCollections = ret;
                     this.allOldCollections = this.nonMigratedOldCollections.slice(0);
                     const countAll: Promise<number[]> = Promise.all(
-                        this.nonMigratedOldCollections.map(oldCol => countAllUndeleted(oldCol.storageInstance))
+                        this.nonMigratedOldCollections.map(oldCol => countAllUndeleted(
+                            this.database.storage,
+                            oldCol.storageInstance
+                            ))
                     );
                     return countAll;
                 })
@@ -223,12 +227,12 @@ export async function createOldCollection(
     const database = dataMigrator.newestCollection.database;
     const schema = createRxSchema(schemaObj, false);
 
-    const storageInstanceCreationParams = {
+    const storageInstanceCreationParams: RxStorageInstanceCreationParams<any, any> = {
         databaseName: database.name,
         collectionName: dataMigrator.newestCollection.name,
         schema: schemaObj,
-        idleQueue: new IdleQueue(),
-        options: dataMigrator.newestCollection.instanceCreationOptions
+        options: dataMigrator.newestCollection.instanceCreationOptions,
+        multiInstance: database.multiInstance
     };
     runPluginHooks(
         'preCreateRxStorageInstance',
@@ -327,6 +331,7 @@ export function getBatchOfOldCollection(
     batchSize: number
 ): Promise<any[]> {
     return getBatch(
+        oldCollection.database.storage,
         oldCollection.storageInstance,
         batchSize
     )

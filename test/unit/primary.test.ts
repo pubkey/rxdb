@@ -21,7 +21,8 @@ import {
     promiseWait,
     isRxDocument,
     RxCollection,
-    getFromMapOrThrow
+    getFromMapOrThrow,
+    getFromObjectOrThrow
 } from '../../plugins/core';
 import {
     getRxStoragePouch
@@ -103,7 +104,7 @@ config.parallel('primary.test.js', () => {
                     const obj = schemaObjects.simpleHuman();
                     await c.insert(obj);
                     const docInStorage = await c.storageInstance.findDocumentsById([obj.passportId], false);
-                    const first = getFromMapOrThrow(docInStorage, obj.passportId);
+                    const first = getFromObjectOrThrow(docInStorage, obj.passportId);
                     assert.strictEqual(obj.passportId, first.passportId);
                     c.database.destroy();
                 });

@@ -5,9 +5,10 @@ const {
 import BroadcastChannel from 'broadcast-channel';
 import * as path from 'path';
 import parallel from 'mocha.parallel';
-import { RxStorage } from '../../src/types';
+import type { RxStorage } from '../../src/types';
 import { getRxStoragePouch, addPouchPlugin } from '../../plugins/pouchdb';
 import { getRxStorageLoki } from '../../plugins/lokijs';
+import { getRxStorageWorker } from '../../plugins/worker';
 
 function isFastMode(): boolean {
     try {
@@ -75,6 +76,24 @@ export function setDefaultStorage(storageKey: string) {
             config.storage = {
                 name: 'lokijs',
                 getStorage: () => getRxStorageLoki(),
+                hasCouchDBReplication: false,
+                hasAttachments: false
+            };
+            break;
+        case 'lokijs-worker':
+            const lokiWorkerPath = require('path').join(
+                '../../../../test_tmp/helper',
+                'lokijs-worker.js'
+            );
+            console.log('lokiWorkerPath: ' + lokiWorkerPath);
+            config.storage = {
+                name: 'lokijs-worker',
+                getStorage: () => getRxStorageWorker(
+                    getRxStorageLoki(),
+                    {
+                        workerInput: lokiWorkerPath
+                    }
+                ),
                 hasCouchDBReplication: false,
                 hasAttachments: false
             };

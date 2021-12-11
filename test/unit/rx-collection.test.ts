@@ -20,6 +20,7 @@ import {
     RxError,
     addRxPlugin,
     RANDOM_STRING,
+    runXTimes,
     RxCollection
 } from '../../plugins/core';
 
@@ -482,16 +483,17 @@ config.parallel('rx-collection.test.js', () => {
                         assert.ok(docs2.length >= 10);
                         c.database.destroy();
                     });
-                    it('find in serial', async () => {
-                        const c = await humansCollection.createPrimary(0);
-                        const docData = schemaObjects.simpleHuman();
-
-                        const docs = await c.find().exec();
-                        assert.strictEqual(docs.length, 0);
-                        await c.insert(docData);
-                        const docs2 = await c.find().exec();
-                        assert.strictEqual(docs2.length, 1);
-                        c.database.destroy();
+                    runXTimes(config.isFastMode() ? 1 : 5, idx => {
+                        it('find in serial #' + idx, async () => {
+                            const c = await humansCollection.createPrimary(0);
+                            const docData = schemaObjects.simpleHuman();
+                            const docs = await c.find().exec();
+                            assert.strictEqual(docs.length, 0);
+                            await c.insert(docData);
+                            const docs2 = await c.find().exec();
+                            assert.strictEqual(docs2.length, 1);
+                            c.database.destroy();
+                        });
                     });
                     it('find all by empty object', async () => {
                         const c = await humansCollection.create();

@@ -137,7 +137,7 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
             if (changedDocs.has(id)) {
                 return;
             }
-            const changedDoc = docs.get(id);
+            const changedDoc = docs[id];
             if (!changedDoc) {
                 throw newRxError('SNH', { args: { docs } });
             }

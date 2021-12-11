@@ -55,7 +55,11 @@ export function getQueryParams<RxDocType>(
          * that uses the hooks to ensure
          * we send for example compressed documents to be sorted by compressed queries.
          */
-        const sortComparator = collection.storageInstance.getSortComparator(queryJson);
+        const sortComparator = collection.database.storage.getSortComparator(
+            collection.storageInstance.schema,
+            queryJson
+        );
+
         const useSortComparator: DeterministicSortComparator<RxDocType> = (docA: RxDocType, docB: RxDocType) => {
             const sortComparatorData = {
                 docA,
@@ -71,7 +75,10 @@ export function getQueryParams<RxDocType>(
          * that uses the hooks to ensure
          * we send for example compressed documents to match compressed queries.
          */
-        const queryMatcher = collection.storageInstance.getQueryMatcher(queryJson);
+        const queryMatcher = collection.database.storage.getQueryMatcher(
+            collection.storageInstance.schema,
+            queryJson
+        );
         const useQueryMatcher: QueryMatcher<RxDocumentWriteData<RxDocType>> = (doc: RxDocumentWriteData<RxDocType>) => {
             const queryMatcherData = {
                 doc,

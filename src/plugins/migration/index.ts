@@ -12,7 +12,7 @@ import type {
     RxDatabase,
     AllMigrationStates
 } from '../../types';
-import { PROMISE_RESOLVE_FALSE } from '../../util';
+import { PROMISE_RESOLVE_FALSE, RXJS_SHARE_REPLAY_DEFAULTS } from '../../util';
 import {
     mustMigrate,
     DataMigrator
@@ -35,10 +35,7 @@ export const RxDBMigrationPlugin: RxPlugin = {
             proto.migrationStates = function (this: RxDatabase): Observable<AllMigrationStates> {
                 return getMigrationStateByDatabase(this).pipe(
                     switchMap(list => combineLatest(list)),
-                    shareReplay({
-                        bufferSize: 1,
-                        refCount: true
-                    })
+                    shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
                 );
             };
         },

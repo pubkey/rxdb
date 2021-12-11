@@ -156,20 +156,6 @@ async function run() {
     console.log('db.storageToken: ' + db.storageToken);
     window.db = db;
 
-
-
-    db.broadcastChannel.addEventListener('message', msg => {
-        console.log('broadcastChannel.addEventListener() emitted:');
-        console.dir(msg);
-
-    });
-
-    db.broadcastChannel$.subscribe(msg => {
-        console.log('broadcastChannel$ emitted:');
-        console.dir(msg);
-    });
-
-
     // display crown when tab is leader
     db.waitForLeadership().then(function () {
         document.title = '♛ ' + document.title;

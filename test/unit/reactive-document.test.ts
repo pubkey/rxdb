@@ -44,11 +44,15 @@ config.parallel('reactive-document.test.js', () => {
                 });
 
                 await doc.atomicPatch({ firstName: newName });
-
-                await AsyncTestUtil.waitUntil(() => emittedCollection.length === 1);
+                await AsyncTestUtil.waitUntil(() => {
+                    const count = emittedCollection.length;
+                    if (count > 1) {
+                        throw new Error('too many events');
+                    } else {
+                        return emittedCollection.length === 1;
+                    }
+                });
                 const docDataAfter = await doc.$.pipe(first()).toPromise();
-
-
                 const changeEvent: any = emittedCollection[0];
                 assert.strictEqual(changeEvent.documentData.firstName, newName);
                 assert.strictEqual(changeEvent.previousDocumentData.firstName, oldName);

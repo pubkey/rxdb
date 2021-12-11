@@ -184,6 +184,10 @@ export function trimDots(str: string): string {
 }
 
 
+export function runXTimes(xTimes: number, fn: (idx: number) => void) {
+    new Array(xTimes).fill(0).forEach((_v, idx) => fn(idx));
+}
+
 export function ensureNotFalsy<T>(obj: T | false | undefined | null): T {
     if (!obj) {
         throw new Error('ensureNotFalsy() is falsy');
@@ -342,8 +346,13 @@ export function flatClone<T>(obj: T | DeepReadonlyObject<T>): T {
  * @link https://stackoverflow.com/a/11509718/3443137
  */
 export function firstPropertyNameOfObject(obj: any): string {
-    return obj[Object.keys(obj)[0]];
+    return Object.keys(obj)[0];
 }
+export function firstPropertyValueOfObject<T>(obj: { [k: string]: T }): T {
+    const key = Object.keys(obj)[0];
+    return obj[key];
+}
+
 
 import isElectron from 'is-electron';
 export const isElectronRenderer = isElectron();
@@ -440,6 +449,17 @@ export function getFromMapOrThrow<K, V>(map: Map<K, V> | WeakMap<any, V>, key: K
     return val;
 }
 
+export function getFromObjectOrThrow<V>(
+    obj: { [k: string]: V },
+    key: string
+): V {
+    const val = obj[key];
+    if (!val) {
+        throw new Error('missing value from object ' + key);
+    }
+    return val;
+}
+
 export const blobBufferUtil = {
     /**
      * depending if we are on node or browser,
@@ -507,3 +527,15 @@ export const blobBufferUtil = {
         });
     }
 };
+
+import type { ShareReplayConfig } from 'rxjs/internal/operators/shareReplay';
+/**
+ * Using shareReplay() without settings will not unsubscribe
+ * if there are no more subscribers.
+ * So we use these defaults.
+ * @link https://cartant.medium.com/rxjs-whats-changed-with-sharereplay-65c098843e95
+ */
+export const RXJS_SHARE_REPLAY_DEFAULTS: ShareReplayConfig = {
+    bufferSize: 1,
+    refCount: true
+}

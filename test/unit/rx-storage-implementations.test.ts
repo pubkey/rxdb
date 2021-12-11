@@ -10,15 +10,16 @@ import {
     lastOfArray,
     writeSingle,
     blobBufferUtil,
+    flattenEvents,
     flatClone,
     MangoQuery,
     RxJsonSchema,
     parseRevision,
-    ensureNotFalsy
+    ensureNotFalsy,
+    getFromObjectOrThrow
 } from '../../plugins/core';
 
 import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
-import { BroadcastChannel, LeaderElector } from 'broadcast-channel';
 addRxPlugin(RxDBKeyCompressionPlugin);
 import { RxDBValidatePlugin } from '../../plugins/validate';
 addRxPlugin(RxDBValidatePlugin);
@@ -31,6 +32,7 @@ import {
     waitUntil
 } from 'async-test-util';
 import {
+    EventBulk,
     PreparedQuery,
     RxDocumentData,
     RxDocumentWriteData,
@@ -40,26 +42,17 @@ import {
     RxStorageInstance,
     RxStorageKeyObjectInstance
 } from '../../src/types';
-import { getLeaderElectorByBroadcastChannel } from '../../plugins/leader-election';
-import { IdleQueue } from 'custom-idle-queue';
+import { filter, map } from 'rxjs/operators';
 
 addRxPlugin(RxDBQueryBuilderPlugin);
 
 declare type TestDocType = { key: string; value: string; };
 declare type OptionalValueTestDoc = TestDocType & { value?: string };
 declare type MultiInstanceInstances = {
-    broadcastChannelA: BroadcastChannel;
-    broadcastChannelB: BroadcastChannel;
-    leaderElectorA: LeaderElector;
-    leaderElectorB: LeaderElector;
     a: RxStorageInstance<TestDocType, any, any>;
     b: RxStorageInstance<TestDocType, any, any>;
 };
 declare type MultiInstanceKeyObjectInstances = {
-    broadcastChannelA: BroadcastChannel;
-    broadcastChannelB: BroadcastChannel;
-    leaderElectorA: LeaderElector;
-    leaderElectorB: LeaderElector;
     a: RxStorageKeyObjectInstance<any, any>;
     b: RxStorageKeyObjectInstance<any, any>;
 };
@@ -131,7 +124,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
                     options: {},
-                    idleQueue: new IdleQueue()
+                    multiInstance: false
                 });
                 await storageInstance.close();
             });
@@ -143,7 +136,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
                     options: {},
-                    idleQueue: new IdleQueue()
+                    multiInstance: false
                 });
 
                 const docData = {
@@ -157,8 +150,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }]
                 );
 
-                assert.strictEqual(writeResponse.error.size, 0);
-                const first = getFromMapOrThrow(writeResponse.success, 'foobar');
+                assert.strictEqual(Object.keys(writeResponse.error).length, 0);
+                const first = getFromObjectOrThrow(writeResponse.success, 'foobar');
 
                 assert.ok(first._rev);
                 (docData as any)._rev = first._rev;
@@ -173,7 +166,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
                     options: {},
-                    idleQueue: new IdleQueue()
+                    multiInstance: false
                 });
 
                 const writeData: RxDocumentWriteData<TestDocType> = {
@@ -193,8 +186,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }]
                 );
 
-                assert.strictEqual(writeResponse.success.size, 0);
-                const first = getFromMapOrThrow(writeResponse.error, 'foobar');
+                assert.strictEqual(Object.keys(writeResponse.success).length, 0);
+                const first = getFromObjectOrThrow(writeResponse.error, 'foobar');
                 assert.strictEqual(first.status, 409);
                 assert.strictEqual(first.documentId, 'foobar');
                 assert.ok(first.writeRow);
@@ -207,7 +200,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
                     options: {},
-                    idleQueue: new IdleQueue()
+                    multiInstance: false
                 });
 
                 const insertResponse = await storageInstance.bulkWrite(
@@ -219,8 +212,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         }
                     }]
                 );
-                assert.strictEqual(insertResponse.error.size, 0);
-                const first = getFromMapOrThrow(insertResponse.success, 'foobar');
+                assert.strictEqual(Object.keys(insertResponse.error).length, 0);
+                const first = getFromObjectOrThrow(insertResponse.success, 'foobar');
 
 
                 const deleteResponse = await storageInstance.bulkWrite(
@@ -229,8 +222,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         document: Object.assign({}, first, { _deleted: true })
                     }]
                 );
-                assert.strictEqual(deleteResponse.error.size, 0);
-                const second = getFromMapOrThrow(deleteResponse.success, 'foobar');
+                assert.strictEqual(Object.keys(deleteResponse.error).length, 0);
+                const second = getFromObjectOrThrow(deleteResponse.success, 'foobar');
 
 
                 const undeleteResponse = await storageInstance.bulkWrite(
@@ -241,8 +234,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }]
                 );
 
-                assert.strictEqual(undeleteResponse.error.size, 0);
-                const third = getFromMapOrThrow(undeleteResponse.success, 'foobar');
+                assert.strictEqual(Object.keys(undeleteResponse.error).length, 0);
+                const third = getFromObjectOrThrow(undeleteResponse.success, 'foobar');
                 assert.strictEqual(third.value, 'aaa');
 
                 storageInstance.close();
@@ -257,7 +250,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema,
                     options: {},
-                    idleQueue: new IdleQueue()
+                    multiInstance: false
                 });
                 const docId = 'foobar';
                 const insertData: RxDocumentData<OptionalValueTestDoc> = {
@@ -270,7 +263,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         document: insertData
                     }]
                 );
-                const insertResponse = getFromMapOrThrow(writeResponse.success, docId);
+                const insertResponse = getFromObjectOrThrow(writeResponse.success, docId);
                 insertData._rev = insertResponse._rev;
 
                 const updateResponse = await storageInstance.bulkWrite(
@@ -282,7 +275,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         } as any
                     }]
                 );
-                const updateResponseDoc = getFromMapOrThrow(updateResponse.success, docId);
+                const updateResponseDoc = getFromObjectOrThrow(updateResponse.success, docId);
                 delete (updateResponseDoc as any)._deleted;
                 delete (updateResponseDoc as any)._rev;
 
@@ -304,7 +297,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
                     options: {},
-                    idleQueue: new IdleQueue()
+                    multiInstance: false
                 });
 
                 const writeData: RxDocumentData<TestDocType> = {
@@ -324,7 +317,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 assert.deepStrictEqual(originalWriteData, writeData);
 
                 const found = await storageInstance.findDocumentsById([originalWriteData.key], false);
-                const doc = getFromMapOrThrow(found, originalWriteData.key);
+                const doc = getFromObjectOrThrow(found, originalWriteData.key);
                 assert.ok(doc);
                 assert.strictEqual(doc.value, originalWriteData.value);
                 // because overwrite=true, the _rev from the input data must be used.
@@ -340,7 +333,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, '_id' as any),
                     options: {},
-                    idleQueue: new IdleQueue()
+                    multiInstance: false
                 });
 
                 const query: MangoQuery = {
@@ -351,7 +344,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     ]
                 };
 
-                const comparator = storageInstance.getSortComparator(
+                const comparator = config.storage.getStorage().getSortComparator(
+                    storageInstance.schema,
                     query
                 );
 
@@ -376,7 +370,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getTestDataSchema(),
                     options: {},
-                    idleQueue: new IdleQueue()
+                    multiInstance: false
                 });
 
                 const matchingValue = 'foobar';
@@ -391,7 +385,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     ]
                 };
 
-                const comparator = storageInstance.getSortComparator(
+                const comparator = config.storage.getStorage().getSortComparator(
+                    storageInstance.schema,
                     query
                 );
 
@@ -421,7 +416,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getTestDataSchema(),
                     options: {},
-                    idleQueue: new IdleQueue()
+                    multiInstance: false
                 });
 
                 const matchingValue = 'aaa';
@@ -444,7 +439,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     ]
                 };
 
-                const comparator = storageInstance.getSortComparator(
+                const comparator = config.storage.getStorage().getSortComparator(
+                    storageInstance.schema,
                     query
                 );
 
@@ -476,7 +472,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, '_id' as any),
                     options: {},
-                    idleQueue: new IdleQueue()
+                    multiInstance: false
                 });
 
                 const query: MangoQuery = {
@@ -489,7 +485,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 };
 
 
-                const queryMatcher = storageInstance.getQueryMatcher(
+                const queryMatcher = config.storage.getStorage().getQueryMatcher(
+                    storageInstance.schema,
                     query
                 );
 
@@ -515,7 +512,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         collectionName: randomCouchString(12),
                         schema: getPseudoSchemaForVersion(0, 'key'),
                         options: {},
-                        idleQueue: new IdleQueue()
+                        multiInstance: false
                     });
 
                 const writeData = {
@@ -530,10 +527,12 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }]
                 );
 
-
-                const preparedQuery = storageInstance.prepareQuery({
-                    selector: {}
-                });
+                const preparedQuery = config.storage.getStorage().prepareQuery(
+                    storageInstance.schema,
+                    {
+                        selector: {}
+                    }
+                );
                 const allDocs = await storageInstance.query(preparedQuery);
                 const first = allDocs.documents[0];
                 assert.ok(first);
@@ -549,7 +548,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         collectionName: randomCouchString(12),
                         schema: getPseudoSchemaForVersion(0, 'key'),
                         options: {},
-                        idleQueue: new IdleQueue()
+                        multiInstance: false
                     });
 
                 const value = 'foobar';
@@ -565,13 +564,16 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     },
                 ]);
 
-                const preparedQuery = storageInstance.prepareQuery({
-                    selector: {
-                        value: {
-                            $eq: value
+                const preparedQuery = config.storage.getStorage().prepareQuery(
+                    storageInstance.schema,
+                    {
+                        selector: {
+                            value: {
+                                $eq: value
+                            }
                         }
                     }
-                });
+                );
 
                 const allDocs = await storageInstance.query(preparedQuery);
                 assert.strictEqual(allDocs.documents.length, 2);
@@ -586,7 +588,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         collectionName: randomCouchString(12),
                         schema: getTestDataSchema(),
                         options: {},
-                        idleQueue: new IdleQueue()
+                        multiInstance: false
                     });
 
                 await storageInstance.bulkWrite([
@@ -601,12 +603,15 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     },
                 ]);
 
-                const preparedQuery = storageInstance.prepareQuery({
-                    selector: {},
-                    sort: [
-                        { value: 'desc' }
-                    ]
-                });
+                const preparedQuery = config.storage.getStorage().prepareQuery(
+                    storageInstance.schema,
+                    {
+                        selector: {},
+                        sort: [
+                            { value: 'desc' }
+                        ]
+                    }
+                );
                 const allDocs = await storageInstance.query(preparedQuery);
 
                 assert.strictEqual(allDocs.documents[0].value, 'c');
@@ -663,7 +668,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         collectionName: randomCouchString(12),
                         schema,
                         options: {},
-                        idleQueue: new IdleQueue()
+                        multiInstance: false
                     });
 
                 const docData: RxDocumentWriteData<RandomDoc>[] = new Array(10)
@@ -678,15 +683,21 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const writeResponse: RxStorageBulkWriteResponse<RandomDoc> = await storageInstance.bulkWrite(
                     docData.map(d => ({ document: d }))
                 );
-                if (writeResponse.error.size > 0) {
+                if (Object.keys(writeResponse.error).length > 0) {
                     throw new Error('could not save');
                 }
-                const docs = Array.from(writeResponse.success.values());
+                const docs = Object.values(writeResponse.success);
 
                 async function testQuery(query: MangoQuery<RandomDoc>): Promise<void> {
-                    const preparedQuery = storageInstance.prepareQuery(query);
+                    const preparedQuery = config.storage.getStorage().prepareQuery(
+                        storageInstance.schema,
+                        query
+                    );
                     const docsViaQuery = (await storageInstance.query(preparedQuery)).documents;
-                    const sortComparator = storageInstance.getSortComparator(preparedQuery);
+                    const sortComparator = config.storage.getStorage().getSortComparator(
+                        storageInstance.schema,
+                        preparedQuery
+                    );
                     const docsViaSort = docs.sort(sortComparator);
                     assert.deepStrictEqual(docsViaQuery, docsViaSort);
                 }
@@ -731,7 +742,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
                     options: {},
-                    idleQueue: new IdleQueue()
+                    multiInstance: false
                 });
 
                 const docData = {
@@ -746,7 +757,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 );
 
                 const found = await storageInstance.findDocumentsById(['foobar'], false);
-                const foundDoc = getFromMapOrThrow(found, 'foobar');
+                const foundDoc = getFromObjectOrThrow(found, 'foobar');
                 delete (foundDoc as any)._rev;
                 delete (foundDoc as any)._deleted;
                 assert.deepStrictEqual(foundDoc, docData);
@@ -759,7 +770,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
                     options: {},
-                    idleQueue: new IdleQueue()
+                    multiInstance: false
                 });
 
                 const insertResult = await storageInstance.bulkWrite(
@@ -771,7 +782,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         }
                     }]
                 );
-                const previous = getFromMapOrThrow(insertResult.success, 'foobar');
+                const previous = getFromObjectOrThrow(insertResult.success, 'foobar');
 
                 await storageInstance.bulkWrite(
                     [{
@@ -786,7 +797,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 );
 
                 const found = await storageInstance.findDocumentsById(['foobar'], true);
-                const foundDeleted = getFromMapOrThrow(found, 'foobar');
+                const foundDeleted = getFromObjectOrThrow(found, 'foobar');
 
                 // even on deleted documents, we must get the other properties.
                 assert.strictEqual(foundDeleted.value, 'barfoo2');
@@ -802,7 +813,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
                     options: {},
-                    idleQueue: new IdleQueue()
+                    multiInstance: false
                 });
                 async function getSequenceAfter(since: number): Promise<number> {
                     const changesResult = await storageInstance.getChangedDocuments({
@@ -835,7 +846,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
 
                 const docsInDbResult = await storageInstance.findDocumentsById(['foobar'], true);
-                const docInDb = getFromMapOrThrow(docsInDbResult, 'foobar');
+                const docInDb = getFromObjectOrThrow(docsInDbResult, 'foobar');
 
                 const oldRev = parseRevision(docInDb._rev);
                 const nextRevHeight = oldRev.height + 1;
@@ -863,7 +874,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
                     options: {},
-                    idleQueue: new IdleQueue()
+                    multiInstance: false
                 });
 
                 let previous: RxDocumentData<TestDocType> | undefined;
@@ -880,7 +891,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     previous,
                     document: writeData
                 }]);
-                previous = getFromMapOrThrow(firstWriteResult.success, writeData.key);
+                previous = getFromObjectOrThrow(firstWriteResult.success, writeData.key);
 
                 const changesAfterWrite = await storageInstance.getChangedDocuments({
                     direction: 'after',
@@ -900,7 +911,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     previous,
                     document: writeData
                 }]);
-                previous = getFromMapOrThrow(updateResult.success, writeData.key);
+                previous = getFromObjectOrThrow(updateResult.success, writeData.key);
                 const changesAfterUpdate = await storageInstance.getChangedDocuments({
                     direction: 'after',
                     sinceSequence: 1
@@ -957,7 +968,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getTestDataSchema(),
                     options: {},
-                    idleQueue: new IdleQueue()
+                    multiInstance: false
                 });
 
                 const insertDocs = new Array(10).fill(0).map(() => getWriteData());
@@ -983,7 +994,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
                     options: {},
-                    idleQueue: new IdleQueue()
+                    multiInstance: false
                 });
 
                 const key = 'foobar';
@@ -994,7 +1005,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         value: 'myValue'
                     }
                 }]);
-                const previous = getFromMapOrThrow(insertResult.success, key);
+                const previous = getFromObjectOrThrow(insertResult.success, key);
 
                 // overwrite via set revisision
                 const customRev = '2-5373c7dc85e8705456beaf68ae041110';
@@ -1040,13 +1051,54 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     options: {
                         auto_compaction: false
                     },
-                    idleQueue: new IdleQueue()
+                    multiInstance: false
                 });
 
-                const emitted: RxStorageChangeEvent<TestDocType>[] = [];
+                const emitted: EventBulk<RxStorageChangeEvent<TestDocType>>[] = [];
                 const sub = storageInstance.changeStream().subscribe(x => {
                     emitted.push(x);
                 });
+
+                const writeData = {
+                    key: 'foobar',
+                    value: 'one',
+                    _rev: undefined as any,
+                    _deleted: false,
+                    _attachments: {}
+                };
+
+                // insert
+                await storageInstance.bulkWrite([{
+                    document: writeData
+                }]);
+
+                await wait(100);
+                assert.strictEqual(emitted.length, 1);
+                assert.strictEqual(emitted[0].events.length, 1);
+
+                sub.unsubscribe();
+                storageInstance.close();
+            });
+            it('should be compatible with rxjs operators', async () => {
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    options: {
+                        auto_compaction: false
+                    },
+                    multiInstance: false
+                });
+
+                const emitted: EventBulk<RxStorageChangeEvent<TestDocType>>[] = [];
+                const sub = storageInstance.changeStream()
+                    .pipe(
+                        map(x => x),
+                        filter(() => true)
+                    )
+                    .subscribe(x => {
+                        emitted.push(x);
+                    });
 
                 const writeData = {
                     key: 'foobar',
@@ -1075,10 +1127,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     options: {
                         auto_compaction: false
                     },
-                    idleQueue: new IdleQueue()
+                    multiInstance: false
                 });
 
-                const emitted: RxStorageChangeEvent<RxDocumentData<TestDocType>>[] = [];
+                const emitted: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>>[] = [];
                 const sub = storageInstance.changeStream().subscribe(x => {
                     emitted.push(x);
                 });
@@ -1097,7 +1149,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     previous,
                     document: writeData
                 }]);
-                previous = getFromMapOrThrow(firstWriteResult.success, writeData.key);
+                previous = getFromObjectOrThrow(firstWriteResult.success, writeData.key);
 
                 // update
                 const originalBeforeUpdate = clone(writeData);
@@ -1105,7 +1157,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     previous,
                     document: writeData
                 }]);
-                previous = getFromMapOrThrow(updateResult.success, writeData.key);
+                previous = getFromObjectOrThrow(updateResult.success, writeData.key);
 
                 // should not mutate the input or add additional properties to output
                 originalBeforeUpdate._rev = (previous as any)._rev;
@@ -1120,8 +1172,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 await waitUntil(() => emitted.length === 3);
 
-                const last = lastOfArray(emitted);
-                if (!last) {
+                const lastEvent = lastOfArray(lastOfArray(emitted).events);
+                if (!lastEvent) {
                     throw new Error('missing last event');
                 }
 
@@ -1131,11 +1183,11 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                  * This is a hack because of pouchdb's strange behavior.
                  * We might want to change that.
                  */
-                const lastRevision = parseRevision((last as any).change.previous._rev);
+                const lastRevision = parseRevision((lastEvent as any).change.previous._rev);
                 assert.strictEqual(lastRevision.height, 3);
 
-                assert.strictEqual(last.change.operation, 'DELETE');
-                assert.ok(last.change.previous);
+                assert.strictEqual(lastEvent.change.operation, 'DELETE');
+                assert.ok(lastEvent.change.previous);
 
                 sub.unsubscribe();
                 storageInstance.close();
@@ -1148,10 +1200,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     options: {
                         auto_compaction: false
                     },
-                    idleQueue: new IdleQueue()
+                    multiInstance: false
                 });
 
-                const emitted: RxStorageChangeEvent<TestDocType>[] = [];
+                const emitted: EventBulk<RxStorageChangeEvent<TestDocType>>[] = [];
                 const sub = storageInstance.changeStream().subscribe(x => emitted.push(x));
 
 
@@ -1188,8 +1240,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }]
                 );
 
-                await waitUntil(() => emitted.length === 2);
-                const lastEvent = emitted.pop();
+                await waitUntil(() => {
+                    return flattenEvents(emitted).length === 2;
+                });
+                const lastEvent = flattenEvents(emitted).pop();
                 if (!lastEvent) {
                     throw new Error('last event missing');
                 }
@@ -1208,16 +1262,19 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
                     options: {},
-                    idleQueue: new IdleQueue()
+                    multiInstance: false
                 });
 
                 const id = 'foobar';
-                const emitted: RxStorageChangeEvent<RxDocumentData<TestDocType>>[] = [];
+                const emitted: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>>[] = [];
                 const sub = storageInstance.changeStream().subscribe(cE => emitted.push(cE));
 
-                const preparedQuery = storageInstance.prepareQuery({
-                    selector: {}
-                });
+                const preparedQuery = config.storage.getStorage().prepareQuery(
+                    storageInstance.schema,
+                    {
+                        selector: {}
+                    }
+                );
 
                 // insert
                 await storageInstance.bulkWrite([{
@@ -1262,7 +1319,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 // insert should overwrite the deleted one
                 const afterDelete = await storageInstance.findDocumentsById([id], true);
-                const afterDeleteDoc = getFromMapOrThrow(afterDelete, id);
+                const afterDeleteDoc = getFromObjectOrThrow(afterDelete, id);
                 await storageInstance.bulkWrite([{
                     document: {
                         key: id,
@@ -1275,13 +1332,11 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
 
 
-                await waitUntil(() => emitted.length === 4);
+                await waitUntil(() => flattenEvents(emitted).length === 4);
+                assert.ok(flattenEvents(emitted)[0].change.operation === 'INSERT');
 
-
-                assert.ok(emitted[0].change.operation === 'INSERT');
-
-                assert.ok(emitted[1].change.operation === 'UPDATE');
-                const updatePrev = flatClone(ensureNotFalsy(emitted[1].change.previous));
+                assert.ok(flattenEvents(emitted)[1].change.operation === 'UPDATE');
+                const updatePrev = flatClone(ensureNotFalsy(flattenEvents(emitted)[1].change.previous));
                 delete (updatePrev as any)._deleted;
                 assert.deepStrictEqual(
                     updatePrev,
@@ -1293,8 +1348,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }
                 );
 
-                assert.ok(emitted[2].change.operation === 'DELETE');
-                assert.ok(emitted[3].change.operation === 'INSERT');
+                assert.ok(flattenEvents(emitted)[2].change.operation === 'DELETE');
+                assert.ok(flattenEvents(emitted)[3].change.operation === 'INSERT');
 
                 sub.unsubscribe();
                 storageInstance.close();
@@ -1312,10 +1367,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     options: {
                         auto_compaction: false
                     },
-                    idleQueue: new IdleQueue()
+                    multiInstance: false
                 });
 
-                const emitted: RxStorageChangeEvent<any>[] = [];
+                const emitted: EventBulk<RxStorageChangeEvent<any>>[] = [];
                 const sub = storageInstance.changeStream().subscribe(x => {
                     emitted.push(x);
                 });
@@ -1347,28 +1402,31 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }
                 );
 
-                await waitUntil(() => emitted.length === 1);
+                await waitUntil(() => flattenEvents(emitted).length === 1);
 
                 assert.strictEqual(writeResult._attachments.foo.type, 'text/plain');
                 assert.strictEqual(writeResult._attachments.foo.digest, attachmentHash);
 
                 const queryResult = await storageInstance.query(
-                    storageInstance.prepareQuery({
-                        selector: {}
-                    })
+                    config.storage.getStorage().prepareQuery(
+                        storageInstance.schema,
+                        {
+                            selector: {}
+                        }
+                    )
                 );
                 assert.strictEqual(queryResult.documents[0]._attachments.foo.type, 'text/plain');
                 assert.strictEqual(queryResult.documents[0]._attachments.foo.length, attachmentData.length);
 
 
                 const byId = await storageInstance.findDocumentsById([writeData.key], false);
-                const byIdDoc = getFromMapOrThrow(byId, writeData.key);
+                const byIdDoc = getFromObjectOrThrow(byId, writeData.key);
                 assert.strictEqual(byIdDoc._attachments.foo.type, 'text/plain');
                 assert.strictEqual(byIdDoc._attachments.foo.length, attachmentData.length);
 
                 // test emitted
-                assert.strictEqual(emitted[0].change.doc._attachments.foo.type, 'text/plain');
-                assert.strictEqual(emitted[0].change.doc._attachments.foo.length, attachmentData.length);
+                assert.strictEqual(flattenEvents(emitted)[0].change.doc._attachments.foo.type, 'text/plain');
+                assert.strictEqual(flattenEvents(emitted)[0].change.doc._attachments.foo.length, attachmentData.length);
 
 
                 const changesResult = await storageInstance.getChangedDocuments({
@@ -1392,7 +1450,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     options: {
                         auto_compaction: false
                     },
-                    idleQueue: new IdleQueue()
+                    multiInstance: false
                 });
 
                 let previous: RxDocumentData<TestDocType> | undefined;
@@ -1451,7 +1509,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     collectionName,
                     schema: getPseudoSchemaForVersion(0, 'key'),
                     options: {},
-                    idleQueue: new IdleQueue()
+                    multiInstance: false
                 });
                 await storageInstance.bulkWrite([
                     {
@@ -1469,10 +1527,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     collectionName,
                     schema: getPseudoSchemaForVersion(0, 'key'),
                     options: {},
-                    idleQueue: new IdleQueue()
+                    multiInstance: false
                 });
                 const docs = await storageInstance2.findDocumentsById(['foobar'], false);
-                assert.strictEqual(docs.size, 0);
+                assert.strictEqual(Object.keys(docs).length, 0);
 
                 storageInstance.close();
                 storageInstance2.close();
@@ -1488,7 +1546,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         databaseName: randomCouchString(12),
                         collectionName: randomCouchString(12),
                         options: {},
-                        idleQueue: new IdleQueue()
+                        multiInstance: false
                     });
 
                 const writeData = {
@@ -1506,8 +1564,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 // should not have mutated the input
                 assert.deepStrictEqual(originalWriteData, writeData);
 
-                assert.strictEqual(writeResponse.error.size, 0);
-                const first = getFromMapOrThrow(writeResponse.success, 'foobar');
+                assert.strictEqual(Object.keys(writeResponse.error).length, 0);
+                const first = getFromObjectOrThrow(writeResponse.success, 'foobar');
                 delete (first as any)._rev;
                 delete (first as any)._deleted;
 
@@ -1522,7 +1580,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         databaseName: randomCouchString(12),
                         collectionName: randomCouchString(12),
                         options: {},
-                        idleQueue: new IdleQueue()
+                        multiInstance: false
                     });
 
                 const writeResponse = await storageInstance.bulkWrite(
@@ -1534,7 +1592,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         }
                     }]
                 );
-                const first = getFromMapOrThrow(writeResponse.success, 'foobar');
+                const first = getFromObjectOrThrow(writeResponse.success, 'foobar');
                 await storageInstance.bulkWrite([
                     {
                         previous: first,
@@ -1547,8 +1605,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 ]);
 
                 const afterUpdate = await storageInstance.findLocalDocumentsById(['foobar']);
-                assert.ok(afterUpdate.get('foobar'));
-                assert.strictEqual(afterUpdate.get('foobar').value, 'barfoo2');
+                assert.ok(afterUpdate['foobar']);
+                assert.strictEqual(afterUpdate['foobar'].value, 'barfoo2');
 
                 storageInstance.close();
             });
@@ -1559,7 +1617,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         databaseName: randomCouchString(12),
                         collectionName: randomCouchString(12),
                         options: {},
-                        idleQueue: new IdleQueue()
+                        multiInstance: false
                     });
 
                 const writeData = [{
@@ -1577,8 +1635,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     writeData
                 );
 
-                assert.strictEqual(writeResponse.success.size, 0);
-                const first = getFromMapOrThrow(writeResponse.error, 'foobar');
+                assert.strictEqual(Object.keys(writeResponse.success).length, 0);
+                const first = getFromObjectOrThrow(writeResponse.error, 'foobar');
                 assert.strictEqual(first.status, 409);
                 assert.strictEqual(first.documentId, 'foobar');
                 assert.ok(first.writeRow.document);
@@ -1592,7 +1650,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         databaseName: randomCouchString(12),
                         collectionName: randomCouchString(12),
                         options: {},
-                        idleQueue: new IdleQueue()
+                        multiInstance: false
                     });
 
                 const writeDoc = {
@@ -1608,7 +1666,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         document: writeDoc
                     }]
                 );
-                const writeDocResult = getFromMapOrThrow(firstWriteResult.success, writeDoc._id);
+                const writeDocResult = getFromObjectOrThrow(firstWriteResult.success, writeDoc._id);
                 writeDoc._rev = writeDocResult._rev;
                 writeDoc.value = writeDoc.value + '2';
                 writeDoc._deleted = true;
@@ -1619,13 +1677,13 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         document: writeDoc
                     }]
                 );
-                if (updateResponse.error.size !== 0) {
+                if (Object.keys(updateResponse.error).length !== 0) {
                     throw new Error('could not update');
                 }
 
                 // should not find the document
                 const res = await storageInstance.findLocalDocumentsById([writeDoc._id]);
-                assert.strictEqual(res.has(writeDoc._id), false);
+                assert.strictEqual(!!res[writeDoc._id], false);
 
                 storageInstance.close();
             });
@@ -1638,7 +1696,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         databaseName: randomCouchString(12),
                         collectionName: randomCouchString(12),
                         options: {},
-                        idleQueue: new IdleQueue()
+                        multiInstance: false
                     });
 
                 const writeData = {
@@ -1654,7 +1712,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 );
 
                 const found = await storageInstance.findLocalDocumentsById([writeData._id]);
-                const doc = getFromMapOrThrow(found, writeData._id);
+                const doc = getFromObjectOrThrow(found, writeData._id);
                 assert.strictEqual(
                     doc.value,
                     writeData.value
@@ -1671,10 +1729,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         databaseName: randomCouchString(12),
                         collectionName: randomCouchString(12),
                         options: {},
-                        idleQueue: new IdleQueue()
+                        multiInstance: false
                     });
 
-                const emitted: RxStorageChangeEvent<RxLocalDocumentData>[] = [];
+                const emitted: EventBulk<RxStorageChangeEvent<RxLocalDocumentData>>[] = [];
                 const sub = storageInstance.changeStream().subscribe(x => {
                     emitted.push(x);
                 });
@@ -1705,10 +1763,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         databaseName: randomCouchString(12),
                         collectionName: randomCouchString(12),
                         options: {},
-                        idleQueue: new IdleQueue()
+                        multiInstance: false
                     });
 
-                const emitted: RxStorageChangeEvent<RxLocalDocumentData>[] = [];
+                const emitted: EventBulk<RxStorageChangeEvent<RxLocalDocumentData>>[] = [];
                 const sub = storageInstance.changeStream().subscribe(x => {
                     emitted.push(x);
                 });
@@ -1727,14 +1785,14 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     previous,
                     document: writeData
                 }]);
-                previous = getFromMapOrThrow(firstWriteResult.success, writeData._id);
+                previous = getFromObjectOrThrow(firstWriteResult.success, writeData._id);
 
                 // update
                 const updateResult = await storageInstance.bulkWrite([{
                     previous,
                     document: writeData
                 }]);
-                previous = getFromMapOrThrow(updateResult.success, writeData._id);
+                previous = getFromObjectOrThrow(updateResult.success, writeData._id);
 
                 // delete
                 writeData._deleted = true;
@@ -1745,7 +1803,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 await waitUntil(() => emitted.length === 3);
 
-                const last = lastOfArray(emitted);
+                const last = lastOfArray(flattenEvents(emitted));
                 if (!last) {
                     throw new Error('missing last event');
                 }
@@ -1767,7 +1825,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         databaseName,
                         collectionName,
                         options: {},
-                        idleQueue: new IdleQueue()
+                        multiInstance: false
                     });
                 await storageInstance.bulkWrite([
                     {
@@ -1786,10 +1844,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     databaseName,
                     collectionName,
                     options: {},
-                    idleQueue: new IdleQueue()
+                    multiInstance: false
                 });
                 const docs = await storageInstance2.findLocalDocumentsById(['foobar']);
-                assert.strictEqual(docs.size, 0);
+                assert.strictEqual(Object.keys(docs).length, 0);
 
                 storageInstance.close();
                 storageInstance2.close();
@@ -1797,87 +1855,71 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
         });
     });
     describe('multiInstance', () => {
-        async function getMultiInstaneRxStorageInstance(): Promise<MultiInstanceInstances> {
+        async function getMultiInstaneRxStorageInstance(): Promise<{
+            a: RxStorageInstance<TestDocType, any, any>;
+            b: RxStorageInstance<TestDocType, any, any>;
+        }> {
             const databaseName = randomCouchString(12);
             const collectionName = randomCouchString(12);
-            const channelName = randomCouchString(12);
-            const broadcastChannelA = new BroadcastChannel(channelName);
-            const broadcastChannelB = new BroadcastChannel(channelName);
-            const leaderElectorA = getLeaderElectorByBroadcastChannel(broadcastChannelA);
-
-            // ensure A is always leader
-            await leaderElectorA.awaitLeadership();
-
-            const leaderElectorB = getLeaderElectorByBroadcastChannel(broadcastChannelB);
             const a = await config.storage.getStorage().createStorageInstance<TestDocType>({
                 databaseName,
                 collectionName,
                 schema: getPseudoSchemaForVersion(0, 'key'),
                 options: {},
-                broadcastChannel: broadcastChannelA,
-                idleQueue: new IdleQueue()
+                multiInstance: true
             });
+            // ensure A is always leader
+            if (a.internals.leaderElector) {
+                await a.internals.leaderElector.awaitLeadership();
+            } else {
+                await wait(200);
+            }
+
             const b = await config.storage.getStorage().createStorageInstance<TestDocType>({
                 databaseName,
                 collectionName,
                 schema: getPseudoSchemaForVersion(0, 'key'),
                 options: {},
-                broadcastChannel: broadcastChannelB,
-                idleQueue: new IdleQueue()
+                multiInstance: true
             });
             return {
-                broadcastChannelA,
-                broadcastChannelB,
-                leaderElectorA,
-                leaderElectorB,
                 a,
                 b
             };
         }
         async function closeMultiInstaneRxStorageInstance(instances: MultiInstanceInstances) {
-            await instances.broadcastChannelA.close();
-            await instances.broadcastChannelB.close();
             await instances.a.close();
             await instances.b.close();
         }
         async function getMultiInstaneRxKeyObjectInstance(): Promise<MultiInstanceKeyObjectInstances> {
             const databaseName = randomCouchString(12);
             const collectionName = randomCouchString(12);
-            const channelName = randomCouchString(12);
-            const broadcastChannelA = new BroadcastChannel(channelName);
-            const broadcastChannelB = new BroadcastChannel(channelName);
-            const leaderElectorA = getLeaderElectorByBroadcastChannel(broadcastChannelA);
 
-            // ensure A is always leader
-            await leaderElectorA.awaitLeadership();
-
-            const leaderElectorB = getLeaderElectorByBroadcastChannel(broadcastChannelB);
             const a = await config.storage.getStorage().createKeyObjectStorageInstance({
                 databaseName,
                 collectionName,
                 options: {},
-                broadcastChannel: broadcastChannelA,
-                idleQueue: new IdleQueue()
+                multiInstance: true
             });
+            // ensure A is always leader
+            if (a.internals.leaderElector) {
+                await a.internals.leaderElector.awaitLeadership();
+            } else {
+                await wait(200);
+            }
+
             const b = await config.storage.getStorage().createKeyObjectStorageInstance({
                 databaseName,
                 collectionName,
                 options: {},
-                broadcastChannel: broadcastChannelB,
-                idleQueue: new IdleQueue()
+                multiInstance: true
             });
             return {
-                broadcastChannelA,
-                broadcastChannelB,
-                leaderElectorA,
-                leaderElectorB,
                 a,
                 b
             };
         }
         async function closeMultiInstaneRxKeyObjectInstance(instances: MultiInstanceKeyObjectInstances) {
-            await instances.broadcastChannelA.close();
-            await instances.broadcastChannelB.close();
             await instances.a.close();
             await instances.b.close();
         }
@@ -1885,9 +1927,9 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
             it('should be able to write and read documents', async () => {
                 const instances = await getMultiInstaneRxStorageInstance();
 
-                const emittedB: RxStorageChangeEvent<RxDocumentData<TestDocType>>[] = [];
+                const emittedB: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>>[] = [];
                 instances.b.changeStream().subscribe(ev => emittedB.push(ev));
-                const emittedA: RxStorageChangeEvent<RxDocumentData<TestDocType>>[] = [];
+                const emittedA: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>>[] = [];
                 instances.a.changeStream().subscribe(ev => emittedA.push(ev));
 
                 // insert a document on A
@@ -1898,19 +1940,23 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 await waitUntil(async () => {
                     try {
                         const foundAgain = await instances.b.findDocumentsById([writeData.key], false);
-                        const foundDoc = getFromMapOrThrow(foundAgain, writeData.key);
+                        const foundDoc = getFromObjectOrThrow(foundAgain, writeData.key);
                         assert.strictEqual(foundDoc.key, writeData.key);
                         return true;
                     } catch (err) {
                         return false;
                     }
-                });
+                }, 10 * 1000, 100);
 
                 // find via query
-                const preparedQuery: PreparedQuery<TestDocType> = instances.b.prepareQuery({
-                    selector: {},
-                    limit: 1
-                });
+                const preparedQuery: PreparedQuery<TestDocType> = config.storage.getStorage().prepareQuery(
+                    instances.b.schema,
+                    {
+                        selector: {},
+                        limit: 1
+                    }
+                );
+
                 const foundViaQuery = await instances.b.query(preparedQuery);
                 assert.strictEqual(foundViaQuery.documents.length, 1);
                 const foundViaQueryDoc = foundViaQuery.documents.find(doc => doc.key === writeData.key);
@@ -1930,12 +1976,12 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const brokenResponse = await instances.b.bulkWrite([{
                     document: brokenDoc
                 }]);
-                assert.strictEqual(brokenResponse.error.size, 1);
-                assert.strictEqual(brokenResponse.success.size, 0);
+                assert.strictEqual(Object.keys(brokenResponse.error).length, 1);
+                assert.strictEqual(Object.keys(brokenResponse.success).length, 0);
 
                 // find by id
                 const foundAgainViaRev = await instances.b.findDocumentsById([writeDataViaRevision.key], false);
-                const foundDocViaRev = getFromMapOrThrow(foundAgainViaRev, writeDataViaRevision.key);
+                const foundDocViaRev = getFromObjectOrThrow(foundAgainViaRev, writeDataViaRevision.key);
                 assert.strictEqual(foundDocViaRev.key, writeDataViaRevision.key);
 
                 // close both
@@ -1954,7 +2000,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 await waitUntil(async () => {
                     try {
                         const foundAgain = await instances.b.findLocalDocumentsById([writeData._id]);
-                        const foundDoc = getFromMapOrThrow(foundAgain, writeData._id);
+                        const foundDoc = getFromObjectOrThrow(foundAgain, writeData._id);
                         assert.strictEqual(foundDoc._id, writeData._id);
                         return true;
                     } catch (err) {

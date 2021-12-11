@@ -18,7 +18,8 @@ import {
     clone,
     overwriteGetterForCaching,
     now,
-    PROMISE_RESOLVE_FALSE
+    PROMISE_RESOLVE_FALSE,
+    RXJS_SHARE_REPLAY_DEFAULTS
 } from './util';
 import {
     newRxError,
@@ -118,10 +119,7 @@ export class RxQueryBase<
                             return docs;
                         }
                     }),
-                    shareReplay({
-                        bufferSize: 1,
-                        refCount: true
-                    })
+                    shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
                 ).asObservable();
 
             /**
@@ -282,7 +280,8 @@ export class RxQueryBase<
         return overwriteGetterForCaching(
             this,
             'queryMatcher',
-            this.collection.storageInstance.getQueryMatcher(
+            this.collection.database.storage.getQueryMatcher(
+                this.collection.storageInstance.schema,
                 this.getPreparedQuery()
             )
         );
@@ -315,8 +314,8 @@ export class RxQueryBase<
             mangoQuery: clone(this.mangoQuery)
         };
         runPluginHooks('prePrepareQuery', hookInput);
-
-        const value = this.collection.storageInstance.prepareQuery(
+        const value = this.collection.database.storage.prepareQuery(
+            this.collection.storageInstance.schema,
             hookInput.mangoQuery
         );
         this.getPreparedQuery = () => value;
@@ -505,29 +504,13 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
      * try to use the queryChangeDetector to calculate the new results
      */
     if (!mustReExec) {
-        let missedChangeEvents = rxQuery.asRxQuery.collection._changeEventBuffer.getFrom(rxQuery._latestChangeEvent + 1);
-
+        const missedChangeEvents = rxQuery.asRxQuery.collection._changeEventBuffer.getFrom(rxQuery._latestChangeEvent + 1);
         if (missedChangeEvents === null) {
             // changeEventBuffer is of bounds -> we must re-execute over the database
             mustReExec = true;
         } else {
             rxQuery._latestChangeEvent = rxQuery.asRxQuery.collection._changeEventBuffer.counter;
 
-            /**
-             * because pouchdb prefers writes over reads,
-             * we have to filter out the events that happend before the read has started
-             * so that we do not fill event-reduce with the wrong data
-             */
-            missedChangeEvents = missedChangeEvents.filter((cE: RxChangeEvent<any>) => {
-                return (
-                    !cE.startTime ||
-                    rxQuery._lastExecStart < cE.startTime &&
-                    (
-                        !cE.endTime ||
-                        rxQuery._lastExecEnd < cE.endTime
-                    )
-                );
-            });
             const runChangeEvents: RxChangeEvent<any>[] = rxQuery.asRxQuery.collection
                 ._changeEventBuffer
                 .reduceByLastOfDoc(missedChangeEvents);
@@ -536,7 +519,6 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
                 rxQuery as any,
                 runChangeEvents
             );
-
             if (eventReduceResult.runFullQueryAgain) {
                 // could not calculate the new results, execute must be done
                 mustReExec = true;

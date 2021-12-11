@@ -4,7 +4,8 @@ import config from './config';
 import {
     addRxPlugin,
     randomCouchString,
-    PouchDBInstance
+    PouchDBInstance,
+    flattenEvents
 } from '../../plugins/core';
 
 import {
@@ -39,6 +40,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     adapter: 'memory'
                 }
             ) as any;
+            (pouch as any).primaryPath = '_id';
 
             const emitted: any[] = [];
             const sub = getCustomEventEmitterByPouch(pouch).subject.subscribe(ev => {
@@ -55,14 +57,15 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 }
             } as any);
 
-            await waitUntil(() => emitted.length === 1);
+            await waitUntil(() => flattenEvents(emitted).length === 1);
 
-            const first = emitted[0];
+            const first = flattenEvents(emitted)[0];
             assert.deepStrictEqual(
-                first.writeOptions.custom,
-                { foo: 'bar' }
+                first.change.operation,
+                'INSERT'
             );
 
+            pouch.destroy();
             sub.unsubscribe();
         });
     });

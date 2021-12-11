@@ -1,12 +1,18 @@
+import type { DeterministicSortComparator, QueryMatcher } from 'event-reduce-js';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
+import lokijs from 'lokijs';
 import type {
     LokiDatabaseSettings,
     LokiSettings,
     LokiStorageInternals,
+    MangoQuery,
+    RxDocumentWriteData,
+    RxJsonSchema,
     RxKeyObjectStorageInstanceCreationParams,
     RxStorage,
     RxStorageInstanceCreationParams
 } from '../../types';
-import { flatClone, hash } from '../../util';
+import { firstPropertyNameOfObject, flatClone, hash } from '../../util';
 import {
     createLokiStorageInstance,
     RxStorageInstanceLoki
@@ -15,9 +21,25 @@ import {
     createLokiKeyObjectStorageInstance,
     RxStorageKeyObjectInstanceLoki
 } from './rx-storage-key-object-instance-loki';
+import { getLokiSortComparator } from './lokijs-helper';
+import type { LeaderElector } from 'broadcast-channel';
 
 export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettings> {
     public name = 'lokijs';
+
+    /**
+     * Create one leader elector by db name.
+     * This is done inside of the storage, not globally
+     * to make it easier to test multi-tab behavior.
+     */
+    public leaderElectorByLokiDbName: Map<string, {
+        leaderElector: LeaderElector,
+        /**
+         * Count the instances that currently use the elector.
+         * If is goes to zero again, the elector can be closed.
+         */
+        intancesCount: number;
+    }> = new Map();
 
     constructor(
         public databaseSettings: LokiDatabaseSettings
@@ -27,10 +49,91 @@ export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettin
         return Promise.resolve(hash(data));
     }
 
+    prepareQuery<RxDocType>(
+        schema: RxJsonSchema<RxDocType>,
+        mutateableQuery: MangoQuery<RxDocType>
+    ) {
+        const primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
+        if (Object.keys(mutateableQuery.selector).length > 0) {
+            mutateableQuery.selector = {
+                $and: [
+                    {
+                        _deleted: false
+                    },
+                    mutateableQuery.selector
+                ]
+            };
+        } else {
+            mutateableQuery.selector = {
+                _deleted: false
+            };
+        }
+
+        /**
+         * To ensure a deterministic sorting,
+         * we have to ensure the primary key is always part
+         * of the sort query.
+         */
+        if (!mutateableQuery.sort) {
+            mutateableQuery.sort = [{ [primaryKey]: 'asc' }] as any;
+        } else {
+            const isPrimaryInSort = mutateableQuery.sort
+                .find(p => firstPropertyNameOfObject(p) === primaryKey);
+            if (!isPrimaryInSort) {
+                mutateableQuery.sort.push({ [primaryKey]: 'asc' } as any);
+            }
+        }
+
+        return mutateableQuery;
+    }
+
+
+    getSortComparator<RxDocType>(
+        schema: RxJsonSchema<RxDocType>,
+        query: MangoQuery<RxDocType>
+    ): DeterministicSortComparator<RxDocType> {
+        return getLokiSortComparator(schema, query);
+    }
+
+    /**
+     * Returns a function that determines if a document matches a query selector.
+     * It is important to have the exact same logix as lokijs uses, to be sure
+     * that the event-reduce algorithm works correct.
+     * But LokisJS does not export such a function, the query logic is deep inside of
+     * the Resultset prototype.
+     * Because I am lazy, I do not copy paste and maintain that code.
+     * Instead we create a fake Resultset and apply the prototype method Resultset.prototype.find(),
+     * same with Collection.
+     */
+    getQueryMatcher<RxDocType>(
+        _schema: RxJsonSchema<RxDocType>,
+        query: MangoQuery<RxDocType>
+    ): QueryMatcher<RxDocumentWriteData<RxDocType>> {
+        const fun: QueryMatcher<RxDocumentWriteData<RxDocType>> = (doc: RxDocumentWriteData<RxDocType>) => {
+            const docWithResetDeleted = flatClone(doc);
+            docWithResetDeleted._deleted = !!docWithResetDeleted._deleted;
+
+            const fakeCollection = {
+                data: [docWithResetDeleted],
+                binaryIndices: {}
+            };
+            Object.setPrototypeOf(fakeCollection, (lokijs as any).Collection.prototype);
+            const fakeResultSet: any = {
+                collection: fakeCollection
+            };
+            Object.setPrototypeOf(fakeResultSet, (lokijs as any).Resultset.prototype);
+            fakeResultSet.find(query.selector, true);
+
+            const ret = fakeResultSet.filteredrows.length > 0;
+            return ret;
+        }
+        return fun;
+    }
+
     async createStorageInstance<RxDocType>(
         params: RxStorageInstanceCreationParams<RxDocType, LokiSettings>
     ): Promise<RxStorageInstanceLoki<RxDocType>> {
-        return createLokiStorageInstance(params, this.databaseSettings);
+        return createLokiStorageInstance(this, params, this.databaseSettings);
     }
 
     public async createKeyObjectStorageInstance(
@@ -41,7 +144,7 @@ export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettin
         const useParams = flatClone(params);
         useParams.collectionName = params.collectionName + '-key-object';
 
-        return createLokiKeyObjectStorageInstance(params, this.databaseSettings);
+        return createLokiKeyObjectStorageInstance(this, params, this.databaseSettings);
     }
 }
 

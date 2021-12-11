@@ -151,7 +151,7 @@ export async function createRxCollectionStorageInstances<RxDocumentType, Interna
     storageInstance: RxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions>,
     localDocumentsStore: RxStorageKeyObjectInstance<any, InstanceCreationOptions>
 }> {
-    storageInstanceCreationParams.broadcastChannel = rxDatabase.broadcastChannel;
+    storageInstanceCreationParams.multiInstance = rxDatabase.multiInstance;
     const [
         storageInstance,
         localDocumentsStore
@@ -168,8 +168,7 @@ export async function createRxCollectionStorageInstances<RxDocumentType, Interna
              */
             collectionName: getCollectionLocalInstanceName(collectionName),
             options: instanceCreationOptions,
-            idleQueue: rxDatabase.idleQueue,
-            broadcastChannel: rxDatabase.broadcastChannel
+            multiInstance: rxDatabase.multiInstance
         })
     ]);
 

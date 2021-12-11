@@ -429,7 +429,7 @@ export async function prepareInMemoryRxCollection(instance: InMemoryRxCollection
         collectionName: randomCouchString(10),
         schema: instance.schema.jsonSchema,
         options: instance.pouchSettings,
-        idleQueue: instance.database.idleQueue
+        multiInstance: false
     });
     (instance as any).pouch = instance.storageInstance.internals.pouch;
 }

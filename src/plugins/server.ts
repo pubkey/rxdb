@@ -167,6 +167,7 @@ export async function spawnServer(
     }
 
     const pouchApp = ExpressPouchDB(pseudo, usePouchExpressOptions);
+
     app.use(collectionsPath, pouchApp);
 
     let server = null;

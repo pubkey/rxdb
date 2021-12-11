@@ -875,26 +875,29 @@ config.parallel('rx-document.test.js', () => {
 
             c.database.destroy();
         });
-        it('#66 - insert -> remove -> insert does not give new state', async () => {
-            const c = await humansCollection.createPrimary(0);
-            const docData = schemaObjects.simpleHuman();
-            const primary = docData.passportId;
+        // randomly failed -> run multiple times
+        new Array(config.isFastMode() ? 1 : 4).fill(0).forEach((_v, idx) => {
+            it('#66 - insert -> remove -> insert does not give new state (#' + idx + ')', async () => {
+                const c = await humansCollection.createPrimary(0);
+                const docData = schemaObjects.simpleHuman();
+                const primary = docData.passportId;
 
-            // insert
-            await c.upsert(docData);
-            const doc1 = await c.findOne(primary).exec(true);
-            assert.strictEqual(doc1.firstName, docData.firstName);
+                // insert
+                await c.upsert(docData);
+                const doc1 = await c.findOne(primary).exec(true);
+                assert.strictEqual(doc1.firstName, docData.firstName);
 
-            // remove
-            await doc1.remove();
+                // remove
+                await doc1.remove();
 
-            // upsert
-            docData.firstName = 'foobar';
-            await c.insert(docData);
-            const doc2 = await c.findOne(primary).exec(true);
-            assert.strictEqual(doc2.firstName, 'foobar');
+                // upsert
+                docData.firstName = 'foobar';
+                await c.insert(docData);
+                const doc2 = await c.findOne(primary).exec(true);
+                assert.strictEqual(doc2.firstName, 'foobar');
 
-            c.database.destroy();
+                c.database.destroy();
+            });
         });
         it('#76 - deepEqual does not work correctly for Arrays', async () => {
             const db = await createRxDatabase({

@@ -48,7 +48,10 @@ config.parallel('data-migration.test.js', () => {
      * which returns a storage that saves the data and still has it when opening
      * the database again.
      */
-    if (config.storage.name === 'lokijs') {
+    if (
+        config.storage.name === 'lokijs' ||
+        config.storage.name === 'lokijs-worker'
+    ) {
         return;
     }
 
@@ -348,7 +351,10 @@ config.parallel('data-migration.test.js', () => {
                             );
                     }
 
-                    const amount = await countAllUndeleted(old.storageInstance);
+                    const amount = await countAllUndeleted(
+                        old.database.storage,
+                        old.storageInstance
+                    );
                     assert.strictEqual(amount, 10);
 
                     const pouchLocation = old.storageInstance.internals.pouch.name;

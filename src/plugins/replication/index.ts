@@ -285,7 +285,7 @@ export class RxReplicationStateBase<RxDocType> {
             const doc: any = flatClone(originalDoc);
             const documentId: string = doc[this.collection.schema.primaryPath];
 
-            const docStateInLocalStorageInstance = docsFromLocal.get(documentId);
+            const docStateInLocalStorageInstance = docsFromLocal[documentId];
             let newRevision = createRevisionForPulledDocument(
                 this.replicationIdentifier,
                 doc

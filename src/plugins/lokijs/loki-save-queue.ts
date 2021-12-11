@@ -1,6 +1,9 @@
-import { IdleQueue } from 'custom-idle-queue';
 import { LokiDatabaseSettings } from '../../types';
-import { now, promiseWait, requestIdlePromise } from '../../util';
+import {
+    promiseWait,
+    PROMISE_RESOLVE_VOID,
+    requestIdlePromise
+} from '../../util';
 
 /**
  * The autosave feature of lokijs has strange behaviors
@@ -11,12 +14,18 @@ import { now, promiseWait, requestIdlePromise } from '../../util';
  */
 export class LokiSaveQueue {
     public writesSinceLastRun: number = 0;
-    public readonly runningSavesIdleQueue: IdleQueue = new IdleQueue(1);
+
+    /**
+     * Ensures that we do not run multiple saves
+     * in parallel
+     */
+    public saveQueue: Promise<void> = PROMISE_RESOLVE_VOID;
+    // track amount of non-finished save calls in the queue.
+    public saveQueueC = 0;
 
     constructor(
         public readonly lokiDatabase: Loki,
-        public readonly databaseSettings: LokiDatabaseSettings,
-        public readonly rxDatabaseIdleQueue: IdleQueue
+        public readonly databaseSettings: LokiDatabaseSettings
     ) {
 
     }
@@ -27,56 +36,74 @@ export class LokiSaveQueue {
     }
 
     public async run() {
-        if (!this.databaseSettings.adapter) {
-            return;
-        }
-        const t = now();
-        if (this.writesSinceLastRun === 0) {
-            return this.runningSavesIdleQueue.requestIdlePromise();
-        }
+        if (
+            // no persistence adapter given, so we do not need to save
+            !this.databaseSettings.adapter ||
+            // do not add more then two pending calls to the queue.
+            this.saveQueueC > 2
 
-        await Promise.all([
-            requestIdlePromise(),
-            promiseWait(100)
-        ]);
-        while (
-            (
-                !this.rxDatabaseIdleQueue.isIdle() ||
-                !this.runningSavesIdleQueue.isIdle()
-            ) && this.writesSinceLastRun !== 0
         ) {
-            await requestIdlePromise();
-            await Promise.all([
-                this.rxDatabaseIdleQueue.requestIdlePromise(),
-                this.runningSavesIdleQueue.requestIdlePromise(),
-                promiseWait(100)
-            ]);
+            return this.saveQueue;
         }
 
-        if (this.writesSinceLastRun === 0) {
-            return;
-        }
-        const writeAmount = this.writesSinceLastRun;
-        this.writesSinceLastRun = 0;
+        this.saveQueueC = this.saveQueueC + 1;
+        this.saveQueue = this.saveQueue
+            .then(async () => {
 
-        return this.runningSavesIdleQueue.requestIdlePromise().then(() => {
-            return this.runningSavesIdleQueue.wrapCall(
-                () => {
-                    return new Promise<void>((res, rej) => {
-                        this.lokiDatabase.saveDatabase(err => {
-                            if (err) {
-                                this.writesSinceLastRun = this.writesSinceLastRun + writeAmount;
-                                rej(err);
-                            } else {
-                                if (this.databaseSettings.autosaveCallback) {
-                                    this.databaseSettings.autosaveCallback();
-                                }
-                                res();
-                            }
-                        });
-                    })
+                /**
+                 * Always wait at least 100ms
+                 * and until the JavaScript process is idle.
+                 * This ensures that CPU blocking writes are finished
+                 * before we proceed.
+                 */
+                await Promise.all([
+                    requestIdlePromise(),
+                    promiseWait(100)
+                ]);
+
+                // no write happened since the last save call
+                if (this.writesSinceLastRun === 0) {
+                    return;
                 }
-            );
-        })
+
+                /**
+                 * Because LokiJS is a in-memory database,
+                 * we can just wait until the JavaScript process is idle
+                 * via requestIdlePromise(). Then we know that nothing important
+                 * is running at the moment. Also we at least wait 100ms
+                 * to ensure it has enough time to free up stuff.
+                 */
+                await Promise.all([
+                    requestIdlePromise(),
+                    promiseWait(100)
+                ]);
+                await requestIdlePromise();
+
+                if (this.writesSinceLastRun === 0) {
+                    return;
+                }
+
+                const writeAmount = this.writesSinceLastRun;
+                this.writesSinceLastRun = 0;
+                return new Promise<void>((res, rej) => {
+                    this.lokiDatabase.saveDatabase(err => {
+                        if (err) {
+                            this.writesSinceLastRun = this.writesSinceLastRun + writeAmount;
+                            rej(err);
+                        } else {
+                            if (this.databaseSettings.autosaveCallback) {
+                                this.databaseSettings.autosaveCallback();
+                            }
+                            res();
+                        }
+                    });
+                });
+
+            })
+            .catch(() => { })
+            .then(() => {
+                this.saveQueueC = this.saveQueueC - 1;
+            });
+        return this.saveQueue;
     }
 }
