@@ -146,10 +146,10 @@ config.parallel('rx-schema.test.js', () => {
                     assert.throws(() => checkSchema({
                         title: 'schema',
                         version: 0,
-                        primaryKey: '_id',
+                        primaryKey: '_asdf',
                         type: 'object',
                         properties: {
-                            _id: {
+                            _asdf: {
                                 type: 'string'
                             },
                             firstName: {

@@ -22,7 +22,8 @@ import {
     isRxDocument,
     RxCollection,
     getFromMapOrThrow,
-    getFromObjectOrThrow
+    getFromObjectOrThrow,
+    RxJsonSchema
 } from '../../plugins/core';
 import {
     getRxStoragePouch
@@ -420,34 +421,37 @@ config.parallel('primary.test.js', () => {
     describe('issues', () => {
         it('#3546 Compound primary key migration throws "Value of primary key(s) cannot be changed"', async () => {
             // create a schema
-            const getSchema = (version: number) => ({
-                version,
-                primaryKey: {
-                    key: 'id',
-                    fields: ['b_firstName', 'a_lastName'],
-                    separator: '|',
-                },
-                type: 'object',
-                properties: {
-                    id: {
-                        type: 'string',
+            const getSchema = (version: number) => {
+                const ret: RxJsonSchema<any> = {
+                    version,
+                    primaryKey: {
+                        key: 'id',
+                        fields: ['b_firstName', 'a_lastName'],
+                        separator: '|',
                     },
-                    passportId: {
-                        type: 'string',
-                    },
-                    b_firstName: {
-                        type: 'string',
-                    },
-                    a_lastName: {
-                        type: 'string',
-                    },
-                    age: {
-                        type: 'integer',
-                        minimum: 0,
-                        maximum: 150,
-                    },
-                },
-            });
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string',
+                        },
+                        passportId: {
+                            type: 'string',
+                        },
+                        b_firstName: {
+                            type: 'string',
+                        },
+                        a_lastName: {
+                            type: 'string',
+                        },
+                        age: {
+                            type: 'integer',
+                            minimum: 0,
+                            maximum: 150,
+                        }
+                    }
+                };
+                return ret;
+            };
 
             // generate a random database-name
             const name = randomCouchString(10);
@@ -497,6 +501,43 @@ config.parallel('primary.test.js', () => {
 
             db.destroy();
             dbInOtherTab.destroy();
+        });
+        it('#3562 _id must be allowed as primaryKey', async () => {
+            const mySchema: RxJsonSchema<any> = {
+                version: 0,
+                primaryKey: '_id',
+                type: 'object',
+                properties: {
+                    _id: {
+                        type: 'string'
+                    },
+                    firstName: {
+                        type: 'string'
+                    }
+                }
+            };
+
+            // generate a random database-name
+            const name = randomCouchString(10);
+
+            // create a database
+            const db = await createRxDatabase({
+                name,
+                storage: config.storage.getStorage(),
+                eventReduce: true,
+                ignoreDuplicate: true
+            });
+            await db.addCollections({
+                mycollection: {
+                    schema: mySchema
+                }
+            });
+            const collection = db.mycollection;
+            await collection.insert({
+                _id: 'foobar',
+                firstName: 'Alice'
+            });
+            db.destroy();
         });
     });
 });
