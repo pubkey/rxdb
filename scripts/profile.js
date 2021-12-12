@@ -8,11 +8,12 @@ const shell = require('shelljs');
 const del = require('delete');
 
 const run = async () => {
-    const configPath = path.join(__dirname, '../config');
-    const files = walkSync(configPath);
+    const isolateFolder = path.join(__dirname, '../');
+    const files = walkSync(isolateFolder);
+    console.dir(files);
     const isolateFile = files.find(name => name.startsWith('isolate-'));
     if (!isolateFile) throw new Error('no isolate-* file found');
-    const isolatePath = configPath + '/' + isolateFile;
+    const isolatePath = isolateFolder + '/' + isolateFile;
     const cmd = 'node --prof-process ' + isolatePath + ' > processed.txt';
     if (shell.exec(cmd).code !== 0) {
         console.error('processing ' + isolatePath + ' failed');

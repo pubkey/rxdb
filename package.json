@@ -66,7 +66,7 @@
     "couch:stop": "docker rm -f rxdb-couchdb",
     "test:couchdb": "npm run pretest && cross-env DEFAULT_STORAGE=pouchdb mocha --config ./config/.mocharc.js ./test_tmp/couch-db-integration.test.js",
     "dockertest": "docker run -it -v $(pwd):/usr/src/app markadams/chromium-xvfb-js:latest-onbuild",
-    "profile": "npm run pretest && cross-env NODE_ENV=fast NODE_PROF=true mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js --prof && node scripts/profile.js",
+    "profile": "npm run pretest && cross-env STORAGE=pouchdb NODE_ENV=fast NODE_PROF=true mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js --v8-prof --expose-gc && node scripts/profile.js",
     "clear": "rimraf -rf test_tmp/ && rimraf -rf dist/ && rimraf .transpile_state.json",
     "lint": "eslint . --ext .js,.ts,.json --cache",
     "lint:fix": "eslint --fix . --ext .js,.ts,.json",
