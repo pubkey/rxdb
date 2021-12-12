@@ -108,6 +108,8 @@
 
 * [RxStorage LokiJS](./rx-storage-lokijs.md)
 
+* [RxStorage Worker](./rx-storage-worker.md)
+
 * [Replication CouchDB](./replication-couchdb.md)
 
 * [Replication GraphQL](./replication-graphql.md)

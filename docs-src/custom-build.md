@@ -15,10 +15,10 @@ import {
 ```
 
 
-## pouchdb
+## PouchDB storage
 
 To call `createRxDatabase` you have to specify the storage engine which is used to store documents and run queries.
-At the moment we only have the pouchdb storage engine which uses pouchdb together with different adapters.
+The pouchdb plugin contains everything needed to use [PouchDB](https://github.com/pouchdb/pouchdb) as underlaying storage engine. PouchDB itself works on so called `adapter` that determine where the data is stored.
 
 ```javascript
 import { 
@@ -28,7 +28,8 @@ import {
 } from 'rxdb/plugins/pouchdb';
 addRxPlugin(RxDBAdapterCheckPlugin);
 
-// add pouchdb specific plugins (non RxDB plugins)
+// Add pouchdb specific plugins (non RxDB plugins)
+// Here we add the idb adapter that stores data inside of IndexedDB.
 addPouchPlugin(require('pouchdb-adapter-idb'));
 
 // with that you can create a database with the pouchdb storage engine
@@ -39,10 +40,17 @@ const db = await createRxDatabase({
     password: 'myLongAndStupidPassword'
 });
 
-// in the pouchdb plugin also there is the method to check if a given pouchdb-adapter works
+// In the pouchdb plugin also there is the method to check if a given pouchdb-adapter works
 await checkAdapter('leveldb'); // > boolean
 ```
 
+## LokiJS storage
+
+Another storage implementation that uses [LokiJS](https://github.com/techfort/LokiJS) to handle the data. [See here for more information about the LokiJS storage.](./rx-storage-lokijs.md).
+
+## Worker storage
+
+A wrapper that can be used to move the Storage inside of a WebWorker (in browsers) or a Worker Thread (in node.js). [See here for more information about the Worker storage.](./rx-storage-worker.md).
 
 ## required modules
 

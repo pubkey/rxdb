@@ -92,4 +92,4 @@ You can fix that by telling webpack to not resolve the `fs` module with the foll
 
 --------------------------------------------------------------------------------
 
-If you are new to RxDB, you should continue [here](./replication-couchdb.md)
+If you are new to RxDB, you should continue [here](./rx-storage-worker.md)
