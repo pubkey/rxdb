@@ -24,7 +24,7 @@ import {
     getRxStoragePouch
 } from '../plugins/pouchdb';
 import {
-    getRxStorageLoki
+    getRxStorageLoki, RxStorageLokiStatics
 } from '../plugins/lokijs';
 
 import { RxDBNoValidatePlugin } from '../plugins/no-validate';
@@ -32,6 +32,7 @@ addRxPlugin(RxDBNoValidatePlugin);
 import { RxDBKeyCompressionPlugin } from '../plugins/key-compression';
 addRxPlugin(RxDBKeyCompressionPlugin);
 import { RxDBMigrationPlugin } from '../plugins/migration';
+import { getRxStorageWorker } from '../plugins/worker';
 addRxPlugin(RxDBMigrationPlugin);
 
 declare type Storage = {
@@ -67,6 +68,37 @@ switch (STORAGE_KEY) {
                 return getRxStorageLoki({
                     adapter
                 });
+            },
+            hasAttachments: true
+        }
+        break;
+    case 'lokijs-worker':
+        const lokiWorkerPath = require('path').join(
+            '../../../../test_tmp/helper',
+            'lokijs-worker.js'
+        );
+        const lokiPersistendWorkerPath = require('path').join(
+            '../../../../test_tmp/helper',
+            'lokijs-worker.js'
+        );
+        console.log('lokiWorkerPath: ' + lokiWorkerPath);
+        console.log('lokiPersistendWorkerPath: ' + lokiPersistendWorkerPath);
+        STORAGE = {
+            getStorage() {
+                return getRxStorageWorker(
+                    RxStorageLokiStatics,
+                    {
+                        workerInput: lokiWorkerPath
+                    }
+                );
+            },
+            getPersistendStorage() {
+                return getRxStorageWorker(
+                    RxStorageLokiStatics,
+                    {
+                        workerInput: lokiPersistendWorkerPath
+                    }
+                );
             },
             hasAttachments: true
         }
@@ -170,6 +202,13 @@ for (let r = 0; r < runs; r++) {
             // create databases with some collections each
             const dbs: RxDatabase[] = [];
 
+            /**
+             * Reuse the same instance of RxStorage
+             * to measure database creation time,
+             * not storage instantiation.
+             */
+            const useStorage = STORAGE.getStorage();
+
             const startTime = nowTime();
             for (let i = 0; i < benchmark.spawnDatabases.amount; i++) {
                 const db = await createRxDatabase({
@@ -183,7 +222,7 @@ for (let r = 0; r < runs; r++) {
                      * creation time.
                      */
                     multiInstance: false,
-                    storage: STORAGE.getStorage()
+                    storage: useStorage
                 });
                 dbs.push(db);
 

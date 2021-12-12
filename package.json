@@ -61,6 +61,7 @@
     "test:circular": "npm run build && madge --circular ./dist/es/index.js",
     "test:performance:pouchdb": "npm run pretest && cross-env STORAGE=pouchdb mocha --config ./config/.mocharc.js ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
     "test:performance:lokijs": "npm run pretest && cross-env STORAGE=lokijs mocha --config ./config/.mocharc.js ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
+    "test:performance:lokijs-worker": "npm run pretest && cross-env STORAGE=lokijs-worker mocha --config ./config/.mocharc.js ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
     "couch:start": "docker run -d -p 5984:5984 --rm --name rxdb-couchdb couchdb:2.1.1",
     "couch:stop": "docker rm -f rxdb-couchdb",
     "test:couchdb": "npm run pretest && cross-env DEFAULT_STORAGE=pouchdb mocha --config ./config/.mocharc.js ./test_tmp/couch-db-integration.test.js",
