@@ -1002,7 +1002,7 @@ config.parallel('data-migration.test.js', () => {
                 attachmentData,
                 'text/plain'
             );
-            const attachmentHash = await getRxStoragePouch('memory').hash(dataBlobBuffer);
+            const attachmentHash = await getRxStoragePouch('memory').statics.hash(dataBlobBuffer);
 
             const col = await humansCollection.createMigrationCollection(10, {
                 3: (doc: any) => {

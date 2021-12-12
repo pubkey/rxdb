@@ -344,7 +344,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     ]
                 };
 
-                const comparator = config.storage.getStorage().getSortComparator(
+                const comparator = config.storage.getStorage().statics.getSortComparator(
                     storageInstance.schema,
                     query
                 );
@@ -385,7 +385,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     ]
                 };
 
-                const comparator = config.storage.getStorage().getSortComparator(
+                const comparator = config.storage.getStorage().statics.getSortComparator(
                     storageInstance.schema,
                     query
                 );
@@ -439,7 +439,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     ]
                 };
 
-                const comparator = config.storage.getStorage().getSortComparator(
+                const comparator = config.storage.getStorage().statics.getSortComparator(
                     storageInstance.schema,
                     query
                 );
@@ -485,7 +485,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 };
 
 
-                const queryMatcher = config.storage.getStorage().getQueryMatcher(
+                const queryMatcher = config.storage.getStorage().statics.getQueryMatcher(
                     storageInstance.schema,
                     query
                 );
@@ -527,7 +527,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }]
                 );
 
-                const preparedQuery = config.storage.getStorage().prepareQuery(
+                const preparedQuery = config.storage.getStorage().statics.prepareQuery(
                     storageInstance.schema,
                     {
                         selector: {}
@@ -564,7 +564,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     },
                 ]);
 
-                const preparedQuery = config.storage.getStorage().prepareQuery(
+                const preparedQuery = config.storage.getStorage().statics.prepareQuery(
                     storageInstance.schema,
                     {
                         selector: {
@@ -603,7 +603,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     },
                 ]);
 
-                const preparedQuery = config.storage.getStorage().prepareQuery(
+                const preparedQuery = config.storage.getStorage().statics.prepareQuery(
                     storageInstance.schema,
                     {
                         selector: {},
@@ -689,12 +689,12 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const docs = Object.values(writeResponse.success);
 
                 async function testQuery(query: MangoQuery<RandomDoc>): Promise<void> {
-                    const preparedQuery = config.storage.getStorage().prepareQuery(
+                    const preparedQuery = config.storage.getStorage().statics.prepareQuery(
                         storageInstance.schema,
                         query
                     );
                     const docsViaQuery = (await storageInstance.query(preparedQuery)).documents;
-                    const sortComparator = config.storage.getStorage().getSortComparator(
+                    const sortComparator = config.storage.getStorage().statics.getSortComparator(
                         storageInstance.schema,
                         preparedQuery
                     );
@@ -1269,7 +1269,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const emitted: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>>[] = [];
                 const sub = storageInstance.changeStream().subscribe(cE => emitted.push(cE));
 
-                const preparedQuery = config.storage.getStorage().prepareQuery(
+                const preparedQuery = config.storage.getStorage().statics.prepareQuery(
                     storageInstance.schema,
                     {
                         selector: {}
@@ -1380,7 +1380,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     attachmentData,
                     'text/plain'
                 );
-                const attachmentHash = await config.storage.getStorage().hash(dataBlobBuffer);
+                const attachmentHash = await config.storage.getStorage().statics.hash(dataBlobBuffer);
 
                 const writeData: RxDocumentWriteData<TestDocType> = {
                     key: 'foobar',
@@ -1408,7 +1408,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 assert.strictEqual(writeResult._attachments.foo.digest, attachmentHash);
 
                 const queryResult = await storageInstance.query(
-                    config.storage.getStorage().prepareQuery(
+                    config.storage.getStorage().statics.prepareQuery(
                         storageInstance.schema,
                         {
                             selector: {}
@@ -1949,7 +1949,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 }, 10 * 1000, 100);
 
                 // find via query
-                const preparedQuery: PreparedQuery<TestDocType> = config.storage.getStorage().prepareQuery(
+                const preparedQuery: PreparedQuery<TestDocType> = config.storage.getStorage().statics.prepareQuery(
                     instances.b.schema,
                     {
                         selector: {},

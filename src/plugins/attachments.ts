@@ -165,7 +165,7 @@ export async function putAttachment(
         .then(async () => {
             if (skipIfSame && this._data._attachments && this._data._attachments[id]) {
                 const currentMeta = this._data._attachments[id];
-                const newHash = await this.collection.database.storage.hash(data);
+                const newHash = await this.collection.database.storage.statics.hash(data);
                 if (currentMeta.type === type && currentMeta.digest === newHash) {
                     // skip because same data and same type
                     return this.getAttachment(id);

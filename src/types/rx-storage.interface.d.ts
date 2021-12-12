@@ -59,6 +59,39 @@ export interface RxStorage<Internals, InstanceCreationOptions> {
     readonly name: string;
 
     /**
+     * Static functions
+     */
+    readonly statics: RxStorageStatics;
+
+    /**
+     * creates a storage instance
+     * that can contain the internal database
+     * For example the PouchDB instance
+     */
+    createStorageInstance<DocumentData>(
+        params: RxStorageInstanceCreationParams<DocumentData, InstanceCreationOptions>
+    ): Promise<RxStorageInstance<DocumentData, Internals, InstanceCreationOptions>>;
+
+    /**
+     * Creates the internal storage instance
+     * that is only cappable of saving schemaless key-object sets.
+     */
+    createKeyObjectStorageInstance(
+        params: RxKeyObjectStorageInstanceCreationParams<InstanceCreationOptions>
+    ): Promise<RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>>;
+}
+
+
+/**
+ * Static functions of the RxStorage.
+ * Can be used without creating an instance of any kind.
+ * These functions are not directy childs of RxStorage because
+ * we might need them without having to import the whole storage engine.
+ * For example when the Worker plugin is used, the main process only needs the
+ * static functions, while the worker process needs the whole storage engine.
+ */
+export type RxStorageStatics = Readonly<{
+    /**
      * Returns a hash of the given value.
      * Used to check equalness of attachments data and other stuff.
      * Pouchdb uses md5 but we can use whatever we want as long as each
@@ -109,24 +142,7 @@ export interface RxStorage<Internals, InstanceCreationOptions> {
         schema: RxJsonSchema<DocumentData>,
         query: MangoQuery<DocumentData>
     ): QueryMatcher<RxDocumentWriteData<DocumentData>>;
-
-    /**
-     * creates a storage instance
-     * that can contain the internal database
-     * For example the PouchDB instance
-     */
-    createStorageInstance<DocumentData>(
-        params: RxStorageInstanceCreationParams<DocumentData, InstanceCreationOptions>
-    ): Promise<RxStorageInstance<DocumentData, Internals, InstanceCreationOptions>>;
-
-    /**
-     * Creates the internal storage instance
-     * that is only cappable of saving schemaless key-object sets.
-     */
-    createKeyObjectStorageInstance(
-        params: RxKeyObjectStorageInstanceCreationParams<InstanceCreationOptions>
-    ): Promise<RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>>;
-}
+}>;
 
 
 export interface RxStorageInstanceBase<Internals, InstanceCreationOptions> {

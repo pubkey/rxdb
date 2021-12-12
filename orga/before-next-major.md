@@ -45,9 +45,6 @@ Also, to not confuse with fast changes that happen directly after each other, th
 
 The change would make all RxDocuments immutable. When you subscribe to a query and the same document is returned in the results, this will always be a new javascript object.
 
-## Remove deprecated 'recieved' methods.
-See [#3392](https://github.com/pubkey/rxdb/pull/3392)
-
 ## Use exports field in package.json
 
 See [#3422](https://github.com/pubkey/rxdb/issues/3422)

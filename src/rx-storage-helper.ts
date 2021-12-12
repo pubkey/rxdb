@@ -32,7 +32,7 @@ export async function getAllDocuments<RxDocType>(
     storageInstance: RxStorageInstance<RxDocType, any, any>
 ): Promise<RxDocumentData<RxDocType>[]> {
 
-    const getAllQueryPrepared = storage.prepareQuery(
+    const getAllQueryPrepared = storage.statics.prepareQuery(
         storageInstance.schema,
         {
             selector: {}
@@ -85,7 +85,7 @@ export async function getBatch<DocType>(
         });
     }
 
-    const preparedQuery = storage.prepareQuery(
+    const preparedQuery = storage.statics.prepareQuery(
         storageInstance.schema,
         {
             selector: {},

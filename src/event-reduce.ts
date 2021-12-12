@@ -55,7 +55,7 @@ export function getQueryParams<RxDocType>(
          * that uses the hooks to ensure
          * we send for example compressed documents to be sorted by compressed queries.
          */
-        const sortComparator = collection.database.storage.getSortComparator(
+        const sortComparator = collection.database.storage.statics.getSortComparator(
             collection.storageInstance.schema,
             queryJson
         );
@@ -75,7 +75,7 @@ export function getQueryParams<RxDocType>(
          * that uses the hooks to ensure
          * we send for example compressed documents to match compressed queries.
          */
-        const queryMatcher = collection.database.storage.getQueryMatcher(
+        const queryMatcher = collection.database.storage.statics.getQueryMatcher(
             collection.storageInstance.schema,
             queryJson
         );

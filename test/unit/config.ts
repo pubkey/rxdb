@@ -7,7 +7,7 @@ import * as path from 'path';
 import parallel from 'mocha.parallel';
 import type { RxStorage } from '../../src/types';
 import { getRxStoragePouch, addPouchPlugin } from '../../plugins/pouchdb';
-import { getRxStorageLoki } from '../../plugins/lokijs';
+import { getRxStorageLoki, RxStorageLokiStatics } from '../../plugins/lokijs';
 import { getRxStorageWorker } from '../../plugins/worker';
 
 function isFastMode(): boolean {
@@ -89,7 +89,7 @@ export function setDefaultStorage(storageKey: string) {
             config.storage = {
                 name: 'lokijs-worker',
                 getStorage: () => getRxStorageWorker(
-                    getRxStorageLoki(),
+                    RxStorageLokiStatics,
                     {
                         workerInput: lokiWorkerPath
                     }

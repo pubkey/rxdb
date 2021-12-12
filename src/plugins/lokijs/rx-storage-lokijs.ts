@@ -1,4 +1,7 @@
-import type { DeterministicSortComparator, QueryMatcher } from 'event-reduce-js';
+import type {
+    DeterministicSortComparator,
+    QueryMatcher
+} from 'event-reduce-js';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import lokijs from 'lokijs';
 import type {
@@ -10,9 +13,14 @@ import type {
     RxJsonSchema,
     RxKeyObjectStorageInstanceCreationParams,
     RxStorage,
-    RxStorageInstanceCreationParams
+    RxStorageInstanceCreationParams,
+    RxStorageStatics
 } from '../../types';
-import { firstPropertyNameOfObject, flatClone, hash } from '../../util';
+import {
+    firstPropertyNameOfObject,
+    flatClone,
+    hash
+} from '../../util';
 import {
     createLokiStorageInstance,
     RxStorageInstanceLoki
@@ -24,30 +32,12 @@ import {
 import { getLokiSortComparator } from './lokijs-helper';
 import type { LeaderElector } from 'broadcast-channel';
 
-export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettings> {
-    public name = 'lokijs';
 
-    /**
-     * Create one leader elector by db name.
-     * This is done inside of the storage, not globally
-     * to make it easier to test multi-tab behavior.
-     */
-    public leaderElectorByLokiDbName: Map<string, {
-        leaderElector: LeaderElector,
-        /**
-         * Count the instances that currently use the elector.
-         * If is goes to zero again, the elector can be closed.
-         */
-        intancesCount: number;
-    }> = new Map();
-
-    constructor(
-        public databaseSettings: LokiDatabaseSettings
-    ) { }
+export const RxStorageLokiStatics: RxStorageStatics = {
 
     hash(data: Buffer | Blob | string): Promise<string> {
         return Promise.resolve(hash(data));
-    }
+    },
 
     prepareQuery<RxDocType>(
         schema: RxJsonSchema<RxDocType>,
@@ -85,7 +75,7 @@ export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettin
         }
 
         return mutateableQuery;
-    }
+    },
 
 
     getSortComparator<RxDocType>(
@@ -93,7 +83,7 @@ export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettin
         query: MangoQuery<RxDocType>
     ): DeterministicSortComparator<RxDocType> {
         return getLokiSortComparator(schema, query);
-    }
+    },
 
     /**
      * Returns a function that determines if a document matches a query selector.
@@ -129,6 +119,30 @@ export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettin
         }
         return fun;
     }
+
+}
+
+export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettings> {
+    public name = 'lokijs';
+    public statics = RxStorageLokiStatics;
+
+    /**
+     * Create one leader elector by db name.
+     * This is done inside of the storage, not globally
+     * to make it easier to test multi-tab behavior.
+     */
+    public leaderElectorByLokiDbName: Map<string, {
+        leaderElector: LeaderElector,
+        /**
+         * Count the instances that currently use the elector.
+         * If is goes to zero again, the elector can be closed.
+         */
+        intancesCount: number;
+    }> = new Map();
+
+    constructor(
+        public databaseSettings: LokiDatabaseSettings
+    ) { }
 
     async createStorageInstance<RxDocType>(
         params: RxStorageInstanceCreationParams<RxDocType, LokiSettings>

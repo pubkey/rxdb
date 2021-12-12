@@ -11,6 +11,7 @@ import type {
     RxDocumentWriteData,
     PreparedQuery,
     MangoQuerySortDirection,
+    RxStorageStatics,
 } from '../../types';
 
 import {
@@ -34,23 +35,16 @@ import { pouchHash, PouchStorageInternals, pouchSwapPrimaryToId, primarySwapPouc
 import type { DeterministicSortComparator, QueryMatcher } from 'event-reduce-js';
 import { getSchemaByObjectPath } from '../../rx-schema-helper';
 
-export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSettings> {
-    public name: string = 'pouchdb';
 
-    constructor(
-        public adapter: any,
-        public pouchSettings: PouchSettings = {}
-    ) {
-        checkPouchAdapter(adapter);
-    }
+export const RxStoragePouchStatics: RxStorageStatics = {
 
     /**
      * create the same diggest as an attachment with that data
      * would have created by pouchdb internally.
      */
-    public hash(data: Buffer | Blob | string): Promise<string> {
+    hash(data: Buffer | Blob | string): Promise<string> {
         return pouchHash(data);
-    }
+    },
 
 
     getSortComparator<RxDocType>(
@@ -104,7 +98,7 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
             }
         };
         return fun;
-    }
+    },
 
     /**
      * @link https://github.com/pouchdb/pouchdb/blob/master/packages/node_modules/pouchdb-selector-core/src/matches-selector.js
@@ -130,45 +124,15 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
             return ret;
         };
         return fun;
-    }
+    },
 
-    private async createPouch(
-        location: string,
-        options: PouchSettings
-    ): Promise<PouchDBInstance> {
-        const pouchDbParameters = {
-            location: location,
-            adapter: adapterObject(this.adapter),
-            settings: options
-        };
-        const pouchDBOptions = Object.assign(
-            {},
-            pouchDbParameters.adapter,
-            this.pouchSettings,
-            pouchDbParameters.settings
-        );
-        const pouch = new PouchDB(
-            pouchDbParameters.location,
-            pouchDBOptions
-        ) as PouchDBInstance;
-
-        /**
-         * In the past we found some errors where the PouchDB is not directly useable
-         * so we we had to call .info() first to ensure it can be used.
-         * I commented this out for now to get faster database/collection creation.
-         * We might have to add this again if something fails.
-         */
-        // await pouch.info();
-
-        return pouch;
-    }
 
     /**
      * pouchdb has many bugs and strange behaviors
      * this functions takes a normal mango query
      * and transforms it to one that fits for pouchdb
      */
-    prepareQuery<RxDocType>(
+     prepareQuery<RxDocType>(
         schema: RxJsonSchema<RxDocType>,
         mutateableQuery: MangoQuery<RxDocType>
     ): PreparedQuery<RxDocType> {
@@ -281,7 +245,49 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
 
         return query;
     }
+};
 
+export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSettings> {
+    public name: string = 'pouchdb';
+    public statics = RxStoragePouchStatics;
+
+    constructor(
+        public adapter: any,
+        public pouchSettings: PouchSettings = {}
+    ) {
+        checkPouchAdapter(adapter);
+    }
+
+    private async createPouch(
+        location: string,
+        options: PouchSettings
+    ): Promise<PouchDBInstance> {
+        const pouchDbParameters = {
+            location: location,
+            adapter: adapterObject(this.adapter),
+            settings: options
+        };
+        const pouchDBOptions = Object.assign(
+            {},
+            pouchDbParameters.adapter,
+            this.pouchSettings,
+            pouchDbParameters.settings
+        );
+        const pouch = new PouchDB(
+            pouchDbParameters.location,
+            pouchDBOptions
+        ) as PouchDBInstance;
+
+        /**
+         * In the past we found some errors where the PouchDB is not directly useable
+         * so we we had to call .info() first to ensure it can be used.
+         * I commented this out for now to get faster database/collection creation.
+         * We might have to add this again if something fails.
+         */
+        // await pouch.info();
+
+        return pouch;
+    }
 
     public async createStorageInstance<RxDocType>(
         params: RxStorageInstanceCreationParams<RxDocType, PouchSettings>

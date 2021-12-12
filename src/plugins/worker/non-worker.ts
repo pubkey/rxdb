@@ -19,7 +19,8 @@ import {
     RxLocalDocumentData,
     RxLocalStorageBulkWriteResponse,
     RxKeyObjectStorageInstanceCreationParams,
-    EventBulk
+    EventBulk,
+    RxStorageStatics
 } from '../../types';
 import { InWorkerStorage } from './in-worker';
 
@@ -45,7 +46,7 @@ export class RxStorageWorker implements RxStorage<WorkerStorageInternals, any> {
     public readonly workerPromise: Promise<InWorkerStorage>;
     constructor(
         public readonly settings: RxStorageWorkerSettings,
-        public readonly originalStorage: RxStorage<any, any>
+        public readonly statics: RxStorageStatics
     ) {
         const workerInput = this.settings.workerInput;
         let workerPromise = WORKER_BY_INPUT.get(workerInput);
@@ -57,28 +58,28 @@ export class RxStorageWorker implements RxStorage<WorkerStorageInternals, any> {
     }
 
     hash(data: Buffer | Blob | string): Promise<string> {
-        return this.originalStorage.hash(data);
+        return this.statics.hash(data);
     }
 
     prepareQuery<RxDocType>(
         schema: RxJsonSchema<RxDocType>,
         mutateableQuery: MangoQuery<RxDocType>
     ) {
-        return this.originalStorage.prepareQuery(schema, mutateableQuery);
+        return this.statics.prepareQuery(schema, mutateableQuery);
     }
 
     getQueryMatcher<RxDocType>(
         schema: RxJsonSchema<RxDocType>,
         query: MangoQuery<RxDocType>
     ) {
-        return this.originalStorage.getQueryMatcher(schema, query);
+        return this.statics.getQueryMatcher(schema, query);
     }
 
     getSortComparator<RxDocType>(
         schema: RxJsonSchema<RxDocType>,
         query: MangoQuery<RxDocType>
     ) {
-        return this.originalStorage.getSortComparator(schema, query);
+        return this.statics.getSortComparator(schema, query);
     }
 
     async createStorageInstance<RxDocType>(
@@ -251,9 +252,9 @@ export class RxStorageKeyObjectInstanceWorker implements RxStorageKeyObjectInsta
 }
 
 export function getRxStorageWorker(
-    originalStorage: RxStorage<any, any>,
+    statics: RxStorageStatics,
     settings: RxStorageWorkerSettings
 ): RxStorageWorker {
-    const storage = new RxStorageWorker(settings, originalStorage);
+    const storage = new RxStorageWorker(settings, statics);
     return storage;
 }

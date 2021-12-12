@@ -159,6 +159,7 @@ export type {
     MigrationStrategy,
     MigrationStrategies,
     RxStorage,
+    RxStorageStatics,
     OldRxCollection,
     WithAttachmentsData
 } from './types';
