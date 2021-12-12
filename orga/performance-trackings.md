@@ -743,3 +743,69 @@ BEFORE:
     "total": 2744.249165
   }
 }
+
+
+
+
+WITH native async/await:
+
+{
+  "storage": "lokijs",
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 6119.575432,
+    "perInstance": 6.1195754319999995
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 5759.660255,
+    "perBlock": 2.8798301275
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 489.215873,
+    "perDocument": 0.0489215873
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 3275.723683
+  },
+  "writeWhileSubscribe": {
+    "amount": 1000,
+    "total": 2716.470968
+  }
+}
+
+WITH async/await transpiled to generator:
+
+{
+  "storage": "lokijs",
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 6116.762565,
+    "perInstance": 6.116762565
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 5766.097302,
+    "perBlock": 2.883048651
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 502.527308,
+    "perDocument": 0.0502527308
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 3268.853656
+  },
+  "writeWhileSubscribe": {
+    "amount": 1000,
+    "total": 2769.797263
+  }
+}
+
