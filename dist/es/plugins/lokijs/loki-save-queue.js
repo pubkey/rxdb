@@ -1,7 +1,6 @@
 import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
-import { IdleQueue } from 'custom-idle-queue';
-import { now, promiseWait, requestIdlePromise } from '../../util';
+import { promiseWait, PROMISE_RESOLVE_VOID, requestIdlePromise } from '../../util';
 /**
  * The autosave feature of lokijs has strange behaviors
  * and often runs a save in critical moments when other
@@ -11,12 +10,17 @@ import { now, promiseWait, requestIdlePromise } from '../../util';
  */
 
 export var LokiSaveQueue = /*#__PURE__*/function () {
-  function LokiSaveQueue(lokiDatabase, databaseSettings, rxDatabaseIdleQueue) {
+  /**
+   * Ensures that we do not run multiple saves
+   * in parallel
+   */
+  // track amount of non-finished save calls in the queue.
+  function LokiSaveQueue(lokiDatabase, databaseSettings) {
     this.writesSinceLastRun = 0;
-    this.runningSavesIdleQueue = new IdleQueue(1);
+    this.saveQueue = PROMISE_RESOLVE_VOID;
+    this.saveQueueC = 0;
     this.lokiDatabase = lokiDatabase;
     this.databaseSettings = databaseSettings;
-    this.rxDatabaseIdleQueue = rxDatabaseIdleQueue;
   }
 
   var _proto = LokiSaveQueue.prototype;
@@ -27,88 +31,92 @@ export var LokiSaveQueue = /*#__PURE__*/function () {
   };
 
   _proto.run = /*#__PURE__*/function () {
-    var _run = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee() {
+    var _run = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2() {
       var _this = this;
 
-      var t, writeAmount;
-      return _regeneratorRuntime.wrap(function _callee$(_context) {
+      return _regeneratorRuntime.wrap(function _callee2$(_context2) {
         while (1) {
-          switch (_context.prev = _context.next) {
+          switch (_context2.prev = _context2.next) {
             case 0:
-              if (this.databaseSettings.adapter) {
-                _context.next = 2;
+              if (!( // no persistence adapter given, so we do not need to save
+              !this.databaseSettings.adapter || // do not add more then two pending calls to the queue.
+              this.saveQueueC > 2)) {
+                _context2.next = 2;
                 break;
               }
 
-              return _context.abrupt("return");
+              return _context2.abrupt("return", this.saveQueue);
 
             case 2:
-              t = now();
+              this.saveQueueC = this.saveQueueC + 1;
+              this.saveQueue = this.saveQueue.then( /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee() {
+                var writeAmount;
+                return _regeneratorRuntime.wrap(function _callee$(_context) {
+                  while (1) {
+                    switch (_context.prev = _context.next) {
+                      case 0:
+                        _context.next = 2;
+                        return Promise.all([requestIdlePromise(), promiseWait(100)]);
 
-              if (!(this.writesSinceLastRun === 0)) {
-                _context.next = 5;
-                break;
-              }
-
-              return _context.abrupt("return", this.runningSavesIdleQueue.requestIdlePromise());
-
-            case 5:
-              _context.next = 7;
-              return Promise.all([requestIdlePromise(), promiseWait(100)]);
-
-            case 7:
-              if (!((!this.rxDatabaseIdleQueue.isIdle() || !this.runningSavesIdleQueue.isIdle()) && this.writesSinceLastRun !== 0)) {
-                _context.next = 14;
-                break;
-              }
-
-              _context.next = 10;
-              return requestIdlePromise();
-
-            case 10:
-              _context.next = 12;
-              return Promise.all([this.rxDatabaseIdleQueue.requestIdlePromise(), this.runningSavesIdleQueue.requestIdlePromise(), promiseWait(100)]);
-
-            case 12:
-              _context.next = 7;
-              break;
-
-            case 14:
-              if (!(this.writesSinceLastRun === 0)) {
-                _context.next = 16;
-                break;
-              }
-
-              return _context.abrupt("return");
-
-            case 16:
-              writeAmount = this.writesSinceLastRun;
-              this.writesSinceLastRun = 0;
-              return _context.abrupt("return", this.runningSavesIdleQueue.requestIdlePromise().then(function () {
-                return _this.runningSavesIdleQueue.wrapCall(function () {
-                  return new Promise(function (res, rej) {
-                    _this.lokiDatabase.saveDatabase(function (err) {
-                      if (err) {
-                        _this.writesSinceLastRun = _this.writesSinceLastRun + writeAmount;
-                        rej(err);
-                      } else {
-                        if (_this.databaseSettings.autosaveCallback) {
-                          _this.databaseSettings.autosaveCallback();
+                      case 2:
+                        if (!(_this.writesSinceLastRun === 0)) {
+                          _context.next = 4;
+                          break;
                         }
 
-                        res();
-                      }
-                    });
-                  });
-                });
-              }));
+                        return _context.abrupt("return");
 
-            case 19:
+                      case 4:
+                        _context.next = 6;
+                        return Promise.all([requestIdlePromise(), promiseWait(100)]);
+
+                      case 6:
+                        _context.next = 8;
+                        return requestIdlePromise();
+
+                      case 8:
+                        if (!(_this.writesSinceLastRun === 0)) {
+                          _context.next = 10;
+                          break;
+                        }
+
+                        return _context.abrupt("return");
+
+                      case 10:
+                        writeAmount = _this.writesSinceLastRun;
+                        _this.writesSinceLastRun = 0;
+                        return _context.abrupt("return", new Promise(function (res, rej) {
+                          _this.lokiDatabase.saveDatabase(function (err) {
+                            if (err) {
+                              _this.writesSinceLastRun = _this.writesSinceLastRun + writeAmount;
+                              rej(err);
+                            } else {
+                              if (_this.databaseSettings.autosaveCallback) {
+                                _this.databaseSettings.autosaveCallback();
+                              }
+
+                              res();
+                            }
+                          });
+                        }));
+
+                      case 13:
+                      case "end":
+                        return _context.stop();
+                    }
+                  }
+                }, _callee);
+              })))["catch"](function () {}).then(function () {
+                _this.saveQueueC = _this.saveQueueC - 1;
+              });
+              return _context2.abrupt("return", this.saveQueue);
+
+            case 5:
             case "end":
-              return _context.stop();
+              return _context2.stop();
           }
         }
-      }, _callee, this);
+      }, _callee2, this);
     }));
 
     function run() {

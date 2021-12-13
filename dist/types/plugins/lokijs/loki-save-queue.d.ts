@@ -1,4 +1,3 @@
-import { IdleQueue } from 'custom-idle-queue';
 import { LokiDatabaseSettings } from '../../types';
 /**
  * The autosave feature of lokijs has strange behaviors
@@ -10,10 +9,14 @@ import { LokiDatabaseSettings } from '../../types';
 export declare class LokiSaveQueue {
     readonly lokiDatabase: Loki;
     readonly databaseSettings: LokiDatabaseSettings;
-    readonly rxDatabaseIdleQueue: IdleQueue;
     writesSinceLastRun: number;
-    readonly runningSavesIdleQueue: IdleQueue;
-    constructor(lokiDatabase: Loki, databaseSettings: LokiDatabaseSettings, rxDatabaseIdleQueue: IdleQueue);
+    /**
+     * Ensures that we do not run multiple saves
+     * in parallel
+     */
+    saveQueue: Promise<void>;
+    saveQueueC: number;
+    constructor(lokiDatabase: Loki, databaseSettings: LokiDatabaseSettings);
     addWrite(): void;
-    run(): Promise<any>;
+    run(): Promise<void>;
 }

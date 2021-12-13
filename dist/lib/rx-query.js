@@ -212,7 +212,7 @@ var RxQueryBase = /*#__PURE__*/function () {
       mangoQuery: (0, _util.clone)(this.mangoQuery)
     };
     (0, _hooks.runPluginHooks)('prePrepareQuery', hookInput);
-    var value = this.collection.storageInstance.prepareQuery(hookInput.mangoQuery);
+    var value = this.collection.database.storage.statics.prepareQuery(this.collection.storageInstance.schema, hookInput.mangoQuery);
 
     this.getPreparedQuery = function () {
       return value;
@@ -322,10 +322,7 @@ var RxQueryBase = /*#__PURE__*/function () {
             // find()-queries emit RxDocument[]
             return docs;
           }
-        }), (0, _operators.shareReplay)({
-          bufferSize: 1,
-          refCount: true
-        })).asObservable();
+        }), (0, _operators.shareReplay)(_util.RXJS_SHARE_REPLAY_DEFAULTS)).asObservable();
         /**
          * subscribe to the changeEvent-stream so it detects changes if it has subscribers
          */
@@ -348,7 +345,7 @@ var RxQueryBase = /*#__PURE__*/function () {
   }, {
     key: "queryMatcher",
     get: function get() {
-      return (0, _util.overwriteGetterForCaching)(this, 'queryMatcher', this.collection.storageInstance.getQueryMatcher(this.getPreparedQuery()));
+      return (0, _util.overwriteGetterForCaching)(this, 'queryMatcher', this.collection.database.storage.statics.getQueryMatcher(this.collection.storageInstance.schema, this.getPreparedQuery()));
     }
   }, {
     key: "asRxQuery",
@@ -473,15 +470,6 @@ function __ensureEqual(rxQuery) {
       mustReExec = true;
     } else {
       rxQuery._latestChangeEvent = rxQuery.asRxQuery.collection._changeEventBuffer.counter;
-      /**
-       * because pouchdb prefers writes over reads,
-       * we have to filter out the events that happend before the read has started
-       * so that we do not fill event-reduce with the wrong data
-       */
-
-      missedChangeEvents = missedChangeEvents.filter(function (cE) {
-        return !cE.startTime || rxQuery._lastExecStart < cE.startTime && (!cE.endTime || rxQuery._lastExecEnd < cE.endTime);
-      });
 
       var runChangeEvents = rxQuery.asRxQuery.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
 

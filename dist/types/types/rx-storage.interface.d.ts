@@ -6,6 +6,7 @@ import type {
     BulkWriteLocalRow,
     BulkWriteRow,
     ChangeStreamOnceOptions,
+    EventBulk,
     PreparedQuery,
     RxDocumentData,
     RxDocumentWriteData,
@@ -44,6 +45,11 @@ import type {
  * A RxStorage is a module that acts
  * as a factory that can create multiple RxStorageInstance
  * objects.
+ * 
+ * All data inputs and outputs of a StorageInstance must be plain json objects.
+ * Do not use Map, Set or anything else that cannot be JSON.stringify-ed.
+ * This will ensure that the storage can exchange data
+ * when it is a WebWorker or a WASM process or data is send via BroadcastChannel.
  */
 export interface RxStorage<Internals, InstanceCreationOptions> {
     /**
@@ -53,12 +59,9 @@ export interface RxStorage<Internals, InstanceCreationOptions> {
     readonly name: string;
 
     /**
-     * Returns a hash of the given value.
-     * Used to check equalness of attachments data and other stuff.
-     * Pouchdb uses md5 but we can use whatever we want as long as each
-     * storage class returns the same hash each time.
+     * Static functions
      */
-    hash(data: Buffer | Blob | string): Promise<string>;
+    readonly statics: RxStorageStatics;
 
     /**
      * creates a storage instance
@@ -77,6 +80,69 @@ export interface RxStorage<Internals, InstanceCreationOptions> {
         params: RxKeyObjectStorageInstanceCreationParams<InstanceCreationOptions>
     ): Promise<RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>>;
 }
+
+
+/**
+ * Static functions of the RxStorage.
+ * Can be used without creating an instance of any kind.
+ * These functions are not directy childs of RxStorage because
+ * we might need them without having to import the whole storage engine.
+ * For example when the Worker plugin is used, the main process only needs the
+ * static functions, while the worker process needs the whole storage engine.
+ */
+export type RxStorageStatics = Readonly<{
+    /**
+     * Returns a hash of the given value.
+     * Used to check equalness of attachments data and other stuff.
+     * Pouchdb uses md5 but we can use whatever we want as long as each
+     * storage class returns the same hash each time.
+     */
+    hash(data: Buffer | Blob | string): Promise<string>;
+
+    /**
+     * PouchDB and others have some bugs
+     * and behaviors that must be worked arround
+     * before querying the db.
+     * For performance reason this preparation
+     * runs in a single step so it can be cached
+     * when the query is used multiple times.
+     * 
+     * If your custom storage engine is capable of running
+     * all valid mango queries properly, just return the
+     * mutateableQuery here.
+     * 
+     *
+     * @returns a format of the query that can be used with the storage
+     */
+    prepareQuery<DocumentData>(
+        schema: RxJsonSchema<DocumentData>,
+        /**
+         * a query that can be mutated by the function without side effects.
+         */
+        mutateableQuery: MangoQuery<DocumentData>
+    ): PreparedQuery<DocumentData>;
+
+    /**
+     * Returns the sort-comparator,
+     * which is able to sort documents in the same way
+     * a query over the db would do.
+     */
+    getSortComparator<DocumentData>(
+        schema: RxJsonSchema<DocumentData>,
+        query: MangoQuery<DocumentData>
+    ): DeterministicSortComparator<DocumentData>;
+
+    /**
+     * Returns a function
+     * that can be used to check if a document
+     * matches the query.
+     *  
+     */
+    getQueryMatcher<DocumentData>(
+        schema: RxJsonSchema<DocumentData>,
+        query: MangoQuery<DocumentData>
+    ): QueryMatcher<RxDocumentWriteData<DocumentData>>;
+}>;
 
 
 export interface RxStorageInstanceBase<Internals, InstanceCreationOptions> {
@@ -103,7 +169,7 @@ export interface RxStorageInstanceBase<Internals, InstanceCreationOptions> {
 }
 
 /**
- * A StorateInstance that is only capable of saving key-object relations,
+ * A StorageInstance that is only capable of saving key-object relations,
  * cannot be queried and has no schema.
  * In the past we saved normal and local documents into the same instance of pouchdb.
  * This was bad because it means that on migration or deletion, we always
@@ -142,12 +208,14 @@ export interface RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>
          * of the documents to find.
          */
         ids: string[]
-    ): Promise<Map<string, RxLocalDocumentData<D>>>;
+    ): Promise<{
+        [documentId: string]: RxLocalDocumentData<D>
+    }>;
 
     /**
      * Emits all changes to the local documents.
      */
-    changeStream(): Observable<RxStorageChangeEvent<RxLocalDocumentData>>;
+    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxLocalDocumentData>>>;
 }
 
 export interface RxStorageInstance<
@@ -163,47 +231,6 @@ export interface RxStorageInstance<
 
     readonly schema: Readonly<RxJsonSchema<DocumentData>>;
     readonly collectionName: string;
-
-    /**
-     * pouchdb and others have some bugs
-     * and behaviors that must be worked arround
-     * before querying the db.
-     * For performance reason this preparation
-     * runs in a single step so it can be cached
-     * when the query is used multiple times.
-     * 
-     * If your custom storage engine is capable of running
-     * all valid mango queries properly, just return the
-     * mutateableQuery here.
-     * 
-     *
-     * @returns a format of the query than can be used with the storage
-     */
-    prepareQuery(
-        /**
-         * a query that can be mutated by the function without side effects.
-         */
-        mutateableQuery: MangoQuery<DocumentData>
-    ): PreparedQuery<DocumentData>;
-
-    /**
-     * Returns the sort-comparator,
-     * which is able to sort documents in the same way
-     * a query over the db would do.
-     */
-    getSortComparator(
-        query: MangoQuery<DocumentData>
-    ): DeterministicSortComparator<DocumentData>;
-
-    /**
-     * Returns a function
-     * that can be used to check if a document
-     * matches the query.
-     *  
-     */
-    getQueryMatcher(
-        query: MangoQuery<DocumentData>
-    ): QueryMatcher<RxDocumentWriteData<DocumentData>>;
 
     /**
      * Writes multiple non-local documents to the storage instance.
@@ -252,7 +279,9 @@ export interface RxStorageInstance<
          * If set to true, deleted documents will also be returned.
          */
         deleted: boolean
-    ): Promise<Map<string, RxDocumentData<DocumentData>>>;
+    ): Promise<{
+        [documentId: string]: RxDocumentData<DocumentData>
+    }>;
 
     /**
      * Runs a NoSQL 'mango' query over the storage
@@ -309,5 +338,5 @@ export interface RxStorageInstance<
      * storage instance.
      * Do not forget to unsubscribe.
      */
-    changeStream(): Observable<RxStorageChangeEvent<RxDocumentData<DocumentData>>>;
+    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<DocumentData>>>>;
 }

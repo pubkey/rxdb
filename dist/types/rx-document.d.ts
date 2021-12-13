@@ -18,10 +18,6 @@ export declare const basePrototype: {
     readonly $: Observable<any>;
     _handleChangeEvent(this: import("./types").RxDocumentBase<{}, {}>, changeEvent: RxChangeEvent<any>): void;
     /**
-     * emits the changeEvent to the upper instance (RxCollection)
-     */
-    $emit(this: import("./types").RxDocumentBase<{}, {}>, changeEvent: RxChangeEvent<any>): void;
-    /**
      * returns observable of the value of the given path
      */
     get$(this: import("./types").RxDocumentBase<{}, {}>, path: string): Observable<any>;
@@ -100,10 +96,6 @@ export declare function createRxDocumentConstructor(proto?: {
      */
     readonly $: Observable<any>;
     _handleChangeEvent(this: import("./types").RxDocumentBase<{}, {}>, changeEvent: RxChangeEvent<any>): void;
-    /**
-     * emits the changeEvent to the upper instance (RxCollection)
-     */
-    $emit(this: import("./types").RxDocumentBase<{}, {}>, changeEvent: RxChangeEvent<any>): void;
     /**
      * returns observable of the value of the given path
      */
@@ -184,10 +176,6 @@ export declare function createRxDocumentConstructor(proto?: {
          */
         readonly $: Observable<any>;
         _handleChangeEvent(this: import("./types").RxDocumentBase<{}, {}>, changeEvent: RxChangeEvent<any>): void;
-        /**
-         * emits the changeEvent to the upper instance (RxCollection)
-         */
-        $emit(this: import("./types").RxDocumentBase<{}, {}>, changeEvent: RxChangeEvent<any>): void;
         /**
          * returns observable of the value of the given path
          */

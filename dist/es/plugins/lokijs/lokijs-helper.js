@@ -4,6 +4,9 @@ import lokijs from 'lokijs';
 import { add as unloadAdd } from 'unload';
 import { flatClone } from '../../util';
 import { LokiSaveQueue } from './loki-save-queue';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
+import { newRxError } from '../../rx-error';
+import { BroadcastChannel, createLeaderElection } from 'broadcast-channel';
 export var CHANGES_COLLECTION_SUFFIX = '-rxdb-changes';
 export var LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request';
 export var LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request-key-object';
@@ -43,7 +46,7 @@ export var LOKIJS_COLLECTION_DEFAULT_OPTIONS = {
   autoupdate: false
 };
 var LOKI_DATABASE_STATE_BY_NAME = new Map();
-export function getLokiDatabase(databaseName, databaseSettings, rxDatabaseIdleQueue) {
+export function getLokiDatabase(databaseName, databaseSettings) {
   var databaseState = LOKI_DATABASE_STATE_BY_NAME.get(databaseName);
 
   if (!databaseState) {
@@ -53,7 +56,7 @@ export function getLokiDatabase(databaseName, databaseSettings, rxDatabaseIdleQu
      */
     var hasPersistence = !!databaseSettings.adapter;
     databaseState = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee() {
-      var persistenceMethod, useSettings, database, saveQueue, unloads, state;
+      var persistenceMethod, useSettings, database, lokiSaveQueue, loadDatabasePromise, unloads, state;
       return _regeneratorRuntime.wrap(function _callee$(_context) {
         while (1) {
           switch (_context.prev = _context.next) {
@@ -80,7 +83,7 @@ export function getLokiDatabase(databaseName, databaseSettings, rxDatabaseIdleQu
                 throttledSaves: false
               });
               database = new lokijs(databaseName + '.db', flatClone(useSettings));
-              saveQueue = new LokiSaveQueue(database, useSettings, rxDatabaseIdleQueue);
+              lokiSaveQueue = new LokiSaveQueue(database, useSettings);
               /**
                * Wait until all data is loaded from persistence adapter.
                * Wrap the loading into the saveQueue to ensure that when many
@@ -89,24 +92,26 @@ export function getLokiDatabase(databaseName, databaseSettings, rxDatabaseIdleQu
                */
 
               if (!hasPersistence) {
-                _context.next = 8;
+                _context.next = 10;
                 break;
               }
 
-              _context.next = 8;
-              return saveQueue.runningSavesIdleQueue.wrapCall(function () {
-                return new Promise(function (res, rej) {
-                  database.loadDatabase({}, function (err) {
-                    if (useSettings.autoloadCallback) {
-                      useSettings.autoloadCallback(err);
-                    }
+              loadDatabasePromise = new Promise(function (res, rej) {
+                database.loadDatabase({}, function (err) {
+                  if (useSettings.autoloadCallback) {
+                    useSettings.autoloadCallback(err);
+                  }
 
-                    err ? rej(err) : res();
-                  });
+                  err ? rej(err) : res();
                 });
               });
+              lokiSaveQueue.saveQueue = lokiSaveQueue.saveQueue.then(function () {
+                return loadDatabasePromise;
+              });
+              _context.next = 10;
+              return loadDatabasePromise;
 
-            case 8:
+            case 10:
               /**
                * Autosave database on process end
                */
@@ -114,20 +119,20 @@ export function getLokiDatabase(databaseName, databaseSettings, rxDatabaseIdleQu
 
               if (hasPersistence) {
                 unloads.push(unloadAdd(function () {
-                  return saveQueue.run();
+                  return lokiSaveQueue.run();
                 }));
               }
 
               state = {
                 database: database,
                 databaseSettings: useSettings,
-                saveQueue: saveQueue,
+                saveQueue: lokiSaveQueue,
                 collections: {},
                 unloads: unloads
               };
               return _context.abrupt("return", state);
 
-            case 12:
+            case 14:
             case "end":
               return _context.stop();
           }
@@ -142,6 +147,10 @@ export function getLokiDatabase(databaseName, databaseSettings, rxDatabaseIdleQu
 export function closeLokiCollections(_x, _x2) {
   return _closeLokiCollections.apply(this, arguments);
 }
+/**
+ * This function is at lokijs-helper
+ * because we need it in multiple places.
+ */
 
 function _closeLokiCollections() {
   _closeLokiCollections = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(databaseName, collections) {
@@ -198,5 +207,87 @@ function _closeLokiCollections() {
     }, _callee2);
   }));
   return _closeLokiCollections.apply(this, arguments);
+}
+
+export function getLokiSortComparator(schema, query) {
+  var _ref2;
+
+  var primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey); // TODO if no sort is given, use sort by primary.
+  // This should be done inside of RxDB and not in the storage implementations.
+
+  var sortOptions = query.sort ? query.sort : [(_ref2 = {}, _ref2[primaryKey] = 'asc', _ref2)];
+
+  var fun = function fun(a, b) {
+    var compareResult = 0; // 1 | -1
+
+    sortOptions.find(function (sortPart) {
+      var fieldName = Object.keys(sortPart)[0];
+      var direction = Object.values(sortPart)[0];
+      var directionMultiplier = direction === 'asc' ? 1 : -1;
+      var valueA = a[fieldName];
+      var valueB = b[fieldName];
+
+      if (valueA === valueB) {
+        return false;
+      } else {
+        if (valueA > valueB) {
+          compareResult = 1 * directionMultiplier;
+          return true;
+        } else {
+          compareResult = -1 * directionMultiplier;
+          return true;
+        }
+      }
+    });
+    /**
+     * Two different objects should never have the same sort position.
+     * We ensure this by having the unique primaryKey in the sort params
+     * at this.prepareQuery()
+     */
+
+    if (!compareResult) {
+      throw newRxError('SNH', {
+        args: {
+          query: query,
+          a: a,
+          b: b
+        }
+      });
+    }
+
+    return compareResult;
+  };
+
+  return fun;
+}
+export function getLokiLeaderElector(storage, databaseName) {
+  var electorState = storage.leaderElectorByLokiDbName.get(databaseName);
+
+  if (!electorState) {
+    var channelName = 'rxdb-lokijs-' + databaseName;
+    var channel = new BroadcastChannel(channelName);
+    var elector = createLeaderElection(channel);
+    electorState = {
+      leaderElector: elector,
+      intancesCount: 1
+    };
+    storage.leaderElectorByLokiDbName.set(databaseName, electorState);
+  } else {
+    electorState.intancesCount = electorState.intancesCount + 1;
+  }
+
+  return electorState.leaderElector;
+}
+export function removeLokiLeaderElectorReference(storage, databaseName) {
+  var electorState = storage.leaderElectorByLokiDbName.get(databaseName);
+
+  if (electorState) {
+    electorState.intancesCount = electorState.intancesCount - 1;
+
+    if (electorState.intancesCount === 0) {
+      electorState.leaderElector.broadcastChannel.close();
+      storage.leaderElectorByLokiDbName["delete"](databaseName);
+    }
+  }
 }
 //# sourceMappingURL=lokijs-helper.js.map

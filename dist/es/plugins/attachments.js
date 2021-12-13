@@ -237,7 +237,7 @@ function _putAttachment() {
 
                       currentMeta = _this4._data._attachments[id];
                       _context4.next = 4;
-                      return _this4.collection.database.storage.hash(data);
+                      return _this4.collection.database.storage.statics.hash(data);
 
                     case 4:
                       newHash = _context4.sent;

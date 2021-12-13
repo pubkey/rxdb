@@ -100,7 +100,7 @@ var RxDBKeyCompressionPlugin = {
   hooks: {
     /**
      * replace the keys of a query-obj with the compressed keys
-     * because the storage instance only know the compressed schema
+     * because the storage instance only knows the compressed schema
      * @return compressed queryJSON
      */
     prePrepareQuery: function prePrepareQuery(input) {

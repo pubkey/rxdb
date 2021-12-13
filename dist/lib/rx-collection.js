@@ -102,6 +102,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
   _proto.prepare = /*#__PURE__*/function () {
     var _prepare = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(
     /**
+     * TODO is this still needed?
      * set to true if the collection data already exists on this storage adapter
      */
     wasCreatedBefore) {
@@ -114,22 +115,48 @@ var RxCollectionBase = /*#__PURE__*/function () {
             case 0:
               // we trigger the non-blocking things first and await them later so we can do stuff in the mean time
               this._crypter = (0, _crypter.createCrypter)(this.database.password, this.schema);
-              this._observable$ = this.database.$.pipe((0, _operators.filter)(function (event) {
-                return event.collectionName === _this.name;
+              this._observable$ = this.database.eventBulks$.pipe((0, _operators.filter)(function (changeEventBulk) {
+                return changeEventBulk.collectionName === _this.name;
+              }), (0, _operators.mergeMap)(function (changeEventBulk) {
+                return changeEventBulk.events;
               }));
               this._changeEventBuffer = (0, _changeEventBuffer.createChangeEventBuffer)(this.asRxCollection);
-              subDocs = this.storageInstance.changeStream().pipe((0, _operators.map)(function (storageEvent) {
-                return (0, _rxStorageHelper.storageChangeEventToRxChangeEvent)(false, storageEvent, _this.database, _this);
-              })).subscribe(function (cE) {
-                _this.$emit(cE);
+              /**
+               * Instead of resolving the EventBulk array here and spit it into
+               * single events, we should fully work with event bulks internally
+               * to save performance.
+               */
+
+              subDocs = this.storageInstance.changeStream().subscribe(function (eventBulk) {
+                var changeEventBulk = {
+                  id: eventBulk.id,
+                  internal: false,
+                  collectionName: _this.name,
+                  storageToken: (0, _util.ensureNotFalsy)(_this.database.storageToken),
+                  events: eventBulk.events.map(function (ev) {
+                    return (0, _rxStorageHelper.storageChangeEventToRxChangeEvent)(false, ev, _this);
+                  }),
+                  databaseToken: _this.database.token
+                };
+
+                _this.database.$emit(changeEventBulk);
               });
 
               this._subs.push(subDocs);
 
-              subLocalDocs = this.localDocumentsStore.changeStream().pipe((0, _operators.map)(function (storageEvent) {
-                return (0, _rxStorageHelper.storageChangeEventToRxChangeEvent)(true, storageEvent, _this.database, _this);
-              })).subscribe(function (cE) {
-                return _this.$emit(cE);
+              subLocalDocs = this.localDocumentsStore.changeStream().subscribe(function (eventBulk) {
+                var changeEventBulk = {
+                  id: eventBulk.id,
+                  internal: false,
+                  collectionName: _this.name,
+                  storageToken: (0, _util.ensureNotFalsy)(_this.database.storageToken),
+                  events: eventBulk.events.map(function (ev) {
+                    return (0, _rxStorageHelper.storageChangeEventToRxChangeEvent)(true, ev, _this);
+                  }),
+                  databaseToken: _this.database.token
+                };
+
+                _this.database.$emit(changeEventBulk);
               });
 
               this._subs.push(subLocalDocs);
@@ -236,11 +263,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
     }
 
     return _queryStorageInstance;
-  }();
-
-  _proto.$emit = function $emit(changeEvent) {
-    return this.database.$emit(changeEvent);
-  }
+  }()
   /**
    * TODO internally call bulkInsert
    * to not have duplicated code.
@@ -373,7 +396,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
             case 11:
               results = _context4.sent;
               // create documents
-              successEntries = Array.from(results.success.entries());
+              successEntries = Object.entries(results.success);
               rxDocuments = successEntries.map(function (_ref) {
                 var key = _ref[0],
                     writtenDocData = _ref[1];
@@ -390,7 +413,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
             case 16:
               return _context4.abrupt("return", {
                 success: rxDocuments,
-                error: Array.from(results.error.values())
+                error: Object.values(results.error)
               });
 
             case 17:
@@ -462,7 +485,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
 
             case 13:
               results = _context5.sent;
-              successIds = Array.from(results.success.keys()); // run hooks
+              successIds = Object.keys(results.success); // run hooks
 
               _context5.next = 17;
               return Promise.all(successIds.map(function (id) {
@@ -475,7 +498,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
               });
               return _context5.abrupt("return", {
                 success: rxDocuments,
-                error: Array.from(results.error.values())
+                error: Object.values(results.error)
               });
 
             case 19:
@@ -663,7 +686,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
 
             case 6:
               docs = _context6.sent;
-              Array.from(docs.values()).forEach(function (docData) {
+              Object.values(docs).forEach(function (docData) {
                 docData = (0, _rxCollectionHelper._handleFromStorageInstance)(_this7, docData);
                 var doc = (0, _rxDocumentPrototypeMerge.createRxDocument)(_this7, docData);
                 ret.set(doc.primary, doc);
@@ -770,10 +793,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
       };
     }()), (0, _operators.filter)(function (x) {
       return !!x;
-    }), (0, _operators.shareReplay)({
-      bufferSize: 1,
-      refCount: true
-    }));
+    }), (0, _operators.shareReplay)(_util.RXJS_SHARE_REPLAY_DEFAULTS));
   }
   /**
    * Export collection to a JSON friendly format.
@@ -1125,7 +1145,7 @@ function createRxCollection(_ref4, wasCreatedBefore) {
     collectionName: name,
     schema: schema.jsonSchema,
     options: instanceCreationOptions,
-    idleQueue: database.idleQueue
+    multiInstance: database.multiInstance
   };
   (0, _hooks.runPluginHooks)('preCreateRxStorageInstance', storageInstanceCreationParams);
   return (0, _rxCollectionHelper.createRxCollectionStorageInstances)(name, database, storageInstanceCreationParams, instanceCreationOptions).then(function (storageInstances) {

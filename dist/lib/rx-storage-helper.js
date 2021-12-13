@@ -25,6 +25,8 @@ var _overwritable = require("./overwritable");
 
 var _rxError = require("./rx-error");
 
+var _util = require("./util");
+
 /**
  * Helper functions for accessing the RxStorage instances.
  */
@@ -36,18 +38,18 @@ var INTERNAL_STORAGE_NAME = '_rxdb_internal';
 
 exports.INTERNAL_STORAGE_NAME = INTERNAL_STORAGE_NAME;
 
-function getAllDocuments(_x) {
+function getAllDocuments(_x, _x2) {
   return _getAllDocuments.apply(this, arguments);
 }
 
 function _getAllDocuments() {
-  _getAllDocuments = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(storageInstance) {
+  _getAllDocuments = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(storage, storageInstance) {
     var getAllQueryPrepared, queryResult, allDocs;
     return _regenerator["default"].wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            getAllQueryPrepared = storageInstance.prepareQuery({
+            getAllQueryPrepared = storage.statics.prepareQuery(storageInstance.schema, {
               selector: {}
             });
             _context.next = 3;
@@ -68,7 +70,7 @@ function _getAllDocuments() {
   return _getAllDocuments.apply(this, arguments);
 }
 
-function getSingleDocument(_x2, _x3) {
+function getSingleDocument(_x3, _x4) {
   return _getSingleDocument.apply(this, arguments);
 }
 /**
@@ -88,7 +90,7 @@ function _getSingleDocument() {
 
           case 2:
             results = _context2.sent;
-            doc = results.get(documentId);
+            doc = results[documentId];
 
             if (!doc) {
               _context2.next = 8;
@@ -110,7 +112,7 @@ function _getSingleDocument() {
   return _getSingleDocument.apply(this, arguments);
 }
 
-function countAllUndeleted(_x4) {
+function countAllUndeleted(_x5, _x6) {
   return _countAllUndeleted.apply(this, arguments);
 }
 /**
@@ -119,14 +121,14 @@ function countAllUndeleted(_x4) {
 
 
 function _countAllUndeleted() {
-  _countAllUndeleted = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(storageInstance) {
+  _countAllUndeleted = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(storage, storageInstance) {
     var docs;
     return _regenerator["default"].wrap(function _callee3$(_context3) {
       while (1) {
         switch (_context3.prev = _context3.next) {
           case 0:
             _context3.next = 2;
-            return getAllDocuments(storageInstance);
+            return getAllDocuments(storage, storageInstance);
 
           case 2:
             docs = _context3.sent;
@@ -142,7 +144,7 @@ function _countAllUndeleted() {
   return _countAllUndeleted.apply(this, arguments);
 }
 
-function getBatch(_x5, _x6) {
+function getBatch(_x7, _x8, _x9) {
   return _getBatch.apply(this, arguments);
 }
 /**
@@ -152,7 +154,7 @@ function getBatch(_x5, _x6) {
 
 
 function _getBatch() {
-  _getBatch = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(storageInstance, limit) {
+  _getBatch = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(storage, storageInstance, limit) {
     var preparedQuery, result;
     return _regenerator["default"].wrap(function _callee4$(_context4) {
       while (1) {
@@ -168,7 +170,7 @@ function _getBatch() {
             });
 
           case 2:
-            preparedQuery = storageInstance.prepareQuery({
+            preparedQuery = storage.statics.prepareQuery(storageInstance.schema, {
               selector: {},
               limit: limit
             });
@@ -189,7 +191,7 @@ function _getBatch() {
   return _getBatch.apply(this, arguments);
 }
 
-function writeSingle(_x7, _x8) {
+function writeSingle(_x10, _x11) {
   return _writeSingle.apply(this, arguments);
 }
 /**
@@ -211,16 +213,16 @@ function _writeSingle() {
           case 2:
             writeResult = _context5.sent;
 
-            if (!(writeResult.error.size > 0)) {
+            if (!(Object.keys(writeResult.error).length > 0)) {
               _context5.next = 8;
               break;
             }
 
-            error = writeResult.error.values().next().value;
+            error = (0, _util.firstPropertyValueOfObject)(writeResult.error);
             throw error;
 
           case 8:
-            ret = writeResult.success.values().next().value;
+            ret = (0, _util.firstPropertyValueOfObject)(writeResult.success);
             return _context5.abrupt("return", ret);
 
           case 10:
@@ -233,7 +235,7 @@ function _writeSingle() {
   return _writeSingle.apply(this, arguments);
 }
 
-function writeSingleLocal(_x9, _x10) {
+function writeSingleLocal(_x12, _x13) {
   return _writeSingleLocal.apply(this, arguments);
 }
 
@@ -250,16 +252,16 @@ function _writeSingleLocal() {
           case 2:
             writeResult = _context6.sent;
 
-            if (!(writeResult.error.size > 0)) {
+            if (!(Object.keys(writeResult.error).length > 0)) {
               _context6.next = 8;
               break;
             }
 
-            error = writeResult.error.values().next().value;
+            error = (0, _util.firstPropertyValueOfObject)(writeResult.error);
             throw error;
 
           case 8:
-            ret = writeResult.success.values().next().value;
+            ret = (0, _util.firstPropertyValueOfObject)(writeResult.success);
             return _context6.abrupt("return", ret);
 
           case 10:
@@ -272,7 +274,7 @@ function _writeSingleLocal() {
   return _writeSingleLocal.apply(this, arguments);
 }
 
-function findLocalDocument(_x11, _x12) {
+function findLocalDocument(_x14, _x15) {
   return _findLocalDocument.apply(this, arguments);
 }
 
@@ -288,7 +290,7 @@ function _findLocalDocument() {
 
           case 2:
             docList = _context7.sent;
-            doc = docList.get(id);
+            doc = docList[id];
 
             if (doc) {
               _context7.next = 8;
@@ -310,7 +312,7 @@ function _findLocalDocument() {
   return _findLocalDocument.apply(this, arguments);
 }
 
-function storageChangeEventToRxChangeEvent(isLocal, rxStorageChangeEvent, rxDatabase, rxCollection) {
+function storageChangeEventToRxChangeEvent(isLocal, rxStorageChangeEvent, rxCollection) {
   var documentData;
 
   if (rxStorageChangeEvent.change.operation !== 'DELETE') {
@@ -346,7 +348,6 @@ function storageChangeEventToRxChangeEvent(isLocal, rxStorageChangeEvent, rxData
   var ret = {
     eventId: rxStorageChangeEvent.eventId,
     documentId: rxStorageChangeEvent.documentId,
-    databaseToken: rxDatabase.token,
     collectionName: rxCollection ? rxCollection.name : undefined,
     startTime: rxStorageChangeEvent.startTime,
     endTime: rxStorageChangeEvent.endTime,

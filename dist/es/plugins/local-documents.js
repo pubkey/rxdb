@@ -5,7 +5,7 @@ import objectPath from 'object-path';
 import { createRxDocumentConstructor, basePrototype } from '../rx-document';
 import { createDocCache } from '../doc-cache';
 import { newRxError, newRxTypeError } from '../rx-error';
-import { flatClone, getFromMapOrThrow } from '../util';
+import { flatClone, getFromObjectOrThrow } from '../util';
 import { isRxDatabase } from '../rx-database';
 import { isRxCollection } from '../rx-collection';
 import { filter, map, distinctUntilChanged, startWith, mergeMap } from 'rxjs/operators';
@@ -184,10 +184,10 @@ var RxLocalDocumentPrototype = {
       previous: oldData,
       document: newData
     }]).then(function (res) {
-      var docResult = res.success.get(newData._id);
+      var docResult = res.success[newData._id];
 
       if (!docResult) {
-        throw getFromMapOrThrow(res.error, newData._id);
+        throw getFromObjectOrThrow(res.error, newData._id);
       }
 
       newData._rev = docResult._rev;

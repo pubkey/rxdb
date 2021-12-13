@@ -2,30 +2,234 @@ import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { flatClone, adapterObject } from '../../util';
 import { isLevelDown, PouchDB } from './pouch-db';
+import { filterInMemoryFields, massageSelector } from 'pouchdb-selector-core';
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import { RxStorageInstancePouch } from './rx-storage-instance-pouch';
 import { RxStorageKeyObjectInstancePouch } from './rx-storage-key-object-instance-pouch';
-import { pouchHash } from './pouchdb-helper';
-export var RxStoragePouch = /*#__PURE__*/function () {
-  function RxStoragePouch(adapter) {
-    var pouchSettings = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-    this.name = 'pouchdb';
-    this.adapter = adapter;
-    this.pouchSettings = pouchSettings;
-    checkPouchAdapter(adapter);
-  }
+import { pouchHash, pouchSwapPrimaryToId, primarySwapPouchDbQuerySelector } from './pouchdb-helper';
+import { getSchemaByObjectPath } from '../../rx-schema-helper';
+export var RxStoragePouchStatics = {
   /**
    * create the same diggest as an attachment with that data
    * would have created by pouchdb internally.
    */
+  hash: function hash(data) {
+    return pouchHash(data);
+  },
+  getSortComparator: function getSortComparator(schema, query) {
+    var _ref;
 
+    var primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
+    var sortOptions = query.sort ? query.sort : [(_ref = {}, _ref[primaryPath] = 'asc', _ref)];
+    var inMemoryFields = Object.keys(query.selector).filter(function (key) {
+      return !key.startsWith('$');
+    });
+
+    var fun = function fun(a, b) {
+      /**
+       * Sorting on two documents with the same primary is not allowed
+       * because it might end up in a non-deterministic result.
+       */
+      if (a[primaryPath] === b[primaryPath]) {
+        throw newRxError('SNH', {
+          args: {
+            a: a,
+            b: b
+          },
+          primaryPath: primaryPath
+        });
+      } // TODO use createFieldSorter
+      // TODO make a performance test
+
+
+      var rows = [a, b].map(function (doc) {
+        return {
+          doc: pouchSwapPrimaryToId(primaryPath, doc)
+        };
+      });
+      var sortedRows = filterInMemoryFields(rows, {
+        selector: {},
+        sort: sortOptions
+      }, inMemoryFields);
+
+      if (sortedRows.length !== 2) {
+        throw newRxError('SNH', {
+          query: query,
+          primaryPath: primaryPath,
+          args: {
+            rows: rows,
+            sortedRows: sortedRows
+          }
+        });
+      }
+
+      if (sortedRows[0].doc._id === rows[0].doc._id) {
+        return -1;
+      } else {
+        return 1;
+      }
+    };
+
+    return fun;
+  },
+
+  /**
+   * @link https://github.com/pouchdb/pouchdb/blob/master/packages/node_modules/pouchdb-selector-core/src/matches-selector.js
+   */
+  getQueryMatcher: function getQueryMatcher(schema, query) {
+    var primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
+    var massagedSelector = massageSelector(query.selector);
+
+    var fun = function fun(doc) {
+      var cloned = pouchSwapPrimaryToId(primaryPath, doc);
+      var row = {
+        doc: cloned
+      };
+      var rowsMatched = filterInMemoryFields([row], {
+        selector: massagedSelector
+      }, Object.keys(query.selector));
+      var ret = rowsMatched && rowsMatched.length === 1;
+      return ret;
+    };
+
+    return fun;
+  },
+
+  /**
+   * pouchdb has many bugs and strange behaviors
+   * this functions takes a normal mango query
+   * and transforms it to one that fits for pouchdb
+   */
+  prepareQuery: function prepareQuery(schema, mutateableQuery) {
+    var primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
+    var query = mutateableQuery;
+    /**
+     * because sort wont work on unused keys we have to workaround
+     * so we add the key to the selector if necessary
+     * @link https://github.com/nolanlawson/pouchdb-find/issues/204
+     */
+
+    if (query.sort) {
+      query.sort.forEach(function (sortPart) {
+        var key = Object.keys(sortPart)[0];
+        var comparisonOperators = ['$gt', '$gte', '$lt', '$lte'];
+        var keyUsed = query.selector[key] && Object.keys(query.selector[key]).some(function (op) {
+          return comparisonOperators.includes(op);
+        }) || false;
+
+        if (!keyUsed) {
+          var schemaObj = getSchemaByObjectPath(schema, key);
+
+          if (!schemaObj) {
+            throw newRxError('QU5', {
+              query: query,
+              key: key,
+              schema: schema
+            });
+          }
+
+          if (!query.selector[key]) {
+            query.selector[key] = {};
+          }
+
+          switch (schemaObj.type) {
+            case 'number':
+            case 'integer':
+              // TODO change back to -Infinity when issue resolved
+              // @link https://github.com/pouchdb/pouchdb/issues/6454
+              // -Infinity does not work since pouchdb 6.2.0
+              query.selector[key].$gt = -9999999999999999999999999999;
+              break;
+
+            case 'string':
+              /**
+               * strings need an empty string, see
+               * @link https://github.com/pubkey/rxdb/issues/585
+               */
+              if (typeof query.selector[key] !== 'string') {
+                query.selector[key].$gt = '';
+              }
+
+              break;
+
+            default:
+              query.selector[key].$gt = null;
+              break;
+          }
+        }
+      });
+    } // regex does not work over the primary key
+    // TODO move this to dev mode
+
+
+    if (query.selector[primaryKey] && query.selector[primaryKey].$regex) {
+      throw newRxError('QU4', {
+        path: primaryKey,
+        query: mutateableQuery
+      });
+    } // primary-swap sorting
+
+
+    if (query.sort) {
+      var sortArray = query.sort.map(function (part) {
+        var _newPart;
+
+        var key = Object.keys(part)[0];
+        var direction = Object.values(part)[0];
+        var useKey = key === primaryKey ? '_id' : key;
+        var newPart = (_newPart = {}, _newPart[useKey] = direction, _newPart);
+        return newPart;
+      });
+      query.sort = sortArray;
+    } // strip empty selectors
+
+
+    Object.entries(query.selector).forEach(function (_ref2) {
+      var k = _ref2[0],
+          v = _ref2[1];
+
+      if (typeof v === 'object' && v !== null && !Array.isArray(v) && Object.keys(v).length === 0) {
+        delete query.selector[k];
+      }
+    });
+    query.selector = primarySwapPouchDbQuerySelector(query.selector, primaryKey);
+    /**
+     * To ensure a deterministic sorting,
+     * we have to ensure the primary key is always part
+     * of the sort query.
+     * TODO This should be done but will not work with pouchdb
+     * because it will throw
+     * 'Cannot sort on field(s) "key" when using the default index'
+     * So we likely have to modify the indexes so that this works. 
+     */
+
+    /*
+    if (!mutateableQuery.sort) {
+        mutateableQuery.sort = [{ [this.primaryPath]: 'asc' }] as any;
+    } else {
+        const isPrimaryInSort = mutateableQuery.sort
+            .find(p => firstPropertyNameOfObject(p) === this.primaryPath);
+        if (!isPrimaryInSort) {
+            mutateableQuery.sort.push({ [this.primaryPath]: 'asc' } as any);
+        }
+    }
+    */
+
+    return query;
+  }
+};
+export var RxStoragePouch = /*#__PURE__*/function () {
+  function RxStoragePouch(adapter) {
+    var pouchSettings = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    this.name = 'pouchdb';
+    this.statics = RxStoragePouchStatics;
+    this.adapter = adapter;
+    this.pouchSettings = pouchSettings;
+    checkPouchAdapter(adapter);
+  }
 
   var _proto = RxStoragePouch.prototype;
-
-  _proto.hash = function hash(data) {
-    return pouchHash(data);
-  };
 
   _proto.createPouch = /*#__PURE__*/function () {
     var _createPouch = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(location, options) {
@@ -207,7 +411,7 @@ function _createIndexesOnPouch() {
             }));
             _context5.next = 9;
             return Promise.all(schema.indexes.map( /*#__PURE__*/function () {
-              var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4(indexMaybeArray) {
+              var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4(indexMaybeArray) {
                 var indexArray, indexName;
                 return _regeneratorRuntime.wrap(function _callee4$(_context4) {
                   while (1) {
@@ -257,7 +461,7 @@ function _createIndexesOnPouch() {
               }));
 
               return function (_x7) {
-                return _ref.apply(this, arguments);
+                return _ref3.apply(this, arguments);
               };
             }()));
 

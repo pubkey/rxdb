@@ -142,7 +142,6 @@ export type RxAttachmentData = {
     length: number;
 }
 
-
 export type RxLocalDocumentData<
     Data = {
         // local documents are schemaless and contain any data
@@ -208,13 +207,17 @@ export type RxStorageBulkWriteResponse<DocData> = {
      * A map that is indexed by the documentId
      * contains all succeded writes.
      */
-    success: Map<string, RxDocumentData<DocData>>;
+    success: {
+        [documentId: string]: RxDocumentData<DocData>;
+    };
 
     /**
      * A map that is indexed by the documentId
      * contains all errored writes.
      */
-    error: Map<string, RxStorageBulkWriteError<DocData>>;
+    error: {
+        [documentId: string]: RxStorageBulkWriteError<DocData>;
+    }
 }
 
 export type RxLocalStorageBulkWriteResponse<DocData> = {
@@ -222,13 +225,17 @@ export type RxLocalStorageBulkWriteResponse<DocData> = {
      * A map that is indexed by the documentId
      * contains all succeded writes.
      */
-    success: Map<string, RxLocalDocumentData<DocData>>;
+    success: {
+        [documentId: string]: RxLocalDocumentData<DocData>;
+    };
 
     /**
      * A map that is indexed by the documentId
      * contains all errored writes.
      */
-    error: Map<string, RxStorageBulkWriteLocalError<DocData>>;
+    error: {
+        [documentId: string]: RxStorageBulkWriteLocalError<DocData>;
+    };
 }
 
 
@@ -249,43 +256,19 @@ export type RxStorageInstanceCreationParams<DocumentData, InstanceCreationOption
     schema: RxJsonSchema<DocumentData>;
     options: InstanceCreationOptions;
     /**
-     * The idle queue from the RxDatabase is passed,
-     * so that the storage instance is able to detect
-     * when the database is idle and background stuff
-     * like persistence, replication etc. can be done.
+     * If multiInstance is true, there can be more
+     * then one instance of the database, for example
+     * when multiple browser tabs exist or more then one Node.js
+     * process relies on the same storage.
      */
-    idleQueue: IdleQueue;
-    /**
-     * The broadcastChannel is passed
-     * to the storage instance,
-     * so it can reuse the same leader elector
-     * as the RxDatabase instance uses.
-     * Or send data between instnaces.
-     * Is not given if multiInstance: false.
-     */
-    broadcastChannel?: BroadcastChannel;
+    multiInstance: boolean;
 }
 
 export type RxKeyObjectStorageInstanceCreationParams<InstanceCreationOptions> = {
     databaseName: string;
     collectionName: string;
     options: InstanceCreationOptions;
-    /**
-     * The idle queue from the RxDatabase is passed,
-     * so that the storage instance is able to detect
-     * when the database is idle and background stuff
-     * like persistence, replication etc. can be done.
-     */
-    idleQueue: IdleQueue;
-    /**
-     * The broadcastChannel is passed
-     * to the storage instance,
-     * so it can reuse the same leader elector
-     * as the RxDatabase instance uses.
-     * Or send data between instnaces.
-     * Is not given if multiInstance: false.
-     */
-    broadcastChannel?: BroadcastChannel;
+    multiInstance: boolean;
 }
 
 
@@ -323,6 +306,23 @@ export type ChangeStreamOnceOptions = ChangeStreamOptions & {
 
     limit?: number;
 };
+
+/**
+ * In the past we handles each RxChangeEvent by its own.
+ * But it has been shown that this take way more performance then needed,
+ * especially when the events get transfered over a data layer
+ * like with WebWorkers or the BroadcastChannel.
+ * So we now process events as bulks internally.
+ */
+export type EventBulk<EventType> = {
+    /**
+     * Unique id of the bulk,
+     * used to detect duplicate bulks
+     * that have already been processed.
+     */
+    id: string;
+    events: EventType[];
+}
 
 export type ChangeStreamEvent<DocumentData> = ChangeEvent<RxDocumentData<DocumentData>> & {
     /**

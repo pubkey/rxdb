@@ -507,7 +507,7 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
                 originalDoc = _step.value;
                 doc = (0, _util.flatClone)(originalDoc);
                 documentId = doc[this.collection.schema.primaryPath];
-                docStateInLocalStorageInstance = docsFromLocal.get(documentId);
+                docStateInLocalStorageInstance = docsFromLocal[documentId];
                 newRevision = (0, _revisionFlag.createRevisionForPulledDocument)(this.replicationIdentifier, doc);
 
                 if (docStateInLocalStorageInstance) {

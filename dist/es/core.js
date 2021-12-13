@@ -13,6 +13,7 @@ export { isRxCollection, RxCollectionBase, createRxCollection // used in tests
 } from './rx-collection';
 export { _handleFromStorageInstance, _handleToStorageInstance, fillObjectDataBeforeInsert } from './rx-collection-helper';
 export { isRxDocument } from './rx-document';
+export { flattenEvents } from './rx-change-event';
 export { getDocumentOrmPrototype, getDocumentPrototype } from './rx-document-prototype-merge';
 export { isInstanceOf as isRxQuery } from './rx-query';
 export { isInstanceOf as isRxSchema, createRxSchema, RxSchema, getIndexes, normalize, getFinalFields, getPreviousVersions } from './rx-schema';

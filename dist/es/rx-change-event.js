@@ -10,13 +10,6 @@ export function getDocumentDataOfRxChangeEvent(rxChangeEvent) {
     return rxChangeEvent.previousDocumentData;
   }
 }
-export function isRxChangeEventIntern(rxChangeEvent) {
-  if (rxChangeEvent.collectionName && rxChangeEvent.collectionName.charAt(0) === '_') {
-    return true;
-  } else {
-    return false;
-  }
-}
 export function rxChangeEventToEventReduceChangeEvent(rxChangeEvent) {
   switch (rxChangeEvent.operation) {
     case 'INSERT':
@@ -43,5 +36,39 @@ export function rxChangeEventToEventReduceChangeEvent(rxChangeEvent) {
         previous: rxChangeEvent.previousDocumentData
       };
   }
+}
+/**
+ * Flattens the given events into a single array of events.
+ * Used mostly in tests.
+ */
+
+export function flattenEvents(input) {
+  var output = [];
+
+  if (Array.isArray(input)) {
+    input.forEach(function (inputItem) {
+      var add = flattenEvents(inputItem);
+      output = output.concat(add);
+    });
+  } else {
+    if (input.id && input.events) {
+      // is bulk
+      input.events.forEach(function (ev) {
+        return output.push(ev);
+      });
+    } else {
+      output.push(input);
+    }
+  }
+
+  var usedIds = new Set();
+  var nonDuplicate = [];
+  output.forEach(function (ev) {
+    if (!usedIds.has(ev.eventId)) {
+      usedIds.add(ev.eventId);
+      nonDuplicate.push(ev);
+    }
+  });
+  return nonDuplicate;
 }
 //# sourceMappingURL=rx-change-event.js.map

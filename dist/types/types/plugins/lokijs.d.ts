@@ -1,3 +1,4 @@
+import type { LeaderElector } from 'broadcast-channel';
 import type {
     Collection
 } from 'lokijs';
@@ -14,6 +15,7 @@ export type LokiSettings = {
 };
 
 export type LokiStorageInternals = {
+    leaderElector?: LeaderElector;
     localState?: Promise<LokiLocalDatabaseState>;
 };
 

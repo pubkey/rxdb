@@ -68,9 +68,7 @@ var RxStorageKeyObjectInstancePouch = /*#__PURE__*/function () {
 
   _proto.bulkWrite = /*#__PURE__*/function () {
     var _bulkWrite = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(documentWrites) {
-      var _this = this;
-
-      var writeRowById, insertDocs, startTime, pouchResult, endTime, ret;
+      var writeRowById, insertDocs, startTime, pouchResult, endTime, ret, eventBulk;
       return _regenerator["default"].wrap(function _callee2$(_context2) {
         while (1) {
           switch (_context2.prev = _context2.next) {
@@ -112,8 +110,12 @@ var RxStorageKeyObjectInstancePouch = /*#__PURE__*/function () {
               pouchResult = _context2.sent;
               endTime = (0, _util.now)();
               ret = {
-                success: new Map(),
-                error: new Map()
+                success: {},
+                error: {}
+              };
+              eventBulk = {
+                id: (0, _util.randomCouchString)(10),
+                events: []
               };
               pouchResult.forEach(function (resultRow) {
                 resultRow.id = (0, _pouchdbHelper.pouchStripLocalFlagFromPrimary)(resultRow.id);
@@ -126,13 +128,13 @@ var RxStorageKeyObjectInstancePouch = /*#__PURE__*/function () {
                     documentId: resultRow.id,
                     writeRow: writeRow
                   };
-                  ret.error.set(resultRow.id, err);
+                  ret.error[resultRow.id] = err;
                 } else {
                   var pushObj = (0, _util.flatClone)(writeRow.document);
                   pushObj._rev = resultRow.rev; // local document cannot have attachments
 
                   pushObj._attachments = {};
-                  ret.success.set(resultRow.id, pushObj);
+                  ret.success[resultRow.id] = pushObj;
                   /**
                    * Emit a write event to the changestream.
                    * We do this here and not by observing the internal pouchdb changes
@@ -188,14 +190,14 @@ var RxStorageKeyObjectInstancePouch = /*#__PURE__*/function () {
                       startTime: startTime,
                       endTime: endTime
                     };
-
-                    _this.changes$.next(storageChangeEvent);
+                    eventBulk.events.push(storageChangeEvent);
                   }
                 }
               });
+              this.changes$.next(eventBulk);
               return _context2.abrupt("return", ret);
 
-            case 12:
+            case 14:
             case "end":
               return _context2.stop();
           }
@@ -212,14 +214,14 @@ var RxStorageKeyObjectInstancePouch = /*#__PURE__*/function () {
 
   _proto.findLocalDocumentsById = /*#__PURE__*/function () {
     var _findLocalDocumentsById = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(ids) {
-      var _this2 = this;
+      var _this = this;
 
       var ret;
       return _regenerator["default"].wrap(function _callee4$(_context4) {
         while (1) {
           switch (_context4.prev = _context4.next) {
             case 0:
-              ret = new Map();
+              ret = {};
               /**
                * Pouchdb is not able to bulk-request local documents
                * with the pouch.allDocs() method.
@@ -238,12 +240,12 @@ var RxStorageKeyObjectInstancePouch = /*#__PURE__*/function () {
                           prefixedId = _pouchdbHelper.POUCHDB_LOCAL_PREFIX + id;
                           _context3.prev = 1;
                           _context3.next = 4;
-                          return _this2.internals.pouch.get(prefixedId);
+                          return _this.internals.pouch.get(prefixedId);
 
                         case 4:
                           docData = _context3.sent;
                           docData._id = id;
-                          ret.set(id, docData);
+                          ret[id] = docData;
                           _context3.next = 11;
                           break;
 

@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import type { RxStorageKeyObjectInstance, RxStorageChangeEvent, RxLocalDocumentData, BulkWriteLocalRow, RxLocalStorageBulkWriteResponse, PouchSettings } from '../../types';
+import type { RxStorageKeyObjectInstance, RxStorageChangeEvent, RxLocalDocumentData, BulkWriteLocalRow, RxLocalStorageBulkWriteResponse, PouchSettings, EventBulk } from '../../types';
 import { PouchStorageInternals } from './pouchdb-helper';
 export declare class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstance<PouchStorageInternals, PouchSettings> {
     readonly databaseName: string;
@@ -11,6 +11,8 @@ export declare class RxStorageKeyObjectInstancePouch implements RxStorageKeyObje
     close(): Promise<void>;
     remove(): Promise<void>;
     bulkWrite<D = any>(documentWrites: BulkWriteLocalRow<D>[]): Promise<RxLocalStorageBulkWriteResponse<D>>;
-    findLocalDocumentsById<D = any>(ids: string[]): Promise<Map<string, RxLocalDocumentData<D>>>;
-    changeStream(): Observable<RxStorageChangeEvent<RxLocalDocumentData>>;
+    findLocalDocumentsById<D = any>(ids: string[]): Promise<{
+        [documentId: string]: RxLocalDocumentData<D>;
+    }>;
+    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxLocalDocumentData>>>;
 }

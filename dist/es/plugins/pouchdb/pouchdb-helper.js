@@ -271,7 +271,8 @@ function _writeAttachmentsToAttachments() {
             _context2.next = 5;
             return Promise.all(Object.entries(attachments).map( /*#__PURE__*/function () {
               var _ref5 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(_ref4) {
-                var key, obj, asWrite, hash, asString, length;
+                var key, obj, asWrite, _yield$Promise$all, hash, asString, length;
+
                 return _regeneratorRuntime.wrap(function _callee$(_context) {
                   while (1) {
                     switch (_context.prev = _context.next) {
@@ -291,34 +292,31 @@ function _writeAttachmentsToAttachments() {
 
                       case 3:
                         if (!obj.data) {
-                          _context.next = 15;
+                          _context.next = 14;
                           break;
                         }
 
                         asWrite = obj;
                         _context.next = 7;
-                        return pouchHash(asWrite.data);
+                        return Promise.all([pouchHash(asWrite.data), blobBufferUtil.toString(asWrite.data)]);
 
                       case 7:
-                        hash = _context.sent;
-                        _context.next = 10;
-                        return blobBufferUtil.toString(asWrite.data);
-
-                      case 10:
-                        asString = _context.sent;
+                        _yield$Promise$all = _context.sent;
+                        hash = _yield$Promise$all[0];
+                        asString = _yield$Promise$all[1];
                         length = asString.length;
                         ret[key] = {
                           digest: hash,
                           length: length,
                           type: asWrite.type
                         };
-                        _context.next = 16;
+                        _context.next = 15;
                         break;
 
-                      case 15:
+                      case 14:
                         ret[key] = obj;
 
-                      case 16:
+                      case 15:
                       case "end":
                         return _context.stop();
                     }

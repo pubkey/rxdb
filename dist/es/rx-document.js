@@ -3,7 +3,7 @@ import _regeneratorRuntime from "@babel/runtime/regenerator";
 import objectPath from 'object-path';
 import { BehaviorSubject } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
-import { clone, trimDots, getHeightOfRevision, pluginMissing, now, nextTick, flatClone, PROMISE_RESOLVE_NULL, PROMISE_RESOLVE_VOID } from './util';
+import { clone, trimDots, getHeightOfRevision, pluginMissing, nextTick, flatClone, PROMISE_RESOLVE_NULL, PROMISE_RESOLVE_VOID } from './util';
 import { newRxError, newRxTypeError, isPouchdbConflictError } from './rx-error';
 import { runPluginHooks } from './hooks';
 import { getDocumentDataOfRxChangeEvent } from './rx-change-event';
@@ -122,13 +122,6 @@ export var basePrototype = {
 
         break;
     }
-  },
-
-  /**
-   * emits the changeEvent to the upper instance (RxCollection)
-   */
-  $emit: function $emit(changeEvent) {
-    return this.collection.$emit(changeEvent);
   },
 
   /**
@@ -491,10 +484,8 @@ export var basePrototype = {
     }
 
     var deletedData = flatClone(this._data);
-    var startTime;
     return this.collection._runHooks('pre', 'remove', deletedData, this).then(function () {
       deletedData._deleted = true;
-      startTime = now();
       return writeToStorageInstance(_this4.collection, {
         previous: _this4._data,
         document: deletedData

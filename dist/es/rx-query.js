@@ -2,7 +2,7 @@ import _createClass from "@babel/runtime/helpers/createClass";
 import deepEqual from 'fast-deep-equal';
 import { merge, BehaviorSubject, firstValueFrom } from 'rxjs';
 import { mergeMap, filter, map, tap, shareReplay } from 'rxjs/operators';
-import { sortObject, stringifyFilter, pluginMissing, clone, overwriteGetterForCaching, now, PROMISE_RESOLVE_FALSE } from './util';
+import { sortObject, stringifyFilter, pluginMissing, clone, overwriteGetterForCaching, now, PROMISE_RESOLVE_FALSE, RXJS_SHARE_REPLAY_DEFAULTS } from './util';
 import { newRxError, newRxTypeError } from './rx-error';
 import { runPluginHooks } from './hooks';
 import { createRxDocuments } from './rx-document-prototype-merge';
@@ -188,7 +188,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
       mangoQuery: clone(this.mangoQuery)
     };
     runPluginHooks('prePrepareQuery', hookInput);
-    var value = this.collection.storageInstance.prepareQuery(hookInput.mangoQuery);
+    var value = this.collection.database.storage.statics.prepareQuery(this.collection.storageInstance.schema, hookInput.mangoQuery);
 
     this.getPreparedQuery = function () {
       return value;
@@ -298,10 +298,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
             // find()-queries emit RxDocument[]
             return docs;
           }
-        }), shareReplay({
-          bufferSize: 1,
-          refCount: true
-        })).asObservable();
+        }), shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)).asObservable();
         /**
          * subscribe to the changeEvent-stream so it detects changes if it has subscribers
          */
@@ -324,7 +321,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
   }, {
     key: "queryMatcher",
     get: function get() {
-      return overwriteGetterForCaching(this, 'queryMatcher', this.collection.storageInstance.getQueryMatcher(this.getPreparedQuery()));
+      return overwriteGetterForCaching(this, 'queryMatcher', this.collection.database.storage.statics.getQueryMatcher(this.collection.storageInstance.schema, this.getPreparedQuery()));
     }
   }, {
     key: "asRxQuery",
@@ -444,15 +441,6 @@ function __ensureEqual(rxQuery) {
       mustReExec = true;
     } else {
       rxQuery._latestChangeEvent = rxQuery.asRxQuery.collection._changeEventBuffer.counter;
-      /**
-       * because pouchdb prefers writes over reads,
-       * we have to filter out the events that happend before the read has started
-       * so that we do not fill event-reduce with the wrong data
-       */
-
-      missedChangeEvents = missedChangeEvents.filter(function (cE) {
-        return !cE.startTime || rxQuery._lastExecStart < cE.startTime && (!cE.endTime || rxQuery._lastExecEnd < cE.endTime);
-      });
 
       var runChangeEvents = rxQuery.asRxQuery.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
 

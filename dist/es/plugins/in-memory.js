@@ -434,7 +434,7 @@ function _prepareInMemoryRxCollection() {
               collectionName: randomCouchString(10),
               schema: instance.schema.jsonSchema,
               options: instance.pouchSettings,
-              idleQueue: instance.database.idleQueue
+              multiInstance: false
             });
 
           case 3:

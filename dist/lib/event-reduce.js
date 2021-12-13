@@ -38,7 +38,7 @@ function getQueryParams(rxQuery) {
      * we send for example compressed documents to be sorted by compressed queries.
      */
 
-    var sortComparator = collection.storageInstance.getSortComparator(queryJson);
+    var sortComparator = collection.database.storage.statics.getSortComparator(collection.storageInstance.schema, queryJson);
 
     var useSortComparator = function useSortComparator(docA, docB) {
       var sortComparatorData = {
@@ -56,7 +56,7 @@ function getQueryParams(rxQuery) {
      */
 
 
-    var queryMatcher = collection.storageInstance.getQueryMatcher(queryJson);
+    var queryMatcher = collection.database.storage.statics.getQueryMatcher(collection.storageInstance.schema, queryJson);
 
     var useQueryMatcher = function useQueryMatcher(doc) {
       var queryMatcherData = {

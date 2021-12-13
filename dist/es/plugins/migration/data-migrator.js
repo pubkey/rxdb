@@ -24,7 +24,6 @@ import { getMigrationStateByDatabase } from './migration-state';
 import { map } from 'rxjs/operators';
 import { countAllUndeleted, getBatch, getSingleDocument } from '../../rx-storage-helper';
 import { _handleFromStorageInstance, _handleToStorageInstance } from '../../rx-collection-helper';
-import { IdleQueue } from 'custom-idle-queue';
 export var DataMigrator = /*#__PURE__*/function () {
   function DataMigrator(newestCollection, migrationStrategies) {
     this._migrated = false;
@@ -85,7 +84,7 @@ export var DataMigrator = /*#__PURE__*/function () {
         _this.nonMigratedOldCollections = ret;
         _this.allOldCollections = _this.nonMigratedOldCollections.slice(0);
         var countAll = Promise.all(_this.nonMigratedOldCollections.map(function (oldCol) {
-          return countAllUndeleted(oldCol.storageInstance);
+          return countAllUndeleted(_this.database.storage, oldCol.storageInstance);
         }));
         return countAll;
       }).then(function (countAll) {
@@ -205,8 +204,8 @@ function _createOldCollection() {
               databaseName: database.name,
               collectionName: dataMigrator.newestCollection.name,
               schema: schemaObj,
-              idleQueue: new IdleQueue(),
-              options: dataMigrator.newestCollection.instanceCreationOptions
+              options: dataMigrator.newestCollection.instanceCreationOptions,
+              multiInstance: database.multiInstance
             };
             runPluginHooks('preCreateRxStorageInstance', storageInstanceCreationParams);
             _context.next = 6;
@@ -333,7 +332,7 @@ export function runStrategyIfNotNull(oldCollection, version, docOrNull) {
   }
 }
 export function getBatchOfOldCollection(oldCollection, batchSize) {
-  return getBatch(oldCollection.storageInstance, batchSize).then(function (docs) {
+  return getBatch(oldCollection.database.storage, oldCollection.storageInstance, batchSize).then(function (docs) {
     return docs.map(function (doc) {
       doc = flatClone(doc);
       doc = _handleFromStorageInstance(oldCollection, doc);

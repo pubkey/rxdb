@@ -216,7 +216,7 @@ function _createRxCollectionStorageInstances() {
       while (1) {
         switch (_context3.prev = _context3.next) {
           case 0:
-            storageInstanceCreationParams.broadcastChannel = rxDatabase.broadcastChannel;
+            storageInstanceCreationParams.multiInstance = rxDatabase.multiInstance;
             _context3.next = 3;
             return Promise.all([rxDatabase.storage.createStorageInstance(storageInstanceCreationParams), rxDatabase.storage.createKeyObjectStorageInstance({
               databaseName: rxDatabase.name,
@@ -228,8 +228,7 @@ function _createRxCollectionStorageInstances() {
                */
               collectionName: getCollectionLocalInstanceName(collectionName),
               options: instanceCreationOptions,
-              idleQueue: rxDatabase.idleQueue,
-              broadcastChannel: rxDatabase.broadcastChannel
+              multiInstance: rxDatabase.multiInstance
             })]);
 
           case 3:

@@ -211,10 +211,10 @@ var RxLocalDocumentPrototype = {
       previous: oldData,
       document: newData
     }]).then(function (res) {
-      var docResult = res.success.get(newData._id);
+      var docResult = res.success[newData._id];
 
       if (!docResult) {
-        throw (0, _util.getFromMapOrThrow)(res.error, newData._id);
+        throw (0, _util.getFromObjectOrThrow)(res.error, newData._id);
       }
 
       newData._rev = docResult._rev;

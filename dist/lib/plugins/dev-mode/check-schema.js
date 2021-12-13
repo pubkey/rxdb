@@ -14,6 +14,8 @@ var _objectPath = _interopRequireDefault(require("object-path"));
 
 var _rxError = require("../../rx-error");
 
+var _rxSchema = require("../../rx-schema");
+
 var _rxSchemaHelper = require("../../rx-schema-helper");
 
 var _util = require("../../util");
@@ -45,7 +47,13 @@ function checkFieldNameRegex(fieldName) {
   var regexStr = '^[a-zA-Z](?:[[a-zA-Z0-9_]*]?[a-zA-Z0-9])?$';
   var regex = new RegExp(regexStr);
 
-  if (!fieldName.match(regex)) {
+  if (
+  /**
+   * It must be allowed to set _id as primaryKey.
+   * This makes it sometimes easier to work with RxDB+CouchDB
+   * @link https://github.com/pubkey/rxdb/issues/681
+   */
+  fieldName !== '_id' && !fieldName.match(regex)) {
     throw (0, _rxError.newRxError)('SC1', {
       regex: regexStr,
       fieldName: fieldName
@@ -57,7 +65,9 @@ function checkFieldNameRegex(fieldName) {
  */
 
 
-function validateFieldsDeep(jsonSchema) {
+function validateFieldsDeep(rxJsonSchema) {
+  var primaryPath = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(rxJsonSchema.primaryKey);
+
   function checkField(fieldName, schemaObj, path) {
     if (typeof fieldName === 'string' && typeof schemaObj === 'object' && !Array.isArray(schemaObj)) checkFieldNameRegex(fieldName); // 'item' only allowed it type=='array'
 
@@ -127,9 +137,17 @@ function validateFieldsDeep(jsonSchema) {
 
 
     if (!isNested) {
-      // check underscore fields
+      // if _id is used, it must be primaryKey
+      if (fieldName === '_id' && primaryPath !== '_id') {
+        throw (0, _rxError.newRxError)('COL2', {
+          fieldName: fieldName
+        });
+      } // check underscore fields
+
+
       if (fieldName.charAt(0) === '_') {
-        if (fieldName === '_deleted') {
+        if ( // exceptional allow underscore on these fields.
+        fieldName === '_id' || fieldName === '_deleted') {
           return;
         }
 
@@ -153,7 +171,7 @@ function validateFieldsDeep(jsonSchema) {
     });
   }
 
-  traverse(jsonSchema, '');
+  traverse(rxJsonSchema, '');
   return true;
 }
 

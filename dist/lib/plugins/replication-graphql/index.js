@@ -108,12 +108,6 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
     this._subjects = {
       received: new _rxjs.Subject(),
       // all documents that are received from the endpoint
-
-      /**
-       * @deprecated use received instead because it is spelled correctly
-       */
-      recieved: new _rxjs.Subject(),
-      // all documents that are received from the endpoint
       send: new _rxjs.Subject(),
       // all documents that are send to the endpoint
       error: new _rxjs.Subject(),
@@ -131,7 +125,6 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
     this._runCount = 0;
     this.initialReplicationComplete$ = undefined;
     this.received$ = undefined;
-    this.recieved$ = undefined;
     this.send$ = undefined;
     this.error$ = undefined;
     this.canceled$ = undefined;
@@ -296,6 +289,15 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
           switch (_context3.prev = _context3.next) {
             case 0:
               retryOnFail = _args3.length > 0 && _args3[0] !== undefined ? _args3[0] : true;
+
+              if (!this.isStopped()) {
+                _context3.next = 3;
+                break;
+              }
+
+              return _context3.abrupt("return", false);
+
+            case 3:
               this._runCount++;
               /**
                * The replication happens in the background anyways
@@ -306,27 +308,27 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
                */
 
               if (!this._subjects.initialReplicationComplete.getValue()) {
-                _context3.next = 5;
+                _context3.next = 7;
                 break;
               }
 
-              _context3.next = 5;
+              _context3.next = 7;
               return this.collection.database.requestIdlePromise();
 
-            case 5:
+            case 7:
               if (!this.push) {
-                _context3.next = 12;
+                _context3.next = 14;
                 break;
               }
 
-              _context3.next = 8;
+              _context3.next = 10;
               return this.runPush();
 
-            case 8:
+            case 10:
               ok = _context3.sent;
 
               if (!(!ok && retryOnFail)) {
-                _context3.next = 12;
+                _context3.next = 14;
                 break;
               }
 
@@ -341,20 +343,20 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
 
               return _context3.abrupt("return", true);
 
-            case 12:
+            case 14:
               if (!this.pull) {
-                _context3.next = 19;
+                _context3.next = 21;
                 break;
               }
 
-              _context3.next = 15;
+              _context3.next = 17;
               return this.runPull();
 
-            case 15:
+            case 17:
               _ok = _context3.sent;
 
               if (!(!_ok && retryOnFail)) {
-                _context3.next = 19;
+                _context3.next = 21;
                 break;
               }
 
@@ -363,10 +365,10 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
               }, this.retryTime);
               return _context3.abrupt("return", true);
 
-            case 19:
+            case 21:
               return _context3.abrupt("return", false);
 
-            case 20:
+            case 22:
             case "end":
               return _context3.stop();
           }
@@ -403,7 +405,7 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
                 break;
               }
 
-              return _context5.abrupt("return", _util.PROMISE_RESOLVE_FALSE);
+              return _context5.abrupt("return", false);
 
             case 2:
               _context5.next = 4;
@@ -535,16 +537,9 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
               modified.map(function (doc) {
                 return _this4._subjects.received.next(doc);
               });
-              /**
-               * @deprecated use received instead because it is spelled correctly
-               */
-
-              modified.map(function (doc) {
-                return _this4._subjects.recieved.next(doc);
-              });
 
               if (!(modified.length === 0)) {
-                _context5.next = 53;
+                _context5.next = 52;
                 break;
               }
 
@@ -552,22 +547,22 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
               } else {// console.log('RxGraphQLReplicationState._run(): no more docs and not live; complete = true');
               }
 
-              _context5.next = 58;
+              _context5.next = 57;
               break;
 
-            case 53:
+            case 52:
               newLatestDocument = modified[modified.length - 1];
-              _context5.next = 56;
+              _context5.next = 55;
               return (0, _crawlingCheckpoint.setLastPullDocument)(this.collection, this.endpointHash, newLatestDocument);
 
-            case 56:
-              _context5.next = 58;
+            case 55:
+              _context5.next = 57;
               return this.runPull();
 
-            case 58:
+            case 57:
               return _context5.abrupt("return", true);
 
-            case 59:
+            case 58:
             case "end":
               return _context5.stop();
           }
@@ -597,12 +592,20 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
         while (1) {
           switch (_context7.prev = _context7.next) {
             case 0:
-              _context7.next = 2;
-              return (0, _crawlingCheckpoint.getChangesSinceLastPushSequence)(this.collection, this.endpointHash, this.push.batchSize);
+              if (!this.isStopped()) {
+                _context7.next = 2;
+                break;
+              }
+
+              return _context7.abrupt("return", false);
 
             case 2:
+              _context7.next = 4;
+              return (0, _crawlingCheckpoint.getChangesSinceLastPushSequence)(this.collection, this.endpointHash, this.push.batchSize);
+
+            case 4:
               changesResult = _context7.sent;
-              _context7.next = 5;
+              _context7.next = 7;
               return Promise.all(Array.from(changesResult.changedDocs.values()).map( /*#__PURE__*/function () {
                 var _ref3 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee6(row) {
                   var changedDoc;
@@ -643,17 +646,17 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
                 };
               }()));
 
-            case 5:
+            case 7:
               changesWithDocs = _context7.sent.filter(function (doc) {
                 return !!doc;
               });
               lastSuccessfullChange = null;
-              _context7.prev = 7;
+              _context7.prev = 9;
               i = 0;
 
-            case 9:
+            case 11:
               if (!(i < changesWithDocs.length)) {
-                _context7.next = 33;
+                _context7.next = 35;
                 break;
               }
 
@@ -664,76 +667,76 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
                 changeWithDoc.doc._deleted = false;
               }
 
-              _context7.next = 14;
+              _context7.next = 16;
               return this.push.queryBuilder(changeWithDoc.doc);
 
-            case 14:
+            case 16:
               pushObj = _context7.sent;
-              _context7.next = 17;
+              _context7.next = 19;
               return this.client.query(pushObj.query, pushObj.variables);
 
-            case 17:
+            case 19:
               result = _context7.sent;
 
               if (!result.errors) {
-                _context7.next = 28;
+                _context7.next = 30;
                 break;
               }
 
               if (!(typeof result.errors === 'string')) {
-                _context7.next = 23;
+                _context7.next = 25;
                 break;
               }
 
               throw new Error(result.errors);
 
-            case 23:
+            case 25:
               err = new Error('unknown errors occurred - see innerErrors for more details');
               err.innerErrors = result.errors;
               throw err;
 
-            case 26:
-              _context7.next = 30;
+            case 28:
+              _context7.next = 32;
               break;
 
-            case 28:
+            case 30:
               this._subjects.send.next(changeWithDoc.doc);
 
               lastSuccessfullChange = changeWithDoc;
 
-            case 30:
+            case 32:
               i++;
-              _context7.next = 9;
-              break;
-
-            case 33:
-              _context7.next = 42;
+              _context7.next = 11;
               break;
 
             case 35:
-              _context7.prev = 35;
-              _context7.t0 = _context7["catch"](7);
+              _context7.next = 44;
+              break;
+
+            case 37:
+              _context7.prev = 37;
+              _context7.t0 = _context7["catch"](9);
 
               if (!lastSuccessfullChange) {
-                _context7.next = 40;
+                _context7.next = 42;
                 break;
               }
 
-              _context7.next = 40;
+              _context7.next = 42;
               return (0, _crawlingCheckpoint.setLastPushSequence)(this.collection, this.endpointHash, lastSuccessfullChange.sequence);
 
-            case 40:
+            case 42:
               this._subjects.error.next(_context7.t0);
 
               return _context7.abrupt("return", false);
 
-            case 42:
-              _context7.next = 44;
+            case 44:
+              _context7.next = 46;
               return (0, _crawlingCheckpoint.setLastPushSequence)(this.collection, this.endpointHash, changesResult.lastSequence);
 
-            case 44:
+            case 46:
               if (!(changesResult.changedDocs.size === 0)) {
-                _context7.next = 48;
+                _context7.next = 50;
                 break;
               }
 
@@ -741,22 +744,22 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
               } else {// console.log('RxGraphQLReplicationState._runPull(): no more docs to push and not live; complete = true');
               }
 
-              _context7.next = 50;
+              _context7.next = 52;
               break;
 
-            case 48:
-              _context7.next = 50;
+            case 50:
+              _context7.next = 52;
               return this.runPush();
 
-            case 50:
+            case 52:
               return _context7.abrupt("return", true);
 
-            case 51:
+            case 53:
             case "end":
               return _context7.stop();
           }
         }
-      }, _callee7, this, [[7, 35]]);
+      }, _callee7, this, [[9, 37]]);
     }));
 
     function runPush() {
@@ -794,7 +797,7 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
                 deletedValue = doc[this.deletedFlag];
                 doc._deleted = deletedValue;
                 delete doc[this.deletedFlag];
-                docStateInLocalStorageInstance = docsFromLocal.get(documentId);
+                docStateInLocalStorageInstance = docsFromLocal[documentId];
                 newRevision = (0, _helper.createRevisionForPulledDocument)(this.endpointHash, doc);
 
                 if (docStateInLocalStorageInstance) {

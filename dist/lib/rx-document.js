@@ -150,13 +150,6 @@ var basePrototype = {
   },
 
   /**
-   * emits the changeEvent to the upper instance (RxCollection)
-   */
-  $emit: function $emit(changeEvent) {
-    return this.collection.$emit(changeEvent);
-  },
-
-  /**
    * returns observable of the value of the given path
    */
   get$: function get$(path) {
@@ -519,10 +512,8 @@ var basePrototype = {
     }
 
     var deletedData = (0, _util.flatClone)(this._data);
-    var startTime;
     return this.collection._runHooks('pre', 'remove', deletedData, this).then(function () {
       deletedData._deleted = true;
-      startTime = (0, _util.now)();
       return (0, _rxCollectionHelper.writeToStorageInstance)(_this4.collection, {
         previous: _this4._data,
         document: deletedData

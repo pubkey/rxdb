@@ -51,7 +51,7 @@ export var ERROR_MESSAGES = {
   DB11: 'RxDatabase.create(): Invalid db-name, folder-paths must not have an ending slash',
   // rx-collection
   COL1: 'RxDocument.insert() You cannot insert an existing document',
-  // removed in 10.0.0 - COL2: 'RxCollection.insert() do not provide ._id when it is not the primary key',
+  COL2: 'RxCollection.insert() fieldName ._id can only be used as primaryKey',
   COL3: 'RxCollection.upsert() does not work without primary',
   COL4: 'RxCollection.atomicUpsert() does not work without primary',
   COL5: 'RxCollection.find() if you want to search by _id, use .findOne(_id)',

@@ -1,6 +1,6 @@
 # Changelog
 
-### X.X.X (BREAKING)
+### 11.0.0 (13 December 2021) BREAKING [read the announcement](./orga/releases/10.0.0.md)
 
 BREAKING:
   - RxStorage: The non async functions `prepareQuery`, `getSortComparator` and `getQueryMatcher` have been moved out of `RxStorageInstance` into `RxStorage`. This was needed to have better WebWorker support. This will not affect you do not use a custom `RxStorage` implementation.
@@ -10,7 +10,7 @@ BREAKING:
     - Replaced typings of event stream to use `EventBulk` and process events in bulks to save performance.
     - Move all static methods into the `statics` property so we can code-split when using the worker plugin.
   - Internally all events are handles via bulks, this saves performance when events are transfered over a WebWorker or a BroadcastChannel.
-  - Removed the deprecated `recieved` methods, use `recieved` instead. [See #3392](https://github.com/pubkey/rxdb/pull/3392)
+  - Removed the deprecated `recieved` methods, use `received` instead. [See #3392](https://github.com/pubkey/rxdb/pull/3392)
 
 Bugfixes:
   - Do not throw an error when database is destroyed while a GraphQL replication is running.

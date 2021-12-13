@@ -21,32 +21,28 @@ var _util = require("../../util");
 
 var _lokijsHelper = require("./lokijs-helper");
 
-var _leaderElection = require("../leader-election");
-
 var instanceId = 1;
 
 var RxStorageKeyObjectInstanceLoki = /*#__PURE__*/function () {
-  function RxStorageKeyObjectInstanceLoki(databaseName, collectionName, internals, options, databaseSettings, idleQueue, broadcastChannel) {
+  function RxStorageKeyObjectInstanceLoki(storage, databaseName, collectionName, internals, options, databaseSettings) {
     var _this = this;
 
     this.changes$ = new _rxjs.Subject();
     this.instanceId = instanceId++;
     this.closed = false;
+    this.storage = storage;
     this.databaseName = databaseName;
     this.collectionName = collectionName;
     this.internals = internals;
     this.options = options;
     this.databaseSettings = databaseSettings;
-    this.idleQueue = idleQueue;
-    this.broadcastChannel = broadcastChannel;
 
     _lokijsHelper.OPEN_LOKIJS_STORAGE_INSTANCES.add(this);
 
-    if (broadcastChannel) {
-      this.leaderElector = (0, _leaderElection.getLeaderElectorByBroadcastChannel)(broadcastChannel);
-      this.leaderElector.awaitLeadership().then(function () {
+    if (this.internals.leaderElector) {
+      this.internals.leaderElector.awaitLeadership().then(function () {
         // this instance is leader now, so it has to reply to queries from other instances
-        (0, _util.ensureNotFalsy)(_this.broadcastChannel).addEventListener('message', /*#__PURE__*/function () {
+        (0, _util.ensureNotFalsy)(_this.internals.leaderElector).broadcastChannel.addEventListener('message', /*#__PURE__*/function () {
           var _ref = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(msg) {
             var operation, params, result, isError, _ref2, response;
 
@@ -87,7 +83,7 @@ var RxStorageKeyObjectInstanceLoki = /*#__PURE__*/function () {
                       isError: isError,
                       type: msg.type
                     };
-                    (0, _util.ensureNotFalsy)(_this.broadcastChannel).postMessage(response);
+                    (0, _util.ensureNotFalsy)(_this.internals.leaderElector).broadcastChannel.postMessage(response);
 
                   case 16:
                   case "end":
@@ -142,7 +138,7 @@ var RxStorageKeyObjectInstanceLoki = /*#__PURE__*/function () {
               return _context2.abrupt("return", this.internals.localState);
 
             case 4:
-              leaderElector = (0, _util.ensureNotFalsy)(this.leaderElector);
+              leaderElector = (0, _util.ensureNotFalsy)(this.internals.leaderElector);
 
             case 5:
               if (leaderElector.hasLeader) {
@@ -180,8 +176,7 @@ var RxStorageKeyObjectInstanceLoki = /*#__PURE__*/function () {
                 databaseName: this.databaseName,
                 collectionName: this.collectionName,
                 options: this.options,
-                idleQueue: this.idleQueue,
-                broadcastChannel: this.broadcastChannel
+                multiInstance: this.internals.leaderElector ? true : false
               }, this.databaseSettings);
               return _context2.abrupt("return", this.getLocalState());
 
@@ -210,7 +205,7 @@ var RxStorageKeyObjectInstanceLoki = /*#__PURE__*/function () {
         while (1) {
           switch (_context3.prev = _context3.next) {
             case 0:
-              broadcastChannel = (0, _util.ensureNotFalsy)(this.broadcastChannel);
+              broadcastChannel = (0, _util.ensureNotFalsy)(this.internals.leaderElector).broadcastChannel;
               requestId = (0, _util.randomCouchString)(12);
               responsePromise = new Promise(function (res, rej) {
                 var listener = function listener(msg) {
@@ -260,9 +255,7 @@ var RxStorageKeyObjectInstanceLoki = /*#__PURE__*/function () {
 
   _proto.bulkWrite = /*#__PURE__*/function () {
     var _bulkWrite = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(documentWrites) {
-      var _this2 = this;
-
-      var localState, startTime, ret, writeRowById;
+      var localState, startTime, ret, writeRowById, eventBulk;
       return _regenerator["default"].wrap(function _callee4$(_context4) {
         while (1) {
           switch (_context4.prev = _context4.next) {
@@ -299,10 +292,14 @@ var RxStorageKeyObjectInstanceLoki = /*#__PURE__*/function () {
 
             case 10:
               ret = {
-                success: new Map(),
-                error: new Map()
+                success: {},
+                error: {}
               };
               writeRowById = new Map();
+              eventBulk = {
+                id: (0, _util.randomCouchString)(10),
+                events: []
+              };
               documentWrites.forEach(function (writeRow) {
                 var id = writeRow.document._id;
                 writeRowById.set(id, writeRow);
@@ -322,7 +319,7 @@ var RxStorageKeyObjectInstanceLoki = /*#__PURE__*/function () {
                       documentId: id,
                       writeRow: writeRow
                     };
-                    ret.error.set(id, err);
+                    ret.error[id] = err;
                     return;
                   } else {
                     var toLoki = (0, _util.flatClone)(writeDoc);
@@ -333,7 +330,7 @@ var RxStorageKeyObjectInstanceLoki = /*#__PURE__*/function () {
                   localState.collection.insert((0, _util.flatClone)(writeDoc));
                 }
 
-                ret.success.set(id, (0, _lokijsHelper.stripLokiKey)(writeDoc));
+                ret.success[id] = (0, _lokijsHelper.stripLokiKey)(writeDoc);
                 var endTime = (0, _util.now)();
                 var event;
 
@@ -383,14 +380,14 @@ var RxStorageKeyObjectInstanceLoki = /*#__PURE__*/function () {
                     startTime: startTime,
                     endTime: endTime
                   };
-
-                  _this2.changes$.next(storageChangeEvent);
+                  eventBulk.events.push(storageChangeEvent);
                 }
               });
               localState.databaseState.saveQueue.addWrite();
+              this.changes$.next(eventBulk);
               return _context4.abrupt("return", ret);
 
-            case 15:
+            case 17:
             case "end":
               return _context4.stop();
           }
@@ -430,12 +427,12 @@ var RxStorageKeyObjectInstanceLoki = /*#__PURE__*/function () {
               return (0, _util.promiseWait)(0);
 
             case 7:
-              ret = new Map();
+              ret = {};
               ids.forEach(function (id) {
                 var documentInDb = localState.collection.by('_id', id);
 
                 if (documentInDb && !documentInDb._deleted) {
-                  ret.set(id, (0, _lokijsHelper.stripLokiKey)(documentInDb));
+                  ret[id] = (0, _lokijsHelper.stripLokiKey)(documentInDb);
                 }
               });
               return _context5.abrupt("return", ret);
@@ -485,6 +482,9 @@ var RxStorageKeyObjectInstanceLoki = /*#__PURE__*/function () {
               return (0, _lokijsHelper.closeLokiCollections)(this.databaseName, [(0, _util.ensureNotFalsy)(localState.collection), (0, _util.ensureNotFalsy)(localState.changesCollection)]);
 
             case 9:
+              (0, _lokijsHelper.removeLokiLeaderElectorReference)(this.storage, this.databaseName);
+
+            case 10:
             case "end":
               return _context6.stop();
           }
@@ -522,7 +522,7 @@ var RxStorageKeyObjectInstanceLoki = /*#__PURE__*/function () {
             case 5:
               localState.databaseState.database.removeCollection(localState.collection.name);
               localState.databaseState.database.removeCollection(localState.changesCollection.name);
-              this.closed = true;
+              this.close();
 
             case 8:
             case "end":
@@ -560,7 +560,7 @@ function _createLokiKeyValueLocalState() {
             }
 
             _context8.next = 3;
-            return (0, _lokijsHelper.getLokiDatabase)(params.databaseName, databaseSettings, params.idleQueue);
+            return (0, _lokijsHelper.getLokiDatabase)(params.databaseName, databaseSettings);
 
           case 3:
             databaseState = _context8.sent;
@@ -593,44 +593,50 @@ function _createLokiKeyValueLocalState() {
   return _createLokiKeyValueLocalState.apply(this, arguments);
 }
 
-function createLokiKeyObjectStorageInstance(_x8, _x9) {
+function createLokiKeyObjectStorageInstance(_x8, _x9, _x10) {
   return _createLokiKeyObjectStorageInstance.apply(this, arguments);
 }
 
 function _createLokiKeyObjectStorageInstance() {
-  _createLokiKeyObjectStorageInstance = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee9(params, databaseSettings) {
-    var internals, instance, leaderElector;
+  _createLokiKeyObjectStorageInstance = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee9(storage, params, databaseSettings) {
+    var internals, leaderElector, instance;
     return _regenerator["default"].wrap(function _callee9$(_context9) {
       while (1) {
         switch (_context9.prev = _context9.next) {
           case 0:
-            internals = {}; // optimisation shortcut, directly create db is non multi instance.
+            internals = {};
 
-            if (params.broadcastChannel) {
-              _context9.next = 5;
+            if (!params.multiInstance) {
+              _context9.next = 6;
               break;
             }
 
+            leaderElector = (0, _lokijsHelper.getLokiLeaderElector)(storage, params.databaseName);
+            internals.leaderElector = leaderElector;
+            _context9.next = 9;
+            break;
+
+          case 6:
+            // optimisation shortcut, directly create db is non multi instance.
             internals.localState = createLokiKeyValueLocalState(params, databaseSettings);
-            _context9.next = 5;
+            _context9.next = 9;
             return internals.localState;
 
-          case 5:
-            instance = new RxStorageKeyObjectInstanceLoki(params.databaseName, params.collectionName, internals, params.options, databaseSettings, params.idleQueue, params.broadcastChannel);
+          case 9:
+            instance = new RxStorageKeyObjectInstanceLoki(storage, params.databaseName, params.collectionName, internals, params.options, databaseSettings);
             /**
              * Directly create the localState if the db becomes leader.
              */
 
-            if (params.broadcastChannel) {
-              leaderElector = (0, _leaderElection.getLeaderElectorByBroadcastChannel)(params.broadcastChannel);
-              leaderElector.awaitLeadership().then(function () {
+            if (params.multiInstance) {
+              (0, _util.ensureNotFalsy)(internals.leaderElector).awaitLeadership().then(function () {
                 return instance.mustUseLocalState();
               });
             }
 
             return _context9.abrupt("return", instance);
 
-          case 8:
+          case 12:
           case "end":
             return _context9.stop();
         }

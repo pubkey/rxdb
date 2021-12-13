@@ -2,7 +2,7 @@ import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { Subject } from 'rxjs';
 import { newRxError } from '../../rx-error';
-import { flatClone, getFromMapOrThrow, now, PROMISE_RESOLVE_VOID } from '../../util';
+import { flatClone, getFromMapOrThrow, now, PROMISE_RESOLVE_VOID, randomCouchString } from '../../util';
 import { getEventKey, OPEN_POUCHDB_STORAGE_INSTANCES, POUCHDB_LOCAL_PREFIX, pouchStripLocalFlagFromPrimary } from './pouchdb-helper';
 export var RxStorageKeyObjectInstancePouch = /*#__PURE__*/function () {
   function RxStorageKeyObjectInstancePouch(databaseName, collectionName, internals, options) {
@@ -50,9 +50,7 @@ export var RxStorageKeyObjectInstancePouch = /*#__PURE__*/function () {
 
   _proto.bulkWrite = /*#__PURE__*/function () {
     var _bulkWrite = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(documentWrites) {
-      var _this = this;
-
-      var writeRowById, insertDocs, startTime, pouchResult, endTime, ret;
+      var writeRowById, insertDocs, startTime, pouchResult, endTime, ret, eventBulk;
       return _regeneratorRuntime.wrap(function _callee2$(_context2) {
         while (1) {
           switch (_context2.prev = _context2.next) {
@@ -94,8 +92,12 @@ export var RxStorageKeyObjectInstancePouch = /*#__PURE__*/function () {
               pouchResult = _context2.sent;
               endTime = now();
               ret = {
-                success: new Map(),
-                error: new Map()
+                success: {},
+                error: {}
+              };
+              eventBulk = {
+                id: randomCouchString(10),
+                events: []
               };
               pouchResult.forEach(function (resultRow) {
                 resultRow.id = pouchStripLocalFlagFromPrimary(resultRow.id);
@@ -108,13 +110,13 @@ export var RxStorageKeyObjectInstancePouch = /*#__PURE__*/function () {
                     documentId: resultRow.id,
                     writeRow: writeRow
                   };
-                  ret.error.set(resultRow.id, err);
+                  ret.error[resultRow.id] = err;
                 } else {
                   var pushObj = flatClone(writeRow.document);
                   pushObj._rev = resultRow.rev; // local document cannot have attachments
 
                   pushObj._attachments = {};
-                  ret.success.set(resultRow.id, pushObj);
+                  ret.success[resultRow.id] = pushObj;
                   /**
                    * Emit a write event to the changestream.
                    * We do this here and not by observing the internal pouchdb changes
@@ -170,14 +172,14 @@ export var RxStorageKeyObjectInstancePouch = /*#__PURE__*/function () {
                       startTime: startTime,
                       endTime: endTime
                     };
-
-                    _this.changes$.next(storageChangeEvent);
+                    eventBulk.events.push(storageChangeEvent);
                   }
                 }
               });
+              this.changes$.next(eventBulk);
               return _context2.abrupt("return", ret);
 
-            case 12:
+            case 14:
             case "end":
               return _context2.stop();
           }
@@ -194,14 +196,14 @@ export var RxStorageKeyObjectInstancePouch = /*#__PURE__*/function () {
 
   _proto.findLocalDocumentsById = /*#__PURE__*/function () {
     var _findLocalDocumentsById = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4(ids) {
-      var _this2 = this;
+      var _this = this;
 
       var ret;
       return _regeneratorRuntime.wrap(function _callee4$(_context4) {
         while (1) {
           switch (_context4.prev = _context4.next) {
             case 0:
-              ret = new Map();
+              ret = {};
               /**
                * Pouchdb is not able to bulk-request local documents
                * with the pouch.allDocs() method.
@@ -220,12 +222,12 @@ export var RxStorageKeyObjectInstancePouch = /*#__PURE__*/function () {
                           prefixedId = POUCHDB_LOCAL_PREFIX + id;
                           _context3.prev = 1;
                           _context3.next = 4;
-                          return _this2.internals.pouch.get(prefixedId);
+                          return _this.internals.pouch.get(prefixedId);
 
                         case 4:
                           docData = _context3.sent;
                           docData._id = id;
-                          ret.set(id, docData);
+                          ret[id] = docData;
                           _context3.next = 11;
                           break;
 

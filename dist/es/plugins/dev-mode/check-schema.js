@@ -4,6 +4,7 @@
  */
 import objectPath from 'object-path';
 import { newRxError } from '../../rx-error';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import { getSchemaByObjectPath } from '../../rx-schema-helper';
 import { flattenObject, trimDots } from '../../util';
 import { rxDocumentProperties } from './entity-properties';
@@ -28,7 +29,13 @@ export function checkFieldNameRegex(fieldName) {
   var regexStr = '^[a-zA-Z](?:[[a-zA-Z0-9_]*]?[a-zA-Z0-9])?$';
   var regex = new RegExp(regexStr);
 
-  if (!fieldName.match(regex)) {
+  if (
+  /**
+   * It must be allowed to set _id as primaryKey.
+   * This makes it sometimes easier to work with RxDB+CouchDB
+   * @link https://github.com/pubkey/rxdb/issues/681
+   */
+  fieldName !== '_id' && !fieldName.match(regex)) {
     throw newRxError('SC1', {
       regex: regexStr,
       fieldName: fieldName
@@ -39,7 +46,9 @@ export function checkFieldNameRegex(fieldName) {
  * validate that all schema-related things are ok
  */
 
-export function validateFieldsDeep(jsonSchema) {
+export function validateFieldsDeep(rxJsonSchema) {
+  var primaryPath = getPrimaryFieldOfPrimaryKey(rxJsonSchema.primaryKey);
+
   function checkField(fieldName, schemaObj, path) {
     if (typeof fieldName === 'string' && typeof schemaObj === 'object' && !Array.isArray(schemaObj)) checkFieldNameRegex(fieldName); // 'item' only allowed it type=='array'
 
@@ -109,9 +118,17 @@ export function validateFieldsDeep(jsonSchema) {
 
 
     if (!isNested) {
-      // check underscore fields
+      // if _id is used, it must be primaryKey
+      if (fieldName === '_id' && primaryPath !== '_id') {
+        throw newRxError('COL2', {
+          fieldName: fieldName
+        });
+      } // check underscore fields
+
+
       if (fieldName.charAt(0) === '_') {
-        if (fieldName === '_deleted') {
+        if ( // exceptional allow underscore on these fields.
+        fieldName === '_id' || fieldName === '_deleted') {
           return;
         }
 
@@ -135,7 +152,7 @@ export function validateFieldsDeep(jsonSchema) {
     });
   }
 
-  traverse(jsonSchema, '');
+  traverse(rxJsonSchema, '');
   return true;
 }
 export function checkPrimaryKey(jsonSchema) {

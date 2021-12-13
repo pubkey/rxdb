@@ -18,6 +18,7 @@ var _exportNames = {
   _handleToStorageInstance: true,
   fillObjectDataBeforeInsert: true,
   isRxDocument: true,
+  flattenEvents: true,
   getDocumentOrmPrototype: true,
   getDocumentPrototype: true,
   isRxQuery: true,
@@ -128,6 +129,12 @@ Object.defineProperty(exports, "findLocalDocument", {
   enumerable: true,
   get: function get() {
     return _rxStorageHelper.findLocalDocument;
+  }
+});
+Object.defineProperty(exports, "flattenEvents", {
+  enumerable: true,
+  get: function get() {
+    return _rxChangeEvent.flattenEvents;
   }
 });
 Object.defineProperty(exports, "getAllDocuments", {
@@ -268,6 +275,8 @@ var _rxCollection = require("./rx-collection");
 var _rxCollectionHelper = require("./rx-collection-helper");
 
 var _rxDocument = require("./rx-document");
+
+var _rxChangeEvent = require("./rx-change-event");
 
 var _rxDocumentPrototypeMerge = require("./rx-document-prototype-merge");
 

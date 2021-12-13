@@ -217,7 +217,7 @@ function _getChangesSinceLastPushSequence() {
                           return;
                         }
 
-                        var changedDoc = docs.get(id);
+                        var changedDoc = docs[id];
 
                         if (!changedDoc) {
                           throw (0, _rxError.newRxError)('SNH', {

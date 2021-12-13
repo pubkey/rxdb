@@ -45,8 +45,6 @@ var _rxStorageHelper = require("../../rx-storage-helper");
 
 var _rxCollectionHelper = require("../../rx-collection-helper");
 
-var _customIdleQueue = require("custom-idle-queue");
-
 /**
  * The DataMigrator handles the documents from collections with older schemas
  * and transforms/saves them into the newest collection
@@ -118,7 +116,7 @@ var DataMigrator = /*#__PURE__*/function () {
         _this.nonMigratedOldCollections = ret;
         _this.allOldCollections = _this.nonMigratedOldCollections.slice(0);
         var countAll = Promise.all(_this.nonMigratedOldCollections.map(function (oldCol) {
-          return (0, _rxStorageHelper.countAllUndeleted)(oldCol.storageInstance);
+          return (0, _rxStorageHelper.countAllUndeleted)(_this.database.storage, oldCol.storageInstance);
         }));
         return countAll;
       }).then(function (countAll) {
@@ -241,8 +239,8 @@ function _createOldCollection() {
               databaseName: database.name,
               collectionName: dataMigrator.newestCollection.name,
               schema: schemaObj,
-              idleQueue: new _customIdleQueue.IdleQueue(),
-              options: dataMigrator.newestCollection.instanceCreationOptions
+              options: dataMigrator.newestCollection.instanceCreationOptions,
+              multiInstance: database.multiInstance
             };
             (0, _hooks.runPluginHooks)('preCreateRxStorageInstance', storageInstanceCreationParams);
             _context.next = 6;
@@ -373,7 +371,7 @@ function runStrategyIfNotNull(oldCollection, version, docOrNull) {
 }
 
 function getBatchOfOldCollection(oldCollection, batchSize) {
-  return (0, _rxStorageHelper.getBatch)(oldCollection.storageInstance, batchSize).then(function (docs) {
+  return (0, _rxStorageHelper.getBatch)(oldCollection.database.storage, oldCollection.storageInstance, batchSize).then(function (docs) {
     return docs.map(function (doc) {
       doc = (0, _util.flatClone)(doc);
       doc = (0, _rxCollectionHelper._handleFromStorageInstance)(oldCollection, doc);

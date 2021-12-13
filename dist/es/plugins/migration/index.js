@@ -1,6 +1,6 @@
 import { combineLatest } from 'rxjs';
 import { shareReplay, switchMap } from 'rxjs/operators';
-import { PROMISE_RESOLVE_FALSE } from '../../util';
+import { PROMISE_RESOLVE_FALSE, RXJS_SHARE_REPLAY_DEFAULTS } from '../../util';
 import { mustMigrate, DataMigrator } from './data-migrator';
 import { getMigrationStateByDatabase, onDatabaseDestroy } from './migration-state';
 export var DATA_MIGRATOR_BY_COLLECTION = new WeakMap();
@@ -15,10 +15,7 @@ export var RxDBMigrationPlugin = {
       proto.migrationStates = function () {
         return getMigrationStateByDatabase(this).pipe(switchMap(function (list) {
           return combineLatest(list);
-        }), shareReplay({
-          bufferSize: 1,
-          refCount: true
-        }));
+        }), shareReplay(RXJS_SHARE_REPLAY_DEFAULTS));
       };
     },
     RxCollection: function RxCollection(proto) {

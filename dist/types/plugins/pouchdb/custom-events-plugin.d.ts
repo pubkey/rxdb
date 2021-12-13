@@ -1,6 +1,6 @@
-import type { PouchBulkDocOptions, PouchBulkDocResultRow, PouchDBInstance, PouchWriteError } from '../../types';
+import type { EventBulk, PouchBulkDocOptions, PouchBulkDocResultRow, PouchDBInstance, PouchWriteError, RxDocumentData, RxStorageChangeEvent } from '../../types';
 import { Subject } from 'rxjs';
-import { ObliviousSet } from 'oblivious-set';
+import { ChangeEvent } from 'event-reduce-js';
 declare type EmitData = {
     emitId: number;
     writeOptions: PouchBulkDocOptions;
@@ -10,16 +10,12 @@ declare type EmitData = {
     startTime: number;
     endTime: number;
 };
-declare type Emitter = {
-    subject: Subject<EmitData>;
-    /**
-     * Contains all eventIds that of emitted events,
-     * used because multi-instance pouchdbs often will reemit the same
-     * event on the other browser tab.
-     */
-    obliviousSet: ObliviousSet<string>;
+declare type Emitter<RxDocType> = {
+    subject: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>>;
 };
-export declare const EVENT_EMITTER_BY_POUCH_INSTANCE: Map<string, Emitter>;
-export declare function getCustomEventEmitterByPouch(pouch: PouchDBInstance): Emitter;
+export declare const EVENT_EMITTER_BY_POUCH_INSTANCE: Map<string, Emitter<any>>;
+export declare function getCustomEventEmitterByPouch<RxDocType>(pouch: PouchDBInstance): Emitter<RxDocType>;
 export declare function addCustomEventsPluginToPouch(): void;
+export declare function eventEmitDataToStorageEvents<RxDocType>(primaryPath: string, emitData: EmitData): Promise<RxStorageChangeEvent<RxDocumentData<RxDocType>>[]>;
+export declare function changeEventToNormal<RxDocType>(primaryPath: string, change: ChangeEvent<RxDocumentData<RxDocType>>, startTime?: number, endTime?: number): RxStorageChangeEvent<RxDocumentData<RxDocType>>;
 export {};

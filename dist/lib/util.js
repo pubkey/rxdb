@@ -5,7 +5,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RXDB_HASH_SALT = exports.RANDOM_STRING = exports.PROMISE_RESOLVE_VOID = exports.PROMISE_RESOLVE_TRUE = exports.PROMISE_RESOLVE_NULL = exports.PROMISE_RESOLVE_FALSE = void 0;
+exports.RXJS_SHARE_REPLAY_DEFAULTS = exports.RXDB_HASH_SALT = exports.RANDOM_STRING = exports.PROMISE_RESOLVE_VOID = exports.PROMISE_RESOLVE_TRUE = exports.PROMISE_RESOLVE_NULL = exports.PROMISE_RESOLVE_FALSE = void 0;
 exports.adapterObject = adapterObject;
 exports.batchArray = batchArray;
 exports.clone = exports.blobBufferUtil = void 0;
@@ -13,9 +13,11 @@ exports.createRevision = createRevision;
 exports.ensureNotFalsy = ensureNotFalsy;
 exports.fastUnsecureHash = fastUnsecureHash;
 exports.firstPropertyNameOfObject = firstPropertyNameOfObject;
+exports.firstPropertyValueOfObject = firstPropertyValueOfObject;
 exports.flatClone = flatClone;
 exports.flattenObject = flattenObject;
 exports.getFromMapOrThrow = getFromMapOrThrow;
+exports.getFromObjectOrThrow = getFromObjectOrThrow;
 exports.getHeightOfRevision = getHeightOfRevision;
 exports.hash = hash;
 exports.isElectronRenderer = void 0;
@@ -32,6 +34,7 @@ exports.randomCouchString = randomCouchString;
 exports.removeOneFromArrayIfMatches = removeOneFromArrayIfMatches;
 exports.requestIdleCallbackIfAvailable = requestIdleCallbackIfAvailable;
 exports.requestIdlePromise = requestIdlePromise;
+exports.runXTimes = runXTimes;
 exports.shuffleArray = shuffleArray;
 exports.sortObject = sortObject;
 exports.stringifyFilter = stringifyFilter;
@@ -234,6 +237,12 @@ function trimDots(str) {
   return str;
 }
 
+function runXTimes(xTimes, fn) {
+  new Array(xTimes).fill(0).forEach(function (_v, idx) {
+    return fn(idx);
+  });
+}
+
 function ensureNotFalsy(obj) {
   if (!obj) {
     throw new Error('ensureNotFalsy() is falsy');
@@ -407,7 +416,12 @@ function flatClone(obj) {
 
 
 function firstPropertyNameOfObject(obj) {
-  return obj[Object.keys(obj)[0]];
+  return Object.keys(obj)[0];
+}
+
+function firstPropertyValueOfObject(obj) {
+  var key = Object.keys(obj)[0];
+  return obj[key];
 }
 
 var isElectronRenderer = (0, _isElectron["default"])();
@@ -506,6 +520,16 @@ function getFromMapOrThrow(map, key) {
   return val;
 }
 
+function getFromObjectOrThrow(obj, key) {
+  var val = obj[key];
+
+  if (!val) {
+    throw new Error('missing value from object ' + key);
+  }
+
+  return val;
+}
+
 var blobBufferUtil = {
   /**
    * depending if we are on node or browser,
@@ -573,4 +597,16 @@ var blobBufferUtil = {
   }
 };
 exports.blobBufferUtil = blobBufferUtil;
+
+/**
+ * Using shareReplay() without settings will not unsubscribe
+ * if there are no more subscribers.
+ * So we use these defaults.
+ * @link https://cartant.medium.com/rxjs-whats-changed-with-sharereplay-65c098843e95
+ */
+var RXJS_SHARE_REPLAY_DEFAULTS = {
+  bufferSize: 1,
+  refCount: true
+};
+exports.RXJS_SHARE_REPLAY_DEFAULTS = RXJS_SHARE_REPLAY_DEFAULTS;
 //# sourceMappingURL=util.js.map

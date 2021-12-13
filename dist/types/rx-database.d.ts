@@ -1,9 +1,10 @@
 import { IdleQueue } from 'custom-idle-queue';
 import { BroadcastChannel } from 'broadcast-channel';
 import type { LeaderElector } from 'broadcast-channel';
-import type { CollectionsOfDatabase, RxDatabase, RxCollectionCreator, RxJsonSchema, RxCollection, ServerOptions, RxDumpDatabase, RxDumpDatabaseAny, AllMigrationStates, ServerResponse, BackupOptions, RxStorage, RxStorageKeyObjectInstance, RxStorageInstance, RxChangeEvent, RxDatabaseCreator } from './types';
+import type { CollectionsOfDatabase, RxDatabase, RxCollectionCreator, RxJsonSchema, RxCollection, ServerOptions, RxDumpDatabase, RxDumpDatabaseAny, AllMigrationStates, ServerResponse, BackupOptions, RxStorage, RxStorageKeyObjectInstance, RxStorageInstance, RxChangeEvent, RxDatabaseCreator, RxChangeEventBulk } from './types';
 import { Subject, Subscription, Observable } from 'rxjs';
 import type { RxBackupState } from './plugins/backup';
+import { ObliviousSet } from 'oblivious-set';
 export declare type InternalStoreDocumentData = {
     collectionName: string;
     schema: RxJsonSchema<any>;
@@ -28,10 +29,13 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
      */
     readonly localDocumentsStore: RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>;
     /**
-     * If multiInstance: true
-     * we need the broadcast channel for the database.
+     * Set if multiInstance: true
+     * This broadcast channel is used to send events to other instances like
+     * other browser tabs or nodejs processes.
+     * We transfer everything in EventBulks because sending many small events has been shown
+     * to be performance expensive.
      */
-    readonly broadcastChannel?: BroadcastChannel<any> | undefined;
+    readonly broadcastChannel?: BroadcastChannel<RxChangeEventBulk<any>> | undefined;
     constructor(name: string, storage: RxStorage<Internals, InstanceCreationOptions>, instanceCreationOptions: InstanceCreationOptions, password: any, multiInstance: boolean, eventReduce: boolean, options: any, idleQueue: IdleQueue, 
     /**
      * Stores information documents about the collections of the database
@@ -42,19 +46,33 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
      */
     localDocumentsStore: RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>, 
     /**
-     * If multiInstance: true
-     * we need the broadcast channel for the database.
+     * Set if multiInstance: true
+     * This broadcast channel is used to send events to other instances like
+     * other browser tabs or nodejs processes.
+     * We transfer everything in EventBulks because sending many small events has been shown
+     * to be performance expensive.
      */
-    broadcastChannel?: BroadcastChannel<any> | undefined);
+    broadcastChannel?: BroadcastChannel<RxChangeEventBulk<any>> | undefined);
     get $(): Observable<RxChangeEvent<any>>;
     readonly token: string;
     _subs: Subscription[];
     destroyed: boolean;
     collections: Collections;
-    private subject;
+    readonly eventBulks$: Subject<RxChangeEventBulk>;
     private observable$;
+    /**
+     * Unique token that is stored with the data.
+     * Used to detect if the dataset has been deleted
+     * and if two RxDatabase instances work on the same dataset or not.
+     */
     storageToken?: string;
-    broadcastChannel$: Subject<RxChangeEvent>;
+    /**
+     * Contains the ids of all event bulks that have been emitted
+     * by the database.
+     * Used to detect duplicates that come in again via BroadcastChannel
+     * or other streams.
+     */
+    emittedEventBulkIds: ObliviousSet<string>;
     /**
      * removes all internal collection-info
      * only use this if you have to upgrade from a major rxdb-version
@@ -68,7 +86,7 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
      * ChangeEvents created by other instances go:
      * MultiInstance -> RxDatabase.$emit -> RxCollection -> RxDatabase
      */
-    $emit(changeEvent: RxChangeEvent): void;
+    $emit(changeEventBulk: RxChangeEventBulk): void;
     /**
      * removes the collection-doc from the internalStore
      */
@@ -137,7 +155,7 @@ export declare function _ensureStorageTokenExists<Collections = any>(rxDatabase:
 /**
  * writes the changeEvent to the broadcastChannel
  */
-export declare function writeToSocket(rxDatabase: RxDatabase, changeEvent: RxChangeEvent): Promise<boolean>;
+export declare function writeToSocket(rxDatabase: RxDatabase, changeEventBulk: RxChangeEventBulk): Promise<boolean>;
 /**
  * returns the primary for a given collection-data
  * used in the internal pouchdb-instances

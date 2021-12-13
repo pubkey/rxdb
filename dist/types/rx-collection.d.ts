@@ -69,6 +69,7 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     private _onDestroyCall?;
     prepare(
     /**
+     * TODO is this still needed?
      * set to true if the collection data already exists on this storage adapter
      */
     wasCreatedBefore: boolean): Promise<void>;
@@ -80,7 +81,6 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
      * wrapps the query function of the storage instance.
      */
     _queryStorageInstance(rxQuery: RxQuery | RxQueryBase, limit?: number, noDecrypt?: boolean): Promise<any[]>;
-    $emit(changeEvent: RxChangeEvent<any>): void;
     /**
      * TODO internally call bulkInsert
      * to not have duplicated code.

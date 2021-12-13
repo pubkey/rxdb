@@ -12,10 +12,10 @@ import _regeneratorRuntime from "@babel/runtime/regenerator";
  */
 import PouchDBCore from 'pouchdb-core';
 import { Subject } from 'rxjs';
-import { flatClone, now } from '../../util';
+import { flatClone, getFromMapOrThrow, getHeightOfRevision, now, randomCouchString } from '../../util';
 import { newRxError } from '../../rx-error';
-import { ObliviousSet } from 'oblivious-set'; // ensure only added once
-
+import { getEventKey, pouchChangeRowToChangeEvent, POUCHDB_DESIGN_PREFIX, POUCHDB_LOCAL_PREFIX, pouchDocumentDataToRxDocumentData, writeAttachmentsToAttachments } from './pouchdb-helper';
+// ensure only added once
 var addedToPouch = false;
 export var EVENT_EMITTER_BY_POUCH_INSTANCE = new Map();
 export function getCustomEventEmitterByPouch(pouch) {
@@ -24,8 +24,7 @@ export function getCustomEventEmitterByPouch(pouch) {
 
   if (!emitter) {
     emitter = {
-      subject: new Subject(),
-      obliviousSet: new ObliviousSet(60 * 1000)
+      subject: new Subject()
     };
     EVENT_EMITTER_BY_POUCH_INSTANCE.set(key, emitter);
   }
@@ -42,13 +41,13 @@ export function addCustomEventsPluginToPouch() {
   var oldBulkDocs = PouchDBCore.prototype.bulkDocs;
 
   var newBulkDocs = /*#__PURE__*/function () {
-    var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(body, options, callback) {
+    var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3(body, options, callback) {
       var _this = this;
 
       var startTime, t, docs, previousDocs, ids, viaChanges, previousDocsResult, deeperOptions;
-      return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+      return _regeneratorRuntime.wrap(function _callee3$(_context3) {
         while (1) {
-          switch (_context2.prev = _context2.next) {
+          switch (_context3.prev = _context3.next) {
             case 0:
               startTime = now();
               t = i++; // normalize input
@@ -75,7 +74,7 @@ export function addCustomEventsPluginToPouch() {
               }
 
               if (!(docs.length === 0)) {
-                _context2.next = 7;
+                _context3.next = 7;
                 break;
               }
 
@@ -95,7 +94,7 @@ export function addCustomEventsPluginToPouch() {
               previousDocs = new Map();
 
               if (!(options.hasOwnProperty('new_edits') && options.new_edits === false)) {
-                _context2.next = 18;
+                _context3.next = 18;
                 break;
               }
 
@@ -108,7 +107,7 @@ export function addCustomEventsPluginToPouch() {
                * changes.
                */
 
-              _context2.next = 12;
+              _context3.next = 12;
               return this.changes({
                 live: false,
                 since: 0,
@@ -117,8 +116,8 @@ export function addCustomEventsPluginToPouch() {
               });
 
             case 12:
-              viaChanges = _context2.sent;
-              _context2.next = 15;
+              viaChanges = _context3.sent;
+              _context3.next = 15;
               return Promise.all(viaChanges.results.map( /*#__PURE__*/function () {
                 var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(result) {
                   var firstDoc;
@@ -152,7 +151,7 @@ export function addCustomEventsPluginToPouch() {
               }()));
 
             case 15:
-              previousDocsResult = _context2.sent;
+              previousDocsResult = _context3.sent;
               previousDocsResult.forEach(function (doc) {
                 return previousDocs.set(doc._id, doc);
               });
@@ -167,6 +166,13 @@ export function addCustomEventsPluginToPouch() {
 
                     var revHeight = parseInt(splittedRev[0], 10);
                     var revLabel = splittedRev[1];
+
+                    if (!previous._revisions) {
+                      previous._revisions = {
+                        ids: []
+                      };
+                    }
+
                     doc._revisions = {
                       start: revHeight,
                       ids: previous._revisions.ids
@@ -187,7 +193,7 @@ export function addCustomEventsPluginToPouch() {
                */
               deeperOptions = flatClone(options);
               deeperOptions.isDeeper = true;
-              return _context2.abrupt("return", oldBulkDocs.call(this, docs, deeperOptions, function (err, result) {
+              return _context3.abrupt("return", oldBulkDocs.call(this, docs, deeperOptions, function (err, result) {
                 if (err) {
                   if (callback) {
                     callback(err);
@@ -195,35 +201,68 @@ export function addCustomEventsPluginToPouch() {
                     throw err;
                   }
                 } else {
-                  if (!options.isDeeper) {
-                    var endTime = now();
-                    var emitData = {
-                      emitId: t,
-                      writeDocs: docs,
-                      writeOptions: options,
-                      writeResult: result,
-                      previousDocs: previousDocs,
-                      startTime: startTime,
-                      endTime: endTime
-                    };
-                    var emitter = getCustomEventEmitterByPouch(_this);
-                    emitter.subject.next(emitData);
-                  }
+                  return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2() {
+                    var endTime, emitData, events, eventBulk, emitter;
+                    return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+                      while (1) {
+                        switch (_context2.prev = _context2.next) {
+                          case 0:
+                            if (options.isDeeper) {
+                              _context2.next = 9;
+                              break;
+                            }
 
-                  if (callback) {
-                    callback(null, result);
-                  } else {
-                    return result;
-                  }
+                            endTime = now();
+                            emitData = {
+                              emitId: t,
+                              writeDocs: docs,
+                              writeOptions: options,
+                              writeResult: result,
+                              previousDocs: previousDocs,
+                              startTime: startTime,
+                              endTime: endTime
+                            };
+                            _context2.next = 5;
+                            return eventEmitDataToStorageEvents('_id', emitData);
+
+                          case 5:
+                            events = _context2.sent;
+                            eventBulk = {
+                              id: randomCouchString(10),
+                              events: events
+                            };
+                            emitter = getCustomEventEmitterByPouch(_this);
+                            emitter.subject.next(eventBulk);
+
+                          case 9:
+                            if (!callback) {
+                              _context2.next = 13;
+                              break;
+                            }
+
+                            callback(null, result);
+                            _context2.next = 14;
+                            break;
+
+                          case 13:
+                            return _context2.abrupt("return", result);
+
+                          case 14:
+                          case "end":
+                            return _context2.stop();
+                        }
+                      }
+                    }, _callee2);
+                  }))();
                 }
               }));
 
             case 21:
             case "end":
-              return _context2.stop();
+              return _context3.stop();
           }
         }
-      }, _callee2, this);
+      }, _callee3, this);
     }));
 
     return function newBulkDocs(_x, _x2, _x3) {
@@ -234,5 +273,329 @@ export function addCustomEventsPluginToPouch() {
   PouchDBCore.plugin({
     bulkDocs: newBulkDocs
   });
+}
+export function eventEmitDataToStorageEvents(_x5, _x6) {
+  return _eventEmitDataToStorageEvents.apply(this, arguments);
+}
+
+function _eventEmitDataToStorageEvents() {
+  _eventEmitDataToStorageEvents = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee7(primaryPath, emitData) {
+    var ret, writeDocsById, writeMap;
+    return _regeneratorRuntime.wrap(function _callee7$(_context7) {
+      while (1) {
+        switch (_context7.prev = _context7.next) {
+          case 0:
+            ret = [];
+
+            if (!(emitData.writeOptions.hasOwnProperty('new_edits') && !emitData.writeOptions.new_edits)) {
+              _context7.next = 6;
+              break;
+            }
+
+            _context7.next = 4;
+            return Promise.all(emitData.writeDocs.map( /*#__PURE__*/function () {
+              var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4(writeDoc) {
+                var id, previousDoc, event, changeEvent;
+                return _regeneratorRuntime.wrap(function _callee4$(_context4) {
+                  while (1) {
+                    switch (_context4.prev = _context4.next) {
+                      case 0:
+                        id = writeDoc._id;
+                        writeDoc = pouchDocumentDataToRxDocumentData(primaryPath, writeDoc);
+                        _context4.next = 4;
+                        return writeAttachmentsToAttachments(writeDoc._attachments);
+
+                      case 4:
+                        writeDoc._attachments = _context4.sent;
+                        previousDoc = emitData.previousDocs.get(id);
+
+                        if (previousDoc) {
+                          previousDoc = pouchDocumentDataToRxDocumentData(primaryPath, previousDoc);
+                        }
+
+                        if (!(previousDoc && getHeightOfRevision(previousDoc._rev) > getHeightOfRevision(writeDoc._rev))) {
+                          _context4.next = 9;
+                          break;
+                        }
+
+                        return _context4.abrupt("return");
+
+                      case 9:
+                        if (!(!previousDoc && writeDoc._deleted)) {
+                          _context4.next = 11;
+                          break;
+                        }
+
+                        return _context4.abrupt("return");
+
+                      case 11:
+                        if (!(previousDoc && previousDoc._deleted && writeDoc._deleted)) {
+                          _context4.next = 13;
+                          break;
+                        }
+
+                        return _context4.abrupt("return");
+
+                      case 13:
+                        if (!((!previousDoc || previousDoc._deleted) && !writeDoc._deleted)) {
+                          _context4.next = 17;
+                          break;
+                        }
+
+                        // was insert
+                        event = {
+                          operation: 'INSERT',
+                          doc: writeDoc,
+                          id: id,
+                          previous: null
+                        };
+                        _context4.next = 27;
+                        break;
+
+                      case 17:
+                        if (!(writeDoc._deleted && previousDoc && !previousDoc._deleted)) {
+                          _context4.next = 22;
+                          break;
+                        }
+
+                        // was delete
+                        previousDoc._rev = writeDoc._rev;
+                        event = {
+                          operation: 'DELETE',
+                          doc: null,
+                          id: id,
+                          previous: previousDoc
+                        };
+                        _context4.next = 27;
+                        break;
+
+                      case 22:
+                        if (!previousDoc) {
+                          _context4.next = 26;
+                          break;
+                        }
+
+                        // was update
+                        event = {
+                          operation: 'UPDATE',
+                          doc: writeDoc,
+                          id: id,
+                          previous: previousDoc
+                        };
+                        _context4.next = 27;
+                        break;
+
+                      case 26:
+                        throw newRxError('SNH', {
+                          args: {
+                            writeDoc: writeDoc
+                          }
+                        });
+
+                      case 27:
+                        changeEvent = changeEventToNormal(primaryPath, event, emitData.startTime, emitData.endTime);
+                        ret.push(changeEvent);
+
+                      case 29:
+                      case "end":
+                        return _context4.stop();
+                    }
+                  }
+                }, _callee4);
+              }));
+
+              return function (_x7) {
+                return _ref4.apply(this, arguments);
+              };
+            }()));
+
+          case 4:
+            _context7.next = 16;
+            break;
+
+          case 6:
+            if (!(!emitData.writeOptions.custom || emitData.writeOptions.custom && !emitData.writeOptions.custom.writeRowById)) {
+              _context7.next = 13;
+              break;
+            }
+
+            writeDocsById = new Map();
+            emitData.writeDocs.forEach(function (writeDoc) {
+              return writeDocsById.set(writeDoc._id, writeDoc);
+            });
+            _context7.next = 11;
+            return Promise.all(emitData.writeResult.map( /*#__PURE__*/function () {
+              var _ref5 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee5(resultRow) {
+                var id, writeDoc, event, changeEvent;
+                return _regeneratorRuntime.wrap(function _callee5$(_context5) {
+                  while (1) {
+                    switch (_context5.prev = _context5.next) {
+                      case 0:
+                        id = resultRow.id;
+
+                        if (!(id.startsWith(POUCHDB_DESIGN_PREFIX) || id.startsWith(POUCHDB_LOCAL_PREFIX))) {
+                          _context5.next = 3;
+                          break;
+                        }
+
+                        return _context5.abrupt("return");
+
+                      case 3:
+                        writeDoc = getFromMapOrThrow(writeDocsById, resultRow.id);
+                        writeDoc = pouchDocumentDataToRxDocumentData(primaryPath, writeDoc);
+                        _context5.next = 7;
+                        return writeAttachmentsToAttachments(writeDoc._attachments);
+
+                      case 7:
+                        writeDoc._attachments = _context5.sent;
+                        writeDoc = flatClone(writeDoc);
+                        writeDoc._rev = resultRow.rev;
+                        event = pouchChangeRowToChangeEvent(primaryPath, writeDoc);
+                        changeEvent = changeEventToNormal(primaryPath, event);
+                        ret.push(changeEvent);
+
+                      case 13:
+                      case "end":
+                        return _context5.stop();
+                    }
+                  }
+                }, _callee5);
+              }));
+
+              return function (_x8) {
+                return _ref5.apply(this, arguments);
+              };
+            }()));
+
+          case 11:
+            _context7.next = 16;
+            break;
+
+          case 13:
+            writeMap = emitData.writeOptions.custom.writeRowById;
+            _context7.next = 16;
+            return Promise.all(emitData.writeResult.map( /*#__PURE__*/function () {
+              var _ref6 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee6(resultRow) {
+                var id, writeRow, newDoc, event, previousDoc, changeEvent;
+                return _regeneratorRuntime.wrap(function _callee6$(_context6) {
+                  while (1) {
+                    switch (_context6.prev = _context6.next) {
+                      case 0:
+                        if (!resultRow.error) {
+                          _context6.next = 2;
+                          break;
+                        }
+
+                        return _context6.abrupt("return");
+
+                      case 2:
+                        id = resultRow.id;
+                        writeRow = getFromMapOrThrow(writeMap, id);
+                        newDoc = pouchDocumentDataToRxDocumentData(primaryPath, writeRow.document);
+                        _context6.next = 7;
+                        return writeAttachmentsToAttachments(newDoc._attachments);
+
+                      case 7:
+                        newDoc._attachments = _context6.sent;
+                        newDoc._rev = resultRow.rev;
+
+                        if (!(!writeRow.previous || writeRow.previous._deleted)) {
+                          _context6.next = 13;
+                          break;
+                        }
+
+                        // was insert
+                        event = {
+                          operation: 'INSERT',
+                          doc: newDoc,
+                          id: id,
+                          previous: null
+                        };
+                        _context6.next = 23;
+                        break;
+
+                      case 13:
+                        if (!writeRow.document._deleted) {
+                          _context6.next = 22;
+                          break;
+                        }
+
+                        // was delete
+                        // we need to add the new revision to the previous doc
+                        // so that the eventkey is calculated correctly.
+                        // Is this a hack? idk.
+                        previousDoc = pouchDocumentDataToRxDocumentData(primaryPath, writeRow.previous);
+                        _context6.next = 17;
+                        return writeAttachmentsToAttachments(previousDoc._attachments);
+
+                      case 17:
+                        previousDoc._attachments = _context6.sent;
+                        previousDoc._rev = resultRow.rev;
+                        event = {
+                          operation: 'DELETE',
+                          doc: null,
+                          id: resultRow.id,
+                          previous: previousDoc
+                        };
+                        _context6.next = 23;
+                        break;
+
+                      case 22:
+                        // was update
+                        event = {
+                          operation: 'UPDATE',
+                          doc: newDoc,
+                          id: resultRow.id,
+                          previous: writeRow.previous
+                        };
+
+                      case 23:
+                        if (writeRow.document._deleted && (!writeRow.previous || writeRow.previous._deleted)) {
+                          /**
+                           * A deleted document was newly added to the storage engine,
+                           * do not emit an event.
+                           */
+                        } else {
+                          changeEvent = changeEventToNormal(emitData.writeOptions.custom.primaryPath, event, emitData.startTime, emitData.endTime);
+                          ret.push(changeEvent);
+                        }
+
+                      case 24:
+                      case "end":
+                        return _context6.stop();
+                    }
+                  }
+                }, _callee6);
+              }));
+
+              return function (_x9) {
+                return _ref6.apply(this, arguments);
+              };
+            }()));
+
+          case 16:
+            return _context7.abrupt("return", ret);
+
+          case 17:
+          case "end":
+            return _context7.stop();
+        }
+      }
+    }, _callee7);
+  }));
+  return _eventEmitDataToStorageEvents.apply(this, arguments);
+}
+
+export function changeEventToNormal(primaryPath, change, startTime, endTime) {
+  var doc = change.operation === 'DELETE' ? change.previous : change.doc;
+  var primary = doc[primaryPath];
+  var storageChangeEvent = {
+    eventId: getEventKey(false, primary, doc._rev),
+    documentId: primary,
+    change: change,
+    startTime: startTime,
+    endTime: endTime
+  };
+  return storageChangeEvent;
 }
 //# sourceMappingURL=custom-events-plugin.js.map

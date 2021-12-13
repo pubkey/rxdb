@@ -233,7 +233,7 @@ function _getChangesSinceLastPushSequence() {
                     case 9:
                       plainDocs = _context3.sent;
                       docs = new Map();
-                      Array.from(plainDocs.entries()).map(function (_ref) {
+                      Object.entries(plainDocs).forEach(function (_ref) {
                         var docId = _ref[0],
                             docData = _ref[1];
                         var hookParams = {

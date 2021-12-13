@@ -49,6 +49,7 @@ export declare function ucfirst(str: string): string;
  * removes trailing and ending dots from the string
  */
 export declare function trimDots(str: string): string;
+export declare function runXTimes(xTimes: number, fn: (idx: number) => void): void;
 export declare function ensureNotFalsy<T>(obj: T | false | undefined | null): T;
 /**
  * deep-sort an object so its attributes are in lexical order.
@@ -99,6 +100,9 @@ export declare function flatClone<T>(obj: T | DeepReadonlyObject<T>): T;
  * @link https://stackoverflow.com/a/11509718/3443137
  */
 export declare function firstPropertyNameOfObject(obj: any): string;
+export declare function firstPropertyValueOfObject<T>(obj: {
+    [k: string]: T;
+}): T;
 export declare const isElectronRenderer: boolean;
 /**
  * returns a flattened object
@@ -128,6 +132,9 @@ export declare function overwriteGetterForCaching<ValueType = any>(obj: any, get
  */
 export declare function isFolderPath(name: string): boolean;
 export declare function getFromMapOrThrow<K, V>(map: Map<K, V> | WeakMap<any, V>, key: K): V;
+export declare function getFromObjectOrThrow<V>(obj: {
+    [k: string]: V;
+}, key: string): V;
 export declare const blobBufferUtil: {
     /**
      * depending if we are on node or browser,
@@ -137,4 +144,12 @@ export declare const blobBufferUtil: {
     isBlobBuffer(data: any): boolean;
     toString(blobBuffer: BlobBuffer): Promise<string>;
 };
+import type { ShareReplayConfig } from 'rxjs/internal/operators/shareReplay';
+/**
+ * Using shareReplay() without settings will not unsubscribe
+ * if there are no more subscribers.
+ * So we use these defaults.
+ * @link https://cartant.medium.com/rxjs-whats-changed-with-sharereplay-65c098843e95
+ */
+export declare const RXJS_SHARE_REPLAY_DEFAULTS: ShareReplayConfig;
 export {};

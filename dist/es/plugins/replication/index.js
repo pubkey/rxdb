@@ -459,7 +459,7 @@ export var RxReplicationStateBase = /*#__PURE__*/function () {
                 originalDoc = _step.value;
                 doc = flatClone(originalDoc);
                 documentId = doc[this.collection.schema.primaryPath];
-                docStateInLocalStorageInstance = docsFromLocal.get(documentId);
+                docStateInLocalStorageInstance = docsFromLocal[documentId];
                 newRevision = createRevisionForPulledDocument(this.replicationIdentifier, doc);
 
                 if (docStateInLocalStorageInstance) {

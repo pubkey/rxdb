@@ -286,8 +286,10 @@ function normalize(jsonSchema) {
 
   if (jsonSchema.indexes) {
     normalizedSchema.indexes = Array.from(jsonSchema.indexes); // indexes should remain unsorted
-  }
+  } // primary key must be unsorted
 
+
+  normalizedSchema.primaryKey = jsonSchema.primaryKey;
   return normalizedSchema;
 }
 /**

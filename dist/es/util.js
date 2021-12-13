@@ -171,6 +171,11 @@ export function trimDots(str) {
 
   return str;
 }
+export function runXTimes(xTimes, fn) {
+  new Array(xTimes).fill(0).forEach(function (_v, idx) {
+    return fn(idx);
+  });
+}
 export function ensureNotFalsy(obj) {
   if (!obj) {
     throw new Error('ensureNotFalsy() is falsy');
@@ -331,7 +336,11 @@ export function flatClone(obj) {
  */
 
 export function firstPropertyNameOfObject(obj) {
-  return obj[Object.keys(obj)[0]];
+  return Object.keys(obj)[0];
+}
+export function firstPropertyValueOfObject(obj) {
+  var key = Object.keys(obj)[0];
+  return obj[key];
 }
 import isElectron from 'is-electron';
 export var isElectronRenderer = isElectron();
@@ -421,6 +430,15 @@ export function getFromMapOrThrow(map, key) {
 
   return val;
 }
+export function getFromObjectOrThrow(obj, key) {
+  var val = obj[key];
+
+  if (!val) {
+    throw new Error('missing value from object ' + key);
+  }
+
+  return val;
+}
 export var blobBufferUtil = {
   /**
    * depending if we are on node or browser,
@@ -486,5 +504,16 @@ export var blobBufferUtil = {
       reader.readAsText(blobBuffer);
     });
   }
+};
+
+/**
+ * Using shareReplay() without settings will not unsubscribe
+ * if there are no more subscribers.
+ * So we use these defaults.
+ * @link https://cartant.medium.com/rxjs-whats-changed-with-sharereplay-65c098843e95
+ */
+export var RXJS_SHARE_REPLAY_DEFAULTS = {
+  bufferSize: 1,
+  refCount: true
 };
 //# sourceMappingURL=util.js.map

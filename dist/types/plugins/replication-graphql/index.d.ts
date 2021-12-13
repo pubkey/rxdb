@@ -23,10 +23,6 @@ export declare class RxGraphQLReplicationState<RxDocType> {
     endpointHash: string;
     _subjects: {
         received: Subject<unknown>;
-        /**
-         * @deprecated use received instead because it is spelled correctly
-         */
-        recieved: Subject<unknown>;
         send: Subject<unknown>;
         error: Subject<unknown>;
         canceled: BehaviorSubject<boolean>;
@@ -39,10 +35,6 @@ export declare class RxGraphQLReplicationState<RxDocType> {
     _runCount: number;
     initialReplicationComplete$: Observable<any>;
     received$: Observable<RxDocumentData<RxDocType>>;
-    /**
-     * @deprecated use received instead because it is spelled correctly
-     */
-    recieved$: Observable<RxDocumentData<RxDocType>>;
     send$: Observable<any>;
     error$: Observable<any>;
     canceled$: Observable<any>;
