@@ -17,7 +17,9 @@ import type {
     RxAttachmentData,
     RxDocumentData,
     RxAttachmentCreator,
-    RxAttachmentWriteData
+    RxAttachmentWriteData,
+    RxStorageStatics,
+    RxAttachmentDataMeta
 } from '../types';
 import type { RxSchema } from '../rx-schema';
 import { writeSingle } from '../rx-storage-helper';
@@ -174,7 +176,14 @@ export async function putAttachment(
 
             const docWriteData: RxDocumentWriteData<{}> = flatClone(this._data);
             docWriteData._attachments = flatClone(docWriteData._attachments);
+
+            const meta = await getAttachmentDataMeta(
+                this.collection.database.storage.statics,
+                data
+            );
             docWriteData._attachments[id] = {
+                digest: meta.digest,
+                length: meta.length,
                 type,
                 data: data
             };
@@ -274,7 +283,13 @@ export async function preMigrateDocument<RxDocType>(
                         ));
                 }
 
+                const meta = await getAttachmentDataMeta(
+                    data.oldCollection.database.storage.statics,
+                    rawAttachmentData
+                );
                 newAttachments[attachmentId] = {
+                    digest: meta.digest,
+                    length: meta.length,
                     type: attachment.type,
                     data: rawAttachmentData
                 };
@@ -295,6 +310,18 @@ export async function postMigrateDocument(_action: any): Promise<void> {
      * we store the attachemnts data buffers directly in the document.
      */
     return;
+}
+
+export async function getAttachmentDataMeta(
+    storageStatics: RxStorageStatics,
+    data: BlobBuffer
+): Promise<RxAttachmentDataMeta> {
+    const hash = await storageStatics.hash(data);
+    const length = blobBufferUtil.size(data);
+    return {
+        digest: hash,
+        length
+    }
 }
 
 export const rxdb = true;

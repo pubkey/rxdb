@@ -505,7 +505,7 @@ export const blobBufferUtil = {
                 .then(() => blobBuffer.toString());
         }
         return new Promise(res => {
-            // browsers
+            // browser
             const reader = new FileReader();
             reader.addEventListener('loadend', e => {
                 const text = (e.target as any).result;
@@ -525,6 +525,15 @@ export const blobBufferUtil = {
 
             reader.readAsText(blobBuffer as any);
         });
+    },
+    size(blobBuffer: BlobBuffer): number {
+        if (typeof Buffer !== 'undefined' && blobBuffer instanceof Buffer) {
+            // node
+            return Buffer.byteLength(blobBuffer);
+        } else {
+            // browser
+            return (blobBuffer as Blob).size;
+        }
     }
 };
 

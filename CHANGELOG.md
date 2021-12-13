@@ -9,6 +9,7 @@ BREAKING:
     - Replaced all `Map` with plain json objects so that they can be `JSON.stringify`-ed
     - Replaced typings of event stream to use `EventBulk` and process events in bulks to save performance.
     - Move all static methods into the `statics` property so we can code-split when using the worker plugin.
+    - `digest` and `length` of attachment data is now created by RxDB, not by the RxStorage. [#3548](https://github.com/pubkey/rxdb/issues/3548)
   - Internally all events are handles via bulks, this saves performance when events are transfered over a WebWorker or a BroadcastChannel.
   - Removed the deprecated `recieved` methods, use `received` instead. [See #3392](https://github.com/pubkey/rxdb/pull/3392)
 

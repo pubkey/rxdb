@@ -2,11 +2,6 @@ import type { ChangeEvent } from 'event-reduce-js';
 import { BlobBuffer } from './pouch';
 import { MangoQuery } from './rx-query';
 import { RxJsonSchema } from './rx-schema';
-import type {
-    BroadcastChannel
-} from 'broadcast-channel';
-import type { IdleQueue } from 'custom-idle-queue';
-
 
 /**
  * The document data how it comes out of the storage instance.
@@ -110,37 +105,43 @@ export type BulkWriteLocalRow<DocumentData> = {
 }
 
 /**
- * Data which is needed for new attachments
+ * Meta data of the attachment.
+ * Created by RxDB, not by the RxStorage.
  */
-export type RxAttachmentWriteData = {
+export type RxAttachmentDataMeta = {
+    /**
+     * The digest which is the output of the hash function
+     * from storage.statics.hash(attachment.data)
+     */
+     digest: string;
+     /**
+      * Size of the attachments data
+      */
+     length: number;
+};
+
+/**
+ * Meta data of the attachment
+ * how it is send to, or comes out of the RxStorage implementation.
+ */
+export type RxAttachmentData = RxAttachmentDataMeta & {
     /**
      * Content type like 'plain/text'
      */
     type: string;
+}
+
+/**
+ * Data which is needed for new attachments
+ * that are send from RxDB to the RxStorage implementation.
+ */
+export type RxAttachmentWriteData = RxAttachmentData & {
     /**
      * The data of the attachment.
      */
     data: BlobBuffer;
 }
 
-/**
- * Meta data of the attachment how it comes out of the storage engine.
- */
-export type RxAttachmentData = {
-    /**
-     * Content type like 'plain/text'
-     */
-    type: string;
-    /**
-     * The digest which is the output of the hash function
-     * from storage.hash(attachment.data)
-     */
-    digest: string;
-    /**
-     * Size of the attachments data
-     */
-    length: number;
-}
 
 export type RxLocalDocumentData<
     Data = {

@@ -187,7 +187,7 @@ export function pouchChangeRowToChangeEvent<DocumentData>(
         primaryKey,
         pouchDoc as any
     );
-    const revHeight = getHeightOfRevision(doc._rev);
+    const revHeight = doc._rev ? getHeightOfRevision(doc._rev) : 1;
 
     if (pouchDoc._deleted) {
         return {
