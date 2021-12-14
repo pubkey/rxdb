@@ -287,8 +287,13 @@ export function normalize<T>(jsonSchema: RxJsonSchema<T>): RxJsonSchema<T> {
     if (jsonSchema.indexes) {
         normalizedSchema.indexes = Array.from(jsonSchema.indexes); // indexes should remain unsorted
     }
-    // primary key must be unsorted
-    normalizedSchema.primaryKey = jsonSchema.primaryKey;
+    // primaryKey.fields must NOT be sorted
+    if (
+        typeof normalizedSchema.primaryKey === 'object' &&
+        typeof jsonSchema.primaryKey === 'object'
+    ) {
+        normalizedSchema.primaryKey.fields = jsonSchema.primaryKey.fields;
+    }
 
     return normalizedSchema;
 }
