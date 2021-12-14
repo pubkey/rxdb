@@ -16,7 +16,7 @@ BREAKING:
 Bugfixes:
   - Do not throw an error when database is destroyed while a GraphQL replication is running.
   - Compound primary key migration throws "Value of primary key(s) cannot be changed" [#3546](https://github.com/pubkey/rxdb/pull/3546) Thanks [@nothingkid](https://github.com/nothingkid)
-  - Allowd `_id` as primaryKey [#3562](https://github.com/pubkey/rxdb/pull/3562) Thanks [@SuperKirik](https://github.com/SuperKirik)
+  - Allow `_id` as primaryKey [#3562](https://github.com/pubkey/rxdb/pull/3562) Thanks [@SuperKirik](https://github.com/SuperKirik)
 
 ### 10.5.4 (30 November 2021)
 
