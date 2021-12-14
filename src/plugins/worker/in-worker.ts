@@ -75,7 +75,9 @@ export type InWorkerStorage = {
 }
 
 export function wrappedRxStorage<T, D>(
-    rxStorage: RxStorage<T, D>
+    args: {
+        storage: RxStorage<T, D>
+    }
 ) {
     let nextId = 0;
     const instanceById: Map<number, any> = new Map();
@@ -86,7 +88,7 @@ export function wrappedRxStorage<T, D>(
          */
         async createStorageInstance(params) {
             const instanceId = nextId++;
-            const instance = await rxStorage.createStorageInstance(params);
+            const instance = await args.storage.createStorageInstance(params);
             instanceById.set(instanceId, instance);
             return instanceId;
         },
@@ -162,7 +164,7 @@ export function wrappedRxStorage<T, D>(
          */
         async createKeyObjectStorageInstance(params) {
             const instanceId = nextId++;
-            const instance = await rxStorage.createKeyObjectStorageInstance(params);
+            const instance = await args.storage.createKeyObjectStorageInstance(params);
             instanceById.set(instanceId, instance);
             return instanceId;
         },

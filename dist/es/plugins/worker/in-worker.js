@@ -7,7 +7,7 @@ import _regeneratorRuntime from "@babel/runtime/regenerator";
  */
 import { expose } from 'threads/worker';
 import { getFromMapOrThrow } from '../../util';
-export function wrappedRxStorage(rxStorage) {
+export function wrappedRxStorage(args) {
   var nextId = 0;
   var instanceById = new Map();
   var exposeMe = {
@@ -23,7 +23,7 @@ export function wrappedRxStorage(rxStorage) {
               case 0:
                 instanceId = nextId++;
                 _context.next = 3;
-                return rxStorage.createStorageInstance(params);
+                return args.storage.createStorageInstance(params);
 
               case 3:
                 instance = _context.sent;
@@ -93,7 +93,7 @@ export function wrappedRxStorage(rxStorage) {
               case 0:
                 instanceId = nextId++;
                 _context2.next = 3;
-                return rxStorage.createKeyObjectStorageInstance(params);
+                return args.storage.createKeyObjectStorageInstance(params);
 
               case 3:
                 instance = _context2.sent;

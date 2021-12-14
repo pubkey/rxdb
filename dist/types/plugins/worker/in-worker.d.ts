@@ -26,4 +26,6 @@ export declare type InWorkerStorage = {
         [documentId: string]: RxLocalDocumentData<DocumentData>;
     }>;
 };
-export declare function wrappedRxStorage<T, D>(rxStorage: RxStorage<T, D>): void;
+export declare function wrappedRxStorage<T, D>(args: {
+    storage: RxStorage<T, D>;
+}): void;
