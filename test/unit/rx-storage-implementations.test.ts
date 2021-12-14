@@ -1425,11 +1425,13 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const byIdDoc = getFromObjectOrThrow(byId, writeData.key);
                 assert.strictEqual(byIdDoc._attachments.foo.type, 'text/plain');
                 assert.strictEqual(byIdDoc._attachments.foo.length, attachmentData.length);
+                assert.ok(!(byIdDoc._attachments.foo as any).data);
 
                 // test emitted
-                assert.strictEqual(flattenEvents(emitted)[0].change.doc._attachments.foo.type, 'text/plain');
-                assert.strictEqual(flattenEvents(emitted)[0].change.doc._attachments.foo.length, attachmentData.length);
-
+                const firstEventAttachment = flattenEvents(emitted)[0].change.doc._attachments.foo;
+                assert.strictEqual(firstEventAttachment.type, 'text/plain');
+                assert.strictEqual(firstEventAttachment.length, attachmentData.length);
+                assert.ok(!(firstEventAttachment as any).data);
 
                 const changesResult = await storageInstance.getChangedDocuments({
                     sinceSequence: 0,

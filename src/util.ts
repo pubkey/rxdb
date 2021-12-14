@@ -498,7 +498,10 @@ export const blobBufferUtil = {
             return false;
         }
     },
-    toString(blobBuffer: BlobBuffer): Promise<string> {
+    toString(blobBuffer: BlobBuffer | string): Promise<string> {
+        if (typeof blobBuffer === 'string') {
+            return Promise.resolve(blobBuffer);
+        }
         if (typeof Buffer !== 'undefined' && blobBuffer instanceof Buffer) {
             // node
             return nextTick()

@@ -28,9 +28,15 @@ import {
     randomCouchString
 } from '../../util';
 import { newRxError } from '../../rx-error';
-import { ObliviousSet } from 'oblivious-set';
-import { getEventKey, pouchChangeRowToChangeEvent, POUCHDB_DESIGN_PREFIX, POUCHDB_LOCAL_PREFIX, pouchDocumentDataToRxDocumentData, writeAttachmentsToAttachments } from './pouchdb-helper';
-import { ChangeEvent } from 'event-reduce-js';
+import {
+    getEventKey,
+    pouchChangeRowToChangeEvent,
+    POUCHDB_DESIGN_PREFIX,
+    POUCHDB_LOCAL_PREFIX,
+    pouchDocumentDataToRxDocumentData,
+    writeAttachmentsToAttachments
+} from './pouchdb-helper';
+import type { ChangeEvent } from 'event-reduce-js';
 
 // ensure only added once
 let addedToPouch = false;
