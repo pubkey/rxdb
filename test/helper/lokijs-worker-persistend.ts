@@ -6,6 +6,6 @@ const adapter = new lfsa();
 const storage = getRxStorageLoki({
     adapter
 });
-wrappedRxStorage(
+wrappedRxStorage({
     storage
-);
+});
