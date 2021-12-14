@@ -268,7 +268,9 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
                   throw newRxError('DB6', {
                     name: name,
                     previousSchemaHash: internalDoc.schemaHash,
-                    schemaHash: schemaHashByName[useName]
+                    schemaHash: schemaHashByName[useName],
+                    previousSchema: internalDoc.schema,
+                    schema: args.schema
                   });
                 } // run hooks
 

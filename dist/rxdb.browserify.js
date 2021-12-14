@@ -11145,7 +11145,9 @@ var RxDatabaseBase = /*#__PURE__*/function () {
                   throw (0, _rxError.newRxError)('DB6', {
                     name: name,
                     previousSchemaHash: internalDoc.schemaHash,
-                    schemaHash: schemaHashByName[useName]
+                    schemaHash: schemaHashByName[useName],
+                    previousSchema: internalDoc.schema,
+                    schema: args.schema
                   });
                 } // run hooks
 
@@ -13565,10 +13567,13 @@ function normalize(jsonSchema) {
 
   if (jsonSchema.indexes) {
     normalizedSchema.indexes = Array.from(jsonSchema.indexes); // indexes should remain unsorted
-  } // primary key must be unsorted
+  } // primaryKey.fields must NOT be sorted
 
 
-  normalizedSchema.primaryKey = jsonSchema.primaryKey;
+  if (typeof normalizedSchema.primaryKey === 'object' && typeof jsonSchema.primaryKey === 'object') {
+    normalizedSchema.primaryKey.fields = jsonSchema.primaryKey.fields;
+  }
+
   return normalizedSchema;
 }
 /**

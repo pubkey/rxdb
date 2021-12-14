@@ -286,10 +286,13 @@ function normalize(jsonSchema) {
 
   if (jsonSchema.indexes) {
     normalizedSchema.indexes = Array.from(jsonSchema.indexes); // indexes should remain unsorted
-  } // primary key must be unsorted
+  } // primaryKey.fields must NOT be sorted
 
 
-  normalizedSchema.primaryKey = jsonSchema.primaryKey;
+  if (typeof normalizedSchema.primaryKey === 'object' && typeof jsonSchema.primaryKey === 'object') {
+    normalizedSchema.primaryKey.fields = jsonSchema.primaryKey.fields;
+  }
+
   return normalizedSchema;
 }
 /**
