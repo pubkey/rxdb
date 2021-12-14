@@ -1,6 +1,6 @@
 import type { EventBulk, PouchBulkDocOptions, PouchBulkDocResultRow, PouchDBInstance, PouchWriteError, RxDocumentData, RxStorageChangeEvent } from '../../types';
 import { Subject } from 'rxjs';
-import { ChangeEvent } from 'event-reduce-js';
+import type { ChangeEvent } from 'event-reduce-js';
 declare type EmitData = {
     emitId: number;
     writeOptions: PouchBulkDocOptions;

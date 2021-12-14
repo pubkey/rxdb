@@ -567,6 +567,10 @@ var blobBufferUtil = {
     }
   },
   toString: function toString(blobBuffer) {
+    if (typeof blobBuffer === 'string') {
+      return Promise.resolve(blobBuffer);
+    }
+
     if (typeof Buffer !== 'undefined' && blobBuffer instanceof Buffer) {
       // node
       return nextTick().then(function () {
