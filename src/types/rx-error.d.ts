@@ -82,6 +82,7 @@ export interface RxErrorParameters {
     readonly funName?: string;
     readonly functionName?: string;
     readonly schemaHash?: string;
+    readonly previousSchema?: Readonly<RxJsonSchema<any>>;
     readonly previousSchemaHash?: string;
     readonly type?: string;
     readonly when?: string;
