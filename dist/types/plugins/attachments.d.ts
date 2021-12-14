@@ -1,4 +1,4 @@
-import type { RxDocument, RxPlugin, BlobBuffer, OldRxCollection, RxAttachmentData, RxDocumentData, RxAttachmentCreator } from '../types';
+import type { RxDocument, RxPlugin, BlobBuffer, OldRxCollection, RxAttachmentData, RxDocumentData, RxAttachmentCreator, RxStorageStatics, RxAttachmentDataMeta } from '../types';
 /**
  * an RxAttachment is basically just the attachment-stub
  * wrapped so that you can access the attachment-data
@@ -37,6 +37,7 @@ export declare function preMigrateDocument<RxDocType>(data: {
     oldCollection: OldRxCollection;
 }): Promise<void>;
 export declare function postMigrateDocument(_action: any): Promise<void>;
+export declare function getAttachmentDataMeta(storageStatics: RxStorageStatics, data: BlobBuffer): Promise<RxAttachmentDataMeta>;
 export declare const rxdb = true;
 export declare const prototypes: {
     RxDocument: (proto: any) => void;

@@ -178,7 +178,7 @@ function pouchChangeRowToChangeEvent(primaryKey, pouchDoc) {
 
   var id = pouchDoc._id;
   var doc = pouchDocumentDataToRxDocumentData(primaryKey, pouchDoc);
-  var revHeight = (0, _util.getHeightOfRevision)(doc._rev);
+  var revHeight = doc._rev ? (0, _util.getHeightOfRevision)(doc._rev) : 1;
 
   if (pouchDoc._deleted) {
     return {

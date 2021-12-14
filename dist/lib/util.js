@@ -575,7 +575,7 @@ var blobBufferUtil = {
     }
 
     return new Promise(function (res) {
-      // browsers
+      // browser
       var reader = new FileReader();
       reader.addEventListener('loadend', function (e) {
         var text = e.target.result;
@@ -594,6 +594,15 @@ var blobBufferUtil = {
 
       reader.readAsText(blobBuffer);
     });
+  },
+  size: function size(blobBuffer) {
+    if (typeof Buffer !== 'undefined' && blobBuffer instanceof Buffer) {
+      // node
+      return Buffer.byteLength(blobBuffer);
+    } else {
+      // browser
+      return blobBuffer.size;
+    }
   }
 };
 exports.blobBufferUtil = blobBufferUtil;

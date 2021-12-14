@@ -143,6 +143,7 @@ export declare const blobBufferUtil: {
     createBlobBuffer(data: string, type: string): BlobBuffer;
     isBlobBuffer(data: any): boolean;
     toString(blobBuffer: BlobBuffer): Promise<string>;
+    size(blobBuffer: BlobBuffer): number;
 };
 import type { ShareReplayConfig } from 'rxjs/internal/operators/shareReplay';
 /**

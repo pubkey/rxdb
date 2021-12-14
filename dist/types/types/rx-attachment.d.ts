@@ -6,8 +6,16 @@ import { RxAttachmentWriteData } from './rx-storage';
 
 declare type Buffer = any;
 
-export type RxAttachmentCreator = RxAttachmentWriteData & {
+export type RxAttachmentCreator = {
     id: string,
+    /**
+     * Content type like 'plain/text'
+     */
+    type: string;
+    /**
+     * The data of the attachment.
+     */
+    data: BlobBuffer;
 };
 
 export declare class RxAttachment<RxDocumentType, OrmMethods = {}> {
