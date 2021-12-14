@@ -1389,6 +1389,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     _deleted: false,
                     _attachments: {
                         foo: {
+                            digest: attachmentHash,
+                            length: blobBufferUtil.size(dataBlobBuffer),
                             data: dataBlobBuffer,
                             type: 'text/plain'
                         }
@@ -1454,6 +1456,9 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 });
 
                 let previous: RxDocumentData<TestDocType> | undefined;
+
+                const data = blobBufferUtil.createBlobBuffer(randomString(20), 'text/plain');
+                const attachmentHash = await config.storage.getStorage().statics.hash(data);
                 const writeData: RxDocumentWriteData<TestDocType> = {
                     key: 'foobar',
                     value: 'one',
@@ -1461,7 +1466,9 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     _deleted: false,
                     _attachments: {
                         foo: {
-                            data: blobBufferUtil.createBlobBuffer(randomString(20), 'text/plain'),
+                            digest: attachmentHash,
+                            length: blobBufferUtil.size(data),
+                            data,
                             type: 'text/plain'
                         }
                     }
@@ -1480,8 +1487,13 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 }
 
                 writeData._attachments = flatClone(previous._attachments) as any;
+
+                const data2 = blobBufferUtil.createBlobBuffer(randomString(20), 'text/plain');
+                const attachmentHash2 = await config.storage.getStorage().statics.hash(data2);
                 writeData._attachments.bar = {
-                    data: blobBufferUtil.createBlobBuffer(randomString(20), 'text/plain'),
+                    data: data2,
+                    digest: attachmentHash2,
+                    length: blobBufferUtil.size(data2),
                     type: 'text/plain'
                 };
 
