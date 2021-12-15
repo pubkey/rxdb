@@ -27,22 +27,6 @@ export var RxStorageWorker = /*#__PURE__*/function () {
 
   var _proto = RxStorageWorker.prototype;
 
-  _proto.hash = function hash(data) {
-    return this.statics.hash(data);
-  };
-
-  _proto.prepareQuery = function prepareQuery(schema, mutateableQuery) {
-    return this.statics.prepareQuery(schema, mutateableQuery);
-  };
-
-  _proto.getQueryMatcher = function getQueryMatcher(schema, query) {
-    return this.statics.getQueryMatcher(schema, query);
-  };
-
-  _proto.getSortComparator = function getSortComparator(schema, query) {
-    return this.statics.getSortComparator(schema, query);
-  };
-
   _proto.createStorageInstance = /*#__PURE__*/function () {
     var _createStorageInstance = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(params) {
       var worker, instanceId;

@@ -1442,6 +1442,7 @@ function _putAttachment() {
         skipIfSame,
         dataString,
         encrypted,
+        statics,
         _args5 = arguments;
 
     return _regenerator["default"].wrap(function _callee5$(_context5) {
@@ -1470,38 +1471,40 @@ function _putAttachment() {
             data = _util.blobBufferUtil.createBlobBuffer(encrypted, 'text/plain');
 
           case 9:
+            statics = this.collection.database.storage.statics;
             this._atomicQueue = this._atomicQueue.then( /*#__PURE__*/(0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4() {
-              var currentMeta, newHash, docWriteData, meta, writeRow, writeResult, attachmentData, attachment, newData;
+              var currentMeta, newHash, newDigest, docWriteData, meta, writeRow, writeResult, attachmentData, attachment, newData;
               return _regenerator["default"].wrap(function _callee4$(_context4) {
                 while (1) {
                   switch (_context4.prev = _context4.next) {
                     case 0:
                       if (!(skipIfSame && _this4._data._attachments && _this4._data._attachments[id])) {
-                        _context4.next = 7;
+                        _context4.next = 8;
                         break;
                       }
 
                       currentMeta = _this4._data._attachments[id];
                       _context4.next = 4;
-                      return _this4.collection.database.storage.statics.hash(data);
+                      return statics.hash(data);
 
                     case 4:
                       newHash = _context4.sent;
+                      newDigest = statics.hashKey + '-' + newHash;
 
-                      if (!(currentMeta.type === type && currentMeta.digest === newHash)) {
-                        _context4.next = 7;
+                      if (!(currentMeta.type === type && currentMeta.digest === newDigest)) {
+                        _context4.next = 8;
                         break;
                       }
 
                       return _context4.abrupt("return", _this4.getAttachment(id));
 
-                    case 7:
+                    case 8:
                       docWriteData = (0, _util.flatClone)(_this4._data);
                       docWriteData._attachments = (0, _util.flatClone)(docWriteData._attachments);
-                      _context4.next = 11;
+                      _context4.next = 12;
                       return getAttachmentDataMeta(_this4.collection.database.storage.statics, data);
 
-                    case 11:
+                    case 12:
                       meta = _context4.sent;
                       docWriteData._attachments[id] = {
                         digest: meta.digest,
@@ -1513,10 +1516,10 @@ function _putAttachment() {
                         previous: (0, _rxCollectionHelper._handleToStorageInstance)(_this4.collection, (0, _util.flatClone)(_this4._data)),
                         document: (0, _rxCollectionHelper._handleToStorageInstance)(_this4.collection, (0, _util.flatClone)(docWriteData))
                       };
-                      _context4.next = 16;
+                      _context4.next = 17;
                       return (0, _rxStorageHelper.writeSingle)(_this4.collection.storageInstance, writeRow);
 
-                    case 16:
+                    case 17:
                       writeResult = _context4.sent;
                       attachmentData = writeResult._attachments[id];
                       attachment = fromStorageInstanceResult(id, attachmentData, _this4);
@@ -1528,7 +1531,7 @@ function _putAttachment() {
 
                       return _context4.abrupt("return", attachment);
 
-                    case 24:
+                    case 25:
                     case "end":
                       return _context4.stop();
                   }
@@ -1537,7 +1540,7 @@ function _putAttachment() {
             })));
             return _context5.abrupt("return", this._atomicQueue);
 
-          case 11:
+          case 12:
           case "end":
             return _context5.stop();
         }
@@ -1711,7 +1714,7 @@ function _getAttachmentDataMeta() {
             hash = _context9.sent;
             length = _util.blobBufferUtil.size(data);
             return _context9.abrupt("return", {
-              digest: hash,
+              digest: storageStatics.hashKey + '-' + hash,
               length: length
             });
 
@@ -6236,7 +6239,6 @@ exports.getEventKey = getEventKey;
 exports.pouchChangeRowToChangeEvent = pouchChangeRowToChangeEvent;
 exports.pouchChangeRowToChangeStreamEvent = pouchChangeRowToChangeStreamEvent;
 exports.pouchDocumentDataToRxDocumentData = pouchDocumentDataToRxDocumentData;
-exports.pouchHash = pouchHash;
 exports.pouchStripLocalFlagFromPrimary = pouchStripLocalFlagFromPrimary;
 exports.pouchSwapIdToPrimary = pouchSwapIdToPrimary;
 exports.pouchSwapPrimaryToId = pouchSwapPrimaryToId;
@@ -6248,11 +6250,11 @@ var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"))
 
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 
-var _pouchdbMd = require("pouchdb-md5");
-
 var _util = require("../../util");
 
 var _rxError = require("../../rx-error");
+
+var _rxStoragePouchdb = require("./rx-storage-pouchdb");
 
 /**
  * Used to check in tests if all instances have been cleaned up.
@@ -6273,14 +6275,6 @@ var POUCHDB_LOCAL_PREFIX = '_local/';
 exports.POUCHDB_LOCAL_PREFIX = POUCHDB_LOCAL_PREFIX;
 var POUCHDB_DESIGN_PREFIX = '_design/';
 exports.POUCHDB_DESIGN_PREFIX = POUCHDB_DESIGN_PREFIX;
-
-function pouchHash(data) {
-  return new Promise(function (res) {
-    (0, _pouchdbMd.binaryMd5)(data, function (digest) {
-      res('md5-' + digest);
-    });
-  });
-}
 
 function pouchSwapIdToPrimary(primaryKey, docData) {
   if (primaryKey === '_id' || docData[primaryKey]) {
@@ -6562,7 +6556,7 @@ function _writeAttachmentsToAttachments() {
 
                         asWrite = obj;
                         _context.next = 7;
-                        return Promise.all([pouchHash(asWrite.data), _util.blobBufferUtil.toString(asWrite.data)]);
+                        return Promise.all([_rxStoragePouchdb.RxStoragePouchStatics.hash(asWrite.data), _util.blobBufferUtil.toString(asWrite.data)]);
 
                       case 7:
                         _yield$Promise$all = _context.sent;
@@ -6570,7 +6564,7 @@ function _writeAttachmentsToAttachments() {
                         asString = _yield$Promise$all[1];
                         length = asString.length;
                         ret[key] = {
-                          digest: hash,
+                          digest: _rxStoragePouchdb.RxStoragePouchStatics.hashKey + '-' + hash,
                           length: length,
                           type: asWrite.type
                         };
@@ -6606,7 +6600,7 @@ function _writeAttachmentsToAttachments() {
   return _writeAttachmentsToAttachments.apply(this, arguments);
 }
 
-},{"../../rx-error":50,"../../util":58,"@babel/runtime/helpers/asyncToGenerator":62,"@babel/runtime/helpers/interopRequireDefault":67,"@babel/runtime/regenerator":73,"pouchdb-md5":495}],34:[function(require,module,exports){
+},{"../../rx-error":50,"../../util":58,"./rx-storage-pouchdb":36,"@babel/runtime/helpers/asyncToGenerator":62,"@babel/runtime/helpers/interopRequireDefault":67,"@babel/runtime/regenerator":73}],34:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
@@ -7477,6 +7471,8 @@ var _pouchdbSelectorCore = require("pouchdb-selector-core");
 
 var _rxError = require("../../rx-error");
 
+var _pouchdbMd = require("pouchdb-md5");
+
 var _rxSchema = require("../../rx-schema");
 
 var _rxStorageInstancePouch = require("./rx-storage-instance-pouch");
@@ -7493,8 +7489,13 @@ var RxStoragePouchStatics = {
    * would have created by pouchdb internally.
    */
   hash: function hash(data) {
-    return (0, _pouchdbHelper.pouchHash)(data);
+    return new Promise(function (res) {
+      (0, _pouchdbMd.binaryMd5)(data, function (digest) {
+        res(digest);
+      });
+    });
   },
+  hashKey: 'md5',
   getSortComparator: function getSortComparator(schema, query) {
     var _ref;
 
@@ -7984,7 +7985,7 @@ function getRxStoragePouch(adapter, pouchSettings) {
   return storage;
 }
 
-},{"../../rx-error":50,"../../rx-schema":53,"../../rx-schema-helper":52,"../../util":58,"./pouch-db":32,"./pouchdb-helper":33,"./rx-storage-instance-pouch":34,"./rx-storage-key-object-instance-pouch":35,"@babel/runtime/helpers/asyncToGenerator":62,"@babel/runtime/helpers/interopRequireDefault":67,"@babel/runtime/regenerator":73,"pouchdb-selector-core":499}],37:[function(require,module,exports){
+},{"../../rx-error":50,"../../rx-schema":53,"../../rx-schema-helper":52,"../../util":58,"./pouch-db":32,"./pouchdb-helper":33,"./rx-storage-instance-pouch":34,"./rx-storage-key-object-instance-pouch":35,"@babel/runtime/helpers/asyncToGenerator":62,"@babel/runtime/helpers/interopRequireDefault":67,"@babel/runtime/regenerator":73,"pouchdb-md5":495,"pouchdb-selector-core":499}],37:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -14109,6 +14110,11 @@ function fastUnsecureHash(obj) {
  * spark-md5 is used here
  * because pouchdb uses the same
  * and build-size could be reduced by 9kb
+ * 
+ * TODO instead of using md5 we should use the hash method from the given RxStorage
+ * this change would require some rewrites because the RxStorage hash is async.
+ * So maybe it is even better to use non-cryptographic hashing like we do at fastUnsecureHash()
+ * which would even be faster.
  */
 
 

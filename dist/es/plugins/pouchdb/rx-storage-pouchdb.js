@@ -4,10 +4,11 @@ import { flatClone, adapterObject } from '../../util';
 import { isLevelDown, PouchDB } from './pouch-db';
 import { filterInMemoryFields, massageSelector } from 'pouchdb-selector-core';
 import { newRxError } from '../../rx-error';
+import { binaryMd5 } from 'pouchdb-md5';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import { RxStorageInstancePouch } from './rx-storage-instance-pouch';
 import { RxStorageKeyObjectInstancePouch } from './rx-storage-key-object-instance-pouch';
-import { pouchHash, pouchSwapPrimaryToId, primarySwapPouchDbQuerySelector } from './pouchdb-helper';
+import { pouchSwapPrimaryToId, primarySwapPouchDbQuerySelector } from './pouchdb-helper';
 import { getSchemaByObjectPath } from '../../rx-schema-helper';
 export var RxStoragePouchStatics = {
   /**
@@ -15,8 +16,13 @@ export var RxStoragePouchStatics = {
    * would have created by pouchdb internally.
    */
   hash: function hash(data) {
-    return pouchHash(data);
+    return new Promise(function (res) {
+      binaryMd5(data, function (digest) {
+        res(digest);
+      });
+    });
   },
+  hashKey: 'md5',
   getSortComparator: function getSortComparator(schema, query) {
     var _ref;
 

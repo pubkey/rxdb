@@ -10,7 +10,6 @@ exports.getEventKey = getEventKey;
 exports.pouchChangeRowToChangeEvent = pouchChangeRowToChangeEvent;
 exports.pouchChangeRowToChangeStreamEvent = pouchChangeRowToChangeStreamEvent;
 exports.pouchDocumentDataToRxDocumentData = pouchDocumentDataToRxDocumentData;
-exports.pouchHash = pouchHash;
 exports.pouchStripLocalFlagFromPrimary = pouchStripLocalFlagFromPrimary;
 exports.pouchSwapIdToPrimary = pouchSwapIdToPrimary;
 exports.pouchSwapPrimaryToId = pouchSwapPrimaryToId;
@@ -22,11 +21,11 @@ var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"))
 
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 
-var _pouchdbMd = require("pouchdb-md5");
-
 var _util = require("../../util");
 
 var _rxError = require("../../rx-error");
+
+var _rxStoragePouchdb = require("./rx-storage-pouchdb");
 
 /**
  * Used to check in tests if all instances have been cleaned up.
@@ -47,14 +46,6 @@ var POUCHDB_LOCAL_PREFIX = '_local/';
 exports.POUCHDB_LOCAL_PREFIX = POUCHDB_LOCAL_PREFIX;
 var POUCHDB_DESIGN_PREFIX = '_design/';
 exports.POUCHDB_DESIGN_PREFIX = POUCHDB_DESIGN_PREFIX;
-
-function pouchHash(data) {
-  return new Promise(function (res) {
-    (0, _pouchdbMd.binaryMd5)(data, function (digest) {
-      res('md5-' + digest);
-    });
-  });
-}
 
 function pouchSwapIdToPrimary(primaryKey, docData) {
   if (primaryKey === '_id' || docData[primaryKey]) {
@@ -336,7 +327,7 @@ function _writeAttachmentsToAttachments() {
 
                         asWrite = obj;
                         _context.next = 7;
-                        return Promise.all([pouchHash(asWrite.data), _util.blobBufferUtil.toString(asWrite.data)]);
+                        return Promise.all([_rxStoragePouchdb.RxStoragePouchStatics.hash(asWrite.data), _util.blobBufferUtil.toString(asWrite.data)]);
 
                       case 7:
                         _yield$Promise$all = _context.sent;
@@ -344,7 +335,7 @@ function _writeAttachmentsToAttachments() {
                         asString = _yield$Promise$all[1];
                         length = asString.length;
                         ret[key] = {
-                          digest: hash,
+                          digest: _rxStoragePouchdb.RxStoragePouchStatics.hashKey + '-' + hash,
                           length: length,
                           type: asWrite.type
                         };

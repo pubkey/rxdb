@@ -225,6 +225,7 @@ function _putAttachment() {
         skipIfSame,
         dataString,
         encrypted,
+        statics,
         _args5 = arguments;
 
     return _regenerator["default"].wrap(function _callee5$(_context5) {
@@ -253,38 +254,40 @@ function _putAttachment() {
             data = _util.blobBufferUtil.createBlobBuffer(encrypted, 'text/plain');
 
           case 9:
+            statics = this.collection.database.storage.statics;
             this._atomicQueue = this._atomicQueue.then( /*#__PURE__*/(0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4() {
-              var currentMeta, newHash, docWriteData, meta, writeRow, writeResult, attachmentData, attachment, newData;
+              var currentMeta, newHash, newDigest, docWriteData, meta, writeRow, writeResult, attachmentData, attachment, newData;
               return _regenerator["default"].wrap(function _callee4$(_context4) {
                 while (1) {
                   switch (_context4.prev = _context4.next) {
                     case 0:
                       if (!(skipIfSame && _this4._data._attachments && _this4._data._attachments[id])) {
-                        _context4.next = 7;
+                        _context4.next = 8;
                         break;
                       }
 
                       currentMeta = _this4._data._attachments[id];
                       _context4.next = 4;
-                      return _this4.collection.database.storage.statics.hash(data);
+                      return statics.hash(data);
 
                     case 4:
                       newHash = _context4.sent;
+                      newDigest = statics.hashKey + '-' + newHash;
 
-                      if (!(currentMeta.type === type && currentMeta.digest === newHash)) {
-                        _context4.next = 7;
+                      if (!(currentMeta.type === type && currentMeta.digest === newDigest)) {
+                        _context4.next = 8;
                         break;
                       }
 
                       return _context4.abrupt("return", _this4.getAttachment(id));
 
-                    case 7:
+                    case 8:
                       docWriteData = (0, _util.flatClone)(_this4._data);
                       docWriteData._attachments = (0, _util.flatClone)(docWriteData._attachments);
-                      _context4.next = 11;
+                      _context4.next = 12;
                       return getAttachmentDataMeta(_this4.collection.database.storage.statics, data);
 
-                    case 11:
+                    case 12:
                       meta = _context4.sent;
                       docWriteData._attachments[id] = {
                         digest: meta.digest,
@@ -296,10 +299,10 @@ function _putAttachment() {
                         previous: (0, _rxCollectionHelper._handleToStorageInstance)(_this4.collection, (0, _util.flatClone)(_this4._data)),
                         document: (0, _rxCollectionHelper._handleToStorageInstance)(_this4.collection, (0, _util.flatClone)(docWriteData))
                       };
-                      _context4.next = 16;
+                      _context4.next = 17;
                       return (0, _rxStorageHelper.writeSingle)(_this4.collection.storageInstance, writeRow);
 
-                    case 16:
+                    case 17:
                       writeResult = _context4.sent;
                       attachmentData = writeResult._attachments[id];
                       attachment = fromStorageInstanceResult(id, attachmentData, _this4);
@@ -311,7 +314,7 @@ function _putAttachment() {
 
                       return _context4.abrupt("return", attachment);
 
-                    case 24:
+                    case 25:
                     case "end":
                       return _context4.stop();
                   }
@@ -320,7 +323,7 @@ function _putAttachment() {
             })));
             return _context5.abrupt("return", this._atomicQueue);
 
-          case 11:
+          case 12:
           case "end":
             return _context5.stop();
         }
@@ -494,7 +497,7 @@ function _getAttachmentDataMeta() {
             hash = _context9.sent;
             length = _util.blobBufferUtil.size(data);
             return _context9.abrupt("return", {
-              digest: hash,
+              digest: storageStatics.hashKey + '-' + hash,
               length: length
             });
 

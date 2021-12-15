@@ -11,6 +11,7 @@ export declare class RxStorageLoki implements RxStorage<LokiStorageInternals, Lo
     name: string;
     statics: Readonly<{
         hash(data: string | Blob | Buffer): Promise<string>;
+        hashKey: string;
         prepareQuery<DocumentData>(schema: RxJsonSchema<DocumentData>, mutateableQuery: MangoQuery<DocumentData>): any;
         getSortComparator<DocumentData_1>(schema: RxJsonSchema<DocumentData_1>, query: MangoQuery<DocumentData_1>): DeterministicSortComparator<DocumentData_1>;
         getQueryMatcher<DocumentData_2>(schema: RxJsonSchema<DocumentData_2>, query: MangoQuery<DocumentData_2>): QueryMatcher<RxDocumentWriteData<DocumentData_2>>;

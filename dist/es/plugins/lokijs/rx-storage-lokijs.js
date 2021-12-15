@@ -2,14 +2,20 @@ import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import lokijs from 'lokijs';
-import { firstPropertyNameOfObject, flatClone, hash as _hash } from '../../util';
+import { firstPropertyNameOfObject, flatClone } from '../../util';
 import { createLokiStorageInstance } from './rx-storage-instance-loki';
 import { createLokiKeyObjectStorageInstance } from './rx-storage-key-object-instance-loki';
 import { getLokiSortComparator } from './lokijs-helper';
+import { binaryMd5 } from 'pouchdb-md5';
 export var RxStorageLokiStatics = {
   hash: function hash(data) {
-    return Promise.resolve(_hash(data));
+    return new Promise(function (res) {
+      binaryMd5(data, function (digest) {
+        res(digest);
+      });
+    });
   },
+  hashKey: 'md5',
   prepareQuery: function prepareQuery(schema, mutateableQuery) {
     var primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
 

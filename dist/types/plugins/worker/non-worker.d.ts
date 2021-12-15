@@ -1,7 +1,5 @@
-/// <reference types="pouchdb-core" />
-/// <reference types="node" />
 import { Observable } from 'rxjs';
-import { RxJsonSchema, RxStorage, RxStorageInstanceCreationParams, MangoQuery, RxStorageInstance, BlobBuffer, BulkWriteRow, ChangeStreamOnceOptions, RxDocumentData, RxStorageBulkWriteResponse, RxStorageChangedDocumentMeta, RxStorageChangeEvent, RxStorageQueryResult, RxStorageKeyObjectInstance, BulkWriteLocalRow, RxLocalDocumentData, RxLocalStorageBulkWriteResponse, RxKeyObjectStorageInstanceCreationParams, EventBulk, RxStorageStatics } from '../../types';
+import { RxJsonSchema, RxStorage, RxStorageInstanceCreationParams, RxStorageInstance, BlobBuffer, BulkWriteRow, ChangeStreamOnceOptions, RxDocumentData, RxStorageBulkWriteResponse, RxStorageChangedDocumentMeta, RxStorageChangeEvent, RxStorageQueryResult, RxStorageKeyObjectInstance, BulkWriteLocalRow, RxLocalDocumentData, RxLocalStorageBulkWriteResponse, RxKeyObjectStorageInstanceCreationParams, EventBulk, RxStorageStatics } from '../../types';
 import { InWorkerStorage } from './in-worker';
 declare type WorkerStorageInternals = {
     rxStorage: RxStorageWorker;
@@ -17,10 +15,6 @@ export declare class RxStorageWorker implements RxStorage<WorkerStorageInternals
     name: string;
     readonly workerPromise: Promise<InWorkerStorage>;
     constructor(settings: RxStorageWorkerSettings, statics: RxStorageStatics);
-    hash(data: Buffer | Blob | string): Promise<string>;
-    prepareQuery<RxDocType>(schema: RxJsonSchema<RxDocType>, mutateableQuery: MangoQuery<RxDocType>): any;
-    getQueryMatcher<RxDocType>(schema: RxJsonSchema<RxDocType>, query: MangoQuery<RxDocType>): import("event-reduce-js").QueryMatcher<import("../../types").RxDocumentWriteData<RxDocType>>;
-    getSortComparator<RxDocType>(schema: RxJsonSchema<RxDocType>, query: MangoQuery<RxDocType>): import("event-reduce-js").DeterministicSortComparator<RxDocType>;
     createStorageInstance<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, any>): Promise<RxStorageInstanceWorker<RxDocType>>;
     createKeyObjectStorageInstance(params: RxKeyObjectStorageInstanceCreationParams<any>): Promise<RxStorageKeyObjectInstanceWorker>;
 }

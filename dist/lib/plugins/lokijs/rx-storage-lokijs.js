@@ -24,10 +24,17 @@ var _rxStorageKeyObjectInstanceLoki = require("./rx-storage-key-object-instance-
 
 var _lokijsHelper = require("./lokijs-helper");
 
+var _pouchdbMd = require("pouchdb-md5");
+
 var RxStorageLokiStatics = {
   hash: function hash(data) {
-    return Promise.resolve((0, _util.hash)(data));
+    return new Promise(function (res) {
+      (0, _pouchdbMd.binaryMd5)(data, function (digest) {
+        res(digest);
+      });
+    });
   },
+  hashKey: 'md5',
   prepareQuery: function prepareQuery(schema, mutateableQuery) {
     var primaryKey = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
 

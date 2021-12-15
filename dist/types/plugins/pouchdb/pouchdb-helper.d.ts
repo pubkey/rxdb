@@ -1,5 +1,3 @@
-/// <reference types="pouchdb-core" />
-/// <reference types="node" />
 import type { ChangeStreamEvent, PouchChangeRow, PouchDBInstance, RxAttachmentData, RxAttachmentWriteData, RxDocumentData, RxDocumentWriteData, WithAttachments } from '../../types';
 import type { RxStorageInstancePouch } from './rx-storage-instance-pouch';
 import type { RxStorageKeyObjectInstancePouch } from './rx-storage-key-object-instance-pouch';
@@ -21,7 +19,6 @@ export declare const POUCHDB_LOCAL_PREFIX: '_local/';
  * design documents to the outside.
  */
 export declare const POUCHDB_DESIGN_PREFIX: '_design/';
-export declare function pouchHash(data: Buffer | Blob | string): Promise<string>;
 export declare function pouchSwapIdToPrimary<T>(primaryKey: keyof T, docData: any): any;
 export declare function pouchDocumentDataToRxDocumentData<T>(primaryKey: keyof T, pouchDoc: WithAttachments<T>): RxDocumentData<T>;
 export declare function rxDocumentDataToPouchDocumentData<T>(primaryKey: keyof T, doc: RxDocumentData<T> | RxDocumentWriteData<T>): WithAttachments<T & {

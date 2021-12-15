@@ -23,6 +23,8 @@ var _pouchdbSelectorCore = require("pouchdb-selector-core");
 
 var _rxError = require("../../rx-error");
 
+var _pouchdbMd = require("pouchdb-md5");
+
 var _rxSchema = require("../../rx-schema");
 
 var _rxStorageInstancePouch = require("./rx-storage-instance-pouch");
@@ -39,8 +41,13 @@ var RxStoragePouchStatics = {
    * would have created by pouchdb internally.
    */
   hash: function hash(data) {
-    return (0, _pouchdbHelper.pouchHash)(data);
+    return new Promise(function (res) {
+      (0, _pouchdbMd.binaryMd5)(data, function (digest) {
+        res(digest);
+      });
+    });
   },
+  hashKey: 'md5',
   getSortComparator: function getSortComparator(schema, query) {
     var _ref;
 
