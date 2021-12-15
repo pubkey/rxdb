@@ -9,10 +9,10 @@ import type {
     WithAttachments
 } from '../../types';
 import type { RxStorageInstancePouch } from './rx-storage-instance-pouch';
+import { binaryMd5 } from 'pouchdb-md5';
 import type {
     RxStorageKeyObjectInstancePouch
 } from './rx-storage-key-object-instance-pouch';
-import { binaryMd5 } from 'pouchdb-md5';
 import {
     blobBufferUtil,
     flatClone,
@@ -20,7 +20,6 @@ import {
 } from '../../util';
 import { newRxError } from '../../rx-error';
 import type { ChangeEvent } from 'event-reduce-js';
-import { RxStoragePouchStatics } from './rx-storage-pouchdb';
 
 export type PouchStorageInternals = {
     pouch: PouchDBInstance;
@@ -289,6 +288,15 @@ export function primarySwapPouchDbQuerySelector<RxDocType>(selector: any, primar
     }
 }
 
+export function pouchHash(data: Buffer | Blob | string): Promise<string> {
+    return new Promise(res => {
+        binaryMd5(data, (digest: string) => {
+            res(digest);
+        });
+    });
+}
+
+export const POUCH_HASH_KEY = 'md5';
 
 export async function writeAttachmentsToAttachments(
     attachments: { [attachmentId: string]: RxAttachmentData | RxAttachmentWriteData; }
@@ -305,13 +313,13 @@ export async function writeAttachmentsToAttachments(
             if ((obj as RxAttachmentWriteData).data) {
                 const asWrite = (obj as RxAttachmentWriteData);
                 const [hash, asString] = await Promise.all([
-                    RxStoragePouchStatics.hash(asWrite.data),
+                    pouchHash(asWrite.data),
                     blobBufferUtil.toString(asWrite.data)
                 ]);
 
                 const length = asString.length;
                 ret[key] = {
-                    digest: RxStoragePouchStatics.hashKey + '-' + hash,
+                    digest: POUCH_HASH_KEY + '-' + hash,
                     length,
                     type: asWrite.type
                 };
