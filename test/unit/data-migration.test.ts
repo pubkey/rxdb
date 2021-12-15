@@ -1002,7 +1002,9 @@ config.parallel('data-migration.test.js', () => {
                 attachmentData,
                 'text/plain'
             );
-            const attachmentHash = await getRxStoragePouch('memory').statics.hash(dataBlobBuffer);
+
+            const statics = getRxStoragePouch('memory').statics;
+            const attachmentHash = await statics.hash(dataBlobBuffer);
 
             const col = await humansCollection.createMigrationCollection(10, {
                 3: (doc: any) => {
@@ -1026,7 +1028,7 @@ config.parallel('data-migration.test.js', () => {
             const attachment = docs[0].getAttachment('foo');
             assert.ok(attachment);
             assert.strictEqual(attachment.type, 'text/plain');
-            assert.strictEqual(attachment.digest, attachmentHash);
+            assert.strictEqual(attachment.digest, statics.hashKey + '-' + attachmentHash);
             assert.strictEqual(attachment.length, attachmentData.length);
 
             olds.forEach(oldCol => oldCol.storageInstance.close());

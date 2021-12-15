@@ -55,6 +55,11 @@ export function fastUnsecureHash(obj: any): number {
  * spark-md5 is used here
  * because pouchdb uses the same
  * and build-size could be reduced by 9kb
+ * 
+ * TODO instead of using md5 we should use the hash method from the given RxStorage
+ * this change would require some rewrites because the RxStorage hash is async.
+ * So maybe it is even better to use non-cryptographic hashing like we do at fastUnsecureHash()
+ * which would even be faster.
  */
 import Md5 from 'spark-md5';
 export const RXDB_HASH_SALT = 'rxdb-specific-hash-salt';

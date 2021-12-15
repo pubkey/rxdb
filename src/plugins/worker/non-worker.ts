@@ -57,31 +57,6 @@ export class RxStorageWorker implements RxStorage<WorkerStorageInternals, any> {
         this.workerPromise = workerPromise as any;
     }
 
-    hash(data: Buffer | Blob | string): Promise<string> {
-        return this.statics.hash(data);
-    }
-
-    prepareQuery<RxDocType>(
-        schema: RxJsonSchema<RxDocType>,
-        mutateableQuery: MangoQuery<RxDocType>
-    ) {
-        return this.statics.prepareQuery(schema, mutateableQuery);
-    }
-
-    getQueryMatcher<RxDocType>(
-        schema: RxJsonSchema<RxDocType>,
-        query: MangoQuery<RxDocType>
-    ) {
-        return this.statics.getQueryMatcher(schema, query);
-    }
-
-    getSortComparator<RxDocType>(
-        schema: RxJsonSchema<RxDocType>,
-        query: MangoQuery<RxDocType>
-    ) {
-        return this.statics.getSortComparator(schema, query);
-    }
-
     async createStorageInstance<RxDocType>(
         params: RxStorageInstanceCreationParams<RxDocType, any>
     ): Promise<RxStorageInstanceWorker<RxDocType>> {

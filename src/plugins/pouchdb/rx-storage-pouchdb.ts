@@ -27,11 +27,12 @@ import {
     massageSelector
 } from 'pouchdb-selector-core';
 import { newRxError } from '../../rx-error';
+import { binaryMd5 } from 'pouchdb-md5';
 
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import { RxStorageInstancePouch } from './rx-storage-instance-pouch';
 import { RxStorageKeyObjectInstancePouch } from './rx-storage-key-object-instance-pouch';
-import { pouchHash, PouchStorageInternals, pouchSwapPrimaryToId, primarySwapPouchDbQuerySelector } from './pouchdb-helper';
+import { PouchStorageInternals, pouchSwapPrimaryToId, primarySwapPouchDbQuerySelector } from './pouchdb-helper';
 import type { DeterministicSortComparator, QueryMatcher } from 'event-reduce-js';
 import { getSchemaByObjectPath } from '../../rx-schema-helper';
 
@@ -43,9 +44,13 @@ export const RxStoragePouchStatics: RxStorageStatics = {
      * would have created by pouchdb internally.
      */
     hash(data: Buffer | Blob | string): Promise<string> {
-        return pouchHash(data);
+        return new Promise(res => {
+            binaryMd5(data, (digest: string) => {
+                res(digest);
+            });
+        });
     },
-
+    hashKey: 'md5',
 
     getSortComparator<RxDocType>(
         schema: RxJsonSchema<RxDocType>,
@@ -132,7 +137,7 @@ export const RxStoragePouchStatics: RxStorageStatics = {
      * this functions takes a normal mango query
      * and transforms it to one that fits for pouchdb
      */
-     prepareQuery<RxDocType>(
+    prepareQuery<RxDocType>(
         schema: RxJsonSchema<RxDocType>,
         mutateableQuery: MangoQuery<RxDocType>
     ): PreparedQuery<RxDocType> {

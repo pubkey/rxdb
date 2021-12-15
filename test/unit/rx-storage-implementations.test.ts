@@ -1369,6 +1369,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     },
                     multiInstance: false
                 });
+                const statics = config.storage.getStorage().statics;
 
                 const emitted: EventBulk<RxStorageChangeEvent<any>>[] = [];
                 const sub = storageInstance.changeStream().subscribe(x => {
@@ -1380,7 +1381,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     attachmentData,
                     'text/plain'
                 );
-                const attachmentHash = await config.storage.getStorage().statics.hash(dataBlobBuffer);
+                const attachmentHash = await statics.hash(dataBlobBuffer);
 
                 const writeData: RxDocumentWriteData<TestDocType> = {
                     key: 'foobar',
@@ -1389,7 +1390,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     _deleted: false,
                     _attachments: {
                         foo: {
-                            digest: attachmentHash,
+                            digest: statics.hashKey + '-' + attachmentHash,
                             length: blobBufferUtil.size(dataBlobBuffer),
                             data: dataBlobBuffer,
                             type: 'text/plain'
@@ -1407,7 +1408,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 await waitUntil(() => flattenEvents(emitted).length === 1);
 
                 assert.strictEqual(writeResult._attachments.foo.type, 'text/plain');
-                assert.strictEqual(writeResult._attachments.foo.digest, attachmentHash);
+                assert.strictEqual(writeResult._attachments.foo.digest, statics.hashKey + '-' + attachmentHash);
 
                 const queryResult = await storageInstance.query(
                     config.storage.getStorage().statics.prepareQuery(

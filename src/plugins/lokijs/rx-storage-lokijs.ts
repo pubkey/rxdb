@@ -18,8 +18,7 @@ import type {
 } from '../../types';
 import {
     firstPropertyNameOfObject,
-    flatClone,
-    hash
+    flatClone
 } from '../../util';
 import {
     createLokiStorageInstance,
@@ -32,12 +31,18 @@ import {
 import { getLokiSortComparator } from './lokijs-helper';
 import type { LeaderElector } from 'broadcast-channel';
 
+import { binaryMd5 } from 'pouchdb-md5';
 
 export const RxStorageLokiStatics: RxStorageStatics = {
 
     hash(data: Buffer | Blob | string): Promise<string> {
-        return Promise.resolve(hash(data));
+        return new Promise(res => {
+            binaryMd5(data, (digest: string) => {
+                res(digest);
+            });
+        });
     },
+    hashKey: 'md5',
 
     prepareQuery<RxDocType>(
         schema: RxJsonSchema<RxDocType>,

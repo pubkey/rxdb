@@ -100,6 +100,12 @@ export type RxStorageStatics = Readonly<{
     hash(data: Buffer | Blob | string): Promise<string>;
 
     /**
+     * Key of the used hash algorithm.
+     * Like 'md5' or 'sha1'.
+     */
+    hashKey: string;
+
+    /**
      * PouchDB and others have some bugs
      * and behaviors that must be worked arround
      * before querying the db.

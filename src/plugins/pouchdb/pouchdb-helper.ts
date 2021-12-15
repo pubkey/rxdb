@@ -20,6 +20,7 @@ import {
 } from '../../util';
 import { newRxError } from '../../rx-error';
 import type { ChangeEvent } from 'event-reduce-js';
+import { RxStoragePouchStatics } from './rx-storage-pouchdb';
 
 export type PouchStorageInternals = {
     pouch: PouchDBInstance;
@@ -40,15 +41,6 @@ export const POUCHDB_LOCAL_PREFIX: '_local/' = '_local/';
  * design documents to the outside.
  */
 export const POUCHDB_DESIGN_PREFIX: '_design/' = '_design/';
-
-
-export function pouchHash(data: Buffer | Blob | string): Promise<string> {
-    return new Promise(res => {
-        binaryMd5(data, (digest: string) => {
-            res('md5-' + digest);
-        });
-    });
-}
 
 export function pouchSwapIdToPrimary<T>(
     primaryKey: keyof T,
@@ -313,12 +305,13 @@ export async function writeAttachmentsToAttachments(
             if ((obj as RxAttachmentWriteData).data) {
                 const asWrite = (obj as RxAttachmentWriteData);
                 const [hash, asString] = await Promise.all([
-                    pouchHash(asWrite.data),
+                    RxStoragePouchStatics.hash(asWrite.data),
                     blobBufferUtil.toString(asWrite.data)
                 ]);
+
                 const length = asString.length;
                 ret[key] = {
-                    digest: hash,
+                    digest: RxStoragePouchStatics.hashKey + '-' + hash,
                     length,
                     type: asWrite.type
                 };

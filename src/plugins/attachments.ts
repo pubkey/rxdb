@@ -163,12 +163,14 @@ export async function putAttachment(
         data = blobBufferUtil.createBlobBuffer(encrypted, 'text/plain');
     }
 
+    const statics = this.collection.database.storage.statics;
     this._atomicQueue = this._atomicQueue
         .then(async () => {
             if (skipIfSame && this._data._attachments && this._data._attachments[id]) {
                 const currentMeta = this._data._attachments[id];
-                const newHash = await this.collection.database.storage.statics.hash(data);
-                if (currentMeta.type === type && currentMeta.digest === newHash) {
+                const newHash = await statics.hash(data);
+                const newDigest = statics.hashKey + '-' + newHash;
+                if (currentMeta.type === type && currentMeta.digest === newDigest) {
                     // skip because same data and same type
                     return this.getAttachment(id);
                 }
@@ -319,7 +321,7 @@ export async function getAttachmentDataMeta(
     const hash = await storageStatics.hash(data);
     const length = blobBufferUtil.size(data);
     return {
-        digest: hash,
+        digest: storageStatics.hashKey + '-' + hash,
         length
     }
 }
