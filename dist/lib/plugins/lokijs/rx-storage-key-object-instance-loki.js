@@ -324,10 +324,13 @@ var RxStorageKeyObjectInstanceLoki = /*#__PURE__*/function () {
                   } else {
                     var toLoki = (0, _util.flatClone)(writeDoc);
                     toLoki.$loki = docInDb.$loki;
+                    toLoki.$lastWriteAt = startTime;
                     localState.collection.update(toLoki);
                   }
                 } else {
-                  localState.collection.insert((0, _util.flatClone)(writeDoc));
+                  var insertData = (0, _util.flatClone)(writeDoc);
+                  insertData.$lastWriteAt = startTime;
+                  localState.collection.insert(insertData);
                 }
 
                 ret.success[id] = (0, _lokijsHelper.stripLokiKey)(writeDoc);

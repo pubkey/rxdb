@@ -377,7 +377,9 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
                     // TODO attachments are currently not working with lokijs
                     _attachments: {}
                   });
-                  localState.collection.insert((0, _util.flatClone)(writeDoc));
+                  var insertData = (0, _util.flatClone)(writeDoc);
+                  insertData.$lastWriteAt = startTime;
+                  localState.collection.insert(insertData);
 
                   if (!insertedIsDeleted) {
                     _this2.addChangeDocumentMeta(id);
@@ -424,6 +426,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
 
                     var _writeDoc = Object.assign({}, writeRow.document, {
                       $loki: documentInDb.$loki,
+                      $lastWriteAt: startTime,
                       _rev: _newRevision,
                       _deleted: isDeleted,
                       // TODO attachments are currently not working with lokijs
@@ -553,7 +556,9 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
 
                 if (!documentInDb) {
                   // document not here, so we can directly insert
-                  localState.collection.insert((0, _util.flatClone)(docData));
+                  var insertData = (0, _util.flatClone)(docData);
+                  insertData.$lastWriteAt = startTime;
+                  localState.collection.insert(insertData);
                   eventBulk.events.push({
                     documentId: id,
                     eventId: (0, _lokijsHelper.getLokiEventKey)(false, id, docData._rev),
@@ -586,6 +591,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
                   if (mustUpdate) {
                     var storeAtLoki = (0, _util.flatClone)(docData);
                     storeAtLoki.$loki = documentInDb.$loki;
+                    storeAtLoki.$lastWriteAt = startTime;
                     localState.collection.update(storeAtLoki);
                     var change = null;
 

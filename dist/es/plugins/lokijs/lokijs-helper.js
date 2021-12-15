@@ -22,6 +22,7 @@ export function stripLokiKey(docData) {
 
   var cloned = flatClone(docData);
   delete cloned.$loki;
+  delete cloned.$lastWriteAt;
   return cloned;
 }
 export function getLokiEventKey(isLocal, primary, revision) {

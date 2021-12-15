@@ -145,12 +145,14 @@ export declare const blobBufferUtil: {
     toString(blobBuffer: BlobBuffer | string): Promise<string>;
     size(blobBuffer: BlobBuffer): number;
 };
-import type { ShareReplayConfig } from 'rxjs/internal/operators/shareReplay';
 /**
  * Using shareReplay() without settings will not unsubscribe
  * if there are no more subscribers.
  * So we use these defaults.
  * @link https://cartant.medium.com/rxjs-whats-changed-with-sharereplay-65c098843e95
  */
-export declare const RXJS_SHARE_REPLAY_DEFAULTS: ShareReplayConfig;
+export declare const RXJS_SHARE_REPLAY_DEFAULTS: {
+    bufferSize: number;
+    refCount: boolean;
+};
 export {};

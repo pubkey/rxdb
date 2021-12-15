@@ -14,6 +14,7 @@ export declare const LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE = "rxdb-loki
  */
 export declare function stripLokiKey<T>(docData: T & {
     $loki?: number;
+    $lastWriteAt?: number;
 }): T;
 export declare function getLokiEventKey(isLocal: boolean, primary: string, revision: string): string;
 /**

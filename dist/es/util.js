@@ -518,13 +518,13 @@ export var blobBufferUtil = {
     }
   }
 };
-
 /**
  * Using shareReplay() without settings will not unsubscribe
  * if there are no more subscribers.
  * So we use these defaults.
  * @link https://cartant.medium.com/rxjs-whats-changed-with-sharereplay-65c098843e95
  */
+
 export var RXJS_SHARE_REPLAY_DEFAULTS = {
   bufferSize: 1,
   refCount: true
