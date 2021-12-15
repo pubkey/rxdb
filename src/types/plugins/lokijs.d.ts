@@ -14,7 +14,8 @@ export type LokiDatabaseSettings = Partial<LokiConstructorOptions & LokiConfigOp
      * If autoCompactionTTL is set, RxDB will automatically remove tombstones of deleted documents
      * after the given time in milliseconds has passed since the deletion of the document.
      */
-    autoCompactionTTL?: number;
+    // TODO implement autocompaction based on the $lastWriteAt flag.
+    // autoCompactionTTL?: number;
 };
 
 export type LokiCollectionSettings = Partial<CollectionOptions<any>>;
