@@ -70,7 +70,7 @@ export class LokiSaveQueue {
                  * Because LokiJS is a in-memory database,
                  * we can just wait until the JavaScript process is idle
                  * via requestIdlePromise(). Then we know that nothing important
-                 * is running at the moment. Also we at least wait 100ms
+                 * is running at the moment. Also we wait at least wait 100ms
                  * to ensure it has enough time to free up stuff.
                  */
                 await Promise.all([

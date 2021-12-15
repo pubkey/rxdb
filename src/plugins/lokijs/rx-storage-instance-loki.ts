@@ -301,7 +301,9 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                         _attachments: {} as any
                     }
                 );
-                localState.collection.insert(flatClone(writeDoc));
+                const insertData: any = flatClone(writeDoc);
+                insertData.$lastWriteAt = startTime;
+                localState.collection.insert(insertData);
                 if (!insertedIsDeleted) {
                     this.addChangeDocumentMeta(id);
                     eventBulk.events.push({
@@ -355,6 +357,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                         writeRow.document,
                         {
                             $loki: documentInDb.$loki,
+                            $lastWriteAt: startTime,
                             _rev: newRevision,
                             _deleted: isDeleted,
                             // TODO attachments are currently not working with lokijs
@@ -442,7 +445,9 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             const documentInDb = localState.collection.by(this.primaryPath, id);
             if (!documentInDb) {
                 // document not here, so we can directly insert
-                localState.collection.insert(flatClone(docData));
+                const insertData: any =flatClone(docData); 
+                insertData.$lastWriteAt = startTime;
+                localState.collection.insert(insertData);
                 eventBulk.events.push({
                     documentId: id,
                     eventId: getLokiEventKey(false, id, docData._rev),
@@ -473,6 +478,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 if (mustUpdate) {
                     const storeAtLoki = flatClone(docData) as any;
                     storeAtLoki.$loki = documentInDb.$loki;
+                    storeAtLoki.$lastWriteAt = startTime;
                     localState.collection.update(storeAtLoki);
                     let change: ChangeEvent<RxDocumentData<RxDocType>> | null = null;
                     if (documentInDb._deleted && !docData._deleted) {

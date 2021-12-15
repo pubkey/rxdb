@@ -5,6 +5,7 @@ import {
     addRxPlugin,
     ensureNotFalsy,
     getPseudoSchemaForVersion,
+    now,
     randomCouchString
 } from '../../plugins/core';
 
@@ -283,6 +284,32 @@ config.parallel('rx-storage-lokijs.test.js', () => {
 
             await waitUntil(() => callbackCalledCount === 1);
             await storageInstance.close();
+        });
+        /**
+         * All stored documents need a $lastWriteAt flag,
+         * so we can later implement an auto_compaction that
+         * removes tombstones of deleted documents.
+         */
+        it('should add the $lastWriteAt flag to all documents', async () => {
+            const startTime = now();
+            const collection = await humansCollections.create(
+                1,
+                randomCouchString(10),
+                false,
+                true,
+                getRxStorageLoki()
+            );
+            const doc = await collection.findOne().exec(true);
+            await doc.atomicPatch({ age: 100 });
+            const docId = doc.primary;
+
+            const localState = await collection.storageInstance.internals.localState;
+            const documentInDb = localState.collection.by(doc.primaryPath, docId);
+
+            assert.ok(documentInDb.$lastWriteAt);
+            assert.ok(documentInDb.$lastWriteAt > startTime);
+
+            collection.database.destroy();
         });
     });
 
