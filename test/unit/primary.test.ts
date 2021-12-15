@@ -197,6 +197,7 @@ config.parallel('primary.test.js', () => {
                 it('find with more selectors', async () => {
                     const c = await humansCollection.createPrimary(6);
                     const obj = schemaObjects.simpleHuman();
+                    obj.firstName = randomCouchString(10);
                     await c.insert(obj);
                     const doc = await c.findOne({
                         selector: {
