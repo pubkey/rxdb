@@ -1,3 +1,5 @@
+/// <reference types="pouchdb-core" />
+/// <reference types="node" />
 import type { ChangeStreamEvent, PouchChangeRow, PouchDBInstance, RxAttachmentData, RxAttachmentWriteData, RxDocumentData, RxDocumentWriteData, WithAttachments } from '../../types';
 import type { RxStorageInstancePouch } from './rx-storage-instance-pouch';
 import type { RxStorageKeyObjectInstancePouch } from './rx-storage-key-object-instance-pouch';
@@ -45,6 +47,8 @@ export declare function pouchChangeRowToChangeStreamEvent<DocumentData>(primaryK
  * @recursive
  */
 export declare function primarySwapPouchDbQuerySelector<RxDocType>(selector: any, primaryKey: keyof RxDocType): any;
+export declare function pouchHash(data: Buffer | Blob | string): Promise<string>;
+export declare const POUCH_HASH_KEY = "md5";
 export declare function writeAttachmentsToAttachments(attachments: {
     [attachmentId: string]: RxAttachmentData | RxAttachmentWriteData;
 }): Promise<{

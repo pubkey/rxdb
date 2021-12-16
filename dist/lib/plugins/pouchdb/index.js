@@ -69,6 +69,19 @@ Object.keys(_pouchdbHelper).forEach(function (key) {
   });
 });
 
+var _pouchStatics = require("./pouch-statics");
+
+Object.keys(_pouchStatics).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _pouchStatics[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _pouchStatics[key];
+    }
+  });
+});
+
 var _rxStorageInstancePouch = require("./rx-storage-instance-pouch");
 
 Object.keys(_rxStorageInstancePouch).forEach(function (key) {

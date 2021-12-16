@@ -1,11 +1,9 @@
 /// <reference types="pouchdb-core" />
 /// <reference types="node" />
-import type { PouchDBInstance, PouchSettings, RxJsonSchema, RxStorageInstanceCreationParams, RxStorage, RxKeyObjectStorageInstanceCreationParams, MangoQuery, RxDocumentWriteData, RxStorageStatics } from '../../types';
+import type { PouchDBInstance, PouchSettings, RxJsonSchema, RxStorageInstanceCreationParams, RxStorage, RxKeyObjectStorageInstanceCreationParams, MangoQuery, RxDocumentWriteData } from '../../types';
 import { RxStorageInstancePouch } from './rx-storage-instance-pouch';
 import { RxStorageKeyObjectInstancePouch } from './rx-storage-key-object-instance-pouch';
 import { PouchStorageInternals } from './pouchdb-helper';
-import type { DeterministicSortComparator, QueryMatcher } from 'event-reduce-js';
-export declare const RxStoragePouchStatics: RxStorageStatics;
 export declare class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSettings> {
     adapter: any;
     pouchSettings: PouchSettings;
@@ -14,8 +12,8 @@ export declare class RxStoragePouch implements RxStorage<PouchStorageInternals, 
         hash(data: string | Blob | Buffer): Promise<string>;
         hashKey: string;
         prepareQuery<DocumentData>(schema: RxJsonSchema<DocumentData>, mutateableQuery: MangoQuery<DocumentData>): any;
-        getSortComparator<DocumentData_1>(schema: RxJsonSchema<DocumentData_1>, query: MangoQuery<DocumentData_1>): DeterministicSortComparator<DocumentData_1>;
-        getQueryMatcher<DocumentData_2>(schema: RxJsonSchema<DocumentData_2>, query: MangoQuery<DocumentData_2>): QueryMatcher<RxDocumentWriteData<DocumentData_2>>;
+        getSortComparator<DocumentData_1>(schema: RxJsonSchema<DocumentData_1>, query: MangoQuery<DocumentData_1>): import("event-reduce-js").DeterministicSortComparator<DocumentData_1>;
+        getQueryMatcher<DocumentData_2>(schema: RxJsonSchema<DocumentData_2>, query: MangoQuery<DocumentData_2>): import("event-reduce-js").QueryMatcher<RxDocumentWriteData<DocumentData_2>>;
     }>;
     constructor(adapter: any, pouchSettings?: PouchSettings);
     private createPouch;

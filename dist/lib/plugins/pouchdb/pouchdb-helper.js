@@ -5,11 +5,12 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.POUCHDB_LOCAL_PREFIX = exports.POUCHDB_DESIGN_PREFIX = exports.OPEN_POUCHDB_STORAGE_INSTANCES = void 0;
+exports.POUCH_HASH_KEY = exports.POUCHDB_LOCAL_PREFIX = exports.POUCHDB_DESIGN_PREFIX = exports.OPEN_POUCHDB_STORAGE_INSTANCES = void 0;
 exports.getEventKey = getEventKey;
 exports.pouchChangeRowToChangeEvent = pouchChangeRowToChangeEvent;
 exports.pouchChangeRowToChangeStreamEvent = pouchChangeRowToChangeStreamEvent;
 exports.pouchDocumentDataToRxDocumentData = pouchDocumentDataToRxDocumentData;
+exports.pouchHash = pouchHash;
 exports.pouchStripLocalFlagFromPrimary = pouchStripLocalFlagFromPrimary;
 exports.pouchSwapIdToPrimary = pouchSwapIdToPrimary;
 exports.pouchSwapPrimaryToId = pouchSwapPrimaryToId;
@@ -21,11 +22,11 @@ var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"))
 
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 
+var _pouchdbMd = require("pouchdb-md5");
+
 var _util = require("../../util");
 
 var _rxError = require("../../rx-error");
-
-var _rxStoragePouchdb = require("./rx-storage-pouchdb");
 
 /**
  * Used to check in tests if all instances have been cleaned up.
@@ -277,6 +278,17 @@ function primarySwapPouchDbQuerySelector(selector, primaryKey) {
   }
 }
 
+function pouchHash(data) {
+  return new Promise(function (res) {
+    (0, _pouchdbMd.binaryMd5)(data, function (digest) {
+      res(digest);
+    });
+  });
+}
+
+var POUCH_HASH_KEY = 'md5';
+exports.POUCH_HASH_KEY = POUCH_HASH_KEY;
+
 function writeAttachmentsToAttachments(_x) {
   return _writeAttachmentsToAttachments.apply(this, arguments);
 }
@@ -327,7 +339,7 @@ function _writeAttachmentsToAttachments() {
 
                         asWrite = obj;
                         _context.next = 7;
-                        return Promise.all([_rxStoragePouchdb.RxStoragePouchStatics.hash(asWrite.data), _util.blobBufferUtil.toString(asWrite.data)]);
+                        return Promise.all([pouchHash(asWrite.data), _util.blobBufferUtil.toString(asWrite.data)]);
 
                       case 7:
                         _yield$Promise$all = _context.sent;
@@ -335,7 +347,7 @@ function _writeAttachmentsToAttachments() {
                         asString = _yield$Promise$all[1];
                         length = asString.length;
                         ret[key] = {
-                          digest: _rxStoragePouchdb.RxStoragePouchStatics.hashKey + '-' + hash,
+                          digest: POUCH_HASH_KEY + '-' + hash,
                           length: length,
                           type: asWrite.type
                         };

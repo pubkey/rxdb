@@ -1,8 +1,8 @@
 import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
+import { binaryMd5 } from 'pouchdb-md5';
 import { blobBufferUtil, flatClone, getHeightOfRevision } from '../../util';
 import { newRxError } from '../../rx-error';
-import { RxStoragePouchStatics } from './rx-storage-pouchdb';
 
 /**
  * Used to check in tests if all instances have been cleaned up.
@@ -241,6 +241,14 @@ export function primarySwapPouchDbQuerySelector(selector, primaryKey) {
     return selector;
   }
 }
+export function pouchHash(data) {
+  return new Promise(function (res) {
+    binaryMd5(data, function (digest) {
+      res(digest);
+    });
+  });
+}
+export var POUCH_HASH_KEY = 'md5';
 export function writeAttachmentsToAttachments(_x) {
   return _writeAttachmentsToAttachments.apply(this, arguments);
 }
@@ -291,7 +299,7 @@ function _writeAttachmentsToAttachments() {
 
                         asWrite = obj;
                         _context.next = 7;
-                        return Promise.all([RxStoragePouchStatics.hash(asWrite.data), blobBufferUtil.toString(asWrite.data)]);
+                        return Promise.all([pouchHash(asWrite.data), blobBufferUtil.toString(asWrite.data)]);
 
                       case 7:
                         _yield$Promise$all = _context.sent;
@@ -299,7 +307,7 @@ function _writeAttachmentsToAttachments() {
                         asString = _yield$Promise$all[1];
                         length = asString.length;
                         ret[key] = {
-                          digest: RxStoragePouchStatics.hashKey + '-' + hash,
+                          digest: POUCH_HASH_KEY + '-' + hash,
                           length: length,
                           type: asWrite.type
                         };
