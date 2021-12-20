@@ -20,7 +20,7 @@
         "declaration": true,
 
         "typeRoots": [
-            "./src/typings/modules"
+            "./src/types/modules"
         ]
     },
     "formatCodeOptions": {

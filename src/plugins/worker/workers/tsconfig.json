@@ -1,0 +1,21 @@
+{
+    "extends": "../../../../tsconfig",
+    "compilerOptions": {
+        "outDir": "./dist/",
+        "noImplicitAny": true,
+        "strict": true,
+        "module": "es6",
+        "allowJs": false,
+        "moduleResolution": "node",
+        "target": "es2017",
+        "noEmit": false,
+        "lib": [
+            "es2017",
+            "webworker"
+        ],
+        "allowSyntheticDefaultImports":  true,
+        "typeRoots": [
+            "../../../types/modules"
+        ]
+    }
+}
