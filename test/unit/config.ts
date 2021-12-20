@@ -89,8 +89,8 @@ export function setDefaultStorage(storageKey: string) {
             config.storage = {
                 name: 'lokijs-worker',
                 getStorage: () => getRxStorageWorker(
-                    RxStorageLokiStatics,
                     {
+                        statics: RxStorageLokiStatics,
                         workerInput: lokiWorkerPath
                     }
                 ),
