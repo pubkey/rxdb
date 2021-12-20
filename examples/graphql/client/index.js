@@ -143,8 +143,47 @@ function getStorage() {
     }
 }
 
+let tmpDb, tmpStorage
+async function testLokiFreeze () {
+    if (!tmpDb) {
+        tmpStorage = getRxStorageLoki({
+            adapter: new LokiIncrementalIndexedDBAdapter()
+        })
+        tmpDb = await createRxDatabase({
+            name: 'db',
+            multiInstance: true,
+            // ignoreDuplicate: true,
+            storage: tmpStorage
+        })
+    }
+    if (tmpDb.humans) await tmpDb.humans.remove()
+    await tmpDb.addCollections({
+        // key = collectionName
+        humans: {
+            schema: {
+                type: 'object',
+                version: 0,
+                primaryKey: 'name',
+                properties: {
+                    name: {
+                        type: 'string'
+                    },
+                    name2: {
+                        type: 'string'
+                    }
+                }
+            }
+        }
+    })
+    console.log('before exec')
+    let timer = setTimeout(()=>alert('FREEZE'), 3000)
+    const docs = await tmpDb.humans.find().exec()
+    clearTimeout(timer)
+    console.log('after exec', docs.length)
+}
 
 async function run() {
+    await testLokiFreeze() // exec on page init
     storageField.innerHTML = getStorageKey();
     databaseNameField.innerHTML = getDatabaseName();
     heroesList.innerHTML = 'Create database..';
@@ -324,6 +363,7 @@ async function run() {
         }
     };
     insertButton.onclick = async function () {
+        await testLokiFreeze() // on second page will never executed(freeze forever)!
         const name = document.querySelector('input[name="name"]').value;
         const color = document.querySelector('input[name="color"]').value;
         const obj = {
