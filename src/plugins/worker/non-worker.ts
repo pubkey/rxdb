@@ -1,10 +1,9 @@
 import { Observable, Subject, Subscription } from 'rxjs';
 import { spawn, Worker } from 'threads';
-import {
+import type {
     RxJsonSchema,
     RxStorage,
     RxStorageInstanceCreationParams,
-    MangoQuery,
     RxStorageInstance,
     BlobBuffer,
     BulkWriteRow,
@@ -30,6 +29,7 @@ declare type WorkerStorageInternals = {
     worker: InWorkerStorage;
 }
 declare type RxStorageWorkerSettings = {
+    statics: RxStorageStatics;
     workerInput: any;
 }
 
@@ -227,9 +227,8 @@ export class RxStorageKeyObjectInstanceWorker implements RxStorageKeyObjectInsta
 }
 
 export function getRxStorageWorker(
-    statics: RxStorageStatics,
     settings: RxStorageWorkerSettings
 ): RxStorageWorker {
-    const storage = new RxStorageWorker(settings, statics);
+    const storage = new RxStorageWorker(settings, settings.statics);
     return storage;
 }

@@ -38,12 +38,12 @@ import { RxStorageLokiStatics } from 'rxdb/plugins/lokijs';
 const database = await createRxDatabase({
     name: 'mydatabase',
     storage: getRxStorageWorker(
-        /**
-         * The static methods of the RxStorage that is also
-         * used inside of the worker process.
-         */
-        RxStorageLokiStatics,
         {
+            /**
+             * The static methods of the RxStorage that is also
+             * used inside of the worker process.
+             */
+            statics: RxStorageLokiStatics,
             /**
              * Contains any value that can be used as parameter
              * to the Worker constructor of thread.js
@@ -72,8 +72,8 @@ import { RxStorageLokiStatics } from 'rxdb/plugins/lokijs';
 const database = await createRxDatabase({
     name: 'mydatabase',
     storage: getRxStorageWorker(
-        RxStorageLokiStatics,
         {
+            statics: RxStorageLokiStatics,
             /**
              * Path to where the copied file from node_modules/rxdb/dist/workers
              * is reachable from the webserver.
