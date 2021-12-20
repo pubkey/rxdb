@@ -57,6 +57,32 @@ const database = await createRxDatabase({
 });
 ```
 
+## Pre-build workers
+
+In the browsers, the `worker.js` must be a self containing JavaScript file that contains all dependencies in a bundle.
+To make it easier for you, RxDB ships with [pre-bundles worker files](https://github.com/pubkey/rxdb/tree/master/dist/workers) that are ready to use.
+You can copy them to a location where it can be served from the webserver and then use their path to create the `RxDatabase`
+
+```ts
+import {
+    createRxDatabase
+} from 'rxdb/plugins/core';
+import { getRxStorageWorker } from 'rxdb/plugins/worker';
+import { RxStorageLokiStatics } from 'rxdb/plugins/lokijs';
+const database = await createRxDatabase({
+    name: 'mydatabase',
+    storage: getRxStorageWorker(
+        RxStorageLokiStatics,
+        {
+            /**
+             * Path to where the copied file from node_modules/rxdb/dist/workers
+             * is reachable from the webserver.
+             */
+            workerInput: '/lokijs-incremental-indexeddb.worker.js'
+        }
+    )
+});
+```
 
 
 --------------------------------------------------------------------------------
