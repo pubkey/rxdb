@@ -1,9 +1,11 @@
-import type { RxStorageInstanceLoki } from './rx-storage-instance-loki';
-import type { RxStorageKeyObjectInstanceLoki } from './rx-storage-key-object-instance-loki';
+import { createLokiLocalState, RxStorageInstanceLoki } from './rx-storage-instance-loki';
+import { createLokiKeyValueLocalState, RxStorageKeyObjectInstanceLoki } from './rx-storage-key-object-instance-loki';
 import lokijs, { Collection } from 'lokijs';
 import type {
     LokiDatabaseSettings,
     LokiDatabaseState,
+    LokiLocalDatabaseState,
+    LokiRemoteResponseBroadcastMessage,
     MangoQuery,
     MangoQuerySortDirection,
     MangoQuerySortPart,
@@ -12,7 +14,7 @@ import type {
 import {
     add as unloadAdd, AddReturn
 } from 'unload';
-import { flatClone } from '../../util';
+import { ensureNotFalsy, flatClone, promiseWait, randomCouchString } from '../../util';
 import { LokiSaveQueue } from './loki-save-queue';
 import type { DeterministicSortComparator } from 'event-reduce-js';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
@@ -264,5 +266,152 @@ export function removeLokiLeaderElectorReference(
             electorState.leaderElector.broadcastChannel.close();
             storage.leaderElectorByLokiDbName.delete(databaseName);
         }
+    }
+}
+
+/**
+ * For multi-instance usage, we send requests to the RxStorage
+ * to the current leading instance over the BroadcastChannel.
+ */
+export function requestRemoteInstance(
+    instance: RxStorageInstanceLoki<any> | RxStorageKeyObjectInstanceLoki,
+    operation: string,
+    params: any[]
+): Promise<any | any[]> {
+    const isRxStorageInstanceLoki = typeof (instance as any).query === 'function';
+    const messageType = isRxStorageInstanceLoki ? LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE : LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE;
+
+    const broadcastChannel = ensureNotFalsy(instance.internals.leaderElector).broadcastChannel;
+    const requestId = randomCouchString(12);
+    const responsePromise = new Promise<any>((res, rej) => {
+        const listener = (msg: any) => {
+            if (
+                msg.type === messageType &&
+                msg.response === true &&
+                msg.requestId === requestId
+            ) {
+                if (msg.isError) {
+                    broadcastChannel.removeEventListener('message', listener);
+                    rej(msg.result);
+                } else {
+                    broadcastChannel.removeEventListener('message', listener);
+                    res(msg.result);
+                }
+            }
+        };
+        broadcastChannel.addEventListener('message', listener);
+    });
+
+    broadcastChannel.postMessage({
+        response: false,
+        type: messageType,
+        operation,
+        params,
+        requestId,
+        databaseName: instance.databaseName,
+        collectionName: instance.collectionName
+    });
+    return responsePromise;
+}
+
+/**
+ * Handles a request that came from a remote instance via requestRemoteInstance()
+ * Runs the requested operation over the local db instance and sends back the result.
+ */
+export async function handleRemoteRequest(
+    instance: RxStorageInstanceLoki<any> | RxStorageKeyObjectInstanceLoki,
+    msg: any
+) {
+    const isRxStorageInstanceLoki = typeof (instance as any).query === 'function';
+    const messageType = isRxStorageInstanceLoki ? LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE : LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE;
+
+    if (
+        msg.type === messageType &&
+        msg.requestId &&
+        msg.databaseName === instance.databaseName &&
+        msg.collectionName === instance.collectionName &&
+        !msg.response
+    ) {
+        const operation = (msg as any).operation;
+        const params = (msg as any).params;
+        let result: any;
+        let isError = false;
+        try {
+            result = await (instance as any)[operation](...params);
+        } catch (err) {
+            isError = true;
+            result = err;
+        }
+        const response: LokiRemoteResponseBroadcastMessage = {
+            response: true,
+            requestId: msg.requestId,
+            databaseName: instance.databaseName,
+            collectionName: instance.collectionName,
+            result,
+            isError,
+            type: msg.type
+        };
+        ensureNotFalsy(instance.internals.leaderElector).broadcastChannel.postMessage(response);
+    }
+}
+
+/**
+ * If the local state must be used, that one is returned.
+ * Returns false if a remote instance must be used.
+ */
+export async function mustUseLocalState(
+    instance: RxStorageInstanceLoki<any> | RxStorageKeyObjectInstanceLoki
+): Promise<LokiLocalDatabaseState | false> {
+    if (instance.closed) {
+        return false;
+    }
+
+    const isRxStorageInstanceLoki = typeof (instance as any).query === 'function';
+
+    if (instance.internals.localState) {
+        return instance.internals.localState;
+    }
+    const leaderElector = ensureNotFalsy(instance.internals.leaderElector);
+
+    while (
+        !leaderElector.hasLeader
+    ) {
+        await leaderElector.applyOnce();
+        await promiseWait(0);
+    }
+
+    /**
+     * It might already have a localState after the applying
+     * because another subtask also called mustUSeLocalState()
+     */
+    if (instance.internals.localState) {
+        return instance.internals.localState;
+    }
+
+    if (
+        leaderElector.isLeader &&
+        !instance.internals.localState
+    ) {
+        // own is leader, use local instance
+        if (isRxStorageInstanceLoki) {
+            instance.internals.localState = createLokiLocalState<any>({
+                databaseName: instance.databaseName,
+                collectionName: instance.collectionName,
+                options: instance.options,
+                schema: (instance as RxStorageInstanceLoki<any>).schema,
+                multiInstance: instance.internals.leaderElector ? true : false
+            }, instance.databaseSettings);
+        } else {
+            instance.internals.localState = createLokiKeyValueLocalState({
+                databaseName: instance.databaseName,
+                collectionName: instance.collectionName,
+                options: instance.options,
+                multiInstance: instance.internals.leaderElector ? true : false
+            }, instance.databaseSettings);
+        }
+        return ensureNotFalsy(instance.internals.localState);
+    } else {
+        // other is leader, send message to remote leading instance
+        return false;
     }
 }
