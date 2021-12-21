@@ -819,7 +819,12 @@ https://www.npmjs.com/package/babel-plugin-transform-async-to-promises
 
 BEFORE:
 
+core:
 Build-Size (minified+gzip):
 75489
 
 AFTER:
+
+core: 
+Build-Size (minified+gzip):
+70723

@@ -70,6 +70,7 @@ if (process.env['NODE_ENV'] === 'es5') {
         [
             '@babel/typescript',
             {
+                loose: true,
                 targets: {
                     edge: '17',
                     firefox: '60',
