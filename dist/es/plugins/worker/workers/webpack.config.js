@@ -3,6 +3,9 @@ var path = require('path');
 var TerserPlugin = require('terser-webpack-plugin');
 
 var projectRootPath = path.resolve(__dirname, '../../../../');
+
+var babelConfig = require('../../../../babel.config');
+
 module.exports = {
   entry: {
     'lokijs-incremental-indexeddb': './src/plugins/worker/workers/lokijs-incremental-indexeddb.worker.ts',
@@ -14,6 +17,7 @@ module.exports = {
   },
   output: {
     filename: '[name].worker.js',
+    clean: true,
     path: path.resolve(projectRootPath, 'dist/workers')
   },
   mode: 'production',
@@ -23,13 +27,18 @@ module.exports = {
   },
   devtool: 'source-map',
   module: {
-    rules: [{
+    rules: [
+    /**
+     * We transpile the typscript via babel instead of ts-loader.
+     * This ensures we have the exact same babel config
+     * as the root RxDB project.
+     */
+    {
       test: /\.tsx?$/,
+      exclude: /(node_modules)/,
       use: {
-        loader: 'ts-loader',
-        options: {
-          transpileOnly: true
-        }
+        loader: 'babel-loader',
+        options: babelConfig
       }
     }]
   },

@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
 import type { RxStorageInstance, LokiSettings, RxStorageChangeEvent, RxDocumentData, BulkWriteRow, RxStorageBulkWriteResponse, RxStorageQueryResult, BlobBuffer, ChangeStreamOnceOptions, RxJsonSchema, MangoQuery, LokiStorageInternals, RxStorageChangedDocumentMeta, RxStorageInstanceCreationParams, LokiDatabaseSettings, LokiLocalDatabaseState, EventBulk } from '../../types';
-import { RxStorageLoki } from './rx-storage-lokijs';
+import type { RxStorageLoki } from './rx-storage-lokijs';
 export declare class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<RxDocType, LokiStorageInternals, LokiSettings> {
     readonly storage: RxStorageLoki;
     readonly databaseName: string;
@@ -13,15 +13,8 @@ export declare class RxStorageInstanceLoki<RxDocType> implements RxStorageInstan
     private changes$;
     private lastChangefeedSequence;
     readonly instanceId: number;
-    private closed;
+    closed: boolean;
     constructor(storage: RxStorageLoki, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocType>>, internals: LokiStorageInternals, options: Readonly<LokiSettings>, databaseSettings: LokiDatabaseSettings);
-    private getLocalState;
-    /**
-     * If the local state must be used, that one is returned.
-     * Returns false if a remote instance must be used.
-     */
-    mustUseLocalState(): Promise<LokiLocalDatabaseState | false>;
-    private requestRemoteInstance;
     /**
      * Adds an entry to the changes feed
      * that can be queried to check which documents have been

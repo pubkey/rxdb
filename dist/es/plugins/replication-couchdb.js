@@ -1,6 +1,3 @@
-import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
-import _regeneratorRuntime from "@babel/runtime/regenerator";
-
 /**
  * this plugin adds the RxCollection.sync()-function to rxdb
  * you can use it to sync collections with remote or local couchdb-instances
@@ -143,30 +140,20 @@ export function setPouchEventEmitter(rxRepState, evEmitter) {
   })); // complete
 
 
-  rxRepState._subs.push(fromEvent(evEmitter, 'complete').subscribe( /*#__PURE__*/function () {
-    var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(info) {
-      return _regeneratorRuntime.wrap(function _callee$(_context) {
-        while (1) {
-          switch (_context.prev = _context.next) {
-            case 0:
-              _context.next = 2;
-              return promiseWait(100);
-
-            case 2:
-              rxRepState._subjects.complete.next(info);
-
-            case 3:
-            case "end":
-              return _context.stop();
-          }
-        }
-      }, _callee);
-    }));
-
-    return function (_x) {
-      return _ref.apply(this, arguments);
-    };
-  }())); // auto-cancel one-time replications on complelete to not cause memory leak
+  rxRepState._subs.push(fromEvent(evEmitter, 'complete').subscribe(function (info) {
+    try {
+      /**
+       * when complete fires, it might be that not all changeEvents
+       * have passed throught, because of the delay of .wachtForChanges()
+       * Therefore we have to first ensure that all previous changeEvents have been handled
+       */
+      return Promise.resolve(promiseWait(100)).then(function () {
+        rxRepState._subjects.complete.next(info);
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  })); // auto-cancel one-time replications on complelete to not cause memory leak
 
 
   if (!rxRepState.syncOptions.options || !rxRepState.syncOptions.options.live) {
@@ -212,23 +199,23 @@ export function setPouchEventEmitter(rxRepState, evEmitter) {
 export function createRxCouchDBReplicationState(collection, syncOptions) {
   return new RxCouchDBReplicationStateBase(collection, syncOptions);
 }
-export function syncCouchDB(_ref2) {
+export function syncCouchDB(_ref) {
   var _this2 = this;
 
-  var remote = _ref2.remote,
-      _ref2$waitForLeadersh = _ref2.waitForLeadership,
-      waitForLeadership = _ref2$waitForLeadersh === void 0 ? true : _ref2$waitForLeadersh,
-      _ref2$direction = _ref2.direction,
-      direction = _ref2$direction === void 0 ? {
+  var remote = _ref.remote,
+      _ref$waitForLeadershi = _ref.waitForLeadership,
+      waitForLeadership = _ref$waitForLeadershi === void 0 ? true : _ref$waitForLeadershi,
+      _ref$direction = _ref.direction,
+      direction = _ref$direction === void 0 ? {
     pull: true,
     push: true
-  } : _ref2$direction,
-      _ref2$options = _ref2.options,
-      options = _ref2$options === void 0 ? {
+  } : _ref$direction,
+      _ref$options = _ref.options,
+      options = _ref$options === void 0 ? {
     live: true,
     retry: true
-  } : _ref2$options,
-      query = _ref2.query;
+  } : _ref$options,
+      query = _ref.query;
   var useOptions = flatClone(options); // prevent #641 by not allowing internal pouchdbs as remote
 
   if (isInstanceOfPouchDB(remote) && INTERNAL_POUCHDBS.has(remote)) {

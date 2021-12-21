@@ -8,12 +8,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.RxDBEncryptionPlugin = void 0;
 exports.decrypt = decrypt;
 exports.encrypt = encrypt;
-exports.rxdb = exports.prototypes = exports.overwritable = void 0;
-exports.storePasswordHashIntoDatabase = storePasswordHashIntoDatabase;
-
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
+exports.storePasswordHashIntoDatabase = exports.rxdb = exports.prototypes = exports.overwritable = void 0;
 
 var _aes = _interopRequireDefault(require("crypto-js/aes"));
 
@@ -34,6 +29,50 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
  * It's using crypto-js/aes for password-encryption
  * @link https://github.com/brix/crypto-js
  */
+
+/**
+ * validates and inserts the password hash into the internal collection
+ * to ensure there is/was no other instance with a different password
+ * which would cause strange side effects when both instances save into the same db
+ */
+var storePasswordHashIntoDatabase = function storePasswordHashIntoDatabase(rxDatabase) {
+  try {
+    if (!rxDatabase.password) {
+      return Promise.resolve(_util.PROMISE_RESOLVE_FALSE);
+    }
+
+    var pwHash = (0, _util.hash)(rxDatabase.password);
+    var pwHashDocumentId = 'pwHash';
+    return Promise.resolve((0, _rxStorageHelper.findLocalDocument)(rxDatabase.localDocumentsStore, pwHashDocumentId)).then(function (pwHashDoc) {
+      if (!pwHashDoc) {
+        var docData = {
+          _id: pwHashDocumentId,
+          value: pwHash,
+          _attachments: {}
+        };
+        return Promise.resolve(rxDatabase.localDocumentsStore.bulkWrite([{
+          document: docData
+        }])).then(function () {
+          return true;
+        });
+      } else if (pwHash !== pwHashDoc.value) {
+        // different hash was already set by other instance
+        return Promise.resolve(rxDatabase.destroy()).then(function () {
+          throw (0, _rxError.newRxError)('DB1', {
+            passwordHash: (0, _util.hash)(rxDatabase.password),
+            existingPasswordHash: pwHashDoc.value
+          });
+        });
+      } else {
+        return true;
+      }
+    });
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+
+exports.storePasswordHashIntoDatabase = storePasswordHashIntoDatabase;
 var minPassLength = 8;
 
 function encrypt(value, password) {
@@ -56,84 +95,6 @@ var _decryptString = function _decryptString(encryptedValue) {
   var decrypted = decrypt(encryptedValue, this.password);
   return decrypted;
 };
-
-/**
- * validates and inserts the password hash into the internal collection
- * to ensure there is/was no other instance with a different password
- * which would cause strange side effects when both instances save into the same db
- */
-function storePasswordHashIntoDatabase(_x) {
-  return _storePasswordHashIntoDatabase.apply(this, arguments);
-}
-
-function _storePasswordHashIntoDatabase() {
-  _storePasswordHashIntoDatabase = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(rxDatabase) {
-    var pwHash, pwHashDocumentId, pwHashDoc, docData;
-    return _regenerator["default"].wrap(function _callee$(_context) {
-      while (1) {
-        switch (_context.prev = _context.next) {
-          case 0:
-            if (rxDatabase.password) {
-              _context.next = 2;
-              break;
-            }
-
-            return _context.abrupt("return", _util.PROMISE_RESOLVE_FALSE);
-
-          case 2:
-            pwHash = (0, _util.hash)(rxDatabase.password);
-            pwHashDocumentId = 'pwHash';
-            _context.next = 6;
-            return (0, _rxStorageHelper.findLocalDocument)(rxDatabase.localDocumentsStore, pwHashDocumentId);
-
-          case 6:
-            pwHashDoc = _context.sent;
-
-            if (pwHashDoc) {
-              _context.next = 14;
-              break;
-            }
-
-            docData = {
-              _id: pwHashDocumentId,
-              value: pwHash,
-              _attachments: {}
-            };
-            _context.next = 11;
-            return rxDatabase.localDocumentsStore.bulkWrite([{
-              document: docData
-            }]);
-
-          case 11:
-            return _context.abrupt("return", true);
-
-          case 14:
-            if (!(pwHash !== pwHashDoc.value)) {
-              _context.next = 20;
-              break;
-            }
-
-            _context.next = 17;
-            return rxDatabase.destroy();
-
-          case 17:
-            throw (0, _rxError.newRxError)('DB1', {
-              passwordHash: (0, _util.hash)(rxDatabase.password),
-              existingPasswordHash: pwHashDoc.value
-            });
-
-          case 20:
-            return _context.abrupt("return", true);
-
-          case 21:
-          case "end":
-            return _context.stop();
-        }
-      }
-    }, _callee);
-  }));
-  return _storePasswordHashIntoDatabase.apply(this, arguments);
-}
 
 var rxdb = true;
 exports.rxdb = rxdb;

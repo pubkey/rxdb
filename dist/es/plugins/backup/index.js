@@ -1,5 +1,3 @@
-import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
-import _regeneratorRuntime from "@babel/runtime/regenerator";
 import * as path from 'path';
 import { BehaviorSubject, firstValueFrom, Subject } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
@@ -11,85 +9,234 @@ import { clearFolder, deleteFolder, documentFolder, ensureFolderExists, getMeta,
  * returns the paths to all written files
  */
 
-export function backupSingleDocument(_x, _x2) {
-  return _backupSingleDocument.apply(this, arguments);
+function _settle(pact, state, value) {
+  if (!pact.s) {
+    if (value instanceof _Pact) {
+      if (value.s) {
+        if (state & 1) {
+          state = value.s;
+        }
+
+        value = value.v;
+      } else {
+        value.o = _settle.bind(null, pact, state);
+        return;
+      }
+    }
+
+    if (value && value.then) {
+      value.then(_settle.bind(null, pact, state), _settle.bind(null, pact, 2));
+      return;
+    }
+
+    pact.s = state;
+    pact.v = value;
+    const observer = pact.o;
+
+    if (observer) {
+      observer(pact);
+    }
+  }
 }
 
-function _backupSingleDocument() {
-  _backupSingleDocument = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee7(rxDocument, options) {
-    var data, writtenFiles, docFolder, fileLocation, attachmentsFolder, attachments;
-    return _regeneratorRuntime.wrap(function _callee7$(_context8) {
-      while (1) {
-        switch (_context8.prev = _context8.next) {
-          case 0:
-            data = rxDocument.toJSON(true);
-            writtenFiles = [];
-            docFolder = documentFolder(options, rxDocument.primary);
-            _context8.next = 5;
-            return clearFolder(docFolder);
+var _Pact = /*#__PURE__*/function () {
+  function _Pact() {}
 
-          case 5:
-            fileLocation = path.join(docFolder, 'document.json');
-            _context8.next = 8;
-            return writeJsonToFile(fileLocation, data);
+  _Pact.prototype.then = function (onFulfilled, onRejected) {
+    var result = new _Pact();
+    var state = this.s;
 
-          case 8:
-            writtenFiles.push(fileLocation);
+    if (state) {
+      var callback = state & 1 ? onFulfilled : onRejected;
 
-            if (!options.attachments) {
-              _context8.next = 15;
-              break;
-            }
+      if (callback) {
+        try {
+          _settle(result, 1, callback(this.v));
+        } catch (e) {
+          _settle(result, 2, e);
+        }
 
-            attachmentsFolder = path.join(docFolder, 'attachments');
-            ensureFolderExists(attachmentsFolder);
-            attachments = rxDocument.allAttachments();
-            _context8.next = 15;
-            return Promise.all(attachments.map( /*#__PURE__*/function () {
-              var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee6(attachment) {
-                var content, attachmentFileLocation;
-                return _regeneratorRuntime.wrap(function _callee6$(_context7) {
-                  while (1) {
-                    switch (_context7.prev = _context7.next) {
-                      case 0:
-                        _context7.next = 2;
-                        return attachment.getData();
+        return result;
+      } else {
+        return this;
+      }
+    }
 
-                      case 2:
-                        content = _context7.sent;
-                        attachmentFileLocation = path.join(attachmentsFolder, attachment.id);
-                        _context7.next = 6;
-                        return writeToFile(attachmentFileLocation, content);
+    this.o = function (_this) {
+      try {
+        var value = _this.v;
 
-                      case 6:
-                        writtenFiles.push(attachmentFileLocation);
+        if (_this.s & 1) {
+          _settle(result, 1, onFulfilled ? onFulfilled(value) : value);
+        } else if (onRejected) {
+          _settle(result, 1, onRejected(value));
+        } else {
+          _settle(result, 2, value);
+        }
+      } catch (e) {
+        _settle(result, 2, e);
+      }
+    };
 
-                      case 7:
-                      case "end":
-                        return _context7.stop();
-                    }
-                  }
-                }, _callee6);
-              }));
+    return result;
+  };
 
-              return function (_x6) {
-                return _ref4.apply(this, arguments);
-              };
-            }()));
+  return _Pact;
+}();
 
-          case 15:
-            return _context8.abrupt("return", writtenFiles);
+function _isSettledPact(thenable) {
+  return thenable instanceof _Pact && thenable.s & 1;
+}
 
-          case 16:
-          case "end":
-            return _context8.stop();
+function _for(test, update, body) {
+  var stage;
+
+  for (;;) {
+    var shouldContinue = test();
+
+    if (_isSettledPact(shouldContinue)) {
+      shouldContinue = shouldContinue.v;
+    }
+
+    if (!shouldContinue) {
+      return result;
+    }
+
+    if (shouldContinue.then) {
+      stage = 0;
+      break;
+    }
+
+    var result = body();
+
+    if (result && result.then) {
+      if (_isSettledPact(result)) {
+        result = result.s;
+      } else {
+        stage = 1;
+        break;
+      }
+    }
+
+    if (update) {
+      var updateValue = update();
+
+      if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
+        stage = 2;
+        break;
+      }
+    }
+  }
+
+  var pact = new _Pact();
+
+  var reject = _settle.bind(null, pact, 2);
+
+  (stage === 0 ? shouldContinue.then(_resumeAfterTest) : stage === 1 ? result.then(_resumeAfterBody) : updateValue.then(_resumeAfterUpdate)).then(void 0, reject);
+  return pact;
+
+  function _resumeAfterBody(value) {
+    result = value;
+
+    do {
+      if (update) {
+        updateValue = update();
+
+        if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
+          updateValue.then(_resumeAfterUpdate).then(void 0, reject);
+          return;
         }
       }
-    }, _callee7);
-  }));
-  return _backupSingleDocument.apply(this, arguments);
+
+      shouldContinue = test();
+
+      if (!shouldContinue || _isSettledPact(shouldContinue) && !shouldContinue.v) {
+        _settle(pact, 1, result);
+
+        return;
+      }
+
+      if (shouldContinue.then) {
+        shouldContinue.then(_resumeAfterTest).then(void 0, reject);
+        return;
+      }
+
+      result = body();
+
+      if (_isSettledPact(result)) {
+        result = result.v;
+      }
+    } while (!result || !result.then);
+
+    result.then(_resumeAfterBody).then(void 0, reject);
+  }
+
+  function _resumeAfterTest(shouldContinue) {
+    if (shouldContinue) {
+      result = body();
+
+      if (result && result.then) {
+        result.then(_resumeAfterBody).then(void 0, reject);
+      } else {
+        _resumeAfterBody(result);
+      }
+    } else {
+      _settle(pact, 1, result);
+    }
+  }
+
+  function _resumeAfterUpdate() {
+    if (shouldContinue = test()) {
+      if (shouldContinue.then) {
+        shouldContinue.then(_resumeAfterTest).then(void 0, reject);
+      } else {
+        _resumeAfterTest(shouldContinue);
+      }
+    } else {
+      _settle(pact, 1, result);
+    }
+  }
 }
 
+export var backupSingleDocument = function backupSingleDocument(rxDocument, options) {
+  try {
+    var data = rxDocument.toJSON(true);
+    var writtenFiles = [];
+    var docFolder = documentFolder(options, rxDocument.primary);
+    return Promise.resolve(clearFolder(docFolder)).then(function () {
+      var fileLocation = path.join(docFolder, 'document.json');
+      return Promise.resolve(writeJsonToFile(fileLocation, data)).then(function () {
+        writtenFiles.push(fileLocation);
+
+        var _temp = function () {
+          if (options.attachments) {
+            var attachmentsFolder = path.join(docFolder, 'attachments');
+            ensureFolderExists(attachmentsFolder);
+            var attachments = rxDocument.allAttachments();
+            return Promise.resolve(Promise.all(attachments.map(function (attachment) {
+              try {
+                return Promise.resolve(attachment.getData()).then(function (content) {
+                  var attachmentFileLocation = path.join(attachmentsFolder, attachment.id);
+                  return Promise.resolve(writeToFile(attachmentFileLocation, content)).then(function () {
+                    writtenFiles.push(attachmentFileLocation);
+                  });
+                });
+              } catch (e) {
+                return Promise.reject(e);
+              }
+            }))).then(function () {});
+          }
+        }();
+
+        return _temp && _temp.then ? _temp.then(function () {
+          return writtenFiles;
+        }) : writtenFiles;
+      });
+    });
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
 var BACKUP_STATES_BY_DB = new WeakMap();
 
 function addToBackupStates(db, state) {
@@ -135,272 +282,138 @@ export var RxBackupState = /*#__PURE__*/function () {
 
   var _proto = RxBackupState.prototype;
 
-  _proto.persistOnce =
-  /*#__PURE__*/
-  function () {
-    var _persistOnce2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee() {
-      var _this = this;
-
-      return _regeneratorRuntime.wrap(function _callee$(_context) {
-        while (1) {
-          switch (_context.prev = _context.next) {
-            case 0:
-              return _context.abrupt("return", this.persistRunning = this.persistRunning.then(function () {
-                return _this._persistOnce();
-              }));
-
-            case 1:
-            case "end":
-              return _context.stop();
-          }
-        }
-      }, _callee, this);
-    }));
-
-    function persistOnce() {
-      return _persistOnce2.apply(this, arguments);
-    }
-
-    return persistOnce;
-  }();
-
-  _proto._persistOnce = /*#__PURE__*/function () {
-    var _persistOnce3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee5() {
+  _proto.persistOnce = function persistOnce() {
+    try {
       var _this2 = this;
 
-      var meta;
-      return _regeneratorRuntime.wrap(function _callee5$(_context6) {
-        while (1) {
-          switch (_context6.prev = _context6.next) {
-            case 0:
-              _context6.next = 2;
-              return getMeta(this.options);
+      return Promise.resolve(_this2.persistRunning = _this2.persistRunning.then(function () {
+        return _this2._persistOnce();
+      }));
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
 
-            case 2:
-              meta = _context6.sent;
-              _context6.next = 5;
-              return Promise.all(Object.keys(this.database.collections).map( /*#__PURE__*/function () {
-                var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4(collectionName) {
-                  var processedDocuments, collection, lastSequence, hasMore, _loop, _ret;
+  _proto._persistOnce = function _persistOnce() {
+    try {
+      var _this4 = this;
 
-                  return _regeneratorRuntime.wrap(function _callee4$(_context5) {
-                    while (1) {
-                      switch (_context5.prev = _context5.next) {
-                        case 0:
-                          processedDocuments = new Set();
-                          collection = _this2.database.collections[collectionName];
-                          _context5.next = 4;
-                          return _this2.database.requestIdlePromise();
-
-                        case 4:
-                          if (!meta.collectionStates[collectionName]) {
-                            meta.collectionStates[collectionName] = {
-                              lastSequence: 0
-                            };
-                          }
-
-                          lastSequence = meta.collectionStates[collectionName].lastSequence;
-                          hasMore = true;
-                          _loop = /*#__PURE__*/_regeneratorRuntime.mark(function _loop() {
-                            var changesResult, docIds, docs;
-                            return _regeneratorRuntime.wrap(function _loop$(_context4) {
-                              while (1) {
-                                switch (_context4.prev = _context4.next) {
-                                  case 0:
-                                    _context4.next = 2;
-                                    return _this2.database.requestIdlePromise();
-
-                                  case 2:
-                                    _context4.next = 4;
-                                    return collection.storageInstance.getChangedDocuments({
-                                      sinceSequence: lastSequence,
-                                      limit: _this2.options.batchSize,
-                                      direction: 'after'
-                                    });
-
-                                  case 4:
-                                    changesResult = _context4.sent;
-                                    lastSequence = changesResult.lastSequence;
-                                    meta.collectionStates[collectionName].lastSequence = lastSequence;
-                                    docIds = changesResult.changedDocuments.filter(function (changedDocument) {
-                                      if (processedDocuments.has(changedDocument.id)) {
-                                        return false;
-                                      } else {
-                                        processedDocuments.add(changedDocument.id);
-                                        return true;
-                                      }
-                                    }).map(function (r) {
-                                      return r.id;
-                                    }) // unique
-                                    .filter(function (elem, pos, arr) {
-                                      return arr.indexOf(elem) === pos;
-                                    });
-                                    _context4.next = 10;
-                                    return _this2.database.requestIdlePromise();
-
-                                  case 10:
-                                    _context4.next = 12;
-                                    return collection.findByIds(docIds);
-
-                                  case 12:
-                                    docs = _context4.sent;
-
-                                    if (!(docs.size === 0)) {
-                                      _context4.next = 16;
-                                      break;
-                                    }
-
-                                    hasMore = false;
-                                    return _context4.abrupt("return", "continue");
-
-                                  case 16:
-                                    _context4.next = 18;
-                                    return Promise.all(Array.from(docs.values()).map( /*#__PURE__*/function () {
-                                      var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(doc) {
-                                        var writtenFiles;
-                                        return _regeneratorRuntime.wrap(function _callee2$(_context2) {
-                                          while (1) {
-                                            switch (_context2.prev = _context2.next) {
-                                              case 0:
-                                                _context2.next = 2;
-                                                return backupSingleDocument(doc, _this2.options);
-
-                                              case 2:
-                                                writtenFiles = _context2.sent;
-
-                                                _this2.internalWriteEvents$.next({
-                                                  collectionName: collection.name,
-                                                  documentId: doc.primary,
-                                                  files: writtenFiles,
-                                                  deleted: false
-                                                });
-
-                                              case 4:
-                                              case "end":
-                                                return _context2.stop();
-                                            }
-                                          }
-                                        }, _callee2);
-                                      }));
-
-                                      return function (_x4) {
-                                        return _ref2.apply(this, arguments);
-                                      };
-                                    }()));
-
-                                  case 18:
-                                    _context4.next = 20;
-                                    return Promise.all(docIds.filter(function (docId) {
-                                      return !docs.has(docId);
-                                    }).map( /*#__PURE__*/function () {
-                                      var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3(docId) {
-                                        return _regeneratorRuntime.wrap(function _callee3$(_context3) {
-                                          while (1) {
-                                            switch (_context3.prev = _context3.next) {
-                                              case 0:
-                                                _context3.next = 2;
-                                                return deleteFolder(documentFolder(_this2.options, docId));
-
-                                              case 2:
-                                                _this2.internalWriteEvents$.next({
-                                                  collectionName: collection.name,
-                                                  documentId: docId,
-                                                  files: [],
-                                                  deleted: true
-                                                });
-
-                                              case 3:
-                                              case "end":
-                                                return _context3.stop();
-                                            }
-                                          }
-                                        }, _callee3);
-                                      }));
-
-                                      return function (_x5) {
-                                        return _ref3.apply(this, arguments);
-                                      };
-                                    }()));
-
-                                  case 20:
-                                  case "end":
-                                    return _context4.stop();
-                                }
-                              }
-                            }, _loop);
-                          });
-
-                        case 8:
-                          if (!(hasMore && !_this2.isStopped)) {
-                            _context5.next = 15;
-                            break;
-                          }
-
-                          return _context5.delegateYield(_loop(), "t0", 10);
-
-                        case 10:
-                          _ret = _context5.t0;
-
-                          if (!(_ret === "continue")) {
-                            _context5.next = 13;
-                            break;
-                          }
-
-                          return _context5.abrupt("continue", 8);
-
-                        case 13:
-                          _context5.next = 8;
-                          break;
-
-                        case 15:
-                          meta.collectionStates[collectionName].lastSequence = lastSequence;
-                          _context5.next = 18;
-                          return setMeta(_this2.options, meta);
-
-                        case 18:
-                        case "end":
-                          return _context5.stop();
-                      }
-                    }
-                  }, _callee4);
-                }));
-
-                return function (_x3) {
-                  return _ref.apply(this, arguments);
-                };
-              }()));
-
-            case 5:
-              if (!this.initialReplicationDone$.getValue()) {
-                this.initialReplicationDone$.next(true);
+      return Promise.resolve(getMeta(_this4.options)).then(function (meta) {
+        return Promise.resolve(Promise.all(Object.keys(_this4.database.collections).map(function (collectionName) {
+          try {
+            var processedDocuments = new Set();
+            var collection = _this4.database.collections[collectionName];
+            return Promise.resolve(_this4.database.requestIdlePromise()).then(function () {
+              function _temp3() {
+                meta.collectionStates[collectionName].lastSequence = lastSequence;
+                return Promise.resolve(setMeta(_this4.options, meta)).then(function () {});
               }
 
-            case 6:
-            case "end":
-              return _context6.stop();
+              if (!meta.collectionStates[collectionName]) {
+                meta.collectionStates[collectionName] = {
+                  lastSequence: 0
+                };
+              }
+
+              var lastSequence = meta.collectionStates[collectionName].lastSequence;
+              var hasMore = true;
+
+              var _temp2 = _for(function () {
+                return !!hasMore && !_this4.isStopped;
+              }, void 0, function () {
+                return Promise.resolve(_this4.database.requestIdlePromise()).then(function () {
+                  return Promise.resolve(collection.storageInstance.getChangedDocuments({
+                    sinceSequence: lastSequence,
+                    limit: _this4.options.batchSize,
+                    direction: 'after'
+                  })).then(function (changesResult) {
+                    lastSequence = changesResult.lastSequence;
+                    meta.collectionStates[collectionName].lastSequence = lastSequence;
+                    var docIds = changesResult.changedDocuments.filter(function (changedDocument) {
+                      if (processedDocuments.has(changedDocument.id)) {
+                        return false;
+                      } else {
+                        processedDocuments.add(changedDocument.id);
+                        return true;
+                      }
+                    }).map(function (r) {
+                      return r.id;
+                    }) // unique
+                    .filter(function (elem, pos, arr) {
+                      return arr.indexOf(elem) === pos;
+                    });
+                    return Promise.resolve(_this4.database.requestIdlePromise()).then(function () {
+                      return Promise.resolve(collection.findByIds(docIds)).then(function (docs) {
+                        if (docs.size === 0) {
+                          hasMore = false;
+                          return;
+                        }
+
+                        return Promise.resolve(Promise.all(Array.from(docs.values()).map(function (doc) {
+                          try {
+                            return Promise.resolve(backupSingleDocument(doc, _this4.options)).then(function (writtenFiles) {
+                              _this4.internalWriteEvents$.next({
+                                collectionName: collection.name,
+                                documentId: doc.primary,
+                                files: writtenFiles,
+                                deleted: false
+                              });
+                            });
+                          } catch (e) {
+                            return Promise.reject(e);
+                          }
+                        }))).then(function () {
+                          // handle deleted documents
+                          return Promise.resolve(Promise.all(docIds.filter(function (docId) {
+                            return !docs.has(docId);
+                          }).map(function (docId) {
+                            try {
+                              return Promise.resolve(deleteFolder(documentFolder(_this4.options, docId))).then(function () {
+                                _this4.internalWriteEvents$.next({
+                                  collectionName: collection.name,
+                                  documentId: docId,
+                                  files: [],
+                                  deleted: true
+                                });
+                              });
+                            } catch (e) {
+                              return Promise.reject(e);
+                            }
+                          }))).then(function () {});
+                        });
+                      });
+                    });
+                  });
+                });
+              });
+
+              return _temp2 && _temp2.then ? _temp2.then(_temp3) : _temp3(_temp2);
+            });
+          } catch (e) {
+            return Promise.reject(e);
           }
-        }
-      }, _callee5, this);
-    }));
-
-    function _persistOnce() {
-      return _persistOnce3.apply(this, arguments);
+        }))).then(function () {
+          if (!_this4.initialReplicationDone$.getValue()) {
+            _this4.initialReplicationDone$.next(true);
+          }
+        });
+      });
+    } catch (e) {
+      return Promise.reject(e);
     }
-
-    return _persistOnce;
-  }();
+  };
 
   _proto.watchForChanges = function watchForChanges() {
-    var _this3 = this;
+    var _this5 = this;
 
     var collections = Object.values(this.database.collections);
     collections.forEach(function (collection) {
       var changes$ = collection.storageInstance.changeStream();
       var sub = changes$.subscribe(function () {
-        _this3.persistOnce();
+        _this5.persistOnce();
       });
 
-      _this3.subs.push(sub);
+      _this5.subs.push(sub);
     });
   }
   /**

@@ -1,20 +1,14 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports._handleFromStorageInstance = _handleFromStorageInstance;
 exports._handleToStorageInstance = _handleToStorageInstance;
-exports.createRxCollectionStorageInstances = createRxCollectionStorageInstances;
+exports.createRxCollectionStorageInstances = void 0;
 exports.fillObjectDataBeforeInsert = fillObjectDataBeforeInsert;
 exports.getCollectionLocalInstanceName = getCollectionLocalInstanceName;
-exports.writeToStorageInstance = writeToStorageInstance;
-
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
+exports.writeToStorageInstance = void 0;
 
 var _util = require("./util");
 
@@ -26,134 +20,312 @@ var _rxStorageHelper = require("./rx-storage-helper");
 
 var _overwritable = require("./overwritable");
 
+function _catch(body, recover) {
+  try {
+    var result = body();
+  } catch (e) {
+    return recover(e);
+  }
+
+  if (result && result.then) {
+    return result.then(void 0, recover);
+  }
+
+  return result;
+}
+
+function _settle(pact, state, value) {
+  if (!pact.s) {
+    if (value instanceof _Pact) {
+      if (value.s) {
+        if (state & 1) {
+          state = value.s;
+        }
+
+        value = value.v;
+      } else {
+        value.o = _settle.bind(null, pact, state);
+        return;
+      }
+    }
+
+    if (value && value.then) {
+      value.then(_settle.bind(null, pact, state), _settle.bind(null, pact, 2));
+      return;
+    }
+
+    pact.s = state;
+    pact.v = value;
+    var observer = pact.o;
+
+    if (observer) {
+      observer(pact);
+    }
+  }
+}
+
+var _Pact = /*#__PURE__*/function () {
+  function _Pact() {}
+
+  _Pact.prototype.then = function (onFulfilled, onRejected) {
+    var result = new _Pact();
+    var state = this.s;
+
+    if (state) {
+      var callback = state & 1 ? onFulfilled : onRejected;
+
+      if (callback) {
+        try {
+          _settle(result, 1, callback(this.v));
+        } catch (e) {
+          _settle(result, 2, e);
+        }
+
+        return result;
+      } else {
+        return this;
+      }
+    }
+
+    this.o = function (_this) {
+      try {
+        var value = _this.v;
+
+        if (_this.s & 1) {
+          _settle(result, 1, onFulfilled ? onFulfilled(value) : value);
+        } else if (onRejected) {
+          _settle(result, 1, onRejected(value));
+        } else {
+          _settle(result, 2, value);
+        }
+      } catch (e) {
+        _settle(result, 2, e);
+      }
+    };
+
+    return result;
+  };
+
+  return _Pact;
+}();
+
+function _isSettledPact(thenable) {
+  return thenable instanceof _Pact && thenable.s & 1;
+}
+
+function _for(test, update, body) {
+  var stage;
+
+  for (;;) {
+    var shouldContinue = test();
+
+    if (_isSettledPact(shouldContinue)) {
+      shouldContinue = shouldContinue.v;
+    }
+
+    if (!shouldContinue) {
+      return result;
+    }
+
+    if (shouldContinue.then) {
+      stage = 0;
+      break;
+    }
+
+    var result = body();
+
+    if (result && result.then) {
+      if (_isSettledPact(result)) {
+        result = result.s;
+      } else {
+        stage = 1;
+        break;
+      }
+    }
+
+    if (update) {
+      var updateValue = update();
+
+      if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
+        stage = 2;
+        break;
+      }
+    }
+  }
+
+  var pact = new _Pact();
+
+  var reject = _settle.bind(null, pact, 2);
+
+  (stage === 0 ? shouldContinue.then(_resumeAfterTest) : stage === 1 ? result.then(_resumeAfterBody) : updateValue.then(_resumeAfterUpdate)).then(void 0, reject);
+  return pact;
+
+  function _resumeAfterBody(value) {
+    result = value;
+
+    do {
+      if (update) {
+        updateValue = update();
+
+        if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
+          updateValue.then(_resumeAfterUpdate).then(void 0, reject);
+          return;
+        }
+      }
+
+      shouldContinue = test();
+
+      if (!shouldContinue || _isSettledPact(shouldContinue) && !shouldContinue.v) {
+        _settle(pact, 1, result);
+
+        return;
+      }
+
+      if (shouldContinue.then) {
+        shouldContinue.then(_resumeAfterTest).then(void 0, reject);
+        return;
+      }
+
+      result = body();
+
+      if (_isSettledPact(result)) {
+        result = result.v;
+      }
+    } while (!result || !result.then);
+
+    result.then(_resumeAfterBody).then(void 0, reject);
+  }
+
+  function _resumeAfterTest(shouldContinue) {
+    if (shouldContinue) {
+      result = body();
+
+      if (result && result.then) {
+        result.then(_resumeAfterBody).then(void 0, reject);
+      } else {
+        _resumeAfterBody(result);
+      }
+    } else {
+      _settle(pact, 1, result);
+    }
+  }
+
+  function _resumeAfterUpdate() {
+    if (shouldContinue = test()) {
+      if (shouldContinue.then) {
+        shouldContinue.then(_resumeAfterTest).then(void 0, reject);
+      } else {
+        _resumeAfterTest(shouldContinue);
+      }
+    } else {
+      _settle(pact, 1, result);
+    }
+  }
+}
+
+/**
+ * Creates the storage instances that are used internally in the collection
+ */
+var createRxCollectionStorageInstances = function createRxCollectionStorageInstances(collectionName, rxDatabase, storageInstanceCreationParams, instanceCreationOptions) {
+  try {
+    storageInstanceCreationParams.multiInstance = rxDatabase.multiInstance;
+    return Promise.resolve(Promise.all([rxDatabase.storage.createStorageInstance(storageInstanceCreationParams), rxDatabase.storage.createKeyObjectStorageInstance({
+      databaseName: rxDatabase.name,
+
+      /**
+       * Use a different collection name for the local documents instance
+       * so that the local docs can be kept while deleting the normal instance
+       * after migration.
+       */
+      collectionName: getCollectionLocalInstanceName(collectionName),
+      options: instanceCreationOptions,
+      multiInstance: rxDatabase.multiInstance
+    })])).then(function (_ref) {
+      var storageInstance = _ref[0],
+          localDocumentsStore = _ref[1];
+      return {
+        storageInstance: storageInstance,
+        localDocumentsStore: localDocumentsStore
+      };
+    });
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+
+exports.createRxCollectionStorageInstances = createRxCollectionStorageInstances;
+
 /**
  * Every write access on the storage engine,
  * goes throught this method
  * so we can run hooks and resolve stuff etc.
  */
-function writeToStorageInstance(_x, _x2) {
-  return _writeToStorageInstance.apply(this, arguments);
-}
+var writeToStorageInstance = function writeToStorageInstance(collection, writeRow) {
+  try {
+    var _exit2 = false;
+    var _arguments2 = arguments;
+    var overwrite = _arguments2.length > 2 && _arguments2[2] !== undefined ? _arguments2[2] : false;
+    var toStorageInstance = {
+      previous: writeRow.previous ? _handleToStorageInstance(collection, (0, _util.flatClone)(writeRow.previous)) : undefined,
+      document: _handleToStorageInstance(collection, (0, _util.flatClone)(writeRow.document))
+    };
+    return Promise.resolve(_for(function () {
+      return !_exit2;
+    }, void 0, function () {
+      return _catch(function () {
+        return Promise.resolve(collection.database.lockedRun(function () {
+          return (0, _rxStorageHelper.writeSingle)(collection.storageInstance, toStorageInstance);
+        })).then(function (writeResult) {
+          // on success, just return the result
+          var ret = _handleFromStorageInstance(collection, writeResult);
+
+          _exit2 = true;
+          return ret;
+        });
+      }, function (err) {
+        var useErr = err;
+        var primary = useErr.documentId;
+        return function () {
+          if (overwrite && useErr.status === 409) {
+            // we have a conflict but must overwrite
+            // so get the new revision
+            return Promise.resolve(collection.database.lockedRun(function () {
+              return (0, _rxStorageHelper.getSingleDocument)(collection.storageInstance, primary);
+            })).then(function (singleRes) {
+              if (!singleRes) {
+                throw (0, _rxError.newRxError)('SNH', {
+                  args: {
+                    writeRow: writeRow
+                  }
+                });
+              }
+
+              toStorageInstance.previous = singleRes; // now we can retry
+            });
+          } else if (useErr.status === 409) {
+            throw (0, _rxError.newRxError)('COL19', {
+              collection: collection.name,
+              id: primary,
+              pouchDbError: useErr,
+              data: writeRow
+            });
+          } else {
+            throw useErr;
+          }
+        }();
+      });
+    }));
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
 /**
  * wrappers to process document data beofre/after it goes to the storage instnace.
  * Used to handle keycompression, encryption etc
  */
 
 
-function _writeToStorageInstance() {
-  _writeToStorageInstance = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(collection, writeRow) {
-    var overwrite,
-        toStorageInstance,
-        writeResult,
-        ret,
-        _args2 = arguments;
-    return _regenerator["default"].wrap(function _callee2$(_context2) {
-      while (1) {
-        switch (_context2.prev = _context2.next) {
-          case 0:
-            overwrite = _args2.length > 2 && _args2[2] !== undefined ? _args2[2] : false;
-            toStorageInstance = {
-              previous: writeRow.previous ? _handleToStorageInstance(collection, (0, _util.flatClone)(writeRow.previous)) : undefined,
-              document: _handleToStorageInstance(collection, (0, _util.flatClone)(writeRow.document))
-            };
-
-          case 2:
-            if (!true) {
-              _context2.next = 16;
-              break;
-            }
-
-            _context2.prev = 3;
-            _context2.next = 6;
-            return collection.database.lockedRun(function () {
-              return (0, _rxStorageHelper.writeSingle)(collection.storageInstance, toStorageInstance);
-            });
-
-          case 6:
-            writeResult = _context2.sent;
-            // on success, just return the result
-            ret = _handleFromStorageInstance(collection, writeResult);
-            return _context2.abrupt("return", ret);
-
-          case 11:
-            _context2.prev = 11;
-            _context2.t0 = _context2["catch"](3);
-            return _context2.delegateYield( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
-              var useErr, primary, singleRes;
-              return _regenerator["default"].wrap(function _callee$(_context) {
-                while (1) {
-                  switch (_context.prev = _context.next) {
-                    case 0:
-                      useErr = _context2.t0;
-                      primary = useErr.documentId;
-
-                      if (!(overwrite && useErr.status === 409)) {
-                        _context.next = 11;
-                        break;
-                      }
-
-                      _context.next = 5;
-                      return collection.database.lockedRun(function () {
-                        return (0, _rxStorageHelper.getSingleDocument)(collection.storageInstance, primary);
-                      });
-
-                    case 5:
-                      singleRes = _context.sent;
-
-                      if (singleRes) {
-                        _context.next = 8;
-                        break;
-                      }
-
-                      throw (0, _rxError.newRxError)('SNH', {
-                        args: {
-                          writeRow: writeRow
-                        }
-                      });
-
-                    case 8:
-                      toStorageInstance.previous = singleRes; // now we can retry
-
-                      _context.next = 16;
-                      break;
-
-                    case 11:
-                      if (!(useErr.status === 409)) {
-                        _context.next = 15;
-                        break;
-                      }
-
-                      throw (0, _rxError.newRxError)('COL19', {
-                        collection: collection.name,
-                        id: primary,
-                        pouchDbError: useErr,
-                        data: writeRow
-                      });
-
-                    case 15:
-                      throw useErr;
-
-                    case 16:
-                    case "end":
-                      return _context.stop();
-                  }
-                }
-              }, _callee);
-            })(), "t1", 14);
-
-          case 14:
-            _context2.next = 2;
-            break;
-
-          case 16:
-          case "end":
-            return _context2.stop();
-        }
-      }
-    }, _callee2, null, [[3, 11]]);
-  }));
-  return _writeToStorageInstance.apply(this, arguments);
-}
+exports.writeToStorageInstance = writeToStorageInstance;
 
 function _handleToStorageInstance(col, data) {
   // ensure primary key has not been changed
@@ -198,55 +370,5 @@ function fillObjectDataBeforeInsert(collection, data) {
 
 function getCollectionLocalInstanceName(collectionName) {
   return collectionName + '-local';
-}
-/**
- * Creates the storage instances that are used internally in the collection
- */
-
-
-function createRxCollectionStorageInstances(_x3, _x4, _x5, _x6) {
-  return _createRxCollectionStorageInstances.apply(this, arguments);
-}
-
-function _createRxCollectionStorageInstances() {
-  _createRxCollectionStorageInstances = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(collectionName, rxDatabase, storageInstanceCreationParams, instanceCreationOptions) {
-    var _yield$Promise$all, storageInstance, localDocumentsStore;
-
-    return _regenerator["default"].wrap(function _callee3$(_context3) {
-      while (1) {
-        switch (_context3.prev = _context3.next) {
-          case 0:
-            storageInstanceCreationParams.multiInstance = rxDatabase.multiInstance;
-            _context3.next = 3;
-            return Promise.all([rxDatabase.storage.createStorageInstance(storageInstanceCreationParams), rxDatabase.storage.createKeyObjectStorageInstance({
-              databaseName: rxDatabase.name,
-
-              /**
-               * Use a different collection name for the local documents instance
-               * so that the local docs can be kept while deleting the normal instance
-               * after migration.
-               */
-              collectionName: getCollectionLocalInstanceName(collectionName),
-              options: instanceCreationOptions,
-              multiInstance: rxDatabase.multiInstance
-            })]);
-
-          case 3:
-            _yield$Promise$all = _context3.sent;
-            storageInstance = _yield$Promise$all[0];
-            localDocumentsStore = _yield$Promise$all[1];
-            return _context3.abrupt("return", {
-              storageInstance: storageInstance,
-              localDocumentsStore: localDocumentsStore
-            });
-
-          case 7:
-          case "end":
-            return _context3.stop();
-        }
-      }
-    }, _callee3);
-  }));
-  return _createRxCollectionStorageInstances.apply(this, arguments);
 }
 //# sourceMappingURL=rx-collection-helper.js.map

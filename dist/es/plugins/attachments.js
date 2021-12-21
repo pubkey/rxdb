@@ -1,5 +1,3 @@
-import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
-import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { map } from 'rxjs/operators';
 import { blobBufferUtil, flatClone } from './../util';
 import { newRxError } from '../rx-error';
@@ -15,6 +13,175 @@ function ensureSchemaSupportsAttachments(doc) {
     });
   }
 }
+
+export var getAttachmentDataMeta = function getAttachmentDataMeta(storageStatics, data) {
+  try {
+    return Promise.resolve(storageStatics.hash(data)).then(function (hash) {
+      var length = blobBufferUtil.size(data);
+      return {
+        digest: storageStatics.hashKey + '-' + hash,
+        length: length
+      };
+    });
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+export var postMigrateDocument = function postMigrateDocument(_action) {
+  /**
+   * No longer needed because
+   * we store the attachemnts data buffers directly in the document.
+   */
+  return Promise.resolve();
+};
+export var preMigrateDocument = function preMigrateDocument(data) {
+  try {
+    var attachments = data.docData._attachments;
+
+    var _temp10 = function () {
+      if (attachments) {
+        var mustDecrypt = !!shouldEncrypt(data.oldCollection.schema);
+        var newAttachments = {};
+        return Promise.resolve(Promise.all(Object.keys(attachments).map(function (attachmentId) {
+          try {
+            var attachment = attachments[attachmentId];
+            var docPrimary = data.docData[data.oldCollection.schema.primaryPath];
+            return Promise.resolve(data.oldCollection.storageInstance.getAttachmentData(docPrimary, attachmentId)).then(function (rawAttachmentData) {
+              function _temp12() {
+                return Promise.resolve(getAttachmentDataMeta(data.oldCollection.database.storage.statics, rawAttachmentData)).then(function (meta) {
+                  newAttachments[attachmentId] = {
+                    digest: meta.digest,
+                    length: meta.length,
+                    type: attachment.type,
+                    data: rawAttachmentData
+                  };
+                });
+              }
+
+              var _temp11 = function () {
+                if (mustDecrypt) {
+                  return Promise.resolve(blobBufferUtil.toString(rawAttachmentData).then(function (dataString) {
+                    return blobBufferUtil.createBlobBuffer(data.oldCollection._crypter._decryptString(dataString), attachment.type);
+                  })).then(function (_blobBufferUtil$toStr) {
+                    rawAttachmentData = _blobBufferUtil$toStr;
+                  });
+                }
+              }();
+
+              return _temp11 && _temp11.then ? _temp11.then(_temp12) : _temp12(_temp11);
+            });
+          } catch (e) {
+            return Promise.reject(e);
+          }
+        }))).then(function () {
+          /**
+           * Hooks mutate the input
+           * instead of returning stuff
+           */
+          data.docData._attachments = newAttachments;
+        });
+      }
+    }();
+
+    return Promise.resolve(_temp10 && _temp10.then ? _temp10.then(function () {}) : void 0);
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+export var putAttachment = function putAttachment(_ref3) {
+  try {
+    var _temp7 = function _temp7() {
+      var statics = _this6.collection.database.storage.statics;
+      _this6._atomicQueue = _this6._atomicQueue.then(function () {
+        try {
+          var _temp5 = function _temp5(_result) {
+            if (_exit2) return _result;
+            var docWriteData = flatClone(_this6._data);
+            docWriteData._attachments = flatClone(docWriteData._attachments);
+            return Promise.resolve(getAttachmentDataMeta(_this6.collection.database.storage.statics, data)).then(function (meta) {
+              docWriteData._attachments[id] = {
+                digest: meta.digest,
+                length: meta.length,
+                type: type,
+                data: data
+              };
+              var writeRow = {
+                previous: _handleToStorageInstance(_this6.collection, flatClone(_this6._data)),
+                document: _handleToStorageInstance(_this6.collection, flatClone(docWriteData))
+              };
+              return Promise.resolve(writeSingle(_this6.collection.storageInstance, writeRow)).then(function (writeResult) {
+                var attachmentData = writeResult._attachments[id];
+                var attachment = fromStorageInstanceResult(id, attachmentData, _this6);
+                var newData = flatClone(_this6._data);
+                newData._rev = writeResult._rev;
+                newData._attachments = writeResult._attachments;
+
+                _this6._dataSync$.next(newData);
+
+                return attachment;
+              });
+            });
+          };
+
+          var _exit2 = false;
+
+          var _temp6 = function () {
+            if (skipIfSame && _this6._data._attachments && _this6._data._attachments[id]) {
+              var currentMeta = _this6._data._attachments[id];
+              return Promise.resolve(statics.hash(data)).then(function (newHash) {
+                var newDigest = statics.hashKey + '-' + newHash;
+
+                if (currentMeta.type === type && currentMeta.digest === newDigest) {
+                  // skip because same data and same type
+                  var _this5$getAttachment2 = _this6.getAttachment(id);
+
+                  _exit2 = true;
+                  return _this5$getAttachment2;
+                }
+              });
+            }
+          }();
+
+          return Promise.resolve(_temp6 && _temp6.then ? _temp6.then(_temp5) : _temp5(_temp6));
+        } catch (e) {
+          return Promise.reject(e);
+        }
+      });
+      return _this6._atomicQueue;
+    };
+
+    var _arguments2 = arguments,
+        _this6 = this;
+
+    var id = _ref3.id,
+        data = _ref3.data,
+        _ref3$type = _ref3.type,
+        type = _ref3$type === void 0 ? 'text/plain' : _ref3$type;
+    var skipIfSame = _arguments2.length > 1 && _arguments2[1] !== undefined ? _arguments2[1] : true;
+    ensureSchemaSupportsAttachments(_this6);
+    /**
+     * Then encryption plugin is only able to encrypt strings,
+     * so unpack as string first.
+     */
+
+    var _temp8 = function () {
+      if (shouldEncrypt(_this6.collection.schema)) {
+        return Promise.resolve(blobBufferUtil.toString(data)).then(function (dataString) {
+          var encrypted = _this6.collection._crypter._encryptString(dataString);
+
+          data = blobBufferUtil.createBlobBuffer(encrypted, 'text/plain');
+        });
+      }
+    }();
+
+    return Promise.resolve(_temp8 && _temp8.then ? _temp8.then(_temp7) : _temp7(_temp8));
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+/**
+ * get an attachment of the document by its id
+ */
 
 var _assignMethodsToAttachment = function _assignMethodsToAttachment(attachment) {
   Object.entries(attachment.doc.collection.attachments).forEach(function (_ref) {
@@ -51,110 +218,57 @@ export var RxAttachment = /*#__PURE__*/function () {
 
   var _proto = RxAttachment.prototype;
 
-  _proto.remove = /*#__PURE__*/function () {
-    var _remove = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2() {
-      var _this = this;
+  _proto.remove = function remove() {
+    try {
+      var _this2 = this;
 
-      return _regeneratorRuntime.wrap(function _callee2$(_context2) {
-        while (1) {
-          switch (_context2.prev = _context2.next) {
-            case 0:
-              this.doc._atomicQueue = this.doc._atomicQueue.then( /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee() {
-                var docWriteData, writeResult, newData;
-                return _regeneratorRuntime.wrap(function _callee$(_context) {
-                  while (1) {
-                    switch (_context.prev = _context.next) {
-                      case 0:
-                        docWriteData = flatClone(_this.doc._data);
-                        docWriteData._attachments = flatClone(docWriteData._attachments);
-                        delete docWriteData._attachments[_this.id];
-                        _context.next = 5;
-                        return writeSingle(_this.doc.collection.storageInstance, {
-                          previous: _handleToStorageInstance(_this.doc.collection, flatClone(_this.doc._data)),
-                          document: _handleToStorageInstance(_this.doc.collection, docWriteData)
-                        });
+      _this2.doc._atomicQueue = _this2.doc._atomicQueue.then(function () {
+        try {
+          var docWriteData = flatClone(_this2.doc._data);
+          docWriteData._attachments = flatClone(docWriteData._attachments);
+          delete docWriteData._attachments[_this2.id];
+          return Promise.resolve(writeSingle(_this2.doc.collection.storageInstance, {
+            previous: _handleToStorageInstance(_this2.doc.collection, flatClone(_this2.doc._data)),
+            document: _handleToStorageInstance(_this2.doc.collection, docWriteData)
+          })).then(function (writeResult) {
+            var newData = flatClone(_this2.doc._data);
+            newData._rev = writeResult._rev;
+            newData._attachments = writeResult._attachments;
 
-                      case 5:
-                        writeResult = _context.sent;
-                        newData = flatClone(_this.doc._data);
-                        newData._rev = writeResult._rev;
-                        newData._attachments = writeResult._attachments;
-
-                        _this.doc._dataSync$.next(newData);
-
-                      case 10:
-                      case "end":
-                        return _context.stop();
-                    }
-                  }
-                }, _callee);
-              })));
-              return _context2.abrupt("return", this.doc._atomicQueue);
-
-            case 2:
-            case "end":
-              return _context2.stop();
-          }
+            _this2.doc._dataSync$.next(newData);
+          });
+        } catch (e) {
+          return Promise.reject(e);
         }
-      }, _callee2, this);
-    }));
-
-    function remove() {
-      return _remove.apply(this, arguments);
+      });
+      return Promise.resolve(_this2.doc._atomicQueue);
+    } catch (e) {
+      return Promise.reject(e);
     }
-
-    return remove;
-  }()
+  }
   /**
    * returns the data for the attachment
    */
   ;
 
-  _proto.getData =
-  /*#__PURE__*/
-  function () {
-    var _getData = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3() {
-      var plainData, dataString, ret;
-      return _regeneratorRuntime.wrap(function _callee3$(_context3) {
-        while (1) {
-          switch (_context3.prev = _context3.next) {
-            case 0:
-              _context3.next = 2;
-              return this.doc.collection.storageInstance.getAttachmentData(this.doc.primary, this.id);
+  _proto.getData = function getData() {
+    try {
+      var _this4 = this;
 
-            case 2:
-              plainData = _context3.sent;
-
-              if (!shouldEncrypt(this.doc.collection.schema)) {
-                _context3.next = 11;
-                break;
-              }
-
-              _context3.next = 6;
-              return blobBufferUtil.toString(plainData);
-
-            case 6:
-              dataString = _context3.sent;
-              ret = blobBufferUtil.createBlobBuffer(this.doc.collection._crypter._decryptString(dataString), this.type);
-              return _context3.abrupt("return", ret);
-
-            case 11:
-              return _context3.abrupt("return", plainData);
-
-            case 12:
-            case "end":
-              return _context3.stop();
-          }
+      return Promise.resolve(_this4.doc.collection.storageInstance.getAttachmentData(_this4.doc.primary, _this4.id)).then(function (plainData) {
+        if (shouldEncrypt(_this4.doc.collection.schema)) {
+          return Promise.resolve(blobBufferUtil.toString(plainData)).then(function (dataString) {
+            var ret = blobBufferUtil.createBlobBuffer(_this4.doc.collection._crypter._decryptString(dataString), _this4.type);
+            return ret;
+          });
+        } else {
+          return plainData;
         }
-      }, _callee3, this);
-    }));
-
-    function getData() {
-      return _getData.apply(this, arguments);
+      });
+    } catch (e) {
+      return Promise.reject(e);
     }
-
-    return getData;
-  }();
+  };
 
   _proto.getStringData = function getStringData() {
     return this.getData().then(function (bufferBlob) {
@@ -178,132 +292,6 @@ function shouldEncrypt(schema) {
   return !!(schema.jsonSchema.attachments && schema.jsonSchema.attachments.encrypted);
 }
 
-export function putAttachment(_x) {
-  return _putAttachment.apply(this, arguments);
-}
-/**
- * get an attachment of the document by its id
- */
-
-function _putAttachment() {
-  _putAttachment = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee5(_ref4) {
-    var _this4 = this;
-
-    var id,
-        data,
-        _ref4$type,
-        type,
-        skipIfSame,
-        dataString,
-        encrypted,
-        statics,
-        _args5 = arguments;
-
-    return _regeneratorRuntime.wrap(function _callee5$(_context5) {
-      while (1) {
-        switch (_context5.prev = _context5.next) {
-          case 0:
-            id = _ref4.id, data = _ref4.data, _ref4$type = _ref4.type, type = _ref4$type === void 0 ? 'text/plain' : _ref4$type;
-            skipIfSame = _args5.length > 1 && _args5[1] !== undefined ? _args5[1] : true;
-            ensureSchemaSupportsAttachments(this);
-            /**
-             * Then encryption plugin is only able to encrypt strings,
-             * so unpack as string first.
-             */
-
-            if (!shouldEncrypt(this.collection.schema)) {
-              _context5.next = 9;
-              break;
-            }
-
-            _context5.next = 6;
-            return blobBufferUtil.toString(data);
-
-          case 6:
-            dataString = _context5.sent;
-            encrypted = this.collection._crypter._encryptString(dataString);
-            data = blobBufferUtil.createBlobBuffer(encrypted, 'text/plain');
-
-          case 9:
-            statics = this.collection.database.storage.statics;
-            this._atomicQueue = this._atomicQueue.then( /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4() {
-              var currentMeta, newHash, newDigest, docWriteData, meta, writeRow, writeResult, attachmentData, attachment, newData;
-              return _regeneratorRuntime.wrap(function _callee4$(_context4) {
-                while (1) {
-                  switch (_context4.prev = _context4.next) {
-                    case 0:
-                      if (!(skipIfSame && _this4._data._attachments && _this4._data._attachments[id])) {
-                        _context4.next = 8;
-                        break;
-                      }
-
-                      currentMeta = _this4._data._attachments[id];
-                      _context4.next = 4;
-                      return statics.hash(data);
-
-                    case 4:
-                      newHash = _context4.sent;
-                      newDigest = statics.hashKey + '-' + newHash;
-
-                      if (!(currentMeta.type === type && currentMeta.digest === newDigest)) {
-                        _context4.next = 8;
-                        break;
-                      }
-
-                      return _context4.abrupt("return", _this4.getAttachment(id));
-
-                    case 8:
-                      docWriteData = flatClone(_this4._data);
-                      docWriteData._attachments = flatClone(docWriteData._attachments);
-                      _context4.next = 12;
-                      return getAttachmentDataMeta(_this4.collection.database.storage.statics, data);
-
-                    case 12:
-                      meta = _context4.sent;
-                      docWriteData._attachments[id] = {
-                        digest: meta.digest,
-                        length: meta.length,
-                        type: type,
-                        data: data
-                      };
-                      writeRow = {
-                        previous: _handleToStorageInstance(_this4.collection, flatClone(_this4._data)),
-                        document: _handleToStorageInstance(_this4.collection, flatClone(docWriteData))
-                      };
-                      _context4.next = 17;
-                      return writeSingle(_this4.collection.storageInstance, writeRow);
-
-                    case 17:
-                      writeResult = _context4.sent;
-                      attachmentData = writeResult._attachments[id];
-                      attachment = fromStorageInstanceResult(id, attachmentData, _this4);
-                      newData = flatClone(_this4._data);
-                      newData._rev = writeResult._rev;
-                      newData._attachments = writeResult._attachments;
-
-                      _this4._dataSync$.next(newData);
-
-                      return _context4.abrupt("return", attachment);
-
-                    case 25:
-                    case "end":
-                      return _context4.stop();
-                  }
-                }
-              }, _callee4);
-            })));
-            return _context5.abrupt("return", this._atomicQueue);
-
-          case 12:
-          case "end":
-            return _context5.stop();
-        }
-      }
-    }, _callee5, this);
-  }));
-  return _putAttachment.apply(this, arguments);
-}
-
 export function getAttachment(id) {
   ensureSchemaSupportsAttachments(this);
 
@@ -319,7 +307,7 @@ export function getAttachment(id) {
  */
 
 export function allAttachments() {
-  var _this2 = this;
+  var _this7 = this;
 
   ensureSchemaSupportsAttachments(this);
 
@@ -331,155 +319,9 @@ export function allAttachments() {
   }
 
   return Object.keys(docData._attachments).map(function (id) {
-    return fromStorageInstanceResult(id, docData._attachments[id], _this2);
+    return fromStorageInstanceResult(id, docData._attachments[id], _this7);
   });
 }
-export function preMigrateDocument(_x2) {
-  return _preMigrateDocument.apply(this, arguments);
-}
-
-function _preMigrateDocument() {
-  _preMigrateDocument = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee7(data) {
-    var attachments, mustDecrypt, newAttachments;
-    return _regeneratorRuntime.wrap(function _callee7$(_context7) {
-      while (1) {
-        switch (_context7.prev = _context7.next) {
-          case 0:
-            attachments = data.docData._attachments;
-
-            if (!attachments) {
-              _context7.next = 7;
-              break;
-            }
-
-            mustDecrypt = !!shouldEncrypt(data.oldCollection.schema);
-            newAttachments = {};
-            _context7.next = 6;
-            return Promise.all(Object.keys(attachments).map( /*#__PURE__*/function () {
-              var _ref7 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee6(attachmentId) {
-                var attachment, docPrimary, rawAttachmentData, meta;
-                return _regeneratorRuntime.wrap(function _callee6$(_context6) {
-                  while (1) {
-                    switch (_context6.prev = _context6.next) {
-                      case 0:
-                        attachment = attachments[attachmentId];
-                        docPrimary = data.docData[data.oldCollection.schema.primaryPath];
-                        _context6.next = 4;
-                        return data.oldCollection.storageInstance.getAttachmentData(docPrimary, attachmentId);
-
-                      case 4:
-                        rawAttachmentData = _context6.sent;
-
-                        if (!mustDecrypt) {
-                          _context6.next = 9;
-                          break;
-                        }
-
-                        _context6.next = 8;
-                        return blobBufferUtil.toString(rawAttachmentData).then(function (dataString) {
-                          return blobBufferUtil.createBlobBuffer(data.oldCollection._crypter._decryptString(dataString), attachment.type);
-                        });
-
-                      case 8:
-                        rawAttachmentData = _context6.sent;
-
-                      case 9:
-                        _context6.next = 11;
-                        return getAttachmentDataMeta(data.oldCollection.database.storage.statics, rawAttachmentData);
-
-                      case 11:
-                        meta = _context6.sent;
-                        newAttachments[attachmentId] = {
-                          digest: meta.digest,
-                          length: meta.length,
-                          type: attachment.type,
-                          data: rawAttachmentData
-                        };
-
-                      case 13:
-                      case "end":
-                        return _context6.stop();
-                    }
-                  }
-                }, _callee6);
-              }));
-
-              return function (_x6) {
-                return _ref7.apply(this, arguments);
-              };
-            }()));
-
-          case 6:
-            /**
-             * Hooks mutate the input
-             * instead of returning stuff
-             */
-            data.docData._attachments = newAttachments;
-
-          case 7:
-          case "end":
-            return _context7.stop();
-        }
-      }
-    }, _callee7);
-  }));
-  return _preMigrateDocument.apply(this, arguments);
-}
-
-export function postMigrateDocument(_x3) {
-  return _postMigrateDocument.apply(this, arguments);
-}
-
-function _postMigrateDocument() {
-  _postMigrateDocument = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee8(_action) {
-    return _regeneratorRuntime.wrap(function _callee8$(_context8) {
-      while (1) {
-        switch (_context8.prev = _context8.next) {
-          case 0:
-            return _context8.abrupt("return");
-
-          case 1:
-          case "end":
-            return _context8.stop();
-        }
-      }
-    }, _callee8);
-  }));
-  return _postMigrateDocument.apply(this, arguments);
-}
-
-export function getAttachmentDataMeta(_x4, _x5) {
-  return _getAttachmentDataMeta.apply(this, arguments);
-}
-
-function _getAttachmentDataMeta() {
-  _getAttachmentDataMeta = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee9(storageStatics, data) {
-    var hash, length;
-    return _regeneratorRuntime.wrap(function _callee9$(_context9) {
-      while (1) {
-        switch (_context9.prev = _context9.next) {
-          case 0:
-            _context9.next = 2;
-            return storageStatics.hash(data);
-
-          case 2:
-            hash = _context9.sent;
-            length = blobBufferUtil.size(data);
-            return _context9.abrupt("return", {
-              digest: storageStatics.hashKey + '-' + hash,
-              length: length
-            });
-
-          case 5:
-          case "end":
-            return _context9.stop();
-        }
-      }
-    }, _callee9);
-  }));
-  return _getAttachmentDataMeta.apply(this, arguments);
-}
-
 export var rxdb = true;
 export var prototypes = {
   RxDocument: function RxDocument(proto) {
@@ -488,7 +330,7 @@ export var prototypes = {
     proto.allAttachments = allAttachments;
     Object.defineProperty(proto, 'allAttachments$', {
       get: function allAttachments$() {
-        var _this3 = this;
+        var _this8 = this;
 
         return this._dataSync$.pipe(map(function (data) {
           if (!data['_attachments']) {
@@ -499,10 +341,10 @@ export var prototypes = {
         }), map(function (attachmentsData) {
           return Object.entries(attachmentsData);
         }), map(function (entries) {
-          return entries.map(function (_ref5) {
-            var id = _ref5[0],
-                attachmentData = _ref5[1];
-            return fromStorageInstanceResult(id, attachmentData, _this3);
+          return entries.map(function (_ref4) {
+            var id = _ref4[0],
+                attachmentData = _ref4[1];
+            return fromStorageInstanceResult(id, attachmentData, _this8);
           });
         }));
       }

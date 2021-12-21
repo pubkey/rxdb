@@ -1,7 +1,7 @@
-import type { RxStorageInstanceLoki } from './rx-storage-instance-loki';
-import type { RxStorageKeyObjectInstanceLoki } from './rx-storage-key-object-instance-loki';
+import { RxStorageInstanceLoki } from './rx-storage-instance-loki';
+import { RxStorageKeyObjectInstanceLoki } from './rx-storage-key-object-instance-loki';
 import { Collection } from 'lokijs';
-import type { LokiDatabaseSettings, LokiDatabaseState, MangoQuery, RxJsonSchema } from '../../types';
+import type { LokiDatabaseSettings, LokiDatabaseState, LokiLocalDatabaseState, MangoQuery, RxJsonSchema } from '../../types';
 import type { DeterministicSortComparator } from 'event-reduce-js';
 import { LeaderElector } from 'broadcast-channel';
 import type { RxStorageLoki } from './rx-storage-lokijs';
@@ -31,3 +31,18 @@ export declare function closeLokiCollections(databaseName: string, collections: 
 export declare function getLokiSortComparator<RxDocType>(schema: RxJsonSchema<RxDocType>, query: MangoQuery<RxDocType>): DeterministicSortComparator<RxDocType>;
 export declare function getLokiLeaderElector(storage: RxStorageLoki, databaseName: string): LeaderElector;
 export declare function removeLokiLeaderElectorReference(storage: RxStorageLoki, databaseName: string): void;
+/**
+ * For multi-instance usage, we send requests to the RxStorage
+ * to the current leading instance over the BroadcastChannel.
+ */
+export declare function requestRemoteInstance(instance: RxStorageInstanceLoki<any> | RxStorageKeyObjectInstanceLoki, operation: string, params: any[]): Promise<any | any[]>;
+/**
+ * Handles a request that came from a remote instance via requestRemoteInstance()
+ * Runs the requested operation over the local db instance and sends back the result.
+ */
+export declare function handleRemoteRequest(instance: RxStorageInstanceLoki<any> | RxStorageKeyObjectInstanceLoki, msg: any): Promise<void>;
+/**
+ * If the local state must be used, that one is returned.
+ * Returns false if a remote instance must be used.
+ */
+export declare function mustUseLocalState(instance: RxStorageInstanceLoki<any> | RxStorageKeyObjectInstanceLoki): Promise<LokiLocalDatabaseState | false>;

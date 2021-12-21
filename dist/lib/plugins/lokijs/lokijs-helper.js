@@ -5,18 +5,19 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.OPEN_LOKIJS_STORAGE_INSTANCES = exports.LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE = exports.LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = exports.LOKIJS_COLLECTION_DEFAULT_OPTIONS = exports.CHANGES_COLLECTION_SUFFIX = void 0;
-exports.closeLokiCollections = closeLokiCollections;
+exports.closeLokiCollections = exports.OPEN_LOKIJS_STORAGE_INSTANCES = exports.LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE = exports.LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = exports.LOKIJS_COLLECTION_DEFAULT_OPTIONS = exports.CHANGES_COLLECTION_SUFFIX = void 0;
 exports.getLokiDatabase = getLokiDatabase;
 exports.getLokiEventKey = getLokiEventKey;
 exports.getLokiLeaderElector = getLokiLeaderElector;
 exports.getLokiSortComparator = getLokiSortComparator;
+exports.mustUseLocalState = exports.handleRemoteRequest = void 0;
 exports.removeLokiLeaderElectorReference = removeLokiLeaderElectorReference;
+exports.requestRemoteInstance = requestRemoteInstance;
 exports.stripLokiKey = stripLokiKey;
 
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
+var _rxStorageInstanceLoki = require("./rx-storage-instance-loki");
 
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
+var _rxStorageKeyObjectInstanceLoki = require("./rx-storage-key-object-instance-loki");
 
 var _lokijs = _interopRequireDefault(require("lokijs"));
 
@@ -32,6 +33,375 @@ var _rxError = require("../../rx-error");
 
 var _broadcastChannel = require("broadcast-channel");
 
+function _catch(body, recover) {
+  try {
+    var result = body();
+  } catch (e) {
+    return recover(e);
+  }
+
+  if (result && result.then) {
+    return result.then(void 0, recover);
+  }
+
+  return result;
+}
+
+function _settle(pact, state, value) {
+  if (!pact.s) {
+    if (value instanceof _Pact) {
+      if (value.s) {
+        if (state & 1) {
+          state = value.s;
+        }
+
+        value = value.v;
+      } else {
+        value.o = _settle.bind(null, pact, state);
+        return;
+      }
+    }
+
+    if (value && value.then) {
+      value.then(_settle.bind(null, pact, state), _settle.bind(null, pact, 2));
+      return;
+    }
+
+    pact.s = state;
+    pact.v = value;
+    var observer = pact.o;
+
+    if (observer) {
+      observer(pact);
+    }
+  }
+}
+
+var _Pact = /*#__PURE__*/function () {
+  function _Pact() {}
+
+  _Pact.prototype.then = function (onFulfilled, onRejected) {
+    var result = new _Pact();
+    var state = this.s;
+
+    if (state) {
+      var callback = state & 1 ? onFulfilled : onRejected;
+
+      if (callback) {
+        try {
+          _settle(result, 1, callback(this.v));
+        } catch (e) {
+          _settle(result, 2, e);
+        }
+
+        return result;
+      } else {
+        return this;
+      }
+    }
+
+    this.o = function (_this) {
+      try {
+        var value = _this.v;
+
+        if (_this.s & 1) {
+          _settle(result, 1, onFulfilled ? onFulfilled(value) : value);
+        } else if (onRejected) {
+          _settle(result, 1, onRejected(value));
+        } else {
+          _settle(result, 2, value);
+        }
+      } catch (e) {
+        _settle(result, 2, e);
+      }
+    };
+
+    return result;
+  };
+
+  return _Pact;
+}();
+
+function _isSettledPact(thenable) {
+  return thenable instanceof _Pact && thenable.s & 1;
+}
+
+function _for(test, update, body) {
+  var stage;
+
+  for (;;) {
+    var shouldContinue = test();
+
+    if (_isSettledPact(shouldContinue)) {
+      shouldContinue = shouldContinue.v;
+    }
+
+    if (!shouldContinue) {
+      return result;
+    }
+
+    if (shouldContinue.then) {
+      stage = 0;
+      break;
+    }
+
+    var result = body();
+
+    if (result && result.then) {
+      if (_isSettledPact(result)) {
+        result = result.s;
+      } else {
+        stage = 1;
+        break;
+      }
+    }
+
+    if (update) {
+      var updateValue = update();
+
+      if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
+        stage = 2;
+        break;
+      }
+    }
+  }
+
+  var pact = new _Pact();
+
+  var reject = _settle.bind(null, pact, 2);
+
+  (stage === 0 ? shouldContinue.then(_resumeAfterTest) : stage === 1 ? result.then(_resumeAfterBody) : updateValue.then(_resumeAfterUpdate)).then(void 0, reject);
+  return pact;
+
+  function _resumeAfterBody(value) {
+    result = value;
+
+    do {
+      if (update) {
+        updateValue = update();
+
+        if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
+          updateValue.then(_resumeAfterUpdate).then(void 0, reject);
+          return;
+        }
+      }
+
+      shouldContinue = test();
+
+      if (!shouldContinue || _isSettledPact(shouldContinue) && !shouldContinue.v) {
+        _settle(pact, 1, result);
+
+        return;
+      }
+
+      if (shouldContinue.then) {
+        shouldContinue.then(_resumeAfterTest).then(void 0, reject);
+        return;
+      }
+
+      result = body();
+
+      if (_isSettledPact(result)) {
+        result = result.v;
+      }
+    } while (!result || !result.then);
+
+    result.then(_resumeAfterBody).then(void 0, reject);
+  }
+
+  function _resumeAfterTest(shouldContinue) {
+    if (shouldContinue) {
+      result = body();
+
+      if (result && result.then) {
+        result.then(_resumeAfterBody).then(void 0, reject);
+      } else {
+        _resumeAfterBody(result);
+      }
+    } else {
+      _settle(pact, 1, result);
+    }
+  }
+
+  function _resumeAfterUpdate() {
+    if (shouldContinue = test()) {
+      if (shouldContinue.then) {
+        shouldContinue.then(_resumeAfterTest).then(void 0, reject);
+      } else {
+        _resumeAfterTest(shouldContinue);
+      }
+    } else {
+      _settle(pact, 1, result);
+    }
+  }
+}
+
+/**
+ * If the local state must be used, that one is returned.
+ * Returns false if a remote instance must be used.
+ */
+var mustUseLocalState = function mustUseLocalState(instance) {
+  try {
+    var _temp14 = function _temp14() {
+      /**
+       * It might already have a localState after the applying
+       * because another subtask also called mustUSeLocalState()
+       */
+      if (instance.internals.localState) {
+        return instance.internals.localState;
+      }
+
+      if (leaderElector.isLeader && !instance.internals.localState) {
+        // own is leader, use local instance
+        if (isRxStorageInstanceLoki) {
+          instance.internals.localState = (0, _rxStorageInstanceLoki.createLokiLocalState)({
+            databaseName: instance.databaseName,
+            collectionName: instance.collectionName,
+            options: instance.options,
+            schema: instance.schema,
+            multiInstance: instance.internals.leaderElector ? true : false
+          }, instance.databaseSettings);
+        } else {
+          instance.internals.localState = (0, _rxStorageKeyObjectInstanceLoki.createLokiKeyValueLocalState)({
+            databaseName: instance.databaseName,
+            collectionName: instance.collectionName,
+            options: instance.options,
+            multiInstance: instance.internals.leaderElector ? true : false
+          }, instance.databaseSettings);
+        }
+
+        return (0, _util.ensureNotFalsy)(instance.internals.localState);
+      } else {
+        // other is leader, send message to remote leading instance
+        return false;
+      }
+    };
+
+    if (instance.closed) {
+      return Promise.resolve(false);
+    }
+
+    var isRxStorageInstanceLoki = typeof instance.query === 'function';
+
+    if (instance.internals.localState) {
+      return Promise.resolve(instance.internals.localState);
+    }
+
+    var leaderElector = (0, _util.ensureNotFalsy)(instance.internals.leaderElector);
+
+    var _temp15 = _for(function () {
+      return !leaderElector.hasLeader;
+    }, void 0, function () {
+      return Promise.resolve(leaderElector.applyOnce()).then(function () {
+        return Promise.resolve((0, _util.promiseWait)(0)).then(function () {});
+      });
+    });
+
+    return Promise.resolve(_temp15 && _temp15.then ? _temp15.then(_temp14) : _temp14(_temp15));
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+
+exports.mustUseLocalState = mustUseLocalState;
+
+/**
+ * Handles a request that came from a remote instance via requestRemoteInstance()
+ * Runs the requested operation over the local db instance and sends back the result.
+ */
+var handleRemoteRequest = function handleRemoteRequest(instance, msg) {
+  try {
+    var isRxStorageInstanceLoki = typeof instance.query === 'function';
+    var messageType = isRxStorageInstanceLoki ? LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE : LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE;
+
+    var _temp9 = function () {
+      if (msg.type === messageType && msg.requestId && msg.databaseName === instance.databaseName && msg.collectionName === instance.collectionName && !msg.response) {
+        var _temp10 = function _temp10() {
+          var response = {
+            response: true,
+            requestId: msg.requestId,
+            databaseName: instance.databaseName,
+            collectionName: instance.collectionName,
+            result: _result,
+            isError: _isError,
+            type: msg.type
+          };
+          (0, _util.ensureNotFalsy)(instance.internals.leaderElector).broadcastChannel.postMessage(response);
+        };
+
+        var operation = msg.operation;
+        var params = msg.params;
+
+        var _result;
+
+        var _isError = false;
+
+        var _temp11 = _catch(function () {
+          var _ref2;
+
+          return Promise.resolve((_ref2 = instance)[operation].apply(_ref2, params)).then(function (_operation) {
+            _result = _operation;
+          });
+        }, function (err) {
+          _isError = true;
+          _result = err;
+        });
+
+        return _temp11 && _temp11.then ? _temp11.then(_temp10) : _temp10(_temp11);
+      }
+    }();
+
+    return Promise.resolve(_temp9 && _temp9.then ? _temp9.then(function () {}) : void 0);
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+
+exports.handleRemoteRequest = handleRemoteRequest;
+
+var closeLokiCollections = function closeLokiCollections(databaseName, collections) {
+  try {
+    return Promise.resolve(LOKI_DATABASE_STATE_BY_NAME.get(databaseName)).then(function (databaseState) {
+      if (!databaseState) {
+        // already closed
+        return;
+      }
+
+      return Promise.resolve(databaseState.saveQueue.run()).then(function () {
+        collections.forEach(function (collection) {
+          var collectionName = collection.name;
+          delete databaseState.collections[collectionName];
+        });
+
+        var _temp5 = function () {
+          if (Object.keys(databaseState.collections).length === 0) {
+            // all collections closed -> also close database
+            LOKI_DATABASE_STATE_BY_NAME["delete"](databaseName);
+            databaseState.unloads.forEach(function (u) {
+              return u.remove();
+            });
+            return Promise.resolve(new Promise(function (res, rej) {
+              databaseState.database.close(function (err) {
+                err ? rej(err) : res();
+              });
+            })).then(function () {});
+          }
+        }();
+
+        if (_temp5 && _temp5.then) return _temp5.then(function () {});
+      });
+    });
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+/**
+ * This function is at lokijs-helper
+ * because we need it in multiple places.
+ */
+
+
+exports.closeLokiCollections = closeLokiCollections;
 var CHANGES_COLLECTION_SUFFIX = '-rxdb-changes';
 exports.CHANGES_COLLECTION_SUFFIX = CHANGES_COLLECTION_SUFFIX;
 var LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request';
@@ -90,169 +460,98 @@ function getLokiDatabase(databaseName, databaseSettings) {
      * the database has to be persistend.
      */
     var hasPersistence = !!databaseSettings.adapter;
-    databaseState = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
-      var persistenceMethod, useSettings, database, lokiSaveQueue, loadDatabasePromise, unloads, state;
-      return _regenerator["default"].wrap(function _callee$(_context) {
-        while (1) {
-          switch (_context.prev = _context.next) {
-            case 0:
-              persistenceMethod = hasPersistence ? 'adapter' : 'memory';
 
-              if (databaseSettings.persistenceMethod) {
-                persistenceMethod = databaseSettings.persistenceMethod;
-              }
+    databaseState = function () {
+      try {
+        var _temp3 = function _temp3() {
+          /**
+           * Autosave database on process end
+           */
+          var unloads = [];
 
-              useSettings = Object.assign( // defaults
-              {
-                autoload: hasPersistence,
-                persistenceMethod: persistenceMethod,
-                verbose: true
-              }, databaseSettings, // overwrites
-              {
-                /**
-                 * RxDB uses its custom load and save handling
-                 * so we disable the LokiJS save/load handlers.
-                 */
-                autoload: false,
-                autosave: false,
-                throttledSaves: false
-              });
-              database = new _lokijs["default"](databaseName + '.db', (0, _util.flatClone)(useSettings));
-              lokiSaveQueue = new _lokiSaveQueue.LokiSaveQueue(database, useSettings);
-              /**
-               * Wait until all data is loaded from persistence adapter.
-               * Wrap the loading into the saveQueue to ensure that when many
-               * collections are created a the same time, the load-calls do not interfer
-               * with each other and cause error logs.
-               */
-
-              if (!hasPersistence) {
-                _context.next = 10;
-                break;
-              }
-
-              loadDatabasePromise = new Promise(function (res, rej) {
-                database.loadDatabase({}, function (err) {
-                  if (useSettings.autoloadCallback) {
-                    useSettings.autoloadCallback(err);
-                  }
-
-                  err ? rej(err) : res();
-                });
-              });
-              lokiSaveQueue.saveQueue = lokiSaveQueue.saveQueue.then(function () {
-                return loadDatabasePromise;
-              });
-              _context.next = 10;
-              return loadDatabasePromise;
-
-            case 10:
-              /**
-               * Autosave database on process end
-               */
-              unloads = [];
-
-              if (hasPersistence) {
-                unloads.push((0, _unload.add)(function () {
-                  return lokiSaveQueue.run();
-                }));
-              }
-
-              state = {
-                database: database,
-                databaseSettings: useSettings,
-                saveQueue: lokiSaveQueue,
-                collections: {},
-                unloads: unloads
-              };
-              return _context.abrupt("return", state);
-
-            case 14:
-            case "end":
-              return _context.stop();
+          if (hasPersistence) {
+            unloads.push((0, _unload.add)(function () {
+              return lokiSaveQueue.run();
+            }));
           }
+
+          var state = {
+            database: database,
+            databaseSettings: useSettings,
+            saveQueue: lokiSaveQueue,
+            collections: {},
+            unloads: unloads
+          };
+          return state;
+        };
+
+        var persistenceMethod = hasPersistence ? 'adapter' : 'memory';
+
+        if (databaseSettings.persistenceMethod) {
+          persistenceMethod = databaseSettings.persistenceMethod;
         }
-      }, _callee);
-    }))();
+
+        var useSettings = Object.assign( // defaults
+        {
+          autoload: hasPersistence,
+          persistenceMethod: persistenceMethod,
+          verbose: true
+        }, databaseSettings, // overwrites
+        {
+          /**
+           * RxDB uses its custom load and save handling
+           * so we disable the LokiJS save/load handlers.
+           */
+          autoload: false,
+          autosave: false,
+          throttledSaves: false
+        });
+        var database = new _lokijs["default"](databaseName + '.db', (0, _util.flatClone)(useSettings));
+        var lokiSaveQueue = new _lokiSaveQueue.LokiSaveQueue(database, useSettings);
+        /**
+         * Wait until all data is loaded from persistence adapter.
+         * Wrap the loading into the saveQueue to ensure that when many
+         * collections are created a the same time, the load-calls do not interfer
+         * with each other and cause error logs.
+         */
+
+        var _temp4 = function () {
+          if (hasPersistence) {
+            var loadDatabasePromise = new Promise(function (res, rej) {
+              database.loadDatabase({}, function (err) {
+                if (useSettings.autoloadCallback) {
+                  useSettings.autoloadCallback(err);
+                }
+
+                err ? rej(err) : res();
+              });
+            });
+            lokiSaveQueue.saveQueue = lokiSaveQueue.saveQueue.then(function () {
+              return loadDatabasePromise;
+            });
+            return Promise.resolve(loadDatabasePromise).then(function () {});
+          }
+        }();
+
+        return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(_temp3) : _temp3(_temp4));
+      } catch (e) {
+        return Promise.reject(e);
+      }
+    }();
+
     LOKI_DATABASE_STATE_BY_NAME.set(databaseName, databaseState);
   }
 
   return databaseState;
 }
 
-function closeLokiCollections(_x, _x2) {
-  return _closeLokiCollections.apply(this, arguments);
-}
-/**
- * This function is at lokijs-helper
- * because we need it in multiple places.
- */
-
-
-function _closeLokiCollections() {
-  _closeLokiCollections = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(databaseName, collections) {
-    var databaseState;
-    return _regenerator["default"].wrap(function _callee2$(_context2) {
-      while (1) {
-        switch (_context2.prev = _context2.next) {
-          case 0:
-            _context2.next = 2;
-            return LOKI_DATABASE_STATE_BY_NAME.get(databaseName);
-
-          case 2:
-            databaseState = _context2.sent;
-
-            if (databaseState) {
-              _context2.next = 5;
-              break;
-            }
-
-            return _context2.abrupt("return");
-
-          case 5:
-            _context2.next = 7;
-            return databaseState.saveQueue.run();
-
-          case 7:
-            collections.forEach(function (collection) {
-              var collectionName = collection.name;
-              delete databaseState.collections[collectionName];
-            });
-
-            if (!(Object.keys(databaseState.collections).length === 0)) {
-              _context2.next = 13;
-              break;
-            }
-
-            // all collections closed -> also close database
-            LOKI_DATABASE_STATE_BY_NAME["delete"](databaseName);
-            databaseState.unloads.forEach(function (u) {
-              return u.remove();
-            });
-            _context2.next = 13;
-            return new Promise(function (res, rej) {
-              databaseState.database.close(function (err) {
-                err ? rej(err) : res();
-              });
-            });
-
-          case 13:
-          case "end":
-            return _context2.stop();
-        }
-      }
-    }, _callee2);
-  }));
-  return _closeLokiCollections.apply(this, arguments);
-}
-
 function getLokiSortComparator(schema, query) {
-  var _ref2;
+  var _ref;
 
   var primaryKey = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(schema.primaryKey); // TODO if no sort is given, use sort by primary.
   // This should be done inside of RxDB and not in the storage implementations.
 
-  var sortOptions = query.sort ? query.sort : [(_ref2 = {}, _ref2[primaryKey] = 'asc', _ref2)];
+  var sortOptions = query.sort ? query.sort : [(_ref = {}, _ref[primaryKey] = 'asc', _ref)];
 
   var fun = function fun(a, b) {
     var compareResult = 0; // 1 | -1
@@ -328,5 +627,42 @@ function removeLokiLeaderElectorReference(storage, databaseName) {
       storage.leaderElectorByLokiDbName["delete"](databaseName);
     }
   }
+}
+/**
+ * For multi-instance usage, we send requests to the RxStorage
+ * to the current leading instance over the BroadcastChannel.
+ */
+
+
+function requestRemoteInstance(instance, operation, params) {
+  var isRxStorageInstanceLoki = typeof instance.query === 'function';
+  var messageType = isRxStorageInstanceLoki ? LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE : LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE;
+  var broadcastChannel = (0, _util.ensureNotFalsy)(instance.internals.leaderElector).broadcastChannel;
+  var requestId = (0, _util.randomCouchString)(12);
+  var responsePromise = new Promise(function (res, rej) {
+    var listener = function listener(msg) {
+      if (msg.type === messageType && msg.response === true && msg.requestId === requestId) {
+        if (msg.isError) {
+          broadcastChannel.removeEventListener('message', listener);
+          rej(msg.result);
+        } else {
+          broadcastChannel.removeEventListener('message', listener);
+          res(msg.result);
+        }
+      }
+    };
+
+    broadcastChannel.addEventListener('message', listener);
+  });
+  broadcastChannel.postMessage({
+    response: false,
+    type: messageType,
+    operation: operation,
+    params: params,
+    requestId: requestId,
+    databaseName: instance.databaseName,
+    collectionName: instance.collectionName
+  });
+  return responsePromise;
 }
 //# sourceMappingURL=lokijs-helper.js.map
