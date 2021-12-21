@@ -214,8 +214,8 @@ export var RxStorageKeyObjectInstanceWorker = /*#__PURE__*/function () {
 
   return RxStorageKeyObjectInstanceWorker;
 }();
-export function getRxStorageWorker(statics, settings) {
-  var storage = new RxStorageWorker(settings, statics);
+export function getRxStorageWorker(settings) {
+  var storage = new RxStorageWorker(settings, settings.statics);
   return storage;
 }
 //# sourceMappingURL=non-worker.js.map

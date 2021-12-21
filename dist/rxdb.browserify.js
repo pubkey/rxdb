@@ -14729,8 +14729,7 @@ function _assertThisInitialized(self) {
   return self;
 }
 
-module.exports = _assertThisInitialized;
-module.exports["default"] = module.exports, module.exports.__esModule = true;
+module.exports = _assertThisInitialized, module.exports.__esModule = true, module.exports["default"] = module.exports;
 },{}],63:[function(require,module,exports){
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
   try {
@@ -14768,8 +14767,7 @@ function _asyncToGenerator(fn) {
   };
 }
 
-module.exports = _asyncToGenerator;
-module.exports["default"] = module.exports, module.exports.__esModule = true;
+module.exports = _asyncToGenerator, module.exports.__esModule = true, module.exports["default"] = module.exports;
 },{}],64:[function(require,module,exports){
 var setPrototypeOf = require("./setPrototypeOf.js");
 
@@ -14777,8 +14775,7 @@ var isNativeReflectConstruct = require("./isNativeReflectConstruct.js");
 
 function _construct(Parent, args, Class) {
   if (isNativeReflectConstruct()) {
-    module.exports = _construct = Reflect.construct;
-    module.exports["default"] = module.exports, module.exports.__esModule = true;
+    module.exports = _construct = Reflect.construct, module.exports.__esModule = true, module.exports["default"] = module.exports;
   } else {
     module.exports = _construct = function _construct(Parent, args, Class) {
       var a = [null];
@@ -14787,16 +14784,13 @@ function _construct(Parent, args, Class) {
       var instance = new Constructor();
       if (Class) setPrototypeOf(instance, Class.prototype);
       return instance;
-    };
-
-    module.exports["default"] = module.exports, module.exports.__esModule = true;
+    }, module.exports.__esModule = true, module.exports["default"] = module.exports;
   }
 
   return _construct.apply(null, arguments);
 }
 
-module.exports = _construct;
-module.exports["default"] = module.exports, module.exports.__esModule = true;
+module.exports = _construct, module.exports.__esModule = true, module.exports["default"] = module.exports;
 },{"./isNativeReflectConstruct.js":70,"./setPrototypeOf.js":71}],65:[function(require,module,exports){
 function _defineProperties(target, props) {
   for (var i = 0; i < props.length; i++) {
@@ -14811,22 +14805,22 @@ function _defineProperties(target, props) {
 function _createClass(Constructor, protoProps, staticProps) {
   if (protoProps) _defineProperties(Constructor.prototype, protoProps);
   if (staticProps) _defineProperties(Constructor, staticProps);
+  Object.defineProperty(Constructor, "prototype", {
+    writable: false
+  });
   return Constructor;
 }
 
-module.exports = _createClass;
-module.exports["default"] = module.exports, module.exports.__esModule = true;
+module.exports = _createClass, module.exports.__esModule = true, module.exports["default"] = module.exports;
 },{}],66:[function(require,module,exports){
 function _getPrototypeOf(o) {
   module.exports = _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
     return o.__proto__ || Object.getPrototypeOf(o);
-  };
-  module.exports["default"] = module.exports, module.exports.__esModule = true;
+  }, module.exports.__esModule = true, module.exports["default"] = module.exports;
   return _getPrototypeOf(o);
 }
 
-module.exports = _getPrototypeOf;
-module.exports["default"] = module.exports, module.exports.__esModule = true;
+module.exports = _getPrototypeOf, module.exports.__esModule = true, module.exports["default"] = module.exports;
 },{}],67:[function(require,module,exports){
 var setPrototypeOf = require("./setPrototypeOf.js");
 
@@ -14836,8 +14830,7 @@ function _inheritsLoose(subClass, superClass) {
   setPrototypeOf(subClass, superClass);
 }
 
-module.exports = _inheritsLoose;
-module.exports["default"] = module.exports, module.exports.__esModule = true;
+module.exports = _inheritsLoose, module.exports.__esModule = true, module.exports["default"] = module.exports;
 },{"./setPrototypeOf.js":71}],68:[function(require,module,exports){
 function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : {
@@ -14845,15 +14838,13 @@ function _interopRequireDefault(obj) {
   };
 }
 
-module.exports = _interopRequireDefault;
-module.exports["default"] = module.exports, module.exports.__esModule = true;
+module.exports = _interopRequireDefault, module.exports.__esModule = true, module.exports["default"] = module.exports;
 },{}],69:[function(require,module,exports){
 function _isNativeFunction(fn) {
   return Function.toString.call(fn).indexOf("[native code]") !== -1;
 }
 
-module.exports = _isNativeFunction;
-module.exports["default"] = module.exports, module.exports.__esModule = true;
+module.exports = _isNativeFunction, module.exports.__esModule = true, module.exports["default"] = module.exports;
 },{}],70:[function(require,module,exports){
 function _isNativeReflectConstruct() {
   if (typeof Reflect === "undefined" || !Reflect.construct) return false;
@@ -14868,44 +14859,29 @@ function _isNativeReflectConstruct() {
   }
 }
 
-module.exports = _isNativeReflectConstruct;
-module.exports["default"] = module.exports, module.exports.__esModule = true;
+module.exports = _isNativeReflectConstruct, module.exports.__esModule = true, module.exports["default"] = module.exports;
 },{}],71:[function(require,module,exports){
 function _setPrototypeOf(o, p) {
   module.exports = _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
     o.__proto__ = p;
     return o;
-  };
-
-  module.exports["default"] = module.exports, module.exports.__esModule = true;
+  }, module.exports.__esModule = true, module.exports["default"] = module.exports;
   return _setPrototypeOf(o, p);
 }
 
-module.exports = _setPrototypeOf;
-module.exports["default"] = module.exports, module.exports.__esModule = true;
+module.exports = _setPrototypeOf, module.exports.__esModule = true, module.exports["default"] = module.exports;
 },{}],72:[function(require,module,exports){
 function _typeof(obj) {
   "@babel/helpers - typeof";
 
-  if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-    module.exports = _typeof = function _typeof(obj) {
-      return typeof obj;
-    };
-
-    module.exports["default"] = module.exports, module.exports.__esModule = true;
-  } else {
-    module.exports = _typeof = function _typeof(obj) {
-      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-    };
-
-    module.exports["default"] = module.exports, module.exports.__esModule = true;
-  }
-
-  return _typeof(obj);
+  return (module.exports = _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) {
+    return typeof obj;
+  } : function (obj) {
+    return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+  }, module.exports.__esModule = true, module.exports["default"] = module.exports), _typeof(obj);
 }
 
-module.exports = _typeof;
-module.exports["default"] = module.exports, module.exports.__esModule = true;
+module.exports = _typeof, module.exports.__esModule = true, module.exports["default"] = module.exports;
 },{}],73:[function(require,module,exports){
 var getPrototypeOf = require("./getPrototypeOf.js");
 
@@ -14944,14 +14920,11 @@ function _wrapNativeSuper(Class) {
       }
     });
     return setPrototypeOf(Wrapper, Class);
-  };
-
-  module.exports["default"] = module.exports, module.exports.__esModule = true;
+  }, module.exports.__esModule = true, module.exports["default"] = module.exports;
   return _wrapNativeSuper(Class);
 }
 
-module.exports = _wrapNativeSuper;
-module.exports["default"] = module.exports, module.exports.__esModule = true;
+module.exports = _wrapNativeSuper, module.exports.__esModule = true, module.exports["default"] = module.exports;
 },{"./construct.js":64,"./getPrototypeOf.js":66,"./isNativeFunction.js":69,"./setPrototypeOf.js":71}],74:[function(require,module,exports){
 module.exports = require("regenerator-runtime");
 

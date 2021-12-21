@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { RxJsonSchema, RxStorage, RxStorageInstanceCreationParams, RxStorageInstance, BlobBuffer, BulkWriteRow, ChangeStreamOnceOptions, RxDocumentData, RxStorageBulkWriteResponse, RxStorageChangedDocumentMeta, RxStorageChangeEvent, RxStorageQueryResult, RxStorageKeyObjectInstance, BulkWriteLocalRow, RxLocalDocumentData, RxLocalStorageBulkWriteResponse, RxKeyObjectStorageInstanceCreationParams, EventBulk, RxStorageStatics } from '../../types';
+import type { RxJsonSchema, RxStorage, RxStorageInstanceCreationParams, RxStorageInstance, BlobBuffer, BulkWriteRow, ChangeStreamOnceOptions, RxDocumentData, RxStorageBulkWriteResponse, RxStorageChangedDocumentMeta, RxStorageChangeEvent, RxStorageQueryResult, RxStorageKeyObjectInstance, BulkWriteLocalRow, RxLocalDocumentData, RxLocalStorageBulkWriteResponse, RxKeyObjectStorageInstanceCreationParams, EventBulk, RxStorageStatics } from '../../types';
 import { InWorkerStorage } from './in-worker';
 declare type WorkerStorageInternals = {
     rxStorage: RxStorageWorker;
@@ -7,6 +7,7 @@ declare type WorkerStorageInternals = {
     worker: InWorkerStorage;
 };
 declare type RxStorageWorkerSettings = {
+    statics: RxStorageStatics;
     workerInput: any;
 };
 export declare class RxStorageWorker implements RxStorage<WorkerStorageInternals, any> {
@@ -68,5 +69,5 @@ export declare class RxStorageKeyObjectInstanceWorker implements RxStorageKeyObj
     close(): Promise<void>;
     remove(): Promise<void>;
 }
-export declare function getRxStorageWorker(statics: RxStorageStatics, settings: RxStorageWorkerSettings): RxStorageWorker;
+export declare function getRxStorageWorker(settings: RxStorageWorkerSettings): RxStorageWorker;
 export {};
