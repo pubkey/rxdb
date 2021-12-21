@@ -19,6 +19,11 @@
         "noEmit": true,
         "declaration": true,
 
+        /**
+         * @link https://spblog.net/post/2018/10/26/TypeScript-Tips-How-to-reduce-the-size-of-a-bundle
+         */
+        "importHelpers": true,
+
         "typeRoots": [
             "./src/types/modules"
         ]

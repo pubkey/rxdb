@@ -9,6 +9,12 @@
         "moduleResolution": "node",
         "target": "es2017",
         "noEmit": false,
+
+        /**
+         * @link https://spblog.net/post/2018/10/26/TypeScript-Tips-How-to-reduce-the-size-of-a-bundle
+         */
+         "importHelpers": true,
+
         "lib": [
             "es2017",
             "webworker"

@@ -809,3 +809,22 @@ WITH async/await transpiled to generator:
   }
 }
 
+
+
+
+## transpile async/await to promises instead of generators
+https://www.npmjs.com/package/babel-plugin-transform-async-to-promises
+
+> npm run build:size
+
+BEFORE:
+
+core:
+Build-Size (minified+gzip):
+75489
+
+AFTER:
+
+core: 
+Build-Size (minified+gzip):
+70723
