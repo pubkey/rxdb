@@ -815,6 +815,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     options: {},
                     multiInstance: false
                 });
+                assert.ok(storageInstance);
                 async function getSequenceAfter(since: number): Promise<number> {
                     const changesResult = await storageInstance.getChangedDocuments({
                         direction: 'after',

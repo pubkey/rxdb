@@ -30,8 +30,19 @@ const plugins = [
     '@babel/transform-block-scoping',
     '@babel/plugin-transform-member-expression-literals',
     '@babel/transform-property-literals',
-    '@babel/transform-async-to-generator',
-    '@babel/transform-regenerator', ['@babel/transform-runtime', {
+
+
+    // '@babel/transform-async-to-generator',
+    // '@babel/transform-regenerator', 
+    /**
+     * TODO transpile to promises instead of async, when this bug is fixed:
+     * @link https://github.com/rpetrich/babel-plugin-transform-async-to-promises/issues/62
+     */
+    ['babel-plugin-transform-async-to-promises', {
+        externalHelpers: false
+    }],
+
+    ['@babel/transform-runtime', {
         'regenerator': true
     }],
     '@babel/proposal-class-properties',
