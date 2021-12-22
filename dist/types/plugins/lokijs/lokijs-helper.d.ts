@@ -41,6 +41,7 @@ export declare function requestRemoteInstance(instance: RxStorageInstanceLoki<an
  * Runs the requested operation over the local db instance and sends back the result.
  */
 export declare function handleRemoteRequest(instance: RxStorageInstanceLoki<any> | RxStorageKeyObjectInstanceLoki, msg: any): Promise<void>;
+export declare function waitUntilHasLeader(leaderElector: LeaderElector): Promise<void>;
 /**
  * If the local state must be used, that one is returned.
  * Returns false if a remote instance must be used.

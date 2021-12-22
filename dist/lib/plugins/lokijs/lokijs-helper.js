@@ -12,8 +12,9 @@ exports.getLokiLeaderElector = getLokiLeaderElector;
 exports.getLokiSortComparator = getLokiSortComparator;
 exports.mustUseLocalState = exports.handleRemoteRequest = void 0;
 exports.removeLokiLeaderElectorReference = removeLokiLeaderElectorReference;
-exports.requestRemoteInstance = requestRemoteInstance;
+exports.requestRemoteInstance = void 0;
 exports.stripLokiKey = stripLokiKey;
+exports.waitUntilHasLeader = void 0;
 
 var _rxStorageInstanceLoki = require("./rx-storage-instance-loki");
 
@@ -242,7 +243,18 @@ function _for(test, update, body) {
  */
 var mustUseLocalState = function mustUseLocalState(instance) {
   try {
-    var _temp14 = function _temp14() {
+    if (instance.closed) {
+      return Promise.resolve(false);
+    }
+
+    var isRxStorageInstanceLoki = typeof instance.query === 'function';
+
+    if (instance.internals.localState) {
+      return Promise.resolve(instance.internals.localState);
+    }
+
+    var leaderElector = (0, _util.ensureNotFalsy)(instance.internals.leaderElector);
+    return Promise.resolve(waitUntilHasLeader(leaderElector)).then(function () {
       /**
        * It might already have a localState after the applying
        * because another subtask also called mustUSeLocalState()
@@ -275,21 +287,17 @@ var mustUseLocalState = function mustUseLocalState(instance) {
         // other is leader, send message to remote leading instance
         return false;
       }
-    };
+    });
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
 
-    if (instance.closed) {
-      return Promise.resolve(false);
-    }
+exports.mustUseLocalState = mustUseLocalState;
 
-    var isRxStorageInstanceLoki = typeof instance.query === 'function';
-
-    if (instance.internals.localState) {
-      return Promise.resolve(instance.internals.localState);
-    }
-
-    var leaderElector = (0, _util.ensureNotFalsy)(instance.internals.leaderElector);
-
-    var _temp15 = _for(function () {
+var waitUntilHasLeader = function waitUntilHasLeader(leaderElector) {
+  try {
+    var _temp13 = _for(function () {
       return !leaderElector.hasLeader;
     }, void 0, function () {
       return Promise.resolve(leaderElector.applyOnce()).then(function () {
@@ -297,13 +305,13 @@ var mustUseLocalState = function mustUseLocalState(instance) {
       });
     });
 
-    return Promise.resolve(_temp15 && _temp15.then ? _temp15.then(_temp14) : _temp14(_temp15));
+    return Promise.resolve(_temp13 && _temp13.then ? _temp13.then(function () {}) : void 0);
   } catch (e) {
     return Promise.reject(e);
   }
 };
 
-exports.mustUseLocalState = mustUseLocalState;
+exports.waitUntilHasLeader = waitUntilHasLeader;
 
 /**
  * Handles a request that came from a remote instance via requestRemoteInstance()
@@ -337,9 +345,9 @@ var handleRemoteRequest = function handleRemoteRequest(instance, msg) {
         var _isError = false;
 
         var _temp11 = _catch(function () {
-          var _ref2;
+          var _ref3;
 
-          return Promise.resolve((_ref2 = instance)[operation].apply(_ref2, params)).then(function (_operation) {
+          return Promise.resolve((_ref3 = instance)[operation].apply(_ref3, params)).then(function (_operation) {
             _result = _operation;
           });
         }, function (err) {
@@ -358,6 +366,90 @@ var handleRemoteRequest = function handleRemoteRequest(instance, msg) {
 };
 
 exports.handleRemoteRequest = handleRemoteRequest;
+
+/**
+ * For multi-instance usage, we send requests to the RxStorage
+ * to the current leading instance over the BroadcastChannel.
+ */
+var requestRemoteInstance = function requestRemoteInstance(instance, operation, params) {
+  try {
+    var isRxStorageInstanceLoki = typeof instance.query === 'function';
+    var messageType = isRxStorageInstanceLoki ? LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE : LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE;
+    var leaderElector = (0, _util.ensureNotFalsy)(instance.internals.leaderElector);
+    var broadcastChannel = leaderElector.broadcastChannel;
+    var whenDeathListener;
+    var leaderDeadPromise = new Promise(function (res) {
+      whenDeathListener = function whenDeathListener(msg) {
+        if (msg.context === 'leader' && msg.action === 'death') {
+          res({
+            retry: true
+          });
+        }
+      };
+
+      broadcastChannel.addEventListener('internal', whenDeathListener);
+    });
+    var requestId = (0, _util.randomCouchString)(12);
+    var responseListener;
+    var responsePromise = new Promise(function (res, rej) {
+      responseListener = function responseListener(msg) {
+        if (msg.type === messageType && msg.response === true && msg.requestId === requestId) {
+          if (msg.isError) {
+            res({
+              retry: false,
+              error: msg.result
+            });
+          } else {
+            res({
+              retry: false,
+              result: msg.result
+            });
+          }
+        }
+      };
+
+      broadcastChannel.addEventListener('message', responseListener);
+    }); // send out the request to the other instance
+
+    broadcastChannel.postMessage({
+      response: false,
+      type: messageType,
+      operation: operation,
+      params: params,
+      requestId: requestId,
+      databaseName: instance.databaseName,
+      collectionName: instance.collectionName
+    });
+    return Promise.race([leaderDeadPromise, responsePromise]).then(function (firstResolved) {
+      // clean up listeners
+      broadcastChannel.removeEventListener('message', responseListener);
+      broadcastChannel.removeEventListener('internal', whenDeathListener);
+
+      if (firstResolved.retry) {
+        var _ref2;
+
+        /**
+         * The leader died while a remote request was running
+         * we re-run the whole operation.
+         * We cannot just re-run requestRemoteInstance()
+         * because the current instance might be the new leader now
+         * and then we have to use the local state instead of requesting the remote.
+         */
+        return (_ref2 = instance)[operation].apply(_ref2, params);
+      } else {
+        if (firstResolved.error) {
+          throw firstResolved.error;
+        } else {
+          return firstResolved.result;
+        }
+      }
+    });
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+
+exports.requestRemoteInstance = requestRemoteInstance;
 
 var closeLokiCollections = function closeLokiCollections(databaseName, collections) {
   try {
@@ -627,42 +719,5 @@ function removeLokiLeaderElectorReference(storage, databaseName) {
       storage.leaderElectorByLokiDbName["delete"](databaseName);
     }
   }
-}
-/**
- * For multi-instance usage, we send requests to the RxStorage
- * to the current leading instance over the BroadcastChannel.
- */
-
-
-function requestRemoteInstance(instance, operation, params) {
-  var isRxStorageInstanceLoki = typeof instance.query === 'function';
-  var messageType = isRxStorageInstanceLoki ? LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE : LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE;
-  var broadcastChannel = (0, _util.ensureNotFalsy)(instance.internals.leaderElector).broadcastChannel;
-  var requestId = (0, _util.randomCouchString)(12);
-  var responsePromise = new Promise(function (res, rej) {
-    var listener = function listener(msg) {
-      if (msg.type === messageType && msg.response === true && msg.requestId === requestId) {
-        if (msg.isError) {
-          broadcastChannel.removeEventListener('message', listener);
-          rej(msg.result);
-        } else {
-          broadcastChannel.removeEventListener('message', listener);
-          res(msg.result);
-        }
-      }
-    };
-
-    broadcastChannel.addEventListener('message', listener);
-  });
-  broadcastChannel.postMessage({
-    response: false,
-    type: messageType,
-    operation: operation,
-    params: params,
-    requestId: requestId,
-    databaseName: instance.databaseName,
-    collectionName: instance.collectionName
-  });
-  return responsePromise;
 }
 //# sourceMappingURL=lokijs-helper.js.map
