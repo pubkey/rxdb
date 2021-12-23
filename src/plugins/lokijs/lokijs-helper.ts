@@ -286,10 +286,19 @@ export async function requestRemoteInstance(
     operation: string,
     params: any[]
 ): Promise<any | any[]> {
+
+
+    /**
+     * I am not sure why, but we need to await the event-loop once here.
+     * Otherwise something went wrong with the event handling inside of the broadcast channel.
+     */
+    await promiseWait(0);
+
     const isRxStorageInstanceLoki = typeof (instance as any).query === 'function';
     const messageType = isRxStorageInstanceLoki ? LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE : LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE;
 
-    const leaderElector = ensureNotFalsy(instance.internals.leaderElector)
+    const leaderElector = ensureNotFalsy(instance.internals.leaderElector);
+    await waitUntilHasLeader(leaderElector);
     const broadcastChannel = leaderElector.broadcastChannel;
 
     type WinningPromise = {
@@ -309,7 +318,6 @@ export async function requestRemoteInstance(
         };
         broadcastChannel.addEventListener('internal', whenDeathListener);
     });
-
     const requestId = randomCouchString(12);
     let responseListener: OnMessageHandler<any>;
     const responsePromise = new Promise<WinningPromise>((res, rej) => {
