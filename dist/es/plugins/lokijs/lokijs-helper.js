@@ -343,73 +343,75 @@ export var requestRemoteInstance = function requestRemoteInstance(instance, oper
     var isRxStorageInstanceLoki = typeof instance.query === 'function';
     var messageType = isRxStorageInstanceLoki ? LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE : LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE;
     var leaderElector = ensureNotFalsy(instance.internals.leaderElector);
-    var broadcastChannel = leaderElector.broadcastChannel;
-    var whenDeathListener;
-    var leaderDeadPromise = new Promise(function (res) {
-      whenDeathListener = function whenDeathListener(msg) {
-        if (msg.context === 'leader' && msg.action === 'death') {
-          res({
-            retry: true
-          });
-        }
-      };
-
-      broadcastChannel.addEventListener('internal', whenDeathListener);
-    });
-    var requestId = randomCouchString(12);
-    var responseListener;
-    var responsePromise = new Promise(function (res, rej) {
-      responseListener = function responseListener(msg) {
-        if (msg.type === messageType && msg.response === true && msg.requestId === requestId) {
-          if (msg.isError) {
+    return Promise.resolve(waitUntilHasLeader(leaderElector)).then(function () {
+      var broadcastChannel = leaderElector.broadcastChannel;
+      var whenDeathListener;
+      var leaderDeadPromise = new Promise(function (res) {
+        whenDeathListener = function whenDeathListener(msg) {
+          if (msg.context === 'leader' && msg.action === 'death') {
             res({
-              retry: false,
-              error: msg.result
-            });
-          } else {
-            res({
-              retry: false,
-              result: msg.result
+              retry: true
             });
           }
-        }
-      };
+        };
 
-      broadcastChannel.addEventListener('message', responseListener);
-    }); // send out the request to the other instance
+        broadcastChannel.addEventListener('internal', whenDeathListener);
+      });
+      var requestId = randomCouchString(12);
+      var responseListener;
+      var responsePromise = new Promise(function (res, rej) {
+        responseListener = function responseListener(msg) {
+          if (msg.type === messageType && msg.response === true && msg.requestId === requestId) {
+            if (msg.isError) {
+              res({
+                retry: false,
+                error: msg.result
+              });
+            } else {
+              res({
+                retry: false,
+                result: msg.result
+              });
+            }
+          }
+        };
 
-    broadcastChannel.postMessage({
-      response: false,
-      type: messageType,
-      operation: operation,
-      params: params,
-      requestId: requestId,
-      databaseName: instance.databaseName,
-      collectionName: instance.collectionName
-    });
-    return Promise.race([leaderDeadPromise, responsePromise]).then(function (firstResolved) {
-      // clean up listeners
-      broadcastChannel.removeEventListener('message', responseListener);
-      broadcastChannel.removeEventListener('internal', whenDeathListener);
+        broadcastChannel.addEventListener('message', responseListener);
+      }); // send out the request to the other instance
 
-      if (firstResolved.retry) {
-        var _ref2;
+      broadcastChannel.postMessage({
+        response: false,
+        type: messageType,
+        operation: operation,
+        params: params,
+        requestId: requestId,
+        databaseName: instance.databaseName,
+        collectionName: instance.collectionName
+      });
+      return Promise.race([leaderDeadPromise, responsePromise]).then(function (firstResolved) {
+        // clean up listeners
+        broadcastChannel.removeEventListener('message', responseListener);
+        broadcastChannel.removeEventListener('internal', whenDeathListener);
 
-        /**
-         * The leader died while a remote request was running
-         * we re-run the whole operation.
-         * We cannot just re-run requestRemoteInstance()
-         * because the current instance might be the new leader now
-         * and then we have to use the local state instead of requesting the remote.
-         */
-        return (_ref2 = instance)[operation].apply(_ref2, params);
-      } else {
-        if (firstResolved.error) {
-          throw firstResolved.error;
+        if (firstResolved.retry) {
+          var _ref2;
+
+          /**
+           * The leader died while a remote request was running
+           * we re-run the whole operation.
+           * We cannot just re-run requestRemoteInstance()
+           * because the current instance might be the new leader now
+           * and then we have to use the local state instead of requesting the remote.
+           */
+          return (_ref2 = instance)[operation].apply(_ref2, params);
         } else {
-          return firstResolved.result;
+          if (firstResolved.error) {
+            throw firstResolved.error;
+          } else {
+            return firstResolved.result;
+          }
         }
-      }
+      });
     });
   } catch (e) {
     return Promise.reject(e);
