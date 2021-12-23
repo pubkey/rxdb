@@ -12,12 +12,12 @@ var leaderIcon = document.querySelector('#leader-icon');
 var heroSchema = {
     "title": "hero schema",
     "description": "describes a simple hero",
+    "primaryKey": "name",
     "version": 0,
     "type": "object",
     "properties": {
         "name": {
-            "type": "string",
-            "primary": true
+            "type": "string"
         },
         "color": {
             "type": "string"
@@ -32,7 +32,7 @@ const syncURL = 'http://' + window.location.hostname + ':10102/';
 window.RxDB
     .createRxDatabase({
         name: 'heroesdb',
-        adapter: 'idb',
+        storage: RxDB.getRxStoragePouch('idb'),
         password: 'myLongAndStupidPassword'
     })
     .then(function(db) {
@@ -57,7 +57,7 @@ window.RxDB
     })
     .then(function(col) {
         console.log('DatabaseService: sync');
-        col.sync({
+        col.syncCouchDB({
             remote: syncURL + 'hero/'
         });
         return col;
