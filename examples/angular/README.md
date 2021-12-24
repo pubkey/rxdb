@@ -23,9 +23,14 @@ Also it uses **angular-universal** to enable server side rendering.
 };
 ```
 
-- Make sure you have used the rxjs-zone.js patch otherwise the change detection will not work properly
+- Make sure you have used the rxjs-zone.js patch otherwise the change detection will not work properly. For that you should put the following code into your `app.component.ts`:
 ```ts
-// in polyfills.ts
+//> app.component.ts
+/**
+ * IMPORTANT: RxDB creates rxjs observables outside of angulars zone
+ * So you have to import the rxjs patch to ensure changedetection works correctly.
+ * @link https://www.bennadel.com/blog/3448-binding-rxjs-observable-sources-outside-of-the-ngzone-in-angular-6-0-2.htm
+ */
 import 'zone.js/dist/zone-patch-rxjs';
 ```
 
