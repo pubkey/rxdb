@@ -145,6 +145,13 @@ function getStorage() {
 
 let tmpDb, tmpStorage
 async function testLokiFreeze () {
+    if (tmpDb && tmpDb.humans) await tmpDb.humans.remove()
+    // if(tmpDb) {
+    //     console.log('before tmpDb.remove(')
+    //     await tmpDb.remove()
+    //     console.log('after tmpDb.remove(')
+    //     tmpDb = null
+    // }
     if (!tmpDb) {
         tmpStorage = getRxStorageLoki({
             adapter: new LokiIncrementalIndexedDBAdapter()
@@ -152,11 +159,10 @@ async function testLokiFreeze () {
         tmpDb = await createRxDatabase({
             name: 'db',
             multiInstance: true,
-            // ignoreDuplicate: true,
+            ignoreDuplicate: true,
             storage: tmpStorage
         })
     }
-    if (tmpDb.humans) await tmpDb.humans.remove()
     await tmpDb.addCollections({
         // key = collectionName
         humans: {
@@ -176,7 +182,7 @@ async function testLokiFreeze () {
         }
     })
     console.log('before exec')
-    let timer = setTimeout(()=>alert('FREEZE'), 3000)
+    let timer = setTimeout(()=>alert('FREEZES!!!'), 3000)
     const docs = await tmpDb.humans.find().exec()
     clearTimeout(timer)
     console.log('after exec', docs.length)
@@ -364,6 +370,7 @@ async function run() {
     };
     insertButton.onclick = async function () {
         await testLokiFreeze() // on second page will never executed(freeze forever)!
+        return
         const name = document.querySelector('input[name="name"]').value;
         const color = document.querySelector('input[name="color"]').value;
         const obj = {
