@@ -1,5 +1,3 @@
-import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
-import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import lokijs from 'lokijs';
 import { firstPropertyNameOfObject, flatClone } from '../../util';
@@ -105,55 +103,16 @@ export var RxStorageLoki = /*#__PURE__*/function () {
 
   var _proto = RxStorageLoki.prototype;
 
-  _proto.createStorageInstance = /*#__PURE__*/function () {
-    var _createStorageInstance = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(params) {
-      return _regeneratorRuntime.wrap(function _callee$(_context) {
-        while (1) {
-          switch (_context.prev = _context.next) {
-            case 0:
-              return _context.abrupt("return", createLokiStorageInstance(this, params, this.databaseSettings));
+  _proto.createStorageInstance = function createStorageInstance(params) {
+    return createLokiStorageInstance(this, params, this.databaseSettings);
+  };
 
-            case 1:
-            case "end":
-              return _context.stop();
-          }
-        }
-      }, _callee, this);
-    }));
-
-    function createStorageInstance(_x) {
-      return _createStorageInstance.apply(this, arguments);
-    }
-
-    return createStorageInstance;
-  }();
-
-  _proto.createKeyObjectStorageInstance = /*#__PURE__*/function () {
-    var _createKeyObjectStorageInstance = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(params) {
-      var useParams;
-      return _regeneratorRuntime.wrap(function _callee2$(_context2) {
-        while (1) {
-          switch (_context2.prev = _context2.next) {
-            case 0:
-              // ensure we never mix up key-object data with normal storage documents.
-              useParams = flatClone(params);
-              useParams.collectionName = params.collectionName + '-key-object';
-              return _context2.abrupt("return", createLokiKeyObjectStorageInstance(this, params, this.databaseSettings));
-
-            case 3:
-            case "end":
-              return _context2.stop();
-          }
-        }
-      }, _callee2, this);
-    }));
-
-    function createKeyObjectStorageInstance(_x2) {
-      return _createKeyObjectStorageInstance.apply(this, arguments);
-    }
-
-    return createKeyObjectStorageInstance;
-  }();
+  _proto.createKeyObjectStorageInstance = function createKeyObjectStorageInstance(params) {
+    // ensure we never mix up key-object data with normal storage documents.
+    var useParams = flatClone(params);
+    useParams.collectionName = params.collectionName + '-key-object';
+    return createLokiKeyObjectStorageInstance(this, params, this.databaseSettings);
+  };
 
   return RxStorageLoki;
 }();

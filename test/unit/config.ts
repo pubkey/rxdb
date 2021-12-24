@@ -82,15 +82,15 @@ export function setDefaultStorage(storageKey: string) {
             break;
         case 'lokijs-worker':
             const lokiWorkerPath = require('path').join(
-                '../../../../test_tmp/helper',
-                'lokijs-worker.js'
+                '../../../../dist/lib/plugins/worker/workers/',
+                'lokijs-memory.worker.js'
             );
             console.log('lokiWorkerPath: ' + lokiWorkerPath);
             config.storage = {
                 name: 'lokijs-worker',
                 getStorage: () => getRxStorageWorker(
-                    RxStorageLokiStatics,
                     {
+                        statics: RxStorageLokiStatics,
                         workerInput: lokiWorkerPath
                     }
                 ),

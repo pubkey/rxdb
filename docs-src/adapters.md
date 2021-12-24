@@ -240,7 +240,7 @@ addPouchPlugin(require('pouchdb-adapter-cordova-sqlite'));
 /**
  * In capacitor/cordova you have to wait until all plugins are loaded and 'window.sqlitePlugin'
  * can be accessed.
- * This functions Waits until document deviceready is called which ensures that everything is loaded.
+ * This function waits until document deviceready is called which ensures that everything is loaded.
  * @link https://cordova.apache.org/docs/de/latest/cordova/events/events.deviceready.html
  */
 export function awaitCapacitorDeviceReady(): Promise<void> {

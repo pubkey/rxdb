@@ -30,7 +30,7 @@
     "pouchdb-adapter-http": "7.2.2",
     "random-token": "0.0.8",
     "react": "17.0.2",
-    "react-native": "0.64.2",
+    "react-native": "0.66.4",
     "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.4.0"
   }

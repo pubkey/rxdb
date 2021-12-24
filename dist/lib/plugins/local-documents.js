@@ -7,10 +7,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.RxLocalDocument = exports.RxDBLocalDocumentsPlugin = void 0;
 
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
-
 var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/inheritsLoose"));
 
 var _objectPath = _interopRequireDefault(require("object-path"));
@@ -379,99 +375,49 @@ function getLocal(id) {
 function getLocal$(id) {
   var _this6 = this;
 
-  return this.$.pipe((0, _operators.startWith)(null), (0, _operators.mergeMap)( /*#__PURE__*/function () {
-    var _ref = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(cE) {
-      var doc;
-      return _regenerator["default"].wrap(function _callee$(_context) {
-        while (1) {
-          switch (_context.prev = _context.next) {
-            case 0:
-              if (!cE) {
-                _context.next = 4;
-                break;
-              }
+  return this.$.pipe((0, _operators.startWith)(null), (0, _operators.mergeMap)(function (cE) {
+    try {
+      if (cE) {
+        return Promise.resolve({
+          changeEvent: cE
+        });
+      } else {
+        return Promise.resolve(_this6.getLocal(id)).then(function (doc) {
+          return {
+            doc: doc
+          };
+        });
+      }
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  }), (0, _operators.mergeMap)(function (changeEventOrDoc) {
+    try {
+      if (changeEventOrDoc.changeEvent) {
+        var cE = changeEventOrDoc.changeEvent;
 
-              return _context.abrupt("return", {
-                changeEvent: cE
-              });
-
-            case 4:
-              _context.next = 6;
-              return _this6.getLocal(id);
-
-            case 6:
-              doc = _context.sent;
-              return _context.abrupt("return", {
-                doc: doc
-              });
-
-            case 8:
-            case "end":
-              return _context.stop();
-          }
+        if (!cE.isLocal || cE.documentId !== id) {
+          return Promise.resolve({
+            use: false
+          });
+        } else {
+          return Promise.resolve(_this6.getLocal(id)).then(function (doc) {
+            return {
+              use: true,
+              doc: doc
+            };
+          });
         }
-      }, _callee);
-    }));
-
-    return function (_x) {
-      return _ref.apply(this, arguments);
-    };
-  }()), (0, _operators.mergeMap)( /*#__PURE__*/function () {
-    var _ref2 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(changeEventOrDoc) {
-      var cE, doc;
-      return _regenerator["default"].wrap(function _callee2$(_context2) {
-        while (1) {
-          switch (_context2.prev = _context2.next) {
-            case 0:
-              if (!changeEventOrDoc.changeEvent) {
-                _context2.next = 12;
-                break;
-              }
-
-              cE = changeEventOrDoc.changeEvent;
-
-              if (!(!cE.isLocal || cE.documentId !== id)) {
-                _context2.next = 6;
-                break;
-              }
-
-              return _context2.abrupt("return", {
-                use: false
-              });
-
-            case 6:
-              _context2.next = 8;
-              return _this6.getLocal(id);
-
-            case 8:
-              doc = _context2.sent;
-              return _context2.abrupt("return", {
-                use: true,
-                doc: doc
-              });
-
-            case 10:
-              _context2.next = 13;
-              break;
-
-            case 12:
-              return _context2.abrupt("return", {
-                use: true,
-                doc: changeEventOrDoc.doc
-              });
-
-            case 13:
-            case "end":
-              return _context2.stop();
-          }
-        }
-      }, _callee2);
-    }));
-
-    return function (_x2) {
-      return _ref2.apply(this, arguments);
-    };
-  }()), (0, _operators.filter)(function (filterFlagged) {
+      } else {
+        return Promise.resolve({
+          use: true,
+          doc: changeEventOrDoc.doc
+        });
+      }
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  }), (0, _operators.filter)(function (filterFlagged) {
     return filterFlagged.use;
   }), (0, _operators.map)(function (filterFlagged) {
     return filterFlagged.doc;

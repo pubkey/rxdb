@@ -123,6 +123,7 @@ config.parallel('rx-storage-lokijs.test.js', () => {
                 });
             }
 
+
             // wait until one is leader
             await waitUntil(() => {
                 const leaderAmount = getLeaders().length;

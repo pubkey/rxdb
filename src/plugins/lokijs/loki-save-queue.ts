@@ -1,4 +1,4 @@
-import { LokiDatabaseSettings } from '../../types';
+import type { LokiDatabaseSettings } from '../../types';
 import {
     promiseWait,
     PROMISE_RESOLVE_VOID,
@@ -35,7 +35,7 @@ export class LokiSaveQueue {
         this.run();
     }
 
-    public async run() {
+    public run() {
         if (
             // no persistence adapter given, so we do not need to save
             !this.databaseSettings.adapter ||
@@ -76,8 +76,7 @@ export class LokiSaveQueue {
                 await Promise.all([
                     requestIdlePromise(),
                     promiseWait(100)
-                ]);
-                await requestIdlePromise();
+                ]).then(() => requestIdlePromise());
 
                 if (this.writesSinceLastRun === 0) {
                     return;
@@ -98,7 +97,6 @@ export class LokiSaveQueue {
                         }
                     });
                 });
-
             })
             .catch(() => { })
             .then(() => {

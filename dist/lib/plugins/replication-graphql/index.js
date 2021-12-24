@@ -15,10 +15,6 @@ var _exportNames = {
 exports.rxdb = exports.prototypes = exports.RxGraphQLReplicationState = exports.RxDBReplicationGraphQLPlugin = void 0;
 exports.syncGraphQL = syncGraphQL;
 
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
-
 var _rxjs = require("rxjs");
 
 var _operators = require("rxjs/operators");
@@ -94,6 +90,244 @@ Object.keys(_queryBuilderFromRxSchema).forEach(function (key) {
     }
   });
 });
+
+function _catch(body, recover) {
+  try {
+    var result = body();
+  } catch (e) {
+    return recover(e);
+  }
+
+  if (result && result.then) {
+    return result.then(void 0, recover);
+  }
+
+  return result;
+}
+
+function _settle(pact, state, value) {
+  if (!pact.s) {
+    if (value instanceof _Pact) {
+      if (value.s) {
+        if (state & 1) {
+          state = value.s;
+        }
+
+        value = value.v;
+      } else {
+        value.o = _settle.bind(null, pact, state);
+        return;
+      }
+    }
+
+    if (value && value.then) {
+      value.then(_settle.bind(null, pact, state), _settle.bind(null, pact, 2));
+      return;
+    }
+
+    pact.s = state;
+    pact.v = value;
+    var observer = pact.o;
+
+    if (observer) {
+      observer(pact);
+    }
+  }
+}
+
+var _Pact = /*#__PURE__*/function () {
+  function _Pact() {}
+
+  _Pact.prototype.then = function (onFulfilled, onRejected) {
+    var result = new _Pact();
+    var state = this.s;
+
+    if (state) {
+      var callback = state & 1 ? onFulfilled : onRejected;
+
+      if (callback) {
+        try {
+          _settle(result, 1, callback(this.v));
+        } catch (e) {
+          _settle(result, 2, e);
+        }
+
+        return result;
+      } else {
+        return this;
+      }
+    }
+
+    this.o = function (_this) {
+      try {
+        var value = _this.v;
+
+        if (_this.s & 1) {
+          _settle(result, 1, onFulfilled ? onFulfilled(value) : value);
+        } else if (onRejected) {
+          _settle(result, 1, onRejected(value));
+        } else {
+          _settle(result, 2, value);
+        }
+      } catch (e) {
+        _settle(result, 2, e);
+      }
+    };
+
+    return result;
+  };
+
+  return _Pact;
+}();
+
+function _isSettledPact(thenable) {
+  return thenable instanceof _Pact && thenable.s & 1;
+}
+
+function _forTo(array, body, check) {
+  var i = -1,
+      pact,
+      reject;
+
+  function _cycle(result) {
+    try {
+      while (++i < array.length && (!check || !check())) {
+        result = body(i);
+
+        if (result && result.then) {
+          if (_isSettledPact(result)) {
+            result = result.v;
+          } else {
+            result.then(_cycle, reject || (reject = _settle.bind(null, pact = new _Pact(), 2)));
+            return;
+          }
+        }
+      }
+
+      if (pact) {
+        _settle(pact, 1, result);
+      } else {
+        pact = result;
+      }
+    } catch (e) {
+      _settle(pact || (pact = new _Pact()), 2, e);
+    }
+  }
+
+  _cycle();
+
+  return pact;
+}
+
+function _for(test, update, body) {
+  var stage;
+
+  for (;;) {
+    var shouldContinue = test();
+
+    if (_isSettledPact(shouldContinue)) {
+      shouldContinue = shouldContinue.v;
+    }
+
+    if (!shouldContinue) {
+      return result;
+    }
+
+    if (shouldContinue.then) {
+      stage = 0;
+      break;
+    }
+
+    var result = body();
+
+    if (result && result.then) {
+      if (_isSettledPact(result)) {
+        result = result.s;
+      } else {
+        stage = 1;
+        break;
+      }
+    }
+
+    if (update) {
+      var updateValue = update();
+
+      if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
+        stage = 2;
+        break;
+      }
+    }
+  }
+
+  var pact = new _Pact();
+
+  var reject = _settle.bind(null, pact, 2);
+
+  (stage === 0 ? shouldContinue.then(_resumeAfterTest) : stage === 1 ? result.then(_resumeAfterBody) : updateValue.then(_resumeAfterUpdate)).then(void 0, reject);
+  return pact;
+
+  function _resumeAfterBody(value) {
+    result = value;
+
+    do {
+      if (update) {
+        updateValue = update();
+
+        if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
+          updateValue.then(_resumeAfterUpdate).then(void 0, reject);
+          return;
+        }
+      }
+
+      shouldContinue = test();
+
+      if (!shouldContinue || _isSettledPact(shouldContinue) && !shouldContinue.v) {
+        _settle(pact, 1, result);
+
+        return;
+      }
+
+      if (shouldContinue.then) {
+        shouldContinue.then(_resumeAfterTest).then(void 0, reject);
+        return;
+      }
+
+      result = body();
+
+      if (_isSettledPact(result)) {
+        result = result.v;
+      }
+    } while (!result || !result.then);
+
+    result.then(_resumeAfterBody).then(void 0, reject);
+  }
+
+  function _resumeAfterTest(shouldContinue) {
+    if (shouldContinue) {
+      result = body();
+
+      if (result && result.then) {
+        result.then(_resumeAfterBody).then(void 0, reject);
+      } else {
+        _resumeAfterBody(result);
+      }
+    } else {
+      _settle(pact, 1, result);
+    }
+  }
+
+  function _resumeAfterUpdate() {
+    if (shouldContinue = test()) {
+      if (shouldContinue.then) {
+        shouldContinue.then(_resumeAfterTest).then(void 0, reject);
+      } else {
+        _resumeAfterTest(shouldContinue);
+      }
+    } else {
+      _settle(pact, 1, result);
+    }
+  }
+}
 
 function _createForOfIteratorHelperLoose(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (it) return (it = it.call(o)).next.bind(it); if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; return function () { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 
@@ -192,196 +426,129 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
   } // ensures this._run() does not run in parallel
   ;
 
-  _proto.run =
-  /*#__PURE__*/
-  function () {
-    var _run2 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2() {
-      var _this2 = this;
+  _proto.run = function run() {
+    try {
+      var _arguments2 = arguments,
+          _this3 = this;
 
-      var retryOnFail,
-          _args2 = arguments;
-      return _regenerator["default"].wrap(function _callee2$(_context2) {
-        while (1) {
-          switch (_context2.prev = _context2.next) {
-            case 0:
-              retryOnFail = _args2.length > 0 && _args2[0] !== undefined ? _args2[0] : true;
+      var retryOnFail = _arguments2.length > 0 && _arguments2[0] !== undefined ? _arguments2[0] : true;
 
-              if (!this.isStopped()) {
-                _context2.next = 3;
-                break;
-              }
+      if (_this3.isStopped()) {
+        return Promise.resolve();
+      }
 
-              return _context2.abrupt("return");
+      if (_this3._runQueueCount > 2) {
+        return Promise.resolve(_this3._runningPromise);
+      }
 
-            case 3:
-              if (!(this._runQueueCount > 2)) {
-                _context2.next = 5;
-                break;
-              }
+      _this3._runQueueCount++;
+      _this3._runningPromise = _this3._runningPromise.then(function () {
+        try {
+          _this3._subjects.active.next(true);
 
-              return _context2.abrupt("return", this._runningPromise);
+          return Promise.resolve(_this3._run(retryOnFail)).then(function (willRetry) {
+            _this3._subjects.active.next(false);
 
-            case 5:
-              this._runQueueCount++;
-              this._runningPromise = this._runningPromise.then( /*#__PURE__*/(0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
-                var willRetry;
-                return _regenerator["default"].wrap(function _callee$(_context) {
-                  while (1) {
-                    switch (_context.prev = _context.next) {
-                      case 0:
-                        _this2._subjects.active.next(true);
+            if (retryOnFail && !willRetry && _this3._subjects.initialReplicationComplete.getValue() === false) {
+              _this3._subjects.initialReplicationComplete.next(true);
+            }
 
-                        _context.next = 3;
-                        return _this2._run(retryOnFail);
-
-                      case 3:
-                        willRetry = _context.sent;
-
-                        _this2._subjects.active.next(false);
-
-                        if (retryOnFail && !willRetry && _this2._subjects.initialReplicationComplete.getValue() === false) {
-                          _this2._subjects.initialReplicationComplete.next(true);
-                        }
-
-                        _this2._runQueueCount--;
-
-                      case 7:
-                      case "end":
-                        return _context.stop();
-                    }
-                  }
-                }, _callee);
-              })));
-              return _context2.abrupt("return", this._runningPromise);
-
-            case 8:
-            case "end":
-              return _context2.stop();
-          }
+            _this3._runQueueCount--;
+          });
+        } catch (e) {
+          return Promise.reject(e);
         }
-      }, _callee2, this);
-    }));
-
-    function run() {
-      return _run2.apply(this, arguments);
+      });
+      return Promise.resolve(_this3._runningPromise);
+    } catch (e) {
+      return Promise.reject(e);
     }
-
-    return run;
-  }()
+  }
   /**
    * returns true if retry must be done
    */
   ;
 
-  _proto._run =
-  /*#__PURE__*/
-  function () {
-    var _run3 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3() {
-      var _this3 = this;
+  _proto._run = function _run() {
+    try {
+      var _temp6 = function _temp6() {
+        var _exit = false;
 
-      var retryOnFail,
-          ok,
-          _ok,
-          _args3 = arguments;
+        function _temp3(_result) {
+          var _exit2 = false;
+          if (_exit) return _result;
 
-      return _regenerator["default"].wrap(function _callee3$(_context3) {
-        while (1) {
-          switch (_context3.prev = _context3.next) {
-            case 0:
-              retryOnFail = _args3.length > 0 && _args3[0] !== undefined ? _args3[0] : true;
+          var _temp = function () {
+            if (_this5.pull) {
+              return Promise.resolve(_this5.runPull()).then(function (ok) {
+                if (!ok && retryOnFail) {
+                  setTimeout(function () {
+                    return _this5.run();
+                  }, _this5.retryTime);
+                  _exit2 = true;
+                  return true;
+                }
+              });
+            }
+          }();
 
-              if (!this.isStopped()) {
-                _context3.next = 3;
-                break;
-              }
-
-              return _context3.abrupt("return", false);
-
-            case 3:
-              this._runCount++;
-              /**
-               * The replication happens in the background anyways
-               * so we have to ensure that we do not slow down primary tasks.
-               * But not if it is the initial replication, because that might happen
-               * on the first inital loading where it is critical to get the data
-               * as fast as possible to decrease initial page load time.
-               */
-
-              if (!this._subjects.initialReplicationComplete.getValue()) {
-                _context3.next = 7;
-                break;
-              }
-
-              _context3.next = 7;
-              return this.collection.database.requestIdlePromise();
-
-            case 7:
-              if (!this.push) {
-                _context3.next = 14;
-                break;
-              }
-
-              _context3.next = 10;
-              return this.runPush();
-
-            case 10:
-              ok = _context3.sent;
-
-              if (!(!ok && retryOnFail)) {
-                _context3.next = 14;
-                break;
-              }
-
-              setTimeout(function () {
-                return _this3.run();
-              }, this.retryTime);
-              /*
-                  Because we assume that conflicts are solved on the server side,
-                  if push failed, do not attempt to pull before push was successful
-                  otherwise we do not know how to merge changes with the local state
-              */
-
-              return _context3.abrupt("return", true);
-
-            case 14:
-              if (!this.pull) {
-                _context3.next = 21;
-                break;
-              }
-
-              _context3.next = 17;
-              return this.runPull();
-
-            case 17:
-              _ok = _context3.sent;
-
-              if (!(!_ok && retryOnFail)) {
-                _context3.next = 21;
-                break;
-              }
-
-              setTimeout(function () {
-                return _this3.run();
-              }, this.retryTime);
-              return _context3.abrupt("return", true);
-
-            case 21:
-              return _context3.abrupt("return", false);
-
-            case 22:
-            case "end":
-              return _context3.stop();
-          }
+          return _temp && _temp.then ? _temp.then(function (_result2) {
+            return _exit2 ? _result2 : false;
+          }) : _exit2 ? _temp : false;
         }
-      }, _callee3, this);
-    }));
 
-    function _run() {
-      return _run3.apply(this, arguments);
+        var _temp2 = function () {
+          if (_this5.push) {
+            return Promise.resolve(_this5.runPush()).then(function (ok) {
+              if (!ok && retryOnFail) {
+                setTimeout(function () {
+                  return _this5.run();
+                }, _this5.retryTime);
+                /*
+                    Because we assume that conflicts are solved on the server side,
+                    if push failed, do not attempt to pull before push was successful
+                    otherwise we do not know how to merge changes with the local state
+                */
+
+                _exit = true;
+                return true;
+              }
+            });
+          }
+        }();
+
+        return _temp2 && _temp2.then ? _temp2.then(_temp3) : _temp3(_temp2);
+      };
+
+      var _arguments4 = arguments,
+          _this5 = this;
+
+      var retryOnFail = _arguments4.length > 0 && _arguments4[0] !== undefined ? _arguments4[0] : true;
+
+      if (_this5.isStopped()) {
+        return Promise.resolve(false);
+      }
+
+      _this5._runCount++;
+      /**
+       * The replication happens in the background anyways
+       * so we have to ensure that we do not slow down primary tasks.
+       * But not if it is the initial replication, because that might happen
+       * on the first inital loading where it is critical to get the data
+       * as fast as possible to decrease initial page load time.
+       */
+
+      var _temp7 = function () {
+        if (_this5._subjects.initialReplicationComplete.getValue()) {
+          return Promise.resolve(_this5.collection.database.requestIdlePromise()).then(function () {});
+        }
+      }();
+
+      return Promise.resolve(_temp7 && _temp7.then ? _temp7.then(_temp6) : _temp6(_temp7));
+    } catch (e) {
+      return Promise.reject(e);
     }
-
-    return _run;
-  }()
+  }
   /**
    * Pull all changes from the server,
    * start from the last pulled change.
@@ -389,461 +556,280 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
    */
   ;
 
-  _proto.runPull =
-  /*#__PURE__*/
-  function () {
-    var _runPull = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee5() {
-      var _this4 = this;
+  _proto.runPull = function runPull() {
+    try {
+      var _this7 = this;
 
-      var latestDocument, latestDocumentData, pullGraphQL, result, err, dataPath, data, modified, newLatestDocument;
-      return _regenerator["default"].wrap(function _callee5$(_context5) {
-        while (1) {
-          switch (_context5.prev = _context5.next) {
-            case 0:
-              if (!this.isStopped()) {
-                _context5.next = 2;
-                break;
+      if (_this7.isStopped()) {
+        return Promise.resolve(false);
+      }
+
+      return Promise.resolve((0, _crawlingCheckpoint.getLastPullDocument)(_this7.collection, _this7.endpointHash)).then(function (latestDocument) {
+        var latestDocumentData = latestDocument ? latestDocument : null;
+        return Promise.resolve(_this7.pull.queryBuilder(latestDocumentData)).then(function (pullGraphQL) {
+          var _exit3 = false;
+
+          function _temp10(_result3) {
+            if (_exit3) return _result3;
+            var dataPath = _this7.pull.dataPath || ['data', Object.keys(result.data)[0]];
+
+            var data = _objectPath["default"].get(result, dataPath); // optimization shortcut, do not proceed if there are no documents.
+
+
+            return data.length === 0 ? true : Promise.resolve(Promise.all(data.map(function (doc) {
+              try {
+                return Promise.resolve(_this7.pull.modifier(doc));
+              } catch (e) {
+                return Promise.reject(e);
               }
-
-              return _context5.abrupt("return", false);
-
-            case 2:
-              _context5.next = 4;
-              return (0, _crawlingCheckpoint.getLastPullDocument)(this.collection, this.endpointHash);
-
-            case 4:
-              latestDocument = _context5.sent;
-              latestDocumentData = latestDocument ? latestDocument : null;
-              _context5.next = 8;
-              return this.pull.queryBuilder(latestDocumentData);
-
-            case 8:
-              pullGraphQL = _context5.sent;
-              _context5.prev = 9;
-              _context5.next = 12;
-              return this.client.query(pullGraphQL.query, pullGraphQL.variables);
-
-            case 12:
-              result = _context5.sent;
-
-              if (!result.errors) {
-                _context5.next = 21;
-                break;
-              }
-
-              if (!(typeof result.errors === 'string')) {
-                _context5.next = 18;
-                break;
-              }
-
-              throw new Error(result.errors);
-
-            case 18:
-              err = new Error('unknown errors occurred - see innerErrors for more details');
-              err.innerErrors = result.errors;
-              throw err;
-
-            case 21:
-              _context5.next = 27;
-              break;
-
-            case 23:
-              _context5.prev = 23;
-              _context5.t0 = _context5["catch"](9);
-
-              this._subjects.error.next(_context5.t0);
-
-              return _context5.abrupt("return", false);
-
-            case 27:
-              dataPath = this.pull.dataPath || ['data', Object.keys(result.data)[0]];
-              data = _objectPath["default"].get(result, dataPath); // optimization shortcut, do not proceed if there are no documents.
-
-              if (!(data.length === 0)) {
-                _context5.next = 31;
-                break;
-              }
-
-              return _context5.abrupt("return", true);
-
-            case 31:
-              _context5.next = 33;
-              return Promise.all(data.map( /*#__PURE__*/function () {
-                var _ref2 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(doc) {
-                  return _regenerator["default"].wrap(function _callee4$(_context4) {
-                    while (1) {
-                      switch (_context4.prev = _context4.next) {
-                        case 0:
-                          _context4.next = 2;
-                          return _this4.pull.modifier(doc);
-
-                        case 2:
-                          return _context4.abrupt("return", _context4.sent);
-
-                        case 3:
-                        case "end":
-                          return _context4.stop();
-                      }
-                    }
-                  }, _callee4);
-                }));
-
-                return function (_x) {
-                  return _ref2.apply(this, arguments);
-                };
-              }()));
-
-            case 33:
-              modified = _context5.sent.filter(function (doc) {
+            }))).then(function (_Promise$all) {
+              var modified = _Promise$all.filter(function (doc) {
                 return !!doc;
               });
 
-              if (!_overwritable.overwritable.isDevMode()) {
-                _context5.next = 43;
-                break;
+              /**
+               * Run schema validation in dev-mode
+               */
+              if (_overwritable.overwritable.isDevMode()) {
+                try {
+                  modified.forEach(function (doc) {
+                    var withoutDeleteFlag = (0, _util.flatClone)(doc);
+                    delete withoutDeleteFlag[_this7.deletedFlag];
+
+                    _this7.collection.schema.validate(withoutDeleteFlag);
+                  });
+                } catch (err) {
+                  _this7._subjects.error.next(err);
+
+                  return false;
+                }
               }
 
-              _context5.prev = 35;
-              modified.forEach(function (doc) {
-                var withoutDeleteFlag = (0, _util.flatClone)(doc);
-                delete withoutDeleteFlag[_this4.deletedFlag];
+              return _this7.isStopped() ? true : Promise.resolve(_this7.handleDocumentsFromRemote(modified)).then(function () {
+                modified.map(function (doc) {
+                  return _this7._subjects.received.next(doc);
+                });
 
-                _this4.collection.schema.validate(withoutDeleteFlag);
+                var _temp8 = function () {
+                  if (modified.length === 0) {
+                    if (_this7.live) {}
+                  } else {
+                    var newLatestDocument = modified[modified.length - 1];
+                    return Promise.resolve((0, _crawlingCheckpoint.setLastPullDocument)(_this7.collection, _this7.endpointHash, newLatestDocument)).then(function () {
+                      /**
+                       * we have more docs, re-run
+                       * TODO we should have a options.pull.batchSize param
+                       * and only re-run if the previous batch was 'full'
+                       * this would save many duplicate requests with empty arrays as response.
+                       */
+                      return Promise.resolve(_this7.runPull()).then(function () {});
+                    });
+                  }
+                }();
+
+                return _temp8 && _temp8.then ? _temp8.then(function () {
+                  return true;
+                }) : true;
               });
-              _context5.next = 43;
-              break;
-
-            case 39:
-              _context5.prev = 39;
-              _context5.t1 = _context5["catch"](35);
-
-              this._subjects.error.next(_context5.t1);
-
-              return _context5.abrupt("return", false);
-
-            case 43:
-              if (!this.isStopped()) {
-                _context5.next = 45;
-                break;
-              }
-
-              return _context5.abrupt("return", true);
-
-            case 45:
-              _context5.next = 47;
-              return this.handleDocumentsFromRemote(modified);
-
-            case 47:
-              modified.map(function (doc) {
-                return _this4._subjects.received.next(doc);
-              });
-
-              if (!(modified.length === 0)) {
-                _context5.next = 52;
-                break;
-              }
-
-              if (this.live) {// console.log('no more docs, wait for ping');
-              } else {// console.log('RxGraphQLReplicationState._run(): no more docs and not live; complete = true');
-              }
-
-              _context5.next = 57;
-              break;
-
-            case 52:
-              newLatestDocument = modified[modified.length - 1];
-              _context5.next = 55;
-              return (0, _crawlingCheckpoint.setLastPullDocument)(this.collection, this.endpointHash, newLatestDocument);
-
-            case 55:
-              _context5.next = 57;
-              return this.runPull();
-
-            case 57:
-              return _context5.abrupt("return", true);
-
-            case 58:
-            case "end":
-              return _context5.stop();
+            });
           }
-        }
-      }, _callee5, this, [[9, 23], [35, 39]]);
-    }));
 
-    function runPull() {
-      return _runPull.apply(this, arguments);
+          var result;
+
+          var _temp9 = _catch(function () {
+            return Promise.resolve(_this7.client.query(pullGraphQL.query, pullGraphQL.variables)).then(function (_this6$client$query) {
+              result = _this6$client$query;
+
+              if (result.errors) {
+                if (typeof result.errors === 'string') {
+                  throw new Error(result.errors);
+                } else {
+                  var err = new Error('unknown errors occurred - see innerErrors for more details');
+                  err.innerErrors = result.errors;
+                  throw err;
+                }
+              }
+            });
+          }, function (err) {
+            _this7._subjects.error.next(err);
+
+            _exit3 = true;
+            return false;
+          });
+
+          return _temp9 && _temp9.then ? _temp9.then(_temp10) : _temp10(_temp9);
+        });
+      });
+    } catch (e) {
+      return Promise.reject(e);
     }
-
-    return runPull;
-  }()
+  }
   /**
    * @return true if successfull, false if not
    */
   ;
 
-  _proto.runPush =
-  /*#__PURE__*/
-  function () {
-    var _runPush = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee7() {
-      var _this5 = this;
+  _proto.runPush = function runPush() {
+    try {
+      var _this9 = this;
 
-      var changesResult, changesWithDocs, lastSuccessfullChange, i, changeWithDoc, pushObj, result, err;
-      return _regenerator["default"].wrap(function _callee7$(_context7) {
-        while (1) {
-          switch (_context7.prev = _context7.next) {
-            case 0:
-              if (!this.isStopped()) {
-                _context7.next = 2;
-                break;
-              }
+      if (_this9.isStopped()) {
+        return Promise.resolve(false);
+      }
 
-              return _context7.abrupt("return", false);
+      return Promise.resolve((0, _crawlingCheckpoint.getChangesSinceLastPushSequence)(_this9.collection, _this9.endpointHash, _this9.push.batchSize)).then(function (changesResult) {
+        return Promise.resolve(Promise.all(Array.from(changesResult.changedDocs.values()).map(function (row) {
+          try {
+            var changedDoc = row.doc;
+            return Promise.resolve(_this9.push.modifier(changedDoc)).then(function (_modifier2) {
+              changedDoc = _modifier2;
+              return changedDoc ? {
+                doc: changedDoc,
+                sequence: row.sequence
+              } : null;
+            });
+          } catch (e) {
+            return Promise.reject(e);
+          }
+        }))).then(function (_Promise$all2) {
+          var _exit4 = false;
 
-            case 2:
-              _context7.next = 4;
-              return (0, _crawlingCheckpoint.getChangesSinceLastPushSequence)(this.collection, this.endpointHash, this.push.batchSize);
+          function _temp15(_result5) {
+            return _exit4 ? _result5 : Promise.resolve((0, _crawlingCheckpoint.setLastPushSequence)(_this9.collection, _this9.endpointHash, changesResult.lastSequence)).then(function () {
+              var _temp13 = function () {
+                if (changesResult.changedDocs.size === 0) {
+                  if (_this9.live) {}
+                } else {
+                  // we have more docs, re-run
+                  return Promise.resolve(_this9.runPush()).then(function () {});
+                }
+              }();
 
-            case 4:
-              changesResult = _context7.sent;
-              _context7.next = 7;
-              return Promise.all(Array.from(changesResult.changedDocs.values()).map( /*#__PURE__*/function () {
-                var _ref3 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee6(row) {
-                  var changedDoc;
-                  return _regenerator["default"].wrap(function _callee6$(_context6) {
-                    while (1) {
-                      switch (_context6.prev = _context6.next) {
-                        case 0:
-                          changedDoc = row.doc;
-                          _context6.next = 3;
-                          return _this5.push.modifier(changedDoc);
+              return _temp13 && _temp13.then ? _temp13.then(function () {
+                return true;
+              }) : true;
+            });
+          }
 
-                        case 3:
-                          changedDoc = _context6.sent;
+          var changesWithDocs = _Promise$all2.filter(function (doc) {
+            return !!doc;
+          });
 
-                          if (changedDoc) {
-                            _context6.next = 6;
-                            break;
-                          }
+          var lastSuccessfullChange = null;
 
-                          return _context6.abrupt("return", null);
-
-                        case 6:
-                          return _context6.abrupt("return", {
-                            doc: changedDoc,
-                            sequence: row.sequence
-                          });
-
-                        case 7:
-                        case "end":
-                          return _context6.stop();
-                      }
-                    }
-                  }, _callee6);
-                }));
-
-                return function (_x2) {
-                  return _ref3.apply(this, arguments);
-                };
-              }()));
-
-            case 7:
-              changesWithDocs = _context7.sent.filter(function (doc) {
-                return !!doc;
-              });
-              lastSuccessfullChange = null;
-              _context7.prev = 9;
-              i = 0;
-
-            case 11:
-              if (!(i < changesWithDocs.length)) {
-                _context7.next = 35;
-                break;
-              }
-
-              changeWithDoc = changesWithDocs[i]; // TODO _deleted should be required on type RxDocumentData
+          var _temp14 = _catch(function () {
+            /**
+             * we cannot run all queries parallel
+             * because then we would not know
+             * where to start again on errors
+             * so we run through the docs in series
+             */
+            return _forTo(changesWithDocs, function (i) {
+              var changeWithDoc = changesWithDocs[i]; // TODO _deleted should be required on type RxDocumentData
               // so we do not need this check here
 
               if (!changeWithDoc.doc.hasOwnProperty('_deleted')) {
                 changeWithDoc.doc._deleted = false;
               }
 
-              _context7.next = 16;
-              return this.push.queryBuilder(changeWithDoc.doc);
+              return Promise.resolve(_this9.push.queryBuilder(changeWithDoc.doc)).then(function (pushObj) {
+                return Promise.resolve(_this9.client.query(pushObj.query, pushObj.variables)).then(function (result) {
+                  if (result.errors) {
+                    if (typeof result.errors === 'string') {
+                      throw new Error(result.errors);
+                    } else {
+                      var err = new Error('unknown errors occurred - see innerErrors for more details');
+                      err.innerErrors = result.errors;
+                      throw err;
+                    }
+                  } else {
+                    _this9._subjects.send.next(changeWithDoc.doc);
 
-            case 16:
-              pushObj = _context7.sent;
-              _context7.next = 19;
-              return this.client.query(pushObj.query, pushObj.variables);
-
-            case 19:
-              result = _context7.sent;
-
-              if (!result.errors) {
-                _context7.next = 30;
-                break;
-              }
-
-              if (!(typeof result.errors === 'string')) {
-                _context7.next = 25;
-                break;
-              }
-
-              throw new Error(result.errors);
-
-            case 25:
-              err = new Error('unknown errors occurred - see innerErrors for more details');
-              err.innerErrors = result.errors;
-              throw err;
-
-            case 28:
-              _context7.next = 32;
-              break;
-
-            case 30:
-              this._subjects.send.next(changeWithDoc.doc);
-
-              lastSuccessfullChange = changeWithDoc;
-
-            case 32:
-              i++;
-              _context7.next = 11;
-              break;
-
-            case 35:
-              _context7.next = 44;
-              break;
-
-            case 37:
-              _context7.prev = 37;
-              _context7.t0 = _context7["catch"](9);
-
-              if (!lastSuccessfullChange) {
-                _context7.next = 42;
-                break;
-              }
-
-              _context7.next = 42;
-              return (0, _crawlingCheckpoint.setLastPushSequence)(this.collection, this.endpointHash, lastSuccessfullChange.sequence);
-
-            case 42:
-              this._subjects.error.next(_context7.t0);
-
-              return _context7.abrupt("return", false);
-
-            case 44:
-              _context7.next = 46;
-              return (0, _crawlingCheckpoint.setLastPushSequence)(this.collection, this.endpointHash, changesResult.lastSequence);
-
-            case 46:
-              if (!(changesResult.changedDocs.size === 0)) {
-                _context7.next = 50;
-                break;
-              }
-
-              if (this.live) {// console.log('no more docs to push, wait for ping');
-              } else {// console.log('RxGraphQLReplicationState._runPull(): no more docs to push and not live; complete = true');
-              }
-
-              _context7.next = 52;
-              break;
-
-            case 50:
-              _context7.next = 52;
-              return this.runPush();
-
-            case 52:
-              return _context7.abrupt("return", true);
-
-            case 53:
-            case "end":
-              return _context7.stop();
-          }
-        }
-      }, _callee7, this, [[9, 37]]);
-    }));
-
-    function runPush() {
-      return _runPush.apply(this, arguments);
-    }
-
-    return runPush;
-  }();
-
-  _proto.handleDocumentsFromRemote = /*#__PURE__*/function () {
-    var _handleDocumentsFromRemote = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee8(docs) {
-      var _this6 = this;
-
-      var toStorageDocs, docIds, docsFromLocal, _iterator, _step, doc, documentId, deletedValue, docStateInLocalStorageInstance, newRevision, hasHeight, newRevisionHeight;
-
-      return _regenerator["default"].wrap(function _callee8$(_context8) {
-        while (1) {
-          switch (_context8.prev = _context8.next) {
-            case 0:
-              toStorageDocs = [];
-              docIds = docs.map(function (doc) {
-                return doc[_this6.collection.schema.primaryPath];
-              });
-              _context8.next = 4;
-              return this.collection.database.lockedRun(function () {
-                return _this6.collection.storageInstance.findDocumentsById(docIds, true);
-              });
-
-            case 4:
-              docsFromLocal = _context8.sent;
-
-              for (_iterator = _createForOfIteratorHelperLoose(docs); !(_step = _iterator()).done;) {
-                doc = _step.value;
-                documentId = doc[this.collection.schema.primaryPath];
-                deletedValue = doc[this.deletedFlag];
-                doc._deleted = deletedValue;
-                delete doc[this.deletedFlag];
-                docStateInLocalStorageInstance = docsFromLocal[documentId];
-                newRevision = (0, _helper.createRevisionForPulledDocument)(this.endpointHash, doc);
-
-                if (docStateInLocalStorageInstance) {
-                  hasHeight = (0, _util.getHeightOfRevision)(docStateInLocalStorageInstance._rev);
-                  newRevisionHeight = hasHeight + 1;
-                  newRevision = newRevisionHeight + '-' + newRevision;
-                } else {
-                  newRevision = '1-' + newRevision;
-                }
-
-                doc._rev = newRevision;
-                toStorageDocs.push({
-                  doc: doc,
-                  deletedValue: deletedValue
+                    lastSuccessfullChange = changeWithDoc;
+                  }
                 });
-              }
-
-              if (!(toStorageDocs.length > 0)) {
-                _context8.next = 9;
-                break;
-              }
-
-              _context8.next = 9;
-              return this.collection.database.lockedRun(function () {
-                return _this6.collection.storageInstance.bulkAddRevisions(toStorageDocs.map(function (row) {
-                  return (0, _rxCollectionHelper._handleToStorageInstance)(_this6.collection, row.doc);
-                }));
               });
+            }, function () {
+              return _exit4;
+            });
+          }, function (err) {
+            function _temp12() {
+              _this9._subjects.error.next(err);
 
-            case 9:
-              return _context8.abrupt("return", true);
+              _exit4 = true;
+              return false;
+            }
 
-            case 10:
-            case "end":
-              return _context8.stop();
-          }
-        }
-      }, _callee8, this);
-    }));
+            var _temp11 = function () {
+              if (lastSuccessfullChange) {
+                return Promise.resolve((0, _crawlingCheckpoint.setLastPushSequence)(_this9.collection, _this9.endpointHash, lastSuccessfullChange.sequence)).then(function () {});
+              }
+            }();
 
-    function handleDocumentsFromRemote(_x3) {
-      return _handleDocumentsFromRemote.apply(this, arguments);
+            return _temp11 && _temp11.then ? _temp11.then(_temp12) : _temp12(_temp11);
+          });
+
+          return _temp14 && _temp14.then ? _temp14.then(_temp15) : _temp15(_temp14); // all docs where successfull, so we use the seq of the changes-fetch
+        });
+      });
+    } catch (e) {
+      return Promise.reject(e);
     }
+  };
 
-    return handleDocumentsFromRemote;
-  }();
+  _proto.handleDocumentsFromRemote = function handleDocumentsFromRemote(docs) {
+    try {
+      var _this11 = this;
+
+      var toStorageDocs = [];
+      var docIds = docs.map(function (doc) {
+        return doc[_this11.collection.schema.primaryPath];
+      });
+      return Promise.resolve(_this11.collection.database.lockedRun(function () {
+        return _this11.collection.storageInstance.findDocumentsById(docIds, true);
+      })).then(function (docsFromLocal) {
+        for (var _iterator = _createForOfIteratorHelperLoose(docs), _step; !(_step = _iterator()).done;) {
+          var doc = _step.value;
+          var documentId = doc[_this11.collection.schema.primaryPath];
+          var deletedValue = doc[_this11.deletedFlag];
+          doc._deleted = deletedValue;
+          delete doc[_this11.deletedFlag];
+          var docStateInLocalStorageInstance = docsFromLocal[documentId];
+          var newRevision = (0, _helper.createRevisionForPulledDocument)(_this11.endpointHash, doc);
+
+          if (docStateInLocalStorageInstance) {
+            var hasHeight = (0, _util.getHeightOfRevision)(docStateInLocalStorageInstance._rev);
+            var newRevisionHeight = hasHeight + 1;
+            newRevision = newRevisionHeight + '-' + newRevision;
+          } else {
+            newRevision = '1-' + newRevision;
+          }
+
+          doc._rev = newRevision;
+          toStorageDocs.push({
+            doc: doc,
+            deletedValue: deletedValue
+          });
+        }
+
+        var _temp16 = function () {
+          if (toStorageDocs.length > 0) {
+            return Promise.resolve(_this11.collection.database.lockedRun(function () {
+              return _this11.collection.storageInstance.bulkAddRevisions(toStorageDocs.map(function (row) {
+                return (0, _rxCollectionHelper._handleToStorageInstance)(_this11.collection, row.doc);
+              }));
+            })).then(function () {});
+          }
+        }();
+
+        return _temp16 && _temp16.then ? _temp16.then(function () {
+          return true;
+        }) : true;
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
 
   _proto.cancel = function cancel() {
     if (this.isStopped()) {
@@ -871,23 +857,23 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
 
 exports.RxGraphQLReplicationState = RxGraphQLReplicationState;
 
-function syncGraphQL(_ref4) {
-  var url = _ref4.url,
-      _ref4$headers = _ref4.headers,
-      headers = _ref4$headers === void 0 ? {} : _ref4$headers,
-      _ref4$waitForLeadersh = _ref4.waitForLeadership,
-      waitForLeadership = _ref4$waitForLeadersh === void 0 ? true : _ref4$waitForLeadersh,
-      pull = _ref4.pull,
-      push = _ref4.push,
-      deletedFlag = _ref4.deletedFlag,
-      _ref4$live = _ref4.live,
-      live = _ref4$live === void 0 ? false : _ref4$live,
-      _ref4$liveInterval = _ref4.liveInterval,
-      liveInterval = _ref4$liveInterval === void 0 ? 1000 * 10 : _ref4$liveInterval,
-      _ref4$retryTime = _ref4.retryTime,
-      retryTime = _ref4$retryTime === void 0 ? 1000 * 5 : _ref4$retryTime,
-      _ref4$autoStart = _ref4.autoStart,
-      autoStart = _ref4$autoStart === void 0 ? true : _ref4$autoStart;
+function syncGraphQL(_ref) {
+  var url = _ref.url,
+      _ref$headers = _ref.headers,
+      headers = _ref$headers === void 0 ? {} : _ref$headers,
+      _ref$waitForLeadershi = _ref.waitForLeadership,
+      waitForLeadership = _ref$waitForLeadershi === void 0 ? true : _ref$waitForLeadershi,
+      pull = _ref.pull,
+      push = _ref.push,
+      deletedFlag = _ref.deletedFlag,
+      _ref$live = _ref.live,
+      live = _ref$live === void 0 ? false : _ref$live,
+      _ref$liveInterval = _ref.liveInterval,
+      liveInterval = _ref$liveInterval === void 0 ? 1000 * 10 : _ref$liveInterval,
+      _ref$retryTime = _ref.retryTime,
+      retryTime = _ref$retryTime === void 0 ? 1000 * 5 : _ref$retryTime,
+      _ref$autoStart = _ref.autoStart,
+      autoStart = _ref$autoStart === void 0 ? true : _ref$autoStart;
   var collection = this; // fill in defaults for pull & push
 
   if (pull) {
@@ -917,44 +903,27 @@ function syncGraphQL(_ref4) {
 
     if (replicationState.live) {
       if (pull) {
-        (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee9() {
-          return _regenerator["default"].wrap(function _callee9$(_context9) {
-            while (1) {
-              switch (_context9.prev = _context9.next) {
-                case 0:
-                  if (replicationState.isStopped()) {
-                    _context9.next = 9;
-                    break;
-                  }
+        (function () {
+          try {
+            var _exit6 = false;
+            return _for(function () {
+              return !_exit6 && !replicationState.isStopped();
+            }, void 0, function () {
+              return Promise.resolve((0, _util.promiseWait)(replicationState.liveInterval)).then(function () {
+                if (replicationState.isStopped()) {
+                  _exit6 = true;
+                  return;
+                }
 
-                  _context9.next = 3;
-                  return (0, _util.promiseWait)(replicationState.liveInterval);
-
-                case 3:
-                  if (!replicationState.isStopped()) {
-                    _context9.next = 5;
-                    break;
-                  }
-
-                  return _context9.abrupt("return");
-
-                case 5:
-                  _context9.next = 7;
-                  return replicationState.run( // do not retry on liveInterval-runs because they might stack up
-                  // when failing
-                  false);
-
-                case 7:
-                  _context9.next = 0;
-                  break;
-
-                case 9:
-                case "end":
-                  return _context9.stop();
-              }
-            }
-          }, _callee9);
-        }))();
+                return Promise.resolve(replicationState.run( // do not retry on liveInterval-runs because they might stack up
+                // when failing
+                false)).then(function () {});
+              });
+            });
+          } catch (e) {
+            Promise.reject(e);
+          }
+        })();
       }
 
       if (push) {

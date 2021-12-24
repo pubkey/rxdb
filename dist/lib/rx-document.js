@@ -11,10 +11,6 @@ exports.createWithConstructor = createWithConstructor;
 exports.defineGetterSetter = defineGetterSetter;
 exports.isRxDocument = isRxDocument;
 
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
-
 var _objectPath = _interopRequireDefault(require("object-path"));
 
 var _rxjs = require("rxjs");
@@ -34,6 +30,209 @@ var _rxCollectionHelper = require("./rx-collection-helper");
 var _overwritable = require("./overwritable");
 
 var _rxSchemaHelper = require("./rx-schema-helper");
+
+function _catch(body, recover) {
+  try {
+    var result = body();
+  } catch (e) {
+    return recover(e);
+  }
+
+  if (result && result.then) {
+    return result.then(void 0, recover);
+  }
+
+  return result;
+}
+
+function _settle(pact, state, value) {
+  if (!pact.s) {
+    if (value instanceof _Pact) {
+      if (value.s) {
+        if (state & 1) {
+          state = value.s;
+        }
+
+        value = value.v;
+      } else {
+        value.o = _settle.bind(null, pact, state);
+        return;
+      }
+    }
+
+    if (value && value.then) {
+      value.then(_settle.bind(null, pact, state), _settle.bind(null, pact, 2));
+      return;
+    }
+
+    pact.s = state;
+    pact.v = value;
+    var observer = pact.o;
+
+    if (observer) {
+      observer(pact);
+    }
+  }
+}
+
+var _Pact = /*#__PURE__*/function () {
+  function _Pact() {}
+
+  _Pact.prototype.then = function (onFulfilled, onRejected) {
+    var result = new _Pact();
+    var state = this.s;
+
+    if (state) {
+      var callback = state & 1 ? onFulfilled : onRejected;
+
+      if (callback) {
+        try {
+          _settle(result, 1, callback(this.v));
+        } catch (e) {
+          _settle(result, 2, e);
+        }
+
+        return result;
+      } else {
+        return this;
+      }
+    }
+
+    this.o = function (_this) {
+      try {
+        var value = _this.v;
+
+        if (_this.s & 1) {
+          _settle(result, 1, onFulfilled ? onFulfilled(value) : value);
+        } else if (onRejected) {
+          _settle(result, 1, onRejected(value));
+        } else {
+          _settle(result, 2, value);
+        }
+      } catch (e) {
+        _settle(result, 2, e);
+      }
+    };
+
+    return result;
+  };
+
+  return _Pact;
+}();
+
+function _isSettledPact(thenable) {
+  return thenable instanceof _Pact && thenable.s & 1;
+}
+
+function _for(test, update, body) {
+  var stage;
+
+  for (;;) {
+    var shouldContinue = test();
+
+    if (_isSettledPact(shouldContinue)) {
+      shouldContinue = shouldContinue.v;
+    }
+
+    if (!shouldContinue) {
+      return result;
+    }
+
+    if (shouldContinue.then) {
+      stage = 0;
+      break;
+    }
+
+    var result = body();
+
+    if (result && result.then) {
+      if (_isSettledPact(result)) {
+        result = result.s;
+      } else {
+        stage = 1;
+        break;
+      }
+    }
+
+    if (update) {
+      var updateValue = update();
+
+      if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
+        stage = 2;
+        break;
+      }
+    }
+  }
+
+  var pact = new _Pact();
+
+  var reject = _settle.bind(null, pact, 2);
+
+  (stage === 0 ? shouldContinue.then(_resumeAfterTest) : stage === 1 ? result.then(_resumeAfterBody) : updateValue.then(_resumeAfterUpdate)).then(void 0, reject);
+  return pact;
+
+  function _resumeAfterBody(value) {
+    result = value;
+
+    do {
+      if (update) {
+        updateValue = update();
+
+        if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
+          updateValue.then(_resumeAfterUpdate).then(void 0, reject);
+          return;
+        }
+      }
+
+      shouldContinue = test();
+
+      if (!shouldContinue || _isSettledPact(shouldContinue) && !shouldContinue.v) {
+        _settle(pact, 1, result);
+
+        return;
+      }
+
+      if (shouldContinue.then) {
+        shouldContinue.then(_resumeAfterTest).then(void 0, reject);
+        return;
+      }
+
+      result = body();
+
+      if (_isSettledPact(result)) {
+        result = result.v;
+      }
+    } while (!result || !result.then);
+
+    result.then(_resumeAfterBody).then(void 0, reject);
+  }
+
+  function _resumeAfterTest(shouldContinue) {
+    if (shouldContinue) {
+      result = body();
+
+      if (result && result.then) {
+        result.then(_resumeAfterBody).then(void 0, reject);
+      } else {
+        _resumeAfterBody(result);
+      }
+    } else {
+      _settle(pact, 1, result);
+    }
+  }
+
+  function _resumeAfterUpdate() {
+    if (shouldContinue = test()) {
+      if (shouldContinue.then) {
+        shouldContinue.then(_resumeAfterTest).then(void 0, reject);
+      } else {
+        _resumeAfterTest(shouldContinue);
+      }
+    } else {
+      _settle(pact, 1, result);
+    }
+  }
+}
 
 var basePrototype = {
   /**
@@ -328,75 +527,55 @@ var basePrototype = {
     var _this2 = this;
 
     return new Promise(function (res, rej) {
-      _this2._atomicQueue = _this2._atomicQueue.then( /*#__PURE__*/(0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
-        var done, oldData, newData;
-        return _regenerator["default"].wrap(function _callee$(_context) {
-          while (1) {
-            switch (_context.prev = _context.next) {
-              case 0:
-                done = false; // we need a hacky while loop to stay incide the chain-link of _atomicQueue
-                // while still having the option to run a retry on conflicts
+      _this2._atomicQueue = _this2._atomicQueue.then(function () {
+        try {
+          var _temp5 = function _temp5(_result2) {
+            if (_exit2) return _result2;
+            res(_this2);
+          };
 
-              case 1:
-                if (done) {
-                  _context.next = 24;
-                  break;
-                }
+          var _exit2 = false;
+          var done = false; // we need a hacky while loop to stay incide the chain-link of _atomicQueue
+          // while still having the option to run a retry on conflicts
 
-                oldData = _this2._dataSync$.getValue();
-                _context.prev = 3;
-                _context.next = 6;
-                return mutationFunction((0, _util.clone)(_this2._dataSync$.getValue()), _this2);
+          var _temp6 = _for(function () {
+            return !_exit2 && !done;
+          }, void 0, function () {
+            var oldData = _this2._dataSync$.getValue();
 
-              case 6:
-                newData = _context.sent;
-
+            var _temp2 = _catch(function () {
+              // always await because mutationFunction might be async
+              return Promise.resolve(mutationFunction((0, _util.clone)(_this2._dataSync$.getValue()), _this2)).then(function (newData) {
                 if (_this2.collection) {
                   newData = _this2.collection.schema.fillObjectWithDefaults(newData);
                 }
 
-                _context.next = 10;
-                return _this2._saveData(newData, oldData);
-
-              case 10:
-                done = true;
-                _context.next = 22;
-                break;
-
-              case 13:
-                _context.prev = 13;
-                _context.t0 = _context["catch"](3);
-
-                if (!(0, _rxError.isPouchdbConflictError)(_context.t0)) {
-                  _context.next = 20;
-                  break;
+                return Promise.resolve(_this2._saveData(newData, oldData)).then(function () {
+                  done = true;
+                });
+              });
+            }, function (err) {
+              var _temp = function () {
+                if ((0, _rxError.isPouchdbConflictError)(err)) {
+                  // we need to free the cpu for a tick or the browser tests will fail
+                  return Promise.resolve((0, _util.nextTick)()).then(function () {}); // pouchdb conflict error -> retrying
+                } else {
+                  rej(err);
+                  _exit2 = true;
                 }
+              }();
 
-                _context.next = 18;
-                return (0, _util.nextTick)();
+              return _temp && _temp.then ? _temp.then(function () {}) : void 0;
+            });
 
-              case 18:
-                _context.next = 22;
-                break;
+            if (_temp2 && _temp2.then) return _temp2.then(function () {});
+          });
 
-              case 20:
-                rej(_context.t0);
-                return _context.abrupt("return");
-
-              case 22:
-                _context.next = 1;
-                break;
-
-              case 24:
-                res(_this2);
-
-              case 25:
-              case "end":
-                return _context.stop();
-            }
-          }
-        }, _callee, null, [[3, 13]]);
-      })));
+          return Promise.resolve(_temp6 && _temp6.then ? _temp6.then(_temp5) : _temp5(_temp6));
+        } catch (e) {
+          return Promise.reject(e);
+        }
+      });
     });
   },
 
@@ -405,9 +584,9 @@ var basePrototype = {
    */
   atomicPatch: function atomicPatch(patch) {
     return this.atomicUpdate(function (docData) {
-      Object.entries(patch).forEach(function (_ref2) {
-        var k = _ref2[0],
-            v = _ref2[1];
+      Object.entries(patch).forEach(function (_ref) {
+        var k = _ref[0],
+            v = _ref[1];
         docData[k] = v;
       });
       return docData;
@@ -418,55 +597,36 @@ var basePrototype = {
    * saves the new document-data
    * and handles the events
    */
-  _saveData: function () {
-    var _saveData2 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(newData, oldData) {
-      return _regenerator["default"].wrap(function _callee2$(_context2) {
-        while (1) {
-          switch (_context2.prev = _context2.next) {
-            case 0:
-              newData = newData; // deleted documents cannot be changed
+  _saveData: function _saveData(newData, oldData) {
+    try {
+      var _this4 = this;
 
-              if (!this._isDeleted$.getValue()) {
-                _context2.next = 3;
-                break;
-              }
+      newData = newData; // deleted documents cannot be changed
 
-              throw (0, _rxError.newRxError)('DOC11', {
-                id: this.primary,
-                document: this
-              });
+      if (_this4._isDeleted$.getValue()) {
+        throw (0, _rxError.newRxError)('DOC11', {
+          id: _this4.primary,
+          document: _this4
+        });
+      } // ensure modifications are ok
 
-            case 3:
-              // ensure modifications are ok
-              this.collection.schema.validateChange(oldData, newData);
-              _context2.next = 6;
-              return this.collection._runHooks('pre', 'save', newData, this);
 
-            case 6:
-              this.collection.schema.validate(newData);
-              _context2.next = 9;
-              return (0, _rxCollectionHelper.writeToStorageInstance)(this.collection, {
-                previous: oldData,
-                document: newData
-              });
+      _this4.collection.schema.validateChange(oldData, newData);
 
-            case 9:
-              return _context2.abrupt("return", this.collection._runHooks('post', 'save', newData, this));
+      return Promise.resolve(_this4.collection._runHooks('pre', 'save', newData, _this4)).then(function () {
+        _this4.collection.schema.validate(newData);
 
-            case 10:
-            case "end":
-              return _context2.stop();
-          }
-        }
-      }, _callee2, this);
-    }));
-
-    function _saveData(_x, _x2) {
-      return _saveData2.apply(this, arguments);
+        return Promise.resolve((0, _rxCollectionHelper.writeToStorageInstance)(_this4.collection, {
+          previous: oldData,
+          document: newData
+        })).then(function () {
+          return _this4.collection._runHooks('post', 'save', newData, _this4);
+        });
+      });
+    } catch (e) {
+      return Promise.reject(e);
     }
-
-    return _saveData;
-  }(),
+  },
 
   /**
    * saves the temporary document and makes a non-temporary out of it
@@ -474,7 +634,7 @@ var basePrototype = {
    * @return false if nothing to save
    */
   save: function save() {
-    var _this3 = this;
+    var _this5 = this;
 
     // .save() cannot be called on non-temporary-documents
     if (!this._isTemporary) {
@@ -485,12 +645,12 @@ var basePrototype = {
     }
 
     return this.collection.insert(this).then(function () {
-      _this3._isTemporary = false;
+      _this5._isTemporary = false;
 
-      _this3.collection._docCache.set(_this3.primary, _this3); // internal events
+      _this5.collection._docCache.set(_this5.primary, _this5); // internal events
 
 
-      _this3._dataSync$.next(_this3._data);
+      _this5._dataSync$.next(_this5._data);
 
       return true;
     });
@@ -502,7 +662,7 @@ var basePrototype = {
    * instead we keep the values and only set _deleted: true
    */
   remove: function remove() {
-    var _this4 = this;
+    var _this6 = this;
 
     if (this.deleted) {
       return Promise.reject((0, _rxError.newRxError)('DOC13', {
@@ -514,14 +674,14 @@ var basePrototype = {
     var deletedData = (0, _util.flatClone)(this._data);
     return this.collection._runHooks('pre', 'remove', deletedData, this).then(function () {
       deletedData._deleted = true;
-      return (0, _rxCollectionHelper.writeToStorageInstance)(_this4.collection, {
-        previous: _this4._data,
+      return (0, _rxCollectionHelper.writeToStorageInstance)(_this6.collection, {
+        previous: _this6._data,
         document: deletedData
       });
     }).then(function () {
-      return _this4.collection._runHooks('post', 'remove', deletedData, _this4);
+      return _this6.collection._runHooks('post', 'remove', deletedData, _this6);
     }).then(function () {
-      return _this4;
+      return _this6;
     });
   },
   destroy: function destroy() {

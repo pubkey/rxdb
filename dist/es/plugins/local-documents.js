@@ -1,6 +1,4 @@
-import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
-import _regeneratorRuntime from "@babel/runtime/regenerator";
 import objectPath from 'object-path';
 import { createRxDocumentConstructor, basePrototype } from '../rx-document';
 import { createDocCache } from '../doc-cache';
@@ -352,99 +350,49 @@ function getLocal(id) {
 function getLocal$(id) {
   var _this6 = this;
 
-  return this.$.pipe(startWith(null), mergeMap( /*#__PURE__*/function () {
-    var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(cE) {
-      var doc;
-      return _regeneratorRuntime.wrap(function _callee$(_context) {
-        while (1) {
-          switch (_context.prev = _context.next) {
-            case 0:
-              if (!cE) {
-                _context.next = 4;
-                break;
-              }
+  return this.$.pipe(startWith(null), mergeMap(function (cE) {
+    try {
+      if (cE) {
+        return Promise.resolve({
+          changeEvent: cE
+        });
+      } else {
+        return Promise.resolve(_this6.getLocal(id)).then(function (doc) {
+          return {
+            doc: doc
+          };
+        });
+      }
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  }), mergeMap(function (changeEventOrDoc) {
+    try {
+      if (changeEventOrDoc.changeEvent) {
+        var cE = changeEventOrDoc.changeEvent;
 
-              return _context.abrupt("return", {
-                changeEvent: cE
-              });
-
-            case 4:
-              _context.next = 6;
-              return _this6.getLocal(id);
-
-            case 6:
-              doc = _context.sent;
-              return _context.abrupt("return", {
-                doc: doc
-              });
-
-            case 8:
-            case "end":
-              return _context.stop();
-          }
+        if (!cE.isLocal || cE.documentId !== id) {
+          return Promise.resolve({
+            use: false
+          });
+        } else {
+          return Promise.resolve(_this6.getLocal(id)).then(function (doc) {
+            return {
+              use: true,
+              doc: doc
+            };
+          });
         }
-      }, _callee);
-    }));
-
-    return function (_x) {
-      return _ref.apply(this, arguments);
-    };
-  }()), mergeMap( /*#__PURE__*/function () {
-    var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(changeEventOrDoc) {
-      var cE, doc;
-      return _regeneratorRuntime.wrap(function _callee2$(_context2) {
-        while (1) {
-          switch (_context2.prev = _context2.next) {
-            case 0:
-              if (!changeEventOrDoc.changeEvent) {
-                _context2.next = 12;
-                break;
-              }
-
-              cE = changeEventOrDoc.changeEvent;
-
-              if (!(!cE.isLocal || cE.documentId !== id)) {
-                _context2.next = 6;
-                break;
-              }
-
-              return _context2.abrupt("return", {
-                use: false
-              });
-
-            case 6:
-              _context2.next = 8;
-              return _this6.getLocal(id);
-
-            case 8:
-              doc = _context2.sent;
-              return _context2.abrupt("return", {
-                use: true,
-                doc: doc
-              });
-
-            case 10:
-              _context2.next = 13;
-              break;
-
-            case 12:
-              return _context2.abrupt("return", {
-                use: true,
-                doc: changeEventOrDoc.doc
-              });
-
-            case 13:
-            case "end":
-              return _context2.stop();
-          }
-        }
-      }, _callee2);
-    }));
-
-    return function (_x2) {
-      return _ref2.apply(this, arguments);
-    };
-  }()), filter(function (filterFlagged) {
+      } else {
+        return Promise.resolve({
+          use: true,
+          doc: changeEventOrDoc.doc
+        });
+      }
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  }), filter(function (filterFlagged) {
     return filterFlagged.use;
   }), map(function (filterFlagged) {
     return filterFlagged.doc;

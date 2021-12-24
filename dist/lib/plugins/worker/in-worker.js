@@ -1,15 +1,9 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.wrappedRxStorage = wrappedRxStorage;
-
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 
 var _worker = require("threads/worker");
 
@@ -26,36 +20,18 @@ function wrappedRxStorage(args) {
     /**
      * RxStorageInstance
      */
-    createStorageInstance: function () {
-      var _createStorageInstance = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(params) {
-        var instanceId, instance;
-        return _regenerator["default"].wrap(function _callee$(_context) {
-          while (1) {
-            switch (_context.prev = _context.next) {
-              case 0:
-                instanceId = nextId++;
-                _context.next = 3;
-                return args.storage.createStorageInstance(params);
+    createStorageInstance: function createStorageInstance(params) {
+      try {
+        var _instanceId = nextId++;
 
-              case 3:
-                instance = _context.sent;
-                instanceById.set(instanceId, instance);
-                return _context.abrupt("return", instanceId);
-
-              case 6:
-              case "end":
-                return _context.stop();
-            }
-          }
-        }, _callee);
-      }));
-
-      function createStorageInstance(_x) {
-        return _createStorageInstance.apply(this, arguments);
+        return Promise.resolve(args.storage.createStorageInstance(params)).then(function (instance) {
+          instanceById.set(_instanceId, instance);
+          return _instanceId;
+        });
+      } catch (e) {
+        return Promise.reject(e);
       }
-
-      return createStorageInstance;
-    }(),
+    },
     bulkWrite: function bulkWrite(instanceId, documentWrites) {
       var instance = (0, _util.getFromMapOrThrow)(instanceById, instanceId);
       return instance.bulkWrite(documentWrites);
@@ -96,36 +72,18 @@ function wrappedRxStorage(args) {
     /**
      * RxKeyObjectStorageInstance
      */
-    createKeyObjectStorageInstance: function () {
-      var _createKeyObjectStorageInstance = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(params) {
-        var instanceId, instance;
-        return _regenerator["default"].wrap(function _callee2$(_context2) {
-          while (1) {
-            switch (_context2.prev = _context2.next) {
-              case 0:
-                instanceId = nextId++;
-                _context2.next = 3;
-                return args.storage.createKeyObjectStorageInstance(params);
+    createKeyObjectStorageInstance: function createKeyObjectStorageInstance(params) {
+      try {
+        var _instanceId2 = nextId++;
 
-              case 3:
-                instance = _context2.sent;
-                instanceById.set(instanceId, instance);
-                return _context2.abrupt("return", instanceId);
-
-              case 6:
-              case "end":
-                return _context2.stop();
-            }
-          }
-        }, _callee2);
-      }));
-
-      function createKeyObjectStorageInstance(_x2) {
-        return _createKeyObjectStorageInstance.apply(this, arguments);
+        return Promise.resolve(args.storage.createKeyObjectStorageInstance(params)).then(function (instance) {
+          instanceById.set(_instanceId2, instance);
+          return _instanceId2;
+        });
+      } catch (e) {
+        return Promise.reject(e);
       }
-
-      return createKeyObjectStorageInstance;
-    }(),
+    },
     bulkWriteLocal: function bulkWriteLocal(instanceId, documentWrites) {
       var instance = (0, _util.getFromMapOrThrow)(instanceById, instanceId);
       return instance.bulkWrite(documentWrites);

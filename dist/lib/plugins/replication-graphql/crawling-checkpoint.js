@@ -1,19 +1,9 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getChangesSinceLastPushSequence = getChangesSinceLastPushSequence;
-exports.getLastPullDocument = getLastPullDocument;
-exports.getLastPushSequence = getLastPushSequence;
-exports.setLastPullDocument = setLastPullDocument;
-exports.setLastPushSequence = setLastPushSequence;
-
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
+exports.setLastPushSequence = exports.setLastPullDocument = exports.getLastPushSequence = exports.getLastPullDocument = exports.getChangesSinceLastPushSequence = void 0;
 
 var _helper = require("./helper");
 
@@ -24,6 +14,423 @@ var _util = require("../../util");
 var _rxError = require("../../rx-error");
 
 var _hooks = require("../../hooks");
+
+function _settle(pact, state, value) {
+  if (!pact.s) {
+    if (value instanceof _Pact) {
+      if (value.s) {
+        if (state & 1) {
+          state = value.s;
+        }
+
+        value = value.v;
+      } else {
+        value.o = _settle.bind(null, pact, state);
+        return;
+      }
+    }
+
+    if (value && value.then) {
+      value.then(_settle.bind(null, pact, state), _settle.bind(null, pact, 2));
+      return;
+    }
+
+    pact.s = state;
+    pact.v = value;
+    var observer = pact.o;
+
+    if (observer) {
+      observer(pact);
+    }
+  }
+}
+
+var _Pact = /*#__PURE__*/function () {
+  function _Pact() {}
+
+  _Pact.prototype.then = function (onFulfilled, onRejected) {
+    var result = new _Pact();
+    var state = this.s;
+
+    if (state) {
+      var callback = state & 1 ? onFulfilled : onRejected;
+
+      if (callback) {
+        try {
+          _settle(result, 1, callback(this.v));
+        } catch (e) {
+          _settle(result, 2, e);
+        }
+
+        return result;
+      } else {
+        return this;
+      }
+    }
+
+    this.o = function (_this) {
+      try {
+        var value = _this.v;
+
+        if (_this.s & 1) {
+          _settle(result, 1, onFulfilled ? onFulfilled(value) : value);
+        } else if (onRejected) {
+          _settle(result, 1, onRejected(value));
+        } else {
+          _settle(result, 2, value);
+        }
+      } catch (e) {
+        _settle(result, 2, e);
+      }
+    };
+
+    return result;
+  };
+
+  return _Pact;
+}();
+
+function _isSettledPact(thenable) {
+  return thenable instanceof _Pact && thenable.s & 1;
+}
+
+function _for(test, update, body) {
+  var stage;
+
+  for (;;) {
+    var shouldContinue = test();
+
+    if (_isSettledPact(shouldContinue)) {
+      shouldContinue = shouldContinue.v;
+    }
+
+    if (!shouldContinue) {
+      return result;
+    }
+
+    if (shouldContinue.then) {
+      stage = 0;
+      break;
+    }
+
+    var result = body();
+
+    if (result && result.then) {
+      if (_isSettledPact(result)) {
+        result = result.s;
+      } else {
+        stage = 1;
+        break;
+      }
+    }
+
+    if (update) {
+      var updateValue = update();
+
+      if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
+        stage = 2;
+        break;
+      }
+    }
+  }
+
+  var pact = new _Pact();
+
+  var reject = _settle.bind(null, pact, 2);
+
+  (stage === 0 ? shouldContinue.then(_resumeAfterTest) : stage === 1 ? result.then(_resumeAfterBody) : updateValue.then(_resumeAfterUpdate)).then(void 0, reject);
+  return pact;
+
+  function _resumeAfterBody(value) {
+    result = value;
+
+    do {
+      if (update) {
+        updateValue = update();
+
+        if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
+          updateValue.then(_resumeAfterUpdate).then(void 0, reject);
+          return;
+        }
+      }
+
+      shouldContinue = test();
+
+      if (!shouldContinue || _isSettledPact(shouldContinue) && !shouldContinue.v) {
+        _settle(pact, 1, result);
+
+        return;
+      }
+
+      if (shouldContinue.then) {
+        shouldContinue.then(_resumeAfterTest).then(void 0, reject);
+        return;
+      }
+
+      result = body();
+
+      if (_isSettledPact(result)) {
+        result = result.v;
+      }
+    } while (!result || !result.then);
+
+    result.then(_resumeAfterBody).then(void 0, reject);
+  }
+
+  function _resumeAfterTest(shouldContinue) {
+    if (shouldContinue) {
+      result = body();
+
+      if (result && result.then) {
+        result.then(_resumeAfterBody).then(void 0, reject);
+      } else {
+        _resumeAfterBody(result);
+      }
+    } else {
+      _settle(pact, 1, result);
+    }
+  }
+
+  function _resumeAfterUpdate() {
+    if (shouldContinue = test()) {
+      if (shouldContinue.then) {
+        shouldContinue.then(_resumeAfterTest).then(void 0, reject);
+      } else {
+        _resumeAfterTest(shouldContinue);
+      }
+    } else {
+      _settle(pact, 1, result);
+    }
+  }
+}
+
+var setLastPullDocument = function setLastPullDocument(collection, endpointHash, doc) {
+  try {
+    var _id = pullLastDocumentId(endpointHash);
+
+    return Promise.resolve(collection.database.lockedRun(function () {
+      return (0, _rxStorageHelper.findLocalDocument)(collection.localDocumentsStore, _id);
+    })).then(function (localDoc) {
+      if (!localDoc) {
+        return collection.database.lockedRun(function () {
+          return (0, _rxStorageHelper.writeSingleLocal)(collection.localDocumentsStore, {
+            document: {
+              _id: _id,
+              doc: doc,
+              _attachments: {}
+            }
+          });
+        });
+      } else {
+        var newDoc = (0, _util.flatClone)(localDoc);
+        newDoc.doc = doc;
+        return collection.database.lockedRun(function () {
+          return (0, _rxStorageHelper.writeSingleLocal)(collection.localDocumentsStore, {
+            previous: localDoc,
+            document: newDoc
+          });
+        });
+      }
+    });
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+
+exports.setLastPullDocument = setLastPullDocument;
+
+var getLastPullDocument = function getLastPullDocument(collection, endpointHash) {
+  try {
+    return Promise.resolve(collection.database.lockedRun(function () {
+      return (0, _rxStorageHelper.findLocalDocument)(collection.localDocumentsStore, pullLastDocumentId(endpointHash));
+    })).then(function (localDoc) {
+      if (!localDoc) {
+        return null;
+      } else {
+        return localDoc.doc;
+      }
+    });
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+
+exports.getLastPullDocument = getLastPullDocument;
+
+var getChangesSinceLastPushSequence = function getChangesSinceLastPushSequence(collection, endpointHash) {
+  try {
+    var _arguments2 = arguments;
+    var batchSize = _arguments2.length > 2 && _arguments2[2] !== undefined ? _arguments2[2] : 10;
+    return Promise.resolve(getLastPushSequence(collection, endpointHash)).then(function (lastPushSequence) {
+      function _temp2() {
+        return {
+          changedDocs: changedDocs,
+          lastSequence: lastSequence
+        };
+      }
+
+      var retry = true;
+      var lastSequence = lastPushSequence;
+      var changedDocs = new Map();
+      /**
+       * it can happen that all docs in the batch
+       * do not have to be replicated.
+       * Then we have to continue grapping the feed
+       * until we reach the end of it
+       */
+
+      var _temp = _for(function () {
+        return !!retry;
+      }, void 0, function () {
+        return Promise.resolve(collection.database.lockedRun(function () {
+          return collection.storageInstance.getChangedDocuments({
+            sinceSequence: lastPushSequence,
+            limit: batchSize,
+            direction: 'after'
+          });
+        })).then(function (changesResults) {
+          lastSequence = changesResults.lastSequence; // optimisation shortcut, do not proceed if there are no changed documents
+
+          if (changesResults.changedDocuments.length === 0) {
+            retry = false;
+            return;
+          }
+
+          return Promise.resolve(collection.database.lockedRun(function () {
+            return collection.storageInstance.findDocumentsById(changesResults.changedDocuments.map(function (row) {
+              return row.id;
+            }), true);
+          })).then(function (plainDocs) {
+            var docs = new Map();
+            Object.entries(plainDocs).forEach(function (_ref) {
+              var docId = _ref[0],
+                  docData = _ref[1];
+              var hookParams = {
+                collection: collection,
+                doc: docData
+              };
+              (0, _hooks.runPluginHooks)('postReadFromInstance', hookParams);
+              docs.set(docId, hookParams.doc);
+            });
+            changesResults.changedDocuments.forEach(function (row) {
+              var id = row.id;
+
+              if (changedDocs.has(id)) {
+                return;
+              }
+
+              var changedDoc = docs.get(id);
+
+              if (!changedDoc) {
+                throw (0, _rxError.newRxError)('SNH', {
+                  args: {
+                    docs: docs
+                  }
+                });
+              }
+              /**
+               * filter out changes with revisions resulting from the pull-stream
+               * so that they will not be upstreamed again
+               */
+
+
+              if ((0, _helper.wasRevisionfromPullReplication)(endpointHash, changedDoc._rev)) {
+                return false;
+              }
+
+              changedDocs.set(id, {
+                id: id,
+                doc: changedDoc,
+                sequence: row.sequence
+              });
+            });
+
+            if (changedDocs.size < batchSize && changesResults.changedDocuments.length === batchSize) {
+              // no pushable docs found but also not reached the end -> re-run
+              lastPushSequence = lastSequence;
+              retry = true;
+            } else {
+              retry = false;
+            }
+          });
+        });
+      });
+
+      return _temp && _temp.then ? _temp.then(_temp2) : _temp2(_temp);
+    });
+  } catch (e) {
+    return Promise.reject(e);
+  }
+}; //
+// things for pull-checkpoint
+//
+
+
+exports.getChangesSinceLastPushSequence = getChangesSinceLastPushSequence;
+
+var setLastPushSequence = function setLastPushSequence(collection, endpointHash, sequence) {
+  try {
+    var _id = pushSequenceId(endpointHash);
+
+    return Promise.resolve(collection.database.lockedRun(function () {
+      return (0, _rxStorageHelper.findLocalDocument)(collection.localDocumentsStore, _id);
+    })).then(function (doc) {
+      if (!doc) {
+        return Promise.resolve(collection.database.lockedRun(function () {
+          return (0, _rxStorageHelper.writeSingleLocal)(collection.localDocumentsStore, {
+            document: {
+              _id: _id,
+              value: sequence,
+              _attachments: {}
+            }
+          });
+        })).then(function (res) {
+          return res;
+        });
+      } else {
+        var newDoc = (0, _util.flatClone)(doc);
+        newDoc.value = sequence;
+        return Promise.resolve(collection.database.lockedRun(function () {
+          return (0, _rxStorageHelper.writeSingleLocal)(collection.localDocumentsStore, {
+            previous: doc,
+            document: {
+              _id: _id,
+              value: sequence,
+              _attachments: {}
+            }
+          });
+        })).then(function (res) {
+          return res;
+        });
+      }
+    });
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+
+exports.setLastPushSequence = setLastPushSequence;
+
+/**
+ * @return last sequence checkpoint
+ */
+var getLastPushSequence = function getLastPushSequence(collection, endpointHash) {
+  try {
+    return Promise.resolve(collection.database.lockedRun(function () {
+      return (0, _rxStorageHelper.findLocalDocument)(collection.localDocumentsStore, pushSequenceId(endpointHash));
+    })).then(function (doc) {
+      if (!doc) {
+        return 0;
+      } else {
+        return doc.value;
+      }
+    });
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+
+exports.getLastPushSequence = getLastPushSequence;
 
 /**
  * when the replication starts,
@@ -43,389 +450,8 @@ var _hooks = require("../../hooks");
 var pushSequenceId = function pushSequenceId(endpointHash) {
   return _helper.GRAPHQL_REPLICATION_PLUGIN_IDENT + '-push-checkpoint-' + endpointHash;
 };
-/**
- * @return last sequence checkpoint
- */
-
-
-function getLastPushSequence(_x, _x2) {
-  return _getLastPushSequence.apply(this, arguments);
-}
-
-function _getLastPushSequence() {
-  _getLastPushSequence = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(collection, endpointHash) {
-    var doc;
-    return _regenerator["default"].wrap(function _callee$(_context) {
-      while (1) {
-        switch (_context.prev = _context.next) {
-          case 0:
-            _context.next = 2;
-            return collection.database.lockedRun(function () {
-              return (0, _rxStorageHelper.findLocalDocument)(collection.localDocumentsStore, pushSequenceId(endpointHash));
-            });
-
-          case 2:
-            doc = _context.sent;
-
-            if (doc) {
-              _context.next = 7;
-              break;
-            }
-
-            return _context.abrupt("return", 0);
-
-          case 7:
-            return _context.abrupt("return", doc.value);
-
-          case 8:
-          case "end":
-            return _context.stop();
-        }
-      }
-    }, _callee);
-  }));
-  return _getLastPushSequence.apply(this, arguments);
-}
-
-function setLastPushSequence(_x3, _x4, _x5) {
-  return _setLastPushSequence.apply(this, arguments);
-}
-
-function _setLastPushSequence() {
-  _setLastPushSequence = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(collection, endpointHash, sequence) {
-    var _id, doc, res, newDoc, _res;
-
-    return _regenerator["default"].wrap(function _callee2$(_context2) {
-      while (1) {
-        switch (_context2.prev = _context2.next) {
-          case 0:
-            _id = pushSequenceId(endpointHash);
-            _context2.next = 3;
-            return collection.database.lockedRun(function () {
-              return (0, _rxStorageHelper.findLocalDocument)(collection.localDocumentsStore, _id);
-            });
-
-          case 3:
-            doc = _context2.sent;
-
-            if (doc) {
-              _context2.next = 11;
-              break;
-            }
-
-            _context2.next = 7;
-            return collection.database.lockedRun(function () {
-              return (0, _rxStorageHelper.writeSingleLocal)(collection.localDocumentsStore, {
-                document: {
-                  _id: _id,
-                  value: sequence,
-                  _attachments: {}
-                }
-              });
-            });
-
-          case 7:
-            res = _context2.sent;
-            return _context2.abrupt("return", res);
-
-          case 11:
-            newDoc = (0, _util.flatClone)(doc);
-            newDoc.value = sequence;
-            _context2.next = 15;
-            return collection.database.lockedRun(function () {
-              return (0, _rxStorageHelper.writeSingleLocal)(collection.localDocumentsStore, {
-                previous: doc,
-                document: {
-                  _id: _id,
-                  value: sequence,
-                  _attachments: {}
-                }
-              });
-            });
-
-          case 15:
-            _res = _context2.sent;
-            return _context2.abrupt("return", _res);
-
-          case 17:
-          case "end":
-            return _context2.stop();
-        }
-      }
-    }, _callee2);
-  }));
-  return _setLastPushSequence.apply(this, arguments);
-}
-
-function getChangesSinceLastPushSequence(_x6, _x7) {
-  return _getChangesSinceLastPushSequence.apply(this, arguments);
-} //
-// things for pull-checkpoint
-//
-
-
-function _getChangesSinceLastPushSequence() {
-  _getChangesSinceLastPushSequence = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(collection, endpointHash) {
-    var batchSize,
-        lastPushSequence,
-        retry,
-        lastSequence,
-        changedDocs,
-        _loop,
-        _ret,
-        _args4 = arguments;
-
-    return _regenerator["default"].wrap(function _callee3$(_context4) {
-      while (1) {
-        switch (_context4.prev = _context4.next) {
-          case 0:
-            batchSize = _args4.length > 2 && _args4[2] !== undefined ? _args4[2] : 10;
-            _context4.next = 3;
-            return getLastPushSequence(collection, endpointHash);
-
-          case 3:
-            lastPushSequence = _context4.sent;
-            retry = true;
-            lastSequence = lastPushSequence;
-            changedDocs = new Map();
-            /**
-             * it can happen that all docs in the batch
-             * do not have to be replicated.
-             * Then we have to continue grapping the feed
-             * until we reach the end of it
-             */
-
-            _loop = /*#__PURE__*/_regenerator["default"].mark(function _loop() {
-              var changesResults, plainDocs, docs;
-              return _regenerator["default"].wrap(function _loop$(_context3) {
-                while (1) {
-                  switch (_context3.prev = _context3.next) {
-                    case 0:
-                      _context3.next = 2;
-                      return collection.database.lockedRun(function () {
-                        return collection.storageInstance.getChangedDocuments({
-                          sinceSequence: lastPushSequence,
-                          limit: batchSize,
-                          direction: 'after'
-                        });
-                      });
-
-                    case 2:
-                      changesResults = _context3.sent;
-                      lastSequence = changesResults.lastSequence; // optimisation shortcut, do not proceed if there are no changed documents
-
-                      if (!(changesResults.changedDocuments.length === 0)) {
-                        _context3.next = 7;
-                        break;
-                      }
-
-                      retry = false;
-                      return _context3.abrupt("return", "continue");
-
-                    case 7:
-                      _context3.next = 9;
-                      return collection.database.lockedRun(function () {
-                        return collection.storageInstance.findDocumentsById(changesResults.changedDocuments.map(function (row) {
-                          return row.id;
-                        }), true);
-                      });
-
-                    case 9:
-                      plainDocs = _context3.sent;
-                      docs = new Map();
-                      Object.entries(plainDocs).forEach(function (_ref) {
-                        var docId = _ref[0],
-                            docData = _ref[1];
-                        var hookParams = {
-                          collection: collection,
-                          doc: docData
-                        };
-                        (0, _hooks.runPluginHooks)('postReadFromInstance', hookParams);
-                        docs.set(docId, hookParams.doc);
-                      });
-                      changesResults.changedDocuments.forEach(function (row) {
-                        var id = row.id;
-
-                        if (changedDocs.has(id)) {
-                          return;
-                        }
-
-                        var changedDoc = docs.get(id);
-
-                        if (!changedDoc) {
-                          throw (0, _rxError.newRxError)('SNH', {
-                            args: {
-                              docs: docs
-                            }
-                          });
-                        }
-                        /**
-                         * filter out changes with revisions resulting from the pull-stream
-                         * so that they will not be upstreamed again
-                         */
-
-
-                        if ((0, _helper.wasRevisionfromPullReplication)(endpointHash, changedDoc._rev)) {
-                          return false;
-                        }
-
-                        changedDocs.set(id, {
-                          id: id,
-                          doc: changedDoc,
-                          sequence: row.sequence
-                        });
-                      });
-
-                      if (changedDocs.size < batchSize && changesResults.changedDocuments.length === batchSize) {
-                        // no pushable docs found but also not reached the end -> re-run
-                        lastPushSequence = lastSequence;
-                        retry = true;
-                      } else {
-                        retry = false;
-                      }
-
-                    case 14:
-                    case "end":
-                      return _context3.stop();
-                  }
-                }
-              }, _loop);
-            });
-
-          case 8:
-            if (!retry) {
-              _context4.next = 15;
-              break;
-            }
-
-            return _context4.delegateYield(_loop(), "t0", 10);
-
-          case 10:
-            _ret = _context4.t0;
-
-            if (!(_ret === "continue")) {
-              _context4.next = 13;
-              break;
-            }
-
-            return _context4.abrupt("continue", 8);
-
-          case 13:
-            _context4.next = 8;
-            break;
-
-          case 15:
-            return _context4.abrupt("return", {
-              changedDocs: changedDocs,
-              lastSequence: lastSequence
-            });
-
-          case 16:
-          case "end":
-            return _context4.stop();
-        }
-      }
-    }, _callee3);
-  }));
-  return _getChangesSinceLastPushSequence.apply(this, arguments);
-}
 
 var pullLastDocumentId = function pullLastDocumentId(endpointHash) {
   return _helper.GRAPHQL_REPLICATION_PLUGIN_IDENT + '-pull-checkpoint-' + endpointHash;
 };
-
-function getLastPullDocument(_x8, _x9) {
-  return _getLastPullDocument.apply(this, arguments);
-}
-
-function _getLastPullDocument() {
-  _getLastPullDocument = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(collection, endpointHash) {
-    var localDoc;
-    return _regenerator["default"].wrap(function _callee4$(_context5) {
-      while (1) {
-        switch (_context5.prev = _context5.next) {
-          case 0:
-            _context5.next = 2;
-            return collection.database.lockedRun(function () {
-              return (0, _rxStorageHelper.findLocalDocument)(collection.localDocumentsStore, pullLastDocumentId(endpointHash));
-            });
-
-          case 2:
-            localDoc = _context5.sent;
-
-            if (localDoc) {
-              _context5.next = 7;
-              break;
-            }
-
-            return _context5.abrupt("return", null);
-
-          case 7:
-            return _context5.abrupt("return", localDoc.doc);
-
-          case 8:
-          case "end":
-            return _context5.stop();
-        }
-      }
-    }, _callee4);
-  }));
-  return _getLastPullDocument.apply(this, arguments);
-}
-
-function setLastPullDocument(_x10, _x11, _x12) {
-  return _setLastPullDocument.apply(this, arguments);
-}
-
-function _setLastPullDocument() {
-  _setLastPullDocument = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee5(collection, endpointHash, doc) {
-    var _id, localDoc, newDoc;
-
-    return _regenerator["default"].wrap(function _callee5$(_context6) {
-      while (1) {
-        switch (_context6.prev = _context6.next) {
-          case 0:
-            _id = pullLastDocumentId(endpointHash);
-            _context6.next = 3;
-            return collection.database.lockedRun(function () {
-              return (0, _rxStorageHelper.findLocalDocument)(collection.localDocumentsStore, _id);
-            });
-
-          case 3:
-            localDoc = _context6.sent;
-
-            if (localDoc) {
-              _context6.next = 8;
-              break;
-            }
-
-            return _context6.abrupt("return", collection.database.lockedRun(function () {
-              return (0, _rxStorageHelper.writeSingleLocal)(collection.localDocumentsStore, {
-                document: {
-                  _id: _id,
-                  doc: doc,
-                  _attachments: {}
-                }
-              });
-            }));
-
-          case 8:
-            newDoc = (0, _util.flatClone)(localDoc);
-            newDoc.doc = doc;
-            return _context6.abrupt("return", collection.database.lockedRun(function () {
-              return (0, _rxStorageHelper.writeSingleLocal)(collection.localDocumentsStore, {
-                previous: localDoc,
-                document: newDoc
-              });
-            }));
-
-          case 11:
-          case "end":
-            return _context6.stop();
-        }
-      }
-    }, _callee5);
-  }));
-  return _setLastPullDocument.apply(this, arguments);
-}
 //# sourceMappingURL=crawling-checkpoint.js.map

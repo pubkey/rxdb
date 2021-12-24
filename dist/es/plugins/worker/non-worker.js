@@ -1,5 +1,3 @@
-import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
-import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { Subject } from 'rxjs';
 import { spawn, Worker } from 'threads';
 
@@ -27,81 +25,41 @@ export var RxStorageWorker = /*#__PURE__*/function () {
 
   var _proto = RxStorageWorker.prototype;
 
-  _proto.createStorageInstance = /*#__PURE__*/function () {
-    var _createStorageInstance = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(params) {
-      var worker, instanceId;
-      return _regeneratorRuntime.wrap(function _callee$(_context) {
-        while (1) {
-          switch (_context.prev = _context.next) {
-            case 0:
-              _context.next = 2;
-              return this.workerPromise;
+  _proto.createStorageInstance = function createStorageInstance(params) {
+    try {
+      var _this2 = this;
 
-            case 2:
-              worker = _context.sent;
-              _context.next = 5;
-              return worker.createStorageInstance(params);
-
-            case 5:
-              instanceId = _context.sent;
-              return _context.abrupt("return", new RxStorageInstanceWorker(params.databaseName, params.collectionName, params.schema, {
-                rxStorage: this,
-                instanceId: instanceId,
-                worker: worker
-              }, params.options));
-
-            case 7:
-            case "end":
-              return _context.stop();
-          }
-        }
-      }, _callee, this);
-    }));
-
-    function createStorageInstance(_x) {
-      return _createStorageInstance.apply(this, arguments);
+      return Promise.resolve(_this2.workerPromise).then(function (worker) {
+        return Promise.resolve(worker.createStorageInstance(params)).then(function (instanceId) {
+          return new RxStorageInstanceWorker(params.databaseName, params.collectionName, params.schema, {
+            rxStorage: _this2,
+            instanceId: instanceId,
+            worker: worker
+          }, params.options);
+        });
+      });
+    } catch (e) {
+      return Promise.reject(e);
     }
+  };
 
-    return createStorageInstance;
-  }();
+  _proto.createKeyObjectStorageInstance = function createKeyObjectStorageInstance(params) {
+    try {
+      var _this4 = this;
 
-  _proto.createKeyObjectStorageInstance = /*#__PURE__*/function () {
-    var _createKeyObjectStorageInstance = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(params) {
-      var worker, instanceId;
-      return _regeneratorRuntime.wrap(function _callee2$(_context2) {
-        while (1) {
-          switch (_context2.prev = _context2.next) {
-            case 0:
-              _context2.next = 2;
-              return this.workerPromise;
-
-            case 2:
-              worker = _context2.sent;
-              _context2.next = 5;
-              return worker.createKeyObjectStorageInstance(params);
-
-            case 5:
-              instanceId = _context2.sent;
-              return _context2.abrupt("return", new RxStorageKeyObjectInstanceWorker(params.databaseName, params.collectionName, {
-                rxStorage: this,
-                worker: worker,
-                instanceId: instanceId
-              }, params.options));
-
-            case 7:
-            case "end":
-              return _context2.stop();
-          }
-        }
-      }, _callee2, this);
-    }));
-
-    function createKeyObjectStorageInstance(_x2) {
-      return _createKeyObjectStorageInstance.apply(this, arguments);
+      return Promise.resolve(_this4.workerPromise).then(function (worker) {
+        return Promise.resolve(worker.createKeyObjectStorageInstance(params)).then(function (instanceId) {
+          return new RxStorageKeyObjectInstanceWorker(params.databaseName, params.collectionName, {
+            rxStorage: _this4,
+            worker: worker,
+            instanceId: instanceId
+          }, params.options);
+        });
+      });
+    } catch (e) {
+      return Promise.reject(e);
     }
-
-    return createKeyObjectStorageInstance;
-  }();
+  };
 
   return RxStorageWorker;
 }();
@@ -111,7 +69,7 @@ export var RxStorageInstanceWorker = /*#__PURE__*/function () {
    * so we have to transform it.
    */
   function RxStorageInstanceWorker(databaseName, collectionName, schema, internals, options) {
-    var _this = this;
+    var _this5 = this;
 
     this.changes$ = new Subject();
     this.subs = [];
@@ -121,7 +79,7 @@ export var RxStorageInstanceWorker = /*#__PURE__*/function () {
     this.internals = internals;
     this.options = options;
     this.subs.push(this.internals.worker.changeStream(this.internals.instanceId).subscribe(function (ev) {
-      return _this.changes$.next(ev);
+      return _this5.changes$.next(ev);
     }));
   }
 
@@ -174,7 +132,7 @@ export var RxStorageKeyObjectInstanceWorker = /*#__PURE__*/function () {
    * so we have to transform it.
    */
   function RxStorageKeyObjectInstanceWorker(databaseName, collectionName, internals, options) {
-    var _this2 = this;
+    var _this6 = this;
 
     this.changes$ = new Subject();
     this.subs = [];
@@ -183,7 +141,7 @@ export var RxStorageKeyObjectInstanceWorker = /*#__PURE__*/function () {
     this.internals = internals;
     this.options = options;
     this.subs.push(this.internals.worker.changeStream(this.internals.instanceId).subscribe(function (ev) {
-      return _this2.changes$.next(ev);
+      return _this6.changes$.next(ev);
     }));
   }
 
@@ -214,8 +172,8 @@ export var RxStorageKeyObjectInstanceWorker = /*#__PURE__*/function () {
 
   return RxStorageKeyObjectInstanceWorker;
 }();
-export function getRxStorageWorker(statics, settings) {
-  var storage = new RxStorageWorker(settings, statics);
+export function getRxStorageWorker(settings) {
+  var storage = new RxStorageWorker(settings, settings.statics);
   return storage;
 }
 //# sourceMappingURL=non-worker.js.map

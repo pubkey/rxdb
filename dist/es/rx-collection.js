@@ -1,6 +1,4 @@
-import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _createClass from "@babel/runtime/helpers/createClass";
-import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { filter, startWith, mergeMap, shareReplay } from 'rxjs/operators';
 import { ucfirst, nextTick, flatClone, promiseSeries, pluginMissing, ensureNotFalsy, getFromMapOrThrow, clone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID, RXJS_SHARE_REPLAY_DEFAULTS } from './util';
 import { _handleToStorageInstance, _handleFromStorageInstance, fillObjectDataBeforeInsert, writeToStorageInstance, createRxCollectionStorageInstances } from './rx-collection-helper';
@@ -70,99 +68,85 @@ export var RxCollectionBase = /*#__PURE__*/function () {
 
   var _proto = RxCollectionBase.prototype;
 
-  _proto.prepare = /*#__PURE__*/function () {
-    var _prepare = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(
-    /**
-     * TODO is this still needed?
-     * set to true if the collection data already exists on this storage adapter
-     */
-    wasCreatedBefore) {
-      var _this = this;
+  _proto.prepare = function prepare(
+  /**
+   * TODO is this still needed?
+   * set to true if the collection data already exists on this storage adapter
+   */
+  wasCreatedBefore) {
+    try {
+      var _this2 = this;
 
-      var subDocs, subLocalDocs;
-      return _regeneratorRuntime.wrap(function _callee$(_context) {
-        while (1) {
-          switch (_context.prev = _context.next) {
-            case 0:
-              // we trigger the non-blocking things first and await them later so we can do stuff in the mean time
-              this._crypter = createCrypter(this.database.password, this.schema);
-              this._observable$ = this.database.eventBulks$.pipe(filter(function (changeEventBulk) {
-                return changeEventBulk.collectionName === _this.name;
-              }), mergeMap(function (changeEventBulk) {
-                return changeEventBulk.events;
-              }));
-              this._changeEventBuffer = createChangeEventBuffer(this.asRxCollection);
-              /**
-               * Instead of resolving the EventBulk array here and spit it into
-               * single events, we should fully work with event bulks internally
-               * to save performance.
-               */
+      // we trigger the non-blocking things first and await them later so we can do stuff in the mean time
+      _this2._crypter = createCrypter(_this2.database.password, _this2.schema);
+      _this2._observable$ = _this2.database.eventBulks$.pipe(filter(function (changeEventBulk) {
+        return changeEventBulk.collectionName === _this2.name;
+      }), mergeMap(function (changeEventBulk) {
+        return changeEventBulk.events;
+      }));
+      _this2._changeEventBuffer = createChangeEventBuffer(_this2.asRxCollection);
+      /**
+       * Instead of resolving the EventBulk array here and spit it into
+       * single events, we should fully work with event bulks internally
+       * to save performance.
+       */
 
-              subDocs = this.storageInstance.changeStream().subscribe(function (eventBulk) {
-                var changeEventBulk = {
-                  id: eventBulk.id,
-                  internal: false,
-                  collectionName: _this.name,
-                  storageToken: ensureNotFalsy(_this.database.storageToken),
-                  events: eventBulk.events.map(function (ev) {
-                    return storageChangeEventToRxChangeEvent(false, ev, _this);
-                  }),
-                  databaseToken: _this.database.token
-                };
+      var subDocs = _this2.storageInstance.changeStream().subscribe(function (eventBulk) {
+        var changeEventBulk = {
+          id: eventBulk.id,
+          internal: false,
+          collectionName: _this2.name,
+          storageToken: ensureNotFalsy(_this2.database.storageToken),
+          events: eventBulk.events.map(function (ev) {
+            return storageChangeEventToRxChangeEvent(false, ev, _this2);
+          }),
+          databaseToken: _this2.database.token
+        };
 
-                _this.database.$emit(changeEventBulk);
-              });
+        _this2.database.$emit(changeEventBulk);
+      });
 
-              this._subs.push(subDocs);
+      _this2._subs.push(subDocs);
 
-              subLocalDocs = this.localDocumentsStore.changeStream().subscribe(function (eventBulk) {
-                var changeEventBulk = {
-                  id: eventBulk.id,
-                  internal: false,
-                  collectionName: _this.name,
-                  storageToken: ensureNotFalsy(_this.database.storageToken),
-                  events: eventBulk.events.map(function (ev) {
-                    return storageChangeEventToRxChangeEvent(true, ev, _this);
-                  }),
-                  databaseToken: _this.database.token
-                };
+      var subLocalDocs = _this2.localDocumentsStore.changeStream().subscribe(function (eventBulk) {
+        var changeEventBulk = {
+          id: eventBulk.id,
+          internal: false,
+          collectionName: _this2.name,
+          storageToken: ensureNotFalsy(_this2.database.storageToken),
+          events: eventBulk.events.map(function (ev) {
+            return storageChangeEventToRxChangeEvent(true, ev, _this2);
+          }),
+          databaseToken: _this2.database.token
+        };
 
-                _this.database.$emit(changeEventBulk);
-              });
+        _this2.database.$emit(changeEventBulk);
+      });
 
-              this._subs.push(subLocalDocs);
-              /**
-               * When a write happens to the collection
-               * we find the changed document in the docCache
-               * and tell it that it has to change its data.
-               */
+      _this2._subs.push(subLocalDocs);
+      /**
+       * When a write happens to the collection
+       * we find the changed document in the docCache
+       * and tell it that it has to change its data.
+       */
 
 
-              this._subs.push(this._observable$.pipe(filter(function (cE) {
-                return !cE.isLocal;
-              })).subscribe(function (cE) {
-                // when data changes, send it to RxDocument in docCache
-                var doc = _this._docCache.get(cE.documentId);
+      _this2._subs.push(_this2._observable$.pipe(filter(function (cE) {
+        return !cE.isLocal;
+      })).subscribe(function (cE) {
+        // when data changes, send it to RxDocument in docCache
+        var doc = _this2._docCache.get(cE.documentId);
 
-                if (doc) {
-                  doc._handleChangeEvent(cE);
-                }
-              }));
-
-            case 8:
-            case "end":
-              return _context.stop();
-          }
+        if (doc) {
+          doc._handleChangeEvent(cE);
         }
-      }, _callee, this);
-    }));
+      }));
 
-    function prepare(_x) {
-      return _prepare.apply(this, arguments);
+      return Promise.resolve();
+    } catch (e) {
+      return Promise.reject(e);
     }
-
-    return prepare;
-  }() // overwritte by migration-plugin
+  } // overwritte by migration-plugin
   ;
 
   _proto.migrationNeeded = function migrationNeeded() {
@@ -187,312 +171,207 @@ export var RxCollectionBase = /*#__PURE__*/function () {
    */
   ;
 
-  _proto._queryStorageInstance =
-  /*#__PURE__*/
-  function () {
-    var _queryStorageInstance2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(rxQuery, limit) {
-      var _this2 = this;
+  _proto._queryStorageInstance = function _queryStorageInstance(rxQuery, limit) {
+    try {
+      var _arguments2 = arguments,
+          _this4 = this;
 
-      var noDecrypt,
-          preparedQuery,
-          queryResult,
-          docs,
-          _args2 = arguments;
-      return _regeneratorRuntime.wrap(function _callee2$(_context2) {
-        while (1) {
-          switch (_context2.prev = _context2.next) {
-            case 0:
-              noDecrypt = _args2.length > 2 && _args2[2] !== undefined ? _args2[2] : false;
-              preparedQuery = rxQuery.getPreparedQuery();
+      var noDecrypt = _arguments2.length > 2 && _arguments2[2] !== undefined ? _arguments2[2] : false;
+      var preparedQuery = rxQuery.getPreparedQuery();
 
-              if (limit) {
-                preparedQuery['limit'] = limit;
-              }
+      if (limit) {
+        preparedQuery['limit'] = limit;
+      }
 
-              _context2.next = 5;
-              return this.database.lockedRun(function () {
-                return _this2.storageInstance.query(preparedQuery);
-              });
-
-            case 5:
-              queryResult = _context2.sent;
-              docs = queryResult.documents.map(function (doc) {
-                return _handleFromStorageInstance(_this2, doc, noDecrypt);
-              });
-              return _context2.abrupt("return", docs);
-
-            case 8:
-            case "end":
-              return _context2.stop();
-          }
-        }
-      }, _callee2, this);
-    }));
-
-    function _queryStorageInstance(_x2, _x3) {
-      return _queryStorageInstance2.apply(this, arguments);
+      return Promise.resolve(_this4.database.lockedRun(function () {
+        return _this4.storageInstance.query(preparedQuery);
+      })).then(function (queryResult) {
+        var docs = queryResult.documents.map(function (doc) {
+          return _handleFromStorageInstance(_this4, doc, noDecrypt);
+        });
+        return docs;
+      });
+    } catch (e) {
+      return Promise.reject(e);
     }
-
-    return _queryStorageInstance;
-  }()
+  }
   /**
    * TODO internally call bulkInsert
    * to not have duplicated code.
    */
   ;
 
-  _proto.insert =
-  /*#__PURE__*/
-  function () {
-    var _insert = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3(json) {
-      var tempDoc, useJson, newDoc, insertResult;
-      return _regeneratorRuntime.wrap(function _callee3$(_context3) {
-        while (1) {
-          switch (_context3.prev = _context3.next) {
-            case 0:
-              // inserting a temporary-document
-              tempDoc = null;
+  _proto.insert = function insert(json) {
+    try {
+      var _this6 = this;
 
-              if (!isRxDocument(json)) {
-                _context3.next = 6;
-                break;
-              }
+      // inserting a temporary-document
+      var tempDoc = null;
 
-              tempDoc = json;
+      if (isRxDocument(json)) {
+        tempDoc = json;
 
-              if (tempDoc._isTemporary) {
-                _context3.next = 5;
-                break;
-              }
-
-              throw newRxError('COL1', {
-                data: json
-              });
-
-            case 5:
-              json = tempDoc.toJSON();
-
-            case 6:
-              useJson = fillObjectDataBeforeInsert(this, json);
-              newDoc = tempDoc;
-              _context3.next = 10;
-              return this._runHooks('pre', 'insert', useJson);
-
-            case 10:
-              this.schema.validate(useJson);
-              _context3.next = 13;
-              return writeToStorageInstance(this, {
-                document: useJson
-              });
-
-            case 13:
-              insertResult = _context3.sent;
-
-              if (tempDoc) {
-                tempDoc._dataSync$.next(insertResult);
-              } else {
-                newDoc = createRxDocument(this, insertResult);
-              }
-
-              _context3.next = 17;
-              return this._runHooks('post', 'insert', useJson, newDoc);
-
-            case 17:
-              return _context3.abrupt("return", newDoc);
-
-            case 18:
-            case "end":
-              return _context3.stop();
-          }
+        if (!tempDoc._isTemporary) {
+          throw newRxError('COL1', {
+            data: json
+          });
         }
-      }, _callee3, this);
-    }));
 
-    function insert(_x4) {
-      return _insert.apply(this, arguments);
-    }
+        json = tempDoc.toJSON();
+      }
 
-    return insert;
-  }();
+      var useJson = fillObjectDataBeforeInsert(_this6, json);
+      var newDoc = tempDoc;
+      return Promise.resolve(_this6._runHooks('pre', 'insert', useJson)).then(function () {
+        _this6.schema.validate(useJson);
 
-  _proto.bulkInsert = /*#__PURE__*/function () {
-    var _bulkInsert = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4(docsData) {
-      var _this3 = this;
-
-      var useDocs, docs, insertDocs, docsMap, results, successEntries, rxDocuments;
-      return _regeneratorRuntime.wrap(function _callee4$(_context4) {
-        while (1) {
-          switch (_context4.prev = _context4.next) {
-            case 0:
-              if (!(docsData.length === 0)) {
-                _context4.next = 2;
-                break;
-              }
-
-              return _context4.abrupt("return", {
-                success: [],
-                error: []
-              });
-
-            case 2:
-              useDocs = docsData.map(function (docData) {
-                var useDocData = fillObjectDataBeforeInsert(_this3, docData);
-                return useDocData;
-              });
-              _context4.next = 5;
-              return Promise.all(useDocs.map(function (doc) {
-                return _this3._runHooks('pre', 'insert', doc).then(function () {
-                  _this3.schema.validate(doc);
-
-                  return doc;
-                });
-              }));
-
-            case 5:
-              docs = _context4.sent;
-              insertDocs = docs.map(function (d) {
-                return {
-                  document: _handleToStorageInstance(_this3, d)
-                };
-              });
-              docsMap = new Map();
-              docs.forEach(function (d) {
-                docsMap.set(d[_this3.schema.primaryPath], d);
-              });
-              _context4.next = 11;
-              return this.database.lockedRun(function () {
-                return _this3.storageInstance.bulkWrite(insertDocs);
-              });
-
-            case 11:
-              results = _context4.sent;
-              // create documents
-              successEntries = Object.entries(results.success);
-              rxDocuments = successEntries.map(function (_ref) {
-                var key = _ref[0],
-                    writtenDocData = _ref[1];
-                var docData = getFromMapOrThrow(docsMap, key);
-                docData._rev = writtenDocData._rev;
-                var doc = createRxDocument(_this3, docData);
-                return doc;
-              });
-              _context4.next = 16;
-              return Promise.all(rxDocuments.map(function (doc) {
-                return _this3._runHooks('post', 'insert', docsMap.get(doc.primary), doc);
-              }));
-
-            case 16:
-              return _context4.abrupt("return", {
-                success: rxDocuments,
-                error: Object.values(results.error)
-              });
-
-            case 17:
-            case "end":
-              return _context4.stop();
+        return Promise.resolve(writeToStorageInstance(_this6, {
+          document: useJson
+        })).then(function (insertResult) {
+          if (tempDoc) {
+            tempDoc._dataSync$.next(insertResult);
+          } else {
+            newDoc = createRxDocument(_this6, insertResult);
           }
-        }
-      }, _callee4, this);
-    }));
 
-    function bulkInsert(_x5) {
-      return _bulkInsert.apply(this, arguments);
+          return Promise.resolve(_this6._runHooks('post', 'insert', useJson, newDoc)).then(function () {
+            return newDoc;
+          });
+        });
+      });
+    } catch (e) {
+      return Promise.reject(e);
     }
+  };
 
-    return bulkInsert;
-  }();
+  _proto.bulkInsert = function bulkInsert(docsData) {
+    try {
+      var _this8 = this;
 
-  _proto.bulkRemove = /*#__PURE__*/function () {
-    var _bulkRemove = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee5(ids) {
-      var _this4 = this;
+      /**
+       * Optimization shortcut,
+       * do nothing when called with an empty array
+       */
+      if (docsData.length === 0) {
+        return Promise.resolve({
+          success: [],
+          error: []
+        });
+      }
 
-      var rxDocumentMap, docsData, docsMap, removeDocs, results, successIds, rxDocuments;
-      return _regeneratorRuntime.wrap(function _callee5$(_context5) {
-        while (1) {
-          switch (_context5.prev = _context5.next) {
-            case 0:
-              if (!(ids.length === 0)) {
-                _context5.next = 2;
-                break;
-              }
+      var useDocs = docsData.map(function (docData) {
+        var useDocData = fillObjectDataBeforeInsert(_this8, docData);
+        return useDocData;
+      });
+      return Promise.resolve(Promise.all(useDocs.map(function (doc) {
+        return _this8._runHooks('pre', 'insert', doc).then(function () {
+          _this8.schema.validate(doc);
 
-              return _context5.abrupt("return", {
-                success: [],
-                error: []
-              });
+          return doc;
+        });
+      }))).then(function (docs) {
+        var insertDocs = docs.map(function (d) {
+          return {
+            document: _handleToStorageInstance(_this8, d)
+          };
+        });
+        var docsMap = new Map();
+        docs.forEach(function (d) {
+          docsMap.set(d[_this8.schema.primaryPath], d);
+        });
+        return Promise.resolve(_this8.database.lockedRun(function () {
+          return _this8.storageInstance.bulkWrite(insertDocs);
+        })).then(function (results) {
+          // create documents
+          var successEntries = Object.entries(results.success);
+          var rxDocuments = successEntries.map(function (_ref) {
+            var key = _ref[0],
+                writtenDocData = _ref[1];
+            var docData = getFromMapOrThrow(docsMap, key);
+            docData._rev = writtenDocData._rev;
+            var doc = createRxDocument(_this8, docData);
+            return doc;
+          });
+          return Promise.resolve(Promise.all(rxDocuments.map(function (doc) {
+            return _this8._runHooks('post', 'insert', docsMap.get(doc.primary), doc);
+          }))).then(function () {
+            return {
+              success: rxDocuments,
+              error: Object.values(results.error)
+            };
+          });
+        });
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
 
-            case 2:
-              _context5.next = 4;
-              return this.findByIds(ids);
+  _proto.bulkRemove = function bulkRemove(ids) {
+    try {
+      var _this10 = this;
 
-            case 4:
-              rxDocumentMap = _context5.sent;
-              docsData = [];
-              docsMap = new Map();
-              Array.from(rxDocumentMap.values()).forEach(function (rxDocument) {
-                var data = clone(rxDocument.toJSON(true));
-                docsData.push(data);
-                docsMap.set(rxDocument.primary, data);
-              });
-              _context5.next = 10;
-              return Promise.all(docsData.map(function (doc) {
-                var primary = doc[_this4.schema.primaryPath];
-                return _this4._runHooks('pre', 'remove', doc, rxDocumentMap.get(primary));
-              }));
+      /**
+       * Optimization shortcut,
+       * do nothing when called with an empty array
+       */
+      if (ids.length === 0) {
+        return Promise.resolve({
+          success: [],
+          error: []
+        });
+      }
 
-            case 10:
-              removeDocs = docsData.map(function (doc) {
-                var writeDoc = flatClone(doc);
-                writeDoc._deleted = true;
-                return {
-                  previous: _handleToStorageInstance(_this4, doc),
-                  document: _handleToStorageInstance(_this4, writeDoc)
-                };
-              });
-              _context5.next = 13;
-              return this.database.lockedRun(function () {
-                return _this4.storageInstance.bulkWrite(removeDocs);
-              });
+      return Promise.resolve(_this10.findByIds(ids)).then(function (rxDocumentMap) {
+        var docsData = [];
+        var docsMap = new Map();
+        Array.from(rxDocumentMap.values()).forEach(function (rxDocument) {
+          var data = clone(rxDocument.toJSON(true));
+          docsData.push(data);
+          docsMap.set(rxDocument.primary, data);
+        });
+        return Promise.resolve(Promise.all(docsData.map(function (doc) {
+          var primary = doc[_this10.schema.primaryPath];
+          return _this10._runHooks('pre', 'remove', doc, rxDocumentMap.get(primary));
+        }))).then(function () {
+          var removeDocs = docsData.map(function (doc) {
+            var writeDoc = flatClone(doc);
+            writeDoc._deleted = true;
+            return {
+              previous: _handleToStorageInstance(_this10, doc),
+              document: _handleToStorageInstance(_this10, writeDoc)
+            };
+          });
+          return Promise.resolve(_this10.database.lockedRun(function () {
+            return _this10.storageInstance.bulkWrite(removeDocs);
+          })).then(function (results) {
+            var successIds = Object.keys(results.success); // run hooks
 
-            case 13:
-              results = _context5.sent;
-              successIds = Object.keys(results.success); // run hooks
-
-              _context5.next = 17;
-              return Promise.all(successIds.map(function (id) {
-                return _this4._runHooks('post', 'remove', docsMap.get(id), rxDocumentMap.get(id));
-              }));
-
-            case 17:
-              rxDocuments = successIds.map(function (id) {
+            return Promise.resolve(Promise.all(successIds.map(function (id) {
+              return _this10._runHooks('post', 'remove', docsMap.get(id), rxDocumentMap.get(id));
+            }))).then(function () {
+              var rxDocuments = successIds.map(function (id) {
                 return rxDocumentMap.get(id);
               });
-              return _context5.abrupt("return", {
+              return {
                 success: rxDocuments,
                 error: Object.values(results.error)
-              });
-
-            case 19:
-            case "end":
-              return _context5.stop();
-          }
-        }
-      }, _callee5, this);
-    }));
-
-    function bulkRemove(_x6) {
-      return _bulkRemove.apply(this, arguments);
+              };
+            });
+          });
+        });
+      });
+    } catch (e) {
+      return Promise.reject(e);
     }
-
-    return bulkRemove;
-  }()
+  }
   /**
    * same as insert but overwrites existing document with same primary
    */
   ;
 
   _proto.upsert = function upsert(json) {
-    var _this5 = this;
+    var _this11 = this;
 
     var useJson = fillObjectDataBeforeInsert(this, json);
     var primary = useJson[this.schema.primaryPath];
@@ -514,7 +393,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
           return existing;
         });
       } else {
-        return _this5.insert(json);
+        return _this11.insert(json);
       }
     });
   }
@@ -524,7 +403,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
   ;
 
   _proto.atomicUpsert = function atomicUpsert(json) {
-    var _this6 = this;
+    var _this12 = this;
 
     var useJson = fillObjectDataBeforeInsert(this, json);
     var primary = useJson[this.schema.primaryPath];
@@ -545,7 +424,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     }
 
     queue = queue.then(function () {
-      return _atomicUpsertEnsureRxDocumentExists(_this6, primary, useJson);
+      return _atomicUpsertEnsureRxDocumentExists(_this12, primary, useJson);
     }).then(function (wasInserted) {
       if (!wasInserted.inserted) {
         return _atomicUpsertUpdate(wasInserted.doc, useJson)
@@ -623,63 +502,42 @@ export var RxCollectionBase = /*#__PURE__*/function () {
    */
   ;
 
-  _proto.findByIds =
-  /*#__PURE__*/
-  function () {
-    var _findByIds = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee6(ids) {
-      var _this7 = this;
+  _proto.findByIds = function findByIds(ids) {
+    try {
+      var _this14 = this;
 
-      var ret, mustBeQueried, docs;
-      return _regeneratorRuntime.wrap(function _callee6$(_context6) {
-        while (1) {
-          switch (_context6.prev = _context6.next) {
-            case 0:
-              ret = new Map();
-              mustBeQueried = []; // first try to fill from docCache
+      var ret = new Map();
+      var mustBeQueried = []; // first try to fill from docCache
 
-              ids.forEach(function (id) {
-                var doc = _this7._docCache.get(id);
+      ids.forEach(function (id) {
+        var doc = _this14._docCache.get(id);
 
-                if (doc) {
-                  ret.set(id, doc);
-                } else {
-                  mustBeQueried.push(id);
-                }
-              }); // find everything which was not in docCache
-
-              if (!(mustBeQueried.length > 0)) {
-                _context6.next = 8;
-                break;
-              }
-
-              _context6.next = 6;
-              return this.storageInstance.findDocumentsById(mustBeQueried, false);
-
-            case 6:
-              docs = _context6.sent;
-              Object.values(docs).forEach(function (docData) {
-                docData = _handleFromStorageInstance(_this7, docData);
-                var doc = createRxDocument(_this7, docData);
-                ret.set(doc.primary, doc);
-              });
-
-            case 8:
-              return _context6.abrupt("return", ret);
-
-            case 9:
-            case "end":
-              return _context6.stop();
-          }
+        if (doc) {
+          ret.set(id, doc);
+        } else {
+          mustBeQueried.push(id);
         }
-      }, _callee6, this);
-    }));
+      }); // find everything which was not in docCache
 
-    function findByIds(_x7) {
-      return _findByIds.apply(this, arguments);
+      var _temp2 = function () {
+        if (mustBeQueried.length > 0) {
+          return Promise.resolve(_this14.storageInstance.findDocumentsById(mustBeQueried, false)).then(function (docs) {
+            Object.values(docs).forEach(function (docData) {
+              docData = _handleFromStorageInstance(_this14, docData);
+              var doc = createRxDocument(_this14, docData);
+              ret.set(doc.primary, doc);
+            });
+          });
+        }
+      }();
+
+      return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {
+        return ret;
+      }) : ret);
+    } catch (e) {
+      return Promise.reject(e);
     }
-
-    return findByIds;
-  }()
+  }
   /**
    * like this.findByIds but returns an observable
    * that always emitts the current state
@@ -687,12 +545,12 @@ export var RxCollectionBase = /*#__PURE__*/function () {
   ;
 
   _proto.findByIds$ = function findByIds$(ids) {
-    var _this8 = this;
+    var _this15 = this;
 
     var currentValue = null;
     var lastChangeEvent = -1;
     var initialPromise = this.findByIds(ids).then(function (docsMap) {
-      lastChangeEvent = _this8._changeEventBuffer.counter;
+      lastChangeEvent = _this15._changeEventBuffer.counter;
       currentValue = docsMap;
     });
     return this.$.pipe(startWith(null), mergeMap(function (ev) {
@@ -706,63 +564,48 @@ export var RxCollectionBase = /*#__PURE__*/function () {
      * we always ensure that we handled all missed events
      * since the last subscription.
      */
-    mergeMap( /*#__PURE__*/function () {
-      var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee7(ev) {
-        var resultMap, missedChangeEvents, newResult;
-        return _regeneratorRuntime.wrap(function _callee7$(_context7) {
-          while (1) {
-            switch (_context7.prev = _context7.next) {
-              case 0:
-                resultMap = ensureNotFalsy(currentValue);
-                missedChangeEvents = _this8._changeEventBuffer.getFrom(lastChangeEvent + 1);
+    mergeMap(function (ev) {
+      try {
+        var resultMap = ensureNotFalsy(currentValue);
 
-                if (!(missedChangeEvents === null)) {
-                  _context7.next = 10;
-                  break;
-                }
+        var missedChangeEvents = _this15._changeEventBuffer.getFrom(lastChangeEvent + 1);
 
-                _context7.next = 5;
-                return _this8.findByIds(ids);
+        var _temp4 = function () {
+          if (missedChangeEvents === null) {
+            /**
+             * changeEventBuffer is of bounds -> we must re-execute over the database
+             * because we cannot calculate the new results just from the events.
+             */
+            return Promise.resolve(_this15.findByIds(ids)).then(function (newResult) {
+              lastChangeEvent = _this15._changeEventBuffer.counter;
+              Array.from(newResult.entries()).forEach(function (_ref2) {
+                var k = _ref2[0],
+                    v = _ref2[1];
+                return resultMap.set(k, v);
+              });
+            });
+          } else {
+            missedChangeEvents.filter(function (rxChangeEvent) {
+              return ids.includes(rxChangeEvent.documentId);
+            }).forEach(function (rxChangeEvent) {
+              var op = rxChangeEvent.operation;
 
-              case 5:
-                newResult = _context7.sent;
-                lastChangeEvent = _this8._changeEventBuffer.counter;
-                Array.from(newResult.entries()).forEach(function (_ref3) {
-                  var k = _ref3[0],
-                      v = _ref3[1];
-                  return resultMap.set(k, v);
-                });
-                _context7.next = 11;
-                break;
-
-              case 10:
-                missedChangeEvents.filter(function (rxChangeEvent) {
-                  return ids.includes(rxChangeEvent.documentId);
-                }).forEach(function (rxChangeEvent) {
-                  var op = rxChangeEvent.operation;
-
-                  if (op === 'INSERT' || op === 'UPDATE') {
-                    resultMap.set(rxChangeEvent.documentId, _this8._docCache.get(rxChangeEvent.documentId));
-                  } else {
-                    resultMap["delete"](rxChangeEvent.documentId);
-                  }
-                });
-
-              case 11:
-                return _context7.abrupt("return", resultMap);
-
-              case 12:
-              case "end":
-                return _context7.stop();
-            }
+              if (op === 'INSERT' || op === 'UPDATE') {
+                resultMap.set(rxChangeEvent.documentId, _this15._docCache.get(rxChangeEvent.documentId));
+              } else {
+                resultMap["delete"](rxChangeEvent.documentId);
+              }
+            });
           }
-        }, _callee7);
-      }));
+        }();
 
-      return function (_x8) {
-        return _ref2.apply(this, arguments);
-      };
-    }()), filter(function (x) {
+        return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(function () {
+          return resultMap;
+        }) : resultMap);
+      } catch (e) {
+        return Promise.reject(e);
+      }
+    }), filter(function (x) {
       return !!x;
     }), shareReplay(RXJS_SHARE_REPLAY_DEFAULTS));
   }
@@ -920,7 +763,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
   };
 
   _proto.destroy = function destroy() {
-    var _this9 = this;
+    var _this16 = this;
 
     if (this.destroyed) {
       return PROMISE_RESOLVE_FALSE;
@@ -942,9 +785,9 @@ export var RxCollectionBase = /*#__PURE__*/function () {
       return replicationState.cancel();
     });
     return Promise.all([this.storageInstance.close(), this.localDocumentsStore.close()]).then(function () {
-      delete _this9.database.collections[_this9.name];
-      _this9.destroyed = true;
-      return runAsyncPluginHooks('postDestroyRxCollection', _this9).then(function () {
+      delete _this16.database.collections[_this16.name];
+      _this16.destroyed = true;
+      return runAsyncPluginHooks('postDestroyRxCollection', _this16).then(function () {
         return true;
       });
     });
@@ -987,11 +830,11 @@ export var RxCollectionBase = /*#__PURE__*/function () {
   }, {
     key: "onDestroy",
     get: function get() {
-      var _this10 = this;
+      var _this17 = this;
 
       if (!this._onDestroy) {
         this._onDestroy = new Promise(function (res) {
-          return _this10._onDestroyCall = res;
+          return _this17._onDestroyCall = res;
         });
       }
 
@@ -1077,26 +920,26 @@ function _atomicUpsertEnsureRxDocumentExists(rxCollection, primary, json) {
  */
 
 
-export function createRxCollection(_ref4, wasCreatedBefore) {
-  var database = _ref4.database,
-      name = _ref4.name,
-      schema = _ref4.schema,
-      _ref4$instanceCreatio = _ref4.instanceCreationOptions,
-      instanceCreationOptions = _ref4$instanceCreatio === void 0 ? {} : _ref4$instanceCreatio,
-      _ref4$migrationStrate = _ref4.migrationStrategies,
-      migrationStrategies = _ref4$migrationStrate === void 0 ? {} : _ref4$migrationStrate,
-      _ref4$autoMigrate = _ref4.autoMigrate,
-      autoMigrate = _ref4$autoMigrate === void 0 ? true : _ref4$autoMigrate,
-      _ref4$statics = _ref4.statics,
-      statics = _ref4$statics === void 0 ? {} : _ref4$statics,
-      _ref4$methods = _ref4.methods,
-      methods = _ref4$methods === void 0 ? {} : _ref4$methods,
-      _ref4$attachments = _ref4.attachments,
-      attachments = _ref4$attachments === void 0 ? {} : _ref4$attachments,
-      _ref4$options = _ref4.options,
-      options = _ref4$options === void 0 ? {} : _ref4$options,
-      _ref4$cacheReplacemen = _ref4.cacheReplacementPolicy,
-      cacheReplacementPolicy = _ref4$cacheReplacemen === void 0 ? defaultCacheReplacementPolicy : _ref4$cacheReplacemen;
+export function createRxCollection(_ref3, wasCreatedBefore) {
+  var database = _ref3.database,
+      name = _ref3.name,
+      schema = _ref3.schema,
+      _ref3$instanceCreatio = _ref3.instanceCreationOptions,
+      instanceCreationOptions = _ref3$instanceCreatio === void 0 ? {} : _ref3$instanceCreatio,
+      _ref3$migrationStrate = _ref3.migrationStrategies,
+      migrationStrategies = _ref3$migrationStrate === void 0 ? {} : _ref3$migrationStrate,
+      _ref3$autoMigrate = _ref3.autoMigrate,
+      autoMigrate = _ref3$autoMigrate === void 0 ? true : _ref3$autoMigrate,
+      _ref3$statics = _ref3.statics,
+      statics = _ref3$statics === void 0 ? {} : _ref3$statics,
+      _ref3$methods = _ref3.methods,
+      methods = _ref3$methods === void 0 ? {} : _ref3$methods,
+      _ref3$attachments = _ref3.attachments,
+      attachments = _ref3$attachments === void 0 ? {} : _ref3$attachments,
+      _ref3$options = _ref3.options,
+      options = _ref3$options === void 0 ? {} : _ref3$options,
+      _ref3$cacheReplacemen = _ref3.cacheReplacementPolicy,
+      cacheReplacementPolicy = _ref3$cacheReplacemen === void 0 ? defaultCacheReplacementPolicy : _ref3$cacheReplacemen;
 
   // TODO move this check to dev-mode plugin
   if (overwritable.isDevMode()) {
@@ -1121,9 +964,9 @@ export function createRxCollection(_ref4, wasCreatedBefore) {
     var collection = new RxCollectionBase(database, name, schema, storageInstances.storageInstance, storageInstances.localDocumentsStore, instanceCreationOptions, migrationStrategies, methods, attachments, options, cacheReplacementPolicy, statics);
     return collection.prepare(wasCreatedBefore).then(function () {
       // ORM add statics
-      Object.entries(statics).forEach(function (_ref5) {
-        var funName = _ref5[0],
-            fun = _ref5[1];
+      Object.entries(statics).forEach(function (_ref4) {
+        var funName = _ref4[0],
+            fun = _ref4[1];
         Object.defineProperty(collection, funName, {
           get: function get() {
             return fun.bind(collection);

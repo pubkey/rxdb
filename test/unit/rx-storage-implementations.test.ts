@@ -815,6 +815,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     options: {},
                     multiInstance: false
                 });
+                assert.ok(storageInstance);
                 async function getSequenceAfter(since: number): Promise<number> {
                     const changesResult = await storageInstance.getChangedDocuments({
                         direction: 'after',
@@ -1870,7 +1871,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
         });
     });
     describe('multiInstance', () => {
-        async function getMultiInstaneRxStorageInstance(): Promise<{
+        async function getMultiInstanceRxStorageInstance(): Promise<{
             a: RxStorageInstance<TestDocType, any, any>;
             b: RxStorageInstance<TestDocType, any, any>;
         }> {
@@ -1902,7 +1903,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 b
             };
         }
-        async function closeMultiInstaneRxStorageInstance(instances: MultiInstanceInstances) {
+        async function closeMultiInstanceRxStorageInstance(instances: MultiInstanceInstances) {
             await instances.a.close();
             await instances.b.close();
         }
@@ -1940,7 +1941,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
         }
         describe('RxStorageInstance', () => {
             it('should be able to write and read documents', async () => {
-                const instances = await getMultiInstaneRxStorageInstance();
+                const instances = await getMultiInstanceRxStorageInstance();
 
                 const emittedB: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>>[] = [];
                 instances.b.changeStream().subscribe(ev => emittedB.push(ev));
@@ -2000,7 +2001,39 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 assert.strictEqual(foundDocViaRev.key, writeDataViaRevision.key);
 
                 // close both
-                await closeMultiInstaneRxStorageInstance(instances);
+                await closeMultiInstanceRxStorageInstance(instances);
+            });
+            /**
+             * RxStorage implementations that need some kind of cross-JavaScript-process handling,
+             * like via BroadcastChannel etc, have shown problem when one instance is closed while
+             * the other is running a query on the remote instance.
+             * This case must be properly handled by having or timeout or detecting that the current leader died etc.
+             */
+            it('should be able to finish a query even when the leading instance gets closed', async () => {
+                const instances = await getMultiInstanceRxStorageInstance();
+
+                // insert a document on A
+                await instances.a.bulkWrite([{ document: getWriteData() }]);
+
+                const preparedQuery: PreparedQuery<TestDocType> = config.storage.getStorage().statics.prepareQuery(
+                    instances.b.schema,
+                    {
+                        selector: {},
+                        limit: 1
+                    }
+                );
+
+                const queryResultBefore = await instances.b.query(preparedQuery);
+                assert.ok(queryResultBefore);
+
+                // close A while starting a query on B
+                const queryResultPromise = instances.b.query(preparedQuery);
+                instances.a.close();
+
+                // the query should still resolve.
+                await queryResultPromise;
+
+                await instances.b.close();
             });
         });
         describe('RxStorageKeyObjectInstance', () => {

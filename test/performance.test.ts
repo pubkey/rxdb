@@ -86,16 +86,16 @@ switch (STORAGE_KEY) {
         STORAGE = {
             getStorage() {
                 return getRxStorageWorker(
-                    RxStorageLokiStatics,
                     {
+                        statics: RxStorageLokiStatics,
                         workerInput: lokiWorkerPath
                     }
                 );
             },
             getPersistendStorage() {
                 return getRxStorageWorker(
-                    RxStorageLokiStatics,
                     {
+                        statics: RxStorageLokiStatics,
                         workerInput: lokiPersistendWorkerPath
                     }
                 );

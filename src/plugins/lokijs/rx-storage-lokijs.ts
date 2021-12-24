@@ -149,13 +149,13 @@ export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettin
         public databaseSettings: LokiDatabaseSettings
     ) { }
 
-    async createStorageInstance<RxDocType>(
+    public createStorageInstance<RxDocType>(
         params: RxStorageInstanceCreationParams<RxDocType, LokiSettings>
     ): Promise<RxStorageInstanceLoki<RxDocType>> {
         return createLokiStorageInstance(this, params, this.databaseSettings);
     }
 
-    public async createKeyObjectStorageInstance(
+    public createKeyObjectStorageInstance(
         params: RxKeyObjectStorageInstanceCreationParams<LokiSettings>
     ): Promise<RxStorageKeyObjectInstanceLoki> {
 

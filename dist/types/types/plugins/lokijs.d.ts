@@ -7,6 +7,10 @@ import { LokiSaveQueue } from '../../plugins/lokijs/loki-save-queue';
 import type { RxStorageChangedDocumentMeta } from '../rx-storage';
 
 export type LokiDatabaseSettings = Partial<LokiConstructorOptions & LokiConfigOptions> & {
+
+    
+
+
     /**
      * RxDB does not totally delete a document when it gets deleted.
      * We still need to store a tombstone of the document to ensure it

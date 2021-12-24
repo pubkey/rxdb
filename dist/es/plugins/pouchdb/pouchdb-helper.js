@@ -1,8 +1,55 @@
-import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
-import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { binaryMd5 } from 'pouchdb-md5';
 import { blobBufferUtil, flatClone, getHeightOfRevision } from '../../util';
 import { newRxError } from '../../rx-error';
+export var writeAttachmentsToAttachments = function writeAttachmentsToAttachments(attachments) {
+  try {
+    if (!attachments) {
+      return Promise.resolve({});
+    }
+
+    var ret = {};
+    return Promise.resolve(Promise.all(Object.entries(attachments).map(function (_ref4) {
+      try {
+        var key = _ref4[0],
+            obj = _ref4[1];
+
+        if (!obj.type) {
+          throw newRxError('SNH', {
+            args: {
+              obj: obj
+            }
+          });
+        }
+
+        var _temp2 = function () {
+          if (obj.data) {
+            var asWrite = obj;
+            return Promise.resolve(Promise.all([pouchHash(asWrite.data), blobBufferUtil.toString(asWrite.data)])).then(function (_ref5) {
+              var hash = _ref5[0],
+                  asString = _ref5[1];
+              var length = asString.length;
+              ret[key] = {
+                digest: POUCH_HASH_KEY + '-' + hash,
+                length: length,
+                type: asWrite.type
+              };
+            });
+          } else {
+            ret[key] = obj;
+          }
+        }();
+
+        return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {}) : void 0);
+      } catch (e) {
+        return Promise.reject(e);
+      }
+    }))).then(function () {
+      return ret;
+    });
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
 
 /**
  * Used to check in tests if all instances have been cleaned up.
@@ -249,97 +296,4 @@ export function pouchHash(data) {
   });
 }
 export var POUCH_HASH_KEY = 'md5';
-export function writeAttachmentsToAttachments(_x) {
-  return _writeAttachmentsToAttachments.apply(this, arguments);
-}
-
-function _writeAttachmentsToAttachments() {
-  _writeAttachmentsToAttachments = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(attachments) {
-    var ret;
-    return _regeneratorRuntime.wrap(function _callee2$(_context2) {
-      while (1) {
-        switch (_context2.prev = _context2.next) {
-          case 0:
-            if (attachments) {
-              _context2.next = 2;
-              break;
-            }
-
-            return _context2.abrupt("return", {});
-
-          case 2:
-            ret = {};
-            _context2.next = 5;
-            return Promise.all(Object.entries(attachments).map( /*#__PURE__*/function () {
-              var _ref5 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(_ref4) {
-                var key, obj, asWrite, _yield$Promise$all, hash, asString, length;
-
-                return _regeneratorRuntime.wrap(function _callee$(_context) {
-                  while (1) {
-                    switch (_context.prev = _context.next) {
-                      case 0:
-                        key = _ref4[0], obj = _ref4[1];
-
-                        if (obj.type) {
-                          _context.next = 3;
-                          break;
-                        }
-
-                        throw newRxError('SNH', {
-                          args: {
-                            obj: obj
-                          }
-                        });
-
-                      case 3:
-                        if (!obj.data) {
-                          _context.next = 14;
-                          break;
-                        }
-
-                        asWrite = obj;
-                        _context.next = 7;
-                        return Promise.all([pouchHash(asWrite.data), blobBufferUtil.toString(asWrite.data)]);
-
-                      case 7:
-                        _yield$Promise$all = _context.sent;
-                        hash = _yield$Promise$all[0];
-                        asString = _yield$Promise$all[1];
-                        length = asString.length;
-                        ret[key] = {
-                          digest: POUCH_HASH_KEY + '-' + hash,
-                          length: length,
-                          type: asWrite.type
-                        };
-                        _context.next = 15;
-                        break;
-
-                      case 14:
-                        ret[key] = obj;
-
-                      case 15:
-                      case "end":
-                        return _context.stop();
-                    }
-                  }
-                }, _callee);
-              }));
-
-              return function (_x2) {
-                return _ref5.apply(this, arguments);
-              };
-            }()));
-
-          case 5:
-            return _context2.abrupt("return", ret);
-
-          case 6:
-          case "end":
-            return _context2.stop();
-        }
-      }
-    }, _callee2);
-  }));
-  return _writeAttachmentsToAttachments.apply(this, arguments);
-}
 //# sourceMappingURL=pouchdb-helper.js.map

@@ -1,7 +1,5 @@
-import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _assertThisInitialized from "@babel/runtime/helpers/assertThisInitialized";
 import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
-import _regeneratorRuntime from "@babel/runtime/regenerator";
 
 /**
  * This plugin adds RxCollection.inMemory()
@@ -20,6 +18,59 @@ import { createRxSchema } from '../rx-schema';
 import { newRxError } from '../rx-error';
 import { getDocumentDataOfRxChangeEvent } from '../rx-change-event';
 import { _handleFromStorageInstance, _handleToStorageInstance } from '../rx-collection-helper';
+export var prepareInMemoryRxCollection = function prepareInMemoryRxCollection(instance) {
+  try {
+    var memoryStorage = getRxStoragePouch('memory', {});
+    return Promise.resolve(memoryStorage.createStorageInstance({
+      databaseName: 'rxdb-in-memory',
+      collectionName: randomCouchString(10),
+      schema: instance.schema.jsonSchema,
+      options: instance.pouchSettings,
+      multiInstance: false
+    })).then(function (_memoryStorage$create) {
+      instance.storageInstance = _memoryStorage$create;
+      instance.pouch = instance.storageInstance.internals.pouch;
+    });
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+
+/**
+ * called in the proto of RxCollection
+ */
+export var inMemory = function inMemory() {
+  try {
+    var _this6 = this;
+
+    if (!INIT_DONE) {
+      INIT_DONE = true; // ensure memory-adapter is added
+
+      if (!PouchDB.adapters || !PouchDB.adapters.memory) {
+        throw newRxError('IM1');
+      }
+    }
+
+    if (collectionCacheMap.has(_this6)) {
+      // already exists for this collection -> wait until synced
+      return Promise.resolve(collectionPromiseCacheMap.get(_this6).then(function () {
+        return collectionCacheMap.get(_this6);
+      }));
+    }
+
+    var col = new InMemoryRxCollection(_this6);
+    return Promise.resolve(prepareInMemoryRxCollection(col)).then(function () {
+      var preparePromise = col.prepareChild();
+      collectionCacheMap.set(_this6, col);
+      collectionPromiseCacheMap.set(_this6, preparePromise);
+      return preparePromise.then(function () {
+        return col;
+      });
+    });
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
 var collectionCacheMap = new WeakMap();
 var collectionPromiseCacheMap = new WeakMap();
 var BULK_DOC_OPTIONS = {
@@ -352,105 +403,6 @@ export function applyChangedDocumentToPouch(rxCollection, docData) {
   });
 }
 var INIT_DONE = false;
-/**
- * called in the proto of RxCollection
- */
-
-export function inMemory() {
-  return _inMemory.apply(this, arguments);
-}
-
-function _inMemory() {
-  _inMemory = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee() {
-    var _this5 = this;
-
-    var col, preparePromise;
-    return _regeneratorRuntime.wrap(function _callee$(_context) {
-      while (1) {
-        switch (_context.prev = _context.next) {
-          case 0:
-            if (INIT_DONE) {
-              _context.next = 4;
-              break;
-            }
-
-            INIT_DONE = true; // ensure memory-adapter is added
-
-            if (!(!PouchDB.adapters || !PouchDB.adapters.memory)) {
-              _context.next = 4;
-              break;
-            }
-
-            throw newRxError('IM1');
-
-          case 4:
-            if (!collectionCacheMap.has(this)) {
-              _context.next = 6;
-              break;
-            }
-
-            return _context.abrupt("return", collectionPromiseCacheMap.get(this).then(function () {
-              return collectionCacheMap.get(_this5);
-            }));
-
-          case 6:
-            col = new InMemoryRxCollection(this);
-            _context.next = 9;
-            return prepareInMemoryRxCollection(col);
-
-          case 9:
-            preparePromise = col.prepareChild();
-            collectionCacheMap.set(this, col);
-            collectionPromiseCacheMap.set(this, preparePromise);
-            return _context.abrupt("return", preparePromise.then(function () {
-              return col;
-            }));
-
-          case 13:
-          case "end":
-            return _context.stop();
-        }
-      }
-    }, _callee, this);
-  }));
-  return _inMemory.apply(this, arguments);
-}
-
-export function prepareInMemoryRxCollection(_x) {
-  return _prepareInMemoryRxCollection.apply(this, arguments);
-}
-
-function _prepareInMemoryRxCollection() {
-  _prepareInMemoryRxCollection = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(instance) {
-    var memoryStorage;
-    return _regeneratorRuntime.wrap(function _callee2$(_context2) {
-      while (1) {
-        switch (_context2.prev = _context2.next) {
-          case 0:
-            memoryStorage = getRxStoragePouch('memory', {});
-            _context2.next = 3;
-            return memoryStorage.createStorageInstance({
-              databaseName: 'rxdb-in-memory',
-              collectionName: randomCouchString(10),
-              schema: instance.schema.jsonSchema,
-              options: instance.pouchSettings,
-              multiInstance: false
-            });
-
-          case 3:
-            instance.storageInstance = _context2.sent;
-            instance.pouch = instance.storageInstance.internals.pouch;
-
-          case 5:
-          case "end":
-            return _context2.stop();
-        }
-      }
-    }, _callee2);
-  }));
-  return _prepareInMemoryRxCollection.apply(this, arguments);
-}
-
 export var rxdb = true;
 export var prototypes = {
   RxCollection: function RxCollection(proto) {

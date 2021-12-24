@@ -1,6 +1,6 @@
 # Changelog
 
-### 11.0.0-beta.X (13 December 2021) BREAKING [read the announcement](./orga/releases/10.0.0.md)
+### 11.0.0-beta.X (13 December 2021) BREAKING [read the announcement](./orga/releases/11.0.0.md)
 
 BREAKING:
   - RxStorage: The non async functions `prepareQuery`, `getSortComparator` and `getQueryMatcher` have been moved out of `RxStorageInstance` into `RxStorage`. This was needed to have better WebWorker support. This will not affect you do not use a custom `RxStorage` implementation.
@@ -18,9 +18,11 @@ Bugfixes:
   - Do not throw an error when database is destroyed while a GraphQL replication is running.
   - Compound primary key migration throws "Value of primary key(s) cannot be changed" [#3546](https://github.com/pubkey/rxdb/pull/3546) Thanks [@nothingkid](https://github.com/nothingkid)
   - Allow `_id` as primaryKey [#3562](https://github.com/pubkey/rxdb/pull/3562) Thanks [@SuperKirik](https://github.com/SuperKirik)
+  - LokiJS: Remote operations do never resolve when remote instance was leader and died.
 
 Other:
   - LokiJS: All documents are stored with a `$lastWriteAt` field, so we can implement an auto compaction later.
+  - Transpile `async`/`await` to promises instead of generators. via [babel-plugin-transform-async-to-promises](https://github.com/rpetrich/babel-plugin-transform-async-to-promises)
 
 ### 10.5.4 (30 November 2021)
 
