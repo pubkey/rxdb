@@ -79,7 +79,7 @@ export class RxQueryBase<
 
     constructor(
         public op: RxQueryOP,
-        public mangoQuery: Readonly<MangoQuery>,
+        public mangoQuery: Readonly<MangoQuery<RxDocumentType>>,
         public collection: RxCollection<RxDocumentType>
     ) {
         if (!mangoQuery) {
@@ -390,7 +390,7 @@ export class RxQueryBase<
     }
 }
 
-export function _getDefaultQuery(): MangoQuery {
+export function _getDefaultQuery<RxDocType>(): MangoQuery<RxDocType> {
     return {
         selector: {}
     };
@@ -405,9 +405,9 @@ export function tunnelQueryCache<RxDocumentType, RxQueryResult>(
     return rxQuery.collection._queryCache.getByQuery(rxQuery as any);
 }
 
-export function createRxQuery(
+export function createRxQuery<RxDocType>(
     op: RxQueryOP,
-    queryObj: MangoQuery,
+    queryObj: MangoQuery<RxDocType>,
     collection: RxCollection
 ) {
     // checks
@@ -553,3 +553,5 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
 export function isInstanceOf(obj: any): boolean {
     return obj instanceof RxQueryBase;
 }
+
+declare const test: RxQuery<{foo: string}>

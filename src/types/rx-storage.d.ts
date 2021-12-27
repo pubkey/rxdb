@@ -1,7 +1,7 @@
 import type { ChangeEvent } from 'event-reduce-js';
 import { BlobBuffer } from './pouch';
-import { MangoQuery } from './rx-query';
 import { RxJsonSchema } from './rx-schema';
+import { MangoQuery } from './mango-dsl';
 
 /**
  * The document data how it comes out of the storage instance.
@@ -279,7 +279,7 @@ export type ChangeStreamOptions = {
      * Sequence number of the first event to start with.
      * If you want to get all ongoing events,
      * first get the latest sequence number and input it here.
-     * 
+     *
      * Optional on changeStream,
      * will start from the newest sequence.
      */

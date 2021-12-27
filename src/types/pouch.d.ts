@@ -1,4 +1,4 @@
-import { MangoQuery } from './rx-query';
+import { MangoQuery } from './mango-dsl';
 
 /**
  * this file contains types that are pouchdb-specific

@@ -21,3 +21,6 @@ export * from './plugins/server';
 export * from './plugins/migration';
 export * from './plugins/backup';
 export * from './plugins/lokijs';
+
+// mango
+export * from './mango-dsl'

@@ -1,6 +1,4 @@
-import {
-    RxQueryBase
-} from '../rx-query';
+import { RxQueryBase } from '../rx-query';
 
 export interface RxQueryOptions<T> {
     $eq?: T;
@@ -27,30 +25,6 @@ export type RxQueryObject<T = any> = keyof T & { [P in keyof T]?: T[P] | RxQuery
     $and: RxQueryObject<T>[];
 };
 
-
-// TODO this should be typed
-export type MangoQuerySelector<RxDocType = any> = {
-    [k: string]: MangoQuerySelector<RxDocType> | any;
-};
-
-/**
- * Discussion was at:
- * @link https://github.com/pubkey/rxdb/issues/1972
- */
-export type MangoQuerySortDirection = 'asc' | 'desc';
-export type MangoQuerySortPart<RxDocType = any> = {
-    [k in keyof RxDocType | string]: MangoQuerySortDirection;
-};
-
-export type MangoQueryNoLimit<RxDocType = any> = {
-    selector: MangoQuerySelector<RxDocType>;
-    skip?: number;
-    sort?: MangoQuerySortPart<RxDocType>[]
-};
-
-export type MangoQuery<RxDocType = any> = MangoQueryNoLimit<RxDocType> & {
-    limit?: number;
-};
 
 export type RxQueryOP = 'find' | 'findOne';
 

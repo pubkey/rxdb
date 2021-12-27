@@ -1,9 +1,10 @@
-import { RxQuery, RxQueryOP, MangoQuery } from './rx-query';
+import { RxQuery, RxQueryOP} from './rx-query';
 import { RxCollection } from './rx-collection';
 import { RxStorageInstanceCreationParams } from './rx-storage';
 import type {
     DeepReadonly
-} from '../types'
+} from './util'
+import { MangoQuery } from './mango-dsl';
 
 export type RxPluginPreCreateRxQueryArgs = {
     op: RxQueryOP;
