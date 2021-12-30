@@ -41,6 +41,7 @@ const plugins = [
          * TODO use externalHelpers instead of inlineHelpers,
          * but we have to wait for this bug to be fixed:
          * @link https://github.com/rpetrich/babel-plugin-transform-async-to-promises/issues/62
+         * @link https://github.com/rpetrich/babel-plugin-transform-async-to-promises/issues/78
          */
         externalHelpers: false,
         inlineHelpers: true
