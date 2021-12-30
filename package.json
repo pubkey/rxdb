@@ -155,7 +155,7 @@
     "@babel/preset-typescript": "7.16.5",
     "@babel/types": "7.16.0",
     "@types/core-js": "2.5.5",
-    "@types/crypto-js": "4.0.2",
+    "@types/crypto-js": "4.1.0",
     "@types/faker": "5.5.9",
     "@types/memdown": "3.0.0",
     "@types/mocha": "8.2.3",
