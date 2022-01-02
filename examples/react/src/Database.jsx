@@ -9,13 +9,11 @@ import {
 } from './Schema';
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
 import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb';
-import { RxDBNoValidatePlugin } from 'rxdb/plugins/no-validate';
 
 addPouchPlugin(require('pouchdb-adapter-idb'));
 addPouchPlugin(require('pouchdb-adapter-http')); // enable syncing over http
 addRxPlugin(RxDBLeaderElectionPlugin);
 addRxPlugin(RxDBReplicationCouchDBPlugin);
-addRxPlugin(RxDBNoValidatePlugin);
 
 const syncURL = 'http://' + window.location.hostname + ':10102/';
 console.log('host: ' + syncURL);
