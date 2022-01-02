@@ -136,7 +136,10 @@ export class RxSchema<T = any> {
      * @param obj equal to input-obj
      */
     public validate(_obj: any, _schemaPath?: string): void {
-        throw pluginMissing('validate');
+        /**
+         * This method might be overwritten by a validation plugin,
+         * otherwise do nothing.
+         */
     }
 
     /**

@@ -26,10 +26,12 @@ const myCollection = await myDatabase.addCollections({
 ```
 
 ### name
+
 The name uniquely identifies the collection and should be used to refind the collection in the database. Two different collections in the same database can never have the same name. Collection names must match the following regex: `^[a-z][a-z0-9]*$`.
 
 ### schema
-The schema defines how your data looks and how it should be handled. You can pass a RxSchema object or a simple javascript-object from which the schema will be generated.
+
+The schema defines how the doucments of the collection are structured. RxDB uses a schema format, similar to [JSON schema](https://json-schema.org/). Read more about the RxDB schema format [here](./rx-schema.md).
 
 ### ORM-functions
 With the parameters `statics`, `methods` and `attachments`, you can define ORM-functions that are applied to each of these objects that belong to this collection. See [ORM/DRM](./orm.md).

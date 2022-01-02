@@ -13,6 +13,7 @@ BREAKING:
     - Added the statics `hashKey` property to identify the used hash function.
   - Internally all events are handles via bulks, this saves performance when events are transfered over a WebWorker or a BroadcastChannel.
   - Removed the deprecated `recieved` methods, use `received` instead. [See #3392](https://github.com/pubkey/rxdb/pull/3392)
+  - Removed the `no-validate` plugin. To use RxDB without schema validation, just do not add a validation plugin to your custom build.
 
 Bugfixes:
   - Do not throw an error when database is destroyed while a GraphQL replication is running.

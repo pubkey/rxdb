@@ -2,7 +2,6 @@ import assert from 'assert';
 import config from './config';
 
 import {
-    addRxPlugin,
     createRxDatabase,
     randomCouchString,
     RxJsonSchema,
@@ -14,7 +13,6 @@ import {
 } from '../../plugins/pouchdb';
 
 
-addRxPlugin(require('../../plugins/no-validate'));
 addPouchPlugin(require('pouchdb-adapter-memory'));
 
 const schema: RxJsonSchema<{ passportId: string; firstName: string; lastName: string; }> = {
@@ -39,6 +37,9 @@ const schema: RxJsonSchema<{ passportId: string; firstName: string; lastName: st
     required: ['firstName', 'lastName']
 };
 
+/**
+ * Test to ensure that RxDB can work without any schema validation plugin.
+ */
 config.parallel('no-validate.node.js', () => {
     it('should allow to insert everything', async () => {
         const db = await createRxDatabase({

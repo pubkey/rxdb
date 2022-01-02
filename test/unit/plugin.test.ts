@@ -219,7 +219,9 @@ config.parallel('plugin.test.js', () => {
                 // console.log(':: ' + data.toString());
                 stdout.push(data.toString());
             });
-            childProcess.stderr.on('data', (data: any) => stderr.push(data.toString()));
+            childProcess.stderr.on('data', (data: any) => {
+                stderr.push(data.toString());
+            });
             try {
                 await promise;
             } catch (err) {
