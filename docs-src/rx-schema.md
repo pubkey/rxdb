@@ -1,6 +1,6 @@
 # RxSchema
 
-Schemas define how your data looks. Which field should be used as primary, which fields should be used as indexes and what should be encrypted. The schema also validates that every inserted document of your collections conforms to the schema. Every collection has its own schema. With RxDB, schemas are defined with the [jsonschema](http://json-schema.org/)-standard which you might know from other projects.
+Schemas define the structure of the documents of a collection. Which field should be used as primary, which fields should be used as indexes and what should be encrypted. Every collection has its own schema. With RxDB, schemas are defined with the [jsonschema](http://json-schema.org/)-standard which you might know from other projects.
 
 ## Example
 
@@ -186,7 +186,7 @@ const mySchema = {
     'id', 
     'firstName',
     'lastName'
-]
+  ]
 };
 ```
 
@@ -198,7 +198,7 @@ Index is only allowed on field types `string`, `integer` and `number`
 
 ### Index-example
 
-```js
+```javascript
 const schemaWithIndexes = {
   version: 0,
   title: 'human schema with indexes',
@@ -246,7 +246,7 @@ To use attachments in the collection, you have to add the `attachments`-attribut
 Default values can only be defined for first-level fields.
 Whenever you insert a document or create a temporary-document, unset fields will be filled with default-values.
 
-```js
+```javascript
 const schemaWithDefaultAge = {
   version: 0,
   primaryKey: 'id',
@@ -279,7 +279,7 @@ Advantages:
 - With final fields you can ensure that no-one accidentally modifies the data
 - When you enable the `query-change-detection`, some performance-improvements are done
 
-```js
+```javascript
 const schemaWithFinalAge = {
   version: 0,
   primaryKey: 'id',
@@ -310,7 +310,7 @@ By adding a field to the `encrypted` list, it will be stored encrypted inside of
 You can set all fields to be encrypted, even nested objects. You can not run queries over encrypted fields.
 The password used for encryption is set during database creation. [See RxDatabase](./rx-database.md#password).
 
-```js
+```javascript
 const schemaWithDefaultAge = {
   version: 0,
   primaryKey: 'id',

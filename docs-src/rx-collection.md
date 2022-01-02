@@ -3,24 +3,23 @@ A collection stores documents of the same type.
 
 
 ## Creating a Collection
-To create one or more collections you need a RxDatabase object which has the `.addCollections()`-method. Every collection needs a collection name and a valid RxSchema. Other attributes are optional.
+To create one or more collections you need a RxDatabase object which has the `.addCollections()`-method. Every collection needs a collection name and a valid `RxJsonSchema`. Other attributes are optional.
 
 ```js
 const myCollection = await myDatabase.addCollections({
   // key = collectionName
   humans: {
     schema: mySchema,
-    pouchSettings: {}, // (optional)
-    statics: {}, // (optional) ORM-functions for this collection
-    methods: {}, // (optional) ORM-functions for documents
-    attachments: {}, // (optional) ORM-functions for attachments
-    options: {}, // (optional) Custom parameters that might be used in plugins
-    migrationStrategies: {}, // (optional)
-    autoMigrate: true, // (optional)
+    statics: {},                          // (optional) ORM-functions for this collection
+    methods: {},                          // (optional) ORM-functions for documents
+    attachments: {},                      // (optional) ORM-functions for attachments
+    options: {},                          // (optional) Custom parameters that might be used in plugins
+    migrationStrategies: {},              // (optional)
+    autoMigrate: true,                    // (optional) [default=true]
     cacheReplacementPolicy: function(){}, // (optional) custom cache replacement policy
   },
   // you can create multiple collections at once
-  otherHumans: {
+  animals: {
     // ...
   }
 });
@@ -31,9 +30,6 @@ The name uniquely identifies the collection and should be used to refind the col
 
 ### schema
 The schema defines how your data looks and how it should be handled. You can pass a RxSchema object or a simple javascript-object from which the schema will be generated.
-
-### pouchSettings
-You can pass settings directly to the [pouchdb database create options](https://pouchdb.com/api.html#options) through this property.
 
 ### ORM-functions
 With the parameters `statics`, `methods` and `attachments`, you can define ORM-functions that are applied to each of these objects that belong to this collection. See [ORM/DRM](./orm.md).
@@ -255,7 +251,7 @@ Full documentation on how to use replication is [here](./replication-couchdb.md)
 
 ### syncGraphQL()
 This method allows you to replicate data between a `RxCollection` and a GraphQL endpoint.
-Full documentation on how to use replication is [here](./replication-graphql.md).
+Full documentation on how to use the GraphQL replication is [here](./replication-graphql.md).
 
 
 ### remove()

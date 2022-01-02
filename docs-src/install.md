@@ -24,9 +24,9 @@ If you need polyfills, you have to import them in your code.
 import '@babel/polyfill';
 ```
 
-## polyfill global
+## Polyfill the `global` variable
 
-When you use RxDB with **angular** or other **webpack** based frameworks, you might get the error <span style="color: red;">Uncaught ReferenceError: global is not defined</span>. This is because pouchdb assumes a nodejs-specific global variable that is not added to browser runtimes by some bundlers.
+When you use RxDB with **angular** or other **webpack** based frameworks, you might get the error <span style="color: red;">Uncaught ReferenceError: global is not defined</span>. This is because pouchdb assumes a nodejs-specific `global` variable that is not added to browser runtimes by some bundlers.
 You have to add them by your own, like we do [here](https://github.com/pubkey/rxdb/blob/master/examples/angular/src/polyfills.ts).
 
 ```ts
@@ -38,9 +38,9 @@ You have to add them by your own, like we do [here](https://github.com/pubkey/rx
 
 ## Project Setup and Configuration
 
-In the [examples](/examples) folder you can find CI tested projects for different frameworks and use cases, while in the [/config](/config) folder base configuration files for Webpack, Rollup, Mocha, Karma, Typescript are exposed.
+In the [examples](https://github.com/pubkey/rxdb/tree/master/examples) folder you can find CI tested projects for different frameworks and use cases, while in the [/config](https://github.com/pubkey/rxdb/tree/master/config) folder base configuration files for Webpack, Rollup, Mocha, Karma, Typescript are exposed.
 
-Consult [package.json](/package.json) for the versions of the packages supported.
+Consult [package.json](https://github.com/pubkey/rxdb/blob/master/package.json) for the versions of the packages supported.
 
 ## Latest
 
@@ -56,15 +56,25 @@ Replace `commitHash` with the hash of the latest [build-commit](https://github.c
 
 ## Import
 
-To import `rxdb`, add this to your javascript file:
+To import `rxdb`, add this to your JavaScript file to import the default bundle that contains the RxDB core and all default plugins:
 
 ```typescript
 import {
   createRxDatabase,
-  RxDatabase
   /* ... */
 } from 'rxdb';
 ```
+
+Instead of using the default bundle, you can also only import the RxDB core and later added the plugins as needed:
+
+```typescript
+import {
+  createRxDatabase,
+  addRxPlugin,
+  /* ... */
+} from 'rxdb/plugins/core';
+```
+
 
 --------------------------------------------------------------------------------
 

@@ -4,44 +4,63 @@ A RxDatabase-Object contains your collections and handles the synchronisation of
 
 ## Creation
 
-The database is created by the asynchronous .create()-function of the main RxDB-module. It has the following parameters:
+The database is created by the asynchronous `.createRxDatabase()` function of the core RxDB module. It has the following parameters:
 
 ```javascript
-import { createRxDatabase, getRxStoragePouch } from 'rxdb';
+import { createRxDatabase } from 'rxdb';
+
+// because we use the PouchDB RxStorage, we have to add the indexeddb adapter first.
+import { getRxStoragePouch, addPouchPlugin } from 'rxdb/plugins/pouchdb';
+addPouchPlugin(require('pouchdb-adapter-idb'));
+
 const db = await createRxDatabase({
-  name: 'heroesdb',           // <- name
-  storage: getRxStoragePouch('idb'),          // <- storage-adapter
-  password: 'myPassword',     // <- password (optional)
-  multiInstance: true,         // <- multiInstance (optional, default: true)
-  eventReduce: false // <- eventReduce (optional, default: true)
+  name: 'heroesdb',                   // <- name
+  storage: getRxStoragePouch('idb'),  // <- RxStorage
+  password: 'myPassword',             // <- password (optional)
+  multiInstance: true,                // <- multiInstance (optional, default: true)
+  eventReduce: true                   // <- eventReduce (optional, default: true)
 });
-console.dir(db);
 ```
 
 ### name
 
-The database-name is a string which uniquely identifies the database. When two RxDatabases have the same name and use the same storage-adapter, their data can be assumed as equal and they will share change-events between each other.
-Depending on the adapter this can also be used to define the storage-folder of your data.
+The database-name is a string which uniquely identifies the database. When two RxDatabases have the same name and use the same `RxStorage`, their data can be assumed as equal and they will share events between each other.
+Depending on the stroage or adapter this can also be used to define the filesystem folder of your data.
 
 
-### adapter
+### storage
 
-RxDB uses adapters to define where the data is actually stored at. You can use different adapters depending on which environment your database runs in. This has the advantage that you can use the same RxDB code in different environments and just switch out the adapter.
+RxDB works on top of an implementation of the `RxStorage` interface. This interface is an abstraction that allows you to use different underlaying databases that actually handle the documents. Depending on your use case you might use a different `storage` with different tradeoffs in performance, bundle size or supported runtimes.
 
-Example for browsers:
+At the moment, there are implementations for the PouchDB based storage and for the LokiJS based storage.
+These storages themself work on different adapter that determine where to store the data. For example you can use the PouchDB storage with an indexeddb adapter in the browser. Or use the LokiJS storage with the filesystem adapter in Node.js.
+
+- [List of PouchDB adapters](./adapters.md)
+- [List of LokiJS adapters](https://github.com/techfort/LokiJS/blob/master/tutorials/Persistence%20Adapters.md)
+
 
 ```javascript
 
-// this adapter stores the data in indexeddb
+// use the PouchDB storage with indexeddb adapter...
+import { getRxStoragePouch, addPouchPlugin } from 'rxdb/plugins/pouchdb';
 addPouchPlugin(require('pouchdb-adapter-idb'));
 
-const db = await createRxDatabase({
+const dbPouch = await createRxDatabase({
   name: 'mydatabase',
   storage: getRxStoragePouch('idb')
 });
-```
 
-** Check out the [List of adapters for RxDB](./adapters.md) to learn which adapter you should use. **
+// ...or use the LokiJS storage with the indexeddb adapter.
+import { getRxStorageLoki } from 'rxdb/plugins/lokijs';
+const LokiIncrementalIndexedDBAdapter = require('lokijs/src/incremental-indexeddb-adapter');
+
+const dbLoki = await createRxDatabase({
+  name: 'mydatabase',
+  storage: getRxStorageLoki({
+    adapter: new LokiIncrementalIndexedDBAdapter()
+  })
+});
+```
 
 
 ### password
@@ -50,7 +69,8 @@ If you want to use encrypted fields in the collections of a database, you have t
 
 ### multiInstance
 `(optional=true)`
-When you create more than one instance of the same database in a single javascript-runtime, you should set multiInstance to ```true```. This will enable the event-sharing between the two instances **serverless**. This should be set to `false` when you have single-instances like a single nodejs-process, a react-native-app, a cordova-app or a single-window electron-app.
+When you create more than one instance of the same database in a single javascript-runtime, you should set `multiInstance` to ```true```. This will enable the event sharing between the two instances. For exmaple when the user has opened multiple browser windows, events will be shared between them so that both windows react to the same changes.
+`multiInstance` should be set to `false` when you have single-instances like a single Node.js-process, a react-native-app, a cordova-app or a single-window electron app which can decrease the startup time because no instance coordination has to be done.
 
 ### eventReduce
 `(optional=true)`
@@ -66,31 +86,29 @@ In some rare cases like unit-tests, you want to do this intentional by setting `
 ```js
 const db1 = await createRxDatabase({
   name: 'heroesdb',
-  storage: getRxStoragePouch('websql'),
+  storage: getRxStoragePouch('idb'),
   ignoreDuplicate: true
 });
 const db2 = await createRxDatabase({
   name: 'heroesdb',
-  storage: getRxStoragePouch('websql'),
+  storage: getRxStoragePouch('idb'),
   ignoreDuplicate: true // this create-call will not throw because you explicitly allow it
 });
 ```
 
-### pouchSettings
-You can pass settings directly to the [pouchdb database create options](https://pouchdb.com/api.html#options) through this property. This settings will be added to all pouchdb-instances that are created for this database.
-
-## Functions
+## Methods
 
 ### Observe with $
-Calling this will return an [rxjs-Observable](http://reactivex.io/documentation/observable.html) which streams every change to data of this database.
+Calling this will return an [rxjs-Observable](http://reactivex.io/documentation/observable.html) which streams all write events of the `RxDatabase`.
 
-```js
+```javascript
 myDb.$.subscribe(changeEvent => console.dir(changeEvent));
 ```
 
 ### exportJSON()
 Use this function to create a json-export from every piece of data in every collection of this database. You can pass `true` as a parameter to decrypt the encrypted data-fields of your document.
-```js
+
+```javascript
 myDatabase.exportJSON()
   .then(json => console.dir(json));
 
@@ -102,7 +120,7 @@ myDatabase.exportJSON(true)
 ### importJSON()
 To import the json-dumps into your database, use this function.
 
-```js
+```javascript
 // import the dump to the database
 emptyDatabase.importJSON(json)
   .then(() => console.log('done'));
@@ -122,7 +140,7 @@ Returns a Promise which resolves when the RxDatabase becomes [elected leader](./
 Returns a promise which resolves when the database is in idle. This works similar to [requestIdleCallback](https://developer.mozilla.org/de/docs/Web/API/Window/requestIdleCallback) but tracks the idle-ness of the database instead of the CPU.
 Use this for semi-important tasks like cleanups which should not affect the speed of important tasks.
 
-```js
+```javascript
 
 myDatabase.requestIdlePromise().then(() => {
     // this will run at the moment the database has nothing else to do
@@ -141,14 +159,14 @@ myDatabase.requestIdlePromise(1000 /* time in ms */).then(() => {
 ### destroy()
 Destroys the databases object-instance. This is to free up memory and stop all observings and replications.
 Returns a `Promise` that resolves when the database is destroyed.
-```js
+```javascript
 await myDatabase.destroy();
 ```
 
 ### remove()
 Removes the database and wipes all data of it from the storage.
 
-```js
+```javascript
 await myDatabase.remove();
 // database is now gone
 
@@ -158,21 +176,21 @@ removeRxDatabase('mydatabasename', 'localstorage');
 ```
 
 ### checkAdapter()
-Checks if the given adapter can be used with RxDB in the current environment.
+Checks if the given PouchDB adapter can be used with RxDB in the current environment.
 
-```js
+```javascript
 // must be imported from the pouchdb plugin
 import { 
     checkAdapter
 } from 'rxdb/plugins/pouchdb';
 
-const ok = await checkAdapter('localstorage');
+const ok = await checkAdapter('idb');
 console.dir(ok); // true on most browsers, false on nodejs
 ```
 
 ### isRxDatabase
 Returns true if the given object is an instance of RxDatabase. Returns false if not.
-```js
+```javascript
 import { isRxDatabase } from 'rxdb';
 const is = isRxDatabase(myObj);
 ```

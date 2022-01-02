@@ -828,3 +828,8 @@ AFTER:
 core: 
 Build-Size (minified+gzip):
 70723
+
+
+
+Without externalHelpers: 70732
+With externalHelpers: 
