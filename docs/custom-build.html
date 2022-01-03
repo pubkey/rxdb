@@ -1394,7 +1394,20 @@
             
         </li>
     
-        <li class="chapter " data-level="1.15" data-path="replication-couchdb.html">
+        <li class="chapter " data-level="1.15" data-path="rx-storage-worker.html">
+            
+                <a href="rx-storage-worker.html">
+            
+                    
+                    RxStorage Worker
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.16" data-path="replication-couchdb.html">
             
                 <a href="replication-couchdb.html">
             
@@ -1407,7 +1420,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.16" data-path="replication-graphql.html">
+        <li class="chapter " data-level="1.17" data-path="replication-graphql.html">
             
                 <a href="replication-graphql.html">
             
@@ -1420,7 +1433,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.17" data-path="replication.html">
+        <li class="chapter " data-level="1.18" data-path="replication.html">
             
                 <a href="replication.html">
             
@@ -1433,7 +1446,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.18" data-path="in-memory.html">
+        <li class="chapter " data-level="1.19" data-path="in-memory.html">
             
                 <a href="in-memory.html">
             
@@ -1446,7 +1459,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19" data-path="backup.html">
+        <li class="chapter " data-level="1.20" data-path="backup.html">
             
                 <a href="backup.html">
             
@@ -1459,7 +1472,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.20" data-path="query-cache.html">
+        <li class="chapter " data-level="1.21" data-path="query-cache.html">
             
                 <a href="query-cache.html">
             
@@ -1472,7 +1485,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.21" data-path="rx-local-document.html">
+        <li class="chapter " data-level="1.22" data-path="rx-local-document.html">
             
                 <a href="rx-local-document.html">
             
@@ -1485,7 +1498,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.22" data-path="custom-build.html">
+        <li class="chapter active" data-level="1.23" data-path="custom-build.html">
             
                 <a href="custom-build.html">
             
@@ -1498,7 +1511,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.23" data-path="plugins.html">
+        <li class="chapter " data-level="1.24" data-path="plugins.html">
             
                 <a href="plugins.html">
             
@@ -1511,7 +1524,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.24" data-path="adapters.html">
+        <li class="chapter " data-level="1.25" data-path="adapters.html">
             
                 <a href="adapters.html">
             
@@ -1728,9 +1741,9 @@
     <span class="hljs-comment">/* ... */</span>
 } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/core&apos;</span>;
 </code></pre>
-<h2 id="pouchdb">pouchdb</h2>
+<h2 id="pouchdb-storage">PouchDB storage</h2>
 <p>To call <code>createRxDatabase</code> you have to specify the storage engine which is used to store documents and run queries.
-At the moment we only have the pouchdb storage engine which uses pouchdb together with different adapters.</p>
+The pouchdb plugin contains everything needed to use <a href="https://github.com/pouchdb/pouchdb" target="_blank">PouchDB</a> as underlaying storage engine. PouchDB itself works on so called <code>adapter</code> that determine where the data is stored.</p>
 <pre><code class="lang-javascript"><span class="hljs-keyword">import</span> { 
     addPouchPlugin,
     getRxStoragePouch,
@@ -1738,7 +1751,8 @@ At the moment we only have the pouchdb storage engine which uses pouchdb togethe
 } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/pouchdb&apos;</span>;
 addRxPlugin(RxDBAdapterCheckPlugin);
 
-<span class="hljs-comment">// add pouchdb specific plugins (non RxDB plugins)</span>
+<span class="hljs-comment">// Add pouchdb specific plugins (non RxDB plugins)</span>
+<span class="hljs-comment">// Here we add the idb adapter that stores data inside of IndexedDB.</span>
 addPouchPlugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;pouchdb-adapter-idb&apos;</span>));
 
 <span class="hljs-comment">// with that you can create a database with the pouchdb storage engine</span>
@@ -1749,14 +1763,19 @@ addPouchPlugin(<span class="hljs-built_in">require</span>(<span class="hljs-stri
     password: <span class="hljs-string">&apos;myLongAndStupidPassword&apos;</span>
 });
 
-<span class="hljs-comment">// in the pouchdb plugin also there is the method to check if a given pouchdb-adapter works</span>
+<span class="hljs-comment">// In the pouchdb plugin also there is the method to check if a given pouchdb-adapter works</span>
 <span class="hljs-keyword">await</span> checkAdapter(<span class="hljs-string">&apos;leveldb&apos;</span>); <span class="hljs-comment">// &gt; boolean</span>
 </code></pre>
+<h2 id="lokijs-storage">LokiJS storage</h2>
+<p>Another storage implementation that uses <a href="https://github.com/techfort/LokiJS" target="_blank">LokiJS</a> to handle the data. <a href="rx-storage-lokijs.html">See here for more information about the LokiJS storage.</a>.</p>
+<h2 id="worker-storage">Worker storage</h2>
+<p>A wrapper that can be used to move the Storage inside of a WebWorker (in browsers) or a Worker Thread (in node.js). <a href="rx-storage-worker.html">See here for more information about the Worker storage.</a>.</p>
 <h2 id="required-modules">required modules</h2>
 <p>Some parts of RxDB are not in the core, but are required. This means they must always be overwrite by at least one plugin.</p>
 <h3 id="validate">validate</h3>
-<p>The validation-module does the schema-validation when you insert or update a <code>RxDocument</code>. To use RxDB you always have to add a validation-module.
-This one is using <a href="https://www.npmjs.com/package/is-my-json-valid" target="_blank">is-my-json-valid</a> but you can also use your own validator instead. To import the default validation-module, do this:</p>
+<p>The validation-module does the schema-validation when you insert or update a <code>RxDocument</code>. When no validation plugin is used, any document data can be safed but there might be undefined behavior when saving data that does not comply to the schema.
+In dev-mode you should always use a validation plugin. In production you might not use a schema validation to save performance and reduce the bundle size.</p>
+<p>This one is using <a href="https://www.npmjs.com/package/is-my-json-valid" target="_blank">is-my-json-valid</a> but you can also use your own validator instead. To import the default validation-module, do this:</p>
 <pre><code class="lang-javascript"><span class="hljs-keyword">import</span> { RxDBValidatePlugin } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/validate&apos;</span>;
 addRxPlugin(RxDBValidatePlugin);
 </code></pre>
@@ -1769,12 +1788,6 @@ addRxPlugin(RxDBAjvValidatePlugin);
 <p>Both <code>is-my-json-valid</code> and <code>ajv-validate</code> use <code>eval()</code> to perform validation which might not be wanted when <code>&apos;unsafe-eval&apos;</code> is not allowed in Content Security Policies. This one is using <a href="https://github.com/zaggino/z-schema" target="_blank">z-schema</a> as validator which doesn&apos;t use <code>eval</code>.</p>
 <pre><code class="lang-javascript"><span class="hljs-keyword">import</span> { RxDBValidateZSchemaPlugin } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/validate-z-schema&apos;</span>;
 addRxPlugin(RxDBValidateZSchemaPlugin);
-</code></pre>
-<h3 id="no-validate">no-validate</h3>
-<p>A validation module that does nothing at handles all data as valid. Use this as an alternative for the normal validator when you can rely on the input of the database.
-This is meant for production to reduce the build-size, do not use this in dev-mode.</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">import</span> { RxDBNoValidatePlugin } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/no-validate&apos;</span>;
-addRxPlugin(RxDBNoValidatePlugin);
 </code></pre>
 <h2 id="optional-modules">optional modules</h2>
 <p>Some modules are optional and only needed if you use their functionality.</p>
@@ -1921,7 +1934,7 @@ addRxPlugin(RxDBServerPlugin);
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Custom Build","level":"1.22","depth":1,"next":{"title":"Creating Plugins","level":"1.23","depth":1,"path":"plugins.md","ref":"./plugins.md","articles":[]},"previous":{"title":"LocalDocuments","level":"1.21","depth":1,"path":"rx-local-document.md","ref":"./rx-local-document.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"custom-build.md","mtime":"2021-11-30T20:08:02.223Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-11-30T20:12:23.666Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Custom Build","level":"1.23","depth":1,"next":{"title":"Creating Plugins","level":"1.24","depth":1,"path":"plugins.md","ref":"./plugins.md","articles":[]},"previous":{"title":"LocalDocuments","level":"1.22","depth":1,"path":"rx-local-document.md","ref":"./rx-local-document.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"custom-build.md","mtime":"2022-01-03T12:43:06.021Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-01-03T12:47:24.092Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

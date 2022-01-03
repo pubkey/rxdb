@@ -78,7 +78,10 @@ var RxSchema = /*#__PURE__*/function () {
   ;
 
   _proto.validate = function validate(_obj, _schemaPath) {
-    throw (0, _util.pluginMissing)('validate');
+    /**
+     * This method might be overwritten by a validation plugin,
+     * otherwise do nothing.
+     */
   }
   /**
    * fills all unset fields with default-values if set

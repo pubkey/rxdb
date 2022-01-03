@@ -1,7 +1,7 @@
 import _createClass from "@babel/runtime/helpers/createClass";
 import deepEqual from 'fast-deep-equal';
 import objectPath from 'object-path';
-import { clone, hash, sortObject, pluginMissing, overwriteGetterForCaching, flatClone } from './util';
+import { clone, hash, sortObject, overwriteGetterForCaching, flatClone } from './util';
 import { newRxError } from './rx-error';
 import { runPluginHooks } from './hooks';
 import { defineGetterSetter } from './rx-document';
@@ -53,7 +53,10 @@ export var RxSchema = /*#__PURE__*/function () {
   ;
 
   _proto.validate = function validate(_obj, _schemaPath) {
-    throw pluginMissing('validate');
+    /**
+     * This method might be overwritten by a validation plugin,
+     * otherwise do nothing.
+     */
   }
   /**
    * fills all unset fields with default-values if set

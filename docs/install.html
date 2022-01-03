@@ -1394,7 +1394,20 @@
             
         </li>
     
-        <li class="chapter " data-level="1.15" data-path="replication-couchdb.html">
+        <li class="chapter " data-level="1.15" data-path="rx-storage-worker.html">
+            
+                <a href="rx-storage-worker.html">
+            
+                    
+                    RxStorage Worker
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.16" data-path="replication-couchdb.html">
             
                 <a href="replication-couchdb.html">
             
@@ -1407,7 +1420,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.16" data-path="replication-graphql.html">
+        <li class="chapter " data-level="1.17" data-path="replication-graphql.html">
             
                 <a href="replication-graphql.html">
             
@@ -1420,7 +1433,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.17" data-path="replication.html">
+        <li class="chapter " data-level="1.18" data-path="replication.html">
             
                 <a href="replication.html">
             
@@ -1433,7 +1446,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.18" data-path="in-memory.html">
+        <li class="chapter " data-level="1.19" data-path="in-memory.html">
             
                 <a href="in-memory.html">
             
@@ -1446,7 +1459,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19" data-path="backup.html">
+        <li class="chapter " data-level="1.20" data-path="backup.html">
             
                 <a href="backup.html">
             
@@ -1459,7 +1472,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.20" data-path="query-cache.html">
+        <li class="chapter " data-level="1.21" data-path="query-cache.html">
             
                 <a href="query-cache.html">
             
@@ -1472,7 +1485,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.21" data-path="rx-local-document.html">
+        <li class="chapter " data-level="1.22" data-path="rx-local-document.html">
             
                 <a href="rx-local-document.html">
             
@@ -1485,7 +1498,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.22" data-path="custom-build.html">
+        <li class="chapter " data-level="1.23" data-path="custom-build.html">
             
                 <a href="custom-build.html">
             
@@ -1498,7 +1511,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.23" data-path="plugins.html">
+        <li class="chapter " data-level="1.24" data-path="plugins.html">
             
                 <a href="plugins.html">
             
@@ -1511,7 +1524,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.24" data-path="adapters.html">
+        <li class="chapter " data-level="1.25" data-path="adapters.html">
             
                 <a href="adapters.html">
             
@@ -1731,8 +1744,8 @@
 <p>If you need polyfills, you have to import them in your code.</p>
 <pre><code class="lang-typescript"><span class="hljs-keyword">import</span> <span class="hljs-string">&apos;@babel/polyfill&apos;</span>;
 </code></pre>
-<h2 id="polyfill-global">polyfill global</h2>
-<p>When you use RxDB with <strong>angular</strong> or other <strong>webpack</strong> based frameworks, you might get the error <span style="color: red;">Uncaught ReferenceError: global is not defined</span>. This is because pouchdb assumes a nodejs-specific global variable that is not added to browser runtimes by some bundlers.
+<h2 id="polyfill-the-global-variable">Polyfill the <code>global</code> variable</h2>
+<p>When you use RxDB with <strong>angular</strong> or other <strong>webpack</strong> based frameworks, you might get the error <span style="color: red;">Uncaught ReferenceError: global is not defined</span>. This is because pouchdb assumes a nodejs-specific <code>global</code> variable that is not added to browser runtimes by some bundlers.
 You have to add them by your own, like we do <a href="https://github.com/pubkey/rxdb/blob/master/examples/angular/src/polyfills.ts" target="_blank">here</a>.</p>
 <pre><code class="lang-ts">(<span class="hljs-built_in">window</span> as <span class="hljs-built_in">any</span>).global = <span class="hljs-built_in">window</span>;
 (<span class="hljs-built_in">window</span> as <span class="hljs-built_in">any</span>).process = {
@@ -1740,8 +1753,8 @@ You have to add them by your own, like we do <a href="https://github.com/pubkey/
 };
 </code></pre>
 <h2 id="project-setup-and-configuration">Project Setup and Configuration</h2>
-<p>In the <a href="examples">examples</a> folder you can find CI tested projects for different frameworks and use cases, while in the <a href="config">/config</a> folder base configuration files for Webpack, Rollup, Mocha, Karma, Typescript are exposed.</p>
-<p>Consult <a href="package.json">package.json</a> for the versions of the packages supported.</p>
+<p>In the <a href="https://github.com/pubkey/rxdb/tree/master/examples" target="_blank">examples</a> folder you can find CI tested projects for different frameworks and use cases, while in the <a href="https://github.com/pubkey/rxdb/tree/master/config" target="_blank">/config</a> folder base configuration files for Webpack, Rollup, Mocha, Karma, Typescript are exposed.</p>
+<p>Consult <a href="https://github.com/pubkey/rxdb/blob/master/package.json" target="_blank">package.json</a> for the versions of the packages supported.</p>
 <h2 id="latest">Latest</h2>
 <p>If you need the latest development state of RxDB, add it as git-dependency into your <code>package.json</code>.</p>
 <pre><code class="lang-json">  <span class="hljs-string">&quot;dependencies&quot;</span>: {
@@ -1750,12 +1763,18 @@ You have to add them by your own, like we do <a href="https://github.com/pubkey/
 </code></pre>
 <p>Replace <code>commitHash</code> with the hash of the latest <a href="https://github.com/pubkey/rxdb/search?q=build&amp;type=Commits" target="_blank">build-commit</a>.</p>
 <h2 id="import">Import</h2>
-<p>To import <code>rxdb</code>, add this to your javascript file:</p>
+<p>To import <code>rxdb</code>, add this to your JavaScript file to import the default bundle that contains the RxDB core and all default plugins:</p>
 <pre><code class="lang-typescript"><span class="hljs-keyword">import</span> {
   createRxDatabase,
-  RxDatabase
   <span class="hljs-comment">/* ... */</span>
 } from <span class="hljs-string">&apos;rxdb&apos;</span>;
+</code></pre>
+<p>Instead of using the default bundle, you can also only import the RxDB core and later added the plugins as needed:</p>
+<pre><code class="lang-typescript"><span class="hljs-keyword">import</span> {
+  createRxDatabase,
+  addRxPlugin,
+  <span class="hljs-comment">/* ... */</span>
+} from <span class="hljs-string">&apos;rxdb/plugins/core&apos;</span>;
 </code></pre>
 <hr>
 <p>If you are new to RxDB, you should continue <a href="rx-database.html">here</a></p>
@@ -1802,7 +1821,7 @@ You have to add them by your own, like we do <a href="https://github.com/pubkey/
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Install","level":"1.2","depth":1,"next":{"title":"npm","level":"1.2.1","depth":2,"anchor":"#npm","path":"install.md","ref":"./install.md#npm","articles":[]},"previous":{"title":"Introduction","level":"1.1","depth":1,"path":"README.md","ref":"README.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"install.md","mtime":"2021-11-30T20:08:02.267Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-11-30T20:12:23.666Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Install","level":"1.2","depth":1,"next":{"title":"npm","level":"1.2.1","depth":2,"anchor":"#npm","path":"install.md","ref":"./install.md#npm","articles":[]},"previous":{"title":"Introduction","level":"1.1","depth":1,"path":"README.md","ref":"README.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"install.md","mtime":"2022-01-03T12:43:06.061Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-01-03T12:47:24.092Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
