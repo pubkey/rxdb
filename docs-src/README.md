@@ -43,7 +43,7 @@ The stream comes as simple <a href="https://github.com/ReactiveX/rxjs" target="_
 ```javascript
 db.heroes
   .find({
-    sort: ['name']
+    sort: [{name: 'asc'}]
   })
   .$ // <- returns observable of query
   .subscribe( docs => {

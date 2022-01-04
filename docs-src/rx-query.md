@@ -30,8 +30,11 @@ const query = myCollection
 ```js
 // find the youngest one
 const query = myCollection
-    .findOne()
-    .sort('age')
+    .findOne({
+      sort: [
+        {age: 'asc'}
+      ]
+    })
 ```
 
 ## exec()
