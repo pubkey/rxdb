@@ -39,6 +39,7 @@ export function simpleHuman(): SimpleHumanDocumentType {
 export interface SimpleHumanV3DocumentType {
     passportId: string;
     age: number;
+    oneOptional?: string;
 }
 export function simpleHumanV3(): SimpleHumanV3DocumentType {
     return {

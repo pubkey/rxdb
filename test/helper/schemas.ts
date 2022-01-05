@@ -957,6 +957,9 @@ export const humanMinimal: RxJsonSchema<SimpleHumanV3DocumentType> = {
         },
         age: {
             type: 'integer'
+        },
+        oneOptional: {
+            type: 'string'
         }
     },
     indexes: [],
