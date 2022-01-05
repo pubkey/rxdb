@@ -1,7 +1,7 @@
 import assert from 'assert';
 import clone from 'clone';
 import config from './config';
-import AsyncTestUtil, { randomNumber, randomString } from 'async-test-util';
+import AsyncTestUtil, { randomBoolean, randomNumber, randomString, wait } from 'async-test-util';
 
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
@@ -1459,6 +1459,29 @@ config.parallel('rx-collection.test.js', () => {
                     ]);
                     assert.ok(docs[0] === docs[1]);
                     assert.ok(isRxDocument(docs[0]));
+                    c.database.destroy();
+                });
+                it('should not crash when upserting the same doc in parallel many times with random waits', async () => {
+                    const c = await humansCollection.createPrimary(0);
+                    const docData = schemaObjects.simpleHuman();
+
+                    const docs = await Promise.all(
+                        new Array(config.isFastMode() ? 20 : 100)
+                            .fill(0)
+                            .map(async (_v, idx) => {
+                                if (randomBoolean()) {
+                                    await wait(randomNumber(0, 30));
+                                }
+                                const upsertData = clone(docData);
+                                upsertData.lastName = idx + '';
+                                return c.atomicUpsert(docData);
+                            })
+                    );
+                    assert.ok(docs[0] === docs[1]);
+                    assert.ok(isRxDocument(docs[0]));
+
+                    //                    process.exit();
+
                     c.database.destroy();
                 });
                 it('should update the value', async () => {
