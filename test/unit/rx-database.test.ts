@@ -21,11 +21,10 @@ import {
 
 import {
     getPouchLocation,
-    getRxStoragePouch,
-    OPEN_POUCHDB_STORAGE_INSTANCES
+    getRxStoragePouch
 } from '../../plugins/pouchdb';
 
-import AsyncTestUtil, { wait } from 'async-test-util';
+import AsyncTestUtil from 'async-test-util';
 import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';

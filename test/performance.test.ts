@@ -445,7 +445,7 @@ for (let r = 0; r < runs; r++) {
                         return result;
                     })
                 );
-                const sub = obs$.subscribe(result => {
+                obs$.subscribe(result => {
                     lastResult = result;
                 });
             });

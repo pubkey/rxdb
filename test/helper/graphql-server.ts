@@ -205,7 +205,7 @@ export async function spawn(
             return doc;
         },
         // used in tests
-        setHumanFail: (args: any) => {
+        setHumanFail: (_args: any) => {
             throw new Error('setHumanFail called');
         },
         humanChanged: () => pubsub.asyncIterator('humanChanged')

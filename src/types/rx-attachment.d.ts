@@ -2,7 +2,6 @@ import { BlobBuffer } from './pouch';
 import {
     RxDocument
 } from './rx-document';
-import { RxAttachmentWriteData } from './rx-storage';
 
 declare type Buffer = any;
 

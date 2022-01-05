@@ -5,17 +5,11 @@ import {
     QueryParams,
     QueryMatcher,
     DeterministicSortComparator,
-    StateResolveFunctionInput,
-    getStateSet,
-    logStateSet,
-    StateResolveFunction,
-    UNKNOWN_VALUE
+    StateResolveFunctionInput
 } from 'event-reduce-js';
 import type { RxQuery, MangoQuery, RxChangeEvent, RxDocumentWriteData } from './types';
 import { runPluginHooks } from './hooks';
 import { rxChangeEventToEventReduceChangeEvent } from './rx-change-event';
-import objectPath from 'object-path';
-import { newRxError } from './rx-error';
 
 export type EventReduceResultNeg = {
     runFullQueryAgain: true,

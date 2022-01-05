@@ -21,8 +21,7 @@ import {
     createRevision,
     PROMISE_RESOLVE_VOID,
     PROMISE_RESOLVE_FALSE,
-    PROMISE_RESOLVE_NULL,
-    ensureNotFalsy
+    PROMISE_RESOLVE_NULL
 } from '../../util';
 import {
     createRxSchema
@@ -68,7 +67,6 @@ import {
     _handleFromStorageInstance,
     _handleToStorageInstance
 } from '../../rx-collection-helper';
-import { IdleQueue } from 'custom-idle-queue';
 
 export class DataMigrator {
 

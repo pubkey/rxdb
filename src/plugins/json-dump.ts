@@ -2,8 +2,7 @@
  * this plugin adds the json export/import capabilities to RxDB
  */
 import {
-    hash,
-    now
+    hash
 } from '../util';
 import {
     createRxQuery,
@@ -141,11 +140,9 @@ function importDumpRxCollection<RxDocType>(
         // validate schema
         .map((doc: any) => this.schema.validate(doc));
 
-    let startTime: number;
     return this.database.lockedRun(
         // write to disc
         () => {
-            startTime = now();
             const writeMe: BulkWriteRow<RxDocType>[] = docs.map(doc => ({
                 document: _handleToStorageInstance(this, doc)
             }));

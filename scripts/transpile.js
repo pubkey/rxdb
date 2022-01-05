@@ -13,7 +13,6 @@ const fs = require('fs');
 const os = require('os');
 const walkSync = require('walk-sync');
 const shell = require('shelljs');
-const del = require('delete');
 const existsFile = require('exists-file');
 const basePath = path.join(__dirname, '..');
 
@@ -21,13 +20,6 @@ const confLocation = path.join(basePath, '.transpile_state.json');
 const cpuCount = os.cpus().length;
 
 const DEBUG = false;
-
-/**
- * if this is too height,
- * the CI os might kill the process when there are too many
- * @link https://docs.travis-ci.com/user/common-build-problems/#parallel-processes
- */
-const MAX_PARALLEL_TRANSPILE = 6;
 
 /**
  * key->value | src -> compiled
@@ -42,20 +34,6 @@ nconf.argv()
     .file({
         file: confLocation
     });
-
-
-function splitArrayInChunks(array, chunkSize) {
-    let i;
-    let j;
-    let temparray;
-    const ret = [];
-    for (i = 0, j = array.length; i < j; i += chunkSize) {
-        temparray = array.slice(i, i + chunkSize);
-        ret.push(temparray);
-    }
-    return ret;
-}
-
 
 async function transpileFile(srcLocations, outDir) {
     DEBUG && console.log('transpile: ' + srcLocations.join(', '));

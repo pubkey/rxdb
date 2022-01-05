@@ -1,11 +1,7 @@
 import assert from 'assert';
-import AsyncTestUtil, {
-    clone, wait, waitUntil
-} from 'async-test-util';
-
 import {
-    first
-} from 'rxjs/operators';
+    clone, waitUntil
+} from 'async-test-util';
 
 import config from './config';
 import * as schemaObjects from '../helper/schema-objects';
@@ -15,23 +11,14 @@ import {
 import * as humansCollection from '../helper/humans-collection';
 
 import {
-    addRxPlugin,
-    createRxDatabase,
-    RxJsonSchema,
-    hash,
-    randomCouchString,
     _handleToStorageInstance,
     flatClone,
     getFromMapOrThrow,
 } from '../../plugins/core';
 
 import {
-    addPouchPlugin,
-    pouchSwapPrimaryToId,
-    PouchDB,
-    getRxStoragePouch
+    pouchSwapPrimaryToId
 } from '../../plugins/pouchdb';
-
 
 import {
     setLastPushSequence,
@@ -43,7 +30,6 @@ import {
     wasRevisionfromPullReplication,
     replicateRxCollection
 } from '../../plugins/replication';
-import * as schemas from '../helper/schemas';
 
 import type {
     RxDocumentData,

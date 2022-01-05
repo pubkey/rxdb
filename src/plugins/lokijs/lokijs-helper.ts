@@ -312,7 +312,7 @@ export async function requestRemoteInstance(
     });
     const requestId = randomCouchString(12);
     let responseListener: OnMessageHandler<any>;
-    const responsePromise = new Promise<WinningPromise>((res, rej) => {
+    const responsePromise = new Promise<WinningPromise>((res, _rej) => {
         responseListener = (msg: any) => {
             if (
                 msg.type === messageType &&

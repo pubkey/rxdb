@@ -6,7 +6,6 @@ import {
     addRxPlugin,
     randomCouchString,
     getPseudoSchemaForVersion,
-    getFromMapOrThrow,
     lastOfArray,
     writeSingle,
     blobBufferUtil,

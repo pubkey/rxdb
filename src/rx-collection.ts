@@ -207,7 +207,7 @@ export class RxCollectionBase<
          * TODO is this still needed?
          * set to true if the collection data already exists on this storage adapter
          */
-        wasCreatedBefore: boolean
+        _wasCreatedBefore: boolean
     ): Promise<void> {
         // we trigger the non-blocking things first and await them later so we can do stuff in the mean time
 
@@ -679,7 +679,7 @@ export class RxCollectionBase<
              * we always ensure that we handled all missed events
              * since the last subscription.
              */
-            mergeMap(async (ev) => {
+            mergeMap(async (_ev) => {
                 const resultMap = ensureNotFalsy(currentValue);
                 const missedChangeEvents = this._changeEventBuffer.getFrom(lastChangeEvent + 1);
                 if (missedChangeEvents === null) {
@@ -740,7 +740,7 @@ export class RxCollectionBase<
     /**
      * sync with a GraphQL endpoint
      */
-    syncGraphQL(options: SyncOptionsGraphQL<RxDocumentType>): RxGraphQLReplicationState<RxDocumentType> {
+    syncGraphQL(_options: SyncOptionsGraphQL<RxDocumentType>): RxGraphQLReplicationState<RxDocumentType> {
         throw pluginMissing('replication-graphql');
     }
 

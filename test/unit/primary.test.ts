@@ -21,7 +21,6 @@ import {
     promiseWait,
     isRxDocument,
     RxCollection,
-    getFromMapOrThrow,
     getFromObjectOrThrow,
     RxJsonSchema
 } from '../../plugins/core';

@@ -12,7 +12,6 @@ import {
     isRxQuery,
     isRxDocument,
     createRxDatabase,
-    createRxSchema,
     randomCouchString,
     shuffleArray,
     RxJsonSchema,
@@ -217,8 +216,6 @@ config.parallel('rx-collection.test.js', () => {
                         name: randomCouchString(10),
                         storage: getRxStoragePouch('memory'),
                     });
-                    const schema = createRxSchema(schemas.human);
-
                     await AsyncTestUtil.assertThrows(
                         () => db.addCollections({
                             'Foobar': {

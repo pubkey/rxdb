@@ -687,6 +687,7 @@ config.parallel('local-documents.test.js', () => {
             doc = await db.insertLocal(key, {
                 foo: 'bar'
             });
+            assert.ok(doc);
 
             let t = 0;
             while (t < 50) {

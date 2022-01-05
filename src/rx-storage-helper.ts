@@ -10,7 +10,6 @@ import type {
     BulkWriteRow,
     RxChangeEvent,
     RxCollection,
-    RxDatabase,
     RxDocumentData,
     RxLocalDocumentData,
     RxLocalStorageBulkWriteResponse,
@@ -19,7 +18,7 @@ import type {
     RxStorageInstance,
     RxStorageKeyObjectInstance
 } from './types';
-import { firstPropertyNameOfObject, firstPropertyValueOfObject } from './util';
+import { firstPropertyValueOfObject } from './util';
 
 export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
 

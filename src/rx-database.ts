@@ -20,7 +20,6 @@ import type {
     BulkWriteRow,
     RxChangeEvent,
     RxDatabaseCreator,
-    EventBulk,
     RxChangeEventBulk
 } from './types';
 
@@ -768,8 +767,6 @@ export async function removeRxDatabase(
     databaseName: string,
     storage: RxStorage<any, any>
 ): Promise<any> {
-    const idleQueue = new IdleQueue();
-
     const storageInstance = await createRxDatabaseStorageInstances(
         storage,
         databaseName,

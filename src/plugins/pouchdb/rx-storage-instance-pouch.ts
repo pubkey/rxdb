@@ -1,12 +1,8 @@
-import type {
-    ChangeEvent
-} from 'event-reduce-js';
 import { ObliviousSet } from 'oblivious-set';
 import {
     Observable,
     Subject,
-    Subscription,
-    tap
+    Subscription
 } from 'rxjs';
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
@@ -29,11 +25,8 @@ import type {
     RxStorageQueryResult
 } from '../../types';
 import {
-    getEventKey,
     OPEN_POUCHDB_STORAGE_INSTANCES,
-    pouchChangeRowToChangeEvent,
     POUCHDB_DESIGN_PREFIX,
-    POUCHDB_LOCAL_PREFIX,
     pouchDocumentDataToRxDocumentData,
     PouchStorageInternals,
     pouchSwapIdToPrimary,
@@ -41,15 +34,9 @@ import {
     writeAttachmentsToAttachments
 } from './pouchdb-helper';
 import {
-    filterInMemoryFields,
-    massageSelector
-} from 'pouchdb-selector-core';
-import {
     flatClone,
     getFromMapOrThrow,
-    getHeightOfRevision,
-    PROMISE_RESOLVE_VOID,
-    randomCouchString
+    PROMISE_RESOLVE_VOID
 } from '../../util';
 import {
     getCustomEventEmitterByPouch

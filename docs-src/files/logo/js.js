@@ -29,7 +29,7 @@ const blocks = [
 
 ];
 const padding = 50;
-const svgHeight = squareHeight * 3 + blockSize * 18;
+// const svgHeight = squareHeight * 3 + blockSize * 18;
 
 
 

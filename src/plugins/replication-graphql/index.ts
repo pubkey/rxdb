@@ -56,7 +56,6 @@ import type {
 } from '../../types';
 import { getDocumentDataOfRxChangeEvent } from '../../rx-change-event';
 import {
-    _handleFromStorageInstance,
     _handleToStorageInstance
 } from '../../rx-collection-helper';
 

@@ -5,13 +5,7 @@ import type {
     RxJsonSchema,
     RxStorageInstanceCreationParams,
     RxStorage,
-    RxKeyObjectStorageInstanceCreationParams,
-    MangoQuery,
-    MangoQuerySortPart,
-    RxDocumentWriteData,
-    PreparedQuery,
-    MangoQuerySortDirection,
-    RxStorageStatics,
+    RxKeyObjectStorageInstanceCreationParams
 } from '../../types';
 
 import {

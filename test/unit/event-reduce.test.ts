@@ -11,9 +11,6 @@ import {
     MangoQuery,
 } from '../../plugins/core';
 
-import {
-    getRxStoragePouch
-} from '../../plugins/pouchdb';
 import config from './config';
 
 

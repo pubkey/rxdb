@@ -48,7 +48,6 @@ config.parallel('reactive-query.test.js', () => {
             const c = await humansCollection.create(1);
             const query = c.find();
             let lastValue: any[] = [];
-            const pw8 = AsyncTestUtil.waitResolveable(500);
             const emitted: any[] = [];
             query.$.subscribe(newResults => {
                 lastValue = newResults;
@@ -109,7 +108,6 @@ config.parallel('reactive-query.test.js', () => {
         it('get new values on RxDocument.save', async () => {
             const c = await humansCollection.create(1);
             const doc: any = await c.findOne().exec(true);
-            const pw8 = AsyncTestUtil.waitResolveable(500);
 
             let values: any;
             const emitted: any[] = [];

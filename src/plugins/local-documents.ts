@@ -13,7 +13,6 @@ import {
 } from '../rx-error';
 import {
     flatClone,
-    getFromMapOrThrow,
     getFromObjectOrThrow
 } from '../util';
 

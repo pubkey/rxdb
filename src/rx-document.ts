@@ -12,7 +12,6 @@ import {
     trimDots,
     getHeightOfRevision,
     pluginMissing,
-    now,
     nextTick,
     flatClone,
     PROMISE_RESOLVE_NULL,
