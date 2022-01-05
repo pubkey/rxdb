@@ -16,7 +16,7 @@ import {
 
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
-import { HumanDocumentType } from '../helper/schema-objects';
+import { HumanDocumentType } from '../helper/schemas';
 
 config.parallel('orm.test.js', () => {
     describe('statics', () => {

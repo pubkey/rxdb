@@ -35,9 +35,9 @@ import {
     migratePromise
 } from '../../plugins/migration';
 import {
-    SimpleHumanV3DocumentType,
-    HumanDocumentType
+    SimpleHumanV3DocumentType
 } from '../helper/schema-objects';
+import { HumanDocumentType } from '../helper/schemas';
 
 config.parallel('data-migration.test.js', () => {
 

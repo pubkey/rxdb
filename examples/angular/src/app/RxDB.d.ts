@@ -7,18 +7,7 @@ import type {
     RxCollection,
     RxDatabase
 } from 'rxdb/plugins/core';
-
-export type RxHeroDocumentType = {
-    name: string;
-    color: string;
-    maxHP: number;
-    hp: number;
-    team?: string;
-    skills: Array<{
-        name?: string;
-        damage?: number;
-    }>;
-};
+import { RxHeroDocumentType } from './schemas/hero.schema';
 
 // ORM methods
 type RxHeroDocMethods = {

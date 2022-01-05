@@ -218,6 +218,14 @@ describe('typings.test.js', function () {
 
     config.parallel('schema', () => {
         describe('positive', () => {
+            it('should work with DocType = any', async () => {
+                const code = codeBase + `
+                    (async() => {
+                        const schema: RxJsonSchema<any> = ${JSON.stringify(schemas.humanMinimal)};
+                    })();
+                `;
+                await transpileCode(code);
+            });
             it('should allow creating generic schema based on a model', async () => {
                 const code = codeBase + `
                     (async() => {

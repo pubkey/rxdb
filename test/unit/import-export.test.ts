@@ -21,6 +21,7 @@ import {
 
 import AsyncTestUtil from 'async-test-util';
 import config from './config';
+import { HumanDocumentType } from './../helper/schemas';
 
 config.parallel('import-export.test.js', () => {
     describe('Collection', () => {
@@ -497,7 +498,7 @@ config.parallel('import-export.test.js', () => {
             describe('negative', () => {
                 it('should not import if schema is different', async () => {
 
-                    const db = await createRxDatabase<{ human: RxCollection<schemaObjects.HumanDocumentType> }>({
+                    const db = await createRxDatabase<{ human: RxCollection<HumanDocumentType> }>({
                         name: randomCouchString(10),
                         storage: getRxStoragePouch('memory'),
                         password: null,

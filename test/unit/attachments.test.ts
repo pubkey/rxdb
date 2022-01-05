@@ -27,6 +27,7 @@ import {
 import {
     getRxStoragePouch
 } from '../../plugins/pouchdb';
+import { HumanDocumentType } from '../helper/schemas';
 
 
 config.parallel('attachments.test.ts', () => {
@@ -405,15 +406,15 @@ config.parallel('attachments.test.ts', () => {
     describe('multiInstance', () => {
         it('should emit on other instance', async () => {
             const name = randomCouchString(10);
-            type Collections = { humans: RxCollection<schemaObjects.HumanDocumentType, {}, {}> };
-            type Document = RxDocument<schemaObjects.HumanDocumentType>;
+            type Collections = { humans: RxCollection<HumanDocumentType, {}, {}> };
+            type Document = RxDocument<HumanDocumentType>;
             const db = await createRxDatabase<Collections>({
                 name,
                 storage: getRxStoragePouch('memory'),
                 multiInstance: true,
                 ignoreDuplicate: true
             });
-            const schemaJson: RxJsonSchema<schemaObjects.HumanDocumentType> = AsyncTestUtil.clone(schemas.human);
+            const schemaJson: RxJsonSchema<HumanDocumentType> = AsyncTestUtil.clone(schemas.human);
             schemaJson.attachments = {};
 
 

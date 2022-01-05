@@ -1,8 +1,10 @@
 import type {
-    RxJsonSchema
+    RxJsonSchema,
+    toTypedRxJsonSchema,
+    ExtractDocumentTypeFromTypedRxJsonSchema
 } from 'rxdb/plugins/core';
 import { RxHeroDocumentType } from '../RxDB';
-export const HERO_SCHEMA: RxJsonSchema<RxHeroDocumentType> = {
+export const HERO_SCHEMA_LITERAL = {
     title: 'hero schema',
     description: 'describes a simple hero',
     version: 0,
@@ -59,4 +61,9 @@ export const HERO_SCHEMA: RxJsonSchema<RxHeroDocumentType> = {
         'maxHP',
         'skills'
     ]
-};
+} as const;
+
+const schemaTyped = toTypedRxJsonSchema(HERO_SCHEMA_LITERAL);
+export type RxHeroDocumentType = ExtractDocumentTypeFromTypedRxJsonSchema<typeof schemaTyped>;
+
+export const HERO_SCHEMA: RxJsonSchema<RxHeroDocumentType> = HERO_SCHEMA_LITERAL;

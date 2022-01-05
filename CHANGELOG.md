@@ -1,5 +1,10 @@
 # Changelog
 
+### X.X.X (comming soon)
+
+Features:
+  - Added `toTypedRxJsonSchema` and `ExtractDocumentTypeFromTypedRxJsonSchema` to generate the document types from the schema.
+
 ### 11.0.0 (3 January 2022) BREAKING [read the announcement](./orga/releases/11.0.0.md)
 
 BREAKING:

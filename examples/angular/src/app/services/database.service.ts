@@ -7,8 +7,7 @@ import {
 import {
     RxHeroDocument,
     RxHeroesDatabase,
-    RxHeroesCollections,
-    RxHeroDocumentType
+    RxHeroesCollections
 } from './../RxDB.d';
 
 /**
@@ -26,7 +25,6 @@ import {
     addPouchPlugin, getRxStoragePouch
 } from 'rxdb/plugins/pouchdb';
 
-import { RxDBNoValidatePlugin } from 'rxdb/plugins/no-validate';
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
 import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb';
 import * as PouchdbAdapterHttp from 'pouchdb-adapter-http';
@@ -37,7 +35,7 @@ import {
     DATABASE_NAME,
     IS_SERVER_SIDE_RENDERING
 } from '../../shared';
-import { HERO_SCHEMA } from '../schemas/hero.schema';
+import { HERO_SCHEMA, RxHeroDocumentType } from '../schemas/hero.schema';
 
 
 const collectionSettings = {
@@ -111,11 +109,7 @@ async function loadRxDBPlugins(): Promise<void> {
                 module => addRxPlugin(module as any)
             )
         ]);
-    } else {
-        // in production we use the no-validate module instead of the schema-validation
-        // to reduce the build-size
-        addRxPlugin(RxDBNoValidatePlugin);
-    }
+    } else { }
 
 }
 

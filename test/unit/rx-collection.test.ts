@@ -21,7 +21,8 @@ import {
     addRxPlugin,
     RANDOM_STRING,
     runXTimes,
-    RxCollection
+    RxCollection,
+    ensureNotFalsy
 } from '../../plugins/core';
 
 import {
@@ -34,8 +35,8 @@ addRxPlugin(RxDBUpdatePlugin);
 import { RxDBMigrationPlugin } from '../../plugins/migration';
 addRxPlugin(RxDBMigrationPlugin);
 
-import { HumanDocumentType } from '../helper/schema-objects';
 import { firstValueFrom } from 'rxjs';
+import { HumanDocumentType } from '../helper/schemas';
 
 config.parallel('rx-collection.test.js', () => {
     async function getDb(): Promise<RxDatabase> {
@@ -673,7 +674,7 @@ config.parallel('rx-collection.test.js', () => {
                         assert.ok(isRxQuery(query));
                         const docs = await query.exec();
                         assert.strictEqual(docs.length, 20);
-                        assert.ok(docs[0]._data.age >= docs[1]._data.age);
+                        assert.ok(ensureNotFalsy(docs[0]._data.age) >= ensureNotFalsy(docs[1]._data.age));
                         c.database.destroy();
                     });
                     it('sort by age desc (with default index-search)', async () => {
@@ -682,7 +683,7 @@ config.parallel('rx-collection.test.js', () => {
                             age: 'desc'
                         }).exec();
                         assert.strictEqual(docs.length, 20);
-                        assert.ok(docs[0]._data.age >= docs[1]._data.age);
+                        assert.ok(ensureNotFalsy(docs[0]._data.age) >= ensureNotFalsy(docs[1]._data.age));
                         c.database.destroy();
                     });
                     it('sort by age asc', async () => {
@@ -691,7 +692,7 @@ config.parallel('rx-collection.test.js', () => {
                             age: 'asc'
                         }).exec();
                         assert.strictEqual(docs.length, 20);
-                        assert.ok(docs[0]._data.age <= docs[1]._data.age);
+                        assert.ok(ensureNotFalsy(docs[0]._data.age) <= ensureNotFalsy(docs[1]._data.age));
                         c.database.destroy();
                     });
                     it('sort by non-top-level-key as index (no keycompression)', async () => {
@@ -978,7 +979,7 @@ config.parallel('rx-collection.test.js', () => {
                          */
                         // const c = humansCollection.create(5);
 
-                        const db = await createRxDatabase<{ humans: RxCollection<schemaObjects.HumanDocumentType> }>({
+                        const db = await createRxDatabase<{ humans: RxCollection<HumanDocumentType> }>({
                             name: randomCouchString(10),
                             storage: config.storage.getStorage(),
                             eventReduce: true
@@ -1479,8 +1480,6 @@ config.parallel('rx-collection.test.js', () => {
                     );
                     assert.ok(docs[0] === docs[1]);
                     assert.ok(isRxDocument(docs[0]));
-
-                    //                    process.exit();
 
                     c.database.destroy();
                 });

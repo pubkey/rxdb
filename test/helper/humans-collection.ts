@@ -15,11 +15,8 @@ import {
     addPouchPlugin
 } from '../../plugins/pouchdb';
 
-
-import {
-    HumanDocumentType
-} from './schema-objects';
 import { MigrationStrategies, RxAttachmentCreator, RxStorage } from '../../src/types';
+import { HumanDocumentType } from './schemas';
 
 export async function create(
     size: number = 20,
@@ -33,7 +30,7 @@ export async function create(
         name = 'human';
     }
 
-    const db = await createRxDatabase<{ human: RxCollection<schemaObjects.HumanDocumentType> }>({
+    const db = await createRxDatabase<{ human: RxCollection<HumanDocumentType> }>({
         name: randomCouchString(10),
         storage,
         multiInstance,
@@ -82,9 +79,9 @@ export async function createAttachments(
     size = 20,
     name = 'human',
     multiInstance = true
-): Promise<RxCollection<schemaObjects.HumanDocumentType, {}, {}>> {
+): Promise<RxCollection<HumanDocumentType, {}, {}>> {
     if (!name) name = 'human';
-    const db = await createRxDatabase<{ [prop: string]: RxCollection<schemaObjects.HumanDocumentType> }>({
+    const db = await createRxDatabase<{ [prop: string]: RxCollection<HumanDocumentType> }>({
         name: randomCouchString(10),
         storage: config.storage.getStorage(),
         multiInstance,
@@ -116,11 +113,11 @@ export async function createEncryptedAttachments(
     size = 20,
     name = 'human',
     multiInstance = true
-): Promise<RxCollection<schemaObjects.HumanDocumentType, {}, {}>> {
+): Promise<RxCollection<HumanDocumentType, {}, {}>> {
 
     if (!name) name = 'human';
 
-    const db = await createRxDatabase<{ [prop: string]: RxCollection<schemaObjects.HumanDocumentType> }>({
+    const db = await createRxDatabase<{ [prop: string]: RxCollection<HumanDocumentType> }>({
         name: randomCouchString(10),
         password: 'foooooobaaaar',
         storage: config.storage.getStorage(),
@@ -154,8 +151,8 @@ export async function createEncryptedAttachments(
 export async function createNoCompression(
     size = 20,
     name = 'human'
-): Promise<RxCollection<schemaObjects.HumanDocumentType>> {
-    const db = await createRxDatabase<{ [prop: string]: RxCollection<schemaObjects.HumanDocumentType> }>({
+): Promise<RxCollection<HumanDocumentType>> {
+    const db = await createRxDatabase<{ [prop: string]: RxCollection<HumanDocumentType> }>({
         name: randomCouchString(10),
         storage: config.storage.getStorage(),
         eventReduce: true,
@@ -183,8 +180,8 @@ export async function createNoCompression(
 
 export async function createAgeIndex(
     amount = 20
-): Promise<RxCollection<schemaObjects.HumanDocumentType>> {
-    const db = await createRxDatabase<{ humana: RxCollection<schemaObjects.HumanDocumentType> }>({
+): Promise<RxCollection<HumanDocumentType>> {
+    const db = await createRxDatabase<{ humana: RxCollection<HumanDocumentType> }>({
         name: randomCouchString(10),
         storage: config.storage.getStorage(),
         eventReduce: true,
@@ -212,15 +209,15 @@ export async function multipleOnSameDB(
     size = 10
 ): Promise<{
     db: RxDatabase<{
-        human: RxCollection<schemaObjects.HumanDocumentType>;
-        human2: RxCollection<schemaObjects.HumanDocumentType>;
+        human: RxCollection<HumanDocumentType>;
+        human2: RxCollection<HumanDocumentType>;
     }>,
-    collection: RxCollection<schemaObjects.HumanDocumentType>
-    collection2: RxCollection<schemaObjects.HumanDocumentType>
+    collection: RxCollection<HumanDocumentType>
+    collection2: RxCollection<HumanDocumentType>
 }> {
     const db = await createRxDatabase<{
-        human: RxCollection<schemaObjects.HumanDocumentType>,
-        human2: RxCollection<schemaObjects.HumanDocumentType>
+        human: RxCollection<HumanDocumentType>,
+        human2: RxCollection<HumanDocumentType>
     }>({
         name: randomCouchString(10),
         storage: config.storage.getStorage(),
@@ -343,8 +340,8 @@ export async function createMultiInstance(
     amount = 0,
     password = null,
     storage: RxStorage<any, any> = config.storage.getStorage()
-): Promise<RxCollection<schemaObjects.HumanDocumentType, {}, {}>> {
-    const db = await createRxDatabase<{ human: RxCollection<schemaObjects.HumanDocumentType> }>({
+): Promise<RxCollection<HumanDocumentType, {}, {}>> {
+    const db = await createRxDatabase<{ human: RxCollection<HumanDocumentType> }>({
         name,
         storage,
         password,

@@ -5,7 +5,6 @@ import {
     clone,
     hash,
     sortObject,
-    pluginMissing,
     overwriteGetterForCaching,
     flatClone
 } from './util';
@@ -21,6 +20,8 @@ import {
 
 import type {
     CompositePrimaryKey,
+    DeepMutable,
+    DeepReadonly,
     PrimaryKey,
     RxJsonSchema
 } from './types';
@@ -372,4 +373,12 @@ export function createRxSchema<T>(
 
 export function isInstanceOf(obj: any): boolean {
     return obj instanceof RxSchema;
+}
+
+/**
+ * Used as helper function the generate the document type out of the schema via typescript.
+ * @link https://github.com/pubkey/rxdb/discussions/3467
+ */
+export function toTypedRxJsonSchema<T extends DeepReadonly<RxJsonSchema<any>>>(schema: T): DeepMutable<T> {
+    return schema as any;
 }

@@ -26,7 +26,7 @@ import type {
     RxChangeEvent,
     RxDocument
 } from '../../src/types';
-import { HumanDocumentType } from '../helper/schema-objects';
+import { HumanDocumentType } from '../helper/schemas';
 
 config.parallel('reactive-document.test.js', () => {
     describe('.save()', () => {

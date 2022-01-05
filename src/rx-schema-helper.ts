@@ -1,5 +1,5 @@
 import objectPath from 'object-path';
-import type { JsonSchema, RxJsonSchema } from './types';
+import type { JsonSchema, RxJsonSchema, StringKeys } from './types';
 import { trimDots } from './util';
 
 /**
@@ -8,7 +8,7 @@ import { trimDots } from './util';
  */
 export function getPseudoSchemaForVersion<T = any>(
     version: number,
-    primaryKey: keyof T
+    primaryKey: StringKeys<T>
 ): RxJsonSchema<T> {
     const pseudoSchema: RxJsonSchema<T> = {
         version,

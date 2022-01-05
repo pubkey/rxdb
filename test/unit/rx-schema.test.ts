@@ -473,7 +473,7 @@ config.parallel('rx-schema.test.js', () => {
                     assert.throws(() => createRxSchema(schemas.noStringIndex), Error);
                 });
                 it('first-level field is "language" is forbitten', () => {
-                    assert.throws(() => createRxSchema({
+                    assert.throws(() => createRxSchema<any>({
                         title: 'schema',
                         version: 0,
                         primaryKey: 'foo',

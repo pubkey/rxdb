@@ -21,12 +21,12 @@ import * as schemaObjects from '../helper/schema-objects';
 import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
 addRxPlugin(RxDBKeyCompressionPlugin);
 import { RxDBValidatePlugin } from '../../plugins/validate';
-import { HumanDocumentType } from '../helper/schema-objects';
 import { waitUntil } from 'async-test-util';
 addRxPlugin(RxDBValidatePlugin);
 import * as path from 'path';
 import * as fs from 'fs';
 import { LeaderElector } from 'broadcast-channel';
+import { HumanDocumentType } from '../helper/schemas';
 
 /**
  * RxStoragePouch specific tests

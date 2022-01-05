@@ -122,7 +122,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
-                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false
                 });
@@ -134,7 +134,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
-                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false
                 });
@@ -164,7 +164,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
-                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false
                 });
@@ -198,7 +198,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
-                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false
                 });
@@ -295,7 +295,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
-                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false
                 });
@@ -510,7 +510,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     .createStorageInstance<{ key: string; value: string; }>({
                         databaseName: randomCouchString(12),
                         collectionName: randomCouchString(12),
-                        schema: getPseudoSchemaForVersion(0, 'key'),
+                        schema: getPseudoSchemaForVersion<{ key: string; value: string; }>(0, 'key'),
                         options: {},
                         multiInstance: false
                     });
@@ -546,7 +546,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     .createStorageInstance<{ key: string; value: string; }>({
                         databaseName: randomCouchString(12),
                         collectionName: randomCouchString(12),
-                        schema: getPseudoSchemaForVersion(0, 'key'),
+                        schema: getPseudoSchemaForVersion<{ key: string; value: string; }>(0, 'key'),
                         options: {},
                         multiInstance: false
                     });
@@ -740,7 +740,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
-                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false
                 });
@@ -768,7 +768,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
-                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false
                 });
@@ -873,7 +873,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
-                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false
                 });
@@ -993,7 +993,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
-                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false
                 });
@@ -1048,7 +1048,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
-                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {
                         auto_compaction: false
                     },
@@ -1084,7 +1084,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
-                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {
                         auto_compaction: false
                     },
@@ -1124,7 +1124,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
-                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {
                         auto_compaction: false
                     },
@@ -1197,7 +1197,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
-                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {
                         auto_compaction: false
                     },
@@ -1261,7 +1261,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
-                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false
                 });
@@ -1364,7 +1364,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
-                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {
                         auto_compaction: false
                     },
@@ -1452,7 +1452,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
-                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {
                         auto_compaction: false
                     },
@@ -1523,7 +1523,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseName,
                     collectionName,
-                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false
                 });
@@ -1541,7 +1541,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const storageInstance2 = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseName,
                     collectionName,
-                    schema: getPseudoSchemaForVersion(0, 'key'),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false
                 });
@@ -1880,7 +1880,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
             const a = await config.storage.getStorage().createStorageInstance<TestDocType>({
                 databaseName,
                 collectionName,
-                schema: getPseudoSchemaForVersion(0, 'key'),
+                schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                 options: {},
                 multiInstance: true
             });
@@ -1894,7 +1894,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
             const b = await config.storage.getStorage().createStorageInstance<TestDocType>({
                 databaseName,
                 collectionName,
-                schema: getPseudoSchemaForVersion(0, 'key'),
+                schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                 options: {},
                 multiInstance: true
             });

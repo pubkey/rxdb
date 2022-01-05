@@ -26,8 +26,50 @@ import {
 } from 'rxdb';
 ```
 
-Then you can declare the base-type for your document. The base-type is basically the typescript-representation of the jsonschema of the collection. If you have many collections, you could also generate the base-type with [json-schema-to-typescript](https://www.npmjs.com/package/json-schema-to-typescript)
 
+## Create the base document type
+
+First we have to define the TypeScript type of the documents of a collection:
+
+### Option A: Create the document type from the schema
+
+```typescript
+import {
+    toTypedRxJsonSchema,
+    ExtractDocumentTypeFromTypedRxJsonSchema,
+    RxJsonSchema
+} from 'rxdb/plugins/core';
+export const heroSchemaLiteral = {
+    title: 'hero schema',
+    description: 'describes a human being',
+    version: 0,
+    keyCompression: true,
+    primaryKey: 'passportId',
+    type: 'object',
+    properties: {
+        passportId: {
+            type: 'string'
+        },
+        firstName: {
+            type: 'string'
+        },
+        lastName: {
+            type: 'string'
+        }
+    },
+    required: ['firstName', 'lastName', 'passportId'],
+    indexes: ['firstName']
+} as const; // <- It is important to set 'as const' to preserve the literal type
+const schemaTyped = toTypedRxJsonSchema(heroSchemaLiteral);
+
+// aggregate the document type from the schema
+type HeroDocType = ExtractDocumentTypeFromTypedRxJsonSchema<typeof schemaTyped>;
+
+// create the typed RxJsonSchema from the literal typed object.
+const heroSchema: RxJsonSchema<HeroDocType> = heroSchemaLiteral;
+```
+
+### Option B: Manually type the document type
 
 ```typescript
 type HeroDocType = {
@@ -37,6 +79,13 @@ type HeroDocType = {
     age?: number; // optional
 };
 ```
+
+### Option C: Generate the document type from schema during build time
+
+If your schema is in a `.json` file or generated from somewhere else, you might generate the typings with the [json-schema-to-typescript](https://www.npmjs.com/package/json-schema-to-typescript) module.
+
+## Types for the ORM methods
+
 
 We also add some ORM-methods for the document.
 
@@ -116,7 +165,7 @@ const heroSchema: RxJsonSchema<HeroDocType> = {
             type: 'integer'
         }
     },
-    required: ['firstName', 'lastName']
+    required: ['passportId', 'firstName', 'lastName']
 };
 
 const heroDocMethods: HeroDocMethods = {

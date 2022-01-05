@@ -54,7 +54,7 @@ config.parallel('population.test.js', () => {
                 assert.strictEqual(schema.constructor.name, 'RxSchema');
             });
             it('should allow to create a schema with a relation in nested', () => {
-                const schema = createRxSchema({
+                const schema = createRxSchema<any>({
                     version: 0,
                     primaryKey: 'id',
                     type: 'object',
@@ -76,7 +76,7 @@ config.parallel('population.test.js', () => {
                 assert.strictEqual(schema.constructor.name, 'RxSchema');
             });
             it('should allow to create relation of array', () => {
-                const schema = createRxSchema({
+                const schema = createRxSchema<any>({
                     version: 0,
                     primaryKey: 'id',
                     type: 'object',
@@ -96,7 +96,7 @@ config.parallel('population.test.js', () => {
                 assert.strictEqual(schema.constructor.name, 'RxSchema');
             });
             it('should allow to create relation with nullable string', () => {
-                const schema = createRxSchema({
+                const schema = createRxSchema<any>({
                     version: 0,
                     primaryKey: 'id',
                     type: 'object',
@@ -119,7 +119,7 @@ config.parallel('population.test.js', () => {
         describe('negative', () => {
             it('throw if ref-type is no string', () => {
                 assert.throws(
-                    () => createRxSchema({
+                    () => createRxSchema<any>({
                         version: 0,
                         primaryKey: 'id',
                         type: 'object',
@@ -137,7 +137,7 @@ config.parallel('population.test.js', () => {
             });
             it('throw if ref-type is no string (array)', () => {
                 assert.throws(
-                    () => createRxSchema({
+                    () => createRxSchema<any>({
                         version: 0,
                         primaryKey: 'id',
                         type: 'object',

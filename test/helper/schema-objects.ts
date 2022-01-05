@@ -8,6 +8,7 @@ import {
     randomNumber,
     randomString
 } from 'async-test-util';
+import { HumanDocumentType } from './schemas';
 
 
 export interface SimpleHumanDocumentType {
@@ -15,11 +16,7 @@ export interface SimpleHumanDocumentType {
     firstName: string;
     lastName: string;
 }
-export interface AgeHumanDocumentType {
-    passportId: string;
-    age: number;
-}
-export interface HumanDocumentType extends SimpleHumanDocumentType, AgeHumanDocumentType { }
+
 export function human(
     passportId: string = randomString(12)
 ): HumanDocumentType {

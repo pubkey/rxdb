@@ -38,8 +38,8 @@ import {
     filter,
     first
 } from 'rxjs/operators';
-import { HumanDocumentType } from '../helper/schema-objects';
 import { RxDocumentData } from '../../src/types';
+import { HumanDocumentType } from '../helper/schemas';
 
 let request: any;
 let SpawnServer: any;

@@ -23,10 +23,9 @@ import {
 import {
     filter,
     map,
-    first,
-    tap
+    first
 } from 'rxjs/operators';
-import { HumanDocumentType } from '../helper/schema-objects';
+import { HumanDocumentType } from '../helper/schemas';
 
 config.parallel('reactive-query.test.js', () => {
     describe('positive', () => {

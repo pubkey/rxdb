@@ -58,7 +58,8 @@ export {
     getIndexes,
     normalize,
     getFinalFields,
-    getPreviousVersions
+    getPreviousVersions,
+    toTypedRxJsonSchema
 } from './rx-schema';
 export {
     getPseudoSchemaForVersion,
@@ -97,6 +98,7 @@ export type {
     MangoQuery,
     MangoQueryNoLimit,
     JsonSchema,
+    ExtractDocumentTypeFromTypedRxJsonSchema,
     KeyFunctionMap,
     MangoQuerySelector,
     MangoQuerySortDirection,

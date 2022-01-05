@@ -1,10 +1,11 @@
 import AsyncTestUtil from 'async-test-util';
 
-import type {
-    RxJsonSchema
+import {
+    RxJsonSchema,
+    toTypedRxJsonSchema,
+    ExtractDocumentTypeFromTypedRxJsonSchema
 } from '../../plugins/core';
 import {
-    HumanDocumentType,
     SimpleHumanV3DocumentType,
     HumanWithSubOtherDocumentType,
     NestedHumanDocumentType,
@@ -16,7 +17,6 @@ import {
     CompoundIndexNoStringDocumentType,
     HeroArrayDocumentType,
     SimpleHeroArrayDocumentType,
-    AgeHumanDocumentType,
     RefHumanDocumentType,
     RefHumanNestedDocumentType,
     AverageSchemaDocumentType,
@@ -28,7 +28,7 @@ import {
     HumanWithCompositePrimary
 } from './schema-objects';
 
-export const human: RxJsonSchema<HumanDocumentType> = {
+export const humanSchemaLiteral = {
     title: 'human schema',
     description: 'describes a human being',
     version: 0,
@@ -52,9 +52,13 @@ export const human: RxJsonSchema<HumanDocumentType> = {
             maximum: 150
         }
     },
-    required: ['firstName', 'lastName'],
+    required: ['firstName', 'lastName', 'passportId'],
     indexes: ['firstName']
-};
+} as const;
+const humanSchemaTyped = toTypedRxJsonSchema(humanSchemaLiteral);
+export type HumanDocumentType = ExtractDocumentTypeFromTypedRxJsonSchema<typeof humanSchemaTyped>;
+export const human: RxJsonSchema<HumanDocumentType> = humanSchemaLiteral;
+
 
 export const humanDefault: RxJsonSchema<HumanDocumentType> = {
     title: 'human schema',
@@ -690,7 +694,7 @@ export const simpleArrayHero: RxJsonSchema<SimpleHeroArrayDocumentType> = {
     ]
 };
 
-export const primaryHuman: RxJsonSchema<HumanDocumentType> = {
+export const primaryHumanLiteral = {
     title: 'human schema with primary',
     version: 0,
     description: 'describes a human being with passsportID as primary',
@@ -714,10 +718,13 @@ export const primaryHuman: RxJsonSchema<HumanDocumentType> = {
             maximum: 150
         }
     },
-    required: ['firstName', 'lastName']
-};
+    required: ['passportId', 'firstName', 'lastName']
+} as const;
+const primaryHumanTypedSchema = toTypedRxJsonSchema(primaryHumanLiteral);
+export type PrimaryHumanDocType = ExtractDocumentTypeFromTypedRxJsonSchema<typeof primaryHumanTypedSchema>;
+export const primaryHuman: RxJsonSchema<PrimaryHumanDocType> = primaryHumanLiteral;
 
-export const humanNormalizeSchema1: RxJsonSchema<AgeHumanDocumentType> = {
+export const humanNormalizeSchema1Literal = {
     title: 'human schema',
     version: 0,
     keyCompression: true,
@@ -737,7 +744,10 @@ export const humanNormalizeSchema1: RxJsonSchema<AgeHumanDocumentType> = {
         }
     },
     required: ['age', 'passportId']
-};
+} as const;
+const humanNormalizeSchema1Typed = toTypedRxJsonSchema(humanNormalizeSchema1Literal);
+export type AgeHumanDocumentType = ExtractDocumentTypeFromTypedRxJsonSchema<typeof humanNormalizeSchema1Typed>;
+export const humanNormalizeSchema1: RxJsonSchema<AgeHumanDocumentType> = humanNormalizeSchema1Literal;
 
 export const humanNormalizeSchema2: RxJsonSchema<AgeHumanDocumentType> = {
     title: 'human schema',
