@@ -2,7 +2,7 @@ import {
     RxJsonSchema,
     toTypedRxJsonSchema,
     ExtractDocumentTypeFromTypedRxJsonSchema
-} from 'rxdb/plugins/core';
+} from 'rxdb';
 export const HERO_SCHEMA_LITERAL = {
     title: 'hero schema',
     description: 'describes a simple hero',
