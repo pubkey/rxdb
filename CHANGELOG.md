@@ -2,6 +2,8 @@
 
 ### X.X.X (comming soon)
 
+### 11.1.0 (6 January 2022)
+
 Features:
   - Added `toTypedRxJsonSchema` and `ExtractDocumentTypeFromTypedRxJsonSchema` to generate the document types from the schema.
 

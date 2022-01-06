@@ -119,7 +119,7 @@ jobs:
             ~/.npm
             ./node_modules
             ./examples/angular/node_modules
-          # invalidate cache when any package-lock.json changes
+          # invalidate cache when any package.json changes
           key: ${{ runner.os }}-npm-angular-x4-${{ hashFiles('**/package.json') }}
           restore-keys: |
             ${{ runner.os }}-npm-angular-x4-
