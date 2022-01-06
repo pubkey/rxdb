@@ -324,4 +324,12 @@ export function createRxSchema(jsonSchema) {
 export function isInstanceOf(obj) {
   return obj instanceof RxSchema;
 }
+/**
+ * Used as helper function the generate the document type out of the schema via typescript.
+ * @link https://github.com/pubkey/rxdb/discussions/3467
+ */
+
+export function toTypedRxJsonSchema(schema) {
+  return schema;
+}
 //# sourceMappingURL=rx-schema.js.map

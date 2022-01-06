@@ -204,6 +204,7 @@ var _exportNames = {
   normalize: true,
   getFinalFields: true,
   getPreviousVersions: true,
+  toTypedRxJsonSchema: true,
   getPseudoSchemaForVersion: true,
   getSchemaByObjectPath: true,
   findLocalDocument: true,
@@ -418,6 +419,12 @@ Object.defineProperty(exports, "removeRxDatabase", {
   enumerable: true,
   get: function get() {
     return _rxDatabase.removeRxDatabase;
+  }
+});
+Object.defineProperty(exports, "toTypedRxJsonSchema", {
+  enumerable: true,
+  get: function get() {
+    return _rxSchema.toTypedRxJsonSchema;
   }
 });
 Object.defineProperty(exports, "writeSingle", {
@@ -3440,10 +3447,8 @@ function importDumpRxCollection(exportedJSON) {
   .map(function (doc) {
     return _this3.schema.validate(doc);
   });
-  var startTime;
   return this.database.lockedRun( // write to disc
   function () {
-    startTime = (0, _util.now)();
     var writeMe = docs.map(function (doc) {
       return {
         document: (0, _rxCollectionHelper._handleToStorageInstance)(_this3, doc)
@@ -8967,7 +8972,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
    * TODO is this still needed?
    * set to true if the collection data already exists on this storage adapter
    */
-  wasCreatedBefore) {
+  _wasCreatedBefore) {
     try {
       var _this2 = this;
 
@@ -9458,7 +9463,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
      * we always ensure that we handled all missed events
      * since the last subscription.
      */
-    (0, _operators.mergeMap)(function (ev) {
+    (0, _operators.mergeMap)(function (_ev) {
       try {
         var resultMap = (0, _util.ensureNotFalsy)(currentValue);
 
@@ -9539,7 +9544,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
    */
   ;
 
-  _proto.syncGraphQL = function syncGraphQL(options) {
+  _proto.syncGraphQL = function syncGraphQL(_options) {
     throw (0, _util.pluginMissing)('replication-graphql');
   }
   /**
@@ -9947,46 +9952,40 @@ var _obliviousSet = require("oblivious-set");
  * removes the database and all its known data
  */
 var removeRxDatabase = function removeRxDatabase(databaseName, storage) {
-  try {
-    var _idleQueue = new _customIdleQueue.IdleQueue();
-
-    return Promise.resolve(createRxDatabaseStorageInstances(storage, databaseName, {}, false)).then(function (storageInstance) {
-      return Promise.resolve((0, _rxStorageHelper.getAllDocuments)(storage, storageInstance.internalStore)).then(function (docs) {
-        return Promise.resolve(Promise.all(docs.map(function (colDoc) {
-          try {
-            var id = colDoc.collectionName;
-            var schema = colDoc.schema;
-            var split = id.split('-');
-            var collectionName = split[0];
-            var version = parseInt(split[1], 10);
-            var primaryPath = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
-            return Promise.resolve(Promise.all([storage.createStorageInstance({
-              databaseName: databaseName,
-              collectionName: collectionName,
-              schema: (0, _rxSchemaHelper.getPseudoSchemaForVersion)(version, primaryPath),
-              options: {},
-              multiInstance: false
-            }), storage.createKeyObjectStorageInstance({
-              databaseName: databaseName,
-              collectionName: (0, _rxCollectionHelper.getCollectionLocalInstanceName)(collectionName),
-              options: {},
-              multiInstance: false
-            })])).then(function (_ref4) {
-              var instance = _ref4[0],
-                  localInstance = _ref4[1];
-              return Promise.resolve(Promise.all([instance.remove(), localInstance.remove()])).then(function () {});
-            });
-          } catch (e) {
-            return Promise.reject(e);
-          }
-        }))).then(function () {
-          return Promise.all([storageInstance.internalStore.remove(), storageInstance.localDocumentsStore.remove()]);
-        });
+  return Promise.resolve(createRxDatabaseStorageInstances(storage, databaseName, {}, false)).then(function (storageInstance) {
+    return Promise.resolve((0, _rxStorageHelper.getAllDocuments)(storage, storageInstance.internalStore)).then(function (docs) {
+      return Promise.resolve(Promise.all(docs.map(function (colDoc) {
+        try {
+          var id = colDoc.collectionName;
+          var schema = colDoc.schema;
+          var split = id.split('-');
+          var collectionName = split[0];
+          var version = parseInt(split[1], 10);
+          var primaryPath = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
+          return Promise.resolve(Promise.all([storage.createStorageInstance({
+            databaseName: databaseName,
+            collectionName: collectionName,
+            schema: (0, _rxSchemaHelper.getPseudoSchemaForVersion)(version, primaryPath),
+            options: {},
+            multiInstance: false
+          }), storage.createKeyObjectStorageInstance({
+            databaseName: databaseName,
+            collectionName: (0, _rxCollectionHelper.getCollectionLocalInstanceName)(collectionName),
+            options: {},
+            multiInstance: false
+          })])).then(function (_ref4) {
+            var instance = _ref4[0],
+                localInstance = _ref4[1];
+            return Promise.resolve(Promise.all([instance.remove(), localInstance.remove()])).then(function () {});
+          });
+        } catch (e) {
+          return Promise.reject(e);
+        }
+      }))).then(function () {
+        return Promise.all([storageInstance.internalStore.remove(), storageInstance.localDocumentsStore.remove()]);
       });
     });
-  } catch (e) {
-    return Promise.reject(e);
-  }
+  });
 };
 
 exports.removeRxDatabase = removeRxDatabase;
@@ -12310,6 +12309,7 @@ exports.getPreviousVersions = getPreviousVersions;
 exports.getPrimaryFieldOfPrimaryKey = getPrimaryFieldOfPrimaryKey;
 exports.isInstanceOf = isInstanceOf;
 exports.normalize = normalize;
+exports.toTypedRxJsonSchema = toTypedRxJsonSchema;
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 
@@ -12653,6 +12653,15 @@ function createRxSchema(jsonSchema) {
 
 function isInstanceOf(obj) {
   return obj instanceof RxSchema;
+}
+/**
+ * Used as helper function the generate the document type out of the schema via typescript.
+ * @link https://github.com/pubkey/rxdb/discussions/3467
+ */
+
+
+function toTypedRxJsonSchema(schema) {
+  return schema;
 }
 
 },{"./hooks":7,"./rx-document":50,"./rx-error":51,"./util":59,"@babel/runtime/helpers/createClass":64,"@babel/runtime/helpers/interopRequireDefault":67,"fast-deep-equal":441,"object-path":476}],55:[function(require,module,exports){

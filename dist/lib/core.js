@@ -29,6 +29,7 @@ var _exportNames = {
   normalize: true,
   getFinalFields: true,
   getPreviousVersions: true,
+  toTypedRxJsonSchema: true,
   getPseudoSchemaForVersion: true,
   getSchemaByObjectPath: true,
   findLocalDocument: true,
@@ -243,6 +244,12 @@ Object.defineProperty(exports, "removeRxDatabase", {
   enumerable: true,
   get: function get() {
     return _rxDatabase.removeRxDatabase;
+  }
+});
+Object.defineProperty(exports, "toTypedRxJsonSchema", {
+  enumerable: true,
+  get: function get() {
+    return _rxSchema.toTypedRxJsonSchema;
   }
 });
 Object.defineProperty(exports, "writeSingle", {

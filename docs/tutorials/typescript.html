@@ -1750,7 +1750,44 @@ Our way to go is</p>
     RxDocument,
 } from <span class="hljs-string">&apos;rxdb&apos;</span>;
 </code></pre>
-<p>Then you can declare the base-type for your document. The base-type is basically the typescript-representation of the jsonschema of the collection. If you have many collections, you could also generate the base-type with <a href="https://www.npmjs.com/package/json-schema-to-typescript" target="_blank">json-schema-to-typescript</a></p>
+<h2 id="create-the-base-document-type">Create the base document type</h2>
+<p>First we have to define the TypeScript type of the documents of a collection:</p>
+<h3 id="option-a-create-the-document-type-from-the-schema">Option A: Create the document type from the schema</h3>
+<pre><code class="lang-typescript"><span class="hljs-keyword">import</span> {
+    toTypedRxJsonSchema,
+    ExtractDocumentTypeFromTypedRxJsonSchema,
+    RxJsonSchema
+} from <span class="hljs-string">&apos;rxdb/plugins/core&apos;</span>;
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> heroSchemaLiteral = {
+    title: <span class="hljs-string">&apos;hero schema&apos;</span>,
+    description: <span class="hljs-string">&apos;describes a human being&apos;</span>,
+    version: <span class="hljs-number">0</span>,
+    keyCompression: <span class="hljs-literal">true</span>,
+    primaryKey: <span class="hljs-string">&apos;passportId&apos;</span>,
+    <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;object&apos;</span>,
+    properties: {
+        passportId: {
+            <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;string&apos;</span>
+        },
+        firstName: {
+            <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;string&apos;</span>
+        },
+        lastName: {
+            <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;string&apos;</span>
+        }
+    },
+    required: [<span class="hljs-string">&apos;firstName&apos;</span>, <span class="hljs-string">&apos;lastName&apos;</span>, <span class="hljs-string">&apos;passportId&apos;</span>],
+    indexes: [<span class="hljs-string">&apos;firstName&apos;</span>]
+} as <span class="hljs-keyword">const</span>; <span class="hljs-comment">// &lt;- It is important to set &apos;as const&apos; to preserve the literal type</span>
+<span class="hljs-keyword">const</span> schemaTyped = toTypedRxJsonSchema(heroSchemaLiteral);
+
+<span class="hljs-comment">// aggregate the document type from the schema</span>
+<span class="hljs-keyword">type</span> HeroDocType = ExtractDocumentTypeFromTypedRxJsonSchema&lt;<span class="hljs-keyword">typeof</span> schemaTyped&gt;;
+
+<span class="hljs-comment">// create the typed RxJsonSchema from the literal typed object.</span>
+<span class="hljs-keyword">const</span> heroSchema: RxJsonSchema&lt;HeroDocType&gt; = heroSchemaLiteral;
+</code></pre>
+<h3 id="option-b-manually-type-the-document-type">Option B: Manually type the document type</h3>
 <pre><code class="lang-typescript"><span class="hljs-keyword">type</span> HeroDocType = {
     passportId: <span class="hljs-built_in">string</span>;
     firstName: <span class="hljs-built_in">string</span>;
@@ -1758,6 +1795,9 @@ Our way to go is</p>
     age?: <span class="hljs-built_in">number</span>; <span class="hljs-comment">// optional</span>
 };
 </code></pre>
+<h3 id="option-c-generate-the-document-type-from-schema-during-build-time">Option C: Generate the document type from schema during build time</h3>
+<p>If your schema is in a <code>.json</code> file or generated from somewhere else, you might generate the typings with the <a href="https://www.npmjs.com/package/json-schema-to-typescript" target="_blank">json-schema-to-typescript</a> module.</p>
+<h2 id="types-for-the-orm-methods">Types for the ORM methods</h2>
 <p>We also add some ORM-methods for the document.</p>
 <pre><code class="lang-typescript"><span class="hljs-keyword">type</span> HeroDocMethods = {
     scream: (v: <span class="hljs-built_in">string</span>) =&gt; <span class="hljs-built_in">string</span>;
@@ -1816,7 +1856,7 @@ Our way to go is</p>
             <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;integer&apos;</span>
         }
     },
-    required: [<span class="hljs-string">&apos;firstName&apos;</span>, <span class="hljs-string">&apos;lastName&apos;</span>]
+    required: [<span class="hljs-string">&apos;passportId&apos;</span>, <span class="hljs-string">&apos;firstName&apos;</span>, <span class="hljs-string">&apos;lastName&apos;</span>]
 };
 
 <span class="hljs-keyword">const</span> heroDocMethods: HeroDocMethods = {
@@ -1921,7 +1961,7 @@ myDatabase.destroy();
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Use RxDB with Typescript","level":"2.1.1","depth":2,"next":{"title":"Using the Server Plugin","level":"2.1.2","depth":2,"path":"tutorials/server.md","ref":"./tutorials/server.md","articles":[]},"previous":{"title":"Tutorials","level":"2.1","depth":1,"ref":"","articles":[{"title":"Use RxDB with Typescript","level":"2.1.1","depth":2,"path":"tutorials/typescript.md","ref":"./tutorials/typescript.md","articles":[]},{"title":"Using the Server Plugin","level":"2.1.2","depth":2,"path":"tutorials/server.md","ref":"./tutorials/server.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"tutorials/typescript.md","mtime":"2022-01-03T12:43:06.065Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-01-03T12:47:24.092Z"},"basePath":"..","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Use RxDB with Typescript","level":"2.1.1","depth":2,"next":{"title":"Using the Server Plugin","level":"2.1.2","depth":2,"path":"tutorials/server.md","ref":"./tutorials/server.md","articles":[]},"previous":{"title":"Tutorials","level":"2.1","depth":1,"ref":"","articles":[{"title":"Use RxDB with Typescript","level":"2.1.1","depth":2,"path":"tutorials/typescript.md","ref":"./tutorials/typescript.md","articles":[]},{"title":"Using the Server Plugin","level":"2.1.2","depth":2,"path":"tutorials/server.md","ref":"./tutorials/server.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"tutorials/typescript.md","mtime":"2022-01-06T08:20:23.410Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-01-06T08:24:19.698Z"},"basePath":"..","book":{"language":""}});
         });
     </script>
 </div>

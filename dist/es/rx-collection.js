@@ -73,7 +73,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
    * TODO is this still needed?
    * set to true if the collection data already exists on this storage adapter
    */
-  wasCreatedBefore) {
+  _wasCreatedBefore) {
     try {
       var _this2 = this;
 
@@ -564,7 +564,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
      * we always ensure that we handled all missed events
      * since the last subscription.
      */
-    mergeMap(function (ev) {
+    mergeMap(function (_ev) {
       try {
         var resultMap = ensureNotFalsy(currentValue);
 
@@ -645,7 +645,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
    */
   ;
 
-  _proto.syncGraphQL = function syncGraphQL(options) {
+  _proto.syncGraphQL = function syncGraphQL(_options) {
     throw pluginMissing('replication-graphql');
   }
   /**

@@ -1,4 +1,4 @@
-import type { PrimaryKey, RxJsonSchema } from './types';
+import type { DeepMutable, DeepReadonly, PrimaryKey, RxJsonSchema } from './types';
 export declare class RxSchema<T = any> {
     readonly jsonSchema: RxJsonSchema<T>;
     indexes: string[][];
@@ -78,3 +78,8 @@ export declare function normalize<T>(jsonSchema: RxJsonSchema<T>): RxJsonSchema<
 export declare function fillWithDefaultSettings<T = any>(schemaObj: RxJsonSchema<T>): RxJsonSchema<T>;
 export declare function createRxSchema<T>(jsonSchema: RxJsonSchema<T>, runPreCreateHooks?: boolean): RxSchema<T>;
 export declare function isInstanceOf(obj: any): boolean;
+/**
+ * Used as helper function the generate the document type out of the schema via typescript.
+ * @link https://github.com/pubkey/rxdb/discussions/3467
+ */
+export declare function toTypedRxJsonSchema<T extends DeepReadonly<RxJsonSchema<any>>>(schema: T): DeepMutable<T>;

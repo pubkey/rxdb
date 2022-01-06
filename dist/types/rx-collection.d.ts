@@ -72,7 +72,7 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
      * TODO is this still needed?
      * set to true if the collection data already exists on this storage adapter
      */
-    wasCreatedBefore: boolean): Promise<void>;
+    _wasCreatedBefore: boolean): Promise<void>;
     migrationNeeded(): Promise<boolean>;
     getDataMigrator(): DataMigrator;
     migrate(batchSize?: number): Observable<MigrationState>;
@@ -135,7 +135,7 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     /**
      * sync with a GraphQL endpoint
      */
-    syncGraphQL(options: SyncOptionsGraphQL<RxDocumentType>): RxGraphQLReplicationState<RxDocumentType>;
+    syncGraphQL(_options: SyncOptionsGraphQL<RxDocumentType>): RxGraphQLReplicationState<RxDocumentType>;
     /**
      * Create a replicated in-memory-collection
      */

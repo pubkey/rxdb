@@ -392,7 +392,7 @@ var requestRemoteInstance = function requestRemoteInstance(instance, operation, 
       });
       var requestId = (0, _util.randomCouchString)(12);
       var responseListener;
-      var responsePromise = new Promise(function (res, rej) {
+      var responsePromise = new Promise(function (res, _rej) {
         responseListener = function responseListener(msg) {
           if (msg.type === messageType && msg.response === true && msg.requestId === requestId) {
             if (msg.isError) {

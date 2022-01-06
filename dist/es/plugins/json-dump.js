@@ -1,7 +1,7 @@
 /**
  * this plugin adds the json export/import capabilities to RxDB
  */
-import { hash, now } from '../util';
+import { hash } from '../util';
 import { createRxQuery, _getDefaultQuery } from '../rx-query';
 import { newRxError } from '../rx-error';
 import { _handleToStorageInstance } from '../rx-collection-helper';
@@ -116,10 +116,8 @@ function importDumpRxCollection(exportedJSON) {
   .map(function (doc) {
     return _this3.schema.validate(doc);
   });
-  var startTime;
   return this.database.lockedRun( // write to disc
   function () {
-    startTime = now();
     var writeMe = docs.map(function (doc) {
       return {
         document: _handleToStorageInstance(_this3, doc)

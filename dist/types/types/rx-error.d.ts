@@ -89,7 +89,7 @@ export interface RxErrorParameters {
     readonly parallel?: boolean;
     readonly collection?: any;
     readonly database?: any;
-    readonly indexes?: Array<string | string[]>;
+    readonly indexes?: Array<string | string[]> | Readonly<Array<string | string[]>>;
     readonly index?: string | string[];
     readonly plugin?: RxPlugin | any;
     readonly plugins?: Set<RxPlugin | any>;

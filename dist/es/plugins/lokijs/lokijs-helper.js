@@ -359,7 +359,7 @@ export var requestRemoteInstance = function requestRemoteInstance(instance, oper
       });
       var requestId = randomCouchString(12);
       var responseListener;
-      var responsePromise = new Promise(function (res, rej) {
+      var responsePromise = new Promise(function (res, _rej) {
         responseListener = function responseListener(msg) {
           if (msg.type === messageType && msg.response === true && msg.requestId === requestId) {
             if (msg.isError) {

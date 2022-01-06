@@ -48,46 +48,40 @@ var _obliviousSet = require("oblivious-set");
  * removes the database and all its known data
  */
 var removeRxDatabase = function removeRxDatabase(databaseName, storage) {
-  try {
-    var _idleQueue = new _customIdleQueue.IdleQueue();
-
-    return Promise.resolve(createRxDatabaseStorageInstances(storage, databaseName, {}, false)).then(function (storageInstance) {
-      return Promise.resolve((0, _rxStorageHelper.getAllDocuments)(storage, storageInstance.internalStore)).then(function (docs) {
-        return Promise.resolve(Promise.all(docs.map(function (colDoc) {
-          try {
-            var id = colDoc.collectionName;
-            var schema = colDoc.schema;
-            var split = id.split('-');
-            var collectionName = split[0];
-            var version = parseInt(split[1], 10);
-            var primaryPath = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
-            return Promise.resolve(Promise.all([storage.createStorageInstance({
-              databaseName: databaseName,
-              collectionName: collectionName,
-              schema: (0, _rxSchemaHelper.getPseudoSchemaForVersion)(version, primaryPath),
-              options: {},
-              multiInstance: false
-            }), storage.createKeyObjectStorageInstance({
-              databaseName: databaseName,
-              collectionName: (0, _rxCollectionHelper.getCollectionLocalInstanceName)(collectionName),
-              options: {},
-              multiInstance: false
-            })])).then(function (_ref4) {
-              var instance = _ref4[0],
-                  localInstance = _ref4[1];
-              return Promise.resolve(Promise.all([instance.remove(), localInstance.remove()])).then(function () {});
-            });
-          } catch (e) {
-            return Promise.reject(e);
-          }
-        }))).then(function () {
-          return Promise.all([storageInstance.internalStore.remove(), storageInstance.localDocumentsStore.remove()]);
-        });
+  return Promise.resolve(createRxDatabaseStorageInstances(storage, databaseName, {}, false)).then(function (storageInstance) {
+    return Promise.resolve((0, _rxStorageHelper.getAllDocuments)(storage, storageInstance.internalStore)).then(function (docs) {
+      return Promise.resolve(Promise.all(docs.map(function (colDoc) {
+        try {
+          var id = colDoc.collectionName;
+          var schema = colDoc.schema;
+          var split = id.split('-');
+          var collectionName = split[0];
+          var version = parseInt(split[1], 10);
+          var primaryPath = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
+          return Promise.resolve(Promise.all([storage.createStorageInstance({
+            databaseName: databaseName,
+            collectionName: collectionName,
+            schema: (0, _rxSchemaHelper.getPseudoSchemaForVersion)(version, primaryPath),
+            options: {},
+            multiInstance: false
+          }), storage.createKeyObjectStorageInstance({
+            databaseName: databaseName,
+            collectionName: (0, _rxCollectionHelper.getCollectionLocalInstanceName)(collectionName),
+            options: {},
+            multiInstance: false
+          })])).then(function (_ref4) {
+            var instance = _ref4[0],
+                localInstance = _ref4[1];
+            return Promise.resolve(Promise.all([instance.remove(), localInstance.remove()])).then(function () {});
+          });
+        } catch (e) {
+          return Promise.reject(e);
+        }
+      }))).then(function () {
+        return Promise.all([storageInstance.internalStore.remove(), storageInstance.localDocumentsStore.remove()]);
       });
     });
-  } catch (e) {
-    return Promise.reject(e);
-  }
+  });
 };
 
 exports.removeRxDatabase = removeRxDatabase;

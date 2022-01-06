@@ -1,3 +1,6 @@
+import { AsTyped } from 'as-typed';
+import { StringKeys } from './util';
+
 /**
  * @link https://github.com/types/lib-json-schema/blob/master/v4/index.d.ts
  */
@@ -8,14 +11,14 @@ export type CompositePrimaryKey<RxDocType> = {
      * The top level field of the document that will be used
      * to store the composite key as string.
      */
-    key: keyof RxDocType;
+    key: StringKeys<RxDocType>;
 
     /**
      * The fields of the composite key,
      * the fields must be required and final
      * and have the type number, int, or string.
      */
-    fields: (keyof RxDocType | string)[];
+    fields: (StringKeys<RxDocType> | string)[];
     /**
      * The separator which is used to concat the
      * primary fields values.
@@ -26,7 +29,7 @@ export type CompositePrimaryKey<RxDocType> = {
     separator: string;
 };
 
-export type PrimaryKey<RxDocType> = keyof RxDocType | CompositePrimaryKey<RxDocType>;
+export type PrimaryKey<RxDocType> = StringKeys<RxDocType> | CompositePrimaryKey<RxDocType>;
 
 export interface JsonSchema {
     allOf?: JsonSchema[];
@@ -101,7 +104,7 @@ export declare class RxJsonSchema<
      * retry this in later typescript-versions
      */
     type: 'object' | string;
-    properties: { [key in keyof RxDocType]: TopLevelProperty };
+    properties: { [key in StringKeys<RxDocType>]: TopLevelProperty };
 
     /**
      * On the top level the required-array must be set
@@ -109,10 +112,10 @@ export declare class RxJsonSchema<
      * 
      * TODO required should be made non-optional on the top level
      */
-    required?: (keyof RxDocType)[];
+    required?: StringKeys<RxDocType>[] | readonly StringKeys<RxDocType>[];
 
 
-    indexes?: Array<string | string[]>;
+    indexes?: (string | string[])[] | readonly (string | string[])[];
     encrypted?: string[];
     keyCompression?: boolean;
     /**
@@ -124,3 +127,9 @@ export declare class RxJsonSchema<
         encrypted?: boolean;
     };
 }
+
+/**
+ * Used to aggregate the document type from the schema.
+ * @link https://github.com/pubkey/rxdb/discussions/3467
+ */
+export type ExtractDocumentTypeFromTypedRxJsonSchema<TypedRxJsonSchema> = AsTyped<TypedRxJsonSchema>;

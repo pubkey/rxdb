@@ -15,6 +15,7 @@ exports.getPreviousVersions = getPreviousVersions;
 exports.getPrimaryFieldOfPrimaryKey = getPrimaryFieldOfPrimaryKey;
 exports.isInstanceOf = isInstanceOf;
 exports.normalize = normalize;
+exports.toTypedRxJsonSchema = toTypedRxJsonSchema;
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 
@@ -358,5 +359,14 @@ function createRxSchema(jsonSchema) {
 
 function isInstanceOf(obj) {
   return obj instanceof RxSchema;
+}
+/**
+ * Used as helper function the generate the document type out of the schema via typescript.
+ * @link https://github.com/pubkey/rxdb/discussions/3467
+ */
+
+
+function toTypedRxJsonSchema(schema) {
+  return schema;
 }
 //# sourceMappingURL=rx-schema.js.map

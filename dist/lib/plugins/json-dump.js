@@ -126,10 +126,8 @@ function importDumpRxCollection(exportedJSON) {
   .map(function (doc) {
     return _this3.schema.validate(doc);
   });
-  var startTime;
   return this.database.lockedRun( // write to disc
   function () {
-    startTime = (0, _util.now)();
     var writeMe = docs.map(function (doc) {
       return {
         document: (0, _rxCollectionHelper._handleToStorageInstance)(_this3, doc)
