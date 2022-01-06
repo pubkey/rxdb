@@ -120,9 +120,9 @@ jobs:
             ./node_modules
             ./examples/angular/node_modules
           # invalidate cache when any package-lock.json changes
-          key: ${{ runner.os }}-npm-angular-x3-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-angular-x4-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-angular-x3-
+            ${{ runner.os }}-npm-angular-x4-
 
       - name: prepare core
         run: |

@@ -130,6 +130,9 @@ export const simpleHuman: RxJsonSchema<SimpleHumanV3DocumentType> = {
         },
         age: {
             type: 'string'
+        },
+        oneOptional: {
+            type: 'string'
         }
     },
     indexes: ['age'],
@@ -149,6 +152,9 @@ export const simpleHumanV3: RxJsonSchema<SimpleHumanV3DocumentType> = {
         },
         age: {
             type: 'number'
+        },
+        oneOptional: {
+            type: 'string'
         }
     },
     indexes: ['age'],
