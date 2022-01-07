@@ -8,6 +8,6 @@ It represents a simple hero-list which is two-way-replicated with the server.
 2. go into project `cd rxdb`
 3. run `npm install`  (you may need to run `npm install --legacy-peer-deps`)
 4. go to this folder `cd examples/graphql`
-5. run `npm install`
+5. run `npm run preinstall && npm install`
 6. run `npm start`
 7. Open [http://127.0.0.1:8888/](http://127.0.0.1:8888/) **IMPORTANT: do not use localhost**
