@@ -1732,10 +1732,10 @@
                                 <section class="normal markdown-section">
                                 
                                 <h1 id="replication-primitives">Replication primitives</h1>
-<p>With the replication primitives plugin, you can build a realtime replication based on any transport layer like <strong>REST</strong>, <strong>WebRTC</strong> or <strong>websockets</strong>.</p>
+<p>With the replication primitives plugin, you can build a realtime replication based on a transport layer like <strong>REST</strong>, <strong>WebRTC</strong> or <strong>websockets</strong> or any other transport layer.</p>
 <h2 id="trade-offs">Trade offs</h2>
 <ul>
-<li><p>This plugin is made to do a <strong>many-to-one</strong> replication like you would do when you replicate many clients with one backend server. It is not possible to replicate things in a star schema like it can be done with the <a href="replication-couchdb.html">couchdb replication</a>.</p>
+<li><p>This plugin is made to do a <strong>many-to-one</strong> replication like you would do when you replicate <strong>many</strong> clients with <strong>one</strong> backend server. It is not possible to replicate things in a star schema like it can be done with the <a href="replication-couchdb.html">couchdb replication</a>.</p>
 </li>
 <li><p>This plugin is made for fast and reliable replication, it has less overhead then the couchdb replication for example.</p>
 </li>
@@ -1745,7 +1745,7 @@
 </li>
 </ul>
 <h2 id="data-layout">Data Layout</h2>
-<p>To use the replication primitives you first have to ensure that your data is sortable by update time.</p>
+<p>To use the replication primitives you first have to ensure that your documents are sortable by their last write time.</p>
 <p>For example if your documents look like this:</p>
 <pre><code class="lang-json">{
     <span class="hljs-string">&quot;id&quot;</span>: <span class="hljs-string">&quot;foobar&quot;</span>,
@@ -1758,19 +1758,28 @@
 <h2 id="the-replication-cycle">The replication cycle</h2>
 <p>The replication works in cycles. A cycle is triggered when:</p>
 <ul>
-<li>Automatically on local writes</li>
-<li>When <code>liveInterval</code> is reached from the last cycle run.</li>
+<li>Automatically on writes to non-<a href="rx-local-document.html">local</a> documents.</li>
+<li>When <code>liveInterval</code> is reached from the time of last <code>run()</code> cycle.</li>
 <li>The <code>run()</code> method is called manually.</li>
 </ul>
 <p>A cycle performs these steps in the same order:</p>
 <ol>
-<li>Get a batch of local unreplicated changes and call the <code>push handler</code> with it to send it to the remote.</li>
+<li>Get a batch of unreplicated document writes and call the <code>push handler</code> with them to send them to the remote instance.</li>
 <li>Repeat step <code>1</code> until there are no more local unreplicated changes.</li>
 <li>Get the <code>latestPullDocument</code> from the local database.</li>
-<li>Call the <code>pull handler</code> with <code>latestPullDocument</code> to fetch a batch from remote unreplicated changes.</li>
+<li>Call the <code>pull handler</code> with <code>latestPullDocument</code> to fetch a batch from remote unreplicated document writes.</li>
 <li>Update <code>latestPullDocument</code> with the newest latest document from the remote.</li>
 <li>Repeat step <code>3+4+5</code> until the pull handler returns <code>hasMoreDocuments: false</code>.</li>
 </ol>
+<h2 id="error-handling">Error handling</h2>
+<p>When sending a document to the remote fails for any reason, RxDB will send it again in a later point in time.
+This happens for <strong>all</strong> errors. The document write could have already reached the remote instance and be processed, while only the answering fails.
+The remote instance must be designed to handle this properly and to not crash on duplicate data transmissions. 
+Depending on your use case, it might be ok to just write the duplicate document data again.
+But for a more resilent error handling you could compare the last write timestamps or add a unique write id field to the document. This field can then be used to detect duplicates and ignore re-send data.</p>
+<h2 id="conflict-resolution">Conflict resolution</h2>
+<p>Imagine two of your users modify the same JSON document, while both are offline. After they go online again, their clients replicate the modified document to the server. Now you have two conflicting versions of the same document, and you need a way to determine how the correct new version of that document should look like. This process is called <strong>conflict resolution</strong>.
+RxDB relies solely on the remote instance to detect and resolve conflicts. Each document write is sent to the remote where conflicts can be resolved and the winning document can be sent back to the clients on the next run of the <code>pull</code> handler.</p>
 <h2 id="replicaterxcollection">replicateRxCollection()</h2>
 <p>You can start the replication of a single <code>RxCollection</code> by calling <code>replicateRxCollection()</code> like in the following:</p>
 <pre><code class="lang-ts"><span class="hljs-keyword">const</span> replicationState = await replicateRxCollection({
@@ -1837,7 +1846,15 @@
             <span class="hljs-comment">/**
              * Push the local documents to a remote REST server.
              */</span>
-            await postData(<span class="hljs-string">&apos;https://example.com/api/sync/push&apos;</span>, { docs });
+            await fetch(<span class="hljs-string">&apos;https://example.com/api/sync/push&apos;</span>, {
+                method: <span class="hljs-string">&apos;POST&apos;</span>,
+                headers: {
+                    <span class="hljs-string">&apos;Accept&apos;</span>: <span class="hljs-string">&apos;application/json&apos;</span>,
+                    <span class="hljs-string">&apos;Content-Type&apos;</span>: <span class="hljs-string">&apos;application/json&apos;</span>
+                },
+                body: <span class="hljs-built_in">JSON</span>.stringify({ docs })
+            });
+            <span class="hljs-keyword">const</span> content = await rawResponse.json();
         },
         <span class="hljs-comment">/**
          * Batch size, optional
@@ -1938,7 +1955,7 @@ myRxReplicationState.active$.subscribe(bool =&gt; <span class="hljs-built_in">co
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Replication Primitives","level":"1.18","depth":1,"next":{"title":"InMemory","level":"1.19","depth":1,"path":"in-memory.md","ref":"./in-memory.md","articles":[]},"previous":{"title":"Replication GraphQL","level":"1.17","depth":1,"path":"replication-graphql.md","ref":"./replication-graphql.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"replication.md","mtime":"2022-01-06T08:20:23.410Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-01-06T08:24:19.698Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Replication Primitives","level":"1.18","depth":1,"next":{"title":"InMemory","level":"1.19","depth":1,"path":"in-memory.md","ref":"./in-memory.md","articles":[]},"previous":{"title":"Replication GraphQL","level":"1.17","depth":1,"path":"replication-graphql.md","ref":"./replication-graphql.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"replication.md","mtime":"2022-01-08T11:47:58.165Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-01-08T11:52:36.753Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
