@@ -631,7 +631,10 @@ describe('replication.test.js', () => {
 
             await wait(config.isFastMode() ? 200 : 500);
 
-            assert.ok(pullCount < 2);
+
+            if (pullCount > 2) {
+                throw new Error('pullCount too height ' + pullCount);
+            }
 
             localCollection.database.destroy();
             remoteCollection.database.destroy();
