@@ -7,6 +7,7 @@
 import assert from 'assert';
 import {
     clone,
+    wait,
     waitUntil
 } from 'async-test-util';
 
@@ -580,12 +581,57 @@ describe('replication.test.js', () => {
             writeWhilePull = true;
             await replicationState.run();
 
-
-            console.dir(doc.toJSON());
             assert.strictEqual(
                 doc.name,
                 'write-from-pull-handler'
             );
+
+            localCollection.database.destroy();
+            remoteCollection.database.destroy();
+        });
+        it('should not stack up failed runs and then run many times', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+            let pullCount = 0;
+            let throwOnPull = false;
+            let startTracking = false;
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: false,
+                retryTime: 50,
+                pull: {
+                    async handler(latestPulledDocument: RxDocumentData<TestDocType> | null) {
+                        if (throwOnPull) {
+                            throw new Error('throwOnPull is true');
+                        }
+                        if (startTracking) {
+                            pullCount = pullCount + 1;
+                        }
+                        return getPullHandler(remoteCollection)(latestPulledDocument);
+                    }
+                },
+                push: {
+                    handler: getPushHandler(remoteCollection)
+                }
+            });
+            await replicationState.awaitInitialReplication();
+
+            // call run() many times but simulate an error on the pull handler.
+            throwOnPull = true;
+
+            let t = 0;
+            while (t < 100) {
+                t++;
+                await replicationState.run();
+            }
+
+            throwOnPull = false;
+            startTracking = true;
+
+
+            await wait(config.isFastMode() ? 200 : 500);
+
+            assert.ok(pullCount < 2);
 
             localCollection.database.destroy();
             remoteCollection.database.destroy();

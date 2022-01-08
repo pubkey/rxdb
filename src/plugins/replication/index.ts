@@ -66,6 +66,13 @@ export class RxReplicationStateBase<RxDocType> {
      */
     public runCount: number = 0;
 
+    /**
+     * Amount of pending retries of the run() cycle.
+     * Increase when a pull or push fails to retry after retryTime.
+     * Decrease when the retry-cycle started to run.
+     */
+    public pendingRetries = 0;
+
     constructor(
         public readonly replicationIdentifier: string,
         public readonly collection: RxCollection<RxDocType>,
@@ -172,10 +179,21 @@ export class RxReplicationStateBase<RxDocType> {
             await this.collection.database.requestIdlePromise();
         }
 
+
+        const addRetry = () => {
+            if (this.pendingRetries < 1) {
+                this.pendingRetries = this.pendingRetries + 1;
+                setTimeout(() => {
+                    this.pendingRetries = this.pendingRetries - 1;
+                    this.run();
+                }, this.retryTime);
+            }
+        };
+
         if (this.push) {
             const ok = await this.runPush();
             if (!ok && retryOnFail) {
-                setTimeout(() => this.run(), this.retryTime);
+                addRetry();
                 /*
                     Because we assume that conflicts are solved on the server side,
                     if push failed, do not attempt to pull before push was successful
@@ -188,7 +206,7 @@ export class RxReplicationStateBase<RxDocType> {
         if (this.pull) {
             const pullResult = await this.runPull();
             if (pullResult === 'error' && retryOnFail) {
-                setTimeout(() => this.run(), this.retryTime);
+                addRetry();
                 return true;
             }
             if (pullResult === 'drop') {

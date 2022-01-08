@@ -129,7 +129,7 @@ const replicationState = await replicateRxCollection({
             /**
              * Push the local documents to a remote REST server.
              */
-            await fetch('https://example.com/api/sync/push', {
+            const rawResponse = await fetch('https://example.com/api/sync/push', {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
