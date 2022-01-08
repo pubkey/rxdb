@@ -1,5 +1,5 @@
 import { Observable, Subscription } from 'rxjs';
-import type { DeepReadonlyObject, ReplicationOptions, ReplicationPullOptions, ReplicationPushOptions, RxCollection, RxReplicationState, WithDeleted } from '../../types';
+import type { DeepReadonlyObject, PullRunResult, ReplicationOptions, ReplicationPullOptions, ReplicationPushOptions, RxCollection, RxReplicationState, WithDeleted } from '../../types';
 export declare class RxReplicationStateBase<RxDocType> {
     readonly replicationIdentifier: string;
     readonly collection: RxCollection<RxDocType>;
@@ -38,7 +38,7 @@ export declare class RxReplicationStateBase<RxDocType> {
      * start from the last pulled change.
      * @return true if successfully, false if something errored
      */
-    runPull(): Promise<boolean>;
+    runPull(): Promise<PullRunResult>;
     handleDocumentsFromRemote(docs: (WithDeleted<RxDocType> | DeepReadonlyObject<WithDeleted<RxDocType>>)[]): Promise<boolean>;
     /**
      * Pushes unreplicated local changes to the remote.
@@ -46,6 +46,6 @@ export declare class RxReplicationStateBase<RxDocType> {
      */
     runPush(): Promise<boolean>;
 }
-export declare function replicateRxCollection<RxDocType>({ replicationIdentifier, collection, pull, push, live, liveInterval, retryTime, waitForLeadership }: ReplicationOptions<RxDocType>): Promise<RxReplicationState<RxDocType>>;
+export declare function replicateRxCollection<RxDocType>({ replicationIdentifier, collection, pull, push, live, liveInterval, retryTime, waitForLeadership }: ReplicationOptions<RxDocType>): RxReplicationState<RxDocType>;
 export * from './replication-checkpoint';
 export * from './revision-flag';

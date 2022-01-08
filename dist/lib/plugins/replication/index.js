@@ -4,10 +4,11 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 var _exportNames = {
-  replicateRxCollection: true,
-  RxReplicationStateBase: true
+  RxReplicationStateBase: true,
+  replicateRxCollection: true
 };
-exports.replicateRxCollection = exports.RxReplicationStateBase = void 0;
+exports.RxReplicationStateBase = void 0;
+exports.replicateRxCollection = replicateRxCollection;
 
 var _rxjs = require("rxjs");
 
@@ -260,92 +261,6 @@ function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o =
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
-var replicateRxCollection = function replicateRxCollection(_ref) {
-  try {
-    var _temp18 = function _temp18() {
-      var replicationState = new RxReplicationStateBase(_replicationIdentifier, _collection, _pull, _push, _live, _liveInterval, _retryTime); // trigger run once
-
-      replicationState.run(); // start sync-interval
-
-      if (replicationState.live) {
-        if (_pull) {
-          (function () {
-            try {
-              var _exit6 = false;
-              return _for(function () {
-                return !_exit6 && !replicationState.isStopped();
-              }, void 0, function () {
-                return Promise.resolve((0, _util.promiseWait)(replicationState.liveInterval)).then(function () {
-                  if (replicationState.isStopped()) {
-                    _exit6 = true;
-                    return;
-                  }
-
-                  return Promise.resolve(replicationState.run( // do not retry on liveInterval-runs because they might stack up
-                  // when failing
-                  false)).then(function () {});
-                });
-              });
-            } catch (e) {
-              Promise.reject(e);
-            }
-          })();
-        }
-
-        if (_push) {
-          /**
-           * When a document is written to the collection,
-           * we might have to run the replication run() once
-           */
-          var changeEventsSub = _collection.$.pipe((0, _operators.filter)(function (cE) {
-            return !cE.isLocal;
-          })).subscribe(function (changeEvent) {
-            if (replicationState.isStopped()) {
-              return;
-            }
-
-            var doc = (0, _rxChangeEvent.getDocumentDataOfRxChangeEvent)(changeEvent);
-            var rev = doc._rev;
-
-            if (rev && !(0, _revisionFlag.wasRevisionfromPullReplication)(_replicationIdentifier, rev)) {
-              replicationState.run();
-            }
-          });
-
-          replicationState.subs.push(changeEventsSub);
-        }
-      }
-
-      return replicationState;
-    };
-
-    var _replicationIdentifier = _ref.replicationIdentifier,
-        _collection = _ref.collection,
-        _pull = _ref.pull,
-        _push = _ref.push,
-        _ref$live = _ref.live,
-        _live = _ref$live === void 0 ? false : _ref$live,
-        _ref$liveInterval = _ref.liveInterval,
-        _liveInterval = _ref$liveInterval === void 0 ? 1000 * 10 : _ref$liveInterval,
-        _ref$retryTime = _ref.retryTime,
-        _retryTime = _ref$retryTime === void 0 ? 1000 * 5 : _ref$retryTime,
-        waitForLeadership = _ref.waitForLeadership;
-
-    var _temp19 = function () {
-      if (waitForLeadership && // do not await leadership if not multiInstance
-      _collection.database.multiInstance) {
-        return Promise.resolve(_collection.database.waitForLeadership()).then(function () {});
-      }
-    }();
-
-    return Promise.resolve(_temp19 && _temp19.then ? _temp19.then(_temp18) : _temp18(_temp19));
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-
-exports.replicateRxCollection = replicateRxCollection;
-
 var RxReplicationStateBase = /*#__PURE__*/function () {
   /**
    * Counts how many times the run() method
@@ -401,11 +316,7 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
       return true;
     }
 
-    if (!this.live && this.subjects.initialReplicationComplete.getValue()) {
-      return true;
-    }
-
-    if (this.subjects.canceled['_value']) {
+    if (this.subjects.canceled.getValue()) {
       return true;
     }
 
@@ -451,21 +362,17 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
 
       _this3.runQueueCount++;
       _this3.runningPromise = _this3.runningPromise.then(function () {
-        try {
-          _this3.subjects.active.next(true);
+        _this3.subjects.active.next(true);
 
-          return Promise.resolve(_this3._run(retryOnFail)).then(function (willRetry) {
-            _this3.subjects.active.next(false);
+        return _this3._run(retryOnFail);
+      }).then(function (willRetry) {
+        _this3.subjects.active.next(false);
 
-            if (retryOnFail && !willRetry && _this3.subjects.initialReplicationComplete.getValue() === false) {
-              _this3.subjects.initialReplicationComplete.next(true);
-            }
-
-            _this3.runQueueCount--;
-          });
-        } catch (e) {
-          return Promise.reject(e);
+        if (retryOnFail && !willRetry && _this3.subjects.initialReplicationComplete.getValue() === false) {
+          _this3.subjects.initialReplicationComplete.next(true);
         }
+
+        _this3.runQueueCount--;
       });
       return Promise.resolve(_this3.runningPromise);
     } catch (e) {
@@ -491,13 +398,20 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
 
           var _temp = function () {
             if (_this5.pull) {
-              return Promise.resolve(_this5.runPull()).then(function (ok) {
-                if (!ok && retryOnFail) {
+              return Promise.resolve(_this5.runPull()).then(function (pullResult) {
+                if (pullResult === 'error' && retryOnFail) {
                   setTimeout(function () {
                     return _this5.run();
                   }, _this5.retryTime);
                   _exit2 = true;
                   return true;
+                }
+
+                if (pullResult === 'drop') {
+                  var _this4$_run2 = _this5._run();
+
+                  _exit2 = true;
+                  return _this4$_run2;
                 }
               });
             }
@@ -571,85 +485,116 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
       }
 
       if (_this7.isStopped()) {
-        return Promise.resolve(_util.PROMISE_RESOLVE_FALSE);
+        return Promise.resolve('ok');
       }
 
       return Promise.resolve((0, _replicationCheckpoint.getLastPullDocument)(_this7.collection, _this7.replicationIdentifier)).then(function (latestDocument) {
         var _exit3 = false;
 
-        function _temp11(_result3) {
+        function _temp14(_result3) {
+          var _exit4 = false;
           if (_exit3) return _result3;
+
+          function _temp12(_result4) {
+            if (_exit4) return _result4;
+
+            /**
+             * Run the schema validation for pulled documentd
+             * in dev-mode.
+             */
+            if (_overwritable.overwritable.isDevMode()) {
+              try {
+                pulledDocuments.forEach(function (doc) {
+                  var withoutDeleteFlag = (0, _util.flatClone)(doc);
+                  delete withoutDeleteFlag._deleted;
+
+                  _this7.collection.schema.validate(withoutDeleteFlag);
+                });
+              } catch (err) {
+                _this7.subjects.error.next(err);
+
+                return Promise.resolve('error');
+              }
+            }
+
+            return _this7.isStopped() ? Promise.resolve('ok') : Promise.resolve(_this7.handleDocumentsFromRemote(pulledDocuments)).then(function () {
+              function _temp10() {
+                return Promise.resolve('ok');
+              }
+
+              pulledDocuments.map(function (doc) {
+                return _this7.subjects.received.next(doc);
+              });
+
+              var _temp9 = function () {
+                if (pulledDocuments.length === 0) {
+                  if (_this7.live) {}
+                } else {
+                  var newLatestDocument = (0, _util.lastOfArray)(pulledDocuments);
+                  return Promise.resolve((0, _replicationCheckpoint.setLastPullDocument)(_this7.collection, _this7.replicationIdentifier, newLatestDocument)).then(function () {
+                    var _temp8 = function () {
+                      if (result.hasMoreDocuments) {
+                        return Promise.resolve(_this7.runPull()).then(function () {});
+                      }
+                    }();
+
+                    if (_temp8 && _temp8.then) return _temp8.then(function () {});
+                  });
+                  /**
+                   * We have more documents on the remote,
+                   * So re-run the pulling.
+                   */
+                }
+              }();
+
+              return _temp9 && _temp9.then ? _temp9.then(_temp10) : _temp10(_temp9);
+            });
+          }
+
           var pulledDocuments = result.documents; // optimization shortcut, do not proceed if there are no documents.
 
           if (pulledDocuments.length === 0) {
-            return true;
+            return Promise.resolve('ok');
           }
           /**
-           * Run schema validation in dev-mode
+           * If a local write has happened while the remote changes where fetched,
+           * we have to drop the document and first run a push-sequence.
+           * This will ensure that no local writes are missed out and not pushed to the remote.
            */
 
 
-          if (_overwritable.overwritable.isDevMode()) {
-            try {
-              pulledDocuments.forEach(function (doc) {
-                var withoutDeleteFlag = (0, _util.flatClone)(doc);
-                delete withoutDeleteFlag._deleted;
+          var _temp11 = function () {
+            if (_this7.push) {
+              return Promise.resolve((0, _replicationCheckpoint.getChangesSinceLastPushSequence)(_this7.collection, _this7.replicationIdentifier, 1)).then(function (localWritesInBetween) {
+                if (localWritesInBetween.changedDocs.size > 0) {
+                  var _Promise$resolve3 = Promise.resolve('drop');
 
-                _this7.collection.schema.validate(withoutDeleteFlag);
+                  _exit4 = true;
+                  return _Promise$resolve3;
+                }
               });
-            } catch (err) {
-              _this7.subjects.error.next(err);
-
-              return false;
             }
-          }
+          }();
 
-          return _this7.isStopped() ? true : Promise.resolve(_this7.handleDocumentsFromRemote(pulledDocuments)).then(function () {
-            pulledDocuments.map(function (doc) {
-              return _this7.subjects.received.next(doc);
-            });
-
-            var _temp9 = function () {
-              if (pulledDocuments.length === 0) {
-                if (_this7.live) {}
-              } else {
-                var newLatestDocument = (0, _util.lastOfArray)(pulledDocuments);
-                return Promise.resolve((0, _replicationCheckpoint.setLastPullDocument)(_this7.collection, _this7.replicationIdentifier, newLatestDocument)).then(function () {
-                  var _temp8 = function () {
-                    if (result.hasMoreDocuments) {
-                      return Promise.resolve(_this7.runPull()).then(function () {});
-                    }
-                  }();
-
-                  if (_temp8 && _temp8.then) return _temp8.then(function () {});
-                });
-                /**
-                 * We have more documents on the remote,
-                 * So re-run the pulling.
-                 */
-              }
-            }();
-
-            return _temp9 && _temp9.then ? _temp9.then(function () {
-              return true;
-            }) : true;
-          });
+          return _temp11 && _temp11.then ? _temp11.then(_temp12) : _temp12(_temp11);
         }
 
         var result;
 
-        var _temp10 = _catch(function () {
+        var _temp13 = _catch(function () {
           return Promise.resolve(_this7.pull.handler(latestDocument)).then(function (_this6$pull$handler) {
             result = _this6$pull$handler;
           });
         }, function (err) {
           _this7.subjects.error.next(err);
 
+          var _Promise$resolve = Promise.resolve('error');
+
           _exit3 = true;
-          return false;
+          return _Promise$resolve;
         });
 
-        return _temp10 && _temp10.then ? _temp10.then(_temp11) : _temp11(_temp10);
+        return _temp13 && _temp13.then ? _temp13.then(_temp14) : _temp14(_temp13);
       });
     } catch (e) {
       return Promise.reject(e);
@@ -684,21 +629,17 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
           toStorageDocs.push(doc);
         }
 
-        var _temp12 = function () {
+        var _temp15 = function () {
           if (toStorageDocs.length > 0) {
             return Promise.resolve(_this9.collection.database.lockedRun(function () {
-              try {
-                return Promise.resolve(_this9.collection.storageInstance.bulkAddRevisions(toStorageDocs.map(function (doc) {
-                  return (0, _rxCollectionHelper._handleToStorageInstance)(_this9.collection, doc);
-                }))).then(function () {});
-              } catch (e) {
-                return Promise.reject(e);
-              }
+              return _this9.collection.storageInstance.bulkAddRevisions(toStorageDocs.map(function (doc) {
+                return (0, _rxCollectionHelper._handleToStorageInstance)(_this9.collection, doc);
+              }));
             })).then(function () {});
           }
         }();
 
-        return _temp12 && _temp12.then ? _temp12.then(function () {
+        return _temp15 && _temp15.then ? _temp15.then(function () {
           return true;
         }) : true;
       });
@@ -722,22 +663,22 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
 
       var batchSize = _this11.push.batchSize ? _this11.push.batchSize : 5;
       return Promise.resolve((0, _replicationCheckpoint.getChangesSinceLastPushSequence)(_this11.collection, _this11.replicationIdentifier, batchSize)).then(function (changesResult) {
-        var _exit4 = false;
+        var _exit5 = false;
 
-        function _temp15(_result4) {
-          if (_exit4) return _result4;
+        function _temp18(_result5) {
+          if (_exit5) return _result5;
           pushDocs.forEach(function (pushDoc) {
             return _this11.subjects.send.next(pushDoc);
           });
           return Promise.resolve((0, _replicationCheckpoint.setLastPushSequence)(_this11.collection, _this11.replicationIdentifier, changesResult.lastSequence)).then(function () {
-            var _temp13 = function () {
+            var _temp16 = function () {
               if (changesResult.changedDocs.size !== 0) {
                 return Promise.resolve(_this11.runPush()).then(function () {});
               }
             }();
 
             // batch had documents so there might be more changes to replicate
-            return _temp13 && _temp13.then ? _temp13.then(function () {
+            return _temp16 && _temp16.then ? _temp16.then(function () {
               return true;
             }) : true;
           });
@@ -756,16 +697,16 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
           return doc;
         });
 
-        var _temp14 = _catch(function () {
+        var _temp17 = _catch(function () {
           return Promise.resolve(_this11.push.handler(pushDocs)).then(function () {});
         }, function (err) {
           _this11.subjects.error.next(err);
 
-          _exit4 = true;
+          _exit5 = true;
           return false;
         });
 
-        return _temp14 && _temp14.then ? _temp14.then(_temp15) : _temp15(_temp14);
+        return _temp17 && _temp17.then ? _temp17.then(_temp18) : _temp18(_temp17);
       });
     } catch (e) {
       return Promise.reject(e);
@@ -776,4 +717,93 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
 }();
 
 exports.RxReplicationStateBase = RxReplicationStateBase;
+
+function replicateRxCollection(_ref) {
+  var replicationIdentifier = _ref.replicationIdentifier,
+      collection = _ref.collection,
+      pull = _ref.pull,
+      push = _ref.push,
+      _ref$live = _ref.live,
+      live = _ref$live === void 0 ? false : _ref$live,
+      _ref$liveInterval = _ref.liveInterval,
+      liveInterval = _ref$liveInterval === void 0 ? 1000 * 10 : _ref$liveInterval,
+      _ref$retryTime = _ref.retryTime,
+      retryTime = _ref$retryTime === void 0 ? 1000 * 5 : _ref$retryTime,
+      waitForLeadership = _ref.waitForLeadership;
+  var replicationState = new RxReplicationStateBase(replicationIdentifier, collection, pull, push, live, liveInterval, retryTime);
+  /**
+   * Always await this Promise to ensure that the current instance
+   * is leader when waitForLeadership=true
+   */
+
+  var mustWaitForLeadership = waitForLeadership && collection.database.multiInstance;
+  var waitTillRun = mustWaitForLeadership ? collection.database.waitForLeadership() : _util.PROMISE_RESOLVE_TRUE;
+  waitTillRun.then(function () {
+    if (replicationState.isStopped()) {
+      return;
+    } // trigger run() once
+
+
+    replicationState.run();
+    /**
+     * Start sync-interval and listeners
+     * if it is a live replication.
+     */
+
+    if (replicationState.live) {
+      if (pull) {
+        (function () {
+          try {
+            var _exit7 = false;
+            return _for(function () {
+              return !_exit7 && !replicationState.isStopped();
+            }, void 0, function () {
+              return Promise.resolve((0, _util.promiseWait)(replicationState.liveInterval)).then(function () {
+                if (replicationState.isStopped()) {
+                  _exit7 = true;
+                  return;
+                }
+
+                return Promise.resolve(replicationState.run( // do not retry on liveInterval-runs because they might stack up
+                // when failing
+                false)).then(function () {});
+              });
+            });
+          } catch (e) {
+            Promise.reject(e);
+          }
+        })();
+      }
+
+      if (push) {
+        /**
+         * When a non-local document is written to the collection,
+         * we have to run the replication run() once to ensure
+         * that the change is pushed to the remote.
+         */
+        var changeEventsSub = collection.$.pipe((0, _operators.filter)(function (cE) {
+          return !cE.isLocal;
+        })).subscribe(function (changeEvent) {
+          if (replicationState.isStopped()) {
+            return;
+          }
+
+          var doc = (0, _rxChangeEvent.getDocumentDataOfRxChangeEvent)(changeEvent);
+          var rev = doc._rev;
+
+          if (rev &&
+          /**
+           * Do not run() if the change
+           * was from a pull-replication cycle.
+           */
+          !(0, _revisionFlag.wasRevisionfromPullReplication)(replicationIdentifier, rev)) {
+            replicationState.run();
+          }
+        });
+        replicationState.subs.push(changeEventsSub);
+      }
+    }
+  });
+  return replicationState;
+}
 //# sourceMappingURL=index.js.map
