@@ -1,6 +1,13 @@
+/**
+ * These tests are for the replication primitives plugin.
+ * Notice that not all edge cases are tested because
+ * we do that inside of the GraphQL replication plugin.
+ */
+
 import assert from 'assert';
 import {
-    clone, waitUntil
+    clone,
+    waitUntil
 } from 'async-test-util';
 
 import config from './config';
@@ -14,6 +21,10 @@ import {
     _handleToStorageInstance,
     flatClone,
     getFromMapOrThrow,
+    RxCollection,
+    ensureNotFalsy,
+    randomCouchString,
+    now,
 } from '../../plugins/core';
 
 import {
@@ -32,12 +43,90 @@ import {
 } from '../../plugins/replication';
 
 import type {
+    ReplicationPullHandler,
+    ReplicationPushHandler,
     RxDocumentData,
     WithDeleted
 } from '../../src/types';
 
 describe('replication.test.js', () => {
-    const REPLICATION_IDENTIFIER_TEST = 'replication-ident-tests'
+    const REPLICATION_IDENTIFIER_TEST = 'replication-ident-tests';
+
+    type TestDocType = schemaObjects.HumanWithTimestampDocumentType;
+    async function getTestCollections(docsAmount: { local: number, remote: number }): Promise<{
+        localCollection: RxCollection<TestDocType, {}, {}, {}>,
+        remoteCollection: RxCollection<TestDocType, {}, {}, {}>
+    }> {
+        const [localCollection, remoteCollection] = await Promise.all([
+            humansCollection.createHumanWithTimestamp(docsAmount.local, randomCouchString(10), false),
+            humansCollection.createHumanWithTimestamp(docsAmount.remote, randomCouchString(10), false)
+        ]);
+        return {
+            localCollection,
+            remoteCollection
+        };
+    }
+
+    function getPullHandler(
+        remoteCollection: RxCollection<TestDocType, {}, {}, {}>
+    ): ReplicationPullHandler<TestDocType> {
+        const handler: ReplicationPullHandler<TestDocType> = async (latestPullDocument) => {
+            const minTimestamp = latestPullDocument ? latestPullDocument.updatedAt : 0;
+            const docs = await remoteCollection.find({
+                selector: {
+                    updatedAt: {
+                        $gt: minTimestamp
+                    }
+                },
+                sort: [
+                    { updatedAt: 'asc' }
+                ]
+            }).exec();
+            const docsData = docs.map(doc => {
+                const docData: WithDeleted<HumanWithTimestampDocumentType> = flatClone(doc.toJSON()) as any;
+                docData._deleted = false;
+                return docData;
+            });
+
+            return {
+                documents: docsData,
+                hasMoreDocuments: false
+            }
+        };
+        return handler;
+    }
+    function getPushHandler(
+        remoteCollection: RxCollection<TestDocType, {}, {}, {}>
+    ): ReplicationPushHandler<TestDocType> {
+        const handler: ReplicationPushHandler<TestDocType> = async (docs) => {
+            // process deleted
+            const deletedIds = docs
+                .filter(doc => doc._deleted)
+                .map(doc => doc.id);
+            const deletedDocs = await remoteCollection.findByIds(deletedIds);
+            await Promise.all(
+                Array.from(deletedDocs.values()).map(doc => doc.remove())
+            );
+
+            // process insert/updated
+            const changedDocs = docs
+                .filter(doc => !doc._deleted)
+                // overwrite the timestamp with the 'server' time.
+                .map(doc => {
+                    doc = flatClone(doc);
+                    doc.updatedAt = now();
+                    return doc;
+                });
+            await Promise.all(
+                changedDocs.map(doc => remoteCollection.atomicUpsert(doc))
+            );
+        }
+        return handler;
+    }
+
+
+
+
     config.parallel('revision-flag', () => {
         describe('.wasRevisionfromPullReplication()', () => {
             it('should be false on random revision', async () => {
@@ -384,59 +473,19 @@ describe('replication.test.js', () => {
             });
         });
     });
-
-    describe('non-live replication', () => {
+    config.parallel('non-live replication', () => {
         it('should replicate both sides', async () => {
-            const localCollection = await humansCollection.createHumanWithTimestamp(5);
-            const remoteCollection = await humansCollection.createHumanWithTimestamp(5);
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 5, remote: 5 });
 
-            const replicationState = await replicateRxCollection({
+            const replicationState = replicateRxCollection({
                 collection: localCollection,
                 replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
                 live: false,
                 pull: {
-                    async handler(latestPullDocument) {
-                        const minTimestamp = latestPullDocument ? latestPullDocument.updatedAt : 0;
-                        const docs = await remoteCollection.find({
-                            selector: {
-                                updatedAt: {
-                                    $gt: minTimestamp
-                                }
-                            },
-                            sort: [
-                                { updatedAt: 'asc' }
-                            ]
-                        }).exec();
-                        const docsData = docs.map(doc => {
-                            const docData: WithDeleted<HumanWithTimestampDocumentType> = flatClone(doc.toJSON()) as any;
-                            docData._deleted = false;
-                            return docData;
-                        });
-
-                        return {
-                            documents: docsData,
-                            hasMoreDocuments: false
-                        }
-                    }
+                    handler: getPullHandler(remoteCollection)
                 },
                 push: {
-                    async handler(docs) {
-                        // process deleted
-                        const deletedIds = docs
-                            .filter(doc => doc._deleted)
-                            .map(doc => doc.id);
-                        const deletedDocs = await remoteCollection.findByIds(deletedIds);
-                        await Promise.all(
-                            Array.from(deletedDocs.values()).map(doc => doc.remove())
-                        );
-
-                        // process insert/updated
-                        const changedDocs = docs
-                            .filter(doc => !doc._deleted);
-                        await Promise.all(
-                            changedDocs.map(doc => remoteCollection.atomicUpsert(doc))
-                        );
-                    }
+                    handler: getPushHandler(remoteCollection)
                 }
             });
             replicationState.error$.subscribe(err => {
@@ -456,6 +505,86 @@ describe('replication.test.js', () => {
             assert.strictEqual(
                 docsLocal.length,
                 10
+            );
+
+            localCollection.database.destroy();
+            remoteCollection.database.destroy();
+        });
+    });
+    config.parallel('issues', () => {
+        /**
+         * When a local write happens while the pull is running,
+         * we should drop the pulled documents and first run the push again
+         * to ensure we do not loose local writes.
+         */
+        it('should re-run push if a local write happend between push and pull', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+
+            // write to this document to track pushed and pulled data
+            const docData = schemaObjects.humanWithTimestamp();
+            docData.age = 0;
+            const doc = await localCollection.insert(docData);
+
+            /**
+             * To speed up this test,
+             * we do some stuff only after the initial replication is done.
+             */
+            let initalReplicationDone = false;
+
+            /**
+             * Track all pushed random values,
+             * so we can later ensure that no local write was non-pushed.
+             */
+            const pushedRandomValues: string[] = [];
+            let writeWhilePull = false;
+
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: false,
+                pull: {
+                    async handler(latestPulledDocument: RxDocumentData<TestDocType> | null) {
+                        /**
+                         * We simulate a write-while-pull-running
+                         * by just doing the write inside of the pull handler.
+                         */
+                        if (writeWhilePull) {
+                            await doc.atomicUpdate(docData => {
+                                docData.name = 'write-from-pull-handler';
+                                docData.age = docData.age + 1;
+                                return docData;
+                            });
+                            writeWhilePull = false;
+                        }
+                        return getPullHandler(remoteCollection)(latestPulledDocument);
+                    }
+                },
+                push: {
+                    async handler(docs: WithDeleted<TestDocType>[]) {
+                        if (initalReplicationDone) {
+                            const randomValue = ensureNotFalsy(docs[0]).name;
+                            pushedRandomValues.push(randomValue);
+                        }
+                        return getPushHandler(remoteCollection)(docs);
+                    }
+                }
+            });
+            await replicationState.awaitInitialReplication();
+            initalReplicationDone = true;
+
+
+
+            await doc.atomicPatch({
+                name: 'before-run'
+            });
+            writeWhilePull = true;
+            await replicationState.run();
+
+
+            console.dir(doc.toJSON());
+            assert.strictEqual(
+                doc.name,
+                'write-from-pull-handler'
             );
 
             localCollection.database.destroy();

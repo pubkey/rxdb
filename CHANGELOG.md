@@ -2,6 +2,8 @@
 
 ### X.X.X (comming soon)
 
+Bugfixes:
+  - Replication Primitives: Local writes while running the `pull` must not be lost but send to the remote.
 ### 11.1.0 (6 January 2022)
 
 Features:

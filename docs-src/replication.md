@@ -1,11 +1,11 @@
 # Replication primitives
 
-With the replication primitives plugin, you can build a realtime replication based on any transport layer like **REST**, **WebRTC** or **websockets**.
+With the replication primitives plugin, you can build a realtime replication based on a transport layer like **REST**, **WebRTC** or **websockets** or any other transport layer.
 
 
 ## Trade offs
 
-- This plugin is made to do a **many-to-one** replication like you would do when you replicate many clients with one backend server. It is not possible to replicate things in a star schema like it can be done with the [couchdb replication](./replication-couchdb.md).
+- This plugin is made to do a **many-to-one** replication like you would do when you replicate **many** clients with **one** backend server. It is not possible to replicate things in a star schema like it can be done with the [couchdb replication](./replication-couchdb.md).
 
 - This plugin is made for fast and reliable replication, it has less overhead then the couchdb replication for example.
 
@@ -15,7 +15,7 @@ With the replication primitives plugin, you can build a realtime replication bas
 
 ## Data Layout
 
-To use the replication primitives you first have to ensure that your data is sortable by update time.
+To use the replication primitives you first have to ensure that your documents are sortable by their last write time.
 
 For example if your documents look like this:
 
@@ -33,18 +33,32 @@ Then your data is always sortable by `updatedAt`. This ensures that when RxDB fe
 ## The replication cycle
 
 The replication works in cycles. A cycle is triggered when:
-  - Automatically on local writes
-  - When `liveInterval` is reached from the last cycle run.
+  - Automatically on writes to non-[local](./rx-local-document.md) documents.
+  - When `liveInterval` is reached from the time of last `run()` cycle.
   - The `run()` method is called manually.
 
 A cycle performs these steps in the same order:
 
-1. Get a batch of local unreplicated changes and call the `push handler` with it to send it to the remote.
+1. Get a batch of unreplicated document writes and call the `push handler` with them to send them to the remote instance.
 2. Repeat step `1` until there are no more local unreplicated changes.
 3. Get the `latestPullDocument` from the local database.
-4. Call the `pull handler` with `latestPullDocument` to fetch a batch from remote unreplicated changes.
+4. Call the `pull handler` with `latestPullDocument` to fetch a batch from remote unreplicated document writes.
 5. Update `latestPullDocument` with the newest latest document from the remote.
 6. Repeat step `3+4+5` until the pull handler returns `hasMoreDocuments: false`.
+
+
+## Error handling
+
+When sending a document to the remote fails for any reason, RxDB will send it again in a later point in time.
+This happens for **all** errors. The document write could have already reached the remote instance and be processed, while only the answering fails.
+The remote instance must be designed to handle this properly and to not crash on duplicate data transmissions. 
+Depending on your use case, it might be ok to just write the duplicate document data again.
+But for a more resilent error handling you could compare the last write timestamps or add a unique write id field to the document. This field can then be used to detect duplicates and ignore re-send data.
+
+## Conflict resolution
+
+Imagine two of your users modify the same JSON document, while both are offline. After they go online again, their clients replicate the modified document to the server. Now you have two conflicting versions of the same document, and you need a way to determine how the correct new version of that document should look like. This process is called **conflict resolution**.
+RxDB relies solely on the remote instance to detect and resolve conflicts. Each document write is sent to the remote where conflicts can be resolved and the winning document can be sent back to the clients on the next run of the `pull` handler.
 
 ## replicateRxCollection()
 
@@ -115,7 +129,15 @@ const replicationState = await replicateRxCollection({
             /**
              * Push the local documents to a remote REST server.
              */
-            await postData('https://example.com/api/sync/push', { docs });
+            await fetch('https://example.com/api/sync/push', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ docs })
+            });
+            const content = await rawResponse.json();
         },
         /**
          * Batch size, optional

@@ -398,13 +398,14 @@ export async function createPrimary(
 
 export async function createHumanWithTimestamp(
     amount = 0,
-    name = randomCouchString(10)
+    name = randomCouchString(10),
+    multiInstance = true
 ): Promise<RxCollection<schemaObjects.HumanWithTimestampDocumentType>> {
 
     const db = await createRxDatabase<{ humans: RxCollection<schemaObjects.HumanWithTimestampDocumentType> }>({
         name,
         storage: config.storage.getStorage(),
-        multiInstance: true,
+        multiInstance,
         eventReduce: true,
         ignoreDuplicate: true
     });

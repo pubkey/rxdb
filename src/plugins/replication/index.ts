@@ -10,6 +10,7 @@ import {
 } from 'rxjs/operators';
 import type {
     DeepReadonlyObject,
+    PullRunResult,
     ReplicationOptions,
     ReplicationPullHandlerResult,
     ReplicationPullOptions,
@@ -94,10 +95,7 @@ export class RxReplicationStateBase<RxDocType> {
         if (this.collection.destroyed) {
             return true;
         }
-        if (!this.live && this.subjects.initialReplicationComplete.getValue()) {
-            return true;
-        }
-        if (this.subjects.canceled['_value']) {
+        if (this.subjects.canceled.getValue()) {
             return true;
         }
 
@@ -129,24 +127,28 @@ export class RxReplicationStateBase<RxDocType> {
             return;
         }
 
+
         if (this.runQueueCount > 2) {
             return this.runningPromise;
         }
 
         this.runQueueCount++;
-        this.runningPromise = this.runningPromise.then(async () => {
-            this.subjects.active.next(true);
-            const willRetry = await this._run(retryOnFail);
-            this.subjects.active.next(false);
-            if (
-                retryOnFail &&
-                !willRetry &&
-                this.subjects.initialReplicationComplete.getValue() === false
-            ) {
-                this.subjects.initialReplicationComplete.next(true);
-            }
-            this.runQueueCount--;
-        });
+        this.runningPromise = this.runningPromise
+            .then(() => {
+                this.subjects.active.next(true);
+                return this._run(retryOnFail);
+            })
+            .then(willRetry => {
+                this.subjects.active.next(false);
+                if (
+                    retryOnFail &&
+                    !willRetry &&
+                    this.subjects.initialReplicationComplete.getValue() === false
+                ) {
+                    this.subjects.initialReplicationComplete.next(true);
+                }
+                this.runQueueCount--;
+            });
         return this.runningPromise;
     }
 
@@ -184,10 +186,13 @@ export class RxReplicationStateBase<RxDocType> {
         }
 
         if (this.pull) {
-            const ok = await this.runPull();
-            if (!ok && retryOnFail) {
+            const pullResult = await this.runPull();
+            if (pullResult === 'error' && retryOnFail) {
                 setTimeout(() => this.run(), this.retryTime);
                 return true;
+            }
+            if (pullResult === 'drop') {
+                return this._run();
             }
         }
 
@@ -199,12 +204,12 @@ export class RxReplicationStateBase<RxDocType> {
      * start from the last pulled change.
      * @return true if successfully, false if something errored
      */
-    async runPull(): Promise<boolean> {
+    async runPull(): Promise<PullRunResult> {
         if (!this.pull) {
             throw newRxError('SNH');
         }
         if (this.isStopped()) {
-            return PROMISE_RESOLVE_FALSE;
+            return Promise.resolve('ok');
         }
 
         const latestDocument = await getLastPullDocument(this.collection, this.replicationIdentifier);
@@ -215,18 +220,35 @@ export class RxReplicationStateBase<RxDocType> {
             result = await this.pull.handler(latestDocument);
         } catch (err) {
             this.subjects.error.next(err);
-            return false;
+            return Promise.resolve('error');
         }
 
         const pulledDocuments = result.documents;
 
         // optimization shortcut, do not proceed if there are no documents.
         if (pulledDocuments.length === 0) {
-            return true;
+            return Promise.resolve('ok');
         }
 
         /**
-         * Run schema validation in dev-mode
+         * If a local write has happened while the remote changes where fetched,
+         * we have to drop the document and first run a push-sequence.
+         * This will ensure that no local writes are missed out and not pushed to the remote.
+         */
+        if (this.push) {
+            const localWritesInBetween = await getChangesSinceLastPushSequence<RxDocType>(
+                this.collection,
+                this.replicationIdentifier,
+                1
+            );
+            if (localWritesInBetween.changedDocs.size > 0) {
+                return Promise.resolve('drop');
+            }
+        }
+
+        /**
+         * Run the schema validation for pulled documentd
+         * in dev-mode.
          */
         if (overwritable.isDevMode()) {
             try {
@@ -237,12 +259,12 @@ export class RxReplicationStateBase<RxDocType> {
                 });
             } catch (err) {
                 this.subjects.error.next(err);
-                return false;
+                return Promise.resolve('error');
             }
         }
 
         if (this.isStopped()) {
-            return true;
+            return Promise.resolve('ok');
         }
         await this.handleDocumentsFromRemote(pulledDocuments);
         pulledDocuments.map((doc: any) => this.subjects.received.next(doc));
@@ -271,7 +293,7 @@ export class RxReplicationStateBase<RxDocType> {
             }
         }
 
-        return true;
+        return Promise.resolve('ok');
     }
 
     async handleDocumentsFromRemote(
@@ -304,11 +326,9 @@ export class RxReplicationStateBase<RxDocType> {
 
         if (toStorageDocs.length > 0) {
             await this.collection.database.lockedRun(
-                async () => {
-                    await this.collection.storageInstance.bulkAddRevisions(
-                        toStorageDocs.map(doc => _handleToStorageInstance(this.collection, doc))
-                    );
-                }
+                () => this.collection.storageInstance.bulkAddRevisions(
+                    toStorageDocs.map(doc => _handleToStorageInstance(this.collection, doc))
+                )
             );
         }
 
@@ -372,7 +392,7 @@ export class RxReplicationStateBase<RxDocType> {
 }
 
 
-export async function replicateRxCollection<RxDocType>(
+export function replicateRxCollection<RxDocType>(
     {
         replicationIdentifier,
         collection,
@@ -383,16 +403,7 @@ export async function replicateRxCollection<RxDocType>(
         retryTime = 1000 * 5,
         waitForLeadership
     }: ReplicationOptions<RxDocType>
-): Promise<RxReplicationState<RxDocType>> {
-
-    if (
-        waitForLeadership &&
-        // do not await leadership if not multiInstance
-        collection.database.multiInstance
-    ) {
-        await collection.database.waitForLeadership();
-    }
-
+): RxReplicationState<RxDocType> {
     const replicationState = new RxReplicationStateBase<RxDocType>(
         replicationIdentifier,
         collection,
@@ -403,36 +414,49 @@ export async function replicateRxCollection<RxDocType>(
         retryTime,
     );
 
-    // trigger run once
-    replicationState.run();
-
-    // start sync-interval
-    if (replicationState.live) {
-        if (pull) {
-            (async () => {
-                while (!replicationState.isStopped()) {
-                    await promiseWait(replicationState.liveInterval);
-                    if (replicationState.isStopped()) {
-                        return;
-                    }
-                    await replicationState.run(
-                        // do not retry on liveInterval-runs because they might stack up
-                        // when failing
-                        false
-                    );
-                }
-            })();
+    /**
+     * Always await this Promise to ensure that the current instance
+     * is leader when waitForLeadership=true
+     */
+    const mustWaitForLeadership = waitForLeadership && collection.database.multiInstance;
+    const waitTillRun: Promise<any> = mustWaitForLeadership ? collection.database.waitForLeadership() : PROMISE_RESOLVE_TRUE;
+    waitTillRun.then(() => {
+        if (replicationState.isStopped()) {
+            return;
         }
 
-        if (push) {
-            /**
-             * When a document is written to the collection,
-             * we might have to run the replication run() once
-             */
-            const changeEventsSub = collection.$.pipe(
-                filter(cE => !cE.isLocal)
-            )
-                .subscribe(changeEvent => {
+        // trigger run() once
+        replicationState.run();
+
+        /**
+         * Start sync-interval and listeners
+         * if it is a live replication.
+         */
+        if (replicationState.live) {
+            if (pull) {
+                (async () => {
+                    while (!replicationState.isStopped()) {
+                        await promiseWait(replicationState.liveInterval);
+                        if (replicationState.isStopped()) {
+                            return;
+                        }
+                        await replicationState.run(
+                            // do not retry on liveInterval-runs because they might stack up
+                            // when failing
+                            false
+                        );
+                    }
+                })();
+            }
+            if (push) {
+                /**
+                 * When a non-local document is written to the collection,
+                 * we have to run the replication run() once to ensure
+                 * that the change is pushed to the remote.
+                 */
+                const changeEventsSub = collection.$.pipe(
+                    filter(cE => !cE.isLocal)
+                ).subscribe(changeEvent => {
                     if (replicationState.isStopped()) {
                         return;
                     }
@@ -440,6 +464,10 @@ export async function replicateRxCollection<RxDocType>(
                     const rev = doc._rev;
                     if (
                         rev &&
+                        /**
+                         * Do not run() if the change
+                         * was from a pull-replication cycle.
+                         */
                         !wasRevisionfromPullReplication(
                             replicationIdentifier,
                             rev
@@ -448,10 +476,10 @@ export async function replicateRxCollection<RxDocType>(
                         replicationState.run();
                     }
                 });
-            replicationState.subs.push(changeEventsSub);
+                replicationState.subs.push(changeEventsSub);
+            }
         }
-    }
-
+    });
     return replicationState as any;
 }
 
