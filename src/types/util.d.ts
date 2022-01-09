@@ -17,6 +17,8 @@ type DeepReadonlyObject<T> = {
     readonly [P in keyof T]: DeepReadonly<T[P]>;
 };
 
+export type MaybeReadonly<T> = T | Readonly<T>;
+
 
 /**
  * Opposite of DeepReadonly,

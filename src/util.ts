@@ -1,4 +1,4 @@
-import type { BlobBuffer, DeepReadonlyObject } from './types';
+import type {BlobBuffer, DeepReadonlyObject, MaybeReadonly} from './types';
 import {
     default as deepClone
 } from 'clone';
@@ -463,6 +463,20 @@ export function getFromObjectOrThrow<V>(
         throw new Error('missing value from object ' + key);
     }
     return val;
+}
+
+/**
+ * returns true if the supplied argument is either an Array<T> or a Readonly<Array<T>>
+ */
+export function isMaybeReadonlyArray(x: any): x is MaybeReadonly<any[]> {
+    // While this looks strange, it's a workaround for an issue in TypeScript:
+    // https://github.com/microsoft/TypeScript/issues/17002
+    //
+    // The problem is that `Array.isArray` as a type guard returns `false` for a readonly array,
+    // but at runtime the object is an array and the runtime call to `Array.isArray` would return `true`.
+    // The type predicate here allows for both `Array<T>` and `Readonly<Array<T>>` to pass a type check while
+    // still performing runtime type inspection.
+    return Array.isArray(x);
 }
 
 export const blobBufferUtil = {

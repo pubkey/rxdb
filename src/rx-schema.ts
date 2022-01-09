@@ -6,7 +6,7 @@ import {
     hash,
     sortObject,
     overwriteGetterForCaching,
-    flatClone
+    flatClone, isMaybeReadonlyArray
 } from './util';
 import {
     newRxError,
@@ -21,13 +21,13 @@ import {
 import type {
     CompositePrimaryKey,
     DeepMutable,
-    DeepReadonly,
+    DeepReadonly, MaybeReadonly,
     PrimaryKey,
     RxJsonSchema
 } from './types';
 
 export class RxSchema<T = any> {
-    public indexes: string[][];
+    public indexes: MaybeReadonly<string[]>[];
     public primaryPath: keyof T;
     public finalFields: string[];
 
@@ -213,8 +213,8 @@ export class RxSchema<T = any> {
 
 export function getIndexes<T = any>(
     jsonSchema: RxJsonSchema<T>
-): string[][] {
-    return (jsonSchema.indexes || []).map(index => Array.isArray(index) ? index : [index]);
+): MaybeReadonly<string[]>[] {
+    return (jsonSchema.indexes || []).map(index => isMaybeReadonlyArray(index) ? index : [index]);
 }
 
 export function getPrimaryFieldOfPrimaryKey<RxDocType>(

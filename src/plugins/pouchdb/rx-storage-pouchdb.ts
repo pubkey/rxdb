@@ -5,12 +5,12 @@ import type {
     RxJsonSchema,
     RxStorageInstanceCreationParams,
     RxStorage,
-    RxKeyObjectStorageInstanceCreationParams
+    RxKeyObjectStorageInstanceCreationParams, MaybeReadonly
 } from '../../types';
 
 import {
     flatClone,
-    adapterObject
+    adapterObject, isMaybeReadonlyArray
 } from '../../util';
 import {
     isLevelDown,
@@ -167,7 +167,7 @@ export async function createIndexesOnPouch(
 
     await Promise.all(
         schema.indexes.map(async (indexMaybeArray) => {
-            let indexArray: string[] = Array.isArray(indexMaybeArray) ? indexMaybeArray : [indexMaybeArray];
+            let indexArray: MaybeReadonly<string[]> = isMaybeReadonlyArray(indexMaybeArray) ? indexMaybeArray : [indexMaybeArray];
 
             /**
              * replace primary key with _id

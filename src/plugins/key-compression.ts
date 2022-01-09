@@ -22,7 +22,7 @@ import type {
     RxCollection,
     CompositePrimaryKey
 } from '../types';
-import { flatClone } from '../util';
+import {flatClone, isMaybeReadonlyArray} from '../util';
 
 declare type CompressionState = {
     table: CompressionTable;
@@ -87,7 +87,7 @@ export function createCompressionState(
      */
     if (schema.indexes) {
         const newIndexes = schema.indexes.map(idx => {
-            if (Array.isArray(idx)) {
+            if (isMaybeReadonlyArray(idx)) {
                 return idx.map(subIdx => compressedPath(table, subIdx));
             } else {
                 return compressedPath(table, idx);
