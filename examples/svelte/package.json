@@ -13,7 +13,7 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "20.0.0",
     "@rollup/plugin-node-resolve": "13.1.2",
-    "async-test-util": "1.7.3",
+    "async-test-util": "2.0.0",
     "pouchdb-adapter-idb": "7.2.2",
     "rollup": "2.62.0",
     "rollup-plugin-css-only": "3.1.0",
