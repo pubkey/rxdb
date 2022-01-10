@@ -1,4 +1,5 @@
 const opentype = require('opentype.js');
+const d3 = require('d3');
 
 const blockSize = 14;
 const squareHeight = 60;

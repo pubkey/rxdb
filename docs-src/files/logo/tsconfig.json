@@ -1,0 +1,36 @@
+{
+    "compilerOptions": {
+        "removeComments": false,
+        "preserveConstEnums": true,
+        "sourceMap": true,
+        "strictNullChecks": true,
+        "noImplicitAny": false,
+        "strict": true,
+        "noImplicitReturns": true,
+        "noImplicitThis": true,
+        "suppressImplicitAnyIndexErrors": true,
+        "moduleResolution": "node",
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "target": "es5",
+        "outDir": "./dist",
+        "lib": [
+            "es7",
+            "esnext.array",
+            "es2017.object",
+            "dom"
+        ]
+    },
+    "formatCodeOptions": {
+        "indentSize": 2,
+        "tabSize": 2
+    },
+    "include": [
+        "src"
+    ],
+    "exclude": [
+        "node_modules",
+        "**/node_modules/*"
+    ],
+    "compileOnSave": false
+}
