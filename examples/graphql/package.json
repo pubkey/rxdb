@@ -35,7 +35,7 @@
     "subscriptions-transport-ws": "0.11.0"
   },
   "devDependencies": {
-    "async-test-util": "1.7.3",
+    "async-test-util": "2.0.0",
     "css-loader": "6.5.1",
     "eslint": "7.32.0",
     "esm": "3.2.25",
