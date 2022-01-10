@@ -1,7 +1,7 @@
 <html>
 
 <head>
-    <script src="node_modules/d3/build/d3.min.js"></script>
+    <script src="node_modules/d3/dist/d3.js"></script>
     <script src="https://d3js.org/d3.v4.min.js"></script>
     <script src="js.build.js"></script>
     <style>
@@ -10,7 +10,8 @@
             padding: 0;
         }
 
-        #logo {
+        #logo,
+        #logo-dark {
             position: relative;
             width: 200px;
             height: 200px;
@@ -20,7 +21,8 @@
             overflow: hidden;
         }
 
-        #text {
+        #text,
+        #text-dark {
             position: relative;
             width: 275px;
             height: 200px;
@@ -28,7 +30,13 @@
             left: -136px;
             margin-top: 100px;
             overflow: hidden;
-            border-style: solid;
+        }
+
+        .dark {
+            background-color: #1a202c;
+            margin-top: 20px;
+            padding-top: 20px;
+            padding-bottom: 20px;
         }
     </style>
 </head>
@@ -36,10 +44,18 @@
 <body>
     <div id="text"></div>
     <div id="logo"></div>
+
+    <!-- Ensure the logo also looks good on dark background -->
+    <div class="dark">
+        <div id="text-dark"></div>
+        <div id="logo-dark"></div>
+    </div>
 </body>
 <script>
     renderLogo('#logo', false);
     renderLogo('#text', true);
+    renderLogo('#logo-dark', false);
+    renderLogo('#text-dark', true);
 </script>
 
 

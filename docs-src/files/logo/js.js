@@ -34,7 +34,7 @@ const padding = 50;
 
 
 
-window.renderLogo = function(selector, showText = true) {
+window.renderLogo = function (selector, showText = true) {
 
     let viewBox = '-' + padding * 2 + ' ' + padding / 2 + ' ' + squareWidth * 2 + ' ' + squareWidth * 2;
     let width = 200;
@@ -56,25 +56,54 @@ window.renderLogo = function(selector, showText = true) {
         .attr('viewBox', viewBox);
 
 
+    /**
+     * All elements have to be added to both groups,
+     * so we can add the stroke the the bordered group
+     * and overlay it with the non-bordered group.
+     * This ensure we have to ugly stroke blinking throught
+     * and we do not have to work with svg masks.
+     */
+    const borderedGroup = svg
+        .append('g')
+        .style('stroke-width', '7px')
+        .style('stroke', 'rgb(255 255 255)')
+        .style('stroke-linejoin', 'round');
+    const normalGroup = svg
+        .append('g')
+        .attr('id', 'normal-group');
+    const groups = [normalGroup, borderedGroup];
+
+
+    function getShapeRendering(idx) {
+        if (idx === 0) {
+            return 'crispEdges';
+        } else {
+            return 'geometricPrecision';
+        }
+    }
 
     function addBlock(x, y, color) {
-        svg.append('rect')
-            .attr('x', x)
-            .attr('y', y)
-            .attr('width', blockSize)
-            .attr('height', blockSize)
-            .attr('shape-rendering', 'crispEdges')
-            .style('fill', color);
+        groups.forEach((g, idx) => {
+            g.append('rect')
+                .attr('x', x)
+                .attr('y', y)
+                .attr('width', blockSize)
+                .attr('height', blockSize)
+                .attr('shape-rendering', getShapeRendering(idx))
+                .style('fill', color);
+        });
     }
 
     function addSquare(x, y, color) {
-        svg.append('rect')
-            .attr('x', x)
-            .attr('y', y)
-            .attr('width', squareWidth)
-            .attr('height', squareHeight)
-            .attr('shape-rendering', 'crispEdges')
-            .style('fill', color);
+        groups.forEach((g, idx) => {
+            g.append('rect')
+                .attr('x', x)
+                .attr('y', y)
+                .attr('width', squareWidth)
+                .attr('height', squareHeight)
+                .attr('shape-rendering', getShapeRendering(idx))
+                .style('fill', color);
+        });
     }
 
     // top
@@ -101,15 +130,19 @@ window.renderLogo = function(selector, showText = true) {
 
     // TEXT
     if (showText) {
-        getTextPaths(function(paths) {
+        getTextPaths(function (paths) {
             paths.forEach(path => {
-                svg.append('svg:path')
-                    .attr('d', path)
-                    .attr('transform', 'scale(1,1.1755)')
-                    .style('fill', color.middle);
+                groups.forEach(g => {
+                    g.append('svg:path')
+                        .attr('d', path)
+                        .attr('transform', 'scale(1,1.1755)')
+                        .attr('shape-rendering', 'geometricPrecision')
+                        .style('fill', color.middle);
+                });
             });
         });
     }
+
 };
 
 /**
@@ -118,7 +151,7 @@ window.renderLogo = function(selector, showText = true) {
  */
 function getTextPaths(cb) {
     console.log('.getTextSVGPaths():');
-    opentype.load('https://cdn.rawgit.com/google/fonts/278aaad9/ofl/kanit/Kanit-Bold.ttf', function(err, font) {
+    opentype.load('https://cdn.rawgit.com/google/fonts/278aaad9/ofl/kanit/Kanit-Bold.ttf', function (err, font) {
         if (err) alert('Could not load font: ' + err);
 
         console.log('font: ');

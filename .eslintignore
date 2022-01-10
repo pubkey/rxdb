@@ -17,3 +17,4 @@ examples/svelte
 examples/react/build
 node_modules
 docs
+docs-src/files/logo/js.build.js
