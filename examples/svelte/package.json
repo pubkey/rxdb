@@ -11,7 +11,7 @@
     "test": "npm run build && concurrently \"npm run start\" \"npm run test:e2e\" --kill-others --success first"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "20.0.0",
+    "@rollup/plugin-commonjs": "21.0.1",
     "@rollup/plugin-node-resolve": "13.1.2",
     "async-test-util": "1.7.3",
     "pouchdb-adapter-idb": "7.2.2",
