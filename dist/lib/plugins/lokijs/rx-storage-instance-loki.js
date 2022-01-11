@@ -68,7 +68,7 @@ var createLokiLocalState = function createLokiLocalState(params, databaseSetting
 
       if (params.schema.indexes) {
         params.schema.indexes.forEach(function (idx) {
-          if (!Array.isArray(idx)) {
+          if (!(0, _util.isMaybeReadonlyArray)(idx)) {
             indices.push(idx);
           }
         });

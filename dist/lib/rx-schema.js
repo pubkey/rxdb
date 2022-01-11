@@ -208,7 +208,7 @@ exports.RxSchema = RxSchema;
 
 function getIndexes(jsonSchema) {
   return (jsonSchema.indexes || []).map(function (index) {
-    return Array.isArray(index) ? index : [index];
+    return (0, _util.isMaybeReadonlyArray)(index) ? index : [index];
   });
 }
 

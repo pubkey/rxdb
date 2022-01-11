@@ -58,7 +58,7 @@ function createCompressionState(schema) {
 
   if (schema.indexes) {
     var newIndexes = schema.indexes.map(function (idx) {
-      if (Array.isArray(idx)) {
+      if ((0, _util.isMaybeReadonlyArray)(idx)) {
         return idx.map(function (subIdx) {
           return (0, _jsonschemaKeyCompression.compressedPath)(table, subIdx);
         });

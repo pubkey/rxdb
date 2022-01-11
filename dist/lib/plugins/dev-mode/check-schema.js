@@ -313,7 +313,7 @@ function checkSchema(jsonSchema) {
 
   if (jsonSchema.indexes) {
     // should be an array
-    if (!Array.isArray(jsonSchema.indexes)) {
+    if (!(0, _util.isMaybeReadonlyArray)(jsonSchema.indexes)) {
       throw (0, _rxError.newRxError)('SC18', {
         indexes: jsonSchema.indexes,
         schema: jsonSchema
@@ -386,7 +386,7 @@ function checkSchema(jsonSchema) {
   /* check types of the indexes */
 
   (jsonSchema.indexes || []).reduce(function (indexPaths, currentIndex) {
-    if (Array.isArray(currentIndex)) {
+    if ((0, _util.isMaybeReadonlyArray)(currentIndex)) {
       indexPaths.concat(currentIndex);
     } else {
       indexPaths.push(currentIndex);

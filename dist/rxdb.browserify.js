@@ -2085,7 +2085,7 @@ function checkSchema(jsonSchema) {
 
   if (jsonSchema.indexes) {
     // should be an array
-    if (!Array.isArray(jsonSchema.indexes)) {
+    if (!(0, _util.isMaybeReadonlyArray)(jsonSchema.indexes)) {
       throw (0, _rxError.newRxError)('SC18', {
         indexes: jsonSchema.indexes,
         schema: jsonSchema
@@ -2158,7 +2158,7 @@ function checkSchema(jsonSchema) {
   /* check types of the indexes */
 
   (jsonSchema.indexes || []).reduce(function (indexPaths, currentIndex) {
-    if (Array.isArray(currentIndex)) {
+    if ((0, _util.isMaybeReadonlyArray)(currentIndex)) {
       indexPaths.concat(currentIndex);
     } else {
       indexPaths.push(currentIndex);
@@ -3542,7 +3542,7 @@ function createCompressionState(schema) {
 
   if (schema.indexes) {
     var newIndexes = schema.indexes.map(function (idx) {
-      if (Array.isArray(idx)) {
+      if ((0, _util.isMaybeReadonlyArray)(idx)) {
         return idx.map(function (subIdx) {
           return (0, _jsonschemaKeyCompression.compressedPath)(table, subIdx);
         });
@@ -6915,7 +6915,7 @@ var createIndexesOnPouch = function createIndexesOnPouch(pouch, schema) {
       }));
       return Promise.resolve(Promise.all(schema.indexes.map(function (indexMaybeArray) {
         try {
-          var indexArray = Array.isArray(indexMaybeArray) ? indexMaybeArray : [indexMaybeArray];
+          var indexArray = (0, _util.isMaybeReadonlyArray)(indexMaybeArray) ? indexMaybeArray : [indexMaybeArray];
           /**
            * replace primary key with _id
            * because that is the enforced primary key on pouchdb.
@@ -12502,7 +12502,7 @@ exports.RxSchema = RxSchema;
 
 function getIndexes(jsonSchema) {
   return (jsonSchema.indexes || []).map(function (index) {
-    return Array.isArray(index) ? index : [index];
+    return (0, _util.isMaybeReadonlyArray)(index) ? index : [index];
   });
 }
 
@@ -12905,6 +12905,7 @@ exports.getHeightOfRevision = getHeightOfRevision;
 exports.hash = hash;
 exports.isElectronRenderer = void 0;
 exports.isFolderPath = isFolderPath;
+exports.isMaybeReadonlyArray = isMaybeReadonlyArray;
 exports.lastOfArray = lastOfArray;
 exports.nextTick = nextTick;
 exports.now = now;
@@ -13416,6 +13417,21 @@ function getFromObjectOrThrow(obj, key) {
   }
 
   return val;
+}
+/**
+ * returns true if the supplied argument is either an Array<T> or a Readonly<Array<T>>
+ */
+
+
+function isMaybeReadonlyArray(x) {
+  // While this looks strange, it's a workaround for an issue in TypeScript:
+  // https://github.com/microsoft/TypeScript/issues/17002
+  //
+  // The problem is that `Array.isArray` as a type guard returns `false` for a readonly array,
+  // but at runtime the object is an array and the runtime call to `Array.isArray` would return `true`.
+  // The type predicate here allows for both `Array<T>` and `Readonly<Array<T>>` to pass a type check while
+  // still performing runtime type inspection.
+  return Array.isArray(x);
 }
 
 var blobBufferUtil = {
@@ -48621,16 +48637,20 @@ var Observable = (function () {
         var _this = this;
         promiseCtor = getPromiseCtor(promiseCtor);
         return new promiseCtor(function (resolve, reject) {
-            var subscription;
-            subscription = _this.subscribe(function (value) {
-                try {
-                    next(value);
-                }
-                catch (err) {
-                    reject(err);
-                    subscription === null || subscription === void 0 ? void 0 : subscription.unsubscribe();
-                }
-            }, reject, resolve);
+            var subscriber = new Subscriber_1.SafeSubscriber({
+                next: function (value) {
+                    try {
+                        next(value);
+                    }
+                    catch (err) {
+                        reject(err);
+                        subscriber.unsubscribe();
+                    }
+                },
+                error: reject,
+                complete: resolve,
+            });
+            _this.subscribe(subscriber);
         });
     };
     Observable.prototype._subscribe = function (subscriber) {
@@ -49752,7 +49772,7 @@ function animationFramesFactory(timestampProvider) {
             var now = provider.now();
             subscriber.next({
                 timestamp: timestampProvider ? now : timestamp,
-                elapsed: now - start
+                elapsed: now - start,
             });
             if (!subscriber.closed) {
                 subscription.add(schedule(run));
@@ -50712,7 +50732,7 @@ var async_1 = require("../scheduler/async");
 var audit_1 = require("./audit");
 var timer_1 = require("../observable/timer");
 function auditTime(duration, scheduler) {
-    if (scheduler === void 0) { scheduler = async_1.async; }
+    if (scheduler === void 0) { scheduler = async_1.asyncScheduler; }
     return audit_1.audit(function () { return timer_1.timer(duration, scheduler); });
 }
 exports.auditTime = auditTime;
@@ -52534,21 +52554,46 @@ exports.repeat = void 0;
 var empty_1 = require("../observable/empty");
 var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
-function repeat(count) {
-    if (count === void 0) { count = Infinity; }
+var innerFrom_1 = require("../observable/innerFrom");
+var timer_1 = require("../observable/timer");
+function repeat(countOrConfig) {
+    var _a;
+    var count = Infinity;
+    var delay;
+    if (countOrConfig != null) {
+        if (typeof countOrConfig === 'object') {
+            (_a = countOrConfig.count, count = _a === void 0 ? Infinity : _a, delay = countOrConfig.delay);
+        }
+        else {
+            count = countOrConfig;
+        }
+    }
     return count <= 0
         ? function () { return empty_1.EMPTY; }
         : lift_1.operate(function (source, subscriber) {
             var soFar = 0;
-            var innerSub;
-            var subscribeForRepeat = function () {
+            var sourceSub;
+            var resubscribe = function () {
+                sourceSub === null || sourceSub === void 0 ? void 0 : sourceSub.unsubscribe();
+                sourceSub = null;
+                if (delay != null) {
+                    var notifier = typeof delay === 'number' ? timer_1.timer(delay) : innerFrom_1.innerFrom(delay(soFar));
+                    var notifierSubscriber_1 = new OperatorSubscriber_1.OperatorSubscriber(subscriber, function () {
+                        notifierSubscriber_1.unsubscribe();
+                        subscribeToSource();
+                    });
+                    notifier.subscribe(notifierSubscriber_1);
+                }
+                else {
+                    subscribeToSource();
+                }
+            };
+            var subscribeToSource = function () {
                 var syncUnsub = false;
-                innerSub = source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, undefined, function () {
+                sourceSub = source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, undefined, function () {
                     if (++soFar < count) {
-                        if (innerSub) {
-                            innerSub.unsubscribe();
-                            innerSub = null;
-                            subscribeForRepeat();
+                        if (sourceSub) {
+                            resubscribe();
                         }
                         else {
                             syncUnsub = true;
@@ -52559,17 +52604,15 @@ function repeat(count) {
                     }
                 }));
                 if (syncUnsub) {
-                    innerSub.unsubscribe();
-                    innerSub = null;
-                    subscribeForRepeat();
+                    resubscribe();
                 }
             };
-            subscribeForRepeat();
+            subscribeToSource();
         });
 }
 exports.repeat = repeat;
 
-},{"../observable/empty":535,"../util/lift":730,"./OperatorSubscriber":557}],631:[function(require,module,exports){
+},{"../observable/empty":535,"../observable/innerFrom":543,"../observable/timer":554,"../util/lift":730,"./OperatorSubscriber":557}],631:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.repeatWhen = void 0;
@@ -52980,7 +53023,7 @@ function shareReplay(configOrBufferSize, windowTime, scheduler) {
         connector: function () { return new ReplaySubject_1.ReplaySubject(bufferSize, windowTime, scheduler); },
         resetOnError: true,
         resetOnComplete: false,
-        resetOnRefCountZero: refCount
+        resetOnRefCountZero: refCount,
     });
 }
 exports.shareReplay = shareReplay;
@@ -53364,9 +53407,10 @@ exports.defaultThrottleConfig = {
     leading: true,
     trailing: false,
 };
-function throttle(durationSelector, _a) {
-    var _b = _a === void 0 ? exports.defaultThrottleConfig : _a, leading = _b.leading, trailing = _b.trailing;
+function throttle(durationSelector, config) {
+    if (config === void 0) { config = exports.defaultThrottleConfig; }
     return lift_1.operate(function (source, subscriber) {
+        var leading = config.leading, trailing = config.trailing;
         var hasValue = false;
         var sendValue = null;
         var throttled = null;
@@ -53453,7 +53497,7 @@ var scan_1 = require("./scan");
 var defer_1 = require("../observable/defer");
 var map_1 = require("./map");
 function timeInterval(scheduler) {
-    if (scheduler === void 0) { scheduler = async_1.async; }
+    if (scheduler === void 0) { scheduler = async_1.asyncScheduler; }
     return function (source) {
         return defer_1.defer(function () {
             return source.pipe(scan_1.scan(function (_a, value) {
@@ -54297,7 +54341,7 @@ var AnimationFrameAction = (function (_super) {
         if ((delay != null && delay > 0) || (delay == null && this.delay > 0)) {
             return _super.prototype.recycleAsyncId.call(this, scheduler, id, delay);
         }
-        if (scheduler.actions.length === 0) {
+        if (!scheduler.actions.some(function (action) { return action.id === id; })) {
             animationFrameProvider_1.animationFrameProvider.cancelAnimationFrame(id);
             scheduler._scheduled = undefined;
         }
@@ -54334,20 +54378,19 @@ var AnimationFrameScheduler = (function (_super) {
     }
     AnimationFrameScheduler.prototype.flush = function (action) {
         this._active = true;
+        var flushId = this._scheduled;
         this._scheduled = undefined;
         var actions = this.actions;
         var error;
-        var index = -1;
         action = action || actions.shift();
-        var count = actions.length;
         do {
             if ((error = action.execute(action.state, action.delay))) {
                 break;
             }
-        } while (++index < count && (action = actions.shift()));
+        } while ((action = actions[0]) && action.id === flushId && actions.shift());
         this._active = false;
         if (error) {
-            while (++index < count && (action = actions.shift())) {
+            while ((action = actions[0]) && action.id === flushId && actions.shift()) {
                 action.unsubscribe();
             }
             throw error;
@@ -54399,7 +54442,7 @@ var AsapAction = (function (_super) {
         if ((delay != null && delay > 0) || (delay == null && this.delay > 0)) {
             return _super.prototype.recycleAsyncId.call(this, scheduler, id, delay);
         }
-        if (scheduler.actions.length === 0) {
+        if (!scheduler.actions.some(function (action) { return action.id === id; })) {
             immediateProvider_1.immediateProvider.clearImmediate(id);
             scheduler._scheduled = undefined;
         }
@@ -54436,20 +54479,19 @@ var AsapScheduler = (function (_super) {
     }
     AsapScheduler.prototype.flush = function (action) {
         this._active = true;
+        var flushId = this._scheduled;
         this._scheduled = undefined;
         var actions = this.actions;
         var error;
-        var index = -1;
         action = action || actions.shift();
-        var count = actions.length;
         do {
             if ((error = action.execute(action.state, action.delay))) {
                 break;
             }
-        } while (++index < count && (action = actions.shift()));
+        } while ((action = actions[0]) && action.id === flushId && actions.shift());
         this._active = false;
         if (error) {
-            while (++index < count && (action = actions.shift())) {
+            while ((action = actions[0]) && action.id === flushId && actions.shift()) {
                 action.unsubscribe();
             }
             throw error;

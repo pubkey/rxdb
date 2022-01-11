@@ -1,5 +1,5 @@
 import { Subject } from 'rxjs';
-import { promiseWait, createRevision, getHeightOfRevision, parseRevision, lastOfArray, flatClone, now, ensureNotFalsy, randomCouchString } from '../../util';
+import { promiseWait, createRevision, getHeightOfRevision, parseRevision, lastOfArray, flatClone, now, ensureNotFalsy, randomCouchString, isMaybeReadonlyArray } from '../../util';
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import { CHANGES_COLLECTION_SUFFIX, closeLokiCollections, getLokiDatabase, getLokiEventKey, OPEN_LOKIJS_STORAGE_INSTANCES, LOKIJS_COLLECTION_DEFAULT_OPTIONS, stripLokiKey, getLokiSortComparator, getLokiLeaderElector, removeLokiLeaderElectorReference, requestRemoteInstance, mustUseLocalState, handleRemoteRequest } from './lokijs-helper';
@@ -53,7 +53,7 @@ export var createLokiLocalState = function createLokiLocalState(params, database
 
       if (params.schema.indexes) {
         params.schema.indexes.forEach(function (idx) {
-          if (!Array.isArray(idx)) {
+          if (!isMaybeReadonlyArray(idx)) {
             indices.push(idx);
           }
         });

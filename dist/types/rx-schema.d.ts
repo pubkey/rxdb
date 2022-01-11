@@ -1,7 +1,7 @@
-import type { DeepMutable, DeepReadonly, PrimaryKey, RxJsonSchema } from './types';
+import type { DeepMutable, DeepReadonly, MaybeReadonly, PrimaryKey, RxJsonSchema } from './types';
 export declare class RxSchema<T = any> {
     readonly jsonSchema: RxJsonSchema<T>;
-    indexes: string[][];
+    indexes: MaybeReadonly<string[]>[];
     primaryPath: keyof T;
     finalFields: string[];
     constructor(jsonSchema: RxJsonSchema<T>);
@@ -51,7 +51,7 @@ export declare class RxSchema<T = any> {
     getPrimaryOfDocumentData(documentData: Partial<T>): string;
     fillPrimaryKey(documentData: T): T;
 }
-export declare function getIndexes<T = any>(jsonSchema: RxJsonSchema<T>): string[][];
+export declare function getIndexes<T = any>(jsonSchema: RxJsonSchema<T>): MaybeReadonly<string[]>[];
 export declare function getPrimaryFieldOfPrimaryKey<RxDocType>(primaryKey: PrimaryKey<RxDocType>): keyof RxDocType;
 /**
  * Returns the composed primaryKey of a document by its data.
