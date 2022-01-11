@@ -18,6 +18,12 @@ export declare class RxReplicationStateBase<RxDocType> {
      * has been called. Used in tests.
      */
     runCount: number;
+    /**
+     * Amount of pending retries of the run() cycle.
+     * Increase when a pull or push fails to retry after retryTime.
+     * Decrease when the retry-cycle started to run.
+     */
+    pendingRetries: number;
     constructor(replicationIdentifier: string, collection: RxCollection<RxDocType>, pull?: ReplicationPullOptions<RxDocType> | undefined, push?: ReplicationPushOptions<RxDocType> | undefined, live?: boolean | undefined, liveInterval?: number | undefined, retryTime?: number | undefined);
     isStopped(): boolean;
     awaitInitialReplication(): Promise<true>;

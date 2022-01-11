@@ -221,6 +221,12 @@ export var RxReplicationStateBase = /*#__PURE__*/function () {
    * Counts how many times the run() method
    * has been called. Used in tests.
    */
+
+  /**
+   * Amount of pending retries of the run() cycle.
+   * Increase when a pull or push fails to retry after retryTime.
+   * Decrease when the retry-cycle started to run.
+   */
   function RxReplicationStateBase(replicationIdentifier, collection, pull, push, live, liveInterval, retryTime) {
     var _this = this;
 
@@ -243,6 +249,7 @@ export var RxReplicationStateBase = /*#__PURE__*/function () {
     this.runningPromise = PROMISE_RESOLVE_VOID;
     this.runQueueCount = 0;
     this.runCount = 0;
+    this.pendingRetries = 0;
     this.replicationIdentifier = replicationIdentifier;
     this.collection = collection;
     this.pull = pull;
@@ -355,9 +362,7 @@ export var RxReplicationStateBase = /*#__PURE__*/function () {
             if (_this5.pull) {
               return Promise.resolve(_this5.runPull()).then(function (pullResult) {
                 if (pullResult === 'error' && retryOnFail) {
-                  setTimeout(function () {
-                    return _this5.run();
-                  }, _this5.retryTime);
+                  addRetry();
                   _exit2 = true;
                   return true;
                 }
@@ -377,13 +382,22 @@ export var RxReplicationStateBase = /*#__PURE__*/function () {
           }) : _exit2 ? _temp : false;
         }
 
+        var addRetry = function addRetry() {
+          if (_this5.pendingRetries < 1) {
+            _this5.pendingRetries = _this5.pendingRetries + 1;
+            setTimeout(function () {
+              _this5.pendingRetries = _this5.pendingRetries - 1;
+
+              _this5.run();
+            }, _this5.retryTime);
+          }
+        };
+
         var _temp2 = function () {
           if (_this5.push) {
             return Promise.resolve(_this5.runPush()).then(function (ok) {
               if (!ok && retryOnFail) {
-                setTimeout(function () {
-                  return _this5.run();
-                }, _this5.retryTime);
+                addRetry();
                 /*
                     Because we assume that conflicts are solved on the server side,
                     if push failed, do not attempt to pull before push was successful
