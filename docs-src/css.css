@@ -1,0 +1,37 @@
+:root {
+    --bg-color: #1a202c;
+}
+
+body,
+html {
+    margin : 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-color);
+
+    /** font **/
+    color      : white;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+header {
+    background-color: var(--bg-color);
+    position        : fixed;
+    height          : 60px;
+    padding-top: 22px;
+    padding-bottom: 22px;
+    width: 90%;
+    padding-left: 5%;
+}
+
+header .logo a {
+    color          : #8d2089;
+    font-weight    : bold;
+    text-decoration: none;
+}
+
+header .logo img {
+    height: 100%;
+}
