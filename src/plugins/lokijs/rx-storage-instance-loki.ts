@@ -14,7 +14,7 @@ import {
     flatClone,
     now,
     ensureNotFalsy,
-    randomCouchString
+    randomCouchString, isMaybeReadonlyArray
 } from '../../util';
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
@@ -547,7 +547,7 @@ export async function createLokiLocalState<RxDocType>(
     const indices: string[] = [];
     if (params.schema.indexes) {
         params.schema.indexes.forEach(idx => {
-            if (!Array.isArray(idx)) {
+            if (!isMaybeReadonlyArray(idx)) {
                 indices.push(idx);
             }
         });

@@ -16,7 +16,7 @@ import type {
     TopLevelProperty
 } from '../../types';
 import {
-    flattenObject,
+    flattenObject, isMaybeReadonlyArray,
     trimDots
 } from '../../util';
 import { rxDocumentProperties } from './entity-properties';
@@ -320,7 +320,7 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
     // check format of jsonSchema.indexes
     if (jsonSchema.indexes) {
         // should be an array
-        if (!Array.isArray(jsonSchema.indexes)) {
+        if (!isMaybeReadonlyArray(jsonSchema.indexes)) {
             throw newRxError('SC18', {
                 indexes: jsonSchema.indexes,
                 schema: jsonSchema
@@ -378,7 +378,7 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
     /* check types of the indexes */
     (jsonSchema.indexes || [])
         .reduce((indexPaths: string[], currentIndex) => {
-            if (Array.isArray(currentIndex)) {
+            if (isMaybeReadonlyArray(currentIndex)) {
                 indexPaths.concat(currentIndex);
             } else {
                 indexPaths.push(currentIndex);

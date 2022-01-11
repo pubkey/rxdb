@@ -115,7 +115,7 @@ export declare class RxJsonSchema<
     required?: StringKeys<RxDocType>[] | readonly StringKeys<RxDocType>[];
 
 
-    indexes?: (string | string[])[] | readonly (string | string[])[];
+    indexes?: (string | string[])[] | (string | readonly string[])[] | readonly (string | string[])[] | readonly (string | readonly string[])[];
     encrypted?: string[];
     keyCompression?: boolean;
     /**
