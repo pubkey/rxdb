@@ -5,6 +5,7 @@
 Bugfixes:
   - Replication Primitives: Local writes while running the `pull` must not be lost but send to the remote.
   - Replication Primitives: Should not stack up failed runs and then run many times.
+  - Support composite indices in schema literal types [#3609](https://github.com/pubkey/rxdb/pull/3609) Thanks [@nirvdrum](https://github.com/nirvdrum)
 
 
 ### 11.1.0 (6 January 2022)
