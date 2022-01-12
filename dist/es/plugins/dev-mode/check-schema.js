@@ -6,7 +6,7 @@ import objectPath from 'object-path';
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import { getSchemaByObjectPath } from '../../rx-schema-helper';
-import { flattenObject, trimDots } from '../../util';
+import { flattenObject, isMaybeReadonlyArray, trimDots } from '../../util';
 import { rxDocumentProperties } from './entity-properties';
 /**
  * checks if the fieldname is allowed
@@ -292,7 +292,7 @@ export function checkSchema(jsonSchema) {
 
   if (jsonSchema.indexes) {
     // should be an array
-    if (!Array.isArray(jsonSchema.indexes)) {
+    if (!isMaybeReadonlyArray(jsonSchema.indexes)) {
       throw newRxError('SC18', {
         indexes: jsonSchema.indexes,
         schema: jsonSchema
@@ -364,7 +364,7 @@ export function checkSchema(jsonSchema) {
   /* check types of the indexes */
 
   (jsonSchema.indexes || []).reduce(function (indexPaths, currentIndex) {
-    if (Array.isArray(currentIndex)) {
+    if (isMaybeReadonlyArray(currentIndex)) {
       indexPaths.concat(currentIndex);
     } else {
       indexPaths.push(currentIndex);

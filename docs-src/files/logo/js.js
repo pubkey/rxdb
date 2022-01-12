@@ -65,7 +65,7 @@ window.renderLogo = function (selector, showText = true) {
      */
     const borderedGroup = svg
         .append('g')
-        .style('stroke-width', '7px')
+        .style('stroke-width', '26px')
         .style('stroke', 'rgb(255 255 255)')
         .style('stroke-linejoin', 'round');
     const normalGroup = svg

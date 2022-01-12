@@ -1,4 +1,4 @@
-import { flatClone, adapterObject } from '../../util';
+import { flatClone, adapterObject, isMaybeReadonlyArray } from '../../util';
 import { isLevelDown, PouchDB } from './pouch-db';
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
@@ -23,7 +23,7 @@ export var createIndexesOnPouch = function createIndexesOnPouch(pouch, schema) {
       }));
       return Promise.resolve(Promise.all(schema.indexes.map(function (indexMaybeArray) {
         try {
-          var indexArray = Array.isArray(indexMaybeArray) ? indexMaybeArray : [indexMaybeArray];
+          var indexArray = isMaybeReadonlyArray(indexMaybeArray) ? indexMaybeArray : [indexMaybeArray];
           /**
            * replace primary key with _id
            * because that is the enforced primary key on pouchdb.

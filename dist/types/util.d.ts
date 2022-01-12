@@ -1,4 +1,4 @@
-import type { BlobBuffer, DeepReadonlyObject } from './types';
+import type { BlobBuffer, DeepReadonlyObject, MaybeReadonly } from './types';
 /**
  * Returns an error that indicates that a plugin is missing
  * We do not throw a RxError because this should not be handled
@@ -135,6 +135,10 @@ export declare function getFromMapOrThrow<K, V>(map: Map<K, V> | WeakMap<any, V>
 export declare function getFromObjectOrThrow<V>(obj: {
     [k: string]: V;
 }, key: string): V;
+/**
+ * returns true if the supplied argument is either an Array<T> or a Readonly<Array<T>>
+ */
+export declare function isMaybeReadonlyArray(x: any): x is MaybeReadonly<any[]>;
 export declare const blobBufferUtil: {
     /**
      * depending if we are on node or browser,

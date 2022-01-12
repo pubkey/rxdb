@@ -40,7 +40,7 @@ var createIndexesOnPouch = function createIndexesOnPouch(pouch, schema) {
       }));
       return Promise.resolve(Promise.all(schema.indexes.map(function (indexMaybeArray) {
         try {
-          var indexArray = Array.isArray(indexMaybeArray) ? indexMaybeArray : [indexMaybeArray];
+          var indexArray = (0, _util.isMaybeReadonlyArray)(indexMaybeArray) ? indexMaybeArray : [indexMaybeArray];
           /**
            * replace primary key with _id
            * because that is the enforced primary key on pouchdb.

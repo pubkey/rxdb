@@ -4,7 +4,7 @@
  */
 import { createCompressionTable, compressObject, decompressObject, compressedPath, compressQuery, DEFAULT_COMPRESSION_FLAG, createCompressedJsonSchema } from 'jsonschema-key-compression';
 import { getPrimaryFieldOfPrimaryKey } from '../rx-schema';
-import { flatClone } from '../util';
+import { flatClone, isMaybeReadonlyArray } from '../util';
 
 /**
  * Cache the compression table and the compressed schema
@@ -44,7 +44,7 @@ export function createCompressionState(schema) {
 
   if (schema.indexes) {
     var newIndexes = schema.indexes.map(function (idx) {
-      if (Array.isArray(idx)) {
+      if (isMaybeReadonlyArray(idx)) {
         return idx.map(function (subIdx) {
           return compressedPath(table, subIdx);
         });
