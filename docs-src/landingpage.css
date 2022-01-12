@@ -53,6 +53,12 @@ html {
     align-items    : center;
 }
 
+.pseudo-hidden {
+    display : block;
+    width   : 1px;
+    height  : 1px;
+    overflow: hidden;
+}
 
 
 body {
@@ -154,8 +160,8 @@ header .logo img {
     color: var(--color-top);
 }
 
-.block.first img {
-    animation: animateHeartbeat 3.2s infinite;
+#heartbeat-logo.animation {
+    animation: animateHeartbeat;
 }
 
 
@@ -171,26 +177,47 @@ header .logo img {
 
 @keyframes animateHeartbeat {
     0% {
-        transform: scale(0.8);
-    }
-
-    5% {
-        transform: scale(0.9);
-    }
-
-    10% {
-        transform: scale(0.8);
-    }
-
-    15% {
         transform: scale(1);
     }
 
+    13% {
+        transform: scale(1.2);
+    }
+
+    16% {
+        transform: scale(1.16);
+    }
+
+    22% {
+        transform: scale(1.4);
+    }
+
+    26% {
+        transform: scale(1);
+    }
+
+    38% {
+        transform: scale(1.18);
+    }
+
+    41% {
+        transform: scale(1.1);
+    }
+
     50% {
-        transform: scale(0.8);
+        transform: scale(1.16);
+    }
+
+    56% {
+        transform: scale(1.1);
+    }
+
+
+    76% {
+        transform: scale(1);
     }
 
     100% {
-        transform: scale(0.8);
+        transform: scale(1);
     }
 }

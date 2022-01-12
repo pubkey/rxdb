@@ -1,10 +1,11 @@
-<html>
+<html lang="en">
 
 <head>
+    <meta charset="utf-8">
     <title>RxDB - A client side, offline-first, reactive database for JavaScript Applications</title>
     <link
         rel="stylesheet"
-        href="css.css"
+        href="landingpage.css"
     />
     <link
         rel="icon"
@@ -74,6 +75,7 @@
                     <img
                         src="./files/logo/logo.svg"
                         width="280"
+                        id="heartbeat-logo"
                         alt="RxDB"
                     />
                 </div>
@@ -82,6 +84,31 @@
         </div>
 
     </div>
+
+
+    <div class="pseudo-hidden">
+        <audio
+            controls
+            preload="auto"
+            id="heartbeat-audio"
+        >
+            <source
+                src="files/audio/heartbeat/heartbeat.wav"
+                type="audio/wav"
+            >
+            <source
+                src="files/audio/heartbeat/heartbeat.mp3"
+                type="audio/mpeg"
+            >
+            Your browser does not support the audio tag.
+        </audio>
+    </div>
+
+
+    <script
+        src="landingpage.js"
+        defer
+    ></script>
 </body>
 
 </html>
