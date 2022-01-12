@@ -1,12 +1,59 @@
+/* les variables */
 :root {
-    --bg-color: #1a202c;
+    --bg-color            : #1a202c;
+    --fontSizes-xl        : 1.25rem;
+    --fontSizes-6xl       : 3.0rem;
+    --space-between-blocks: 40px;
+
+
+    --color-top   : #e6008d;
+    --color-middle: #8d2089;
+    --color-bottom: #5f2688;
 }
 
+/** reset some defaults **/
 body,
 html {
     margin : 0;
     padding: 0;
 }
+
+
+/* helper classses */
+.clear {
+    clear: both;
+}
+
+.left {
+    float: left;
+}
+
+.right {
+    float: right;
+}
+
+.half {
+    width        : calc(50% - 20px);
+    padding-left : 10px;
+    padding-right: 10px;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.full-height {
+    height: 100%;
+}
+
+.centered {
+    display        : flex;
+    flex-direction : column;
+    justify-content: center;
+    align-items    : center;
+}
+
+
 
 body {
     background-color: var(--bg-color);
@@ -19,19 +66,131 @@ body {
 header {
     background-color: var(--bg-color);
     position        : fixed;
+    display         : block;
     height          : 60px;
-    padding-top: 22px;
-    padding-bottom: 22px;
-    width: 90%;
-    padding-left: 5%;
+    padding-top     : 22px;
+    padding-bottom  : 22px;
+    width           : 90%;
+    padding-left    : 5%;
+    padding-right   : 5%;
 }
 
-header .logo a {
-    color          : #8d2089;
+header a {
+    text-decoration: none;
+    color          : #a0aec0;
+}
+
+header a:hover {
+    color: white;
+}
+
+header .logo {
+    float: left;
+}
+
+header .logo {
+    color          : white;
     font-weight    : bold;
     text-decoration: none;
 }
 
+header a:hover .logo .text {
+    text-decoration: underline;
+}
+
+
+header .text {
+    padding-top  : 20px;
+    float        : left;
+    padding-right: 15px;
+}
+
+header .logo .text {
+    font-size  : var(--fontSizes-xl);
+    padding-top: 18px;
+    color      : white;
+}
+
 header .logo img {
     height: 100%;
+    float : left;
+}
+
+.header-space {
+    width : 100%;
+    height: calc(var(--space-between-blocks) + 110px);
+}
+
+
+
+.content {
+    width       : 100%;
+    max-width   : 1248px;
+    margin-left : auto;
+    margin-right: auto;
+}
+
+
+
+.block {
+    width : 100%;
+    height: 450px;
+}
+
+
+
+.block.first .inner {
+    width: 60%;
+}
+
+.block.first .text {
+    font-size    : var(--fontSizes-6xl);
+    overflow-wrap: break-word;
+    font-weight  : 600;
+    text-align   : right;
+}
+
+.block.first .text b {
+    color: var(--color-top);
+}
+
+.block.first img {
+    animation: animateHeartbeat 3.2s infinite;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+@keyframes animateHeartbeat {
+    0% {
+        transform: scale(0.8);
+    }
+
+    5% {
+        transform: scale(0.9);
+    }
+
+    10% {
+        transform: scale(0.8);
+    }
+
+    15% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(0.8);
+    }
+
+    100% {
+        transform: scale(0.8);
+    }
 }
