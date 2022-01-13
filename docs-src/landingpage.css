@@ -15,8 +15,11 @@
 /** reset some defaults **/
 body,
 html {
-    margin : 0;
-    padding: 0;
+    margin    : 0;
+    padding   : 0;
+    min-height: 100%;
+    width     : 100%;
+    overflow-x: hidden;
 }
 
 
@@ -38,6 +41,19 @@ html {
     padding-left : 10px;
     padding-right: 10px;
 }
+
+.third {
+    width        : calc(33.33% - 20px);
+    padding-left : 10px;
+    padding-right: 10px;
+}
+
+.fifth {
+    width        : calc(20% - 20px);
+    padding-left : 10px;
+    padding-right: 10px;
+}
+
 
 .full-width {
     width: 100%;
@@ -61,14 +77,36 @@ html {
     overflow: hidden;
 }
 
-/*
- * Every element with this class
- * is made beating via javascript
- */
-.beating.animation {
-    animation: animateHeartbeat;
+
+.underline {
+    z-index : 5;
+    position: relative;
 }
 
+.underline::after {
+    content   : "";
+    position  : absolute;
+    left      : 0px;
+    bottom    : 0px;
+    width     : 100%;
+    height    : 30%;
+    opacity   : 0.4;
+    background: var(--color-top);
+    z-index   : -1;
+}
+
+
+b {
+    color: var(--color-top);
+}
+
+h2 {
+    font-size: var(--fontSizes-6xl);
+}
+
+p {
+    font-size: var(--fontSizes-xl);
+}
 
 
 body {
@@ -141,17 +179,19 @@ header .logo img {
 
 
 .content {
-    width       : 100%;
-    max-width   : 1248px;
-    margin-left : auto;
-    margin-right: auto;
+    width        : 98%;
+    padding-left : 1%;
+    padding-right: 1%;
+    max-width    : 1248px;
+    margin-left  : auto;
+    margin-right : auto;
 }
 
 
 
 .block {
     width         : 100%;
-    height        : 450px;
+    min-height    : 450px;
     padding-top   : 80px;
     padding-bottom: 100px;
 }
@@ -171,11 +211,6 @@ header .logo img {
     text-align : right;
 }
 
-.block.first .text b {
-    color: var(--color-top);
-}
-
-
 .block.second .smartphone {
     width            : 200px;
     height           : 200px;
@@ -185,6 +220,10 @@ header .logo img {
 }
 
 .block.second .smartphone #smartphone-color {
+    -webkit-transition: background-color 100ms linear;
+    -ms-transition    : background-color 100ms linear;
+    transition        : background-color 100ms linear;
+
     position        : absolute;
     width           : 130px;
     height          : 153px;
@@ -195,12 +234,104 @@ header .logo img {
 }
 
 
+.block.second .line {
+    width           : 80%;
+    margin-left     : 0%;
+    height          : 3px;
+    background-color: white;
+    margin-top      : 62px;
+}
+
+.block.second .arrow {
+    width           : 90%;
+    margin-left     : 5%;
+    margin-top      : 31px;
+    transform-origin: center center;
+}
 
 
 
 
 
 
+
+.block.third .smartphone {
+    width            : 200px;
+    height           : 200px;
+    background-repeat: no-repeat;
+    background-size  : contain;
+    background-image : url(./files/smartphone/tablet_white.svg);
+}
+
+.block.third .smartphone #smartphone-color {
+    -webkit-transition: background-color 100ms linear;
+    -ms-transition    : background-color 100ms linear;
+    transition        : background-color 100ms linear;
+
+    position        : absolute;
+    z-index         : 2;
+    width           : 130px;
+    height          : 153px;
+    background-color: #e6008d;
+    margin-top      : -17px;
+    margin-left     : 0px;
+    border-radius   : 4px;
+}
+
+.block.third .smartphone img {
+    position   : absolute;
+    z-index    : 3;
+    width      : 150px;
+    margin-top : -9px;
+    margin-left: -2px;
+}
+
+.block.third img.protocol {
+    width: 100px;
+}
+
+.block.third .arrow {
+    font-size       : 160px;
+    margin-top      : 30px;
+    height          : 140px;
+    transform-origin: center center;
+}
+
+.block.third .arrow img {
+    width      : 90%;
+    margin-left: 5%;
+}
+
+.block.third .circle {
+    border-radius   : 50%;
+    width           : 200px;
+    height          : 200px;
+    background-color: white;
+}
+
+
+
+
+
+
+/*
+ * Every element with this class
+ * is made beating via javascript
+ */
+.beating.animation {
+    transform-origin: center center;
+    animation       : animateHeartbeat;
+}
+
+.beating-first.animation {
+    transform-origin: center center;
+    animation       : animateOnFirstHeartbeat;
+}
+
+.beating-second.animation {
+    transform-origin: center center;
+    animation       : animateOnSecondHeartbeat;
+}
 
 
 /*
@@ -222,6 +353,67 @@ header .logo img {
 
     22% {
         transform: scale(1.4);
+    }
+
+    26% {
+        transform: scale(1);
+    }
+
+    38% {
+        transform: scale(1.18);
+    }
+
+    41% {
+        transform: scale(1.1);
+    }
+
+    50% {
+        transform: scale(1.16);
+    }
+
+    56% {
+        transform: scale(1.1);
+    }
+
+    76% {
+        transform: scale(1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+
+@keyframes animateOnFirstHeartbeat {
+    0% {
+        transform: scale(1);
+    }
+
+    13% {
+        transform: scale(1.2);
+    }
+
+    16% {
+        transform: scale(1.16);
+    }
+
+    22% {
+        transform: scale(1.4);
+    }
+
+    26% {
+        transform: scale(1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes animateOnSecondHeartbeat {
+    0% {
+        transform: scale(1);
     }
 
     26% {

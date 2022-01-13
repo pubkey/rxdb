@@ -5,7 +5,9 @@ window.onload = function () {
      * Lists of pointers have $$
      */
     var $heartbeatAudio = document.getElementById('heartbeat-audio');
-    var $beating = document.getElementsByClassName('beating');
+    var $$beating = document.getElementsByClassName('beating');
+    var $$beatingFirst = document.getElementsByClassName('beating-first');
+    var $$beatingSecond = document.getElementsByClassName('beating-second');
     var $swapOutFirst = document.getElementById('swap-out-first');
     var $swapOutSecond = document.getElementById('swap-out-second');
     var $smartphoneColor = document.getElementById('smartphone-color');
@@ -17,22 +19,29 @@ window.onload = function () {
     var heartbeatIndex = 0;
     var heartbeatDuration = 851.088;
     var heartbeatTimeToFirstBeat = 105;
+    var heartbeatTimeToSecondBeat = 324;
 
     console.log('heartbeatDuration: ' + heartbeatDuration);
 
 
     setInterval(function () {
-        heartbeatListeners.forEach(function (listener) {
-            listener(heartbeatIndex);
-        });
-        heartbeatIndex = heartbeatIndex + 1;
+        /**
+         * Only run when browser tab is active
+         * to not annoy the user with background sound otherwise.
+         */
+        if (!document.hidden) {
+            heartbeatListeners.forEach(function (listener) {
+                listener(heartbeatIndex);
+            });
+            heartbeatIndex = heartbeatIndex + 1;
+        }
     }, heartbeatDuration * 2);
 
 
+    // swap out main text on every X heartbeat
+    var swapOutTextEveryX = 1;
+    var swapOutsDone = 0;
     function swapMainText(index) {
-        // swap out main text on every X heartbeat
-        var swapOutTextEveryX = 1;
-        var swapOutsDone = 0;
         var textsFirst = [
             'NoSQL',
             'OfflineFirst',
@@ -101,7 +110,19 @@ window.onload = function () {
 
     // css animation of big logo on heartbeat
     heartbeatListeners.push(function () {
-        Array.from($beating).forEach(function (element) {
+        Array.from($$beating).forEach(function (element) {
+            element.style.animationDuration = heartbeatDuration + 'ms';
+            element.classList.remove('animation');
+            element.offsetWidth
+            element.classList.add('animation');
+        });
+        Array.from($$beatingFirst).forEach(function (element) {
+            element.style.animationDuration = heartbeatDuration + 'ms';
+            element.classList.remove('animation');
+            element.offsetWidth
+            element.classList.add('animation');
+        });
+        Array.from($$beatingSecond).forEach(function (element) {
             element.style.animationDuration = heartbeatDuration + 'ms';
             element.classList.remove('animation');
             element.offsetWidth
@@ -120,7 +141,7 @@ window.onload = function () {
         setTimeout(function () {
             lastSmartphoneColor = randomOfArray(colors, lastSmartphoneColor);
             $smartphoneColor.style.backgroundColor = lastSmartphoneColor;
-        }, heartbeatTimeToFirstBeat);
+        }, heartbeatTimeToSecondBeat);
     });
 
 };

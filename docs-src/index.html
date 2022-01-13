@@ -89,11 +89,12 @@
 
     <div class="block second dark">
         <div class="content">
-            <h2>Easily build realtime applications</h2>
+            <h2>Realtime applications <b class="underline">made easy</b></h2>
             <p>
                 From the results of a query, to a single field of a document, with RxDB you can <b>observe
                     everything</b>.
-                This enables you to build realtime applications fast and reliable. Whenever your data changes, your UI
+                This enables you to build realtime applications <b>fast</b> and <b>reliable</b>. Whenever your data
+                changes, your UI
                 reflects the new state.
             </p>
             <div style="width: 60%; margin-left: 20%; margin-top: 120px;">
@@ -101,7 +102,7 @@
                     class="full-width"
                     class="centered"
                 >
-                    <div class="left half centered">
+                    <div class="left third centered">
                         <img
                             src="./files/logo/logo.svg"
                             width="190"
@@ -110,7 +111,20 @@
                             alt="RxDB"
                         />
                     </div>
-                    <div class="right half centered">
+                    <div
+                        class="third centered left"
+                        style="padding-left: 0px;"
+                    >
+                        <img
+                            src="./files/icons/arrows/left-arrow.svg"
+                            class="beating-first arrow"
+                        />
+                        <img
+                            src="./files/icons/arrows/right-arrow.svg"
+                            class="beating-second arrow"
+                        />
+                    </div>
+                    <div class="right third centered">
                         <div class="smartphone">
                             <div id="smartphone-color"></div>
                         </div>
@@ -118,6 +132,73 @@
                     <div class="clear"></div>
                 </div>
             </div>
+        </div>
+    </div>
+
+
+
+    <div class="block third">
+        <div class="content">
+            <h2>Replicate </h2>
+            <p>
+                RxDB supports replication with a <b>CouchDB</b> server or any custom <b>GraphQL</b>
+                endpoint which smoothly integrates with your existing infrastructure.
+                Also you can use the replication primitives plugin to create custom replications via <b>REST</b>,
+                <b>Websocket</b> or
+                <b>p2p</b>.
+            </p>
+            <div style="width: 82%; margin-left: 9%; margin-top: 120px;">
+                <div
+                    class="full-width"
+                    class="centered"
+                >
+
+                    <div class="fifth centered left">
+                        <div class="circle centered">
+                            <img
+                                src="./files/icons/graphql-text.svg"
+                                class="protocol"
+                            />
+                        </div>
+                    </div>
+                    <div class="fifth centered left arrow beating-first">
+                        <img src="./files/icons/arrows/double-arrow.svg" />
+                    </div>
+                    <div class="fifth centered left">
+                        <div class="smartphone centered">
+                            <div id="smartphone-color"></div>
+                            <img src="./files/logo/logo.svg" />
+                        </div>
+                    </div>
+                    <div class="fifth centered left arrow beating-second">
+                        <img src="./files/icons/arrows/double-arrow.svg" />
+                    </div>
+                    <div class="fifth centered left">
+                        <div class="circle centered">
+                            <img
+                                src="./files/icons/couchdb-text.svg"
+                                class="protocol"
+                            />
+                        </div>
+                    </div>
+                    <div class="clear"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="block fourth dark">
+        <div class="content">
+            <h2>Flexible</h2>
+            <p>
+                Due to the storage and adapter system, RxDB can be used in any <b>JavaScript</b> runtime.
+            </p>
+        </div>
+    </div>
+
+    <div class="block fifth">
+        <div class="content">
+            <h2>Offline First</h2>
 
         </div>
     </div>
@@ -146,6 +227,9 @@
         src="landingpage.js"
         defer
     ></script>
+
+
+    <div class="clear"></div>
 </body>
 
 </html>
