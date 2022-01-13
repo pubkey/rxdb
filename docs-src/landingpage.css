@@ -1,9 +1,10 @@
 /* les variables */
 :root {
     --bg-color            : #1a202c;
+    --bg-color-dark       : #171923;
     --fontSizes-xl        : 1.25rem;
     --fontSizes-6xl       : 3.0rem;
-    --space-between-blocks: 40px;
+    --space-between-blocks: 0px;
 
 
     --color-top   : #e6008d;
@@ -60,6 +61,15 @@ html {
     overflow: hidden;
 }
 
+/*
+ * Every element with this class
+ * is made beating via javascript
+ */
+.beating.animation {
+    animation: animateHeartbeat;
+}
+
+
 
 body {
     background-color: var(--bg-color);
@@ -70,6 +80,7 @@ body {
 }
 
 header {
+    z-index         : 10;
     background-color: var(--bg-color);
     position        : fixed;
     display         : block;
@@ -139,10 +150,15 @@ header .logo img {
 
 
 .block {
-    width : 100%;
-    height: 450px;
+    width         : 100%;
+    height        : 450px;
+    padding-top   : 80px;
+    padding-bottom: 100px;
 }
 
+.block.dark {
+    background-color: var(--bg-color-dark);
+}
 
 
 .block.first .inner {
@@ -150,18 +166,32 @@ header .logo img {
 }
 
 .block.first .text {
-    font-size    : var(--fontSizes-6xl);
-    overflow-wrap: break-word;
-    font-weight  : 600;
-    text-align   : right;
+    font-size  : var(--fontSizes-6xl);
+    font-weight: 600;
+    text-align : right;
 }
 
 .block.first .text b {
     color: var(--color-top);
 }
 
-#heartbeat-logo.animation {
-    animation: animateHeartbeat;
+
+.block.second .smartphone {
+    width            : 200px;
+    height           : 200px;
+    background-repeat: no-repeat;
+    background-size  : contain;
+    background-image : url(./files/smartphone/tablet_white.svg);
+}
+
+.block.second .smartphone #smartphone-color {
+    position        : absolute;
+    width           : 130px;
+    height          : 153px;
+    background-color: #e6008d;
+    margin-top      : 15px;
+    margin-left     : 35px;
+    border-radius   : 4px;
 }
 
 
@@ -173,8 +203,10 @@ header .logo img {
 
 
 
-
-
+/*
+ * The animation must use the same steps as the soundwave of the heartbeat.mp3
+ * @link https://planetcalc.com/8627/
+ */
 @keyframes animateHeartbeat {
     0% {
         transform: scale(1);
@@ -211,7 +243,6 @@ header .logo img {
     56% {
         transform: scale(1.1);
     }
-
 
     76% {
         transform: scale(1);
