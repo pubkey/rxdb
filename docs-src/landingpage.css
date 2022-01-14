@@ -46,6 +46,12 @@ a:visited {
     padding-right: 10px;
 }
 
+@media (max-width: 900px) {
+    .half {
+        width: calc(100% - 20px);
+    }
+}
+
 .third {
     width        : calc(33.33% - 20px);
     padding-left : 10px;
@@ -228,6 +234,13 @@ header .logo img {
     margin-right : auto;
 }
 
+@media (max-width: 800px) {
+    .content {
+        width        : 94%;
+        padding-left : 3%;
+        padding-right: 3%;
+    }
+}
 
 
 .block {
@@ -249,11 +262,38 @@ header .logo img {
     margin-right: 13px;
 }
 
+@media (max-width: 900px) {
+    .block.first .text {
+        text-align  : center;
+        margin-right: 0px;
+    }
+}
+
 .block.first img {
     margin-left: 13px;
     margin-top : 8px;
 }
 
+@media (max-width: 900px) {
+    .block.first img {
+        margin-left: 0px;
+        margin-top : 16px;
+    }
+}
+
+
+.block.second .content-canvas {
+    width      : 60%;
+    margin-left: 20%;
+    margin-top : 120px;
+}
+
+@media (max-width: 800px) {
+    .block.second .content-canvas {
+        width      : 90%;
+        margin-left: 5%;
+    }
+}
 
 .block.second .smartphone {
     width            : 200px;
@@ -297,10 +337,17 @@ header .logo img {
 
 
 .block.third .replication-icons {
+    height     : 515px;
     width      : 90%;
     margin-left: 10%;
     margin-top : 0px;
     position   : relative;
+}
+
+@media (max-width: 900px) {
+    .block.third .replication-icons {
+        margin-left: 5%;
+    }
 }
 
 
@@ -309,8 +356,8 @@ header .logo img {
     width      : 150px;
     margin-left: 50%;
     left       : -75px;
-    margin-top : 50%;
-    top        : -75px;
+    top        : 50%;
+    margin-top : -75px;
 }
 
 .block.third .replicate-graphql {
@@ -328,16 +375,16 @@ header .logo img {
 
 .block.third .replicate-rest {
     position   : absolute;
-    top        : -70px;
-    margin-top : 83%;
+    margin-top : -70px;
+    top        : 83%;
     margin-left: 18%;
     text-align : center;
 }
 
 .block.third .replicate-websocket {
     position   : absolute;
-    top        : -70px;
-    margin-top : 93%;
+    margin-top : -70px;
+    top        : 93%;
     margin-left: 50%;
     left       : -35px;
     text-align : center;
@@ -345,8 +392,8 @@ header .logo img {
 
 .block.third .replicate-p2p {
     position  : absolute;
-    top       : -70px;
-    margin-top: 83%;
+    margin-top: -70px;
+    top       : 83%;
 
     left       : 82%;
     margin-left: -70px;
