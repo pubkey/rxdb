@@ -8,6 +8,8 @@ window.onload = function () {
     var $$beating = document.getElementsByClassName('beating');
     var $$beatingFirst = document.getElementsByClassName('beating-first');
     var $$beatingSecond = document.getElementsByClassName('beating-second');
+    var $$beatingNumber = document.getElementsByClassName('beating-number');
+
     var $swapOutFirst = document.getElementById('swap-out-first');
     var $swapOutSecond = document.getElementById('swap-out-second');
     var $smartphoneColor = document.getElementById('smartphone-color');
@@ -127,6 +129,17 @@ window.onload = function () {
             element.classList.remove('animation');
             element.offsetWidth
             element.classList.add('animation');
+        });
+    });
+
+    // increase beating numbers
+    heartbeatListeners.push(function () {
+        Array.from($$beatingNumber).forEach(function (element) {
+            setTimeout(function () {
+                var value = parseFloat(element.innerHTML, 10);
+                var newValue = value + 1;
+                element.innerHTML = newValue + '';
+            }, heartbeatTimeToFirstBeat);
         });
     });
 

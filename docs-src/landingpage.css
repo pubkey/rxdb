@@ -22,6 +22,10 @@ html {
     overflow-x: hidden;
 }
 
+a,
+a:visited {
+    text-decoration: none;
+}
 
 /* helper classses */
 .clear {
@@ -103,7 +107,6 @@ html {
 .button {
     background-color: var(--color-top);
     border-radius   : 8px;
-    height          : 3rem;
     min-width       : 3rem;
     font-size       : 1rem;
 
@@ -121,7 +124,16 @@ html {
     outline-offset: 2px;
     line-height   : 1.2;
 
+    will-change: box-shadow text-decoration transform;
+    transition : all .15s ease-in-out;
+}
+
+.button a {
     text-decoration: none;
+}
+
+.button:hover {
+    box-shadow: 2px 2px 13px #ca007c, -2px -1px 14px #ff009e;
 }
 
 
@@ -314,40 +326,31 @@ header .logo img {
     margin-top : 8%;
 }
 
-.block.third .circle.replicate-rest {
+.block.third .replicate-rest {
     position   : absolute;
-    width      : 70px;
-    height     : 70px;
     top        : -70px;
     margin-top : 83%;
     margin-left: 18%;
-    color      : black;
     text-align : center;
 }
 
-.block.third .circle.replicate-websocket {
+.block.third .replicate-websocket {
     position   : absolute;
-    width      : 70px;
-    height     : 70px;
     top        : -70px;
     margin-top : 93%;
     margin-left: 50%;
     left       : -35px;
-    color      : black;
     text-align : center;
 }
 
-.block.third .circle.replicate-p2p {
+.block.third .replicate-p2p {
     position  : absolute;
-    width     : 70px;
-    height    : 70px;
     top       : -70px;
     margin-top: 83%;
 
     left       : 82%;
     margin-left: -70px;
 
-    color     : black;
     text-align: center;
 }
 
@@ -377,29 +380,12 @@ header .logo img {
     margin-left: 5%;
 }
 
-.block.third .circle {
-    border-radius   : 50%;
-    width           : 130px;
-    height          : 130px;
-    background-color: white;
-}
-
 
 
 
 .block.fourth .circle {
-    border-radius   : 50%;
-    width           : 95px;
-    height          : 95px;
-    background-color: white;
-    color           : var(--bg-color-dark);
-    font-size       : 85%;
-    position        : absolute;
-}
-
-.block.fourth .circle.smaller {
-    width : 77px;
-    height: 77px;
+    font-size: 85%;
+    position : absolute;
 }
 
 .block.fourth .circle img {
@@ -450,10 +436,103 @@ header .logo img {
 }
 
 
+.block.last .buttons {
+    margin-top: 90px;
+    position  : relative;
+    height    : 500px;
+}
+
+.block.last .buttons .button {
+    display : inline;
+    position: absolute;
+    top     : 0;
+    left    : 0;
+}
+
+.block.last .button.sponsor-me {
+    padding      : 10px;
+    padding-left : 38px;
+    padding-right: 38px;
+    border-radius: 10px;
+    font-size    : 37px;
+}
 
 
 
+/**
+ * NEUMORPHISM STUFF
+ * Generate circles shaddows: https://neumorphism.io/#1a202c
+ */
+.neumorphism-circle-xl {
+    border-radius: 50%;
+    width        : 130px;
+    height       : 130px;
+    font-size    : 85%;
 
+    color     : white;
+    background: var(--bg-color);
+
+    box-shadow: 5px 5px 10px #161c26,
+        -5px -5px 10px #1e2432;
+}
+
+.neumorphism-circle-m {
+    border-radius: 50%;
+    width        : 95px;
+    height       : 95px;
+    font-size    : 85%;
+
+    color     : white;
+    background: var(--bg-color);
+
+    box-shadow: 5px 5px 10px #171c26,
+        -5px -5px 10px #1d2432;
+}
+
+.dark .neumorphism-circle-m {
+    background: var(--bg-color-dark);
+    box-shadow: 5px 5px 10px #14161e,
+        -5px -5px 10px #1a1c28;
+}
+
+.neumorphism-circle-s {
+    border-radius: 50%;
+    width        : 70px;
+    height       : 70px;
+    font-size    : 85%;
+
+    color     : white;
+    background: var(--bg-color);
+
+    box-shadow: 3px 3px 6px #151a24,
+        -3px -3px 6px #1f2634;
+}
+
+.dark .neumorphism-circle-s {
+    background: var(--bg-color--dark);
+    box-shadow: 3px 3px 6px #13151d,
+        -3px -3px 6px #1b1e29;
+
+}
+
+.neumorphism-circle-xs {
+    border-radius: 50%;
+    width        : 70px;
+    height       : 70px;
+    font-size    : 85%;
+
+    color     : white;
+    background: var(--bg-color);
+
+    box-shadow: 5px 5px 7px #171c26,
+        -5px -5px 7px #1d2432;
+}
+
+
+
+/*
+ * ANIMATION STUFF
+ */
 
 /*
  * Every element with this class
