@@ -1,0 +1,703 @@
+/** reset some defaults **/
+body,
+html {
+    margin    : 0;
+    padding   : 0;
+    min-height: 100%;
+    width     : 100%;
+    overflow-x: hidden;
+}
+
+a,
+a:visited {
+    text-decoration: none;
+}
+
+/* helper classses */
+.clear {
+    clear: both;
+}
+
+.left {
+    float: left;
+}
+
+.right {
+    float: right;
+}
+
+.half {
+    width        : calc(50% - 20px);
+    padding-left : 10px;
+    padding-right: 10px;
+}
+
+@media (max-width: 900px) {
+    .half {
+        width: calc(100% - 20px);
+    }
+}
+
+.third {
+    width        : calc(33.33% - 20px);
+    padding-left : 10px;
+    padding-right: 10px;
+}
+
+.fifth {
+    width        : calc(20% - 20px);
+    padding-left : 10px;
+    padding-right: 10px;
+}
+
+
+.full-width {
+    width: 100%;
+}
+
+.full-height {
+    height: 100%;
+}
+
+.centered {
+    display        : flex;
+    flex-direction : column;
+    justify-content: center;
+    align-items    : center;
+}
+
+.pseudo-hidden {
+    display : block;
+    width   : 1px;
+    height  : 1px;
+    overflow: hidden;
+}
+
+
+.underline {
+    z-index : 5;
+    position: relative;
+}
+
+.underline::after {
+    content   : "";
+    position  : absolute;
+    left      : 0px;
+    bottom    : 0px;
+    width     : 100%;
+    height    : 30%;
+    opacity   : 0.4;
+    background: var(--color-top);
+    z-index   : -1;
+}
+
+.dark {
+    background-color: var(--bg-color-dark);
+}
+
+
+.button {
+    background-color: var(--color-top);
+    border-radius   : 8px;
+    min-width       : 3rem;
+    font-size       : 1rem;
+
+    padding      : 10px;
+    padding-left : 20px;
+    padding-right: 20px;
+    text-align   : center;
+    margin-right : 20px;
+
+    color         : white;
+    font-weight   : bold;
+    user-select   : none;
+    vertical-align: middle;
+    outline       : 2px solid transparent;
+    outline-offset: 2px;
+    line-height   : 1.2;
+
+    will-change: box-shadow text-decoration transform;
+    transition : all .15s ease-in-out;
+}
+
+.button a {
+    text-decoration: none;
+}
+
+.button:hover {
+    box-shadow: 2px 2px 13px #ca007c, -2px -1px 14px #ff009e;
+}
+
+
+b {
+    color: var(--color-top);
+}
+
+h2 {
+    font-size: var(--fontSizes-6xl);
+}
+
+p {
+    font-size: var(--fontSizes-xl);
+}
+
+
+body {
+    background-color: var(--bg-color);
+
+    /** font **/
+    color      : white;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+header {
+    z-index         : 10;
+    background-color: var(--bg-color);
+    position        : fixed;
+    display         : block;
+    height          : 60px;
+    padding-top     : 22px;
+    padding-bottom  : 22px;
+    width           : 90%;
+    padding-left    : 5%;
+    padding-right   : 5%;
+}
+
+header a {
+    text-decoration: none;
+    color          : #a0aec0;
+}
+
+header a:hover {
+    color: white;
+}
+
+header .logo {
+    float: left;
+}
+
+header .logo {
+    color          : white;
+    font-weight    : bold;
+    text-decoration: none;
+}
+
+header a:hover .logo .text {
+    text-decoration: underline;
+}
+
+
+header .text {
+    padding-top  : 20px;
+    float        : left;
+    padding-right: 15px;
+}
+
+header .logo .text {
+    font-size  : var(--fontSizes-xl);
+    padding-top: 18px;
+    color      : white;
+}
+
+header .logo img {
+    height: 100%;
+    float : left;
+}
+
+.header-space {
+    width : 100%;
+    height: calc(var(--space-between-blocks) + 110px);
+}
+
+
+
+.content {
+    width        : 98%;
+    padding-left : 1%;
+    padding-right: 1%;
+    max-width    : 1248px;
+    margin-left  : auto;
+    margin-right : auto;
+}
+
+@media (max-width: 800px) {
+    .content {
+        width        : 94%;
+        padding-left : 3%;
+        padding-right: 3%;
+    }
+}
+
+
+.block {
+    width         : 100%;
+    min-height    : 450px;
+    padding-top   : 80px;
+    padding-bottom: 100px;
+}
+
+
+.block.first .inner {
+    width: 60%;
+}
+
+.block.first .text {
+    font-size   : var(--fontSizes-6xl);
+    font-weight : 600;
+    text-align  : right;
+    margin-right: 13px;
+}
+
+@media (max-width: 900px) {
+    .block.first .text {
+        text-align  : center;
+        margin-right: 0px;
+    }
+}
+
+.block.first img {
+    margin-left: 13px;
+    margin-top : 8px;
+}
+
+@media (max-width: 900px) {
+    .block.first img {
+        margin-left: 0px;
+        margin-top : 16px;
+    }
+}
+
+
+.block.second .content-canvas {
+    width      : 60%;
+    margin-left: 20%;
+    margin-top : 120px;
+}
+
+@media (max-width: 800px) {
+    .block.second .content-canvas {
+        width      : 90%;
+        margin-left: 5%;
+    }
+}
+
+.block.second .smartphone {
+    width            : 200px;
+    height           : 200px;
+    background-repeat: no-repeat;
+    background-size  : contain;
+    background-image : url(../files/smartphone/tablet_white.svg);
+}
+
+.block.second .smartphone #smartphone-color {
+    -webkit-transition: background-color 100ms linear;
+    -ms-transition    : background-color 100ms linear;
+    transition        : background-color 100ms linear;
+
+    position        : absolute;
+    width           : 130px;
+    height          : 153px;
+    background-color: #e6008d;
+    margin-top      : 15px;
+    margin-left     : 35px;
+    border-radius   : 4px;
+}
+
+
+.block.second .line {
+    width           : 80%;
+    margin-left     : 0%;
+    height          : 3px;
+    background-color: white;
+    margin-top      : 62px;
+}
+
+.block.second .arrow {
+    width           : 90%;
+    margin-left     : 5%;
+    margin-top      : 31px;
+    transform-origin: center center;
+}
+
+
+
+
+.block.third .replication-icons {
+    height     : 515px;
+    width      : 90%;
+    margin-left: 10%;
+    margin-top : 0px;
+    position   : relative;
+}
+
+@media (max-width: 900px) {
+    .block.third .replication-icons {
+        margin-left: 5%;
+    }
+}
+
+
+.block.third .replicate-logo {
+    position   : absolute;
+    width      : 150px;
+    margin-left: 50%;
+    left       : -75px;
+    top        : 50%;
+    margin-top : -75px;
+}
+
+.block.third .replicate-graphql {
+    position   : absolute;
+    margin-top : 8%;
+    margin-left: 10%;
+}
+
+.block.third .replicate-couchdb {
+    position   : absolute;
+    left       : 90%;
+    margin-left: -130px;
+    margin-top : 8%;
+}
+
+.block.third .replicate-rest {
+    position   : absolute;
+    margin-top : -70px;
+    top        : 83%;
+    margin-left: 18%;
+    text-align : center;
+}
+
+.block.third .replicate-websocket {
+    position   : absolute;
+    margin-top : -70px;
+    top        : 93%;
+    margin-left: 50%;
+    left       : -35px;
+    text-align : center;
+}
+
+.block.third .replicate-p2p {
+    position  : absolute;
+    margin-top: -70px;
+    top       : 83%;
+
+    left       : 82%;
+    margin-left: -70px;
+
+    text-align: center;
+}
+
+
+
+.block.third .smartphone img {
+    position   : absolute;
+    z-index    : 3;
+    width      : 150px;
+    margin-top : -9px;
+    margin-left: -2px;
+}
+
+.block.third img.protocol {
+    width: 80px;
+}
+
+.block.third .arrow {
+    font-size       : 160px;
+    margin-top      : 30px;
+    height          : 140px;
+    transform-origin: center center;
+}
+
+.block.third .arrow img {
+    width      : 90%;
+    margin-left: 5%;
+}
+
+
+
+
+.block.fourth .circle {
+    font-size: 85%;
+    position : absolute;
+}
+
+.block.fourth .circle img {
+    height        : 46%;
+    padding-bottom: 3px;
+}
+
+
+
+
+.block.fifth .box {
+    border-radius : 0.75rem;
+    padding-top   : 12px;
+    padding-bottom: 12px;
+    padding-left  : 16px;
+    padding-right : 16px;
+
+    float       : left;
+    width       : 260px;
+    margin-right: 20px;
+    margin-top  : 20px;
+}
+
+.block.fifth .box img {
+    width        : 20px;
+    padding-right: 10px;
+    float        : left;
+}
+
+.block.fifth .box a {
+    text-decoration: none;
+}
+
+.block.fifth .box a:hover {
+    text-decoration: underline;
+}
+
+.block.fifth .box .label {
+    margin-top: 2px;
+    float     : left;
+}
+
+.block.fifth .box .value {
+    color            : var(--color-top);
+    font-weight      : bold;
+    float            : right;
+    margin-inline-end: 0px;
+    right            : 0px;
+}
+
+
+.block.last .buttons {
+    margin-top: 90px;
+    position  : relative;
+    height    : 500px;
+}
+
+.block.last .buttons .button {
+    display : inline;
+    position: absolute;
+    top     : 0;
+    left    : 0;
+}
+
+.block.last .button.sponsor-me {
+    padding      : 10px;
+    padding-left : 38px;
+    padding-right: 38px;
+    border-radius: 10px;
+    font-size    : 37px;
+}
+
+
+
+/**
+ * NEUMORPHISM STUFF
+ * Generate circles shaddows: https://neumorphism.io/#1a202c
+ */
+.neumorphism-circle-xl {
+    border-radius: 50%;
+    width        : 130px;
+    height       : 130px;
+    font-size    : 85%;
+
+    color     : white;
+    background: var(--bg-color);
+
+    box-shadow: 5px 5px 10px #161c26,
+        -5px -5px 10px #1e2432;
+}
+
+.neumorphism-circle-m {
+    border-radius: 50%;
+    width        : 95px;
+    height       : 95px;
+    font-size    : 85%;
+
+    color     : white;
+    background: var(--bg-color);
+
+    box-shadow: 5px 5px 10px #171c26,
+        -5px -5px 10px #1d2432;
+}
+
+.dark .neumorphism-circle-m {
+    background: var(--bg-color-dark);
+    box-shadow: 5px 5px 10px #14161e,
+        -5px -5px 10px #1a1c28;
+}
+
+.neumorphism-circle-s {
+    border-radius: 50%;
+    width        : 70px;
+    height       : 70px;
+    font-size    : 85%;
+
+    color     : white;
+    background: var(--bg-color);
+
+    box-shadow: 3px 3px 6px #151a24,
+        -3px -3px 6px #1f2634;
+}
+
+.dark .neumorphism-circle-s {
+    background: var(--bg-color--dark);
+    box-shadow: 3px 3px 6px #13151d,
+        -3px -3px 6px #1b1e29;
+
+}
+
+.neumorphism-circle-xs {
+    border-radius: 50%;
+    width        : 70px;
+    height       : 70px;
+    font-size    : 85%;
+
+    color     : white;
+    background: var(--bg-color);
+
+    box-shadow: 5px 5px 7px #171c26,
+        -5px -5px 7px #1d2432;
+}
+
+
+
+/*
+ * ANIMATION STUFF
+ */
+
+/*
+ * Every element with this class
+ * is made beating via javascript
+ */
+.beating.animation {
+    will-change     : transform;
+    transform-origin: center center;
+    animation       : animateHeartbeat;
+}
+
+.beating-first.animation {
+    will-change     : transform;
+    transform-origin: center center;
+    animation       : animateOnFirstHeartbeat;
+}
+
+.beating-second.animation {
+    will-change     : transform;
+    transform-origin: center center;
+    animation       : animateOnSecondHeartbeat;
+}
+
+
+/*
+ * The animation must use the same steps as the soundwave of the heartbeat.mp3
+ * @link https://planetcalc.com/8627/
+ */
+@keyframes animateHeartbeat {
+    0% {
+        transform: scale(1);
+    }
+
+    13% {
+        transform: scale(1.2);
+    }
+
+    16% {
+        transform: scale(1.16);
+    }
+
+    22% {
+        transform: scale(1.4);
+    }
+
+    26% {
+        transform: scale(1);
+    }
+
+    38% {
+        transform: scale(1.18);
+    }
+
+    41% {
+        transform: scale(1.1);
+    }
+
+    50% {
+        transform: scale(1.14);
+    }
+
+    56% {
+        transform: scale(1.1);
+    }
+
+    76% {
+        transform: scale(1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+
+@keyframes animateOnFirstHeartbeat {
+    0% {
+        transform: scale(1);
+    }
+
+    13% {
+        transform: scale(1.2);
+    }
+
+    16% {
+        transform: scale(1.16);
+    }
+
+    22% {
+        transform: scale(1.4);
+    }
+
+    26% {
+        transform: scale(1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes animateOnSecondHeartbeat {
+    0% {
+        transform: scale(1);
+    }
+
+    26% {
+        transform: scale(1);
+    }
+
+    38% {
+        transform: scale(1.18);
+    }
+
+    41% {
+        transform: scale(1.1);
+    }
+
+    50% {
+        transform: scale(1.14);
+    }
+
+    56% {
+        transform: scale(1.1);
+    }
+
+    76% {
+        transform: scale(1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}

@@ -1,0 +1,531 @@
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>RxDB - A client side, offline-first, reactive database for JavaScript Applications</title>
+    <link
+        rel="stylesheet"
+        href="styles/variables.css"
+    />
+    <link
+        rel="stylesheet"
+        href="styles/landingpage.css"
+    />
+    <link
+        rel="icon"
+        href="./files/logo/logo.svg"
+        sizes="any"
+        type="image/svg+xml"
+    >
+</head>
+
+<body>
+
+    <header>
+        <a href="/">
+            <div class="logo">
+                <img
+                    src="./files/logo/logo.svg"
+                    alt="RxDB"
+                />
+                <div class="text">RxDB</div>
+            </div>
+        </a>
+
+        <div class="right">
+            <a
+                href="https://rxdb.info/install.html"
+                target="_blank"
+                class="text"
+            >Docs</a>
+            <a
+                href="https://github.com/pubkey/rxdb"
+                target="_blank"
+                class="text"
+            >Code</a>
+            <a
+                href="https://gitter.im/pubkey/rxdb"
+                target="_blank"
+                class="text"
+            >Chat</a>
+        </div>
+        <div class="clear"></div>
+    </header>
+
+    <div class="header-space"></div>
+
+
+    <div class="content">
+        <div class="block first centered">
+            <div class="inner">
+                <div class="left half full-height">
+                    <div class="text">
+                        The
+                        </br />
+                        <b id="swap-out-first">JavaScript</b>
+                        </br />
+                        Database
+                        </br />
+                        <b id="swap-out-second">you deserve</b>
+                    </div>
+                </div>
+                <div class="right half centered full-height">
+                    <img
+                        src="./files/logo/logo_text.svg"
+                        width="290"
+                        class="beating"
+                        id="heartbeat-logo"
+                        alt="RxDB"
+                    />
+                </div>
+                <div class="clear"></div>
+            </div>
+        </div>
+
+
+
+    </div>
+
+    <div class="block second dark">
+        <div class="content">
+            <h2>Realtime applications <b class="underline">made easy</b></h2>
+            <p>
+                From the results of a query, to a single field of a document, with RxDB you can <b>observe
+                    everything</b>.
+                This enables you to build realtime applications <b>fast</b> and <b>reliable</b>. Whenever your data
+                changes, your UI
+                reflects the new state.
+            </p>
+            <div class="content-canvas">
+                <div
+                    class="full-width"
+                    class="centered"
+                >
+                    <div class="left third centered">
+                        <img
+                            src="./files/logo/logo.svg"
+                            width="190"
+                            class="beating"
+                            id="heartbeat-logo"
+                            alt="RxDB"
+                        />
+                    </div>
+                    <div
+                        class="third centered left"
+                        style="padding-left: 0px;"
+                    >
+                        <img
+                            src="./files/icons/arrows/left-arrow.svg"
+                            class="beating-first arrow"
+                        />
+                        <img
+                            src="./files/icons/arrows/right-arrow.svg"
+                            class="beating-second arrow"
+                        />
+                    </div>
+                    <div class="right third centered">
+                        <div class="smartphone">
+                            <div id="smartphone-color"></div>
+                        </div>
+                    </div>
+                    <div class="clear"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="block third">
+        <div class="content">
+            <div class="half left">
+                <br />
+                <br />
+                <br />
+                <br />
+                <br />
+                <h2>Replicate <b class="underline">with your existing infrastructure</b></h2>
+                <p>
+                    RxDB supports replication with a <b>CouchDB</b> server or any custom <b>GraphQL</b>
+                    endpoint which smoothly integrates with your existing infrastructure.
+                    Also you can use the replication primitives plugin to create custom replications over any protocol
+                    like <b>REST</b>,
+                    <b>Websocket</b> or <b>p2p</b>.
+                </p>
+            </div>
+
+            <div class="half right">
+
+                <div class="replication-icons">
+
+                    <img
+                        src="./files/logo/logo.svg"
+                        class="replicate-logo"
+                    />
+                    <div class="neumorphism-circle-xl centered replicate-graphql beating-second">
+                        <img
+                            src="./files/icons/graphql-text.svg"
+                            class="protocol"
+                        />
+                    </div>
+                    <div class="neumorphism-circle-xl centered replicate-couchdb beating-first">
+                        <img
+                            src="./files/icons/couchdb-text.svg"
+                            class="protocol"
+                        />
+                    </div>
+                    <div class="neumorphism-circle-xs centered replicate-rest beating-second">
+                        { REST }
+                    </div>
+                    <div class="neumorphism-circle-xs centered replicate-websocket beating-first">
+                        websocket
+                    </div>
+                    <div class="neumorphism-circle-xs centered replicate-p2p beating-second">
+                        p2p
+                    </div>
+                </div>
+            </div>
+            <div class="clear"></div>
+        </div>
+    </div>
+
+    <div class="block fourth dark">
+        <div
+            class="content"
+            style="position: relative; height: 510px;"
+        >
+            <div
+                class="neumorphism-circle-m circle centered beating-second"
+                style="top: 1%; left: 10%;"
+            >
+                <img src="./files/icons/angular.svg" />
+                Angular
+            </div>
+            <div
+                class="neumorphism-circle-m circle centered beating-first"
+                style="top: 30%; left: 60%;"
+            >
+                <img src="./files/icons/capacitor.svg" />
+                Capacitor
+            </div>
+            <div
+                class="neumorphism-circle-m circle centered beating-first"
+                style="top: 25; left: 34%;"
+            >
+                <img src="./files/icons/cordova.svg" />
+                Cordova
+            </div>
+            <div
+                class="neumorphism-circle-s circle centered beating-second"
+                style="top: 72%; left: 12%;"
+            >
+                <img src="./files/icons/electron.svg" />
+                Electron
+            </div>
+            <div
+                class="neumorphism-circle-s circle centered beating-first"
+                style="top: 86%; left: 76%;"
+            >
+                <img src="./files/icons/ionic.svg" />
+                Ionic
+            </div>
+            <div
+                class="neumorphism-circle-m circle centered beating-second"
+                style="top: 80%; left: 90%;"
+            >
+                <img src="./files/icons/jquery.svg" />
+                jQuery
+            </div>
+            <div
+                class="neumorphism-circle-m circle centered beating-first"
+                style="top: 90%; left: 1%;"
+            >
+                <img src="./files/icons/nativescript.svg" />
+                NativeScript
+            </div>
+            <div
+                class="neumorphism-circle-m circle centered beating-second"
+                style="top: 88%; left: 58%;"
+            >
+                <img src="./files/icons/nextjs.svg" />
+                Nextjs
+            </div>
+            <div
+                class="neumorphism-circle-m circle centered beating-second"
+                style="top: 8%; left: 85%;"
+            >
+                <img src="./files/icons/nodejs.svg" />
+                node.js
+            </div>
+            <div
+                class="neumorphism-circle-m circle centered beating-second"
+                style="top: 110px; left: 240px;"
+            >
+                <img src="./files/icons/react.svg" />
+                React
+            </div>
+
+            <div
+                class="neumorphism-circle-m circle centered beating-second"
+                style="top: 84%; left: 23%;"
+            >
+                <img src="./files/icons/react.svg" />
+                React Native
+            </div>
+            <div
+                class="neumorphism-circle-m circle centered beating-first"
+                style="top: 39%; left: 77%;"
+            >
+                <img src="./files/icons/svelte.svg" />
+                Svelte
+            </div>
+            <div
+                class="neumorphism-circle-s circle centered beating-first"
+                style="top: 82%; left: 45%;"
+            >
+                <img src="./files/icons/vuejs.svg" />
+                Vue
+            </div>
+
+
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <h2>Flexible</h2>
+            <p>
+                Due to the storage and adapter system, RxDB can be used in any <b>JavaScript</b> runtime or framework.
+            </p>
+        </div>
+    </div>
+
+    <div class="block fifth">
+        <div class="content">
+            <h2>Trusted and <b class="underline">open source</b></h2>
+            <div class="full-width">
+
+                <div class="box dark">
+                    <img src="files/icons/github-star.svg" />
+                    <div class="label">
+                        Github Stars
+                    </div>
+                    <a
+                        class="value"
+                        href="https://github.com/pubkey/rxdb"
+                        target="_blank"
+                    >
+                        16954
+                    </a>
+                    <div class="clear"></div>
+                </div>
+                <div class="box dark">
+                    <img src="files/icons/download.svg" />
+                    <div class="label">
+                        npm downloads
+                    </div>
+                    <a
+                        class="value beating-number"
+                        href="https://www.npmjs.com/package/rxdb"
+                        target="_blank"
+                    >238572</a>
+                    <div class="clear"></div>
+                </div>
+                <div class="clear"></div>
+                <div class="box dark">
+                    <img src="files/icons/person.svg" />
+                    <div class="label">
+                        Contributors
+                    </div>
+                    <a
+                        class="value"
+                        href="https://github.com/pubkey/rxdb/graphs/contributors"
+                        target="_blank"
+                    >
+                        133
+                    </a>
+                    <div class="clear"></div>
+                </div>
+                <div class="box dark">
+                    <img src="files/icons/person.svg" />
+                    <div class="label">
+                        Commits
+                    </div>
+                    <a
+                        class="value"
+                        href="https://github.com/pubkey/rxdb/commits/master"
+                        target="_blank"
+                    >
+                        6390
+                    </a>
+                    <div class="clear"></div>
+                </div>
+                <div class="clear"></div>
+                <div class="box dark">
+                    <img src="files/icons/gear.svg" />
+                    <div class="label">
+                        Projects build with RxDB
+                    </div>
+                    <a
+                        class="value"
+                        href="https://github.com/pubkey/rxdb/network/dependents?package_id=UGFja2FnZS0xODM0NzAyMw%3D%3D"
+                        target="_blank"
+                    >
+                        825
+                    </a>
+                    <div class="clear"></div>
+                </div>
+                <div class="box dark">
+                    <img src="files/icons/twitter.svg" />
+                    <div class="label">
+                        Twitter followers
+                    </div>
+                    <a
+                        class="value"
+                        href="https://twitter.com/intent/user?screen_name=rxdbjs"
+                        target="_blank"
+                    >
+                        2762
+                    </a>
+                    <div class="clear"></div>
+                </div>
+                <div class="clear"></div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+    <div class="block dark last">
+        <div class="content">
+
+            <h2>
+                Start using <b class="underline">RxDB</b> today
+            </h2>
+
+            <div class="buttons full-width">
+                <a
+                    href="https://github.com/sponsors/pubkey"
+                    target="_blank"
+                >
+                    <div
+                        class="button sponsor-me beating"
+                        style="left: 25%; top: 20%;"
+                    >
+                        Sponsor Me
+                    </div>
+                </a>
+                <a
+                    href="https://www.getrevue.co/profile/rxdbjs/"
+                    target="_blank"
+                >
+                    <div
+                        class="button"
+                        style="left: 10%;"
+                    >
+                        Get the Newsletter
+                    </div>
+                </a>
+                <a
+                    href="https://gitter.im/pubkey/rxdb"
+                    target="_blank"
+                >
+                    <div
+                        class="button"
+                        style="left: 50%; top: 5%;"
+                    >
+
+                        Join the Chat
+                    </div>
+                </a>
+                <a
+                    href="https://rxdb.info/install.html"
+                    target="_blank"
+                >
+                    <div
+                        class="button"
+                        style="top: 40%; left: 2%;"
+                    >
+                        Read the Docs
+                    </div>
+                </a>
+                <a
+                    href="https://twitter.com/intent/user?screen_name=rxdbjs"
+                    target="_blank"
+                >
+                    <div
+                        class="button"
+                        style="top: 44%; left: 53%"
+                    >
+                        Follow on Twitter
+                    </div>
+                </a>
+                <a
+                    href="https://github.com/pubkey/rxdb"
+                    target="_blank"
+                >
+                    <div
+                        class="button"
+                        style="top: 54%; left: 22%;"
+                    >
+                        Get the Code
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+
+    <div class="pseudo-hidden">
+        <audio
+            controls
+            preload="auto"
+            id="heartbeat-audio"
+        >
+            <source
+                src="files/audio/heartbeat/heartbeat.wav"
+                type="audio/wav"
+            >
+            <source
+                src="files/audio/heartbeat/heartbeat.mp3"
+                type="audio/mpeg"
+            >
+            Your browser does not support the audio tag.
+        </audio>
+    </div>
+
+
+    <script
+        src="landingpage.js"
+        defer
+    ></script>
+    <script
+        src="analytics.js"
+        defer
+    ></script>
+    <script
+        src="gitter.js"
+        defer
+    ></script>
+
+
+    <div class="clear"></div>
+</body>
+
+</html>
