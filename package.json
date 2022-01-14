@@ -80,6 +80,7 @@
     "build:webpack": "npm run build && cross-env NODE_ENV=build webpack --config ./config/webpack.config.js",
     "build:rollup": "npm run build && rollup --config ./config/rollup.config.js",
     "build:size": "npm run build:webpack && echo \"Build-Size (minified+gzip):\" && gzip-size --raw ./test_tmp/webpack.bundle.js",
+    "// docs": "TODO move away from gitbook so we are not forced to use node.js version 13 to build the docs",
     "docs:install": "gitbook install docs-src",
     "// docs:serve": "start a local server to watch the docs. Served at http://localhost:4000/",
     "docs:serve": "gitbook serve docs-src",

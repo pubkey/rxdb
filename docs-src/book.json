@@ -13,6 +13,7 @@
     ],
     "links": {
         "sidebar": {
+            "&#x2190; Home ": "/",
             "Follow @twitter ": "https://twitter.com/rxdbjs",
             "Chat @gitter ": "https://gitter.im/pubkey/rxdb",
             "Star @github ": "https://github.com/pubkey/rxdb",

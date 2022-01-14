@@ -1,17 +1,3 @@
-/* les variables */
-:root {
-    --bg-color            : #1a202c;
-    --bg-color-dark       : #171923;
-    --fontSizes-xl        : 1.25rem;
-    --fontSizes-6xl       : 3.0rem;
-    --space-between-blocks: 0px;
-
-
-    --color-top   : #e6008d;
-    --color-middle: #8d2089;
-    --color-bottom: #5f2688;
-}
-
 /** reset some defaults **/
 body,
 html {
@@ -436,7 +422,8 @@ header .logo img {
 }
 
 .block.fourth .circle img {
-    height: 46%;
+    height        : 46%;
+    padding-bottom: 3px;
 }
 
 
