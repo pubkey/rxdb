@@ -1,3 +1,5 @@
+@import url("variables.css");
+
 /** custom css, see https://help.gitbook.com/content/how-can-i-include-css.html **/
 .page-inner {
     max-width: 1000px;
@@ -5,6 +7,22 @@
 
 .markdown-section a {
     color: #e6008d;
+}
+
+/* make header fixed*/
+.page-wrapper {
+    padding-top: 50px;
+}
+
+.book-header {
+    position: fixed;
+    width   : 100%;
+}
+
+/* images and codeblock muse have border radius */
+pre,
+img {
+    border-radius: 4px;
 }
 
 
@@ -23,4 +41,56 @@
     .gitter-open-chat-button {
         display: none;
     }
+}
+
+
+
+/**
+ * Make stuff dark like the landingpage
+ */
+book-summary * {
+    color: white !important;
+}
+
+body,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+h7,
+h8,
+li {
+    color: white;
+}
+
+.book .book-summary ul.summary li a,
+.book .book-summary ul.summary li span {
+    color: white;
+}
+
+#book-search-results .search-results .has-results .search-results-item a {
+    color: var(--color-middle);
+}
+
+.page-wrapper,
+.book-summary,
+#book-search-input,
+.body-inner {
+    background-color: var(--bg-color);
+}
+
+.book-header {
+    background-color: var(--bg-color-dark);
+}
+
+code {
+    color        : black !important;
+    border-radius: 4px;
+}
+
+::marker {
+    color: white;
 }
