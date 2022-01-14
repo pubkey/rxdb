@@ -95,6 +95,35 @@ html {
     z-index   : -1;
 }
 
+.dark {
+    background-color: var(--bg-color-dark);
+}
+
+
+.button {
+    background-color: var(--color-top);
+    border-radius   : 8px;
+    height          : 3rem;
+    min-width       : 3rem;
+    font-size       : 1rem;
+
+    padding      : 10px;
+    padding-left : 20px;
+    padding-right: 20px;
+    text-align   : center;
+    margin-right : 20px;
+
+    color         : white;
+    font-weight   : bold;
+    user-select   : none;
+    vertical-align: middle;
+    outline       : 2px solid transparent;
+    outline-offset: 2px;
+    line-height   : 1.2;
+
+    text-decoration: none;
+}
+
 
 b {
     color: var(--color-top);
@@ -196,20 +225,23 @@ header .logo img {
     padding-bottom: 100px;
 }
 
-.block.dark {
-    background-color: var(--bg-color-dark);
-}
-
 
 .block.first .inner {
     width: 60%;
 }
 
 .block.first .text {
-    font-size  : var(--fontSizes-6xl);
-    font-weight: 600;
-    text-align : right;
+    font-size   : var(--fontSizes-6xl);
+    font-weight : 600;
+    text-align  : right;
+    margin-right: 13px;
 }
+
+.block.first img {
+    margin-left: 13px;
+    margin-top : 8px;
+}
+
 
 .block.second .smartphone {
     width            : 200px;
@@ -252,31 +284,74 @@ header .logo img {
 
 
 
-
-
-
-.block.third .smartphone {
-    width            : 200px;
-    height           : 200px;
-    background-repeat: no-repeat;
-    background-size  : contain;
-    background-image : url(./files/smartphone/tablet_white.svg);
+.block.third .replication-icons {
+    width      : 90%;
+    margin-left: 10%;
+    margin-top : 0px;
+    position   : relative;
 }
 
-.block.third .smartphone #smartphone-color {
-    -webkit-transition: background-color 100ms linear;
-    -ms-transition    : background-color 100ms linear;
-    transition        : background-color 100ms linear;
 
-    position        : absolute;
-    z-index         : 2;
-    width           : 130px;
-    height          : 153px;
-    background-color: #e6008d;
-    margin-top      : -17px;
-    margin-left     : 0px;
-    border-radius   : 4px;
+.block.third .replicate-logo {
+    position   : absolute;
+    width      : 150px;
+    margin-left: 50%;
+    left       : -75px;
+    margin-top : 50%;
+    top        : -75px;
 }
+
+.block.third .replicate-graphql {
+    position   : absolute;
+    margin-top : 8%;
+    margin-left: 10%;
+}
+
+.block.third .replicate-couchdb {
+    position   : absolute;
+    left       : 90%;
+    margin-left: -130px;
+    margin-top : 8%;
+}
+
+.block.third .circle.replicate-rest {
+    position   : absolute;
+    width      : 70px;
+    height     : 70px;
+    top        : -70px;
+    margin-top : 83%;
+    margin-left: 18%;
+    color      : black;
+    text-align : center;
+}
+
+.block.third .circle.replicate-websocket {
+    position   : absolute;
+    width      : 70px;
+    height     : 70px;
+    top        : -70px;
+    margin-top : 93%;
+    margin-left: 50%;
+    left       : -35px;
+    color      : black;
+    text-align : center;
+}
+
+.block.third .circle.replicate-p2p {
+    position  : absolute;
+    width     : 70px;
+    height    : 70px;
+    top       : -70px;
+    margin-top: 83%;
+
+    left       : 82%;
+    margin-left: -70px;
+
+    color     : black;
+    text-align: center;
+}
+
+
 
 .block.third .smartphone img {
     position   : absolute;
@@ -287,7 +362,7 @@ header .logo img {
 }
 
 .block.third img.protocol {
-    width: 100px;
+    width: 80px;
 }
 
 .block.third .arrow {
@@ -304,10 +379,76 @@ header .logo img {
 
 .block.third .circle {
     border-radius   : 50%;
-    width           : 200px;
-    height          : 200px;
+    width           : 130px;
+    height          : 130px;
     background-color: white;
 }
+
+
+
+
+.block.fourth .circle {
+    border-radius   : 50%;
+    width           : 95px;
+    height          : 95px;
+    background-color: white;
+    color           : var(--bg-color-dark);
+    font-size       : 85%;
+    position        : absolute;
+}
+
+.block.fourth .circle.smaller {
+    width : 77px;
+    height: 77px;
+}
+
+.block.fourth .circle img {
+    height: 46%;
+}
+
+
+
+
+.block.fifth .box {
+    border-radius : 0.75rem;
+    padding-top   : 12px;
+    padding-bottom: 12px;
+    padding-left  : 16px;
+    padding-right : 16px;
+
+    float       : left;
+    width       : 260px;
+    margin-right: 20px;
+    margin-top  : 20px;
+}
+
+.block.fifth .box img {
+    width        : 20px;
+    padding-right: 10px;
+    float        : left;
+}
+
+.block.fifth .box a {
+    text-decoration: none;
+}
+
+.block.fifth .box a:hover {
+    text-decoration: underline;
+}
+
+.block.fifth .box .label {
+    margin-top: 2px;
+    float     : left;
+}
+
+.block.fifth .box .value {
+    color            : var(--color-top);
+    font-weight      : bold;
+    float            : right;
+    margin-inline-end: 0px;
+    right            : 0px;
+}
+
 
 
 
@@ -319,16 +460,19 @@ header .logo img {
  * is made beating via javascript
  */
 .beating.animation {
+    will-change     : transform;
     transform-origin: center center;
     animation       : animateHeartbeat;
 }
 
 .beating-first.animation {
+    will-change     : transform;
     transform-origin: center center;
     animation       : animateOnFirstHeartbeat;
 }
 
 .beating-second.animation {
+    will-change     : transform;
     transform-origin: center center;
     animation       : animateOnSecondHeartbeat;
 }
@@ -368,7 +512,7 @@ header .logo img {
     }
 
     50% {
-        transform: scale(1.16);
+        transform: scale(1.14);
     }
 
     56% {
@@ -429,7 +573,7 @@ header .logo img {
     }
 
     50% {
-        transform: scale(1.16);
+        transform: scale(1.14);
     }
 
     56% {
