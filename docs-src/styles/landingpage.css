@@ -286,7 +286,7 @@ header .logo img {
     height           : 200px;
     background-repeat: no-repeat;
     background-size  : contain;
-    background-image : url(./files/smartphone/tablet_white.svg);
+    background-image : url(../files/smartphone/tablet_white.svg);
 }
 
 .block.second .smartphone #smartphone-color {

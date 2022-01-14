@@ -15,7 +15,9 @@ In this example-schema we define a hero-collection with the following settings:
 - the skills-attribute must be an array with objects which contain the name and the damage-attribute. There is a maximum of 5 skills per hero.
 - Allows adding attachments and store them encrypted
 
-  ```json
+
+
+```json
   {
     "title": "hero schema",
     "version": 0,
@@ -69,7 +71,7 @@ In this example-schema we define a hero-collection with the following settings:
         "encrypted": true
     }
   }
-  ```
+```
 
 ## Create a collection with the schema
 
