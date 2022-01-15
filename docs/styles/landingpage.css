@@ -209,6 +209,8 @@ header .logo img {
     height: calc(var(--space-between-blocks) + 110px);
 }
 
+
+
 .content {
     width        : 98%;
     padding-left : 1%;
@@ -237,6 +239,12 @@ header .logo img {
 
 .block.first .inner {
     width: 60%;
+}
+
+@media (max-width: 900px) {
+    .block.first .inner {
+        width: 89%;
+    }
 }
 
 .block.first .text {
@@ -279,6 +287,16 @@ header .logo img {
     }
 }
 
+.block.second .logo {
+    width: 190px;
+}
+
+@media (max-width: 530px) {
+    .block.second .logo {
+        width: 150px;
+    }
+}
+
 .block.second .smartphone {
     width            : 200px;
     height           : 200px;
@@ -287,18 +305,26 @@ header .logo img {
     background-image : url(../files/smartphone/tablet_white.svg);
 }
 
+@media (max-width: 530px) {
+    .block.second .smartphone {
+        width : 150px;
+        height: 150px;
+    }
+}
+
+
 .block.second .smartphone #smartphone-color {
     -webkit-transition: background-color 100ms linear;
     -ms-transition    : background-color 100ms linear;
     transition        : background-color 100ms linear;
 
-    position        : absolute;
-    width           : 130px;
-    height          : 153px;
     background-color: #e6008d;
-    margin-top      : 15px;
-    margin-left     : 35px;
     border-radius   : 4px;
+
+    width      : 65.4%;
+    height     : 76.2%;
+    margin-top : 7.4%;
+    margin-left: 17.4%;
 }
 
 
@@ -350,12 +376,26 @@ header .logo img {
     margin-left: 10%;
 }
 
+@media (max-width: 500px) {
+    .block.replication .replicate-graphql {
+        margin-left: 0%;
+    }
+}
+
+
 .block.replication .replicate-couchdb {
     position   : absolute;
     left       : 90%;
     margin-left: -130px;
     margin-top : 8%;
 }
+
+@media (max-width: 500px) {
+    .block.replication .replicate-couchdb {
+        left: 100%;
+    }
+}
+
 
 .block.replication .replicate-rest {
     position   : absolute;
@@ -385,32 +425,9 @@ header .logo img {
     text-align: center;
 }
 
-
-
-.block.replication .smartphone img {
-    position   : absolute;
-    z-index    : 3;
-    width      : 150px;
-    margin-top : -9px;
-    margin-left: -2px;
-}
-
 .block.replication img.protocol {
     width: 80px;
 }
-
-.block.replication .arrow {
-    font-size       : 160px;
-    margin-top      : 30px;
-    height          : 140px;
-    transform-origin: center center;
-}
-
-.block.replication .arrow img {
-    width      : 90%;
-    margin-left: 5%;
-}
-
 
 
 
@@ -439,6 +456,13 @@ header .logo img {
     margin-right: 20px;
     margin-top  : 20px;
 }
+
+@media (max-width: 500px) {
+    .block.fifth .box {
+        width: calc(100% - 52px);
+    }
+}
+
 
 .block.fifth .box img {
     width        : 20px;
