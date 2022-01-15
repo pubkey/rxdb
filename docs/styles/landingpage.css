@@ -209,8 +209,6 @@ header .logo img {
     height: calc(var(--space-between-blocks) + 110px);
 }
 
-
-
 .content {
     width        : 98%;
     padding-left : 1%;
@@ -322,7 +320,7 @@ header .logo img {
 
 
 
-.block.third .replication-icons {
+.block.replication .replication-icons {
     height     : 515px;
     width      : 90%;
     margin-left: 10%;
@@ -331,13 +329,13 @@ header .logo img {
 }
 
 @media (max-width: 900px) {
-    .block.third .replication-icons {
+    .block.replication .replication-icons {
         margin-left: 5%;
     }
 }
 
 
-.block.third .replicate-logo {
+.block.replication .replicate-logo {
     position   : absolute;
     width      : 150px;
     margin-left: 50%;
@@ -346,20 +344,20 @@ header .logo img {
     margin-top : -75px;
 }
 
-.block.third .replicate-graphql {
+.block.replication .replicate-graphql {
     position   : absolute;
     margin-top : 8%;
     margin-left: 10%;
 }
 
-.block.third .replicate-couchdb {
+.block.replication .replicate-couchdb {
     position   : absolute;
     left       : 90%;
     margin-left: -130px;
     margin-top : 8%;
 }
 
-.block.third .replicate-rest {
+.block.replication .replicate-rest {
     position   : absolute;
     margin-top : -70px;
     top        : 83%;
@@ -367,7 +365,7 @@ header .logo img {
     text-align : center;
 }
 
-.block.third .replicate-websocket {
+.block.replication .replicate-websocket {
     position   : absolute;
     margin-top : -70px;
     top        : 93%;
@@ -376,7 +374,7 @@ header .logo img {
     text-align : center;
 }
 
-.block.third .replicate-p2p {
+.block.replication .replicate-p2p {
     position  : absolute;
     margin-top: -70px;
     top       : 83%;
@@ -389,7 +387,7 @@ header .logo img {
 
 
 
-.block.third .smartphone img {
+.block.replication .smartphone img {
     position   : absolute;
     z-index    : 3;
     width      : 150px;
@@ -397,18 +395,18 @@ header .logo img {
     margin-left: -2px;
 }
 
-.block.third img.protocol {
+.block.replication img.protocol {
     width: 80px;
 }
 
-.block.third .arrow {
+.block.replication .arrow {
     font-size       : 160px;
     margin-top      : 30px;
     height          : 140px;
     transform-origin: center center;
 }
 
-.block.third .arrow img {
+.block.replication .arrow img {
     width      : 90%;
     margin-left: 5%;
 }
