@@ -25,6 +25,22 @@ window.onload = function () {
 
     console.log('heartbeatDuration: ' + heartbeatDuration);
 
+    /**
+     * For iOS we have to trigger the audio start on the first user interaction.
+     * This will 'unlock' the audio element so we can later play() at any time.
+     * @link https://www.py4u.net/discuss/287774
+     */
+    window.addEventListener('touchstart', () => {
+        console.log('touchstart: START');
+        $heartbeatAudio.volume = 0.01;
+        $heartbeatAudio.play();
+        setTimeout(function () {
+            $heartbeatAudio.pause();
+            $heartbeatAudio.currentTime = 0;
+            console.log('touchstart: END');
+        }, 1);
+    });
+
 
     setInterval(function () {
         /**
