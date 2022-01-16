@@ -386,12 +386,14 @@ export class RxGraphQLReplicationState<RxDocType> {
             return false;
         }
 
-        // all docs where successfull, so we use the seq of the changes-fetch
-        await setLastPushSequence(
-            this.collection,
-            this.endpointHash,
-            changesResult.lastSequence
-        );
+        if (lastSuccessfullChange) {
+            // all docs where successfull, so we use the seq of the changes-fetch
+            await setLastPushSequence(
+                this.collection,
+                this.endpointHash,
+                changesResult.lastSequence
+            );
+        }
 
         if (changesResult.changedDocs.size === 0) {
             if (this.live) {
