@@ -2339,6 +2339,46 @@ describe('replication-graphql.test.js', () => {
         });
 
         config.parallel('issues', () => {
+            it('should not create push checkpoints unnecessarily [PR: #3627]', async () => {
+                const amount = batchSize * 4;
+                const testData = getTestData(amount);
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(amount),
+                    SpawnServer.spawn(testData),
+                ]);
+
+                const replicationState = c.syncGraphQL({
+                    url: server.url,
+                    push: {
+                        batchSize,
+                        queryBuilder: pushQueryBuilder,
+                    },
+                    pull: {
+                        queryBuilder,
+                    },
+                    live: true,
+                    deletedFlag: 'deleted',
+                    liveInterval: 60 * 1000,
+                });
+
+                await replicationState.awaitInitialReplication();
+                
+                const originalSequence = await getLastPushSequence(
+                    replicationState.collection,
+                    replicationState.endpointHash,
+                );
+                // call .run() often
+                await Promise.all(
+                    new Array(3).fill(0).map(() => replicationState.run())
+                );
+                const newSequence = await getLastPushSequence(
+                    replicationState.collection,
+                    replicationState.endpointHash,
+                );
+                assert.ok(originalSequence === newSequence);
+                server.close();
+                c.database.destroy();
+            });
             it('push not working on slow db', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
