@@ -11,6 +11,7 @@ export declare function getChangesSinceLastPushSequence<RxDocType>(collection: R
         sequence: number;
     }>;
     lastSequence: number;
+    hasChangesSinceLastSequence: boolean;
 }>;
 export declare function getLastPullDocument<RxDocType>(collection: RxCollection<RxDocType>, replicationIdentifier: string): Promise<RxDocumentData<RxDocType> | null>;
 export declare function setLastPullDocument(collection: RxCollection, replicationIdentifier: string, doc: any): Promise<{

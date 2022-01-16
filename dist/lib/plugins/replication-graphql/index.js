@@ -694,8 +694,10 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
         }))).then(function (_Promise$all2) {
           var _exit4 = false;
 
-          function _temp15(_result5) {
-            return _exit4 ? _result5 : Promise.resolve((0, _crawlingCheckpoint.setLastPushSequence)(_this9.collection, _this9.endpointHash, changesResult.lastSequence)).then(function () {
+          function _temp17(_result5) {
+            if (_exit4) return _result5;
+
+            function _temp15() {
               var _temp13 = function () {
                 if (changesResult.changedDocs.size === 0) {
                   if (_this9.live) {}
@@ -708,7 +710,16 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
               return _temp13 && _temp13.then ? _temp13.then(function () {
                 return true;
               }) : true;
-            });
+            }
+
+            var _temp14 = function () {
+              if (changesResult.hasChangesSinceLastSequence) {
+                // all docs where successfull, so we use the seq of the changes-fetch
+                return Promise.resolve((0, _crawlingCheckpoint.setLastPushSequence)(_this9.collection, _this9.endpointHash, changesResult.lastSequence)).then(function () {});
+              }
+            }();
+
+            return _temp14 && _temp14.then ? _temp14.then(_temp15) : _temp15(_temp14);
           }
 
           var changesWithDocs = _Promise$all2.filter(function (doc) {
@@ -717,7 +728,7 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
 
           var lastSuccessfullChange = null;
 
-          var _temp14 = _catch(function () {
+          var _temp16 = _catch(function () {
             /**
              * we cannot run all queries parallel
              * because then we would not know
@@ -769,7 +780,7 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
             return _temp11 && _temp11.then ? _temp11.then(_temp12) : _temp12(_temp11);
           });
 
-          return _temp14 && _temp14.then ? _temp14.then(_temp15) : _temp15(_temp14); // all docs where successfull, so we use the seq of the changes-fetch
+          return _temp16 && _temp16.then ? _temp16.then(_temp17) : _temp17(_temp16);
         });
       });
     } catch (e) {
@@ -812,7 +823,7 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
           });
         }
 
-        var _temp16 = function () {
+        var _temp18 = function () {
           if (toStorageDocs.length > 0) {
             return Promise.resolve(_this11.collection.database.lockedRun(function () {
               return _this11.collection.storageInstance.bulkAddRevisions(toStorageDocs.map(function (row) {
@@ -822,7 +833,7 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
           }
         }();
 
-        return _temp16 && _temp16.then ? _temp16.then(function () {
+        return _temp18 && _temp18.then ? _temp18.then(function () {
           return true;
         }) : true;
       });

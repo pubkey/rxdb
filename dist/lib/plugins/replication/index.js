@@ -679,12 +679,10 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
       return Promise.resolve((0, _replicationCheckpoint.getChangesSinceLastPushSequence)(_this11.collection, _this11.replicationIdentifier, batchSize)).then(function (changesResult) {
         var _exit5 = false;
 
-        function _temp18(_result5) {
+        function _temp20(_result5) {
           if (_exit5) return _result5;
-          pushDocs.forEach(function (pushDoc) {
-            return _this11.subjects.send.next(pushDoc);
-          });
-          return Promise.resolve((0, _replicationCheckpoint.setLastPushSequence)(_this11.collection, _this11.replicationIdentifier, changesResult.lastSequence)).then(function () {
+
+          function _temp18() {
             var _temp16 = function () {
               if (changesResult.changedDocs.size !== 0) {
                 return Promise.resolve(_this11.runPush()).then(function () {});
@@ -695,7 +693,19 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
             return _temp16 && _temp16.then ? _temp16.then(function () {
               return true;
             }) : true;
+          }
+
+          pushDocs.forEach(function (pushDoc) {
+            return _this11.subjects.send.next(pushDoc);
           });
+
+          var _temp17 = function () {
+            if (changesResult.hasChangesSinceLastSequence) {
+              return Promise.resolve((0, _replicationCheckpoint.setLastPushSequence)(_this11.collection, _this11.replicationIdentifier, changesResult.lastSequence)).then(function () {});
+            }
+          }();
+
+          return _temp17 && _temp17.then ? _temp17.then(_temp18) : _temp18(_temp17);
         }
 
         var pushDocs = Array.from(changesResult.changedDocs.values()).map(function (row) {
@@ -711,7 +721,7 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
           return doc;
         });
 
-        var _temp17 = _catch(function () {
+        var _temp19 = _catch(function () {
           return Promise.resolve(_this11.push.handler(pushDocs)).then(function () {});
         }, function (err) {
           _this11.subjects.error.next(err);
@@ -720,7 +730,7 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
           return false;
         });
 
-        return _temp17 && _temp17.then ? _temp17.then(_temp18) : _temp18(_temp17);
+        return _temp19 && _temp19.then ? _temp19.then(_temp20) : _temp20(_temp19);
       });
     } catch (e) {
       return Promise.reject(e);

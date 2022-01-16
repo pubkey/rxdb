@@ -244,7 +244,8 @@ export var getChangesSinceLastPushSequence = function getChangesSinceLastPushSeq
       function _temp2() {
         return {
           changedDocs: changedDocs,
-          lastSequence: lastSequence
+          lastSequence: lastSequence,
+          hasChangesSinceLastSequence: lastPushSequence !== lastSequence
         };
       }
 

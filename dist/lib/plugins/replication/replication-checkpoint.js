@@ -258,7 +258,8 @@ var getChangesSinceLastPushSequence = function getChangesSinceLastPushSequence(c
       function _temp2() {
         return {
           changedDocs: changedDocs,
-          lastSequence: lastSequence
+          lastSequence: lastSequence,
+          hasChangesSinceLastSequence: lastPushSequence !== lastSequence
         };
       }
 
