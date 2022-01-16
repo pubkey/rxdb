@@ -151,11 +151,14 @@ window.onload = function () {
     // increase beating numbers
     heartbeatListeners.push(function () {
         Array.from($$beatingNumber).forEach(function (element) {
-            setTimeout(function () {
-                var value = parseFloat(element.innerHTML, 10);
-                var newValue = value + 1;
-                element.innerHTML = newValue + '';
-            }, heartbeatTimeToFirstBeat);
+            // only increase randomly so it looks more natural.
+            if (randomBoolean() && randomBoolean()) {
+                setTimeout(function () {
+                    var value = parseFloat(element.innerHTML, 10);
+                    var newValue = value + 1;
+                    element.innerHTML = newValue + '';
+                }, heartbeatTimeToFirstBeat);
+            }
         });
     });
 
@@ -178,7 +181,9 @@ window.onload = function () {
 
 // UTILS
 
-
+function randomBoolean() {
+    return Math.random() < 0.5;
+}
 function randomOfArray(array, mustNotBe) {
     var ret;
     while (!ret || ret === mustNotBe) {

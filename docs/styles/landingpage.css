@@ -337,10 +337,14 @@ header .logo img {
 }
 
 .block.second .arrow {
-    width           : 90%;
-    margin-left     : 5%;
-    margin-top      : 31px;
+    width           : 60%;
+    margin-left     : -20%;
+    margin-top      : 45px;
     transform-origin: center center;
+}
+
+.block.second .arrow.arrow-right {
+    margin-left: 20%;
 }
 
 
@@ -401,7 +405,8 @@ header .logo img {
     position   : absolute;
     margin-top : -70px;
     top        : 83%;
-    margin-left: 18%;
+    margin-left: 20%;
+    left       : -35px;
     text-align : center;
 }
 
@@ -419,8 +424,8 @@ header .logo img {
     margin-top: -70px;
     top       : 83%;
 
-    left       : 82%;
-    margin-left: -70px;
+    left       : 80%;
+    margin-left: -35px;
 
     text-align: center;
 }
@@ -441,8 +446,24 @@ header .logo img {
     padding-bottom: 3px;
 }
 
+.block.fourth .neumorphism-circle-s {
+    margin-left: -35px;
+}
+
+.block.fourth .neumorphism-circle-m {
+    margin-left: -47.5px;
+}
 
 
+.block.fifth .inner {
+    width: 624px;
+}
+
+@media (max-width: 624px) {
+    .block.fifth .inner {
+        width: 100%;
+    }
+}
 
 .block.fifth .box {
     border-radius : 0.75rem;
@@ -452,14 +473,14 @@ header .logo img {
     padding-right : 16px;
 
     float       : left;
-    width       : 260px;
+    width       : calc(50% - 40px - 32px);
     margin-right: 20px;
     margin-top  : 20px;
 }
 
 @media (max-width: 500px) {
     .block.fifth .box {
-        width: calc(100% - 52px);
+        width: calc(100% - 40px - 32px);
     }
 }
 
@@ -503,6 +524,7 @@ header .logo img {
     position: absolute;
     top     : 0;
     left    : 0;
+    margin  : 0;
 }
 
 .block.last .button.sponsor-me {
@@ -511,6 +533,7 @@ header .logo img {
     padding-right: 38px;
     border-radius: 10px;
     font-size    : 37px;
+
 }
 
 
