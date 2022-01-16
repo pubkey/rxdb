@@ -2362,15 +2362,18 @@ describe('replication-graphql.test.js', () => {
                 });
 
                 await replicationState.awaitInitialReplication();
-                
+                await replicationState.run();
+            
                 const originalSequence = await getLastPushSequence(
                     replicationState.collection,
                     replicationState.endpointHash,
                 );
+                
                 // call .run() often
-                await Promise.all(
-                    new Array(3).fill(0).map(() => replicationState.run())
-                );
+                for(let i = 0; i < 3; i++){
+                    await replicationState.run();
+                }
+
                 const newSequence = await getLastPushSequence(
                     replicationState.collection,
                     replicationState.endpointHash,

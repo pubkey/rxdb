@@ -534,17 +534,17 @@ describe('replication.test.js', () => {
             });
 
             await replicationState.awaitInitialReplication();
-
+            await replicationState.run();
+            
             const originalSequence = await getLastPushSequence(
                 localCollection,
                 REPLICATION_IDENTIFIER_TEST
             );
             // call .run() often
-            await Promise.all(
-                new Array(3)
-                    .fill(0)
-                    .map(() => replicationState.run())
-            );
+            for (let i = 0; i < 3; i++) {
+                await replicationState.run()
+            }
+
             const newSequence = await getLastPushSequence(
                 localCollection,
                 REPLICATION_IDENTIFIER_TEST
