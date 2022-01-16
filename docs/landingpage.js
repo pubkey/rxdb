@@ -53,7 +53,7 @@ window.onload = function () {
             });
             heartbeatIndex = heartbeatIndex + 1;
         }
-    }, heartbeatDuration * 2);
+    }, heartbeatDuration * 1.9);
 
 
     // swap out main text on every X heartbeat
