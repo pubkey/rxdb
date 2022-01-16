@@ -91,6 +91,17 @@ a:visited {
     z-index   : -1;
 }
 
+@media (max-width: 500px) {
+
+    /**
+     * Underline gets broken on mobile,
+     * so better disable it.
+     */
+    .underline::after {
+        display: none;
+    }
+}
+
 .dark {
     background-color: var(--bg-color-dark);
 }
@@ -137,8 +148,36 @@ h2 {
     font-size: var(--fontSizes-6xl);
 }
 
-p {
+p,
+ul,
+li {
     font-size: var(--fontSizes-xl);
+}
+
+p a {
+    color      : var(--color-top);
+    font-weight: bold;
+}
+
+p a:hover {
+    text-decoration: underline;
+}
+
+li {
+    margin-bottom: 34px;
+}
+
+ul {
+    list-style: none;
+}
+
+ul li:before {
+    content      : '✓ ';
+    font-size    : 40px;
+    display      : block;
+    float        : left;
+    padding-right: 10px;
+    margin-top: -11px;
 }
 
 
@@ -180,8 +219,8 @@ header .logo {
     color          : white;
     font-weight    : bold;
     text-decoration: none;
-    will-change: transform;
-    transition: 150ms ease-in-out;
+    will-change    : transform;
+    transition     : 150ms ease-in-out;
 }
 
 header a:hover .logo {
@@ -231,12 +270,53 @@ header .logo img {
 }
 
 
+
+
+.smartphone {
+    width            : 200px;
+    height           : 200px;
+    background-repeat: no-repeat;
+    background-size  : contain;
+    background-image : url(../files/smartphone/tablet_white.svg);
+}
+
+.smartphone .smartphone-color {
+    -webkit-transition: background-color 100ms linear;
+    -ms-transition    : background-color 100ms linear;
+    transition        : background-color 100ms linear;
+
+    background-color: #e6008d;
+    border-radius   : 4px;
+
+    width      : 65.4%;
+    height     : 76.2%;
+    margin-top : 7.4%;
+    margin-left: 17.4%;
+}
+
+
+
+
 .block {
     width         : 100%;
     min-height    : 450px;
     padding-top   : 80px;
     padding-bottom: 100px;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 .block.first .inner {
@@ -299,34 +379,11 @@ header .logo img {
     }
 }
 
-.block.second .smartphone {
-    width            : 200px;
-    height           : 200px;
-    background-repeat: no-repeat;
-    background-size  : contain;
-    background-image : url(../files/smartphone/tablet_white.svg);
-}
-
 @media (max-width: 530px) {
     .block.second .smartphone {
         width : 150px;
         height: 150px;
     }
-}
-
-
-.block.second .smartphone #smartphone-color {
-    -webkit-transition: background-color 100ms linear;
-    -ms-transition    : background-color 100ms linear;
-    transition        : background-color 100ms linear;
-
-    background-color: #e6008d;
-    border-radius   : 4px;
-
-    width      : 65.4%;
-    height     : 76.2%;
-    margin-top : 7.4%;
-    margin-left: 17.4%;
 }
 
 
@@ -438,23 +495,71 @@ header .logo img {
 
 
 
-.block.fourth .circle {
+.block.offline-first {
+    position: relative;
+    overflow: hidden;
+}
+
+.block.offline-first .offline-image-wrapper {
+    position   : absolute;
+    transform  : rotate(76deg);
+    width      : 224%;
+    margin-left: -112%;
+    left       : 57%;
+    top        : -45%;
+}
+
+@media (max-width: 900px) {
+    .block.offline-first .offline-image-wrapper {
+        width    : 163%;
+        left     : 82%;
+        transform: rotate(66deg);
+    }
+}
+
+.block.offline-first .offline-image {
+    width : 100%;
+    height: 100%;
+}
+
+.block.offline-first .content {
+    position: relative;
+}
+
+.block.offline-first ul {}
+
+@media (max-width: 600px) {
+    .block.offline-first ul {
+        padding-left: 0px;
+    }
+}
+
+
+
+
+
+
+
+.block.frameworks .circle {
     font-size: 85%;
     position : absolute;
 }
 
-.block.fourth .circle img {
+.block.frameworks .circle img {
     height        : 46%;
     padding-bottom: 3px;
 }
 
-.block.fourth .neumorphism-circle-s {
+.block.frameworks .neumorphism-circle-s {
     margin-left: -35px;
 }
 
-.block.fourth .neumorphism-circle-m {
+.block.frameworks .neumorphism-circle-m {
     margin-left: -47.5px;
 }
+
+
+
 
 
 .block.fifth .inner {
@@ -465,6 +570,15 @@ header .logo img {
     .block.fifth .inner {
         width: 100%;
     }
+}
+
+
+.block.fifth .box {
+    background-color: var(--bg-color-dark);
+}
+
+.block.fifth.dark .box {
+    background-color: var(--bg-color);
 }
 
 .block.fifth .box {
@@ -480,7 +594,7 @@ header .logo img {
     margin-top  : 20px;
 }
 
-@media (max-width: 500px) {
+@media (max-width: 590px) {
     .block.fifth .box {
         width: calc(100% - 40px - 32px);
     }
@@ -637,6 +751,13 @@ header .logo img {
     animation       : animateOnSecondHeartbeat;
 }
 
+.beating-color {
+    will-change       : background-color;
+    -webkit-transition: background-color 100ms linear;
+    -ms-transition    : background-color 100ms linear;
+    transition        : background-color 100ms linear;
+    background-color  : #e6008d;
+}
 
 /*
  * The animation must use the same steps as the soundwave of the heartbeat.mp3

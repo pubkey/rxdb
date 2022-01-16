@@ -9,10 +9,10 @@ window.onload = function () {
     var $$beatingFirst = document.getElementsByClassName('beating-first');
     var $$beatingSecond = document.getElementsByClassName('beating-second');
     var $$beatingNumber = document.getElementsByClassName('beating-number');
+    var $$beatingColor = document.getElementsByClassName('beating-color');
 
     var $swapOutFirst = document.getElementById('swap-out-first');
     var $swapOutSecond = document.getElementById('swap-out-second');
-    var $smartphoneColor = document.getElementById('smartphone-color');
 
 
     var audioVolume = 0.5;
@@ -168,11 +168,20 @@ window.onload = function () {
         '#8d2089',
         '#5f2688'
     ];
-    var lastSmartphoneColor = colors[0];
+    var lastColorByElementIndex = {};
     heartbeatListeners.push(function () {
         setTimeout(function () {
-            lastSmartphoneColor = randomOfArray(colors, lastSmartphoneColor);
-            $smartphoneColor.style.backgroundColor = lastSmartphoneColor;
+            Array.from($$beatingColor).forEach(function (element, idx) {
+
+                var isColor = lastColorByElementIndex[idx];
+                if (!isColor) {
+                    isColor = colors[0];
+                }
+                console.log('isColor: ' + isColor);
+                var newColor = randomOfArray(colors, isColor);
+                lastColorByElementIndex[idx] = newColor;
+                element.style.backgroundColor = newColor;
+            });
         }, heartbeatTimeToSecondBeat);
     });
 
