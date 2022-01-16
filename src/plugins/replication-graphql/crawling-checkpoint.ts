@@ -118,6 +118,7 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
         sequence: number;
     }>;
     lastSequence: number;
+    hasChangesSinceLastSequence: boolean;
 }> {
     let lastPushSequence = await getLastPushSequence(
         collection,
@@ -212,7 +213,8 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
 
     return {
         changedDocs,
-        lastSequence
+        lastSequence,
+        hasChangesSinceLastSequence: lastPushSequence !== lastSequence,
     };
 }
 

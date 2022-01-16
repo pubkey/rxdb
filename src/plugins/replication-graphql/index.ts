@@ -386,7 +386,7 @@ export class RxGraphQLReplicationState<RxDocType> {
             return false;
         }
 
-        if (lastSuccessfullChange) {
+        if (changesResult.hasChangesSinceLastSequence) {
             // all docs where successfull, so we use the seq of the changes-fetch
             await setLastPushSequence(
                 this.collection,

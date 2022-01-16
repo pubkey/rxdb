@@ -394,7 +394,7 @@ export class RxReplicationStateBase<RxDocType> {
 
         pushDocs.forEach(pushDoc => this.subjects.send.next(pushDoc));
 
-        if (pushDocs.length > 0) {
+        if (changesResult.hasChangesSinceLastSequence) {
             await setLastPushSequence(
                 this.collection,
                 this.replicationIdentifier,
