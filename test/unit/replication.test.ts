@@ -513,6 +513,47 @@ describe('replication.test.js', () => {
         });
     });
     config.parallel('issues', () => {
+        it('should not create push checkpoints unnecessarily [PR: #3627]', async () => {
+            const { localCollection, remoteCollection } =
+                await getTestCollections({ local: 5, remote: 5 });
+
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: false,
+                pull: {
+                    handler: getPullHandler(remoteCollection),
+                },
+                push: {
+                    handler: getPushHandler(remoteCollection),
+                },
+            });
+            replicationState.error$.subscribe((err) => {
+                console.log('got error :');
+                console.dir(err);
+            });
+
+            await replicationState.awaitInitialReplication();
+            await replicationState.run();
+            
+            const originalSequence = await getLastPushSequence(
+                localCollection,
+                REPLICATION_IDENTIFIER_TEST
+            );
+            // call .run() often
+            for (let i = 0; i < 3; i++) {
+                await replicationState.run()
+            }
+
+            const newSequence = await getLastPushSequence(
+                localCollection,
+                REPLICATION_IDENTIFIER_TEST
+            );
+            assert.strictEqual(originalSequence, newSequence);
+            localCollection.database.destroy();
+            remoteCollection.database.destroy();
+        });
+
         /**
          * When a local write happens while the pull is running,
          * we should drop the pulled documents and first run the push again

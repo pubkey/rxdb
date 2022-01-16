@@ -394,11 +394,13 @@ export class RxReplicationStateBase<RxDocType> {
 
         pushDocs.forEach(pushDoc => this.subjects.send.next(pushDoc));
 
-        await setLastPushSequence(
-            this.collection,
-            this.replicationIdentifier,
-            changesResult.lastSequence
-        );
+        if (changesResult.hasChangesSinceLastSequence) {
+            await setLastPushSequence(
+                this.collection,
+                this.replicationIdentifier,
+                changesResult.lastSequence
+            );
+        }
 
         // batch had documents so there might be more changes to replicate
         if (changesResult.changedDocs.size !== 0) {
