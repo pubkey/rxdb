@@ -58,9 +58,9 @@ import { getDocumentDataOfRxChangeEvent } from '../../rx-change-event';
 import {
     _handleToStorageInstance
 } from '../../rx-collection-helper';
+import {RxReplicationError} from '../replication';
 
 addRxPlugin(RxDBLeaderElectionPlugin);
-
 
 export class RxGraphQLReplicationState<RxDocType> {
 
@@ -235,15 +235,19 @@ export class RxGraphQLReplicationState<RxDocType> {
             result = await this.client.query(pullGraphQL.query, pullGraphQL.variables);
             if (result.errors) {
                 if (typeof result.errors === 'string') {
-                    throw new Error(result.errors);
+                    throw new RxReplicationError(result.errors, { type: 'pull' });
                 } else {
-                    const err: any = new Error('unknown errors occurred - see innerErrors for more details');
-                    err.innerErrors = result.errors;
-                    throw err;
+                    throw new RxReplicationError('unknown errors occurred in replication pull - see innerErrors for more details', { type: 'pull' }, result.errors);
                 }
             }
-        } catch (err) {
-            this._subjects.error.next(err);
+        } catch (err: any) {
+            let replicationError = err;
+
+            if (!(err instanceof RxReplicationError)) {
+                replicationError = new RxReplicationError(err.message, { type: 'pull' }, err)
+            }
+
+            this._subjects.error.next(replicationError);
             return false;
         }
 
@@ -359,22 +363,33 @@ export class RxGraphQLReplicationState<RxDocType> {
 
                 const pushObj = await this.push.queryBuilder(changeWithDoc.doc);
 
-                const result = await this.client.query(pushObj.query, pushObj.variables);
+                try {
+                    const result = await this.client.query(pushObj.query, pushObj.variables);
 
-                if (result.errors) {
-                    if (typeof result.errors === 'string') {
-                        throw new Error(result.errors);
+                    if (result.errors) {
+                        if (typeof result.errors === 'string') {
+                            throw new RxReplicationError(result.errors, {type: 'push', documentData: changeWithDoc.doc});
+                        } else {
+                            throw new RxReplicationError('unknown errors occurred in replication push - see innerErrors for more details', {
+                                type: 'push',
+                                documentData: changeWithDoc.doc
+                            }, result.errors);
+                        }
                     } else {
-                        const err: any = new Error('unknown errors occurred - see innerErrors for more details');
-                        err.innerErrors = result.errors;
-                        throw err;
+                        this._subjects.send.next(changeWithDoc.doc);
+                        lastSuccessfullChange = changeWithDoc;
                     }
-                } else {
-                    this._subjects.send.next(changeWithDoc.doc);
-                    lastSuccessfullChange = changeWithDoc;
+                } catch (err: any) {
+                    let replicationError = err;
+
+                    if (!(err instanceof RxReplicationError)) {
+                        replicationError = new RxReplicationError(err.message, { type: 'push', documentData: changeWithDoc.doc }, err)
+                    }
+
+                    throw replicationError
                 }
             }
-        } catch (err) {
+        } catch (err: any) {
             if (lastSuccessfullChange) {
                 await setLastPushSequence(
                     this.collection,
@@ -382,6 +397,7 @@ export class RxGraphQLReplicationState<RxDocType> {
                     lastSuccessfullChange.sequence
                 );
             }
+
             this._subjects.error.next(err);
             return false;
         }
