@@ -148,6 +148,10 @@ h2 {
     font-size: var(--fontSizes-6xl);
 }
 
+p {
+    line-height: 150%;
+}
+
 p,
 ul,
 li {
@@ -177,7 +181,7 @@ ul li:before {
     display      : block;
     float        : left;
     padding-right: 10px;
-    margin-top: -11px;
+    margin-top   : -11px;
 }
 
 
