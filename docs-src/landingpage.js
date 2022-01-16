@@ -172,12 +172,10 @@ window.onload = function () {
     heartbeatListeners.push(function () {
         setTimeout(function () {
             Array.from($$beatingColor).forEach(function (element, idx) {
-
                 var isColor = lastColorByElementIndex[idx];
                 if (!isColor) {
                     isColor = colors[0];
                 }
-                console.log('isColor: ' + isColor);
                 var newColor = randomOfArray(colors, isColor);
                 lastColorByElementIndex[idx] = newColor;
                 element.style.backgroundColor = newColor;
