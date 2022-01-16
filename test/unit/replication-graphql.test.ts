@@ -2375,7 +2375,7 @@ describe('replication-graphql.test.js', () => {
                     replicationState.collection,
                     replicationState.endpointHash,
                 );
-                assert.ok(originalSequence === newSequence);
+                assert.strictEqual(originalSequence, newSequence);
                 server.close();
                 c.database.destroy();
             });

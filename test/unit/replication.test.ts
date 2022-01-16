@@ -549,7 +549,7 @@ describe('replication.test.js', () => {
                 localCollection,
                 REPLICATION_IDENTIFIER_TEST
             );
-            assert.ok(originalSequence === newSequence);
+            assert.strictEqual(originalSequence, newSequence);
             localCollection.database.destroy();
             remoteCollection.database.destroy();
         });
