@@ -180,10 +180,12 @@ header .logo {
     color          : white;
     font-weight    : bold;
     text-decoration: none;
+    will-change: transform;
+    transition: 150ms ease-in-out;
 }
 
-header a:hover .logo .text {
-    text-decoration: underline;
+header a:hover .logo {
+    transform: scale(1.1);
 }
 
 
