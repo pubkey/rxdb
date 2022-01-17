@@ -514,9 +514,16 @@ header .logo img {
 
 @media (max-width: 900px) {
     .block.offline-first .offline-image-wrapper {
-        width    : 163%;
-        left     : 82%;
-        transform: rotate(66deg);
+        width      : 1200px;
+        margin-left: -600px;
+    }
+}
+
+@media (max-width: 500px) {
+    .block.offline-first .offline-image-wrapper {
+        width      : 600px;
+        margin-left: -300px;
+        top        : 10%;
     }
 }
 
