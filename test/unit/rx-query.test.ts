@@ -1512,5 +1512,22 @@ config.parallel('rx-query.test.js', () => {
 
             db.destroy();
         });
+        it('#3631 Sorting a query adds in deleted documents', async () => {
+            const c = await humansCollection.createAgeIndex(1);
+            const doc = await c.findOne().exec(true);
+            await doc.remove();
+
+            const queryResult = await c.find({
+                selector: {},
+                sort: [
+                    { age: 'asc' }
+                ]
+            }).exec();
+
+            // should not have found the deleted document
+            assert.strictEqual(queryResult.length, 0);
+
+            c.database.destroy();
+        });
     });
 });
