@@ -305,7 +305,7 @@ header .logo img {
     width         : 100%;
     min-height    : 450px;
     padding-top   : 80px;
-    padding-bottom: 100px;
+    padding-bottom: 80px;
 }
 
 
@@ -322,6 +322,10 @@ header .logo img {
 
 
 
+
+.block.first {
+    padding-bottom: 140px;
+}
 
 .block.first .inner {
     width: 60%;
@@ -505,7 +509,7 @@ header .logo img {
 
 .block.offline-first .offline-image-wrapper {
     position   : absolute;
-    transform  : rotate(86deg);
+    transform  : rotate(77deg);
     width      : 1500px;
     margin-left: -750px;
     left       : 46%;
@@ -514,6 +518,7 @@ header .logo img {
 
 @media (max-width: 900px) {
     .block.offline-first .offline-image-wrapper {
+        transform  : rotate(110deg);
         width      : 1200px;
         margin-left: -600px;
     }
@@ -521,6 +526,7 @@ header .logo img {
 
 @media (max-width: 500px) {
     .block.offline-first .offline-image-wrapper {
+        transform  : rotate(110deg);
         width      : 600px;
         margin-left: -300px;
         top        : 10%;
@@ -639,6 +645,9 @@ header .logo img {
     right            : 0px;
 }
 
+.block.last {
+    padding-bottom: 0px;
+}
 
 .block.last h2 {
     text-align: center;
