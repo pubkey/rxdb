@@ -33,7 +33,7 @@ window.onload = function () {
     window.addEventListener('touchstart', () => {
         console.log('touchstart: START');
         $heartbeatAudio.volume = 0.01;
-        $heartbeatAudio.play();
+        $heartbeatAudio.play().catch(function () { /* Ignore erros */ });
         setTimeout(function () {
             $heartbeatAudio.pause();
             $heartbeatAudio.currentTime = 0;
@@ -123,6 +123,12 @@ window.onload = function () {
                  */
                 audioVolume = audioVolume * 0.9;
                 $heartbeatAudio.volume = audioVolume;
+            }).catch(function () {
+                /**
+                 * This might fail if the user has not already interaced with the UI
+                 * and we are not allowed to play sound yet.
+                 * Then we just do not play sound and ignore the error.
+                 */
             });
     });
 
