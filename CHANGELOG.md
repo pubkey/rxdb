@@ -2,6 +2,8 @@
 
 ### X.X.X (comming soon)
 
+### 11.3.0 (17 January 2022)
+
 Bugfixes:
   - GraphQL replication: Unnecessary local document writes fill up the database [#3627](https://github.com/pubkey/rxdb/pull/3627) Thanks [@hdwatts](https://github.com/hdwatts)
 
