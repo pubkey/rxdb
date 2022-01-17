@@ -30,7 +30,12 @@ window.onload = function () {
      * This will 'unlock' the audio element so we can later play() at any time.
      * @link https://www.py4u.net/discuss/287774
      */
-    window.addEventListener('touchstart', () => {
+    var touchStartDone = false;
+    window.addEventListener('touchstart', function () {
+        if (touchStartDone) {
+            return;
+        }
+        touchStartDone = true;
         console.log('touchstart: START');
         $heartbeatAudio.volume = 0.01;
         $heartbeatAudio.play().catch(function () { /* Ignore erros */ });

@@ -25,7 +25,7 @@ const db = await createRxDatabase({
 ### name
 
 The database-name is a string which uniquely identifies the database. When two RxDatabases have the same name and use the same `RxStorage`, their data can be assumed as equal and they will share events between each other.
-Depending on the stroage or adapter this can also be used to define the filesystem folder of your data.
+Depending on the storage or adapter this can also be used to define the filesystem folder of your data.
 
 
 ### storage

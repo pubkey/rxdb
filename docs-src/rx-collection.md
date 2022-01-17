@@ -31,7 +31,7 @@ The name uniquely identifies the collection and should be used to refind the col
 
 ### schema
 
-The schema defines how the doucments of the collection are structured. RxDB uses a schema format, similar to [JSON schema](https://json-schema.org/). Read more about the RxDB schema format [here](./rx-schema.md).
+The schema defines how the documents of the collection are structured. RxDB uses a schema format, similar to [JSON schema](https://json-schema.org/). Read more about the RxDB schema format [here](./rx-schema.md).
 
 ### ORM-functions
 With the parameters `statics`, `methods` and `attachments`, you can define ORM-functions that are applied to each of these objects that belong to this collection. See [ORM/DRM](./orm.md).
