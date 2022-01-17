@@ -18,3 +18,4 @@ examples/react/build
 node_modules
 docs
 docs-src/files/logo/js.build.js
+docs-src/_book/
