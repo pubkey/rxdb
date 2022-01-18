@@ -32,7 +32,7 @@ var name = myDocument.get('name'); // returns the name
 This function returns an observable of the given paths-value.
 The current value of this path will be emitted each time the document changes.
 ```js
-// get the life-updating value of 'name'
+// get the live-updating value of 'name'
 var isName;
 myDocument.get$('name')
   .subscribe(newName => {
