@@ -1,6 +1,6 @@
 # Why it has to be NoSQL
 
-RxDB, a client side, offline first, JavaScript database, is now several years old.
+[RxDB](https://rxdb.info), a client side, offline first, JavaScript database, is now several years old.
 Often new users appear in the chat and ask for that one simple feature:
 They want to store and query **relational data**.
 
