@@ -25,6 +25,15 @@ img {
     border-radius: 4px;
 }
 
+/* images must have white background so transparent svg images a readable */
+img {
+    background-color: white;
+}
+
+.img-padding {
+    padding: 7px;
+}
+
 /* the gitter button overlayed the next-button on mobile */
 @media (max-width: 1150px) {
     .gitter-open-chat-button {
