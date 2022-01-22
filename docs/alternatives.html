@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>LeaderElection · RxDB - Documentation</title>
+        <title>Alternatives · RxDB - Documentation</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -63,10 +63,10 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="rx-storage-lokijs.html" />
+    <link rel="next" href="questions-answers.html" />
     
     
-    <link rel="prev" href="data-migration.html" />
+    <link rel="prev" href="why-nosql.html" />
     
 
     </head>
@@ -1373,7 +1373,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.13" data-path="leader-election.html">
+        <li class="chapter " data-level="1.13" data-path="leader-election.html">
             
                 <a href="leader-election.html">
             
@@ -1660,7 +1660,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.2.5" data-path="alternatives.html">
+        <li class="chapter active" data-level="2.2.5" data-path="alternatives.html">
             
                 <a href="alternatives.html">
             
@@ -1734,7 +1734,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >LeaderElection</a>
+        <a href="." >Alternatives</a>
     </h1>
 </div>
 
@@ -1749,66 +1749,143 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="leader-election">Leader-Election</h1>
-<p>RxDB comes with a leader-election which elects a leading instance between different instances in the same javascript runtime.
-Before you read this, please check out on how many of your open browser-tabs you have opened the same website more than once. Count them, I will wait..</p>
-<p>So if you would now inspect the traffic that theses open tabs produce, you can see that many of them send exact the same data over wire for every tab. No matter if the data is sent with an open websocket or by polling.</p>
-<h2 id="use-case-example">Use-case-example</h2>
-<p>Imagine we have a website which displays the current temperature of the visitors location in various charts, numbers or heatmaps. To always display the live-data, the website opens a websocket to our API-Server which sends the current temperature every 10 seconds. Using the way most sites are currently build, we can now open it in 5 browser-tabs and it will open 5 websockets which send data 6*5=30 times per minute. This will not only waste the power of your clients device, but also wastes your api-servers resources by opening redundant connections.</p>
-<h2 id="solution">Solution</h2>
-<p>The solution to this redundancy is the usage of a <a href="https://en.wikipedia.org/wiki/Leader_election" target="_blank">leader-election</a>-algorithm which makes sure that always exactly one tab is managing the remote-data-access. The managing tab is the elected leader and stays leader until it is closed. No matter how many tabs are opened or closed, there must be always exactly <strong>one</strong> leader.
-You could now start implementing a messaging-system between your browser-tabs, hand out which one is leader, solve conflicts and reassign a new leader when the old one &apos;dies&apos;.
-Or just use RxDB which does all these things for you.</p>
-<h2 id="code-example">Code-example</h2>
-<p>To make it easy, here is an example where the temperature is pulled every ten seconds and saved to a collection. The pulling starts at the moment where the opened tab becomes the leader.</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> db = <span class="hljs-keyword">await</span> createRxDatabase({
-  name: <span class="hljs-string">&apos;weatherDB&apos;</span>,
-  storage: getRxStoragePouch(<span class="hljs-string">&apos;idb&apos;</span>),
-  password: <span class="hljs-string">&apos;myPassword&apos;</span>,
-  multiInstance: <span class="hljs-literal">true</span>
-});
-<span class="hljs-keyword">await</span> db.addCollections({
-  temperature: {
-    schema: mySchema
-  }
-});
+                                <h1 id="alternatives-for-offline-firstrealtimejavascript-applications">Alternatives for offline-first/realtime/JavaScript applications</h1>
+<p>To give you an augmented view over the topic of client side JavaScript databases, this page contains all known alternatives to <strong>RxDB</strong>. Remember that you read this inside of the RxDB documentation, so everything is <strong>opinionated</strong>.
+If you disagree with anything or think that something is missing, make a pull request to this file.</p>
+<h3 id="what-to-compare-with">What to compare with</h3>
+<p><a href="https://rxdb.info" target="_blank">RxDB</a> is an <strong>observable</strong>, <strong>replicating</strong>, <strong><a href="offline-first.html">offline first</a></strong>, <strong>JavaScript</strong> database. So it makes only sense to list similar projects as alternatives, not just any database or JavaScript store library. However, I will list up some projects that RxDB is often compared with, even if it only makes sense for some use cases.
+This list should be seen as an <strong>entrypoint</strong> for your personal evaluation of which tool could work for your project.</p>
+<!-- 
+  IMPORTANT:
+  DO NOT ADD ANY LINKS TO THE PROJECTS.
+  THEY WOULD HAVE TO BE UPDATED EVERY FEW MONTHS AND I DO NOT WANT TO MAINTAIN THEM.
+-->
+<h3 id="firebase">Firebase</h3>
+<p align="center">
+  <img src="files/alternatives/firebase.svg" alt="firebase alternative" height="60">
+</p>
 
-db.waitForLeadership()
-  .then(() =&gt; {
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&apos;Long lives the king!&apos;</span>); <span class="hljs-comment">// &lt;- runs when db becomes leader</span>
-    setInterval(<span class="hljs-keyword">async</span> () =&gt; {
-      <span class="hljs-keyword">const</span> temp = <span class="hljs-keyword">await</span> fetch(<span class="hljs-string">&apos;https://example.com/api/temp/&apos;</span>);
-      db.temperature.insert({
-          degrees: temp,
-          time: <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>().getTime()
-      });
-    }, <span class="hljs-number">1000</span> * <span class="hljs-number">10</span>);
-  });
-</code></pre>
-<h2 id="handle-duplicate-leaders">Handle Duplicate Leaders</h2>
-<p>On rare occassions, it can happen that <a href="https://github.com/pubkey/broadcast-channel/blob/master/.github/README.md#handle-duplicate-leaders" target="_blank">more then one leader</a> is elected. This can happen when the CPU is on 100% or for any other reason the JavaScript process is fully blocked for a long time.
-For most cases this is not really problem because on duplicate leaders, both browser tabs replicate with the same backend anyways.
-To handle the duplicate leader event, you can access the leader elector and set a handler:</p>
-<pre><code class="lang-ts"><span class="hljs-keyword">import</span> {
-    getLeaderElectorByBroadcastChannel
-} from <span class="hljs-string">&apos;rxdb/plugins/leader-election&apos;</span>;
+<p>Firebase is a <strong>platform</strong> developed by Google for creating mobile and web applications. Firebase has many features and products, two of which are client side databases. The <code>Realtime Database</code> and the <code>Cloud Firestore</code>.</p>
+<h4 id="firebase---realtime-database">Firebase - Realtime Database</h4>
+<p>The firebase realtime database was the first database in firestore. It has to be mentioned that in this context, &quot;realtime&quot; means <strong>&quot;realtime replication&quot;</strong>, not &quot;realtime computing&quot;. The firebase realtime database stores data as a big unstructured JSON tree that is replicated between clients and the backend.</p>
+<h4 id="firebase---cloud-firestore">Firebase - Cloud Firestore</h4>
+<p>The firestore is the successor to the realtime database. The big difference is that it behaves more like a &apos;normal&apos; database that stores data as documents inside of collections. The conflict resolution strategy of firestore is always <em>last-write-wins</em> which might or might not be suitable for your use case.</p>
+<p>The biggest difference to RxDB is that firebase products are only able to replicate with the firebase cloud hosted backend, which creates a vendor lock-in. RxDB can replicate with any self hosted CouchDB server or custom GraphQL endpoints.</p>
+<h3 id="meteor">Meteor</h3>
+<p align="center">
+  <img src="files/alternatives/meteor_text.svg" alt="MeteorJS alternative" height="60">
+</p>
 
-<span class="hljs-keyword">const</span> leaderElector = getLeaderElectorByBroadcastChannel(broadcastChannel);
-leaderElector.onduplicate = async () =&gt; {
-    <span class="hljs-comment">// Duplicate leader detected -&gt; reload the page.</span>
-    location.reload();
-}
+<p>Meteor (since 2012) is one of the oldest technologies for JavaScript realtime applications. Meteor is no a library but a whole framework with its own package manager, database management and replication protocol.
+Because of how it works, it has proven to be hard to integrate it with other modern JavaScript frameworks like <a href="https://github.com/urigo/angular-meteor" target="_blank">angular</a>, vue.js or svelte.</p>
+<p>Meteor uses MongoDB in the backend and can replicate with a Minimongo database in the frontend.
+While testing, it has proven to be impossible to make a meteor app <strong>offline first</strong> capable. There are <a href="https://github.com/frozeman/meteor-persistent-minimongo2" target="_blank">some projects</a> that might do this, but all are unmaintained.</p>
+<h3 id="minimongo">Minimongo</h3>
+<p>Forked in Jan 2014 from meteorJSs&apos; minimongo package, Minimongo is a client-side, in-memory, JavaScript version of MongoDB with backend replication over HTTP. Similar to MongoDB, it stores data in documents inside of collections and also has the same query syntax. Minimongo has different storage adapters for IndexedDB, WebSQL, LocalStorage and SQLite.
+Compared to RxDB, Minimongo has no concept of revisions or conflict handling, which might lead to undefined behavior when used with replication or in multiple browser tabs. Minimongo has no observable queries or changestream.</p>
+<h3 id="watermelondb">WatermelonDB</h3>
+<p align="center">
+  <img src="files/alternatives/watermelondb.png" alt="WatermelonDB alternative" height="60">
+</p>
+
+<p>WatermelonDB is a reactive &amp; asynchronous JavaScript database. While originally made for React and React Native, it can also be used with other JavaScript frameworks. The main goal of WatermelonDB is <strong>performance</strong> when having application with much data.
+In React Native, WatermelonDB uses the provided SQLite database. In a browser, LokiJS can be used to store and query data.</p>
+<h3 id="aws-amplify">AWS Amplify</h3>
+<p align="center">
+  <img src="files/alternatives/aws-amplify.svg" alt="AWS Amplify alternative" height="60">
+</p>
+
+<p>AWS Amplify is a collection of tools and libraries to develope web- and mobile frontend applications. Similar to firebase, it provides everything needed like authentication, analytics, a REST API, storage and so on. Everything hosted in the AWS Cloud, even when they state that <em>&quot;AWS Amplify is designed to be open and pluggable for any custom backend or service&quot;</em>. For realtime replication, AWS Amplify can connect to an AWS App-Sync GraphQL endpoint.</p>
+<h3 id="aws-datastore">AWS Datastore</h3>
+<p>Since december 2019 the Amplify library includes the AWS Datastore which is a document based, client side database that is able to replicate data via AWS AppSync in the background.
+The main difference to other projects is the complex project configuration via the amplify cli and the bit confusing query syntax that works over functions. Complex Queries with multiple <code>OR/AND</code> statements are not possible which might change in the future.
+Local development is hard because the AWS AppSync mock does not support realtime replication. It also is not really offline-first because a user login is always required.</p>
+<pre><code class="lang-ts"><span class="hljs-comment">// An AWS datastore OR query</span>
+<span class="hljs-keyword">const</span> posts = await DataStore.query(Post, c =&gt; c.or(
+  c =&gt; c.rating(<span class="hljs-string">&quot;gt&quot;</span>, <span class="hljs-number">4</span>).status(<span class="hljs-string">&quot;eq&quot;</span>, PostStatus.PUBLISHED)
+));
+
+<span class="hljs-comment">// An AWS datastore SORT query</span>
+<span class="hljs-keyword">const</span> posts = await DataStore.query(Post, Predicates.ALL, {
+  sort: s =&gt; s.rating(SortDirection.ASCENDING).title(SortDirection.DESCENDING)
+});
 </code></pre>
-<h2 id="live-example">Live-Example</h2>
-<p>In this example the leader is marked with the crown &#x265B;</p>
-<p><img src="files/leader-election.gif" alt="reactive.gif"></p>
-<h2 id="try-it-out">Try it out</h2>
-<p>Run the <a href="../examples/vanilla">vanillaJS-example</a> where the leading tab is marked with a crown on the top-right-corner.</p>
-<h2 id="notice">Notice</h2>
-<p>The leader election is implemented via the  <a href="https://github.com/pubkey/broadcast-channel#using-the-leaderelection" target="_blank">broadcast-channel module</a>.
-The leader is elected between different processes on the same javascript-runtime. Like multiple tabs in the same browser or mupltiple NodeJs-processes on the same machine. It will not run between different replicated instances.</p>
-<hr>
-<p>If you are new to RxDB, you should continue <a href="rx-storage-lokijs.html">here</a></p>
+<p>The biggest difference to RxDB is that you have to use the AWS cloud backends. This might not be a problem if your data is at AWS anyway.</p>
+<h3 id="rethinkdb">RethinkDB</h3>
+<p align="center">
+  <img src="files/alternatives/rethinkdb.svg" alt="RethinkDB alternative" height="60">
+</p>
+
+<p>RethinkDB is a backend database that pushed dynamic JSON data to the client in realtime. It was founded in 2009 and the company shut down in 2016.
+Rethink db is not a client side database, it streams data from the backend to the client which of course does not work while offline.</p>
+<h3 id="horizon">Horizon</h3>
+<p>Horizion is the client side library for RethinkDB which provides useful functions like authentication, permission management and subscription to a RethinkDB backend. Offline support <a href="https://github.com/rethinkdb/horizon/issues/58" target="_blank">never made</a> it to horizon.</p>
+<h3 id="supabase">Supabase</h3>
+<p align="center">
+  <img src="files/alternatives/supabase.svg" alt="Supabase alternative" height="60">
+</p>
+
+
+<p>Supabase labels itself as &quot;<em>an open source Firebase alternative</em>&quot;. It is a collection of open source tools that together can mimic many of the firebase features, most of them by wrapping a PostgreSQL database. While it has realtime queries that run over the wire, like with RethinkDB, Supabase has no client side storage or replication feature and therefore is not offline first.</p>
+<h3 id="couchdb">CouchDB</h3>
+<p align="center">
+  <img src="files/icons/couchdb-text.svg" alt="CouchDB alternative" height="60">
+</p>
+
+<p>Apache CouchDB is a server side, document oriented database that is mostly known for its multi-master replication feature. Instead of having a master-slave replication, with CouchDB you can run replication in any constellation without having a master server as bottleneck where the server even can go off- and online at any time. This comes with the     drawback of having a slow replication with much network overhead.
+CouchDB has a changestream and a query syntax similar to MongoDB.</p>
+<h3 id="pouchdb">PouchDB</h3>
+<p align="center">
+  <img src="files/alternatives/pouchdb.svg" alt="PouchDB alternative" height="60">
+</p>
+
+
+<p>PouchDB is a JavaScript database that is compatible with most of the CouchDB API. It has an adapter system that allows you to switch out the underlaying storage layer. There are many adapters like for IndexedDB, SQLite, the Filesystem and so on. The main benefit is to be able to replicate data with any CouchDB compatible endpoint.
+Because of the CouchDB compatibility, PouchDB has to do a lot of overhead in handling the revision tree of document, which is why it can show bad performance for bigger datasets.
+RxDB was originally build around PouchDB until the storage layer was abstracted out in version <a href="https://github.com/pubkey/rxdb/blob/master/orga/releases/10.0.0.md" target="_blank">10.0.0</a> so it now allows to use different <code>RxStorage</code> implementations.</p>
+<h3 id="couchbase">Couchbase</h3>
+<p>Couchbase (originally known as Membase) is another NoSQL document database made for realtime applications.
+It uses the N1QL query language which is more SQL like compared to other NoSQL query languages. In theory you can replication a Couchbase with a PouchDB database, but this has shown to be not <a href="https://github.com/pouchdb/pouchdb/issues/7793#issuecomment-501624297" target="_blank">that easy</a>.</p>
+<h3 id="cloudant">Cloudant</h3>
+<p>Cloudant is a cloud-based service that is based on CouchDB and has mostly the same features.
+It was originally designed for cloud computing where data can automatically be distributed between servers. But it can also be used to replicate with frontend PouchDB instances to create scaleable web applications.
+It was bought by IBM in 2014 and since 2018 the Cloudant Shared Plan is retired and migrated to IBM Cloud.</p>
+<h3 id="hoodie">Hoodie</h3>
+<p>Hoodie is a backend solution that enables offline-first JavaScript frontend development without having to write backend code. Its main goal is to abstract away configuration into simple calls to the Hoodie API.
+It uses CouchDB in the backend and PouchDB in the frontend to enable offline-first capabilities.
+The last commit for hoodie was one year ago and the website (hood.ie) is offline which indicates it is no active project anymore.</p>
+<h3 id="lokijs">LokiJS</h3>
+<p>LokiJS is a JavaScript embeddable, in-memory database. And because everything is handled in-memory, LokiJS has awesome performance when mutating or querying data. You can still persist to a permanent storage (IndexedDB, Filesystem etc.) with one of the provided storage adapters. The persistence happens after a timeout is reached after a write, or before the JavaScript process exits. This also means you could loose data when the JavaScript process exits ungracefully like when the power of the device is shut down or the browser crashes.
+While the project is not that active anymore, it is more <em>finished</em> then <em>unmaintained</em>.</p>
+<p>RxDB supports using <a href="rx-storage-lokijs.html">LokiJS as RxStorage</a>.</p>
+<h3 id="gundb">Gundb</h3>
+<p>GUN is a JavaScript graph database. While having many features, the <strong>decentralized</strong> replication is the main unique selling point. You can replicate data Peer-to-Peer without any centralized backend server. GUN has several other features that are useful on top of that, like encryption and authentication.</p>
+<p>While testing it was really hard to get basic things running. GUN is open source, but because of how the source code <a href="https://github.com/amark/gun/blob/master/src/put.js" target="_blank">is written</a>, it is very difficult to understand what is going wrong.</p>
+<h3 id="sqljs">sql.js</h3>
+<p>sql.js is a javascript library to run SQLite on the web. It uses a virtual database file stored in memory and does not have any persistence. All data is lost once the JavaScript process exits. sql.js is created by compiling SQLite to WebAssembly so it has about the same features as SQLite. For older browsers there is a JavaScript fallback.</p>
+<h3 id="absurd-sql">absurd-sQL</h3>
+<p>Absurd-sql is a project that implements an IndexedDB based persistence for sql.js. Instead of directly writing data into the IndexedDB, it treats IndexedDB like a disk and stores data in blocks there which shows to have a much better performance, mostly because of how <a href="slow-indexeddb.html">performance expensive</a> IndexedDB transactions are.</p>
+<h3 id="nedb">NeDB</h3>
+<p>NeDB was a embedded persistent or in-memory database for Node.js, nw.js, Electron and browsers.
+It is document oriented and had the same query syntax as MongoDB. 
+Like LokiJS it has persistence adapters for IndexedDB etc. to persist the database state on the disc.
+The last commit to NeDB was in <strong>2016</strong>.</p>
+<h3 id="dexiejs">Dexie.js</h3>
+<p>Dexie.js is a minimalistic wrapper for IndexedDB. While providing a better API then plain IndexedDB, Dexie also improves performance by batching transactions and other optimizations. It also ads additional non-IndexedDB features like observable queries or multi tab support or react hooks.
+Dexie.js is used by Whatsapp Web, Microsoft To Do and Github Desktop.</p>
+<h3 id="mongodb-realm">MongoDB Realm</h3>
+<p>Originally Realm was a mobile database for android and iOS. Later they added support for other languages and runtimes, also for JavaScript. 
+It was meant as replacement for SQLite but is more like an object store then a full SQL database.
+In 2019 MongoDB bought Realm and changed the projects focus.
+Now Realm is made for replication with the MongoDB Realm Sync based on the MongoDB Atlas Cloud platform.</p>
+<h3 id="apollo">Apollo</h3>
+<p>The Apollo GraphQL platform is made to transfer data between a server to UI applications over GraphQL endpoints. It contains several tools like GraphQL clients in different languages or libraries to create GraphQL endpoints.</p>
+<p>While it is has different caching features for offline usage, compared to RxDB it is not fully offline first because caching alone does not mean your application is fully useable when the user is offline.</p>
+<h1 id="read-further">Read further</h1>
+<ul>
+<li><a href="https://github.com/pubkey/client-side-databases" target="_blank">Offline First Database Comparison</a></li>
+<li><a href="https://jaredforsyth.com/tags/local-first/" target="_blank">https://jaredforsyth.com/tags/local-first/</a></li>
+</ul>
 
                                 
                                 </section>
@@ -1836,12 +1913,12 @@ The leader is elected between different processes on the same javascript-runtime
 
             
                 
-                <a href="data-migration.html" class="navigation navigation-prev " aria-label="Previous page: DataMigration">
+                <a href="why-nosql.html" class="navigation navigation-prev " aria-label="Previous page: Why NoSQL">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
                 
-                <a href="rx-storage-lokijs.html" class="navigation navigation-next " aria-label="Next page: RxStorage LokiJS">
+                <a href="questions-answers.html" class="navigation navigation-next " aria-label="Next page: Questions & Answers">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -1852,7 +1929,7 @@ The leader is elected between different processes on the same javascript-runtime
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"LeaderElection","level":"1.13","depth":1,"next":{"title":"RxStorage LokiJS","level":"1.14","depth":1,"path":"rx-storage-lokijs.md","ref":"./rx-storage-lokijs.md","articles":[]},"previous":{"title":"DataMigration","level":"1.12","depth":1,"path":"data-migration.md","ref":"./data-migration.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"leader-election.md","mtime":"2022-01-22T01:45:59.223Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-01-22T01:49:19.317Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Alternatives","level":"2.2.5","depth":2,"next":{"title":"Questions & Answers","level":"2.3","depth":1,"path":"questions-answers.md","ref":"./questions-answers.md","articles":[]},"previous":{"title":"Why NoSQL","level":"2.2.4","depth":2,"path":"why-nosql.md","ref":"./why-nosql.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"alternatives.md","mtime":"2022-01-22T01:45:59.183Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-01-22T01:49:19.317Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
