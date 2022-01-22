@@ -1,4 +1,4 @@
-# Alternatives for offline-first/realtime/JavaScript applications
+# Alternatives for realtime offline-first JavaScript applications
 
 To give you an augmented view over the topic of client side JavaScript databases, this page contains all known alternatives to **RxDB**. Remember that you read this inside of the RxDB documentation, so everything is **opinionated**.
 If you disagree with anything or think that something is missing, make a pull request to this file.
@@ -108,7 +108,7 @@ Rethink db is not a client side database, it streams data from the backend to th
 
 ### Horizon
 
-Horizion is the client side library for RethinkDB which provides useful functions like authentication, permission management and subscription to a RethinkDB backend. Offline support [never made](https://github.com/rethinkdb/horizon/issues/58) it to horizon.
+Horizon is the client side library for RethinkDB which provides useful functions like authentication, permission management and subscription to a RethinkDB backend. Offline support [never made](https://github.com/rethinkdb/horizon/issues/58) it to horizon.
 
 ### Supabase
 
