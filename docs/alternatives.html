@@ -1749,12 +1749,13 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="alternatives-for-offline-firstrealtimejavascript-applications">Alternatives for offline-first/realtime/JavaScript applications</h1>
+                                <h1 id="alternatives-for-realtime-offline-first-javascript-applications">Alternatives for realtime offline-first JavaScript applications</h1>
 <p>To give you an augmented view over the topic of client side JavaScript databases, this page contains all known alternatives to <strong>RxDB</strong>. Remember that you read this inside of the RxDB documentation, so everything is <strong>opinionated</strong>.
 If you disagree with anything or think that something is missing, make a pull request to this file.</p>
 <h3 id="what-to-compare-with">What to compare with</h3>
-<p><a href="https://rxdb.info" target="_blank">RxDB</a> is an <strong>observable</strong>, <strong>replicating</strong>, <strong><a href="offline-first.html">offline first</a></strong>, <strong>JavaScript</strong> database. So it makes only sense to list similar projects as alternatives, not just any database or JavaScript store library. However, I will list up some projects that RxDB is often compared with, even if it only makes sense for some use cases.
-This list should be seen as an <strong>entrypoint</strong> for your personal evaluation of which tool could work for your project.</p>
+<p><a href="https://rxdb.info" target="_blank">RxDB</a> is an <strong>observable</strong>, <strong>replicating</strong>, <strong><a href="offline-first.html">offline first</a></strong>, <strong>JavaScript</strong> database. So it makes only sense to list similar projects as alternatives, not just any database or JavaScript store library. However, I will list up some projects that RxDB is often compared with, even if it only makes sense for some use cases.</p>
+<p>This list should be seen as an <strong>entrypoint</strong> for your personal evaluation of which tool could work for your project.</p>
+<hr>
 <!-- 
   IMPORTANT:
   DO NOT ADD ANY LINKS TO THE PROJECTS.
@@ -1762,7 +1763,7 @@ This list should be seen as an <strong>entrypoint</strong> for your personal eva
 -->
 <h3 id="firebase">Firebase</h3>
 <p align="center">
-  <img src="files/alternatives/firebase.svg" alt="firebase alternative" height="60">
+  <img src="files/alternatives/firebase.svg" alt="firebase alternative" class="img-padding" height="60">
 </p>
 
 <p>Firebase is a <strong>platform</strong> developed by Google for creating mobile and web applications. Firebase has many features and products, two of which are client side databases. The <code>Realtime Database</code> and the <code>Cloud Firestore</code>.</p>
@@ -1773,7 +1774,7 @@ This list should be seen as an <strong>entrypoint</strong> for your personal eva
 <p>The biggest difference to RxDB is that firebase products are only able to replicate with the firebase cloud hosted backend, which creates a vendor lock-in. RxDB can replicate with any self hosted CouchDB server or custom GraphQL endpoints.</p>
 <h3 id="meteor">Meteor</h3>
 <p align="center">
-  <img src="files/alternatives/meteor_text.svg" alt="MeteorJS alternative" height="60">
+  <img src="files/alternatives/meteor_text.svg" alt="MeteorJS alternative" class="img-padding" height="60">
 </p>
 
 <p>Meteor (since 2012) is one of the oldest technologies for JavaScript realtime applications. Meteor is no a library but a whole framework with its own package manager, database management and replication protocol.
@@ -1792,7 +1793,7 @@ Compared to RxDB, Minimongo has no concept of revisions or conflict handling, wh
 In React Native, WatermelonDB uses the provided SQLite database. In a browser, LokiJS can be used to store and query data.</p>
 <h3 id="aws-amplify">AWS Amplify</h3>
 <p align="center">
-  <img src="files/alternatives/aws-amplify.svg" alt="AWS Amplify alternative" height="60">
+  <img src="files/alternatives/aws-amplify.svg" alt="AWS Amplify alternative" height="60" class="img-padding">
 </p>
 
 <p>AWS Amplify is a collection of tools and libraries to develope web- and mobile frontend applications. Similar to firebase, it provides everything needed like authentication, analytics, a REST API, storage and so on. Everything hosted in the AWS Cloud, even when they state that <em>&quot;AWS Amplify is designed to be open and pluggable for any custom backend or service&quot;</em>. For realtime replication, AWS Amplify can connect to an AWS App-Sync GraphQL endpoint.</p>
@@ -1813,30 +1814,30 @@ Local development is hard because the AWS AppSync mock does not support realtime
 <p>The biggest difference to RxDB is that you have to use the AWS cloud backends. This might not be a problem if your data is at AWS anyway.</p>
 <h3 id="rethinkdb">RethinkDB</h3>
 <p align="center">
-  <img src="files/alternatives/rethinkdb.svg" alt="RethinkDB alternative" height="60">
+  <img src="files/alternatives/rethinkdb.svg" alt="RethinkDB alternative" height="60" class="img-padding">
 </p>
 
 <p>RethinkDB is a backend database that pushed dynamic JSON data to the client in realtime. It was founded in 2009 and the company shut down in 2016.
 Rethink db is not a client side database, it streams data from the backend to the client which of course does not work while offline.</p>
 <h3 id="horizon">Horizon</h3>
-<p>Horizion is the client side library for RethinkDB which provides useful functions like authentication, permission management and subscription to a RethinkDB backend. Offline support <a href="https://github.com/rethinkdb/horizon/issues/58" target="_blank">never made</a> it to horizon.</p>
+<p>Horizon is the client side library for RethinkDB which provides useful functions like authentication, permission management and subscription to a RethinkDB backend. Offline support <a href="https://github.com/rethinkdb/horizon/issues/58" target="_blank">never made</a> it to horizon.</p>
 <h3 id="supabase">Supabase</h3>
 <p align="center">
-  <img src="files/alternatives/supabase.svg" alt="Supabase alternative" height="60">
+  <img src="files/alternatives/supabase.svg" alt="Supabase alternative" height="60" class="img-padding">
 </p>
 
 
 <p>Supabase labels itself as &quot;<em>an open source Firebase alternative</em>&quot;. It is a collection of open source tools that together can mimic many of the firebase features, most of them by wrapping a PostgreSQL database. While it has realtime queries that run over the wire, like with RethinkDB, Supabase has no client side storage or replication feature and therefore is not offline first.</p>
 <h3 id="couchdb">CouchDB</h3>
 <p align="center">
-  <img src="files/icons/couchdb-text.svg" alt="CouchDB alternative" height="60">
+  <img src="files/icons/couchdb-text.svg" alt="CouchDB alternative" height="60" class="img-padding">
 </p>
 
 <p>Apache CouchDB is a server side, document oriented database that is mostly known for its multi-master replication feature. Instead of having a master-slave replication, with CouchDB you can run replication in any constellation without having a master server as bottleneck where the server even can go off- and online at any time. This comes with the     drawback of having a slow replication with much network overhead.
 CouchDB has a changestream and a query syntax similar to MongoDB.</p>
 <h3 id="pouchdb">PouchDB</h3>
 <p align="center">
-  <img src="files/alternatives/pouchdb.svg" alt="PouchDB alternative" height="60">
+  <img src="files/alternatives/pouchdb.svg" alt="PouchDB alternative" height="60" class="img-padding">
 </p>
 
 
@@ -1929,7 +1930,7 @@ Now Realm is made for replication with the MongoDB Realm Sync based on the Mongo
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Alternatives","level":"2.2.5","depth":2,"next":{"title":"Questions & Answers","level":"2.3","depth":1,"path":"questions-answers.md","ref":"./questions-answers.md","articles":[]},"previous":{"title":"Why NoSQL","level":"2.2.4","depth":2,"path":"why-nosql.md","ref":"./why-nosql.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"alternatives.md","mtime":"2022-01-22T01:45:59.183Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-01-22T01:49:19.317Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Alternatives","level":"2.2.5","depth":2,"next":{"title":"Questions & Answers","level":"2.3","depth":1,"path":"questions-answers.md","ref":"./questions-answers.md","articles":[]},"previous":{"title":"Why NoSQL","level":"2.2.4","depth":2,"path":"why-nosql.md","ref":"./why-nosql.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"alternatives.md","mtime":"2022-01-22T02:12:40.582Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-01-22T02:16:44.800Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
