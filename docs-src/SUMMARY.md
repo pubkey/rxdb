@@ -141,6 +141,7 @@
     * [Downsides of Offline First](./downsides-of-offline-first.md)
     * [Slow IndexedDB](./slow-indexeddb.md)
     * [Why NoSQL](./why-nosql.md)
+    * [Alternatives](./alternatives.md)
 
 * [Questions & Answers](./questions-answers.md)
 

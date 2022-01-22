@@ -1,4 +1,4 @@
-# Alternatives for offline-first/realtime JavaScript applications
+# Alternatives for offline-first/realtime/JavaScript applications
 
 To give you an augmented view over the topic of client side JavaScript databases, this page contains all known alternatives to **RxDB**. Remember that you read this inside of the RxDB documentation, so everything is **opinionated**.
 If you disagree with anything or think that something is missing, make a pull request to this file.
@@ -6,8 +6,8 @@ If you disagree with anything or think that something is missing, make a pull re
 
 ### What to compare with
 
-[RxDB](https://rxdb.info) is an **observable**, **replicating**, **[offline first](./offline-first.md)**, **JavaScript** database. So it makes only sense to list similar projects as alternatives, not just any database or JavaScript store library.
-
+[RxDB](https://rxdb.info) is an **observable**, **replicating**, **[offline first](./offline-first.md)**, **JavaScript** database. So it makes only sense to list similar projects as alternatives, not just any database or JavaScript store library. However, I will list up some projects that RxDB is often compared with, even if it only makes sense for some use cases.
+This list should be seen as an **entrypoint** for your personal evaluation of which tool could work for your project.
 
 
 <!-- 
@@ -31,7 +31,7 @@ The firebase realtime database was the first database in firestore. It has to be
 
 #### Firebase - Cloud Firestore
 
-The firestore is the successor to the realtime database. The big difference is that it behaves more like a 'normal' database that stores data as documents inside of collections.
+The firestore is the successor to the realtime database. The big difference is that it behaves more like a 'normal' database that stores data as documents inside of collections. The conflict resolution strategy of firestore is always *last-write-wins* which might or might not be suitable for your use case.
 
 The biggest difference to RxDB is that firebase products are only able to replicate with the firebase cloud hosted backend, which creates a vendor lock-in. RxDB can replicate with any self hosted CouchDB server or custom GraphQL endpoints.
 
@@ -74,12 +74,12 @@ AWS Amplify is a collection of tools and libraries to develope web- and mobile f
 
 Since december 2019 the Amplify library includes the AWS Datastore which is a document based, client side database that is able to replicate data via AWS AppSync in the background.
 The main difference to other projects is the complex project configuration via the amplify cli and the bit confusing query syntax that works over functions. Complex Queries with multiple `OR/AND` statements are not possible which might change in the future.
-Local developement is hard because the AWS AppSync mock does not support realtime replication. It also is not really offline-first because a user login is always required.
+Local development is hard because the AWS AppSync mock does not support realtime replication. It also is not really offline-first because a user login is always required.
 
 ```ts
 // An AWS datastore OR query
 const posts = await DataStore.query(Post, c => c.or(
-  c => c.rating("gt", 4).status("eq", PostStatus.PUBLISHED),
+  c => c.rating("gt", 4).status("eq", PostStatus.PUBLISHED)
 ));
 
 // An AWS datastore SORT query
@@ -102,7 +102,7 @@ Rethink db is not a client side database, it streams data from the backend to th
 
 ### Horizon
 
-Horizion is the client side library for RethinkDB which provides usefull functions like authentication, permission management and subscription to a RethinkDB backend. Offline support [never made](https://github.com/rethinkdb/horizon/issues/58) it to horizon.
+Horizion is the client side library for RethinkDB which provides useful functions like authentication, permission management and subscription to a RethinkDB backend. Offline support [never made](https://github.com/rethinkdb/horizon/issues/58) it to horizon.
 
 ### Supabase
 
@@ -111,32 +111,95 @@ Horizion is the client side library for RethinkDB which provides usefull functio
 </p>
 
 
-Supabase labels itself as "*Supabase is an open source Firebase alternative*". It is a collection of open source tools that together can mimic many of the firebase features, most of them by wrapping a PostgreSQL database. While it has realtime queries that run over the wire, like with RethinkDB, Supabase has no client side storage or replication feature and therefore is not offline first.
+Supabase labels itself as "*an open source Firebase alternative*". It is a collection of open source tools that together can mimic many of the firebase features, most of them by wrapping a PostgreSQL database. While it has realtime queries that run over the wire, like with RethinkDB, Supabase has no client side storage or replication feature and therefore is not offline first.
 
 ### CouchDB
 
+<p align="center">
+  <img src="./files/icons/couchdb-text.svg" alt="CouchDB alternative" height="60" />
+</p>
+
+Apache CouchDB is a server side, document oriented database that is mostly known for its multi-master replication feature. Instead of having a master-slave replication, with CouchDB you can run replication in any constellation without having a master server as bottleneck where the server even can go off- and online at any time. This comes with the 	drawback of having a slow replication with much network overhead.
+CouchDB has a changestream and a query syntax similar to MongoDB.
+
 ### PouchDB
 
+<p align="center">
+  <img src="./files/alternatives/pouchdb.svg" alt="PouchDB alternative" height="60" />
+</p>
+
+
+PouchDB is a JavaScript database that is compatible with most of the CouchDB API. It has an adapter system that allows you to switch out the underlaying storage layer. There are many adapters like for IndexedDB, SQLite, the Filesystem and so on. The main benefit is to be able to replicate data with any CouchDB compatible endpoint.
+Because of the CouchDB compatibility, PouchDB has to do a lot of overhead in handling the revision tree of document, which is why it can show bad performance for bigger datasets.
+RxDB was originally build around PouchDB until the storage layer was abstracted out in version [10.0.0](https://github.com/pubkey/rxdb/blob/master/orga/releases/10.0.0.md) so it now allows to use different `RxStorage` implementations.
+
 ### Couchbase
-## Hoodie
+
+Couchbase (originally known as Membase) is another NoSQL document database made for realtime applications.
+It uses the N1QL query language which is more SQL like compared to other NoSQL query languages. In theory you can replication a Couchbase with a PouchDB database, but this has shown to be not [that easy](https://github.com/pouchdb/pouchdb/issues/7793#issuecomment-501624297).
+
+### Cloudant
+
+Cloudant is a cloud-based service that is based on CouchDB and has mostly the same features.
+It was originally designed for cloud computing where data can automatically be distributed between servers. But it can also be used to replicate with frontend PouchDB instances to create scaleable web applications.
+It was bought by IBM in 2014 and since 2018 the Cloudant Shared Plan is retired and migrated to IBM Cloud.
+
+### Hoodie
+
+Hoodie is a backend solution that enables offline-first JavaScript frontend development without having to write backend code. Its main goal is to abstract away configuration into simple calls to the Hoodie API.
+It uses CouchDB in the backend and PouchDB in the frontend to enable offline-first capabilities.
+The last commit for hoodie was one year ago and the website (hood.ie) is offline which indicates it is no active project anymore.
 
 ### LokiJS
+
+LokiJS is a JavaScript embeddable, in-memory database. And because everything is handled in-memory, LokiJS has awesome performance when mutating or querying data. You can still persist to a permanent storage (IndexedDB, Filesystem etc.) with one of the provided storage adapters. The persistence happens after a timeout is reached after a write, or before the JavaScript process exits. This also means you could loose data when the JavaScript process exits ungracefully like when the power of the device is shut down or the browser crashes.
+While the project is not that active anymore, it is more *finished* then *unmaintained*.
+
+RxDB supports using [LokiJS as RxStorage](./rx-storage-lokijs.md).
+
 ### Gundb
 
-### sql.js
-https://github.com/sql-js/sql.js/
+GUN is a JavaScript graph database. While having many features, the **decentralized** replication is the main unique selling point. You can replicate data Peer-to-Peer without any centralized backend server. GUN has several other features that are useful on top of that, like encryption and authentication.
 
-### Absurd SQL
-https://github.com/jlongster/absurd-sql
+While testing it was really hard to get basic things running. GUN is open source, but because of how the source code [is written](https://github.com/amark/gun/blob/master/src/put.js), it is very difficult to understand what is going wrong.
+
+### sql.js
+
+sql.js is a javascript library to run SQLite on the web. It uses a virtual database file stored in memory and does not have any persistence. All data is lost once the JavaScript process exits. sql.js is created by compiling SQLite to WebAssembly so it has about the same features as SQLite. For older browsers there is a JavaScript fallback.
+
+
+### absurd-sQL
+
+Absurd-sql is a project that implements an IndexedDB based persistence for sql.js. Instead of directly writing data into the IndexedDB, it treats IndexedDB like a disk and stores data in blocks there which shows to have a much better performance, mostly because of how [performance expensive](./slow-indexeddb.md) IndexedDB transactions are.
 
 ### NeDB
 
-https://github.com/louischatriot/nedb
+NeDB was a embedded persistent or in-memory database for Node.js, nw.js, Electron and browsers.
+It is document oriented and had the same query syntax as MongoDB. 
+Like LokiJS it has persistence adapters for IndexedDB etc. to persist the database state on the disc.
+The last commit to NeDB was in **2016**.
 
-### MongoDB realm
+### Dexie.js
+
+Dexie.js is a minimalistic wrapper for IndexedDB. While providing a better API then plain IndexedDB, Dexie also improves performance by batching transactions and other optimizations. It also ads additional non-IndexedDB features like observable queries or multi tab support or react hooks.
+Dexie.js is used by Whatsapp Web, Microsoft To Do and Github Desktop.
+
+
+### MongoDB Realm
+
+Originally Realm was a mobile database for android and iOS. Later they added support for other languages and runtimes, also for JavaScript. 
+It was meant as replacement for SQLite but is more like an object store then a full SQL database.
+In 2019 MongoDB bought Realm and changed the projects focus.
+Now Realm is made for replication with the MongoDB Realm Sync based on the MongoDB Atlas Cloud platform.
 
 ### Apollo
 
-## Further Read
+The Apollo GraphQL platform is made to transfer data between a server to UI applications over GraphQL endpoints. It contains several tools like GraphQL clients in different languages or libraries to create GraphQL endpoints.
+
+While it is has different caching features for offline usage, compared to RxDB it is not fully offline first because caching alone does not mean your application is fully useable when the user is offline.
+
+
+# Read further
 
 - [Offline First Database Comparison](https://github.com/pubkey/client-side-databases)
+- https://jaredforsyth.com/tags/local-first/
