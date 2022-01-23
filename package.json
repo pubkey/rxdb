@@ -239,7 +239,7 @@
     "terser-webpack-plugin": "5.2.5",
     "ts-loader": "9.2.6",
     "ts-node": "10.4.0",
-    "typescript": "4.5.4",
+    "typescript": "4.5.5",
     "walk-sync": "3.0.0",
     "watch": "1.0.2",
     "webpack": "5.65.0",
