@@ -50,6 +50,29 @@ config.parallel('rx-storage-lokijs.test.js', () => {
             assert.ok(localStorageInstance.internals.leaderElector);
             assert.ok(storageInstance.internals.leaderElector);
 
+            const insertedHuman = await collection.insert({
+                passportId: 'aatspywninca',
+                firstName: 'Tester',
+                lastName: 'Test',
+                age: 10
+            })
+
+            const newHuman = await collection.findOne('aatspywninca').exec()
+
+            assert.strictEqual(newHuman?.toJSON(), {
+                passportId: 'aatspywninca',
+                firstName: 'Tester',
+                lastName: 'Test',
+                age: 10,
+            })
+
+            assert.strictEqual(insertedHuman.toJSON(), {
+                passportId: 'aatspywninca',
+                firstName: 'Tester',
+                lastName: 'Test',
+                age: 10,
+            })
+
             await collection.database.destroy();
         });
         it('should work with 2 instances', async () => {
