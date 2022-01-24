@@ -969,6 +969,63 @@ describe('replication-graphql.test.js', () => {
                 server.close();
                 c.database.destroy();
             });
+            it('should handle truthy deleted flag values', async () => {
+                const doc: any = schemaObjects.humanWithTimestamp();
+                doc['deletedAt'] = Math.floor(new Date().getTime() / 1000);
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(0),
+                    SpawnServer.spawn([doc])
+                ]);
+
+                const deletedAtQueryBuilder = (doc: any) => {
+                    if (!doc) {
+                        doc = {
+                            id: '',
+                            updatedAt: 0
+                        };
+                    }
+
+                    const query = `query($lastId: String!, $updatedAt: Int!, $batchSize: Int!)
+                    {
+                        collectionFeedForRxDBReplication(lastId: $lastId, minUpdatedAt: $updatedAt, limit: $batchSize) {
+                            collection {
+                                id
+                                name
+                                age
+                                updatedAt
+                                deletedAt
+                            }
+                        }
+                    }`;
+
+                    const variables = {
+                        lastId: doc.id,
+                        updatedAt: doc.updatedAt,
+                        batchSize
+                    };
+
+                    return {
+                        query,
+                        variables
+                    };
+                }
+
+                const replicationState = c.syncGraphQL({
+                    url: server.url,
+                    pull: {
+                        queryBuilder: deletedAtQueryBuilder,
+                        dataPath: 'data.collectionFeedForRxDBReplication.collection'
+                    },
+                    deletedFlag: 'deletedAt'
+                });
+                replicationState.error$.subscribe((err) => console.log('REPLICATION ERROR', err))
+                await replicationState.awaitInitialReplication();
+                const docs = await c.find().exec();
+                assert.strictEqual(docs.length, 0);
+
+                server.close();
+                c.database.destroy();
+            });
             it('should retry on errors', async () => {
                 const amount = batchSize * 4;
                 const testData = getTestData(amount);

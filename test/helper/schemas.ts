@@ -1012,6 +1012,9 @@ export const humanWithTimestamp: RxJsonSchema<HumanWithTimestampDocumentType> = 
         },
         updatedAt: {
             type: 'number'
+        },
+        deletedAt: {
+            type: 'number'
         }
     },
     indexes: ['updatedAt'],
@@ -1037,6 +1040,9 @@ export const humanWithTimestampAllIndex: RxJsonSchema<HumanWithTimestampDocument
             type: 'number'
         },
         updatedAt: {
+            type: 'number'
+        },
+        deletedAt: {
             type: 'number'
         }
     },

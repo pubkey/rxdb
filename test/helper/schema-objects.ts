@@ -313,6 +313,7 @@ export interface HumanWithTimestampDocumentType {
     name: string;
     age: number;
     updatedAt: number;
+    deletedAt?: number;
 }
 export function humanWithTimestamp(): HumanWithTimestampDocumentType {
     const now = new Date().getTime() / 1000;

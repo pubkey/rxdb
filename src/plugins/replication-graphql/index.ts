@@ -423,7 +423,7 @@ export class RxGraphQLReplicationState<RxDocType> {
 
         for (const doc of docs) {
             const documentId = doc[this.collection.schema.primaryPath];
-            const deletedValue = doc[this.deletedFlag];
+            const deletedValue = !!doc[this.deletedFlag];
 
             doc._deleted = deletedValue;
             delete doc[this.deletedFlag];
