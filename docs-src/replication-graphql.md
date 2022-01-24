@@ -22,7 +22,10 @@ Cons:
 
 ### Data Design
 
-To use the GraphQL-replication you first have to ensure that your data is sortable by update time and your documents never get deleted, only have a deleted-flag set.
+To use the GraphQL-replication you first have to ensure that your data is sortable by update time and your documents never get deleted.
+Instead, your response object should have a field indicating that a document has been deleted.
+The name of the field is configurable and handles truthy values follow JavaScript's rules, so you can use a GraphQL `Boolean` value or something more complex such as a string or timestamp, depending on your remote data source schema.
+
 
 For example if your documents look like this,
 
@@ -41,6 +44,8 @@ Then your data is always sortable by `updatedAt`. This ensures that when RxDB fe
 
 Deleted documents still exist but have `deleted: true` set. This ensures that when RxDB fetches new documents, even the deleted documents are send back and can be known at the client-side.
 
+RxDB documents also have an internal `_deleted` field that is managed by RxDB when deleting documents or pulling deleted documents from a GraphQL server.
+If you use something like a `deletedAt` field instead and configure the `deletedFlag` option in the `syncGraphQL` to use the timestamp field, RxDB will still be able to keep track of deleted documents with an efficient Boolean flag.
 
 ### GraphQL Server
 
@@ -160,7 +165,7 @@ const replicationState = myCollection.syncGraphQL({
     url: 'http://example.com/graphql', // url to the GraphQL endpoint
     pull: {
         queryBuilder: pullQueryBuilder, // the queryBuilder from above
-        modifier: doc => doc // (optional) modifies all pulled documents before they are handeled by RxDB. Returning null will skip the document.
+        modifier: doc => doc, // (optional) modifies all pulled documents before they are handeled by RxDB. Returning null will skip the document.
         dataPath: undefined // (optional) specifies the object path to access the document(s). Otherwise, the first result of the response data is used.
     },
     deletedFlag: 'deleted', // the flag which indicates if a pulled document is deleted

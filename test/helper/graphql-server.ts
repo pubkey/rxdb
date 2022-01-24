@@ -105,7 +105,8 @@ export async function spawn(
             name: String!,
             age: Int!,
             updatedAt: Int!,
-            deleted: Boolean!
+            deleted: Boolean!,
+            deletedAt: Int
         }
         type HumanCollection {
             collection: [Human!]
