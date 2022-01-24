@@ -2,6 +2,9 @@
 
 ### X.X.X (comming soon)
 
+Features:
+  - Allow truthy values for the GraphQL replication `deletedFlag` field. [#3644](https://github.com/pubkey/rxdb/pull/3644) Thanks [@nirvdrum](https://github.com/nirvdrum)
+
 ### 11.3.0 (17 January 2022)
 
 Bugfixes:
