@@ -687,21 +687,28 @@ config.parallel('rx-document.test.js', () => {
         });
         it('should get a fresh object each time', async () => {
             const c = await humansCollection.create(1);
-            const doc: any = await c.findOne().exec();
+            const doc = await c.findOne().exec(true);
             const json = doc.toJSON();
             const json2 = doc.toJSON();
             assert.ok(json !== json2);
             c.database.destroy();
         });
-        it('should not return _rev if not wanted', async () => {
-            const c = await humansCollection.create(1);
-            const doc: any = await c.findOne().exec();
-            const json = doc.toJSON(
-                false // no ._rev
-            );
-            assert.ok(json.passportId);
-            assert.ok(json.firstName);
-            assert.strictEqual(typeof json._rev, 'undefined');
+        it('should not return meta fields if not wanted', async () => {
+            const c = await humansCollection.create(0);
+            await c.insert({
+                passportId: 'aatspywninca',
+                firstName: 'Tester',
+                lastName: 'Test',
+                age: 10
+            });
+            const newHuman = await c.findOne('aatspywninca').exec(true);
+            const jsonWithWithoutMetaFields = newHuman.toJSON();
+
+            const metaField = Object.keys(jsonWithWithoutMetaFields).find(key => key.startsWith('_'));
+            if (metaField) {
+                throw new Error('should not contain meta field ' + metaField);
+            }
+
             c.database.destroy();
         });
         it('should not return _attachments if not wanted', async () => {

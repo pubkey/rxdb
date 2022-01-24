@@ -238,11 +238,12 @@ export const basePrototype = {
         return valueObj;
     },
 
-    toJSON(this: RxDocument, withRevAndAttachments = false) {
-        if (!withRevAndAttachments) {
+    toJSON(this: RxDocument, withMetaFields = false) {
+        if (!withMetaFields) {
             const data = flatClone(this._data);
             delete (data as any)._rev;
             delete (data as any)._attachments;
+            delete (data as any)._deleted;
             return overwritable.deepFreezeWhenDevMode(data);
         } else {
             return overwritable.deepFreezeWhenDevMode(this._data);

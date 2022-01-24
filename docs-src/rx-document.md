@@ -158,6 +158,21 @@ console.dir(json);
 */
 ```
 
+You can also set `withMetaFields: true` to get additional meta fields like the revision, attachments or the deleted flag.
+
+```js
+const json = myDocument.toJSON(true);
+console.dir(json);
+/* { passportId: 'h1rg9ugdd30o',
+  firstName: 'Carolina',
+  lastName: 'Gibson',
+  _deleted: false,
+  _attachments: { ... },
+  _rev: '1-aklsdjfhaklsdjhf...'
+*/
+```
+
+
 ### set()
 **Only temporary documents**
 
