@@ -1,6 +1,6 @@
 # Alternatives for realtime offline-first JavaScript applications
 
-To give you an augmented view over the topic of client side JavaScript databases, this page contains all known alternatives to **RxDB**. Remember that you read this inside of the RxDB documentation, so everything is **opinionated**.
+To give you an augmented view over the topic of client side JavaScript databases, this page contains all known alternatives to **RxDB**. Remember that you are reading this inside of the RxDB documentation, so everything is **opinionated**.
 If you disagree with anything or think that something is missing, make a pull request to this file.
 
 
@@ -47,7 +47,7 @@ The biggest difference to RxDB is that firebase products are only able to replic
   height="60" />
 </p>
 
-Meteor (since 2012) is one of the oldest technologies for JavaScript realtime applications. Meteor is no a library but a whole framework with its own package manager, database management and replication protocol.
+Meteor (since 2012) is one of the oldest technologies for JavaScript realtime applications. Meteor is not a library but a whole framework with its own package manager, database management and replication protocol.
 Because of how it works, it has proven to be hard to integrate it with other modern JavaScript frameworks like [angular](https://github.com/urigo/angular-meteor), vue.js or svelte.
 
 Meteor uses MongoDB in the backend and can replicate with a Minimongo database in the frontend.
@@ -65,7 +65,7 @@ Compared to RxDB, Minimongo has no concept of revisions or conflict handling, wh
   <img src="./files/alternatives/watermelondb.png" alt="WatermelonDB alternative" height="60" />
 </p>
 
-WatermelonDB is a reactive & asynchronous JavaScript database. While originally made for React and React Native, it can also be used with other JavaScript frameworks. The main goal of WatermelonDB is **performance** when having application with much data.
+WatermelonDB is a reactive & asynchronous JavaScript database. While originally made for React and React Native, it can also be used with other JavaScript frameworks. The main goal of WatermelonDB is **performance** within an application with lots of data.
 In React Native, WatermelonDB uses the provided SQLite database. In a browser, LokiJS can be used to store and query data.
 
 
@@ -78,7 +78,7 @@ AWS Amplify is a collection of tools and libraries to develope web- and mobile f
 
 ### AWS Datastore
 
-Since december 2019 the Amplify library includes the AWS Datastore which is a document based, client side database that is able to replicate data via AWS AppSync in the background.
+Since december 2019 the Amplify library includes the AWS Datastore which is a document-based, client side database that is able to replicate data via AWS AppSync in the background.
 The main difference to other projects is the complex project configuration via the amplify cli and the bit confusing query syntax that works over functions. Complex Queries with multiple `OR/AND` statements are not possible which might change in the future.
 Local development is hard because the AWS AppSync mock does not support realtime replication. It also is not really offline-first because a user login is always required.
 
@@ -117,7 +117,7 @@ Horizon is the client side library for RethinkDB which provides useful functions
 </p>
 
 
-Supabase labels itself as "*an open source Firebase alternative*". It is a collection of open source tools that together can mimic many of the firebase features, most of them by wrapping a PostgreSQL database. While it has realtime queries that run over the wire, like with RethinkDB, Supabase has no client side storage or replication feature and therefore is not offline first.
+Supabase labels itself as "*an open source Firebase alternative*". It is a collection of open source tools that together mimic many Firebase features, most of them by providing a wrapper around a PostgreSQL database. While it has realtime queries that run over the wire, like with RethinkDB, Supabase has no client-side storage or replication feature and therefore is not offline first.
 
 ### CouchDB
 
@@ -125,7 +125,7 @@ Supabase labels itself as "*an open source Firebase alternative*". It is a colle
   <img src="./files/icons/couchdb-text.svg" alt="CouchDB alternative" height="60" class="img-padding" />
 </p>
 
-Apache CouchDB is a server side, document oriented database that is mostly known for its multi-master replication feature. Instead of having a master-slave replication, with CouchDB you can run replication in any constellation without having a master server as bottleneck where the server even can go off- and online at any time. This comes with the 	drawback of having a slow replication with much network overhead.
+Apache CouchDB is a server-side, document-oriented database that is mostly known for its multi-master replication feature. Instead of having a master-slave replication, with CouchDB you can run replication in any constellation without having a master server as bottleneck where the server even can go off- and online at any time. This comes with the drawback of having a slow replication with much network overhead.
 CouchDB has a changestream and a query syntax similar to MongoDB.
 
 ### PouchDB
@@ -142,7 +142,7 @@ RxDB was originally build around PouchDB until the storage layer was abstracted 
 ### Couchbase
 
 Couchbase (originally known as Membase) is another NoSQL document database made for realtime applications.
-It uses the N1QL query language which is more SQL like compared to other NoSQL query languages. In theory you can replication a Couchbase with a PouchDB database, but this has shown to be not [that easy](https://github.com/pouchdb/pouchdb/issues/7793#issuecomment-501624297).
+It uses the N1QL query language which is more SQL like compared to other NoSQL query languages. In theory you can achieve replication of a Couchbase with a PouchDB database, but this has shown to be not [that easy](https://github.com/pouchdb/pouchdb/issues/7793#issuecomment-501624297).
 
 ### Cloudant
 
@@ -154,7 +154,7 @@ It was bought by IBM in 2014 and since 2018 the Cloudant Shared Plan is retired 
 
 Hoodie is a backend solution that enables offline-first JavaScript frontend development without having to write backend code. Its main goal is to abstract away configuration into simple calls to the Hoodie API.
 It uses CouchDB in the backend and PouchDB in the frontend to enable offline-first capabilities.
-The last commit for hoodie was one year ago and the website (hood.ie) is offline which indicates it is no active project anymore.
+The last commit for hoodie was one year ago and the website (hood.ie) is offline which indicates it is not an active project anymore.
 
 ### LokiJS
 
@@ -176,12 +176,12 @@ sql.js is a javascript library to run SQLite on the web. It uses a virtual datab
 
 ### absurd-sQL
 
-Absurd-sql is a project that implements an IndexedDB based persistence for sql.js. Instead of directly writing data into the IndexedDB, it treats IndexedDB like a disk and stores data in blocks there which shows to have a much better performance, mostly because of how [performance expensive](./slow-indexeddb.md) IndexedDB transactions are.
+Absurd-sql is a project that implements an IndexedDB-based persistence for sql.js. Instead of directly writing data into the IndexedDB, it treats IndexedDB like a disk and stores data in blocks there which shows to have a much better performance, mostly because of how [performance expensive](./slow-indexeddb.md) IndexedDB transactions are.
 
 ### NeDB
 
 NeDB was a embedded persistent or in-memory database for Node.js, nw.js, Electron and browsers.
-It is document oriented and had the same query syntax as MongoDB. 
+It is document-oriented and had the same query syntax as MongoDB. 
 Like LokiJS it has persistence adapters for IndexedDB etc. to persist the database state on the disc.
 The last commit to NeDB was in **2016**.
 
@@ -193,7 +193,7 @@ Dexie.js is used by Whatsapp Web, Microsoft To Do and Github Desktop.
 
 ### MongoDB Realm
 
-Originally Realm was a mobile database for android and iOS. Later they added support for other languages and runtimes, also for JavaScript. 
+Originally Realm was a mobile database for Android and iOS. Later they added support for other languages and runtimes, also for JavaScript. 
 It was meant as replacement for SQLite but is more like an object store then a full SQL database.
 In 2019 MongoDB bought Realm and changed the projects focus.
 Now Realm is made for replication with the MongoDB Realm Sync based on the MongoDB Atlas Cloud platform.
