@@ -60,6 +60,17 @@ if (config.platform.name === 'firefox') {
     };
 }
 
+import setGlobalVars from 'indexeddbshim';
+if (config.platform.name === 'node') {
+    /**
+     * Set polyfill for indexeddb so we can test dexie.js
+     * in node.
+     * @link https://www.npmjs.com/package/indexeddbshim
+     */
+    (global as any).window = global; // We'll allow ourselves to use `window.indexedDB` or `indexedDB` as a global
+    setGlobalVars(); // See signature below
+}
+
 
 describe('init.test.js', () => {
     it('clear BroadcastChannel tmp folder', async () => {

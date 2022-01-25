@@ -112,7 +112,6 @@ if (config.platform.name === 'node') {
     config.rootPath = path.join(__dirname, '../../');
     console.log('rootPath: ' + config.rootPath);
 
-
     /**
      * Add a global function to process, so we can debug timings
      */

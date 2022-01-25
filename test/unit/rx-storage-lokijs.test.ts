@@ -29,7 +29,7 @@ import { LeaderElector } from 'broadcast-channel';
 import { HumanDocumentType } from '../helper/schemas';
 
 /**
- * RxStoragePouch specific tests
+ * RxStorageLokiJS specific tests
  */
 config.parallel('rx-storage-lokijs.test.js', () => {
     describe('RxDatabase', () => {

@@ -18,13 +18,14 @@ export interface SimpleHumanDocumentType {
 }
 
 export function human(
-    passportId: string = randomString(12)
+    passportId: string = randomString(12),
+    age: number = randomNumber(10, 50)
 ): HumanDocumentType {
     return {
         passportId: passportId,
         firstName: faker.name.firstName(),
         lastName: faker.name.lastName(),
-        age: randomNumber(10, 50)
+        age
     };
 }
 
@@ -373,11 +374,13 @@ export interface HumanWithIdAndAgeIndexDocumentType {
     name: string;
     age: number;
 }
-export function humanWithIdAndAgeIndexDocumentType(): HumanWithIdAndAgeIndexDocumentType {
+export function humanWithIdAndAgeIndexDocumentType(
+    age: number = randomNumber(1, 100)
+): HumanWithIdAndAgeIndexDocumentType {
     return {
         id: randomString(12),
         name: faker.name.firstName(),
-        age: randomNumber(1, 100)
+        age
     };
 }
 
