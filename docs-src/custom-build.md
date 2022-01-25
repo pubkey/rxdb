@@ -125,7 +125,7 @@ addRxPlugin(RxDBMigrationPlugin);
 Adds the [CouchDB replication](./replication-couchdb.md)-functionality to RxDB which allows you to replicate the database with a CouchDB compliant endpoint.
 
 ```javascript
-import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication';
+import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb';
 addRxPlugin(RxDBReplicationCouchDBPlugin);
 ```
 
