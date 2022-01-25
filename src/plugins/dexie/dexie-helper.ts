@@ -7,13 +7,18 @@ import type {
     MangoQuery,
     RxJsonSchema
 } from '../../types';
-import Dexie from 'dexie';
+import { Dexie } from 'dexie';
+import { DexieSettings } from '../../types';
+import { flatClone } from '../../util';
 
-const DEXIE_DB_BY_NAME: Map<string, any> = new Map();
-export function getDexieDbByName(dbName: string) {
+const DEXIE_DB_BY_NAME: Map<string, Dexie> = new Map();
+export function getDexieDbByName(dbName: string, settings: DexieSettings): Dexie {
     let db = DEXIE_DB_BY_NAME.get(dbName);
     if (!db) {
-        db = new Dexie(dbName);
+        console.log('create db');
+        console.dir(settings);
+
+        db = new Dexie(dbName, settings);
         DEXIE_DB_BY_NAME.set(dbName, db);
     }
     return db;
@@ -63,11 +68,47 @@ export function getDexieSortComparator<RxDocType>(
         const sorted = mingo.find([a, b], {}).sort(mingoSortObject);
         const first = sorted.next();
         if (first === a) {
-            return 1;
-        } else {
             return -1;
+        } else {
+            return 1;
         }
     }
 
     return fun;
+}
+
+
+/**
+ * Creates a string that can be used to create the dexie store.
+ * @link https://dexie.org/docs/API-Reference#quick-reference
+ */
+export function getDexieStoreSchema(
+    rxJsonSchema: RxJsonSchema<any>
+): string {
+    const parts: string[] = [];
+
+    const primaryKey: string = getPrimaryFieldOfPrimaryKey(rxJsonSchema.primaryKey) as string;
+    parts.push(primaryKey);
+
+    return parts.join(',');
+}
+
+export function getDexieEventKey(
+    isLocal: boolean,
+    primary: string,
+    revision: string
+): string {
+    const prefix = isLocal ? 'local' : 'non-local';
+    const eventKey = prefix + '|' + primary + '|' + revision;
+    return eventKey;
+}
+
+
+/**
+ * Removes all internal fields from the document data
+ */
+export function stripDexieKey<T>(docData: T & { $lastWriteAt?: number; }): T {
+    const cloned = flatClone(docData);
+    delete cloned.$lastWriteAt;
+    return cloned;
 }

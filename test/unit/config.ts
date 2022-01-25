@@ -2,12 +2,15 @@
 const {
     detect
 } = require('detect-browser');
-import BroadcastChannel from 'broadcast-channel';
+import {
+    enforceOptions as broadcastChannelEnforceOptions
+} from 'broadcast-channel';
 import * as path from 'path';
 import parallel from 'mocha.parallel';
 import type { RxStorage } from '../../src/types';
 import { getRxStoragePouch, addPouchPlugin } from '../../plugins/pouchdb';
 import { getRxStorageLoki, RxStorageLokiStatics } from '../../plugins/lokijs';
+import { getRxStorageDexie } from '../../plugins/dexie';
 import { getRxStorageWorker } from '../../plugins/worker';
 
 function isFastMode(): boolean {
@@ -22,7 +25,7 @@ let useParallel = describe;
 try {
     if (process.env.NODE_ENV === 'fast') {
         useParallel = parallel;
-        BroadcastChannel.enforceOptions({
+        broadcastChannelEnforceOptions({
             type: 'simulate'
         });
     }
@@ -94,6 +97,17 @@ export function setDefaultStorage(storageKey: string) {
                         workerInput: lokiWorkerPath
                     }
                 ),
+                hasCouchDBReplication: false,
+                hasAttachments: false
+            };
+            break;
+        case 'dexie':
+            const indexedDB = require('fake-indexeddb');
+            config.storage = {
+                name: 'dexie',
+                getStorage: () => getRxStorageDexie({
+                    indexedDB
+                }),
                 hasCouchDBReplication: false,
                 hasAttachments: false
             };

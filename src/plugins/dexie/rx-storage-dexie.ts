@@ -6,7 +6,9 @@ import type {
     MangoQuery,
     RxDocumentWriteData,
     RxJsonSchema,
+    RxKeyObjectStorageInstanceCreationParams,
     RxStorage,
+    RxStorageInstanceCreationParams,
     RxStorageStatics
 } from '../../types';
 import {
@@ -16,7 +18,7 @@ import { binaryMd5 } from 'pouchdb-md5';
 import { getDexieSortComparator } from './dexie-helper';
 import { flatClone } from '../../util';
 import { DexieSettings, DexieStorageInternals } from '../../types/plugins/dexie';
-import { RxStorageInstanceDexie } from './rx-storage-instance-dexie';
+import { createDexieStorageInstance, RxStorageInstanceDexie } from './rx-storage-instance-dexie';
 
 export const RxStorageDexieStatics: RxStorageStatics = {
     hash(data: Buffer | Blob | string): Promise<string> {
@@ -81,4 +83,12 @@ export class RxStorageDexie implements RxStorage<DexieStorageInternals, DexieSet
     ): Promise<RxStorageKeyObjectInstanceDexie> {
         throw new Error('not implemented');
     }
+}
+
+
+export function getRxStorageDexie(
+    settings: DexieSettings = {}
+): RxStorageDexie {
+    const storage = new RxStorageDexie(settings);
+    return storage;
 }

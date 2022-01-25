@@ -54,9 +54,9 @@ config.parallel('rx-storage-dexie.test.js', () => {
                     query
                 );
                 const sortResult = comparator(docA, docB);
-                assert.strictEqual(sortResult, 1);
+                assert.strictEqual(sortResult, -1);
                 const sortResultReverse = comparator(docB, docA);
-                assert.strictEqual(sortResultReverse, -1);
+                assert.strictEqual(sortResultReverse, 1);
             });
         });
         describe('.getQueryMatcher()', () => {
@@ -83,7 +83,6 @@ config.parallel('rx-storage-dexie.test.js', () => {
 
                 const notMatching = matcher(docNotMatching as any);
                 assert.strictEqual(notMatching, false);
-                process.exit();
             });
         });
     });

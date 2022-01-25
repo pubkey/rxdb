@@ -1,7 +1,12 @@
-import Dexie from 'dexie';
+import {
+    Dexie,
+    DexieOptions,
+    Table as DexieTable
+} from 'dexie';
 
-export type DexieSettings = {};
+export type DexieSettings = DexieOptions;
 
 export type DexieStorageInternals = {
-    database: Dexie;
+    dexieDb: Dexie;
+    dexieTable: DexieTable;
 };
