@@ -211,7 +211,7 @@ Breaking:
   - Pouchdb plugins are not longer added via `addRxPlugin()` but `addPouchPlugin()`. (RxDB plugins are still added via `addRxPlugin`).
   - Removed plugin hook `preCreatePouchDb`.
   - Removed the `watch-for-changes` plugin, this is now directly integrated into the pouchdb `RxStorage`.
-  - Removed the `adapter-check` plugin. (The function `adapterCheck` is move to the pouchdb plugin).
+  - Removed the `adapter-check` plugin. (The function `adapterCheck` has moved to the pouchdb plugin).
 
 
   - Calling `RxDatabase.server()` now returns a promise that resolves when the server is started up.
