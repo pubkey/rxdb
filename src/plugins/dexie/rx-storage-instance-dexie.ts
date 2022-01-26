@@ -35,10 +35,11 @@ import type {
 import { DexieSettings, DexieStorageInternals } from '../../types/plugins/dexie';
 import { RxStorageDexie, RxStorageDexieStatics } from './rx-storage-dexie';
 import {
-    CHANGES_COLLECTION_SUFFIX,
-    getDexieDbByName,
+    closeDexieDb,
+    DEXIE_CHANGES_TABLE_NAME,
+    DEXIE_DOCS_TABLE_NAME,
+    getDexieDbWithTables,
     getDexieEventKey,
-    getDexieStoreSchema,
     stripDexieKey
 } from './dexie-helper';
 
@@ -357,13 +358,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         deleted: boolean
     ): Promise<{ [documentId: string]: RxDocumentData<RxDocType> }> {
         const ret: { [documentId: string]: RxDocumentData<RxDocType> } = {};
-
-
-        console.log('AAAAAAAAAAAAA ' + this.internals.dexieTable.name + ' ' + ids.join(','));
-        console.dir(this.internals.dexieTable.core);
-        console.dir(this.internals.dexieDb[this.internals.dexieTable.name].core);
-
-        const docsInDb = await this.internals.dexieDb[this.internals.dexieTable.name].bulkGet(ids);
+        const docsInDb = await (this.internals.dexieDb as any)[DEXIE_DOCS_TABLE_NAME].bulkGet(ids);
         ids.forEach((id, idx) => {
             const documentInDb = docsInDb[idx];
             if (
@@ -457,7 +452,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
     async close(): Promise<void> {
         this.closed = true;
         this.changes$.complete();
-        // TODO close dexie db if no more pointers to the database
+        closeDexieDb(this.internals.dexieDb);
     }
 }
 
@@ -467,32 +462,15 @@ export async function createDexieStorageInstance<RxDocType>(
     params: RxStorageInstanceCreationParams<RxDocType, DexieSettings>,
     settings: DexieSettings
 ): Promise<RxStorageInstanceDexie<RxDocType>> {
-    const dexieDb = getDexieDbByName(params.databaseName, settings);
-    const changesCollectionName = params.collectionName + CHANGES_COLLECTION_SUFFIX;
+    const dexieDb = getDexieDbWithTables(
+        params.databaseName,
+        params.collectionName,
+        settings,
+        params.schema
+    );
 
-    /**
-     * Tables cannot be closed without closing the database.
-     * So we cannot re-create them when the storage intance was removed
-     * or on multi tab usage in the same process.
-     * We have to check if the table is already there and assume that
-     * the schema did not change.
-     */
-    const tableAlreadyThere = dexieDb.tables.find(table => table.name === params.collectionName);
-
-    console.log('--- ' + params.collectionName + '  - changesCollectionName: ' + changesCollectionName);
-    console.dir(dexieDb.tables.map(t => t.name));
-    console.log('tableAlreadyThere: ' + !!tableAlreadyThere);
-
-
-    if (!tableAlreadyThere) {
-        dexieDb.stores({
-            [params.collectionName]: getDexieStoreSchema(params.schema),
-            [changesCollectionName]: '++sequence, id'
-        });
-    }
-
-    const dexieTable = (dexieDb as any)[params.collectionName];
-    const dexieChangesTable = (dexieDb as any)[changesCollectionName];
+    const dexieTable = (dexieDb as any)[DEXIE_DOCS_TABLE_NAME];
+    const dexieChangesTable = (dexieDb as any)[DEXIE_CHANGES_TABLE_NAME];
 
     const internals: DexieStorageInternals = {
         dexieDb,

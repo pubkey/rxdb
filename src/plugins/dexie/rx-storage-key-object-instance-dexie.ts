@@ -1,6 +1,5 @@
 import type { ChangeEvent } from 'event-reduce-js';
 import { Observable, Subject } from 'rxjs';
-import { newRxError } from '../../rx-error';
 import type {
     BulkWriteLocalRow,
     DexieSettings,
@@ -18,12 +17,13 @@ import {
     flatClone,
     now,
     parseRevision,
-    promiseWait,
     randomCouchString
 } from '../../util';
 import {
-    CHANGES_COLLECTION_SUFFIX,
-    getDexieDbByName,
+    closeDexieDb,
+    DEXIE_CHANGES_TABLE_NAME,
+    DEXIE_DOCS_TABLE_NAME,
+    getDexieDbWithTables,
     getDexieEventKey,
     stripDexieKey
 } from './dexie-helper';
@@ -210,6 +210,7 @@ export class RxStorageKeyObjectInstanceDexie implements RxStorageKeyObjectInstan
     async close(): Promise<void> {
         this.closed = true;
         this.changes$.complete();
+        closeDexieDb(this.internals.dexieDb);
     }
 
     async remove(): Promise<void> {
@@ -227,26 +228,20 @@ export async function createDexieKeyObjectStorageInstance(
     params: RxKeyObjectStorageInstanceCreationParams<DexieSettings>,
     settings: DexieSettings
 ): Promise<RxStorageKeyObjectInstanceDexie> {
-    const dexieDb = getDexieDbByName(params.databaseName, settings);
-    const changesCollectionName = params.collectionName + CHANGES_COLLECTION_SUFFIX;
+    const dexieDb = getDexieDbWithTables(
+        params.databaseName,
+        params.collectionName,
+        settings,
+        {
+            version: 0,
+            primaryKey: '_id',
+            type: 'object',
+            properties: {}
+        }
+    );
 
-    /**
-     * Tables cannot be closed without closing the database.
-     * So we cannot re-create them when the storage intance was removed
-     * or on multi tab usage in the same process.
-     * We have to check if the table is already there and assume that
-     * the schema did not change.
-     */
-    const tableAlreadyThere = dexieDb.tables.find(table => table.name === params.collectionName);
-    if (!tableAlreadyThere) {
-        dexieDb.version(1).stores({
-            [params.collectionName]: '_id',
-            [changesCollectionName]: '++sequence, id'
-        });
-    }
-    await promiseWait(0);
-    const dexieTable = (dexieDb as any)[params.collectionName];
-    const dexieChangesTable = (dexieDb as any)[changesCollectionName];
+    const dexieTable = (dexieDb as any)[DEXIE_DOCS_TABLE_NAME];
+    const dexieChangesTable = (dexieDb as any)[DEXIE_CHANGES_TABLE_NAME];
 
     const internals: DexieStorageInternals = {
         dexieDb,

@@ -11,21 +11,46 @@ import { Dexie } from 'dexie';
 import { DexieSettings } from '../../types';
 import { flatClone } from '../../util';
 
-export const CHANGES_COLLECTION_SUFFIX = '-rxdb-changes';
+export const DEXIE_DOCS_TABLE_NAME = 'docs';
+export const DEXIE_CHANGES_TABLE_NAME = 'changes';
+
 
 const DEXIE_DB_BY_NAME: Map<string, Dexie> = new Map();
-export function getDexieDbByName(dbName: string, settings: DexieSettings): Dexie {
-    let db = DEXIE_DB_BY_NAME.get(dbName);
+const REF_COUNT_PER_DEXIE_DB: Map<Dexie, number> = new Map();
+export function getDexieDbWithTables(
+    databaseName: string,
+    collectionName: string,
+    settings: DexieSettings,
+    schema: RxJsonSchema<any>
+): Dexie {
+    const dexieDbName = databaseName + '----' + collectionName;
+    let db = DEXIE_DB_BY_NAME.get(dexieDbName);
     if (!db) {
-        console.log('create db');
-        console.dir(settings);
-
-        db = new Dexie(dbName, settings);
-        DEXIE_DB_BY_NAME.set(dbName, db);
+        /**
+         * IndexedDB was not designed for dynamically adding tables on the fly,
+         * so we create on db per collection.
+         * @link https://github.com/dexie/Dexie.js/issues/684#issuecomment-373224696
+         */
+        db = new Dexie(dexieDbName, settings);
+        db.version(1).stores({
+            [DEXIE_DOCS_TABLE_NAME]: getDexieStoreSchema(schema),
+            [DEXIE_CHANGES_TABLE_NAME]: '++sequence, id'
+        });
+        DEXIE_DB_BY_NAME.set(dexieDbName, db);
+        REF_COUNT_PER_DEXIE_DB.set(db, 0);
     }
     return db;
 }
 
+export function closeDexieDb(db: Dexie) {
+    const prevCount = REF_COUNT_PER_DEXIE_DB.get(db);
+    const newCount = (prevCount as any) - 1;
+    if (newCount === 0) {
+        db.close();
+    } else {
+        REF_COUNT_PER_DEXIE_DB.set(db, newCount);
+    }
+}
 
 
 function sortDirectionToMingo(direction: 'asc' | 'desc'): 1 | -1 {
