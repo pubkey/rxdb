@@ -11,6 +11,7 @@ import { Dexie } from 'dexie';
 import { DexieSettings } from '../../types';
 import { flatClone } from '../../util';
 
+export const CHANGES_COLLECTION_SUFFIX = '-rxdb-changes';
 const DEXIE_DB_BY_NAME: Map<string, Dexie> = new Map();
 export function getDexieDbByName(dbName: string, settings: DexieSettings): Dexie {
     let db = DEXIE_DB_BY_NAME.get(dbName);
@@ -87,8 +88,14 @@ export function getDexieStoreSchema(
 ): string {
     const parts: string[] = [];
 
+    /**
+     * First part must be the primary key
+     * @link https://github.com/dexie/Dexie.js/issues/1307#issuecomment-846590912
+     */
     const primaryKey: string = getPrimaryFieldOfPrimaryKey(rxJsonSchema.primaryKey) as string;
     parts.push(primaryKey);
+
+    // TODO add other indexes
 
     return parts.join(',');
 }

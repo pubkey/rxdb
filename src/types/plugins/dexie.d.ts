@@ -9,4 +9,5 @@ export type DexieSettings = DexieOptions;
 export type DexieStorageInternals = {
     dexieDb: Dexie;
     dexieTable: DexieTable;
+    dexieChangesTable: DexieTable;
 };

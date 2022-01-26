@@ -824,6 +824,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     return changesResult.lastSequence;
                 }
                 const latestBefore = await getSequenceAfter(0);
+                assert.strictEqual(latestBefore, 0);
+
                 await storageInstance.bulkWrite([
                     {
                         document: {
@@ -833,6 +835,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }
                 ]);
                 const latestMiddle = await getSequenceAfter(0);
+                assert.strictEqual(latestMiddle, 1);
 
                 await storageInstance.bulkWrite([
                     {
@@ -843,7 +846,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }
                 ]);
                 const latestAfter = await getSequenceAfter(1);
-
+                assert.strictEqual(latestAfter, 2);
 
                 const docsInDbResult = await storageInstance.findDocumentsById(['foobar'], true);
                 const docInDb = getFromObjectOrThrow(docsInDbResult, 'foobar');
@@ -860,10 +863,6 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }
                 ]);
                 const latestAfterBulkAddRevision = await getSequenceAfter(2);
-
-                assert.strictEqual(latestBefore, 0);
-                assert.strictEqual(latestMiddle, 1);
-                assert.strictEqual(latestAfter, 2);
                 assert.strictEqual(latestAfterBulkAddRevision, 3);
 
                 storageInstance.close();

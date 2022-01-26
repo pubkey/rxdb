@@ -103,10 +103,12 @@ export function setDefaultStorage(storageKey: string) {
             break;
         case 'dexie':
             const indexedDB = require('fake-indexeddb');
+            const IDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange');
             config.storage = {
                 name: 'dexie',
                 getStorage: () => getRxStorageDexie({
-                    indexedDB
+                    indexedDB,
+                    IDBKeyRange
                 }),
                 hasCouchDBReplication: false,
                 hasAttachments: false
