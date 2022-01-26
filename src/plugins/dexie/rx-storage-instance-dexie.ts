@@ -6,22 +6,15 @@ import {
     Observable
 } from 'rxjs';
 import {
-    promiseWait,
     createRevision,
     getHeightOfRevision,
     parseRevision,
     lastOfArray,
     flatClone,
     now,
-    ensureNotFalsy,
-    randomCouchString,
-    isMaybeReadonlyArray
+    randomCouchString
 } from '../../util';
 import { newRxError } from '../../rx-error';
-import {
-    Dexie,
-    Table as DexieTable
-} from 'dexie';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import type {
     RxStorageInstance,
@@ -41,7 +34,13 @@ import type {
 } from '../../types';
 import { DexieSettings, DexieStorageInternals } from '../../types/plugins/dexie';
 import { RxStorageDexie, RxStorageDexieStatics } from './rx-storage-dexie';
-import { CHANGES_COLLECTION_SUFFIX, getDexieDbByName, getDexieEventKey, getDexieStoreSchema, stripDexieKey } from './dexie-helper';
+import {
+    CHANGES_COLLECTION_SUFFIX,
+    getDexieDbByName,
+    getDexieEventKey,
+    getDexieStoreSchema,
+    stripDexieKey
+} from './dexie-helper';
 
 let instanceId = now();
 
@@ -74,12 +73,13 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
      */
     private async addChangeDocumentsMeta(ids: string[]) {
         const addDocs = ids.map(id => ({ id }));
-        console.log('addDocs: ');
+        console.log('addChangeDocumentsMeta():');
         console.dir(addDocs);
         return this.internals.dexieChangesTable.bulkPut(addDocs);
     }
 
     async bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>> {
+        console.log('bulkWrite()');
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
             success: {},
             error: {}
@@ -95,6 +95,8 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
             this.internals.dexieTable,
             this.internals.dexieChangesTable,
             async () => {
+                console.log('bulkWrite() doc keys (' + this.collectionName + '):');
+                console.dir(documentKeys);
                 const docsInDb = await this.internals.dexieTable.bulkGet(documentKeys);
                 const bulkPutData: any[] = [];
                 const changesIds: string[] = [];
@@ -356,7 +358,12 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
     ): Promise<{ [documentId: string]: RxDocumentData<RxDocType> }> {
         const ret: { [documentId: string]: RxDocumentData<RxDocType> } = {};
 
-        const docsInDb = await this.internals.dexieTable.bulkGet(ids);
+
+        console.log('AAAAAAAAAAAAA ' + this.internals.dexieTable.name + ' ' + ids.join(','));
+        console.dir(this.internals.dexieTable.core);
+        console.dir(this.internals.dexieDb[this.internals.dexieTable.name].core);
+
+        const docsInDb = await this.internals.dexieDb[this.internals.dexieTable.name].bulkGet(ids);
         ids.forEach((id, idx) => {
             const documentInDb = docsInDb[idx];
             if (
@@ -399,37 +406,31 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         lastSequence: number;
     }> {
         let lastSequence: number = 0;
-        let changedDocuments: RxStorageChangedDocumentMeta[] = [];
 
-        await this.internals.dexieDb.transaction(
-            'r',
-            this.internals.dexieChangesTable,
-            async () => {
-                let query;
-                if (options.direction === 'before') {
-                    query = this.internals.dexieChangesTable
-                        .where('sequence')
-                        .below(options.sinceSequence)
-                        .reverse();
-                } else {
-                    query = this.internals.dexieChangesTable
-                        .where('sequence')
-                        .above(options.sinceSequence);
-                }
+        let query;
+        if (options.direction === 'before') {
+            query = this.internals.dexieChangesTable
+                .where('sequence')
+                .below(options.sinceSequence)
+                .reverse();
+        } else {
+            query = this.internals.dexieChangesTable
+                .where('sequence')
+                .above(options.sinceSequence);
+        }
 
-                if (options.limit) {
-                    query = (query as any).limit(options.limit);
-                }
+        if (options.limit) {
+            query = (query as any).limit(options.limit);
+        }
 
-                changedDocuments = await query.toArray();
+        const changedDocuments: RxStorageChangedDocumentMeta[] = await query.toArray();
 
-                if (changedDocuments.length === 0) {
-                    lastSequence = options.sinceSequence;
-                } else {
-                    const useForLastSequence = options.direction === 'after' ? lastOfArray(changedDocuments) : changedDocuments[0];
-                    lastSequence = useForLastSequence.sequence;
-                }
-            });
+        if (changedDocuments.length === 0) {
+            lastSequence = options.sinceSequence;
+        } else {
+            const useForLastSequence = options.direction === 'after' ? lastOfArray(changedDocuments) : changedDocuments[0];
+            lastSequence = useForLastSequence.sequence;
+        }
 
         return {
             lastSequence,
@@ -466,24 +467,30 @@ export async function createDexieStorageInstance<RxDocType>(
     params: RxStorageInstanceCreationParams<RxDocType, DexieSettings>,
     settings: DexieSettings
 ): Promise<RxStorageInstanceDexie<RxDocType>> {
-
     const dexieDb = getDexieDbByName(params.databaseName, settings);
-
     const changesCollectionName = params.collectionName + CHANGES_COLLECTION_SUFFIX;
-    try {
-        dexieDb.version(1).stores({
+
+    /**
+     * Tables cannot be closed without closing the database.
+     * So we cannot re-create them when the storage intance was removed
+     * or on multi tab usage in the same process.
+     * We have to check if the table is already there and assume that
+     * the schema did not change.
+     */
+    const tableAlreadyThere = dexieDb.tables.find(table => table.name === params.collectionName);
+
+    console.log('--- ' + params.collectionName + '  - changesCollectionName: ' + changesCollectionName);
+    console.dir(dexieDb.tables.map(t => t.name));
+    console.log('tableAlreadyThere: ' + !!tableAlreadyThere);
+
+
+    if (!tableAlreadyThere) {
+        dexieDb.stores({
             [params.collectionName]: getDexieStoreSchema(params.schema),
             [changesCollectionName]: '++sequence, id'
         });
-    } catch (err) {
-        /**
-         * Might throw if table is already there but was cleared before
-         * @link https://stackoverflow.com/a/35893988/3443137
-         */
-        if (!err.toString().includes('when database is open')) {
-            throw err;
-        }
     }
+
     const dexieTable = (dexieDb as any)[params.collectionName];
     const dexieChangesTable = (dexieDb as any)[changesCollectionName];
 

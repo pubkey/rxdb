@@ -101,7 +101,10 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
             writeRowById.set(id, writeRow);
             const writeDoc = flatClone(writeRow.document);
             const docInDb = localState.collection.by('_id', id);
+
+            // TODO why not use docInDb instead of collection.by() ??
             const previous = writeRow.previous ? writeRow.previous : localState.collection.by('_id', id);
+
             const newRevHeight = previous ? parseRevision(previous._rev).height + 1 : 1;
             const newRevision = newRevHeight + '-' + createRevision(writeRow.document);
             writeDoc._rev = newRevision;

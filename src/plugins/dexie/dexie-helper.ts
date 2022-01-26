@@ -12,6 +12,7 @@ import { DexieSettings } from '../../types';
 import { flatClone } from '../../util';
 
 export const CHANGES_COLLECTION_SUFFIX = '-rxdb-changes';
+
 const DEXIE_DB_BY_NAME: Map<string, Dexie> = new Map();
 export function getDexieDbByName(dbName: string, settings: DexieSettings): Dexie {
     let db = DEXIE_DB_BY_NAME.get(dbName);

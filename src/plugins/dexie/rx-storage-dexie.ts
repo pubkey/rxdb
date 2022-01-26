@@ -20,6 +20,7 @@ import { firstPropertyNameOfObject, flatClone } from '../../util';
 import { DexieSettings, DexieStorageInternals } from '../../types/plugins/dexie';
 import { createDexieStorageInstance, RxStorageInstanceDexie } from './rx-storage-instance-dexie';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
+import { createDexieKeyObjectStorageInstance, RxStorageKeyObjectInstanceDexie } from './rx-storage-key-object-instance-dexie';
 
 export const RxStorageDexieStatics: RxStorageStatics = {
     hash(data: Buffer | Blob | string): Promise<string> {
@@ -115,7 +116,15 @@ export class RxStorageDexie implements RxStorage<DexieStorageInternals, DexieSet
     public createKeyObjectStorageInstance(
         params: RxKeyObjectStorageInstanceCreationParams<DexieSettings>
     ): Promise<RxStorageKeyObjectInstanceDexie> {
-        throw new Error('not implemented');
+        // ensure we never mix up key-object data with normal storage documents.
+        const useParams = flatClone(params);
+        useParams.collectionName = params.collectionName + '-key-object';
+
+        return createDexieKeyObjectStorageInstance(
+            this,
+            params,
+            this.settings
+        );
     }
 }
 
