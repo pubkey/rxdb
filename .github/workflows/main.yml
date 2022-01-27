@@ -99,6 +99,29 @@ jobs:
       - name: npm run test:fast:lokijs-worker
         run: npm run test:fast:lokijs-worker
 
+  # run the node tests for the Dexie.js RxStorage in a different
+  # task to run in parallel.
+  node-dexie:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.5.1
+        with:
+          node-version: 16.5.0
+
+      - name: install npm dependencies
+        run: npm install
+      
+      - name: build
+        run: npm run build
+
+      - name: npm run test:node:dexie
+        run: npm run test:node:dexie
+
+      - name: npm run test:fast:dexie
+        run: npm run test:fast:dexie
+
   angular:
     runs-on: ubuntu-18.04
     steps:
