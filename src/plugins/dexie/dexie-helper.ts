@@ -28,7 +28,7 @@ export function getDexieDbWithTables(
     if (!db) {
         /**
          * IndexedDB was not designed for dynamically adding tables on the fly,
-         * so we create on db per collection.
+         * so we create one dexie database per RxDB storage instance.
          * @link https://github.com/dexie/Dexie.js/issues/684#issuecomment-373224696
          */
         db = new Dexie(dexieDbName, settings);
@@ -47,6 +47,7 @@ export function closeDexieDb(db: Dexie) {
     const newCount = (prevCount as any) - 1;
     if (newCount === 0) {
         db.close();
+        REF_COUNT_PER_DEXIE_DB.delete(db);
     } else {
         REF_COUNT_PER_DEXIE_DB.set(db, newCount);
     }
