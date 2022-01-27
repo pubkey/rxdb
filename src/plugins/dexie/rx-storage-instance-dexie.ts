@@ -74,13 +74,10 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
      */
     private async addChangeDocumentsMeta(ids: string[]) {
         const addDocs = ids.map(id => ({ id }));
-        console.log('addChangeDocumentsMeta():');
-        console.dir(addDocs);
         return this.internals.dexieChangesTable.bulkPut(addDocs);
     }
 
     async bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>> {
-        console.log('bulkWrite()');
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
             success: {},
             error: {}
@@ -96,8 +93,6 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
             this.internals.dexieTable,
             this.internals.dexieChangesTable,
             async () => {
-                console.log('bulkWrite() doc keys (' + this.collectionName + '):');
-                console.dir(documentKeys);
                 const docsInDb = await this.internals.dexieTable.bulkGet(documentKeys);
                 const bulkPutData: any[] = [];
                 const changesIds: string[] = [];
@@ -383,12 +378,17 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         );
         const sortComparator = RxStorageDexieStatics.getSortComparator(this.schema, preparedQuery);
         const docsInDb = await this.internals.dexieTable.filter(queryMatcher).toArray();
-        const documents = docsInDb
+        let documents = docsInDb
             .map(docData => stripDexieKey(docData))
             .sort(sortComparator);
 
-        console.log('query result:');
-        console.dir(documents);
+        if (preparedQuery.skip) {
+            documents = documents.slice(preparedQuery.skip);
+        }
+        if (preparedQuery.limit && documents.length > preparedQuery.limit) {
+            documents = documents.slice(0, preparedQuery.limit);
+        }
+
         return {
             documents
         };

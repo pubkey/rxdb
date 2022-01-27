@@ -1995,9 +1995,6 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
         }
         describe('RxStorageInstance', () => {
             it('should be able to write and read documents', async () => {
-
-                console.log('#################################');
-
                 const instances = await getMultiInstanceRxStorageInstance();
 
                 const emittedB: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>>[] = [];

@@ -41,14 +41,18 @@ export const RxStorageDexieStatics: RxStorageStatics = {
             mutateableQuery.selector = {
                 $and: [
                     {
-                        _deleted: false
+                        _deleted: {
+                            $ne: true
+                        }
                     },
                     mutateableQuery.selector
                 ]
             };
         } else {
             mutateableQuery.selector = {
-                _deleted: false
+                _deleted: {
+                    $ne: true
+                }
             };
         }
 

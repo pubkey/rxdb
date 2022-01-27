@@ -328,6 +328,7 @@ config.parallel('rx-query.test.js', () => {
             const q = col.find();
 
             const docData = {
+                passportId: 'foobar',
                 color: 'green',
                 hp: 100,
                 maxHP: 767,
@@ -837,16 +838,18 @@ config.parallel('rx-query.test.js', () => {
             c.database.destroy();
         });
         it('#278 queryCache breaks when pointer out of bounds', async () => {
-            if (!config.platform.isNode()) return; // dont do this on browsers because firefox takes too long
+            if (!config.platform.isNode()) {
+                // dont do this on browsers because firefox takes too long
+                return;
+            }
 
             const c = await humansCollection.createPrimary(0);
 
             // insert 100
-            await Promise.all(
+            await c.bulkInsert(
                 new Array(100)
                     .fill(0)
                     .map(() => schemaObjects.human())
-                    .map(data => c.insert(data))
             );
 
             // make and exec query
@@ -855,12 +858,12 @@ config.parallel('rx-query.test.js', () => {
             assert.strictEqual(docs.length, 100);
 
             // produces changeEvents
-            await Promise.all(
+            await c.bulkInsert(
                 new Array(300) // higher than ChangeEventBuffer.limit
                     .fill(0)
                     .map(() => schemaObjects.human())
-                    .map(data => c.insert(data))
             );
+
 
             // re-exec query
             const docs2 = await query.exec();
@@ -870,19 +873,18 @@ config.parallel('rx-query.test.js', () => {
             const docData = new Array(200)
                 .fill(0)
                 .map(() => schemaObjects.human());
-            for (const doc of docData) {
-                await c.insert(doc);
-            }
+            await c.bulkInsert(docData);
 
             const docs3 = await query.exec();
             assert.strictEqual(docs3.length, 600);
 
-            const docData2 = clone(docData);
+            let docData2 = clone(docData);
+            // because we have no bulkUpsert, we only upsert 10 docs to speed up the test.
+            docData2 = docData2.slice(0, 10);
             docData2.forEach((doc: any) => doc.lastName = doc.lastName + '1');
-
-            for (const doc of docData2) {
-                await c.upsert(doc);
-            }
+            await Promise.all(
+                docData2.map(doc => c.upsert(doc))
+            );
 
             const docs4 = await query.exec();
             assert.strictEqual(docs4.length, 600);
@@ -1071,7 +1073,7 @@ config.parallel('rx-query.test.js', () => {
                 },
                 {
                     created_at: {
-                        $gt: null
+                        $gt: 0
                     }
                 }, {
                     user_id: {
@@ -1080,7 +1082,7 @@ config.parallel('rx-query.test.js', () => {
                 },
                 {
                     created_at: {
-                        $gt: null
+                        $gt: 0
                     }
                 }
                 ]
@@ -1101,13 +1103,12 @@ config.parallel('rx-query.test.js', () => {
                 .find()
                 .where('event_id').eq(2)
                 .where('user_id').eq('6')
-                .where('created_at').gt(null)
+                .where('created_at').gt(0)
                 .sort({
                     created_at: 'desc'
                 })
                 .exec();
             const resultData2 = resultDocs2.map(doc => doc.toJSON());
-
 
             assert.strictEqual(resultData1.length, 1);
             assert.strictEqual(resultData1[0]['event_id'], 2);

@@ -50,7 +50,9 @@ config.parallel('data-migration.test.js', () => {
      */
     if (
         config.storage.name === 'lokijs' ||
-        config.storage.name === 'lokijs-worker'
+        config.storage.name === 'lokijs-worker' ||
+        // Same goes for the dexie.js 'fake-indexeddb'.
+        config.storage.name === 'dexie'
     ) {
         return;
     }

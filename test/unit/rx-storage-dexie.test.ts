@@ -3,30 +3,21 @@ import assert from 'assert';
 import config from './config';
 import {
     addRxPlugin,
-    ensureNotFalsy,
-    getPseudoSchemaForVersion,
     MangoQuery,
-    now,
     randomCouchString
 } from '../../plugins/core';
 
 import {
-    getDexieSortComparator,
     RxStorageDexieStatics
 } from '../../plugins/dexie';
 
-import * as humansCollections from '../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 
 import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
 addRxPlugin(RxDBKeyCompressionPlugin);
 import { RxDBValidatePlugin } from '../../plugins/validate';
-import { waitUntil } from 'async-test-util';
 addRxPlugin(RxDBValidatePlugin);
-import * as path from 'path';
-import * as fs from 'fs';
-import { LeaderElector } from 'broadcast-channel';
-import { HumanDocumentType, humanMinimal } from '../helper/schemas';
+import { humanMinimal } from '../helper/schemas';
 
 /**
  * RxStoragePouch specific tests
