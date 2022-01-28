@@ -65,6 +65,7 @@ RxDB relies solely on the remote instance to detect and resolve conflicts. Each 
 You can start the replication of a single `RxCollection` by calling `replicateRxCollection()` like in the following:
 
 ```ts
+import { replicateRxCollection } from 'rxdb/plugins/replication';
 const replicationState = await replicateRxCollection({
     collection: myRxCollection,
     replicationIdentifier: 'my-custom-rest-replication',
@@ -102,18 +103,19 @@ const replicationState = await replicateRxCollection({
             /**
              * In this example we replicate with a remote REST server
              */
-            const documentsFromRemote = fetch(
+            const response = await fetch(
                 `https://example.com/api/sync/?minUpdatedAt=${minTimestamp}&limit=${limitPerPull}`
-            ).json();
+            );
+            const documentsFromRemote = await response.json();
             return {
                 /**
                  * Contains the pulled documents from the remote.
                  */
-                documents: docsData,
+                documents: documentsFromRemote,
                 /**
                  * Must be true if there might be more newer changes on the remote.
                  */
-                hasMoreDocuments: documentsFromRemote.length !== limitPerPull
+                hasMoreDocuments: documentsFromRemote.length === limitPerPull
             };
         }
     },
