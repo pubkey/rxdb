@@ -77,14 +77,21 @@ export class RxQueryBase<
     // used to count the subscribers to the query
     public refCount$ = new BehaviorSubject(null);
 
+    public isFindOneByIdQuery: false | string;
+
     constructor(
         public op: RxQueryOP,
         public mangoQuery: Readonly<MangoQuery>,
         public collection: RxCollection<RxDocumentType>
     ) {
         if (!mangoQuery) {
-            mangoQuery = _getDefaultQuery();
+            this.mangoQuery = _getDefaultQuery();
         }
+
+        this.isFindOneByIdQuery = isFindOneByIdQuery(
+            this.collection.schema.primaryPath as string,
+            mangoQuery
+        );
     }
     get $(): BehaviorSubject<RxQueryResult> {
         if (!this._$) {
@@ -546,6 +553,37 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
     }
 
     return ret; // true if results have changed
+}
+
+
+/**
+ * Returns true if the given query
+ * selects exactly one document by its id.
+ * Used to optimize performance because these kind of
+ * queries do not have to run over an index and can use get-by-id instead.
+ * Returns false if no query of that kind.
+ * Returns the document id otherwise.
+ */
+export function isFindOneByIdQuery(
+    primaryPath: string,
+    query: MangoQuery<any>
+): false | string {
+    if (
+        query.limit === 1 &&
+        !query.skip &&
+        Object.keys(query.selector).length === 1 &&
+        query.selector[primaryPath]
+    ) {
+        if (typeof query.selector[primaryPath] === 'string') {
+            return query.selector[primaryPath];
+        } else if (
+            Object.keys(query.selector[primaryPath]).length === 1 &&
+            typeof query.selector[primaryPath].$eq === 'string'
+        ) {
+            return query.selector[primaryPath].$eq;
+        }
+    }
+    return false;
 }
 
 
