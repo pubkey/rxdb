@@ -15,6 +15,7 @@ export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumen
     other: any;
     uncached: boolean;
     refCount$: BehaviorSubject<null>;
+    isFindOneByIdQuery: false | string;
     constructor(op: RxQueryOP, mangoQuery: Readonly<MangoQuery>, collection: RxCollection<RxDocumentType>);
     get $(): BehaviorSubject<RxQueryResult>;
     _latestChangeEvent: -1 | number;
@@ -100,4 +101,13 @@ export declare function _getDefaultQuery(): MangoQuery;
  */
 export declare function tunnelQueryCache<RxDocumentType, RxQueryResult>(rxQuery: RxQueryBase<RxDocumentType, RxQueryResult>): RxQuery<RxDocumentType, RxQueryResult>;
 export declare function createRxQuery(op: RxQueryOP, queryObj: MangoQuery, collection: RxCollection): RxQueryBase<any, any>;
+/**
+ * Returns true if the given query
+ * selects exactly one document by its id.
+ * Used to optimize performance because these kind of
+ * queries do not have to run over an index and can use get-by-id instead.
+ * Returns false if no query of that kind.
+ * Returns the document id otherwise.
+ */
+export declare function isFindOneByIdQuery(primaryPath: string, query: MangoQuery<any>): false | string;
 export declare function isInstanceOf(obj: any): boolean;

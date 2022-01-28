@@ -29,7 +29,7 @@ export declare const basePrototype: {
      * get data by objectPath
      */
     get(this: import("./types").RxDocumentBase<{}, {}>, objPath: string): any | null;
-    toJSON(this: import("./types").RxDocumentBase<{}, {}>, withRevAndAttachments?: boolean): import("./types").DeepReadonlyObject<{
+    toJSON(this: import("./types").RxDocumentBase<{}, {}>, withMetaFields?: boolean): import("./types").DeepReadonlyObject<{
         _deleted?: boolean | undefined;
         _attachments: {
             [attachmentId: string]: import("./types").RxAttachmentData;
@@ -108,7 +108,7 @@ export declare function createRxDocumentConstructor(proto?: {
      * get data by objectPath
      */
     get(this: import("./types").RxDocumentBase<{}, {}>, objPath: string): any;
-    toJSON(this: import("./types").RxDocumentBase<{}, {}>, withRevAndAttachments?: boolean): import("./types").DeepReadonlyObject<{
+    toJSON(this: import("./types").RxDocumentBase<{}, {}>, withMetaFields?: boolean): import("./types").DeepReadonlyObject<{
         _deleted?: boolean | undefined;
         _attachments: {
             [attachmentId: string]: import("./types").RxAttachmentData;
@@ -188,7 +188,7 @@ export declare function createRxDocumentConstructor(proto?: {
          * get data by objectPath
          */
         get(this: import("./types").RxDocumentBase<{}, {}>, objPath: string): any;
-        toJSON(this: import("./types").RxDocumentBase<{}, {}>, withRevAndAttachments?: boolean): import("./types").DeepReadonlyObject<{
+        toJSON(this: import("./types").RxDocumentBase<{}, {}>, withMetaFields?: boolean): import("./types").DeepReadonlyObject<{
             _deleted?: boolean | undefined;
             _attachments: {
                 [attachmentId: string]: import("./types").RxAttachmentData;

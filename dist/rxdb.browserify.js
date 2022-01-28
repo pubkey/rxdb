@@ -9072,24 +9072,53 @@ var RxCollectionBase = /*#__PURE__*/function () {
 
   _proto._queryStorageInstance = function _queryStorageInstance(rxQuery, limit) {
     try {
+      var _temp3 = function _temp3() {
+        docs = docs.map(function (doc) {
+          return (0, _rxCollectionHelper._handleFromStorageInstance)(_this4, doc, noDecrypt);
+        });
+        return docs;
+      };
+
       var _arguments2 = arguments,
           _this4 = this;
 
       var noDecrypt = _arguments2.length > 2 && _arguments2[2] !== undefined ? _arguments2[2] : false;
-      var preparedQuery = rxQuery.getPreparedQuery();
+      var docs = [];
+      /**
+       * Optimizations shortcut.
+       * If query is find-one-document-by-id,
+       * then we do not have to use the slow query() method
+       * but instead can use findDocumentsById()
+       */
 
-      if (limit) {
-        preparedQuery['limit'] = limit;
-      }
+      var _temp4 = function () {
+        if (rxQuery.isFindOneByIdQuery) {
+          var docId = rxQuery.isFindOneByIdQuery;
+          return Promise.resolve(_this4.database.lockedRun(function () {
+            return _this4.storageInstance.findDocumentsById([docId], false);
+          })).then(function (docsMap) {
+            var docData = docsMap[docId];
 
-      return Promise.resolve(_this4.database.lockedRun(function () {
-        return _this4.storageInstance.query(preparedQuery);
-      })).then(function (queryResult) {
-        var docs = queryResult.documents.map(function (doc) {
-          return (0, _rxCollectionHelper._handleFromStorageInstance)(_this4, doc, noDecrypt);
-        });
-        return docs;
-      });
+            if (docData) {
+              docs.push(docData);
+            }
+          });
+        } else {
+          var preparedQuery = rxQuery.getPreparedQuery();
+
+          if (limit) {
+            preparedQuery['limit'] = limit;
+          }
+
+          return Promise.resolve(_this4.database.lockedRun(function () {
+            return _this4.storageInstance.query(preparedQuery);
+          })).then(function (queryResult) {
+            docs = queryResult.documents;
+          });
+        }
+      }();
+
+      return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(_temp3) : _temp3(_temp4));
     } catch (e) {
       return Promise.reject(e);
     }
@@ -9372,18 +9401,20 @@ var RxCollectionBase = /*#__PURE__*/function () {
       var _selector;
 
       query = (0, _rxQuery.createRxQuery)('findOne', {
-        selector: (_selector = {}, _selector[this.schema.primaryPath] = queryObj, _selector)
+        selector: (_selector = {}, _selector[this.schema.primaryPath] = queryObj, _selector),
+        limit: 1
       }, this);
     } else {
       if (!queryObj) {
         queryObj = (0, _rxQuery._getDefaultQuery)();
-      } // cannot have limit on findOne queries
+      } // cannot have limit on findOne queries because it will be overwritte
 
 
       if (queryObj.limit) {
         throw (0, _rxError.newRxError)('QU6');
       }
 
+      queryObj.limit = 1;
       query = (0, _rxQuery.createRxQuery)('findOne', queryObj, this);
     }
 
@@ -9418,7 +9449,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
         }
       }); // find everything which was not in docCache
 
-      var _temp2 = function () {
+      var _temp6 = function () {
         if (mustBeQueried.length > 0) {
           return Promise.resolve(_this14.storageInstance.findDocumentsById(mustBeQueried, false)).then(function (docs) {
             Object.values(docs).forEach(function (docData) {
@@ -9430,7 +9461,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
         }
       }();
 
-      return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {
+      return Promise.resolve(_temp6 && _temp6.then ? _temp6.then(function () {
         return ret;
       }) : ret);
     } catch (e) {
@@ -9469,7 +9500,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
 
         var missedChangeEvents = _this15._changeEventBuffer.getFrom(lastChangeEvent + 1);
 
-        var _temp4 = function () {
+        var _temp8 = function () {
           if (missedChangeEvents === null) {
             /**
              * changeEventBuffer is of bounds -> we must re-execute over the database
@@ -9498,7 +9529,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
           }
         }();
 
-        return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(function () {
+        return Promise.resolve(_temp8 && _temp8.then ? _temp8.then(function () {
           return resultMap;
         }) : resultMap);
       } catch (e) {
@@ -11248,12 +11279,13 @@ var basePrototype = {
     return valueObj;
   },
   toJSON: function toJSON() {
-    var withRevAndAttachments = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+    var withMetaFields = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
 
-    if (!withRevAndAttachments) {
+    if (!withMetaFields) {
       var data = (0, _util.flatClone)(this._data);
       delete data._rev;
       delete data._attachments;
+      delete data._deleted;
       return _overwritable.overwritable.deepFreezeWhenDevMode(data);
     } else {
       return _overwritable.overwritable.deepFreezeWhenDevMode(this._data);
@@ -11739,6 +11771,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.RxQueryBase = void 0;
 exports._getDefaultQuery = _getDefaultQuery;
 exports.createRxQuery = createRxQuery;
+exports.isFindOneByIdQuery = isFindOneByIdQuery;
 exports.isInstanceOf = isInstanceOf;
 exports.tunnelQueryCache = tunnelQueryCache;
 
@@ -11796,8 +11829,10 @@ var RxQueryBase = /*#__PURE__*/function () {
     this.collection = collection;
 
     if (!mangoQuery) {
-      mangoQuery = _getDefaultQuery();
+      this.mangoQuery = _getDefaultQuery();
     }
+
+    this.isFindOneByIdQuery = isFindOneByIdQuery(this.collection.schema.primaryPath, mangoQuery);
   }
 
   var _proto = RxQueryBase.prototype;
@@ -12236,6 +12271,27 @@ function __ensureEqual(rxQuery) {
   }
 
   return ret; // true if results have changed
+}
+/**
+ * Returns true if the given query
+ * selects exactly one document by its id.
+ * Used to optimize performance because these kind of
+ * queries do not have to run over an index and can use get-by-id instead.
+ * Returns false if no query of that kind.
+ * Returns the document id otherwise.
+ */
+
+
+function isFindOneByIdQuery(primaryPath, query) {
+  if (query.limit === 1 && !query.skip && Object.keys(query.selector).length === 1 && query.selector[primaryPath]) {
+    if (typeof query.selector[primaryPath] === 'string') {
+      return query.selector[primaryPath];
+    } else if (Object.keys(query.selector[primaryPath]).length === 1 && typeof query.selector[primaryPath].$eq === 'string') {
+      return query.selector[primaryPath].$eq;
+    }
+  }
+
+  return false;
 }
 
 function isInstanceOf(obj) {
