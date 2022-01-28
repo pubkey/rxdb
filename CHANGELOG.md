@@ -2,6 +2,8 @@
 
 ### X.X.X (comming soon)
 
+### 11.4.0 (28 January 2022)
+
 Bugfixes:
   - `RxDocument.toJSON()` is leaking meta field `_deleted`. [#3645](https://github.com/pubkey/rxdb/pull/3645) Thanks [@Bessonov](https://github.com/Bessonov)
 
