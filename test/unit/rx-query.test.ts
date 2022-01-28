@@ -828,6 +828,14 @@ config.parallel('rx-query.test.js', () => {
             });
         });
         it('#267 query for null-fields', async () => {
+            if (config.storage.name !== 'pouchdb') {
+                /**
+                 * This test only runs in pouchdb,
+                 * TODO this should run on every RxStorage because it is a valid mongodb query.
+                 * @link https://docs.mongodb.com/manual/tutorial/query-for-null-fields/#faq-developers-query-for-nulls
+                 */
+                return;
+            }
             const c = await humansCollection.create(2);
             const foundDocs = await c.find({
                 selector: {

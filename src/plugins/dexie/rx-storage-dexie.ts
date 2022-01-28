@@ -17,10 +17,21 @@ import {
 import { binaryMd5 } from 'pouchdb-md5';
 import { getDexieSortComparator } from './dexie-helper';
 import { firstPropertyNameOfObject, flatClone } from '../../util';
-import { DexieSettings, DexieStorageInternals } from '../../types/plugins/dexie';
-import { createDexieStorageInstance, RxStorageInstanceDexie } from './rx-storage-instance-dexie';
+import {
+    DexieSettings,
+    DexieStorageInternals
+} from '../../types/plugins/dexie';
+import {
+    createDexieStorageInstance,
+    RxStorageInstanceDexie
+} from './rx-storage-instance-dexie';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
-import { createDexieKeyObjectStorageInstance, RxStorageKeyObjectInstanceDexie } from './rx-storage-key-object-instance-dexie';
+import {
+    createDexieKeyObjectStorageInstance,
+    RxStorageKeyObjectInstanceDexie
+} from './rx-storage-key-object-instance-dexie';
+import { getPouchQueryPlan } from './query/dexie-query';
+
 
 export const RxStorageDexieStatics: RxStorageStatics = {
     hash(data: Buffer | Blob | string): Promise<string> {
@@ -54,6 +65,15 @@ export const RxStorageDexieStatics: RxStorageStatics = {
             }
         }
 
+
+        /**
+         * Store the query plan together with the
+         * prepared query to save performance.
+         */
+        (mutateableQuery as any).pouchQueryPlan = getPouchQueryPlan(
+            schema,
+            mutateableQuery
+        );
         return mutateableQuery;
     },
 
