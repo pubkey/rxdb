@@ -558,7 +558,7 @@ export function getLokiDatabase(databaseName, databaseSettings) {
         /**
          * Wait until all data is loaded from persistence adapter.
          * Wrap the loading into the saveQueue to ensure that when many
-         * collections are created a the same time, the load-calls do not interfer
+         * collections are created at the same time, the load-calls do not interfere
          * with each other and cause error logs.
          */
 

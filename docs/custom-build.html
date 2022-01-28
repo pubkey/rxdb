@@ -879,10 +879,10 @@
     
         <li class="chapter " data-level="1.5.2.14" data-path="rx-collection.html">
             
-                <a href="rx-collection.html#sync">
+                <a href="rx-collection.html#synccouchdb">
             
                     
-                    sync()
+                    syncCouchDB()
             
                 </a>
             
@@ -891,6 +891,19 @@
         </li>
     
         <li class="chapter " data-level="1.5.2.15" data-path="rx-collection.html">
+            
+                <a href="rx-collection.html#syncgraphql">
+            
+                    
+                    syncGraphQL()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2.16" data-path="rx-collection.html">
             
                 <a href="rx-collection.html#remove">
             
@@ -903,7 +916,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.16" data-path="rx-collection.html">
+        <li class="chapter " data-level="1.5.2.17" data-path="rx-collection.html">
             
                 <a href="rx-collection.html#destroy">
             
@@ -916,7 +929,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.17" data-path="rx-collection.html">
+        <li class="chapter " data-level="1.5.2.18" data-path="rx-collection.html">
             
                 <a href="rx-collection.html#isrxcollection">
             
@@ -1828,7 +1841,7 @@ addRxPlugin(RxDBMigrationPlugin);
 </code></pre>
 <h3 id="replication-couchdb">replication-couchdb</h3>
 <p>Adds the <a href="replication-couchdb.html">CouchDB replication</a>-functionality to RxDB which allows you to replicate the database with a CouchDB compliant endpoint.</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">import</span> { RxDBReplicationCouchDBPlugin } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/replication&apos;</span>;
+<pre><code class="lang-javascript"><span class="hljs-keyword">import</span> { RxDBReplicationCouchDBPlugin } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/replication-couchdb&apos;</span>;
 addRxPlugin(RxDBReplicationCouchDBPlugin);
 </code></pre>
 <h3 id="replication-graphql">replication-graphql</h3>
@@ -1952,7 +1965,7 @@ addRxPlugin(RxDBServerPlugin);
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Custom Build","level":"1.23","depth":1,"next":{"title":"Creating Plugins","level":"1.24","depth":1,"path":"plugins.md","ref":"./plugins.md","articles":[]},"previous":{"title":"LocalDocuments","level":"1.22","depth":1,"path":"rx-local-document.md","ref":"./rx-local-document.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"custom-build.md","mtime":"2022-01-22T02:12:40.582Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-01-22T02:16:44.800Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Custom Build","level":"1.23","depth":1,"next":{"title":"Creating Plugins","level":"1.24","depth":1,"path":"plugins.md","ref":"./plugins.md","articles":[]},"previous":{"title":"LocalDocuments","level":"1.22","depth":1,"path":"rx-local-document.md","ref":"./rx-local-document.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"custom-build.md","mtime":"2022-01-28T20:42:33.654Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-01-28T20:47:00.086Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

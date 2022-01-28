@@ -303,17 +303,36 @@ export class RxCollectionBase<
         limit?: number,
         noDecrypt: boolean = false
     ): Promise<any[]> {
-        const preparedQuery = rxQuery.getPreparedQuery();
-        if (limit) {
-            preparedQuery['limit'] = limit;
+        let docs: any[] = [];
+
+        /**
+         * Optimizations shortcut.
+         * If query is find-one-document-by-id,
+         * then we do not have to use the slow query() method
+         * but instead can use findDocumentsById()
+         */
+        if (rxQuery.isFindOneByIdQuery) {
+            const docId = rxQuery.isFindOneByIdQuery;
+            const docsMap = await this.database.lockedRun(
+                () => this.storageInstance.findDocumentsById([docId], false)
+            );
+            const docData = docsMap[docId];
+            if (docData) {
+                docs.push(docData);
+            }
+        } else {
+            const preparedQuery = rxQuery.getPreparedQuery();
+            if (limit) {
+                preparedQuery['limit'] = limit;
+            }
+
+            const queryResult = await this.database.lockedRun(
+                () => this.storageInstance.query(preparedQuery)
+            );
+            docs = queryResult.documents
         }
 
-        const queryResult = await this.database.lockedRun(
-            () => this.storageInstance.query(preparedQuery)
-        );
-
-        const docs = queryResult.documents
-            .map((doc: any) => _handleFromStorageInstance(this, doc, noDecrypt));
+        docs = docs.map((doc: any) => _handleFromStorageInstance(this, doc, noDecrypt));
         return docs;
     }
 
@@ -596,18 +615,20 @@ export class RxCollectionBase<
             query = createRxQuery('findOne', {
                 selector: {
                     [this.schema.primaryPath]: queryObj
-                }
+                },
+                limit: 1
             }, this as any);
         } else {
             if (!queryObj) {
                 queryObj = _getDefaultQuery();
             }
 
-            // cannot have limit on findOne queries
+            // cannot have limit on findOne queries because it will be overwritte
             if ((queryObj as MangoQuery).limit) {
                 throw newRxError('QU6');
             }
 
+            (queryObj as any).limit = 1;
             query = createRxQuery('findOne', queryObj, this as any);
         }
 

@@ -2,11 +2,16 @@
 
 ### X.X.X (comming soon)
 
+### 11.4.0 (28 January 2022)
+
 Bugfixes:
   - `RxDocument.toJSON()` is leaking meta field `_deleted`. [#3645](https://github.com/pubkey/rxdb/pull/3645) Thanks [@Bessonov](https://github.com/Bessonov)
 
 Features:
   - Allow truthy values for the GraphQL replication `deletedFlag` field. [#3644](https://github.com/pubkey/rxdb/pull/3644) Thanks [@nirvdrum](https://github.com/nirvdrum)
+
+Other:
+  - `.findOne(documentId)` should use `RxStorage().findDocumentsById()` instead of `RxStorage().query()`
 
 ### 11.3.0 (17 January 2022)
 

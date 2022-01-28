@@ -422,12 +422,13 @@ export var basePrototype = {
     return valueObj;
   },
   toJSON: function toJSON() {
-    var withRevAndAttachments = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+    var withMetaFields = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
 
-    if (!withRevAndAttachments) {
+    if (!withMetaFields) {
       var data = flatClone(this._data);
       delete data._rev;
       delete data._attachments;
+      delete data._deleted;
       return overwritable.deepFreezeWhenDevMode(data);
     } else {
       return overwritable.deepFreezeWhenDevMode(this._data);

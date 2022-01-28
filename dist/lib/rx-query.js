@@ -8,6 +8,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.RxQueryBase = void 0;
 exports._getDefaultQuery = _getDefaultQuery;
 exports.createRxQuery = createRxQuery;
+exports.isFindOneByIdQuery = isFindOneByIdQuery;
 exports.isInstanceOf = isInstanceOf;
 exports.tunnelQueryCache = tunnelQueryCache;
 
@@ -65,8 +66,10 @@ var RxQueryBase = /*#__PURE__*/function () {
     this.collection = collection;
 
     if (!mangoQuery) {
-      mangoQuery = _getDefaultQuery();
+      this.mangoQuery = _getDefaultQuery();
     }
+
+    this.isFindOneByIdQuery = isFindOneByIdQuery(this.collection.schema.primaryPath, mangoQuery);
   }
 
   var _proto = RxQueryBase.prototype;
@@ -505,6 +508,27 @@ function __ensureEqual(rxQuery) {
   }
 
   return ret; // true if results have changed
+}
+/**
+ * Returns true if the given query
+ * selects exactly one document by its id.
+ * Used to optimize performance because these kind of
+ * queries do not have to run over an index and can use get-by-id instead.
+ * Returns false if no query of that kind.
+ * Returns the document id otherwise.
+ */
+
+
+function isFindOneByIdQuery(primaryPath, query) {
+  if (query.limit === 1 && !query.skip && Object.keys(query.selector).length === 1 && query.selector[primaryPath]) {
+    if (typeof query.selector[primaryPath] === 'string') {
+      return query.selector[primaryPath];
+    } else if (Object.keys(query.selector[primaryPath]).length === 1 && typeof query.selector[primaryPath].$eq === 'string') {
+      return query.selector[primaryPath].$eq;
+    }
+  }
+
+  return false;
 }
 
 function isInstanceOf(obj) {

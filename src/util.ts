@@ -1,4 +1,8 @@
-import type {BlobBuffer, DeepReadonlyObject, MaybeReadonly} from './types';
+import type {
+    BlobBuffer,
+    DeepReadonlyObject,
+    MaybeReadonly
+} from './types';
 import {
     default as deepClone
 } from 'clone';

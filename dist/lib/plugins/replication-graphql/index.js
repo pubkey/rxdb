@@ -802,7 +802,7 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
         for (var _iterator = _createForOfIteratorHelperLoose(docs), _step; !(_step = _iterator()).done;) {
           var doc = _step.value;
           var documentId = doc[_this11.collection.schema.primaryPath];
-          var deletedValue = doc[_this11.deletedFlag];
+          var deletedValue = !!doc[_this11.deletedFlag];
           doc._deleted = deletedValue;
           delete doc[_this11.deletedFlag];
           var docStateInLocalStorageInstance = docsFromLocal[documentId];

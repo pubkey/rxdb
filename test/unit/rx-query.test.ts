@@ -644,6 +644,50 @@ config.parallel('rx-query.test.js', () => {
             );
             c.database.destroy();
         });
+        it('.findOne(documentId) should use RxStorage().findDocumentsById() instead of RxStorage().query()', async () => {
+            const c = await humansCollection.create();
+            const docData = schemaObjects.simpleHuman();
+            const docId = 'foobar';
+            docData.passportId = docId;
+            await c.insert(docData);
+
+
+            // overwrite .query() to track the amount of calls
+            let queryCalls = 0;
+            const queryBefore = c.storageInstance.query.bind(c.storageInstance);
+            c.storageInstance.query = function (preparedQuery) {
+                queryCalls = queryCalls + 1;
+                console.log('query: ' + JSON.stringify(preparedQuery));
+                return queryBefore(preparedQuery);
+            };
+
+            /**
+             * None of these operations should lead to a call to .query()
+             */
+            const operations = [
+                () => c.findOne(docId).exec(true),
+                () => c.find({
+                    selector: {
+                        passportId: docId
+                    },
+                    limit: 1
+                }).exec(),
+                () => c.find({
+                    selector: {
+                        passportId: {
+                            $eq: docId
+                        }
+                    },
+                    limit: 1
+                }).exec()
+            ];
+            for (const operation of operations) {
+                await operation();
+            }
+
+            assert.strictEqual(queryCalls, 0);
+            c.database.destroy();
+        });
     });
     describe('update', () => {
         describe('positive', () => {

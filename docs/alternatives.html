@@ -879,10 +879,10 @@
     
         <li class="chapter " data-level="1.5.2.14" data-path="rx-collection.html">
             
-                <a href="rx-collection.html#sync">
+                <a href="rx-collection.html#synccouchdb">
             
                     
-                    sync()
+                    syncCouchDB()
             
                 </a>
             
@@ -891,6 +891,19 @@
         </li>
     
         <li class="chapter " data-level="1.5.2.15" data-path="rx-collection.html">
+            
+                <a href="rx-collection.html#syncgraphql">
+            
+                    
+                    syncGraphQL()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2.16" data-path="rx-collection.html">
             
                 <a href="rx-collection.html#remove">
             
@@ -903,7 +916,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.16" data-path="rx-collection.html">
+        <li class="chapter " data-level="1.5.2.17" data-path="rx-collection.html">
             
                 <a href="rx-collection.html#destroy">
             
@@ -916,7 +929,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.17" data-path="rx-collection.html">
+        <li class="chapter " data-level="1.5.2.18" data-path="rx-collection.html">
             
                 <a href="rx-collection.html#isrxcollection">
             
@@ -1750,7 +1763,7 @@
                                 <section class="normal markdown-section">
                                 
                                 <h1 id="alternatives-for-realtime-offline-first-javascript-applications">Alternatives for realtime offline-first JavaScript applications</h1>
-<p>To give you an augmented view over the topic of client side JavaScript databases, this page contains all known alternatives to <strong>RxDB</strong>. Remember that you read this inside of the RxDB documentation, so everything is <strong>opinionated</strong>.
+<p>To give you an augmented view over the topic of client side JavaScript databases, this page contains all known alternatives to <strong>RxDB</strong>. Remember that you are reading this inside of the RxDB documentation, so everything is <strong>opinionated</strong>.
 If you disagree with anything or think that something is missing, make a pull request to this file.</p>
 <h3 id="what-to-compare-with">What to compare with</h3>
 <p><a href="https://rxdb.info" target="_blank">RxDB</a> is an <strong>observable</strong>, <strong>replicating</strong>, <strong><a href="offline-first.html">offline first</a></strong>, <strong>JavaScript</strong> database. So it makes only sense to list similar projects as alternatives, not just any database or JavaScript store library. However, I will list up some projects that RxDB is often compared with, even if it only makes sense for some use cases.</p>
@@ -1777,7 +1790,7 @@ If you disagree with anything or think that something is missing, make a pull re
   <img src="files/alternatives/meteor_text.svg" alt="MeteorJS alternative" class="img-padding" height="60">
 </p>
 
-<p>Meteor (since 2012) is one of the oldest technologies for JavaScript realtime applications. Meteor is no a library but a whole framework with its own package manager, database management and replication protocol.
+<p>Meteor (since 2012) is one of the oldest technologies for JavaScript realtime applications. Meteor is not a library but a whole framework with its own package manager, database management and replication protocol.
 Because of how it works, it has proven to be hard to integrate it with other modern JavaScript frameworks like <a href="https://github.com/urigo/angular-meteor" target="_blank">angular</a>, vue.js or svelte.</p>
 <p>Meteor uses MongoDB in the backend and can replicate with a Minimongo database in the frontend.
 While testing, it has proven to be impossible to make a meteor app <strong>offline first</strong> capable. There are <a href="https://github.com/frozeman/meteor-persistent-minimongo2" target="_blank">some projects</a> that might do this, but all are unmaintained.</p>
@@ -1789,7 +1802,7 @@ Compared to RxDB, Minimongo has no concept of revisions or conflict handling, wh
   <img src="files/alternatives/watermelondb.png" alt="WatermelonDB alternative" height="60">
 </p>
 
-<p>WatermelonDB is a reactive &amp; asynchronous JavaScript database. While originally made for React and React Native, it can also be used with other JavaScript frameworks. The main goal of WatermelonDB is <strong>performance</strong> when having application with much data.
+<p>WatermelonDB is a reactive &amp; asynchronous JavaScript database. While originally made for React and React Native, it can also be used with other JavaScript frameworks. The main goal of WatermelonDB is <strong>performance</strong> within an application with lots of data.
 In React Native, WatermelonDB uses the provided SQLite database. In a browser, LokiJS can be used to store and query data.</p>
 <h3 id="aws-amplify">AWS Amplify</h3>
 <p align="center">
@@ -1798,7 +1811,7 @@ In React Native, WatermelonDB uses the provided SQLite database. In a browser, L
 
 <p>AWS Amplify is a collection of tools and libraries to develope web- and mobile frontend applications. Similar to firebase, it provides everything needed like authentication, analytics, a REST API, storage and so on. Everything hosted in the AWS Cloud, even when they state that <em>&quot;AWS Amplify is designed to be open and pluggable for any custom backend or service&quot;</em>. For realtime replication, AWS Amplify can connect to an AWS App-Sync GraphQL endpoint.</p>
 <h3 id="aws-datastore">AWS Datastore</h3>
-<p>Since december 2019 the Amplify library includes the AWS Datastore which is a document based, client side database that is able to replicate data via AWS AppSync in the background.
+<p>Since december 2019 the Amplify library includes the AWS Datastore which is a document-based, client side database that is able to replicate data via AWS AppSync in the background.
 The main difference to other projects is the complex project configuration via the amplify cli and the bit confusing query syntax that works over functions. Complex Queries with multiple <code>OR/AND</code> statements are not possible which might change in the future.
 Local development is hard because the AWS AppSync mock does not support realtime replication. It also is not really offline-first because a user login is always required.</p>
 <pre><code class="lang-ts"><span class="hljs-comment">// An AWS datastore OR query</span>
@@ -1827,13 +1840,13 @@ Rethink db is not a client side database, it streams data from the backend to th
 </p>
 
 
-<p>Supabase labels itself as &quot;<em>an open source Firebase alternative</em>&quot;. It is a collection of open source tools that together can mimic many of the firebase features, most of them by wrapping a PostgreSQL database. While it has realtime queries that run over the wire, like with RethinkDB, Supabase has no client side storage or replication feature and therefore is not offline first.</p>
+<p>Supabase labels itself as &quot;<em>an open source Firebase alternative</em>&quot;. It is a collection of open source tools that together mimic many Firebase features, most of them by providing a wrapper around a PostgreSQL database. While it has realtime queries that run over the wire, like with RethinkDB, Supabase has no client-side storage or replication feature and therefore is not offline first.</p>
 <h3 id="couchdb">CouchDB</h3>
 <p align="center">
   <img src="files/icons/couchdb-text.svg" alt="CouchDB alternative" height="60" class="img-padding">
 </p>
 
-<p>Apache CouchDB is a server side, document oriented database that is mostly known for its multi-master replication feature. Instead of having a master-slave replication, with CouchDB you can run replication in any constellation without having a master server as bottleneck where the server even can go off- and online at any time. This comes with the     drawback of having a slow replication with much network overhead.
+<p>Apache CouchDB is a server-side, document-oriented database that is mostly known for its multi-master replication feature. Instead of having a master-slave replication, with CouchDB you can run replication in any constellation without having a master server as bottleneck where the server even can go off- and online at any time. This comes with the drawback of having a slow replication with much network overhead.
 CouchDB has a changestream and a query syntax similar to MongoDB.</p>
 <h3 id="pouchdb">PouchDB</h3>
 <p align="center">
@@ -1846,7 +1859,7 @@ Because of the CouchDB compatibility, PouchDB has to do a lot of overhead in han
 RxDB was originally build around PouchDB until the storage layer was abstracted out in version <a href="https://github.com/pubkey/rxdb/blob/master/orga/releases/10.0.0.md" target="_blank">10.0.0</a> so it now allows to use different <code>RxStorage</code> implementations.</p>
 <h3 id="couchbase">Couchbase</h3>
 <p>Couchbase (originally known as Membase) is another NoSQL document database made for realtime applications.
-It uses the N1QL query language which is more SQL like compared to other NoSQL query languages. In theory you can replication a Couchbase with a PouchDB database, but this has shown to be not <a href="https://github.com/pouchdb/pouchdb/issues/7793#issuecomment-501624297" target="_blank">that easy</a>.</p>
+It uses the N1QL query language which is more SQL like compared to other NoSQL query languages. In theory you can achieve replication of a Couchbase with a PouchDB database, but this has shown to be not <a href="https://github.com/pouchdb/pouchdb/issues/7793#issuecomment-501624297" target="_blank">that easy</a>.</p>
 <h3 id="cloudant">Cloudant</h3>
 <p>Cloudant is a cloud-based service that is based on CouchDB and has mostly the same features.
 It was originally designed for cloud computing where data can automatically be distributed between servers. But it can also be used to replicate with frontend PouchDB instances to create scaleable web applications.
@@ -1854,7 +1867,7 @@ It was bought by IBM in 2014 and since 2018 the Cloudant Shared Plan is retired 
 <h3 id="hoodie">Hoodie</h3>
 <p>Hoodie is a backend solution that enables offline-first JavaScript frontend development without having to write backend code. Its main goal is to abstract away configuration into simple calls to the Hoodie API.
 It uses CouchDB in the backend and PouchDB in the frontend to enable offline-first capabilities.
-The last commit for hoodie was one year ago and the website (hood.ie) is offline which indicates it is no active project anymore.</p>
+The last commit for hoodie was one year ago and the website (hood.ie) is offline which indicates it is not an active project anymore.</p>
 <h3 id="lokijs">LokiJS</h3>
 <p>LokiJS is a JavaScript embeddable, in-memory database. And because everything is handled in-memory, LokiJS has awesome performance when mutating or querying data. You can still persist to a permanent storage (IndexedDB, Filesystem etc.) with one of the provided storage adapters. The persistence happens after a timeout is reached after a write, or before the JavaScript process exits. This also means you could loose data when the JavaScript process exits ungracefully like when the power of the device is shut down or the browser crashes.
 While the project is not that active anymore, it is more <em>finished</em> then <em>unmaintained</em>.</p>
@@ -1865,17 +1878,17 @@ While the project is not that active anymore, it is more <em>finished</em> then 
 <h3 id="sqljs">sql.js</h3>
 <p>sql.js is a javascript library to run SQLite on the web. It uses a virtual database file stored in memory and does not have any persistence. All data is lost once the JavaScript process exits. sql.js is created by compiling SQLite to WebAssembly so it has about the same features as SQLite. For older browsers there is a JavaScript fallback.</p>
 <h3 id="absurd-sql">absurd-sQL</h3>
-<p>Absurd-sql is a project that implements an IndexedDB based persistence for sql.js. Instead of directly writing data into the IndexedDB, it treats IndexedDB like a disk and stores data in blocks there which shows to have a much better performance, mostly because of how <a href="slow-indexeddb.html">performance expensive</a> IndexedDB transactions are.</p>
+<p>Absurd-sql is a project that implements an IndexedDB-based persistence for sql.js. Instead of directly writing data into the IndexedDB, it treats IndexedDB like a disk and stores data in blocks there which shows to have a much better performance, mostly because of how <a href="slow-indexeddb.html">performance expensive</a> IndexedDB transactions are.</p>
 <h3 id="nedb">NeDB</h3>
 <p>NeDB was a embedded persistent or in-memory database for Node.js, nw.js, Electron and browsers.
-It is document oriented and had the same query syntax as MongoDB. 
+It is document-oriented and had the same query syntax as MongoDB. 
 Like LokiJS it has persistence adapters for IndexedDB etc. to persist the database state on the disc.
 The last commit to NeDB was in <strong>2016</strong>.</p>
 <h3 id="dexiejs">Dexie.js</h3>
 <p>Dexie.js is a minimalistic wrapper for IndexedDB. While providing a better API then plain IndexedDB, Dexie also improves performance by batching transactions and other optimizations. It also ads additional non-IndexedDB features like observable queries or multi tab support or react hooks.
 Dexie.js is used by Whatsapp Web, Microsoft To Do and Github Desktop.</p>
 <h3 id="mongodb-realm">MongoDB Realm</h3>
-<p>Originally Realm was a mobile database for android and iOS. Later they added support for other languages and runtimes, also for JavaScript. 
+<p>Originally Realm was a mobile database for Android and iOS. Later they added support for other languages and runtimes, also for JavaScript. 
 It was meant as replacement for SQLite but is more like an object store then a full SQL database.
 In 2019 MongoDB bought Realm and changed the projects focus.
 Now Realm is made for replication with the MongoDB Realm Sync based on the MongoDB Atlas Cloud platform.</p>
@@ -1930,7 +1943,7 @@ Now Realm is made for replication with the MongoDB Realm Sync based on the Mongo
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Alternatives","level":"2.2.5","depth":2,"next":{"title":"Questions & Answers","level":"2.3","depth":1,"path":"questions-answers.md","ref":"./questions-answers.md","articles":[]},"previous":{"title":"Why NoSQL","level":"2.2.4","depth":2,"path":"why-nosql.md","ref":"./why-nosql.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"alternatives.md","mtime":"2022-01-22T02:12:40.582Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-01-22T02:16:44.800Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Alternatives","level":"2.2.5","depth":2,"next":{"title":"Questions & Answers","level":"2.3","depth":1,"path":"questions-answers.md","ref":"./questions-answers.md","articles":[]},"previous":{"title":"Why NoSQL","level":"2.2.4","depth":2,"path":"why-nosql.md","ref":"./why-nosql.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"alternatives.md","mtime":"2022-01-28T20:42:33.654Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-01-28T20:47:00.086Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
