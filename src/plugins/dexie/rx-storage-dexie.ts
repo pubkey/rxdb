@@ -37,25 +37,6 @@ export const RxStorageDexieStatics: RxStorageStatics = {
         mutateableQuery: MangoQuery<RxDocType>
     ) {
         const primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
-        if (Object.keys(mutateableQuery.selector).length > 0) {
-            mutateableQuery.selector = {
-                $and: [
-                    {
-                        _deleted: {
-                            $ne: true
-                        }
-                    },
-                    mutateableQuery.selector
-                ]
-            };
-        } else {
-            mutateableQuery.selector = {
-                _deleted: {
-                    $ne: true
-                }
-            };
-        }
-
         /**
          * To ensure a deterministic sorting,
          * we have to ensure the primary key is always part

@@ -21,8 +21,6 @@ import {
 } from '../../util';
 import {
     closeDexieDb,
-    DEXIE_CHANGES_TABLE_NAME,
-    DEXIE_DOCS_TABLE_NAME,
     getDexieDbWithTables,
     getDexieEventKey,
     stripDexieKey
@@ -228,7 +226,7 @@ export async function createDexieKeyObjectStorageInstance(
     params: RxKeyObjectStorageInstanceCreationParams<DexieSettings>,
     settings: DexieSettings
 ): Promise<RxStorageKeyObjectInstanceDexie> {
-    const dexieDb = getDexieDbWithTables(
+    const internals = getDexieDbWithTables(
         params.databaseName,
         params.collectionName,
         settings,
@@ -239,15 +237,6 @@ export async function createDexieKeyObjectStorageInstance(
             properties: {}
         }
     );
-
-    const dexieTable = (dexieDb as any)[DEXIE_DOCS_TABLE_NAME];
-    const dexieChangesTable = (dexieDb as any)[DEXIE_CHANGES_TABLE_NAME];
-
-    const internals: DexieStorageInternals = {
-        dexieDb,
-        dexieTable,
-        dexieChangesTable
-    };
 
     const instance = new RxStorageKeyObjectInstanceDexie(
         storage,

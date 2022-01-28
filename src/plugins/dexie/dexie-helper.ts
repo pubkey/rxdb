@@ -4,7 +4,9 @@ import type {
 import mingo from 'mingo';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import type {
+    DexieStorageInternals,
     MangoQuery,
+    RxDocumentData,
     RxJsonSchema
 } from '../../types';
 import { Dexie } from 'dexie';
@@ -12,6 +14,7 @@ import { DexieSettings } from '../../types';
 import { flatClone } from '../../util';
 
 export const DEXIE_DOCS_TABLE_NAME = 'docs';
+export const DEXIE_DELETED_DOCS_TABLE_NAME = 'deleted-docs';
 export const DEXIE_CHANGES_TABLE_NAME = 'changes';
 
 
@@ -22,7 +25,8 @@ export function getDexieDbWithTables(
     collectionName: string,
     settings: DexieSettings,
     schema: RxJsonSchema<any>
-): Dexie {
+): DexieStorageInternals {
+    const primaryPath: string = getPrimaryFieldOfPrimaryKey(schema.primaryKey) as any;
     const dexieDbName = databaseName + '----' + collectionName;
     let db = DEXIE_DB_BY_NAME.get(dexieDbName);
     if (!db) {
@@ -34,12 +38,26 @@ export function getDexieDbWithTables(
         db = new Dexie(dexieDbName, settings);
         db.version(1).stores({
             [DEXIE_DOCS_TABLE_NAME]: getDexieStoreSchema(schema),
-            [DEXIE_CHANGES_TABLE_NAME]: '++sequence, id'
+            [DEXIE_CHANGES_TABLE_NAME]: '++sequence, id',
+            /**
+             * Instead of adding {deleted: false} to every query we run over the document store,
+             * we move deleted documents into a separate store where they can only be queried
+             * by primary key.
+             * This increases performance because it is way easier for the query planner to select
+             * a good index and we also do not have to add the _deleted field to every index.
+             */
+            [DEXIE_DELETED_DOCS_TABLE_NAME]: primaryPath + ',$lastWriteAt'
         });
         DEXIE_DB_BY_NAME.set(dexieDbName, db);
         REF_COUNT_PER_DEXIE_DB.set(db, 0);
     }
-    return db;
+
+    return {
+        dexieDb: db,
+        dexieTable: (db as any)[DEXIE_DOCS_TABLE_NAME],
+        dexieDeletedTable: (db as any)[DEXIE_DELETED_DOCS_TABLE_NAME],
+        dexieChangesTable: (db as any)[DEXIE_CHANGES_TABLE_NAME]
+    }
 }
 
 export function closeDexieDb(db: Dexie) {
@@ -145,4 +163,29 @@ export function stripDexieKey<T>(docData: T & { $lastWriteAt?: number; }): T {
     const cloned = flatClone(docData);
     delete cloned.$lastWriteAt;
     return cloned;
+}
+
+
+/**
+ * Returns all documents in the database.
+ * Non-deleted plus deleted ones.
+ */
+export async function getDocsInDb<RxDocType>(
+    internals: DexieStorageInternals,
+    docIds: string[]
+): Promise<RxDocumentData<RxDocType>[]> {
+    const [
+        nonDeletedDocsInDb,
+        deletedDocsInDb
+    ] = await Promise.all([
+        internals.dexieTable.bulkGet(docIds),
+        internals.dexieDeletedTable.bulkGet(docIds)
+    ]);
+    const docsInDb = deletedDocsInDb.slice(0);
+    nonDeletedDocsInDb.forEach((doc, idx) => {
+        if (doc) {
+            docsInDb[idx] = doc;
+        }
+    });
+    return docsInDb;
 }
