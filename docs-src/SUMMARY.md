@@ -107,6 +107,8 @@
 
 * [LeaderElection](./leader-election.md)
 
+* [RxStorage Dexie.js](./rx-storage-dexie.md)
+
 * [RxStorage LokiJS](./rx-storage-lokijs.md)
 
 * [RxStorage Worker](./rx-storage-worker.md)

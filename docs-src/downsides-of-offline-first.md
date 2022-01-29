@@ -102,7 +102,7 @@ With offline first applications, it is even more fun. You do not only have to mi
 
 When you create a web based offline first app, you cannot store data directly on the users filesystem. In fact there are many layers between your JavaScript code and the filesystem of the operation system. Let's say you insert a document in [RxDB](https://github.com/pubkey/rxdb):
   - You call the RxDB API to validate and store the data
-  - RxDB calls the underlying RxStorage, which is PouchDB for most cases
+  - RxDB calls the underlying RxStorage, for example PouchDB.
   - Pouchdb calls its underlying storage adapter
   - The storage adapter calls IndexedDB
   - The browser runs its internal handling of the IndexedDB API

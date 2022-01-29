@@ -439,10 +439,7 @@ function shouldShortCircuit(selector: any) {
     // just like the http adapter (couchdb) and mongodb
     // see tests for issue #7810
 
-    // @todo Use 'Object.values' when Node.js v6 support is dropped.
-    const values = Object.keys(selector).map(function (key) {
-        return selector[key];
-    });
+    const values = Object.values(selector);
     return values.some(function (val) {
         return typeof val === 'object' && Object.keys(val).length === 0;
     });

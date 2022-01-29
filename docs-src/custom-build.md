@@ -17,8 +17,7 @@ import {
 
 ## PouchDB storage
 
-To call `createRxDatabase` you have to specify the storage engine which is used to store documents and run queries.
-The pouchdb plugin contains everything needed to use [PouchDB](https://github.com/pouchdb/pouchdb) as underlaying storage engine. PouchDB itself works on so called `adapter` that determine where the data is stored.
+To call `createRxDatabase` you have to specify the `RxStorage` implementation which is used to store documents and run queries.
 
 ```javascript
 import { 
@@ -39,10 +38,11 @@ const db = await createRxDatabase({
     storage: getRxStoragePouch('idb'),
     password: 'myLongAndStupidPassword'
 });
-
-// In the pouchdb plugin also there is the method to check if a given pouchdb-adapter works
-await checkAdapter('leveldb'); // > boolean
 ```
+
+## Dexie.js storage
+
+Another storage implementation that uses Dexie.js to handle the data. [See here for more information about the Dexie.js storage.](./rx-storage-dexie.md).
 
 ## LokiJS storage
 

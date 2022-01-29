@@ -1,6 +1,6 @@
 import { getPrimaryFieldOfPrimaryKey } from '../../../rx-schema';
 import type { MangoQuery, PreparedQuery, RxJsonSchema, RxStorageQueryResult } from '../../../types';
-import { clone, ensureNotFalsy, promiseWait } from '../../../util';
+import { clone, ensureNotFalsy } from '../../../util';
 import { pouchSwapIdToPrimaryString } from '../../pouchdb';
 import { preparePouchDbQuery } from '../../pouchdb/pouch-statics';
 import { DEXIE_DOCS_TABLE_NAME, stripDexieKey } from '../dexie-helper';
@@ -129,11 +129,6 @@ export async function dexieQuery<RxDocType>(
         (state.dexieDb as any)._options.IDBKeyRange
     );
 
-    /**
-     * TODO I am not sure why we need this await to pass the test suite.
-     */
-    await promiseWait(0);
-
     const queryPlanFields: string[] = queryPlan.index.def.fields
         .map((fieldObj: any) => Object.keys(fieldObj)[0])
         .map((field: any) => pouchSwapIdToPrimaryString(instance.primaryPath, field));
@@ -147,7 +142,7 @@ export async function dexieQuery<RxDocType>(
      */
     const sortFieldsSameAsIndexFields = queryPlanFields.join(',') === sortFields.join(',');
     /**
-     * Also sort if one part of the sort is in descending order
+     * Also manually sort if one part of the sort is in descending order
      * because all our indexes are ascending.
      * TODO should we be able to define descending indexes?
      */

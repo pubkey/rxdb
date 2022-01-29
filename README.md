@@ -345,7 +345,7 @@ By setting a schema-field to `encrypted`, the value of this field will be stored
 <summary>
   <b>Adapters and Storage</b>
   <p>
-    RxDB is not a self contained database. It is a wrapper arround another database that implements the `RxStorage` interface. At the moment you can either use PouchDB or <a href="https://rxdb.info/rx-storage-lokijs.html">LokiJS</a> as underlaying storage. Each of them respectively has it's own adapters that can be swapped out, depending on your needs. For example you can use and IndexedDB based storage in the browser, and an SQLite storage in your hybrid app.
+    RxDB is not a self contained database. It is a wrapper arround another database that implements the `RxStorage` interface. At the moment you can either use PouchDB or <a href="https://rxdb.info/rx-storage-dexie.html">Dexie.js</a> or <a href="https://rxdb.info/rx-storage-lokijs.html">LokiJS</a> as underlaying storage. Each of them respectively has it's own adapters that can be swapped out, depending on your needs. For example you can use and IndexedDB based storage in the browser, and an SQLite storage in your hybrid app.
   </p>
 
 </summary>

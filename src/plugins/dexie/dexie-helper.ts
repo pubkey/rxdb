@@ -165,7 +165,7 @@ export function getDexieStoreSchema(
     const primaryKey: string = getPrimaryFieldOfPrimaryKey(rxJsonSchema.primaryKey) as string;
     parts.push([primaryKey]);
 
-    // TODO add other indexes
+    // add other indexes
     if (rxJsonSchema.indexes) {
         rxJsonSchema.indexes.forEach(index => {
             const arIndex = Array.isArray(index) ? index : [index];

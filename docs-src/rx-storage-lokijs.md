@@ -1,6 +1,6 @@
 # RxStorage LokiJS
 
-Instead of using PouchDB as underlying storage engine, you can also use [LokiJS](https://github.com/techfort/LokiJS).
+Instead of using PouchDB or [Dexie.js](./rx-storage-dexie.md) as underlying storage engine, you can also use [LokiJS](https://github.com/techfort/LokiJS).
 LokiJS has the main benefit of having a better performance. It can do this because it is an **in-memory** database that processes all data in memory and only saves to disc when the app is closed or an interval is reached.
 
 
@@ -13,10 +13,11 @@ LokiJS has the main benefit of having a better performance. It can do this becau
 
 ### Cons
 
-- It does not support CouchDB replication, only GraphQL replication.
-- It does not support attachments.
+- Does not support CouchDB replication. 
+- It does not support attachments. (Make a pull request)
 - Data can be lost when the JavaScript process is killed ungracefully like when the browser crashes or the power of the PC is terminated.
 - All data must fit into the memory.
+- Slow initialisation time when used with `multiInstance: true` because it has to await the leader election process.
 
 
 ## Usage
