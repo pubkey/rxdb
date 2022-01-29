@@ -13,9 +13,7 @@ import {
     flatClone,
     now,
     randomCouchString,
-    PROMISE_RESOLVE_VOID,
-    promiseWait,
-    ensureNotFalsy
+    PROMISE_RESOLVE_VOID
 } from '../../util';
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
@@ -30,24 +28,21 @@ import type {
     BlobBuffer,
     ChangeStreamOnceOptions,
     RxJsonSchema,
-    MangoQuery,
     RxStorageChangedDocumentMeta,
     RxStorageInstanceCreationParams,
     EventBulk,
     PreparedQuery
 } from '../../types';
 import { DexieSettings, DexieStorageInternals } from '../../types/plugins/dexie';
-import { RxStorageDexie, RxStorageDexieStatics } from './rx-storage-dexie';
+import { RxStorageDexie } from './rx-storage-dexie';
 import {
     closeDexieDb,
-    DEXIE_DOCS_TABLE_NAME,
     getDexieDbWithTables,
     getDexieEventKey,
     getDocsInDb,
     stripDexieKey
 } from './dexie-helper';
-import { getDexieKeyRange } from './query/dexie-query';
-import { pouchSwapIdToPrimaryString } from '../pouchdb';
+import { dexieQuery } from './query/dexie-query';
 
 let instanceId = now();
 
@@ -439,150 +434,11 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         return ret;
     }
 
-    /**
-     * TODO atm we run over the whole store to retrieve the matching documents.
-     * We should use a query planner like pouchdb has and then only iterate
-     * over the best index and between the keys.
-     */
-    async query(preparedQuery: PreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>> {
-        const state = await this.internals;
-        const queryMatcher = RxStorageDexieStatics.getQueryMatcher(
-            this.schema,
+    query(preparedQuery: PreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>> {
+        return dexieQuery(
+            this,
             preparedQuery
         );
-        const sortComparator = RxStorageDexieStatics.getSortComparator(this.schema, preparedQuery);
-
-        const queryPlan = (preparedQuery as any).pouchQueryPlan;
-        const keyRange = getDexieKeyRange(
-            queryPlan,
-            Number.NEGATIVE_INFINITY,
-            (state.dexieDb as any)._maxKey,
-            (state.dexieDb as any)._options.IDBKeyRange
-        );
-
-
-
-        /**
-         * TODO I am not sure why we need this await to pass the test suite.
-         */
-        await promiseWait(0);
-
-        const queryPlanFields: string[] = queryPlan.index.def.fields
-            .map((fieldObj: any) => Object.keys(fieldObj)[0])
-            .map((field: any) => pouchSwapIdToPrimaryString(this.primaryPath, field));
-
-        const sortFields = ensureNotFalsy((preparedQuery as MangoQuery<RxDocType>).sort)
-            .map(sortPart => Object.keys(sortPart)[0]);
-
-        //console.log('testKeyRange:');
-        //const testKeyRange = (state.dexieDb as any)._options.IDBKeyRange.lowerBound('', true);
-        //console.dir(testKeyRange);
-
-
-        let rows: any[] = [];
-        await state.dexieDb.transaction(
-            'r',
-            state.dexieTable,
-            async (dexieTx) => {
-                const tx = (dexieTx as any).idbtrans;
-                // const nativeIndexedDB = state.dexieDb.backendDB();
-                // const trans = nativeIndexedDB.transaction([DEXIE_DOCS_TABLE_NAME], 'readonly');
-                const store = tx.objectStore(DEXIE_DOCS_TABLE_NAME);
-                let index: any;
-                if (
-                    queryPlanFields.length === 1 &&
-                    queryPlanFields[0] === this.primaryPath
-                ) {
-                    index = store;
-                } else {
-                    let indexName: string;
-                    if (queryPlanFields.length === 1) {
-                        indexName = queryPlanFields[0];
-                    } else {
-                        indexName = '[' + queryPlanFields.join('+') + ']';
-                    }
-                    index = store.index(indexName);
-                }
-
-
-                const cursorReq = index.openCursor(keyRange);
-                await new Promise<void>(res => {
-                    cursorReq.onsuccess = function (e: any) {
-                        const cursor = e.target.result;
-                        if (cursor) {
-                            // We have a record in cursor.value
-                            const docData = cursor.value;
-                            if (
-                                queryMatcher(docData)
-                            ) {
-                                rows.push(cursor.value);
-                            }
-                            cursor.continue();
-                        } else {
-                            // Iteration complete
-                            res();
-                        }
-                    };
-                });
-
-
-            }
-        );
-
-        /**
-         * If the cursor iterated over the same index that
-         * would be used for sorting, we do not have to sort the results.
-         */
-        const sortFieldsSameAsIndexFields = queryPlanFields.join(',') === sortFields.join(',');
-        /**
-         * Also sort if one part of the sort is in descending order
-         * because all our indexes are ascending.
-         * TODO should we be able to define descending indexes?
-         */
-        const isOneSortDescending = preparedQuery.sort.find((sortPart: any) => Object.values(sortPart)[0] === 'desc');
-        if (
-            isOneSortDescending ||
-            !sortFieldsSameAsIndexFields
-        ) {
-            rows = rows.sort(sortComparator);
-        }
-
-
-
-
-        if (preparedQuery.skip) {
-            rows = rows.slice(preparedQuery.skip);
-        }
-        if (preparedQuery.limit && rows.length > preparedQuery.limit) {
-            rows = rows.slice(0, preparedQuery.limit);
-        }
-
-        /**
-         * Strip internal keys as last operation
-         * so it has to run over less documents.
-         */
-        rows = rows
-            .map(docData => stripDexieKey(docData))
-
-
-        /**
-         * Comment this in for debugging to check all fields in the database.
-         */
-        // const docsInDb = await state.dexieTable.filter(queryMatcher).toArray();
-        // let documents = docsInDb
-        //     .map(docData => stripDexieKey(docData))
-        //     .sort(sortComparator);
-        // if (preparedQuery.skip) {
-        //     documents = documents.slice(preparedQuery.skip);
-        // }
-        // if (preparedQuery.limit && documents.length > preparedQuery.limit) {
-        //     documents = documents.slice(0, preparedQuery.limit);
-        // }
-
-
-        return {
-            documents: rows
-        };
     }
 
     async getChangedDocuments(
