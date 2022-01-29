@@ -81,23 +81,29 @@ function externaliseRecord(idbDoc: any) {
  * The first key is always 0, as that's how we're filtering out deleted entries.
  */
 export function generateKeyRange(
-    opts: any, 
+    opts: any,
     IDBKeyRange: any,
     low: any = IDB_COLLATE_LO,
     height: any = IDB_COLLATE_HI
-    ) {
+) {
     function defined(obj: any, k: string) {
         return obj[k] !== void 0;
     }
 
     // Converts a valid CouchDB key into a valid IndexedDB one
     function convert(key: any, exact?: any) {
-        // The first item in every native index is doc.deleted, and we always want
-        // to only search documents that are not deleted.
-        // "foo" -> [0, "foo"]
-        const filterDeleted = [0].concat(key);
 
-        return filterDeleted.map(function (k) {
+
+
+        /**
+         * Overwritten.
+         * In dexie.js we store deleted documents at another
+         * table.
+         * So we do not have to filter for deleted ones.
+         */
+        const filterDeleted = [key];
+
+        const ret = filterDeleted.map(function (k) {
             // null, true and false are not indexable by indexeddb. When we write
             // these values we convert them to these constants, and so when we
             // query for them we need to convert the query also.
@@ -123,6 +129,16 @@ export function generateKeyRange(
 
             return k;
         });
+
+        /**
+         * Because we do not have to index over the deleted field,
+         * we sometimes have only one key.
+         */
+        if (ret.length === 1) {
+            return ret[0];
+        } else {
+            return ret;
+        }
     }
 
     // CouchDB and so PouchdB defaults to true. We need to make this explicit as
@@ -164,6 +180,7 @@ export function generateKeyRange(
 
         if (defined(opts, 'startkey') && defined(opts, 'endkey')) {
             console.log('-- 4');
+            console.dir(opts);
             return IDBKeyRange.bound(
                 convert(opts.startkey), convert(opts.endkey),
                 !opts.inclusive_start, !opts.inclusive_end

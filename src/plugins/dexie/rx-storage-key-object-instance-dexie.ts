@@ -48,6 +48,7 @@ export class RxStorageKeyObjectInstanceDexie implements RxStorageKeyObjectInstan
     async bulkWrite<RxDocType>(
         documentWrites: BulkWriteLocalRow<RxDocType>[]
     ): Promise<RxLocalStorageBulkWriteResponse<RxDocType>> {
+        const state = await this.internals;
         const ret: RxLocalStorageBulkWriteResponse<RxDocType> = {
             success: {},
             error: {}
@@ -58,12 +59,12 @@ export class RxStorageKeyObjectInstanceDexie implements RxStorageKeyObjectInstan
         };
         const documentKeys: string[] = documentWrites.map(writeRow => writeRow.document._id);
         const bulkPutData: any[] = [];
-        await this.internals.dexieDb.transaction(
+        await state.dexieDb.transaction(
             'rw',
-            this.internals.dexieTable,
+            state.dexieTable,
             async () => {
                 const startTime = now();
-                const docsInDb = await this.internals.dexieTable.bulkGet(documentKeys);
+                const docsInDb = await state.dexieTable.bulkGet(documentKeys);
 
                 const successDocs: {
                     writeRow: BulkWriteLocalRow<RxDocType>;
@@ -112,7 +113,7 @@ export class RxStorageKeyObjectInstanceDexie implements RxStorageKeyObjectInstan
                     });
                 });
 
-                await this.internals.dexieTable.bulkPut(bulkPutData);
+                await state.dexieTable.bulkPut(bulkPutData);
                 const endTime = now();
 
                 successDocs.forEach(sucessRow => {
@@ -187,8 +188,9 @@ export class RxStorageKeyObjectInstanceDexie implements RxStorageKeyObjectInstan
     async findLocalDocumentsById<RxDocType = any>(
         ids: string[]
     ): Promise<{ [documentId: string]: RxLocalDocumentData<RxDocType> }> {
+        const state = await this.internals;
         const ret: { [documentId: string]: RxLocalDocumentData<RxDocType> } = {};
-        const docsInDb = await this.internals.dexieTable.bulkGet(ids);
+        const docsInDb = await state.dexieTable.bulkGet(ids);
         ids.forEach((id, idx) => {
             const documentInDb = docsInDb[idx];
             if (
@@ -208,13 +210,14 @@ export class RxStorageKeyObjectInstanceDexie implements RxStorageKeyObjectInstan
     async close(): Promise<void> {
         this.closed = true;
         this.changes$.complete();
-        closeDexieDb(this.internals.dexieDb);
+        closeDexieDb(this.internals);
     }
 
     async remove(): Promise<void> {
+        const state = await this.internals;
         await Promise.all([
-            this.internals.dexieChangesTable.clear(),
-            this.internals.dexieTable.clear()
+            state.dexieChangesTable.clear(),
+            state.dexieTable.clear()
         ]);
         return this.close();
     }

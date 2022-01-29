@@ -21,7 +21,10 @@ import {
 const COLLATE_LO = null;
 
 // couchdb highest collation value (TODO: well not really, but close enough amirite)
-const COLLATE_HI = { '\uffff': {} };
+// const COLLATE_HI = { '\uffff': {} };
+// overwritten COLLATE_HI for dexie.js RxStorage.
+const COLLATE_HI = '\uffff';
+
 
 const SHORT_CIRCUIT_QUERY = {
     queryOpts: { limit: 0, startkey: COLLATE_HI, endkey: COLLATE_LO },

@@ -68,20 +68,20 @@ export function getPouchQueryPlan<RxDocType>(
         clone(query)
     );
 
-    console.log('pouchdbCompatibleQuery:');
-    console.dir(pouchdbCompatibleQuery);
-    console.log('pouchCompatibleIndexes:');
-    console.log(JSON.stringify(pouchCompatibleIndexes, null, 4));
+    // console.log('pouchdbCompatibleQuery:');
+    // console.dir(pouchdbCompatibleQuery);
+    // console.log('pouchCompatibleIndexes:');
+    // console.log(JSON.stringify(pouchCompatibleIndexes, null, 4));
 
     const pouchQueryPlan = planQuery(
         pouchdbCompatibleQuery,
         pouchCompatibleIndexes
     );
-    console.log('queryPlan:');
-    console.log(JSON.stringify(pouchQueryPlan, null, 4));
-    console.log('---------------------------------------------------------');
-    console.log('---------------------------------------------------------');
-    console.log('---------------------------------------------------------');
+    // console.log('queryPlan:');
+    // console.log(JSON.stringify(pouchQueryPlan, null, 4));
+    // console.log('---------------------------------------------------------');
+    // console.log('---------------------------------------------------------');
+    // console.log('---------------------------------------------------------');
 
     return pouchQueryPlan;
 }

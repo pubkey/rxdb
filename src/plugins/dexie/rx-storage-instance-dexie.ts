@@ -13,7 +13,8 @@ import {
     flatClone,
     now,
     randomCouchString,
-    PROMISE_RESOLVE_VOID
+    PROMISE_RESOLVE_VOID,
+    promiseWait
 } from '../../util';
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
@@ -38,12 +39,14 @@ import { DexieSettings, DexieStorageInternals } from '../../types/plugins/dexie'
 import { RxStorageDexie, RxStorageDexieStatics } from './rx-storage-dexie';
 import {
     closeDexieDb,
+    DEXIE_DOCS_TABLE_NAME,
     getDexieDbWithTables,
     getDexieEventKey,
     getDocsInDb,
     stripDexieKey
 } from './dexie-helper';
 import { getDexieKeyRange } from './query/dexie-query';
+import { pouchSwapIdToPrimaryString } from '../pouchdb';
 
 let instanceId = now();
 
@@ -75,11 +78,13 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
      * changed since sequence X.
      */
     private async addChangeDocumentsMeta(ids: string[]) {
+        const state = await this.internals;
         const addDocs = ids.map(id => ({ id }));
-        return this.internals.dexieChangesTable.bulkPut(addDocs);
+        return state.dexieChangesTable.bulkPut(addDocs);
     }
 
     async bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>> {
+        const state = await this.internals;
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
             success: {},
             error: {}
@@ -90,11 +95,11 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         };
 
         const documentKeys: string[] = documentWrites.map(writeRow => writeRow.document[this.primaryPath] as any);
-        await this.internals.dexieDb.transaction(
+        await state.dexieDb.transaction(
             'rw',
-            this.internals.dexieTable,
-            this.internals.dexieDeletedTable,
-            this.internals.dexieChangesTable,
+            state.dexieTable,
+            state.dexieDeletedTable,
+            state.dexieChangesTable,
             async () => {
                 const docsInDb = await getDocsInDb<RxDocType>(this.internals, documentKeys);
 
@@ -257,10 +262,10 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                 });
 
                 await Promise.all([
-                    bulkPutDocs.length > 0 ? this.internals.dexieTable.bulkPut(bulkPutDocs) : PROMISE_RESOLVE_VOID,
-                    bulkRemoveDocs.length > 0 ? this.internals.dexieTable.bulkDelete(bulkRemoveDocs) : PROMISE_RESOLVE_VOID,
-                    bulkPutDeletedDocs.length > 0 ? this.internals.dexieDeletedTable.bulkPut(bulkPutDeletedDocs) : PROMISE_RESOLVE_VOID,
-                    bulkRemoveDeletedDocs.length > 0 ? this.internals.dexieDeletedTable.bulkDelete(bulkRemoveDeletedDocs) : PROMISE_RESOLVE_VOID,
+                    bulkPutDocs.length > 0 ? state.dexieTable.bulkPut(bulkPutDocs) : PROMISE_RESOLVE_VOID,
+                    bulkRemoveDocs.length > 0 ? state.dexieTable.bulkDelete(bulkRemoveDocs) : PROMISE_RESOLVE_VOID,
+                    bulkPutDeletedDocs.length > 0 ? state.dexieDeletedTable.bulkPut(bulkPutDeletedDocs) : PROMISE_RESOLVE_VOID,
+                    bulkRemoveDeletedDocs.length > 0 ? state.dexieDeletedTable.bulkDelete(bulkRemoveDeletedDocs) : PROMISE_RESOLVE_VOID,
                     changesIds.length > 0 ? this.addChangeDocumentsMeta(changesIds) : PROMISE_RESOLVE_VOID
                 ]);
             });
@@ -273,16 +278,17 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
     }
 
     async bulkAddRevisions(documents: RxDocumentData<RxDocType>[]): Promise<void> {
+        const state = await this.internals;
         const eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>> = {
             id: randomCouchString(10),
             events: []
         };
         const documentKeys: string[] = documents.map(writeRow => writeRow[this.primaryPath] as any);
-        await this.internals.dexieDb.transaction(
+        await state.dexieDb.transaction(
             'rw',
-            this.internals.dexieTable,
-            this.internals.dexieDeletedTable,
-            this.internals.dexieChangesTable,
+            state.dexieTable,
+            state.dexieDeletedTable,
+            state.dexieChangesTable,
             async () => {
                 const docsInDb = await getDocsInDb<RxDocType>(this.internals, documentKeys);
 
@@ -388,10 +394,10 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                     }
                 });
                 await Promise.all([
-                    bulkPutDocs.length > 0 ? this.internals.dexieTable.bulkPut(bulkPutDocs) : PROMISE_RESOLVE_VOID,
-                    bulkRemoveDocs.length > 0 ? this.internals.dexieTable.bulkDelete(bulkRemoveDocs) : PROMISE_RESOLVE_VOID,
-                    bulkPutDeletedDocs.length > 0 ? this.internals.dexieDeletedTable.bulkPut(bulkPutDeletedDocs) : PROMISE_RESOLVE_VOID,
-                    bulkRemoveDeletedDocs.length > 0 ? this.internals.dexieDeletedTable.bulkDelete(bulkRemoveDeletedDocs) : PROMISE_RESOLVE_VOID,
+                    bulkPutDocs.length > 0 ? state.dexieTable.bulkPut(bulkPutDocs) : PROMISE_RESOLVE_VOID,
+                    bulkRemoveDocs.length > 0 ? state.dexieTable.bulkDelete(bulkRemoveDocs) : PROMISE_RESOLVE_VOID,
+                    bulkPutDeletedDocs.length > 0 ? state.dexieDeletedTable.bulkPut(bulkPutDeletedDocs) : PROMISE_RESOLVE_VOID,
+                    bulkRemoveDeletedDocs.length > 0 ? state.dexieDeletedTable.bulkDelete(bulkRemoveDeletedDocs) : PROMISE_RESOLVE_VOID,
                     this.addChangeDocumentsMeta(changesIds)
                 ]);
             });
@@ -405,18 +411,19 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         ids: string[],
         deleted: boolean
     ): Promise<{ [documentId: string]: RxDocumentData<RxDocType> }> {
+        const state = await this.internals;
         const ret: { [documentId: string]: RxDocumentData<RxDocType> } = {};
 
-        await this.internals.dexieDb.transaction(
+        await state.dexieDb.transaction(
             'r',
-            this.internals.dexieTable,
-            this.internals.dexieDeletedTable,
+            state.dexieTable,
+            state.dexieDeletedTable,
             async () => {
                 let docsInDb: RxDocumentData<RxDocType>[];
                 if (deleted) {
                     docsInDb = await getDocsInDb<RxDocType>(this.internals, ids);
                 } else {
-                    docsInDb = await this.internals.dexieTable.bulkGet(ids)
+                    docsInDb = await state.dexieTable.bulkGet(ids)
                 }
                 ids.forEach((id, idx) => {
                     const documentInDb = docsInDb[idx];
@@ -437,23 +444,83 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
      * over the best index and between the keys.
      */
     async query(preparedQuery: PreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>> {
+        const state = await this.internals;
         const queryMatcher = RxStorageDexieStatics.getQueryMatcher(
             this.schema,
             preparedQuery
         );
         const sortComparator = RxStorageDexieStatics.getSortComparator(this.schema, preparedQuery);
 
+        const queryPlan = (preparedQuery as any).pouchQueryPlan;
         const keyRange = getDexieKeyRange(
-            (preparedQuery as any).pouchQueryPlan,
+            queryPlan,
             Number.NEGATIVE_INFINITY,
-            (this.internals.dexieDb as any)._maxKey,
-            (this.internals.dexieDb as any)._options.IDBKeyRange
+            (state.dexieDb as any)._maxKey,
+            (state.dexieDb as any)._options.IDBKeyRange
         );
-        console.dir(keyRange);
-        console.dir(this.internals.dexieTable.core.openCursor);
-        // process.exit();
 
-        const docsInDb = await this.internals.dexieTable.filter(queryMatcher).toArray();
+
+
+            await promiseWait(100);
+
+        console.log('query plan:');
+        console.log(JSON.stringify(queryPlan, null, 4));
+
+        console.log('keyRange:');
+        console.dir(keyRange);
+
+        console.log('testKeyRange:');
+        const testKeyRange = (state.dexieDb as any)._options.IDBKeyRange.lowerBound('', true);
+        console.dir(testKeyRange);
+
+
+        const nativeIndexedDB = state.dexieDb.backendDB();
+        const trans = nativeIndexedDB.transaction([DEXIE_DOCS_TABLE_NAME], 'readonly');
+        const store = trans.objectStore(DEXIE_DOCS_TABLE_NAME);
+        console.dir(store);
+        const queryPlanFields: string[] = queryPlan.index.def.fields
+            .map((fieldObj: any) => Object.keys(fieldObj)[0])
+            .map((field: any) => pouchSwapIdToPrimaryString(this.primaryPath, field));
+        let index: any;
+        if (
+            queryPlanFields.length === 1 &&
+            queryPlanFields[0] === this.primaryPath
+        ) {
+            index = store;
+            console.log('------> use default store as index');
+        } else {
+            let indexName: string;
+            if (queryPlanFields.length === 1) {
+                indexName = queryPlanFields[0];
+            } else {
+                indexName = '[' + queryPlanFields.join('+') + ']';
+            }
+            console.log('------> use index: ' + indexName);
+            index = store.index(indexName);
+        }
+
+
+        const cursorReq = index.openCursor(keyRange);
+        const rows: any[] = [];
+        await new Promise<void>(res => {
+            cursorReq.onsuccess = function (e: any) {
+                const cursor = e.target.result;
+                if (cursor) {
+                    // We have a record in cursor.value
+                    rows.push(cursor.value);
+                    cursor.continue();
+                } else {
+                    // Iteration complete
+                    res();
+                }
+            };
+        });
+
+        console.log('cursor rows:');
+        console.dir(rows);
+
+
+        const docsInDb = await state.dexieTable.filter(queryMatcher).toArray();
         let documents = docsInDb
             .map(docData => stripDexieKey(docData))
             .sort(sortComparator);
@@ -463,6 +530,13 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         }
         if (preparedQuery.limit && documents.length > preparedQuery.limit) {
             documents = documents.slice(0, preparedQuery.limit);
+        }
+
+        console.log('return rows:');
+        console.dir(documents);
+
+        if (documents.length > rows.length) {
+            throw new Error('documents.length > rows.length');
         }
 
         return {
@@ -476,16 +550,17 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         changedDocuments: RxStorageChangedDocumentMeta[];
         lastSequence: number;
     }> {
+        const state = await this.internals;
         let lastSequence: number = 0;
 
         let query;
         if (options.direction === 'before') {
-            query = this.internals.dexieChangesTable
+            query = state.dexieChangesTable
                 .where('sequence')
                 .below(options.sinceSequence)
                 .reverse();
         } else {
-            query = this.internals.dexieChangesTable
+            query = state.dexieChangesTable
                 .where('sequence')
                 .above(options.sinceSequence);
         }
@@ -510,9 +585,10 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
     }
 
     async remove(): Promise<void> {
+        const state = await this.internals;
         await Promise.all([
-            this.internals.dexieChangesTable.clear(),
-            this.internals.dexieTable.clear()
+            state.dexieChangesTable.clear(),
+            state.dexieTable.clear()
         ]);
         return this.close();
     }
@@ -528,7 +604,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
     async close(): Promise<void> {
         this.closed = true;
         this.changes$.complete();
-        closeDexieDb(this.internals.dexieDb);
+        closeDexieDb(this.internals);
     }
 }
 
