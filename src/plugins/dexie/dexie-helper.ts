@@ -39,7 +39,6 @@ export function getDexieDbWithTables(
             const useSettings = flatClone(settings);
             useSettings.autoOpen = false;
             const dexieDb = new Dexie(dexieDbName, useSettings);
-            console.log('createSTore with schema;: ' + getDexieStoreSchema(schema));
             dexieDb.version(1).stores({
                 [DEXIE_DOCS_TABLE_NAME]: getDexieStoreSchema(schema),
                 [DEXIE_CHANGES_TABLE_NAME]: '++sequence, id',

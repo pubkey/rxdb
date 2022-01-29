@@ -7,8 +7,8 @@ function getArguments(fun: any) {
         while (++i < len) {
             args[i] = arguments[i];
         }
-        // @ts-ignore
-        return fun.call(this, args);
+        const ret = fun.call(undefined, args);
+        return ret;
     };
 }
 

@@ -164,23 +164,18 @@ export function generateKeyRange(
 
     try {
         if (defined(opts, 'key')) {
-            console.log('-- 1');
             return IDBKeyRange.only(convert(opts.key, true));
         }
 
         if (defined(opts, 'startkey') && !defined(opts, 'endkey')) {
-            console.log('-- 2');
             return IDBKeyRange.lowerBound(convert(opts.startkey), !opts.inclusive_start);
         }
 
         if (!defined(opts, 'startkey') && defined(opts, 'endkey')) {
-            console.log('-- 3');
             return IDBKeyRange.upperBound(convert(opts.endkey), !opts.inclusive_end);
         }
 
         if (defined(opts, 'startkey') && defined(opts, 'endkey')) {
-            console.log('-- 4');
-            console.dir(opts);
             return IDBKeyRange.bound(
                 convert(opts.startkey), convert(opts.endkey),
                 !opts.inclusive_start, !opts.inclusive_end
