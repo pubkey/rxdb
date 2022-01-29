@@ -1,10 +1,11 @@
-# RxStorage Dexie.js
+# RxStorage Dexie.js (In beta)
 
 Instead of using PouchDB as underlying storage engine, you can also use [Dexie.js](https://github.com/dexie/Dexie.js).
 Dexie.js is a minimal wrapper around IndexedDB that has a good performance.
 
 For the Dexie based `RxStorage`, we use the [mingo](https://github.com/kofrasa/mingo) query handler. And a copy of the query planner from the [PouchDB-find](https://github.com/pouchdb/pouchdb/tree/master/packages/node_modules/pouchdb-find) plugin.
 
+**IMPORTANT:** The Dexie.js `RxStorage` is in **beta** mode. It may get breaking changes in any minor new RxDB version. Use at your own risk.
 
 ## Pros 
     - Smaller bundle size then with the PouchDB storage.
@@ -51,6 +52,20 @@ const db = await createRxDatabase({
     })
 });
 
+```
+
+
+## Using addons
+
+Dexie.js has its own plugin system with [many plugins](https://dexie.org/docs/DerivedWork#known-addons) for encryption, replication or other use cases. With the Dexie.js `RxStorage` you can use the same plugins by passing them to the `getRxStorageDexie()` function.
+
+```ts
+const db = await createRxDatabase({
+    name: 'exampledb',
+    storage: getRxStorageDexie({
+        addons: [ /* Your Dexie.js plugins */ ]
+    })
+});
 ```
 
 

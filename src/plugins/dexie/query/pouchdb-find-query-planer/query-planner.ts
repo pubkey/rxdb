@@ -440,7 +440,7 @@ function shouldShortCircuit(selector: any) {
     // see tests for issue #7810
 
     const values = Object.values(selector);
-    return values.some(function (val) {
+    return values.some(function (val: any) {
         return typeof val === 'object' && Object.keys(val).length === 0;
     });
 }
