@@ -155,9 +155,17 @@ export async function dexieQuery<RxDocType>(
         'r',
         state.dexieTable,
         async (dexieTx) => {
+            /**
+             * TODO here we use the native IndexedDB transaction
+             * to get the cursor.
+             * Instead we should not leave Dexie.js API and find
+             * a way to create the cursor with Dexie.js.
+             */
             const tx = (dexieTx as any).idbtrans;
+
             // const nativeIndexedDB = state.dexieDb.backendDB();
             // const trans = nativeIndexedDB.transaction([DEXIE_DOCS_TABLE_NAME], 'readonly');
+
             const store = tx.objectStore(DEXIE_DOCS_TABLE_NAME);
             let index: any;
             if (
