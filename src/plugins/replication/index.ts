@@ -44,6 +44,28 @@ import { _handleToStorageInstance } from '../../rx-collection-helper';
 import { newRxError } from '../../rx-error';
 import { getDocumentDataOfRxChangeEvent } from '../../rx-change-event';
 
+export type RxReplicationAction = 'pull' | 'push';
+
+interface RxReplicationErrorPullPayload {
+    type: 'pull'
+}
+
+interface RxReplicationErrorPushPayload<RxDocType> {
+    type: 'push'
+    documentData: RxDocumentData<RxDocType>
+}
+
+export class RxReplicationError<RxDocType> extends Error {
+    readonly payload: RxReplicationErrorPullPayload | RxReplicationErrorPushPayload<any>
+    readonly innerErrors?: any;
+
+    constructor(message: string, payload: RxReplicationErrorPullPayload | RxReplicationErrorPushPayload<RxDocType>, innerErrors?: any) {
+        super(message);
+
+        this.payload = payload;
+        this.innerErrors = innerErrors;
+    }
+}
 
 export class RxReplicationStateBase<RxDocType> {
     public readonly subs: Subscription[] = [];

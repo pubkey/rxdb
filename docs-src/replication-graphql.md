@@ -349,6 +349,52 @@ replicationState.error$.subscribe(error => {
 });
 ```
 
+GraphQL errors are wrapped in a `RxReplicationError`, which has a `payload` property with information to help you handle the underlying error.
+The payload has a `type` field with a value of `"pull"` or `"push"`, corresponding to an error in either a GraphQL pull or push replication operation, respectively.
+If the error occurs doing a _push_, the `payload` also contains a `documentData` property, which corresponds to the document data supplied to the push query builder.
+**Notice:** You may see errors in this observable that are not `RxReplicationError`.
+Replication may fail for reasons unrelated to the GraphQL service.
+E.g., your PouchDB or LokiJS database may have issues in which case a general error will be generated and passed on.
+
+As an example, you can try to recover from errors like so:
+
+```js
+replicationState.error$.subscribe((error) => {
+  if (error.payload) {
+      if (error.payload.type === 'pull') {
+          console.log('error pulling from GraphQL server', error.innerErrors);
+      } else if (error.type === 'push') {
+          if (error.innerErrors && error.innerErrors.length > 0) {
+              const graphQLError = error.innerErrors[0];
+              
+              // In this hypothetical case, there's a remote database uniqueness constraint being violated due to two
+              // clients pushing an object with the same property value. With the document data, you can decide how best
+              // to resolve the issue. In this case, the client that pushed last "loses" and we delete the object since
+              // the one it conflicts with will be pulled down during the next pull replication event.
+              // The `graphQLError` structure is dictated by your remote GraphQL service. The field names are likely
+              // to be different.
+              if (graphQLError.code === 'constraint-violation' && graphQLError.constraintName === "unique_profile_name") {
+                  this.db.profiles
+                      .findOne(documentData.id)
+                      .exec()
+                      .then((doc) => {
+                          doc?.remove();
+                      });
+              }
+          } else {
+              console.log('error pushing document to GraphQL server', documentData);
+          }
+      } else {
+          console.log('Unknown replication action', error.payload.type);
+      }
+  } else {
+      // General error occurred. E.g., issue communicating with local database.
+      console.log('something was wrong');
+      console.dir(error);
+  }
+});
+```
+
 #### .canceled$
 
 An `Observable` that emits `true` when the replication is canceled, `false` if not.
