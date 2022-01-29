@@ -964,6 +964,7 @@ describe('replication-graphql.test.js', () => {
                 });
                 await replicationState.awaitInitialReplication();
                 const docs = await c.find().exec();
+
                 assert.strictEqual(docs.length, 0);
 
                 server.close();

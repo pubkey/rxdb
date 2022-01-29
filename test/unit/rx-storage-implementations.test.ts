@@ -127,6 +127,27 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 });
                 await storageInstance.close();
             });
+            it('open two different instances on the same database name', async () => {
+                const databaseName = randomCouchString(12);
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseName,
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                    options: {},
+                    multiInstance: false
+                });
+                const storageInstance2 = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseName,
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                    options: {},
+                    multiInstance: false
+                });
+                await Promise.all([
+                    storageInstance.close(),
+                    storageInstance2.close()
+                ]);
+            });
         });
         describe('.bulkWrite()', () => {
             it('should write the document', async () => {
@@ -240,7 +261,6 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 storageInstance.close();
             });
             it('should be able to unset a property', async () => {
-
                 const schema = getTestDataSchema();
                 schema.required = ['key'];
 
@@ -287,6 +307,42 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 )
 
                 storageInstance.close();
+            });
+            it('should be able to create another instance after a write', async () => {
+                const databaseName = randomCouchString(12);
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseName,
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                    options: {},
+                    multiInstance: false
+                });
+                const docData = {
+                    key: 'foobar',
+                    value: 'barfoo1',
+                    _attachments: {}
+                };
+                await storageInstance.bulkWrite(
+                    [{
+                        document: clone(docData)
+                    }]
+                );
+                const storageInstance2 = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseName,
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                    options: {},
+                    multiInstance: false
+                });
+                await storageInstance2.bulkWrite(
+                    [{
+                        document: clone(docData)
+                    }]
+                );
+                await Promise.all([
+                    storageInstance.close(),
+                    storageInstance2.close()
+                ]);
             });
         });
         describe('.bulkAddRevisions()', () => {
@@ -824,6 +880,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     return changesResult.lastSequence;
                 }
                 const latestBefore = await getSequenceAfter(0);
+                assert.strictEqual(latestBefore, 0);
+
                 await storageInstance.bulkWrite([
                     {
                         document: {
@@ -833,6 +891,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }
                 ]);
                 const latestMiddle = await getSequenceAfter(0);
+                assert.strictEqual(latestMiddle, 1);
 
                 await storageInstance.bulkWrite([
                     {
@@ -843,7 +902,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }
                 ]);
                 const latestAfter = await getSequenceAfter(1);
-
+                assert.strictEqual(latestAfter, 2);
 
                 const docsInDbResult = await storageInstance.findDocumentsById(['foobar'], true);
                 const docInDb = getFromObjectOrThrow(docsInDbResult, 'foobar');
@@ -860,10 +919,6 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }
                 ]);
                 const latestAfterBulkAddRevision = await getSequenceAfter(2);
-
-                assert.strictEqual(latestBefore, 0);
-                assert.strictEqual(latestMiddle, 1);
-                assert.strictEqual(latestAfter, 2);
                 assert.strictEqual(latestAfterBulkAddRevision, 3);
 
                 storageInstance.close();

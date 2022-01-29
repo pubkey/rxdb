@@ -29,9 +29,12 @@ import { LeaderElector } from 'broadcast-channel';
 import { HumanDocumentType } from '../helper/schemas';
 
 /**
- * RxStoragePouch specific tests
+ * RxStorageLokiJS specific tests
  */
 config.parallel('rx-storage-lokijs.test.js', () => {
+    if (config.storage.name !== 'lokijs') {
+        return;
+    }
     describe('RxDatabase', () => {
         it('create/write/remove', async () => {
             const collection = await humansCollections.create(

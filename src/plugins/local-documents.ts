@@ -215,6 +215,7 @@ const RxLocalDocumentPrototype: any = {
                 if (!docResult) {
                     throw getFromObjectOrThrow(res.error, newData._id);
                 }
+                newData = flatClone(newData);
                 newData._rev = docResult._rev;
             });
     },
@@ -314,6 +315,7 @@ function insertLocal(
                     document: docData
                 }
             ).then(res => {
+                docData = flatClone(docData);
                 docData._rev = res._rev;
                 const newDoc = RxLocalDocument.create(id, docData, this);
                 return newDoc;

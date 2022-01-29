@@ -523,7 +523,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         }
         localState.databaseState.database.removeCollection(this.collectionName);
         localState.databaseState.database.removeCollection(localState.changesCollection.name);
-        this.close();
+        return this.close();
     }
 }
 

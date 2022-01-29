@@ -60,7 +60,6 @@ if (config.platform.name === 'firefox') {
     };
 }
 
-
 describe('init.test.js', () => {
     it('clear BroadcastChannel tmp folder', async () => {
         await clearNodeFolder();

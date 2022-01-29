@@ -56,6 +56,14 @@ export function pouchSwapIdToPrimary<T>(
     return docData;
 }
 
+export function pouchSwapIdToPrimaryString<T>(primaryKey: keyof T, str: keyof T): keyof T {
+    if (str === '_id') {
+        return primaryKey;
+    } else {
+        return str;
+    }
+}
+
 export function pouchDocumentDataToRxDocumentData<T>(
     primaryKey: keyof T,
     pouchDoc: WithAttachments<T>

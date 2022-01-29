@@ -663,7 +663,7 @@ config.parallel('rx-collection.test.js', () => {
                         const query = c.find({
                             selector: {
                                 age: {
-                                    $gt: null
+                                    $gt: 0
                                 }
                             }
                         }).sort({ age: 'desc' });

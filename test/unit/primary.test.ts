@@ -273,7 +273,17 @@ config.parallel('primary.test.js', () => {
                         docs = newDocs;
                     });
                     await c.insert(schemaObjects.simpleHuman());
-                    await AsyncTestUtil.waitUntil(() => docs && docs.length === 1);
+                    await AsyncTestUtil.waitUntil(() => {
+                        if (docs) {
+                            if (docs.length === 1) {
+                                return true;
+                            }
+                            if (docs.length > 1) {
+                                throw new Error('too many documents');
+                            }
+                        }
+                        return false;
+                    });
                     sub.unsubscribe();
                     c.database.destroy();
                 });

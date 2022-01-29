@@ -2,12 +2,15 @@
 const {
     detect
 } = require('detect-browser');
-import BroadcastChannel from 'broadcast-channel';
+import {
+    enforceOptions as broadcastChannelEnforceOptions
+} from 'broadcast-channel';
 import * as path from 'path';
 import parallel from 'mocha.parallel';
 import type { RxStorage } from '../../src/types';
 import { getRxStoragePouch, addPouchPlugin } from '../../plugins/pouchdb';
 import { getRxStorageLoki, RxStorageLokiStatics } from '../../plugins/lokijs';
+import { getRxStorageDexie } from '../../plugins/dexie';
 import { getRxStorageWorker } from '../../plugins/worker';
 
 function isFastMode(): boolean {
@@ -22,7 +25,7 @@ let useParallel = describe;
 try {
     if (process.env.NODE_ENV === 'fast') {
         useParallel = parallel;
-        BroadcastChannel.enforceOptions({
+        broadcastChannelEnforceOptions({
             type: 'simulate'
         });
     }
@@ -98,6 +101,19 @@ export function setDefaultStorage(storageKey: string) {
                 hasAttachments: false
             };
             break;
+        case 'dexie':
+            const indexedDB = require('fake-indexeddb');
+            const IDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange');
+            config.storage = {
+                name: 'dexie',
+                getStorage: () => getRxStorageDexie({
+                    indexedDB,
+                    IDBKeyRange
+                }),
+                hasCouchDBReplication: false,
+                hasAttachments: false
+            };
+            break;
         default:
             throw new Error('no DEFAULT_STORAGE set');
     }
@@ -111,7 +127,6 @@ if (config.platform.name === 'node') {
     require('events').EventEmitter.defaultMaxListeners = 100;
     config.rootPath = path.join(__dirname, '../../');
     console.log('rootPath: ' + config.rootPath);
-
 
     /**
      * Add a global function to process, so we can debug timings

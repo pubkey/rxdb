@@ -74,7 +74,6 @@ export type LokiDatabaseState = {
 
 export type LokiLocalDatabaseState = {
     databaseState: LokiDatabaseState;
-
     collection: Collection<any & { $lastWriteAt: number; }>;
     /**
      * LokiJS has no persistend, observable
@@ -82,5 +81,4 @@ export type LokiLocalDatabaseState = {
      * in the changesCollection.
      */
     changesCollection: Collection<RxStorageChangedDocumentMeta>;
-
 }
