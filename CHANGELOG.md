@@ -2,6 +2,9 @@
 
 ### X.X.X (comming soon)
 
+Features:
+  - Improve emitted errors of the GraphQL replication [#3630](https://github.com/pubkey/rxdb/pull/3630) Thanks [@nirvdrum](https://github.com/nirvdrum)
+
 ### 11.4.0 (28 January 2022)
 
 Bugfixes:

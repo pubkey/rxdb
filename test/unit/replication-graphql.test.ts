@@ -1984,6 +1984,53 @@ describe('replication-graphql.test.js', () => {
                 replicationState.cancel();
                 c.database.destroy();
             });
+            it('should contain include replication action data in pull request failure', async () => {
+                const c = await humansCollection.createHumanWithTimestamp(0);
+                const replicationState = c.syncGraphQL({
+                    url: ERROR_URL,
+                    pull: {
+                        queryBuilder
+                    },
+                    deletedFlag: 'deleted'
+                });
+
+                const error = await replicationState.error$.pipe(
+                    first()
+                ).toPromise();
+
+                assert.strictEqual(error.payload.type, 'pull');
+
+                replicationState.cancel();
+                c.database.destroy();
+            });
+            it('should contain include replication action data in push request failure', async () => {
+                const c = await humansCollection.createHumanWithTimestamp(0);
+                const replicationState = c.syncGraphQL({
+                    url: ERROR_URL,
+                    push: {
+                        queryBuilder: pushQueryBuilder,
+                    },
+                    deletedFlag: 'deleted'
+                });
+
+                const localDoc = schemaObjects.humanWithTimestamp();
+                await c.insert(localDoc);
+
+                const error = await replicationState.error$.pipe(
+                    first()
+                ).toPromise();
+
+                const { documentData: actual } = error.payload;
+
+                assert.strictEqual(error.payload.type, 'push');
+                assert.strictEqual(actual.id, localDoc.id);
+                assert.strictEqual(actual.name, localDoc.name);
+                assert.strictEqual(actual.age, localDoc.age);
+                assert.strictEqual(actual.updatedAt, localDoc.updatedAt);
+
+                replicationState.cancel();
+                c.database.destroy();
+            });
             it('should not exit .run() before the batch is inserted and its events have been emitted', async () => {
                 const c = await humansCollection.createHumanWithTimestamp(0);
                 const server = await SpawnServer.spawn(getTestData(1));
