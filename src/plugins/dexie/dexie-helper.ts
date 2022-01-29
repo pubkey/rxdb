@@ -36,6 +36,10 @@ export function getDexieDbWithTables(
          * @link https://github.com/dexie/Dexie.js/issues/684#issuecomment-373224696
          */
         db = new Dexie(dexieDbName, settings);
+
+
+        console.log('createSTore with schema;: ' + getDexieStoreSchema(schema));
+
         db.version(1).stores({
             [DEXIE_DOCS_TABLE_NAME]: getDexieStoreSchema(schema),
             [DEXIE_CHANGES_TABLE_NAME]: '++sequence, id',
@@ -124,6 +128,18 @@ export function getDexieSortComparator<RxDocType>(
 }
 
 
+
+
+export const DEXIE_PIPE_SUBSTITUTE = 'RxDBSubstPipe';
+export function dexieReplaceIfStartsWithPipe(str: string): string {
+    if (str.startsWith('|')) {
+        const withoutFirst = str.substring(1);
+        return DEXIE_PIPE_SUBSTITUTE + withoutFirst;
+    } else {
+        return str;
+    }
+}
+
 /**
  * Creates a string that can be used to create the dexie store.
  * @link https://dexie.org/docs/API-Reference#quick-reference
@@ -131,18 +147,42 @@ export function getDexieSortComparator<RxDocType>(
 export function getDexieStoreSchema(
     rxJsonSchema: RxJsonSchema<any>
 ): string {
-    const parts: string[] = [];
+    let parts: string[][] = [];
 
     /**
      * First part must be the primary key
      * @link https://github.com/dexie/Dexie.js/issues/1307#issuecomment-846590912
      */
     const primaryKey: string = getPrimaryFieldOfPrimaryKey(rxJsonSchema.primaryKey) as string;
-    parts.push(primaryKey);
+    parts.push([primaryKey]);
 
     // TODO add other indexes
+    if (rxJsonSchema.indexes) {
+        rxJsonSchema.indexes.forEach(index => {
+            const arIndex = Array.isArray(index) ? index : [index];
+            parts.push(arIndex);
+        });
+    }
 
-    return parts.join(',');
+
+    /**
+     * It is not possible to set non-javascript-variable-syntax
+     * keys as IndexedDB indexes. So we have to substitute the pipe-char
+     * which comes from the key-compression plugin.
+     */
+    parts = parts.map(part => {
+        return part.map(str => dexieReplaceIfStartsWithPipe(str))
+    });
+
+
+
+    return parts.map(part => {
+        if (part.length === 1) {
+            return part[0];
+        } else {
+            return '[' + part.join('+') + ']';
+        }
+    }).join(', ');
 }
 
 export function getDexieEventKey(

@@ -31,7 +31,8 @@ import type {
     MangoQuery,
     RxStorageChangedDocumentMeta,
     RxStorageInstanceCreationParams,
-    EventBulk
+    EventBulk,
+    PreparedQuery
 } from '../../types';
 import { DexieSettings, DexieStorageInternals } from '../../types/plugins/dexie';
 import { RxStorageDexie, RxStorageDexieStatics } from './rx-storage-dexie';
@@ -42,6 +43,7 @@ import {
     getDocsInDb,
     stripDexieKey
 } from './dexie-helper';
+import { getDexieKeyRange } from './query/dexie-query';
 
 let instanceId = now();
 
@@ -434,12 +436,23 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
      * We should use a query planner like pouchdb has and then only iterate
      * over the best index and between the keys.
      */
-    async query(preparedQuery: MangoQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>> {
+    async query(preparedQuery: PreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>> {
         const queryMatcher = RxStorageDexieStatics.getQueryMatcher(
             this.schema,
             preparedQuery
         );
         const sortComparator = RxStorageDexieStatics.getSortComparator(this.schema, preparedQuery);
+
+        const keyRange = getDexieKeyRange(
+            (preparedQuery as any).pouchQueryPlan,
+            Number.NEGATIVE_INFINITY,
+            (this.internals.dexieDb as any)._maxKey,
+            (this.internals.dexieDb as any)._options.IDBKeyRange
+        );
+        console.dir(keyRange);
+        console.dir(this.internals.dexieTable.core.openCursor);
+        // process.exit();
+
         const docsInDb = await this.internals.dexieTable.filter(queryMatcher).toArray();
         let documents = docsInDb
             .map(docData => stripDexieKey(docData))

@@ -30,7 +30,7 @@ const SHORT_CIRCUIT_QUERY = {
 
 // couchdb second-lowest collation value
 
-function checkFieldInIndex(index, field) {
+function checkFieldInIndex(index: any, field: string) {
     const indexFields = index.def.fields.map(getKey);
     for (let i = 0, len = indexFields.length; i < len; i++) {
         const indexField = indexFields[i];
@@ -46,7 +46,7 @@ function checkFieldInIndex(index, field) {
 // in the database, but the second part has to be done in-memory,
 // because $gt has forced us to lose precision.
 // so that's what this determines
-function userOperatorLosesPrecision(selector, field) {
+function userOperatorLosesPrecision(selector: any, field: string) {
     const matcher = selector[field];
     const userOperator = getKey(matcher);
 
@@ -55,7 +55,7 @@ function userOperatorLosesPrecision(selector, field) {
 
 // sort the user fields by their position in the index,
 // if they're in the index
-function sortFieldsByIndex(userFields, index) {
+function sortFieldsByIndex(userFields: any[], index: any) {
     const indexFields = index.def.fields.map(getKey);
 
     return userFields.slice().sort(function (a, b) {
@@ -72,7 +72,7 @@ function sortFieldsByIndex(userFields, index) {
 }
 
 // first pass to try to find fields that will need to be sorted in-memory
-function getBasicInMemoryFields(index, selector, userFields) {
+function getBasicInMemoryFields(index: any, selector: any, userFields: any) {
 
     userFields = sortFieldsByIndex(userFields, index);
 
@@ -90,8 +90,8 @@ function getBasicInMemoryFields(index, selector, userFields) {
     return [];
 }
 
-function getInMemoryFieldsFromNe(selector) {
-    const fields = [];
+function getInMemoryFieldsFromNe(selector: any) {
+    const fields: any[] = [];
     Object.keys(selector).forEach(function (field) {
         const matcher = selector[field];
         Object.keys(matcher).forEach(function (operator) {
@@ -103,8 +103,8 @@ function getInMemoryFieldsFromNe(selector) {
     return fields;
 }
 
-function getInMemoryFields(coreInMemoryFields, index, selector, userFields) {
-    const result = flatten(
+function getInMemoryFields(coreInMemoryFields: any, index: any, selector: any, userFields: any) {
+    const result = (flatten as any)(
         // in-memory fields reported as necessary by the query planner
         coreInMemoryFields,
         // combine with another pass that checks for any we may have missed
@@ -118,7 +118,7 @@ function getInMemoryFields(coreInMemoryFields, index, selector, userFields) {
 
 // check that at least one field in the user's query is represented
 // in the index. order matters in the case of sorts
-function checkIndexFieldsMatch(indexFields, sortOrder, fields) {
+function checkIndexFieldsMatch(indexFields: any, sortOrder: any, fields: any) {
     if (sortOrder) {
         // array has to be a strict subarray of index array. furthermore,
         // the sortOrder fields need to all be represented in the index
@@ -135,7 +135,7 @@ function checkIndexFieldsMatch(indexFields, sortOrder, fields) {
 }
 
 const logicalMatchers = ['$eq', '$gt', '$gte', '$lt', '$lte'];
-function isNonLogicalMatcher(matcher) {
+function isNonLogicalMatcher(matcher: any) {
     return logicalMatchers.indexOf(matcher) === -1;
 }
 
@@ -143,7 +143,7 @@ function isNonLogicalMatcher(matcher) {
 // e.g. if the user queries {foo: {$ne: 'foo'}, bar: {$eq: 'bar'}},
 // then we can neither use an index on ['foo'] nor an index on
 // ['foo', 'bar'], but we can use an index on ['bar'] or ['bar', 'foo']
-function checkFieldsLogicallySound(indexFields, selector) {
+function checkFieldsLogicallySound(indexFields: any, selector: any) {
     const firstField = indexFields[0];
     const matcher = selector[firstField];
 
@@ -158,7 +158,7 @@ function checkFieldsLogicallySound(indexFields, selector) {
     return !isInvalidNe;
 }
 
-function checkIndexMatches(index, sortOrder, fields, selector) {
+function checkIndexMatches(index: any, sortOrder: any, fields: any, selector: any) {
 
     const indexFields = index.def.fields.map(getKey);
 
@@ -178,24 +178,24 @@ function checkIndexMatches(index, sortOrder, fields, selector) {
 // then use that index
 //
 //
-function findMatchingIndexes(selector, userFields, sortOrder, indexes) {
-    return indexes.filter(function (index) {
+function findMatchingIndexes(selector: any, userFields: any, sortOrder: any, indexes: any) {
+    return indexes.filter(function (index: any) {
         return checkIndexMatches(index, sortOrder, userFields, selector);
     });
 }
 
 // find the best index, i.e. the one that matches the most fields
 // in the user's query
-function findBestMatchingIndex(selector, userFields, sortOrder, indexes, useIndex) {
+function findBestMatchingIndex(selector: any, userFields: any, sortOrder: any, indexes: any, useIndex: any) {
 
     const matchingIndexes = findMatchingIndexes(selector, userFields, sortOrder, indexes);
 
     if (matchingIndexes.length === 0) {
         if (useIndex) {
-            throw {
-                error: "no_usable_index",
-                message: "There is no index available for this selector."
-            };
+            throw new Error({
+                error: 'no_usable_index',
+                message: 'There is no index available for this selector.'
+            }.toString());
         }
         //return `all_docs` as a default index;
         //I'm assuming that _all_docs is always first
@@ -209,7 +209,7 @@ function findBestMatchingIndex(selector, userFields, sortOrder, indexes, useInde
 
     const userFieldsMap = arrayToObject(userFields);
 
-    function scoreIndex(index) {
+    function scoreIndex(index: any) {
         const indexFields = index.def.fields.map(getKey);
         let score = 0;
         for (let i = 0, len = indexFields.length; i < len; i++) {
@@ -224,7 +224,7 @@ function findBestMatchingIndex(selector, userFields, sortOrder, indexes, useInde
     if (useIndex) {
         const useIndexDdoc = '_design/' + useIndex[0];
         const useIndexName = useIndex.length === 2 ? useIndex[1] : false;
-        const index = matchingIndexes.find(function (index) {
+        const index = matchingIndexes.find(function (index: any) {
             if (useIndexName && index.ddoc === useIndexDdoc && useIndexName === index.name) {
                 return true;
             }
@@ -238,10 +238,10 @@ function findBestMatchingIndex(selector, userFields, sortOrder, indexes, useInde
         });
 
         if (!index) {
-            throw {
-                error: "unknown_error",
-                message: "Could not find that index or could not use that index for the query"
-            };
+            throw new Error({
+                error: 'unknown_error',
+                message: 'Could not find that index or could not use that index for the query'
+            }.toString());
         }
         return index;
     }
@@ -249,7 +249,7 @@ function findBestMatchingIndex(selector, userFields, sortOrder, indexes, useInde
     return max(matchingIndexes, scoreIndex);
 }
 
-function getSingleFieldQueryOptsFor(userOperator, userValue) {
+function getSingleFieldQueryOptsFor(userOperator: any, userValue: any) {
     switch (userOperator) {
         case '$eq':
             return { key: userValue };
@@ -274,16 +274,16 @@ function getSingleFieldQueryOptsFor(userOperator, userValue) {
     };
 }
 
-function getSingleFieldCoreQueryPlan(selector, index) {
+function getSingleFieldCoreQueryPlan(selector: any, index: any) {
     const field = getKey(index.def.fields[0]);
     //ignoring this because the test to exercise the branch is skipped at the moment
     /* istanbul ignore next */
     const matcher = selector[field] || {};
-    const inMemoryFields = [];
+    const inMemoryFields: any[] = [];
 
     const userOperators = Object.keys(matcher);
 
-    let combinedOpts;
+    let combinedOpts: any;
 
     userOperators.forEach(function (userOperator) {
 
@@ -308,7 +308,7 @@ function getSingleFieldCoreQueryPlan(selector, index) {
     };
 }
 
-function getMultiFieldCoreQueryPlan(userOperator, userValue) {
+function getMultiFieldCoreQueryPlan(userOperator: any, userValue: any) {
     switch (userOperator) {
         case '$eq':
             return {
@@ -336,18 +336,18 @@ function getMultiFieldCoreQueryPlan(userOperator, userValue) {
     }
 }
 
-function getMultiFieldQueryOpts(selector, index) {
+function getMultiFieldQueryOpts(selector: any, index: any) {
 
     const indexFields = index.def.fields.map(getKey);
 
-    let inMemoryFields = [];
+    let inMemoryFields: any[] = [];
     const startkey = [];
     const endkey = [];
-    let inclusiveStart;
-    let inclusiveEnd;
+    let inclusiveStart: any;
+    let inclusiveEnd: any;
 
 
-    function finish(i) {
+    function finish(i: any) {
 
         if (inclusiveStart !== false) {
             startkey.push(COLLATE_LO);
@@ -387,7 +387,7 @@ function getMultiFieldQueryOpts(selector, index) {
 
         const userOperators = Object.keys(matcher);
 
-        let combinedOpts = null;
+        let combinedOpts: any = null;
 
         for (let j = 0; j < userOperators.length; j++) {
             const userOperator = userOperators[j];
@@ -412,7 +412,7 @@ function getMultiFieldQueryOpts(selector, index) {
         }
     }
 
-    const res = {
+    const res: any = {
         startkey: startkey,
         endkey: endkey
     };
@@ -430,7 +430,7 @@ function getMultiFieldQueryOpts(selector, index) {
     };
 }
 
-function shouldShortCircuit(selector) {
+function shouldShortCircuit(selector: any) {
     // We have a field to select from, but not a valid value
     // this should result in a short circuited query 
     // just like the http adapter (couchdb) and mongodb
@@ -445,7 +445,7 @@ function shouldShortCircuit(selector) {
     });
 }
 
-function getDefaultQueryPlan(selector) {
+function getDefaultQueryPlan(selector: any, _idx?: any) {
     //using default index, so all fields need to be done in memory
     return {
         queryOpts: { startkey: null },
@@ -453,7 +453,7 @@ function getDefaultQueryPlan(selector) {
     };
 }
 
-function getCoreQueryPlan(selector, index) {
+function getCoreQueryPlan(selector: any, index: any) {
     if (index.defaultUsed) {
         return getDefaultQueryPlan(selector, index);
     }
@@ -466,7 +466,7 @@ function getCoreQueryPlan(selector, index) {
     return getMultiFieldQueryOpts(selector, index);
 }
 
-export function planQuery(request, indexes) {
+export function planQuery(request: any, indexes: any) {
 
     const selector = request.selector;
     const sort = request.sort;

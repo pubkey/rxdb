@@ -74,6 +74,7 @@ export const RxStorageDexieStatics: RxStorageStatics = {
             schema,
             mutateableQuery
         );
+
         return mutateableQuery;
     },
 

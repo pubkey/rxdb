@@ -2,6 +2,7 @@ import { getPrimaryFieldOfPrimaryKey } from '../../../rx-schema';
 import type { MangoQuery, RxJsonSchema } from '../../../types';
 import { clone } from '../../../util';
 import { preparePouchDbQuery } from '../../pouchdb/pouch-statics';
+import { generateKeyRange } from './pouchdb-find-query-planer/indexeddb-find';
 import { planQuery } from './pouchdb-find-query-planer/query-planner';
 
 
@@ -13,7 +14,7 @@ import { planQuery } from './pouchdb-find-query-planer/query-planner';
 export function getPouchQueryPlan<RxDocType>(
     schema: RxJsonSchema<RxDocType>,
     query: MangoQuery<RxDocType>
-): any {
+) {
     const primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
 
     /**
@@ -72,15 +73,38 @@ export function getPouchQueryPlan<RxDocType>(
     console.log('pouchCompatibleIndexes:');
     console.log(JSON.stringify(pouchCompatibleIndexes, null, 4));
 
-    const queryPlan = planQuery(
+    const pouchQueryPlan = planQuery(
         pouchdbCompatibleQuery,
         pouchCompatibleIndexes
     );
     console.log('queryPlan:');
-    console.log(JSON.stringify(queryPlan, null, 4));
+    console.log(JSON.stringify(pouchQueryPlan, null, 4));
     console.log('---------------------------------------------------------');
     console.log('---------------------------------------------------------');
     console.log('---------------------------------------------------------');
 
-    return queryPlan;
+    return pouchQueryPlan;
+}
+
+
+export function getDexieKeyRange(
+    queryPlan: any,
+    low: any,
+    height: any,
+    /**
+     * The window.IDBKeyRange object.
+     * Can be swapped out in other environments
+     */
+    IDBKeyRange?: any
+): any {
+
+    if (!IDBKeyRange) {
+        if (typeof window === 'undefined') {
+            throw new Error('IDBKeyRange missing');
+        } else {
+            IDBKeyRange = window.IDBKeyRange;
+        }
+    }
+
+    return generateKeyRange(queryPlan.queryOpts, IDBKeyRange, low, height);
 }

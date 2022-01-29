@@ -1,108 +1,23 @@
-import {
-    getFieldFromDoc,
-    setFieldInDoc,
-    parseField
-} from 'pouchdb-selector-core';
 
-import { nextTick } from 'pouchdb-utils';
-
-function once(fun) {
-    var called = false;
-    return getArguments(function (args) {
-        if (called) {
-            console.trace();
-            throw new Error('once called  more than once');
-        } else {
-            called = true;
-            fun.apply(this, args);
-        }
-    });
-}
-function getArguments(fun) {
+function getArguments(fun: any) {
     return function () {
-        var len = arguments.length;
-        var args = new Array(len);
-        var i = -1;
+        const len = arguments.length;
+        const args = new Array(len);
+        let i = -1;
         while (++i < len) {
             args[i] = arguments[i];
         }
+        // @ts-ignore
         return fun.call(this, args);
     };
 }
-function toPromise(func) {
-    //create the function we will be returning
-    return getArguments(function (args) {
-        var self = this;
-        var tempCB = (typeof args[args.length - 1] === 'function') ? args.pop() : false;
-        // if the last argument is a function, assume its a callback
-        var usedCB;
-        if (tempCB) {
-            // if it was a callback, create a new callback which calls it,
-            // but do so async so we don't trap any errors
-            usedCB = function (err, resp) {
-                nextTick(function () {
-                    tempCB(err, resp);
-                });
-            };
-        }
-        var promise = new Promise(function (fulfill, reject) {
-            try {
-                var callback = once(function (err, mesg) {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        fulfill(mesg);
-                    }
-                });
-                // create a callback for this invocation
-                // apply the function in the orig context
-                args.push(callback);
-                func.apply(self, args);
-            } catch (e) {
-                reject(e);
-            }
-        });
-        // if there is a callback, call it back
-        if (usedCB) {
-            promise.then(function (result) {
-                usedCB(null, result);
-            }, usedCB);
-        }
-        promise.cancel = function () {
-            return this;
-        };
-        return promise;
-    });
-}
 
-function callbackify(fun) {
-    return getArguments(function (args) {
-        var cb = args.pop();
-        var promise = fun.apply(this, args);
-        promisedCallback(promise, cb);
-        return promise;
-    });
-}
-
-function promisedCallback(promise, callback) {
-    promise.then(function (res) {
-        nextTick(function () {
-            callback(null, res);
-        });
-    }, function (reason) {
-        nextTick(function () {
-            callback(reason);
-        });
-    });
-    return promise;
-}
-
-export const flatten = getArguments(function (args) {
-    var res = [];
-    for (var i = 0, len = args.length; i < len; i++) {
-        var subArr = args[i];
+export const flatten = getArguments(function (args: any) {
+    let res: any[] = [];
+    for (let i = 0, len = args.length; i < len; i++) {
+        const subArr: any = args[i] as any;
         if (Array.isArray(subArr)) {
-            res = res.concat(flatten.apply(null, subArr));
+            res = res.concat(flatten.apply(null, subArr as any));
         } else {
             res.push(subArr);
         }
@@ -110,32 +25,18 @@ export const flatten = getArguments(function (args) {
     return res;
 });
 
-export function mergeObjects(arr) {
-    var res = {};
-    for (var i = 0, len = arr.length; i < len; i++) {
+export function mergeObjects(arr: any[]) {
+    let res = {};
+    for (let i = 0, len = arr.length; i < len; i++) {
         res = Object.assign(res, arr[i]);
     }
     return res;
 }
 
-// Selects a list of fields defined in dot notation from one doc
-// and copies them to a new doc. Like underscore _.pick but supports nesting.
-function pick(obj, arr) {
-    var res = {};
-    for (var i = 0, len = arr.length; i < len; i++) {
-        var parsedField = parseField(arr[i]);
-        var value = getFieldFromDoc(obj, parsedField);
-        if (typeof value !== 'undefined') {
-            setFieldInDoc(res, parsedField, value);
-        }
-    }
-    return res;
-}
 
 // e.g. ['a'], ['a', 'b'] is true, but ['b'], ['a', 'b'] is false
-export function oneArrayIsSubArrayOfOther(left, right) {
-
-    for (var i = 0, len = Math.min(left.length, right.length); i < len; i++) {
+export function oneArrayIsSubArrayOfOther(left: any, right: any) {
+    for (let i = 0, len = Math.min(left.length, right.length); i < len; i++) {
         if (left[i] !== right[i]) {
             return false;
         }
@@ -144,8 +45,7 @@ export function oneArrayIsSubArrayOfOther(left, right) {
 }
 
 // e.g.['a', 'b', 'c'], ['a', 'b'] is false
-export function oneArrayIsStrictSubArrayOfOther(left, right) {
-
+export function oneArrayIsStrictSubArrayOfOther(left: any, right: any) {
     if (left.length > right.length) {
         return false;
     }
@@ -155,14 +55,14 @@ export function oneArrayIsStrictSubArrayOfOther(left, right) {
 
 // same as above, but treat the left array as an unordered set
 // e.g. ['b', 'a'], ['a', 'b', 'c'] is true, but ['c'], ['a', 'b', 'c'] is false
-export function oneSetIsSubArrayOfOther(left, right) {
+export function oneSetIsSubArrayOfOther(left: any, right: any) {
     left = left.slice();
-    for (var i = 0, len = right.length; i < len; i++) {
-        var field = right[i];
+    for (let i = 0, len = right.length; i < len; i++) {
+        const field = right[i];
         if (!left.length) {
             break;
         }
-        var leftIdx = left.indexOf(field);
+        const leftIdx = left.indexOf(field);
         if (leftIdx === -1) {
             return false;
         } else {
@@ -172,20 +72,20 @@ export function oneSetIsSubArrayOfOther(left, right) {
     return true;
 }
 
-export function arrayToObject(arr) {
-    var res = {};
-    for (var i = 0, len = arr.length; i < len; i++) {
+export function arrayToObject(arr: any[]) {
+    const res: any = {};
+    for (let i = 0, len = arr.length; i < len; i++) {
         res[arr[i]] = true;
     }
     return res;
 }
 
-export function max(arr, fun) {
-    var max = null;
-    var maxScore = -1;
-    for (var i = 0, len = arr.length; i < len; i++) {
-        var element = arr[i];
-        var score = fun(element);
+export function max(arr: any[], fun: Function) {
+    let max = null;
+    let maxScore = -1;
+    for (let i = 0, len = arr.length; i < len; i++) {
+        const element = arr[i];
+        const score = fun(element);
         if (score > maxScore) {
             maxScore = score;
             max = element;
@@ -194,11 +94,11 @@ export function max(arr, fun) {
     return max;
 }
 
-export function arrayEquals(arr1, arr2) {
+export function arrayEquals(arr1: any[], arr2: any[]) {
     if (arr1.length !== arr2.length) {
         return false;
     }
-    for (var i = 0, len = arr1.length; i < len; i++) {
+    for (let i = 0, len = arr1.length; i < len; i++) {
         if (arr1[i] !== arr2[i]) {
             return false;
         }
@@ -206,9 +106,9 @@ export function arrayEquals(arr1, arr2) {
     return true;
 }
 
-export function uniq(arr) {
-    var obj = {};
-    for (var i = 0; i < arr.length; i++) {
+export function uniq(arr: any[]) {
+    const obj: any = {};
+    for (let i = 0; i < arr.length; i++) {
         obj['$' + arr[i]] = true;
     }
     return Object.keys(obj).map(function (key) {

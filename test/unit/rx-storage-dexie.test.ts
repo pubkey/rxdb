@@ -4,11 +4,14 @@ import config from './config';
 import {
     addRxPlugin,
     MangoQuery,
-    randomCouchString
+    randomCouchString,
+    RxJsonSchema
 } from '../../plugins/core';
 
 import {
-    RxStorageDexieStatics
+    RxStorageDexieStatics,
+    getPouchQueryPlan,
+    getDexieStoreSchema
 } from '../../plugins/dexie';
 
 import * as schemaObjects from '../helper/schema-objects';
@@ -74,6 +77,84 @@ config.parallel('rx-storage-dexie.test.js', () => {
 
                 const notMatching = matcher(docNotMatching as any);
                 assert.strictEqual(notMatching, false);
+            });
+        });
+    });
+    describe('helper', () => {
+        describe('.getDexieStoreSchema()', () => {
+            it('should start with the primary key', () => {
+                const dexieSchema = getDexieStoreSchema({
+                    primaryKey: 'id',
+                    type: 'object',
+                    version: 0,
+                    properties: {
+                        id: {
+                            type: 'string'
+                        }
+                    }
+                });
+                assert.strictEqual(dexieSchema, 'id');
+            });
+            it('should contains the indees', () => {
+                const dexieSchema = getDexieStoreSchema({
+                    primaryKey: 'id',
+                    type: 'object',
+                    version: 0,
+                    properties: {
+                        id: {
+                            type: 'string'
+                        },
+                        age: {
+                            type: 'number'
+                        }
+                    },
+                    indexes: [
+                        ['age', 'id']
+                    ]
+                });
+                assert.strictEqual(dexieSchema, 'id, [age+id]');
+            });
+        });
+    });
+    describe('query', () => {
+        describe('.getPouchQueryPlan()', () => {
+            it('should use the correct index', () => {
+                const schema: RxJsonSchema<any> = {
+                    version: 0,
+                    primaryKey: 'key',
+                    type: 'object',
+                    properties: {
+                        key: {
+                            type: 'string'
+                        },
+                        age: {
+                            type: 'number'
+                        }
+                    },
+                    indexes: [
+                        ['age', 'key']
+                    ]
+                };
+
+                const queryPlan = getPouchQueryPlan(
+                    schema,
+                    {
+                        selector: {
+                            age: {
+                                $gt: 18
+                            }
+                        },
+                        sort: [
+                            { age: 'asc' },
+                            { key: 'asc' }
+                        ],
+                        limit: 5,
+                        skip: 1
+                    }
+                );
+
+                assert.ok(queryPlan.index.name.includes('age'));
+                assert.ok(queryPlan.index.name.includes('key'));
             });
         });
     });
