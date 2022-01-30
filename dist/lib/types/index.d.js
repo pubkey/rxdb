@@ -263,4 +263,17 @@ Object.keys(_lokijs).forEach(function (key) {
     }
   });
 });
+
+var _dexie = require("./plugins/dexie");
+
+Object.keys(_dexie).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _dexie[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _dexie[key];
+    }
+  });
+});
 //# sourceMappingURL=index.d.js.map

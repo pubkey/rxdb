@@ -673,6 +673,8 @@ function getLokiSortComparator(schema, query) {
      * Two different objects should never have the same sort position.
      * We ensure this by having the unique primaryKey in the sort params
      * at this.prepareQuery()
+     * TODO RxDB should ensure that the primary key is always used in the sort params
+     * to ensure a deterministic sorting.
      */
 
     if (!compareResult) {

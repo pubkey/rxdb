@@ -22,6 +22,7 @@ export declare const POUCHDB_LOCAL_PREFIX: '_local/';
  */
 export declare const POUCHDB_DESIGN_PREFIX: '_design/';
 export declare function pouchSwapIdToPrimary<T>(primaryKey: keyof T, docData: any): any;
+export declare function pouchSwapIdToPrimaryString<T>(primaryKey: keyof T, str: keyof T): keyof T;
 export declare function pouchDocumentDataToRxDocumentData<T>(primaryKey: keyof T, pouchDoc: WithAttachments<T>): RxDocumentData<T>;
 export declare function rxDocumentDataToPouchDocumentData<T>(primaryKey: keyof T, doc: RxDocumentData<T> | RxDocumentWriteData<T>): WithAttachments<T & {
     _id: string;

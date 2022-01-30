@@ -1,14 +1,21 @@
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 var _exportNames = {
+  RxReplicationError: true,
   RxReplicationStateBase: true,
   replicateRxCollection: true
 };
-exports.RxReplicationStateBase = void 0;
+exports.RxReplicationStateBase = exports.RxReplicationError = void 0;
 exports.replicateRxCollection = replicateRxCollection;
+
+var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/inheritsLoose"));
+
+var _wrapNativeSuper2 = _interopRequireDefault(require("@babel/runtime/helpers/wrapNativeSuper"));
 
 var _rxjs = require("rxjs");
 
@@ -261,6 +268,23 @@ function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o =
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
+var RxReplicationError = /*#__PURE__*/function (_Error) {
+  (0, _inheritsLoose2["default"])(RxReplicationError, _Error);
+
+  function RxReplicationError(message, payload, innerErrors) {
+    var _this;
+
+    _this = _Error.call(this, message) || this;
+    _this.payload = payload;
+    _this.innerErrors = innerErrors;
+    return _this;
+  }
+
+  return RxReplicationError;
+}( /*#__PURE__*/(0, _wrapNativeSuper2["default"])(Error));
+
+exports.RxReplicationError = RxReplicationError;
+
 var RxReplicationStateBase = /*#__PURE__*/function () {
   /**
    * Counts how many times the run() method
@@ -273,7 +297,7 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
    * Decrease when the retry-cycle started to run.
    */
   function RxReplicationStateBase(replicationIdentifier, collection, pull, push, live, liveInterval, retryTime) {
-    var _this = this;
+    var _this2 = this;
 
     this.subs = [];
     this.initialReplicationComplete$ = undefined;
@@ -304,11 +328,11 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
     this.retryTime = retryTime;
     // stop the replication when the collection gets destroyed
     this.collection.onDestroy.then(function () {
-      _this.cancel();
+      _this2.cancel();
     }); // create getters for the observables
 
     Object.keys(this.subjects).forEach(function (key) {
-      Object.defineProperty(_this, key + '$', {
+      Object.defineProperty(_this2, key + '$', {
         get: function get() {
           return this.subjects[key].asObservable();
         }
@@ -355,33 +379,33 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
   _proto.run = function run() {
     try {
       var _arguments2 = arguments,
-          _this3 = this;
+          _this4 = this;
 
       var retryOnFail = _arguments2.length > 0 && _arguments2[0] !== undefined ? _arguments2[0] : true;
 
-      if (_this3.isStopped()) {
+      if (_this4.isStopped()) {
         return Promise.resolve();
       }
 
-      if (_this3.runQueueCount > 2) {
-        return Promise.resolve(_this3.runningPromise);
+      if (_this4.runQueueCount > 2) {
+        return Promise.resolve(_this4.runningPromise);
       }
 
-      _this3.runQueueCount++;
-      _this3.runningPromise = _this3.runningPromise.then(function () {
-        _this3.subjects.active.next(true);
+      _this4.runQueueCount++;
+      _this4.runningPromise = _this4.runningPromise.then(function () {
+        _this4.subjects.active.next(true);
 
-        return _this3._run(retryOnFail);
+        return _this4._run(retryOnFail);
       }).then(function (willRetry) {
-        _this3.subjects.active.next(false);
+        _this4.subjects.active.next(false);
 
-        if (retryOnFail && !willRetry && _this3.subjects.initialReplicationComplete.getValue() === false) {
-          _this3.subjects.initialReplicationComplete.next(true);
+        if (retryOnFail && !willRetry && _this4.subjects.initialReplicationComplete.getValue() === false) {
+          _this4.subjects.initialReplicationComplete.next(true);
         }
 
-        _this3.runQueueCount--;
+        _this4.runQueueCount--;
       });
-      return Promise.resolve(_this3.runningPromise);
+      return Promise.resolve(_this4.runningPromise);
     } catch (e) {
       return Promise.reject(e);
     }
@@ -404,8 +428,8 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
           if (_exit) return _result;
 
           var _temp = function () {
-            if (_this5.pull) {
-              return Promise.resolve(_this5.runPull()).then(function (pullResult) {
+            if (_this6.pull) {
+              return Promise.resolve(_this6.runPull()).then(function (pullResult) {
                 if (pullResult === 'error' && retryOnFail) {
                   addRetry();
                   _exit2 = true;
@@ -413,10 +437,10 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
                 }
 
                 if (pullResult === 'drop') {
-                  var _this4$_run2 = _this5._run();
+                  var _this5$_run2 = _this6._run();
 
                   _exit2 = true;
-                  return _this4$_run2;
+                  return _this5$_run2;
                 }
               });
             }
@@ -428,19 +452,19 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
         }
 
         var addRetry = function addRetry() {
-          if (_this5.pendingRetries < 1) {
-            _this5.pendingRetries = _this5.pendingRetries + 1;
+          if (_this6.pendingRetries < 1) {
+            _this6.pendingRetries = _this6.pendingRetries + 1;
             setTimeout(function () {
-              _this5.pendingRetries = _this5.pendingRetries - 1;
+              _this6.pendingRetries = _this6.pendingRetries - 1;
 
-              _this5.run();
-            }, _this5.retryTime);
+              _this6.run();
+            }, _this6.retryTime);
           }
         };
 
         var _temp2 = function () {
-          if (_this5.push) {
-            return Promise.resolve(_this5.runPush()).then(function (ok) {
+          if (_this6.push) {
+            return Promise.resolve(_this6.runPush()).then(function (ok) {
               if (!ok && retryOnFail) {
                 addRetry();
                 /*
@@ -460,10 +484,10 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
       };
 
       var _arguments4 = arguments,
-          _this5 = this;
+          _this6 = this;
 
       var retryOnFail = _arguments4.length > 0 && _arguments4[0] !== undefined ? _arguments4[0] : true;
-      _this5.runCount++;
+      _this6.runCount++;
       /**
        * The replication happens in the background anyways
        * so we have to ensure that we do not slow down primary tasks.
@@ -473,8 +497,8 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
        */
 
       var _temp7 = function () {
-        if (_this5.subjects.initialReplicationComplete.getValue()) {
-          return Promise.resolve(_this5.collection.database.requestIdlePromise()).then(function () {});
+        if (_this6.subjects.initialReplicationComplete.getValue()) {
+          return Promise.resolve(_this6.collection.database.requestIdlePromise()).then(function () {});
         }
       }();
 
@@ -492,17 +516,17 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
 
   _proto.runPull = function runPull() {
     try {
-      var _this7 = this;
+      var _this8 = this;
 
-      if (!_this7.pull) {
+      if (!_this8.pull) {
         throw (0, _rxError.newRxError)('SNH');
       }
 
-      if (_this7.isStopped()) {
+      if (_this8.isStopped()) {
         return Promise.resolve('ok');
       }
 
-      return Promise.resolve((0, _replicationCheckpoint.getLastPullDocument)(_this7.collection, _this7.replicationIdentifier)).then(function (latestDocument) {
+      return Promise.resolve((0, _replicationCheckpoint.getLastPullDocument)(_this8.collection, _this8.replicationIdentifier)).then(function (latestDocument) {
         var _exit3 = false;
 
         function _temp14(_result3) {
@@ -522,33 +546,33 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
                   var withoutDeleteFlag = (0, _util.flatClone)(doc);
                   delete withoutDeleteFlag._deleted;
 
-                  _this7.collection.schema.validate(withoutDeleteFlag);
+                  _this8.collection.schema.validate(withoutDeleteFlag);
                 });
               } catch (err) {
-                _this7.subjects.error.next(err);
+                _this8.subjects.error.next(err);
 
                 return Promise.resolve('error');
               }
             }
 
-            return _this7.isStopped() ? Promise.resolve('ok') : Promise.resolve(_this7.handleDocumentsFromRemote(pulledDocuments)).then(function () {
+            return _this8.isStopped() ? Promise.resolve('ok') : Promise.resolve(_this8.handleDocumentsFromRemote(pulledDocuments)).then(function () {
               function _temp10() {
                 return Promise.resolve('ok');
               }
 
               pulledDocuments.map(function (doc) {
-                return _this7.subjects.received.next(doc);
+                return _this8.subjects.received.next(doc);
               });
 
               var _temp9 = function () {
                 if (pulledDocuments.length === 0) {
-                  if (_this7.live) {}
+                  if (_this8.live) {}
                 } else {
                   var newLatestDocument = (0, _util.lastOfArray)(pulledDocuments);
-                  return Promise.resolve((0, _replicationCheckpoint.setLastPullDocument)(_this7.collection, _this7.replicationIdentifier, newLatestDocument)).then(function () {
+                  return Promise.resolve((0, _replicationCheckpoint.setLastPullDocument)(_this8.collection, _this8.replicationIdentifier, newLatestDocument)).then(function () {
                     var _temp8 = function () {
                       if (result.hasMoreDocuments) {
-                        return Promise.resolve(_this7.runPull()).then(function () {});
+                        return Promise.resolve(_this8.runPull()).then(function () {});
                       }
                     }();
 
@@ -578,8 +602,8 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
 
 
           var _temp11 = function () {
-            if (_this7.push) {
-              return Promise.resolve((0, _replicationCheckpoint.getChangesSinceLastPushSequence)(_this7.collection, _this7.replicationIdentifier, 1)).then(function (localWritesInBetween) {
+            if (_this8.push) {
+              return Promise.resolve((0, _replicationCheckpoint.getChangesSinceLastPushSequence)(_this8.collection, _this8.replicationIdentifier, 1)).then(function (localWritesInBetween) {
                 if (localWritesInBetween.changedDocs.size > 0) {
                   var _Promise$resolve3 = Promise.resolve('drop');
 
@@ -596,11 +620,11 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
         var result;
 
         var _temp13 = _catch(function () {
-          return Promise.resolve(_this7.pull.handler(latestDocument)).then(function (_this6$pull$handler) {
-            result = _this6$pull$handler;
+          return Promise.resolve(_this8.pull.handler(latestDocument)).then(function (_this7$pull$handler) {
+            result = _this7$pull$handler;
           });
         }, function (err) {
-          _this7.subjects.error.next(err);
+          _this8.subjects.error.next(err);
 
           var _Promise$resolve = Promise.resolve('error');
 
@@ -617,19 +641,19 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
 
   _proto.handleDocumentsFromRemote = function handleDocumentsFromRemote(docs) {
     try {
-      var _this9 = this;
+      var _this10 = this;
 
       var toStorageDocs = [];
       var docIds = docs.map(function (doc) {
-        return doc[_this9.collection.schema.primaryPath];
+        return doc[_this10.collection.schema.primaryPath];
       });
-      return Promise.resolve(_this9.collection.storageInstance.findDocumentsById(docIds, true)).then(function (docsFromLocal) {
+      return Promise.resolve(_this10.collection.storageInstance.findDocumentsById(docIds, true)).then(function (docsFromLocal) {
         for (var _iterator = _createForOfIteratorHelperLoose(docs), _step; !(_step = _iterator()).done;) {
           var originalDoc = _step.value;
           var doc = (0, _util.flatClone)(originalDoc);
-          var documentId = doc[_this9.collection.schema.primaryPath];
+          var documentId = doc[_this10.collection.schema.primaryPath];
           var docStateInLocalStorageInstance = docsFromLocal[documentId];
-          var newRevision = (0, _revisionFlag.createRevisionForPulledDocument)(_this9.replicationIdentifier, doc);
+          var newRevision = (0, _revisionFlag.createRevisionForPulledDocument)(_this10.replicationIdentifier, doc);
 
           if (docStateInLocalStorageInstance) {
             var hasHeight = (0, _util.getHeightOfRevision)(docStateInLocalStorageInstance._rev);
@@ -645,9 +669,9 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
 
         var _temp15 = function () {
           if (toStorageDocs.length > 0) {
-            return Promise.resolve(_this9.collection.database.lockedRun(function () {
-              return _this9.collection.storageInstance.bulkAddRevisions(toStorageDocs.map(function (doc) {
-                return (0, _rxCollectionHelper._handleToStorageInstance)(_this9.collection, doc);
+            return Promise.resolve(_this10.collection.database.lockedRun(function () {
+              return _this10.collection.storageInstance.bulkAddRevisions(toStorageDocs.map(function (doc) {
+                return (0, _rxCollectionHelper._handleToStorageInstance)(_this10.collection, doc);
               }));
             })).then(function () {});
           }
@@ -669,14 +693,14 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
 
   _proto.runPush = function runPush() {
     try {
-      var _this11 = this;
+      var _this12 = this;
 
-      if (!_this11.push) {
+      if (!_this12.push) {
         throw (0, _rxError.newRxError)('SNH');
       }
 
-      var batchSize = _this11.push.batchSize ? _this11.push.batchSize : 5;
-      return Promise.resolve((0, _replicationCheckpoint.getChangesSinceLastPushSequence)(_this11.collection, _this11.replicationIdentifier, batchSize)).then(function (changesResult) {
+      var batchSize = _this12.push.batchSize ? _this12.push.batchSize : 5;
+      return Promise.resolve((0, _replicationCheckpoint.getChangesSinceLastPushSequence)(_this12.collection, _this12.replicationIdentifier, batchSize)).then(function (changesResult) {
         var _exit5 = false;
 
         function _temp20(_result5) {
@@ -685,7 +709,7 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
           function _temp18() {
             var _temp16 = function () {
               if (changesResult.changedDocs.size !== 0) {
-                return Promise.resolve(_this11.runPush()).then(function () {});
+                return Promise.resolve(_this12.runPush()).then(function () {});
               }
             }();
 
@@ -696,12 +720,12 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
           }
 
           pushDocs.forEach(function (pushDoc) {
-            return _this11.subjects.send.next(pushDoc);
+            return _this12.subjects.send.next(pushDoc);
           });
 
           var _temp17 = function () {
             if (changesResult.hasChangesSinceLastSequence) {
-              return Promise.resolve((0, _replicationCheckpoint.setLastPushSequence)(_this11.collection, _this11.replicationIdentifier, changesResult.lastSequence)).then(function () {});
+              return Promise.resolve((0, _replicationCheckpoint.setLastPushSequence)(_this12.collection, _this12.replicationIdentifier, changesResult.lastSequence)).then(function () {});
             }
           }();
 
@@ -722,9 +746,9 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
         });
 
         var _temp19 = _catch(function () {
-          return Promise.resolve(_this11.push.handler(pushDocs)).then(function () {});
+          return Promise.resolve(_this12.push.handler(pushDocs)).then(function () {});
         }, function (err) {
-          _this11.subjects.error.next(err);
+          _this12.subjects.error.next(err);
 
           _exit5 = true;
           return false;

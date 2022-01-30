@@ -591,8 +591,7 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
 
         localState.databaseState.database.removeCollection(_this17.collectionName);
         localState.databaseState.database.removeCollection(localState.changesCollection.name);
-
-        _this17.close();
+        return _this17.close();
       });
     } catch (e) {
       return Promise.reject(e);

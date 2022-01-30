@@ -11,6 +11,7 @@ exports.pouchDocumentDataToRxDocumentData = pouchDocumentDataToRxDocumentData;
 exports.pouchHash = pouchHash;
 exports.pouchStripLocalFlagFromPrimary = pouchStripLocalFlagFromPrimary;
 exports.pouchSwapIdToPrimary = pouchSwapIdToPrimary;
+exports.pouchSwapIdToPrimaryString = pouchSwapIdToPrimaryString;
 exports.pouchSwapPrimaryToId = pouchSwapPrimaryToId;
 exports.primarySwapPouchDbQuerySelector = primarySwapPouchDbQuerySelector;
 exports.rxDocumentDataToPouchDocumentData = rxDocumentDataToPouchDocumentData;
@@ -103,6 +104,14 @@ function pouchSwapIdToPrimary(primaryKey, docData) {
   docData[primaryKey] = docData._id;
   delete docData._id;
   return docData;
+}
+
+function pouchSwapIdToPrimaryString(primaryKey, str) {
+  if (str === '_id') {
+    return primaryKey;
+  } else {
+    return str;
+  }
 }
 
 function pouchDocumentDataToRxDocumentData(primaryKey, pouchDoc) {

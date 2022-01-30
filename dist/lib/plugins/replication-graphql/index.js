@@ -63,6 +63,8 @@ var _rxChangeEvent = require("../../rx-change-event");
 
 var _rxCollectionHelper = require("../../rx-collection-helper");
 
+var _replication = require("../replication");
+
 var _graphqlSchemaFromRxSchema = require("./graphql-schema-from-rx-schema");
 
 Object.keys(_graphqlSchemaFromRxSchema).forEach(function (key) {
@@ -642,16 +644,26 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
 
               if (result.errors) {
                 if (typeof result.errors === 'string') {
-                  throw new Error(result.errors);
+                  throw new _replication.RxReplicationError(result.errors, {
+                    type: 'pull'
+                  });
                 } else {
-                  var err = new Error('unknown errors occurred - see innerErrors for more details');
-                  err.innerErrors = result.errors;
-                  throw err;
+                  throw new _replication.RxReplicationError('unknown errors occurred in replication pull - see innerErrors for more details', {
+                    type: 'pull'
+                  }, result.errors);
                 }
               }
             });
           }, function (err) {
-            _this7._subjects.error.next(err);
+            var replicationError = err;
+
+            if (!(err instanceof _replication.RxReplicationError)) {
+              replicationError = new _replication.RxReplicationError(err.message, {
+                type: 'pull'
+              }, err);
+            }
+
+            _this7._subjects.error.next(replicationError);
 
             _exit3 = true;
             return false;
@@ -694,8 +706,8 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
         }))).then(function (_Promise$all2) {
           var _exit4 = false;
 
-          function _temp17(_result5) {
-            if (_exit4) return _result5;
+          function _temp17(_result6) {
+            if (_exit4) return _result6;
 
             function _temp15() {
               var _temp13 = function () {
@@ -744,20 +756,37 @@ var RxGraphQLReplicationState = /*#__PURE__*/function () {
               }
 
               return Promise.resolve(_this9.push.queryBuilder(changeWithDoc.doc)).then(function (pushObj) {
-                return Promise.resolve(_this9.client.query(pushObj.query, pushObj.variables)).then(function (result) {
-                  if (result.errors) {
-                    if (typeof result.errors === 'string') {
-                      throw new Error(result.errors);
+                return _catch(function () {
+                  return Promise.resolve(_this9.client.query(pushObj.query, pushObj.variables)).then(function (result) {
+                    if (result.errors) {
+                      if (typeof result.errors === 'string') {
+                        throw new _replication.RxReplicationError(result.errors, {
+                          type: 'push',
+                          documentData: changeWithDoc.doc
+                        });
+                      } else {
+                        throw new _replication.RxReplicationError('unknown errors occurred in replication push - see innerErrors for more details', {
+                          type: 'push',
+                          documentData: changeWithDoc.doc
+                        }, result.errors);
+                      }
                     } else {
-                      var err = new Error('unknown errors occurred - see innerErrors for more details');
-                      err.innerErrors = result.errors;
-                      throw err;
-                    }
-                  } else {
-                    _this9._subjects.send.next(changeWithDoc.doc);
+                      _this9._subjects.send.next(changeWithDoc.doc);
 
-                    lastSuccessfullChange = changeWithDoc;
+                      lastSuccessfullChange = changeWithDoc;
+                    }
+                  });
+                }, function (err) {
+                  var replicationError = err;
+
+                  if (!(err instanceof _replication.RxReplicationError)) {
+                    replicationError = new _replication.RxReplicationError(err.message, {
+                      type: 'push',
+                      documentData: changeWithDoc.doc
+                    }, err);
                   }
+
+                  throw replicationError;
                 });
               });
             }, function () {

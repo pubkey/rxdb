@@ -102,7 +102,8 @@ a:visited {
     }
 }
 
-.dark {
+.dark,
+.block.dark {
     background-color: var(--bg-color-dark);
 }
 
@@ -302,10 +303,12 @@ header .logo img {
 
 
 .block {
-    width         : 100%;
-    min-height    : 450px;
-    padding-top   : 80px;
-    padding-bottom: 80px;
+    width           : 100%;
+    min-height      : 450px;
+    padding-top     : 80px;
+    padding-bottom  : 80px;
+    background-color: var(--bg-color);
+    position        : relative;
 }
 
 
@@ -328,7 +331,8 @@ header .logo img {
 }
 
 .block.first .inner {
-    width: 60%;
+    width   : 60%;
+    position: fixed;
 }
 
 @media (max-width: 900px) {

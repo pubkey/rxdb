@@ -49,6 +49,8 @@ var RxStorageLokiStatics = {
      * To ensure a deterministic sorting,
      * we have to ensure the primary key is always part
      * of the sort query.
+     * TODO this should be done by RxDB instead so we
+     * can ensure it in all storage implementations.
      */
 
 

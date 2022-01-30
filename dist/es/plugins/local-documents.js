@@ -188,6 +188,7 @@ var RxLocalDocumentPrototype = {
         throw getFromObjectOrThrow(res.error, newData._id);
       }
 
+      newData = flatClone(newData);
       newData._rev = docResult._rev;
     });
   },
@@ -279,6 +280,7 @@ function insertLocal(id, docData) {
     return writeSingleLocal(_getKeyObjectStorageInstanceByParent(_this3), {
       document: docData
     }).then(function (res) {
+      docData = flatClone(docData);
       docData._rev = res._rev;
       var newDoc = RxLocalDocument.create(id, docData, _this3);
       return newDoc;

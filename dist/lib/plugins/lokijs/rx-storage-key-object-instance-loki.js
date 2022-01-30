@@ -149,7 +149,8 @@ var RxStorageKeyObjectInstanceLoki = /*#__PURE__*/function () {
             var id = writeRow.document._id;
             writeRowById.set(id, writeRow);
             var writeDoc = (0, _util.flatClone)(writeRow.document);
-            var docInDb = localState.collection.by('_id', id);
+            var docInDb = localState.collection.by('_id', id); // TODO why not use docInDb instead of collection.by() ??
+
             var previous = writeRow.previous ? writeRow.previous : localState.collection.by('_id', id);
             var newRevHeight = previous ? (0, _util.parseRevision)(previous._rev).height + 1 : 1;
             var newRevision = newRevHeight + '-' + (0, _util.createRevision)(writeRow.document);
