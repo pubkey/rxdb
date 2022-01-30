@@ -92,6 +92,10 @@ var RxStoragePouchStatics = {
     var massagedSelector = (0, _pouchdbSelectorCore.massageSelector)(query.selector);
 
     var fun = function fun(doc) {
+      if (doc._deleted) {
+        return false;
+      }
+
       var cloned = (0, _pouchdbHelper.pouchSwapPrimaryToId)(primaryPath, doc);
       var row = {
         doc: cloned

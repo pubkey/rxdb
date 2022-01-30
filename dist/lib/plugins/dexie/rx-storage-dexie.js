@@ -72,6 +72,10 @@ var RxStorageDexieStatics = {
     var mingoQuery = new _mingo.Query(query.selector);
 
     var fun = function fun(doc) {
+      if (doc._deleted) {
+        return false;
+      }
+
       var cursor = mingoQuery.find([doc]);
       var next = cursor.next();
 

@@ -88,6 +88,10 @@ var RxStorageLokiStatics = {
    */
   getQueryMatcher: function getQueryMatcher(_schema, query) {
     var fun = function fun(doc) {
+      if (doc._deleted) {
+        return false;
+      }
+
       var docWithResetDeleted = (0, _util.flatClone)(doc);
       docWithResetDeleted._deleted = !!docWithResetDeleted._deleted;
       var fakeCollection = {

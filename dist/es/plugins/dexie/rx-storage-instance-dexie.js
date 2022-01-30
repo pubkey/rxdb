@@ -349,6 +349,7 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
                         doc: null
                       };
                     } else if (documentInDb._deleted && docData._deleted) {
+                      bulkPutDocs.push(docData);
                       change = null;
                     }
 

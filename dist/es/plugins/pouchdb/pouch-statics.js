@@ -78,6 +78,10 @@ export var RxStoragePouchStatics = {
     var massagedSelector = massageSelector(query.selector);
 
     var fun = function fun(doc) {
+      if (doc._deleted) {
+        return false;
+      }
+
       var cloned = pouchSwapPrimaryToId(primaryPath, doc);
       var row = {
         doc: cloned
