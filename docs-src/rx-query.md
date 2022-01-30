@@ -24,19 +24,24 @@ const query = myCollection
       selector: {
         name: 'alice'
       }
-    })
+    });
 ```
 
 ```js
 // find the youngest one
 const query = myCollection
     .findOne({
+      selector: {},
       sort: [
         {age: 'asc'}
       ]
-    })
+    });
 ```
 
+```js
+// find one document by the primary key
+const query = myCollection.findOne('foobar');
+```
 ## exec()
 Returns a `Promise` that resolves with the result-set of the query.
 
