@@ -619,6 +619,34 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     },
                 ]);
 
+                /**
+                 * Also add deleted documents via bulkAddRevisions()
+                 */
+                await storageInstance.bulkAddRevisions(
+                    new Array(5)
+                        .fill(0)
+                        .map(() => {
+                            const docData: RxDocumentData<TestDocType> = getWriteData({
+                                value,
+                                _deleted: true
+                            }) as any;
+                            docData._rev = '2-5373c7dc85e8705456beaf68ae041110';
+                            return docData;
+                        })
+                );
+                /**
+                 * Simulate deletion of existing document via bulkAddRevisions() 
+                 */
+                const oneDoc = getWriteData({ key: 'deleted-doc', value });
+                await storageInstance.bulkWrite([
+                    {
+                        document: clone(oneDoc)
+                    }
+                ]);
+                oneDoc._rev = '2-5373c7dc85e8705456beaf68ae041110';
+                oneDoc._deleted = true;
+                await storageInstance.bulkAddRevisions([oneDoc as any]);
+
                 const preparedQuery = config.storage.getStorage().statics.prepareQuery(
                     storageInstance.schema,
                     {
