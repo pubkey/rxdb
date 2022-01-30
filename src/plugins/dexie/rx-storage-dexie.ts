@@ -91,6 +91,9 @@ export const RxStorageDexieStatics: RxStorageStatics = {
     ): QueryMatcher<RxDocumentWriteData<RxDocType>> {
         const mingoQuery = new MingoQuery(query.selector);
         const fun: QueryMatcher<RxDocumentWriteData<RxDocType>> = (doc: RxDocumentWriteData<RxDocType>) => {
+            if (doc._deleted) {
+                return false;
+            }
             const cursor = mingoQuery.find([doc]);
             const next = cursor.next();
             if (next) {

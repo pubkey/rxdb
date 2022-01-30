@@ -98,7 +98,10 @@ export const RxStoragePouchStatics: RxStorageStatics = {
         const primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
         const massagedSelector = massageSelector(query.selector);
 
-        const fun: QueryMatcher<RxDocumentWriteData<RxDocType>> = (doc: RxDocType) => {
+        const fun: QueryMatcher<RxDocumentWriteData<RxDocType>> = (doc: RxDocumentWriteData<RxDocType>) => {
+            if (doc._deleted) {
+                return false;
+            }
             const cloned = pouchSwapPrimaryToId(primaryPath, doc);
             const row = {
                 doc: cloned

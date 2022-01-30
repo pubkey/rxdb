@@ -107,6 +107,9 @@ export const RxStorageLokiStatics: RxStorageStatics = {
         query: MangoQuery<RxDocType>
     ): QueryMatcher<RxDocumentWriteData<RxDocType>> {
         const fun: QueryMatcher<RxDocumentWriteData<RxDocType>> = (doc: RxDocumentWriteData<RxDocType>) => {
+            if (doc._deleted) {
+                return false;
+            }
             const docWithResetDeleted = flatClone(doc);
             docWithResetDeleted._deleted = !!docWithResetDeleted._deleted;
 

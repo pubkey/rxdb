@@ -539,7 +539,6 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }
                 };
 
-
                 const queryMatcher = config.storage.getStorage().statics.getQueryMatcher(
                     storageInstance.schema,
                     query
@@ -554,6 +553,33 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 assert.strictEqual(queryMatcher(doc1), false);
                 assert.strictEqual(queryMatcher(doc2), true);
+
+                storageInstance.close();
+            });
+            it('should not match deleted documents', async () => {
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion(0, '_id' as any),
+                    options: {},
+                    multiInstance: false
+                });
+
+                const query: MangoQuery = {
+                    selector: {}
+                };
+
+                const queryMatcher = config.storage.getStorage().statics.getQueryMatcher(
+                    storageInstance.schema,
+                    query
+                );
+
+                const doc1: any = schemaObjects.human();
+                doc1._deleted = true;
+                assert.strictEqual(
+                    queryMatcher(doc1),
+                    false
+                );
 
                 storageInstance.close();
             });
