@@ -1399,7 +1399,20 @@
             
         </li>
     
-        <li class="chapter " data-level="1.14" data-path="rx-storage-lokijs.html">
+        <li class="chapter " data-level="1.14" data-path="rx-storage-dexie.html">
+            
+                <a href="rx-storage-dexie.html">
+            
+                    
+                    RxStorage Dexie.js
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.15" data-path="rx-storage-lokijs.html">
             
                 <a href="rx-storage-lokijs.html">
             
@@ -1412,7 +1425,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.15" data-path="rx-storage-worker.html">
+        <li class="chapter " data-level="1.16" data-path="rx-storage-worker.html">
             
                 <a href="rx-storage-worker.html">
             
@@ -1425,7 +1438,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.16" data-path="replication-couchdb.html">
+        <li class="chapter " data-level="1.17" data-path="replication-couchdb.html">
             
                 <a href="replication-couchdb.html">
             
@@ -1438,7 +1451,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.17" data-path="replication-graphql.html">
+        <li class="chapter active" data-level="1.18" data-path="replication-graphql.html">
             
                 <a href="replication-graphql.html">
             
@@ -1451,7 +1464,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.18" data-path="replication.html">
+        <li class="chapter " data-level="1.19" data-path="replication.html">
             
                 <a href="replication.html">
             
@@ -1464,7 +1477,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19" data-path="in-memory.html">
+        <li class="chapter " data-level="1.20" data-path="in-memory.html">
             
                 <a href="in-memory.html">
             
@@ -1477,7 +1490,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.20" data-path="backup.html">
+        <li class="chapter " data-level="1.21" data-path="backup.html">
             
                 <a href="backup.html">
             
@@ -1490,7 +1503,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.21" data-path="query-cache.html">
+        <li class="chapter " data-level="1.22" data-path="query-cache.html">
             
                 <a href="query-cache.html">
             
@@ -1503,7 +1516,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.22" data-path="rx-local-document.html">
+        <li class="chapter " data-level="1.23" data-path="rx-local-document.html">
             
                 <a href="rx-local-document.html">
             
@@ -1516,7 +1529,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.23" data-path="custom-build.html">
+        <li class="chapter " data-level="1.24" data-path="custom-build.html">
             
                 <a href="custom-build.html">
             
@@ -1529,7 +1542,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.24" data-path="plugins.html">
+        <li class="chapter " data-level="1.25" data-path="plugins.html">
             
                 <a href="plugins.html">
             
@@ -1542,7 +1555,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.25" data-path="adapters.html">
+        <li class="chapter " data-level="1.26" data-path="adapters.html">
             
                 <a href="adapters.html">
             
@@ -2027,6 +2040,48 @@ When the clients sends a document to the server which causes a conflict, this ha
     <span class="hljs-built_in">console</span>.dir(error);
 });
 </code></pre>
+<p>GraphQL errors are wrapped in a <code>RxReplicationError</code>, which has a <code>payload</code> property with information to help you handle the underlying error.
+The payload has a <code>type</code> field with a value of <code>&quot;pull&quot;</code> or <code>&quot;push&quot;</code>, corresponding to an error in either a GraphQL pull or push replication operation, respectively.
+If the error occurs doing a <em>push</em>, the <code>payload</code> also contains a <code>documentData</code> property, which corresponds to the document data supplied to the push query builder.
+<strong>Notice:</strong> You may see errors in this observable that are not <code>RxReplicationError</code>.
+Replication may fail for reasons unrelated to the GraphQL service.
+E.g., your PouchDB or LokiJS database may have issues in which case a general error will be generated and passed on.</p>
+<p>As an example, you can try to recover from errors like so:</p>
+<pre><code class="lang-js">replicationState.error$.subscribe((error) =&gt; {
+  <span class="hljs-keyword">if</span> (error.payload) {
+      <span class="hljs-keyword">if</span> (error.payload.type === <span class="hljs-string">&apos;pull&apos;</span>) {
+          <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&apos;error pulling from GraphQL server&apos;</span>, error.innerErrors);
+      } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (error.type === <span class="hljs-string">&apos;push&apos;</span>) {
+          <span class="hljs-keyword">if</span> (error.innerErrors &amp;&amp; error.innerErrors.length &gt; <span class="hljs-number">0</span>) {
+              <span class="hljs-keyword">const</span> graphQLError = error.innerErrors[<span class="hljs-number">0</span>];
+
+              <span class="hljs-comment">// In this hypothetical case, there&apos;s a remote database uniqueness constraint being violated due to two</span>
+              <span class="hljs-comment">// clients pushing an object with the same property value. With the document data, you can decide how best</span>
+              <span class="hljs-comment">// to resolve the issue. In this case, the client that pushed last &quot;loses&quot; and we delete the object since</span>
+              <span class="hljs-comment">// the one it conflicts with will be pulled down during the next pull replication event.</span>
+              <span class="hljs-comment">// The `graphQLError` structure is dictated by your remote GraphQL service. The field names are likely</span>
+              <span class="hljs-comment">// to be different.</span>
+              <span class="hljs-keyword">if</span> (graphQLError.code === <span class="hljs-string">&apos;constraint-violation&apos;</span> &amp;&amp; graphQLError.constraintName === <span class="hljs-string">&quot;unique_profile_name&quot;</span>) {
+                  <span class="hljs-keyword">this</span>.db.profiles
+                      .findOne(documentData.id)
+                      .exec()
+                      .then((doc) =&gt; {
+                          doc?.remove();
+                      });
+              }
+          } <span class="hljs-keyword">else</span> {
+              <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&apos;error pushing document to GraphQL server&apos;</span>, documentData);
+          }
+      } <span class="hljs-keyword">else</span> {
+          <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&apos;Unknown replication action&apos;</span>, error.payload.type);
+      }
+  } <span class="hljs-keyword">else</span> {
+      <span class="hljs-comment">// General error occurred. E.g., issue communicating with local database.</span>
+      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&apos;something was wrong&apos;</span>);
+      <span class="hljs-built_in">console</span>.dir(error);
+  }
+});
+</code></pre>
 <h4 id="canceled">.canceled$</h4>
 <p>An <code>Observable</code> that emits <code>true</code> when the replication is canceled, <code>false</code> if not.</p>
 <h4 id="active">.active$</h4>
@@ -2077,7 +2132,7 @@ When the clients sends a document to the server which causes a conflict, this ha
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Replication GraphQL","level":"1.17","depth":1,"next":{"title":"Replication Primitives","level":"1.18","depth":1,"path":"replication.md","ref":"./replication.md","articles":[]},"previous":{"title":"Replication CouchDB","level":"1.16","depth":1,"path":"replication-couchdb.md","ref":"./replication-couchdb.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"replication-graphql.md","mtime":"2022-01-28T20:42:33.694Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-01-28T20:47:00.086Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Replication GraphQL","level":"1.18","depth":1,"next":{"title":"Replication Primitives","level":"1.19","depth":1,"path":"replication.md","ref":"./replication.md","articles":[]},"previous":{"title":"Replication CouchDB","level":"1.17","depth":1,"path":"replication-couchdb.md","ref":"./replication-couchdb.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"replication-graphql.md","mtime":"2022-01-30T00:44:25.493Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-01-30T00:48:28.827Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

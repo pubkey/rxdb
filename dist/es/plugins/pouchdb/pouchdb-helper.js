@@ -77,6 +77,13 @@ export function pouchSwapIdToPrimary(primaryKey, docData) {
   delete docData._id;
   return docData;
 }
+export function pouchSwapIdToPrimaryString(primaryKey, str) {
+  if (str === '_id') {
+    return primaryKey;
+  } else {
+    return str;
+  }
+}
 export function pouchDocumentDataToRxDocumentData(primaryKey, pouchDoc) {
   var useDoc = pouchSwapIdToPrimary(primaryKey, pouchDoc); // always flat clone becaues we mutate the _attachments property.
 

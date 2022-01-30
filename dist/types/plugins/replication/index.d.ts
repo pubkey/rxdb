@@ -1,5 +1,18 @@
 import { Observable, Subscription } from 'rxjs';
-import type { DeepReadonlyObject, PullRunResult, ReplicationOptions, ReplicationPullOptions, ReplicationPushOptions, RxCollection, RxReplicationState, WithDeleted } from '../../types';
+import type { DeepReadonlyObject, PullRunResult, ReplicationOptions, ReplicationPullOptions, ReplicationPushOptions, RxCollection, RxDocumentData, RxReplicationState, WithDeleted } from '../../types';
+export declare type RxReplicationAction = 'pull' | 'push';
+interface RxReplicationErrorPullPayload {
+    type: 'pull';
+}
+interface RxReplicationErrorPushPayload<RxDocType> {
+    type: 'push';
+    documentData: RxDocumentData<RxDocType>;
+}
+export declare class RxReplicationError<RxDocType> extends Error {
+    readonly payload: RxReplicationErrorPullPayload | RxReplicationErrorPushPayload<any>;
+    readonly innerErrors?: any;
+    constructor(message: string, payload: RxReplicationErrorPullPayload | RxReplicationErrorPushPayload<RxDocType>, innerErrors?: any);
+}
 export declare class RxReplicationStateBase<RxDocType> {
     readonly replicationIdentifier: string;
     readonly collection: RxCollection<RxDocType>;

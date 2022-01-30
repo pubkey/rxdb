@@ -3,6 +3,7 @@ import { newRxError } from '../../rx-error';
 import { pouchHash, pouchSwapPrimaryToId, POUCH_HASH_KEY, primarySwapPouchDbQuerySelector } from './pouchdb-helper';
 import { getSchemaByObjectPath } from '../../rx-schema-helper';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
+import { overwritable } from '../../overwritable';
 export var RxStoragePouchStatics = {
   /**
    * create the same diggest as an attachment with that data
@@ -97,121 +98,129 @@ export var RxStoragePouchStatics = {
    * and transforms it to one that fits for pouchdb
    */
   prepareQuery: function prepareQuery(schema, mutateableQuery) {
-    var primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
-    var query = mutateableQuery;
-    /**
-     * because sort wont work on unused keys we have to workaround
-     * so we add the key to the selector if necessary
-     * @link https://github.com/nolanlawson/pouchdb-find/issues/204
-     */
-
-    if (query.sort) {
-      query.sort.forEach(function (sortPart) {
-        var key = Object.keys(sortPart)[0];
-        var comparisonOperators = ['$gt', '$gte', '$lt', '$lte'];
-        var keyUsed = query.selector[key] && Object.keys(query.selector[key]).some(function (op) {
-          return comparisonOperators.includes(op);
-        }) || false;
-
-        if (!keyUsed) {
-          var schemaObj = getSchemaByObjectPath(schema, key);
-
-          if (!schemaObj) {
-            throw newRxError('QU5', {
-              query: query,
-              key: key,
-              schema: schema
-            });
-          }
-
-          if (!query.selector[key]) {
-            query.selector[key] = {};
-          }
-
-          switch (schemaObj.type) {
-            case 'number':
-            case 'integer':
-              // TODO change back to -Infinity when issue resolved
-              // @link https://github.com/pouchdb/pouchdb/issues/6454
-              // -Infinity does not work since pouchdb 6.2.0
-              query.selector[key].$gt = -9999999999999999999999999999;
-              break;
-
-            case 'string':
-              /**
-               * strings need an empty string, see
-               * @link https://github.com/pubkey/rxdb/issues/585
-               */
-              if (typeof query.selector[key] !== 'string') {
-                query.selector[key].$gt = '';
-              }
-
-              break;
-
-            default:
-              query.selector[key].$gt = null;
-              break;
-          }
-        }
-      });
-    } // regex does not work over the primary key
-    // TODO move this to dev mode
-
-
-    if (query.selector[primaryKey] && query.selector[primaryKey].$regex) {
-      throw newRxError('QU4', {
-        path: primaryKey,
-        query: mutateableQuery
-      });
-    } // primary-swap sorting
-
-
-    if (query.sort) {
-      var sortArray = query.sort.map(function (part) {
-        var _newPart;
-
-        var key = Object.keys(part)[0];
-        var direction = Object.values(part)[0];
-        var useKey = key === primaryKey ? '_id' : key;
-        var newPart = (_newPart = {}, _newPart[useKey] = direction, _newPart);
-        return newPart;
-      });
-      query.sort = sortArray;
-    } // strip empty selectors
-
-
-    Object.entries(query.selector).forEach(function (_ref2) {
-      var k = _ref2[0],
-          v = _ref2[1];
-
-      if (typeof v === 'object' && v !== null && !Array.isArray(v) && Object.keys(v).length === 0) {
-        delete query.selector[k];
-      }
-    });
-    query.selector = primarySwapPouchDbQuerySelector(query.selector, primaryKey);
-    /**
-     * To ensure a deterministic sorting,
-     * we have to ensure the primary key is always part
-     * of the sort query.
-     * TODO This should be done but will not work with pouchdb
-     * because it will throw
-     * 'Cannot sort on field(s) "key" when using the default index'
-     * So we likely have to modify the indexes so that this works. 
-     */
-
-    /*
-    if (!mutateableQuery.sort) {
-        mutateableQuery.sort = [{ [this.primaryPath]: 'asc' }] as any;
-    } else {
-        const isPrimaryInSort = mutateableQuery.sort
-            .find(p => firstPropertyNameOfObject(p) === this.primaryPath);
-        if (!isPrimaryInSort) {
-            mutateableQuery.sort.push({ [this.primaryPath]: 'asc' } as any);
-        }
-    }
-    */
-
-    return query;
+    return preparePouchDbQuery(schema, mutateableQuery);
   }
 };
+/**
+     * pouchdb has many bugs and strange behaviors
+     * this functions takes a normal mango query
+     * and transforms it to one that fits for pouchdb
+     */
+
+export function preparePouchDbQuery(schema, mutateableQuery) {
+  var primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
+  var query = mutateableQuery;
+  /**
+   * because sort wont work on unused keys we have to workaround
+   * so we add the key to the selector if necessary
+   * @link https://github.com/nolanlawson/pouchdb-find/issues/204
+   */
+
+  if (query.sort) {
+    query.sort.forEach(function (sortPart) {
+      var key = Object.keys(sortPart)[0];
+      var comparisonOperators = ['$gt', '$gte', '$lt', '$lte'];
+      var keyUsed = query.selector[key] && Object.keys(query.selector[key]).some(function (op) {
+        return comparisonOperators.includes(op);
+      }) || false;
+
+      if (!keyUsed) {
+        var schemaObj = getSchemaByObjectPath(schema, key);
+
+        if (!schemaObj) {
+          throw newRxError('QU5', {
+            query: query,
+            key: key,
+            schema: schema
+          });
+        }
+
+        if (!query.selector[key]) {
+          query.selector[key] = {};
+        }
+
+        switch (schemaObj.type) {
+          case 'number':
+          case 'integer':
+            // TODO change back to -Infinity when issue resolved
+            // @link https://github.com/pouchdb/pouchdb/issues/6454
+            // -Infinity does not work since pouchdb 6.2.0
+            query.selector[key].$gt = -9999999999999999999999999999;
+            break;
+
+          case 'string':
+            /**
+             * strings need an empty string, see
+             * @link https://github.com/pubkey/rxdb/issues/585
+             */
+            if (typeof query.selector[key] !== 'string') {
+              query.selector[key].$gt = '';
+            }
+
+            break;
+
+          default:
+            query.selector[key].$gt = null;
+            break;
+        }
+      }
+    });
+  } // regex does not work over the primary key
+
+
+  if (overwritable.isDevMode() && query.selector[primaryKey] && query.selector[primaryKey].$regex) {
+    throw newRxError('QU4', {
+      path: primaryKey,
+      query: mutateableQuery
+    });
+  } // primary-swap sorting
+
+
+  if (query.sort) {
+    var sortArray = query.sort.map(function (part) {
+      var _newPart;
+
+      var key = Object.keys(part)[0];
+      var direction = Object.values(part)[0];
+      var useKey = key === primaryKey ? '_id' : key;
+      var newPart = (_newPart = {}, _newPart[useKey] = direction, _newPart);
+      return newPart;
+    });
+    query.sort = sortArray;
+  } // strip empty selectors
+
+
+  Object.entries(query.selector).forEach(function (_ref2) {
+    var k = _ref2[0],
+        v = _ref2[1];
+
+    if (typeof v === 'object' && v !== null && !Array.isArray(v) && Object.keys(v).length === 0) {
+      delete query.selector[k];
+    }
+  });
+  query.selector = primarySwapPouchDbQuerySelector(query.selector, primaryKey);
+  /**
+   * To ensure a deterministic sorting,
+   * we have to ensure the primary key is always part
+   * of the sort query.
+   * TODO This should be done but will not work with pouchdb
+   * because it will throw
+   * 'Cannot sort on field(s) "key" when using the default index'
+   * So we likely have to modify the indexes so that this works. 
+   */
+
+  /*
+  if (!mutateableQuery.sort) {
+      mutateableQuery.sort = [{ [this.primaryPath]: 'asc' }] as any;
+  } else {
+      const isPrimaryInSort = mutateableQuery.sort
+          .find(p => firstPropertyNameOfObject(p) === this.primaryPath);
+      if (!isPrimaryInSort) {
+          mutateableQuery.sort.push({ [this.primaryPath]: 'asc' } as any);
+      }
+  }
+  */
+
+  return query;
+}
 //# sourceMappingURL=pouch-statics.js.map
