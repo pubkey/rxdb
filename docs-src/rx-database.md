@@ -51,7 +51,17 @@ const dbPouch = await createRxDatabase({
   storage: getRxStoragePouch('idb')
 });
 
-// ...or use the LokiJS storage with the indexeddb adapter.
+
+// ...or use the Dexie.js RxStorage that stores data in IndexedDB.
+import { getRxStorageDexie } from 'rxdb/plugins/dexie';
+
+const dbDexie = await createRxDatabase({
+  name: 'mydatabase',
+  storage: getRxStorageDexie()
+});
+
+
+// ...or use the LokiJS RxStorage with the indexeddb adapter.
 import { getRxStorageLoki } from 'rxdb/plugins/lokijs';
 const LokiIncrementalIndexedDBAdapter = require('lokijs/src/incremental-indexeddb-adapter');
 
