@@ -2,6 +2,8 @@
 
 ### X.X.X (comming soon)
 
+### 11.5.0 (30 January 2022)
+
 Features:
   - Improve emitted errors of the GraphQL replication [#3630](https://github.com/pubkey/rxdb/pull/3630) Thanks [@nirvdrum](https://github.com/nirvdrum)
   - Added Dexie.js based `RxStorage`. [Read the docs](https://rxdb.info/rx-storage-dexie.html)
