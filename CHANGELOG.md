@@ -2,6 +2,8 @@
 
 ### X.X.X (comming soon)
 
+### 11.5.1 (30 January 2022)
+
 Bugfixes:
   - `RxStorage.statics.getQueryMatcher()` must not match documents with `_deleted: true`.
 
