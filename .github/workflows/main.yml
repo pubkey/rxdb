@@ -411,6 +411,11 @@ jobs:
         with:
           working-directory: ./examples/graphql
           run: npm run test:lokijs
+      - name: test test:dexie
+        uses: GabrielBB/xvfb-action@v1.6
+        with:
+          working-directory: ./examples/graphql
+          run: npm run test:dexie
 
 
   test-browser-couch:

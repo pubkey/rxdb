@@ -20,6 +20,11 @@ import {
 const LokiIncrementalIndexedDBAdapter = require('lokijs/src/incremental-indexeddb-adapter');
 
 import {
+    getRxStorageDexie
+} from 'rxdb/plugins/dexie';
+
+
+import {
     filter
 } from 'rxjs/operators';
 
@@ -138,6 +143,8 @@ function getStorage() {
                 console.log('Autosave done!');
             }
         });
+    } else if (storageKey === 'dexie') {
+        return getRxStorageDexie();
     } else {
         throw new Error('storage key not defined ' + storageKey);
     }
