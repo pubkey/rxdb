@@ -8,9 +8,9 @@ For the Dexie based `RxStorage`, we use the [mingo](https://github.com/kofrasa/m
 **IMPORTANT:** The Dexie.js `RxStorage` is in **beta** mode. It may get breaking changes in any minor new RxDB version. Use at your own risk.
 
 ## Pros 
-    - Smaller bundle size then with the PouchDB storage.
-    - Fast inital load even on big datasets.
-    - Faster write and read performance than with PouchDB because it has less overhead.
+  - Smaller bundle size then with the PouchDB storage.
+  - Fast inital load even on big datasets.
+  - Faster write and read performance than with PouchDB because it has less overhead.
 
 ## Cons
   - Does not support CouchDB replication.
@@ -40,7 +40,7 @@ You can do that by using the [fake-indexeddb](https://github.com/dumbmatter/fake
 import { createRxDatabase } from 'rxdb/plugins/core';
 import { getRxStorageDexie } from 'rxdb/plugins/dexie';
 
-//> npm install fake-indexeddb
+//> npm install fake-indexeddb --save
 const fakeIndexedDB = require('fake-indexeddb');
 const fakeIDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange');
 
