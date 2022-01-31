@@ -56,7 +56,7 @@ export {
     createRxSchema,
     RxSchema,
     getIndexes,
-    normalize,
+    normalizeRxJsonSchema,
     getFinalFields,
     getPreviousVersions,
     toTypedRxJsonSchema

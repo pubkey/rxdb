@@ -158,7 +158,6 @@ export async function createIndexesOnPouch(
     if (!schema.indexes) {
         return;
     }
-
     const primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
     const before = await pouch.getIndexes();
     const existingIndexes: Set<string> = new Set(
@@ -186,8 +185,9 @@ export async function createIndexesOnPouch(
                 // index already exists
                 return;
             }
+
             /**
-             * TODO we might have even better performance by doing a bulkDocs
+             * TODO we might have even better performance by doing a pouch.bulkDocs()
              * on index creation
              */
             return pouch.createIndex({

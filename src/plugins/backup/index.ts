@@ -165,8 +165,7 @@ export class RxBackupState {
                                 }
                             })
                             .map(r => r.id)
-                            // unique
-                            .filter((elem, pos, arr) => arr.indexOf(elem) === pos);
+                            .filter((elem, pos, arr) => arr.indexOf(elem) === pos); // unique
                         await this.database.requestIdlePromise();
 
                         const docs: Map<string, RxDocument> = await collection.findByIds(docIds);

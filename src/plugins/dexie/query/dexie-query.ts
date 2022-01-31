@@ -63,7 +63,6 @@ export function getPouchQueryPlan<RxDocType>(
         })
     }
 
-
     /**
      * Because pouchdb-find is buggy AF,
      * we have to apply the same hacks to the query
@@ -126,6 +125,7 @@ export async function dexieQuery<RxDocType>(
     const limit = preparedQuery.limit ? preparedQuery.limit : Infinity;
     const skipPlusLimit = skip + limit;
     const queryPlan = (preparedQuery as any).pouchQueryPlan;
+
     const keyRange = getDexieKeyRange(
         queryPlan,
         Number.NEGATIVE_INFINITY,

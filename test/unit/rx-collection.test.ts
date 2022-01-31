@@ -95,11 +95,13 @@ config.parallel('rx-collection.test.js', () => {
                     assert.strictEqual(indexes.indexes.length, 2);
                     const lastIndexDefFields = indexes.indexes[1].def.fields;
                     assert.deepStrictEqual(
-                        lastIndexDefFields, [{
-                            'age': 'asc'
-                        }, {
-                            'passportCountry': 'asc'
-                        }]
+                        lastIndexDefFields,
+                        [
+                            { 'age': 'asc' },
+                            { 'passportCountry': 'asc' },
+                            // the primaryKey index will always be added by RxDB
+                            { _id: 'asc' }
+                        ]
                     );
                     db.destroy();
                 });
@@ -118,11 +120,12 @@ config.parallel('rx-collection.test.js', () => {
                     assert.strictEqual(indexes.indexes.length, 2);
                     const lastIndexDefFields = indexes.indexes[1].def.fields;
                     assert.deepStrictEqual(
-                        lastIndexDefFields, [{
-                            'age': 'asc'
-                        }, {
-                            '|a': 'asc'
-                        }]
+                        lastIndexDefFields, [
+                        { 'age': 'asc' },
+                        { '|a': 'asc' },
+                        // the primaryKey index will always be added by RxDB
+                        { _id: 'asc' }
+                    ]
                     );
                     db.destroy();
                 });
@@ -722,9 +725,10 @@ config.parallel('rx-collection.test.js', () => {
                                     '$gt': 0
                                 }
                             },
-                            sort: [{
-                                'other.age': 'asc'
-                            }]
+                            sort: [
+                                { 'other.age': 'asc' },
+                                { _id: 'asc' }
+                            ]
                         });
                         assert.strictEqual(all.docs.length, 10);
 

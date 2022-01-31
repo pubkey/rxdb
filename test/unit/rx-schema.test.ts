@@ -15,16 +15,11 @@ import {
     createRxSchema,
     RxJsonSchema,
     getIndexes,
-    normalize,
+    normalizeRxJsonSchema,
     getFinalFields,
     getPreviousVersions,
     getSchemaByObjectPath,
 } from '../../plugins/core';
-
-import {
-    getRxStoragePouch
-} from '../../plugins/pouchdb';
-
 
 config.parallel('rx-schema.test.js', () => {
     describe('static', () => {
@@ -427,7 +422,7 @@ config.parallel('rx-schema.test.js', () => {
                 });
             });
         });
-        describe('.normalize()', () => {
+        describe('.normalizeRxJsonSchema()', () => {
             it('should sort array with objects and strings', () => {
                 const val = ['firstName', 'lastName', {
                     name: 2
@@ -436,17 +431,44 @@ config.parallel('rx-schema.test.js', () => {
                 assert.deepStrictEqual(val, normalized);
             });
             it('should be the same object', () => {
-                const schema = normalize(schemas.humanNormalizeSchema1);
+                const schema = normalizeRxJsonSchema(schemas.humanNormalizeSchema1);
                 assert.deepStrictEqual(schema, schemas.humanNormalizeSchema1);
             });
             it('should deep sort one schema with different orders to be the same', () => {
-                const schema1 = normalize(schemas.humanNormalizeSchema1);
-                const schema2 = normalize(schemas.humanNormalizeSchema2);
+                const schema1 = normalizeRxJsonSchema(schemas.humanNormalizeSchema1);
+                const schema2 = normalizeRxJsonSchema(schemas.humanNormalizeSchema2);
                 assert.deepStrictEqual(schema1, schema2);
             });
             it('should not sort indexes array in the schema (related with https://github.com/pubkey/rxdb/pull/1695#issuecomment-554636433)', () => {
-                const schema = normalize(schemas.humanWithSimpleAndCompoundIndexes);
+                const schema = normalizeRxJsonSchema(schemas.humanWithSimpleAndCompoundIndexes);
                 assert.deepStrictEqual(schema.indexes, schemas.humanWithSimpleAndCompoundIndexes.indexes);
+            });
+            it('should have added the primaryKey to indexes that did not contain it', () => {
+                const schema: RxJsonSchema<any> = {
+                    primaryKey: 'id',
+                    version: 0,
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string'
+                        }
+                    },
+                    required: ['id'],
+                    indexes: [
+                        'age',
+                        ['foo', 'bar'],
+                        ['bar', 'id', 'foo']
+                    ]
+                }
+                const normalizedSchema = normalizeRxJsonSchema(schema);
+                assert.deepStrictEqual(
+                    normalizedSchema.indexes,
+                    [
+                        ['age', 'id'],
+                        ['foo', 'bar', 'id'],
+                        ['bar', 'id', 'foo']
+                    ]
+                );
             });
         });
         describe('.create()', () => {
@@ -825,7 +847,7 @@ config.parallel('rx-schema.test.js', () => {
             };
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                storage: getRxStoragePouch('memory')
+                storage: config.storage.getStorage()
             });
             const cols = await db.addCollections({
                 items: {
@@ -842,14 +864,20 @@ config.parallel('rx-schema.test.js', () => {
                 }
             });
 
-            const query = cols.items.find()
-                .where('fileInfo.watch.time')
-                .gt(-9999999999999999999999999999)
-                .sort('fileInfo.watch.time');
+            const query = cols.items.find({
+                selector: {
+                    'fileInfo.watch.time': {
+                        $gt: -9999999999999999999999999999
+                    }
+                },
+                sort: [
+                    { 'fileInfo.watch.time': 'asc' }
+                ]
+            });
+
             const found = await query.exec();
             assert.strictEqual(found.length, 1);
             assert.strictEqual(found[0].fileInfo.watch.time, 1);
-
             db.destroy();
         });
         it('#620 indexes should not be required', async () => {
@@ -878,7 +906,7 @@ config.parallel('rx-schema.test.js', () => {
             // create a database
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                storage: getRxStoragePouch('memory')
+                storage: config.storage.getStorage()
             });
             const collections = await db.addCollections({
                 test: {
@@ -919,7 +947,7 @@ config.parallel('rx-schema.test.js', () => {
             // create a database
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                storage: getRxStoragePouch('memory')
+                storage: config.storage.getStorage()
             });
             const collections = await db.addCollections({
                 test: {
@@ -964,7 +992,7 @@ config.parallel('rx-schema.test.js', () => {
             // create a database
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                storage: getRxStoragePouch('memory')
+                storage: config.storage.getStorage()
             });
             const collections = await db.addCollections({
                 test: {

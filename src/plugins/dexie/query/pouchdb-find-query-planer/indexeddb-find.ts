@@ -42,17 +42,13 @@ export function generateKeyRange(
 
     // Converts a valid CouchDB key into a valid IndexedDB one
     function convert(key: any, exact?: any) {
-
-
-
         /**
          * Overwritten.
          * In dexie.js we store deleted documents at another
          * table.
          * So we do not have to filter for deleted ones.
          */
-        const filterDeleted = [key];
-
+        const filterDeleted = Array.isArray(key) ? key : [key];
         const ret = filterDeleted.map(function (k) {
             // null, true and false are not indexable by indexeddb. When we write
             // these values we convert them to these constants, and so when we
@@ -66,7 +62,6 @@ export function generateKeyRange(
             } else if ((k as any) === false) {
                 return IDB_FALSE;
             }
-
             if (!exact) {
                 // We get passed CouchDB's collate low and high values, so for non-exact
                 // ranged queries we're going to convert them to our IDB equivalents
@@ -76,9 +71,9 @@ export function generateKeyRange(
                     return height;
                 }
             }
-
             return k;
         });
+
 
         /**
          * Because we do not have to index over the deleted field,

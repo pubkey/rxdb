@@ -343,15 +343,6 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
         });
     }
 
-    /**
-     * TODO
-     * this check has to exist only in beta-version, to help developers migrate their schemas
-     */
-    // remove backward-compatibility for compoundIndexes
-    if (Object.keys(jsonSchema).includes('compoundIndexes')) {
-        throw newRxError('SC25', { schema: jsonSchema });
-    }
-
     // remove backward-compatibility for index: true
     Object.keys(flattenObject(jsonSchema))
         .map(key => {

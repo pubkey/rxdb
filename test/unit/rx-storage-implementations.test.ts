@@ -15,7 +15,8 @@ import {
     RxJsonSchema,
     parseRevision,
     ensureNotFalsy,
-    getFromObjectOrThrow
+    getFromObjectOrThrow,
+    shuffleArray
 } from '../../plugins/core';
 
 import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
@@ -107,11 +108,50 @@ function getLocalWriteData(
     );
 }
 
+function getNestedDocSchema() {
+    const schema: RxJsonSchema<NestedDoc> = {
+        version: 0,
+        primaryKey: 'id',
+        type: 'object',
+        properties: {
+            id: {
+                type: 'string'
+            },
+            nes: {
+                type: 'object',
+                properties: {
+                    ted: {
+                        type: 'String'
+                    }
+                },
+                required: [
+                    'ted'
+                ]
+            }
+        },
+        indexes: [
+            ['nes.ted', 'id']
+        ],
+        required: [
+            'id',
+            'nes'
+        ]
+    };
+    return schema;
+}
+
 declare type RandomDoc = {
     id: string;
     equal: string;
     random: string;
     increment: number;
+};
+
+declare type NestedDoc = {
+    id: string;
+    nes: {
+        ted: string;
+    }
 };
 
 config.parallel('rx-storage-implementations.test.js (implementation: ' + config.storage.name + ')', () => {
@@ -541,7 +581,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 const queryMatcher = config.storage.getStorage().statics.getQueryMatcher(
                     storageInstance.schema,
-                    query
+                    config.storage.getStorage().statics.prepareQuery(
+                        storageInstance.schema,
+                        query
+                    )
                 );
 
                 const doc1: any = schemaObjects.human();
@@ -571,7 +614,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 const queryMatcher = config.storage.getStorage().statics.getQueryMatcher(
                     storageInstance.schema,
-                    query
+                    config.storage.getStorage().statics.prepareQuery(
+                        storageInstance.schema,
+                        query
+                    )
                 );
 
                 const doc1: any = schemaObjects.human();
@@ -582,6 +628,51 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 );
 
                 storageInstance.close();
+            });
+            it('should match the nested document', async () => {
+                const schema = getNestedDocSchema();
+                const query: MangoQuery = {
+                    selector: {
+                        'nes.ted': {
+                            $eq: 'barfoo'
+                        }
+                    },
+                    sort: [
+                        { id: 'asc' }
+                    ]
+                };
+
+                const queryMatcher = config.storage.getStorage().statics.getQueryMatcher(
+                    schema,
+                    config.storage.getStorage().statics.prepareQuery(
+                        schema,
+                        query
+                    )
+                );
+
+                const notMatchingDoc = {
+                    id: 'foobar',
+                    nes: {
+                        ted: 'xxx'
+                    },
+                    _attachments: {}
+                };
+                const matchingDoc = {
+                    id: 'foobar',
+                    nes: {
+                        ted: 'barfoo'
+                    },
+                    _attachments: {}
+                };
+
+                assert.strictEqual(
+                    queryMatcher(notMatchingDoc),
+                    false
+                );
+                assert.strictEqual(
+                    queryMatcher(matchingDoc),
+                    true
+                );
             });
         });
         describe('.query()', () => {
@@ -754,13 +845,19 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         }
                     },
                     indexes: [
-                        'id',
-                        'equal',
-                        'increment',
-                        'random',
+                        /**
+                         * RxDB wil always append the primaryKey to an index
+                         * if the primaryKey was not used in the index before.
+                         * This ensures we have a deterministic sorting when querying documents
+                         * from that index.
+                         */
+                        ['equal', 'id'],
+                        ['increment', 'id'],
+                        ['random', 'id'],
                         [
                             'equal',
-                            'increment'
+                            'increment',
+                            'id'
                         ]
                     ],
                     required: [
@@ -807,7 +904,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         storageInstance.schema,
                         preparedQuery
                     );
-                    const docsViaSort = docs.sort(sortComparator);
+                    const docsViaSort = shuffleArray(docs).sort(sortComparator);
                     assert.deepStrictEqual(docsViaQuery, docsViaSort);
                 }
                 const queries: MangoQuery<RandomDoc>[] = [
@@ -820,26 +917,76 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     {
                         selector: {},
                         sort: [
-                            { equal: 'asc' }
+                            { equal: 'asc' },
+                            /**
+                             * RxDB will always append the primaryKey as last sort parameter
+                             * if the primary key is not used in the sorting before.
+                             */
+                            { id: 'asc' }
                         ]
                     },
                     {
                         selector: {},
                         sort: [
-                            { increment: 'desc' }
+                            { increment: 'desc' },
+                            { id: 'asc' }
                         ]
                     },
                     {
                         selector: {},
                         sort: [
                             { equal: 'asc' },
-                            { increment: 'desc' }
+                            { increment: 'desc' },
+                            { id: 'asc' }
                         ]
                     }
                 ];
                 for (const query of queries) {
                     await testQuery(query);
                 }
+
+                storageInstance.close();
+            });
+            it('should be able to search over a nested object', async () => {
+                const schema = getNestedDocSchema();
+                const storageInstance = await config.storage
+                    .getStorage()
+                    .createStorageInstance<NestedDoc>({
+                        databaseName: randomCouchString(12),
+                        collectionName: randomCouchString(12),
+                        schema,
+                        options: {},
+                        multiInstance: false
+                    });
+                await storageInstance.bulkWrite([
+                    {
+                        document: {
+                            id: 'foobar',
+                            nes: {
+                                ted: 'barfoo'
+                            },
+                            _attachments: {}
+                        }
+                    }
+                ]);
+
+                const preparedQuery = config.storage.getStorage().statics.prepareQuery<NestedDoc>(
+                    schema,
+                    {
+                        selector: {
+                            'nes.ted': {
+                                $eq: 'barfoo'
+                            }
+                        },
+                        sort: [
+                            { 'nes.ted': 'asc' },
+                            { id: 'asc' }
+                        ]
+                    }
+                );
+
+                const results = await storageInstance.query(preparedQuery);
+                assert.strictEqual(results.documents.length, 1);
 
                 storageInstance.close();
             });

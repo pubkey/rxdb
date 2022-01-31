@@ -154,8 +154,11 @@ export function preparePouchDbQuery<RxDocType>(
     if (query.sort) {
         query.sort.forEach(sortPart => {
             const key = Object.keys(sortPart)[0];
-            const comparisonOperators = ['$gt', '$gte', '$lt', '$lte'];
-            const keyUsed = query.selector[key] && Object.keys(query.selector[key]).some(op => comparisonOperators.includes(op)) || false;
+            const comparisonOperators = ['$gt', '$gte', '$lt', '$lte', '$eq'];
+            const keyUsed = query.selector[key] &&
+                Object.keys(query.selector[key]).some(op => comparisonOperators.includes(op))
+                || false; // TODO why we need this '|| false' ?
+
             if (!keyUsed) {
                 const schemaObj = getSchemaByObjectPath(schema, key);
                 if (!schemaObj) {
@@ -230,28 +233,6 @@ export function preparePouchDbQuery<RxDocType>(
     });
 
     query.selector = primarySwapPouchDbQuerySelector(query.selector, primaryKey);
-
-    /**
-     * To ensure a deterministic sorting,
-     * we have to ensure the primary key is always part
-     * of the sort query.
-
-    * TODO This should be done but will not work with pouchdb
-     * because it will throw
-     * 'Cannot sort on field(s) "key" when using the default index'
-     * So we likely have to modify the indexes so that this works. 
-     */
-    /*
-    if (!mutateableQuery.sort) {
-        mutateableQuery.sort = [{ [this.primaryPath]: 'asc' }] as any;
-    } else {
-        const isPrimaryInSort = mutateableQuery.sort
-            .find(p => firstPropertyNameOfObject(p) === this.primaryPath);
-        if (!isPrimaryInSort) {
-            mutateableQuery.sort.push({ [this.primaryPath]: 'asc' } as any);
-        }
-    }
-    */
 
     return query;
 }

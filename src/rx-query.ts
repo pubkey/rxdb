@@ -19,11 +19,12 @@ import {
     overwriteGetterForCaching,
     now,
     PROMISE_RESOLVE_FALSE,
-    RXJS_SHARE_REPLAY_DEFAULTS
+    RXJS_SHARE_REPLAY_DEFAULTS,
+    flatClone,
+    firstPropertyNameOfObject
 } from './util';
 import {
-    newRxError,
-    newRxTypeError
+    newRxError
 } from './rx-error';
 import {
     runPluginHooks
@@ -38,7 +39,8 @@ import type {
     MangoQuerySelector,
     PreparedQuery,
     RxChangeEvent,
-    RxDocumentWriteData
+    RxDocumentWriteData,
+    RxJsonSchema
 } from './types';
 
 import {
@@ -48,6 +50,7 @@ import { calculateNewResults } from './event-reduce';
 import { triggerCacheReplacement } from './query-cache';
 import type { QueryMatcher } from 'event-reduce-js';
 import { _handleToStorageInstance } from './rx-collection-helper';
+import { getPrimaryFieldOfPrimaryKey } from './rx-schema';
 
 let _queryCount = 0;
 const newQueryID = function (): number {
@@ -323,7 +326,7 @@ export class RxQueryBase<
         runPluginHooks('prePrepareQuery', hookInput);
         const value = this.collection.database.storage.statics.prepareQuery(
             this.collection.storageInstance.schema,
-            hookInput.mangoQuery
+            normalizeMangoQuery(this.collection.schema.normalized, hookInput.mangoQuery)
         );
         this.getPreparedQuery = () => value;
         return value;
@@ -417,18 +420,6 @@ export function createRxQuery(
     queryObj: MangoQuery,
     collection: RxCollection
 ) {
-    // checks
-    if (queryObj && typeof queryObj !== 'object') {
-        throw newRxTypeError('QU7', {
-            queryObj
-        });
-    }
-    if (Array.isArray(queryObj)) {
-        throw newRxTypeError('QU8', {
-            queryObj
-        });
-    }
-
     runPluginHooks('preCreateRxQuery', {
         op,
         queryObj,
@@ -555,6 +546,39 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
     return ret; // true if results have changed
 }
 
+
+/**
+ * Normalize the query to ensure we have all fields set
+ * and queries that represent the same query logic are detected as equal by the caching.
+ */
+export function normalizeMangoQuery<RxDocType>(
+    schema: RxJsonSchema<RxDocType>,
+    mangoQuery: MangoQuery<RxDocType>
+): MangoQuery<RxDocType> {
+    const primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
+    mangoQuery = flatClone(mangoQuery);
+
+
+    /**
+     * To ensure a deterministic sorting,
+     * we have to ensure the primary key is always part
+     * of the sort query.
+     * Primary sorting is added as last sort parameter,
+     * similiar to how we add the primary key to indexes that do not have it.
+     */
+    if (!mangoQuery.sort) {
+        mangoQuery.sort = [{ [primaryKey]: 'asc' }] as any;
+    } else {
+        const isPrimaryInSort = mangoQuery.sort
+            .find(p => firstPropertyNameOfObject(p) === primaryKey);
+        if (!isPrimaryInSort) {
+            mangoQuery.sort = mangoQuery.sort.slice(0);
+            mangoQuery.sort.push({ [primaryKey]: 'asc' } as any);
+        }
+    }
+
+    return mangoQuery;
+}
 
 /**
  * Returns true if the given query

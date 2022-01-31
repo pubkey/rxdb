@@ -1071,7 +1071,11 @@ export const humanWithSimpleAndCompoundIndexes: RxJsonSchema<{ id: string; name:
             type: 'number'
         }
     },
-    indexes: ['name', 'age', ['createdAt', 'updatedAt']],
+    indexes: [
+        ['name', 'id'],
+        ['age', 'id'],
+        ['createdAt', 'updatedAt', 'id']
+    ],
     required: ['id', 'name', 'age', 'updatedAt']
 };
 

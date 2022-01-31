@@ -2,6 +2,12 @@
 
 ### X.X.X (comming soon)
 
+
+### 12.0.0 (comming soon) BREAKING
+
+- All indexes that do not contain the primaryKey, get the primary key added.
+
+
 ### 11.5.1 (30 January 2022)
 
 Bugfixes:
