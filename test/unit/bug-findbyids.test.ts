@@ -98,10 +98,12 @@ describe('bug-report.test.js', () => {
             'a', 'b', 'c', 'd'
         ]).subscribe({
             next: data => {
+                // eslint-disable-next-line
                 console.info('Got update', data)
                 updates.push(data)
             },
             error: err => {
+                // eslint-disable-next-line
                 console.error('Got error', err)
                 errors.push(err)
             }
