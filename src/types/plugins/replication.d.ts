@@ -25,7 +25,6 @@ export type ReplicationPullHandlerResult<RxDocType> = {
     hasMoreDocuments: boolean;
 };
 
-
 export type ReplicationPullHandler<RxDocType> = (latestPulledDocument: RxDocumentData<RxDocType> | null) => Promise<ReplicationPullHandlerResult<RxDocType>>;
 export type ReplicationPullOptions<RxDocType> = {
     /**
@@ -58,24 +57,30 @@ export type RxReplicationState<RxDocType> = RxReplicationStateBase<RxDocType> & 
 }
 
 export type ReplicationOptions<RxDocType> = {
-    replicationIdentifier: string,
-    collection: RxCollection<RxDocType>,
-    pull?: ReplicationPullOptions<RxDocType>,
-    push?: ReplicationPushOptions<RxDocType>,
+    replicationIdentifier: string;
+    collection: RxCollection<RxDocType>;
+    /**
+     * Define a custom property that is used
+     * to flag a document as being deleted.
+     * [default='_deleted']
+     */
+    deletedFlag?: '_deleted' | string;
+    pull?: ReplicationPullOptions<RxDocType>;
+    push?: ReplicationPushOptions<RxDocType>;
     /**
      * default=false
      */
-    live?: boolean,
+    live?: boolean;
     /**
      * Interval in milliseconds on when to run() again,
      * Set this to 0 when you have a back-channel from your server
      * that like a websocket that tells the client when to pull.
      */
-    liveInterval?: number,
+    liveInterval?: number;
     /**
      * Time in milliseconds
      */
-    retryTime?: number,
+    retryTime?: number;
     /**
      * If set to false,
      * it will not wait until the current instance becomes leader.

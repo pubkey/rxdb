@@ -98,6 +98,7 @@ export class RxReplicationStateBase<RxDocType> {
     constructor(
         public readonly replicationIdentifier: string,
         public readonly collection: RxCollection<RxDocType>,
+        public readonly deletedFlag: string,
         public readonly pull?: ReplicationPullOptions<RxDocType>,
         public readonly push?: ReplicationPushOptions<RxDocType>,
         public readonly live?: boolean,
@@ -273,7 +274,7 @@ export class RxReplicationStateBase<RxDocType> {
         /**
          * If a local write has happened while the remote changes where fetched,
          * we have to drop the document and first run a push-sequence.
-         * This will ensure that no local writes are missed out and not pushed to the remote.
+         * This will ensure that no local writes are missed out and are not pushed to the remote.
          */
         if (this.push) {
             const localWritesInBetween = await getChangesSinceLastPushSequence<RxDocType>(
@@ -287,7 +288,7 @@ export class RxReplicationStateBase<RxDocType> {
         }
 
         /**
-         * Run the schema validation for pulled documentd
+         * Run the schema validation for pulled documents
          * in dev-mode.
          */
         if (overwritable.isDevMode()) {
@@ -438,6 +439,7 @@ export function replicateRxCollection<RxDocType>(
     {
         replicationIdentifier,
         collection,
+        deletedFlag = '_deleted',
         pull,
         push,
         live = false,
@@ -449,6 +451,7 @@ export function replicateRxCollection<RxDocType>(
     const replicationState = new RxReplicationStateBase<RxDocType>(
         replicationIdentifier,
         collection,
+        deletedFlag,
         pull,
         push,
         live,
