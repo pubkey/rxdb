@@ -5,6 +5,7 @@ import {
 import { newRxError } from '../../rx-error';
 
 import {
+    getPouchIndexDesignDocNameByIndex,
     pouchHash,
     pouchSwapPrimaryToId,
     POUCH_HASH_KEY,
@@ -23,6 +24,7 @@ import type {
 } from '../../types';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import { overwritable } from '../../overwritable';
+import { isMaybeReadonlyArray } from '../../util';
 
 export const RxStoragePouchStatics: RxStorageStatics = {
 
@@ -231,6 +233,25 @@ export function preparePouchDbQuery<RxDocType>(
             delete query.selector[k];
         }
     });
+
+    /**
+     * Set use_index
+     * @link https://pouchdb.com/guides/mango-queries.html#use_index
+     */
+    if (mutateableQuery.index) {
+        const indexMaybeArray = mutateableQuery.index;
+        let indexArray: string[] = isMaybeReadonlyArray(indexMaybeArray) ? indexMaybeArray : [indexMaybeArray];
+        indexArray = indexArray.map(str => {
+            if (str === primaryKey) {
+                return '_id';
+            } else {
+                return str;
+            }
+        });
+        const indexName = getPouchIndexDesignDocNameByIndex(indexArray);
+        delete mutateableQuery.index;
+        (mutateableQuery as any).use_index = indexName;
+    }
 
     query.selector = primarySwapPouchDbQuerySelector(query.selector, primaryKey);
 

@@ -1,4 +1,4 @@
-import { MangoQuery } from './rx-query';
+import { MangoQuery, MangoQuerySelector, MangoQuerySortPart } from './rx-query';
 
 /**
  * this file contains types that are pouchdb-specific
@@ -237,6 +237,36 @@ export type PouchBulkDocOptions = {
     custom?: any;
 }
 
+export type PouchMangoQuery<DocType> = MangoQuery<DocType> & {
+    index: undefined;
+    use_index?: string;
+};
+
+export type ExplainedPouchQuery<DocType> = {
+    dbname: string;
+    index: {
+        ddoc: string | null;
+        name: string; // 'idx-rxdb-index-age,_id'
+        type: 'json';
+        def: {
+            fields: MangoQuerySortPart<DocType>[];
+        }
+    };
+    selector: MangoQuerySelector<DocType>;
+    range: {
+        start_key: any[];
+        end_key: any[];
+    };
+    opts: {
+        use_index: string[];
+        bookmark: string;
+        sort: MangoQuerySortPart<DocType>[];
+        conflicts: boolean;
+        r: any[];
+    };
+    skip: number;
+}
+
 export declare class PouchDBInstance {
     constructor(
         name: string,
@@ -370,7 +400,7 @@ export declare class PouchDBInstance {
     }>;
 
     revsDiff(diff: any): Promise<any>;
-    explain(query: any): Promise<any>;
+    explain<DocType = any>(query: PouchMangoQuery<DocType>): Promise<ExplainedPouchQuery<DocType>>;
 
     getIndexes(): Promise<{
         indexes: {

@@ -35,6 +35,7 @@ export const ERROR_MESSAGES = {
     QU9: 'throwIfMissing can only be used in findOne queries',
     QU10: 'result empty and throwIfMissing: true',
     QU11: 'RxQuery: no valid query params given',
+    QU12: 'Given index is not in schema',
 
     // mquery.js
     MQ1: 'path must be a string or object',

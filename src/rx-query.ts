@@ -321,12 +321,15 @@ export class RxQueryBase<
         const hookInput = {
             rxQuery: this,
             // can be mutated by the hooks so we have to deep clone first.
-            mangoQuery: clone(this.mangoQuery)
+            mangoQuery: normalizeMangoQuery<RxDocumentType>(
+                this.collection.schema.normalized,
+                clone(this.mangoQuery)
+            )
         };
         runPluginHooks('prePrepareQuery', hookInput);
         const value = this.collection.database.storage.statics.prepareQuery(
             this.collection.storageInstance.schema,
-            normalizeMangoQuery(this.collection.schema.normalized, hookInput.mangoQuery)
+            hookInput.mangoQuery
         );
         this.getPreparedQuery = () => value;
         return value;
@@ -555,7 +558,7 @@ export function normalizeMangoQuery<RxDocType>(
     schema: RxJsonSchema<RxDocType>,
     mangoQuery: MangoQuery<RxDocType>
 ): MangoQuery<RxDocType> {
-    const primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
+    const primaryKey: string = getPrimaryFieldOfPrimaryKey(schema.primaryKey) as string;
     mangoQuery = flatClone(mangoQuery);
 
 
@@ -575,6 +578,18 @@ export function normalizeMangoQuery<RxDocType>(
             mangoQuery.sort = mangoQuery.sort.slice(0);
             mangoQuery.sort.push({ [primaryKey]: 'asc' } as any);
         }
+    }
+
+    /**
+     * Ensure that if an index is specified,
+     * the primaryKey is inside of it.
+     */
+    if (mangoQuery.index) {
+        const indexAr = Array.isArray(mangoQuery.index) ? mangoQuery.index.slice(0) : [mangoQuery.index];
+        if (!indexAr.includes(primaryKey)) {
+            indexAr.push(primaryKey);
+        }
+        mangoQuery.index = indexAr;
     }
 
     return mangoQuery;

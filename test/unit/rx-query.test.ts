@@ -34,6 +34,26 @@ config.parallel('rx-query.test.js', () => {
 
             col.database.destroy();
         });
+        it('should throw error when custom index not in schema indexes', async () => {
+            const col = await humansCollection.create(0);
+            await AsyncTestUtil.assertThrows(
+                () => col.find({
+                    selector: {},
+                    index: ['f', 'o', 'b', 'a', 'r']
+                }).getPreparedQuery(),
+                'RxError',
+                'not in schem'
+            );
+            col.database.destroy();
+        });
+        it('should NOT throw error when custom index is in schema indexes', async () => {
+            const col = await humansCollection.createAgeIndex(0);
+            col.find({
+                selector: {},
+                index: ['age']
+            }).getPreparedQuery();
+            col.database.destroy();
+        });
     });
     describe('.toJSON()', () => {
         it('should produce the correct selector-object', async () => {

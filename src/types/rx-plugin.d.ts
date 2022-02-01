@@ -18,6 +18,11 @@ export type RxPluginPreAddRxPluginArgs = {
     plugins: Set<RxPlugin | any>
 }
 
+export type RxPluginPrePrepareQueryArgs = {
+    rxQuery: RxQuery<any>;
+    mangoQuery: MangoQuery<any>;
+};
+
 export interface RxPlugin {
     /**
      * A string to uniquely identifies the plugin.
@@ -60,7 +65,7 @@ export interface RxPlugin {
         preCreateRxSchema?: Function,
         createRxSchema?: Function,
         preCreateRxQuery?: (data: RxPluginPreCreateRxQueryArgs) => void,
-        prePrepareQuery?: (i: { rxQuery: RxQuery<any>; mangoQuery: MangoQuery<any> }) => void,
+        prePrepareQuery?: (data: RxPluginPrePrepareQueryArgs) => void,
         preQueryMatcher?: (i: { rxQuery: RxQuery<any>; doc: any }) => void;
         preSortComparator?: (i: { rxQuery: RxQuery<any>; docA: any; docB: any; }) => void,
         preWriteToStorageInstance?: (i: { collection: RxCollection; doc: any }) => void;
