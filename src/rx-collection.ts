@@ -725,7 +725,7 @@ export class RxCollectionBase<
                         missedChangeEvents
                             .forEach(rxChangeEvent => {
                                 const docId = rxChangeEvent.documentId;
-                                if (!ids.includes(rxChangeEvent.documentId)) {
+                                if (!ids.includes(docId)) {
                                     // document is not relevant for the result set
                                     return;
                                 }
