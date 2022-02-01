@@ -6,6 +6,7 @@
 
 Bugfixes:
   - `RxStorage.statics.getQueryMatcher()` must not match documents with `_deleted: true`.
+  - Fixed multiple problems with `RxCollection.findByIds$()` [#3659](https://github.com/pubkey/rxdb/pull/3659) Thanks [@Hideman85](https://github.com/Hideman85)
 
 ### 11.5.0 (30 January 2022)
 
