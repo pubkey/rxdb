@@ -10,7 +10,7 @@
  */
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
-import config from './config';
+// import config from './config';
 
 import {
     createRxDatabase,
@@ -32,12 +32,12 @@ describe('bug-report.test.js', () => {
          * If your test should only run in nodejs or only run in the browser,
          * you should comment in the return operator and addapt the if statement.
          */
-        if (
-            config.platform.isNode() // runs only in node
-            // config.platform.isNode() // runs only in the browser
-        ) {
-            return;
-        }
+        // if (
+        //     config.platform.isNode() // runs only in node
+        //     // config.platform.isNode() // runs only in the browser
+        // ) {
+        //     return;
+        // }
 
         // create a schema
         const mySchema = {
@@ -81,7 +81,7 @@ describe('bug-report.test.js', () => {
 
 
         //  Simple helper to create data
-        const createObject = id => ({
+        const createObject = (id: string) => ({
             passportId: id,
             firstName: id,
             lastName: id,
@@ -91,8 +91,8 @@ describe('bug-report.test.js', () => {
 
 
         //  Record subscription
-        const updates = []
-        const errors = []
+        const updates: any[] = []
+        const errors: any[] = []
 
         const sub = collections.mycollection.findByIds$([
             'a', 'b', 'c', 'd'
