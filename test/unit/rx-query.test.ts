@@ -222,6 +222,44 @@ config.parallel('rx-query.test.js', () => {
             assert.notStrictEqual(q.id, q2.id);
             col.database.destroy();
         });
+        it('should honour both lte and gte with sort', async () => {
+            const col = await humansCollection.create(10);
+            const all = await col.find().exec();
+            const primaries = all.map((x) => x.primary).sort();
+            assert.strictEqual(primaries.length, 10);
+            const sample = primaries[5];
+            const sampleCount = primaries.filter((x) => x === sample).length;
+            assert.strictEqual(sampleCount, 1, `sampleCount: ${sampleCount}`);
+            const gte = sample;
+            const q = col
+                .findOne()
+                .where('passportId')
+                .gte(gte)
+                .lte(gte + '~')
+                .sort('-passportId');
+            const result = await q.exec();
+            assert(result);
+            assert.strictEqual(result.primary, sample);
+            col.database.destroy();
+        });
+        it('should throw on illegal sort request', async () => {
+            const col = await humansCollection.create(10);
+            const all = await col.find().exec();
+            const primaries = all.map((x) => x.primary).sort();
+            assert.strictEqual(primaries.length, 10);
+            const sample = primaries[5];
+            const sampleCount = primaries.filter((x) => x === sample).length;
+            assert.strictEqual(sampleCount, 1, `sampleCount: ${sampleCount}`);
+            const gte = sample;
+            const q = col
+                .findOne()
+                .where('passportId')
+                .gte(gte)
+                .lte(gte + '~')
+                .sort('not really a field');
+            await assert.rejects(q.exec())
+            col.database.destroy();
+        });
         it('ISSUE: ensure its the same query', async () => {
             const col = await humansCollection.create(0);
 
