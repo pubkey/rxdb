@@ -27,6 +27,7 @@ import {
     setLastPushSequence
 } from './replication-checkpoint';
 import {
+    ensureNotFalsy,
     flatClone,
     getHeightOfRevision,
     lastOfArray,
@@ -43,41 +44,19 @@ import {
 import { _handleToStorageInstance } from '../../rx-collection-helper';
 import { newRxError } from '../../rx-error';
 import { getDocumentDataOfRxChangeEvent } from '../../rx-change-event';
-
-export type RxReplicationAction = 'pull' | 'push';
-
-interface RxReplicationErrorPullPayload {
-    type: 'pull'
-}
-
-interface RxReplicationErrorPushPayload<RxDocType> {
-    type: 'push'
-    documentData: RxDocumentData<RxDocType>
-}
-
-export class RxReplicationError<RxDocType> extends Error {
-    readonly payload: RxReplicationErrorPullPayload | RxReplicationErrorPushPayload<any>
-    readonly innerErrors?: any;
-
-    constructor(message: string, payload: RxReplicationErrorPullPayload | RxReplicationErrorPushPayload<RxDocType>, innerErrors?: any) {
-        super(message);
-
-        this.payload = payload;
-        this.innerErrors = innerErrors;
-    }
-}
+import { RxReplicationError, RxReplicationPullError } from './rx-replication-error';
 
 export class RxReplicationStateBase<RxDocType> {
     public readonly subs: Subscription[] = [];
-    public initialReplicationComplete$: Observable<any> = undefined as any;
+    public initialReplicationComplete$: Observable<true> = undefined as any;
 
-    private subjects = {
-        received: new Subject(), // all documents that are received from the endpoint
+    public readonly subjects = {
+        received: new Subject<RxDocumentData<RxDocType>>(), // all documents that are received from the endpoint
         send: new Subject(), // all documents that are send to the endpoint
-        error: new Subject(), // all errors that are received from the endpoint, emits new Error() objects
-        canceled: new BehaviorSubject(false), // true when the replication was canceled
-        active: new BehaviorSubject(false), // true when something is running, false when not
-        initialReplicationComplete: new BehaviorSubject(false) // true the initial replication-cycle is over
+        error: new Subject<RxReplicationError<RxDocType>>(), // all errors that are received from the endpoint, emits new Error() objects
+        canceled: new BehaviorSubject<boolean>(false), // true when the replication was canceled
+        active: new BehaviorSubject<boolean>(false), // true when something is running, false when not
+        initialReplicationComplete: new BehaviorSubject<boolean>(false) // true the initial replication-cycle is over
     };
 
     private runningPromise: Promise<void> = PROMISE_RESOLVE_VOID;
@@ -98,7 +77,6 @@ export class RxReplicationStateBase<RxDocType> {
     constructor(
         public readonly replicationIdentifier: string,
         public readonly collection: RxCollection<RxDocType>,
-        public readonly deletedFlag: string,
         public readonly pull?: ReplicationPullOptions<RxDocType>,
         public readonly push?: ReplicationPushOptions<RxDocType>,
         public readonly live?: boolean,
@@ -252,15 +230,21 @@ export class RxReplicationStateBase<RxDocType> {
         if (this.isStopped()) {
             return Promise.resolve('ok');
         }
-
         const latestDocument = await getLastPullDocument(this.collection, this.replicationIdentifier);
-
         let result: ReplicationPullHandlerResult<RxDocType>;
-
         try {
             result = await this.pull.handler(latestDocument);
-        } catch (err) {
-            this.subjects.error.next(err);
+        } catch (err: any | Error | RxReplicationError<RxDocType>) {
+            if (err instanceof RxReplicationPullError) {
+                this.subjects.error.next(err);
+            } else {
+                const emitError: RxReplicationError<RxDocType> = new RxReplicationPullError(
+                    err.message,
+                    latestDocument,
+                    err
+                );
+                this.subjects.error.next(emitError);
+            }
             return Promise.resolve('error');
         }
 
@@ -291,6 +275,7 @@ export class RxReplicationStateBase<RxDocType> {
          * Run the schema validation for pulled documents
          * in dev-mode.
          */
+        console.log('--- 1');
         if (overwritable.isDevMode()) {
             try {
                 pulledDocuments.forEach((doc: any) => {
@@ -303,6 +288,7 @@ export class RxReplicationStateBase<RxDocType> {
                 return Promise.resolve('error');
             }
         }
+        console.log('--- 2');
 
         if (this.isStopped()) {
             return Promise.resolve('ok');
@@ -391,9 +377,12 @@ export class RxReplicationStateBase<RxDocType> {
             this.replicationIdentifier,
             batchSize,
         );
+        if (changesResult.changedDocs.size === 0) {
+            return true;
+        }
 
-        const pushDocs: WithDeleted<RxDocType>[] = Array
-            .from(changesResult.changedDocs.values())
+        const changeRows = Array.from(changesResult.changedDocs.values());
+        const pushDocs: WithDeleted<RxDocType>[] = changeRows
             .map(row => {
                 const doc: WithDeleted<RxDocType> = flatClone(row.doc) as any;
                 // TODO _deleted should be required on type RxDocumentData
@@ -407,6 +396,7 @@ export class RxReplicationStateBase<RxDocType> {
 
                 return doc;
             });
+
 
         try {
             await this.push.handler(pushDocs);
@@ -427,9 +417,8 @@ export class RxReplicationStateBase<RxDocType> {
 
         // batch had documents so there might be more changes to replicate
         if (changesResult.changedDocs.size !== 0) {
-            await this.runPush();
+            return this.runPush();
         }
-
         return true;
     }
 }
@@ -439,7 +428,6 @@ export function replicateRxCollection<RxDocType>(
     {
         replicationIdentifier,
         collection,
-        deletedFlag = '_deleted',
         pull,
         push,
         live = false,
@@ -451,7 +439,6 @@ export function replicateRxCollection<RxDocType>(
     const replicationState = new RxReplicationStateBase<RxDocType>(
         replicationIdentifier,
         collection,
-        deletedFlag,
         pull,
         push,
         live,

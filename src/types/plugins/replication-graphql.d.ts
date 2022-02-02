@@ -9,16 +9,28 @@ export type RxGraphQLReplicationQueryBuilderResponse =
     RxGraphQLReplicationQueryBuilderResponseObject |
     Promise<RxGraphQLReplicationQueryBuilderResponseObject>;
 
-export type RxGraphQLReplicationQueryBuilder = (doc: any) =>
+export type RxGraphQLReplicationPushQueryBuilder = (
+    // typed 'any' because the data might be modified by the push.modifier.
+    docs: any
+    ) =>
+    RxGraphQLReplicationQueryBuilderResponse;
+export type RxGraphQLReplicationPullQueryBuilder<RxDocType> = (latestPulledDocument: RxDocumentData<RxDocType> | null) =>
     RxGraphQLReplicationQueryBuilderResponse;
 
 export interface GraphQLSyncPullOptions<RxDocType> {
-    queryBuilder: RxGraphQLReplicationQueryBuilder;
+    queryBuilder: RxGraphQLReplicationPullQueryBuilder<RxDocType>;
+    /**
+     * Amount of documents that the remote will send in one request.
+     * If the response contains less then [batchSize] documents,
+     * RxDB will assume there are no more changes on the backend
+     * that are not replicated.
+     */
+    batchSize: number;
     modifier?: (doc: RxDocType | any) => Promise<any> | any;
     dataPath?: string;
 }
 export interface GraphQLSyncPushOptions<RxDocType> {
-    queryBuilder: RxGraphQLReplicationQueryBuilder;
+    queryBuilder: RxGraphQLReplicationPushQueryBuilder;
     modifier?: (doc: RxDocumentData<RxDocType>) => Promise<any> | any;
     batchSize?: number;
 }
@@ -29,9 +41,8 @@ export type SyncOptionsGraphQL<RxDocType> = {
     waitForLeadership?: boolean; // default=true
     pull?: GraphQLSyncPullOptions<RxDocType>;
     push?: GraphQLSyncPushOptions<RxDocType>;
-    deletedFlag: string;
+    deletedFlag?: string; // default='_deleted'
     live?: boolean; // default=false
     liveInterval?: number; // time in milliseconds
     retryTime?: number; // time in milliseconds
-    autoStart?: boolean; // if this is false, the replication does nothing at start
 };

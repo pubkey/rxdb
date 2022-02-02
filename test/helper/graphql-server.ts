@@ -90,8 +90,8 @@ export async function spawn(
             getAll: [Human!]!
         }
         type Mutation {
-            setHuman(human: HumanInput): Human
-            setHumanFail(human: HumanInput): Human
+            setHumans(humans: [HumanInput]): Human
+            setHumansFail(humans: [HumanInput]): Human
         }
         input HumanInput {
             id: ID!,
@@ -176,38 +176,42 @@ export async function spawn(
         getAll: () => {
             return documents;
         },
-        setHuman: (args: any) => {
-            // console.log('## setHuman()');
-            // console.dir(args);
-            const doc: Human = args.human;
-            const previousDoc = documents.find((d: Human) => d.id === doc.id);
-            documents = documents.filter((d: Human) => d.id !== doc.id);
-            doc.updatedAt = Math.ceil(new Date().getTime() / 1000);
+        setHumans: (args: any) => {
+            console.log('## setHumans()');
+            console.dir(args);
+            const docs: Human[] = args.humans;
+            let last: any;
+            docs.forEach(doc => {
+                const previousDoc = documents.find((d: Human) => d.id === doc.id);
+                documents = documents.filter((d: Human) => d.id !== doc.id);
+                doc.updatedAt = Math.ceil(new Date().getTime() / 1000);
 
-            // because javascript timer precission is not high enought,
-            // and we store seconds, not microseconds
-            // we have to ensure that the new updatedAt is always higher then the previous one
-            // otherwise the feed would not return updated documents some times
-            if (previousDoc && previousDoc.updatedAt >= doc.updatedAt) {
-                doc.updatedAt = doc.updatedAt + 1;
-            }
-
-            documents.push(doc);
-
-            // console.log('server: setHuman(' + doc.id + ') with new updatedAt: ' + doc.updatedAt);
-            // console.dir(documents);
-
-            pubsub.publish(
-                'humanChanged',
-                {
-                    humanChanged: doc
+                // because javascript timer precission is not high enought,
+                // and we store seconds, not microseconds
+                // we have to ensure that the new updatedAt is always higher then the previous one
+                // otherwise the feed would not return updated documents some times
+                if (previousDoc && previousDoc.updatedAt >= doc.updatedAt) {
+                    doc.updatedAt = doc.updatedAt + 1;
                 }
-            );
-            return doc;
+
+                documents.push(doc);
+
+                // console.log('server: setHumans(' + doc.id + ') with new updatedAt: ' + doc.updatedAt);
+                // console.dir(documents);
+
+                pubsub.publish(
+                    'humanChanged',
+                    {
+                        humanChanged: doc
+                    }
+                );
+                last = doc;
+            });
+            return last;
         },
         // used in tests
-        setHumanFail: (_args: any) => {
-            throw new Error('setHumanFail called');
+        setHumansFail: (_args: any) => {
+            throw new Error('setHumansFail called');
         },
         humanChanged: () => pubsub.asyncIterator('humanChanged')
     };
@@ -275,16 +279,12 @@ export async function spawn(
                     async setDocument(doc: any) {
                         const result = await client.query(
                             `
-            mutation CreateHuman($human: HumanInput) {
-                setHuman(human: $human) {
-                    id,
-                    updatedAt
-                }
-              }
-
-                        `, {
-                            human: doc
-                        }
+                            mutation CreateHumans($humans: [HumanInput]) {
+                                setHumans(humans: $humans) { id }
+                            }`,
+                            {
+                                humans: [doc]
+                            }
                         );
                         // console.dir(result);
                         return result;

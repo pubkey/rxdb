@@ -93,7 +93,13 @@ You can start the replication of a single `RxCollection` by calling `replicateRx
 import { replicateRxCollection } from 'rxdb/plugins/replication';
 const replicationState = await replicateRxCollection({
     collection: myRxCollection,
-    replicationIdentifier: 'my-custom-rest-replication',
+    /**
+     * An id for the replication to identify it
+     * and so that RxDB is able to resume the replication on app reload.
+     * If you replicate with a remote server, it is recommended to put the
+     * server url into the replicationIdentifier.
+     */
+    replicationIdentifier: 'my-rest-replication-to-https://example.com/rest',
     /**
      * By default it will do a one-time replication.
      * By settings live: true the replication will continuously
