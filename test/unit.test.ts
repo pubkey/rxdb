@@ -2,6 +2,7 @@ import './unit/init.test.js';
 import './unit/util.test.js';
 import './unit/pouch-db-integration.test.js';
 import './unit/adapter-check.test.js';
+
 import './unit/rx-storage-pouchdb.test.js';
 import './unit/rx-storage-implementations.test.js';
 import './unit/rx-storage-lokijs.test.js';
@@ -10,7 +11,6 @@ import './unit/instance-of-check.test.js';
 import './unit/rx-schema.test.js';
 import './unit/key-compression.test.js';
 import './unit/bug-report.test.js';
-import './unit/replication-graphql.test.js'; // TODO move down under couchdb replication
 import './unit/rx-database.test.js';
 import './unit/rx-collection.test.js';
 import './unit/rx-document.test.js';
@@ -33,6 +33,7 @@ import './unit/data-migration.test.js';
 import './unit/backup.test.js';
 import './unit/leader-election.test.js';
 import './unit/replication.test.js';
+import './unit/replication-graphql.test.js';
 import './unit/replication-couchdb.test.js';
 import './unit/encryption.test.js';
 import './unit/import-export.test.js';

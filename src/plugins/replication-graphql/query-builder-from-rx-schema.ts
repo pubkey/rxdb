@@ -5,14 +5,17 @@ import {
     SPACING
 } from './graphql-schema-from-rx-schema';
 import { ucfirst } from '../../util';
-import { RxGraphQLReplicationQueryBuilder } from '../../types';
+import type {
+    RxGraphQLReplicationPullQueryBuilder,
+    RxGraphQLReplicationPushQueryBuilder
+} from '../../types';
 import { newRxError } from '../../rx-error';
 
 export function pullQueryBuilderFromRxSchema(
     collectionName: string,
     input: GraphQLSchemaFromRxSchemaInputSingleCollection,
     batchSize: number = 5
-): RxGraphQLReplicationQueryBuilder {
+): RxGraphQLReplicationPullQueryBuilder<any> {
     input = fillUpOptionals(input);
     const schema = input.schema;
     const prefixes: Prefixes = input.prefixes as any;
@@ -23,7 +26,7 @@ export function pullQueryBuilderFromRxSchema(
     const outputFields = Object.keys(schema.properties).filter(k => !(input.ignoreOutputKeys as string[]).includes(k));
     outputFields.push(input.deletedFlag);
 
-    const builder: RxGraphQLReplicationQueryBuilder = (doc: any) => {
+    const builder: RxGraphQLReplicationPullQueryBuilder<any> = (doc: any) => {
 
         const queryKeys = input.feedKeys.map(key => {
             const subSchema: any = schema.properties[key];
@@ -68,14 +71,14 @@ export function pullQueryBuilderFromRxSchema(
 export function pushQueryBuilderFromRxSchema(
     collectionName: string,
     input: GraphQLSchemaFromRxSchemaInputSingleCollection
-): RxGraphQLReplicationQueryBuilder {
+): RxGraphQLReplicationPushQueryBuilder {
     input = fillUpOptionals(input);
     const prefixes: Prefixes = input.prefixes as any;
 
     const ucCollectionName = ucfirst(collectionName);
     const queryName = prefixes.set + ucCollectionName;
 
-    const builder: RxGraphQLReplicationQueryBuilder = (doc: any) => {
+    const builder: RxGraphQLReplicationPushQueryBuilder = (doc: any) => {
         const query = '' +
             'mutation Set' + ucCollectionName + '($' + collectionName + ': ' + ucCollectionName + 'Input) {\n' +
             SPACING + queryName + '(' + collectionName + ': $' + collectionName + ') {\n' +

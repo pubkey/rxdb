@@ -151,17 +151,29 @@ export function syncGraphQL<RxDocType>(
                 }
 
                 const dataPath = pull.dataPath || ['data', Object.keys(result.data)[0]];
-                const data: any[] = objectPath.get(result, dataPath);
+                const docsData: any[] = objectPath.get(result, dataPath);
 
                 // optimization shortcut, do not proceed if there are no documents.
-                if (data.length === 0) {
+                if (docsData.length === 0) {
                     return {
                         documents: [],
                         hasMoreDocuments: false
                     };
                 }
 
-                const modified: any[] = (await Promise.all(data
+                let hasMoreDocuments: boolean = false;
+                if (docsData.length > pull.batchSize) {
+                    throw newRxError('GQL3', {
+                        args: {
+                            pull,
+                            documents: docsData
+                        }
+                    });
+                } else if (docsData.length === pull.batchSize) {
+                    hasMoreDocuments = true;
+                }
+
+                const modified: any[] = (await Promise.all(docsData
                     .map(async (doc: any) => {
                         // swap out deleted flag
                         const isDeleted = doc[deletedFlag];
@@ -171,25 +183,6 @@ export function syncGraphQL<RxDocType>(
                         return await pullModifier(doc);
                     })
                 )).filter(doc => !!doc);
-
-                console.log('pull modified:');
-                console.dir(modified.length);
-
-
-                let hasMoreDocuments: boolean = false;
-                if (modified.length > pull.batchSize) {
-                    console.log('throw: got too many ' + pull.batchSize);
-                    throw newRxError('GQL3', {
-                        args: {
-                            pull,
-                            documents: modified
-                        }
-                    });
-                } else if (modified.length === pull.batchSize) {
-                    hasMoreDocuments = true;
-                }
-
-                console.log('hasMoreDocuments(' + pull.batchSize + '): ' + hasMoreDocuments);
                 return {
                     documents: modified,
                     hasMoreDocuments
@@ -202,8 +195,6 @@ export function syncGraphQL<RxDocType>(
         replicationPrimitivesPush = {
             batchSize: push.batchSize,
             async handler(docs: RxDocumentData<RxDocType>[]) {
-                console.log('push handler docs:');
-                console.dir(docs);
                 let modifiedPushDocs: RxDocumentData<RxDocType>[] = await Promise.all(
                     docs.map(async (doc) => {
                         let changedDoc: any = flatClone(doc);
@@ -223,11 +214,17 @@ export function syncGraphQL<RxDocType>(
                  */
                 modifiedPushDocs = modifiedPushDocs.filter(doc => !!doc) as any;
 
-                console.log('modifiedPushDocs:');
-                console.dir(modifiedPushDocs);
+                /**
+                 * Optimization shortcut.
+                 * If we have no more documents to push,
+                 * because all were filtered out by the modifier,
+                 * we can quit here.
+                 */
+                if (modifiedPushDocs.length === 0) {
+                    return;
+                }
+
                 const pushObj = await push.queryBuilder(modifiedPushDocs);
-                console.log('pushObj:');
-                console.dir(pushObj);
                 const result = await mutateableClientState.client.query(pushObj.query, pushObj.variables);
                 if (result.errors) {
                     if (typeof result.errors === 'string') {

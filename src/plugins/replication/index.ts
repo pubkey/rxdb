@@ -27,9 +27,9 @@ import {
     setLastPushSequence
 } from './replication-checkpoint';
 import {
-    ensureNotFalsy,
     flatClone,
     getHeightOfRevision,
+    hash,
     lastOfArray,
     promiseWait,
     PROMISE_RESOLVE_FALSE,
@@ -44,7 +44,7 @@ import {
 import { _handleToStorageInstance } from '../../rx-collection-helper';
 import { newRxError } from '../../rx-error';
 import { getDocumentDataOfRxChangeEvent } from '../../rx-change-event';
-import { RxReplicationError, RxReplicationPullError } from './rx-replication-error';
+import { RxReplicationError, RxReplicationPullError, RxReplicationPushError } from './rx-replication-error';
 
 export class RxReplicationStateBase<RxDocType> {
     public readonly subs: Subscription[] = [];
@@ -60,7 +60,7 @@ export class RxReplicationStateBase<RxDocType> {
     };
 
     private runningPromise: Promise<void> = PROMISE_RESOLVE_VOID;
-    private runQueueCount: number = 0;
+    public runQueueCount: number = 0;
     /**
      * Counts how many times the run() method
      * has been called. Used in tests.
@@ -74,6 +74,12 @@ export class RxReplicationStateBase<RxDocType> {
      */
     public pendingRetries = 0;
 
+    /**
+     * hash of the identifier, used to flag revisions
+     * and to identify which documents state came from the remote.
+     */
+    public replicationIdentifierHash: string;
+
     constructor(
         public readonly replicationIdentifier: string,
         public readonly collection: RxCollection<RxDocType>,
@@ -83,6 +89,7 @@ export class RxReplicationStateBase<RxDocType> {
         public liveInterval?: number,
         public retryTime?: number,
     ) {
+        this.replicationIdentifierHash = hash(this.replicationIdentifier);
 
         // stop the replication when the collection gets destroyed
         this.collection.onDestroy.then(() => {
@@ -106,7 +113,6 @@ export class RxReplicationStateBase<RxDocType> {
         if (this.subjects.canceled.getValue()) {
             return true;
         }
-
         return false;
     }
 
@@ -124,6 +130,13 @@ export class RxReplicationStateBase<RxDocType> {
         }
         this.subs.forEach(sub => sub.unsubscribe());
         this.subjects.canceled.next(true);
+
+        this.subjects.active.complete();
+        this.subjects.canceled.complete();
+        this.subjects.error.complete();
+        this.subjects.received.complete();
+        this.subjects.send.complete();
+
         return PROMISE_RESOLVE_TRUE;
     }
 
@@ -264,6 +277,7 @@ export class RxReplicationStateBase<RxDocType> {
             const localWritesInBetween = await getChangesSinceLastPushSequence<RxDocType>(
                 this.collection,
                 this.replicationIdentifier,
+                this.replicationIdentifierHash,
                 1
             );
             if (localWritesInBetween.changedDocs.size > 0) {
@@ -275,7 +289,6 @@ export class RxReplicationStateBase<RxDocType> {
          * Run the schema validation for pulled documents
          * in dev-mode.
          */
-        console.log('--- 1');
         if (overwritable.isDevMode()) {
             try {
                 pulledDocuments.forEach((doc: any) => {
@@ -283,17 +296,16 @@ export class RxReplicationStateBase<RxDocType> {
                     delete withoutDeleteFlag._deleted;
                     this.collection.schema.validate(withoutDeleteFlag);
                 });
-            } catch (err) {
+            } catch (err: any) {
                 this.subjects.error.next(err);
                 return Promise.resolve('error');
             }
         }
-        console.log('--- 2');
 
         if (this.isStopped()) {
             return Promise.resolve('ok');
         }
-        await this.handleDocumentsFromRemote(pulledDocuments);
+        await this.handleDocumentsFromRemote(pulledDocuments as any);
         pulledDocuments.map((doc: any) => this.subjects.received.next(doc));
 
 
@@ -336,7 +348,7 @@ export class RxReplicationStateBase<RxDocType> {
 
             const docStateInLocalStorageInstance = docsFromLocal[documentId];
             let newRevision = createRevisionForPulledDocument(
-                this.replicationIdentifier,
+                this.replicationIdentifierHash,
                 doc
             );
             if (docStateInLocalStorageInstance) {
@@ -375,6 +387,7 @@ export class RxReplicationStateBase<RxDocType> {
         const changesResult = await getChangesSinceLastPushSequence<RxDocType>(
             this.collection,
             this.replicationIdentifier,
+            this.replicationIdentifierHash,
             batchSize,
         );
         if (changesResult.changedDocs.size === 0) {
@@ -397,16 +410,25 @@ export class RxReplicationStateBase<RxDocType> {
                 return doc;
             });
 
-
         try {
-            await this.push.handler(pushDocs);
-        } catch (err) {
-            this.subjects.error.next(err);
+            await this.push.handler(pushDocs as any);
+
+        } catch (err: any | Error | RxReplicationError<RxDocType>) {
+            if (err instanceof RxReplicationPushError) {
+                this.subjects.error.next(err);
+            } else {
+                const documentsData = changeRows.map(row => row.doc);
+                const emitError: RxReplicationPushError<RxDocType> = new RxReplicationPushError(
+                    err.message,
+                    documentsData,
+                    err
+                );
+                this.subjects.error.next(emitError);
+            }
             return false;
         }
 
         pushDocs.forEach(pushDoc => this.subjects.send.next(pushDoc));
-
         if (changesResult.hasChangesSinceLastSequence) {
             await setLastPushSequence(
                 this.collection,
@@ -501,7 +523,7 @@ export function replicateRxCollection<RxDocType>(
                          * was from a pull-replication cycle.
                          */
                         !wasRevisionfromPullReplication(
-                            replicationIdentifier,
+                            replicationState.replicationIdentifierHash,
                             rev
                         )
                     ) {
@@ -517,3 +539,4 @@ export function replicateRxCollection<RxDocType>(
 
 export * from './replication-checkpoint';
 export * from './revision-flag';
+export * from './rx-replication-error';

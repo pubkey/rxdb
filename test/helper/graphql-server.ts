@@ -177,8 +177,8 @@ export async function spawn(
             return documents;
         },
         setHumans: (args: any) => {
-            console.log('## setHumans()');
-            console.dir(args);
+            // console.log('## setHumans()');
+            // console.dir(args);
             const docs: Human[] = args.humans;
             let last: any;
             docs.forEach(doc => {

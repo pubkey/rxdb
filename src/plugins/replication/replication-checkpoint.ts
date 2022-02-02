@@ -11,6 +11,7 @@ import {
 import { flatClone } from '../../util';
 import { newRxError } from '../../rx-error';
 import { wasRevisionfromPullReplication } from './revision-flag';
+import { runPluginHooks } from '../../hooks';
 
 //
 // things for the push-checkpoint
@@ -84,6 +85,7 @@ export async function setLastPushSequence(
 export async function getChangesSinceLastPushSequence<RxDocType>(
     collection: RxCollection<RxDocType, any>,
     replicationIdentifier: string,
+    replicationIdentifierHash: string,
     batchSize = 10
 ): Promise<{
     changedDocs: Map<string, {
@@ -114,7 +116,6 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
      * until we reach the end of it
      */
     while (retry) {
-
         const changesResults = await collection.storageInstance.getChangedDocuments({
             sinceSequence: lastPushSequence,
             limit: batchSize,
@@ -138,7 +139,7 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
             if (changedDocs.has(id)) {
                 return;
             }
-            const changedDoc = docs[id];
+            let changedDoc = docs[id];
             if (!changedDoc) {
                 throw newRxError('SNH', { args: { docs } });
             }
@@ -149,12 +150,19 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
              */
             if (
                 wasRevisionfromPullReplication(
-                    replicationIdentifier,
+                    replicationIdentifierHash,
                     changedDoc._rev
                 )
             ) {
                 return false;
             }
+
+            const hookParams = {
+                collection,
+                doc: changedDoc
+            };
+            runPluginHooks('postReadFromInstance', hookParams);
+            changedDoc = hookParams.doc;
 
             changedDocs.set(id, {
                 id,
@@ -162,7 +170,6 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
                 sequence: row.sequence
             });
         });
-
 
         if (changedDocs.size < batchSize && changesResults.changedDocuments.length === batchSize) {
             // no pushable docs found but also not reached the end -> re-run
@@ -172,6 +179,8 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
             retry = false;
         }
     }
+
+
 
     return {
         changedDocs,
