@@ -72,7 +72,8 @@ type Query {
     feedForRxDBReplication(lastId: String!, minUpdatedAt: Int!, limit: Int!): [Human!]!
 }
 type Mutation {
-    setHuman(human: HumanInput): Human
+    # the mutations get arrays of documents as input.
+    setHumans(humans: [HumanInput]): Human # returns the last of the mutated documents
 }
 ```
 
@@ -109,12 +110,17 @@ const rootValue = {
         return limited;
     },
     // a modifier that updates the state on the server
-    setHuman: args => {
-        const doc = args.human;
-        documents = documents.filter(d => d.id !== doc.id);
-        doc.updatedAt = Math.round(new Date().getTime() / 1000);
-        documents.push(doc);
-        return doc;
+    setHumans: args => {
+        const docs = args.humans;
+        let lastOne;
+        docs.forEach(doc => {
+            documents = documents.filter(d => d.id !== doc.id);
+            doc.updatedAt = Math.round(new Date().getTime() / 1000);
+            documents.push(doc);
+            lastOne = doc;
+        });
+        // returns the last of the mutated documents
+        return lastOne;
     },
 }
 ```
@@ -167,6 +173,14 @@ const replicationState = myCollection.syncGraphQL({
         queryBuilder: pullQueryBuilder, // the queryBuilder from above
         modifier: doc => doc, // (optional) modifies all pulled documents before they are handeled by RxDB. Returning null will skip the document.
         dataPath: undefined // (optional) specifies the object path to access the document(s). Otherwise, the first result of the response data is used.
+        /**
+         * Amount of documents that the remote will send in one request.
+         * If the response contains less then [batchSize] documents,
+         * RxDB will assume there are no more changes on the backend
+         * that are not replicated.
+         * This value is the same as the limit in the feedForRxDBReplication() schema.
+         */
+        batchSize: 5
     },
     deletedFlag: 'deleted', // the flag which indicates if a pulled document is deleted
     live: true // if this is true, rxdb will watch for ongoing changes and sync them, when false, a one-time-replication will be done
@@ -178,18 +192,16 @@ const replicationState = myCollection.syncGraphQL({
 For the push-replication, you also need a `queryBuilder`. Here, the builder recieves a changed document as input which has to be send to the server. It also returns a GraphQL-Query and its data.
 
 ```js
-const pushQueryBuilder = doc => {
+const pushQueryBuilder = docs => {
     const query = `
-        mutation CreateHuman($human: HumanInput) {
-            setHuman(human: $human) {
-                id,
-                updatedAt,
-                deleted
+        mutation CreateHumans($humans: [HumanInput]) {
+            setHumans(humans: $humans) {
+                id # GraphQL does not allow returning void, so we return one id.
             }
         }
     `;
     const variables = {
-        human: doc
+        humans: docs
     };
     return {
         query,
@@ -205,8 +217,17 @@ const replicationState = myCollection.syncGraphQL({
     url: 'http://example.com/graphql', // url to the GraphQL endpoint
     push: {
         queryBuilder: pushQueryBuilder, // the queryBuilder from above
-        batchSize: 5, // (optional) amount of documents that will pulled out of the storage at once. This does not affect how many documents are send to the server in a single request.
-        modifier: d => d // (optional) modifies all pushed documents before they are send to the GraphQL endpoint. Returning null will skip the document.
+        /**
+         * batchSize (optional)
+         * Amount of document that will be pushed to the server in a single request.
+         */
+        batchSize: 5,
+        /**
+         * modifier (optional)
+         * Modifies all pushed documents before they are send to the GraphQL endpoint.
+         * Returning null will skip the document.
+         */
+        modifier: doc => doc
     },
     deletedFlag: 'deleted', // the flag which indicates if a pulled document is deleted
     live: true // if this is true, rxdb will watch for ongoing changes and sync them
@@ -360,38 +381,34 @@ As an example, you can try to recover from errors like so:
 
 ```js
 replicationState.error$.subscribe((error) => {
-  if (error.payload) {
-      if (error.payload.type === 'pull') {
-          console.log('error pulling from GraphQL server', error.innerErrors);
-      } else if (error.type === 'push') {
-          if (error.innerErrors && error.innerErrors.length > 0) {
-              const graphQLError = error.innerErrors[0];
-              
-              // In this hypothetical case, there's a remote database uniqueness constraint being violated due to two
-              // clients pushing an object with the same property value. With the document data, you can decide how best
-              // to resolve the issue. In this case, the client that pushed last "loses" and we delete the object since
-              // the one it conflicts with will be pulled down during the next pull replication event.
-              // The `graphQLError` structure is dictated by your remote GraphQL service. The field names are likely
-              // to be different.
-              if (graphQLError.code === 'constraint-violation' && graphQLError.constraintName === "unique_profile_name") {
-                  this.db.profiles
-                      .findOne(documentData.id)
-                      .exec()
-                      .then((doc) => {
-                          doc?.remove();
-                      });
-              }
-          } else {
-              console.log('error pushing document to GraphQL server', documentData);
-          }
-      } else {
-          console.log('Unknown replication action', error.payload.type);
-      }
-  } else {
-      // General error occurred. E.g., issue communicating with local database.
-      console.log('something was wrong');
-      console.dir(error);
-  }
+    if (error.type === 'pull') {
+        console.log('error pulling from GraphQL server', error.innerErrors);
+    } else if (error.type === 'push') {
+        if (error.innerErrors && error.innerErrors.length > 0) {
+            const graphQLError = error.innerErrors[0];
+
+            // In this hypothetical case, there's a remote database uniqueness constraint being violated due to two
+            // clients pushing an object with the same property value. With the document data, you can decide how best
+            // to resolve the issue. In this case, the client that pushed last "loses" and we delete the object since
+            // the one it conflicts with will be pulled down during the next pull replication event.
+            // The `graphQLError` structure is dictated by your remote GraphQL service. The field names are likely
+            // to be different.
+            if (graphQLError.code === 'constraint-violation' && graphQLError.constraintName === "unique_profile_name") {
+                this.db.profiles
+                    .findOne(documentData.id)
+                    .exec()
+                    .then((doc) => {
+                        doc?.remove();
+                    });
+            }
+        } else {
+            console.log('error pushing document to GraphQL server', documentData);
+        }
+    } else {
+        // General error occurred. E.g., issue communicating with local database.
+        console.log('something was wrong');
+        console.dir(error);
+    }
 });
 ```
 

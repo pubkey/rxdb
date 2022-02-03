@@ -180,6 +180,10 @@ export class RxReplicationStateBase<RxDocType> {
      * Returns true if a retry must be done
      */
     async _run(retryOnFail = true): Promise<boolean> {
+        if (this.isStopped()) {
+            return false;
+        }
+
         this.runCount++;
 
         /**
@@ -381,6 +385,9 @@ export class RxReplicationStateBase<RxDocType> {
     async runPush(): Promise<boolean> {
         if (!this.push) {
             throw newRxError('SNH');
+        }
+        if (this.isStopped()) {
+            return true;
         }
 
         const batchSize = this.push.batchSize ? this.push.batchSize : 5;
