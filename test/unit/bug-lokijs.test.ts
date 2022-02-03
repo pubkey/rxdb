@@ -94,11 +94,11 @@ const runTest = async (name: string, storage = getRxStorageLoki(), write = true)
         await replication.handleDocumentsFromRemote(docs)
     }
 
-    if (write) {
-        await AsyncTestUtil.waitUntil(() => updates.length > 1 || errors.length > 1);
-    } else { // The second test unit has a bug so the subscription is not triggered twice [0, numDocs]
-        await new Promise(resolve => setTimeout(resolve, 200))
-    }
+    // if (write) {
+    //     await AsyncTestUtil.waitUntil(() => updates.length > 1 || errors.length > 1);
+    // } else { // The second test unit has a bug so the subscription is not triggered twice [0, numDocs]
+        await new Promise(resolve => setTimeout(resolve, 300))
+    // }
 
     //  Verify that the subscription has been correctly triggered
     const expectedSizes = [0, numDocs]
