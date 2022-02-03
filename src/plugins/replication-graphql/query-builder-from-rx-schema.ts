@@ -10,11 +10,12 @@ import type {
     RxGraphQLReplicationPushQueryBuilder
 } from '../../types';
 import { newRxError } from '../../rx-error';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 
 export function pullQueryBuilderFromRxSchema(
     collectionName: string,
     input: GraphQLSchemaFromRxSchemaInputSingleCollection,
-    batchSize: number = 5
+    batchSize: number
 ): RxGraphQLReplicationPullQueryBuilder<any> {
     input = fillUpOptionals(input);
     const schema = input.schema;
@@ -72,37 +73,41 @@ export function pushQueryBuilderFromRxSchema(
     collectionName: string,
     input: GraphQLSchemaFromRxSchemaInputSingleCollection
 ): RxGraphQLReplicationPushQueryBuilder {
+    const primaryKey: string = getPrimaryFieldOfPrimaryKey(input.schema.primaryKey) as string;
     input = fillUpOptionals(input);
     const prefixes: Prefixes = input.prefixes as any;
 
     const ucCollectionName = ucfirst(collectionName);
     const queryName = prefixes.set + ucCollectionName;
 
-    const builder: RxGraphQLReplicationPushQueryBuilder = (doc: any) => {
+    const builder: RxGraphQLReplicationPushQueryBuilder = (docs: any[]) => {
         const query = '' +
-            'mutation Set' + ucCollectionName + '($' + collectionName + ': ' + ucCollectionName + 'Input) {\n' +
+            'mutation Set' + ucCollectionName + '($' + collectionName + ': [' + ucCollectionName + 'Input]) {\n' +
             SPACING + queryName + '(' + collectionName + ': $' + collectionName + ') {\n' +
-            SPACING + SPACING + input.deletedFlag + '\n' + // GraphQL enforces to return at least one field
+            SPACING + SPACING + primaryKey + '\n' + // GraphQL enforces to return at least one field
             SPACING + '}\n' +
             '}';
 
-        const sendDoc: any = {};
-        Object.entries(doc).forEach(([k, v]) => {
-            if (
-                // skip if in ignoreInputKeys list
-                !(input.ignoreInputKeys as string[]).includes(k) &&
-                // only use properties that are in the schema
-                input.schema.properties[k]
-            ) {
-                sendDoc[k] = v;
-            }
+        const sendDocs: any[] = [];
+        docs.forEach(doc => {
+            const sendDoc: any = {};
+            Object.entries(doc).forEach(([k, v]) => {
+                if (
+                    // skip if in ignoreInputKeys list
+                    !(input.ignoreInputKeys as string[]).includes(k) &&
+                    // only use properties that are in the schema
+                    input.schema.properties[k]
+                ) {
+                    sendDoc[k] = v;
+                }
+            });
+
+            // add deleted flag
+            sendDoc[input.deletedFlag] = !!doc._deleted;
+            sendDocs.push(sendDoc);
         });
-
-        // add deleted flag
-        sendDoc[input.deletedFlag] = !!doc._deleted;
-
         const variables = {
-            [collectionName]: sendDoc
+            [collectionName]: sendDocs
         };
         return {
             query,
