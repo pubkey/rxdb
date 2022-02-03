@@ -11,7 +11,7 @@ export type RxGraphQLReplicationQueryBuilderResponse =
 
 export type RxGraphQLReplicationPushQueryBuilder = (
     // typed 'any' because the data might be modified by the push.modifier.
-    docs: any
+    docs: any[]
     ) =>
     RxGraphQLReplicationQueryBuilderResponse;
 export type RxGraphQLReplicationPullQueryBuilder<RxDocType> = (latestPulledDocument: RxDocumentData<RxDocType> | null) =>

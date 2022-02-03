@@ -1496,8 +1496,8 @@ describe('replication-graphql.test.js', () => {
                         'id',
                         'updatedAt'
                     ],
-                    deletedFlag: 'deleted'
-                });
+                    deletedFlag: 'deleted',
+                }, batchSize);
 
                 const output = await builder({
                     id: 'foo',
@@ -1515,8 +1515,8 @@ describe('replication-graphql.test.js', () => {
                         'id',
                         'updatedAt'
                     ],
-                    deletedFlag: 'deleted'
-                });
+                    deletedFlag: 'deleted',
+                }, batchSize);
 
                 const output = await builder(null);
                 const parsed = parseQuery(output.query);
@@ -1536,14 +1536,14 @@ describe('replication-graphql.test.js', () => {
                 });
 
                 // build valid output for insert document
-                const output = await builder({
+                const output = await builder([{
                     id: 'foo',
                     name: 'foo',
                     age: 1234,
                     updatedAt: 12343,
                     _attachments: {},
                     _rev: '1-foobar'
-                });
+                }]);
                 const parsed = parseQuery(output.query);
 
                 const variable: HumanWithTimestampDocumentType = output.variables.human;
@@ -1554,10 +1554,10 @@ describe('replication-graphql.test.js', () => {
                 assert.ok(!variable.hasOwnProperty('_deleted'));
 
                 // build valid output for deleted document
-                const outputDeleted = await builder({
+                const outputDeleted = await builder([{
                     id: 'foo',
                     _deleted: true
-                });
+                }]);
                 parseQuery(outputDeleted.query);
 
                 // should not have added internal properties
