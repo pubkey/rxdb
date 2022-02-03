@@ -101,9 +101,6 @@ export function pushQueryBuilderFromRxSchema(
                     sendDoc[k] = v;
                 }
             });
-
-            // add deleted flag
-            sendDoc[input.deletedFlag] = !!doc._deleted;
             sendDocs.push(sendDoc);
         });
         const variables = {

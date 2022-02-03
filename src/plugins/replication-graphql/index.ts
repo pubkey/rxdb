@@ -176,9 +176,11 @@ export function syncGraphQL<RxDocType>(
                 const modified: any[] = (await Promise.all(docsData
                     .map(async (doc: any) => {
                         // swap out deleted flag
-                        const isDeleted = doc[deletedFlag];
-                        doc._deleted = isDeleted;
-                        delete doc[deletedFlag];
+                        if (deletedFlag !== '_deleted') {
+                            const isDeleted = !!doc[deletedFlag];
+                            doc._deleted = isDeleted;
+                            delete doc[deletedFlag];
+                        }
 
                         return await pullModifier(doc);
                     })
@@ -200,9 +202,11 @@ export function syncGraphQL<RxDocType>(
                         let changedDoc: any = flatClone(doc);
 
                         // swap out deleted flag
-                        const isDeleted = !!doc._deleted;
-                        changedDoc[deletedFlag] = isDeleted;
-                        delete changedDoc._deleted;
+                        if (deletedFlag !== '_deleted') {
+                            const isDeleted = !!doc._deleted;
+                            changedDoc[deletedFlag] = isDeleted;
+                            delete changedDoc._deleted;
+                        }
 
                         changedDoc = await pushModifier(changedDoc);
                         return changedDoc ? changedDoc : null;

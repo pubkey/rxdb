@@ -1568,6 +1568,29 @@ describe('replication-graphql.test.js', () => {
 
                 assert.ok(parsed);
             });
+            it('should keep the deleted value', async () => {
+                const docData: any = schemaObjects.humanWithTimestamp();
+                /**
+                 * The GraphQL replication will
+                 * internally switch out _deleted with the deleted flag.
+                 * So the pushQueryBuilder MUST NOT switch out again.
+                 */
+                docData.deleted = true;
+                const ownPushQueryBuilder = pushQueryBuilderFromRxSchema(
+                    'human',
+                    {
+                        deletedFlag: 'deleted',
+                        feedKeys: [
+                            'id',
+                            'updatedAt'
+                        ],
+                        schema: schemas.humanWithTimestamp
+                    }
+                );
+                const pushData = await ownPushQueryBuilder([docData]);
+                const pushDoc = pushData.variables.human[0];
+                assert.ok(pushDoc.deleted);
+            });
         });
         config.parallel('integrations', () => {
             it('should work with encryption', async () => {
@@ -2134,6 +2157,7 @@ describe('replication-graphql.test.js', () => {
                 assert.ok(replicationState.runCount < 20, replicationState.runCount.toString());
 
                 c.database.destroy();
+                server.close();
             });
             it('#3319 database.remove() should delete the last-pull document', async () => {
                 const dbName = randomCouchString(12);
