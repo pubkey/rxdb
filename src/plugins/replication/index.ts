@@ -312,6 +312,9 @@ export class RxReplicationStateBase<RxDocType> {
         await this.handleDocumentsFromRemote(pulledDocuments as any);
         pulledDocuments.map((doc: any) => this.subjects.received.next(doc));
 
+        if (this.isStopped()) {
+            return Promise.resolve('ok');
+        }
 
         if (pulledDocuments.length === 0) {
             if (this.live) {
