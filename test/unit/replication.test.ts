@@ -266,6 +266,7 @@ describe('replication.test.js', () => {
                     c,
                     REPLICATION_IDENTIFIER_TEST,
                     REPLICATION_IDENTIFIER_TEST_HASH,
+                    () => false,
                     10
                 );
                 assert.strictEqual(changesResult.changedDocs.size, amount);
@@ -282,6 +283,7 @@ describe('replication.test.js', () => {
                     c,
                     REPLICATION_IDENTIFIER_TEST,
                     REPLICATION_IDENTIFIER_TEST_HASH,
+                    () => false,
                     10
                 );
                 assert.strictEqual(changesResult.changedDocs.size, amount);
@@ -294,6 +296,7 @@ describe('replication.test.js', () => {
                     c,
                     REPLICATION_IDENTIFIER_TEST,
                     REPLICATION_IDENTIFIER_TEST_HASH,
+                    () => false,
                     10
                 );
                 /**
@@ -312,6 +315,7 @@ describe('replication.test.js', () => {
                     c,
                     REPLICATION_IDENTIFIER_TEST,
                     REPLICATION_IDENTIFIER_TEST_HASH,
+                    () => false,
                     10
                 );
                 assert.strictEqual(changesResult.changedDocs.size, amount);
@@ -353,6 +357,7 @@ describe('replication.test.js', () => {
                     c,
                     REPLICATION_IDENTIFIER_TEST,
                     REPLICATION_IDENTIFIER_TEST_HASH,
+                    () => false,
                     10
                 );
                 assert.strictEqual(changesResult.changedDocs.size, 1);
@@ -369,6 +374,7 @@ describe('replication.test.js', () => {
                     c,
                     REPLICATION_IDENTIFIER_TEST,
                     REPLICATION_IDENTIFIER_TEST_HASH,
+                    () => false,
                     10
                 );
                 const firstChange = Array.from(changesResult.changedDocs.values())[0];
@@ -399,6 +405,7 @@ describe('replication.test.js', () => {
                     c,
                     REPLICATION_IDENTIFIER_TEST,
                     REPLICATION_IDENTIFIER_TEST_HASH,
+                    () => false,
                     10
                 );
 

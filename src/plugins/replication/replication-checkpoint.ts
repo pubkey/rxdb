@@ -86,6 +86,12 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
     collection: RxCollection<RxDocType, any>,
     replicationIdentifier: string,
     replicationIdentifierHash: string,
+    /**
+     * A function that returns true
+     * when the underlaying RxReplication is stopped.
+     * So that we do not run requests against a close RxStorageInstance.
+     */
+    isStopped: () => boolean,
     batchSize = 10
 ): Promise<{
     changedDocs: Map<string, {
@@ -115,7 +121,7 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
      * Then we have to continue grapping the feed
      * until we reach the end of it
      */
-    while (retry) {
+    while (retry && !isStopped()) {
         const changesResults = await collection.storageInstance.getChangedDocuments({
             sinceSequence: lastPushSequence,
             limit: batchSize,
@@ -130,6 +136,9 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
             continue;
         }
 
+        if (isStopped()) {
+            break;
+        }
         const docs = await collection.storageInstance.findDocumentsById(
             changesResults.changedDocuments.map(row => row.id),
             true

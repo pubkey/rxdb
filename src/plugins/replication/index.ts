@@ -282,6 +282,7 @@ export class RxReplicationStateBase<RxDocType> {
                 this.collection,
                 this.replicationIdentifier,
                 this.replicationIdentifierHash,
+                () => this.isStopped(),
                 1
             );
             if (localWritesInBetween.changedDocs.size > 0) {
@@ -398,6 +399,7 @@ export class RxReplicationStateBase<RxDocType> {
             this.collection,
             this.replicationIdentifier,
             this.replicationIdentifierHash,
+            () => this.isStopped(),
             batchSize,
         );
 
