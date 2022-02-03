@@ -1952,7 +1952,8 @@ describe('replication-graphql.test.js', () => {
                 assert.strictEqual(docsOnServer.length, amount);
 
                 // insert one which will trigger an auto push
-                await collection.insert(schemaObjects.humanWithTimestamp());
+                const insertedDoc = await collection.insert(schemaObjects.humanWithTimestamp());
+                assert.ok(insertedDoc);
 
                 await AsyncTestUtil.waitUntil(async () => {
                     const docs = await server.getDocuments();

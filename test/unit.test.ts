@@ -3,6 +3,12 @@ import './unit/util.test.js';
 import './unit/pouch-db-integration.test.js';
 import './unit/adapter-check.test.js';
 
+/**
+ * Move these tests around so that
+ * when you focus on one part of RxDB,
+ * your relevant tests run first.
+ * Do not commit this file if you modified the order.
+ */
 import './unit/rx-storage-pouchdb.test.js';
 import './unit/rx-storage-implementations.test.js';
 import './unit/rx-storage-lokijs.test.js';

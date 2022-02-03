@@ -141,7 +141,7 @@ describe('replication.test.js', () => {
                 const doc = await c.findOne().exec(true);
 
                 const wasFromPull = wasRevisionfromPullReplication(
-                    REPLICATION_IDENTIFIER_TEST,
+                    REPLICATION_IDENTIFIER_TEST_HASH,
                     doc.toJSON(true)._rev
                 );
                 assert.strictEqual(wasFromPull, false);
@@ -156,7 +156,7 @@ describe('replication.test.js', () => {
                 const c = await humansCollection.createHumanWithTimestamp(0);
                 let toPouch: any = schemaObjects.humanWithTimestamp();
                 toPouch._rev = '1-' + createRevisionForPulledDocument(
-                    REPLICATION_IDENTIFIER_TEST,
+                    REPLICATION_IDENTIFIER_TEST_HASH,
                     toPouch
                 );
                 toPouch = pouchSwapPrimaryToId(
@@ -172,7 +172,7 @@ describe('replication.test.js', () => {
 
                 const doc = await c.findOne().exec(true);
                 const wasFromPull = wasRevisionfromPullReplication(
-                    REPLICATION_IDENTIFIER_TEST,
+                    REPLICATION_IDENTIFIER_TEST_HASH,
                     doc.toJSON(true)._rev
                 );
                 assert.strictEqual(wasFromPull, true);
@@ -376,28 +376,20 @@ describe('replication.test.js', () => {
                 assert.ok(firstChange.doc.id);
                 c.database.destroy();
             });
-            it('should have filtered out replicated docs from the endpoint', async () => {
-                if (config.storage.name !== 'pouchdb') {
-                    return;
-                }
+            it('should have filtered out documents that are already replicated from the remote', async () => {
                 const amount = 5;
                 const c = await humansCollection.createHumanWithTimestamp(amount);
-                let toPouch: any = schemaObjects.humanWithTimestamp();
-                toPouch._rev = '1-' + createRevisionForPulledDocument(
-                    REPLICATION_IDENTIFIER_TEST,
-                    toPouch
+                const toStorageInstance: RxDocumentData<HumanWithTimestampDocumentType> = schemaObjects.humanWithTimestamp() as any;
+                const docId = toStorageInstance.id;
+                toStorageInstance._attachments = {};
+                toStorageInstance._deleted = false;
+                toStorageInstance._rev = '1-' + createRevisionForPulledDocument(
+                    REPLICATION_IDENTIFIER_TEST_HASH,
+                    toStorageInstance
                 );
-                toPouch = pouchSwapPrimaryToId(
-                    c.schema.primaryPath,
-                    toPouch
-                );
-
-                await c.storageInstance.internals.pouch.bulkDocs(
-                    [_handleToStorageInstance(c, toPouch)],
-                    {
-                        new_edits: false
-                    }
-                );
+                await c.storageInstance.bulkAddRevisions([
+                    _handleToStorageInstance(c, toStorageInstance)
+                ]);
 
                 const allDocs = await c.find().exec();
 
@@ -411,14 +403,16 @@ describe('replication.test.js', () => {
                 );
 
                 assert.strictEqual(changesResult.changedDocs.size, amount);
-                const shouldNotBeFound = Array.from(changesResult.changedDocs.values()).find((change) => change.id === toPouch.id);
+                const shouldNotBeFound = Array.from(changesResult.changedDocs.values()).find((change) => change.id === docId);
                 assert.ok(!shouldNotBeFound);
 
                 /**
-                 * We need amount+2 because we also have skipped the
-                 * document for the updatedAt index of the collection schema.
+                 * lastSequence must be >= amount
+                 * Not == because there might be hidden change documents
+                 * like when pouchdb adds one while creating an index.
                  */
-                assert.strictEqual(changesResult.lastSequence, amount + 2);
+                assert.ok(changesResult.lastSequence >= amount);
+
                 c.database.destroy();
             });
         });

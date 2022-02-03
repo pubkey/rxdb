@@ -336,21 +336,41 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             since: options.sinceSequence,
             descending: options.direction === 'before' ? true : false
         };
-        const pouchResults = await this.internals.pouch.changes(pouchChangesOpts);
 
+        let lastSequence = 0;
+        let first = true;
+        let skippedDesignDocuments = 0;
+        let changedDocuments: { id: string; sequence: number; }[] = [];
         /**
-         * TODO stripping the internal docs
-         * results in having a non-full result set that maybe no longer
-         * reaches the options.limit. We should fill up again
-         * to ensure pagination works correctly.
+         * Because PouchDB also returns changes of _design documents,
+         * we have to fill up the results with more changes if this happens.
          */
-        const changedDocuments = pouchResults.results
-            .filter(row => !row.id.startsWith(POUCHDB_DESIGN_PREFIX))
-            .map(row => ({
-                id: row.id,
-                sequence: row.seq
-            }));
-        const lastSequence = pouchResults.last_seq;
+        while (first || skippedDesignDocuments > 0) {
+            first = false;
+            skippedDesignDocuments = 0;
+            const pouchResults = await this.internals.pouch.changes(pouchChangesOpts);
+            const addChangedDocuments = pouchResults.results
+                .filter(row => {
+                    const isDesignDoc = row.id.startsWith(POUCHDB_DESIGN_PREFIX);
+                    if (isDesignDoc) {
+                        skippedDesignDocuments = skippedDesignDocuments + 1;
+                        return false;
+                    } else {
+                        return true;
+                    }
+                })
+                .map(row => ({
+                    id: row.id,
+                    sequence: row.seq
+                }));
+            changedDocuments = changedDocuments.concat(addChangedDocuments);
+            lastSequence = pouchResults.last_seq;
+
+            // modify pouch options for next run of pouch.changes()
+            pouchChangesOpts.since = lastSequence;
+            pouchChangesOpts.limit = skippedDesignDocuments;
+        }
+
         return {
             changedDocuments,
             lastSequence

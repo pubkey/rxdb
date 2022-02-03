@@ -1150,6 +1150,48 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 storageInstance.close();
             });
+            it('should get the full amount of change documents', async () => {
+
+                /**
+                 * PouchDB failed this test when we have indexes
+                 * because it stores meta documents that contain info about the indexes.
+                 * So we add more indexes here to ensure this is never broken.
+                 */
+                const useSchema = getTestDataSchema();
+                ensureNotFalsy(useSchema.indexes as any).push(['key']);
+                ensureNotFalsy(useSchema.indexes as any).push(['key', 'value']);
+
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: useSchema,
+                    options: {},
+                    multiInstance: false
+                });
+
+                // run many inserts
+                const insertDocs = new Array(10).fill(0).map(() => getWriteData());
+                await storageInstance.bulkWrite(
+                    insertDocs.map(d => ({ document: d }))
+                );
+
+                const limit = 5;
+                const result = await storageInstance.getChangedDocuments({
+                    direction: 'after',
+                    sinceSequence: 0,
+                    limit
+                });
+
+
+                /**
+                 * Because we did many writes, the result should be 'full'.
+                 * This is important so that the caller of getChangedDocuments()
+                 * can know if there might be more changes to be fetched.
+                 */
+                assert.strictEqual(result.changedDocuments.length, limit);
+
+                storageInstance.close();
+            });
         });
         describe('.changeStream()', () => {
             it('should emit exactly one event on write', async () => {

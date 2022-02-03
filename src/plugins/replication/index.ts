@@ -390,6 +390,7 @@ export class RxReplicationStateBase<RxDocType> {
             this.replicationIdentifierHash,
             batchSize,
         );
+
         if (changesResult.changedDocs.size === 0) {
             return true;
         }

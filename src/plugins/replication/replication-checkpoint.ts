@@ -121,6 +121,7 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
             limit: batchSize,
             direction: 'after'
         });
+
         lastSequence = changesResults.lastSequence;
 
         // optimisation shortcut, do not proceed if there are no changed documents
@@ -179,8 +180,6 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
             retry = false;
         }
     }
-
-
 
     return {
         changedDocs,
