@@ -2075,6 +2075,7 @@ config.parallel('rx-collection.test.js', () => {
 
             //  test we have a map and no error
             await AsyncTestUtil.waitUntil(() => updates.length > 0);
+            await AsyncTestUtil.wait(100);
             assert.strictEqual(updates.length, 1);
 
             /**

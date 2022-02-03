@@ -8,7 +8,6 @@ import {
     mergeMap,
     filter,
     map,
-    tap,
     shareReplay
 } from 'rxjs/operators';
 import {
@@ -19,7 +18,8 @@ import {
     overwriteGetterForCaching,
     now,
     PROMISE_RESOLVE_FALSE,
-    RXJS_SHARE_REPLAY_DEFAULTS
+    RXJS_SHARE_REPLAY_DEFAULTS,
+    promiseWait
 } from './util';
 import {
     newRxError,
@@ -101,8 +101,8 @@ export class RxQueryBase<
              */
             const results$ = (this._resultsDocs$ as any)
                 .pipe(
-                    mergeMap((docs: any[]) => {
-                        return _ensureEqual(this as any)
+                    mergeMap(async (docs: any[] | null) => {
+                        const ret = await _ensureEqual(this as any)
                             .then((hasChanged: any) => {
                                 if (hasChanged) {
                                     // wait for next emit
@@ -111,6 +111,7 @@ export class RxQueryBase<
                                     return docs;
                                 }
                             });
+                        return ret;
                     }),
                     // not if previous returned false
                     filter((docs: any[]) => !!docs),
@@ -134,7 +135,17 @@ export class RxQueryBase<
              */
             const changeEvents$ = this.collection.$
                 .pipe(
-                    tap(() => _ensureEqual(this)),
+                    mergeMap(async (changeEvent) => {
+                        /**
+                         * Performance shortcut.
+                         * Changes to local documents are not relevant for the query.
+                         */
+                        if (changeEvent.isLocal) {
+                            return;
+                        }
+
+                        return promiseWait(0).then(() => _ensureEqual(this));
+                    }),
                     filter(() => false)
                 );
 
@@ -485,7 +496,7 @@ function _ensureEqual(rxQuery: RxQueryBase): Promise<boolean> {
  * ensures that the results of this query is equal to the results which a query over the database would give
  * @return true if results have changed
  */
-function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
+function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> {
     rxQuery._lastEnsureEqual = now();
 
     /**
@@ -508,7 +519,7 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
     }
 
     /**
-     * try to use the queryChangeDetector to calculate the new results
+     * try to use EventReduce to calculate the new results
      */
     if (!mustReExec) {
         const missedChangeEvents = rxQuery.asRxQuery.collection._changeEventBuffer.getFrom(rxQuery._latestChangeEvent + 1);
@@ -537,6 +548,8 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
         }
     }
 
+
+
     // oh no we have to re-execute the whole query over the database
     if (mustReExec) {
         // counter can change while _execOverDatabase() is running so we save it here
@@ -551,8 +564,7 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
                 return ret;
             });
     }
-
-    return ret; // true if results have changed
+    return Promise.resolve(ret); // true if results have changed
 }
 
 
