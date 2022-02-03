@@ -438,8 +438,13 @@ export class RxReplicationStateBase<RxDocType> {
             }
             return false;
         }
-
         pushDocs.forEach(pushDoc => this.subjects.send.next(pushDoc));
+
+
+        if (this.isStopped()) {
+            return true;
+        }
+
         if (changesResult.hasChangesSinceLastSequence) {
             await setLastPushSequence(
                 this.collection,
