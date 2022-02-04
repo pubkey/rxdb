@@ -3,7 +3,8 @@ import {
     BehaviorSubject,
     firstValueFrom,
     Observable,
-    combineLatest
+    combineLatest,
+    merge
 } from 'rxjs';
 import {
     mergeMap,
@@ -163,15 +164,15 @@ export class RxQueryBase<
                 })
             );
 
-            this._$ = combineLatest([
+            this._$ = merge<any>(
                 results$,
                 /**
                  * Also add the refCount$ to the query observable
                  * to allow us to count the amount of subscribers.
                  */
-                this.refCount$
-            ]).pipe(
-                map(([result]) => result as any)
+                this.refCount$.pipe(
+                    filter(() => false)
+                )
             );
         }
         return this._$ as any;
@@ -279,7 +280,14 @@ export class RxQueryBase<
             });
         }
 
-        return firstValueFrom(this.$)
+
+        /**
+         * run _ensureEqual() here,
+         * this will make sure that errors in the query which throw inside of the RxStorage,
+         * will be thrown at this execution context and not in the background.
+         */
+        return _ensureEqual(this)
+            .then(() => firstValueFrom(this.$))
             .then(result => {
                 if (!result && throwIfMissing) {
                     throw newRxError('QU10', {
