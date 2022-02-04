@@ -292,7 +292,7 @@ config.parallel('rx-query.test.js', () => {
             col.database.destroy();
         });
     });
-    describe('doesDocMatchQuery()', () => {
+    describe('.doesDocMatchQuery()', () => {
         it('should match', async () => {
             const col = await humansCollection.create(0);
             const q = col.find().where('firstName').ne('foobar');
