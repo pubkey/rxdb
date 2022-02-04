@@ -10,6 +10,7 @@ import {
 import type { RxQuery, MangoQuery, RxChangeEvent, RxDocumentWriteData } from './types';
 import { runPluginHooks } from './hooks';
 import { rxChangeEventToEventReduceChangeEvent } from './rx-change-event';
+import { ensureNotFalsy } from './util';
 
 export type EventReduceResultNeg = {
     runFullQueryAgain: true,
@@ -109,9 +110,8 @@ export function calculateNewResults<RxDocumentType>(
         };
     }
     const queryParams = getQueryParams(rxQuery);
-    const previousResults: RxDocumentType[] = rxQuery._resultsData.slice();
-
-    const previousResultsMap: Map<string, RxDocumentType> = rxQuery._resultsDataMap;
+    const previousResults: RxDocumentType[] = ensureNotFalsy(rxQuery._result).docsData.slice(0);
+    const previousResultsMap: Map<string, RxDocumentType> = ensureNotFalsy(rxQuery._result).docsDataMap;
     let changed: boolean = false;
 
     const foundNonOptimizeable = rxChangeEvents.find(cE => {

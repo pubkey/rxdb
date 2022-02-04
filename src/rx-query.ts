@@ -1,13 +1,16 @@
 import deepEqual from 'fast-deep-equal';
 import {
-    merge,
     BehaviorSubject,
-    firstValueFrom
+    firstValueFrom,
+    Observable,
+    combineLatest
 } from 'rxjs';
 import {
     mergeMap,
     filter,
     map,
+    startWith,
+    distinctUntilChanged,
     shareReplay
 } from 'rxjs/operators';
 import {
@@ -18,8 +21,8 @@ import {
     overwriteGetterForCaching,
     now,
     PROMISE_RESOLVE_FALSE,
-    RXJS_SHARE_REPLAY_DEFAULTS,
-    promiseWait
+    ensureNotFalsy,
+    RXJS_SHARE_REPLAY_DEFAULTS
 } from './util';
 import {
     newRxError,
@@ -38,7 +41,8 @@ import type {
     MangoQuerySelector,
     PreparedQuery,
     RxChangeEvent,
-    RxDocumentWriteData
+    RxDocumentWriteData,
+    RxDocumentData
 } from './types';
 
 import {
@@ -67,6 +71,8 @@ export class RxQueryBase<
      */
     public _execOverDatabaseCount: number = 0;
     public _creationTime = now();
+
+    // used in the query-cache to determine if the RxQuery can be cleaned up.
     public _lastEnsureEqual = 0;
 
     // used by some plugins
@@ -78,6 +84,25 @@ export class RxQueryBase<
     public refCount$ = new BehaviorSubject(null);
 
     public isFindOneByIdQuery: false | string;
+
+
+    /**
+     * Contains the current result state
+     * or null if query has not run yet.
+     */
+    public _result: {
+        docsData: RxDocumentType[];
+        // A key->document map, used in the event reduce optimization.
+        docsDataMap: Map<string, RxDocumentType>;
+        docs: RxDocument<RxDocumentType>[];
+        /**
+         * Time at which the current _result state was created.
+         * Used to determine if the result set has changed since X
+         * so that we do not emit the same result multiple times on subscription.
+         */
+        time: number;
+    } | null = null;
+
 
     constructor(
         public op: RxQueryOP,
@@ -95,69 +120,59 @@ export class RxQueryBase<
     }
     get $(): BehaviorSubject<RxQueryResult> {
         if (!this._$) {
-            /**
-             * We use _resultsDocs$ to emit new results
-             * This also ensures that there is a reemit on subscribe
-             */
-            const results$ = (this._resultsDocs$ as any)
-                .pipe(
-                    mergeMap(async (docs: any[] | null) => {
-                        const ret = await _ensureEqual(this as any)
-                            .then((hasChanged: any) => {
-                                if (hasChanged) {
-                                    // wait for next emit
-                                    return false;
-                                } else {
-                                    return docs;
-                                }
-                            });
-                        return ret;
-                    }),
-                    // not if previous returned false
-                    filter((docs: any[]) => !!docs),
-                    // copy the array so it wont matter if the user modifies it
-                    map((docs: any[]) => docs.slice(0)),
-                    map((docs: any[]) => {
-                        if (this.op === 'findOne') {
-                            // findOne()-queries emit document or null
-                            const doc = docs.length === 0 ? null : docs[0];
-                            return doc;
-                        } else {
-                            // find()-queries emit RxDocument[]
-                            return docs;
-                        }
-                    }),
-                    shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
-                ).asObservable();
 
-            /**
-             * subscribe to the changeEvent-stream so it detects changes if it has subscribers
-             */
-            const changeEvents$ = this.collection.$
-                .pipe(
-                    mergeMap(async (changeEvent) => {
-                        /**
-                         * Performance shortcut.
-                         * Changes to local documents are not relevant for the query.
-                         */
-                        if (changeEvent.isLocal) {
-                            return;
-                        }
+            const results$ = this.collection.$.pipe(
+                /**
+                 * Performance shortcut.
+                 * Changes to local documents are not relevant for the query.
+                 */
+                filter(changeEvent => !changeEvent.isLocal),
+                /**
+                 * Start once to ensure the querying also starts
+                 * when there where no changes.
+                 */
+                startWith(null),
+                // ensure query results are up to date.
+                mergeMap(() => _ensureEqual(this as any)),
+                // use the current result set, written by _ensureEqual().
+                map(() => this._result),
+                // do not run stuff above for each new subscriber, only once.
+                shareReplay(RXJS_SHARE_REPLAY_DEFAULTS),
+                // do not proceed if result set has not changed.
+                distinctUntilChanged((prev, curr) => {
+                    if (prev && prev.time === ensureNotFalsy(curr).time) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }),
+                /**
+                 * Map the result set to a single RxDocument or an array,
+                 * depending on query type
+                 */
+                map((result) => {
+                    const useResult = ensureNotFalsy(result);
+                    if (this.op === 'findOne') {
+                        // findOne()-queries emit RxDocument or null
+                        return useResult.docs.length === 0 ? null : useResult.docs[0];
+                    } else {
+                        // find()-queries emit RxDocument[]
+                        // Flat copy the array so it wont matter if the user modifies it.
+                        return useResult.docs.slice(0);
+                    }
+                })
+            );
 
-                        return promiseWait(0).then(() => _ensureEqual(this));
-                    }),
-                    filter(() => false)
-                );
-
-            this._$ =
-                // tslint:disable-next-line
-                merge(
-                    results$,
-                    changeEvents$,
-                    this.refCount$.pipe(
-                        filter(() => false)
-                    )
-                ) as any;
+            this._$ = combineLatest([
+                results$,
+                /**
+                 * Also add the refCount$ to the query observable
+                 * to allow us to count the amount of subscribers.
+                 */
+                this.refCount$
+            ]).pipe(
+                map(([result]) => result as any)
+            );
         }
         return this._$ as any;
     }
@@ -166,17 +181,10 @@ export class RxQueryBase<
     // stores the changeEvent-number of the last handled change-event
     public _latestChangeEvent: -1 | number = -1;
 
-    // contains the results as plain json-data
-    public _resultsData: any = null;
-    public _resultsDataMap: Map<string, RxDocumentType> = new Map();
-
     // time stamps on when the last full exec over the database has run
     // used to properly handle events that happen while the find-query is running
     public _lastExecStart: number = 0;
     public _lastExecEnd: number = 0;
-
-    // contains the results as RxDocument[]
-    public _resultsDocs$: BehaviorSubject<any> = new BehaviorSubject(null);
 
     /**
      * ensures that the exec-runs
@@ -191,14 +199,14 @@ export class RxQueryBase<
      * - Emit the new result-set when an RxChangeEvent comes in
      * - Do not emit anything before the first result-set was created (no null)
      */
-    public _$?: BehaviorSubject<RxQueryResult>;
+    public _$?: Observable<RxQueryResult>;
 
     /**
      * set the new result-data as result-docs of the query
      * @param newResultData json-docs that were received from pouchdb
      */
-    _setResultData(newResultData: any[]): RxDocument[] {
-        const docs = createRxDocuments(
+    _setResultData(newResultData: RxDocumentData<RxDocumentType[]>): void {
+        const docs = createRxDocuments<RxDocumentType, {}>(
             this.collection,
             newResultData
         );
@@ -209,24 +217,27 @@ export class RxQueryBase<
          * to ensure we do not store the same data twice and fill up the memory.
          */
         const primPath = this.collection.schema.primaryPath;
-        this._resultsDataMap = new Map();
-        this._resultsData = docs.map(doc => {
+        const docsDataMap = new Map();
+        const docsData = docs.map(doc => {
             const docData: RxDocumentType = doc._dataSync$.getValue() as any;
             const id: string = docData[primPath] as any;
-            this._resultsDataMap.set(id, docData);
+            docsDataMap.set(id, docData);
             return docData;
         });
 
-
-        this._resultsDocs$.next(docs);
-        return docs as any;
+        this._result = {
+            docsData,
+            docsDataMap,
+            docs,
+            time: now()
+        }
     }
 
     /**
      * executes the query on the database
      * @return results-array with document-data
      */
-    _execOverDatabase(): Promise<any[]> {
+    _execOverDatabase(): Promise<RxDocumentData<RxDocumentType>[]> {
         this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
         this._lastExecStart = now();
 
@@ -268,13 +279,7 @@ export class RxQueryBase<
             });
         }
 
-        /**
-         * run _ensureEqual() here,
-         * this will make sure that errors in the query which throw inside of pouchdb,
-         * will be thrown at this execution context
-         */
-        return _ensureEqual(this)
-            .then(() => firstValueFrom(this.$))
+        return firstValueFrom(this.$)
             .then(result => {
                 if (!result && throwIfMissing) {
                     throw newRxError('QU10', {
@@ -343,7 +348,6 @@ export class RxQueryBase<
     /**
      * returns true if the document matches the query,
      * does not use the 'skip' and 'limit'
-     * // TODO this was moved to rx-storage
      */
     doesDocumentDataMatch(docData: RxDocumentType | any): boolean {
         // if doc is deleted, it cannot match
@@ -543,7 +547,7 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> {
             } else if (eventReduceResult.changed) {
                 // we got the new results, we do not have to re-execute, mustReExec stays false
                 ret = true; // true because results changed
-                rxQuery._setResultData(eventReduceResult.newResults);
+                rxQuery._setResultData(eventReduceResult.newResults as any);
             }
         }
     }
@@ -557,9 +561,9 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> {
         return rxQuery._execOverDatabase()
             .then(newResultData => {
                 rxQuery._latestChangeEvent = latestAfter;
-                if (!deepEqual(newResultData, rxQuery._resultsData)) {
+                if (!rxQuery._result || !deepEqual(newResultData, rxQuery._result.docsData)) {
                     ret = true; // true because results changed
-                    rxQuery._setResultData(newResultData);
+                    rxQuery._setResultData(newResultData as any);
                 }
                 return ret;
             });
