@@ -2,6 +2,8 @@
 
 ### X.X.X (comming soon)
 
+### 11.6.0 (4 February 2022)
+
 Bugfixes:
   - [#3666](https://github.com/pubkey/rxdb/issues/3666) RxDB with lokijs works bad in Safari and FF when using multiple tabs
 
