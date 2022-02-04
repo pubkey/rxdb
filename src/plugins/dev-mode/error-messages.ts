@@ -184,7 +184,10 @@ export const ERROR_MESSAGES = {
     // plugins/server.js
     S1: 'You cannot create collections after calling RxDatabase.server()',
 
-    // plugins/replication-graphql.js
+    // plugins/replication/
+    REP1: 'Replication: _deleted field not provided',
+
+    // plugins/replication-graphql/
     GQL1: 'cannot find sub schema by key',
 
     /**

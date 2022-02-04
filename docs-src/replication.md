@@ -15,7 +15,7 @@ With the replication primitives plugin, you can build a realtime replication bas
 
 ## Data Layout
 
-To use the replication primitives you first have to ensure that your documents are sortable by their last write time.
+To use the replication primitives you first have to ensure that your documents are sortable by their last write time and have a `_deleted` flag set.
 
 For example if your documents look like this:
 
@@ -24,11 +24,14 @@ For example if your documents look like this:
     "id": "foobar",
     "name": "Alice",
     "lastName": "Wilson",
-    "updatedAt": 1564483474
+    "updatedAt": 1564483474,
+    "_deleted": false
 }
 ```
 
 Then your data is always sortable by `updatedAt`. This ensures that when RxDB fetches 'new' changes, it can send the latest `updatedAt` to the remote endpoint and then recieve all newer documents.
+
+The deleted field must always be exactly `_deleted`. If your remote endpoint uses a different field to mark deleted documents, you have to map the fields in the pull- and push handlers.
 
 ## The replication cycle
 
