@@ -1,6 +1,6 @@
 import { Subject } from 'rxjs';
 import { newRxError } from '../../rx-error';
-import { createRevision, ensureNotFalsy, flatClone, now, parseRevision, promiseWait, randomCouchString } from '../../util';
+import { createRevision, ensureNotFalsy, flatClone, now, parseRevision, randomCouchString } from '../../util';
 import { CHANGES_COLLECTION_SUFFIX, closeLokiCollections, getLokiDatabase, getLokiEventKey, getLokiLeaderElector, handleRemoteRequest, LOKIJS_COLLECTION_DEFAULT_OPTIONS, mustUseLocalState, OPEN_LOKIJS_STORAGE_INSTANCES, removeLokiLeaderElectorReference, requestRemoteInstance, stripLokiKey } from './lokijs-helper';
 export var createLokiKeyObjectStorageInstance = function createLokiKeyObjectStorageInstance(storage, params, databaseSettings) {
   try {
@@ -117,109 +117,107 @@ export var RxStorageKeyObjectInstanceLoki = /*#__PURE__*/function () {
         }
 
         var startTime = now();
-        return Promise.resolve(promiseWait(0)).then(function () {
-          var ret = {
-            success: {},
-            error: {}
-          };
-          var writeRowById = new Map();
-          var eventBulk = {
-            id: randomCouchString(10),
-            events: []
-          };
-          documentWrites.forEach(function (writeRow) {
-            var id = writeRow.document._id;
-            writeRowById.set(id, writeRow);
-            var writeDoc = flatClone(writeRow.document);
-            var docInDb = localState.collection.by('_id', id); // TODO why not use docInDb instead of collection.by() ??
+        var ret = {
+          success: {},
+          error: {}
+        };
+        var writeRowById = new Map();
+        var eventBulk = {
+          id: randomCouchString(10),
+          events: []
+        };
+        documentWrites.forEach(function (writeRow) {
+          var id = writeRow.document._id;
+          writeRowById.set(id, writeRow);
+          var writeDoc = flatClone(writeRow.document);
+          var docInDb = localState.collection.by('_id', id); // TODO why not use docInDb instead of collection.by() ??
 
-            var previous = writeRow.previous ? writeRow.previous : localState.collection.by('_id', id);
-            var newRevHeight = previous ? parseRevision(previous._rev).height + 1 : 1;
-            var newRevision = newRevHeight + '-' + createRevision(writeRow.document);
-            writeDoc._rev = newRevision;
+          var previous = writeRow.previous ? writeRow.previous : localState.collection.by('_id', id);
+          var newRevHeight = previous ? parseRevision(previous._rev).height + 1 : 1;
+          var newRevision = newRevHeight + '-' + createRevision(writeRow.document);
+          writeDoc._rev = newRevision;
 
-            if (docInDb) {
-              if (!writeRow.previous || docInDb._rev !== writeRow.previous._rev) {
-                // conflict error
-                var err = {
-                  isError: true,
-                  status: 409,
-                  documentId: id,
-                  writeRow: writeRow
-                };
-                ret.error[id] = err;
-                return;
-              } else {
-                var toLoki = flatClone(writeDoc);
-                toLoki.$loki = docInDb.$loki;
-                toLoki.$lastWriteAt = startTime;
-                localState.collection.update(toLoki);
-              }
-            } else {
-              var insertData = flatClone(writeDoc);
-              insertData.$lastWriteAt = startTime;
-              localState.collection.insert(insertData);
-            }
-
-            ret.success[id] = stripLokiKey(writeDoc);
-            var endTime = now();
-            var event;
-
-            if (!writeRow.previous) {
-              // was insert
-              event = {
-                operation: 'INSERT',
-                doc: writeDoc,
-                id: id,
-                previous: null
-              };
-            } else if (writeRow.document._deleted) {
-              // was delete
-              // we need to add the new revision to the previous doc
-              // so that the eventkey is calculated correctly.
-              // Is this a hack? idk.
-              var previousDoc = flatClone(writeRow.previous);
-              previousDoc._rev = newRevision;
-              event = {
-                operation: 'DELETE',
-                doc: null,
-                id: id,
-                previous: previousDoc
-              };
-            } else {
-              // was update
-              event = {
-                operation: 'UPDATE',
-                doc: writeDoc,
-                id: id,
-                previous: writeRow.previous
-              };
-            }
-
-            if (writeRow.document._deleted && (!writeRow.previous || writeRow.previous._deleted)) {
-              /**
-               * An already deleted document was added to the storage engine,
-               * do not emit an event because it does not affect anything.
-               */
-            } else {
-              var doc = event.operation === 'DELETE' ? event.previous : event.doc;
-              var eventId = getLokiEventKey(true, doc._id, doc._rev ? doc._rev : '');
-              var storageChangeEvent = {
-                eventId: eventId,
+          if (docInDb) {
+            if (!writeRow.previous || docInDb._rev !== writeRow.previous._rev) {
+              // conflict error
+              var err = {
+                isError: true,
+                status: 409,
                 documentId: id,
-                change: event,
-                startTime: startTime,
-                endTime: endTime
+                writeRow: writeRow
               };
-              eventBulk.events.push(storageChangeEvent);
+              ret.error[id] = err;
+              return;
+            } else {
+              var toLoki = flatClone(writeDoc);
+              toLoki.$loki = docInDb.$loki;
+              toLoki.$lastWriteAt = startTime;
+              localState.collection.update(toLoki);
             }
-          });
-          localState.databaseState.saveQueue.addWrite();
+          } else {
+            var insertData = flatClone(writeDoc);
+            insertData.$lastWriteAt = startTime;
+            localState.collection.insert(insertData);
+          }
 
-          _this3.changes$.next(eventBulk);
+          ret.success[id] = stripLokiKey(writeDoc);
+          var endTime = now();
+          var event;
 
-          return ret;
+          if (!writeRow.previous) {
+            // was insert
+            event = {
+              operation: 'INSERT',
+              doc: writeDoc,
+              id: id,
+              previous: null
+            };
+          } else if (writeRow.document._deleted) {
+            // was delete
+            // we need to add the new revision to the previous doc
+            // so that the eventkey is calculated correctly.
+            // Is this a hack? idk.
+            var previousDoc = flatClone(writeRow.previous);
+            previousDoc._rev = newRevision;
+            event = {
+              operation: 'DELETE',
+              doc: null,
+              id: id,
+              previous: previousDoc
+            };
+          } else {
+            // was update
+            event = {
+              operation: 'UPDATE',
+              doc: writeDoc,
+              id: id,
+              previous: writeRow.previous
+            };
+          }
+
+          if (writeRow.document._deleted && (!writeRow.previous || writeRow.previous._deleted)) {
+            /**
+             * An already deleted document was added to the storage engine,
+             * do not emit an event because it does not affect anything.
+             */
+          } else {
+            var doc = event.operation === 'DELETE' ? event.previous : event.doc;
+            var eventId = getLokiEventKey(true, doc._id, doc._rev ? doc._rev : '');
+            var storageChangeEvent = {
+              eventId: eventId,
+              documentId: id,
+              change: event,
+              startTime: startTime,
+              endTime: endTime
+            };
+            eventBulk.events.push(storageChangeEvent);
+          }
         });
+        localState.databaseState.saveQueue.addWrite();
+
+        _this3.changes$.next(eventBulk);
+
+        return ret;
       });
     } catch (e) {
       return Promise.reject(e);
@@ -231,17 +229,19 @@ export var RxStorageKeyObjectInstanceLoki = /*#__PURE__*/function () {
       var _this5 = this;
 
       return Promise.resolve(mustUseLocalState(_this5)).then(function (localState) {
-        return localState ? Promise.resolve(promiseWait(0)).then(function () {
-          var ret = {};
-          ids.forEach(function (id) {
-            var documentInDb = localState.collection.by('_id', id);
+        if (!localState) {
+          return requestRemoteInstance(_this5, 'findLocalDocumentsById', [ids]);
+        }
 
-            if (documentInDb && !documentInDb._deleted) {
-              ret[id] = stripLokiKey(documentInDb);
-            }
-          });
-          return ret;
-        }) : requestRemoteInstance(_this5, 'findLocalDocumentsById', [ids]);
+        var ret = {};
+        ids.forEach(function (id) {
+          var documentInDb = localState.collection.by('_id', id);
+
+          if (documentInDb && !documentInDb._deleted) {
+            ret[id] = stripLokiKey(documentInDb);
+          }
+        });
+        return ret;
       });
     } catch (e) {
       return Promise.reject(e);

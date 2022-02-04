@@ -1,5 +1,5 @@
-import { BehaviorSubject } from 'rxjs';
-import type { RxCollection, RxDocument, RxQueryOP, RxQuery, MangoQuery, MangoQuerySortPart, MangoQuerySelector, PreparedQuery, RxDocumentWriteData } from './types';
+import { BehaviorSubject, Observable } from 'rxjs';
+import type { RxCollection, RxDocument, RxQueryOP, RxQuery, MangoQuery, MangoQuerySortPart, MangoQuerySelector, PreparedQuery, RxDocumentWriteData, RxDocumentData } from './types';
 import type { QueryMatcher } from 'event-reduce-js';
 export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocument<RxDocumentType[]> | RxDocument<RxDocumentType>> {
     op: RxQueryOP;
@@ -16,14 +16,26 @@ export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumen
     uncached: boolean;
     refCount$: BehaviorSubject<null>;
     isFindOneByIdQuery: false | string;
+    /**
+     * Contains the current result state
+     * or null if query has not run yet.
+     */
+    _result: {
+        docsData: RxDocumentType[];
+        docsDataMap: Map<string, RxDocumentType>;
+        docs: RxDocument<RxDocumentType>[];
+        /**
+         * Time at which the current _result state was created.
+         * Used to determine if the result set has changed since X
+         * so that we do not emit the same result multiple times on subscription.
+         */
+        time: number;
+    } | null;
     constructor(op: RxQueryOP, mangoQuery: Readonly<MangoQuery>, collection: RxCollection<RxDocumentType>);
     get $(): BehaviorSubject<RxQueryResult>;
     _latestChangeEvent: -1 | number;
-    _resultsData: any;
-    _resultsDataMap: Map<string, RxDocumentType>;
     _lastExecStart: number;
     _lastExecEnd: number;
-    _resultsDocs$: BehaviorSubject<any>;
     /**
      * ensures that the exec-runs
      * are not run in parallel
@@ -36,17 +48,17 @@ export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumen
      * - Emit the new result-set when an RxChangeEvent comes in
      * - Do not emit anything before the first result-set was created (no null)
      */
-    _$?: BehaviorSubject<RxQueryResult>;
+    _$?: Observable<RxQueryResult>;
     /**
      * set the new result-data as result-docs of the query
      * @param newResultData json-docs that were received from pouchdb
      */
-    _setResultData(newResultData: any[]): RxDocument[];
+    _setResultData(newResultData: RxDocumentData<RxDocumentType[]>): void;
     /**
      * executes the query on the database
      * @return results-array with document-data
      */
-    _execOverDatabase(): Promise<any[]>;
+    _execOverDatabase(): Promise<RxDocumentData<RxDocumentType>[]>;
     /**
      * Execute the query
      * To have an easier implementations,
@@ -73,7 +85,6 @@ export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumen
     /**
      * returns true if the document matches the query,
      * does not use the 'skip' and 'limit'
-     * // TODO this was moved to rx-storage
      */
     doesDocumentDataMatch(docData: RxDocumentType | any): boolean;
     /**

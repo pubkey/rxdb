@@ -14,6 +14,8 @@ var _hooks = require("./hooks");
 
 var _rxChangeEvent = require("./rx-change-event");
 
+var _util = require("./util");
+
 function getSortFieldsOfQuery(primaryKey, query) {
   if (!query.sort || query.sort.length === 0) {
     return [primaryKey];
@@ -90,10 +92,8 @@ function calculateNewResults(rxQuery, rxChangeEvents) {
   }
 
   var queryParams = getQueryParams(rxQuery);
-
-  var previousResults = rxQuery._resultsData.slice();
-
-  var previousResultsMap = rxQuery._resultsDataMap;
+  var previousResults = (0, _util.ensureNotFalsy)(rxQuery._result).docsData.slice(0);
+  var previousResultsMap = (0, _util.ensureNotFalsy)(rxQuery._result).docsDataMap;
   var changed = false;
   var foundNonOptimizeable = rxChangeEvents.find(function (cE) {
     var eventReduceEvent = (0, _rxChangeEvent.rxChangeEventToEventReduceChangeEvent)(cE);
