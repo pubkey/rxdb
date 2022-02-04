@@ -17,6 +17,7 @@ import {
 
 import * as humansCollections from '../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
+import * as schemas from '../helper/schemas';
 
 import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
 addRxPlugin(RxDBKeyCompressionPlugin);
@@ -31,11 +32,11 @@ import { HumanDocumentType } from '../helper/schemas';
 /**
  * RxStorageLokiJS specific tests
  */
-config.parallel('rx-storage-lokijs.test.js', () => {
+describe('rx-storage-lokijs.test.js', () => {
     if (config.storage.name !== 'lokijs') {
         return;
     }
-    describe('RxDatabase', () => {
+    config.parallel('RxDatabase', () => {
         it('create/write/remove', async () => {
             const collection = await humansCollections.create(
                 10,
@@ -314,6 +315,103 @@ config.parallel('rx-storage-lokijs.test.js', () => {
             assert.ok(documentInDb.$lastWriteAt > startTime);
 
             collection.database.destroy();
+        });
+    });
+    config.parallel('issues', () => {
+        /**
+         * When the leading tab is set to cpu throttling mode by the browsers,
+         * running setTimeout takes way longer then the given time.
+         * Because LokiJS is in-memory, we elect a leader and all requests go to that leader.
+         * This means when the leader is cpu-throttled, we have a realy slow response.
+         * 
+         * So in this test we assure that the internals of the LokiJS RxStorage
+         * do not use any setTimeout call.
+         * 
+         * @link https://github.com/pubkey/rxdb/issues/3666#issuecomment-1027801805
+         */
+        describe('#3666 RxDB with lokijs works bad in Safari and FF when using multiple tabs', () => {
+            it('must not use setTimeout internally', async () => {
+                if (
+                    // run only on node to ensure that rewriting the setTimeout works properly.
+                    !config.platform.isNode() ||
+                    // do not run in fast mode because we overwrite global.setTimeout which break parallel tests.
+                    config.isFastMode()
+                ) {
+                    return;
+                }
+
+                const oldSetTimeout = global.setTimeout;
+                (global as any).setTimeout = (fn: Function, time: number) => {
+                    throw new Error('LokiJS must not use setTimeout(' + fn.toString() + ', ' + time + ')');
+                }
+
+                const storage = getRxStorageLoki({
+                    /**
+                     * Do not set a persistence adapter.
+                     * It is allowed to use setTimeout in the persistence
+                     * because it is required to have it to determine when the database is isdle.
+                     * Also the persistence happens in the background so it is not that bad
+                     * if the setTimeout takes longer because the browser throttled the tab.
+                     */
+                });
+
+                const storageInstance = await storage.createStorageInstance({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    multiInstance: false,
+                    options: {},
+                    schema: schemas.human
+                });
+
+                const firstDocData = Object.assign(schemaObjects.human(), {
+                    _deleted: false,
+                    _attachments: {}
+                });
+                await storageInstance.bulkWrite([
+                    {
+                        document: firstDocData
+                    }
+                ]);
+
+                await storageInstance.bulkAddRevisions([
+                    Object.assign(schemaObjects.human(), {
+                        _deleted: false,
+                        _attachments: {},
+                        _rev: '1-51b2fae5721cc4d3cf7392f19e6cc118'
+                    })
+                ]);
+                const preparedQuery = storage.statics.prepareQuery(
+                    schemas.human,
+                    {
+                        selector: {}
+                    }
+                );
+                await storageInstance.query(preparedQuery);
+
+                await storageInstance.findDocumentsById([firstDocData.passportId], false);
+
+                const keyObjectStorageInstance = await storage.createKeyObjectStorageInstance({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    multiInstance: false,
+                    options: {}
+                });
+
+                await keyObjectStorageInstance.bulkWrite([{
+                    document: {
+                        _id: 'foobar',
+                        _attachments: {},
+                        _deleted: false
+                    }
+                }]);
+                await keyObjectStorageInstance.findLocalDocumentsById(['foobar']);
+
+                await storageInstance.close();
+                await keyObjectStorageInstance.close();
+
+                // reset the global.setTimeout so the following tests work properly.
+                global.setTimeout = oldSetTimeout;
+            });
         });
     });
 
