@@ -10,8 +10,10 @@ import type { RxCollection, RxDocument } from './types';
 export declare function getDocumentPrototype(rxCollection: RxCollection): any;
 export declare function getRxDocumentConstructor(rxCollection: RxCollection): any;
 /**
- * create a RxDocument-instance from the jsonData
- * and the prototype merge
+ * Create a RxDocument-instance from the jsonData
+ * and the prototype merge.
+ * If the document already exists in the _docCache,
+ * return that instead to ensure we have no duplicates.
  */
 export declare function createRxDocument<DT, OM>(rxCollection: RxCollection<DT, OM>, docData: any): RxDocument<DT, OM>;
 /**

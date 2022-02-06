@@ -2,17 +2,26 @@
 
 ### X.X.X (comming soon)
 
-
 ### 12.0.0 (comming soon) BREAKING
 
 - All indexes that do not contain the primaryKey, get the primary key added.
 - You can now set a custom index when doing a query.
 
+- Unified the replication primitives and the GraphQL replication plugin.
+
+### 11.6.0 (4 February 2022)
+
+Bugfixes:
+  - [#3666](https://github.com/pubkey/rxdb/issues/3666) RxDB with lokijs works bad in Safari and FF when using multiple tabs
+
+Other:
+  - Replication primitives must throw an error if `_deleted` field is missing. [#3671](https://github.com/pubkey/rxdb/pull/3671)
 
 ### 11.5.1 (30 January 2022)
 
 Bugfixes:
   - `RxStorage.statics.getQueryMatcher()` must not match documents with `_deleted: true`.
+  - Fixed multiple problems with `RxCollection.findByIds$()` [#3659](https://github.com/pubkey/rxdb/pull/3659) Thanks [@Hideman85](https://github.com/Hideman85)
 
 ### 11.5.0 (30 January 2022)
 

@@ -11,6 +11,7 @@ import {
 import { flatClone } from '../../util';
 import { newRxError } from '../../rx-error';
 import { wasRevisionfromPullReplication } from './revision-flag';
+import { runPluginHooks } from '../../hooks';
 
 //
 // things for the push-checkpoint
@@ -84,6 +85,13 @@ export async function setLastPushSequence(
 export async function getChangesSinceLastPushSequence<RxDocType>(
     collection: RxCollection<RxDocType, any>,
     replicationIdentifier: string,
+    replicationIdentifierHash: string,
+    /**
+     * A function that returns true
+     * when the underlaying RxReplication is stopped.
+     * So that we do not run requests against a close RxStorageInstance.
+     */
+    isStopped: () => boolean,
     batchSize = 10
 ): Promise<{
     changedDocs: Map<string, {
@@ -113,13 +121,13 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
      * Then we have to continue grapping the feed
      * until we reach the end of it
      */
-    while (retry) {
-
+    while (retry && !isStopped()) {
         const changesResults = await collection.storageInstance.getChangedDocuments({
             sinceSequence: lastPushSequence,
             limit: batchSize,
             direction: 'after'
         });
+
         lastSequence = changesResults.lastSequence;
 
         // optimisation shortcut, do not proceed if there are no changed documents
@@ -128,6 +136,9 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
             continue;
         }
 
+        if (isStopped()) {
+            break;
+        }
         const docs = await collection.storageInstance.findDocumentsById(
             changesResults.changedDocuments.map(row => row.id),
             true
@@ -138,7 +149,7 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
             if (changedDocs.has(id)) {
                 return;
             }
-            const changedDoc = docs[id];
+            let changedDoc = docs[id];
             if (!changedDoc) {
                 throw newRxError('SNH', { args: { docs } });
             }
@@ -149,12 +160,19 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
              */
             if (
                 wasRevisionfromPullReplication(
-                    replicationIdentifier,
+                    replicationIdentifierHash,
                     changedDoc._rev
                 )
             ) {
                 return false;
             }
+
+            const hookParams = {
+                collection,
+                doc: changedDoc
+            };
+            runPluginHooks('postReadFromInstance', hookParams);
+            changedDoc = hookParams.doc;
 
             changedDocs.set(id, {
                 id,
@@ -162,7 +180,6 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
                 sequence: row.sequence
             });
         });
-
 
         if (changedDocs.size < batchSize && changesResults.changedDocuments.length === batchSize) {
             // no pushable docs found but also not reached the end -> re-run

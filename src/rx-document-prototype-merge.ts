@@ -93,8 +93,10 @@ export function getRxDocumentConstructor(
 }
 
 /**
- * create a RxDocument-instance from the jsonData
- * and the prototype merge
+ * Create a RxDocument-instance from the jsonData
+ * and the prototype merge.
+ * If the document already exists in the _docCache,
+ * return that instead to ensure we have no duplicates.
  */
 export function createRxDocument<DT, OM>(
     rxCollection: RxCollection<DT, OM>,
@@ -102,7 +104,7 @@ export function createRxDocument<DT, OM>(
 ): RxDocument<DT, OM> {
     const primary = docData[rxCollection.schema.primaryPath];
 
-    // return from cache if exsists
+    // return from cache if exists
     const cacheDoc = rxCollection._docCache.get(primary);
     if (cacheDoc) {
         return cacheDoc as any;

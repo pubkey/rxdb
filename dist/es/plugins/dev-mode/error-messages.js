@@ -158,7 +158,9 @@ export var ERROR_MESSAGES = {
   IM2: 'inMemoryCollection.sync(): Do not replicate with the in-memory instance. Replicate with the parent instead',
   // plugins/server.js
   S1: 'You cannot create collections after calling RxDatabase.server()',
-  // plugins/replication-graphql.js
+  // plugins/replication/
+  REP1: 'Replication: _deleted field not provided',
+  // plugins/replication-graphql/
   GQL1: 'cannot find sub schema by key',
 
   /**

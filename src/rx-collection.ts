@@ -59,7 +59,7 @@ import {
     runPluginHooks
 } from './hooks';
 
-import type {
+import {
     Subscription,
     Observable
 } from 'rxjs';
@@ -679,7 +679,7 @@ export class RxCollectionBase<
 
     /**
      * like this.findByIds but returns an observable
-     * that always emitts the current state
+     * that always emits the current state
      */
     findByIds$(
         ids: string[]
@@ -687,43 +687,94 @@ export class RxCollectionBase<
         let currentValue: Map<string, RxDocument<RxDocumentType, OrmMethods>> | null = null;
         let lastChangeEvent: number = -1;
 
+        /**
+         * Ensure we do not process events in parallel
+         */
+        let queue: Promise<any> = PROMISE_RESOLVE_VOID;
+
         const initialPromise = this.findByIds(ids).then(docsMap => {
             lastChangeEvent = this._changeEventBuffer.counter;
             currentValue = docsMap;
         });
+        let firstEmitDone = false;
+
         return this.$.pipe(
             startWith(null),
-            mergeMap(ev => initialPromise.then(() => ev)),
+            /**
+             * Optimization shortcut.
+             * Do not proceed if the emited RxChangeEvent
+             * is not relevant for the query.
+             */
+            filter(changeEvent => {
+                if (
+                    // first emit has no event
+                    changeEvent &&
+                    (
+                        // local documents are not relevant for the query
+                        changeEvent.isLocal ||
+                        // document of the change is not in the ids list.
+                        !ids.includes(changeEvent.documentId)
+                    )
+                ) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }),
+            mergeMap(() => initialPromise),
             /**
              * Because shareReplay with refCount: true
              * will often subscribe/unsusbscribe
              * we always ensure that we handled all missed events
              * since the last subscription.
              */
-            mergeMap(async (_ev) => {
-                const resultMap = ensureNotFalsy(currentValue);
-                const missedChangeEvents = this._changeEventBuffer.getFrom(lastChangeEvent + 1);
-                if (missedChangeEvents === null) {
-                    /**
-                     * changeEventBuffer is of bounds -> we must re-execute over the database
-                     * because we cannot calculate the new results just from the events.
-                     */
-                    const newResult = await this.findByIds(ids);
+            mergeMap(() => {
+                queue = queue.then(async () => {
+                    const resultMap = ensureNotFalsy(currentValue);
+                    const missedChangeEvents = this._changeEventBuffer.getFrom(lastChangeEvent + 1);
                     lastChangeEvent = this._changeEventBuffer.counter;
-                    Array.from(newResult.entries()).forEach(([k, v]) => resultMap.set(k, v));
-                } else {
-                    missedChangeEvents
-                        .filter(rxChangeEvent => ids.includes(rxChangeEvent.documentId))
-                        .forEach(rxChangeEvent => {
-                            const op = rxChangeEvent.operation;
-                            if (op === 'INSERT' || op === 'UPDATE') {
-                                resultMap.set(rxChangeEvent.documentId, this._docCache.get(rxChangeEvent.documentId) as any);
-                            } else {
-                                resultMap.delete(rxChangeEvent.documentId);
-                            }
-                        });
-                }
-                return resultMap;
+                    if (missedChangeEvents === null) {
+                        /**
+                         * changeEventBuffer is of bounds -> we must re-execute over the database
+                         * because we cannot calculate the new results just from the events.
+                         */
+                        const newResult = await this.findByIds(ids);
+                        lastChangeEvent = this._changeEventBuffer.counter;
+                        Array.from(newResult.entries()).forEach(([k, v]) => resultMap.set(k, v));
+                    } else {
+                        let resultHasChanged = false;
+                        missedChangeEvents
+                            .forEach(rxChangeEvent => {
+                                const docId = rxChangeEvent.documentId;
+                                if (!ids.includes(docId)) {
+                                    // document is not relevant for the result set
+                                    return;
+                                }
+                                const op = rxChangeEvent.operation;
+                                if (op === 'INSERT' || op === 'UPDATE') {
+                                    resultHasChanged = true;
+                                    const rxDocument = createRxDocument(
+                                        this.asRxCollection,
+                                        rxChangeEvent.documentData
+                                    );
+                                    resultMap.set(docId, rxDocument);
+                                } else {
+                                    if (resultMap.has(docId)) {
+                                        resultHasChanged = true;
+                                        resultMap.delete(docId);
+                                    }
+                                }
+                            });
+
+                        // nothing happened that affects the result -> do not emit
+                        if (!resultHasChanged && firstEmitDone) {
+                            return false as any;
+                        }
+                    }
+                    firstEmitDone = true;
+                    return resultMap;
+                });
+                return queue;
             }),
             filter(x => !!x),
             shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)

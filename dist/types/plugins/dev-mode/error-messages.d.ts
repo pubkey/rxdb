@@ -134,6 +134,7 @@ export declare const ERROR_MESSAGES: {
     IM1: string;
     IM2: string;
     S1: string;
+    REP1: string;
     GQL1: string;
     /**
      * Should never be thrown, use this for

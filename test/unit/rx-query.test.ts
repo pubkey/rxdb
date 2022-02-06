@@ -13,6 +13,7 @@ import {
     RxJsonSchema,
     promiseWait,
     randomCouchString,
+    ensureNotFalsy,
 } from '../../plugins/core';
 import {
     getRxStoragePouch
@@ -302,7 +303,7 @@ config.parallel('rx-query.test.js', () => {
             }
 
             const docDataObject = doc._dataSync$.getValue();
-            const inQueryCacheObject = query._resultsData[0];
+            const inQueryCacheObject = ensureNotFalsy(query._result).docsData[0];
 
             assert.ok(
                 docDataObject === inQueryCacheObject
@@ -311,7 +312,7 @@ config.parallel('rx-query.test.js', () => {
             col.database.destroy();
         });
     });
-    describe('doesDocMatchQuery()', () => {
+    describe('.doesDocMatchQuery()', () => {
         it('should match', async () => {
             const col = await humansCollection.create(0);
             const q = col.find().where('firstName').ne('foobar');
@@ -534,7 +535,6 @@ config.parallel('rx-query.test.js', () => {
             };
             await col.insert(docData);
 
-
             const emitted = [];
             const query = col.findOne(docData.passportId);
             query.$.subscribe((data: any) => emitted.push(data.toJSON()));
@@ -647,7 +647,7 @@ config.parallel('rx-query.test.js', () => {
         it('exec(true) should throw if missing', async () => {
             const c = await humansCollection.create(0);
 
-            AsyncTestUtil.assertThrows(
+            await AsyncTestUtil.assertThrows(
                 () => c.findOne().exec(true),
                 'RxError',
                 'throwIfMissing'
@@ -657,7 +657,7 @@ config.parallel('rx-query.test.js', () => {
         });
         it('exec(true) should throw used with non-findOne', async () => {
             const c = await humansCollection.create(0);
-            AsyncTestUtil.assertThrows(
+            await AsyncTestUtil.assertThrows(
                 () => c.find().exec(true),
                 'RxError',
                 'findOne'

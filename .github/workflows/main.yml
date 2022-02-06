@@ -81,6 +81,18 @@ jobs:
         with:
           node-version: 16.5.0
 
+      - name: Reuse npm cache folder
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+            ./node_modules
+          key: ${{ runner.os }}-npm-loki-x4-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-loki-x4-
+
       - name: install npm dependencies
         run: npm install
       

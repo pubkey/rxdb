@@ -135,109 +135,107 @@ var RxStorageKeyObjectInstanceLoki = /*#__PURE__*/function () {
         }
 
         var startTime = (0, _util.now)();
-        return Promise.resolve((0, _util.promiseWait)(0)).then(function () {
-          var ret = {
-            success: {},
-            error: {}
-          };
-          var writeRowById = new Map();
-          var eventBulk = {
-            id: (0, _util.randomCouchString)(10),
-            events: []
-          };
-          documentWrites.forEach(function (writeRow) {
-            var id = writeRow.document._id;
-            writeRowById.set(id, writeRow);
-            var writeDoc = (0, _util.flatClone)(writeRow.document);
-            var docInDb = localState.collection.by('_id', id); // TODO why not use docInDb instead of collection.by() ??
+        var ret = {
+          success: {},
+          error: {}
+        };
+        var writeRowById = new Map();
+        var eventBulk = {
+          id: (0, _util.randomCouchString)(10),
+          events: []
+        };
+        documentWrites.forEach(function (writeRow) {
+          var id = writeRow.document._id;
+          writeRowById.set(id, writeRow);
+          var writeDoc = (0, _util.flatClone)(writeRow.document);
+          var docInDb = localState.collection.by('_id', id); // TODO why not use docInDb instead of collection.by() ??
 
-            var previous = writeRow.previous ? writeRow.previous : localState.collection.by('_id', id);
-            var newRevHeight = previous ? (0, _util.parseRevision)(previous._rev).height + 1 : 1;
-            var newRevision = newRevHeight + '-' + (0, _util.createRevision)(writeRow.document);
-            writeDoc._rev = newRevision;
+          var previous = writeRow.previous ? writeRow.previous : localState.collection.by('_id', id);
+          var newRevHeight = previous ? (0, _util.parseRevision)(previous._rev).height + 1 : 1;
+          var newRevision = newRevHeight + '-' + (0, _util.createRevision)(writeRow.document);
+          writeDoc._rev = newRevision;
 
-            if (docInDb) {
-              if (!writeRow.previous || docInDb._rev !== writeRow.previous._rev) {
-                // conflict error
-                var err = {
-                  isError: true,
-                  status: 409,
-                  documentId: id,
-                  writeRow: writeRow
-                };
-                ret.error[id] = err;
-                return;
-              } else {
-                var toLoki = (0, _util.flatClone)(writeDoc);
-                toLoki.$loki = docInDb.$loki;
-                toLoki.$lastWriteAt = startTime;
-                localState.collection.update(toLoki);
-              }
-            } else {
-              var insertData = (0, _util.flatClone)(writeDoc);
-              insertData.$lastWriteAt = startTime;
-              localState.collection.insert(insertData);
-            }
-
-            ret.success[id] = (0, _lokijsHelper.stripLokiKey)(writeDoc);
-            var endTime = (0, _util.now)();
-            var event;
-
-            if (!writeRow.previous) {
-              // was insert
-              event = {
-                operation: 'INSERT',
-                doc: writeDoc,
-                id: id,
-                previous: null
-              };
-            } else if (writeRow.document._deleted) {
-              // was delete
-              // we need to add the new revision to the previous doc
-              // so that the eventkey is calculated correctly.
-              // Is this a hack? idk.
-              var previousDoc = (0, _util.flatClone)(writeRow.previous);
-              previousDoc._rev = newRevision;
-              event = {
-                operation: 'DELETE',
-                doc: null,
-                id: id,
-                previous: previousDoc
-              };
-            } else {
-              // was update
-              event = {
-                operation: 'UPDATE',
-                doc: writeDoc,
-                id: id,
-                previous: writeRow.previous
-              };
-            }
-
-            if (writeRow.document._deleted && (!writeRow.previous || writeRow.previous._deleted)) {
-              /**
-               * An already deleted document was added to the storage engine,
-               * do not emit an event because it does not affect anything.
-               */
-            } else {
-              var doc = event.operation === 'DELETE' ? event.previous : event.doc;
-              var eventId = (0, _lokijsHelper.getLokiEventKey)(true, doc._id, doc._rev ? doc._rev : '');
-              var storageChangeEvent = {
-                eventId: eventId,
+          if (docInDb) {
+            if (!writeRow.previous || docInDb._rev !== writeRow.previous._rev) {
+              // conflict error
+              var err = {
+                isError: true,
+                status: 409,
                 documentId: id,
-                change: event,
-                startTime: startTime,
-                endTime: endTime
+                writeRow: writeRow
               };
-              eventBulk.events.push(storageChangeEvent);
+              ret.error[id] = err;
+              return;
+            } else {
+              var toLoki = (0, _util.flatClone)(writeDoc);
+              toLoki.$loki = docInDb.$loki;
+              toLoki.$lastWriteAt = startTime;
+              localState.collection.update(toLoki);
             }
-          });
-          localState.databaseState.saveQueue.addWrite();
+          } else {
+            var insertData = (0, _util.flatClone)(writeDoc);
+            insertData.$lastWriteAt = startTime;
+            localState.collection.insert(insertData);
+          }
 
-          _this3.changes$.next(eventBulk);
+          ret.success[id] = (0, _lokijsHelper.stripLokiKey)(writeDoc);
+          var endTime = (0, _util.now)();
+          var event;
 
-          return ret;
+          if (!writeRow.previous) {
+            // was insert
+            event = {
+              operation: 'INSERT',
+              doc: writeDoc,
+              id: id,
+              previous: null
+            };
+          } else if (writeRow.document._deleted) {
+            // was delete
+            // we need to add the new revision to the previous doc
+            // so that the eventkey is calculated correctly.
+            // Is this a hack? idk.
+            var previousDoc = (0, _util.flatClone)(writeRow.previous);
+            previousDoc._rev = newRevision;
+            event = {
+              operation: 'DELETE',
+              doc: null,
+              id: id,
+              previous: previousDoc
+            };
+          } else {
+            // was update
+            event = {
+              operation: 'UPDATE',
+              doc: writeDoc,
+              id: id,
+              previous: writeRow.previous
+            };
+          }
+
+          if (writeRow.document._deleted && (!writeRow.previous || writeRow.previous._deleted)) {
+            /**
+             * An already deleted document was added to the storage engine,
+             * do not emit an event because it does not affect anything.
+             */
+          } else {
+            var doc = event.operation === 'DELETE' ? event.previous : event.doc;
+            var eventId = (0, _lokijsHelper.getLokiEventKey)(true, doc._id, doc._rev ? doc._rev : '');
+            var storageChangeEvent = {
+              eventId: eventId,
+              documentId: id,
+              change: event,
+              startTime: startTime,
+              endTime: endTime
+            };
+            eventBulk.events.push(storageChangeEvent);
+          }
         });
+        localState.databaseState.saveQueue.addWrite();
+
+        _this3.changes$.next(eventBulk);
+
+        return ret;
       });
     } catch (e) {
       return Promise.reject(e);
@@ -249,17 +247,19 @@ var RxStorageKeyObjectInstanceLoki = /*#__PURE__*/function () {
       var _this5 = this;
 
       return Promise.resolve((0, _lokijsHelper.mustUseLocalState)(_this5)).then(function (localState) {
-        return localState ? Promise.resolve((0, _util.promiseWait)(0)).then(function () {
-          var ret = {};
-          ids.forEach(function (id) {
-            var documentInDb = localState.collection.by('_id', id);
+        if (!localState) {
+          return (0, _lokijsHelper.requestRemoteInstance)(_this5, 'findLocalDocumentsById', [ids]);
+        }
 
-            if (documentInDb && !documentInDb._deleted) {
-              ret[id] = (0, _lokijsHelper.stripLokiKey)(documentInDb);
-            }
-          });
-          return ret;
-        }) : (0, _lokijsHelper.requestRemoteInstance)(_this5, 'findLocalDocumentsById', [ids]);
+        var ret = {};
+        ids.forEach(function (id) {
+          var documentInDb = localState.collection.by('_id', id);
+
+          if (documentInDb && !documentInDb._deleted) {
+            ret[id] = (0, _lokijsHelper.stripLokiKey)(documentInDb);
+          }
+        });
+        return ret;
       });
     } catch (e) {
       return Promise.reject(e);

@@ -1,6 +1,7 @@
 import { calculateActionName, runAction } from 'event-reduce-js';
 import { runPluginHooks } from './hooks';
 import { rxChangeEventToEventReduceChangeEvent } from './rx-change-event';
+import { ensureNotFalsy } from './util';
 export function getSortFieldsOfQuery(primaryKey, query) {
   if (!query.sort || query.sort.length === 0) {
     return [primaryKey];
@@ -73,10 +74,8 @@ export function calculateNewResults(rxQuery, rxChangeEvents) {
   }
 
   var queryParams = getQueryParams(rxQuery);
-
-  var previousResults = rxQuery._resultsData.slice();
-
-  var previousResultsMap = rxQuery._resultsDataMap;
+  var previousResults = ensureNotFalsy(rxQuery._result).docsData.slice(0);
+  var previousResultsMap = ensureNotFalsy(rxQuery._result).docsDataMap;
   var changed = false;
   var foundNonOptimizeable = rxChangeEvents.find(function (cE) {
     var eventReduceEvent = rxChangeEventToEventReduceChangeEvent(cE);

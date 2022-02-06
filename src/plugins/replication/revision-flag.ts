@@ -18,10 +18,9 @@ import {
  * from the remote server and not saved by the client.
  */
 export function createRevisionForPulledDocument(
-    replicationIdentifier: string,
+    replicationIdentifierHash: string,
     doc: any
 ) {
-    const replicationIdentifierHash = hash(replicationIdentifier);
     const dataHash = hash(doc);
 
     const ret =
@@ -31,10 +30,9 @@ export function createRevisionForPulledDocument(
 }
 
 export function wasRevisionfromPullReplication(
-    replicationIdentifier: string,
+    replicationIdentifierHash: string,
     revision: string
 ) {
-    const replicationIdentifierHash = hash(replicationIdentifier);
     const useFromHash = replicationIdentifierHash.substring(0, 30)
 
     const ret = revision.endsWith(useFromHash);

@@ -6,7 +6,6 @@ import {
     Observable
 } from 'rxjs';
 import {
-    promiseWait,
     createRevision,
     getHeightOfRevision,
     parseRevision,
@@ -133,11 +132,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             return requestRemoteInstance(this, 'bulkWrite', [documentWrites]);
         }
 
-        /**
-         * lokijs is in memory and non-async, so we emulate async behavior
-         * to ensure all RxStorage implementations behave equal.
-         */
-        await promiseWait(0);
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
             success: {},
             error: {}
@@ -283,6 +277,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         });
         localState.databaseState.saveQueue.addWrite();
         this.changes$.next(eventBulk);
+
         return ret;
     }
 
@@ -299,12 +294,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         if (!localState) {
             return requestRemoteInstance(this, 'bulkAddRevisions', [documents]);
         }
-
-        /**
-         * lokijs is in memory and non-async, so we emulate async behavior
-         * to ensure all RxStorage implementations behave equal.
-         */
-        await promiseWait(0);
 
         const eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>> = {
             id: randomCouchString(10),

@@ -21,7 +21,6 @@ import {
     flatClone,
     now,
     parseRevision,
-    promiseWait,
     randomCouchString
 } from '../../util';
 import {
@@ -85,8 +84,6 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
         }
 
         const startTime = now();
-        await promiseWait(0);
-
         const ret: RxLocalStorageBulkWriteResponse<RxDocType> = {
             success: {},
             error: {}
@@ -206,8 +203,6 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
         if (!localState) {
             return requestRemoteInstance(this, 'findLocalDocumentsById', [ids]);
         }
-
-        await promiseWait(0);
         const ret: { [documentId: string]: RxLocalDocumentData<RxDocType> } = {};
         ids.forEach(id => {
             const documentInDb = localState.collection.by('_id', id);

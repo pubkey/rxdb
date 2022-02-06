@@ -129,23 +129,25 @@ export async function run() {
             log(args);
             authenticateRequest(request);
 
-            const doc = args.hero;
-            documents = documents.filter(d => d.id !== doc.id);
-            doc.updatedAt = Math.round(new Date().getTime() / 1000);
-            documents.push(doc);
+            const docs = args.hero;
+            docs.forEach(doc => {
+                documents = documents.filter(d => d.id !== doc.id);
+                doc.updatedAt = Math.round(new Date().getTime() / 1000);
+                documents.push(doc);
 
-            pubsub.publish(
-                'changedHero',
-                {
-                    changedHero: doc
-                }
-            );
-            log('published changedHero ' + doc.id);
+                pubsub.publish(
+                    'changedHero',
+                    {
+                        changedHero: doc
+                    }
+                );
+                log('published changedHero ' + doc.id);
+            });
 
             console.log('## current documents:');
             console.log(JSON.stringify(documents, null, 4));
 
-            return doc;
+            return docs[0];
         },
         changedHero: (args) => {
             log('## changedHero()');

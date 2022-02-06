@@ -21,7 +21,9 @@ import {
     RANDOM_STRING,
     runXTimes,
     RxCollection,
-    ensureNotFalsy
+    ensureNotFalsy,
+    _handleToStorageInstance,
+    lastOfArray
 } from '../../plugins/core';
 
 import {
@@ -436,31 +438,6 @@ config.parallel('rx-collection.test.js', () => {
                     assert.strictEqual(ret.success.length, 10);
                     assert.strictEqual(ret.error.length, 1);
                     db.destroy();
-                });
-            });
-        });
-        describe('.bulkRemove()', () => {
-            describe('positive', () => {
-                it('should remove some humans', async () => {
-                    const amount = 5;
-                    const c = await humansCollection.create(amount);
-                    const docList = await c.find().exec();
-
-                    assert.strictEqual(docList.length, amount);
-
-                    const primaryList = docList.map(doc => doc.primary);
-                    const ret = await c.bulkRemove(primaryList);
-                    assert.strictEqual(ret.success.length, amount);
-
-                    const finalList = await c.find().exec();
-                    assert.strictEqual(finalList.length, 0);
-
-                    c.database.destroy();
-                });
-                it('should not throw when called with an empty array', async () => {
-                    const col = await humansCollection.create(0);
-                    await col.bulkRemove([]);
-                    col.database.destroy();
                 });
             });
         });
@@ -1141,6 +1118,31 @@ config.parallel('rx-collection.test.js', () => {
                     const docsAfter = await c.find().exec();
                     assert.strictEqual(docsAfter.length, 9);
                     c.database.destroy();
+                });
+            });
+            describe('.bulkRemove()', () => {
+                describe('positive', () => {
+                    it('should remove some humans', async () => {
+                        const amount = 5;
+                        const c = await humansCollection.create(amount);
+                        const docList = await c.find().exec();
+
+                        assert.strictEqual(docList.length, amount);
+
+                        const primaryList = docList.map(doc => doc.primary);
+                        const ret = await c.bulkRemove(primaryList);
+                        assert.strictEqual(ret.success.length, amount);
+
+                        const finalList = await c.find().exec();
+                        assert.strictEqual(finalList.length, 0);
+
+                        c.database.destroy();
+                    });
+                    it('should not throw when called with an empty array', async () => {
+                        const col = await humansCollection.create(0);
+                        await col.bulkRemove([]);
+                        col.database.destroy();
+                    });
                 });
             });
             describe('.update()', () => {
@@ -2047,7 +2049,7 @@ config.parallel('rx-collection.test.js', () => {
             // recreating with the same params-object should work
             const db2 = await createRxDatabase({
                 name: randomCouchString(10),
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
             });
             await db2.addCollections({
                 humans: collectionParams
@@ -2055,6 +2057,87 @@ config.parallel('rx-collection.test.js', () => {
             assert.deepStrictEqual(cloned, collectionParams);
 
             db2.destroy();
+        });
+        it('#3661 .findByIds$() fires too often', async () => {
+            const collection = await humansCollection.create(0);
+
+            //  Record subscription
+            const updates: any[] = [];
+
+            const createObject = (id: string) => {
+                const docData: any = schemaObjects.human();
+                docData.passportId = id;
+                docData._deleted = false;
+                docData._rev = '1-51b2fae5721cc4d3cf7392f19e6cc118';
+                return docData;
+            }
+
+            const matchingIds = ['a', 'b', 'c', 'd'];
+            const sub = collection.findByIds$(matchingIds).subscribe(data => {
+                updates.push(data);
+            });
+
+            //  test we have a map and no error
+            await AsyncTestUtil.waitUntil(() => updates.length > 0);
+            await AsyncTestUtil.wait(100);
+            assert.strictEqual(updates.length, 1);
+
+            /**
+             * Non-existing documents should not be in the map at all
+             * (also not with undefined value)
+             */
+            assert.strictEqual(updates[0].size, 0);
+
+
+            //  Simulate a write from a primitive replication
+            await collection.storageInstance.bulkAddRevisions(
+                matchingIds
+                    .map(id => createObject(id))
+                    .map(doc => _handleToStorageInstance(collection, doc))
+            );
+
+            //  Now we should have 2 updates
+            await AsyncTestUtil.waitUntil(() => updates.length > 1);
+
+            /**
+             * Should have emited 2 times,
+             * one initial and one for the bulk-writes.
+             */
+            assert.strictEqual(updates.length, 2);
+            //  The map should be of size 4
+            assert.strictEqual(updates[1].size, 4);
+
+            // should have the same result set as running findByIds() once.
+            const singleQueryDocs = await collection.findByIds(matchingIds);
+            const singleQueryDocsData = Array.from(singleQueryDocs.values()).map((d: any) => d.toJSON(true));
+            const observedResultData = Array.from(lastOfArray(updates).values()).map((d: any) => d.toJSON(true));
+            assert.deepStrictEqual(observedResultData, singleQueryDocsData);
+
+            //  And contains the right data
+            assert.strictEqual(updates[1].get('a')?.passportId, 'a');
+            assert.strictEqual(updates[1].get('b')?.passportId, 'b');
+            assert.strictEqual(updates[1].get('c')?.passportId, 'c');
+            assert.strictEqual(updates[1].get('d')?.passportId, 'd');
+
+            //  Let's try to update something different that should be ignored
+            await collection.storageInstance.bulkAddRevisions(
+                [
+                    createObject('e'),
+                    createObject('f'),
+                    createObject('g'),
+                    createObject('h')
+                ].map(doc => _handleToStorageInstance(collection, doc))
+            );
+
+            //  Wait a bit to see if we catch anything
+            await wait(config.isFastMode() ? 100 : 300);
+
+            //  Verify that the subscription has not been triggered and no error has been added
+            assert.strictEqual(updates.length, 2);
+
+            // clean up afterwards
+            sub.unsubscribe();
+            collection.database.destroy();
         });
     });
 });
