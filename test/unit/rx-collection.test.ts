@@ -438,31 +438,6 @@ config.parallel('rx-collection.test.js', () => {
                 });
             });
         });
-        describe('.bulkRemove()', () => {
-            describe('positive', () => {
-                it('should remove some humans', async () => {
-                    const amount = 5;
-                    const c = await humansCollection.create(amount);
-                    const docList = await c.find().exec();
-
-                    assert.strictEqual(docList.length, amount);
-
-                    const primaryList = docList.map(doc => doc.primary);
-                    const ret = await c.bulkRemove(primaryList);
-                    assert.strictEqual(ret.success.length, amount);
-
-                    const finalList = await c.find().exec();
-                    assert.strictEqual(finalList.length, 0);
-
-                    c.database.destroy();
-                });
-                it('should not throw when called with an empty array', async () => {
-                    const col = await humansCollection.create(0);
-                    await col.bulkRemove([]);
-                    col.database.destroy();
-                });
-            });
-        });
         describe('.find()', () => {
             describe('find all', () => {
                 describe('positive', () => {
@@ -1139,6 +1114,31 @@ config.parallel('rx-collection.test.js', () => {
                     const docsAfter = await c.find().exec();
                     assert.strictEqual(docsAfter.length, 9);
                     c.database.destroy();
+                });
+            });
+            describe('.bulkRemove()', () => {
+                describe('positive', () => {
+                    it('should remove some humans', async () => {
+                        const amount = 5;
+                        const c = await humansCollection.create(amount);
+                        const docList = await c.find().exec();
+
+                        assert.strictEqual(docList.length, amount);
+
+                        const primaryList = docList.map(doc => doc.primary);
+                        const ret = await c.bulkRemove(primaryList);
+                        assert.strictEqual(ret.success.length, amount);
+
+                        const finalList = await c.find().exec();
+                        assert.strictEqual(finalList.length, 0);
+
+                        c.database.destroy();
+                    });
+                    it('should not throw when called with an empty array', async () => {
+                        const col = await humansCollection.create(0);
+                        await col.bulkRemove([]);
+                        col.database.destroy();
+                    });
                 });
             });
             describe('.update()', () => {
@@ -2075,6 +2075,7 @@ config.parallel('rx-collection.test.js', () => {
 
             //  test we have a map and no error
             await AsyncTestUtil.waitUntil(() => updates.length > 0);
+            await AsyncTestUtil.wait(100);
             assert.strictEqual(updates.length, 1);
 
             /**

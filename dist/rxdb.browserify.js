@@ -684,6 +684,8 @@ var _hooks = require("./hooks");
 
 var _rxChangeEvent = require("./rx-change-event");
 
+var _util = require("./util");
+
 function getSortFieldsOfQuery(primaryKey, query) {
   if (!query.sort || query.sort.length === 0) {
     return [primaryKey];
@@ -760,10 +762,8 @@ function calculateNewResults(rxQuery, rxChangeEvents) {
   }
 
   var queryParams = getQueryParams(rxQuery);
-
-  var previousResults = rxQuery._resultsData.slice();
-
-  var previousResultsMap = rxQuery._resultsDataMap;
+  var previousResults = (0, _util.ensureNotFalsy)(rxQuery._result).docsData.slice(0);
+  var previousResultsMap = (0, _util.ensureNotFalsy)(rxQuery._result).docsDataMap;
   var changed = false;
   var foundNonOptimizeable = rxChangeEvents.find(function (cE) {
     var eventReduceEvent = (0, _rxChangeEvent.rxChangeEventToEventReduceChangeEvent)(cE);
@@ -805,7 +805,7 @@ function calculateNewResults(rxQuery, rxChangeEvents) {
   }
 }
 
-},{"./hooks":7,"./rx-change-event":45,"event-reduce-js":436}],7:[function(require,module,exports){
+},{"./hooks":7,"./rx-change-event":45,"./util":59,"event-reduce-js":436}],7:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2487,7 +2487,9 @@ var ERROR_MESSAGES = {
   IM2: 'inMemoryCollection.sync(): Do not replicate with the in-memory instance. Replicate with the parent instead',
   // plugins/server.js
   S1: 'You cannot create collections after calling RxDatabase.server()',
-  // plugins/replication-graphql.js
+  // plugins/replication/
+  REP1: 'Replication: _deleted field not provided',
+  // plugins/replication-graphql/
   GQL1: 'cannot find sub schema by key',
 
   /**
@@ -9497,7 +9499,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
   }
   /**
    * like this.findByIds but returns an observable
-   * that always emitts the current state
+   * that always emits the current state
    */
   ;
 
@@ -9506,14 +9508,33 @@ var RxCollectionBase = /*#__PURE__*/function () {
 
     var currentValue = null;
     var lastChangeEvent = -1;
+    /**
+     * Ensure we do not process events in parallel
+     */
+
+    var queue = _util.PROMISE_RESOLVE_VOID;
     var initialPromise = this.findByIds(ids).then(function (docsMap) {
       lastChangeEvent = _this15._changeEventBuffer.counter;
       currentValue = docsMap;
     });
-    return this.$.pipe((0, _operators.startWith)(null), (0, _operators.mergeMap)(function (ev) {
-      return initialPromise.then(function () {
-        return ev;
-      });
+    var firstEmitDone = false;
+    return this.$.pipe((0, _operators.startWith)(null),
+    /**
+     * Optimization shortcut.
+     * Do not proceed if the emited RxChangeEvent
+     * is not relevant for the query.
+     */
+    (0, _operators.filter)(function (changeEvent) {
+      if ( // first emit has no event
+      changeEvent && ( // local documents are not relevant for the query
+      changeEvent.isLocal || // document of the change is not in the ids list.
+      !ids.includes(changeEvent.documentId))) {
+        return false;
+      } else {
+        return true;
+      }
+    }), (0, _operators.mergeMap)(function () {
+      return initialPromise;
     }),
     /**
      * Because shareReplay with refCount: true
@@ -9521,47 +9542,74 @@ var RxCollectionBase = /*#__PURE__*/function () {
      * we always ensure that we handled all missed events
      * since the last subscription.
      */
-    (0, _operators.mergeMap)(function (_ev) {
-      try {
-        var resultMap = (0, _util.ensureNotFalsy)(currentValue);
+    (0, _operators.mergeMap)(function () {
+      queue = queue.then(function () {
+        try {
+          var _temp10 = function _temp10(_result) {
+            if (_exit2) return _result;
+            firstEmitDone = true;
+            return resultMap;
+          };
 
-        var missedChangeEvents = _this15._changeEventBuffer.getFrom(lastChangeEvent + 1);
+          var _exit2 = false;
+          var resultMap = (0, _util.ensureNotFalsy)(currentValue);
 
-        var _temp8 = function () {
-          if (missedChangeEvents === null) {
-            /**
-             * changeEventBuffer is of bounds -> we must re-execute over the database
-             * because we cannot calculate the new results just from the events.
-             */
-            return Promise.resolve(_this15.findByIds(ids)).then(function (newResult) {
-              lastChangeEvent = _this15._changeEventBuffer.counter;
-              Array.from(newResult.entries()).forEach(function (_ref2) {
-                var k = _ref2[0],
-                    v = _ref2[1];
-                return resultMap.set(k, v);
+          var missedChangeEvents = _this15._changeEventBuffer.getFrom(lastChangeEvent + 1);
+
+          lastChangeEvent = _this15._changeEventBuffer.counter;
+
+          var _temp11 = function () {
+            if (missedChangeEvents === null) {
+              /**
+               * changeEventBuffer is of bounds -> we must re-execute over the database
+               * because we cannot calculate the new results just from the events.
+               */
+              return Promise.resolve(_this15.findByIds(ids)).then(function (newResult) {
+                lastChangeEvent = _this15._changeEventBuffer.counter;
+                Array.from(newResult.entries()).forEach(function (_ref2) {
+                  var k = _ref2[0],
+                      v = _ref2[1];
+                  return resultMap.set(k, v);
+                });
               });
-            });
-          } else {
-            missedChangeEvents.filter(function (rxChangeEvent) {
-              return ids.includes(rxChangeEvent.documentId);
-            }).forEach(function (rxChangeEvent) {
-              var op = rxChangeEvent.operation;
+            } else {
+              var resultHasChanged = false;
+              missedChangeEvents.forEach(function (rxChangeEvent) {
+                var docId = rxChangeEvent.documentId;
 
-              if (op === 'INSERT' || op === 'UPDATE') {
-                resultMap.set(rxChangeEvent.documentId, _this15._docCache.get(rxChangeEvent.documentId));
-              } else {
-                resultMap["delete"](rxChangeEvent.documentId);
+                if (!ids.includes(docId)) {
+                  // document is not relevant for the result set
+                  return;
+                }
+
+                var op = rxChangeEvent.operation;
+
+                if (op === 'INSERT' || op === 'UPDATE') {
+                  resultHasChanged = true;
+                  var rxDocument = (0, _rxDocumentPrototypeMerge.createRxDocument)(_this15.asRxCollection, rxChangeEvent.documentData);
+                  resultMap.set(docId, rxDocument);
+                } else {
+                  if (resultMap.has(docId)) {
+                    resultHasChanged = true;
+                    resultMap["delete"](docId);
+                  }
+                }
+              }); // nothing happened that affects the result -> do not emit
+
+              if (!resultHasChanged && firstEmitDone) {
+                var _temp12 = false;
+                _exit2 = true;
+                return _temp12;
               }
-            });
-          }
-        }();
+            }
+          }();
 
-        return Promise.resolve(_temp8 && _temp8.then ? _temp8.then(function () {
-          return resultMap;
-        }) : resultMap);
-      } catch (e) {
-        return Promise.reject(e);
-      }
+          return Promise.resolve(_temp11 && _temp11.then ? _temp11.then(_temp10) : _temp10(_temp11));
+        } catch (e) {
+          return Promise.reject(e);
+        }
+      });
+      return queue;
     }), (0, _operators.filter)(function (x) {
       return !!x;
     }), (0, _operators.shareReplay)(_util.RXJS_SHARE_REPLAY_DEFAULTS));
@@ -10807,13 +10855,15 @@ function getRxDocumentConstructor(rxCollection) {
   return constructorForCollection.get(rxCollection);
 }
 /**
- * create a RxDocument-instance from the jsonData
- * and the prototype merge
+ * Create a RxDocument-instance from the jsonData
+ * and the prototype merge.
+ * If the document already exists in the _docCache,
+ * return that instead to ensure we have no duplicates.
  */
 
 
 function createRxDocument(rxCollection, docData) {
-  var primary = docData[rxCollection.schema.primaryPath]; // return from cache if exsists
+  var primary = docData[rxCollection.schema.primaryPath]; // return from cache if exists
 
   var cacheDoc = rxCollection._docCache.get(primary);
 
@@ -11834,8 +11884,14 @@ var RxQueryBase = /*#__PURE__*/function () {
   /**
    * Some stats then are used for debugging and cache replacement policies
    */
+  // used in the query-cache to determine if the RxQuery can be cleaned up.
   // used by some plugins
   // used to count the subscribers to the query
+
+  /**
+   * Contains the current result state
+   * or null if query has not run yet.
+   */
   function RxQueryBase(op, mangoQuery, collection) {
     this.id = newQueryID();
     this._execOverDatabaseCount = 0;
@@ -11844,12 +11900,10 @@ var RxQueryBase = /*#__PURE__*/function () {
     this.other = {};
     this.uncached = false;
     this.refCount$ = new _rxjs.BehaviorSubject(null);
+    this._result = null;
     this._latestChangeEvent = -1;
-    this._resultsData = null;
-    this._resultsDataMap = new Map();
     this._lastExecStart = 0;
     this._lastExecEnd = 0;
-    this._resultsDocs$ = new _rxjs.BehaviorSubject(null);
     this._ensureEqualQueue = _util.PROMISE_RESOLVE_FALSE;
     this.op = op;
     this.mangoQuery = mangoQuery;
@@ -11869,8 +11923,6 @@ var RxQueryBase = /*#__PURE__*/function () {
    * @param newResultData json-docs that were received from pouchdb
    */
   _proto._setResultData = function _setResultData(newResultData) {
-    var _this = this;
-
     var docs = (0, _rxDocumentPrototypeMerge.createRxDocuments)(this.collection, newResultData);
     /**
      * Instead of using the newResultData in the result cache,
@@ -11879,20 +11931,20 @@ var RxQueryBase = /*#__PURE__*/function () {
      */
 
     var primPath = this.collection.schema.primaryPath;
-    this._resultsDataMap = new Map();
-    this._resultsData = docs.map(function (doc) {
+    var docsDataMap = new Map();
+    var docsData = docs.map(function (doc) {
       var docData = doc._dataSync$.getValue();
 
       var id = docData[primPath];
-
-      _this._resultsDataMap.set(id, docData);
-
+      docsDataMap.set(id, docData);
       return docData;
     });
-
-    this._resultsDocs$.next(docs);
-
-    return docs;
+    this._result = {
+      docsData: docsData,
+      docsDataMap: docsDataMap,
+      docs: docs,
+      time: (0, _util.now)()
+    };
   }
   /**
    * executes the query on the database
@@ -11901,7 +11953,7 @@ var RxQueryBase = /*#__PURE__*/function () {
   ;
 
   _proto._execOverDatabase = function _execOverDatabase() {
-    var _this2 = this;
+    var _this = this;
 
     this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
     this._lastExecStart = (0, _util.now)();
@@ -11924,7 +11976,7 @@ var RxQueryBase = /*#__PURE__*/function () {
     }
 
     return docsPromise.then(function (docs) {
-      _this2._lastExecEnd = (0, _util.now)();
+      _this._lastExecEnd = (0, _util.now)();
       return docs;
     });
   }
@@ -11936,7 +11988,7 @@ var RxQueryBase = /*#__PURE__*/function () {
   ;
 
   _proto.exec = function exec(throwIfMissing) {
-    var _this3 = this;
+    var _this2 = this;
 
     // TODO this should be ensured by typescript
     if (throwIfMissing && this.op !== 'findOne') {
@@ -11948,19 +12000,19 @@ var RxQueryBase = /*#__PURE__*/function () {
     }
     /**
      * run _ensureEqual() here,
-     * this will make sure that errors in the query which throw inside of pouchdb,
-     * will be thrown at this execution context
+     * this will make sure that errors in the query which throw inside of the RxStorage,
+     * will be thrown at this execution context and not in the background.
      */
 
 
     return _ensureEqual(this).then(function () {
-      return (0, _rxjs.firstValueFrom)(_this3.$);
+      return (0, _rxjs.firstValueFrom)(_this2.$);
     }).then(function (result) {
       if (!result && throwIfMissing) {
         throw (0, _rxError.newRxError)('QU10', {
-          collection: _this3.collection.name,
-          query: _this3.mangoQuery,
-          op: _this3.op
+          collection: _this2.collection.name,
+          query: _this2.mangoQuery,
+          op: _this2.op
         });
       } else {
         return result;
@@ -12016,7 +12068,6 @@ var RxQueryBase = /*#__PURE__*/function () {
   /**
    * returns true if the document matches the query,
    * does not use the 'skip' and 'limit'
-   * // TODO this was moved to rx-storage
    */
   ;
 
@@ -12084,50 +12135,58 @@ var RxQueryBase = /*#__PURE__*/function () {
   (0, _createClass2["default"])(RxQueryBase, [{
     key: "$",
     get: function get() {
-      var _this4 = this;
+      var _this3 = this;
 
       if (!this._$) {
+        var results$ = this.collection.$.pipe(
         /**
-         * We use _resultsDocs$ to emit new results
-         * This also ensures that there is a reemit on subscribe
+         * Performance shortcut.
+         * Changes to local documents are not relevant for the query.
          */
-        var results$ = this._resultsDocs$.pipe((0, _operators.mergeMap)(function (docs) {
-          return _ensureEqual(_this4).then(function (hasChanged) {
-            if (hasChanged) {
-              // wait for next emit
-              return false;
-            } else {
-              return docs;
-            }
-          });
-        }), // not if previous returned false
-        (0, _operators.filter)(function (docs) {
-          return !!docs;
-        }), // copy the array so it wont matter if the user modifies it
-        (0, _operators.map)(function (docs) {
-          return docs.slice(0);
-        }), (0, _operators.map)(function (docs) {
-          if (_this4.op === 'findOne') {
-            // findOne()-queries emit document or null
-            var doc = docs.length === 0 ? null : docs[0];
-            return doc;
+        (0, _operators.filter)(function (changeEvent) {
+          return !changeEvent.isLocal;
+        }),
+        /**
+         * Start once to ensure the querying also starts
+         * when there where no changes.
+         */
+        (0, _operators.startWith)(null), // ensure query results are up to date.
+        (0, _operators.mergeMap)(function () {
+          return _ensureEqual(_this3);
+        }), // use the current result set, written by _ensureEqual().
+        (0, _operators.map)(function () {
+          return _this3._result;
+        }), // do not run stuff above for each new subscriber, only once.
+        (0, _operators.shareReplay)(_util.RXJS_SHARE_REPLAY_DEFAULTS), // do not proceed if result set has not changed.
+        (0, _operators.distinctUntilChanged)(function (prev, curr) {
+          if (prev && prev.time === (0, _util.ensureNotFalsy)(curr).time) {
+            return true;
+          } else {
+            return false;
+          }
+        }),
+        /**
+         * Map the result set to a single RxDocument or an array,
+         * depending on query type
+         */
+        (0, _operators.map)(function (result) {
+          var useResult = (0, _util.ensureNotFalsy)(result);
+
+          if (_this3.op === 'findOne') {
+            // findOne()-queries emit RxDocument or null
+            return useResult.docs.length === 0 ? null : useResult.docs[0];
           } else {
             // find()-queries emit RxDocument[]
-            return docs;
+            // Flat copy the array so it wont matter if the user modifies it.
+            return useResult.docs.slice(0);
           }
-        }), (0, _operators.shareReplay)(_util.RXJS_SHARE_REPLAY_DEFAULTS)).asObservable();
-        /**
-         * subscribe to the changeEvent-stream so it detects changes if it has subscribers
-         */
-
-
-        var changeEvents$ = this.collection.$.pipe((0, _operators.tap)(function () {
-          return _ensureEqual(_this4);
-        }), (0, _operators.filter)(function () {
-          return false;
         }));
-        this._$ = // tslint:disable-next-line
-        (0, _rxjs.merge)(results$, changeEvents$, this.refCount$.pipe((0, _operators.filter)(function () {
+        this._$ = (0, _rxjs.merge)(results$,
+        /**
+         * Also add the refCount$ to the query observable
+         * to allow us to count the amount of subscribers.
+         */
+        this.refCount$.pipe((0, _operators.filter)(function () {
           return false;
         })));
       }
@@ -12251,7 +12310,7 @@ function __ensureEqual(rxQuery) {
     mustReExec = true;
   }
   /**
-   * try to use the queryChangeDetector to calculate the new results
+   * try to use EventReduce to calculate the new results
    */
 
 
@@ -12287,7 +12346,7 @@ function __ensureEqual(rxQuery) {
     return rxQuery._execOverDatabase().then(function (newResultData) {
       rxQuery._latestChangeEvent = latestAfter;
 
-      if (!(0, _fastDeepEqual["default"])(newResultData, rxQuery._resultsData)) {
+      if (!rxQuery._result || !(0, _fastDeepEqual["default"])(newResultData, rxQuery._result.docsData)) {
         ret = true; // true because results changed
 
         rxQuery._setResultData(newResultData);
@@ -12297,7 +12356,7 @@ function __ensureEqual(rxQuery) {
     });
   }
 
-  return ret; // true if results have changed
+  return Promise.resolve(ret); // true if results have changed
 }
 /**
  * Returns true if the given query

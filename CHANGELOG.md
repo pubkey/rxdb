@@ -2,8 +2,16 @@
 
 ### X.X.X (comming soon)
 
-
 - Unified the replication primitives and the GraphQL replication plugin.
+
+### 11.6.0 (4 February 2022)
+
+Bugfixes:
+  - [#3666](https://github.com/pubkey/rxdb/issues/3666) RxDB with lokijs works bad in Safari and FF when using multiple tabs
+
+Other:
+  - Replication primitives must throw an error if `_deleted` field is missing. [#3671](https://github.com/pubkey/rxdb/pull/3671)
+
 ### 11.5.1 (30 January 2022)
 
 Bugfixes:

@@ -272,6 +272,7 @@ config.parallel('primary.test.js', () => {
                     const sub = c.find().$.subscribe(newDocs => {
                         docs = newDocs;
                     });
+                    await AsyncTestUtil.waitUntil(() => !!docs);
                     await c.insert(schemaObjects.simpleHuman());
                     await AsyncTestUtil.waitUntil(() => {
                         if (docs) {

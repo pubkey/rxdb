@@ -21,9 +21,10 @@ To use the replication primitives you first have to ensure that:
   *deterministic* means that even if two documents have the same *last write time*, they have a predictable sort order.
     This is most often ensure by using the *primaryKey* as second sort parameter.
 
-- **documents are never deleted, instead the `deleted` field is set to `true`.**
+- **documents are never deleted, instead the `_deleted` field is set to `true`.**
 
   This is needed so that the deletion state of a document exists in the database and can be replicated with other instances.
+
 
 For example if your documents look like this:
 
@@ -47,6 +48,8 @@ For example if your documents look like this:
 ```
 
 Then your data is always sortable by `updatedAt`. This ensures that when RxDB fetches 'new' changes, it can send the latest `updatedAt` to the remote endpoint and then recieve all newer documents.
+
+The deleted field must always be exactly `_deleted`. If your remote endpoint uses a different field to mark deleted documents, you have to map the fields in the pull- and push handlers.
 
 ## The replication cycle
 

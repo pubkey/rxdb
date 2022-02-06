@@ -700,6 +700,27 @@ export class RxCollectionBase<
 
         return this.$.pipe(
             startWith(null),
+            /**
+             * Optimization shortcut.
+             * Do not proceed if the emited RxChangeEvent
+             * is not relevant for the query.
+             */
+            filter(changeEvent => {
+                if (
+                    // first emit has no event
+                    changeEvent &&
+                    (
+                        // local documents are not relevant for the query
+                        changeEvent.isLocal ||
+                        // document of the change is not in the ids list.
+                        !ids.includes(changeEvent.documentId)
+                    )
+                ) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }),
             mergeMap(() => initialPromise),
             /**
              * Because shareReplay with refCount: true

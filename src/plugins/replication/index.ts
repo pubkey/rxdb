@@ -272,6 +272,16 @@ export class RxReplicationStateBase<RxDocType> {
             return Promise.resolve('ok');
         }
 
+        if (overwritable.isDevMode()) {
+            pulledDocuments.forEach(doc => {
+                if (!doc.hasOwnProperty('_deleted')) {
+                    throw newRxError('REP1', {
+                        document: doc
+                    });
+                }
+            });
+        }
+
         /**
          * If a local write has happened while the remote changes where fetched,
          * we have to drop the document and first run a push-sequence.

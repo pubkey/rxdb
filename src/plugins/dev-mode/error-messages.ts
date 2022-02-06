@@ -190,6 +190,9 @@ export const ERROR_MESSAGES = {
     GQL3: 'GraphQL replication: pull returns more documents then batchSize',
     GQL4: 'GraphQL replication: unknown errors occurred in replication push - see innerErrors for more details',
 
+    // plugins/replication/
+    REP1: 'Replication: _deleted field not provided',
+
     /**
      * Should never be thrown, use this for
      * null checks etc. so you do not have to increase the

@@ -598,7 +598,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
   }
   /**
    * like this.findByIds but returns an observable
-   * that always emitts the current state
+   * that always emits the current state
    */
   ;
 
@@ -607,14 +607,33 @@ var RxCollectionBase = /*#__PURE__*/function () {
 
     var currentValue = null;
     var lastChangeEvent = -1;
+    /**
+     * Ensure we do not process events in parallel
+     */
+
+    var queue = _util.PROMISE_RESOLVE_VOID;
     var initialPromise = this.findByIds(ids).then(function (docsMap) {
       lastChangeEvent = _this15._changeEventBuffer.counter;
       currentValue = docsMap;
     });
-    return this.$.pipe((0, _operators.startWith)(null), (0, _operators.mergeMap)(function (ev) {
-      return initialPromise.then(function () {
-        return ev;
-      });
+    var firstEmitDone = false;
+    return this.$.pipe((0, _operators.startWith)(null),
+    /**
+     * Optimization shortcut.
+     * Do not proceed if the emited RxChangeEvent
+     * is not relevant for the query.
+     */
+    (0, _operators.filter)(function (changeEvent) {
+      if ( // first emit has no event
+      changeEvent && ( // local documents are not relevant for the query
+      changeEvent.isLocal || // document of the change is not in the ids list.
+      !ids.includes(changeEvent.documentId))) {
+        return false;
+      } else {
+        return true;
+      }
+    }), (0, _operators.mergeMap)(function () {
+      return initialPromise;
     }),
     /**
      * Because shareReplay with refCount: true
@@ -622,47 +641,74 @@ var RxCollectionBase = /*#__PURE__*/function () {
      * we always ensure that we handled all missed events
      * since the last subscription.
      */
-    (0, _operators.mergeMap)(function (_ev) {
-      try {
-        var resultMap = (0, _util.ensureNotFalsy)(currentValue);
+    (0, _operators.mergeMap)(function () {
+      queue = queue.then(function () {
+        try {
+          var _temp10 = function _temp10(_result) {
+            if (_exit2) return _result;
+            firstEmitDone = true;
+            return resultMap;
+          };
 
-        var missedChangeEvents = _this15._changeEventBuffer.getFrom(lastChangeEvent + 1);
+          var _exit2 = false;
+          var resultMap = (0, _util.ensureNotFalsy)(currentValue);
 
-        var _temp8 = function () {
-          if (missedChangeEvents === null) {
-            /**
-             * changeEventBuffer is of bounds -> we must re-execute over the database
-             * because we cannot calculate the new results just from the events.
-             */
-            return Promise.resolve(_this15.findByIds(ids)).then(function (newResult) {
-              lastChangeEvent = _this15._changeEventBuffer.counter;
-              Array.from(newResult.entries()).forEach(function (_ref2) {
-                var k = _ref2[0],
-                    v = _ref2[1];
-                return resultMap.set(k, v);
+          var missedChangeEvents = _this15._changeEventBuffer.getFrom(lastChangeEvent + 1);
+
+          lastChangeEvent = _this15._changeEventBuffer.counter;
+
+          var _temp11 = function () {
+            if (missedChangeEvents === null) {
+              /**
+               * changeEventBuffer is of bounds -> we must re-execute over the database
+               * because we cannot calculate the new results just from the events.
+               */
+              return Promise.resolve(_this15.findByIds(ids)).then(function (newResult) {
+                lastChangeEvent = _this15._changeEventBuffer.counter;
+                Array.from(newResult.entries()).forEach(function (_ref2) {
+                  var k = _ref2[0],
+                      v = _ref2[1];
+                  return resultMap.set(k, v);
+                });
               });
-            });
-          } else {
-            missedChangeEvents.filter(function (rxChangeEvent) {
-              return ids.includes(rxChangeEvent.documentId);
-            }).forEach(function (rxChangeEvent) {
-              var op = rxChangeEvent.operation;
+            } else {
+              var resultHasChanged = false;
+              missedChangeEvents.forEach(function (rxChangeEvent) {
+                var docId = rxChangeEvent.documentId;
 
-              if (op === 'INSERT' || op === 'UPDATE') {
-                resultMap.set(rxChangeEvent.documentId, _this15._docCache.get(rxChangeEvent.documentId));
-              } else {
-                resultMap["delete"](rxChangeEvent.documentId);
+                if (!ids.includes(docId)) {
+                  // document is not relevant for the result set
+                  return;
+                }
+
+                var op = rxChangeEvent.operation;
+
+                if (op === 'INSERT' || op === 'UPDATE') {
+                  resultHasChanged = true;
+                  var rxDocument = (0, _rxDocumentPrototypeMerge.createRxDocument)(_this15.asRxCollection, rxChangeEvent.documentData);
+                  resultMap.set(docId, rxDocument);
+                } else {
+                  if (resultMap.has(docId)) {
+                    resultHasChanged = true;
+                    resultMap["delete"](docId);
+                  }
+                }
+              }); // nothing happened that affects the result -> do not emit
+
+              if (!resultHasChanged && firstEmitDone) {
+                var _temp12 = false;
+                _exit2 = true;
+                return _temp12;
               }
-            });
-          }
-        }();
+            }
+          }();
 
-        return Promise.resolve(_temp8 && _temp8.then ? _temp8.then(function () {
-          return resultMap;
-        }) : resultMap);
-      } catch (e) {
-        return Promise.reject(e);
-      }
+          return Promise.resolve(_temp11 && _temp11.then ? _temp11.then(_temp10) : _temp10(_temp11));
+        } catch (e) {
+          return Promise.reject(e);
+        }
+      });
+      return queue;
     }), (0, _operators.filter)(function (x) {
       return !!x;
     }), (0, _operators.shareReplay)(_util.RXJS_SHARE_REPLAY_DEFAULTS));

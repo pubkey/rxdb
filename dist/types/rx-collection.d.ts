@@ -4,7 +4,7 @@ import { Crypter } from './crypter';
 import { DocCache } from './doc-cache';
 import { QueryCache } from './query-cache';
 import { ChangeEventBuffer } from './change-event-buffer';
-import type { Subscription, Observable } from 'rxjs';
+import { Subscription, Observable } from 'rxjs';
 import type { KeyFunctionMap, RxCouchDBReplicationState, MigrationState, SyncOptions, RxCollection, RxDatabase, RxQuery, RxDocument, SyncOptionsGraphQL, RxDumpCollection, RxDumpCollectionAny, MangoQuery, MangoQueryNoLimit, RxCacheReplacementPolicy, RxStorageBulkWriteError, RxStorageKeyObjectInstance, RxChangeEvent, RxChangeEventInsert, RxChangeEventUpdate, RxChangeEventDelete, RxStorageInstance, CollectionsOfDatabase } from './types';
 import type { RxGraphQLReplicationState } from './plugins/replication-graphql';
 import { RxSchema } from './rx-schema';
@@ -111,7 +111,7 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     findByIds(ids: string[]): Promise<Map<string, RxDocument<RxDocumentType, OrmMethods>>>;
     /**
      * like this.findByIds but returns an observable
-     * that always emitts the current state
+     * that always emits the current state
      */
     findByIds$(ids: string[]): Observable<Map<string, RxDocument<RxDocumentType, OrmMethods>>>;
     /**

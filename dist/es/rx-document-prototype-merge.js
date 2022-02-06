@@ -61,12 +61,14 @@ export function getRxDocumentConstructor(rxCollection) {
   return constructorForCollection.get(rxCollection);
 }
 /**
- * create a RxDocument-instance from the jsonData
- * and the prototype merge
+ * Create a RxDocument-instance from the jsonData
+ * and the prototype merge.
+ * If the document already exists in the _docCache,
+ * return that instead to ensure we have no duplicates.
  */
 
 export function createRxDocument(rxCollection, docData) {
-  var primary = docData[rxCollection.schema.primaryPath]; // return from cache if exsists
+  var primary = docData[rxCollection.schema.primaryPath]; // return from cache if exists
 
   var cacheDoc = rxCollection._docCache.get(primary);
 

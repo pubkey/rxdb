@@ -10,6 +10,10 @@ import { planQuery } from './pouchdb-find-query-planer/query-planner';
  * Use the pouchdb query planner to determine which index
  * must be used to get the correct documents.
  * @link https://www.bennadel.com/blog/3258-understanding-the-query-plan-explained-by-the-find-plugin-in-pouchdb-6-2-0.htm
+ * 
+ * 
+ * TODO use batched cursor
+ * @link https://nolanlawson.com/2021/08/22/speeding-up-indexeddb-reads-and-writes/
  */
 
 /**
