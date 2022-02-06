@@ -92,6 +92,7 @@
     * [update()](./rx-query.md#update)
     * [remove()](./rx-query.md#remove)
     * [doesDocumentDataMatch()](./rx-query.md#doesDocumentDataMatch)
+    * [Specific Index](./rx-query.md#setting-a-specific-index)
     * [Examples](./rx-query.md#examples)
     * [isRxQuery()](./rx-query.md#isrxquery)
 
