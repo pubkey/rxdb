@@ -1,6 +1,6 @@
 # Replication primitives
 
-With the replication primitives plugin, you can build a realtime replication based on a transport layer like **REST**, **WebRTC** or **websockets** or any other transport layer.
+With the replication primitives plugin, you can build a realtime replication based on a transport layer like **REST**, **WebRTC** or **websockets** or any other transport layer. Also the [GraphQL replication plugin](./replication-graphql.md) is build on top of the replication primitives.
 
 
 ## Trade offs
@@ -15,7 +15,16 @@ With the replication primitives plugin, you can build a realtime replication bas
 
 ## Data Layout
 
-To use the replication primitives you first have to ensure that your documents are sortable by their last write time and have a `_deleted` flag set.
+To use the replication primitives you first have to ensure that:
+- **documents are deterministic sortable by their last write time**
+
+  *deterministic* means that even if two documents have the same *last write time*, they have a predictable sort order.
+    This is most often ensure by using the *primaryKey* as second sort parameter.
+
+- **documents are never deleted, instead the `_deleted` field is set to `true`.**
+
+  This is needed so that the deletion state of a document exists in the database and can be replicated with other instances.
+
 
 For example if your documents look like this:
 
@@ -24,7 +33,16 @@ For example if your documents look like this:
     "id": "foobar",
     "name": "Alice",
     "lastName": "Wilson",
+    /**
+     * Contains the last write timestamp
+     * so all documents writes can be sorted by that value
+     * when they are fetched from the remote instance.
+     */
     "updatedAt": 1564483474,
+    /**
+     * Instead of physically deleting documents,
+     * a deleted document gets replicated.
+     */
     "_deleted": false
 }
 ```
@@ -40,14 +58,17 @@ The replication works in cycles. A cycle is triggered when:
   - When `liveInterval` is reached from the time of last `run()` cycle.
   - The `run()` method is called manually.
 
-A cycle performs these steps in the same order:
+A cycle performs these steps in the given order:
 
 1. Get a batch of unreplicated document writes and call the `push handler` with them to send them to the remote instance.
 2. Repeat step `1` until there are no more local unreplicated changes.
 3. Get the `latestPullDocument` from the local database.
 4. Call the `pull handler` with `latestPullDocument` to fetch a batch from remote unreplicated document writes.
-5. Update `latestPullDocument` with the newest latest document from the remote.
-6. Repeat step `3+4+5` until the pull handler returns `hasMoreDocuments: false`.
+5. When the `pull handler` has returned the remote documents...
+  - ...if a local write happened in between, drop the pulled changes and start from step `1` to not miss out local writes.
+  - ...if no local write happend in between, persist the pulled changes to the local state.
+6. Update `latestPullDocument` with the newest latest document from the remote.
+7. Repeat step `3+4+5` until the pull handler returns `hasMoreDocuments: false`.
 
 
 ## Error handling
@@ -63,6 +84,10 @@ But for a more resilent error handling you could compare the last write timestam
 Imagine two of your users modify the same JSON document, while both are offline. After they go online again, their clients replicate the modified document to the server. Now you have two conflicting versions of the same document, and you need a way to determine how the correct new version of that document should look like. This process is called **conflict resolution**.
 RxDB relies solely on the remote instance to detect and resolve conflicts. Each document write is sent to the remote where conflicts can be resolved and the winning document can be sent back to the clients on the next run of the `pull` handler.
 
+## Security
+
+Be aware that client side clocks can never be trusted. When you have a client-backend replication, the backend should overwrite the `updatedAt` timestamp when it receives the change from the client.
+
 ## replicateRxCollection()
 
 You can start the replication of a single `RxCollection` by calling `replicateRxCollection()` like in the following:
@@ -71,7 +96,13 @@ You can start the replication of a single `RxCollection` by calling `replicateRx
 import { replicateRxCollection } from 'rxdb/plugins/replication';
 const replicationState = await replicateRxCollection({
     collection: myRxCollection,
-    replicationIdentifier: 'my-custom-rest-replication',
+    /**
+     * An id for the replication to identify it
+     * and so that RxDB is able to resume the replication on app reload.
+     * If you replicate with a remote server, it is recommended to put the
+     * server url into the replicationIdentifier.
+     */
+    replicationIdentifier: 'my-rest-replication-to-https://example.com/rest',
     /**
      * By default it will do a one-time replication.
      * By settings live: true the replication will continuously

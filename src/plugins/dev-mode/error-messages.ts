@@ -184,11 +184,14 @@ export const ERROR_MESSAGES = {
     // plugins/server.js
     S1: 'You cannot create collections after calling RxDatabase.server()',
 
+    // plugins/replication-graphql.js
+    GQL1: 'GraphQL replication: cannot find sub schema by key',
+    GQL2: 'GraphQL replication: unknown errors occurred in replication pull - see innerErrors for more details',
+    GQL3: 'GraphQL replication: pull returns more documents then batchSize',
+    GQL4: 'GraphQL replication: unknown errors occurred in replication push - see innerErrors for more details',
+
     // plugins/replication/
     REP1: 'Replication: _deleted field not provided',
-
-    // plugins/replication-graphql/
-    GQL1: 'cannot find sub schema by key',
 
     /**
      * Should never be thrown, use this for

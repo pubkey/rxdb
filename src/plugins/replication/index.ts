@@ -29,6 +29,7 @@ import {
 import {
     flatClone,
     getHeightOfRevision,
+    hash,
     lastOfArray,
     promiseWait,
     PROMISE_RESOLVE_FALSE,
@@ -43,45 +44,23 @@ import {
 import { _handleToStorageInstance } from '../../rx-collection-helper';
 import { newRxError } from '../../rx-error';
 import { getDocumentDataOfRxChangeEvent } from '../../rx-change-event';
-
-export type RxReplicationAction = 'pull' | 'push';
-
-interface RxReplicationErrorPullPayload {
-    type: 'pull'
-}
-
-interface RxReplicationErrorPushPayload<RxDocType> {
-    type: 'push'
-    documentData: RxDocumentData<RxDocType>
-}
-
-export class RxReplicationError<RxDocType> extends Error {
-    readonly payload: RxReplicationErrorPullPayload | RxReplicationErrorPushPayload<any>
-    readonly innerErrors?: any;
-
-    constructor(message: string, payload: RxReplicationErrorPullPayload | RxReplicationErrorPushPayload<RxDocType>, innerErrors?: any) {
-        super(message);
-
-        this.payload = payload;
-        this.innerErrors = innerErrors;
-    }
-}
+import { RxReplicationError, RxReplicationPullError, RxReplicationPushError } from './rx-replication-error';
 
 export class RxReplicationStateBase<RxDocType> {
     public readonly subs: Subscription[] = [];
-    public initialReplicationComplete$: Observable<any> = undefined as any;
+    public initialReplicationComplete$: Observable<true> = undefined as any;
 
-    private subjects = {
-        received: new Subject(), // all documents that are received from the endpoint
+    public readonly subjects = {
+        received: new Subject<RxDocumentData<RxDocType>>(), // all documents that are received from the endpoint
         send: new Subject(), // all documents that are send to the endpoint
-        error: new Subject(), // all errors that are received from the endpoint, emits new Error() objects
-        canceled: new BehaviorSubject(false), // true when the replication was canceled
-        active: new BehaviorSubject(false), // true when something is running, false when not
-        initialReplicationComplete: new BehaviorSubject(false) // true the initial replication-cycle is over
+        error: new Subject<RxReplicationError<RxDocType>>(), // all errors that are received from the endpoint, emits new Error() objects
+        canceled: new BehaviorSubject<boolean>(false), // true when the replication was canceled
+        active: new BehaviorSubject<boolean>(false), // true when something is running, false when not
+        initialReplicationComplete: new BehaviorSubject<boolean>(false) // true the initial replication-cycle is over
     };
 
     private runningPromise: Promise<void> = PROMISE_RESOLVE_VOID;
-    private runQueueCount: number = 0;
+    public runQueueCount: number = 0;
     /**
      * Counts how many times the run() method
      * has been called. Used in tests.
@@ -95,6 +74,12 @@ export class RxReplicationStateBase<RxDocType> {
      */
     public pendingRetries = 0;
 
+    /**
+     * hash of the identifier, used to flag revisions
+     * and to identify which documents state came from the remote.
+     */
+    public replicationIdentifierHash: string;
+
     constructor(
         public readonly replicationIdentifier: string,
         public readonly collection: RxCollection<RxDocType>,
@@ -104,6 +89,7 @@ export class RxReplicationStateBase<RxDocType> {
         public liveInterval?: number,
         public retryTime?: number,
     ) {
+        this.replicationIdentifierHash = hash(this.replicationIdentifier);
 
         // stop the replication when the collection gets destroyed
         this.collection.onDestroy.then(() => {
@@ -127,7 +113,6 @@ export class RxReplicationStateBase<RxDocType> {
         if (this.subjects.canceled.getValue()) {
             return true;
         }
-
         return false;
     }
 
@@ -145,6 +130,13 @@ export class RxReplicationStateBase<RxDocType> {
         }
         this.subs.forEach(sub => sub.unsubscribe());
         this.subjects.canceled.next(true);
+
+        this.subjects.active.complete();
+        this.subjects.canceled.complete();
+        this.subjects.error.complete();
+        this.subjects.received.complete();
+        this.subjects.send.complete();
+
         return PROMISE_RESOLVE_TRUE;
     }
 
@@ -188,6 +180,10 @@ export class RxReplicationStateBase<RxDocType> {
      * Returns true if a retry must be done
      */
     async _run(retryOnFail = true): Promise<boolean> {
+        if (this.isStopped()) {
+            return false;
+        }
+
         this.runCount++;
 
         /**
@@ -251,15 +247,21 @@ export class RxReplicationStateBase<RxDocType> {
         if (this.isStopped()) {
             return Promise.resolve('ok');
         }
-
         const latestDocument = await getLastPullDocument(this.collection, this.replicationIdentifier);
-
         let result: ReplicationPullHandlerResult<RxDocType>;
-
         try {
             result = await this.pull.handler(latestDocument);
-        } catch (err) {
-            this.subjects.error.next(err);
+        } catch (err: any | Error | RxReplicationError<RxDocType>) {
+            if (err instanceof RxReplicationPullError) {
+                this.subjects.error.next(err);
+            } else {
+                const emitError: RxReplicationError<RxDocType> = new RxReplicationPullError(
+                    err.message,
+                    latestDocument,
+                    err
+                );
+                this.subjects.error.next(emitError);
+            }
             return Promise.resolve('error');
         }
 
@@ -283,21 +285,27 @@ export class RxReplicationStateBase<RxDocType> {
         /**
          * If a local write has happened while the remote changes where fetched,
          * we have to drop the document and first run a push-sequence.
-         * This will ensure that no local writes are missed out and not pushed to the remote.
+         * This will ensure that no local writes are missed out and are not pushed to the remote.
          */
         if (this.push) {
             const localWritesInBetween = await getChangesSinceLastPushSequence<RxDocType>(
                 this.collection,
                 this.replicationIdentifier,
+                this.replicationIdentifierHash,
+                () => this.isStopped(),
                 1
             );
+            /**
+             * TODO instead of dropping the pull docs when any local change was done,
+             * instead we should only drop when relevant (same as pulled) documents where written locally.
+             */
             if (localWritesInBetween.changedDocs.size > 0) {
                 return Promise.resolve('drop');
             }
         }
 
         /**
-         * Run the schema validation for pulled documentd
+         * Run the schema validation for pulled documents
          * in dev-mode.
          */
         if (overwritable.isDevMode()) {
@@ -307,7 +315,7 @@ export class RxReplicationStateBase<RxDocType> {
                     delete withoutDeleteFlag._deleted;
                     this.collection.schema.validate(withoutDeleteFlag);
                 });
-            } catch (err) {
+            } catch (err: any) {
                 this.subjects.error.next(err);
                 return Promise.resolve('error');
             }
@@ -316,9 +324,12 @@ export class RxReplicationStateBase<RxDocType> {
         if (this.isStopped()) {
             return Promise.resolve('ok');
         }
-        await this.handleDocumentsFromRemote(pulledDocuments);
+        await this.handleDocumentsFromRemote(pulledDocuments as any);
         pulledDocuments.map((doc: any) => this.subjects.received.next(doc));
 
+        if (this.isStopped()) {
+            return Promise.resolve('ok');
+        }
 
         if (pulledDocuments.length === 0) {
             if (this.live) {
@@ -359,7 +370,7 @@ export class RxReplicationStateBase<RxDocType> {
 
             const docStateInLocalStorageInstance = docsFromLocal[documentId];
             let newRevision = createRevisionForPulledDocument(
-                this.replicationIdentifier,
+                this.replicationIdentifierHash,
                 doc
             );
             if (docStateInLocalStorageInstance) {
@@ -393,16 +404,25 @@ export class RxReplicationStateBase<RxDocType> {
         if (!this.push) {
             throw newRxError('SNH');
         }
+        if (this.isStopped()) {
+            return true;
+        }
 
         const batchSize = this.push.batchSize ? this.push.batchSize : 5;
         const changesResult = await getChangesSinceLastPushSequence<RxDocType>(
             this.collection,
             this.replicationIdentifier,
+            this.replicationIdentifierHash,
+            () => this.isStopped(),
             batchSize,
         );
 
-        const pushDocs: WithDeleted<RxDocType>[] = Array
-            .from(changesResult.changedDocs.values())
+        if (changesResult.changedDocs.size === 0) {
+            return true;
+        }
+
+        const changeRows = Array.from(changesResult.changedDocs.values());
+        const pushDocs: WithDeleted<RxDocType>[] = changeRows
             .map(row => {
                 const doc: WithDeleted<RxDocType> = flatClone(row.doc) as any;
                 // TODO _deleted should be required on type RxDocumentData
@@ -418,13 +438,28 @@ export class RxReplicationStateBase<RxDocType> {
             });
 
         try {
-            await this.push.handler(pushDocs);
-        } catch (err) {
-            this.subjects.error.next(err);
+            await this.push.handler(pushDocs as any);
+
+        } catch (err: any | Error | RxReplicationError<RxDocType>) {
+            if (err instanceof RxReplicationPushError) {
+                this.subjects.error.next(err);
+            } else {
+                const documentsData = changeRows.map(row => row.doc);
+                const emitError: RxReplicationPushError<RxDocType> = new RxReplicationPushError(
+                    err.message,
+                    documentsData,
+                    err
+                );
+                this.subjects.error.next(emitError);
+            }
             return false;
         }
-
         pushDocs.forEach(pushDoc => this.subjects.send.next(pushDoc));
+
+
+        if (this.isStopped()) {
+            return true;
+        }
 
         if (changesResult.hasChangesSinceLastSequence) {
             await setLastPushSequence(
@@ -436,9 +471,8 @@ export class RxReplicationStateBase<RxDocType> {
 
         // batch had documents so there might be more changes to replicate
         if (changesResult.changedDocs.size !== 0) {
-            await this.runPush();
+            return this.runPush();
         }
-
         return true;
     }
 }
@@ -521,7 +555,7 @@ export function replicateRxCollection<RxDocType>(
                          * was from a pull-replication cycle.
                          */
                         !wasRevisionfromPullReplication(
-                            replicationIdentifier,
+                            replicationState.replicationIdentifierHash,
                             rev
                         )
                     ) {
@@ -537,3 +571,4 @@ export function replicateRxCollection<RxDocType>(
 
 export * from './replication-checkpoint';
 export * from './revision-flag';
+export * from './rx-replication-error';

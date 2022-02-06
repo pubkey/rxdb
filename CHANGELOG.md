@@ -2,6 +2,8 @@
 
 ### X.X.X (comming soon)
 
+- Unified the replication primitives and the GraphQL replication plugin.
+
 ### 11.6.0 (4 February 2022)
 
 Bugfixes:

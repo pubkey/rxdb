@@ -54,6 +54,15 @@ async function deleteAll(t) {
     for (let i = 0; i < amount; i++) {
         await t.click('.delete-icon');
     }
+    await assertNoErrors(t);
+
+    // ensure that all are deleted
+    await AsyncTestUtil.wait(100);
+    const heroElementsAfter = Selector('#heroes-list .hero-item');
+    const amountAfter = await heroElementsAfter.count;
+    if (amountAfter > 0) {
+        throw new Error('too many heroes after deleteAll() ' + amountAfter);
+    }
 }
 
 async function waitUntilServerIsOnline() {
@@ -136,6 +145,10 @@ test.page(
         await t.switchToIframe('#frame_0');
         await waitUntilPageIsLoaded(t);
         await deleteAll(t);
+
+
+        await AsyncTestUtil.wait(10000);
+
         await t.switchToMainWindow();
         await t.switchToIframe('#frame_1');
         await waitUntilPageIsLoaded(t);
@@ -160,8 +173,12 @@ test.page(
 
         await AsyncTestUtil.waitUntil(async () => {
             console.log('wait until the hero is replicated to the other frame');
+            await assertNoErrors(t);
             const heroElements = Selector('#heroes-list .hero-item');
             const amount = await heroElements.count;
+            if (amount > 1) {
+                throw new Error('too many heroes ' + amount);
+            }
             return amount === 1;
         }, 0, 500);
 

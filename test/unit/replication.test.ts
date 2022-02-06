@@ -26,6 +26,7 @@ import {
     ensureNotFalsy,
     randomCouchString,
     now,
+    hash,
 } from '../../plugins/core';
 
 import {
@@ -46,12 +47,12 @@ import {
 import type {
     ReplicationPullHandler,
     ReplicationPushHandler,
-    RxDocumentData,
-    WithDeleted
+    RxDocumentData
 } from '../../src/types';
 
 describe('replication.test.js', () => {
     const REPLICATION_IDENTIFIER_TEST = 'replication-ident-tests';
+    const REPLICATION_IDENTIFIER_TEST_HASH = hash(REPLICATION_IDENTIFIER_TEST);
 
     type TestDocType = schemaObjects.HumanWithTimestampDocumentType;
     async function getTestCollections(docsAmount: { local: number, remote: number }): Promise<{
@@ -68,6 +69,10 @@ describe('replication.test.js', () => {
         };
     }
 
+    /**
+     * Creates a pull handler that always returns
+     * all documents.
+     */
     function getPullHandler(
         remoteCollection: RxCollection<TestDocType, {}, {}, {}>
     ): ReplicationPullHandler<TestDocType> {
@@ -84,7 +89,7 @@ describe('replication.test.js', () => {
                 ]
             }).exec();
             const docsData = docs.map(doc => {
-                const docData: WithDeleted<HumanWithTimestampDocumentType> = flatClone(doc.toJSON()) as any;
+                const docData: RxDocumentData<HumanWithTimestampDocumentType> = flatClone(doc.toJSON()) as any;
                 docData._deleted = false;
                 return docData;
             });
@@ -112,7 +117,8 @@ describe('replication.test.js', () => {
             // process insert/updated
             const changedDocs = docs
                 .filter(doc => !doc._deleted)
-                // overwrite the timestamp with the 'server' time.
+                // overwrite the timestamp with the 'server' time
+                // because the 'client' cannot be trusted.
                 .map(doc => {
                     doc = flatClone(doc);
                     doc.updatedAt = now();
@@ -135,7 +141,7 @@ describe('replication.test.js', () => {
                 const doc = await c.findOne().exec(true);
 
                 const wasFromPull = wasRevisionfromPullReplication(
-                    REPLICATION_IDENTIFIER_TEST,
+                    REPLICATION_IDENTIFIER_TEST_HASH,
                     doc.toJSON(true)._rev
                 );
                 assert.strictEqual(wasFromPull, false);
@@ -150,7 +156,7 @@ describe('replication.test.js', () => {
                 const c = await humansCollection.createHumanWithTimestamp(0);
                 let toPouch: any = schemaObjects.humanWithTimestamp();
                 toPouch._rev = '1-' + createRevisionForPulledDocument(
-                    REPLICATION_IDENTIFIER_TEST,
+                    REPLICATION_IDENTIFIER_TEST_HASH,
                     toPouch
                 );
                 toPouch = pouchSwapPrimaryToId(
@@ -166,7 +172,7 @@ describe('replication.test.js', () => {
 
                 const doc = await c.findOne().exec(true);
                 const wasFromPull = wasRevisionfromPullReplication(
-                    REPLICATION_IDENTIFIER_TEST,
+                    REPLICATION_IDENTIFIER_TEST_HASH,
                     doc.toJSON(true)._rev
                 );
                 assert.strictEqual(wasFromPull, true);
@@ -259,6 +265,8 @@ describe('replication.test.js', () => {
                 const changesResult = await getChangesSinceLastPushSequence(
                     c,
                     REPLICATION_IDENTIFIER_TEST,
+                    REPLICATION_IDENTIFIER_TEST_HASH,
+                    () => false,
                     10
                 );
                 assert.strictEqual(changesResult.changedDocs.size, amount);
@@ -274,6 +282,8 @@ describe('replication.test.js', () => {
                 const changesResult = await getChangesSinceLastPushSequence(
                     c,
                     REPLICATION_IDENTIFIER_TEST,
+                    REPLICATION_IDENTIFIER_TEST_HASH,
+                    () => false,
                     10
                 );
                 assert.strictEqual(changesResult.changedDocs.size, amount);
@@ -285,6 +295,8 @@ describe('replication.test.js', () => {
                 const changesResult = await getChangesSinceLastPushSequence(
                     c,
                     REPLICATION_IDENTIFIER_TEST,
+                    REPLICATION_IDENTIFIER_TEST_HASH,
+                    () => false,
                     10
                 );
                 /**
@@ -302,6 +314,8 @@ describe('replication.test.js', () => {
                 const changesResult = await getChangesSinceLastPushSequence(
                     c,
                     REPLICATION_IDENTIFIER_TEST,
+                    REPLICATION_IDENTIFIER_TEST_HASH,
+                    () => false,
                     10
                 );
                 assert.strictEqual(changesResult.changedDocs.size, amount);
@@ -342,6 +356,8 @@ describe('replication.test.js', () => {
                 const changesResult = await getChangesSinceLastPushSequence(
                     c,
                     REPLICATION_IDENTIFIER_TEST,
+                    REPLICATION_IDENTIFIER_TEST_HASH,
+                    () => false,
                     10
                 );
                 assert.strictEqual(changesResult.changedDocs.size, 1);
@@ -357,6 +373,8 @@ describe('replication.test.js', () => {
                 const changesResult = await getChangesSinceLastPushSequence(
                     c,
                     REPLICATION_IDENTIFIER_TEST,
+                    REPLICATION_IDENTIFIER_TEST_HASH,
+                    () => false,
                     10
                 );
                 const firstChange = Array.from(changesResult.changedDocs.values())[0];
@@ -364,28 +382,20 @@ describe('replication.test.js', () => {
                 assert.ok(firstChange.doc.id);
                 c.database.destroy();
             });
-            it('should have filtered out replicated docs from the endpoint', async () => {
-                if (config.storage.name !== 'pouchdb') {
-                    return;
-                }
+            it('should have filtered out documents that are already replicated from the remote', async () => {
                 const amount = 5;
                 const c = await humansCollection.createHumanWithTimestamp(amount);
-                let toPouch: any = schemaObjects.humanWithTimestamp();
-                toPouch._rev = '1-' + createRevisionForPulledDocument(
-                    REPLICATION_IDENTIFIER_TEST,
-                    toPouch
+                const toStorageInstance: RxDocumentData<HumanWithTimestampDocumentType> = schemaObjects.humanWithTimestamp() as any;
+                const docId = toStorageInstance.id;
+                toStorageInstance._attachments = {};
+                toStorageInstance._deleted = false;
+                toStorageInstance._rev = '1-' + createRevisionForPulledDocument(
+                    REPLICATION_IDENTIFIER_TEST_HASH,
+                    toStorageInstance
                 );
-                toPouch = pouchSwapPrimaryToId(
-                    c.schema.primaryPath,
-                    toPouch
-                );
-
-                await c.storageInstance.internals.pouch.bulkDocs(
-                    [_handleToStorageInstance(c, toPouch)],
-                    {
-                        new_edits: false
-                    }
-                );
+                await c.storageInstance.bulkAddRevisions([
+                    _handleToStorageInstance(c, toStorageInstance)
+                ]);
 
                 const allDocs = await c.find().exec();
 
@@ -394,18 +404,22 @@ describe('replication.test.js', () => {
                 const changesResult = await getChangesSinceLastPushSequence(
                     c,
                     REPLICATION_IDENTIFIER_TEST,
+                    REPLICATION_IDENTIFIER_TEST_HASH,
+                    () => false,
                     10
                 );
 
                 assert.strictEqual(changesResult.changedDocs.size, amount);
-                const shouldNotBeFound = Array.from(changesResult.changedDocs.values()).find((change) => change.id === toPouch.id);
+                const shouldNotBeFound = Array.from(changesResult.changedDocs.values()).find((change) => change.id === docId);
                 assert.ok(!shouldNotBeFound);
 
                 /**
-                 * We need amount+2 because we also have skipped the
-                 * document for the updatedAt index of the collection schema.
+                 * lastSequence must be >= amount
+                 * Not == because there might be hidden change documents
+                 * like when pouchdb adds one while creating an index.
                  */
-                assert.strictEqual(changesResult.lastSequence, amount + 2);
+                assert.ok(changesResult.lastSequence >= amount);
+
                 c.database.destroy();
             });
         });
@@ -535,7 +549,7 @@ describe('replication.test.js', () => {
 
             await replicationState.awaitInitialReplication();
             await replicationState.run();
-            
+
             const originalSequence = await getLastPushSequence(
                 localCollection,
                 REPLICATION_IDENTIFIER_TEST
@@ -602,7 +616,7 @@ describe('replication.test.js', () => {
                     }
                 },
                 push: {
-                    async handler(docs: WithDeleted<TestDocType>[]) {
+                    async handler(docs: RxDocumentData<TestDocType>[]) {
                         if (initalReplicationDone) {
                             const randomValue = ensureNotFalsy(docs[0]).name;
                             pushedRandomValues.push(randomValue);
@@ -614,8 +628,6 @@ describe('replication.test.js', () => {
             await replicationState.awaitInitialReplication();
             initalReplicationDone = true;
 
-
-
             await doc.atomicPatch({
                 name: 'before-run'
             });
@@ -626,6 +638,50 @@ describe('replication.test.js', () => {
                 doc.name,
                 'write-from-pull-handler'
             );
+
+            localCollection.database.destroy();
+            remoteCollection.database.destroy();
+        });
+        it('should not stack up run()-calls more then 2', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: false,
+                retryTime: 50,
+                pull: {
+                    async handler() {
+                        throw new Error('throw on pull');
+                    }
+                },
+                push: {
+                    async handler() {
+                        throw new Error('throw on push');
+                    }
+                }
+            });
+
+            // change replicationState._run to count the calls
+            const oldRun = replicationState._run.bind(replicationState);
+            let count = 0;
+            const newRun = function () {
+                count++;
+                return oldRun();
+            };
+            replicationState._run = newRun.bind(replicationState);
+
+            const amount = 50;
+            // call .run() often
+            await Promise.all(
+                new Array(amount).fill(0).map(
+                    () => replicationState.run()
+                )
+            );
+
+            await waitUntil(
+                () => replicationState.runQueueCount === 0
+            );
+            assert.ok(count < 10);
 
             localCollection.database.destroy();
             remoteCollection.database.destroy();

@@ -113,7 +113,7 @@ export function graphQLSchemaFromRxSchema(
 
         // mutation
         const mutationName = prefixes.set + ucCollectionName;
-        const mutationString = mutationName + '(' + collectionName + ': ' + collectionNameInput + '): ' + ucCollectionName;
+        const mutationString = mutationName + '(' + collectionName + ': [' + collectionNameInput + ']): ' + ucCollectionName;
         ret.mutations.push(SPACING + mutationString);
 
         // subscription
