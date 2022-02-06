@@ -30,11 +30,12 @@ export const ERROR_MESSAGES = {
     QU4: 'RxQuery.regex(): You cannot use .regex() on the primary field',
     QU5: 'RxQuery.sort(): does not work because key is not defined in the schema',
     QU6: 'RxQuery.limit(): cannot be called on .findOne()',
-    QU7: 'query must be an object',
-    QU8: 'query cannot be an array',
+    // removed in 12.0.0 (should by ensured by the typings) - QU7: 'query must be an object',
+    // removed in 12.0.0 (should by ensured by the typings) - QU8: 'query cannot be an array',
     QU9: 'throwIfMissing can only be used in findOne queries',
     QU10: 'result empty and throwIfMissing: true',
     QU11: 'RxQuery: no valid query params given',
+    QU12: 'Given index is not in schema',
 
     // mquery.js
     MQ1: 'path must be a string or object',

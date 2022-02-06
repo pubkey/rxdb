@@ -5,7 +5,8 @@ import type {
     RxJsonSchema,
     RxStorageInstanceCreationParams,
     RxStorage,
-    RxKeyObjectStorageInstanceCreationParams, MaybeReadonly
+    RxKeyObjectStorageInstanceCreationParams,
+    MaybeReadonly
 } from '../../types';
 
 import {
@@ -22,6 +23,7 @@ import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import { RxStorageInstancePouch } from './rx-storage-instance-pouch';
 import { RxStorageKeyObjectInstancePouch } from './rx-storage-key-object-instance-pouch';
 import {
+    getPouchIndexDesignDocNameByIndex,
     PouchStorageInternals
 } from './pouchdb-helper';
 import { RxStoragePouchStatics } from './pouch-statics';
@@ -158,7 +160,6 @@ export async function createIndexesOnPouch(
     if (!schema.indexes) {
         return;
     }
-
     const primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
     const before = await pouch.getIndexes();
     const existingIndexes: Set<string> = new Set(
@@ -181,13 +182,14 @@ export async function createIndexesOnPouch(
                 }
             });
 
-            const indexName = 'idx-rxdb-index-' + indexArray.join(',');
+            const indexName = getPouchIndexDesignDocNameByIndex(indexArray);
             if (existingIndexes.has(indexName)) {
                 // index already exists
                 return;
             }
+
             /**
-             * TODO we might have even better performance by doing a bulkDocs
+             * TODO we might have even better performance by doing a pouch.bulkDocs()
              * on index creation
              */
             return pouch.createIndex({

@@ -35,6 +35,26 @@ config.parallel('rx-query.test.js', () => {
 
             col.database.destroy();
         });
+        it('should throw error when custom index not in schema indexes', async () => {
+            const col = await humansCollection.create(0);
+            await AsyncTestUtil.assertThrows(
+                () => col.find({
+                    selector: {},
+                    index: ['f', 'o', 'b', 'a', 'r']
+                }).getPreparedQuery(),
+                'RxError',
+                'not in schem'
+            );
+            col.database.destroy();
+        });
+        it('should NOT throw error when custom index is in schema indexes', async () => {
+            const col = await humansCollection.createAgeIndex(0);
+            col.find({
+                selector: {},
+                index: ['age']
+            }).getPreparedQuery();
+            col.database.destroy();
+        });
     });
     describe('.toJSON()', () => {
         it('should produce the correct selector-object', async () => {
@@ -1056,9 +1076,19 @@ config.parallel('rx-query.test.js', () => {
             const q1 = collection.findOne({
                 selector: {
                     passportId: 'foofbar'
-                }
+                },
+                /**
+                 * TODO if we do not set a sorting,
+                 * the primaryKey sorting will still be added by RxDb
+                 * which causes PouchDB to pick the wrong index.
+                 * This looks like a pouchdb bug, create a test there.
+                 */
+                sort: [
+                    { passportId: 'asc' }
+                ]
             });
             const explained1 = await collection.storageInstance.internals.pouch.explain(q1.getPreparedQuery());
+
             assert.ok(explained1.index.ddoc);
             assert.ok(explained1.index.ddoc.startsWith('_design/idx-'));
 
@@ -1145,9 +1175,6 @@ config.parallel('rx-query.test.js', () => {
                 .find({
                     selector
                 })
-                .sort({
-                    created_at: 'desc'
-                })
                 .exec();
             const resultData1: any[] = resultDocs1.map(doc => doc.toJSON());
 
@@ -1156,9 +1183,6 @@ config.parallel('rx-query.test.js', () => {
                 .where('event_id').eq(2)
                 .where('user_id').eq('6')
                 .where('created_at').gt(0)
-                .sort({
-                    created_at: 'desc'
-                })
                 .exec();
             const resultData2 = resultDocs2.map(doc => doc.toJSON());
 

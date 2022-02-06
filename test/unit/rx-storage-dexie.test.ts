@@ -3,7 +3,11 @@ import assert from 'assert';
 import config from './config';
 import {
     addRxPlugin,
+    clone,
+    ensureNotFalsy,
     MangoQuery,
+    normalizeMangoQuery,
+    normalizeRxJsonSchema,
     randomCouchString,
     RxJsonSchema
 } from '../../plugins/core';
@@ -20,12 +24,15 @@ import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
 addRxPlugin(RxDBKeyCompressionPlugin);
 import { RxDBValidatePlugin } from '../../plugins/validate';
 addRxPlugin(RxDBValidatePlugin);
-import { humanMinimal } from '../helper/schemas';
+import { HumanDocumentType, humanMinimal, humanSchemaLiteral } from '../helper/schemas';
 
 /**
  * RxStoragePouch specific tests
  */
 config.parallel('rx-storage-dexie.test.js', () => {
+    if (config.storage.name !== 'dexie') {
+        return;
+    }
     describe('RxStorageDexieStatics', () => {
         describe('.getSortComparator()', () => {
             it('should sort in the correct order', () => {
@@ -153,9 +160,109 @@ config.parallel('rx-storage-dexie.test.js', () => {
                     }
                 );
 
-                assert.ok(queryPlan.index.name.includes('age'));
-                assert.ok(queryPlan.index.name.includes('key'));
+                const hasAgeField = queryPlan.index.def.fields.find((field: any) => Object.keys(field)[0] === 'age');
+                assert.ok(hasAgeField);
+                const hasKeyField = queryPlan.index.def.fields.find((field: any) => Object.keys(field)[0] === 'key');
+                assert.ok(hasKeyField);
             });
+        });
+    });
+    describe('.query()', () => {
+        it('should respect a custom index', async () => {
+            /**
+             * This test should only run when dexie
+             */
+            assert.strictEqual(config.storage.name, 'dexie');
+
+            const storage = config.storage.getStorage();
+
+            let schema = clone(humanSchemaLiteral) as any;
+            schema.indexes.push(['passportId', 'age']);
+            /*
+                        schema.indexes.push(['age']);
+                        schema.indexes.push(['age', 'passportId']);
+                        schema.indexes.push(['age', 'firstName', 'passportId']);
+                        schema.indexes.push(['firstName', 'age', 'passportId']);
+                        */
+            schema = normalizeRxJsonSchema(schema);
+
+            const databaseName = randomCouchString(12);
+            const storageInstance = await storage.createStorageInstance<HumanDocumentType>({
+                databaseName,
+                collectionName: randomCouchString(12),
+                schema,
+                options: {},
+                multiInstance: false
+            });
+
+            await storageInstance.bulkWrite(
+                new Array(5).fill(0).map(() => {
+                    const data = schemaObjects.human() as any;
+                    data._attachments = {};
+                    data._deleted = false;
+                    data.age = 18;
+                    return {
+                        document: data
+                    }
+                })
+            );
+
+            // const hasIndexes = await pouch.getIndexes();
+
+            async function analyzeQuery(query: MangoQuery<HumanDocumentType>) {
+                const preparedQuery = storage.statics.prepareQuery(
+                    schema,
+                    normalizeMangoQuery(schema, query)
+                );
+                const queryPlan = getPouchQueryPlan(
+                    schema,
+                    preparedQuery
+                );
+                const result = await storageInstance.query(preparedQuery);
+                return {
+                    query,
+                    preparedQuery,
+                    queryPlan,
+                    result: result.documents
+                };
+            }
+
+            const defaultAnalyzed = await analyzeQuery({
+                selector: {},
+                sort: [
+                    { passportId: 'asc' }
+                ]
+            });
+
+            const customIndexAnalyzed = await analyzeQuery({
+                selector: {},
+                sort: [
+                    { passportId: 'asc' }
+                ],
+                index: ['passportId', 'age']
+            });
+
+            // default should use default index
+            assert.strictEqual(
+                defaultAnalyzed.queryPlan.index.ddoc,
+                null
+            );
+
+            // custom should use the custom index
+            (customIndexAnalyzed.query as any).index.forEach((indexKey: string) => {
+                if (indexKey !== 'passportId') {
+                    assert.ok(ensureNotFalsy(customIndexAnalyzed.queryPlan.index.ddoc).includes(indexKey));
+                }
+            });
+            assert.ok(ensureNotFalsy(customIndexAnalyzed.queryPlan.index.ddoc).includes('_id'));
+
+            // both queries should have returned the same documents
+            assert.deepStrictEqual(
+                defaultAnalyzed.result,
+                customIndexAnalyzed.result
+            );
+
+            storageInstance.close();
         });
     });
 });

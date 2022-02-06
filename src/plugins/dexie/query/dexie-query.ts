@@ -1,7 +1,7 @@
 import { getPrimaryFieldOfPrimaryKey } from '../../../rx-schema';
 import type { MangoQuery, PreparedQuery, RxJsonSchema, RxStorageQueryResult } from '../../../types';
 import { clone, ensureNotFalsy } from '../../../util';
-import { pouchSwapIdToPrimaryString } from '../../pouchdb';
+import { getPouchIndexDesignDocNameByIndex, POUCHDB_DESIGN_PREFIX, pouchSwapIdToPrimaryString } from '../../pouchdb';
 import { preparePouchDbQuery } from '../../pouchdb/pouch-statics';
 import { DEXIE_DOCS_TABLE_NAME, stripDexieKey } from '../dexie-helper';
 import { RxStorageDexieStatics } from '../rx-storage-dexie';
@@ -21,7 +21,7 @@ import { planQuery } from './pouchdb-find-query-planer/query-planner';
  */
 export function getPouchQueryPlan<RxDocType>(
     schema: RxJsonSchema<RxDocType>,
-    query: MangoQuery<RxDocType>
+    query: PreparedQuery<RxDocType>
 ) {
     const primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
 
@@ -48,10 +48,17 @@ export function getPouchQueryPlan<RxDocType>(
     if (schema.indexes) {
         schema.indexes.forEach(index => {
             index = Array.isArray(index) ? index : [index];
-            const indexName = index.join(',');
+            const pouchIndex = index.map(indexPart => {
+                if (indexPart === primaryKey) {
+                    return '_id';
+                } else {
+                    return indexPart;
+                }
+            });
+            const indexName = getPouchIndexDesignDocNameByIndex(pouchIndex);
             pouchCompatibleIndexes.push({
-                ddoc: '_design/idx-rxdb-index-' + indexName,
-                name: 'idx-rxdb-index-' + indexName,
+                ddoc: POUCHDB_DESIGN_PREFIX + indexName,
+                name: indexName,
                 type: 'json',
                 def: {
                     fields: index.map(indexPart => {
@@ -62,7 +69,6 @@ export function getPouchQueryPlan<RxDocType>(
             });
         })
     }
-
 
     /**
      * Because pouchdb-find is buggy AF,
@@ -80,6 +86,16 @@ export function getPouchQueryPlan<RxDocType>(
         pouchdbCompatibleQuery,
         pouchCompatibleIndexes
     );
+
+    // transform back _id to primaryKey
+    pouchQueryPlan.index.def.fields = pouchQueryPlan.index.def.fields.map((field: any) => {
+        const [fieldName, value] = Object.entries(field)[0];
+        if (fieldName === '_id') {
+            return { [primaryKey]: value };
+        } else {
+            return { [fieldName]: value };
+        }
+    });
 
     return pouchQueryPlan;
 }
@@ -126,6 +142,7 @@ export async function dexieQuery<RxDocType>(
     const limit = preparedQuery.limit ? preparedQuery.limit : Infinity;
     const skipPlusLimit = skip + limit;
     const queryPlan = (preparedQuery as any).pouchQueryPlan;
+
     const keyRange = getDexieKeyRange(
         queryPlan,
         Number.NEGATIVE_INFINITY,

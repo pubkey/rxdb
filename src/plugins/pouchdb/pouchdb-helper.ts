@@ -1,5 +1,6 @@
 import type {
     ChangeStreamEvent,
+    MaybeReadonly,
     PouchChangeRow,
     PouchDBInstance,
     RxAttachmentData,
@@ -339,3 +340,9 @@ export async function writeAttachmentsToAttachments(
     return ret;
 }
 
+export function getPouchIndexDesignDocNameByIndex(
+    index: MaybeReadonly<string[]>
+): string {
+    const indexName = 'idx-rxdb-index-' + index.join(',');
+    return indexName;
+}

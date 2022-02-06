@@ -103,6 +103,35 @@ myCollection.find().where('age').gt(18).doesDocumentDataMatch(documentData); // 
 myCollection.find().where('age').gt(20).doesDocumentDataMatch(documentData); // > false
 ```
 
+
+## Setting a specific index
+
+By default, the query will be send to the RxStorage, where a query planner will determine which one of the available indexes must be used.
+But the query planner cannot know everything and sometimes will not pick the most optimal index.
+To improve query performance, you can specify which index must be used, when running the query.
+
+```ts
+const query = myCollection
+    .findOne({
+      selector: {
+        age: {
+          $gt: 18
+        },
+        gender: {
+          $eq: 'm'
+        }
+      },
+      /**
+       * Because the developer knows that 50% of the documents are 'male',
+       * but only 20% are below age 18,
+       * it makes sense to enforce using the ['gender', 'age'] index to improve performance.
+       * This could not be known by the query planer which might have choosen ['age', 'gender'] instead.
+       */
+      index: ['gender', 'age']
+    });
+```
+
+
 ## Examples
 Here some examples to fast learn how to write queries without reading the docs.
 - [Pouch-find-docs](https://github.com/pouchdb/pouchdb/blob/master/packages/node_modules/pouchdb-find/README.md) - learn how to use mango-queries

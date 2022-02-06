@@ -2,7 +2,6 @@ import type {
     DeterministicSortComparator,
     QueryMatcher
 } from 'event-reduce-js';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import lokijs from 'lokijs';
 import type {
     LokiDatabaseSettings,
@@ -17,7 +16,6 @@ import type {
     RxStorageStatics
 } from '../../types';
 import {
-    firstPropertyNameOfObject,
     flatClone
 } from '../../util';
 import {
@@ -45,10 +43,9 @@ export const RxStorageLokiStatics: RxStorageStatics = {
     hashKey: 'md5',
 
     prepareQuery<RxDocType>(
-        schema: RxJsonSchema<RxDocType>,
+        _schema: RxJsonSchema<RxDocType>,
         mutateableQuery: MangoQuery<RxDocType>
     ) {
-        const primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
         if (Object.keys(mutateableQuery.selector).length > 0) {
             mutateableQuery.selector = {
                 $and: [
@@ -62,23 +59,6 @@ export const RxStorageLokiStatics: RxStorageStatics = {
             mutateableQuery.selector = {
                 _deleted: false
             };
-        }
-
-        /**
-         * To ensure a deterministic sorting,
-         * we have to ensure the primary key is always part
-         * of the sort query.
-         * TODO this should be done by RxDB instead so we
-         * can ensure it in all storage implementations.
-         */
-        if (!mutateableQuery.sort) {
-            mutateableQuery.sort = [{ [primaryKey]: 'asc' }] as any;
-        } else {
-            const isPrimaryInSort = mutateableQuery.sort
-                .find(p => firstPropertyNameOfObject(p) === primaryKey);
-            if (!isPrimaryInSort) {
-                mutateableQuery.sort.push({ [primaryKey]: 'asc' } as any);
-            }
         }
 
         return mutateableQuery;

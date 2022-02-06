@@ -189,16 +189,21 @@ function findMatchingIndexes(selector: any, userFields: any, sortOrder: any, ind
 
 // find the best index, i.e. the one that matches the most fields
 // in the user's query
-function findBestMatchingIndex(selector: any, userFields: any, sortOrder: any, indexes: any, useIndex: any) {
+function findBestMatchingIndex(selector: any, userFields: any, sortOrder: any, indexes: any, useIndex: string) {
 
     const matchingIndexes = findMatchingIndexes(selector, userFields, sortOrder, indexes);
 
     if (matchingIndexes.length === 0) {
         if (useIndex) {
-            throw new Error({
+            throw new Error(JSON.stringify({
                 error: 'no_usable_index',
-                message: 'There is no index available for this selector.'
-            }.toString());
+                message: 'There is no index available for this selector.',
+                selector,
+                indexes,
+                sortOrder,
+                userFields,
+                useIndex
+            }, null, 4));
         }
         //return `all_docs` as a default index;
         //I'm assuming that _all_docs is always first
@@ -225,8 +230,8 @@ function findBestMatchingIndex(selector: any, userFields: any, sortOrder: any, i
     }
 
     if (useIndex) {
-        const useIndexDdoc = '_design/' + useIndex[0];
-        const useIndexName = useIndex.length === 2 ? useIndex[1] : false;
+        const useIndexDdoc = '_design/' + useIndex;
+        const useIndexName = useIndex;
         const index = matchingIndexes.find(function (index: any) {
             if (useIndexName && index.ddoc === useIndexDdoc && useIndexName === index.name) {
                 return true;
@@ -241,10 +246,13 @@ function findBestMatchingIndex(selector: any, userFields: any, sortOrder: any, i
         });
 
         if (!index) {
-            throw new Error({
+            throw new Error(JSON.stringify({
                 error: 'unknown_error',
-                message: 'Could not find that index or could not use that index for the query'
-            }.toString());
+                message: 'Could not find that index or could not use that index for the query',
+                useIndex,
+                indexes,
+                selector
+            }, null, 4));
         }
         return index;
     }

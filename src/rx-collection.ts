@@ -1059,7 +1059,7 @@ export function createRxCollection(
     const storageInstanceCreationParams: RxStorageInstanceCreationParams<any, any> = {
         databaseName: database.name,
         collectionName: name,
-        schema: schema.jsonSchema,
+        schema: schema.normalized,
         options: instanceCreationOptions,
         multiInstance: database.multiInstance
     };

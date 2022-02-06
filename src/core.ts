@@ -48,7 +48,8 @@ export {
 } from './rx-document-prototype-merge';
 
 export {
-    isInstanceOf as isRxQuery
+    isInstanceOf as isRxQuery,
+    normalizeMangoQuery
 } from './rx-query';
 
 export {
@@ -56,7 +57,7 @@ export {
     createRxSchema,
     RxSchema,
     getIndexes,
-    normalize,
+    normalizeRxJsonSchema,
     getFinalFields,
     getPreviousVersions,
     toTypedRxJsonSchema

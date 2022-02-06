@@ -18,7 +18,7 @@ import {
     ensureCollectionNameValid,
     ensureDatabaseNameIsValid
 } from './unallowed-properties';
-import { checkQuery } from './check-query';
+import { checkMangoQuery, checkQuery } from './check-query';
 import { newRxError } from '../../rx-error';
 import { DeepReadonly } from '../../types/util';
 
@@ -93,6 +93,9 @@ export const RxDBDevModePlugin: RxPlugin = {
         },
         preCreateRxQuery: (args) => {
             checkQuery(args);
+        },
+        prePrepareQuery: (args) => {
+            checkMangoQuery(args);
         },
         createRxCollection: (args: RxCollectionCreator) => {
             // check ORM-methods
