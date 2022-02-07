@@ -197,11 +197,12 @@ var _exportNames = {
   getDocumentOrmPrototype: true,
   getDocumentPrototype: true,
   isRxQuery: true,
+  normalizeMangoQuery: true,
   isRxSchema: true,
   createRxSchema: true,
   RxSchema: true,
   getIndexes: true,
-  normalize: true,
+  normalizeRxJsonSchema: true,
   getFinalFields: true,
   getPreviousVersions: true,
   toTypedRxJsonSchema: true,
@@ -403,10 +404,16 @@ Object.defineProperty(exports, "isRxSchema", {
     return _rxSchema.isInstanceOf;
   }
 });
-Object.defineProperty(exports, "normalize", {
+Object.defineProperty(exports, "normalizeMangoQuery", {
   enumerable: true,
   get: function get() {
-    return _rxSchema.normalize;
+    return _rxQuery.normalizeMangoQuery;
+  }
+});
+Object.defineProperty(exports, "normalizeRxJsonSchema", {
+  enumerable: true,
+  get: function get() {
+    return _rxSchema.normalizeRxJsonSchema;
   }
 });
 Object.defineProperty(exports, "overwritable", {
@@ -1733,10 +1740,15 @@ function checkOrmMethods(statics) {
 },{"../../rx-error":51,"./entity-properties":16}],14:[function(require,module,exports){
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.checkMangoQuery = checkMangoQuery;
 exports.checkQuery = checkQuery;
+
+var _fastDeepEqual = _interopRequireDefault(require("fast-deep-equal"));
 
 var _rxError = require("../../rx-error");
 
@@ -1756,20 +1768,47 @@ function checkQuery(args) {
     });
   }
 
-  var validKeys = ['selector', 'limit', 'skip', 'sort'];
+  var validKeys = ['selector', 'limit', 'skip', 'sort', 'index'];
   Object.keys(args.queryObj).forEach(function (key) {
     if (!validKeys.includes(key)) {
       throw (0, _rxError.newRxTypeError)('QU11', {
         op: args.op,
         collection: args.collection.name,
         queryObj: args.queryObj,
-        key: key
+        key: key,
+        args: {
+          validKeys: validKeys
+        }
       });
     }
   });
 }
 
-},{"../../rx-error":51}],15:[function(require,module,exports){
+function checkMangoQuery(args) {
+  /**
+   * ensure if custom index is set,
+   * it is also defined in the schema
+   */
+  var schema = args.rxQuery.collection.schema.normalized;
+  var schemaIndexes = schema.indexes ? schema.indexes : [];
+  var index = args.mangoQuery.index;
+
+  if (index) {
+    var isInSchema = schemaIndexes.find(function (schemaIndex) {
+      return (0, _fastDeepEqual["default"])(schemaIndex, index);
+    });
+
+    if (!isInSchema) {
+      throw (0, _rxError.newRxError)('QU12', {
+        collection: args.rxQuery.collection.name,
+        query: args.mangoQuery,
+        schema: schema
+      });
+    }
+  }
+}
+
+},{"../../rx-error":51,"@babel/runtime/helpers/interopRequireDefault":67,"fast-deep-equal":441}],15:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
@@ -2113,18 +2152,6 @@ function checkSchema(jsonSchema) {
         }
       }
     });
-  }
-  /**
-   * TODO
-   * this check has to exist only in beta-version, to help developers migrate their schemas
-   */
-  // remove backward-compatibility for compoundIndexes
-
-
-  if (Object.keys(jsonSchema).includes('compoundIndexes')) {
-    throw (0, _rxError.newRxError)('SC25', {
-      schema: jsonSchema
-    });
   } // remove backward-compatibility for index: true
 
 
@@ -2352,11 +2379,12 @@ var ERROR_MESSAGES = {
   QU4: 'RxQuery.regex(): You cannot use .regex() on the primary field',
   QU5: 'RxQuery.sort(): does not work because key is not defined in the schema',
   QU6: 'RxQuery.limit(): cannot be called on .findOne()',
-  QU7: 'query must be an object',
-  QU8: 'query cannot be an array',
+  // removed in 12.0.0 (should by ensured by the typings) - QU7: 'query must be an object',
+  // removed in 12.0.0 (should by ensured by the typings) - QU8: 'query cannot be an array',
   QU9: 'throwIfMissing can only be used in findOne queries',
   QU10: 'result empty and throwIfMissing: true',
   QU11: 'RxQuery: no valid query params given',
+  QU12: 'Given index is not in schema',
   // mquery.js
   MQ1: 'path must be a string or object',
   MQ2: 'Invalid argument',
@@ -2487,10 +2515,13 @@ var ERROR_MESSAGES = {
   IM2: 'inMemoryCollection.sync(): Do not replicate with the in-memory instance. Replicate with the parent instead',
   // plugins/server.js
   S1: 'You cannot create collections after calling RxDatabase.server()',
+  // plugins/replication-graphql.js
+  GQL1: 'GraphQL replication: cannot find sub schema by key',
+  GQL2: 'GraphQL replication: unknown errors occurred in replication pull - see innerErrors for more details',
+  GQL3: 'GraphQL replication: pull returns more documents then batchSize',
+  GQL4: 'GraphQL replication: unknown errors occurred in replication push - see innerErrors for more details',
   // plugins/replication/
   REP1: 'Replication: _deleted field not provided',
-  // plugins/replication-graphql/
-  GQL1: 'cannot find sub schema by key',
 
   /**
    * Should never be thrown, use this for
@@ -2624,6 +2655,9 @@ var RxDBDevModePlugin = {
     },
     preCreateRxQuery: function preCreateRxQuery(args) {
       (0, _checkQuery.checkQuery)(args);
+    },
+    prePrepareQuery: function prePrepareQuery(args) {
+      (0, _checkQuery.checkMangoQuery)(args);
     },
     createRxCollection: function createRxCollection(args) {
       // check ORM-methods
@@ -5728,6 +5762,8 @@ var _rxSchema = require("../../rx-schema");
 
 var _overwritable = require("../../overwritable");
 
+var _util = require("../../util");
+
 var RxStoragePouchStatics = {
   /**
    * create the same diggest as an attachment with that data
@@ -5849,10 +5885,10 @@ function preparePouchDbQuery(schema, mutateableQuery) {
   if (query.sort) {
     query.sort.forEach(function (sortPart) {
       var key = Object.keys(sortPart)[0];
-      var comparisonOperators = ['$gt', '$gte', '$lt', '$lte'];
+      var comparisonOperators = ['$gt', '$gte', '$lt', '$lte', '$eq'];
       var keyUsed = query.selector[key] && Object.keys(query.selector[key]).some(function (op) {
         return comparisonOperators.includes(op);
-      }) || false;
+      }) || false; // TODO why we need this '|| false' ?
 
       if (!keyUsed) {
         var schemaObj = (0, _rxSchemaHelper.getSchemaByObjectPath)(schema, key);
@@ -5928,33 +5964,31 @@ function preparePouchDbQuery(schema, mutateableQuery) {
       delete query.selector[k];
     }
   });
-  query.selector = (0, _pouchdbHelper.primarySwapPouchDbQuerySelector)(query.selector, primaryKey);
   /**
-   * To ensure a deterministic sorting,
-   * we have to ensure the primary key is always part
-   * of the sort query.
-   * TODO This should be done but will not work with pouchdb
-   * because it will throw
-   * 'Cannot sort on field(s) "key" when using the default index'
-   * So we likely have to modify the indexes so that this works. 
+   * Set use_index
+   * @link https://pouchdb.com/guides/mango-queries.html#use_index
    */
 
-  /*
-  if (!mutateableQuery.sort) {
-      mutateableQuery.sort = [{ [this.primaryPath]: 'asc' }] as any;
-  } else {
-      const isPrimaryInSort = mutateableQuery.sort
-          .find(p => firstPropertyNameOfObject(p) === this.primaryPath);
-      if (!isPrimaryInSort) {
-          mutateableQuery.sort.push({ [this.primaryPath]: 'asc' } as any);
+  if (mutateableQuery.index) {
+    var indexMaybeArray = mutateableQuery.index;
+    var indexArray = (0, _util.isMaybeReadonlyArray)(indexMaybeArray) ? indexMaybeArray : [indexMaybeArray];
+    indexArray = indexArray.map(function (str) {
+      if (str === primaryKey) {
+        return '_id';
+      } else {
+        return str;
       }
+    });
+    var indexName = (0, _pouchdbHelper.getPouchIndexDesignDocNameByIndex)(indexArray);
+    delete mutateableQuery.index;
+    mutateableQuery.use_index = indexName;
   }
-  */
 
+  query.selector = (0, _pouchdbHelper.primarySwapPouchDbQuerySelector)(query.selector, primaryKey);
   return query;
 }
 
-},{"../../overwritable":9,"../../rx-error":51,"../../rx-schema":54,"../../rx-schema-helper":53,"./pouchdb-helper":34,"pouchdb-selector-core":498}],34:[function(require,module,exports){
+},{"../../overwritable":9,"../../rx-error":51,"../../rx-schema":54,"../../rx-schema-helper":53,"../../util":59,"./pouchdb-helper":34,"pouchdb-selector-core":498}],34:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5962,6 +5996,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.POUCH_HASH_KEY = exports.POUCHDB_LOCAL_PREFIX = exports.POUCHDB_DESIGN_PREFIX = exports.OPEN_POUCHDB_STORAGE_INSTANCES = void 0;
 exports.getEventKey = getEventKey;
+exports.getPouchIndexDesignDocNameByIndex = getPouchIndexDesignDocNameByIndex;
 exports.pouchChangeRowToChangeEvent = pouchChangeRowToChangeEvent;
 exports.pouchChangeRowToChangeStreamEvent = pouchChangeRowToChangeStreamEvent;
 exports.pouchDocumentDataToRxDocumentData = pouchDocumentDataToRxDocumentData;
@@ -6301,6 +6336,11 @@ function pouchHash(data) {
 var POUCH_HASH_KEY = 'md5';
 exports.POUCH_HASH_KEY = POUCH_HASH_KEY;
 
+function getPouchIndexDesignDocNameByIndex(index) {
+  var indexName = 'idx-rxdb-index-' + index.join(',');
+  return indexName;
+}
+
 },{"../../rx-error":51,"../../util":59,"pouchdb-md5":494}],35:[function(require,module,exports){
 "use strict";
 
@@ -6322,6 +6362,195 @@ var _pouchdbHelper = require("./pouchdb-helper");
 var _util = require("../../util");
 
 var _customEventsPlugin = require("./custom-events-plugin");
+
+function _settle(pact, state, value) {
+  if (!pact.s) {
+    if (value instanceof _Pact) {
+      if (value.s) {
+        if (state & 1) {
+          state = value.s;
+        }
+
+        value = value.v;
+      } else {
+        value.o = _settle.bind(null, pact, state);
+        return;
+      }
+    }
+
+    if (value && value.then) {
+      value.then(_settle.bind(null, pact, state), _settle.bind(null, pact, 2));
+      return;
+    }
+
+    pact.s = state;
+    pact.v = value;
+    var observer = pact.o;
+
+    if (observer) {
+      observer(pact);
+    }
+  }
+}
+
+var _Pact = /*#__PURE__*/function () {
+  function _Pact() {}
+
+  _Pact.prototype.then = function (onFulfilled, onRejected) {
+    var result = new _Pact();
+    var state = this.s;
+
+    if (state) {
+      var callback = state & 1 ? onFulfilled : onRejected;
+
+      if (callback) {
+        try {
+          _settle(result, 1, callback(this.v));
+        } catch (e) {
+          _settle(result, 2, e);
+        }
+
+        return result;
+      } else {
+        return this;
+      }
+    }
+
+    this.o = function (_this) {
+      try {
+        var value = _this.v;
+
+        if (_this.s & 1) {
+          _settle(result, 1, onFulfilled ? onFulfilled(value) : value);
+        } else if (onRejected) {
+          _settle(result, 1, onRejected(value));
+        } else {
+          _settle(result, 2, value);
+        }
+      } catch (e) {
+        _settle(result, 2, e);
+      }
+    };
+
+    return result;
+  };
+
+  return _Pact;
+}();
+
+function _isSettledPact(thenable) {
+  return thenable instanceof _Pact && thenable.s & 1;
+}
+
+function _for(test, update, body) {
+  var stage;
+
+  for (;;) {
+    var shouldContinue = test();
+
+    if (_isSettledPact(shouldContinue)) {
+      shouldContinue = shouldContinue.v;
+    }
+
+    if (!shouldContinue) {
+      return result;
+    }
+
+    if (shouldContinue.then) {
+      stage = 0;
+      break;
+    }
+
+    var result = body();
+
+    if (result && result.then) {
+      if (_isSettledPact(result)) {
+        result = result.s;
+      } else {
+        stage = 1;
+        break;
+      }
+    }
+
+    if (update) {
+      var updateValue = update();
+
+      if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
+        stage = 2;
+        break;
+      }
+    }
+  }
+
+  var pact = new _Pact();
+
+  var reject = _settle.bind(null, pact, 2);
+
+  (stage === 0 ? shouldContinue.then(_resumeAfterTest) : stage === 1 ? result.then(_resumeAfterBody) : updateValue.then(_resumeAfterUpdate)).then(void 0, reject);
+  return pact;
+
+  function _resumeAfterBody(value) {
+    result = value;
+
+    do {
+      if (update) {
+        updateValue = update();
+
+        if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
+          updateValue.then(_resumeAfterUpdate).then(void 0, reject);
+          return;
+        }
+      }
+
+      shouldContinue = test();
+
+      if (!shouldContinue || _isSettledPact(shouldContinue) && !shouldContinue.v) {
+        _settle(pact, 1, result);
+
+        return;
+      }
+
+      if (shouldContinue.then) {
+        shouldContinue.then(_resumeAfterTest).then(void 0, reject);
+        return;
+      }
+
+      result = body();
+
+      if (_isSettledPact(result)) {
+        result = result.v;
+      }
+    } while (!result || !result.then);
+
+    result.then(_resumeAfterBody).then(void 0, reject);
+  }
+
+  function _resumeAfterTest(shouldContinue) {
+    if (shouldContinue) {
+      result = body();
+
+      if (result && result.then) {
+        result.then(_resumeAfterBody).then(void 0, reject);
+      } else {
+        _resumeAfterBody(result);
+      }
+    } else {
+      _settle(pact, 1, result);
+    }
+  }
+
+  function _resumeAfterUpdate() {
+    if (shouldContinue = test()) {
+      if (shouldContinue.then) {
+        shouldContinue.then(_resumeAfterTest).then(void 0, reject);
+      } else {
+        _resumeAfterTest(shouldContinue);
+      }
+    } else {
+      _settle(pact, 1, result);
+    }
+  }
+}
 
 var lastId = 0;
 
@@ -6627,6 +6856,13 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
   _proto.getChangedDocuments = function getChangedDocuments(options) {
     try {
+      var _temp13 = function _temp13() {
+        return {
+          changedDocuments: changedDocuments,
+          lastSequence: lastSequence
+        };
+      };
+
       var _this15 = this;
 
       var pouchChangesOpts = {
@@ -6636,27 +6872,45 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
         since: options.sinceSequence,
         descending: options.direction === 'before' ? true : false
       };
-      return Promise.resolve(_this15.internals.pouch.changes(pouchChangesOpts)).then(function (pouchResults) {
-        /**
-         * TODO stripping the internal docs
-         * results in having a non-full result set that maybe no longer
-         * reaches the options.limit. We should fill up again
-         * to ensure pagination works correctly.
-         */
-        var changedDocuments = pouchResults.results.filter(function (row) {
-          return !row.id.startsWith(_pouchdbHelper.POUCHDB_DESIGN_PREFIX);
-        }).map(function (row) {
-          return {
-            id: row.id,
-            sequence: row.seq
-          };
+      var lastSequence = 0;
+      var first = true;
+      var skippedDesignDocuments = 0;
+      var changedDocuments = [];
+      /**
+       * Because PouchDB also returns changes of _design documents,
+       * we have to fill up the results with more changes if this happens.
+       */
+
+      var _temp14 = _for(function () {
+        return !!first || skippedDesignDocuments > 0;
+      }, void 0, function () {
+        first = false;
+        skippedDesignDocuments = 0;
+        return Promise.resolve(_this15.internals.pouch.changes(pouchChangesOpts)).then(function (pouchResults) {
+          var addChangedDocuments = pouchResults.results.filter(function (row) {
+            var isDesignDoc = row.id.startsWith(_pouchdbHelper.POUCHDB_DESIGN_PREFIX);
+
+            if (isDesignDoc) {
+              skippedDesignDocuments = skippedDesignDocuments + 1;
+              return false;
+            } else {
+              return true;
+            }
+          }).map(function (row) {
+            return {
+              id: row.id,
+              sequence: row.seq
+            };
+          });
+          changedDocuments = changedDocuments.concat(addChangedDocuments);
+          lastSequence = pouchResults.last_seq; // modify pouch options for next run of pouch.changes()
+
+          pouchChangesOpts.since = lastSequence;
+          pouchChangesOpts.limit = skippedDesignDocuments;
         });
-        var lastSequence = pouchResults.last_seq;
-        return {
-          changedDocuments: changedDocuments,
-          lastSequence: lastSequence
-        };
       });
+
+      return Promise.resolve(_temp14 && _temp14.then ? _temp14.then(_temp13) : _temp13(_temp14));
     } catch (e) {
       return Promise.reject(e);
     }
@@ -6925,6 +7179,8 @@ var _rxStorageInstancePouch = require("./rx-storage-instance-pouch");
 
 var _rxStorageKeyObjectInstancePouch = require("./rx-storage-key-object-instance-pouch");
 
+var _pouchdbHelper = require("./pouchdb-helper");
+
 var _pouchStatics = require("./pouch-statics");
 
 /**
@@ -6957,14 +7213,14 @@ var createIndexesOnPouch = function createIndexesOnPouch(pouch, schema) {
               return key;
             }
           });
-          var indexName = 'idx-rxdb-index-' + indexArray.join(',');
+          var indexName = (0, _pouchdbHelper.getPouchIndexDesignDocNameByIndex)(indexArray);
 
           if (existingIndexes.has(indexName)) {
             // index already exists
             return Promise.resolve();
           }
           /**
-           * TODO we might have even better performance by doing a bulkDocs
+           * TODO we might have even better performance by doing a pouch.bulkDocs()
            * on index creation
            */
 
@@ -7124,7 +7380,7 @@ function getRxStoragePouch(adapter, pouchSettings) {
   return storage;
 }
 
-},{"../../rx-error":51,"../../rx-schema":54,"../../util":59,"./pouch-db":32,"./pouch-statics":33,"./rx-storage-instance-pouch":35,"./rx-storage-key-object-instance-pouch":36}],38:[function(require,module,exports){
+},{"../../rx-error":51,"../../rx-schema":54,"../../util":59,"./pouch-db":32,"./pouch-statics":33,"./pouchdb-helper":34,"./rx-storage-instance-pouch":35,"./rx-storage-key-object-instance-pouch":36}],38:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -9962,7 +10218,7 @@ function createRxCollection(_ref3, wasCreatedBefore) {
   var storageInstanceCreationParams = {
     databaseName: database.name,
     collectionName: name,
-    schema: schema.jsonSchema,
+    schema: schema.normalized,
     options: instanceCreationOptions,
     multiInstance: database.multiInstance
   };
@@ -11850,6 +12106,7 @@ exports._getDefaultQuery = _getDefaultQuery;
 exports.createRxQuery = createRxQuery;
 exports.isFindOneByIdQuery = isFindOneByIdQuery;
 exports.isInstanceOf = isInstanceOf;
+exports.normalizeMangoQuery = normalizeMangoQuery;
 exports.tunnelQueryCache = tunnelQueryCache;
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
@@ -11873,6 +12130,8 @@ var _eventReduce = require("./event-reduce");
 var _queryCache = require("./query-cache");
 
 var _rxCollectionHelper = require("./rx-collection-helper");
+
+var _rxSchema = require("./rx-schema");
 
 var _queryCount = 0;
 
@@ -12054,7 +12313,7 @@ var RxQueryBase = /*#__PURE__*/function () {
     var hookInput = {
       rxQuery: this,
       // can be mutated by the hooks so we have to deep clone first.
-      mangoQuery: (0, _util.clone)(this.mangoQuery)
+      mangoQuery: normalizeMangoQuery(this.collection.schema.normalized, (0, _util.clone)(this.mangoQuery))
     };
     (0, _hooks.runPluginHooks)('prePrepareQuery', hookInput);
     var value = this.collection.database.storage.statics.prepareQuery(this.collection.storageInstance.schema, hookInput.mangoQuery);
@@ -12225,19 +12484,6 @@ function tunnelQueryCache(rxQuery) {
 }
 
 function createRxQuery(op, queryObj, collection) {
-  // checks
-  if (queryObj && typeof queryObj !== 'object') {
-    throw (0, _rxError.newRxTypeError)('QU7', {
-      queryObj: queryObj
-    });
-  }
-
-  if (Array.isArray(queryObj)) {
-    throw (0, _rxError.newRxTypeError)('QU8', {
-      queryObj: queryObj
-    });
-  }
-
   (0, _hooks.runPluginHooks)('preCreateRxQuery', {
     op: op,
     queryObj: queryObj,
@@ -12359,6 +12605,57 @@ function __ensureEqual(rxQuery) {
   return Promise.resolve(ret); // true if results have changed
 }
 /**
+ * Normalize the query to ensure we have all fields set
+ * and queries that represent the same query logic are detected as equal by the caching.
+ */
+
+
+function normalizeMangoQuery(schema, mangoQuery) {
+  var primaryKey = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
+  mangoQuery = (0, _util.flatClone)(mangoQuery);
+  /**
+   * To ensure a deterministic sorting,
+   * we have to ensure the primary key is always part
+   * of the sort query.
+   * Primary sorting is added as last sort parameter,
+   * similiar to how we add the primary key to indexes that do not have it.
+   */
+
+  if (!mangoQuery.sort) {
+    var _ref;
+
+    mangoQuery.sort = [(_ref = {}, _ref[primaryKey] = 'asc', _ref)];
+  } else {
+    var isPrimaryInSort = mangoQuery.sort.find(function (p) {
+      return (0, _util.firstPropertyNameOfObject)(p) === primaryKey;
+    });
+
+    if (!isPrimaryInSort) {
+      var _mangoQuery$sort$push;
+
+      mangoQuery.sort = mangoQuery.sort.slice(0);
+      mangoQuery.sort.push((_mangoQuery$sort$push = {}, _mangoQuery$sort$push[primaryKey] = 'asc', _mangoQuery$sort$push));
+    }
+  }
+  /**
+   * Ensure that if an index is specified,
+   * the primaryKey is inside of it.
+   */
+
+
+  if (mangoQuery.index) {
+    var indexAr = Array.isArray(mangoQuery.index) ? mangoQuery.index.slice(0) : [mangoQuery.index];
+
+    if (!indexAr.includes(primaryKey)) {
+      indexAr.push(primaryKey);
+    }
+
+    mangoQuery.index = indexAr;
+  }
+
+  return mangoQuery;
+}
+/**
  * Returns true if the given query
  * selects exactly one document by its id.
  * Used to optimize performance because these kind of
@@ -12384,7 +12681,7 @@ function isInstanceOf(obj) {
   return obj instanceof RxQueryBase;
 }
 
-},{"./event-reduce":6,"./hooks":7,"./query-cache":44,"./rx-collection-helper":46,"./rx-document-prototype-merge":49,"./rx-error":51,"./util":59,"@babel/runtime/helpers/createClass":64,"@babel/runtime/helpers/interopRequireDefault":67,"fast-deep-equal":441,"rxjs":512,"rxjs/operators":737}],53:[function(require,module,exports){
+},{"./event-reduce":6,"./hooks":7,"./query-cache":44,"./rx-collection-helper":46,"./rx-document-prototype-merge":49,"./rx-error":51,"./rx-schema":54,"./util":59,"@babel/runtime/helpers/createClass":64,"@babel/runtime/helpers/interopRequireDefault":67,"fast-deep-equal":441,"rxjs":512,"rxjs/operators":737}],53:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
@@ -12450,7 +12747,7 @@ exports.getIndexes = getIndexes;
 exports.getPreviousVersions = getPreviousVersions;
 exports.getPrimaryFieldOfPrimaryKey = getPrimaryFieldOfPrimaryKey;
 exports.isInstanceOf = isInstanceOf;
-exports.normalize = normalize;
+exports.normalizeRxJsonSchema = normalizeRxJsonSchema;
 exports.toTypedRxJsonSchema = toTypedRxJsonSchema;
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
@@ -12584,7 +12881,7 @@ var RxSchema = /*#__PURE__*/function () {
   }, {
     key: "normalized",
     get: function get() {
-      return (0, _util.overwriteGetterForCaching)(this, 'normalized', normalize(this.jsonSchema));
+      return (0, _util.overwriteGetterForCaching)(this, 'normalized', normalizeRxJsonSchema(this.jsonSchema));
     }
   }, {
     key: "topLevelFields",
@@ -12716,21 +13013,48 @@ function getFinalFields(jsonSchema) {
   return ret;
 }
 /**
- * orders the schemas attributes by alphabetical order
- * @return jsonSchema - ordered
+ * Normalize the RxJsonSchema.
+ * We need this to ensure everything is set up properly
+ * and we have the same hash on schemas that represent the same value but
+ * have different json.
+ * 
+ * - Orders the schemas attributes by alphabetical order
+ * - Adds the primaryKey to all indexes that do not contain the primaryKey
+ *   - We need this for determinstic sort order on all queries, which is required for event-reduce to work.
+ *
+ * @return RxJsonSchema - ordered and filled
  */
 
 
-function normalize(jsonSchema) {
-  var normalizedSchema = (0, _util.sortObject)((0, _util.clone)(jsonSchema));
+function normalizeRxJsonSchema(jsonSchema) {
+  var primaryPath = getPrimaryFieldOfPrimaryKey(jsonSchema.primaryKey);
+  var normalizedSchema = (0, _util.sortObject)((0, _util.clone)(jsonSchema)); // indexes must NOT be sorted because sort order is important here.
 
   if (jsonSchema.indexes) {
-    normalizedSchema.indexes = Array.from(jsonSchema.indexes); // indexes should remain unsorted
-  } // primaryKey.fields must NOT be sorted
+    normalizedSchema.indexes = Array.from(jsonSchema.indexes);
+  } // primaryKey.fields must NOT be sorted because sort order is important here.
 
 
   if (typeof normalizedSchema.primaryKey === 'object' && typeof jsonSchema.primaryKey === 'object') {
     normalizedSchema.primaryKey.fields = jsonSchema.primaryKey.fields;
+  }
+  /**
+   * Add primary key to indexes that do not contain primaryKey.
+   */
+
+
+  if (normalizedSchema.indexes) {
+    normalizedSchema.indexes = normalizedSchema.indexes.map(function (index) {
+      var arIndex = (0, _util.isMaybeReadonlyArray)(index) ? index : [index];
+
+      if (!arIndex.includes(primaryPath)) {
+        var modifiedIndex = arIndex.slice(0);
+        modifiedIndex.push(primaryPath);
+        return modifiedIndex;
+      }
+
+      return arIndex;
+    });
   }
 
   return normalizedSchema;

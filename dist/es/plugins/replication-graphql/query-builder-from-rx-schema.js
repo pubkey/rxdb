@@ -1,8 +1,8 @@
 import { fillUpOptionals, SPACING } from './graphql-schema-from-rx-schema';
 import { ucfirst } from '../../util';
 import { newRxError } from '../../rx-error';
-export function pullQueryBuilderFromRxSchema(collectionName, input) {
-  var batchSize = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 5;
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
+export function pullQueryBuilderFromRxSchema(collectionName, input, batchSize) {
   input = fillUpOptionals(input);
   var schema = input.schema;
   var prefixes = input.prefixes;
@@ -51,30 +51,33 @@ export function pullQueryBuilderFromRxSchema(collectionName, input) {
   return builder;
 }
 export function pushQueryBuilderFromRxSchema(collectionName, input) {
+  var primaryKey = getPrimaryFieldOfPrimaryKey(input.schema.primaryKey);
   input = fillUpOptionals(input);
   var prefixes = input.prefixes;
   var ucCollectionName = ucfirst(collectionName);
   var queryName = prefixes.set + ucCollectionName;
 
-  var builder = function builder(doc) {
+  var builder = function builder(docs) {
     var _variables;
 
-    var query = '' + 'mutation Set' + ucCollectionName + '($' + collectionName + ': ' + ucCollectionName + 'Input) {\n' + SPACING + queryName + '(' + collectionName + ': $' + collectionName + ') {\n' + SPACING + SPACING + input.deletedFlag + '\n' + // GraphQL enforces to return at least one field
+    var query = '' + 'mutation Set' + ucCollectionName + '($' + collectionName + ': [' + ucCollectionName + 'Input]) {\n' + SPACING + queryName + '(' + collectionName + ': $' + collectionName + ') {\n' + SPACING + SPACING + primaryKey + '\n' + // GraphQL enforces to return at least one field
     SPACING + '}\n' + '}';
-    var sendDoc = {};
-    Object.entries(doc).forEach(function (_ref) {
-      var k = _ref[0],
-          v = _ref[1];
+    var sendDocs = [];
+    docs.forEach(function (doc) {
+      var sendDoc = {};
+      Object.entries(doc).forEach(function (_ref) {
+        var k = _ref[0],
+            v = _ref[1];
 
-      if ( // skip if in ignoreInputKeys list
-      !input.ignoreInputKeys.includes(k) && // only use properties that are in the schema
-      input.schema.properties[k]) {
-        sendDoc[k] = v;
-      }
-    }); // add deleted flag
-
-    sendDoc[input.deletedFlag] = !!doc._deleted;
-    var variables = (_variables = {}, _variables[collectionName] = sendDoc, _variables);
+        if ( // skip if in ignoreInputKeys list
+        !input.ignoreInputKeys.includes(k) && // only use properties that are in the schema
+        input.schema.properties[k]) {
+          sendDoc[k] = v;
+        }
+      });
+      sendDocs.push(sendDoc);
+    });
+    var variables = (_variables = {}, _variables[collectionName] = sendDocs, _variables);
     return {
       query: query,
       variables: variables

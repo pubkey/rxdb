@@ -1,10 +1,10 @@
 import type { Observable } from 'rxjs';
 import type { RxReplicationStateBase } from '../../plugins/replication';
+import { RxReplicationError } from '../../plugins/replication/rx-replication-error';
 import type {
     DeepReadonlyObject,
     RxCollection,
-    RxDocumentData,
-    WithDeleted
+    RxDocumentData
 } from '../../types';
 
 export type ReplicationCheckpointDocument = { _id: string; value: number; };
@@ -17,14 +17,13 @@ export type ReplicationPullHandlerResult<RxDocType> = {
     /**
      * The documents that got pulled from the remote actor.
      */
-    documents: (WithDeleted<RxDocType> | DeepReadonlyObject<WithDeleted<RxDocType>>)[];
+    documents: (RxDocumentData<RxDocType> | DeepReadonlyObject<RxDocumentData<RxDocType>>)[];
     /**
      * True if there can be more changes on the remote,
      * so the pulling will run again.
      */
     hasMoreDocuments: boolean;
 };
-
 
 export type ReplicationPullHandler<RxDocType> = (latestPulledDocument: RxDocumentData<RxDocType> | null) => Promise<ReplicationPullHandlerResult<RxDocType>>;
 export type ReplicationPullOptions<RxDocType> = {
@@ -35,7 +34,7 @@ export type ReplicationPullOptions<RxDocType> = {
     handler: ReplicationPullHandler<RxDocType>;
 };
 
-export type ReplicationPushHandler<RxDocType> = (docs: WithDeleted<RxDocType>[]) => Promise<void>;
+export type ReplicationPushHandler<RxDocType> = (docs: RxDocumentData<RxDocType>[]) => Promise<void>;
 export type ReplicationPushOptions<RxDocType> = {
     /**
      * A handler that sends the new local changes
@@ -52,30 +51,43 @@ export type ReplicationPushOptions<RxDocType> = {
 export type RxReplicationState<RxDocType> = RxReplicationStateBase<RxDocType> & {
     readonly received$: Observable<RxDocumentData<RxDocType>>;
     readonly send$: Observable<any>;
-    readonly error$: Observable<any>;
+    readonly error$: Observable<RxReplicationError<RxDocType>>;
     readonly canceled$: Observable<any>;
     readonly active$: Observable<boolean>;
 }
 
 export type ReplicationOptions<RxDocType> = {
-    replicationIdentifier: string,
-    collection: RxCollection<RxDocType>,
-    pull?: ReplicationPullOptions<RxDocType>,
-    push?: ReplicationPushOptions<RxDocType>,
+    /**
+     * An id for the replication to identify it
+     * and so that RxDB is able to resume the replication on app reload.
+     * If you replicate with a remote server, it is recommended to put the
+     * server url into the replicationIdentifier.
+     * Like 'my-rest-replication-to-https://example.com/rest'
+     */
+    replicationIdentifier: string;
+    collection: RxCollection<RxDocType>;
+    /**
+     * Define a custom property that is used
+     * to flag a document as being deleted.
+     * [default='_deleted']
+     */
+    deletedFlag?: '_deleted' | string;
+    pull?: ReplicationPullOptions<RxDocType>;
+    push?: ReplicationPushOptions<RxDocType>;
     /**
      * default=false
      */
-    live?: boolean,
+    live?: boolean;
     /**
      * Interval in milliseconds on when to run() again,
      * Set this to 0 when you have a back-channel from your server
      * that like a websocket that tells the client when to pull.
      */
-    liveInterval?: number,
+    liveInterval?: number;
     /**
      * Time in milliseconds
      */
-    retryTime?: number,
+    retryTime?: number;
     /**
      * If set to false,
      * it will not wait until the current instance becomes leader.

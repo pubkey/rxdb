@@ -184,10 +184,15 @@ function findBestMatchingIndex(selector, userFields, sortOrder, indexes, useInde
 
   if (matchingIndexes.length === 0) {
     if (useIndex) {
-      throw new Error({
+      throw new Error(JSON.stringify({
         error: 'no_usable_index',
-        message: 'There is no index available for this selector.'
-      }.toString());
+        message: 'There is no index available for this selector.',
+        selector: selector,
+        indexes: indexes,
+        sortOrder: sortOrder,
+        userFields: userFields,
+        useIndex: useIndex
+      }, null, 4));
     } //return `all_docs` as a default index;
     //I'm assuming that _all_docs is always first
 
@@ -219,8 +224,8 @@ function findBestMatchingIndex(selector, userFields, sortOrder, indexes, useInde
   }
 
   if (useIndex) {
-    var useIndexDdoc = '_design/' + useIndex[0];
-    var useIndexName = useIndex.length === 2 ? useIndex[1] : false;
+    var useIndexDdoc = '_design/' + useIndex;
+    var useIndexName = useIndex;
     var index = matchingIndexes.find(function (index) {
       if (useIndexName && index.ddoc === useIndexDdoc && useIndexName === index.name) {
         return true;
@@ -235,10 +240,13 @@ function findBestMatchingIndex(selector, userFields, sortOrder, indexes, useInde
     });
 
     if (!index) {
-      throw new Error({
+      throw new Error(JSON.stringify({
         error: 'unknown_error',
-        message: 'Could not find that index or could not use that index for the query'
-      }.toString());
+        message: 'Could not find that index or could not use that index for the query',
+        useIndex: useIndex,
+        indexes: indexes,
+        selector: selector
+      }, null, 4));
     }
 
     return index;

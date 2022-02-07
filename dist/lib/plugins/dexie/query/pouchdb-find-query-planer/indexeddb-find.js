@@ -50,7 +50,7 @@ function generateKeyRange(opts, IDBKeyRange) {
      * table.
      * So we do not have to filter for deleted ones.
      */
-    var filterDeleted = [key];
+    var filterDeleted = Array.isArray(key) ? key : [key];
     var ret = filterDeleted.map(function (k) {
       // null, true and false are not indexable by indexeddb. When we write
       // these values we convert them to these constants, and so when we

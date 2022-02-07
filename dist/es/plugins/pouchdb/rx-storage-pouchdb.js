@@ -4,6 +4,7 @@ import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import { RxStorageInstancePouch } from './rx-storage-instance-pouch';
 import { RxStorageKeyObjectInstancePouch } from './rx-storage-key-object-instance-pouch';
+import { getPouchIndexDesignDocNameByIndex } from './pouchdb-helper';
 import { RxStoragePouchStatics } from './pouch-statics';
 
 /**
@@ -36,14 +37,14 @@ export var createIndexesOnPouch = function createIndexesOnPouch(pouch, schema) {
               return key;
             }
           });
-          var indexName = 'idx-rxdb-index-' + indexArray.join(',');
+          var indexName = getPouchIndexDesignDocNameByIndex(indexArray);
 
           if (existingIndexes.has(indexName)) {
             // index already exists
             return Promise.resolve();
           }
           /**
-           * TODO we might have even better performance by doing a bulkDocs
+           * TODO we might have even better performance by doing a pouch.bulkDocs()
            * on index creation
            */
 

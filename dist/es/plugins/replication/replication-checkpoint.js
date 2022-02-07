@@ -1,7 +1,8 @@
 import { findLocalDocument, writeSingleLocal } from '../../rx-storage-helper';
 import { flatClone } from '../../util';
 import { newRxError } from '../../rx-error';
-import { wasRevisionfromPullReplication } from './revision-flag'; //
+import { wasRevisionfromPullReplication } from './revision-flag';
+import { runPluginHooks } from '../../hooks'; //
 // things for the push-checkpoint
 //
 
@@ -236,11 +237,19 @@ export var getLastPullDocument = function getLastPullDocument(collection, replic
     return Promise.reject(e);
   }
 };
-export var getChangesSinceLastPushSequence = function getChangesSinceLastPushSequence(collection, replicationIdentifier) {
+export var getChangesSinceLastPushSequence = function getChangesSinceLastPushSequence(collection, replicationIdentifier, replicationIdentifierHash,
+/**
+ * A function that returns true
+ * when the underlaying RxReplication is stopped.
+ * So that we do not run requests against a close RxStorageInstance.
+ */
+isStopped) {
   try {
     var _arguments2 = arguments;
-    var batchSize = _arguments2.length > 2 && _arguments2[2] !== undefined ? _arguments2[2] : 10;
+    var batchSize = _arguments2.length > 4 && _arguments2[4] !== undefined ? _arguments2[4] : 10;
     return Promise.resolve(getLastPushSequence(collection, replicationIdentifier)).then(function (lastPushSequence) {
+      var _interrupt = false;
+
       function _temp2() {
         return {
           changedDocs: changedDocs,
@@ -260,7 +269,7 @@ export var getChangesSinceLastPushSequence = function getChangesSinceLastPushSeq
        */
 
       var _temp = _for(function () {
-        return !!retry;
+        return !_interrupt && !!retry && !isStopped();
       }, void 0, function () {
         return Promise.resolve(collection.storageInstance.getChangedDocuments({
           sinceSequence: lastPushSequence,
@@ -271,6 +280,11 @@ export var getChangesSinceLastPushSequence = function getChangesSinceLastPushSeq
 
           if (changesResults.changedDocuments.length === 0) {
             retry = false;
+            return;
+          }
+
+          if (isStopped()) {
+            _interrupt = true;
             return;
           }
 
@@ -299,10 +313,16 @@ export var getChangesSinceLastPushSequence = function getChangesSinceLastPushSeq
                */
 
 
-              if (wasRevisionfromPullReplication(replicationIdentifier, changedDoc._rev)) {
+              if (wasRevisionfromPullReplication(replicationIdentifierHash, changedDoc._rev)) {
                 return false;
               }
 
+              var hookParams = {
+                collection: collection,
+                doc: changedDoc
+              };
+              runPluginHooks('postReadFromInstance', hookParams);
+              changedDoc = hookParams.doc;
               changedDocs.set(id, {
                 id: id,
                 doc: changedDoc,

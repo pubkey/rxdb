@@ -121,6 +121,9 @@ var RxDBDevModePlugin = {
     preCreateRxQuery: function preCreateRxQuery(args) {
       (0, _checkQuery.checkQuery)(args);
     },
+    prePrepareQuery: function prePrepareQuery(args) {
+      (0, _checkQuery.checkMangoQuery)(args);
+    },
     createRxCollection: function createRxCollection(args) {
       // check ORM-methods
       (0, _checkOrm.checkOrmMethods)(args.statics);

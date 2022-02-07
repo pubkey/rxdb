@@ -21,6 +21,8 @@ var _rxStorageInstancePouch = require("./rx-storage-instance-pouch");
 
 var _rxStorageKeyObjectInstancePouch = require("./rx-storage-key-object-instance-pouch");
 
+var _pouchdbHelper = require("./pouchdb-helper");
+
 var _pouchStatics = require("./pouch-statics");
 
 /**
@@ -53,14 +55,14 @@ var createIndexesOnPouch = function createIndexesOnPouch(pouch, schema) {
               return key;
             }
           });
-          var indexName = 'idx-rxdb-index-' + indexArray.join(',');
+          var indexName = (0, _pouchdbHelper.getPouchIndexDesignDocNameByIndex)(indexArray);
 
           if (existingIndexes.has(indexName)) {
             // index already exists
             return Promise.resolve();
           }
           /**
-           * TODO we might have even better performance by doing a bulkDocs
+           * TODO we might have even better performance by doing a pouch.bulkDocs()
            * on index creation
            */
 

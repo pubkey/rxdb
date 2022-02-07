@@ -122,7 +122,7 @@ export var RxSchema = /*#__PURE__*/function () {
   }, {
     key: "normalized",
     get: function get() {
-      return overwriteGetterForCaching(this, 'normalized', normalize(this.jsonSchema));
+      return overwriteGetterForCaching(this, 'normalized', normalizeRxJsonSchema(this.jsonSchema));
     }
   }, {
     key: "topLevelFields",
@@ -248,20 +248,47 @@ export function getFinalFields(jsonSchema) {
   return ret;
 }
 /**
- * orders the schemas attributes by alphabetical order
- * @return jsonSchema - ordered
+ * Normalize the RxJsonSchema.
+ * We need this to ensure everything is set up properly
+ * and we have the same hash on schemas that represent the same value but
+ * have different json.
+ * 
+ * - Orders the schemas attributes by alphabetical order
+ * - Adds the primaryKey to all indexes that do not contain the primaryKey
+ *   - We need this for determinstic sort order on all queries, which is required for event-reduce to work.
+ *
+ * @return RxJsonSchema - ordered and filled
  */
 
-export function normalize(jsonSchema) {
-  var normalizedSchema = sortObject(clone(jsonSchema));
+export function normalizeRxJsonSchema(jsonSchema) {
+  var primaryPath = getPrimaryFieldOfPrimaryKey(jsonSchema.primaryKey);
+  var normalizedSchema = sortObject(clone(jsonSchema)); // indexes must NOT be sorted because sort order is important here.
 
   if (jsonSchema.indexes) {
-    normalizedSchema.indexes = Array.from(jsonSchema.indexes); // indexes should remain unsorted
-  } // primaryKey.fields must NOT be sorted
+    normalizedSchema.indexes = Array.from(jsonSchema.indexes);
+  } // primaryKey.fields must NOT be sorted because sort order is important here.
 
 
   if (typeof normalizedSchema.primaryKey === 'object' && typeof jsonSchema.primaryKey === 'object') {
     normalizedSchema.primaryKey.fields = jsonSchema.primaryKey.fields;
+  }
+  /**
+   * Add primary key to indexes that do not contain primaryKey.
+   */
+
+
+  if (normalizedSchema.indexes) {
+    normalizedSchema.indexes = normalizedSchema.indexes.map(function (index) {
+      var arIndex = isMaybeReadonlyArray(index) ? index : [index];
+
+      if (!arIndex.includes(primaryPath)) {
+        var modifiedIndex = arIndex.slice(0);
+        modifiedIndex.push(primaryPath);
+        return modifiedIndex;
+      }
+
+      return arIndex;
+    });
   }
 
   return normalizedSchema;

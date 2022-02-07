@@ -1,6 +1,6 @@
 /// <reference types="pouchdb-core" />
 /// <reference types="node" />
-import type { ChangeStreamEvent, PouchChangeRow, PouchDBInstance, RxAttachmentData, RxAttachmentWriteData, RxDocumentData, RxDocumentWriteData, WithAttachments } from '../../types';
+import type { ChangeStreamEvent, MaybeReadonly, PouchChangeRow, PouchDBInstance, RxAttachmentData, RxAttachmentWriteData, RxDocumentData, RxDocumentWriteData, WithAttachments } from '../../types';
 import type { RxStorageInstancePouch } from './rx-storage-instance-pouch';
 import type { RxStorageKeyObjectInstancePouch } from './rx-storage-key-object-instance-pouch';
 import type { ChangeEvent } from 'event-reduce-js';
@@ -55,3 +55,4 @@ export declare function writeAttachmentsToAttachments(attachments: {
 }): Promise<{
     [attachmentId: string]: RxAttachmentData;
 }>;
+export declare function getPouchIndexDesignDocNameByIndex(index: MaybeReadonly<string[]>): string;

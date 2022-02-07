@@ -12,8 +12,9 @@ var _util = require("../../util");
 
 var _rxError = require("../../rx-error");
 
-function pullQueryBuilderFromRxSchema(collectionName, input) {
-  var batchSize = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 5;
+var _rxSchema = require("../../rx-schema");
+
+function pullQueryBuilderFromRxSchema(collectionName, input, batchSize) {
   input = (0, _graphqlSchemaFromRxSchema.fillUpOptionals)(input);
   var schema = input.schema;
   var prefixes = input.prefixes;
@@ -63,30 +64,33 @@ function pullQueryBuilderFromRxSchema(collectionName, input) {
 }
 
 function pushQueryBuilderFromRxSchema(collectionName, input) {
+  var primaryKey = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(input.schema.primaryKey);
   input = (0, _graphqlSchemaFromRxSchema.fillUpOptionals)(input);
   var prefixes = input.prefixes;
   var ucCollectionName = (0, _util.ucfirst)(collectionName);
   var queryName = prefixes.set + ucCollectionName;
 
-  var builder = function builder(doc) {
+  var builder = function builder(docs) {
     var _variables;
 
-    var query = '' + 'mutation Set' + ucCollectionName + '($' + collectionName + ': ' + ucCollectionName + 'Input) {\n' + _graphqlSchemaFromRxSchema.SPACING + queryName + '(' + collectionName + ': $' + collectionName + ') {\n' + _graphqlSchemaFromRxSchema.SPACING + _graphqlSchemaFromRxSchema.SPACING + input.deletedFlag + '\n' + // GraphQL enforces to return at least one field
+    var query = '' + 'mutation Set' + ucCollectionName + '($' + collectionName + ': [' + ucCollectionName + 'Input]) {\n' + _graphqlSchemaFromRxSchema.SPACING + queryName + '(' + collectionName + ': $' + collectionName + ') {\n' + _graphqlSchemaFromRxSchema.SPACING + _graphqlSchemaFromRxSchema.SPACING + primaryKey + '\n' + // GraphQL enforces to return at least one field
     _graphqlSchemaFromRxSchema.SPACING + '}\n' + '}';
-    var sendDoc = {};
-    Object.entries(doc).forEach(function (_ref) {
-      var k = _ref[0],
-          v = _ref[1];
+    var sendDocs = [];
+    docs.forEach(function (doc) {
+      var sendDoc = {};
+      Object.entries(doc).forEach(function (_ref) {
+        var k = _ref[0],
+            v = _ref[1];
 
-      if ( // skip if in ignoreInputKeys list
-      !input.ignoreInputKeys.includes(k) && // only use properties that are in the schema
-      input.schema.properties[k]) {
-        sendDoc[k] = v;
-      }
-    }); // add deleted flag
-
-    sendDoc[input.deletedFlag] = !!doc._deleted;
-    var variables = (_variables = {}, _variables[collectionName] = sendDoc, _variables);
+        if ( // skip if in ignoreInputKeys list
+        !input.ignoreInputKeys.includes(k) && // only use properties that are in the schema
+        input.schema.properties[k]) {
+          sendDoc[k] = v;
+        }
+      });
+      sendDocs.push(sendDoc);
+    });
+    var variables = (_variables = {}, _variables[collectionName] = sendDocs, _variables);
     return {
       query: query,
       variables: variables

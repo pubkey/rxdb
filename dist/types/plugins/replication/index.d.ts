@@ -1,18 +1,6 @@
-import { Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, Subscription } from 'rxjs';
 import type { DeepReadonlyObject, PullRunResult, ReplicationOptions, ReplicationPullOptions, ReplicationPushOptions, RxCollection, RxDocumentData, RxReplicationState, WithDeleted } from '../../types';
-export declare type RxReplicationAction = 'pull' | 'push';
-interface RxReplicationErrorPullPayload {
-    type: 'pull';
-}
-interface RxReplicationErrorPushPayload<RxDocType> {
-    type: 'push';
-    documentData: RxDocumentData<RxDocType>;
-}
-export declare class RxReplicationError<RxDocType> extends Error {
-    readonly payload: RxReplicationErrorPullPayload | RxReplicationErrorPushPayload<any>;
-    readonly innerErrors?: any;
-    constructor(message: string, payload: RxReplicationErrorPullPayload | RxReplicationErrorPushPayload<RxDocType>, innerErrors?: any);
-}
+import { RxReplicationError } from './rx-replication-error';
 export declare class RxReplicationStateBase<RxDocType> {
     readonly replicationIdentifier: string;
     readonly collection: RxCollection<RxDocType>;
@@ -22,10 +10,17 @@ export declare class RxReplicationStateBase<RxDocType> {
     liveInterval?: number | undefined;
     retryTime?: number | undefined;
     readonly subs: Subscription[];
-    initialReplicationComplete$: Observable<any>;
-    private subjects;
+    initialReplicationComplete$: Observable<true>;
+    readonly subjects: {
+        received: Subject<RxDocumentData<RxDocType>>;
+        send: Subject<unknown>;
+        error: Subject<RxReplicationError<RxDocType>>;
+        canceled: BehaviorSubject<boolean>;
+        active: BehaviorSubject<boolean>;
+        initialReplicationComplete: BehaviorSubject<boolean>;
+    };
     private runningPromise;
-    private runQueueCount;
+    runQueueCount: number;
     /**
      * Counts how many times the run() method
      * has been called. Used in tests.
@@ -37,6 +32,11 @@ export declare class RxReplicationStateBase<RxDocType> {
      * Decrease when the retry-cycle started to run.
      */
     pendingRetries: number;
+    /**
+     * hash of the identifier, used to flag revisions
+     * and to identify which documents state came from the remote.
+     */
+    replicationIdentifierHash: string;
     constructor(replicationIdentifier: string, collection: RxCollection<RxDocType>, pull?: ReplicationPullOptions<RxDocType> | undefined, push?: ReplicationPushOptions<RxDocType> | undefined, live?: boolean | undefined, liveInterval?: number | undefined, retryTime?: number | undefined);
     isStopped(): boolean;
     awaitInitialReplication(): Promise<true>;
@@ -68,3 +68,4 @@ export declare class RxReplicationStateBase<RxDocType> {
 export declare function replicateRxCollection<RxDocType>({ replicationIdentifier, collection, pull, push, live, liveInterval, retryTime, waitForLeadership }: ReplicationOptions<RxDocType>): RxReplicationState<RxDocType>;
 export * from './replication-checkpoint';
 export * from './revision-flag';
+export * from './rx-replication-error';

@@ -13,14 +13,12 @@ import { hash } from '../../util';
  * from the remote server and not saved by the client.
  */
 
-export function createRevisionForPulledDocument(replicationIdentifier, doc) {
-  var replicationIdentifierHash = hash(replicationIdentifier);
+export function createRevisionForPulledDocument(replicationIdentifierHash, doc) {
   var dataHash = hash(doc);
   var ret = dataHash.substring(0, 8) + replicationIdentifierHash.substring(0, 30);
   return ret;
 }
-export function wasRevisionfromPullReplication(replicationIdentifier, revision) {
-  var replicationIdentifierHash = hash(replicationIdentifier);
+export function wasRevisionfromPullReplication(replicationIdentifierHash, revision) {
   var useFromHash = replicationIdentifierHash.substring(0, 30);
   var ret = revision.endsWith(useFromHash);
   return ret;

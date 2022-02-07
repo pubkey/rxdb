@@ -5,6 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.POUCH_HASH_KEY = exports.POUCHDB_LOCAL_PREFIX = exports.POUCHDB_DESIGN_PREFIX = exports.OPEN_POUCHDB_STORAGE_INSTANCES = void 0;
 exports.getEventKey = getEventKey;
+exports.getPouchIndexDesignDocNameByIndex = getPouchIndexDesignDocNameByIndex;
 exports.pouchChangeRowToChangeEvent = pouchChangeRowToChangeEvent;
 exports.pouchChangeRowToChangeStreamEvent = pouchChangeRowToChangeStreamEvent;
 exports.pouchDocumentDataToRxDocumentData = pouchDocumentDataToRxDocumentData;
@@ -343,4 +344,9 @@ function pouchHash(data) {
 
 var POUCH_HASH_KEY = 'md5';
 exports.POUCH_HASH_KEY = POUCH_HASH_KEY;
+
+function getPouchIndexDesignDocNameByIndex(index) {
+  var indexName = 'idx-rxdb-index-' + index.join(',');
+  return indexName;
+}
 //# sourceMappingURL=pouchdb-helper.js.map
