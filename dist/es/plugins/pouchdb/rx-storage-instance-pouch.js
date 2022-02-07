@@ -5,7 +5,198 @@ import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import { OPEN_POUCHDB_STORAGE_INSTANCES, POUCHDB_DESIGN_PREFIX, pouchDocumentDataToRxDocumentData, pouchSwapIdToPrimary, rxDocumentDataToPouchDocumentData, writeAttachmentsToAttachments } from './pouchdb-helper';
 import { flatClone, getFromMapOrThrow, PROMISE_RESOLVE_VOID } from '../../util';
 import { getCustomEventEmitterByPouch } from './custom-events-plugin';
+
+function _settle(pact, state, value) {
+  if (!pact.s) {
+    if (value instanceof _Pact) {
+      if (value.s) {
+        if (state & 1) {
+          state = value.s;
+        }
+
+        value = value.v;
+      } else {
+        value.o = _settle.bind(null, pact, state);
+        return;
+      }
+    }
+
+    if (value && value.then) {
+      value.then(_settle.bind(null, pact, state), _settle.bind(null, pact, 2));
+      return;
+    }
+
+    pact.s = state;
+    pact.v = value;
+    var observer = pact.o;
+
+    if (observer) {
+      observer(pact);
+    }
+  }
+}
+
 var lastId = 0;
+
+const _Pact = /*#__PURE__*/function () {
+  function _Pact() {}
+
+  _Pact.prototype.then = function (onFulfilled, onRejected) {
+    const result = new _Pact();
+    const state = this.s;
+
+    if (state) {
+      const callback = state & 1 ? onFulfilled : onRejected;
+
+      if (callback) {
+        try {
+          _settle(result, 1, callback(this.v));
+        } catch (e) {
+          _settle(result, 2, e);
+        }
+
+        return result;
+      } else {
+        return this;
+      }
+    }
+
+    this.o = function (_this) {
+      try {
+        const value = _this.v;
+
+        if (_this.s & 1) {
+          _settle(result, 1, onFulfilled ? onFulfilled(value) : value);
+        } else if (onRejected) {
+          _settle(result, 1, onRejected(value));
+        } else {
+          _settle(result, 2, value);
+        }
+      } catch (e) {
+        _settle(result, 2, e);
+      }
+    };
+
+    return result;
+  };
+
+  return _Pact;
+}();
+
+function _isSettledPact(thenable) {
+  return thenable instanceof _Pact && thenable.s & 1;
+}
+
+function _for(test, update, body) {
+  var stage;
+
+  for (;;) {
+    var shouldContinue = test();
+
+    if (_isSettledPact(shouldContinue)) {
+      shouldContinue = shouldContinue.v;
+    }
+
+    if (!shouldContinue) {
+      return result;
+    }
+
+    if (shouldContinue.then) {
+      stage = 0;
+      break;
+    }
+
+    var result = body();
+
+    if (result && result.then) {
+      if (_isSettledPact(result)) {
+        result = result.s;
+      } else {
+        stage = 1;
+        break;
+      }
+    }
+
+    if (update) {
+      var updateValue = update();
+
+      if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
+        stage = 2;
+        break;
+      }
+    }
+  }
+
+  var pact = new _Pact();
+
+  var reject = _settle.bind(null, pact, 2);
+
+  (stage === 0 ? shouldContinue.then(_resumeAfterTest) : stage === 1 ? result.then(_resumeAfterBody) : updateValue.then(_resumeAfterUpdate)).then(void 0, reject);
+  return pact;
+
+  function _resumeAfterBody(value) {
+    result = value;
+
+    do {
+      if (update) {
+        updateValue = update();
+
+        if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
+          updateValue.then(_resumeAfterUpdate).then(void 0, reject);
+          return;
+        }
+      }
+
+      shouldContinue = test();
+
+      if (!shouldContinue || _isSettledPact(shouldContinue) && !shouldContinue.v) {
+        _settle(pact, 1, result);
+
+        return;
+      }
+
+      if (shouldContinue.then) {
+        shouldContinue.then(_resumeAfterTest).then(void 0, reject);
+        return;
+      }
+
+      result = body();
+
+      if (_isSettledPact(result)) {
+        result = result.v;
+      }
+    } while (!result || !result.then);
+
+    result.then(_resumeAfterBody).then(void 0, reject);
+  }
+
+  function _resumeAfterTest(shouldContinue) {
+    if (shouldContinue) {
+      result = body();
+
+      if (result && result.then) {
+        result.then(_resumeAfterBody).then(void 0, reject);
+      } else {
+        _resumeAfterBody(result);
+      }
+    } else {
+      _settle(pact, 1, result);
+    }
+  }
+
+  function _resumeAfterUpdate() {
+    if (shouldContinue = test()) {
+      if (shouldContinue.then) {
+        shouldContinue.then(_resumeAfterTest).then(void 0, reject);
+      } else {
+        _resumeAfterTest(shouldContinue);
+      }
+    } else {
+      _settle(pact, 1, result);
+    }
+  }
+}
+
 export var RxStorageInstancePouch = /*#__PURE__*/function () {
   function RxStorageInstancePouch(databaseName, collectionName, schema, internals, options) {
     var _this = this;
@@ -303,6 +494,13 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
 
   _proto.getChangedDocuments = function getChangedDocuments(options) {
     try {
+      var _temp13 = function _temp13() {
+        return {
+          changedDocuments: changedDocuments,
+          lastSequence: lastSequence
+        };
+      };
+
       var _this15 = this;
 
       var pouchChangesOpts = {
@@ -312,27 +510,45 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
         since: options.sinceSequence,
         descending: options.direction === 'before' ? true : false
       };
-      return Promise.resolve(_this15.internals.pouch.changes(pouchChangesOpts)).then(function (pouchResults) {
-        /**
-         * TODO stripping the internal docs
-         * results in having a non-full result set that maybe no longer
-         * reaches the options.limit. We should fill up again
-         * to ensure pagination works correctly.
-         */
-        var changedDocuments = pouchResults.results.filter(function (row) {
-          return !row.id.startsWith(POUCHDB_DESIGN_PREFIX);
-        }).map(function (row) {
-          return {
-            id: row.id,
-            sequence: row.seq
-          };
+      var lastSequence = 0;
+      var first = true;
+      var skippedDesignDocuments = 0;
+      var changedDocuments = [];
+      /**
+       * Because PouchDB also returns changes of _design documents,
+       * we have to fill up the results with more changes if this happens.
+       */
+
+      var _temp14 = _for(function () {
+        return !!first || skippedDesignDocuments > 0;
+      }, void 0, function () {
+        first = false;
+        skippedDesignDocuments = 0;
+        return Promise.resolve(_this15.internals.pouch.changes(pouchChangesOpts)).then(function (pouchResults) {
+          var addChangedDocuments = pouchResults.results.filter(function (row) {
+            var isDesignDoc = row.id.startsWith(POUCHDB_DESIGN_PREFIX);
+
+            if (isDesignDoc) {
+              skippedDesignDocuments = skippedDesignDocuments + 1;
+              return false;
+            } else {
+              return true;
+            }
+          }).map(function (row) {
+            return {
+              id: row.id,
+              sequence: row.seq
+            };
+          });
+          changedDocuments = changedDocuments.concat(addChangedDocuments);
+          lastSequence = pouchResults.last_seq; // modify pouch options for next run of pouch.changes()
+
+          pouchChangesOpts.since = lastSequence;
+          pouchChangesOpts.limit = skippedDesignDocuments;
         });
-        var lastSequence = pouchResults.last_seq;
-        return {
-          changedDocuments: changedDocuments,
-          lastSequence: lastSequence
-        };
       });
+
+      return Promise.resolve(_temp14 && _temp14.then ? _temp14.then(_temp13) : _temp13(_temp14));
     } catch (e) {
       return Promise.reject(e);
     }

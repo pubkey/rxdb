@@ -31,12 +31,10 @@ import type {
 /**
  * TODO WORK IN PROGRESS! Might change without breaking change.
  * This is an interface that abstracts the storage engine.
- * At the moment we only have PouchDB as storage but
- * in the future we want to create many more of them.
+ * This allows us to use RxDB with different engines like PouchDB or LokiJS.
  *
  * Also see
  * @link https://github.com/pubkey/rxdb/issues/1636
- *
  *
  */
 

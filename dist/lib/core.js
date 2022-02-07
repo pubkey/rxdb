@@ -22,11 +22,12 @@ var _exportNames = {
   getDocumentOrmPrototype: true,
   getDocumentPrototype: true,
   isRxQuery: true,
+  normalizeMangoQuery: true,
   isRxSchema: true,
   createRxSchema: true,
   RxSchema: true,
   getIndexes: true,
-  normalize: true,
+  normalizeRxJsonSchema: true,
   getFinalFields: true,
   getPreviousVersions: true,
   toTypedRxJsonSchema: true,
@@ -228,10 +229,16 @@ Object.defineProperty(exports, "isRxSchema", {
     return _rxSchema.isInstanceOf;
   }
 });
-Object.defineProperty(exports, "normalize", {
+Object.defineProperty(exports, "normalizeMangoQuery", {
   enumerable: true,
   get: function get() {
-    return _rxSchema.normalize;
+    return _rxQuery.normalizeMangoQuery;
+  }
+});
+Object.defineProperty(exports, "normalizeRxJsonSchema", {
+  enumerable: true,
+  get: function get() {
+    return _rxSchema.normalizeRxJsonSchema;
   }
 });
 Object.defineProperty(exports, "overwritable", {

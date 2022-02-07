@@ -338,10 +338,10 @@ export var RxBackupState = /*#__PURE__*/function () {
                       }
                     }).map(function (r) {
                       return r.id;
-                    }) // unique
-                    .filter(function (elem, pos, arr) {
+                    }).filter(function (elem, pos, arr) {
                       return arr.indexOf(elem) === pos;
-                    });
+                    }); // unique
+
                     return Promise.resolve(_this4.database.requestIdlePromise()).then(function () {
                       return Promise.resolve(collection.findByIds(docIds)).then(function (docs) {
                         if (docs.size === 0) {

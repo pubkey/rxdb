@@ -11,5 +11,5 @@
  * and contains the information that this document data was pulled
  * from the remote server and not saved by the client.
  */
-export declare function createRevisionForPulledDocument(replicationIdentifier: string, doc: any): string;
-export declare function wasRevisionfromPullReplication(replicationIdentifier: string, revision: string): boolean;
+export declare function createRevisionForPulledDocument(replicationIdentifierHash: string, doc: any): string;
+export declare function wasRevisionfromPullReplication(replicationIdentifierHash: string, revision: string): boolean;

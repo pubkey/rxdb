@@ -3,7 +3,7 @@ import { checkSchema } from './check-schema';
 import { checkOrmMethods } from './check-orm';
 import { checkMigrationStrategies } from './check-migration-strategies';
 import { ensureCollectionNameValid, ensureDatabaseNameIsValid } from './unallowed-properties';
-import { checkQuery } from './check-query';
+import { checkMangoQuery, checkQuery } from './check-query';
 import { newRxError } from '../../rx-error';
 export * from './check-schema';
 export * from './unallowed-properties';
@@ -76,6 +76,9 @@ export var RxDBDevModePlugin = {
     },
     preCreateRxQuery: function preCreateRxQuery(args) {
       checkQuery(args);
+    },
+    prePrepareQuery: function prePrepareQuery(args) {
+      checkMangoQuery(args);
     },
     createRxCollection: function createRxCollection(args) {
       // check ORM-methods

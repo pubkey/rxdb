@@ -17,11 +17,10 @@ export declare const ERROR_MESSAGES: {
     QU4: string;
     QU5: string;
     QU6: string;
-    QU7: string;
-    QU8: string;
     QU9: string;
     QU10: string;
     QU11: string;
+    QU12: string;
     MQ1: string;
     MQ2: string;
     MQ3: string;
@@ -134,8 +133,11 @@ export declare const ERROR_MESSAGES: {
     IM1: string;
     IM2: string;
     S1: string;
-    REP1: string;
     GQL1: string;
+    GQL2: string;
+    GQL3: string;
+    GQL4: string;
+    REP1: string;
     /**
      * Should never be thrown, use this for
      * null checks etc. so you do not have to increase the

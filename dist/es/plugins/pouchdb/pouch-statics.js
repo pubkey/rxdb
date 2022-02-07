@@ -1,9 +1,10 @@
 import { filterInMemoryFields, massageSelector } from 'pouchdb-selector-core';
 import { newRxError } from '../../rx-error';
-import { pouchHash, pouchSwapPrimaryToId, POUCH_HASH_KEY, primarySwapPouchDbQuerySelector } from './pouchdb-helper';
+import { getPouchIndexDesignDocNameByIndex, pouchHash, pouchSwapPrimaryToId, POUCH_HASH_KEY, primarySwapPouchDbQuerySelector } from './pouchdb-helper';
 import { getSchemaByObjectPath } from '../../rx-schema-helper';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import { overwritable } from '../../overwritable';
+import { isMaybeReadonlyArray } from '../../util';
 export var RxStoragePouchStatics = {
   /**
    * create the same diggest as an attachment with that data
@@ -123,10 +124,10 @@ export function preparePouchDbQuery(schema, mutateableQuery) {
   if (query.sort) {
     query.sort.forEach(function (sortPart) {
       var key = Object.keys(sortPart)[0];
-      var comparisonOperators = ['$gt', '$gte', '$lt', '$lte'];
+      var comparisonOperators = ['$gt', '$gte', '$lt', '$lte', '$eq'];
       var keyUsed = query.selector[key] && Object.keys(query.selector[key]).some(function (op) {
         return comparisonOperators.includes(op);
-      }) || false;
+      }) || false; // TODO why we need this '|| false' ?
 
       if (!keyUsed) {
         var schemaObj = getSchemaByObjectPath(schema, key);
@@ -202,29 +203,27 @@ export function preparePouchDbQuery(schema, mutateableQuery) {
       delete query.selector[k];
     }
   });
-  query.selector = primarySwapPouchDbQuerySelector(query.selector, primaryKey);
   /**
-   * To ensure a deterministic sorting,
-   * we have to ensure the primary key is always part
-   * of the sort query.
-   * TODO This should be done but will not work with pouchdb
-   * because it will throw
-   * 'Cannot sort on field(s) "key" when using the default index'
-   * So we likely have to modify the indexes so that this works. 
+   * Set use_index
+   * @link https://pouchdb.com/guides/mango-queries.html#use_index
    */
 
-  /*
-  if (!mutateableQuery.sort) {
-      mutateableQuery.sort = [{ [this.primaryPath]: 'asc' }] as any;
-  } else {
-      const isPrimaryInSort = mutateableQuery.sort
-          .find(p => firstPropertyNameOfObject(p) === this.primaryPath);
-      if (!isPrimaryInSort) {
-          mutateableQuery.sort.push({ [this.primaryPath]: 'asc' } as any);
+  if (mutateableQuery.index) {
+    var indexMaybeArray = mutateableQuery.index;
+    var indexArray = isMaybeReadonlyArray(indexMaybeArray) ? indexMaybeArray : [indexMaybeArray];
+    indexArray = indexArray.map(function (str) {
+      if (str === primaryKey) {
+        return '_id';
+      } else {
+        return str;
       }
+    });
+    var indexName = getPouchIndexDesignDocNameByIndex(indexArray);
+    delete mutateableQuery.index;
+    mutateableQuery.use_index = indexName;
   }
-  */
 
+  query.selector = primarySwapPouchDbQuerySelector(query.selector, primaryKey);
   return query;
 }
 //# sourceMappingURL=pouch-statics.js.map

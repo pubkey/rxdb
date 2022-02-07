@@ -198,10 +198,17 @@ function getPouchQueryPlan(schema, query) {
   if (schema.indexes) {
     schema.indexes.forEach(function (index) {
       index = Array.isArray(index) ? index : [index];
-      var indexName = index.join(',');
+      var pouchIndex = index.map(function (indexPart) {
+        if (indexPart === primaryKey) {
+          return '_id';
+        } else {
+          return indexPart;
+        }
+      });
+      var indexName = (0, _pouchdb.getPouchIndexDesignDocNameByIndex)(pouchIndex);
       pouchCompatibleIndexes.push({
-        ddoc: '_design/idx-rxdb-index-' + indexName,
-        name: 'idx-rxdb-index-' + indexName,
+        ddoc: _pouchdb.POUCHDB_DESIGN_PREFIX + indexName,
+        name: indexName,
         type: 'json',
         def: {
           fields: index.map(function (indexPart) {
@@ -224,7 +231,23 @@ function getPouchQueryPlan(schema, query) {
 
 
   var pouchdbCompatibleQuery = (0, _pouchStatics.preparePouchDbQuery)(schema, (0, _util.clone)(query));
-  var pouchQueryPlan = (0, _queryPlanner.planQuery)(pouchdbCompatibleQuery, pouchCompatibleIndexes);
+  var pouchQueryPlan = (0, _queryPlanner.planQuery)(pouchdbCompatibleQuery, pouchCompatibleIndexes); // transform back _id to primaryKey
+
+  pouchQueryPlan.index.def.fields = pouchQueryPlan.index.def.fields.map(function (field) {
+    var _Object$entries$ = Object.entries(field)[0],
+        fieldName = _Object$entries$[0],
+        value = _Object$entries$[1];
+
+    if (fieldName === '_id') {
+      var _ref2;
+
+      return _ref2 = {}, _ref2[primaryKey] = value, _ref2;
+    } else {
+      var _ref3;
+
+      return _ref3 = {}, _ref3[fieldName] = value, _ref3;
+    }
+  });
   return pouchQueryPlan;
 }
 

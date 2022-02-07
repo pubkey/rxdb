@@ -23,11 +23,12 @@ export var ERROR_MESSAGES = {
   QU4: 'RxQuery.regex(): You cannot use .regex() on the primary field',
   QU5: 'RxQuery.sort(): does not work because key is not defined in the schema',
   QU6: 'RxQuery.limit(): cannot be called on .findOne()',
-  QU7: 'query must be an object',
-  QU8: 'query cannot be an array',
+  // removed in 12.0.0 (should by ensured by the typings) - QU7: 'query must be an object',
+  // removed in 12.0.0 (should by ensured by the typings) - QU8: 'query cannot be an array',
   QU9: 'throwIfMissing can only be used in findOne queries',
   QU10: 'result empty and throwIfMissing: true',
   QU11: 'RxQuery: no valid query params given',
+  QU12: 'Given index is not in schema',
   // mquery.js
   MQ1: 'path must be a string or object',
   MQ2: 'Invalid argument',
@@ -158,10 +159,13 @@ export var ERROR_MESSAGES = {
   IM2: 'inMemoryCollection.sync(): Do not replicate with the in-memory instance. Replicate with the parent instead',
   // plugins/server.js
   S1: 'You cannot create collections after calling RxDatabase.server()',
+  // plugins/replication-graphql.js
+  GQL1: 'GraphQL replication: cannot find sub schema by key',
+  GQL2: 'GraphQL replication: unknown errors occurred in replication pull - see innerErrors for more details',
+  GQL3: 'GraphQL replication: pull returns more documents then batchSize',
+  GQL4: 'GraphQL replication: unknown errors occurred in replication push - see innerErrors for more details',
   // plugins/replication/
   REP1: 'Replication: _deleted field not provided',
-  // plugins/replication-graphql/
-  GQL1: 'cannot find sub schema by key',
 
   /**
    * Should never be thrown, use this for

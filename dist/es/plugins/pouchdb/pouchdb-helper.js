@@ -303,4 +303,8 @@ export function pouchHash(data) {
   });
 }
 export var POUCH_HASH_KEY = 'md5';
+export function getPouchIndexDesignDocNameByIndex(index) {
+  var indexName = 'idx-rxdb-index-' + index.join(',');
+  return indexName;
+}
 //# sourceMappingURL=pouchdb-helper.js.map

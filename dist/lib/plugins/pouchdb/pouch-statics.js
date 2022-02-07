@@ -18,6 +18,8 @@ var _rxSchema = require("../../rx-schema");
 
 var _overwritable = require("../../overwritable");
 
+var _util = require("../../util");
+
 var RxStoragePouchStatics = {
   /**
    * create the same diggest as an attachment with that data
@@ -139,10 +141,10 @@ function preparePouchDbQuery(schema, mutateableQuery) {
   if (query.sort) {
     query.sort.forEach(function (sortPart) {
       var key = Object.keys(sortPart)[0];
-      var comparisonOperators = ['$gt', '$gte', '$lt', '$lte'];
+      var comparisonOperators = ['$gt', '$gte', '$lt', '$lte', '$eq'];
       var keyUsed = query.selector[key] && Object.keys(query.selector[key]).some(function (op) {
         return comparisonOperators.includes(op);
-      }) || false;
+      }) || false; // TODO why we need this '|| false' ?
 
       if (!keyUsed) {
         var schemaObj = (0, _rxSchemaHelper.getSchemaByObjectPath)(schema, key);
@@ -218,29 +220,27 @@ function preparePouchDbQuery(schema, mutateableQuery) {
       delete query.selector[k];
     }
   });
-  query.selector = (0, _pouchdbHelper.primarySwapPouchDbQuerySelector)(query.selector, primaryKey);
   /**
-   * To ensure a deterministic sorting,
-   * we have to ensure the primary key is always part
-   * of the sort query.
-   * TODO This should be done but will not work with pouchdb
-   * because it will throw
-   * 'Cannot sort on field(s) "key" when using the default index'
-   * So we likely have to modify the indexes so that this works. 
+   * Set use_index
+   * @link https://pouchdb.com/guides/mango-queries.html#use_index
    */
 
-  /*
-  if (!mutateableQuery.sort) {
-      mutateableQuery.sort = [{ [this.primaryPath]: 'asc' }] as any;
-  } else {
-      const isPrimaryInSort = mutateableQuery.sort
-          .find(p => firstPropertyNameOfObject(p) === this.primaryPath);
-      if (!isPrimaryInSort) {
-          mutateableQuery.sort.push({ [this.primaryPath]: 'asc' } as any);
+  if (mutateableQuery.index) {
+    var indexMaybeArray = mutateableQuery.index;
+    var indexArray = (0, _util.isMaybeReadonlyArray)(indexMaybeArray) ? indexMaybeArray : [indexMaybeArray];
+    indexArray = indexArray.map(function (str) {
+      if (str === primaryKey) {
+        return '_id';
+      } else {
+        return str;
       }
+    });
+    var indexName = (0, _pouchdbHelper.getPouchIndexDesignDocNameByIndex)(indexArray);
+    delete mutateableQuery.index;
+    mutateableQuery.use_index = indexName;
   }
-  */
 
+  query.selector = (0, _pouchdbHelper.primarySwapPouchDbQuerySelector)(query.selector, primaryKey);
   return query;
 }
 //# sourceMappingURL=pouch-statics.js.map

@@ -67,10 +67,18 @@ export declare function getPreviousVersions(schema: RxJsonSchema<any>): number[]
  */
 export declare function getFinalFields<T = any>(jsonSchema: RxJsonSchema<T>): string[];
 /**
- * orders the schemas attributes by alphabetical order
- * @return jsonSchema - ordered
+ * Normalize the RxJsonSchema.
+ * We need this to ensure everything is set up properly
+ * and we have the same hash on schemas that represent the same value but
+ * have different json.
+ *
+ * - Orders the schemas attributes by alphabetical order
+ * - Adds the primaryKey to all indexes that do not contain the primaryKey
+ *   - We need this for determinstic sort order on all queries, which is required for event-reduce to work.
+ *
+ * @return RxJsonSchema - ordered and filled
  */
-export declare function normalize<T>(jsonSchema: RxJsonSchema<T>): RxJsonSchema<T>;
+export declare function normalizeRxJsonSchema<T>(jsonSchema: RxJsonSchema<T>): RxJsonSchema<T>;
 /**
  * fills the schema-json with default-settings
  * @return cloned schemaObj

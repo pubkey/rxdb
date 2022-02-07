@@ -60,7 +60,7 @@ export function graphQLSchemaFromRxSchema(input) {
     ret.queries.push(SPACING + queryString); // mutation
 
     var mutationName = prefixes.set + ucCollectionName;
-    var mutationString = mutationName + '(' + collectionName + ': ' + collectionNameInput + '): ' + ucCollectionName;
+    var mutationString = mutationName + '(' + collectionName + ': [' + collectionNameInput + ']): ' + ucCollectionName;
     ret.mutations.push(SPACING + mutationString); // subscription
 
     var subscriptionParamsString = '';
