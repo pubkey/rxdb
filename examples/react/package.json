@@ -17,7 +17,7 @@
   "devDependencies": {
     "react-scripts": "4.0.3",
     "rimraf": "3.0.2",
-    "testcafe": "1.17.1",
+    "testcafe": "1.18.3",
     "local-web-server": "5.1.1"
   },
   "scripts": {
