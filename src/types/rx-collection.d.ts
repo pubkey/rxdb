@@ -46,6 +46,7 @@ export interface MigrationState {
 
 export type RxCacheReplacementPolicy = (collection: RxCollection, queryCache: QueryCache) => void;
 
+
 export type RxCollectionHookCallback<
     RxDocumentType,
     OrmMethods

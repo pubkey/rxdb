@@ -11,6 +11,7 @@ export * from './rx-storage';
 export * from './rx-storage.interface';
 export * from './rx-change-event';
 export * from './util';
+export * from './cleanup';
 
 // plugins
 export * from './plugins/replication';

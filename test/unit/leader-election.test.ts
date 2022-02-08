@@ -49,11 +49,12 @@ config.parallel('leader-election.test.js', () => {
         it('should not elect as leader if other instance is leader', async () => {
             const name = randomCouchString(10);
             const c1 = await humansCollection.createMultiInstance(name);
-            const c2 = await humansCollection.createMultiInstance(name);
             const db1 = c1.database;
+            await db1.waitForLeadership();
+
+            const c2 = await humansCollection.createMultiInstance(name);
             const db2 = c2.database;
 
-            await db1.waitForLeadership();
             await AsyncTestUtil.wait(150);
             assert.strictEqual(db2.isLeader(), false);
 

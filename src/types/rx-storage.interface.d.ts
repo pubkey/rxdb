@@ -22,6 +22,7 @@ import type {
 import type {
     BlobBuffer,
     MangoQuery,
+    RxCleanupPolicy,
     RxJsonSchema
 } from './';
 import type {
@@ -170,6 +171,19 @@ export interface RxStorageInstanceBase<Internals, InstanceCreationOptions> {
      * deletes all of its data.
      */
     remove(): Promise<void>;
+
+    /**
+     * Runs a cleanup that removes all tompstones
+     * of documents that have _deleted set to true
+     * to free up disc space.
+     * 
+     * Returns false if all cleanable documents have been removed.
+     * Returns true if there are more documents to be cleaned up,
+     * but not all have been purged because that would block the storage for too long.
+     * If there are more docs to clean up, RxDB should re-run this method
+     * later instead of directly switchting to the next storage.
+     */
+    cleanup(cleanupPolicy: RxCleanupPolicy): Promise<boolean>;
 }
 
 /**

@@ -13,6 +13,7 @@ import {
 import { Observable } from 'rxjs';
 import { RxStorage } from './rx-storage.interface';
 import { PouchDBExpressServerOptions } from './plugins/server';
+import { RxCleanupPolicy } from './cleanup';
 
 export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = any> {
     storage: RxStorage<Internals, InstanceCreationOptions>,
@@ -23,6 +24,7 @@ export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = an
     eventReduce?: boolean;
     ignoreDuplicate?: boolean;
     options?: any;
+    cleanupPolicy?: Partial<RxCleanupPolicy>;
 }
 
 // options for the server-plugin

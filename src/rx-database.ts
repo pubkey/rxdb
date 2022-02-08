@@ -20,7 +20,8 @@ import type {
     BulkWriteRow,
     RxChangeEvent,
     RxDatabaseCreator,
-    RxChangeEventBulk
+    RxChangeEventBulk,
+    RxCleanupPolicy
 } from './types';
 
 import {
@@ -69,6 +70,7 @@ import {
     getCollectionLocalInstanceName
 } from './rx-collection-helper';
 import { ObliviousSet } from 'oblivious-set';
+import { DEFAULT_CLEANUP_POLICY, startCleanup } from './cleanup';
 
 /**
  * stores the used database names
@@ -100,6 +102,7 @@ export class RxDatabaseBase<
         public readonly eventReduce: boolean = false,
         public options: any = {},
         public readonly idleQueue: IdleQueue,
+        public readonly cleanupPolicy: RxCleanupPolicy,
         /**
          * Stores information documents about the collections of the database
          */
@@ -134,6 +137,18 @@ export class RxDatabaseBase<
         .pipe(
             mergeMap(changeEventBulk => changeEventBulk.events)
         );
+
+    /**
+     * returns a promise that is resolved when the collection gets destroyed
+     */
+    private _onDestroy?: Promise<void>;
+    private _onDestroyCall?: () => void;
+    get onDestroy() {
+        if (!this._onDestroy) {
+            this._onDestroy = new Promise(res => this._onDestroyCall = res);
+        }
+        return this._onDestroy;
+    }
 
     /**
      * Unique token that is stored with the data.
@@ -210,6 +225,8 @@ export class RxDatabaseBase<
         );
     }
 
+
+    public isFirstAddCollections: boolean = true;
     /**
      * creates multiple RxCollections at once
      * to be much faster by saving db txs and doing stuff in bulk-operations
@@ -324,6 +341,17 @@ export class RxDatabaseBase<
             await this.lockedRun(
                 () => this.internalStore.bulkWrite(bulkPutDocs)
             );
+        }
+
+        // if this was the first time addCollections() was called,
+        // start the cleanup cycle
+        if (this.isFirstAddCollections) {
+            this.isFirstAddCollections = false;
+            /**
+             * Start the cleanup interval.
+             * Do not await this function call.
+             */
+            startCleanup(this as any);
         }
 
         return ret;
@@ -448,7 +476,9 @@ export class RxDatabaseBase<
         runPluginHooks('preDestroyRxDatabase', this);
         DB_COUNT--;
         this.destroyed = true;
-
+        if (this._onDestroyCall) {
+            this._onDestroyCall();
+        }
         this._subs.map(sub => sub.unsubscribe());
 
 
@@ -695,7 +725,8 @@ export function createRxDatabase<
         multiInstance = true,
         eventReduce = false,
         ignoreDuplicate = false,
-        options = {}
+        options = {},
+        cleanupPolicy
     }: RxDatabaseCreator<Internals, InstanceCreationOptions>
 ): Promise<
     RxDatabase<Collections, Internals, InstanceCreationOptions>
@@ -720,6 +751,14 @@ export function createRxDatabase<
         throwIfDatabaseNameUsed(name);
     }
     USED_DATABASE_NAMES.add(name);
+
+    const useCleanupPolicy = Object.assign(
+        {},
+        cleanupPolicy ? cleanupPolicy : {},
+        DEFAULT_CLEANUP_POLICY
+    );
+    console.log('useCleanupPolicy:');
+    console.dir(useCleanupPolicy);
 
     let broadcastChannel: BroadcastChannel | undefined;
     if (multiInstance) {
@@ -750,6 +789,7 @@ export function createRxDatabase<
             eventReduce,
             options,
             idleQueue,
+            useCleanupPolicy,
             storageInstances.internalStore,
             storageInstances.localDocumentsStore,
             broadcastChannel

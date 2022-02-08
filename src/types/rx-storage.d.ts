@@ -113,11 +113,11 @@ export type RxAttachmentDataMeta = {
      * The digest which is the output of the hash function
      * from storage.statics.hash(attachment.data)
      */
-     digest: string;
-     /**
-      * Size of the attachments data
-      */
-     length: number;
+    digest: string;
+    /**
+     * Size of the attachments data
+     */
+    length: number;
 };
 
 /**
@@ -251,11 +251,11 @@ export type RxStorageQueryResult<RxDocType> = {
     documents: RxDocumentData<RxDocType>[];
 }
 
-export type RxStorageInstanceCreationParams<DocumentData, InstanceCreationOptions> = {
+
+export type RxStorageInstanceBaseCreateParams = {
     databaseName: string;
     collectionName: string;
-    schema: RxJsonSchema<DocumentData>;
-    options: InstanceCreationOptions;
+
     /**
      * If multiInstance is true, there can be more
      * then one instance of the database, for example
@@ -265,11 +265,13 @@ export type RxStorageInstanceCreationParams<DocumentData, InstanceCreationOption
     multiInstance: boolean;
 }
 
-export type RxKeyObjectStorageInstanceCreationParams<InstanceCreationOptions> = {
-    databaseName: string;
-    collectionName: string;
+export type RxStorageInstanceCreationParams<DocumentData, InstanceCreationOptions> = RxStorageInstanceBaseCreateParams & {
+    schema: RxJsonSchema<DocumentData>;
     options: InstanceCreationOptions;
-    multiInstance: boolean;
+}
+
+export type RxKeyObjectStorageInstanceCreationParams<InstanceCreationOptions> = RxStorageInstanceBaseCreateParams & {
+    options: InstanceCreationOptions;
 }
 
 

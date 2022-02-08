@@ -102,7 +102,11 @@ config.parallel('plugin.test.js', () => {
             const promise = spawn('mocha', [config.rootPath + 'test_tmp/unit/full.node.js']);
             const childProcess = promise.childProcess;
             childProcess.stdout.on('data', (data: any) => stdout.push(data.toString()));
-            childProcess.stderr.on('data', (data: any) => stderr.push(data.toString()));
+            childProcess.stderr.on('data', (data: any) => {
+                console.log('full.node.ts error:');
+                console.dir(data);
+                stderr.push(data.toString());
+            });
             try {
                 await promise;
             } catch (err) {
