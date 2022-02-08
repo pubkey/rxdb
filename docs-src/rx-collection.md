@@ -17,6 +17,7 @@ const myCollection = await myDatabase.addCollections({
     migrationStrategies: {},              // (optional)
     autoMigrate: true,                    // (optional) [default=true]
     cacheReplacementPolicy: function(){}, // (optional) custom cache replacement policy
+    cleanupPolicy: {}                     // (optional) custom cleanup policy
   },
   // you can create multiple collections at once
   animals: {

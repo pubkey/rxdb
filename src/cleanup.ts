@@ -7,7 +7,7 @@ import { firstValueFrom } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { HOOKS } from './hooks';
 import type { RxCleanupPolicy, RxCollection, RxDatabase } from './types';
-import { promiseWait, PROMISE_RESOLVE_TRUE } from './util';
+import { promiseWaitCancelable, PROMISE_RESOLVE_TRUE } from './util';
 
 export const DEFAULT_CLEANUP_POLICY: RxCleanupPolicy = {
     minimumDeletedTime: 1000 * 60 * 60 * 24 * 31, // one month
@@ -20,20 +20,17 @@ export const DEFAULT_CLEANUP_POLICY: RxCleanupPolicy = {
 export async function startCleanup(
     rxDatabase: RxDatabase
 ) {
-
-    console.dir(rxDatabase);
     const cleanupPolicy = rxDatabase.cleanupPolicy;
-
-
     await cleanupPolicy.waitForLeadership ? rxDatabase.waitForLeadership() : PROMISE_RESOLVE_TRUE;
 
     /**
      * Wait until minimumDatabaseInstanceAge is reached
      * or database is destroyed.
      */
+    const waitMinimumDatabaseInstanceAge = promiseWaitCancelable(cleanupPolicy.minimumDatabaseInstanceAge);
     await Promise.race([
-        rxDatabase.onDestroy,
-        promiseWait(cleanupPolicy.minimumDatabaseInstanceAge)
+        rxDatabase.onDestroy.then(() => waitMinimumDatabaseInstanceAge.cancel()),
+        waitMinimumDatabaseInstanceAge.promise
     ]);
     if (rxDatabase.destroyed) {
         return;
@@ -57,7 +54,11 @@ export async function startCleanup(
      */
     collections.forEach(collection => runCleanupAfterDelete(collection, cleanupPolicy));
     // same goes for newly created collections
-    HOOKS.createRxCollection.push((collection: RxCollection) => runCleanupAfterDelete(collection, cleanupPolicy));
+    HOOKS.createRxCollection.push((collection: RxCollection) => {
+        if (collection.database === rxDatabase) {
+            runCleanupAfterDelete(collection, cleanupPolicy)
+        }
+    });
 }
 
 /**
@@ -94,7 +95,11 @@ export async function runCleanupAfterDelete(
         await firstValueFrom(rxCollection.$.pipe(
             filter(changeEvent => changeEvent.operation === 'DELETE')
         ));
-        await promiseWait(cleanupPolicy.minimumDeletedTime);
+        const waitMinimumDeletedTime = promiseWaitCancelable(cleanupPolicy.minimumDeletedTime);
+        await Promise.race([
+            waitMinimumDeletedTime,
+            rxCollection.onDestroy.then(() => waitMinimumDeletedTime.cancel())
+        ]);
         await cleanupRxCollection(rxCollection, cleanupPolicy);
     }
 }

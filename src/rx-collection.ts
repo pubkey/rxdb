@@ -150,9 +150,6 @@ export class RxCollectionBase<
     /**
      * returns observable
      */
-    get $(): Observable<RxChangeEvent<any>> {
-        return this._observable$ as any;
-    }
     get insert$(): Observable<RxChangeEventInsert<RxDocumentType>> {
         return this.$.pipe(
             filter(cE => cE.operation === 'INSERT')
@@ -193,7 +190,7 @@ export class RxCollectionBase<
 
     public _queryCache: QueryCache = createQueryCache();
     public _crypter: Crypter = {} as Crypter;
-    public _observable$: Observable<RxChangeEvent<RxDocumentType>> = {} as any;
+    public $: Observable<RxChangeEvent<RxDocumentType>> = {} as any;
     public _changeEventBuffer: ChangeEventBuffer = {} as ChangeEventBuffer;
 
     /**
@@ -213,10 +210,11 @@ export class RxCollectionBase<
 
         this._crypter = createCrypter(this.database.password, this.schema);
 
-        this._observable$ = this.database.eventBulks$.pipe(
+        this.$ = this.database.eventBulks$.pipe(
             filter(changeEventBulk => changeEventBulk.collectionName === this.name),
             mergeMap(changeEventBulk => changeEventBulk.events),
         );
+
         this._changeEventBuffer = createChangeEventBuffer(this.asRxCollection);
 
 
@@ -266,7 +264,7 @@ export class RxCollectionBase<
          * and tell it that it has to change its data.
          */
         this._subs.push(
-            this._observable$
+            this.$
                 .pipe(
                     filter((cE: RxChangeEvent<RxDocumentType>) => !cE.isLocal)
                 )

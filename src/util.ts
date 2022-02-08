@@ -109,6 +109,20 @@ export function promiseWait(ms: number = 0): Promise<void> {
     return new Promise(res => setTimeout(res, ms));
 }
 
+export function promiseWaitCancelable(ms: number = 0): {
+    promise: Promise<void>;
+    cancel: () => void;
+} {
+    let timeout: any;
+    const promise = new Promise<void>(res => {
+        timeout = setTimeout(res, ms);
+    });
+    return {
+        promise,
+        cancel: () => clearTimeout(timeout)
+    }
+}
+
 export function toPromise<T>(maybePromise: Promise<T> | T): Promise<T> {
     if (maybePromise && typeof (maybePromise as any).then === 'function') {
         // is promise

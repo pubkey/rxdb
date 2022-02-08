@@ -474,6 +474,13 @@ export class RxDatabaseBase<
             return PROMISE_RESOLVE_FALSE;
         }
         runPluginHooks('preDestroyRxDatabase', this);
+
+        /**
+         * Complete the event stream
+         * to stop all subscribers who forgot to unsubscribe.
+         */
+        this.eventBulks$.complete();
+
         DB_COUNT--;
         this.destroyed = true;
         if (this._onDestroyCall) {
@@ -757,8 +764,6 @@ export function createRxDatabase<
         cleanupPolicy ? cleanupPolicy : {},
         DEFAULT_CLEANUP_POLICY
     );
-    console.log('useCleanupPolicy:');
-    console.dir(useCleanupPolicy);
 
     let broadcastChannel: BroadcastChannel | undefined;
     if (multiInstance) {
