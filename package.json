@@ -247,7 +247,7 @@
     "typescript": "4.5.5",
     "walk-sync": "3.0.0",
     "watch": "1.0.2",
-    "webpack": "5.65.0",
+    "webpack": "5.68.0",
     "webpack-bundle-analyzer": "4.5.0",
     "webpack-cli": "4.9.2"
   }
