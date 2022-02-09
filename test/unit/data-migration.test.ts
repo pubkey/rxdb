@@ -17,6 +17,7 @@ import {
     blobBufferUtil,
     PouchDBInstance,
     lastOfArray,
+    getAllDocuments,
 } from '../../plugins/core';
 
 import {
@@ -353,10 +354,11 @@ config.parallel('data-migration.test.js', () => {
                             );
                     }
 
-                    const amount = await countAllUndeleted(
+                    const undeleted = await getAllDocuments(
                         old.database.storage,
                         old.storageInstance
                     );
+                    const amount = undeleted.length;
                     assert.strictEqual(amount, 10);
 
                     const pouchLocation = old.storageInstance.internals.pouch.name;

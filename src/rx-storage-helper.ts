@@ -4,7 +4,6 @@
 
 import { runPluginHooks } from './hooks';
 import { overwritable } from './overwritable';
-import { newRxError } from './rx-error';
 import type {
     BulkWriteLocalRow,
     BulkWriteRow,
@@ -53,46 +52,6 @@ export async function getSingleDocument<RxDocType>(
     } else {
         return null;
     }
-}
-
-
-/**
- * get the number of all undeleted documents
- */
-export async function countAllUndeleted<DocType>(
-    storage: RxStorage<any, any>,
-    storageInstance: RxStorageInstance<DocType, any, any>
-): Promise<number> {
-    const docs = await getAllDocuments(
-        storage,
-        storageInstance
-    );
-    return docs.length;
-}
-
-/**
- * get a batch of documents from the storage-instance
- */
-export async function getBatch<DocType>(
-    storage: RxStorage<any, any>,
-    storageInstance: RxStorageInstance<DocType, any, any>,
-    limit: number
-): Promise<any[]> {
-    if (limit <= 1) {
-        throw newRxError('P1', {
-            limit
-        });
-    }
-
-    const preparedQuery = storage.statics.prepareQuery(
-        storageInstance.schema,
-        {
-            selector: {},
-            limit
-        }
-    );
-    const result = await storageInstance.query(preparedQuery);
-    return result.documents;
 }
 
 /**

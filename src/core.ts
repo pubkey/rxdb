@@ -72,9 +72,7 @@ export {
     getSingleDocument,
     getAllDocuments,
     writeSingleLocal,
-    writeSingle,
-    countAllUndeleted,
-    getBatch
+    writeSingle
 } from './rx-storage-helper';
 
 export {

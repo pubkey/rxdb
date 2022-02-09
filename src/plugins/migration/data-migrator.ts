@@ -58,8 +58,7 @@ import {
 } from './migration-state';
 import { map } from 'rxjs/operators';
 import {
-    countAllUndeleted,
-    getBatch,
+    getAllDocuments,
     getSingleDocument
 } from '../../rx-storage-helper';
 import { InternalStoreDocumentData } from '../../rx-database';
@@ -126,10 +125,11 @@ export class DataMigrator {
                     this.nonMigratedOldCollections = ret;
                     this.allOldCollections = this.nonMigratedOldCollections.slice(0);
                     const countAll: Promise<number[]> = Promise.all(
-                        this.nonMigratedOldCollections.map(oldCol => countAllUndeleted(
-                            this.database.storage,
-                            oldCol.storageInstance
-                            ))
+                        this.nonMigratedOldCollections
+                            .map(oldCol => getAllDocuments(
+                                this.database.storage,
+                                oldCol.storageInstance
+                            ).then(allDocs => allDocs.length))
                     );
                     return countAll;
                 })
@@ -328,12 +328,19 @@ export function getBatchOfOldCollection(
     oldCollection: OldRxCollection,
     batchSize: number
 ): Promise<any[]> {
-    return getBatch(
-        oldCollection.database.storage,
-        oldCollection.storageInstance,
-        batchSize
-    )
-        .then(docs => docs
+    const storage = oldCollection.database.storage;
+    const storageInstance = oldCollection.storageInstance;
+    const preparedQuery = storage.statics.prepareQuery(
+        storageInstance.schema,
+        {
+            selector: {},
+            limit: batchSize
+        }
+    );
+
+    return storageInstance
+        .query(preparedQuery)
+        .then(result => result.documents
             .map(doc => {
                 doc = flatClone(doc);
                 doc = _handleFromStorageInstance(oldCollection as any, doc);

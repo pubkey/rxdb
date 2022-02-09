@@ -19,7 +19,7 @@ export const ERROR_MESSAGES = {
     PL2: 'You tried importy a RxDB plugin to pouchdb. Use addRxPlugin() instead.',
 
     // pouch-db.js
-    P1: 'PouchDB.getBatch: limit must be > 2',
+    // removed ind 12.0.0 - P1: 'PouchDB.getBatch: limit must be > 2',
     P2: 'bulkWrite() cannot be called with an empty array',
     P3: 'bulkAddRevisions cannot be called with an empty array',
 
