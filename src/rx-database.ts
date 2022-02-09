@@ -70,7 +70,6 @@ import {
     getCollectionLocalInstanceName
 } from './rx-collection-helper';
 import { ObliviousSet } from 'oblivious-set';
-import { DEFAULT_CLEANUP_POLICY, startCleanup } from './cleanup';
 
 /**
  * stores the used database names
@@ -102,7 +101,7 @@ export class RxDatabaseBase<
         public readonly eventReduce: boolean = false,
         public options: any = {},
         public readonly idleQueue: IdleQueue,
-        public readonly cleanupPolicy: RxCleanupPolicy,
+        public readonly cleanupPolicy: Partial<RxCleanupPolicy>,
         /**
          * Stores information documents about the collections of the database
          */
@@ -341,17 +340,6 @@ export class RxDatabaseBase<
             await this.lockedRun(
                 () => this.internalStore.bulkWrite(bulkPutDocs)
             );
-        }
-
-        // if this was the first time addCollections() was called,
-        // start the cleanup cycle
-        if (this.isFirstAddCollections) {
-            this.isFirstAddCollections = false;
-            /**
-             * Start the cleanup interval.
-             * Do not await this function call.
-             */
-            startCleanup(this as any);
         }
 
         return ret;
@@ -759,12 +747,6 @@ export function createRxDatabase<
     }
     USED_DATABASE_NAMES.add(name);
 
-    const useCleanupPolicy = Object.assign(
-        {},
-        cleanupPolicy ? cleanupPolicy : {},
-        DEFAULT_CLEANUP_POLICY
-    );
-
     let broadcastChannel: BroadcastChannel | undefined;
     if (multiInstance) {
         broadcastChannel = new BroadcastChannel(
@@ -794,7 +776,7 @@ export function createRxDatabase<
             eventReduce,
             options,
             idleQueue,
-            useCleanupPolicy,
+            cleanupPolicy,
             storageInstances.internalStore,
             storageInstances.localDocumentsStore,
             broadcastChannel

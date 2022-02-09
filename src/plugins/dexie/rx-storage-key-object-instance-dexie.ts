@@ -5,6 +5,7 @@ import type {
     DexieSettings,
     DexieStorageInternals,
     EventBulk,
+    RxCleanupPolicy,
     RxKeyObjectStorageInstanceCreationParams,
     RxLocalDocumentData,
     RxLocalStorageBulkWriteResponse,
@@ -205,6 +206,11 @@ export class RxStorageKeyObjectInstanceDexie implements RxStorageKeyObjectInstan
 
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxLocalDocumentData<{ [key: string]: any; }>>>> {
         return this.changes$.asObservable();
+    }
+
+    async cleanup(_cleanupPolicy: RxCleanupPolicy): Promise<boolean> {
+        // TODO implement cleanup() for keyObject store.
+        return false;
     }
 
     async close(): Promise<void> {

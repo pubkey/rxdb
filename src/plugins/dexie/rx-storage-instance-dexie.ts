@@ -31,7 +31,8 @@ import type {
     RxStorageChangedDocumentMeta,
     RxStorageInstanceCreationParams,
     EventBulk,
-    PreparedQuery
+    PreparedQuery,
+    RxCleanupPolicy
 } from '../../types';
 import { DexieSettings, DexieStorageInternals } from '../../types/plugins/dexie';
 import { RxStorageDexie } from './rx-storage-dexie';
@@ -497,6 +498,28 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
 
     getAttachmentData(_documentId: string, _attachmentId: string): Promise<BlobBuffer> {
         throw new Error('Attachments are not implemented in the dexie RxStorage. Make a pull request.');
+    }
+
+    async cleanup(cleanupPolicy: RxCleanupPolicy): Promise<boolean> {
+        const state = await this.internals;
+        await state.dexieDb.transaction(
+            'rw',
+            state.dexieDeletedTable,
+            async () => {
+                const maxDeletionTime = now() - cleanupPolicy.minimumDeletedTime;
+                const toRemove = await state.dexieDeletedTable.where('$lastWriteAt').below(maxDeletionTime).toArray();
+                const removeIds: string[] = toRemove.map(doc => doc[this.primaryPath]);
+                await state.dexieDeletedTable.bulkDelete(removeIds);
+            }
+        );
+
+        /**
+         * TODO instead of deleting all deleted docs at once,
+         * only clean up some of them and return true.
+         * This ensures that when many documents have to be purged,
+         * we do not block the more important tasks too long.
+         */
+        return false;
     }
 
     async close(): Promise<void> {

@@ -16,7 +16,8 @@ import {
     parseRevision,
     ensureNotFalsy,
     getFromObjectOrThrow,
-    shuffleArray
+    shuffleArray,
+    getFromMapOrThrow
 } from '../../plugins/core';
 
 import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
@@ -57,6 +58,8 @@ declare type MultiInstanceKeyObjectInstances = {
     b: RxStorageKeyObjectInstance<any, any>;
 };
 
+const EXAMPLE_REV_1 = '1-a723631364fbfa906c5ffb8203ac9725';
+const EXAMPLE_REV_2 = '2-5373c7dc85e8705456beaf68ae041110';
 
 function getWriteData(
     ownParams: Partial<RxDocumentWriteData<TestDocType>> = {}
@@ -747,7 +750,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                                 value,
                                 _deleted: true
                             }) as any;
-                            docData._rev = '2-5373c7dc85e8705456beaf68ae041110';
+                            docData._rev = EXAMPLE_REV_2;
                             return docData;
                         })
                 );
@@ -760,7 +763,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         document: clone(oneDoc)
                     }
                 ]);
-                oneDoc._rev = '2-5373c7dc85e8705456beaf68ae041110';
+                oneDoc._rev = EXAMPLE_REV_2;
                 oneDoc._deleted = true;
                 await storageInstance.bulkAddRevisions([oneDoc as any]);
 
@@ -1034,7 +1037,9 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         document: {
                             key: 'foobar',
                             value: 'barfoo',
-                            _attachments: {}
+                            _rev: EXAMPLE_REV_1,
+                            _attachments: {},
+                            _deleted: false
                         }
                     }]
                 );
@@ -1042,10 +1047,17 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 await storageInstance.bulkWrite(
                     [{
-                        previous,
+                        previous: {
+                            key: 'foobar',
+                            value: 'barfoo',
+                            _rev: EXAMPLE_REV_1,
+                            _attachments: {},
+                            _deleted: false
+                        },
                         document: {
                             key: 'foobar',
-                            value: 'barfoo2',
+                            value: 'barfoo',
+                            _rev: EXAMPLE_REV_2,
                             _deleted: true,
                             _attachments: {}
                         }
@@ -1056,7 +1068,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const foundDeleted = getFromObjectOrThrow(found, 'foobar');
 
                 // even on deleted documents, we must get the other properties.
-                assert.strictEqual(foundDeleted.value, 'barfoo2');
+                assert.strictEqual(foundDeleted.value, 'barfoo');
                 assert.strictEqual(foundDeleted._deleted, true);
 
                 storageInstance.close();
@@ -1264,7 +1276,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const previous = getFromObjectOrThrow(insertResult.success, key);
 
                 // overwrite via set revisision
-                const customRev = '2-5373c7dc85e8705456beaf68ae041110';
+                const customRev = EXAMPLE_REV_2;
                 await storageInstance.bulkAddRevisions([
                     {
                         key,
@@ -1813,6 +1825,78 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 storageInstance.close();
             });
         });
+        describe('.cleanup()', () => {
+            it('should have cleaned up the deleted document', async () => {
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                    options: {},
+                    multiInstance: false
+                });
+
+                const id = 'foobar';
+                /**
+                 * Insert
+                 */
+                const insertResult = await storageInstance.bulkWrite([{
+                    document: {
+                        key: id,
+                        value: 'barfoo',
+                        _rev: EXAMPLE_REV_1,
+                        _attachments: {},
+                        _deleted: false
+                    }
+                }]);
+                const previous = getFromObjectOrThrow(insertResult.success, id);
+                console.dir(previous);
+                /**
+                 * Delete
+                 */
+                await storageInstance.bulkWrite([{
+                    previous: {
+                        key: id,
+                        value: 'barfoo',
+                        _rev: EXAMPLE_REV_1,
+                        _attachments: {},
+                        _deleted: false
+                    },
+                    document: {
+                        key: id,
+                        value: 'barfoo',
+                        _rev: EXAMPLE_REV_2,
+                        _deleted: true,
+                        _attachments: {}
+                    }
+                }]);
+
+                const mustBeThereButDeleted = await storageInstance.findDocumentsById(
+                    [id],
+                    true
+                );
+                const doc = mustBeThereButDeleted[id];
+                console.dir(mustBeThereButDeleted);
+                assert.ok(doc._deleted);
+
+                await storageInstance.cleanup({
+                    awaitAllInitialReplications: true,
+                    minimumDatabaseInstanceAge: 0,
+                    minimumDeletedTime: 0,
+                    waitForLeadership: false
+                });
+
+                const mustNotBeThere = await storageInstance.findDocumentsById(
+                    [id],
+                    true
+                );
+                console.dir(mustNotBeThere);
+                assert.ok(!mustNotBeThere[id]);
+
+                process.exit();
+
+                storageInstance.close();
+            });
+        });
         describe('.remove()', () => {
             it('should have deleted all data', async () => {
                 const databaseName = randomCouchString(12);
@@ -2128,6 +2212,54 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 storageInstance.close();
             });
         });
+        describe('.cleanup()', () => {
+            it('should have cleaned up the deleted document', async () => {
+                const storageInstance = await config.storage
+                    .getStorage()
+                    .createKeyObjectStorageInstance({
+                        databaseName: randomCouchString(12),
+                        collectionName: randomCouchString(12),
+                        options: {},
+                        multiInstance: false
+                    });
+
+                const docId = 'foobar';
+                /**
+                 * Insert
+                 */
+                await storageInstance.bulkWrite([{
+                    document: {
+                        _id: docId,
+                        _rev: EXAMPLE_REV_1,
+                        _attachments: {},
+                        _deleted: false
+                    }
+                }]);
+                /**
+                 * Delete
+                 */
+                await storageInstance.bulkWrite([{
+                    previous: {
+                        _id: docId,
+                        _rev: EXAMPLE_REV_1,
+                        _attachments: {},
+                        _deleted: false
+                    },
+                    document: {
+                        _id: docId,
+                        _rev: EXAMPLE_REV_2,
+                        _attachments: {},
+                        _deleted: true
+                    }
+                }]);
+
+                const mustBeThereButDeleted = await storageInstance.findLocalDocumentsById(
+                    [docId]
+                );
+
+                storageInstance.close();
+            });
+        });
         describe('.remove()', () => {
             it('should have deleted all data', async () => {
                 const databaseName = randomCouchString(12);
@@ -2280,7 +2412,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     key: 'foobar',
                     value: 'barfoo',
                     _attachments: {},
-                    _rev: '1-a723631364fbfa906c5ffb8203ac9725'
+                    _rev: EXAMPLE_REV_1
                 };
                 await instances.b.bulkAddRevisions([writeDataViaRevision]);
 

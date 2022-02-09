@@ -587,3 +587,9 @@ export const RXJS_SHARE_REPLAY_DEFAULTS = {
     bufferSize: 1,
     refCount: true
 }
+
+/**
+ * Maximium time that can be passed to setTimeout() savely.
+ * @link https://stackoverflow.com/a/3468650/3443137
+ */
+export const SET_TIMEOUT_MAX = 2147483647;

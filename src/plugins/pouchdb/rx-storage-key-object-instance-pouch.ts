@@ -14,7 +14,8 @@ import type {
     RxStorageBulkWriteLocalError,
     PouchBulkDocResultRow,
     PouchSettings,
-    EventBulk
+    EventBulk,
+    RxCleanupPolicy
 } from '../../types';
 import {
     flatClone,
@@ -221,5 +222,15 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
 
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxLocalDocumentData>>> {
         return this.changes$.asObservable();
+    }
+
+    async cleanup(_cleanupPolicy: RxCleanupPolicy): Promise<boolean> {
+        /**
+         * PouchDB does not support purging documents.
+         * So instead we run a compaction that might at least help a bit.
+         * @link https://github.com/pouchdb/pouchdb/issues/802
+         */
+        await this.internals.pouch.compact();
+        return false;
     }
 }
