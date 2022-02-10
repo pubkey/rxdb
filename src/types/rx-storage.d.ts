@@ -274,9 +274,7 @@ export type RxKeyObjectStorageInstanceCreationParams<InstanceCreationOptions> = 
     options: InstanceCreationOptions;
 }
 
-
 export type ChangeStreamOptions = {
-
     /**
      * Sequence number of the first event to start with.
      * If you want to get all ongoing events,

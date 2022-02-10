@@ -1032,30 +1032,24 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     multiInstance: false
                 });
 
+                const key = 'foobar';
                 const insertResult = await storageInstance.bulkWrite(
                     [{
                         document: {
-                            key: 'foobar',
+                            key,
                             value: 'barfoo',
-                            _rev: EXAMPLE_REV_1,
                             _attachments: {},
                             _deleted: false
                         }
                     }]
                 );
-                const previous = getFromObjectOrThrow(insertResult.success, 'foobar');
+                const previous = getFromObjectOrThrow(insertResult.success, key);
 
-                await storageInstance.bulkWrite(
+                const updateResult = await storageInstance.bulkWrite(
                     [{
-                        previous: {
-                            key: 'foobar',
-                            value: 'barfoo',
-                            _rev: EXAMPLE_REV_1,
-                            _attachments: {},
-                            _deleted: false
-                        },
+                        previous,
                         document: {
-                            key: 'foobar',
+                            key,
                             value: 'barfoo',
                             _rev: EXAMPLE_REV_2,
                             _deleted: true,
@@ -1063,6 +1057,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         }
                     }]
                 );
+                getFromObjectOrThrow(updateResult.success, key);
 
                 const found = await storageInstance.findDocumentsById(['foobar'], true);
                 const foundDeleted = getFromObjectOrThrow(found, 'foobar');
@@ -1843,7 +1838,6 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     document: {
                         key: id,
                         value: 'barfoo',
-                        _rev: EXAMPLE_REV_1,
                         _attachments: {},
                         _deleted: false
                     }
@@ -1853,14 +1847,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 /**
                  * Delete
                  */
-                await storageInstance.bulkWrite([{
-                    previous: {
-                        key: id,
-                        value: 'barfoo',
-                        _rev: EXAMPLE_REV_1,
-                        _attachments: {},
-                        _deleted: false
-                    },
+                const deleteResult = await storageInstance.bulkWrite([{
+                    previous,
                     document: {
                         key: id,
                         value: 'barfoo',
@@ -1869,13 +1857,13 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         _attachments: {}
                     }
                 }]);
+                getFromObjectOrThrow(deleteResult.success, id);
 
                 const mustBeThereButDeleted = await storageInstance.findDocumentsById(
                     [id],
                     true
                 );
                 const doc = mustBeThereButDeleted[id];
-                console.dir(mustBeThereButDeleted);
                 assert.ok(doc._deleted);
 
                 await storageInstance.cleanup({
@@ -1885,14 +1873,20 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     waitForLeadership: false
                 });
 
+                if (config.storage.name === 'pouchdb') {
+                    /**
+                     * PouchDB is not able to fully purge a document
+                     * so it makes no sense to check if the deleted document
+                     * was removed on cleanup.
+                     */
+                    return;
+                }
+
                 const mustNotBeThere = await storageInstance.findDocumentsById(
                     [id],
                     true
                 );
-                console.dir(mustNotBeThere);
                 assert.ok(!mustNotBeThere[id]);
-
-                process.exit();
 
                 storageInstance.close();
             });
@@ -2256,6 +2250,30 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const mustBeThereButDeleted = await storageInstance.findLocalDocumentsById(
                     [docId]
                 );
+                const doc = mustBeThereButDeleted[docId];
+                assert.ok(doc._deleted);
+
+                await storageInstance.cleanup({
+                    awaitAllInitialReplications: true,
+                    minimumDatabaseInstanceAge: 0,
+                    minimumDeletedTime: 0,
+                    waitForLeadership: false
+                });
+
+                if (config.storage.name === 'pouchdb') {
+                    /**
+                     * PouchDB is not able to fully purge a document
+                     * so it makes no sense to check if the deleted document
+                     * was removed on cleanup.
+                     */
+                    return;
+                }
+
+                const mustNotBeThere = await storageInstance.findLocalDocumentsById(
+                    [docId],
+                    true
+                );
+                assert.ok(!mustNotBeThere[docId]);
 
                 storageInstance.close();
             });
