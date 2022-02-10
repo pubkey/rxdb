@@ -7,7 +7,6 @@ import {
 
 import {
     ucfirst,
-    nextTick,
     flatClone,
     promiseSeries,
     pluginMissing,
