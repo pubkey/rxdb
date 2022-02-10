@@ -19,8 +19,6 @@ import {
     RXJS_SHARE_REPLAY_DEFAULTS
 } from './util';
 import {
-    _handleToStorageInstance,
-    _handleFromStorageInstance,
     fillObjectDataBeforeInsert,
     writeToStorageInstance,
     createRxCollectionStorageInstances
@@ -109,7 +107,7 @@ import {
     createRxDocument,
     getRxDocumentConstructor
 } from './rx-document-prototype-merge';
-import { storageChangeEventToRxChangeEvent } from './rx-storage-helper';
+import { getWrappedStorageInstance, storageChangeEventToRxChangeEvent } from './rx-storage-helper';
 import { overwritable } from './overwritable';
 
 const HOOKS_WHEN = ['pre', 'post'];
@@ -123,6 +121,9 @@ export class RxCollectionBase<
     StaticMethods = { [key: string]: any }
     > {
 
+
+    public storageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions> = {} as any;
+
     constructor(
         public database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions>,
         public name: string,
@@ -130,7 +131,7 @@ export class RxCollectionBase<
         /**
          * Stores all 'normal' documents
          */
-        public storageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>,
+        public internalStorageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>,
         /**
          * Stores the local documents so that they are not deleted
          * when a migration runs.
@@ -209,8 +210,9 @@ export class RxCollectionBase<
          */
         _wasCreatedBefore: boolean
     ): Promise<void> {
-        // we trigger the non-blocking things first and await them later so we can do stuff in the mean time
+        this.storageInstance = getWrappedStorageInstance(this as any, this.internalStorageInstance);
 
+        // we trigger the non-blocking things first and await them later so we can do stuff in the mean time
         this._crypter = createCrypter(this.database.password, this.schema);
 
         this._observable$ = this.database.eventBulks$.pipe(
@@ -297,11 +299,11 @@ export class RxCollectionBase<
 
     /**
      * wrapps the query function of the storage instance.
+     * TODO move this function to rx-query.ts
      */
     async _queryStorageInstance(
         rxQuery: RxQuery | RxQueryBase,
-        limit?: number,
-        noDecrypt: boolean = false
+        limit?: number
     ): Promise<any[]> {
         let docs: any[] = [];
 
@@ -313,9 +315,7 @@ export class RxCollectionBase<
          */
         if (rxQuery.isFindOneByIdQuery) {
             const docId = rxQuery.isFindOneByIdQuery;
-            const docsMap = await this.database.lockedRun(
-                () => this.storageInstance.findDocumentsById([docId], false)
-            );
+            const docsMap = await this.storageInstance.findDocumentsById([docId], false);
             const docData = docsMap[docId];
             if (docData) {
                 docs.push(docData);
@@ -325,14 +325,9 @@ export class RxCollectionBase<
             if (limit) {
                 preparedQuery['limit'] = limit;
             }
-
-            const queryResult = await this.database.lockedRun(
-                () => this.storageInstance.query(preparedQuery)
-            );
-            docs = queryResult.documents
+            const queryResult = await this.storageInstance.query(preparedQuery);
+            docs = queryResult.documents;
         }
-
-        docs = docs.map((doc: any) => _handleFromStorageInstance(this, doc, noDecrypt));
         return docs;
     }
 
@@ -409,17 +404,18 @@ export class RxCollectionBase<
             })
         );
 
-        const insertDocs: BulkWriteRow<RxDocumentType>[] = docs.map(d => ({
-            document: _handleToStorageInstance(this, d)
-        }));
         const docsMap: Map<string, RxDocumentType> = new Map();
-        docs.forEach(d => {
-            docsMap.set((d as any)[this.schema.primaryPath] as any, d);
+        const insertRows: BulkWriteRow<RxDocumentType>[] = docs.map(doc => {
+            docsMap.set((doc as any)[this.schema.primaryPath] as any, doc);
+            const row: BulkWriteRow<RxDocumentType> = {
+                document: Object.assign(doc, {
+                    _attachments: {},
+                    _deleted: false
+                })
+            };
+            return row;
         });
-
-        const results = await this.database.lockedRun(
-            () => this.storageInstance.bulkWrite(insertDocs)
-        );
+        const results = await this.storageInstance.bulkWrite(insertRows);
 
         // create documents
         const successEntries: [string, RxDocumentData<RxDocumentType>][] = Object.entries(results.success);
@@ -487,14 +483,11 @@ export class RxCollectionBase<
             const writeDoc = flatClone(doc);
             writeDoc._deleted = true;
             return {
-                previous: _handleToStorageInstance(this, doc),
-                document: _handleToStorageInstance(this, writeDoc)
+                previous: doc,
+                document: writeDoc
             };
         });
-
-        const results = await this.database.lockedRun(
-            () => this.storageInstance.bulkWrite(removeDocs)
-        );
+        const results = await this.storageInstance.bulkWrite(removeDocs);
 
         const successIds: string[] = Object.keys(results.success);
 
@@ -669,7 +662,6 @@ export class RxCollectionBase<
         if (mustBeQueried.length > 0) {
             const docs = await this.storageInstance.findDocumentsById(mustBeQueried, false);
             Object.values(docs).forEach(docData => {
-                docData = _handleFromStorageInstance(this, docData);
                 const doc = createRxDocument<RxDocumentType, OrmMethods>(this as any, docData);
                 ret.set(doc.primary, doc);
             });

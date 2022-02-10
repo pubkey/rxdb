@@ -68,8 +68,8 @@ config.parallel('key-compression.test.js', () => {
             const c = await humansCollection.createPrimary(0);
             const docData = schemaObjects.simpleHuman();
             await c.insert(docData);
-            const doc = await c.storageInstance.internals.pouch.get(docData.passportId);
 
+            const doc = await c.internalStorageInstance.internals.pouch.get(docData.passportId);
             Object.keys(doc)
                 .filter(key => !key.startsWith('_'))
                 .forEach(key => {

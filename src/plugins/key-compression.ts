@@ -22,7 +22,7 @@ import type {
     RxCollection,
     CompositePrimaryKey
 } from '../types';
-import {flatClone, isMaybeReadonlyArray} from '../util';
+import { flatClone, isMaybeReadonlyArray } from '../util';
 
 declare type CompressionState = {
     table: CompressionTable;
@@ -194,6 +194,7 @@ export const RxDBKeyCompressionPlugin: RxPlugin = {
              * Do not send attachments to compressObject()
              * because it will deep clone which does not work on Blob or Buffer.
              */
+            params.doc = flatClone(params.doc);
             const attachments = params.doc._attachments;
             delete params.doc._attachments;
 

@@ -149,26 +149,14 @@ describe('replication.test.js', () => {
                 c.database.destroy();
             });
             it('should be true for pulled revision', async () => {
-                if (config.storage.name !== 'pouchdb') {
-                    return;
-                }
-
                 const c = await humansCollection.createHumanWithTimestamp(0);
-                let toPouch: any = schemaObjects.humanWithTimestamp();
-                toPouch._rev = '1-' + createRevisionForPulledDocument(
+                const toStorage: any = schemaObjects.humanWithTimestamp();
+                toStorage._rev = '1-' + createRevisionForPulledDocument(
                     REPLICATION_IDENTIFIER_TEST_HASH,
-                    toPouch
+                    toStorage
                 );
-                toPouch = pouchSwapPrimaryToId(
-                    c.schema.primaryPath,
-                    toPouch
-                );
-                await c.storageInstance.internals.pouch.bulkDocs(
-                    [_handleToStorageInstance(c, toPouch)],
-                    {
-                        new_edits: false
-                    }
-                );
+                toStorage._deleted = false;
+                await c.storageInstance.bulkAddRevisions([toStorage]);
 
                 const doc = await c.findOne().exec(true);
                 const wasFromPull = wasRevisionfromPullReplication(
@@ -394,7 +382,7 @@ describe('replication.test.js', () => {
                     toStorageInstance
                 );
                 await c.storageInstance.bulkAddRevisions([
-                    _handleToStorageInstance(c, toStorageInstance)
+                    toStorageInstance
                 ]);
 
                 const allDocs = await c.find().exec();

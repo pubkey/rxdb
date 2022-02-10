@@ -59,13 +59,10 @@ import {
 import { map } from 'rxjs/operators';
 import {
     getAllDocuments,
-    getSingleDocument
+    getSingleDocument,
+    getWrappedStorageInstance
 } from '../../rx-storage-helper';
 import { InternalStoreDocumentData } from '../../rx-database';
-import {
-    _handleFromStorageInstance,
-    _handleToStorageInstance
-} from '../../rx-collection-helper';
 
 export class DataMigrator {
 
@@ -253,6 +250,8 @@ export async function createOldCollection(
         )
     };
 
+    ret.storageInstance = getWrappedStorageInstance(ret as any, storageInstance);
+
     return ret;
 }
 
@@ -343,7 +342,6 @@ export function getBatchOfOldCollection(
         .then(result => result.documents
             .map(doc => {
                 doc = flatClone(doc);
-                doc = _handleFromStorageInstance(oldCollection as any, doc);
                 return doc;
             })
         );
@@ -491,7 +489,7 @@ export async function _migrateDocuments(
              * notice that this data also contains the attachments data
              */
             const attachmentsBefore = migratedDocData._attachments;
-            const saveData: WithAttachmentsData<any> = _handleToStorageInstance(oldCollection.newestCollection, migratedDocData);
+            const saveData: WithAttachmentsData<any> = migratedDocData;
             saveData._attachments = attachmentsBefore;
             bulkWriteToStorageInput.push(saveData);
             action.res = saveData;
@@ -531,8 +529,8 @@ export async function _migrateDocuments(
         const writeDeleted = flatClone(docData);
         writeDeleted._deleted = true;
         return {
-            previous: _handleToStorageInstance(oldCollection as any, docData),
-            document: _handleToStorageInstance(oldCollection as any, writeDeleted)
+            previous: docData,
+            document: writeDeleted
         };
     });
 

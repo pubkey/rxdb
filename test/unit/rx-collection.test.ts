@@ -610,6 +610,7 @@ config.parallel('rx-collection.test.js', () => {
                     }, {
                         firstName: 'foobarBob'
                     }]);
+
                     const results = await query.exec();
                     assert.strictEqual(results.length, 2);
                     const foundFirstNames = results.map(doc => doc.firstName);
@@ -2093,7 +2094,6 @@ config.parallel('rx-collection.test.js', () => {
             await collection.storageInstance.bulkAddRevisions(
                 matchingIds
                     .map(id => createObject(id))
-                    .map(doc => _handleToStorageInstance(collection, doc))
             );
 
             //  Now we should have 2 updates
@@ -2126,7 +2126,7 @@ config.parallel('rx-collection.test.js', () => {
                     createObject('f'),
                     createObject('g'),
                     createObject('h')
-                ].map(doc => _handleToStorageInstance(collection, doc))
+                ]
             );
 
             //  Wait a bit to see if we catch anything

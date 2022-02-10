@@ -8,6 +8,8 @@
 - You can now set a custom index when doing a query.
 
 - Unified the replication primitives and the GraphQL replication plugin.
+- Removed the deprecated in-memory plugin.
+- Refactor usage of RxCollection.storageInstance to ensure all hooks run properly.
 
 ### 11.6.0 (4 February 2022)
 

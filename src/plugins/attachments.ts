@@ -23,7 +23,6 @@ import type {
 } from '../types';
 import type { RxSchema } from '../rx-schema';
 import { writeSingle } from '../rx-storage-helper';
-import { _handleToStorageInstance } from '../rx-collection-helper';
 
 function ensureSchemaSupportsAttachments(doc: any) {
     const schemaJson = doc.collection.schema.jsonSchema;
@@ -80,8 +79,8 @@ export class RxAttachment {
                 const writeResult: RxDocumentData<any> = await writeSingle(
                     this.doc.collection.storageInstance,
                     {
-                        previous: _handleToStorageInstance(this.doc.collection, flatClone(this.doc._data)),
-                        document: _handleToStorageInstance(this.doc.collection, docWriteData)
+                        previous: flatClone(this.doc._data),
+                        document: docWriteData
                     }
                 );
 
@@ -191,8 +190,8 @@ export async function putAttachment(
             };
 
             const writeRow = {
-                previous: _handleToStorageInstance(this.collection, flatClone(this._data)),
-                document: _handleToStorageInstance(this.collection, flatClone(docWriteData))
+                previous: flatClone(this._data),
+                document: flatClone(docWriteData)
             };
 
             const writeResult = await writeSingle(
