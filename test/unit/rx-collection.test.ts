@@ -22,7 +22,6 @@ import {
     runXTimes,
     RxCollection,
     ensureNotFalsy,
-    _handleToStorageInstance,
     lastOfArray
 } from '../../plugins/core';
 

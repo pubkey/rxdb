@@ -19,7 +19,6 @@ import {
 import * as humansCollection from '../helper/humans-collection';
 
 import {
-    _handleToStorageInstance,
     flatClone,
     getFromMapOrThrow,
     RxCollection,
@@ -28,10 +27,6 @@ import {
     now,
     hash,
 } from '../../plugins/core';
-
-import {
-    pouchSwapPrimaryToId
-} from '../../plugins/pouchdb';
 
 import {
     setLastPushSequence,

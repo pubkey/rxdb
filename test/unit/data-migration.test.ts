@@ -10,7 +10,6 @@ import {
     randomCouchString,
     promiseWait,
     _collectionNamePrimary,
-    countAllUndeleted,
     RxError,
     clone,
     getHeightOfRevision,
