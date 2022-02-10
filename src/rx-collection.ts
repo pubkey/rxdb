@@ -563,13 +563,6 @@ export class RxCollectionBase<
             .then((wasInserted: any) => {
                 if (!wasInserted.inserted) {
                     return _atomicUpsertUpdate(wasInserted.doc, useJson)
-                        /**
-                         * tick here so the event can propagate
-                         * TODO we should not need that here
-                         */
-                        .then(() => nextTick())
-                        .then(() => nextTick())
-                        .then(() => nextTick())
                         .then(() => wasInserted.doc);
                 } else {
                     return wasInserted.doc;
