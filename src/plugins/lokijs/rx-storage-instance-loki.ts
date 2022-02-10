@@ -339,6 +339,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                     const storeAtLoki = flatClone(docData) as any;
                     storeAtLoki.$loki = documentInDb.$loki;
                     storeAtLoki.$lastWriteAt = startTime;
+                    console.log(storeAtLoki);
                     localState.collection.update(storeAtLoki);
                     let change: ChangeEvent<RxDocumentData<RxDocType>> | null = null;
                     if (documentInDb._deleted && !docData._deleted) {
