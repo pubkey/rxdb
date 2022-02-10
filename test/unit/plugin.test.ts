@@ -116,36 +116,6 @@ config.parallel('plugin.test.js', () => {
             }
         });
     });
-    describe('in-memory.node.ts', () => {
-        return; // TODO commented out while in-memory plugin not rewritten
-        it('in-memory should run without errors', async () => {
-            if (!config.platform.isNode())
-                return;
-
-            const spawn = REQUIRE_FUN('child-process-promise').spawn;
-            const stdout: any[] = [];
-            const stderr: any[] = [];
-            const promise = spawn('mocha', [config.rootPath + 'test_tmp/unit/in-memory.node.js']);
-            const childProcess = promise.childProcess;
-            childProcess.stdout.on('data', (data: any) => {
-                // comment in to debug
-                // console.log(':: ' + data.toString());
-                stdout.push(data.toString());
-            });
-            childProcess.stderr.on('data', (data: any) => stderr.push(data.toString()));
-            try {
-                await promise;
-            } catch (err) {
-                console.error('errrrr');
-                console.dir(stdout);
-                throw new Error(`could not run in-memory.node.js.
-                        # Error: ${err}
-                        # Output: ${stdout}
-                        # ErrOut: ${stderr}
-                        `);
-            }
-        });
-    });
     describe('ajv-validate.node.ts', () => {
         it('ajv-validate.node.ts: should allow everything', async () => {
             if (!config.platform.isNode())
