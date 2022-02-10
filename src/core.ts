@@ -29,8 +29,6 @@ export {
 } from './rx-collection';
 
 export {
-    _handleFromStorageInstance,
-    _handleToStorageInstance,
     fillObjectDataBeforeInsert
 } from './rx-collection-helper';
 
@@ -72,9 +70,7 @@ export {
     getSingleDocument,
     getAllDocuments,
     writeSingleLocal,
-    writeSingle,
-    countAllUndeleted,
-    getBatch
+    writeSingle
 } from './rx-storage-helper';
 
 export {

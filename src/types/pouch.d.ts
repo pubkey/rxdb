@@ -286,7 +286,6 @@ export declare class PouchDBInstance {
 
     static plugin(p: any): void;
     static isInstanceOf(instance: any): boolean;
-    static countAllUndeleted(pouchdb: PouchDBInstance): Promise<number>;
     info(): Promise<any>;
 
     allDocs(options?: PouchAllDocsOptions): Promise<{

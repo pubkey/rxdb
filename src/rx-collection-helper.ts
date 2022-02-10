@@ -9,16 +9,10 @@ import type {
     RxStorageKeyObjectInstance
 } from './types';
 import {
-    flatClone
-} from './util';
-import {
     newRxError
 } from './rx-error';
-import { runPluginHooks } from './hooks';
 import { getSingleDocument, writeSingle } from './rx-storage-helper';
 import { RxCollectionBase } from './rx-collection';
-import { overwritable } from './overwritable';
-
 
 /**
  * Every write access on the storage engine,
@@ -32,36 +26,25 @@ export async function writeToStorageInstance<RxDocumentType>(
 ): Promise<
     RxDocumentData<RxDocumentType>
 > {
-    const toStorageInstance: BulkWriteRow<any> = {
-        previous: writeRow.previous ? _handleToStorageInstance(collection, flatClone(writeRow.previous)) : undefined,
-        document: _handleToStorageInstance(collection, flatClone(writeRow.document))
-    };
-
     while (true) {
         try {
-            const writeResult = await collection.database.lockedRun(
-                () => writeSingle(
-                    collection.storageInstance,
-                    toStorageInstance
-                )
+            const writeResult = await writeSingle(
+                collection.storageInstance,
+                writeRow
             );
             // on success, just return the result
-
-            const ret = _handleFromStorageInstance(collection, writeResult);
-            return ret;
+            return writeResult;
         } catch (err: any) {
             const useErr: RxStorageBulkWriteError<RxDocumentType> = err as any;
             const primary = useErr.documentId;
             if (overwrite && useErr.status === 409) {
                 // we have a conflict but must overwrite
                 // so get the new revision
-                const singleRes = await collection.database.lockedRun(
-                    () => getSingleDocument(collection.storageInstance, primary)
-                );
+                const singleRes = await getSingleDocument(collection.storageInstance, primary);
                 if (!singleRes) {
                     throw newRxError('SNH', { args: { writeRow } });
                 }
-                toStorageInstance.previous = singleRes;
+                writeRow.previous = singleRes;
                 // now we can retry
             } else if (useErr.status === 409) {
                 throw newRxError('COL19', {
@@ -75,49 +58,6 @@ export async function writeToStorageInstance<RxDocumentType>(
             }
         }
     }
-}
-
-/**
- * wrappers to process document data beofre/after it goes to the storage instnace.
- * Used to handle keycompression, encryption etc
- */
-export function _handleToStorageInstance(
-    col: RxCollection | RxCollectionBase<any, any, any>,
-    data: any
-) {
-    // ensure primary key has not been changed
-    if (overwritable.isDevMode()) {
-        col.schema.fillPrimaryKey(data);
-    }
-
-    data = (col._crypter as any).encrypt(data);
-
-    const hookParams = {
-        collection: col,
-        doc: data
-    };
-    runPluginHooks('preWriteToStorageInstance', hookParams);
-
-    return hookParams.doc;
-}
-
-export function _handleFromStorageInstance(
-    col: RxCollection | RxCollectionBase<any, any, any>,
-    data: any,
-    noDecrypt = false
-) {
-
-    const hookParams = {
-        collection: col,
-        doc: data
-    };
-    runPluginHooks('postReadFromInstance', hookParams);
-
-    if (noDecrypt) {
-        return hookParams.doc;
-    }
-
-    return (col._crypter as any).decrypt(hookParams.doc);
 }
 
 /**

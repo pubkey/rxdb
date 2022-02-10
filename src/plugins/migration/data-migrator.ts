@@ -58,15 +58,11 @@ import {
 } from './migration-state';
 import { map } from 'rxjs/operators';
 import {
-    countAllUndeleted,
-    getBatch,
-    getSingleDocument
+    getAllDocuments,
+    getSingleDocument,
+    getWrappedStorageInstance
 } from '../../rx-storage-helper';
 import { InternalStoreDocumentData } from '../../rx-database';
-import {
-    _handleFromStorageInstance,
-    _handleToStorageInstance
-} from '../../rx-collection-helper';
 
 export class DataMigrator {
 
@@ -126,10 +122,11 @@ export class DataMigrator {
                     this.nonMigratedOldCollections = ret;
                     this.allOldCollections = this.nonMigratedOldCollections.slice(0);
                     const countAll: Promise<number[]> = Promise.all(
-                        this.nonMigratedOldCollections.map(oldCol => countAllUndeleted(
-                            this.database.storage,
-                            oldCol.storageInstance
-                            ))
+                        this.nonMigratedOldCollections
+                            .map(oldCol => getAllDocuments(
+                                this.database.storage,
+                                oldCol.storageInstance
+                            ).then(allDocs => allDocs.length))
                     );
                     return countAll;
                 })
@@ -253,6 +250,8 @@ export async function createOldCollection(
         )
     };
 
+    ret.storageInstance = getWrappedStorageInstance(ret as any, storageInstance);
+
     return ret;
 }
 
@@ -328,15 +327,21 @@ export function getBatchOfOldCollection(
     oldCollection: OldRxCollection,
     batchSize: number
 ): Promise<any[]> {
-    return getBatch(
-        oldCollection.database.storage,
-        oldCollection.storageInstance,
-        batchSize
-    )
-        .then(docs => docs
+    const storage = oldCollection.database.storage;
+    const storageInstance = oldCollection.storageInstance;
+    const preparedQuery = storage.statics.prepareQuery(
+        storageInstance.schema,
+        {
+            selector: {},
+            limit: batchSize
+        }
+    );
+
+    return storageInstance
+        .query(preparedQuery)
+        .then(result => result.documents
             .map(doc => {
                 doc = flatClone(doc);
-                doc = _handleFromStorageInstance(oldCollection as any, doc);
                 return doc;
             })
         );
@@ -484,7 +489,7 @@ export async function _migrateDocuments(
              * notice that this data also contains the attachments data
              */
             const attachmentsBefore = migratedDocData._attachments;
-            const saveData: WithAttachmentsData<any> = _handleToStorageInstance(oldCollection.newestCollection, migratedDocData);
+            const saveData: WithAttachmentsData<any> = migratedDocData;
             saveData._attachments = attachmentsBefore;
             bulkWriteToStorageInput.push(saveData);
             action.res = saveData;
@@ -524,8 +529,8 @@ export async function _migrateDocuments(
         const writeDeleted = flatClone(docData);
         writeDeleted._deleted = true;
         return {
-            previous: _handleToStorageInstance(oldCollection as any, docData),
-            document: _handleToStorageInstance(oldCollection as any, writeDeleted)
+            previous: docData,
+            document: writeDeleted
         };
     });
 

@@ -41,7 +41,6 @@ import {
     createRevisionForPulledDocument,
     wasRevisionfromPullReplication
 } from './revision-flag';
-import { _handleToStorageInstance } from '../../rx-collection-helper';
 import { newRxError } from '../../rx-error';
 import { getDocumentDataOfRxChangeEvent } from '../../rx-change-event';
 import { RxReplicationError, RxReplicationPullError, RxReplicationPushError } from './rx-replication-error';
@@ -386,11 +385,7 @@ export class RxReplicationStateBase<RxDocType> {
         }
 
         if (toStorageDocs.length > 0) {
-            await this.collection.database.lockedRun(
-                () => this.collection.storageInstance.bulkAddRevisions(
-                    toStorageDocs.map(doc => _handleToStorageInstance(this.collection, doc))
-                )
-            );
+            await this.collection.storageInstance.bulkAddRevisions(toStorageDocs);
         }
 
         return true;

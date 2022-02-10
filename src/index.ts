@@ -19,7 +19,6 @@ import { RxDBEncryptionPlugin } from './plugins/encryption';
 import { RxDBUpdatePlugin } from './plugins/update';
 import { RxDBReplicationCouchDBPlugin } from './plugins/replication-couchdb';
 import { RxDBJsonDumpPlugin } from './plugins/json-dump';
-import { RxDBInMemoryPlugin } from './plugins/in-memory';
 import { RxDBAttachmentsPlugin } from './plugins/attachments';
 import { RxDBLocalDocumentsPlugin } from './plugins/local-documents';
 import { RxDBQueryBuilderPlugin } from './plugins/query-builder';
@@ -51,7 +50,6 @@ export function addDefaultRxPlugins() {
     addRxPlugin(RxDBUpdatePlugin);
     addRxPlugin(RxDBReplicationCouchDBPlugin);
     addRxPlugin(RxDBJsonDumpPlugin);
-    addRxPlugin(RxDBInMemoryPlugin);
     addRxPlugin(RxDBAttachmentsPlugin);
     addRxPlugin(RxDBLocalDocumentsPlugin);
     addRxPlugin(RxDBQueryBuilderPlugin);

@@ -65,7 +65,7 @@ import {
 } from 'rxdb';
 ```
 
-Instead of using the default bundle, you can also only import the RxDB core and later added the plugins as needed:
+By default, if you import RxDB into your javascript, a full batteries-included build will be imported. This has the advantage that you don't have to choose which things you need and which not. The disadvantage is the build-size. Often you don't need most of the functionality and you could save a lot of bandwidth by cherry-picking only the things you really need. For this, RxDB supports [custom builds](./custom-build.md).
 
 ```typescript
 import {

@@ -307,6 +307,8 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 // document not here, so we can directly insert
                 const insertData: any = flatClone(docData);
                 insertData.$lastWriteAt = startTime;
+                console.log('insertData:');
+                console.log(insertData);
                 localState.collection.insert(insertData);
                 eventBulk.events.push({
                     documentId: id,
@@ -339,6 +341,8 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                     const storeAtLoki = flatClone(docData) as any;
                     storeAtLoki.$loki = documentInDb.$loki;
                     storeAtLoki.$lastWriteAt = startTime;
+                    console.log('storeAtLoki:');
+                    console.log(storeAtLoki);
                     localState.collection.update(storeAtLoki);
                     let change: ChangeEvent<RxDocumentData<RxDocType>> | null = null;
                     if (documentInDb._deleted && !docData._deleted) {

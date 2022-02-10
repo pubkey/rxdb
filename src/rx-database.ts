@@ -381,12 +381,10 @@ export class RxDatabaseBase<
             .then(storageInstances => {
                 return Promise.all(
                     storageInstances.map(
-                        instance => this.lockedRun(
-                            () => Promise.all([
-                                instance.storageInstance.remove(),
-                                instance.localDocumentsStore.remove()
-                            ])
-                        )
+                        instance => Promise.all([
+                            instance.storageInstance.remove(),
+                            instance.localDocumentsStore.remove()
+                        ])
                     )
                 );
             })

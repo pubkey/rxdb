@@ -53,7 +53,6 @@ import {
 import { calculateNewResults } from './event-reduce';
 import { triggerCacheReplacement } from './query-cache';
 import type { QueryMatcher } from 'event-reduce-js';
-import { _handleToStorageInstance } from './rx-collection-helper';
 import { getPrimaryFieldOfPrimaryKey } from './rx-schema';
 
 let _queryCount = 0;
@@ -310,12 +309,16 @@ export class RxQueryBase<
      * @overwrites itself with the actual value
      */
     get queryMatcher(): QueryMatcher<RxDocumentWriteData<RxDocumentType>> {
+        const schema = this.collection.schema.normalized;
         return overwriteGetterForCaching(
             this,
             'queryMatcher',
             this.collection.database.storage.statics.getQueryMatcher(
-                this.collection.storageInstance.schema,
-                this.getPreparedQuery()
+                schema,
+                this.collection.database.storage.statics.prepareQuery(
+                    schema,
+                    this.mangoQuery
+                )
             )
         );
     }
@@ -368,9 +371,7 @@ export class RxQueryBase<
             return false;
         }
 
-        return this.queryMatcher(
-            _handleToStorageInstance(this.collection, docData)
-        );
+        return this.queryMatcher(docData);
     }
 
     /**
