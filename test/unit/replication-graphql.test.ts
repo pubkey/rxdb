@@ -1017,8 +1017,8 @@ describe('replication-graphql.test.js', () => {
                     const docsOnDb2 = server.getDocuments();
                     return docsOnDb2.length === (amount * 2) + 2;
                 });
-                server.close();
-                c.database.destroy();
+                await server.close();
+                await c.database.destroy();
             });
             it('should push and pull many docs; live: true', async () => {
                 const amount = batchSize * 4;
@@ -1073,8 +1073,8 @@ describe('replication-graphql.test.js', () => {
                     return docsOnDb2.length === (amount * 2) + 2;
                 });
 
-                server.close();
-                c.database.destroy();
+                await server.close();
+                await c.database.destroy();
             });
             it('should work with multiInstance', async () => {
                 const name = randomCouchString(10);
