@@ -105,7 +105,7 @@ describe('typings.test.js', function () {
     config.parallel('import', () => {
         it('import * with strict:true', async () => {
             const code = `
-                import { addPouchPlugin } as rxdb from '${pouchdbPluginPath}';
+                import { addPouchPlugin } from '${pouchdbPluginPath}';
                 import * as PouchMemAdapter from 'pouchdb-adapter-memory';
                 addPouchPlugin(PouchMemAdapter);
             `;

@@ -19,6 +19,9 @@ addPouchPlugin(MemoryAdapter);
 import { RxDBServerPlugin } from 'rxdb/plugins/server';
 addRxPlugin(RxDBServerPlugin);
 
+import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
+addRxPlugin(RxDBLeaderElectionPlugin);
+
 import * as PouchHttpPlugin from 'pouchdb-adapter-http';
 addPouchPlugin(PouchHttpPlugin);
 
