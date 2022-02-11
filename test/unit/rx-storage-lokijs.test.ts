@@ -404,7 +404,7 @@ describe('rx-storage-lokijs.test.js', () => {
                         _deleted: false
                     }
                 }]);
-                await keyObjectStorageInstance.findLocalDocumentsById(['foobar']);
+                await keyObjectStorageInstance.findLocalDocumentsById(['foobar'], false);
 
                 await storageInstance.close();
                 await keyObjectStorageInstance.close();

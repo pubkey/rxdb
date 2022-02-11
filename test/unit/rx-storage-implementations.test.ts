@@ -2206,7 +2206,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     options: {},
                     multiInstance: false
                 });
-                const docs = await storageInstance2.findLocalDocumentsById(['foobar']);
+                const docs = await storageInstance2.findLocalDocumentsById(['foobar'], false);
                 assert.strictEqual(Object.keys(docs).length, 0);
 
                 storageInstance.close();
@@ -2391,7 +2391,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 // find the document on B
                 await waitUntil(async () => {
                     try {
-                        const foundAgain = await instances.b.findLocalDocumentsById([writeData._id]);
+                        const foundAgain = await instances.b.findLocalDocumentsById([writeData._id], false);
                         const foundDoc = getFromObjectOrThrow(foundAgain, writeData._id);
                         assert.strictEqual(foundDoc._id, writeData._id);
                         return true;

@@ -203,7 +203,7 @@ config.parallel('rx-database.test.js', () => {
                     password,
                     ignoreDuplicate: true
                 });
-                const doc = await findLocalDocument<any>(db.localDocumentsStore, 'pwHash');
+                const doc = await findLocalDocument<any>(db.localDocumentsStore, 'pwHash', false);
                 if (!doc) {
                     throw new Error('error in test this should never happen ' + doc);
                 }
@@ -214,7 +214,7 @@ config.parallel('rx-database.test.js', () => {
                     password,
                     ignoreDuplicate: true
                 });
-                const doc2 = await findLocalDocument<any>(db.localDocumentsStore, 'pwHash');
+                const doc2 = await findLocalDocument<any>(db.localDocumentsStore, 'pwHash', false);
                 assert.ok(doc2);
                 assert.strictEqual(typeof doc2.value, 'string');
 
