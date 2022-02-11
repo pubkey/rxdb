@@ -512,7 +512,7 @@ function throwIfDatabaseNameUsed(
  */
 export async function _ensureStorageTokenExists<Collections = any>(rxDatabase: RxDatabase<Collections>): Promise<string> {
     const storageTokenDocumentId = 'storageToken';
-    const storageTokenDoc = await findLocalDocument<{ value: string }>(rxDatabase.localDocumentsStore, storageTokenDocumentId);
+    const storageTokenDoc = await findLocalDocument<{ value: string }>(rxDatabase.localDocumentsStore, storageTokenDocumentId, false);
     if (!storageTokenDoc) {
         const storageToken = randomCouchString(10);
         await rxDatabase.localDocumentsStore.bulkWrite([{

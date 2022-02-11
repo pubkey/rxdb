@@ -25,6 +25,8 @@ import {
 } from '../../util';
 import {
     getEventKey,
+    localDocumentFromPouch,
+    localDocumentToPouch,
     OPEN_POUCHDB_STORAGE_INSTANCES,
     POUCHDB_LOCAL_PREFIX,
     PouchStorageInternals,
@@ -71,13 +73,12 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
 
         const insertDocs: RxLocalDocumentData<D>[] = documentWrites.map(writeRow => {
             writeRowById.set(writeRow.document._id, writeRow);
-            const storeDocumentData = flatClone(writeRow.document);
 
             /**
              * add local prefix
              * Local documents always have _id as primary
              */
-            storeDocumentData._id = POUCHDB_LOCAL_PREFIX + storeDocumentData._id;
+            const storeDocumentData = localDocumentToPouch(writeRow.document);
 
             // if previous document exists, we have to send the previous revision to pouchdb.
             if (writeRow.previous) {
@@ -195,7 +196,12 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
         return ret;
     }
 
-    async findLocalDocumentsById<D = any>(ids: string[]): Promise<{ [documentId: string]: RxLocalDocumentData<D> }> {
+    async findLocalDocumentsById<D = any>(
+        ids: string[],
+        withDeleted: boolean
+    ): Promise<{ [documentId: string]: RxLocalDocumentData<D> }> {
+        const pouch = this.internals.pouch;
+        const pouchIds = ids.map(id => POUCHDB_LOCAL_PREFIX + id);
         const ret: { [documentId: string]: RxLocalDocumentData<D> } = {};
 
         /**
@@ -205,12 +211,16 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
          * TODO create an issue at the pouchdb repo
          */
         await Promise.all(
-            ids.map(async (id) => {
-                const prefixedId = POUCHDB_LOCAL_PREFIX + id;
+            pouchIds.map(async (pouchId) => {
                 try {
-                    const docData = await this.internals.pouch.get(prefixedId);
-                    docData._id = id;
-                    ret[id] = docData;
+                    let docData = await pouch.get(pouchId);
+                    docData = localDocumentFromPouch(docData);
+                    if (
+                        withDeleted ||
+                        !docData._deleted
+                    ) {
+                        ret[docData._id] = docData;
+                    }
                 } catch (err) {
                     // do not add to result list on error
                 }

@@ -361,7 +361,7 @@ function getLocal(this: any, id: string): Promise<RxLocalDocument | null> {
     }
 
     // if not found, check in storage instance
-    return findLocalDocument(storageInstance, id)
+    return findLocalDocument(storageInstance, id, false)
         .then((docData) => {
             if (!docData) {
                 return null;

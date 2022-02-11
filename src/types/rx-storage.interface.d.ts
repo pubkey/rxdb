@@ -211,7 +211,11 @@ export interface RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>
          * List of primary values
          * of the documents to find.
          */
-        ids: string[]
+        ids: string[],
+        /**
+         * If set to true, deleted documents will also be returned.
+         */
+        withDeleted: boolean
     ): Promise<{
         [documentId: string]: RxLocalDocumentData<D>
     }>;
@@ -282,7 +286,7 @@ export interface RxStorageInstance<
         /**
          * If set to true, deleted documents will also be returned.
          */
-        deleted: boolean
+        withDeleted: boolean
     ): Promise<{
         [documentId: string]: RxDocumentData<DocumentData>
     }>;

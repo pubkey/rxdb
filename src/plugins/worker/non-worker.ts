@@ -203,11 +203,13 @@ export class RxStorageKeyObjectInstanceWorker implements RxStorageKeyObjectInsta
         );
     }
     findLocalDocumentsById<DocumentData>(
-        ids: string[]
+        ids: string[],
+        withDeleted: boolean
     ): Promise<{ [documentId: string]: RxLocalDocumentData<DocumentData> }> {
         return this.internals.worker.findLocalDocumentsById(
             this.internals.instanceId,
-            ids
+            ids,
+            withDeleted
         );
     }
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxLocalDocumentData<{ [key: string]: any; }>>>> {

@@ -70,7 +70,8 @@ export type InWorkerStorage = {
         documentWrites: BulkWriteLocalRow<DocumentData>[]): Promise<RxLocalStorageBulkWriteResponse<DocumentData>>;
     findLocalDocumentsById<DocumentData>(
         instanceId: number,
-        ids: string[]
+        ids: string[],
+        withDeleted: boolean
     ): Promise<{ [documentId: string]: RxLocalDocumentData<DocumentData> }>;
 }
 
@@ -177,10 +178,11 @@ export function wrappedRxStorage<T, D>(
         },
         findLocalDocumentsById<DocumentData>(
             instanceId: number,
-            ids: string[]
+            ids: string[],
+            withDeleted: boolean
         ): Promise<{ [documentId: string]: RxLocalDocumentData<DocumentData> }> {
             const instance = getFromMapOrThrow(instanceById, instanceId);
-            return instance.findLocalDocumentsById(ids);
+            return instance.findLocalDocumentsById(ids, withDeleted);
         }
     }
     expose(exposeMe);

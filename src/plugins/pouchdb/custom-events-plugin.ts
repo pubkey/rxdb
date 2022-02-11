@@ -141,6 +141,7 @@ export function addCustomEventsPluginToPouch() {
              * Pouchdb does not return deleted documents via allDocs()
              * So have to do use our hack with getting the newest revisions from the
              * changes.
+             * @link https://github.com/pouchdb/pouchdb/issues/7877#issuecomment-522775955
              */
             const viaChanges = await this.changes({
                 live: false,

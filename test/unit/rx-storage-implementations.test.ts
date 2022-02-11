@@ -1917,7 +1917,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }
                 ]);
 
-                const afterUpdate = await storageInstance.findLocalDocumentsById(['foobar']);
+                const afterUpdate = await storageInstance.findLocalDocumentsById(['foobar'], false);
                 assert.ok(afterUpdate['foobar']);
                 assert.strictEqual(afterUpdate['foobar'].value, 'barfoo2');
 
@@ -1995,7 +1995,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 }
 
                 // should not find the document
-                const res = await storageInstance.findLocalDocumentsById([writeDoc._id]);
+                const res = await storageInstance.findLocalDocumentsById([writeDoc._id], false);
                 assert.strictEqual(!!res[writeDoc._id], false);
 
                 storageInstance.close();
@@ -2024,12 +2024,59 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }]
                 );
 
-                const found = await storageInstance.findLocalDocumentsById([writeData._id]);
+                const found = await storageInstance.findLocalDocumentsById([writeData._id], false);
                 const doc = getFromObjectOrThrow(found, writeData._id);
                 assert.strictEqual(
                     doc.value,
                     writeData.value
                 );
+
+                storageInstance.close();
+            });
+            it('should find the deleted document if withDeleted: true', async () => {
+                const storageInstance = await config.storage
+                    .getStorage()
+                    .createKeyObjectStorageInstance({
+                        databaseName: randomCouchString(12),
+                        collectionName: randomCouchString(12),
+                        options: {},
+                        multiInstance: false
+                    });
+
+                const id = 'foobar';
+                const writeData = {
+                    _id: id,
+                    value: 'barfoo',
+                    _deleted: false,
+                    _attachments: {}
+                };
+
+                const insertResponse = await storageInstance.bulkWrite(
+                    [{
+                        document: writeData
+                    }]
+                );
+
+                const previous = getFromObjectOrThrow(insertResponse.success, id);
+
+                // delete the document
+                writeData._deleted = true;
+                const deleteResponse = await storageInstance.bulkWrite(
+                    [{
+                        previous,
+                        document: writeData
+                    }]
+                );
+                getFromObjectOrThrow(deleteResponse.success, id);
+
+                // should not be returned if withDeleted: false
+                const foundWithoutDeleted = await storageInstance.findLocalDocumentsById([writeData._id], false);
+                assert.ok(!foundWithoutDeleted[id]);
+
+                // should be returned if withDeleted: true
+                const found = await storageInstance.findLocalDocumentsById([writeData._id], true);
+                const doc = getFromObjectOrThrow(found, writeData._id);
+                assert.strictEqual(doc._deleted, true);
 
                 storageInstance.close();
             });

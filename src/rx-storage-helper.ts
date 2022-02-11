@@ -103,9 +103,10 @@ export async function writeSingleLocal<DocumentData>(
 
 export async function findLocalDocument<DocType>(
     instance: RxStorageKeyObjectInstance<any, any>,
-    id: string
+    id: string,
+    withDeleted: boolean
 ): Promise<RxDocumentData<RxLocalDocumentData<DocType>> | null> {
-    const docList = await instance.findLocalDocumentsById([id]);
+    const docList = await instance.findLocalDocumentsById([id], withDeleted);
     const doc = docList[id];
     if (!doc) {
         return null;

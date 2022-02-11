@@ -186,7 +186,8 @@ export class RxStorageKeyObjectInstanceDexie implements RxStorageKeyObjectInstan
     }
 
     async findLocalDocumentsById<RxDocType = any>(
-        ids: string[]
+        ids: string[],
+        withDeleted: boolean
     ): Promise<{ [documentId: string]: RxLocalDocumentData<RxDocType> }> {
         const state = await this.internals;
         const ret: { [documentId: string]: RxLocalDocumentData<RxDocType> } = {};
@@ -195,7 +196,10 @@ export class RxStorageKeyObjectInstanceDexie implements RxStorageKeyObjectInstan
             const documentInDb = docsInDb[idx];
             if (
                 documentInDb &&
-                !documentInDb._deleted
+                (
+                    withDeleted ||
+                    !documentInDb._deleted
+                )
             ) {
                 ret[id] = stripDexieKey(documentInDb);
             }

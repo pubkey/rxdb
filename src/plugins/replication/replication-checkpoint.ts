@@ -30,7 +30,8 @@ export async function getLastPushSequence(
 ): Promise<number> {
     const doc = await findLocalDocument<ReplicationCheckpointDocument>(
         collection.localDocumentsStore,
-        pushSequenceId(replicationIdentifier)
+        pushSequenceId(replicationIdentifier),
+        false
     );
     if (!doc) {
         return 0;
@@ -48,7 +49,8 @@ export async function setLastPushSequence(
 
     const doc = await findLocalDocument<ReplicationCheckpointDocument>(
         collection.localDocumentsStore,
-        _id
+        _id,
+        false
     );
     if (!doc) {
         const res = await writeSingleLocal<ReplicationCheckpointDocument>(
@@ -211,7 +213,8 @@ export async function getLastPullDocument<RxDocType>(
 ): Promise<RxDocumentData<RxDocType> | null> {
     const localDoc = await findLocalDocument<any>(
         collection.localDocumentsStore,
-        pullLastDocumentId(replicationIdentifier)
+        pullLastDocumentId(replicationIdentifier),
+        false
     );
     if (!localDoc) {
         return null;
@@ -229,7 +232,8 @@ export async function setLastPullDocument(
 
     const localDoc: RxLocalDocumentData = await findLocalDocument<any>(
         collection.localDocumentsStore,
-        _id
+        _id,
+        false
     );
 
     if (!localDoc) {

@@ -65,7 +65,8 @@ export async function storePasswordHashIntoDatabase(
 
     const pwHashDoc = await findLocalDocument<PasswordHashDocument>(
         rxDatabase.localDocumentsStore,
-        pwHashDocumentId
+        pwHashDocumentId,
+        false
     );
     if (!pwHashDoc) {
         const docData: PasswordHashDocument = {

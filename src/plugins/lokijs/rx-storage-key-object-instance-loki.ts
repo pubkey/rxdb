@@ -198,7 +198,10 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
         this.changes$.next(eventBulk);
         return ret;
     }
-    async findLocalDocumentsById<RxDocType = any>(ids: string[]): Promise<{ [documentId: string]: RxLocalDocumentData<RxDocType> }> {
+    async findLocalDocumentsById<RxDocType = any>(
+        ids: string[],
+        withDeleted: boolean
+    ): Promise<{ [documentId: string]: RxLocalDocumentData<RxDocType> }> {
         const localState = await mustUseLocalState(this);
         if (!localState) {
             return requestRemoteInstance(this, 'findLocalDocumentsById', [ids]);
@@ -208,7 +211,10 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
             const documentInDb = localState.collection.by('_id', id);
             if (
                 documentInDb &&
-                !documentInDb._deleted
+                (
+                    withDeleted ||
+                    !documentInDb._deleted
+                )
             ) {
                 ret[id] = stripLokiKey(documentInDb);
             }
