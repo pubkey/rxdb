@@ -10,7 +10,7 @@ import {
     now,
     blobBufferUtil,
     createRevision
-} from '../../plugins/core';
+} from '../../';
 
 import {
     validateDatabaseName,

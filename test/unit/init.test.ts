@@ -11,7 +11,7 @@ import faker from 'faker';
 faker.seed(123);
 
 // add dev-mode plugin
-import { addRxPlugin } from '../../plugins/core';
+import { addRxPlugin } from '../../';
 import { RxDBDevModePlugin } from '../../plugins/dev-mode';
 addRxPlugin(RxDBDevModePlugin);
 

@@ -30,7 +30,7 @@ wrappedRxStorage({
 ```ts
 import {
     createRxDatabase
-} from 'rxdb/plugins/core';
+} from 'rxdb';
 import { getRxStorageWorker } from 'rxdb/plugins/worker';
 import { RxStorageLokiStatics } from 'rxdb/plugins/lokijs';
 
@@ -66,7 +66,7 @@ You can copy them to a location where it can be served from the webserver and th
 ```ts
 import {
     createRxDatabase
-} from 'rxdb/plugins/core';
+} from 'rxdb';
 import { getRxStorageWorker } from 'rxdb/plugins/worker';
 import { RxStorageLokiStatics } from 'rxdb/plugins/lokijs';
 const database = await createRxDatabase({

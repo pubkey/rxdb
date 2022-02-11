@@ -19,7 +19,7 @@ Use this adapter when:
 ```js
 import {
     createRxDatabase
-} from 'rxdb/plugins/core'
+} from 'rxdb'
 import {
     getRxStoragePouch
 } from 'rxdb/plugins/pouchdb'

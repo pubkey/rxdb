@@ -9,7 +9,7 @@ import * as schemaObjects from '../helper/schema-objects';
 import {
     addRxPlugin,
     blobBufferUtil
-} from '../../plugins/core';
+} from '../../';
 import { createAttachments } from '../helper/humans-collection';
 import {
     backupSingleDocument,

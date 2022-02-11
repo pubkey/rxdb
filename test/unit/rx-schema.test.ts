@@ -19,7 +19,7 @@ import {
     getFinalFields,
     getPreviousVersions,
     getSchemaByObjectPath,
-} from '../../plugins/core';
+} from '../../';
 
 config.parallel('rx-schema.test.js', () => {
     describe('static', () => {

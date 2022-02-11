@@ -13,7 +13,7 @@ import {
     isRxDocument,
     randomCouchString,
     RxJsonSchema,
-} from '../../plugins/core';
+} from '../../';
 
 import {
     addPouchPlugin,

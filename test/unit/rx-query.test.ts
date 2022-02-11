@@ -14,7 +14,7 @@ import {
     promiseWait,
     randomCouchString,
     ensureNotFalsy,
-} from '../../plugins/core';
+} from '../../';
 import {
     getRxStoragePouch
 } from '../../plugins/pouchdb';

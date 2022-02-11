@@ -22,7 +22,7 @@ import {
     MigrationStrategies,
     WithAttachmentsData,
     RxCollection,
-} from '../../plugins/core';
+} from '../../';
 
 import {
     getRxStoragePouch

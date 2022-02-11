@@ -25,7 +25,7 @@ LokiJS has the main benefit of having a better performance. It can do this becau
 ```ts
 import {
     createRxDatabase
-} from 'rxdb/plugins/core';
+} from 'rxdb';
 import {
     getRxStorageLoki
 } from 'rxdb/plugins/lokijs';

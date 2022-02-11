@@ -14,7 +14,7 @@ The backup plugin works only in node.js, not in browser.
 This means we have to import it to RxDB before it can be used.
 
 ```javascript
-import { addRxPlugin } from 'rxdb/plugins/core';
+import { addRxPlugin } from 'rxdb';
 import { RxDBBackupPlugin } from 'rxdb/plugins/backup';
 addRxPlugin(RxDBBackupPlugin);
 ```

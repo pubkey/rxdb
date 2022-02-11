@@ -6,7 +6,7 @@ import type {
     RxDocument,
     RxCollection,
     RxDatabase
-} from 'rxdb/plugins/core';
+} from 'rxdb';
 import { RxHeroDocumentType } from './schemas/hero.schema';
 
 // ORM methods

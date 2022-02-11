@@ -10,7 +10,7 @@ import {
     RxLocalDocument,
     addRxPlugin,
     RxJsonSchema,
-} from '../../plugins/core';
+} from '../../';
 
 import {
     getRxStoragePouch

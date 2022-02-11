@@ -4,6 +4,19 @@ Like [pouchdb](https://pouchdb.com/guides/attachments.html), RxDB can store atta
 
 You can store string, binary files, images and whatever you want side by side with your documents.
 
+## Add the attachments plugin
+
+To enable the attachments, you have to add the `attachments` plugin.
+
+```ts
+import { addRxPlugin } from 'rxdb';
+import { RxDBAttachmentsPlugin } from 'rxdb/plugins/attachments';
+addRxPlugin(RxDBAttachmentsPlugin);
+```
+
+
+## Enable attachments in the schema
+
 Before you can use attachments, you have to ensure that the attachments-object is set in the schema of your `RxCollection`.
 
 ```javascript

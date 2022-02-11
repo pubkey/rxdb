@@ -15,6 +15,16 @@ The solution to this redundancy is the usage of a [leader-election](https://en.w
 You could now start implementing a messaging-system between your browser-tabs, hand out which one is leader, solve conflicts and reassign a new leader when the old one 'dies'.
 Or just use RxDB which does all these things for you.
 
+
+## Add the leader election plugin
+
+To enable the leader election, you have to add the `leader-election` plugin.
+
+```javascript
+import { addRxPlugin } from 'rxdb';
+import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
+addRxPlugin(RxDBLeaderElectionPlugin);
+```
 ## Code-example
 
 To make it easy, here is an example where the temperature is pulled every ten seconds and saved to a collection. The pulling starts at the moment where the opened tab becomes the leader.

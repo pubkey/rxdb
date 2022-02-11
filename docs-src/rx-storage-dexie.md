@@ -21,7 +21,7 @@ For the Dexie based `RxStorage`, we use the [mingo](https://github.com/kofrasa/m
 ## Usage
 
 ```ts
-import { createRxDatabase } from 'rxdb/plugins/core';
+import { createRxDatabase } from 'rxdb';
 import { getRxStorageDexie } from 'rxdb/plugins/dexie';
 
 const db = await createRxDatabase({
@@ -37,7 +37,7 @@ Node.js has no IndexedDB API. To still run the Dexie `RxStorage` in Node.js, for
 You can do that by using the [fake-indexeddb](https://github.com/dumbmatter/fakeIndexedDB) module and pass it to the `getRxStorageDexie()` function.
 
 ```ts
-import { createRxDatabase } from 'rxdb/plugins/core';
+import { createRxDatabase } from 'rxdb';
 import { getRxStorageDexie } from 'rxdb/plugins/dexie';
 
 //> npm install fake-indexeddb --save

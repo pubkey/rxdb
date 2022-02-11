@@ -22,7 +22,7 @@ import {
     blobBufferUtil,
     RxChangeEvent,
     flattenEvents
-} from '../../plugins/core';
+} from '../../';
 
 import {
     addPouchPlugin,

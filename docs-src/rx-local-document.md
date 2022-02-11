@@ -10,6 +10,17 @@ They come in handy when you want to store settings or additional data next to yo
 - Local Documents can not have attachments
 - Local Documents will not get handled by the [data-migration](./data-migration.md)
 
+
+## Add the local documents plugin
+
+To enable the local documents, you have to add the `local-documents` plugin.
+
+```ts
+import { addRxPlugin } from 'rxdb';
+import { RxDBLocalDocumentsPlugin } from 'rxdb/plugins/local-documents';
+addRxPlugin(RxDBLocalDocumentsPlugin);
+```
+
 ## insertLocal()
 
 Creates a local document for the database or collection. Throws if a local document with the same id already exists. Returns a Promise which resolves the new `RxLocalDocument`.
@@ -113,4 +124,4 @@ const foo: string = localDoc.toJSON().foo;
 
 --------------------------------------------------------------------------------
 
-If you are new to RxDB, you should continue [here](./custom-build.md)
+If you are new to RxDB, you should continue [here](./third-party-plugins.md)

@@ -88,6 +88,7 @@ RxDB relies solely on the remote instance to detect and resolve conflicts. Each 
 
 Be aware that client side clocks can never be trusted. When you have a client-backend replication, the backend should overwrite the `updatedAt` timestamp when it receives the change from the client.
 
+
 ## replicateRxCollection()
 
 You can start the replication of a single `RxCollection` by calling `replicateRxCollection()` like in the following:

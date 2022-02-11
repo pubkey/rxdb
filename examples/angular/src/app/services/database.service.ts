@@ -10,16 +10,10 @@ import {
     RxHeroesCollections
 } from './../RxDB.d';
 
-/**
- * Instead of using the default rxdb-import,
- * we do a custom build which lets us cherry-pick
- * only the modules that we need.
- * A default import would be: import RxDB from 'rxdb';
- */
 import {
     createRxDatabase,
     addRxPlugin
-} from 'rxdb/plugins/core';
+} from 'rxdb';
 
 import {
     addPouchPlugin, getRxStoragePouch

@@ -7,7 +7,7 @@ import {
     getPseudoSchemaForVersion,
     now,
     randomCouchString
-} from '../../plugins/core';
+} from '../../';
 
 import {
     getRxStorageLoki,

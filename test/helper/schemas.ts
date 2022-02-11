@@ -4,7 +4,7 @@ import {
     RxJsonSchema,
     toTypedRxJsonSchema,
     ExtractDocumentTypeFromTypedRxJsonSchema
-} from '../../plugins/core';
+} from '../../';
 import {
     SimpleHumanV3DocumentType,
     HumanWithSubOtherDocumentType,

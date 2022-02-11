@@ -2,7 +2,7 @@ import assert from 'assert';
 import { waitUntil } from 'async-test-util';
 import {
     dbCount
-} from '../../plugins/core';
+} from '../../';
 import { OPEN_POUCHDB_STORAGE_INSTANCES } from '../../plugins/pouchdb';
 
 describe('last.test.js', () => {

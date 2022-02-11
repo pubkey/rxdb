@@ -17,7 +17,7 @@ import {
     ensureNotFalsy,
     getFromObjectOrThrow,
     shuffleArray
-} from '../../plugins/core';
+} from '../../';
 
 import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
 addRxPlugin(RxDBKeyCompressionPlugin);

@@ -5,7 +5,7 @@ import {
     createRxDatabase,
     randomCouchString,
     RxJsonSchema,
-} from '../../plugins/core';
+} from '../../';
 
 import {
     addPouchPlugin,

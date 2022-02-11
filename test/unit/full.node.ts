@@ -8,13 +8,15 @@ import assert from 'assert';
 const {
     createRxDatabase,
     isRxDocument,
-    randomCouchString,
+    randomCouchString
+} = require('../../');
+const {
     addPouchPlugin,
     getRxStoragePouch
-} = require('../../');
-import {
+} = require('../../plugins/pouchdb');
+import type {
     RxJsonSchema,
-} from '../../plugins/core';
+} from '../../';
 
 addPouchPlugin(require('pouchdb-adapter-memory'));
 
@@ -41,6 +43,7 @@ const schema: RxJsonSchema<{ passportId: string; firstName: string; lastName: st
 };
 
 const run = async function () {
+
     // create database
     const db = await createRxDatabase({
         name: randomCouchString(10),
@@ -63,7 +66,13 @@ const run = async function () {
     });
 
     // query
-    const doc = await db.humans.findOne().where('firstName').ne('foobar').exec();
+    const doc = await db.humans.findOne({
+        selector: {
+            firstName: {
+                $ne: 'foobar'
+            }
+        }
+    }).exec();
     assert.ok(isRxDocument(doc));
 
     // destroy database

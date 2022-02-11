@@ -171,8 +171,7 @@ export const ERROR_MESSAGES = {
     SC33: 'SchemaCheck: used primary key is not a property in the schema',
 
     // plugins/dev-mode
-    DEV1: 'dev-mode added multiple times, ' +
-        'this is likely because you have mixed up the import from the the plugins/core and the full RxDB',
+    DEV1: 'dev-mode added multiple times',
 
     // plugins/validate.js
     VD1: 'Sub-schema not found, does the schemaPath exists in your schema?',

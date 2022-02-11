@@ -12,7 +12,7 @@ import {
     RxCollection,
     randomCouchString,
     blobBufferUtil,
-} from '../../plugins/core';
+} from '../../';
 
 import {
     getRxStoragePouch

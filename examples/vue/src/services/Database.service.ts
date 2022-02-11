@@ -12,16 +12,10 @@ import {
 
 import heroSchema from '../schemas/Hero.schema';
 
-// batteries-included
-// import RxDB from 'rxdb';
-
-/**
- * custom build
- */
 import {
     createRxDatabase,
     addRxPlugin
-} from 'rxdb/plugins/core';
+} from 'rxdb';
 
 import {
     addPouchPlugin,

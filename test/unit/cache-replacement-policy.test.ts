@@ -11,7 +11,7 @@ import {
     QueryCache,
     triggerCacheReplacement,
     RxQuery,
-} from '../../plugins/core';
+} from '../../';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { mergeMap, shareReplay, switchMap } from 'rxjs/operators';
 

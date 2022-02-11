@@ -3,7 +3,7 @@ import assert from 'assert';
 import config from './config';
 import type {
     MangoQuery
-} from '../../plugins/core';
+} from '../../';
 
 import {
     NoSqlQueryBuilder,

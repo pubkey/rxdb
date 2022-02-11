@@ -9,7 +9,7 @@ import {
     RxCollection,
     RxDocument,
     MangoQuery,
-} from '../../plugins/core';
+} from '../../';
 
 import config from './config';
 

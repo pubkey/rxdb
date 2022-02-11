@@ -64,6 +64,14 @@ All properties of a `RxDocument` are assigned as getters so you can also directl
 Updates the document based on the [mongo-update-syntax](https://docs.mongodb.com/manual/reference/operator/update-field/), based on [modifyjs](https://github.com/lgandecki/modifyjs#implemented).
 
 ```js
+
+/**
+ * If not done before, you have to add the update plugin.
+ */
+import { addRxPlugin } from 'rxdb';
+import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
+addRxPlugin(RxDBUpdatePlugin);
+
 await myDocument.update({
     $inc: {
         age: 1 // increases age by 1

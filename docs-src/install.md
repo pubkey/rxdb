@@ -56,7 +56,7 @@ Replace `commitHash` with the hash of the latest [build-commit](https://github.c
 
 ## Import
 
-To import `rxdb`, add this to your JavaScript file to import the default bundle that contains the RxDB core and all default plugins:
+To import `rxdb`, add this to your JavaScript file to import the default bundle that contains the RxDB core:
 
 ```typescript
 import {
@@ -65,17 +65,8 @@ import {
 } from 'rxdb';
 ```
 
-By default, if you import RxDB into your javascript, a full batteries-included build will be imported. This has the advantage that you don't have to choose which things you need and which not. The disadvantage is the build-size. Often you don't need most of the functionality and you could save a lot of bandwidth by cherry-picking only the things you really need. For this, RxDB supports [custom builds](./custom-build.md).
-
-```typescript
-import {
-  createRxDatabase,
-  addRxPlugin,
-  /* ... */
-} from 'rxdb/plugins/core';
-```
 
 
 --------------------------------------------------------------------------------
 
-If you are new to RxDB, you should continue [here](./rx-database.md)
+If you are new to RxDB, you should continue [here](./dev-mode.md)

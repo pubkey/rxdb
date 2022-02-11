@@ -7,7 +7,7 @@ import {
     randomCouchString,
     RxCollection,
     RxJsonSchema
-} from '../../plugins/core';
+} from '../../';
 
 import {
     getRxStoragePouch,

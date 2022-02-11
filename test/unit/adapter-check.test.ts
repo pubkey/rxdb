@@ -2,7 +2,7 @@ import assert from 'assert';
 import config from './config';
 import {
     adapterObject,
-} from '../../plugins/core';
+} from '../../';
 import {
     PouchDB,
     addPouchPlugin,

@@ -10,7 +10,7 @@ import {
     normalizeMangoQuery,
     MangoQuery,
     ensureNotFalsy
-} from '../../plugins/core';
+} from '../../';
 
 import {
     addCustomEventsPluginToPouch,

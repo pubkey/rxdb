@@ -13,9 +13,6 @@ import {
 } from '../../util';
 
 import {
-    addRxPlugin, SyncOptionsGraphQL
-} from '../../core';
-import {
     hash
 } from '../../util';
 
@@ -42,6 +39,7 @@ import {
     RxReplicationPushError
 } from '../replication/rx-replication-error';
 import { newRxError } from '../../rx-error';
+import { addRxPlugin, SyncOptionsGraphQL } from '../../index';
 
 addRxPlugin(RxDBLeaderElectionPlugin);
 

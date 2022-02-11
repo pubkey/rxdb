@@ -17,7 +17,7 @@ import {
     addRxPlugin,
     blobBufferUtil,
     RxJsonSchema,
-} from '../../plugins/core';
+} from '../../';
 
 import {
     getRxStoragePouch

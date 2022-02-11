@@ -12,7 +12,7 @@ import {
     randomCouchString,
     isRxDocument,
     RxJsonSchema,
-} from '../../plugins/core';
+} from '../../';
 
 import {
     getRxStoragePouch

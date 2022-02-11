@@ -20,6 +20,16 @@ Cons:
 
 ## Usage
 
+### Add the GraphQL replication plugin
+
+To enable the GraphQL replication, you have to add the `replication-graphql` plugin.
+
+```ts
+import { addRxPlugin } from 'rxdb';
+import { RxDBReplicationGraphQLPlugin } from 'rxdb/plugins/replication-graphql';
+addRxPlugin(RxDBReplicationGraphQLPlugin);
+```
+
 ### Data Design
 
 To use the GraphQL-replication you first have to ensure that your data is sortable by update time and your documents never get deleted.

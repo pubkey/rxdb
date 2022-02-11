@@ -3,9 +3,9 @@
  */
 
 import { map } from 'rxjs/operators';
-import { RxCollectionBase } from './core';
 import { runPluginHooks } from './hooks';
 import { overwritable } from './overwritable';
+import { RxCollectionBase } from './rx-collection';
 import type {
     BulkWriteLocalRow,
     BulkWriteRow,

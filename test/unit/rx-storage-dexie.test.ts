@@ -10,7 +10,7 @@ import {
     normalizeRxJsonSchema,
     randomCouchString,
     RxJsonSchema
-} from '../../plugins/core';
+} from '../../';
 
 import {
     RxStorageDexieStatics,

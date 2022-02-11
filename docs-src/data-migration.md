@@ -4,6 +4,18 @@ Imagine you have your awesome messenger-app distributed to many users. After a w
 
 With RxDB you can provide migrationStrategies for your collections that automatically (or on call) transform your existing data from older to newer schemas. This assures that the client's data always matches your newest code-version.
 
+
+# Add the migration plugin
+
+To enable the data migration, you have to add the `migration` plugin.
+
+```ts
+import { addRxPlugin } from 'rxdb';
+import { RxDBMigrationPlugin } from 'rxdb/plugins/migration';
+addRxPlugin(RxDBMigrationPlugin);
+```
+
+
 ## Providing strategies
 
 Upon creation of a collection, you have to provide migrationStrategies when your schema's version-number is greater than `0`. To do this, you have to add an object to the `migrationStrategies` property where a function for every schema-version is assigned. A migrationStrategy is a function which gets the old document-data as a parameter and returns the new, transformed document-data. If the strategy returns `null`, the document will be removed instead of migrated.
@@ -158,7 +170,7 @@ When you store `RxAttachment`s together with your document, they can also be cha
 You can do this by mutating the `oldDoc._attachments` property.
 
 ```js
-import { blobBufferUtil } from 'rxdb/plugins/core';
+import { blobBufferUtil } from 'rxdb';
 const migrationStrategies = {
       1: async function(oldDoc){
         // do nothing with _attachments to keep all attachments and have them in the new collection version.

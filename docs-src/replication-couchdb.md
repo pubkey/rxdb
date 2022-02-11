@@ -4,6 +4,17 @@ With the CouchDB replication you can replicate data in both directions with any 
 It works with remote endpoints and also with local pouchdb instances or `RxCollection` that is created with the pouchdb storage.
 
 
+### Add the CouchDB replication plugin
+
+To enable the CouchDB replication, you have to add the `replication-couchdb` plugin.
+
+```ts
+import { addRxPlugin } from 'rxdb';
+import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb';
+addRxPlugin(RxDBReplicationCouchDBPlugin);
+```
+
+
 ## Rx.Collection.syncCouchDB()
 To replicate the collection with another instance, use `RxCollection.syncCouchDB()`.
 It basically does the same as [pouchdb-sync](https://pouchdb.com/guides/replication.html) but also adds event-handlers to make sure that change-events will be recognized in the internal event-stream.

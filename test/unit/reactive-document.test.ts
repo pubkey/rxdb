@@ -13,7 +13,7 @@ import {
     createRxDatabase,
     randomCouchString,
     promiseWait
-} from '../../plugins/core';
+} from '../../';
 
 import {
     getRxStoragePouch

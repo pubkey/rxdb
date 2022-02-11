@@ -22,7 +22,7 @@ import {
     hash,
     randomCouchString,
     ensureNotFalsy
-} from '../../plugins/core';
+} from '../../';
 
 import {
     addPouchPlugin,

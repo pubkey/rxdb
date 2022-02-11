@@ -18,7 +18,7 @@ import {
     dbCount,
     RxDatabase,
     RxStorage
-} from '../plugins/core';
+} from '../';
 import {
     addPouchPlugin,
     getRxStoragePouch

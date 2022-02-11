@@ -1,7 +1,7 @@
 # RxQuery
 
 A query allows to find documents in your collection.
-Like most other noSQL-Databases, RxDB uses the [mango-query-syntax](https://github.com/cloudant/mango). It is also possible to use [chained methods](https://docs.mongodb.com/manual/reference/method/db.collection.find/#combine-cursor-methods).
+Like most other noSQL-Databases, RxDB uses the [mango-query-syntax](https://github.com/cloudant/mango). It is also possible to use [chained methods](https://docs.mongodb.com/manual/reference/method/db.collection.find/#combine-cursor-methods) with the `query-builder` plugin.
 
 ## find()
 To create a basic `RxQuery`, call `.find()` on a collection and insert selectors. The result-set of normal queries is an array with documents.
@@ -9,9 +9,13 @@ To create a basic `RxQuery`, call `.find()` on a collection and insert selectors
 ```js
 // find all that are older then 18
 const query = myCollection
-    .find()
-    .where('age')
-    .gt(18);
+    .find({
+      selector: {
+        age: {
+          $gt: 18
+        }
+      }
+    });
 ```
 
 ## findOne()
@@ -51,6 +55,23 @@ const results = await query.exec();
 console.dir(results); // > [RxDocument,RxDocument,RxDocument..]
 ```
 
+## Query Builder
+
+To use chained query methods, you can use the `query-builder` plugin.
+
+```ts
+
+// add the query builder plugin
+import { addRxPlugin } from 'rxdb';
+import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
+addRxPlugin(RxDBQueryBuilderPlugin);
+
+// now you can use chained query methods
+
+const query = myCollection.find().where('age').gt(18);
+```
+
+
 ## Observe $
 An `BehaviorSubject` [see](https://medium.com/@luukgruijs/understanding-rxjs-behaviorsubject-replaysubject-and-asyncsubject-8cc061f1cfc0) that always has the current result-set as value.
 This is extremely helpful when used together with UIs that should always show the same state as what is written in the database.
@@ -70,7 +91,19 @@ await myCollection.insert({/* ... */}); // insert one
 Runs and [update](./rx-document.md#update) on every RxDocument of the query-result.
 
 ```js
-const query = myCollection.find().where('age').gt(18);
+
+// to use the update() method, you need to add the update plugin.
+import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
+addRxPlugin(RxDBUpdatePlugin);
+
+
+const query = myCollection.find({
+  selector: {
+    age: {
+      $gt: 18
+    }
+  }
+});
 await query.update({
     $inc: {
         age: 1 // increases age of every found document by 1
@@ -84,7 +117,13 @@ Deletes all found documents. Returns a promise which resolves to the deleted doc
 
 ```javascript
 // All documents where the age is less than 18
-const query = myCollection.find().where('age').lt(18);
+const query = myCollection.find({
+  selector: {
+    age: {
+      $lt: 18
+    }
+  }
+});
 // Remove the documents from the collection
 const removedDocs = await query.remove();
 ```
@@ -98,9 +137,21 @@ const documentData = {
   age: 19
 };
 
-myCollection.find().where('age').gt(18).doesDocumentDataMatch(documentData); // > true
+myCollection.find({
+  selector: {
+    age: {
+      $gt: 18
+    }
+  }
+}).doesDocumentDataMatch(documentData); // > true
 
-myCollection.find().where('age').gt(20).doesDocumentDataMatch(documentData); // > false
+myCollection.find({
+  selector: {
+    age: {
+      $gt: 20
+    }
+  }
+}).doesDocumentDataMatch(documentData); // > false
 ```
 
 
@@ -142,7 +193,7 @@ Here some examples to fast learn how to write queries without reading the docs.
 // directly pass search-object
 myCollection.find({
   selector: {
-    name: {$eq: 'foo'}
+    name: { $eq: 'foo' }
   }
 })
 .exec().then(documents => console.dir(documents));
@@ -151,7 +202,7 @@ myCollection.find({
 // This example will fe: match 'foo' but also 'fifoo' or 'foofa' or 'fifoofa'
 myCollection.find({
   selector: {
-    name: {$regex: '.*foo.*'}
+    name: { $regex: '.*foo.*' }
   }
 })
 .exec().then(documents => console.dir(documents));
@@ -159,7 +210,7 @@ myCollection.find({
 // find using a composite statement eg: $or
 // This example checks where name is either foo or if name is not existant on the document
 myCollection.find({
-  selector: {$or: [ { name: { $eq: 'foo' } }, { name: { $exists: false } }]}
+  selector: { $or: [ { name: { $eq: 'foo' } }, { name: { $exists: false } }] }
 })
 .exec().then(documents => console.dir(documents));
 
@@ -167,7 +218,7 @@ myCollection.find({
 // This example will match 'foo' or 'FOO' or 'FoO' etc...
 var regexp = new RegExp('^foo$', 'i');
 myCollection.find({
-  selector: {name: {$regex: regexp}}
+  selector: { name: { $regex: regexp } }
 })
 .exec().then(documents => console.dir(documents));
 

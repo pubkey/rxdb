@@ -163,10 +163,16 @@ For compression the npm module [jsonschema-key-compression](https://github.com/p
 
 `keyCompression` can only be set on the **top-level** of a schema.
 
-**Notice:** When you use `keyCompression` together with the graphql replication, you must ensure that direct non-RxDB writes to the remote database must also write compressed documents. Therefore it is not recommended to enable `keyCompression` for that use case.
+**Notice:** When you use `keyCompression` together with the graphql replication or replication primitives, you must ensure that direct non-RxDB writes to the remote database must also write compressed documents. Therefore it is not recommended to enable `keyCompression` for that use case.
 
 
 ```javascript
+
+// add the key-compression plugin
+import { addRxPlugin } from 'rxdb';
+import { RxDBKeyCompressionPlugin } from 'rxdb/plugins/key-compression';
+addRxPlugin(RxDBKeyCompressionPlugin);
+
 const mySchema = {
   keyCompression: true, // set this to true, to enable the keyCompression
   version: 0,
@@ -312,6 +318,17 @@ By adding a field to the `encrypted` list, it will be stored encrypted inside of
 You can set all fields to be encrypted, even nested objects. You can not run queries over encrypted fields.
 The password used for encryption is set during database creation. [See RxDatabase](./rx-database.md#password).
 
+To use encryption, you first have to add the `encryption` plugin.
+
+```javascript
+import { addRxPlugin } from 'rxdb';
+import { RxDBEncryptionPlugin } from 'rxdb/plugins/encryption';
+addRxPlugin(RxDBEncryptionPlugin);
+```
+
+The encryption-module is using `crypto-js` and is only needed when you create your RxDB-Database with a [password](./rx-database.md#password-optional).
+
+
 ```javascript
 const schemaWithDefaultAge = {
   version: 0,
@@ -338,4 +355,4 @@ For example, fieldnames must match the regex `^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-
 
 --------------------------------------------------------------------------------
 
-If you are new to RxDB, you should continue [here](./rx-collection.md)
+If you are new to RxDB, you should continue [here](./schema-validation.md)

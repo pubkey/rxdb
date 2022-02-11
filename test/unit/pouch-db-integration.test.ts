@@ -15,7 +15,7 @@ import {
     isRxDatabase,
     PouchDBInstance,
     blobBufferUtil,
-} from '../../plugins/core';
+} from '../../';
 
 import {
     PouchDB,

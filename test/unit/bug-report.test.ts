@@ -15,7 +15,7 @@ import config from './config';
 import {
     createRxDatabase,
     randomCouchString
-} from '../../plugins/core';
+} from '../../';
 
 import {
     getRxStoragePouch,

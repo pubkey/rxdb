@@ -16,7 +16,7 @@ import {
     randomCouchString,
     addRxPlugin,
     findLocalDocument,
-} from '../../plugins/core';
+} from '../../';
 
 
 import {

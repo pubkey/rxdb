@@ -7,7 +7,7 @@ import {
     decrypt,
     encrypt
 } from '../../plugins/encryption';
-import { randomCouchString } from '../../plugins/core';
+import { randomCouchString } from '../../';
 
 describe('mod-encrytion.test.js : .encrypt()', () => {
     it('should encrypt properly', () => {

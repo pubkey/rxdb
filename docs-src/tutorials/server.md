@@ -15,14 +15,15 @@ It should never be used openly accessible to the internet, use a couchdb-instanc
 Because the server plugin only works in node, it is not part of the default rxdb-build. You have to import it before you can use it.
 
 ```typescript
-import { addRxPlugin } from 'rxdb';
-import { addPouchPlugin } from 'rxdb/plugins/pouchdb';
+// run 'npm install express-pouchdb' before you use the server plugin.
 
 // add the server-plugin
+import { addRxPlugin } from 'rxdb';
 import { RxDBServerPlugin } from 'rxdb/plugins/server';
 addRxPlugin(RxDBServerPlugin);
 
-// add the memory-adapter
+// add the PouchDB memory-adapter
+import { addPouchPlugin } from 'rxdb/plugins/pouchdb';
 import * as MemoryAdapter from 'pouchdb-adapter-memory';
 addPouchPlugin(MemoryAdapter);
 ```

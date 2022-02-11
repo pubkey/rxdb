@@ -8,7 +8,7 @@ import {
     createRxDatabase,
     addRxPlugin,
     randomCouchString,
-} from '../../plugins/core';
+} from '../../';
 
 import {
     addPouchPlugin,

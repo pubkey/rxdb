@@ -23,7 +23,7 @@ import {
     RxCollection,
     ensureNotFalsy,
     lastOfArray
-} from '../../plugins/core';
+} from '../../';
 
 import {
     getRxStoragePouch

@@ -1,82 +1,166 @@
 /**
- * this is the default rxdb-export
- * It has a batteries-included guarantee.
- * It basically just rxdb-core with some default plugins
+ * this is the main entry-point for custom builds
+ * it can be used as standalone but is also used in the batteries-included main-export
  */
 
-import {
-    addRxPlugin,
-    createRxDatabase as createRxDatabaseCore
-} from './core';
-
-// default plugins
-import { RxDBDevModePlugin } from './plugins/dev-mode';
-import { RxDBValidatePlugin } from './plugins/validate';
-import { RxDBKeyCompressionPlugin } from './plugins/key-compression';
-import { RxDBMigrationPlugin } from './plugins/migration';
-import { RxDBLeaderElectionPlugin } from './plugins/leader-election';
-import { RxDBEncryptionPlugin } from './plugins/encryption';
-import { RxDBUpdatePlugin } from './plugins/update';
-import { RxDBReplicationCouchDBPlugin } from './plugins/replication-couchdb';
-import { RxDBJsonDumpPlugin } from './plugins/json-dump';
-import { RxDBAttachmentsPlugin } from './plugins/attachments';
-import { RxDBLocalDocumentsPlugin } from './plugins/local-documents';
-import { RxDBQueryBuilderPlugin } from './plugins/query-builder';
-import type {
-    RxDatabase,
-    RxDatabaseCreator,
-    RxCollection
-} from './types';
-
-
-let defaultPluginsAdded: boolean = false;
-
-/**
- * Adds the default plugins
- * that are used on non-custom builds.
- */
-export function addDefaultRxPlugins() {
-    if (defaultPluginsAdded) {
-        return;
-    }
-    defaultPluginsAdded = true;
-
-    addRxPlugin(RxDBDevModePlugin);
-    addRxPlugin(RxDBValidatePlugin);
-    addRxPlugin(RxDBKeyCompressionPlugin);
-    addRxPlugin(RxDBMigrationPlugin);
-    addRxPlugin(RxDBLeaderElectionPlugin);
-    addRxPlugin(RxDBEncryptionPlugin);
-    addRxPlugin(RxDBUpdatePlugin);
-    addRxPlugin(RxDBReplicationCouchDBPlugin);
-    addRxPlugin(RxDBJsonDumpPlugin);
-    addRxPlugin(RxDBAttachmentsPlugin);
-    addRxPlugin(RxDBLocalDocumentsPlugin);
-    addRxPlugin(RxDBQueryBuilderPlugin);
-}
-
-/**
- * Because we have set sideEffects: false
- * in the package.json, we have to ensure that the default plugins
- * are added before the first database is created.
- * So we have to wrap the createRxDatabase function.
- * Always ensure that this function has the same typings as in the rx-database.ts
- * TODO create a type for that function and use it on both sides.
- */
-export function createRxDatabase<
-    Collections = { [key: string]: RxCollection },
-    Internals = any,
-    InstanceCreationOptions = any
->(
-    params: RxDatabaseCreator<Internals, InstanceCreationOptions>
-): Promise<
-    RxDatabase<Collections, Internals, InstanceCreationOptions>
-> {
-    addDefaultRxPlugins();
-    return createRxDatabaseCore<Collections, Internals, InstanceCreationOptions>(params);
-}
-
-// re-export things from core
-export * from './core';
-
-export * from './plugins/pouchdb';
+ import './types/modules/graphql-client.d';
+ import './types/modules/mocha.parallel.d';
+ import './types/modules/modifiyjs.d';
+ 
+ 
+ export { addRxPlugin } from './plugin';
+ 
+ export {
+     createRxDatabase,
+     removeRxDatabase,
+     isRxDatabase,
+     dbCount,
+     _collectionNamePrimary // used in tests
+ } from './rx-database';
+ 
+ export {
+     overwritable
+ } from './overwritable';
+ 
+ export {
+     isRxCollection,
+     RxCollectionBase,
+     createRxCollection // used in tests
+ } from './rx-collection';
+ 
+ export {
+     fillObjectDataBeforeInsert
+ } from './rx-collection-helper';
+ 
+ export {
+     isRxDocument
+ } from './rx-document';
+ 
+ export {
+     flattenEvents
+ } from './rx-change-event';
+ 
+ export {
+     getDocumentOrmPrototype,
+     getDocumentPrototype
+ } from './rx-document-prototype-merge';
+ 
+ export {
+     isInstanceOf as isRxQuery,
+     normalizeMangoQuery
+ } from './rx-query';
+ 
+ export {
+     isInstanceOf as isRxSchema,
+     createRxSchema,
+     RxSchema,
+     getIndexes,
+     normalizeRxJsonSchema,
+     getFinalFields,
+     getPreviousVersions,
+     toTypedRxJsonSchema
+ } from './rx-schema';
+ export {
+     getPseudoSchemaForVersion,
+     getSchemaByObjectPath
+ } from './rx-schema-helper';
+ 
+ export {
+     findLocalDocument,
+     getSingleDocument,
+     getAllDocuments,
+     writeSingleLocal,
+     writeSingle
+ } from './rx-storage-helper';
+ 
+ export {
+     _clearHook // used in tests
+ } from './hooks';
+ 
+ export {
+     createCrypter // used in tests
+ } from './crypter';
+ 
+ export * from './query-cache';
+ 
+ export * from './util';
+ 
+ // TODO how to do 'export type * ..' ?
+ export type {
+     JsonSchemaTypes,
+     GraphQLSyncPullOptions,
+     GraphQLSyncPushOptions,
+     AtomicUpdateFunction,
+     CollectionsOfDatabase,
+     MangoQuery,
+     MangoQueryNoLimit,
+     JsonSchema,
+     ExtractDocumentTypeFromTypedRxJsonSchema,
+     KeyFunctionMap,
+     MangoQuerySelector,
+     MangoQuerySortDirection,
+     MangoQuerySortPart,
+     MigrationState,
+     NumberFunctionMap,
+     DeepReadonlyObject,
+ 
+     // pouchdb stuff
+     PouchDBInstance,
+     PouchReplicationOptions,
+     PouchSettings,
+     PouchSyncHandler,
+     PouchSyncHandlerEvents,
+     PouchdbQuery,
+ 
+     RxAttachment,
+     RxAttachmentCreator,
+     RxCollection,
+     RxCacheReplacementPolicy,
+     RxChangeEvent,
+     RxChangeEventBulk,
+     RxCollectionCreator,
+     RxCollectionGenerated,
+     RxCollectionHookCallback,
+     RxCollectionHookCallbackNonAsync,
+     RxCollectionHookNoInstance,
+     RxCollectionHookNoInstanceCallback,
+     RxDatabase,
+     RxDatabaseCreator,
+     RxDocument,
+     RxDumpCollection,
+     RxDumpCollectionAny,
+     RxDumpCollectionAsAny,
+     RxDumpDatabase,
+     Buffer,
+     Debug,
+     ExtractDTcol,
+     RxDatabaseGenerated,
+     RxDocumentBase,
+     RxDumpCollectionBase,
+     RxDumpDatabaseAny,
+     RxDumpDatabaseBase,
+     RxError,
+     RxErrorItem,
+     RxErrorParameters,
+     RxGraphQLReplicationPushQueryBuilder,
+     RxGraphQLReplicationPullQueryBuilder,
+     RxJsonSchema,
+     RxLocalDocument,
+     RxPlugin,
+     RxQuery,
+     RxQueryOP,
+     RxQueryObject,
+     RxQueryOptions,
+     RxCouchDBReplicationState,
+     RxTypeError,
+     ServerOptions,
+     SyncOptions,
+     SyncOptionsGraphQL,
+     MigrationStrategy,
+     MigrationStrategies,
+     RxStorage,
+     RxStorageStatics,
+     OldRxCollection,
+     WithAttachmentsData
+ } from './types';
+ 

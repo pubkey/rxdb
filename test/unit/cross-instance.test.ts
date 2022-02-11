@@ -15,7 +15,7 @@ import {
     randomCouchString,
     promiseWait,
     RxDatabase,
-} from '../../plugins/core';
+} from '../../';
 
 import {
     getRxStoragePouch

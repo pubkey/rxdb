@@ -11,7 +11,7 @@ import {
     randomCouchString,
     _clearHook,
     RxPlugin
-} from '../../plugins/core';
+} from '../../';
 
 import {
     addPouchPlugin

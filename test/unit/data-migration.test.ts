@@ -17,7 +17,7 @@ import {
     PouchDBInstance,
     lastOfArray,
     getAllDocuments,
-} from '../../plugins/core';
+} from '../../';
 
 import {
     PouchDB,

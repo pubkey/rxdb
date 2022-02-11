@@ -26,7 +26,7 @@ import {
     randomCouchString,
     now,
     hash,
-} from '../../plugins/core';
+} from '../../';
 
 import {
     setLastPushSequence,

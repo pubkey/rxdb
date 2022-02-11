@@ -12,7 +12,7 @@ import {
     RxJsonSchema,
     randomCouchString,
     createCrypter,
-} from '../../plugins/core';
+} from '../../';
 
 import {
     getRxStoragePouch

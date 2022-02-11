@@ -7,6 +7,7 @@
     * [npm](./install.md#npm)
     * [import](./install.md#import)
 
+* [Dev Mode](./dev-mode.md)
 * [RxDatabase](./rx-database.md)
     * [Creation](./rx-database.md#creation)
         * [name](./rx-database.md#name)
@@ -38,6 +39,8 @@
     * [default](./rx-schema.md#default)
     * [final](./rx-schema.md#final)
     * [encryption](./rx-schema.md#encryption)
+
+* [Schema Validation](./schema-validation.md)
 
 * [RxCollection](./rx-collection.md)
     * [Creation](./rx-collection.md#creating-a-collection)
@@ -128,7 +131,7 @@
 
 * [LocalDocuments](./rx-local-document.md)
 
-* [Custom Build](./custom-build.md)
+* [Third Party Plugins](./third-party-plugins.md)
 
 * [Creating Plugins](./plugins.md)
 

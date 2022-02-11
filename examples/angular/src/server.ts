@@ -6,7 +6,7 @@
 import {
     addRxPlugin,
     createRxDatabase
-} from 'rxdb/plugins/core';
+} from 'rxdb';
 
 import {
     addPouchPlugin,

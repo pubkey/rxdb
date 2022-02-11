@@ -23,7 +23,7 @@ import {
     RxCollection,
     getFromObjectOrThrow,
     RxJsonSchema
-} from '../../plugins/core';
+} from '../../';
 import {
     getRxStoragePouch
 } from '../../plugins/pouchdb';

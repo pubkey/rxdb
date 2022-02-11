@@ -20,16 +20,14 @@ import type {
     ServerResponse
 } from '../types';
 
-import {
-    adapterObject,
-    addRxPlugin,
-    flatClone,
-    PROMISE_RESOLVE_VOID
-} from '../core';
 import { RxDBReplicationCouchDBPlugin } from './replication-couchdb';
 addRxPlugin(RxDBReplicationCouchDBPlugin);
 
 import PouchAdapterHttp from 'pouchdb-adapter-http';
+import { adapterObject, addRxPlugin } from '../index';
+import {
+    flatClone, PROMISE_RESOLVE_VOID
+} from '../util';
 addPouchPlugin(PouchAdapterHttp);
 
 let ExpressPouchDB: any;
