@@ -17,6 +17,9 @@ addPouchPlugin(require('pouchdb-adapter-http'));
 const { RxDBEncryptionPlugin } = require('../../../plugins/encryption');
 addRxPlugin(RxDBEncryptionPlugin);
 
+const { RxDBLeaderElectionPlugin } = require('../../../plugins/leader-election');
+addRxPlugin(RxDBLeaderElectionPlugin);
+
 const Database = {};
 
 const heroSchema = {
