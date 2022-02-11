@@ -7,10 +7,12 @@
 import {
     addRxPlugin,
     createRxDatabase,
-    addPouchPlugin,
     RxJsonSchema,
-    getRxStoragePouch
 } from 'rxdb';
+import {
+    addPouchPlugin,
+    getRxStoragePouch
+} from 'rxdb/plugins/pouchdb';
 import * as MemoryAdapter from 'pouchdb-adapter-memory';
 addPouchPlugin(MemoryAdapter);
 

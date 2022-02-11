@@ -1,5 +1,5 @@
 import React, { createContext, useEffect, useState } from 'react';
-import { addPouchPlugin } from 'rxdb';
+import { addPouchPlugin } from 'rxdb/plugins/pouchdb';
 import Heroes from './Heroes';
 import initializeDb from './initializeDb';
 

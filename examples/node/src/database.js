@@ -14,6 +14,9 @@ const {
 addPouchPlugin(require('pouchdb-adapter-node-websql'));
 addPouchPlugin(require('pouchdb-adapter-http'));
 
+const { RxDBEncryptionPlugin } = require('../../../plugins/encryption');
+addRxPlugin(RxDBEncryptionPlugin);
+
 const Database = {};
 
 const heroSchema = {

@@ -7,6 +7,8 @@ import config from './unit/config';
 import AsyncTestUtil from 'async-test-util';
 import * as path from 'path';
 
+const pouchdbPluginPath = path.join(config.rootPath, 'plugins/pouchdb');
+
 describe('typings.test.js', function () {
     this.timeout(120 * 1000); // tests can take very long on slow devices like the CI
     const codeBase = `
@@ -27,7 +29,7 @@ describe('typings.test.js', function () {
         import {
             addPouchPlugin,
             getRxStoragePouch
-        } from '${path.join(config.rootPath, 'plugins/pouchdb')}';
+        } from '${pouchdbPluginPath}';
         import * as PouchMemAdapter from 'pouchdb-adapter-memory';
         addPouchPlugin(PouchMemAdapter);
         const PouchHttpAdapter = require('pouchdb-adapter-http');
@@ -103,9 +105,9 @@ describe('typings.test.js', function () {
     config.parallel('import', () => {
         it('import * with strict:true', async () => {
             const code = `
-                import * as rxdb from '${config.rootPath}';
+                import { addPouchPlugin } as rxdb from '${pouchdbPluginPath}';
                 import * as PouchMemAdapter from 'pouchdb-adapter-memory';
-                rxdb.addPouchPlugin(PouchMemAdapter);
+                addPouchPlugin(PouchMemAdapter);
             `;
             await transpileCode(code);
         });
