@@ -1132,19 +1132,26 @@ describe('replication-graphql.test.js', () => {
                 });
 
 
+                console.log('----- 1');
+
                 // insert to collection1
                 await collection1.insert(schemaObjects.humanWithTimestamp());
+                console.log('----- 2');
                 await AsyncTestUtil.waitUntil(async () => {
                     const docs = await collection2.find().exec();
                     return docs.length === 1;
                 });
+                console.log('----- 3');
 
                 // insert to collection2
+                console.log('----- 4');
                 await collection2.insert(schemaObjects.humanWithTimestamp());
+                console.log('----- 5');
                 await AsyncTestUtil.waitUntil(async () => {
                     const docs = await collection1.find().exec();
                     return docs.length === 2;
                 });
+                console.log('----- 6');
 
                 db1.destroy();
                 db2.destroy();
