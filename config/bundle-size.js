@@ -1,6 +1,6 @@
 import {
     createRxDatabase
-} from '../plugins/core';
+} from '../';
 import {
     getRxStoragePouch,
     addPouchPlugin

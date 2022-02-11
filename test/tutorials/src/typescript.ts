@@ -10,10 +10,12 @@ import {
     RxCollection,
     RxJsonSchema,
     RxDocument,
-    createRxDatabase,
+    createRxDatabase
+} from 'rxdb';
+import {
     addPouchPlugin,
     getRxStoragePouch
-} from 'rxdb';
+} from 'rxdb/plugins/pouchdb';
 
 import * as MemoryAdapter from 'pouchdb-adapter-memory';
 addPouchPlugin(MemoryAdapter);

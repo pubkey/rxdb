@@ -1,9 +1,16 @@
 require('babel-polyfill');
 const {
     createRxDatabase,
+    addRxPlugin
+} = require('../../../');
+const {
+    RxDBReplicationCouchDBPlugin
+} = require('../../../plugins/replication-couchdb');
+addRxPlugin(RxDBReplicationCouchDBPlugin);
+const {
     addPouchPlugin,
     getRxStoragePouch
-} = require('../../../');
+} = require('../../../plugins/pouchdb');
 addPouchPlugin(require('pouchdb-adapter-node-websql'));
 addPouchPlugin(require('pouchdb-adapter-http'));
 

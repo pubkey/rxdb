@@ -1,9 +1,11 @@
 import {
     createRxDatabase,
-    addRxPlugin,
+    addRxPlugin
+} from 'rxdb';
+import {
     addPouchPlugin,
     getRxStoragePouch
-} from 'rxdb';
+} from 'rxdb/plugins/pouchdb';
 import {
     heroSchema
 } from './Schema';

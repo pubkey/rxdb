@@ -5,6 +5,7 @@ import assert from 'assert';
 import * as schemas from './helper/schemas';
 import config from './unit/config';
 import AsyncTestUtil from 'async-test-util';
+import * as path from 'path';
 
 describe('typings.test.js', function () {
     this.timeout(120 * 1000); // tests can take very long on slow devices like the CI
@@ -21,10 +22,12 @@ describe('typings.test.js', function () {
             RxAttachment,
             RxPlugin,
             addRxPlugin,
-            addPouchPlugin,
-            getRxStoragePouch,
             blobBufferUtil
         } from '${config.rootPath}';
+        import {
+            addPouchPlugin,
+            getRxStoragePouch
+        } from '${path.join(config.rootPath, 'plugins/pouchdb')}';
         import * as PouchMemAdapter from 'pouchdb-adapter-memory';
         addPouchPlugin(PouchMemAdapter);
         const PouchHttpAdapter = require('pouchdb-adapter-http');

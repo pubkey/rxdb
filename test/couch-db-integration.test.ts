@@ -8,11 +8,15 @@ import assert from 'assert';
 import { waitUntil } from 'async-test-util';
 
 import {
-    addPouchPlugin,
     randomCouchString,
-    addDefaultRxPlugins
+    addRxPlugin
 } from '../';
-addDefaultRxPlugins();
+import {
+    addPouchPlugin
+} from '../plugins/pouchdb';
+
+import { RxDBReplicationCouchDBPlugin } from '../plugins/replication-couchdb';
+addRxPlugin(RxDBReplicationCouchDBPlugin);
 
 addPouchPlugin(require('pouchdb-adapter-memory'));
 addPouchPlugin(require('pouchdb-adapter-http'));

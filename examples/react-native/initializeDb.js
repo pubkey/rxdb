@@ -1,5 +1,6 @@
 import schema from './src/Schema';
-import { createRxDatabase, getRxStoragePouch } from 'rxdb';
+import { createRxDatabase } from 'rxdb';
+import { getRxStoragePouch } from 'rxdb/plugins/pouchdb'
 
 const syncURL = 'http://localhost:10102/'; // Replace localhost with a public ip address!
 const dbName = 'heroesreactdatabase1';
