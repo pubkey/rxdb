@@ -996,11 +996,15 @@ describe('replication-graphql.test.js', () => {
 
 
                 // insert one on local and one on server
-                const doc: any = schemaObjects.humanWithTimestamp();
+                const doc: any = schemaObjects.humanWithTimestamp({
+                    name: 'some1local'
+                });
                 doc['deleted'] = false;
                 await server.setDocument(doc);
 
-                const insertData = schemaObjects.humanWithTimestamp();
+                const insertData = schemaObjects.humanWithTimestamp({
+                    name: 'some1server'
+                });
                 await c.insert(insertData);
 
                 await AsyncTestUtil.waitUntil(async () => {
@@ -1053,10 +1057,14 @@ describe('replication-graphql.test.js', () => {
 
 
                 // insert one on local and one on server
-                const doc: any = schemaObjects.humanWithTimestamp();
+                const doc: any = schemaObjects.humanWithTimestamp({
+                    name: 'many1local'
+                });
                 doc['deleted'] = false;
                 await server.setDocument(doc);
-                await c.insert(schemaObjects.humanWithTimestamp());
+                await c.insert(schemaObjects.humanWithTimestamp({
+                    name: 'many1server'
+                }));
 
                 await AsyncTestUtil.waitUntil(async () => {
                     /**
@@ -1135,7 +1143,9 @@ describe('replication-graphql.test.js', () => {
                 console.log('----- 1');
 
                 // insert to collection1
-                await collection1.insert(schemaObjects.humanWithTimestamp());
+                await collection1.insert(schemaObjects.humanWithTimestamp({
+                    name: 'mt1'
+                }));
                 console.log('----- 2');
                 await AsyncTestUtil.waitUntil(async () => {
                     const docs = await collection2.find().exec();
@@ -1145,7 +1155,9 @@ describe('replication-graphql.test.js', () => {
 
                 // insert to collection2
                 console.log('----- 4');
-                await collection2.insert(schemaObjects.humanWithTimestamp());
+                await collection2.insert(schemaObjects.humanWithTimestamp({
+                    name: 'mt2'
+                }));
                 console.log('----- 5');
                 await AsyncTestUtil.waitUntil(async () => {
                     const docs = await collection1.find().exec();
