@@ -330,7 +330,11 @@ export async function createLokiKeyObjectStorageInstance(
     if (params.multiInstance) {
         ensureNotFalsy(internals.leaderElector)
             .awaitLeadership()
-            .then(() => mustUseLocalState(instance));
+            .then(() => {
+                if (!instance.closed) {
+                    mustUseLocalState(instance);
+                }
+            });
     }
 
 

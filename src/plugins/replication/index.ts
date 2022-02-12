@@ -287,6 +287,9 @@ export class RxReplicationStateBase<RxDocType> {
          * This will ensure that no local writes are missed out and are not pushed to the remote.
          */
         if (this.push) {
+            if (this.isStopped()) {
+                return Promise.resolve('ok');
+            }
             const localWritesInBetween = await getChangesSinceLastPushSequence<RxDocType>(
                 this.collection,
                 this.replicationIdentifier,

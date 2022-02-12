@@ -434,11 +434,23 @@ export async function waitUntilHasLeader(leaderElector: LeaderElector) {
 export async function mustUseLocalState(
     instance: RxStorageInstanceLoki<any> | RxStorageKeyObjectInstanceLoki
 ): Promise<LokiLocalDatabaseState | false> {
+    const isRxStorageInstanceLoki = typeof (instance as any).query === 'function';
+
     if (instance.closed) {
-        return false;
+        /**
+         * If this happens, it means that RxDB made a call to an already closed storage instance.
+         * This must never happen because when RxDB closes a collection or database,
+         * all tasks must be cleared so that no more calls are made the the storage.
+         */
+        throw newRxError('SNH', {
+            args: {
+                databaseName: instance.databaseName,
+                collectionName: instance.collectionName,
+                isRxStorageInstanceLoki
+            }
+        });
     }
 
-    const isRxStorageInstanceLoki = typeof (instance as any).query === 'function';
 
     if (instance.internals.localState) {
         return instance.internals.localState;
