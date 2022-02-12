@@ -385,8 +385,10 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
     async findDocumentsById(ids: string[], deleted: boolean): Promise<{ [documentId: string]: RxDocumentData<RxDocType> }> {
         const localState = await mustUseLocalState(this);
         if (!localState) {
+            console.log('findDocumentsById use remote');
             return requestRemoteInstance(this, 'findDocumentsById', [ids, deleted]);
         }
+        console.log('findDocumentsById NOT use remote');
 
         const ret: { [documentId: string]: RxDocumentData<RxDocType> } = {};
         ids.forEach(id => {
@@ -442,8 +444,10 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
     }> {
         const localState = await mustUseLocalState(this);
         if (!localState) {
+            console.log('getChangedDocuments use remote');
             return requestRemoteInstance(this, 'getChangedDocuments', [options]);
         }
+        console.log('getChangedDocuments NOT use remote');
 
         const desc = options.direction === 'before';
         const operator = options.direction === 'after' ? '$gt' : '$lt';

@@ -124,6 +124,7 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
      * until we reach the end of it
      */
     while (retry && !isStopped()) {
+        console.log('------------');
         const changesResults = await collection.storageInstance.getChangedDocuments({
             sinceSequence: lastPushSequence,
             limit: batchSize,
@@ -138,11 +139,11 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
             continue;
         }
 
+        const docIds = changesResults.changedDocuments.map(row => row.id);
+
         if (isStopped()) {
             break;
         }
-
-        const docIds = changesResults.changedDocuments.map(row => row.id);
         const docs = await collection.storageInstance.findDocumentsById(
             docIds,
             true
@@ -155,6 +156,12 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
             }
             let changedDoc = docs[id];
             if (!changedDoc) {
+
+                console.log('ERRRR');
+                console.dir(collection.name);
+                console.dir({ args: { docs, docIds } });
+                process.exit(1);
+
                 throw newRxError('SNH', { args: { docs, docIds } });
             }
 

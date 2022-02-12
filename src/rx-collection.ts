@@ -908,6 +908,15 @@ export class RxCollectionBase<
         if (this.destroyed) {
             return PROMISE_RESOLVE_FALSE;
         }
+
+        /**
+         * Settings destroyed = true
+         * must be the first thing to do,
+         * so for example the replication can directly stop
+         * instead of sending requests to a closed storage.
+         */
+        this.destroyed = true;
+
         if (this._onDestroyCall) {
             this._onDestroyCall();
         }
@@ -924,7 +933,6 @@ export class RxCollectionBase<
             ])
             .then(() => {
                 delete this.database.collections[this.name];
-                this.destroyed = true;
                 return runAsyncPluginHooks('postDestroyRxCollection', this).then(() => true);
             });
     }

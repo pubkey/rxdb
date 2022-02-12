@@ -443,9 +443,11 @@ export class RxDatabaseBase<
         if (this.destroyed) {
             return PROMISE_RESOLVE_FALSE;
         }
+        // settings destroyed = true must be the first thing to do.
+        this.destroyed = true;
+
         runPluginHooks('preDestroyRxDatabase', this);
         DB_COUNT--;
-        this.destroyed = true;
 
         this._subs.map(sub => sub.unsubscribe());
 
