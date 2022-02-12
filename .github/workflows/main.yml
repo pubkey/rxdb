@@ -102,11 +102,40 @@ jobs:
       - name: npm run test:node:lokijs
         run: npm run test:node:lokijs
 
-      - name: npm run test:node:lokijs-worker
-        run: npm run test:node:lokijs-worker
-
       - name: npm run test:fast:lokijs
         run: npm run test:fast:lokijs
+
+  # run the node tests for the LokiJS RxStorage in a different
+  # task to run in parallel.
+  node-lokijs-worker:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.5.1
+        with:
+          node-version: 16.5.0
+
+      - name: Reuse npm cache folder
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+            ./node_modules
+          key: ${{ runner.os }}-npm-loki-worker-x4-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-loki-worker-x4-
+
+      - name: install npm dependencies
+        run: npm install
+      
+      - name: build
+        run: npm run build
+
+      - name: npm run test:node:lokijs-worker
+        run: npm run test:node:lokijs-worker
 
       - name: npm run test:fast:lokijs-worker
         run: npm run test:fast:lokijs-worker
