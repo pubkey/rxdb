@@ -70,6 +70,10 @@ export function addRxPlugin(plugin: RxPlugin) {
         });
     }
 
+    if (plugin.init) {
+        plugin.init();
+    }
+
     // prototype-overwrites
     if (plugin.prototypes) {
         Object

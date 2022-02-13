@@ -41,8 +41,6 @@ import {
 import { newRxError } from '../../rx-error';
 import { addRxPlugin, SyncOptionsGraphQL } from '../../index';
 
-addRxPlugin(RxDBLeaderElectionPlugin);
-
 export class RxGraphQLReplicationState<RxDocType> {
 
     public received$: Observable<RxDocumentData<RxDocType>>;
@@ -274,6 +272,9 @@ export * from './query-builder-from-rx-schema';
 
 export const RxDBReplicationGraphQLPlugin: RxPlugin = {
     name: 'replication-graphql',
+    init() {
+        addRxPlugin(RxDBLeaderElectionPlugin);
+    },
     rxdb: true,
     prototypes: {
         RxCollection: (proto: any) => {

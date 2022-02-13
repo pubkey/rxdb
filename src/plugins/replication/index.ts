@@ -437,7 +437,6 @@ export class RxReplicationStateBase<RxDocType> {
 
         try {
             await this.push.handler(pushDocs as any);
-
         } catch (err: any | Error | RxReplicationError<RxDocType>) {
             if (err instanceof RxReplicationPushError) {
                 this.subjects.error.next(err);

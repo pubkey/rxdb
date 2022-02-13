@@ -13,7 +13,7 @@
 - Added `withDeleted` parameter to `RxStorageKeyObjectInstance.findLocalDocumentsById()`
 
 - Removed the `core` plugin. The default export `from 'rxdb'` now exports only the RxDB core without plugins.
-
+- Added optional `init()` function to `RxPlugin`.
 ### 11.6.0 (4 February 2022)
 
 Bugfixes:

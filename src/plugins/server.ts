@@ -21,7 +21,6 @@ import type {
 } from '../types';
 
 import { RxDBReplicationCouchDBPlugin } from './replication-couchdb';
-addRxPlugin(RxDBReplicationCouchDBPlugin);
 
 import PouchAdapterHttp from 'pouchdb-adapter-http';
 import { adapterObject, addRxPlugin } from '../index';
@@ -247,6 +246,9 @@ export function onDestroy(db: RxDatabase) {
 export const RxDBServerPlugin: RxPlugin = {
     name: 'server',
     rxdb: true,
+    init() {
+        addRxPlugin(RxDBReplicationCouchDBPlugin);
+    },
     prototypes: {
         RxDatabase: (proto: any) => {
             proto.server = spawnServer;
