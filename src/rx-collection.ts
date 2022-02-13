@@ -122,6 +122,7 @@ export class RxCollectionBase<
 
 
     public storageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions> = {} as any;
+    public readonly timeouts: Set<ReturnType<typeof setTimeout>> = new Set();
 
     constructor(
         public database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions>,
@@ -904,6 +905,25 @@ export class RxCollectionBase<
         return doc as any;
     }
 
+    /**
+     * Returns a promise that resolves after the given time.
+     * Ensures that is properly cleans up when the collection is destroyed
+     * so that no running timeouts prevent the exit of the JavaScript process.
+     */
+    promiseWait(time: number): Promise<void> {
+        const ret = new Promise<void>(res => {
+            const timeout = setTimeout(() => {
+                this.timeouts.delete(timeout);
+                res();
+            }, time);
+            this.onDestroy.then(() => {
+                clearTimeout(timeout);
+                this.timeouts.delete(timeout);
+            });
+        });
+        return ret;
+    }
+
     destroy(): Promise<boolean> {
         if (this.destroyed) {
             return PROMISE_RESOLVE_FALSE;
@@ -920,6 +940,7 @@ export class RxCollectionBase<
         if (this._onDestroyCall) {
             this._onDestroyCall();
         }
+        Array.from(this.timeouts).forEach(timeout => clearTimeout(timeout));
         this._subs.forEach(sub => sub.unsubscribe());
         if (this._changeEventBuffer) {
             this._changeEventBuffer.destroy();

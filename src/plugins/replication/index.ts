@@ -27,6 +27,7 @@ import {
     setLastPushSequence
 } from './replication-checkpoint';
 import {
+    ensureNotFalsy,
     flatClone,
     getHeightOfRevision,
     hash,
@@ -200,10 +201,12 @@ export class RxReplicationStateBase<RxDocType> {
         const addRetry = () => {
             if (this.pendingRetries < 1) {
                 this.pendingRetries = this.pendingRetries + 1;
-                setTimeout(() => {
-                    this.pendingRetries = this.pendingRetries - 1;
-                    this.run();
-                }, this.retryTime);
+                this.collection
+                    .promiseWait(ensureNotFalsy(this.retryTime))
+                    .then(() => {
+                        this.pendingRetries = this.pendingRetries - 1;
+                        this.run();
+                    });
             }
         };
 
@@ -519,7 +522,7 @@ export function replicateRxCollection<RxDocType>(
             if (pull) {
                 (async () => {
                     while (!replicationState.isStopped()) {
-                        await promiseWait(replicationState.liveInterval);
+                        await collection.promiseWait(ensureNotFalsy(replicationState.liveInterval));
                         if (replicationState.isStopped()) {
                             return;
                         }
