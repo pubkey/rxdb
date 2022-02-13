@@ -36,7 +36,9 @@ export const RxStoragePouchStatics: RxStorageStatics = {
         return pouchHash(data);
     },
     hashKey: POUCH_HASH_KEY,
-
+    doesBroadcastChangestream() {
+        return false;
+    },
     getSortComparator<RxDocType>(
         schema: RxJsonSchema<RxDocType>,
         query: MangoQuery<RxDocType>

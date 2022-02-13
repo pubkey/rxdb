@@ -38,7 +38,7 @@
     "pretest": "npm run transpile",
     "test": "npm run test:node && npm run test:browser",
     "// test:fast": "run tests in the fast-mode. Most of them will run in parrallel, skips tests that are known slow",
-    "test:fast": "npm run test:fast:pouchdb && npm run test:fast:lokijs && npm run test:fast:lokijs-worker",
+    "test:fast": "npm run test:fast:pouchdb && npm run test:fast:lokijs && npm run test:fast:lokijs-worker && npm run test:fast:dexie",
     "test:fast:pouchdb": "npm run pretest && rimraf -rf pouch__all_dbs__ && cross-env DEFAULT_STORAGE=pouchdb NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js",
     "test:fast:lokijs": "npm run pretest && cross-env DEFAULT_STORAGE=lokijs NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js",
     "test:fast:dexie": "npm run pretest && cross-env DEFAULT_STORAGE=dexie NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js",

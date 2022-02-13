@@ -42,7 +42,9 @@ export const RxStorageDexieStatics: RxStorageStatics = {
         });
     },
     hashKey: 'md5',
-
+    doesBroadcastChangestream() {
+        return false;
+    },
     prepareQuery<RxDocType>(
         schema: RxJsonSchema<RxDocType>,
         mutateableQuery: MangoQuery<RxDocType>
