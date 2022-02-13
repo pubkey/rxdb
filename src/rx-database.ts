@@ -185,9 +185,7 @@ export class RxDatabaseBase<
         this.eventBulks$.next(changeEventBulk);
 
         // write to socket to inform other instances about the change
-        if (!this.storage.statics.doesBroadcastChangestream()) {
-            writeToSocket(this as any, changeEventBulk);
-        }
+        writeToSocket(this as any, changeEventBulk);
     }
 
     /**
@@ -545,6 +543,7 @@ export function writeToSocket(
     }
 
     if (
+        !rxDatabase.storage.statics.doesBroadcastChangestream() &&
         rxDatabase.multiInstance &&
         rxDatabase.broadcastChannel &&
         !changeEventBulk.internal &&

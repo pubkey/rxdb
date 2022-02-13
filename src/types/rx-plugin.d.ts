@@ -42,7 +42,7 @@ export interface RxPlugin {
      * Init function where dependend plugins could be added.
      * (optional)
      */
-    init(): any;
+    init?(): any;
 
     prototypes?: {
         RxSchema?: Function,
