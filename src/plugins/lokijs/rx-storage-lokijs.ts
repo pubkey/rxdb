@@ -42,7 +42,7 @@ export const RxStorageLokiStatics: RxStorageStatics = {
     },
     hashKey: 'md5',
     doesBroadcastChangestream() {
-        return true;
+        return false;
     },
     prepareQuery<RxDocType>(
         _schema: RxJsonSchema<RxDocType>,
