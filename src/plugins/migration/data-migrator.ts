@@ -334,7 +334,7 @@ export function getBatchOfOldCollection(
         storageInstance.schema,
         {
             selector: {},
-            sort: [{ [oldCollection.schema.primaryPath]: 'asc' }],
+            sort: [{ [oldCollection.schema.primaryPath]: 'asc' } as any],
             limit: batchSize
         }
     );

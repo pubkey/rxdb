@@ -16,6 +16,7 @@ import type {
     RxStorageStatics
 } from '../../types';
 import {
+    ensureNotFalsy,
     flatClone
 } from '../../util';
 import {
@@ -48,7 +49,7 @@ export const RxStorageLokiStatics: RxStorageStatics = {
         _schema: RxJsonSchema<RxDocType>,
         mutateableQuery: MangoQuery<RxDocType>
     ) {
-        if (Object.keys(mutateableQuery.selector).length > 0) {
+        if (Object.keys(ensureNotFalsy(mutateableQuery.selector)).length > 0) {
             mutateableQuery.selector = {
                 $and: [
                     {

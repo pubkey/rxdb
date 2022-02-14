@@ -79,7 +79,7 @@ export const RxStorageDexieStatics: RxStorageStatics = {
         _schema: RxJsonSchema<RxDocType>,
         query: MangoQuery<RxDocType>
     ): QueryMatcher<RxDocumentWriteData<RxDocType>> {
-        const mingoQuery = new MingoQuery(query.selector);
+        const mingoQuery = new MingoQuery(query.selector ? query.selector : {});
         const fun: QueryMatcher<RxDocumentWriteData<RxDocType>> = (doc: RxDocumentWriteData<RxDocType>) => {
             if (doc._deleted) {
                 return false;

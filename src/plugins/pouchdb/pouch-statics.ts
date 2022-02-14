@@ -24,7 +24,7 @@ import type {
 } from '../../types';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import { overwritable } from '../../overwritable';
-import { isMaybeReadonlyArray } from '../../util';
+import { ensureNotFalsy, isMaybeReadonlyArray } from '../../util';
 
 export const RxStoragePouchStatics: RxStorageStatics = {
 
@@ -47,8 +47,9 @@ export const RxStoragePouchStatics: RxStorageStatics = {
         const sortOptions: MangoQuerySortPart[] = query.sort ? (query.sort as any) : [{
             [primaryPath]: 'asc'
         }];
+        const selector = query.selector ? query.selector : {};
         const inMemoryFields = Object
-            .keys(query.selector)
+            .keys(selector)
             .filter(key => !key.startsWith('$'));
 
         const fun: DeterministicSortComparator<RxDocType> = (a: RxDocType, b: RxDocType) => {
@@ -100,8 +101,8 @@ export const RxStoragePouchStatics: RxStorageStatics = {
         query: MangoQuery<RxDocType>
     ): QueryMatcher<RxDocumentWriteData<RxDocType>> {
         const primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
-        const massagedSelector = massageSelector(query.selector);
-
+        const selector = query.selector ? query.selector : {};
+        const massagedSelector = massageSelector(selector);
         const fun: QueryMatcher<RxDocumentWriteData<RxDocType>> = (doc: RxDocumentWriteData<RxDocType>) => {
             if (doc._deleted) {
                 return false;
@@ -113,7 +114,7 @@ export const RxStoragePouchStatics: RxStorageStatics = {
             const rowsMatched = filterInMemoryFields(
                 [row],
                 { selector: massagedSelector },
-                Object.keys(query.selector)
+                Object.keys(selector)
             );
             const ret = rowsMatched && rowsMatched.length === 1;
             return ret;
@@ -159,7 +160,7 @@ export function preparePouchDbQuery<RxDocType>(
         query.sort.forEach(sortPart => {
             const key = Object.keys(sortPart)[0];
             const comparisonOperators = ['$gt', '$gte', '$lt', '$lte', '$eq'];
-            const keyUsed = query.selector[key] && Object.keys(query.selector[key]).some(op => comparisonOperators.includes(op));
+            const keyUsed = query.selector && query.selector[key] && Object.keys(query.selector[key]).some(op => comparisonOperators.includes(op));
 
             if (!keyUsed) {
                 const schemaObj = getSchemaByObjectPath(schema, key);
@@ -169,6 +170,9 @@ export function preparePouchDbQuery<RxDocType>(
                         key,
                         schema
                     });
+                }
+                if (!query.selector) {
+                    query.selector = {};
                 }
                 if (!query.selector[key]) {
                     query.selector[key] = {};
@@ -201,6 +205,7 @@ export function preparePouchDbQuery<RxDocType>(
     // regex does not work over the primary key
     if (
         overwritable.isDevMode() &&
+        query.selector &&
         query.selector[primaryKey as any] &&
         query.selector[primaryKey as any].$regex
     ) {
@@ -223,14 +228,14 @@ export function preparePouchDbQuery<RxDocType>(
     }
 
     // strip empty selectors
-    Object.entries(query.selector).forEach(([k, v]) => {
+    Object.entries(ensureNotFalsy(query.selector)).forEach(([k, v]) => {
         if (
             typeof v === 'object' &&
             v !== null &&
             !Array.isArray(v) &&
             Object.keys((v as any)).length === 0
         ) {
-            delete query.selector[k];
+            delete ensureNotFalsy(query.selector)[k];
         }
     });
 
