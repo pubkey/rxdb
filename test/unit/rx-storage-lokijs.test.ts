@@ -395,7 +395,10 @@ describe('rx-storage-lokijs.test.js', () => {
                 const preparedQuery = storage.statics.prepareQuery(
                     schemas.human,
                     {
-                        selector: {}
+                        selector: {},
+                        sort: [{
+                            passportId: 'asc'
+                        }]
                     }
                 );
                 await storageInstance.query(preparedQuery);
