@@ -105,7 +105,7 @@ import {
     createRxDocument,
     getRxDocumentConstructor
 } from './rx-document-prototype-merge';
-import { getWrappedStorageInstance, storageChangeEventToRxChangeEvent } from './rx-storage-helper';
+import { getWrappedStorageInstance, storageChangeEventToRxChangeEvent, throwIfIsStorageWriteError } from './rx-storage-helper';
 import { overwritable } from './overwritable';
 
 const HOOKS_WHEN = ['pre', 'post'];
@@ -287,10 +287,6 @@ export class RxCollectionBase<
         return this.getDataMigrator().migratePromise(batchSize);
     }
 
-    /**
-     * TODO internally call bulkInsert
-     * to not have duplicated code.
-     */
     async insert(
         json: RxDocumentType | RxDocument
     ): Promise<RxDocument<RxDocumentType, OrmMethods>> {
@@ -307,26 +303,18 @@ export class RxCollectionBase<
         }
 
         const useJson: RxDocumentWriteData<RxDocumentType> = fillObjectDataBeforeInsert(this as any, json);
-        let newDoc = tempDoc;
+        const writeResult = await this.bulkInsert([useJson]);
 
-        await this._runHooks('pre', 'insert', useJson);
-        this.schema.validate(useJson);
-        const insertResult = await writeToStorageInstance(
-            this,
-            {
-                document: useJson
-            }
-        );
+        const isError = writeResult.error[0];
+        throwIfIsStorageWriteError(this as any, useJson[this.schema.primaryPath] as any, json, isError);
+        const insertResult = ensureNotFalsy(writeResult.success[0]);
 
         if (tempDoc) {
-            tempDoc._dataSync$.next(insertResult);
+            tempDoc._dataSync$.next(insertResult._data);
+            return tempDoc as any;
         } else {
-            newDoc = createRxDocument(this as any, insertResult);
+            return insertResult;
         }
-
-        await this._runHooks('post', 'insert', useJson, newDoc);
-
-        return newDoc as any;
     }
 
     async bulkInsert(
@@ -387,8 +375,7 @@ export class RxCollectionBase<
         await Promise.all(
             rxDocuments.map(doc => {
                 return this._runHooks(
-                    'post',
-                    'insert',
+                    'post', 'insert',
                     docsMap.get(doc.primary),
                     doc
                 );

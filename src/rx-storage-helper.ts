@@ -6,6 +6,7 @@ import { map } from 'rxjs/operators';
 import { runPluginHooks } from './hooks';
 import { overwritable } from './overwritable';
 import { RxCollectionBase } from './rx-collection';
+import { newRxError } from './rx-error';
 import type {
     BulkWriteLocalRow,
     BulkWriteRow,
@@ -14,9 +15,11 @@ import type {
     RxChangeEvent,
     RxCollection,
     RxDocumentData,
+    RxDocumentWriteData,
     RxLocalDocumentData,
     RxLocalStorageBulkWriteResponse,
     RxStorage,
+    RxStorageBulkWriteError,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
     RxStorageInstance,
@@ -175,6 +178,26 @@ export function transformDocumentDataFromRxStorageToRxDB(
     };
     runPluginHooks('postReadFromInstance', hookParams);
     return (col._crypter as any).decrypt(hookParams.doc);
+}
+
+export function throwIfIsStorageWriteError<RxDocType>(
+    collection: RxCollection<RxDocType>,
+    documentId: string,
+    writeData: RxDocumentWriteData<RxDocType> | RxDocType,
+    error: RxStorageBulkWriteError<RxDocType> | undefined
+) {
+    if (error) {
+        if (error.status === 409) {
+            throw newRxError('COL19', {
+                collection: collection.name,
+                id: documentId,
+                pouchDbError: error,
+                data: writeData
+            });
+        } else {
+            throw error;
+        }
+    }
 }
 
 

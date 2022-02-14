@@ -15,7 +15,8 @@ import {
     nextTick,
     flatClone,
     PROMISE_RESOLVE_NULL,
-    PROMISE_RESOLVE_VOID
+    PROMISE_RESOLVE_VOID,
+    ensureNotFalsy
 } from './util';
 import {
     newRxError,
@@ -37,6 +38,7 @@ import { getDocumentDataOfRxChangeEvent } from './rx-change-event';
 import { writeToStorageInstance } from './rx-collection-helper';
 import { overwritable } from './overwritable';
 import { getSchemaByObjectPath } from './rx-schema-helper';
+import { throwIfIsStorageWriteError } from './rx-storage-helper';
 
 export const basePrototype = {
 
@@ -394,17 +396,18 @@ export const basePrototype = {
 
         // ensure modifications are ok
         this.collection.schema.validateChange(oldData, newData);
-
         await this.collection._runHooks('pre', 'save', newData, this);
-
         this.collection.schema.validate(newData);
-        await writeToStorageInstance(
-            this.collection,
-            {
-                previous: oldData,
-                document: newData
-            }
-        );
+
+        const writeResult = await this.collection.storageInstance.bulkWrite([{
+            previous: oldData,
+            document: newData
+        }]);
+
+        const isError = writeResult.error[this.primary];
+        throwIfIsStorageWriteError(this.collection, this.primary, newData, isError);
+        ensureNotFalsy(writeResult.success[this.primary]);
+
 
         return this.collection._runHooks('post', 'save', newData, this);
     },
@@ -441,6 +444,7 @@ export const basePrototype = {
      * instead we keep the values and only set _deleted: true
      */
     remove(this: RxDocument): Promise<RxDocument> {
+        const collection = this.collection;
         if (this.deleted) {
             return Promise.reject(newRxError('DOC13', {
                 document: this,
@@ -449,16 +453,17 @@ export const basePrototype = {
         }
 
         const deletedData = flatClone(this._data);
-        return this.collection._runHooks('pre', 'remove', deletedData, this)
-            .then(() => {
+        return collection._runHooks('pre', 'remove', deletedData, this)
+            .then(async () => {
                 deletedData._deleted = true;
-                return writeToStorageInstance(
-                    this.collection,
-                    {
-                        previous: this._data,
-                        document: deletedData
-                    }
-                );
+
+                const writeResult = await collection.storageInstance.bulkWrite([{
+                    previous: this._data,
+                    document: deletedData
+                }]);
+                const isError = writeResult.error[this.primary];
+                throwIfIsStorageWriteError(collection, this.primary, deletedData, isError);
+                return ensureNotFalsy(writeResult.success[this.primary]);
             })
             .then(() => {
                 return this.collection._runHooks('post', 'remove', deletedData, this);
