@@ -31,7 +31,6 @@ export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
 
 /**
  * returns all NON-LOCAL documents
- * TODO this is pouchdb specific should not be needed
  */
 export async function getAllDocuments<RxDocType>(
     storage: RxStorage<any, any>,

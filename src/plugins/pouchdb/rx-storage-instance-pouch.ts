@@ -258,7 +258,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
 
     async findDocumentsById(ids: string[], deleted: boolean): Promise<{ [documentId: string]: RxDocumentData<RxDocType> }> {
         /**
-         * On deleted documents, pouchdb will only return the tombstone.
+         * On deleted documents, PouchDB will only return the tombstone.
          * So we have to get the properties directly for each document
          * with the hack of getting the changes and then make one request per document
          * with the latest revision.

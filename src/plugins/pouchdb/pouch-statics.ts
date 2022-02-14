@@ -159,9 +159,7 @@ export function preparePouchDbQuery<RxDocType>(
         query.sort.forEach(sortPart => {
             const key = Object.keys(sortPart)[0];
             const comparisonOperators = ['$gt', '$gte', '$lt', '$lte', '$eq'];
-            const keyUsed = query.selector[key] &&
-                Object.keys(query.selector[key]).some(op => comparisonOperators.includes(op))
-                || false; // TODO why we need this '|| false' ?
+            const keyUsed = query.selector[key] && Object.keys(query.selector[key]).some(op => comparisonOperators.includes(op));
 
             if (!keyUsed) {
                 const schemaObj = getSchemaByObjectPath(schema, key);
