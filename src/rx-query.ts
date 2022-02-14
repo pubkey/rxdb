@@ -243,21 +243,7 @@ export class RxQueryBase<
         this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
         this._lastExecStart = now();
 
-        let docsPromise;
-        switch (this.op) {
-            case 'find':
-                docsPromise = this.collection._queryStorageInstance(this as any);
-                break;
-            case 'findOne':
-                docsPromise = this.collection._queryStorageInstance(this as any, 1);
-                break;
-            default:
-                throw newRxError('QU1', {
-                    collection: this.collection.name,
-                    op: this.op
-                });
-        }
-
+        const docsPromise = queryCollection<RxDocumentType>(this as any);
         return docsPromise.then(docs => {
             this._lastExecEnd = now();
             return docs;
@@ -617,6 +603,41 @@ export function normalizeMangoQuery<RxDocType>(
     }
 
     return mangoQuery;
+}
+
+
+/**
+ * Runs the query over the storage instance
+ * of the collection.
+ * Does some optimizations to ensuer findById is used
+ * when specific queries are used.
+ */
+export async function queryCollection<RxDocType>(
+    rxQuery: RxQuery<RxDocType> | RxQueryBase<RxDocType>
+): Promise<RxDocumentData<RxDocType>[]> {
+    let docs: RxDocumentData<RxDocType>[] = [];
+    const collection = rxQuery.collection;
+
+    /**
+     * Optimizations shortcut.
+     * If query is find-one-document-by-id,
+     * then we do not have to use the slow query() method
+     * but instead can use findDocumentsById()
+     */
+    if (rxQuery.isFindOneByIdQuery) {
+        const docId = rxQuery.isFindOneByIdQuery;
+        const docsMap = await collection.storageInstance.findDocumentsById([docId], false);
+        const docData = docsMap[docId];
+        if (docData) {
+            docs.push(docData);
+        }
+    } else {
+        const preparedQuery = rxQuery.getPreparedQuery();
+        const queryResult = await collection.storageInstance.query(preparedQuery);
+        docs = queryResult.documents;
+    }
+    return docs;
+
 }
 
 /**

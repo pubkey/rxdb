@@ -119,7 +119,6 @@ export class RxCouchDBReplicationStateBase {
             return PROMISE_RESOLVE_FALSE;
         }
         this.canceled = true;
-        this.collection._repStates.delete(this as any);
         if (this._pouchEventEmitterObject) {
             this._pouchEventEmitterObject.cancel();
         }
@@ -333,7 +332,8 @@ export function syncCouchDB(
         }
         const pouchSync = syncFun(remote, useOptions);
         setPouchEventEmitter(repState, pouchSync);
-        this._repStates.add(repState);
+
+        this.onDestroy.then(() => repState.cancel());
     });
 
     return repState;

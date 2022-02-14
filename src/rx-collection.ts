@@ -24,7 +24,6 @@ import {
 } from './rx-collection-helper';
 import {
     createRxQuery,
-    RxQueryBase,
     _getDefaultQuery
 } from './rx-query';
 import {
@@ -185,9 +184,6 @@ export class RxCollectionBase<
     public hooks: any = {};
     public _subs: Subscription[] = [];
 
-    // TODO move _repStates into migration plugin
-    public _repStates: Set<RxCouchDBReplicationState> = new Set();
-
     public _docCache: DocCache<
         RxDocument<RxDocumentType, OrmMethods>
     > = createDocCache();
@@ -203,13 +199,7 @@ export class RxCollectionBase<
     private _onDestroy?: Promise<void>;
 
     private _onDestroyCall?: () => void;
-    public async prepare(
-        /**
-         * TODO is this still needed?
-         * set to true if the collection data already exists on this storage adapter
-         */
-        _wasCreatedBefore: boolean
-    ): Promise<void> {
+    public async prepare(): Promise<void> {
         this.storageInstance = getWrappedStorageInstance(this as any, this.internalStorageInstance);
 
         // we trigger the non-blocking things first and await them later so we can do stuff in the mean time
@@ -295,40 +285,6 @@ export class RxCollectionBase<
     }
     migratePromise(batchSize: number = 10): Promise<any> {
         return this.getDataMigrator().migratePromise(batchSize);
-    }
-
-    /**
-     * wrapps the query function of the storage instance.
-     * TODO move this function to rx-query.ts
-     */
-    async _queryStorageInstance(
-        rxQuery: RxQuery | RxQueryBase,
-        limit?: number
-    ): Promise<any[]> {
-        let docs: any[] = [];
-
-        /**
-         * Optimizations shortcut.
-         * If query is find-one-document-by-id,
-         * then we do not have to use the slow query() method
-         * but instead can use findDocumentsById()
-         */
-        if (rxQuery.isFindOneByIdQuery) {
-            const docId = rxQuery.isFindOneByIdQuery;
-            const docsMap = await this.storageInstance.findDocumentsById([docId], false);
-            const docData = docsMap[docId];
-            if (docData) {
-                docs.push(docData);
-            }
-        } else {
-            const preparedQuery = rxQuery.getPreparedQuery();
-            if (limit) {
-                preparedQuery['limit'] = limit;
-            }
-            const queryResult = await this.storageInstance.query(preparedQuery);
-            docs = queryResult.documents;
-        }
-        return docs;
     }
 
     /**
@@ -943,8 +899,6 @@ export class RxCollectionBase<
         if (this._changeEventBuffer) {
             this._changeEventBuffer.destroy();
         }
-        Array.from(this._repStates).forEach(replicationState => replicationState.cancel());
-
         return Promise
             .all([
                 this.storageInstance.close(),
@@ -1053,8 +1007,7 @@ export function createRxCollection(
         attachments = {},
         options = {},
         cacheReplacementPolicy = defaultCacheReplacementPolicy
-    }: any,
-    wasCreatedBefore: boolean
+    }: any
 ): Promise<RxCollection> {
     // TODO move this check to dev-mode plugin
     if (overwritable.isDevMode()) {
@@ -1102,7 +1055,7 @@ export function createRxCollection(
         );
 
         return collection
-            .prepare(wasCreatedBefore)
+            .prepare()
             .then(() => {
                 // ORM add statics
                 Object

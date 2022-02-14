@@ -790,9 +790,6 @@ describe('replication-couchdb.test.js', () => {
 
             await waitUntil(() => syncState.canceled === true);
 
-            // should have cleaned up itself from the replication state set
-            assert.strictEqual(collection._repStates.size, 0);
-
             collection.database.destroy();
             syncCollection.database.destroy();
         });

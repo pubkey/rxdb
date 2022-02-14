@@ -6,6 +6,7 @@ import {
 } from '../util';
 import {
     createRxQuery,
+    queryCollection,
     _getDefaultQuery
 } from '../rx-query';
 import {
@@ -98,7 +99,7 @@ const dumpRxCollection = function (
         _getDefaultQuery(),
         this
     );
-    return this._queryStorageInstance(query, undefined)
+    return queryCollection(query)
         .then((docs: any) => {
             json.docs = docs.map((docData: any) => {
                 delete docData._rev;
