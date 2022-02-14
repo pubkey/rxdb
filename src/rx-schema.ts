@@ -334,9 +334,8 @@ export function normalizeRxJsonSchema<T>(jsonSchema: RxJsonSchema<T>): RxJsonSch
 export function fillWithDefaultSettings<T = any>(
     schemaObj: RxJsonSchema<T>
 ): RxJsonSchema<T> {
-    // TODO we should not have to deep clone here
-    // flat clone the nessescary parts instead.
-    schemaObj = clone(schemaObj);
+    schemaObj = flatClone(schemaObj);
+    schemaObj.properties = flatClone(schemaObj.properties);
 
     // additionalProperties is always false
     schemaObj.additionalProperties = false;
@@ -347,13 +346,13 @@ export function fillWithDefaultSettings<T = any>(
     }
 
     // indexes must be array
-    schemaObj.indexes = schemaObj.indexes || [];
+    schemaObj.indexes = schemaObj.indexes ? schemaObj.indexes.slice(0) : [];
 
     // required must be array
-    schemaObj.required = schemaObj.required || [];
+    schemaObj.required = schemaObj.required ? schemaObj.required.slice(0) : [];
 
     // encrypted must be array
-    schemaObj.encrypted = schemaObj.encrypted || [];
+    schemaObj.encrypted = schemaObj.encrypted ? schemaObj.encrypted.slice(0) : [];
 
 
 

@@ -258,7 +258,6 @@ export class RxQueryBase<
     public exec(throwIfMissing: true): Promise<RxDocument<RxDocumentType>>;
     public exec(): Promise<RxQueryResult>;
     public exec(throwIfMissing?: boolean): Promise<any> {
-        // TODO this should be ensured by typescript
         if (throwIfMissing && this.op !== 'findOne') {
             throw newRxError('QU9', {
                 collection: this.collection.name,

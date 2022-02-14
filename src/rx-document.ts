@@ -35,7 +35,6 @@ import type {
     RxChangeEvent
 } from './types';
 import { getDocumentDataOfRxChangeEvent } from './rx-change-event';
-import { writeToStorageInstance } from './rx-collection-helper';
 import { overwritable } from './overwritable';
 import { getSchemaByObjectPath } from './rx-schema-helper';
 import { throwIfIsStorageWriteError } from './rx-storage-helper';

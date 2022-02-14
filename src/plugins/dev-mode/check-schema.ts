@@ -28,8 +28,9 @@ import { rxDocumentProperties } from './entity-properties';
  * @throws {Error}
  */
 export function checkFieldNameRegex(fieldName: string) {
-    if (fieldName === '') return; // TODO why is the fieldname allowed to be empty string?
-    if (fieldName === '_deleted') return;
+    if (fieldName === '_deleted') {
+        return;
+    }
 
     if (['properties', 'language'].includes(fieldName)) {
         throw newRxError('SC23', {
