@@ -14,13 +14,13 @@ import {
     clone,
     getHeightOfRevision,
     blobBufferUtil,
-    PouchDBInstance,
     lastOfArray,
     getAllDocuments,
 } from '../../';
 
 import {
     PouchDB,
+    PouchDBInstance,
     getRxStoragePouch
 } from '../../plugins/pouchdb';
 

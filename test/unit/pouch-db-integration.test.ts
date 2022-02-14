@@ -13,12 +13,12 @@ import {
     promiseWait,
     clone,
     isRxDatabase,
-    PouchDBInstance,
     blobBufferUtil,
 } from '../../';
 
 import {
     PouchDB,
+    PouchDBInstance,
     addPouchPlugin,
     getRxStoragePouch
 } from '../../plugins/pouchdb';

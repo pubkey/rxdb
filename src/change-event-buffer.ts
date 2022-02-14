@@ -107,25 +107,6 @@ export class ChangeEventBuffer {
         return Object.values(docEventMap);
     }
 
-    /**
-     * use this to check if a change has already been handled
-     * @returns true if change with revision exists
-     * TODO only used in the in-memory plugin, we should move it there.
-     *
-     */
-    hasChangeWithRevision(revision: string): boolean {
-        // we loop from behind because its more likely that the searched event is at the end
-        let t = this.buffer.length;
-        while (t > 0) {
-            t--;
-            const cE: any = this.buffer[t];
-            if (cE.documentData && cE.documentData._rev === revision) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     destroy() {
         this.subs.forEach(sub => sub.unsubscribe());
     }

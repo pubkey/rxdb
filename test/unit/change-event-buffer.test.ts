@@ -198,21 +198,4 @@ config.parallel('change-event-buffer.test.js', () => {
             col.database.destroy();
         });
     });
-    describe('.hasChangeWithRevision()', () => {
-        it('should not have a random revision', async () => {
-            const col = await humansCollection.create(5);
-            await col.insert(schemaObjects.human());
-            const has = col._changeEventBuffer.hasChangeWithRevision('1-foobar');
-            assert.strictEqual(has, false);
-            col.database.destroy();
-        });
-        it('should have the revision of the last event', async () => {
-            const col = await humansCollection.create(5);
-            const doc = await col.insert(schemaObjects.human());
-            const lastRev = doc._data._rev;
-            const has = col._changeEventBuffer.hasChangeWithRevision(lastRev);
-            assert.ok(has);
-            col.database.destroy();
-        });
-    });
 });

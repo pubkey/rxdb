@@ -4,7 +4,6 @@ import config from './config';
 import {
     addRxPlugin,
     randomCouchString,
-    PouchDBInstance,
     flattenEvents,
     normalizeRxJsonSchema,
     normalizeMangoQuery,
@@ -15,6 +14,7 @@ import {
 import {
     addCustomEventsPluginToPouch,
     getCustomEventEmitterByPouch,
+    PouchDBInstance,
     getRxStoragePouch,
     PouchDB
 } from '../../plugins/pouchdb';

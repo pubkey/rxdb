@@ -179,7 +179,7 @@ export class RxCollectionBase<
 
     public _isInMemory = false;
     public destroyed = false;
-    public _atomicUpsertQueues = new Map(); // TODO type
+    public _atomicUpsertQueues: Map<string, Promise<any>> = new Map();
     // defaults
     public synced: boolean = false;
     public hooks: any = {};
@@ -552,11 +552,9 @@ export class RxCollectionBase<
         }
 
         // ensure that it wont try 2 parallel runs
-        let queue;
-        if (!this._atomicUpsertQueues.has(primary)) {
+        let queue = this._atomicUpsertQueues.get(primary);
+        if (!queue) {
             queue = PROMISE_RESOLVE_VOID;
-        } else {
-            queue = this._atomicUpsertQueues.get(primary);
         }
         queue = queue
             .then(() => _atomicUpsertEnsureRxDocumentExists(this as any, primary as any, useJson))

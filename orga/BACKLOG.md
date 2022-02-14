@@ -24,26 +24,6 @@ await myCollection.insert({/* any docData */});
 
 There should be an optimisation to determine if the amount is needed once or many times (if we subscribe). The first case should do a pouch-find-count-query, the second case should use the QueryChangeDetection for better performance.
 
-## remote-only-collections
-
-It's currently not possible to create remote-only databases, like with the [pouchdb-http-adapter](https://www.npmjs.com/package/pouchdb-adapter-http).
-
-Goal-API:
-
-```javascript
-
-import 'babel-polyfill'; // only needed when you dont have polyfills
-import RxDB from 'rxdb';
-RxDB.plugin(require('pouchdb-adapter-http'));
-const db = await RxDB.create({
-    name: 'heroesdb',
-    adapter: 'http'
-});
-
-const collection = await db.collection({name: 'http://127.0.0.1:5984/mydb', schema: mySchema});
-
-
-```
 
 
 ## default and custom [conflict-strategies](https://pouchdb.com/guides/conflicts.html)
@@ -81,10 +61,6 @@ See [#494](https://github.com/pubkey/rxdb/issues/494)
 ## import/export with attachments
 
 See [#1396](https://github.com/pubkey/rxdb/pull/1396#issuecomment-523014106)
-
-## generate typings from schema
-[Writing typescript](https://rxdb.info/tutorials/typescript.html) defintions for rxdb documents and collections could be done by generating them from the schema. 
-Also see [here](https://github.com/pubkey/rxdb/discussions/3467)
 
 ## refactor middleware to not be based on side effects
 
