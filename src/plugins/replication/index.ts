@@ -32,7 +32,6 @@ import {
     getHeightOfRevision,
     hash,
     lastOfArray,
-    promiseWait,
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_TRUE,
     PROMISE_RESOLVE_VOID
