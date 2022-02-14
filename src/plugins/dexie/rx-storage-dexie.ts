@@ -16,7 +16,7 @@ import {
 } from 'mingo';
 import { binaryMd5 } from 'pouchdb-md5';
 import { getDexieSortComparator } from './dexie-helper';
-import { firstPropertyNameOfObject, flatClone } from '../../util';
+import { flatClone } from '../../util';
 import {
     DexieSettings,
     DexieStorageInternals
@@ -25,12 +25,12 @@ import {
     createDexieStorageInstance,
     RxStorageInstanceDexie
 } from './rx-storage-instance-dexie';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import {
     createDexieKeyObjectStorageInstance,
     RxStorageKeyObjectInstanceDexie
 } from './rx-storage-key-object-instance-dexie';
 import { getPouchQueryPlan } from './query/dexie-query';
+import { newRxError } from '../../rx-error';
 
 
 export const RxStorageDexieStatics: RxStorageStatics = {
@@ -49,24 +49,12 @@ export const RxStorageDexieStatics: RxStorageStatics = {
         schema: RxJsonSchema<RxDocType>,
         mutateableQuery: MangoQuery<RxDocType>
     ) {
-        const primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
-        /**
-         * To ensure a deterministic sorting,
-         * we have to ensure the primary key is always part
-         * of the sort query.
-         * TODO this should be done by RxDB instead so we
-         * can ensure it in all storage implementations.
-         */
-        if (!mutateableQuery.sort) {
-            mutateableQuery.sort = [{ [primaryKey]: 'asc' }] as any;
-        } else {
-            const isPrimaryInSort = mutateableQuery.sort
-                .find(p => firstPropertyNameOfObject(p) === primaryKey);
-            if (!isPrimaryInSort) {
-                mutateableQuery.sort.push({ [primaryKey]: 'asc' } as any);
-            }
-        }
 
+        if (!mutateableQuery.sort) {
+            throw newRxError('SNH', {
+                query: mutateableQuery
+            });
+        }
 
         /**
          * Store the query plan together with the

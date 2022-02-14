@@ -29,7 +29,6 @@ import {
     newRxError
 } from '../rx-error';
 import {
-    pouchReplicationFunction,
     isInstanceOf as isInstanceOfPouchDB,
     addPouchPlugin
 } from '../plugins/pouchdb';
@@ -264,6 +263,33 @@ export function createRxCouchDBReplicationState(
         collection,
         syncOptions
     ) as RxCouchDBReplicationState;
+}
+
+/**
+ * get the correct function-name for pouchdb-replication
+ */
+export function pouchReplicationFunction(
+    pouch: PouchDBInstance,
+    {
+        pull = true,
+        push = true
+    }
+): any {
+    if (pull && push) {
+        return pouch.sync.bind(pouch);
+    }
+    if (!pull && push) {
+        return (pouch.replicate as any).to.bind(pouch);
+    }
+    if (pull && !push) {
+        return (pouch.replicate as any).from.bind(pouch);
+    }
+    if (!pull && !push) {
+        throw newRxError('UT3', {
+            pull,
+            push
+        });
+    }
 }
 
 export function syncCouchDB(

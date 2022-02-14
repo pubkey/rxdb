@@ -549,9 +549,6 @@ export async function createLokiLocalState<RxDocType>(
     const primaryKey = getPrimaryFieldOfPrimaryKey(params.schema.primaryKey);
     indices.push(primaryKey as string);
 
-    /**
-     * TODO disable stuff we do not need from CollectionOptions
-     */
     const collectionOptions: Partial<CollectionOptions<RxDocumentData<RxDocType>>> = Object.assign(
         {},
         params.options.collection,

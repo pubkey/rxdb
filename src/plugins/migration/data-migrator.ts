@@ -124,6 +124,7 @@ export class DataMigrator {
                     const countAll: Promise<number[]> = Promise.all(
                         this.nonMigratedOldCollections
                             .map(oldCol => getAllDocuments(
+                                oldCol.schema.primaryPath,
                                 this.database.storage,
                                 oldCol.storageInstance
                             ).then(allDocs => allDocs.length))
@@ -333,6 +334,7 @@ export function getBatchOfOldCollection(
         storageInstance.schema,
         {
             selector: {},
+            sort: [{ [oldCollection.schema.primaryPath]: 'asc' }],
             limit: batchSize
         }
     );

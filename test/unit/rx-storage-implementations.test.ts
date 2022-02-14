@@ -33,6 +33,7 @@ import {
 } from 'async-test-util';
 import {
     EventBulk,
+    FilledMangoQuery,
     PreparedQuery,
     RxDocumentData,
     RxDocumentWriteData,
@@ -574,13 +575,18 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     multiInstance: false
                 });
 
-                const query: MangoQuery = {
+                const query: FilledMangoQuery<TestDocType> = {
                     selector: {
                         age: {
                             $gt: 10,
                             $ne: 50
                         }
-                    }
+                    },
+                    sort: [
+                        {
+                            _id: 'asc'
+                        }
+                    ]
                 };
 
                 const queryMatcher = config.storage.getStorage().statics.getQueryMatcher(
@@ -604,16 +610,19 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 storageInstance.close();
             });
             it('should not match deleted documents', async () => {
-                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                const storageInstance = await config.storage.getStorage().createStorageInstance<{ _id: string }>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
-                    schema: getPseudoSchemaForVersion(0, '_id' as any),
+                    schema: getPseudoSchemaForVersion<{ _id: string }>(0, '_id' as any),
                     options: {},
                     multiInstance: false
                 });
 
-                const query: MangoQuery = {
-                    selector: {}
+                const query: FilledMangoQuery<{ _id: string }> = {
+                    selector: {},
+                    sort: [
+                        { _id: 'asc' }
+                    ]
                 };
 
                 const queryMatcher = config.storage.getStorage().statics.getQueryMatcher(
@@ -635,7 +644,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
             });
             it('should match the nested document', async () => {
                 const schema = getNestedDocSchema();
-                const query: MangoQuery = {
+                const query: FilledMangoQuery<NestedDoc> = {
                     selector: {
                         'nes.ted': {
                             $eq: 'barfoo'
@@ -709,7 +718,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const preparedQuery = config.storage.getStorage().statics.prepareQuery(
                     storageInstance.schema,
                     {
-                        selector: {}
+                        selector: {},
+                        sort: [{ key: 'asc' }]
                     }
                 );
                 const allDocs = await storageInstance.query(preparedQuery);
@@ -778,7 +788,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                             value: {
                                 $eq: value
                             }
-                        }
+                        },
+                        sort: [
+                            { key: 'asc' }
+                        ]
                     }
                 );
 
@@ -902,7 +915,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 }
                 const docs = Object.values(writeResponse.success);
 
-                async function testQuery(query: MangoQuery<RandomDoc>): Promise<void> {
+                async function testQuery(query: FilledMangoQuery<RandomDoc>): Promise<void> {
                     const preparedQuery = config.storage.getStorage().statics.prepareQuery(
                         storageInstance.schema,
                         query
@@ -915,7 +928,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     const docsViaSort = shuffleArray(docs).sort(sortComparator);
                     assert.deepStrictEqual(docsViaQuery, docsViaSort);
                 }
-                const queries: MangoQuery<RandomDoc>[] = [
+                const queries: FilledMangoQuery<RandomDoc>[] = [
                     {
                         selector: {},
                         sort: [
@@ -1585,7 +1598,12 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const preparedQuery = config.storage.getStorage().statics.prepareQuery(
                     storageInstance.schema,
                     {
-                        selector: {}
+                        selector: {},
+                        sort: [
+                            {
+                                key: 'asc'
+                            }
+                        ]
                     }
                 );
 
@@ -1728,7 +1746,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     config.storage.getStorage().statics.prepareQuery(
                         storageInstance.schema,
                         {
-                            selector: {}
+                            selector: {},
+                            sort: [
+                                { key: 'asc' }
+                            ]
                         }
                     )
                 );
@@ -2333,7 +2354,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     instances.b.schema,
                     {
                         selector: {},
-                        limit: 1
+                        limit: 1,
+                        sort: [{ key: 'asc' }]
                     }
                 );
 
@@ -2384,7 +2406,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     instances.b.schema,
                     {
                         selector: {},
-                        limit: 1
+                        limit: 1,
+                        sort: [{ key: 'asc' }]
                     }
                 );
 

@@ -151,6 +151,7 @@ export type {
     MigrationStrategies,
     RxStorage,
     RxStorageStatics,
+    FilledMangoQuery,
     OldRxCollection,
     WithAttachmentsData
 } from './types';

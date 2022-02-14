@@ -22,6 +22,7 @@ import type {
 import type {
     BlobBuffer,
     MangoQuery,
+    MangoQuerySortPart,
     RxJsonSchema
 } from './';
 import type {
@@ -80,6 +81,16 @@ export interface RxStorage<Internals, InstanceCreationOptions> {
 }
 
 
+export type FilledMangoQuery<DocumentData> = MangoQuery<DocumentData> & {
+    /**
+     * In contrast to the user-provided MangoQuery,
+     * the sorting is required here because
+     * RxDB has to ensure that the primary key is always
+     * part of the sort params.
+     */
+    sort: MangoQuerySortPart<DocumentData>[];
+}
+
 /**
  * Static functions of the RxStorage.
  * Can be used without creating an instance of any kind.
@@ -135,7 +146,7 @@ export type RxStorageStatics = Readonly<{
         /**
          * a query that can be mutated by the function without side effects.
          */
-        mutateableQuery: MangoQuery<DocumentData>
+        mutateableQuery: FilledMangoQuery<DocumentData>
     ): PreparedQuery<DocumentData>;
 
     /**

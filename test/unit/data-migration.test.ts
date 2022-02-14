@@ -354,6 +354,7 @@ config.parallel('data-migration.test.js', () => {
                     }
 
                     const undeleted = await getAllDocuments(
+                        old.schema.primaryPath,
                         old.database.storage,
                         old.storageInstance
                     );

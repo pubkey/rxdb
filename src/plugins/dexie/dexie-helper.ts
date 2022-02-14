@@ -12,6 +12,7 @@ import type {
 import { Dexie } from 'dexie';
 import { DexieSettings } from '../../types';
 import { flatClone } from '../../util';
+import { newRxError } from '../../rx-error';
 
 export const DEXIE_DOCS_TABLE_NAME = 'docs';
 export const DEXIE_DELETED_DOCS_TABLE_NAME = 'deleted-docs';
@@ -93,30 +94,22 @@ function sortDirectionToMingo(direction: 'asc' | 'desc'): 1 | -1 {
  * because we need it in multiple places.
  */
 export function getDexieSortComparator<RxDocType>(
-    schema: RxJsonSchema<RxDocType>,
+    _schema: RxJsonSchema<RxDocType>,
     query: MangoQuery<RxDocType>
 ): DeterministicSortComparator<RxDocType> {
-    const primaryKey: string = getPrimaryFieldOfPrimaryKey(schema.primaryKey) as string;
-
     const mingoSortObject: {
         [fieldName: string]: 1 | -1;
     } = {};
-    let wasPrimaryInSort = false;
-    if (query.sort) {
-        query.sort.forEach(sortBlock => {
-            const key = Object.keys(sortBlock)[0];
-            if (key === primaryKey) {
-                wasPrimaryInSort = true;
-            }
-            const direction = Object.values(sortBlock)[0];
-            mingoSortObject[key] = sortDirectionToMingo(direction);
-        });
-    }
-    // TODO ensuring that the primaryKey is in the sorting, should be done by RxDB, not by the storage.
-    if (!wasPrimaryInSort) {
-        mingoSortObject[primaryKey] = 1;
+
+    if (!query.sort) {
+        throw newRxError('SNH', { query });
     }
 
+    query.sort.forEach(sortBlock => {
+        const key = Object.keys(sortBlock)[0];
+        const direction = Object.values(sortBlock)[0];
+        mingoSortObject[key] = sortDirectionToMingo(direction);
+    });
 
     const fun: DeterministicSortComparator<RxDocType> = (a: RxDocType, b: RxDocType) => {
         const sorted = mingo.find([a, b], {}).sort(mingoSortObject);

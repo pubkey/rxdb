@@ -25,8 +25,6 @@ export function rxCollectionProperties(): string[] {
 let _rxDatabaseProperties: string[];
 export function rxDatabaseProperties(): string[] {
     if (!_rxDatabaseProperties) {
-        // TODO instead of using the pseudoInstance,
-        // we should get the properties from the prototype of the class
         const pseudoInstance: RxDatabaseBase<any, any> = new (RxDatabaseBase as any)(
             'pseudoInstance',
             'memory'

@@ -33,14 +33,15 @@ export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
  * returns all NON-LOCAL documents
  */
 export async function getAllDocuments<RxDocType>(
+    primaryKey: keyof RxDocType,
     storage: RxStorage<any, any>,
     storageInstance: RxStorageInstance<RxDocType, any, any>
 ): Promise<RxDocumentData<RxDocType>[]> {
-
     const getAllQueryPrepared = storage.statics.prepareQuery(
         storageInstance.schema,
         {
-            selector: {}
+            selector: {},
+            sort: [{ [primaryKey]: 'asc' } as any]
         }
     );
     const queryResult = await storageInstance.query(getAllQueryPrepared);

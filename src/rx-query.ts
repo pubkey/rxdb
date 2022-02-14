@@ -44,7 +44,8 @@ import type {
     RxChangeEvent,
     RxDocumentWriteData,
     RxJsonSchema,
-    RxDocumentData
+    RxDocumentData,
+    FilledMangoQuery
 } from './types';
 
 import {
@@ -295,15 +296,28 @@ export class RxQueryBase<
      */
     get queryMatcher(): QueryMatcher<RxDocumentWriteData<RxDocumentType>> {
         const schema = this.collection.schema.normalized;
+
+
+        /**
+         * Instead of calling this.getPreparedQuery(),
+         * we have to prepare the query for the query matcher
+         * so that it does not contain modifications from the hooks
+         * like the key compression.
+         */
+        const usePreparedQuery = this.collection.database.storage.statics.prepareQuery(
+            schema,
+            normalizeMangoQuery(
+                this.collection.schema.normalized,
+                clone(this.mangoQuery)
+            )
+        );
+
         return overwriteGetterForCaching(
             this,
             'queryMatcher',
             this.collection.database.storage.statics.getQueryMatcher(
                 schema,
-                this.collection.database.storage.statics.prepareQuery(
-                    schema,
-                    this.mangoQuery
-                )
+                usePreparedQuery
             )
         );
     }
@@ -342,6 +356,7 @@ export class RxQueryBase<
             this.collection.storageInstance.schema,
             hookInput.mangoQuery
         );
+
         this.getPreparedQuery = () => value;
         return value;
     }
@@ -566,7 +581,7 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> {
 export function normalizeMangoQuery<RxDocType>(
     schema: RxJsonSchema<RxDocType>,
     mangoQuery: MangoQuery<RxDocType>
-): MangoQuery<RxDocType> {
+): FilledMangoQuery<RxDocType> {
     const primaryKey: string = getPrimaryFieldOfPrimaryKey(schema.primaryKey) as string;
     mangoQuery = flatClone(mangoQuery);
 
@@ -601,7 +616,7 @@ export function normalizeMangoQuery<RxDocType>(
         mangoQuery.index = indexAr;
     }
 
-    return mangoQuery;
+    return mangoQuery as any;
 }
 
 
@@ -654,6 +669,7 @@ export function isFindOneByIdQuery(
     if (
         query.limit === 1 &&
         !query.skip &&
+        query.selector &&
         Object.keys(query.selector).length === 1 &&
         query.selector[primaryPath]
     ) {

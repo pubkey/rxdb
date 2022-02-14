@@ -43,13 +43,21 @@ export type MangoQuerySortPart<RxDocType = any> = {
 };
 
 export type MangoQueryNoLimit<RxDocType = any> = {
-    selector: MangoQuerySelector<RxDocType>;
+    /**
+     * Selector is optional,
+     * if not given, the query matches all documents
+     * that are not _deleted=true.
+     */
+    selector?: MangoQuerySelector<RxDocType>;
     skip?: number;
     /**
      * Sorting of the results.
      * If no sort is set, RxDB will sort by the primary key.
      * Also if sort is set, RxDB will add primaryKey sorting
      * if the primaryKey was not in the sort parameters before.
+     * This ensures that there is a deterministic sorting of the 
+     * results, not mather at which order the documents have been
+     * inserted into the storage.
      */
     sort?: MangoQuerySortPart<RxDocType>[];
     /**

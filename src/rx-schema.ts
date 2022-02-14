@@ -354,11 +354,9 @@ export function fillWithDefaultSettings<T = any>(
     // encrypted must be array
     schemaObj.encrypted = schemaObj.encrypted ? schemaObj.encrypted.slice(0) : [];
 
-
-
     /**
-     * TODO we should not need to added the internal fields to the schema.
-     * Better remove the before validation.
+     * TODO we should not need to add the internal fields to the schema.
+     * Better remove the fields before validation.
      */
     // add _rev
     (schemaObj.properties as any)._rev = {

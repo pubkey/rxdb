@@ -20,7 +20,6 @@ import {
 import { ensureNotFalsy, flatClone, promiseWait, randomCouchString } from '../../util';
 import { LokiSaveQueue } from './loki-save-queue';
 import type { DeterministicSortComparator } from 'event-reduce-js';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import { newRxError } from '../../rx-error';
 import {
     BroadcastChannel,
@@ -198,15 +197,14 @@ export async function closeLokiCollections(
  * because we need it in multiple places.
  */
 export function getLokiSortComparator<RxDocType>(
-    schema: RxJsonSchema<RxDocType>,
+    _schema: RxJsonSchema<RxDocType>,
     query: MangoQuery<RxDocType>
 ): DeterministicSortComparator<RxDocType> {
-    const primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
-    // TODO if no sort is given, use sort by primary.
-    // This should be done inside of RxDB and not in the storage implementations.
-    const sortOptions: MangoQuerySortPart<RxDocType>[] = query.sort ? (query.sort as any) : [{
-        [primaryKey]: 'asc'
-    }];
+    if (!query.sort) {
+        throw newRxError('SNH', { query });
+    }
+    const sortOptions: MangoQuerySortPart<RxDocType>[] = query.sort;
+
     const fun: DeterministicSortComparator<RxDocType> = (a: RxDocType, b: RxDocType) => {
         let compareResult: number = 0; // 1 | -1
         sortOptions.find(sortPart => {
@@ -231,9 +229,7 @@ export function getLokiSortComparator<RxDocType>(
         /**
          * Two different objects should never have the same sort position.
          * We ensure this by having the unique primaryKey in the sort params
-         * at this.prepareQuery()
-         * TODO RxDB should ensure that the primary key is always used in the sort params
-         * to ensure a deterministic sorting.
+         * which is added by RxDB if not existing yet.
          */
         if (!compareResult) {
             throw newRxError('SNH', { args: { query, a, b } });
