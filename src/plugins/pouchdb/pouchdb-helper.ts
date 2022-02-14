@@ -78,6 +78,9 @@ export function pouchDocumentDataToRxDocumentData<T>(
     useDoc = flatClone(useDoc);
     delete (useDoc as any)._revisions;
 
+    // ensure deleted flag is set.
+    useDoc._deleted = !!useDoc._deleted;
+
     useDoc._attachments = {};
     if (pouchDoc._attachments) {
         Object.entries(pouchDoc._attachments).forEach(([key, value]) => {
@@ -233,7 +236,6 @@ export function pouchChangeRowToChangeStreamEvent<DocumentData>(
                 pouchRow.doc as any
             )
         );
-        delete previousDoc._deleted;
         const ev: ChangeStreamEvent<DocumentData> = {
             sequence: pouchRow.seq,
             id: pouchRow.id,

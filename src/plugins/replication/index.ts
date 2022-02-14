@@ -273,6 +273,10 @@ export class RxReplicationStateBase<RxDocType> {
             return Promise.resolve('ok');
         }
 
+        /**
+         * Many people forgot sending the _deleted flag
+         * so we check if it exists and throw if not.
+         */
         if (overwritable.isDevMode()) {
             pulledDocuments.forEach(doc => {
                 if (!doc.hasOwnProperty('_deleted')) {
@@ -425,12 +429,6 @@ export class RxReplicationStateBase<RxDocType> {
         const pushDocs: WithDeleted<RxDocType>[] = changeRows
             .map(row => {
                 const doc: WithDeleted<RxDocType> = flatClone(row.doc) as any;
-                // TODO _deleted should be required on type RxDocumentData
-                // so we do not need this check here
-                if (!doc.hasOwnProperty('_deleted')) {
-                    doc._deleted = false;
-                }
-
                 delete (doc as any)._rev;
                 delete (doc as any)._attachments;
 

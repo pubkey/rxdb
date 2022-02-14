@@ -305,6 +305,7 @@ export class RxDatabaseBase<
                         schemaHash: schemaHashByName[name],
                         schema: collection.schema.normalized,
                         version: collection.schema.version,
+                        _deleted: false,
                         _attachments: {}
                     }
                 });
@@ -521,6 +522,7 @@ export async function _ensureStorageTokenExists<Collections = any>(rxDatabase: R
             document: {
                 _id: storageTokenDocumentId,
                 value: storageToken,
+                _deleted: false,
                 _attachments: {}
 
             }

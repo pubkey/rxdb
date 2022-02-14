@@ -104,8 +104,11 @@ import {
     createRxDocument,
     getRxDocumentConstructor
 } from './rx-document-prototype-merge';
-import { getWrappedStorageInstance, storageChangeEventToRxChangeEvent, throwIfIsStorageWriteError } from './rx-storage-helper';
-import { overwritable } from './overwritable';
+import {
+    getWrappedStorageInstance,
+    storageChangeEventToRxChangeEvent,
+    throwIfIsStorageWriteError
+} from './rx-storage-helper';
 
 const HOOKS_WHEN = ['pre', 'post'];
 const HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];

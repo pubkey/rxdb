@@ -15,9 +15,7 @@ export type RxDocumentData<T> = T & {
      * Instead the documents are stored with _deleted: true
      * which means they will not be returned at queries.
      */
-    // deleted is optional. If not set, we assume _deleted: false
-    // TODO make it required to ensure we have to correct value and type everywhere.
-    _deleted?: boolean;
+    _deleted: boolean;
 
     /**
      * The attachments meta data is stored besides to document.
@@ -45,10 +43,11 @@ export type RxDocumentData<T> = T & {
  * storage instance to save it.
  */
 export type RxDocumentWriteData<T> = T & {
-
-    // deleted is optional. If not set, we assume _deleted: false
-    // TODO make it required to ensure we have to correct value and type everywhere.
-    _deleted?: boolean;
+    /**
+     * True if the document is deleted,
+     * false if not.
+     */
+    _deleted: boolean;
 
     _attachments: {
         /**
@@ -156,7 +155,7 @@ export type RxLocalDocumentData<
         // so this must always be an empty object.
         _attachments: {};
 
-        _deleted?: boolean;
+        _deleted: boolean;
         _rev?: string;
     } & Data;
 
@@ -168,8 +167,12 @@ export type RxStorageBulkWriteError<RxDocType> = {
 
     status: number |
     409 // conflict
-    // TODO add other status codes from pouchdb
-    ;
+    /**
+     * Before you add any other status code,
+     * check pouchdb/packages/node_modules/pouch-errors/src/index.js
+     * and try to use the same code as PouchDB does.
+     */
+     ;
 
     /**
      * set this property to make it easy
@@ -187,7 +190,11 @@ export type RxStorageBulkWriteError<RxDocType> = {
 export type RxStorageBulkWriteLocalError<D> = {
     status: number |
     409 // conflict
-    // TODO add other status codes from pouchdb
+    /**
+     * Before you add any other status code,
+     * check pouchdb/packages/node_modules/pouch-errors/src/index.js
+     * and try to use the same code as PouchDB does.
+     */
     ;
 
     /**

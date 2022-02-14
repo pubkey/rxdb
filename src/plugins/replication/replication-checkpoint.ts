@@ -59,6 +59,7 @@ export async function setLastPushSequence(
                 document: {
                     _id,
                     value: sequence,
+                    _deleted: false,
                     _attachments: {}
                 }
             }
@@ -74,6 +75,7 @@ export async function setLastPushSequence(
                 document: {
                     _id,
                     value: sequence,
+                    _deleted: false,
                     _attachments: {}
                 }
             }
@@ -245,6 +247,7 @@ export async function setLastPullDocument(
                 document: {
                     _id,
                     doc,
+                    _deleted: false,
                     _attachments: {}
                 }
             }

@@ -72,7 +72,8 @@ export async function storePasswordHashIntoDatabase(
         const docData: PasswordHashDocument = {
             _id: pwHashDocumentId,
             value: pwHash,
-            _attachments: {}
+            _attachments: {},
+            _deleted: false
         };
         await rxDatabase.localDocumentsStore.bulkWrite([{
             document: docData

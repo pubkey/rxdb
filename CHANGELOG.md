@@ -11,6 +11,7 @@
 - Removed the deprecated in-memory plugin.
 - Refactor usage of RxCollection.storageInstance to ensure all hooks run properly.
 - Added `withDeleted` parameter to `RxStorageKeyObjectInstance.findLocalDocumentsById()`
+- The `_deleted` field is now required for each data interaction with `RxStorage`.
 
 - Removed the `core` plugin. The default export `from 'rxdb'` now exports only the RxDB core without plugins.
 - Added optional `init()` function to `RxPlugin`.

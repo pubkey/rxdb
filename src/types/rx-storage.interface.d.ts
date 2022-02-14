@@ -29,7 +29,7 @@ import type {
 } from 'rxjs';
 
 /**
- * TODO WORK IN PROGRESS! Might change without breaking change.
+ * RxStorage
  * This is an interface that abstracts the storage engine.
  * This allows us to use RxDB with different engines like PouchDB or LokiJS.
  *
@@ -312,9 +312,6 @@ export interface RxStorageInstance<
      * as reference to how NoSQL-queries must work.
      * But the past has shown that pouchdb find can behave wrong,
      * which must be fixed or at least documented.
-     *
-     * TODO should we have a way for streamed results
-     * or a way to cancel a running query?
      */
     query(
         /**
