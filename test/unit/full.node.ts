@@ -14,6 +14,9 @@ const {
     addPouchPlugin,
     getRxStoragePouch
 } = require('../../plugins/pouchdb');
+const {
+    replicateRxCollection
+} = require('../../plugins/replication');
 import type {
     RxJsonSchema,
 } from '../../';
@@ -55,6 +58,34 @@ const run = async function () {
     await db.addCollections({
         humans: {
             schema
+        }
+    });
+    const collection = db.humans;
+
+    /**
+     * Start a replication to ensure
+     * all replication timeouts are cleared up when the collection
+     * gets destroyed.
+     */
+    await replicateRxCollection({
+        collection,
+        replicationIdentifier: 'my-custom-rest-replication',
+        live: true,
+        // use realy high values to ensure that the CI fails if the node process does not exit by itself.
+        liveInterval: 50000,
+        retryTime: 50000,
+        pull: {
+            async handler() {
+                return {
+                    documents: [],
+                    hasMoreDocuments: false
+                };
+            }
+        },
+        push: {
+            async handler() {
+            },
+            batchSize: 5
         }
     });
 
