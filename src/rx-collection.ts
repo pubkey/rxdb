@@ -19,7 +19,6 @@ import {
 } from './util';
 import {
     fillObjectDataBeforeInsert,
-    writeToStorageInstance,
     createRxCollectionStorageInstances
 } from './rx-collection-helper';
 import {
@@ -996,17 +995,6 @@ export function createRxCollection(
         cacheReplacementPolicy = defaultCacheReplacementPolicy
     }: any
 ): Promise<RxCollection> {
-    // TODO move this check to dev-mode plugin
-    if (overwritable.isDevMode()) {
-        Object.keys(methods)
-            .filter(funName => schema.topLevelFields.includes(funName))
-            .forEach(funName => {
-                throw newRxError('COL18', {
-                    funName
-                });
-            });
-    }
-
     const storageInstanceCreationParams: RxStorageInstanceCreationParams<any, any> = {
         databaseName: database.name,
         collectionName: name,

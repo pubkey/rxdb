@@ -60,10 +60,6 @@ export class RxSchema<T = any> {
         );
     }
 
-    public get topLevelFields(): (keyof T)[] {
-        return Object.keys(this.normalized.properties) as (keyof T)[];
-    }
-
     public get defaultValues(): { [P in keyof T]: T[P] } {
         const values = {} as { [P in keyof T]: T[P] };
         Object

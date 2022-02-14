@@ -12,7 +12,7 @@ import {
 import {
     checkSchema
 } from './check-schema';
-import { checkOrmMethods } from './check-orm';
+import { checkOrmDocumentMethods, checkOrmMethods } from './check-orm';
 import { checkMigrationStrategies } from './check-migration-strategies';
 import {
     ensureCollectionNameValid,
@@ -79,6 +79,7 @@ export const RxDBDevModePlugin: RxPlugin = {
         },
         preCreateRxCollection: (args: RxCollectionCreator & { name: string; }) => {
             ensureCollectionNameValid(args);
+            checkOrmDocumentMethods(args.schema as any, args.methods);
             if (args.name.charAt(0) === '_') {
                 throw newRxError('DB2', {
                     name: args.name
