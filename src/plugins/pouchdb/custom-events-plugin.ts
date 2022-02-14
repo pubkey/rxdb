@@ -23,8 +23,8 @@ import { Subject } from 'rxjs';
 import {
     flatClone,
     getFromMapOrThrow,
-    getHeightOfRevision,
     now,
+    parseRevision,
     randomCouchString
 } from '../../util';
 import { newRxError } from '../../rx-error';
@@ -279,14 +279,33 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
                     );
                 }
 
-                if (
-                    previousDoc &&
-                    getHeightOfRevision(previousDoc._rev) > getHeightOfRevision(writeDoc._rev)
-                ) {
-                    // not the newest revision was added
-                    // TODO is comparing the height enough to compare revisions?
-                    return;
+
+                if (previousDoc) {
+                    const parsedRevPrevious = parseRevision(previousDoc._rev);
+                    const parsedRevNew = parseRevision(writeDoc._rev);
+                    if (
+                        (
+                            parsedRevPrevious.height > parsedRevNew.height ||
+                            /**
+                             * If the revision height is equal,
+                             * we determine the higher hash as winner.
+                             */
+                            (
+                                parsedRevPrevious.height === parsedRevNew.height &&
+                                parsedRevPrevious.hash > parsedRevNew.hash
+                            )
+                        )
+                    ) {
+                        /**
+                         * The newly added document was not the latest revision
+                         * so we drop the write.
+                         * With plain PouchDB it makes sense to store conflicting branches of the document
+                         * but RxDB assumes that the conflict is resolved directly.
+                         */
+                        return;
+                    }
                 }
+
                 if (!previousDoc && writeDoc._deleted) {
                     // deleted document was added as revision
                     return;
