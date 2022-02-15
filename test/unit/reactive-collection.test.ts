@@ -20,6 +20,7 @@ import AsyncTestUtil from 'async-test-util';
 import {
     first
 } from 'rxjs/operators';
+import { HumanDocumentType } from '../helper/schemas';
 
 config.parallel('reactive-collection.test.js', () => {
     describe('.insert()', () => {
@@ -38,7 +39,7 @@ config.parallel('reactive-collection.test.js', () => {
                 const c = cols[colName];
 
                 c.insert(schemaObjects.human());
-                const changeEvent: RxChangeEvent = await c.$.pipe(first()).toPromise() as any;
+                const changeEvent: RxChangeEvent<HumanDocumentType> = await c.$.pipe(first()).toPromise() as any;
                 assert.strictEqual(changeEvent.collectionName, colName);
                 assert.strictEqual(typeof changeEvent.documentId, 'string');
                 assert.ok(changeEvent.documentData);
@@ -89,7 +90,7 @@ config.parallel('reactive-collection.test.js', () => {
                 });
                 const collection = collections.human;
 
-                const emittedCollection: RxChangeEvent[] = [];
+                const emittedCollection: RxChangeEvent<HumanDocumentType>[] = [];
                 const colSub = collection.insert$.subscribe((ce) => {
                     emittedCollection.push(ce);
                 });
@@ -114,7 +115,7 @@ config.parallel('reactive-collection.test.js', () => {
             it('should fire on bulk remove', async () => {
                 const c = await humansCollection.create(10);
 
-                const emittedCollection: RxChangeEvent[] = [];
+                const emittedCollection: RxChangeEvent<HumanDocumentType>[] = [];
                 const colSub = c.remove$.subscribe((ce) => {
                     emittedCollection.push(ce);
                 });
@@ -172,7 +173,7 @@ config.parallel('reactive-collection.test.js', () => {
         it('should only emit inserts', async () => {
             const c = await humansCollection.create(0);
 
-            const emitted: RxChangeEvent[] = [];
+            const emitted: RxChangeEvent<HumanDocumentType>[] = [];
             c.insert$.subscribe(cE => emitted.push(cE as any));
 
             await c.insert(schemaObjects.human());
@@ -193,7 +194,7 @@ config.parallel('reactive-collection.test.js', () => {
         it('should only emit updates', async () => {
             const c = await humansCollection.create(0);
 
-            const emitted: RxChangeEvent[] = [];
+            const emitted: RxChangeEvent<HumanDocumentType>[] = [];
             c.update$.subscribe(cE => emitted.push(cE as any));
 
             const doc1 = await c.insert(schemaObjects.human());
@@ -214,7 +215,7 @@ config.parallel('reactive-collection.test.js', () => {
         it('should only emit removes', async () => {
             const c = await humansCollection.create(0);
 
-            const emitted: RxChangeEvent[] = [];
+            const emitted: RxChangeEvent<HumanDocumentType>[] = [];
             c.remove$.subscribe(cE => emitted.push(cE as any));
             await c.insert(schemaObjects.human());
             const doc1 = await c.insert(schemaObjects.human());

@@ -1548,7 +1548,7 @@ config.parallel('rx-query.test.js', () => {
                         type: 'boolean'
                     }
                 }
-            };
+            } as const;
             const db = await createRxDatabase({
                 name: randomCouchString(10),
                 storage: getRxStoragePouch('memory'),
