@@ -291,10 +291,6 @@ function insertLocal(
     id: string,
     docData: any
 ): Promise<RxLocalDocument> {
-    if (isRxCollection(this) && this._isInMemory) {
-        return (this as any).parentCollection.insertLocal(id, docData);
-    }
-
     return (this as any).getLocal(id)
         .then((existing: any) => {
 
@@ -328,10 +324,6 @@ function insertLocal(
  * overwrites existing if exists
  */
 function upsertLocal(this: any, id: string, data: any): Promise<RxLocalDocument> {
-    if (isRxCollection(this) && this._isInMemory) {
-        return this._parentCollection.upsertLocal(id, data);
-    }
-
     return this.getLocal(id)
         .then((existing: RxDocument) => {
             if (!existing) {
@@ -347,10 +339,6 @@ function upsertLocal(this: any, id: string, data: any): Promise<RxLocalDocument>
 }
 
 function getLocal(this: any, id: string): Promise<RxLocalDocument | null> {
-    if (isRxCollection(this) && this._isInMemory) {
-        return this.parentCollection.getLocal(id);
-    }
-
     const storageInstance = _getKeyObjectStorageInstanceByParent(this);
     const docCache = _getDocCache(this);
 

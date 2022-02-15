@@ -179,7 +179,6 @@ export class RxCollectionBase<
         return this._onDestroy;
     }
 
-    public _isInMemory = false;
     public destroyed = false;
     public _atomicUpsertQueues: Map<string, Promise<any>> = new Map();
     // defaults
@@ -746,14 +745,6 @@ export class RxCollectionBase<
     }
 
     /**
-     * Create a replicated in-memory-collection
-     */
-    inMemory(): Promise<RxCollection<RxDocumentType, OrmMethods>> {
-        throw pluginMissing('in-memory');
-    }
-
-
-    /**
      * HOOKS
      */
     addHook(when: string, key: string, fun: any, parallel = false) {
@@ -797,6 +788,7 @@ export class RxCollectionBase<
         };
         this.hooks[key][when][runName].push(boundFun);
     }
+
     getHooks(when: string, key: string) {
         try {
             return this.hooks[key][when];
