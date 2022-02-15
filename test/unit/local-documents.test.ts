@@ -462,39 +462,6 @@ config.parallel('local-documents.test.js', () => {
             db2.destroy();
         });
     });
-    describe('in-memory', () => {
-        return; // TODO commented out while in-memory plugin is not rewritten.
-        it('should call the non-mem parent', async () => {
-            const name = randomCouchString(10);
-            const db = await createRxDatabase({
-                name,
-                storage: getRxStoragePouch('memory'),
-            });
-            const c1 = await db.addCollections({
-                humans: {
-                    schema: schemas.primaryHuman
-                }
-            });
-            const inMem = await c1.humans.inMemory();
-
-            await inMem.insertLocal('foobar', {
-                foo: 'bar',
-                age: 10
-            });
-            const doc = await c1.humans.getLocal('foobar');
-            assert.ok(doc);
-            assert.strictEqual(doc.get('age'), 10);
-
-            await c1.humans.insertLocal('foobar2', {
-                foo: 'bar',
-                age: 11
-            });
-            const doc2 = await inMem.getLocal('foobar2');
-            assert.strictEqual(doc2.get('age'), 11);
-
-            db.destroy();
-        });
-    });
     describe('issues', () => {
         it('PouchDB: Create and remove local doc', async () => {
             if (config.storage.name !== 'pouchdb') {
