@@ -16,6 +16,7 @@
 - Removed the `core` plugin. The default export `from 'rxdb'` now exports only the RxDB core without plugins.
 - Added optional `init()` function to `RxPlugin`.
 - Added `doesBroadcastChangestream()` to `RxStorageStatics`
+- Fix (replication primitives) only drop pulled documents when a relevant document was changed locally.
 
 ### 11.6.0 (4 February 2022)
 

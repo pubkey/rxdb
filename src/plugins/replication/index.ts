@@ -303,12 +303,20 @@ export class RxReplicationStateBase<RxDocType> {
                 () => this.isStopped(),
                 1
             );
+
             /**
-             * TODO instead of dropping the pull docs when any local change was done,
-             * we should only drop when relevant (same as pulled) documents where written locally.
+             * If any of the pulled documents
+             * was changed locally in between,
+             * we drop.
+             * If other documents where changed locally,
+             * we do not care.
              */
-            if (localWritesInBetween.changedDocs.size > 0) {
-                return Promise.resolve('drop');
+            const primaryPath = this.collection.schema.primaryPath;
+            for (const pulledDoc of pulledDocuments) {
+                const id = pulledDoc[primaryPath] as any;
+                if (localWritesInBetween.changedDocIds.has(id)) {
+                    return Promise.resolve('drop');
+                }
             }
         }
 

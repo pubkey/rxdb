@@ -98,6 +98,8 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
     isStopped: () => boolean,
     batchSize = 10
 ): Promise<{
+    // for better performance we also store the ids of the changed docs.
+    changedDocIds: Set<string>,
     changedDocs: Map<string, {
         id: string;
         doc: RxDocumentData<RxDocType>;
@@ -118,6 +120,7 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
         doc: RxDocumentData<RxDocType>;
         sequence: number;
     }> = new Map();
+    const changedDocIds: Set<string> = new Set();
 
     /**
      * it can happen that all docs in the batch
@@ -182,6 +185,7 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
             runPluginHooks('postReadFromInstance', hookParams);
             changedDoc = hookParams.doc;
 
+            changedDocIds.add(id);
             changedDocs.set(id, {
                 id,
                 doc: changedDoc,
@@ -199,6 +203,7 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
     }
 
     return {
+        changedDocIds,
         changedDocs,
         lastSequence,
         hasChangesSinceLastSequence: lastPushSequence !== lastSequence,
