@@ -860,10 +860,7 @@ export class RxCollectionBase<
                 this.timeouts.delete(timeout);
                 res();
             }, time);
-            this.onDestroy.then(() => {
-                clearTimeout(timeout);
-                this.timeouts.delete(timeout);
-            });
+            this.timeouts.add(timeout);
         });
         return ret;
     }
