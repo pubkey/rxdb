@@ -30,9 +30,6 @@ import type {
 import {
     isRxDatabase
 } from '../rx-database';
-import {
-    isRxCollection
-} from '../rx-collection';
 
 import {
     filter,
