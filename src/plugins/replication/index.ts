@@ -305,7 +305,7 @@ export class RxReplicationStateBase<RxDocType> {
             );
             /**
              * TODO instead of dropping the pull docs when any local change was done,
-             * instead we should only drop when relevant (same as pulled) documents where written locally.
+             * we should only drop when relevant (same as pulled) documents where written locally.
              */
             if (localWritesInBetween.changedDocs.size > 0) {
                 return Promise.resolve('drop');

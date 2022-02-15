@@ -133,7 +133,6 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
  */
 export function checkPouchAdapter(adapter: string | any) {
     if (typeof adapter === 'string') {
-        // TODO make a function hasAdapter()
         if (!(PouchDB as any).adapters || !(PouchDB as any).adapters[adapter]) {
             throw newRxError('DB9', {
                 adapter

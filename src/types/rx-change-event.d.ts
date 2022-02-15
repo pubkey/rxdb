@@ -39,15 +39,14 @@ export type RxChangeEventDelete<DocType> = RxChangeEventBase & {
     previousDocumentData: DeepReadonly<DocType> | 'UNKNOWN';
 }
 
-// TODO remove =any
-export type RxChangeEvent<DocType = any> = RxChangeEventInsert<DocType> | RxChangeEventUpdate<DocType> | RxChangeEventDelete<DocType>;
+export type RxChangeEvent<DocType> = RxChangeEventInsert<DocType> | RxChangeEventUpdate<DocType> | RxChangeEventDelete<DocType>;
 
 /**
  * Internally, all events are processed via bulks
  * to save performance when sending them over a transport layer
  * or de-duplicating them.
  */
-export type RxChangeEventBulk<DocType = any> = EventBulk<RxChangeEvent<DocType>> & {
+export type RxChangeEventBulk<DocType> = EventBulk<RxChangeEvent<DocType>> & {
     // optional, not given for changes to local documents of a RxDatabase.
     collectionName?: string;
     /**

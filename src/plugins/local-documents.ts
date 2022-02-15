@@ -115,7 +115,7 @@ const RxLocalDocumentPrototype: any = {
 
     _handleChangeEvent(
         this: any,
-        changeEvent: RxChangeEvent
+        changeEvent: RxChangeEvent<RxLocalDocumentData>
     ) {
         if (changeEvent.documentId !== this.primary) {
             return;
@@ -149,7 +149,7 @@ const RxLocalDocumentPrototype: any = {
     get $() {
         return (this as RxDocument)._dataSync$.asObservable();
     },
-    $emit(this: any, changeEvent: RxChangeEvent) {
+    $emit(this: any, changeEvent: RxChangeEvent<RxLocalDocumentData>) {
         return this.parent.$emit(changeEvent);
     },
     get(this: RxDocument, objPath: string) {
@@ -375,7 +375,7 @@ function getLocal(this: any, id: string): Promise<RxLocalDocument | null> {
 function getLocal$(this: RxCollection, id: string): Observable<RxLocalDocument | null> {
     return this.$.pipe(
         startWith(null),
-        mergeMap(async (cE: RxChangeEvent | null) => {
+        mergeMap(async (cE: RxChangeEvent<RxLocalDocumentData> | null) => {
             if (cE) {
                 return {
                     changeEvent: cE

@@ -38,7 +38,7 @@ config.parallel('reactive-document.test.js', () => {
                 const oldName = doc.firstName;
                 const newName = randomCouchString(8);
 
-                const emittedCollection: RxChangeEvent[] = [];
+                const emittedCollection: RxChangeEvent<HumanDocumentType>[] = [];
                 const colSub = c.$.subscribe(cE => {
                     emittedCollection.push(cE);
                 });

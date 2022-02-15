@@ -115,7 +115,7 @@ export class RxDatabaseBase<
          * We transfer everything in EventBulks because sending many small events has been shown
          * to be performance expensive.
          */
-        public readonly broadcastChannel?: BroadcastChannel<RxChangeEventBulk>,
+        public readonly broadcastChannel?: BroadcastChannel<RxChangeEventBulk<any>>,
     ) {
         this.collections = {} as any;
         DB_COUNT++;
@@ -129,7 +129,7 @@ export class RxDatabaseBase<
     public _subs: Subscription[] = [];
     public destroyed: boolean = false;
     public collections: Collections;
-    public readonly eventBulks$: Subject<RxChangeEventBulk> = new Subject();
+    public readonly eventBulks$: Subject<RxChangeEventBulk<any>> = new Subject();
     private observable$: Observable<RxChangeEvent<any>> = this.eventBulks$
         .pipe(
             mergeMap(changeEventBulk => changeEventBulk.events)
@@ -175,7 +175,7 @@ export class RxDatabaseBase<
      * ChangeEvents created by other instances go:
      * MultiInstance -> RxDatabase.$emit -> RxCollection -> RxDatabase
      */
-    $emit(changeEventBulk: RxChangeEventBulk) {
+    $emit(changeEventBulk: RxChangeEventBulk<any>) {
         if (this.emittedEventBulkIds.has(changeEventBulk.id)) {
             return;
         }
@@ -538,7 +538,7 @@ export async function _ensureStorageTokenExists<Collections = any>(rxDatabase: R
  */
 export function writeToSocket(
     rxDatabase: RxDatabase,
-    changeEventBulk: RxChangeEventBulk
+    changeEventBulk: RxChangeEventBulk<any>
 ): Promise<boolean> {
     if (rxDatabase.destroyed) {
         return PROMISE_RESOLVE_FALSE;
@@ -608,7 +608,7 @@ export async function _removeAllOfCollection(
 function _prepareBroadcastChannel<Collections>(rxDatabase: RxDatabase<Collections>): void {
     // listen to changes from other instances that come over the BroadcastChannel
     ensureNotFalsy(rxDatabase.broadcastChannel)
-        .addEventListener('message', (changeEventBulk: RxChangeEventBulk) => {
+        .addEventListener('message', (changeEventBulk: RxChangeEventBulk<any>) => {
             if (
                 // not same storage-state
                 changeEventBulk.storageToken !== rxDatabase.storageToken ||
@@ -667,7 +667,7 @@ async function prepare<Internals, InstanceCreationOptions, Collections>(
     rxDatabase.storageToken = await _ensureStorageTokenExists<Collections>(rxDatabase as any);
     const localDocsSub = rxDatabase.localDocumentsStore.changeStream()
         .subscribe(eventBulk => {
-            const changeEventBulk: RxChangeEventBulk = {
+            const changeEventBulk: RxChangeEventBulk<any> = {
                 id: eventBulk.id,
                 internal: false,
                 storageToken: ensureNotFalsy(rxDatabase.storageToken),

@@ -86,7 +86,8 @@ import type {
     RxChangeEventDelete,
     RxStorageInstance,
     CollectionsOfDatabase,
-    RxChangeEventBulk
+    RxChangeEventBulk,
+    RxLocalDocumentData
 } from './types';
 import type {
     RxGraphQLReplicationState
@@ -220,7 +221,7 @@ export class RxCollectionBase<
          * to save performance.
          */
         const subDocs = this.storageInstance.changeStream().subscribe(eventBulk => {
-            const changeEventBulk: RxChangeEventBulk = {
+            const changeEventBulk: RxChangeEventBulk<RxDocumentType | RxLocalDocumentData> = {
                 id: eventBulk.id,
                 internal: false,
                 collectionName: this.name,
@@ -237,7 +238,7 @@ export class RxCollectionBase<
 
         this._subs.push(subDocs);
         const subLocalDocs = this.localDocumentsStore.changeStream().subscribe(eventBulk => {
-            const changeEventBulk: RxChangeEventBulk = {
+            const changeEventBulk: RxChangeEventBulk<RxDocumentType | RxLocalDocumentData> = {
                 id: eventBulk.id,
                 internal: false,
                 collectionName: this.name,

@@ -169,12 +169,6 @@ export function getEventKey(
     primary: string,
     revision: string
 ): string {
-
-    // TODO remove this check this should never happen
-    if (!primary) {
-        throw new Error('primary missing !!');
-    }
-
     const prefix = isLocal ? 'local' : 'non-local';
     const eventKey = prefix + '|' + primary + '|' + revision;
     return eventKey;
