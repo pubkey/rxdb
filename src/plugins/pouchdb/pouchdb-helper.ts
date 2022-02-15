@@ -45,6 +45,14 @@ export const POUCHDB_LOCAL_PREFIX_LENGTH = POUCHDB_LOCAL_PREFIX.length;
  */
 export const POUCHDB_DESIGN_PREFIX: '_design/' = '_design/';
 
+
+/**
+ * PouchDB does not allow to add custom properties
+ * that start with lodash like RxDB's _meta field.
+ * So we have to map this field into a non-lodashed field.
+ */
+export const POUCHDB_META_FIELDNAME = 'rxdbMeta';
+
 export function pouchSwapIdToPrimary<T>(
     primaryKey: keyof T,
     docData: any
@@ -100,6 +108,9 @@ export function pouchDocumentDataToRxDocumentData<T>(
         });
     }
 
+    useDoc._meta = (useDoc as any)[POUCHDB_META_FIELDNAME];
+    delete (useDoc as any)[POUCHDB_META_FIELDNAME];
+
     return useDoc;
 }
 
@@ -131,6 +142,9 @@ export function rxDocumentDataToPouchDocumentData<T>(
             }
         });
     }
+
+    (pouchDoc as any)[POUCHDB_META_FIELDNAME] = (pouchDoc as any)._meta;
+    delete (pouchDoc as any)._meta;
 
     return pouchDoc as any;
 }

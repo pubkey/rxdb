@@ -6,6 +6,7 @@ import type {
     RxStorageKeyObjectInstance
 } from './types';
 import { RxCollectionBase } from './rx-collection';
+import { now } from './util';
 
 /**
  * fills in the default data.
@@ -17,10 +18,11 @@ export function fillObjectDataBeforeInsert(
 ): any {
     let useJson = collection.schema.fillObjectWithDefaults(data);
     useJson = collection.schema.fillPrimaryKey(useJson);
-
+    useJson._meta = {
+        lwt: now()
+    };
     return useJson;
 }
-
 
 export function getCollectionLocalInstanceName(collectionName: string): string {
     return collectionName + '-local';

@@ -15,8 +15,9 @@ import {
 } from '../../';
 
 import {
-    getRxStoragePouch
+    getRxStoragePouch, pouchDocumentDataToRxDocumentData
 } from '../../plugins/pouchdb';
+import { SimpleHumanDocumentType } from './../helper/schema-objects';
 
 
 config.parallel('key-compression.test.js', () => {
@@ -69,14 +70,16 @@ config.parallel('key-compression.test.js', () => {
             const docData = schemaObjects.simpleHuman();
             await c.insert(docData);
 
-            const doc = await c.internalStorageInstance.internals.pouch.get(docData.passportId);
+            const pouchDoc = await c.internalStorageInstance.internals.pouch.get(docData.passportId);
+            const doc = pouchDocumentDataToRxDocumentData<SimpleHumanDocumentType>(c.schema.primaryPath, pouchDoc);
             Object.keys(doc)
                 .filter(key => !key.startsWith('_'))
+                .filter(key => key !== c.schema.primaryPath)
                 .forEach(key => {
-                    assert.ok(key.length <= 4);
+                    assert.ok(key.length <= 3);
                     assert.strictEqual(typeof doc[key], 'string');
                 });
-            assert.strictEqual(doc._id, docData.passportId);
+            assert.strictEqual(doc[c.schema.primaryPath], docData.passportId);
             assert.strictEqual(doc['|a'], docData.firstName);
             c.database.destroy();
         });

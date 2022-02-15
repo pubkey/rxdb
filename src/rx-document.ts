@@ -245,6 +245,7 @@ export const basePrototype = {
             delete (data as any)._rev;
             delete (data as any)._attachments;
             delete (data as any)._deleted;
+            delete (data as any)._meta;
             return overwritable.deepFreezeWhenDevMode(data);
         } else {
             return overwritable.deepFreezeWhenDevMode(this._data);

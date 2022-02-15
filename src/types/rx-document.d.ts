@@ -18,6 +18,20 @@ export type RxDocument<RxDocumentType = {}, OrmMethods = {}> = RxDocumentBase<Rx
 
 declare type AtomicUpdateFunction<RxDocumentType> = (doc: RxDocumentType) => RxDocumentType | Promise<RxDocumentType>;
 
+/**
+ * Meta data that is attached to each document by RxDB.
+ * TODO in the next major release,
+ * we should move the other meta fields
+ * _rev, _deleted, _attachments into this property.
+ */
+export type RxDocumentMeta = {
+    /**
+     * Last write time.
+     * Unix epoch in milliseconds.
+     */
+    lwt: number;
+};
+
 export declare interface RxDocumentBase<RxDocumentType, OrmMethods = {}> {
     isInstanceOfRxDocument: true;
     collection: RxCollection<RxDocumentType, OrmMethods>;
