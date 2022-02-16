@@ -1616,7 +1616,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
 
                 // make normal insert
-                await writeSingle(
+                await writeSingle<TestDocType>(
                     storageInstance,
                     {
                         document: writeData
@@ -1828,7 +1828,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }
                 };
 
-                const writeResult = await writeSingle(
+                const writeResult = await writeSingle<TestDocType>(
                     storageInstance,
                     {
                         document: writeData
@@ -1913,7 +1913,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }
                 };
 
-                previous = await writeSingle(
+                previous = await writeSingle<TestDocType>(
                     storageInstance,
                     {
                         previous,
@@ -1936,7 +1936,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     type: 'text/plain'
                 };
 
-                previous = await writeSingle(
+                previous = await writeSingle<TestDocType>(
                     storageInstance,
                     {
                         previous,

@@ -253,6 +253,9 @@ describe('rx-storage-lokijs.test.js', () => {
                 document: {
                     key: 'foobar',
                     _deleted: false,
+                    _meta: {
+                        lwt: now()
+                    },
                     _attachments: {}
                 }
             }]);
@@ -295,6 +298,9 @@ describe('rx-storage-lokijs.test.js', () => {
                 document: {
                     key: 'foobar',
                     _deleted: false,
+                    _meta: {
+                        lwt: now()
+                    },
                     _attachments: {}
                 }
             }]);
@@ -377,6 +383,9 @@ describe('rx-storage-lokijs.test.js', () => {
 
                 const firstDocData = Object.assign(schemaObjects.human(), {
                     _deleted: false,
+                    _meta: {
+                        lwt: now()
+                    },
                     _attachments: {}
                 });
                 await storageInstance.bulkWrite([
@@ -389,6 +398,9 @@ describe('rx-storage-lokijs.test.js', () => {
                     Object.assign(schemaObjects.human(), {
                         _deleted: false,
                         _attachments: {},
+                        _meta: {
+                            lwt: now()
+                        },
                         _rev: '1-51b2fae5721cc4d3cf7392f19e6cc118'
                     })
                 ]);
@@ -416,6 +428,9 @@ describe('rx-storage-lokijs.test.js', () => {
                     document: {
                         _id: 'foobar',
                         _attachments: {},
+                        _meta: {
+                            lwt: now()
+                        },
                         _deleted: false
                     }
                 }]);

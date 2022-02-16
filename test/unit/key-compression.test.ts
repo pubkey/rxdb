@@ -77,10 +77,10 @@ config.parallel('key-compression.test.js', () => {
                 .filter(key => key !== c.schema.primaryPath)
                 .forEach(key => {
                     assert.ok(key.length <= 3);
-                    assert.strictEqual(typeof doc[key], 'string');
+                    assert.strictEqual(typeof (doc as any)[key], 'string');
                 });
             assert.strictEqual(doc[c.schema.primaryPath], docData.passportId);
-            assert.strictEqual(doc['|a'], docData.firstName);
+            assert.strictEqual((doc as any)['|a'], docData.firstName);
             c.database.destroy();
         });
     });

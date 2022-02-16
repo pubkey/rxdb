@@ -12,7 +12,7 @@ import {
 } from './rx-attachment';
 import { RxDocumentData } from './rx-storage';
 import { RxChangeEvent } from './rx-change-event';
-import { DeepReadonly } from './util';
+import { DeepReadonly, PlainJsonValue } from './util';
 
 export type RxDocument<RxDocumentType = {}, OrmMethods = {}> = RxDocumentBase<RxDocumentType, OrmMethods> & RxDocumentType & OrmMethods;
 
@@ -30,6 +30,12 @@ export type RxDocumentMeta = {
      * Unix epoch in milliseconds.
      */
     lwt: number;
+
+    /**
+     * Any other value can be attached to the _meta data.
+     * Mostly done by plugins to mark documents.
+     */
+    [k: string]: PlainJsonValue;
 };
 
 export declare interface RxDocumentBase<RxDocumentType, OrmMethods = {}> {
