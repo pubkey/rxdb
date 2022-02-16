@@ -357,6 +357,9 @@ export class RxCollectionBase<
             const row: BulkWriteRow<RxDocumentType> = {
                 document: Object.assign(doc, {
                     _attachments: {},
+                    _meta: {
+                        lwt: now()
+                    },
                     _deleted: false
                 })
             };

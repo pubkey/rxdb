@@ -13,7 +13,8 @@ import {
 } from '../rx-error';
 import {
     flatClone,
-    getFromObjectOrThrow
+    getFromObjectOrThrow,
+    now
 } from '../util';
 
 import type {
@@ -222,6 +223,9 @@ const RxLocalDocumentPrototype: any = {
         const writeData: RxDocumentWriteData<{ _id: string }> = {
             _id: this.id,
             _deleted: true,
+            _meta: {
+                lwt: now()
+            },
             _attachments: {}
         };
         return writeSingleLocal(storageInstance, {

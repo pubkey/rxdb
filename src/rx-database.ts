@@ -29,7 +29,8 @@ import {
     PROMISE_RESOLVE_FALSE,
     randomCouchString,
     ensureNotFalsy,
-    PROMISE_RESOLVE_VOID
+    PROMISE_RESOLVE_VOID,
+    now
 } from './util';
 import {
     newRxError
@@ -306,6 +307,9 @@ export class RxDatabaseBase<
                         schema: collection.schema.normalized,
                         version: collection.schema.version,
                         _deleted: false,
+                        _meta: {
+                            lwt: now()
+                        },
                         _attachments: {}
                     }
                 });
@@ -523,6 +527,9 @@ export async function _ensureStorageTokenExists<Collections = any>(rxDatabase: R
                 _id: storageTokenDocumentId,
                 value: storageToken,
                 _deleted: false,
+                _meta: {
+                    lwt: now()
+                },
                 _attachments: {}
 
             }

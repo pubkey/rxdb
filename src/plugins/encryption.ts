@@ -20,7 +20,7 @@ import type {
     RxDatabase,
     RxLocalDocumentData
 } from '../types';
-import { hash, PROMISE_RESOLVE_FALSE } from '../util';
+import { hash, now, PROMISE_RESOLVE_FALSE } from '../util';
 import { findLocalDocument } from '../rx-storage-helper';
 
 const minPassLength = 8;
@@ -73,6 +73,9 @@ export async function storePasswordHashIntoDatabase(
             _id: pwHashDocumentId,
             value: pwHash,
             _attachments: {},
+            _meta: {
+                lwt: now()
+            },
             _deleted: false
         };
         await rxDatabase.localDocumentsStore.bulkWrite([{
