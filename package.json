@@ -163,7 +163,7 @@
     "@babel/preset-typescript": "7.16.7",
     "@babel/types": "7.17.0",
     "@types/core-js": "2.5.5",
-    "@types/crypto-js": "4.1.0",
+    "@types/crypto-js": "4.1.1",
     "@types/faker": "5.5.9",
     "@types/memdown": "3.0.0",
     "@types/mocha": "8.2.3",
