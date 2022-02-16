@@ -32,7 +32,7 @@
     "normalize.css": "8.0.1",
     "pouchdb-adapter-idb": "7.2.2",
     "rxdb": "file:rxdb-local.tgz",
-    "rxjs": "7.5.2",
+    "rxjs": "7.5.4",
     "subscriptions-transport-ws": "0.11.0"
   },
   "devDependencies": {
