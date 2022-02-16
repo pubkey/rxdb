@@ -23,7 +23,7 @@
     "rollup-plugin-svelte": "7.1.0",
     "rollup-plugin-terser": "7.0.2",
     "rxdb": "file:rxdb-local.tgz",
-    "rxjs": "7.5.2",
+    "rxjs": "7.5.4",
     "svelte": "3.46.4",
     "testcafe": "1.18.3"
   },
