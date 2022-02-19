@@ -17,6 +17,7 @@ import './unit/instance-of-check.test.js';
 import './unit/rx-schema.test.js';
 import './unit/key-compression.test.js';
 import './unit/bug-report.test.js';
+import './unit/data-migration.test.js'; // MOVE DOWN
 import './unit/rx-database.test.js';
 import './unit/rx-collection.test.js';
 import './unit/rx-document.test.js';
@@ -35,7 +36,6 @@ import './unit/hooks.test.js';
 import './unit/attachments.test.js';
 import './unit/orm.test.js';
 import './unit/population.test.js';
-import './unit/data-migration.test.js';
 import './unit/backup.test.js';
 import './unit/leader-election.test.js';
 import './unit/replication.test.js';

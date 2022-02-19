@@ -386,6 +386,18 @@ export function migrateDocumentData(
             return PROMISE_RESOLVE_NULL;
         }
 
+        /**
+         * Add _meta field if missing.
+         * We need this to migration documents from pre-12.0.0 state
+         * to version 12.0.0. Therefore we need to add the _meta field if it is missing.
+         * TODO remove this in the major version 13.0.0 
+         */
+        if (!doc._meta) {
+            doc._meta = {
+                lwt: new Date().getTime()
+            }
+        }
+
         // check final schema
         try {
             oldCollection.newestCollection.schema.validate(doc);

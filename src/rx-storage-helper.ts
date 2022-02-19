@@ -145,9 +145,6 @@ export function storageChangeEventToRxChangeEvent<DocType>(
     return ret;
 }
 
-
-
-
 export function transformDocumentDataFromRxDBToRxStorage(
     col: RxCollection | RxCollectionBase<any, any, any>,
     data: any
@@ -306,7 +303,7 @@ export function getWrappedStorageInstance<RxDocumentType, Internals, InstanceCre
                             if (changeDoc && !changeDoc._meta) {
                                 console.dir(changeDoc);
                                 console.error('changeSTream meta is missing');
-                                process.exit(1);
+                                // process.exit(1);
                             }
 
                             return {

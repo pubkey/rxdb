@@ -56,9 +56,10 @@ Ensure that it works with typescript. Check the rxjs repo and find out how they 
 Rename the paths in the `exports` field in the `package.json` so that users can do `import {} from 'rxdb/core'` instead of the current `import {} from 'rxdb/plugins/core'`.
 
 
-## use replication primitives in graphql replication
+# Move _rev, _deleted and _attachments into _meta
 
-Atm we have duplicate code. Most of the graphql replication code can be switched out with the general replication plugin. Also we then could support bulk-push methods and replicate multiple changes from the local to the remote in the push replication.
+From version `12.0.0` on, all document data is stored with an `_meta` field that can contain various flags and other values. This makes it easier for plugins to remember stuff that belongs to the document.
+In the future, the other meta field like `_rev`, `_deleted` and `_attachments` will be moved from the root level to the `_meta` field. This is **not** done directly in release `12.0.0` to ensure that there is a migration path.
 
 
 ## Ensure deterministic sorting.
