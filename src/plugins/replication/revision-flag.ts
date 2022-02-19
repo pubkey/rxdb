@@ -6,35 +6,50 @@
  * by setting a specially crafted revision string.
  */
 
+import type { RxDocumentData, RxDocumentWriteData } from '../../types';
 import {
-    hash
+    parseRevision
 } from '../../util';
 
 
-/**
- * Returns a new revision key without the revision height.
- * The revision is crafted for the graphql replication
- * and contains the information that this document data was pulled
- * from the remote server and not saved by the client.
- */
-export function createRevisionForPulledDocument(
-    replicationIdentifierHash: string,
-    doc: any
+export function getPullReplicationFlag(
+    replicationIdentifierHash: string
 ) {
-    const dataHash = hash(doc);
-
-    const ret =
-        dataHash.substring(0, 8) +
-        replicationIdentifierHash.substring(0, 30);
-    return ret;
+    return 'rep-' + replicationIdentifierHash;
 }
 
-export function wasRevisionfromPullReplication(
-    replicationIdentifierHash: string,
-    revision: string
-) {
-    const useFromHash = replicationIdentifierHash.substring(0, 30)
 
-    const ret = revision.endsWith(useFromHash);
-    return ret;
+/**
+ * Sets the pull replication flag to the _meta
+ * to contain the next revision height.
+ * Used to identify the document as 'pulled-from-remote'
+ * so we do not send it to remote again.
+ */
+export function setLastWritePullReplication<RxDocType>(
+    replicationIdentifierHash: string,
+    documentData: RxDocumentData<RxDocType> | RxDocumentWriteData<RxDocType>,
+    /**
+     * Height of the revision
+     * with which the pull flag will be saved.
+     */
+    revisionHeight: number
+) {
+    documentData._meta[getPullReplicationFlag(replicationIdentifierHash)] = revisionHeight;
+}
+
+export function wasLastWriteFromPullReplication<RxDocType>(
+    replicationIdentifierHash: string,
+    documentData: RxDocumentData<RxDocType>
+): boolean {
+    const lastRevision = parseRevision(documentData._rev);
+    const replicationFlagValue: number | undefined = documentData._meta[getPullReplicationFlag(replicationIdentifierHash)] as any;
+
+    if (
+        replicationFlagValue &&
+        lastRevision.height === replicationFlagValue
+    ) {
+        return true;
+    } else {
+        return false;
+    }
 }

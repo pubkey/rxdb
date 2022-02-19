@@ -10,7 +10,7 @@ import {
 } from '../../rx-storage-helper';
 import { flatClone, now } from '../../util';
 import { newRxError } from '../../rx-error';
-import { wasRevisionfromPullReplication } from './revision-flag';
+import { wasLastWriteFromPullReplication } from './revision-flag';
 import { runPluginHooks } from '../../hooks';
 
 //
@@ -176,9 +176,9 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
              * so that they will not be upstreamed again
              */
             if (
-                wasRevisionfromPullReplication(
+                wasLastWriteFromPullReplication(
                     replicationIdentifierHash,
-                    changedDoc._rev
+                    changedDoc
                 )
             ) {
                 return false;

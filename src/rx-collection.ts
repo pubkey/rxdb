@@ -365,7 +365,12 @@ export class RxCollectionBase<
             };
             return row;
         });
+
+        console.log('bulkInsert rows:');
+        console.log(JSON.stringify(insertRows, null, 4));
+
         const results = await this.storageInstance.bulkWrite(insertRows);
+        console.dir(results);
 
         // create documents
         const successEntries: [string, RxDocumentData<RxDocumentType>][] = Object.entries(results.success);
@@ -373,6 +378,9 @@ export class RxCollectionBase<
             .map(([key, writtenDocData]) => {
                 const docData: RxDocumentData<RxDocumentType> = getFromMapOrThrow(docsMap, key) as any;
                 docData._rev = writtenDocData._rev;
+
+                console.log('create with:');
+                console.dir(docData);
                 const doc = createRxDocument(this as any, docData);
                 return doc;
             });
@@ -683,6 +691,8 @@ export class RxCollectionBase<
                                     return;
                                 }
                                 const op = rxChangeEvent.operation;
+                                console.log('rxChangeEvent doc data:');
+                                console.dir(rxChangeEvent.documentData);
                                 if (op === 'INSERT' || op === 'UPDATE') {
                                     resultHasChanged = true;
                                     const rxDocument = createRxDocument(

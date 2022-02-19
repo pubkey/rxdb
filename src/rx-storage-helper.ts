@@ -165,6 +165,16 @@ export function transformDocumentDataFromRxDBToRxStorage(
     };
     runPluginHooks('preWriteToStorageInstance', hookParams);
 
+
+    // TODO remove this check after everything has been fixed.
+    if (
+        overwritable.isDevMode() &&
+        !hookParams.doc._meta
+    ) {
+        console.dir(hookParams.doc);
+        throw new Error('transformDocumentDataFromRxDBToRxStorage() _meta is missing');
+    }
+
     return hookParams.doc;
 }
 
@@ -256,6 +266,8 @@ export function getWrappedStorageInstance<RxDocumentType, Internals, InstanceCre
             return database.lockedRun(
                 () => storageInstance.query(preparedQuery)
             ).then(queryResult => {
+                console.log('queryResult:');
+                console.dir(queryResult.documents);
                 return {
                     documents: queryResult.documents.map(doc => transformDocumentDataFromRxStorageToRxDB(collection, doc))
                 };
@@ -303,8 +315,11 @@ export function getWrappedStorageInstance<RxDocumentType, Internals, InstanceCre
                         events: eventBulk.events.map(event => {
 
                             const changeDoc = event.change.doc;
-                            if (changeDoc) {
 
+                            if (changeDoc && !changeDoc._meta) {
+                                console.dir(changeDoc);
+                                console.error('changeSTream meta is missing');
+                                process.exit(1);
                             }
 
                             return {

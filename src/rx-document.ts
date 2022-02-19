@@ -326,12 +326,16 @@ export const basePrototype = {
                     // while still having the option to run a retry on conflicts
                     while (!done) {
                         const oldData = this._dataSync$.getValue();
+                        console.log('atomicUpdate oldData:');
+                        console.dir(oldData);
                         try {
                             // always await because mutationFunction might be async
                             let newData = await mutationFunction(clone(this._dataSync$.getValue()), this);
                             if (this.collection) {
                                 newData = this.collection.schema.fillObjectWithDefaults(newData);
                             }
+                            console.log('new data:');
+                            console.dir(newData);
                             await this._saveData(newData, oldData);
                             done = true;
                         } catch (err) {
@@ -398,6 +402,11 @@ export const basePrototype = {
         this.collection.schema.validateChange(oldData, newData);
         await this.collection._runHooks('pre', 'save', newData, this);
         this.collection.schema.validate(newData);
+
+
+        console.log('rxDocuent._saveData:');
+        console.dir(oldData);
+        console.dir(newData);
 
         const writeResult = await this.collection.storageInstance.bulkWrite([{
             previous: oldData,
@@ -569,15 +578,18 @@ export function defineGetterSetter(
         });
 }
 
-export function createWithConstructor(
+export function createWithConstructor<RxDocType>(
     constructor: any,
-    collection: RxCollection,
-    jsonData: any
-): RxDocument | null {
+    collection: RxCollection<RxDocType>,
+    jsonData: RxDocumentData<RxDocType>
+): RxDocument<RxDocType> | null {
+    const primary: string = jsonData[collection.schema.primaryPath] as any;
     if (
-        jsonData[collection.schema.primaryPath] &&
-        jsonData[collection.schema.primaryPath].startsWith('_design')
-    ) return null;
+        primary &&
+        primary.startsWith('_design')
+    ) {
+        return null;
+    }
 
     const doc = new constructor(collection, jsonData);
     runPluginHooks('createRxDocument', doc);

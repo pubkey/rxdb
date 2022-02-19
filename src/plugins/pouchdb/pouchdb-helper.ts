@@ -80,6 +80,15 @@ export function pouchDocumentDataToRxDocumentData<T>(
     primaryKey: keyof T,
     pouchDoc: WithAttachments<T>
 ): RxDocumentData<T> {
+
+    console.log('pouchDocumentDataToRxDocumentData:');
+    console.dir(pouchDoc);
+
+    // TODO remove this check after everything is fixed
+    if ((pouchDoc as any)._meta) {
+        throw new Error('already has _meta field');
+    }
+
     let useDoc: RxDocumentData<T> = pouchSwapIdToPrimary(primaryKey, pouchDoc);
 
     // always flat clone becaues we mutate the _attachments property.
@@ -123,6 +132,10 @@ export function rxDocumentDataToPouchDocumentData<T>(
     // always flat clone becaues we mutate the _attachments property.
     pouchDoc = flatClone(pouchDoc);
 
+
+    console.log('rxDocumentDataToPouchDocumentData:');
+    console.dir(pouchDoc);
+
     pouchDoc._attachments = {};
     if (doc._attachments) {
         Object.entries(doc._attachments).forEach(([key, value]) => {
@@ -145,6 +158,8 @@ export function rxDocumentDataToPouchDocumentData<T>(
 
     (pouchDoc as any)[POUCHDB_META_FIELDNAME] = (pouchDoc as any)._meta;
     delete (pouchDoc as any)._meta;
+
+    console.dir(pouchDoc);
 
     return pouchDoc as any;
 }

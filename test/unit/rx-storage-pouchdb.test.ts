@@ -8,7 +8,8 @@ import {
     normalizeRxJsonSchema,
     normalizeMangoQuery,
     MangoQuery,
-    ensureNotFalsy
+    ensureNotFalsy,
+    now
 } from '../../';
 
 import {
@@ -29,6 +30,7 @@ addRxPlugin(RxDBValidatePlugin);
 import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder';
 import { clone, waitUntil } from 'async-test-util';
 import { HumanDocumentType, humanSchemaLiteral } from '../helper/schemas';
+import { RxDocumentWriteData } from '../../src/types';
 
 addRxPlugin(RxDBQueryBuilderPlugin);
 
@@ -100,9 +102,16 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
 
             await storageInstance.bulkWrite(
                 new Array(5).fill(0).map(() => {
-                    const data = schemaObjects.human() as any;
-                    data._attachments = {};
-                    data._deleted = false;
+                    const data: RxDocumentWriteData<HumanDocumentType> = Object.assign(
+                        schemaObjects.human(),
+                        {
+                            _attachments: {},
+                            _deleted: false,
+                            _meta: {
+                                lwt: now()
+                            }
+                        }
+                    );
                     data.age = 18;
                     return {
                         document: data

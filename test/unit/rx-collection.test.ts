@@ -467,6 +467,8 @@ config.parallel('rx-collection.test.js', () => {
                             const docs = await c.find().exec();
                             assert.strictEqual(docs.length, 0);
                             await c.insert(docData);
+
+                            console.log('---');
                             const docs2 = await c.find().exec();
                             assert.strictEqual(docs2.length, 1);
                             c.database.destroy();
@@ -1878,12 +1880,14 @@ config.parallel('rx-collection.test.js', () => {
             // insert whose id is not in ids-list should not affect anything
             await c.insert(schemaObjects.human());
 
-
             const res2 = await firstValueFrom(obs);
             assert.strictEqual(res2.size, 6);
             assert.ok(res2.has('foobar'));
 
             // check update
+            console.log('##################################');
+            console.log('##################################');
+            console.log('##################################');
             addData.firstName = 'barfoo';
             await c.upsert(addData);
             const res3 = await firstValueFrom(obs);

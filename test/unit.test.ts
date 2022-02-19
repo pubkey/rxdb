@@ -16,7 +16,6 @@ import './unit/rx-storage-dexie.test.js';
 import './unit/instance-of-check.test.js';
 import './unit/rx-schema.test.js';
 import './unit/key-compression.test.js';
-import './unit/replication.test.js'; // TODO mnov down
 import './unit/bug-report.test.js';
 import './unit/rx-database.test.js';
 import './unit/rx-collection.test.js';
@@ -39,6 +38,7 @@ import './unit/population.test.js';
 import './unit/data-migration.test.js';
 import './unit/backup.test.js';
 import './unit/leader-election.test.js';
+import './unit/replication.test.js';
 import './unit/replication-graphql.test.js';
 import './unit/replication-couchdb.test.js';
 import './unit/encryption.test.js';

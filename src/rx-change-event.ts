@@ -10,12 +10,13 @@ import { overwritable } from './overwritable';
 
 import type {
     EventBulk,
-    RxChangeEvent
+    RxChangeEvent,
+    RxDocumentData
 } from './types';
 
 export function getDocumentDataOfRxChangeEvent<T>(
     rxChangeEvent: RxChangeEvent<T>
-): T {
+): RxDocumentData<T> {
     if ((rxChangeEvent as any).documentData) {
         return (rxChangeEvent as any).documentData;
     } else {
