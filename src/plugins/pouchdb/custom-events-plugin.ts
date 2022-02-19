@@ -405,12 +405,15 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
 
                 const id = resultRow.id;
                 const writeRow = getFromMapOrThrow(writeMap, id);
-                const newDoc = pouchDocumentDataToRxDocumentData(
-                    primaryPath,
-                    writeRow.document as any
+                const attachments = await writeAttachmentsToAttachments(writeRow.document._attachments);
+                const newDoc: RxDocumentData<RxDocType> = Object.assign(
+                    {},
+                    writeRow.document,
+                    {
+                        _attachments: attachments,
+                        _rev: (resultRow as PouchBulkDocResultRow).rev
+                    }
                 );
-                newDoc._attachments = await writeAttachmentsToAttachments(newDoc._attachments);
-                newDoc._rev = (resultRow as PouchBulkDocResultRow).rev;
 
                 let event: ChangeEvent<RxDocumentData<RxDocType>>;
                 if (!writeRow.previous || writeRow.previous._deleted) {
@@ -427,12 +430,15 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
                     // we need to add the new revision to the previous doc
                     // so that the eventkey is calculated correctly.
                     // Is this a hack? idk.
-                    const previousDoc = pouchDocumentDataToRxDocumentData(
-                        primaryPath,
-                        writeRow.previous as any
+                    const attachments = await writeAttachmentsToAttachments(writeRow.previous._attachments);
+                    const previousDoc = Object.assign(
+                        {},
+                        writeRow.previous,
+                        {
+                            _attachments: attachments,
+                            _rev: (resultRow as PouchBulkDocResultRow).rev
+                        }
                     );
-                    previousDoc._attachments = await writeAttachmentsToAttachments(previousDoc._attachments);
-                    previousDoc._rev = (resultRow as PouchBulkDocResultRow).rev;
 
                     event = {
                         operation: 'DELETE',
