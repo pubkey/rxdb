@@ -148,11 +148,11 @@
     "z-schema": "5.0.2"
   },
   "devDependencies": {
-    "@babel/cli": "7.17.0",
-    "@babel/core": "7.17.2",
+    "@babel/cli": "7.17.3",
+    "@babel/core": "7.17.5",
     "@babel/plugin-external-helpers": "7.16.7",
     "@babel/plugin-proposal-class-properties": "7.16.7",
-    "@babel/plugin-proposal-object-rest-spread": "7.16.7",
+    "@babel/plugin-proposal-object-rest-spread": "7.17.3",
     "@babel/plugin-transform-member-expression-literals": "7.16.7",
     "@babel/plugin-transform-modules-commonjs": "7.16.8",
     "@babel/plugin-transform-property-literals": "7.16.7",
