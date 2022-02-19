@@ -2109,7 +2109,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         multiInstance: false
                     });
 
-                const writeData = [{
+                const getWriteData = () => [{
                     document: {
                         _id: 'foobar',
                         value: 'barfoo',
@@ -2122,10 +2122,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 }];
 
                 await storageInstance.bulkWrite(
-                    writeData
+                    getWriteData()
                 );
                 const writeResponse = await storageInstance.bulkWrite(
-                    writeData
+                    getWriteData()
                 );
 
                 assert.strictEqual(Object.keys(writeResponse.success).length, 0);

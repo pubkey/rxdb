@@ -22,7 +22,8 @@ import {
     runXTimes,
     RxCollection,
     ensureNotFalsy,
-    lastOfArray
+    lastOfArray,
+    now
 } from '../../';
 
 import {
@@ -37,6 +38,7 @@ addRxPlugin(RxDBMigrationPlugin);
 
 import { firstValueFrom } from 'rxjs';
 import { HumanDocumentType } from '../helper/schemas';
+import { RxDocumentData } from '../../src/types';
 
 config.parallel('rx-collection.test.js', () => {
     async function getDb(): Promise<RxDatabase> {
@@ -2068,12 +2070,20 @@ config.parallel('rx-collection.test.js', () => {
             //  Record subscription
             const updates: any[] = [];
 
-            const createObject = (id: string) => {
-                const docData: any = schemaObjects.human();
-                docData.passportId = id;
-                docData._deleted = false;
-                docData._rev = '1-51b2fae5721cc4d3cf7392f19e6cc118';
-                return docData;
+            function createObject(id: string): RxDocumentData<HumanDocumentType> {
+                const ret: RxDocumentData<HumanDocumentType> = Object.assign(
+                    schemaObjects.human(),
+                    {
+                        passportId: id,
+                        _deleted: false,
+                        _attachments: {},
+                        _meta: {
+                            lwt: now()
+                        },
+                        _rev: '1-51b2fae5721cc4d3cf7392f19e6cc118'
+                    }
+                );
+                return ret;
             }
 
             const matchingIds = ['a', 'b', 'c', 'd'];

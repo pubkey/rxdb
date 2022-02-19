@@ -259,10 +259,6 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
 ): Promise<RxStorageChangeEvent<RxDocumentData<RxDocType>>[]> {
     const ret: RxStorageChangeEvent<RxDocumentData<RxDocType>>[] = [];
 
-
-    console.log('eventEmitDataToStorageEvents:');
-    console.dir(emitData);
-
     if (emitData.writeOptions.hasOwnProperty('new_edits') && !emitData.writeOptions.new_edits) {
         await Promise.all(
             emitData.writeDocs.map(async (writeDoc) => {
@@ -352,10 +348,6 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
                     throw newRxError('SNH', { args: { writeDoc } });
                 }
 
-                console.log('eventEmitDataToStorageEvents: event');
-                console.dir(event);
-
-
                 const changeEvent = changeEventToNormal(
                     primaryPath,
                     event,
@@ -413,12 +405,15 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
 
                 const id = resultRow.id;
                 const writeRow = getFromMapOrThrow(writeMap, id);
-                const newDoc: RxDocumentData<RxDocType> = writeRow.document as any;
-                newDoc._attachments = await writeAttachmentsToAttachments(newDoc._attachments);
-                newDoc._rev = (resultRow as PouchBulkDocResultRow).rev;
-                console.log('AAAAAAAAAAAAA');
-                console.dir(newDoc);
-
+                const attachments = await writeAttachmentsToAttachments(writeRow.document._attachments);
+                const newDoc: RxDocumentData<RxDocType> = Object.assign(
+                    {},
+                    writeRow.document,
+                    {
+                        _attachments: attachments,
+                        _rev: (resultRow as PouchBulkDocResultRow).rev
+                    }
+                );
 
                 let event: ChangeEvent<RxDocumentData<RxDocType>>;
                 if (!writeRow.previous || writeRow.previous._deleted) {
@@ -435,11 +430,15 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
                     // we need to add the new revision to the previous doc
                     // so that the eventkey is calculated correctly.
                     // Is this a hack? idk.
-                    const previousDoc = writeRow.previous;
-                    console.log('BBBBBBBB');
-                    console.dir(previousDoc);
-                    previousDoc._attachments = await writeAttachmentsToAttachments(previousDoc._attachments);
-                    previousDoc._rev = (resultRow as PouchBulkDocResultRow).rev;
+                    const attachments = await writeAttachmentsToAttachments(writeRow.previous._attachments);
+                    const previousDoc = Object.assign(
+                        {},
+                        writeRow.previous,
+                        {
+                            _attachments: attachments,
+                            _rev: (resultRow as PouchBulkDocResultRow).rev
+                        }
+                    );
 
                     event = {
                         operation: 'DELETE',

@@ -168,16 +168,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             });
         }
 
-        // TODO remove this check after everything is fixed
-        documentWrites.forEach(writeRow => {
-            if (!writeRow.document._meta) {
-                console.dir(writeRow);
-                throw new Error('_meta is missing');
-            }
-        });
-
-
-
         const writeRowById: Map<string, BulkWriteRow<RxDocType>> = new Map();
         const insertDocs: (RxDocType & { _id: string; _rev: string })[] = documentWrites.map(writeData => {
             const primary: string = (writeData.document as any)[this.primaryPath];
@@ -196,10 +186,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             return storeDocumentData;
         });
 
-
-
-        console.log('pouch bulkDocs:');
-        console.dir(insertDocs);
         const pouchResult = await this.internals.pouch.bulkDocs(insertDocs, {
             custom: {
                 primaryPath: this.primaryPath,
@@ -239,9 +225,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                 }
             })
         );
-
-        console.log('pouch bulkDocs ret:');
-        console.dir(ret);
 
         return ret;
     }

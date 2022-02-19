@@ -124,15 +124,6 @@ export function calculateNewResults<RxDocumentType>(
             keyDocumentMap: previousResultsMap
         }
 
-
-        /*
-        // use this to check if all states are calculated correctly
-        const stateSet = getStateSet(stateResolveFunctionInput);
-        console.dir(stateResolveFunctionInput);
-        console.log('state set:');
-        logStateSet(stateSet);
-        */
-
         const actionName: ActionName = calculateActionName(stateResolveFunctionInput);
         if (actionName === 'runFullQueryAgain') {
             return true;

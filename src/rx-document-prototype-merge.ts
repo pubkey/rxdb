@@ -104,13 +104,6 @@ export function createRxDocument<RxDocType, ORM>(
     docData: RxDocumentData<RxDocType>
 ): RxDocument<RxDocType, ORM> {
     const primary: string = docData[rxCollection.schema.primaryPath] as any;
-    console.log('createRxDocument() ' + primary);
-
-    // TODO remove this check after everything is fixed
-    if (!docData._meta) {
-        console.dir(docData);
-        throw new Error('createRxDocument: _meta is missing');
-    }
 
     // return from cache if exists
     const cacheDoc = rxCollection._docCache.get(primary);

@@ -549,8 +549,6 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> {
             } else if (eventReduceResult.changed) {
                 // we got the new results, we do not have to re-execute, mustReExec stays false
                 ret = true; // true because results changed
-                console.log('calc result data:');
-                console.dir(eventReduceResult.newResults);
                 rxQuery._setResultData(eventReduceResult.newResults as any);
             }
         }
@@ -567,8 +565,6 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> {
                 rxQuery._latestChangeEvent = latestAfter;
                 if (!rxQuery._result || !deepEqual(newResultData, rxQuery._result.docsData)) {
                     ret = true; // true because results changed
-                    console.log('re exec result data:');
-                    console.dir(newResultData);
                     rxQuery._setResultData(newResultData as any);
                 }
                 return ret;

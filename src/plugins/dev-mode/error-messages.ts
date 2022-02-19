@@ -80,7 +80,7 @@ export const ERROR_MESSAGES = {
     COL16: 'given static method is not a function',
     COL17: 'RxCollection.ORM: statics-name not allowed',
     COL18: 'collection-method not allowed because fieldname is in the schema',
-    COL19: 'Document document update conflict, when changing a document you must work on the previous revision',
+    COL19: 'Document update conflict. When changing a document you must work on the previous revision',
 
     // rx-document.js
     DOC1: 'RxDocument.get$ cannot get observable of in-array fields because order cannot be guessed',
