@@ -16,7 +16,8 @@ import {
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_VOID,
     RXJS_SHARE_REPLAY_DEFAULTS,
-    now
+    now,
+    getDefaultRxDocumentMeta
 } from './util';
 import {
     fillObjectDataBeforeInsert,
@@ -361,9 +362,7 @@ export class RxCollectionBase<
             const row: BulkWriteRow<RxDocumentType> = {
                 document: Object.assign(doc, {
                     _attachments: {},
-                    _meta: {
-                        lwt: now()
-                    },
+                    _meta: getDefaultRxDocumentMeta(),
                     _deleted: false
                 })
             };

@@ -19,7 +19,7 @@ export function fillObjectDataBeforeInsert(
     let useJson = collection.schema.fillObjectWithDefaults(data);
     useJson = collection.schema.fillPrimaryKey(useJson);
     useJson._meta = {
-        lwt: now()
+        lwt: 0
     };
     return useJson;
 }

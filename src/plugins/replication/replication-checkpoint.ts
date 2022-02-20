@@ -8,7 +8,7 @@ import {
     findLocalDocument,
     writeSingleLocal
 } from '../../rx-storage-helper';
-import { flatClone, now } from '../../util';
+import { flatClone, getDefaultRxDocumentMeta } from '../../util';
 import { newRxError } from '../../rx-error';
 import { wasLastWriteFromPullReplication } from './revision-flag';
 import { runPluginHooks } from '../../hooks';
@@ -60,9 +60,7 @@ export async function setLastPushSequence(
                     _id,
                     value: sequence,
                     _deleted: false,
-                    _meta: {
-                        lwt: now()
-                    },
+                    _meta: getDefaultRxDocumentMeta(),
                     _attachments: {}
                 }
             }
@@ -78,9 +76,7 @@ export async function setLastPushSequence(
                 document: {
                     _id,
                     value: sequence,
-                    _meta: {
-                        lwt: now()
-                    },
+                    _meta: getDefaultRxDocumentMeta(),
                     _deleted: false,
                     _attachments: {}
                 }
@@ -258,9 +254,7 @@ export async function setLastPullDocument(
                 document: {
                     _id,
                     doc,
-                    _meta: {
-                        lwt: now()
-                    },
+                    _meta: getDefaultRxDocumentMeta(),
                     _deleted: false,
                     _attachments: {}
                 }

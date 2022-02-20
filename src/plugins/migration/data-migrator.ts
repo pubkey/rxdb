@@ -20,7 +20,8 @@ import {
     createRevision,
     PROMISE_RESOLVE_VOID,
     PROMISE_RESOLVE_FALSE,
-    PROMISE_RESOLVE_NULL
+    PROMISE_RESOLVE_NULL,
+    getDefaultRxDocumentMeta
 } from '../../util';
 import {
     createRxSchema
@@ -393,9 +394,7 @@ export function migrateDocumentData(
          * TODO remove this in the major version 13.0.0 
          */
         if (!doc._meta) {
-            doc._meta = {
-                lwt: new Date().getTime()
-            }
+            doc._meta = getDefaultRxDocumentMeta();
         }
 
         // check final schema

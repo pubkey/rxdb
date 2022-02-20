@@ -6,7 +6,7 @@
  * by setting a specially crafted revision string.
  */
 
-import type { RxDocumentData, RxDocumentWriteData } from '../../types';
+import type { DeepReadonly, RxDocumentData, RxDocumentWriteData } from '../../types';
 import {
     parseRevision
 } from '../../util';
@@ -39,7 +39,7 @@ export function setLastWritePullReplication<RxDocType>(
 
 export function wasLastWriteFromPullReplication<RxDocType>(
     replicationIdentifierHash: string,
-    documentData: RxDocumentData<RxDocType>
+    documentData: RxDocumentData<RxDocType> | DeepReadonly<RxDocumentData<RxDocType>>
 ): boolean {
     const lastRevision = parseRevision(documentData._rev);
     const replicationFlagValue: number | undefined = documentData._meta[getPullReplicationFlag(replicationIdentifierHash)] as any;

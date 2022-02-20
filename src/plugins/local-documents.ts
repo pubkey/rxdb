@@ -13,8 +13,8 @@ import {
 } from '../rx-error';
 import {
     flatClone,
-    getFromObjectOrThrow,
-    now
+    getDefaultRxDocumentMeta,
+    getFromObjectOrThrow
 } from '../util';
 
 import type {
@@ -223,9 +223,7 @@ const RxLocalDocumentPrototype: any = {
         const writeData: RxDocumentWriteData<{ _id: string }> = {
             _id: this.id,
             _deleted: true,
-            _meta: {
-                lwt: now()
-            },
+            _meta: getDefaultRxDocumentMeta(),
             _attachments: {}
         };
         return writeSingleLocal(storageInstance, {
@@ -309,9 +307,7 @@ function insertLocal<DocData>(
                 {
                     _id: id,
                     _deleted: false,
-                    _meta: {
-                        lwt: new Date().getTime()
-                    },
+                    _meta: getDefaultRxDocumentMeta(),
                     _attachments: {}
                 }
             );
@@ -358,9 +354,7 @@ function upsertLocal<DocData>(
                         _rev: existing._data._rev,
                         _deleted: false,
                         _attachments: {},
-                        _meta: {
-                            lwt: 0
-                        }
+                        _meta: getDefaultRxDocumentMeta()
                     },
                     data
                 );

@@ -1,7 +1,8 @@
 import type {
     BlobBuffer,
     DeepReadonlyObject,
-    MaybeReadonly
+    MaybeReadonly,
+    RxDocumentMeta
 } from './types';
 import {
     default as deepClone
@@ -572,4 +573,17 @@ export const blobBufferUtil = {
 export const RXJS_SHARE_REPLAY_DEFAULTS = {
     bufferSize: 1,
     refCount: true
+}
+
+
+export function getDefaultRxDocumentMeta(): RxDocumentMeta {
+    return {
+        /**
+         * Set this to zero to not waste performance
+         * while calling new Date()..
+         * The storage wrappers will anyway update
+         * the lastWrite time while calling transformDocumentDataFromRxDBToRxStorage()
+         */
+        lwt: 0
+    }
 }
