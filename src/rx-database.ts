@@ -30,7 +30,6 @@ import {
     randomCouchString,
     ensureNotFalsy,
     PROMISE_RESOLVE_VOID,
-    now,
     getDefaultRxDocumentMeta
 } from './util';
 import {

@@ -16,7 +16,6 @@ import {
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_VOID,
     RXJS_SHARE_REPLAY_DEFAULTS,
-    now,
     getDefaultRxDocumentMeta
 } from './util';
 import {

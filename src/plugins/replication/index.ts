@@ -34,7 +34,6 @@ import {
     getHeightOfRevision,
     hash,
     lastOfArray,
-    now,
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_TRUE,
     PROMISE_RESOLVE_VOID

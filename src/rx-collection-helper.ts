@@ -6,7 +6,7 @@ import type {
     RxStorageKeyObjectInstance
 } from './types';
 import { RxCollectionBase } from './rx-collection';
-import { now } from './util';
+import { getDefaultRxDocumentMeta } from './util';
 
 /**
  * fills in the default data.
@@ -18,9 +18,7 @@ export function fillObjectDataBeforeInsert(
 ): any {
     let useJson = collection.schema.fillObjectWithDefaults(data);
     useJson = collection.schema.fillPrimaryKey(useJson);
-    useJson._meta = {
-        lwt: 0
-    };
+    useJson._meta = getDefaultRxDocumentMeta();
     return useJson;
 }
 
