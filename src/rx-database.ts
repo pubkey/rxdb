@@ -59,6 +59,7 @@ import {
     findLocalDocument,
     getAllDocuments,
     getSingleDocument,
+    getWrappedKeyObjectInstance,
     INTERNAL_STORAGE_NAME,
     storageChangeEventToRxChangeEvent,
     writeSingle
@@ -92,6 +93,12 @@ export class RxDatabaseBase<
     Internals, InstanceCreationOptions,
     Collections = CollectionsOfDatabase,
     > {
+
+    /**
+     * Stores the local documents which are attached to this database.
+     */
+    public localDocumentsStore: RxStorageKeyObjectInstance<Internals, InstanceCreationOptions> = {} as any;
+
     constructor(
         public readonly name: string,
         public readonly storage: RxStorage<Internals, InstanceCreationOptions>,
@@ -105,10 +112,7 @@ export class RxDatabaseBase<
          * Stores information documents about the collections of the database
          */
         public readonly internalStore: RxStorageInstance<InternalStoreDocumentData, Internals, InstanceCreationOptions>,
-        /**
-         * Stores the local documents which are attached to this database.
-         */
-        public readonly localDocumentsStore: RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>,
+        public readonly internalLocalDocumentsStore: RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>,
         /**
          * Set if multiInstance: true
          * This broadcast channel is used to send events to other instances like
@@ -671,6 +675,7 @@ async function createRxDatabaseStorageInstances<Internals, InstanceCreationOptio
 async function prepare<Internals, InstanceCreationOptions, Collections>(
     rxDatabase: RxDatabaseBase<Internals, InstanceCreationOptions, Collections>
 ): Promise<void> {
+    rxDatabase.localDocumentsStore = getWrappedKeyObjectInstance(rxDatabase as any, rxDatabase.internalLocalDocumentsStore);
     rxDatabase.storageToken = await _ensureStorageTokenExists<Collections>(rxDatabase as any);
     const localDocsSub = rxDatabase.localDocumentsStore.changeStream()
         .subscribe(eventBulk => {

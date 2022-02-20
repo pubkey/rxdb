@@ -138,11 +138,8 @@ config.parallel('local-documents.test.js', () => {
             c.database.destroy();
         });
         it('collection: should emit again when state changed', async () => {
-
             const c = await humansCollection.create(0);
-
             const cEmits: any[] = [];
-
             const sub = c.getLocal$(id).subscribe((x: RxLocalDocument<any>) => {
                 cEmits.push(x ? x.toJSON() : null);
             });
@@ -176,12 +173,15 @@ config.parallel('local-documents.test.js', () => {
             assert.strictEqual(cEmits[0], null);
 
             // insert
+            console.log('insert');
             await db.insertLocal(id, { foo: 'bar' });
             await waitUntil(() => cEmits.length === 2);
             assert.strictEqual(cEmits[1].foo, 'bar');
 
             // update
+            console.log('upsert');
             await db.upsertLocal(id, { foo: 'bar2' });
+            console.log('upsert DONE');
             await waitUntil(() => cEmits.length === 3);
             assert.strictEqual(cEmits[2].foo, 'bar2');
 

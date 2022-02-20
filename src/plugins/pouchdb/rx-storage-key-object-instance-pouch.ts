@@ -69,6 +69,14 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
             });
         }
 
+        // TODO remove this after all is fixed
+        documentWrites.forEach(writeRow => {
+            if (!writeRow.document._meta) {
+                console.dir(writeRow);
+                throw new Error('meta is missing');
+            }
+        });
+
         const writeRowById: Map<string, BulkWriteLocalRow<D>> = new Map();
 
         const insertDocs: RxLocalDocumentData<D>[] = documentWrites.map(writeRow => {

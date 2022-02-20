@@ -200,7 +200,7 @@ const RxLocalDocumentPrototype: any = {
         return this;
     },
     _saveData(this: RxLocalDocument, newData: RxLocalDocumentData) {
-        const oldData = this._dataSync$.getValue();
+        const oldData: RxLocalDocumentData = this._dataSync$.getValue();
         const storageInstance = _getKeyObjectStorageInstanceByParent(this.parent);
         newData._id = this.id;
 
@@ -287,10 +287,10 @@ RxLocalDocument.create = (id: string, data: any, parent: any) => {
  * save the local-document-data
  * throws if already exists
  */
-function insertLocal(
+function insertLocal<DocData>(
     this: RxDatabase | RxCollection,
     id: string,
-    docData: any
+    data: DocData
 ): Promise<RxLocalDocument> {
     return (this as any).getLocal(id)
         .then((existing: any) => {
@@ -298,13 +298,23 @@ function insertLocal(
             if (existing) {
                 throw newRxError('LD7', {
                     id,
-                    data: docData
+                    data
                 });
             }
 
             // create new one
-            docData = flatClone(docData);
-            docData._id = id;
+            let docData: RxLocalDocumentData<DocData> = Object.assign(
+                {},
+                data,
+                {
+                    _id: id,
+                    _deleted: false,
+                    _meta: {
+                        lwt: new Date().getTime()
+                    },
+                    _attachments: {}
+                }
+            );
 
             return writeSingleLocal(
                 _getKeyObjectStorageInstanceByParent(this),
@@ -324,7 +334,11 @@ function insertLocal(
  * save the local-document-data
  * overwrites existing if exists
  */
-function upsertLocal(this: any, id: string, data: any): Promise<RxLocalDocument> {
+function upsertLocal<DocData>(
+    this: any,
+    id: string,
+    data: DocData
+): Promise<RxLocalDocument> {
     return this.getLocal(id)
         .then((existing: RxDocument) => {
             if (!existing) {
@@ -333,8 +347,28 @@ function upsertLocal(this: any, id: string, data: any): Promise<RxLocalDocument>
                 return docPromise;
             } else {
                 // update existing
-                data._rev = existing._data._rev;
-                return existing.atomicUpdate(() => data).then(() => existing);
+
+                console.log('update existing');
+                console.dir(data);
+                console.dir(existing);
+
+                const newData: RxLocalDocumentData<DocData> = Object.assign(
+                    {
+                        _id: id,
+                        _rev: existing._data._rev,
+                        _deleted: false,
+                        _attachments: {},
+                        _meta: {
+                            lwt: 0
+                        }
+                    },
+                    data
+                );
+
+                return existing.atomicUpdate(() => {
+                    newData._rev = existing._data._rev;
+                    return newData;
+                }).then(() => existing);
             }
         });
 }
