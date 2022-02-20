@@ -39,8 +39,7 @@ import {
     closeDexieDb,
     getDexieDbWithTables,
     getDexieEventKey,
-    getDocsInDb,
-    stripDexieKey
+    getDocsInDb
 } from './dexie-helper';
 import { dexieQuery } from './query/dexie-query';
 
@@ -131,13 +130,11 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                                 _attachments: {} as any
                             }
                         );
-                        const insertData: any = flatClone(writeDoc);
-                        insertData.$lastWriteAt = startTime;
                         changesIds.push(id);
                         if (insertedIsDeleted) {
-                            bulkPutDeletedDocs.push(insertData);
+                            bulkPutDeletedDocs.push(writeDoc);
                         } else {
-                            bulkPutDocs.push(insertData);
+                            bulkPutDocs.push(writeDoc);
                             eventBulk.events.push({
                                 eventId: getDexieEventKey(false, id, newRevision),
                                 documentId: id,
@@ -189,7 +186,6 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                                 {},
                                 writeRow.document,
                                 {
-                                    $lastWriteAt: startTime,
                                     _rev: newRevision,
                                     _deleted: isDeleted,
                                     // TODO attachments are currently not working with lokijs
@@ -208,7 +204,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                                     id,
                                     operation: 'INSERT',
                                     previous: null,
-                                    doc: stripDexieKey(writeDoc)
+                                    doc: writeDoc
                                 };
                             } else if (writeRow.previous && !writeRow.previous._deleted && !writeDoc._deleted) {
                                 /**
@@ -219,7 +215,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                                     id,
                                     operation: 'UPDATE',
                                     previous: writeRow.previous,
-                                    doc: stripDexieKey(writeDoc)
+                                    doc: writeDoc
                                 };
                             } else if (writeRow.previous && !writeRow.previous._deleted && writeDoc._deleted) {
                                 /**
@@ -252,7 +248,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                                 // will be filled up before the event is pushed into the changestream
                                 endTime: startTime
                             });
-                            ret.success[id] = stripDexieKey(writeDoc);
+                            ret.success[id] = writeDoc;
                         }
                     }
                 });
@@ -304,14 +300,10 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                     const id: string = docData[this.primaryPath] as any;
 
                     if (!documentInDb) {
-                        // document not here, so we can directly insert
-                        const insertData: any = flatClone(docData);
-                        insertData.$lastWriteAt = startTime;
-
-                        if (insertData._deleted) {
-                            bulkPutDeletedDocs.push(insertData);
+                        if (docData._deleted) {
+                            bulkPutDeletedDocs.push(docData);
                         } else {
-                            bulkPutDocs.push(insertData);
+                            bulkPutDocs.push(docData);
                         }
 
                         eventBulk.events.push({
@@ -343,8 +335,6 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                             mustUpdate = true;
                         }
                         if (mustUpdate) {
-                            const storeAtDb = flatClone(docData) as any;
-                            storeAtDb.$lastWriteAt = startTime;
                             let change: ChangeEvent<RxDocumentData<RxDocType>> | null = null;
                             if (documentInDb._deleted && !docData._deleted) {
                                 bulkRemoveDeletedDocs.push(id);
@@ -360,7 +350,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                                 change = {
                                     id,
                                     operation: 'UPDATE',
-                                    previous: stripDexieKey(documentInDb),
+                                    previous: documentInDb,
                                     doc: docData
                                 };
                             } else if (!documentInDb._deleted && docData._deleted) {
@@ -369,7 +359,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                                 change = {
                                     id,
                                     operation: 'DELETE',
-                                    previous: stripDexieKey(documentInDb),
+                                    previous: documentInDb,
                                     doc: null
                                 };
                             } else if (documentInDb._deleted && docData._deleted) {
@@ -428,7 +418,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                         documentInDb &&
                         (!documentInDb._deleted || deleted)
                     ) {
-                        ret[id] = stripDexieKey(documentInDb);
+                        ret[id] = documentInDb;
                     }
                 });
             });

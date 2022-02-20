@@ -12,6 +12,7 @@ import type {
     MangoQuery,
     MangoQuerySortDirection,
     MangoQuerySortPart,
+    RxDocumentData,
     RxJsonSchema
 } from '../../types';
 import {
@@ -38,13 +39,25 @@ export const LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remot
  * Loki attaches a $loki property to all data
  * which must be removed before returning the data back to RxDB.
  */
-export function stripLokiKey<T>(docData: T & { $loki?: number; $lastWriteAt?: number; }): T {
+export function stripLokiKey<T>(docData: RxDocumentData<T> & { $loki?: number; }): T {
     if (!docData.$loki) {
         return docData;
     }
     const cloned = flatClone(docData);
+
+    /**
+     * In RxDB version 12.0.0,
+     * we introduced the _meta field that already contains the last write time.
+     * To be backwards compatible, we have to move the $lastWriteAt to the _meta field.
+     */
+    if ((cloned as any).$lastWriteAt) {
+        cloned._meta = {
+            lwt: (cloned as any).$lastWriteAt
+        };
+        delete (cloned as any).$lastWriteAt;
+    }
+
     delete cloned.$loki;
-    delete cloned.$lastWriteAt;
     return cloned;
 }
 
