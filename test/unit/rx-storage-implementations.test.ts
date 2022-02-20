@@ -262,10 +262,6 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }]
                 );
 
-
-                console.log('!!!!!!!!!!!!!!1');
-                console.dir(writeResponse);
-
                 assert.strictEqual(Object.keys(writeResponse.success).length, 0);
                 const first = getFromObjectOrThrow(writeResponse.error, 'foobar');
                 assert.strictEqual(first.status, 409);
@@ -1465,12 +1461,6 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     multiInstance: false
                 });
 
-
-                console.log('----------------------------------');
-                console.log('----------------------------------');
-                console.log('----------------------------------');
-                console.log('----------------------------------');
-
                 const emitted: EventBulk<RxStorageChangeEvent<TestDocType>>[] = [];
                 const sub = storageInstance.changeStream().subscribe(x => {
                     emitted.push(x);
@@ -1495,9 +1485,6 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 assert.strictEqual(emitted.length, 1);
                 assert.strictEqual(emitted[0].events.length, 1);
 
-
-                console.log('emitted event:');
-                console.dir(emitted[0].events[0]);
                 // should contain the _meta data
                 assert.ok((emitted as any)[0].events[0].change.doc._meta.lwt);
 
