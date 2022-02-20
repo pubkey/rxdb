@@ -579,11 +579,11 @@ export const RXJS_SHARE_REPLAY_DEFAULTS = {
 export function getDefaultRxDocumentMeta(): RxDocumentMeta {
     return {
         /**
-         * Set this to zero to not waste performance
+         * Set this to 1 to not waste performance
          * while calling new Date()..
          * The storage wrappers will anyway update
          * the lastWrite time while calling transformDocumentDataFromRxDBToRxStorage()
          */
-        lwt: 0
+        lwt: 1
     }
 }
