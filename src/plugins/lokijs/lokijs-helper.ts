@@ -440,6 +440,7 @@ export async function mustUseLocalState(
          */
         throw newRxError('SNH', {
             args: {
+                instanceClosed: instance.closed,
                 databaseName: instance.databaseName,
                 collectionName: instance.collectionName,
                 isRxStorageInstanceLoki
