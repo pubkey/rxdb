@@ -287,6 +287,9 @@ export class RxReplicationStateBase<RxDocType> {
         }
 
         const pulledDocIds: string[] = pulledDocuments.map(doc => doc[this.collection.schema.primaryPath]) as any;
+        if (this.isStopped()) {
+            return Promise.resolve('ok');
+        }
         const docsFromLocal = await this.collection.storageInstance.findDocumentsById(pulledDocIds, true);
 
         /**
