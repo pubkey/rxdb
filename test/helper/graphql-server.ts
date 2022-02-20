@@ -163,14 +163,6 @@ export async function spawn(
             // limit if requested
             const limited = args.limit ? filteredByMinUpdatedAtAndId.slice(0, args.limit) : filteredByMinUpdatedAtAndId;
 
-            /*
-            console.log('sortedDocuments:');
-            console.dir(sortedDocuments);
-            console.log('filterForMinUpdatedAt:');
-            console.dir(filterForMinUpdatedAtAndId);
-            console.log('return docs:');
-            console.dir(limited);
-*/
             return limited;
         },
         getAll: () => {

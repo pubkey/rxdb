@@ -1,6 +1,5 @@
 import type { LokiDatabaseSettings } from '../../types';
 import {
-    promiseWait,
     PROMISE_RESOLVE_VOID,
     requestIdlePromise
 } from '../../util';
@@ -49,17 +48,12 @@ export class LokiSaveQueue {
         this.saveQueueC = this.saveQueueC + 1;
         this.saveQueue = this.saveQueue
             .then(async () => {
-
                 /**
-                 * Always wait at least 100ms
-                 * and until the JavaScript process is idle.
+                 * Always wait until the JavaScript process is idle.
                  * This ensures that CPU blocking writes are finished
                  * before we proceed.
                  */
-                await Promise.all([
-                    requestIdlePromise(),
-                    promiseWait(100)
-                ]);
+                await requestIdlePromise();
 
                 // no write happened since the last save call
                 if (this.writesSinceLastRun === 0) {
@@ -73,10 +67,7 @@ export class LokiSaveQueue {
                  * is running at the moment. Also we wait at least wait 100ms
                  * to ensure it has enough time to free up stuff.
                  */
-                await Promise.all([
-                    requestIdlePromise(),
-                    promiseWait(100)
-                ]).then(() => requestIdlePromise());
+                await requestIdlePromise().then(() => requestIdlePromise());
 
                 if (this.writesSinceLastRun === 0) {
                     return;

@@ -70,7 +70,6 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
         }
 
         const writeRowById: Map<string, BulkWriteLocalRow<D>> = new Map();
-
         const insertDocs: RxLocalDocumentData<D>[] = documentWrites.map(writeRow => {
             writeRowById.set(writeRow.document._id, writeRow);
 

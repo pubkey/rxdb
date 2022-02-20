@@ -677,7 +677,6 @@ config.parallel('rx-query.test.js', () => {
             const queryBefore = c.storageInstance.query.bind(c.storageInstance);
             c.storageInstance.query = function (preparedQuery) {
                 queryCalls = queryCalls + 1;
-                console.log('query: ' + JSON.stringify(preparedQuery));
                 return queryBefore(preparedQuery);
             };
 

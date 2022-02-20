@@ -9,7 +9,8 @@
 
 import type {
     RxCollection,
-    RxDocument
+    RxDocument,
+    RxDocumentData
 } from './types';
 import {
     createRxDocumentConstructor,
@@ -98,11 +99,11 @@ export function getRxDocumentConstructor(
  * If the document already exists in the _docCache,
  * return that instead to ensure we have no duplicates.
  */
-export function createRxDocument<DT, OM>(
-    rxCollection: RxCollection<DT, OM>,
-    docData: any
-): RxDocument<DT, OM> {
-    const primary = docData[rxCollection.schema.primaryPath];
+export function createRxDocument<RxDocType, ORM>(
+    rxCollection: RxCollection<RxDocType, ORM>,
+    docData: RxDocumentData<RxDocType>
+): RxDocument<RxDocType, ORM> {
+    const primary: string = docData[rxCollection.schema.primaryPath] as any;
 
     // return from cache if exists
     const cacheDoc = rxCollection._docCache.get(primary);
@@ -113,7 +114,7 @@ export function createRxDocument<DT, OM>(
     const doc = createRxDocumentWithConstructor(
         getRxDocumentConstructor(rxCollection as any),
         rxCollection as any,
-        overwritable.deepFreezeWhenDevMode(docData)
+        overwritable.deepFreezeWhenDevMode(docData as any)
     );
 
     rxCollection._docCache.set(primary, doc as any);

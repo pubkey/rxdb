@@ -22,8 +22,7 @@ import {
 import {
     closeDexieDb,
     getDexieDbWithTables,
-    getDexieEventKey,
-    stripDexieKey
+    getDexieEventKey
 } from './dexie-helper';
 import { RxStorageDexie } from './rx-storage-dexie';
 
@@ -95,17 +94,13 @@ export class RxStorageKeyObjectInstanceDexie implements RxStorageKeyObjectInstan
                             ret.error[id] = err;
                             return;
                         } else {
-                            const saveMe: any = flatClone(writeDoc);
-                            saveMe.$lastWriteAt = startTime;
-                            bulkPutData.push(saveMe);
+                            bulkPutData.push(writeDoc);
                         }
                     } else {
-                        const insertData: any = flatClone(writeDoc);
-                        insertData.$lastWriteAt = startTime;
-                        bulkPutData.push(insertData);
+                        bulkPutData.push(writeDoc);
                     }
 
-                    ret.success[id] = stripDexieKey(writeDoc);
+                    ret.success[id] = writeDoc;
                     successDocs.push({
                         writeRow,
                         previous,
@@ -201,7 +196,7 @@ export class RxStorageKeyObjectInstanceDexie implements RxStorageKeyObjectInstan
                     !documentInDb._deleted
                 )
             ) {
-                ret[id] = stripDexieKey(documentInDb);
+                ret[id] = documentInDb;
             }
         });
         return ret;

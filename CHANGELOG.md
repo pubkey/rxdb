@@ -17,6 +17,8 @@
 - Added optional `init()` function to `RxPlugin`.
 - Added `doesBroadcastChangestream()` to `RxStorageStatics`
 - Fix (replication primitives) only drop pulled documents when a relevant document was changed locally.
+- Add `_meta` property to stored document data.
+
 
 ### 11.6.0 (4 February 2022)
 

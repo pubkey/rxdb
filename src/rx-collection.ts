@@ -15,7 +15,8 @@ import {
     clone,
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_VOID,
-    RXJS_SHARE_REPLAY_DEFAULTS
+    RXJS_SHARE_REPLAY_DEFAULTS,
+    getDefaultRxDocumentMeta
 } from './util';
 import {
     fillObjectDataBeforeInsert,
@@ -106,6 +107,7 @@ import {
     getRxDocumentConstructor
 } from './rx-document-prototype-merge';
 import {
+    getWrappedKeyObjectInstance,
     getWrappedStorageInstance,
     storageChangeEventToRxChangeEvent,
     throwIfIsStorageWriteError
@@ -123,22 +125,24 @@ export class RxCollectionBase<
     > {
 
 
+    /**
+     * Stores all 'normal' documents
+     */
     public storageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions> = {} as any;
+    /**
+     * Stores the local documents so that they are not deleted
+     * when a migration runs.
+     */
+    public localDocumentsStore: RxStorageKeyObjectInstance<any, InstanceCreationOptions> = {} as any;
     public readonly timeouts: Set<ReturnType<typeof setTimeout>> = new Set();
 
     constructor(
         public database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions>,
         public name: string,
         public schema: RxSchema<RxDocumentType>,
-        /**
-         * Stores all 'normal' documents
-         */
         public internalStorageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>,
-        /**
-         * Stores the local documents so that they are not deleted
-         * when a migration runs.
-         */
-        public localDocumentsStore: RxStorageKeyObjectInstance<any, InstanceCreationOptions>,
+        public internalLocalDocumentsStore: RxStorageKeyObjectInstance<any, InstanceCreationOptions>,
+
         public instanceCreationOptions: InstanceCreationOptions = {} as any,
         public migrationStrategies: KeyFunctionMap = {},
         public methods: KeyFunctionMap = {},
@@ -203,6 +207,7 @@ export class RxCollectionBase<
     private _onDestroyCall?: () => void;
     public async prepare(): Promise<void> {
         this.storageInstance = getWrappedStorageInstance(this as any, this.internalStorageInstance);
+        this.localDocumentsStore = getWrappedKeyObjectInstance(this as any, this.internalLocalDocumentsStore);
 
         // we trigger the non-blocking things first and await them later so we can do stuff in the mean time
         this._crypter = createCrypter(this.database.password, this.schema);
@@ -356,11 +361,13 @@ export class RxCollectionBase<
             const row: BulkWriteRow<RxDocumentType> = {
                 document: Object.assign(doc, {
                     _attachments: {},
+                    _meta: getDefaultRxDocumentMeta(),
                     _deleted: false
                 })
             };
             return row;
         });
+
         const results = await this.storageInstance.bulkWrite(insertRows);
 
         // create documents
@@ -369,6 +376,7 @@ export class RxCollectionBase<
             .map(([key, writtenDocData]) => {
                 const docData: RxDocumentData<RxDocumentType> = getFromMapOrThrow(docsMap, key) as any;
                 docData._rev = writtenDocData._rev;
+
                 const doc = createRxDocument(this as any, docData);
                 return doc;
             });
@@ -829,11 +837,11 @@ export class RxCollectionBase<
      * creates a temporaryDocument which can be saved later
      */
     newDocument(docData: Partial<RxDocumentType> = {}): RxDocument<RxDocumentType, OrmMethods> {
-        docData = this.schema.fillObjectWithDefaults(docData);
+        const filledDocData: RxDocumentData<RxDocumentType> = this.schema.fillObjectWithDefaults(docData);
         const doc: any = createRxDocumentWithConstructor(
             getRxDocumentConstructor(this as any),
             this as any,
-            docData
+            filledDocData
         );
         doc._isTemporary = true;
 

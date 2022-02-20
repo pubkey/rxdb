@@ -32,17 +32,19 @@ import {
     setLastPushSequence,
     getLastPushSequence,
     getChangesSinceLastPushSequence,
-    createRevisionForPulledDocument,
     setLastPullDocument,
     getLastPullDocument,
-    wasRevisionfromPullReplication,
-    replicateRxCollection
+    replicateRxCollection,
+    wasLastWriteFromPullReplication,
+    setLastWritePullReplication,
+    getPullReplicationFlag
 } from '../../plugins/replication';
 
 import type {
     ReplicationPullHandler,
     ReplicationPushHandler,
-    RxDocumentData
+    RxDocumentData,
+    RxDocumentWriteData
 } from '../../src/types';
 
 describe('replication.test.js', () => {
@@ -125,19 +127,15 @@ describe('replication.test.js', () => {
         }
         return handler;
     }
-
-
-
-
     config.parallel('revision-flag', () => {
-        describe('.wasRevisionfromPullReplication()', () => {
-            it('should be false on random revision', async () => {
+        describe('.wasLastWriteFromPullReplication()', () => {
+            it('should be false on non-set flag', async () => {
                 const c = await humansCollection.createHumanWithTimestamp(1);
                 const doc = await c.findOne().exec(true);
 
-                const wasFromPull = wasRevisionfromPullReplication(
+                const wasFromPull = wasLastWriteFromPullReplication(
                     REPLICATION_IDENTIFIER_TEST_HASH,
-                    doc.toJSON(true)._rev
+                    doc.toJSON(true)
                 );
                 assert.strictEqual(wasFromPull, false);
 
@@ -145,18 +143,22 @@ describe('replication.test.js', () => {
             });
             it('should be true for pulled revision', async () => {
                 const c = await humansCollection.createHumanWithTimestamp(0);
-                const toStorage: any = schemaObjects.humanWithTimestamp();
-                toStorage._rev = '1-' + createRevisionForPulledDocument(
+                const toStorage: RxDocumentData<HumanWithTimestampDocumentType> = Object.assign(
+                    schemaObjects.humanWithTimestamp(),
+                    {
+                        _rev: '1-62080c42d471e3d2625e49dcca3b8e3e',
+                        _attachments: {},
+                        _deleted: false,
+                        _meta: {
+                            lwt: now(),
+                            [getPullReplicationFlag(REPLICATION_IDENTIFIER_TEST_HASH)]: 1
+                        }
+                    }
+                );
+
+                const wasFromPull = wasLastWriteFromPullReplication(
                     REPLICATION_IDENTIFIER_TEST_HASH,
                     toStorage
-                );
-                toStorage._deleted = false;
-                await c.storageInstance.bulkAddRevisions([toStorage]);
-
-                const doc = await c.findOne().exec(true);
-                const wasFromPull = wasRevisionfromPullReplication(
-                    REPLICATION_IDENTIFIER_TEST_HASH,
-                    doc.toJSON(true)._rev
                 );
                 assert.strictEqual(wasFromPull, true);
 
@@ -368,22 +370,30 @@ describe('replication.test.js', () => {
             it('should have filtered out documents that are already replicated from the remote', async () => {
                 const amount = 5;
                 const c = await humansCollection.createHumanWithTimestamp(amount);
-                const toStorageInstance: RxDocumentData<HumanWithTimestampDocumentType> = schemaObjects.humanWithTimestamp() as any;
-                const docId = toStorageInstance.id;
-                toStorageInstance._attachments = {};
-                toStorageInstance._deleted = false;
-                toStorageInstance._rev = '1-' + createRevisionForPulledDocument(
-                    REPLICATION_IDENTIFIER_TEST_HASH,
-                    toStorageInstance
+                const toStorageInstance: RxDocumentWriteData<HumanWithTimestampDocumentType> = Object.assign(
+                    schemaObjects.humanWithTimestamp(),
+                    {
+                        _attachments: {},
+                        _deleted: false,
+                        _meta: {
+                            lwt: now()
+                        }
+                    }
                 );
-                await c.storageInstance.bulkAddRevisions([
-                    toStorageInstance
-                ]);
+                setLastWritePullReplication(
+                    REPLICATION_IDENTIFIER_TEST_HASH,
+                    toStorageInstance,
+                    1
+                );
+                const docId = toStorageInstance.id;
+
+                await c.storageInstance.bulkWrite([{
+                    document: toStorageInstance
+                }]);
 
                 const allDocs = await c.find().exec();
 
                 assert.strictEqual(allDocs.length, amount + 1);
-
                 const changesResult = await getChangesSinceLastPushSequence(
                     c,
                     REPLICATION_IDENTIFIER_TEST,

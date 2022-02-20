@@ -58,7 +58,8 @@ export function createCompressionState(
             getPrimaryFieldOfPrimaryKey(schema.primaryKey) as string,
             '_rev',
             '_attachments',
-            '_deleted'
+            '_deleted',
+            '_meta'
         ]
     );
 

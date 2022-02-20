@@ -16,7 +16,8 @@ import {
     parseRevision,
     ensureNotFalsy,
     getFromObjectOrThrow,
-    shuffleArray
+    shuffleArray,
+    now
 } from '../../';
 
 import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
@@ -48,7 +49,7 @@ import { filter, map } from 'rxjs/operators';
 addRxPlugin(RxDBQueryBuilderPlugin);
 
 declare type TestDocType = { key: string; value: string; };
-declare type OptionalValueTestDoc = TestDocType & { value?: string };
+declare type OptionalValueTestDoc = { key: string; value?: string };
 declare type MultiInstanceInstances = {
     a: RxStorageInstance<TestDocType, any, any>;
     b: RxStorageInstance<TestDocType, any, any>;
@@ -67,7 +68,10 @@ function getWriteData(
             key: randomString(10),
             value: 'barfoo',
             _deleted: false,
-            _attachments: {}
+            _attachments: {},
+            _meta: {
+                lwt: now()
+            }
         },
         ownParams
     );
@@ -104,7 +108,10 @@ function getLocalWriteData(
             _id: randomString(10),
             value: 'barfoo',
             _deleted: false,
-            _attachments: {}
+            _attachments: {},
+            _meta: {
+                lwt: now()
+            }
         },
         ownParams
     );
@@ -205,6 +212,9 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     key: 'foobar',
                     value: 'barfoo1',
                     _deleted: false,
+                    _meta: {
+                        lwt: now()
+                    },
                     _attachments: {}
                 };
                 const writeResponse = await storageInstance.bulkWrite(
@@ -235,7 +245,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     key: 'foobar',
                     value: 'barfoo',
                     _deleted: false,
-                    _attachments: {}
+                    _attachments: {},
+                    _meta: {
+                        lwt: now()
+                    }
                 };
 
                 await storageInstance.bulkWrite(
@@ -272,7 +285,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                             key: 'foobar',
                             value: 'barfoo1',
                             _deleted: false,
-                            _attachments: {}
+                            _attachments: {},
+                            _meta: {
+                                lwt: now()
+                            }
                         }
                     }]
                 );
@@ -316,31 +332,46 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     multiInstance: false
                 });
                 const docId = 'foobar';
-                const insertData: RxDocumentData<OptionalValueTestDoc> = {
+                const insertData: RxDocumentWriteData<OptionalValueTestDoc> = {
                     key: docId,
                     value: 'barfoo1',
-                    _attachments: {}
-                } as any;
+                    _attachments: {},
+                    _deleted: false,
+                    _meta: {
+                        lwt: now()
+                    }
+                };
                 const writeResponse = await storageInstance.bulkWrite(
                     [{
                         document: insertData
                     }]
                 );
                 const insertResponse = getFromObjectOrThrow(writeResponse.success, docId);
-                insertData._rev = insertResponse._rev;
+                const insertDataAfterWrite: RxDocumentData<OptionalValueTestDoc> = Object.assign(
+                    {},
+                    insertResponse,
+                    {
+                        _rev: insertResponse._rev
+                    }
+                );
 
                 const updateResponse = await storageInstance.bulkWrite(
                     [{
-                        previous: insertData,
+                        previous: insertDataAfterWrite,
                         document: {
                             key: docId,
-                            _attachments: {}
-                        } as any
+                            _attachments: {},
+                            _deleted: false,
+                            _meta: {
+                                lwt: now()
+                            }
+                        }
                     }]
                 );
                 const updateResponseDoc = getFromObjectOrThrow(updateResponse.success, docId);
                 delete (updateResponseDoc as any)._deleted;
                 delete (updateResponseDoc as any)._rev;
+                delete (updateResponseDoc as any)._meta;
 
                 assert.deepStrictEqual(
                     updateResponseDoc,
@@ -361,10 +392,14 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     options: {},
                     multiInstance: false
                 });
-                const docData = {
+                const docData: RxDocumentWriteData<TestDocType> = {
                     key: 'foobar',
                     value: 'barfoo1',
-                    _attachments: {}
+                    _attachments: {},
+                    _deleted: false,
+                    _meta: {
+                        lwt: now()
+                    }
                 };
                 await storageInstance.bulkWrite(
                     [{
@@ -404,7 +439,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     value: 'barfoo',
                     _attachments: {},
                     _deleted: false,
-                    _rev: '1-a623631364fbfa906c5ffa8203ac9725'
+                    _rev: '1-a623631364fbfa906c5ffa8203ac9725',
+                    _meta: {
+                        lwt: now()
+                    }
                 };
                 const originalWriteData = clone(writeData);
                 await storageInstance.bulkAddRevisions(
@@ -669,7 +707,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         ted: 'xxx'
                     },
                     _deleted: false,
-                    _attachments: {}
+                    _attachments: {},
+                    _meta: {
+                        lwt: now()
+                    }
                 };
                 const matchingDoc = {
                     id: 'foobar',
@@ -677,7 +718,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         ted: 'barfoo'
                     },
                     _deleted: false,
-                    _attachments: {}
+                    _attachments: {},
+                    _meta: {
+                        lwt: now()
+                    }
                 };
 
                 assert.strictEqual(
@@ -706,7 +750,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     key: 'foobar',
                     value: 'barfoo',
                     _deleted: false,
-                    _attachments: {}
+                    _attachments: {},
+                    _meta: {
+                        lwt: now()
+                    }
                 };
 
                 await storageInstance.bulkWrite(
@@ -905,7 +952,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         random: randomString(10),
                         increment: idx + 1,
                         _deleted: false,
-                        _attachments: {}
+                        _attachments: {},
+                        _meta: {
+                            lwt: now()
+                        }
                     }));
                 const writeResponse: RxStorageBulkWriteResponse<RandomDoc> = await storageInstance.bulkWrite(
                     docData.map(d => ({ document: d }))
@@ -987,7 +1037,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                                 ted: 'barfoo'
                             },
                             _deleted: false,
-                            _attachments: {}
+                            _attachments: {},
+                            _meta: {
+                                lwt: now()
+                            }
                         }
                     }
                 ]);
@@ -1027,7 +1080,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     key: 'foobar',
                     value: 'barfoo',
                     _deleted: false,
-                    _attachments: {}
+                    _attachments: {},
+                    _meta: {
+                        lwt: now()
+                    }
                 };
                 await storageInstance.bulkWrite(
                     [{
@@ -1057,7 +1113,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                             key: 'foobar',
                             value: 'barfoo',
                             _deleted: false,
-                            _attachments: {}
+                            _attachments: {},
+                            _meta: {
+                                lwt: now()
+                            }
                         }
                     }]
                 );
@@ -1070,7 +1129,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                             key: 'foobar',
                             value: 'barfoo2',
                             _deleted: true,
-                            _attachments: {}
+                            _attachments: {},
+                            _meta: {
+                                lwt: now()
+                            }
                         }
                     }]
                 );
@@ -1111,7 +1173,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         document: {
                             key: 'foobar',
                             _deleted: false,
-                            _attachments: {}
+                            _attachments: {},
+                            _meta: {
+                                lwt: now()
+                            }
                         }
                     }
                 ]);
@@ -1123,7 +1188,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         document: {
                             key: 'foobar2',
                             _deleted: false,
-                            _attachments: {}
+                            _attachments: {},
+                            _meta: {
+                                lwt: now()
+                            }
                         }
                     }
                 ]);
@@ -1142,7 +1210,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         key: 'foobar2',
                         _deleted: false,
                         _attachments: {},
-                        _rev: nextRevHeight + '-' + oldRev.hash
+                        _rev: nextRevHeight + '-' + oldRev.hash,
+                        _meta: {
+                            lwt: now()
+                        }
                     }
                 ]);
                 const latestAfterBulkAddRevision = await getSequenceAfter(2);
@@ -1165,7 +1236,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     value: 'one',
                     _attachments: {},
                     _rev: undefined as any,
-                    _deleted: false
+                    _deleted: false,
+                    _meta: {
+                        lwt: now()
+                    }
                 };
 
                 // insert
@@ -1285,7 +1359,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         key,
                         _deleted: false,
                         _attachments: {},
-                        value: 'myValue'
+                        value: 'myValue',
+                        _meta: {
+                            lwt: now()
+                        }
                     }
                 }]);
                 const previous = getFromObjectOrThrow(insertResult.success, key);
@@ -1298,7 +1375,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         _deleted: false,
                         _attachments: {},
                         value: 'myValueRev',
-                        _rev: customRev
+                        _rev: customRev,
+                        _meta: {
+                            lwt: now()
+                        }
                     }
                 ]);
 
@@ -1309,7 +1389,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         key,
                         _attachments: {},
                         value: 'myValue',
-                        _deleted: true
+                        _deleted: true,
+                        _meta: {
+                            lwt: now()
+                        }
                     }
                 }]);
 
@@ -1374,9 +1457,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
-                    options: {
-                        auto_compaction: false
-                    },
+                    options: {},
                     multiInstance: false
                 });
 
@@ -1385,12 +1466,14 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     emitted.push(x);
                 });
 
-                const writeData = {
+                const writeData: RxDocumentWriteData<TestDocType> = {
                     key: 'foobar',
                     value: 'one',
-                    _rev: undefined as any,
                     _deleted: false,
-                    _attachments: {}
+                    _attachments: {},
+                    _meta: {
+                        lwt: now()
+                    }
                 };
 
                 // insert
@@ -1402,6 +1485,9 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 assert.strictEqual(emitted.length, 1);
                 assert.strictEqual(emitted[0].events.length, 1);
 
+                // should contain the _meta data
+                assert.ok((emitted as any)[0].events[0].change.doc._meta.lwt);
+
                 sub.unsubscribe();
                 storageInstance.close();
             });
@@ -1410,9 +1496,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
-                    options: {
-                        auto_compaction: false
-                    },
+                    options: {},
                     multiInstance: false
                 });
 
@@ -1431,7 +1515,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     value: 'one',
                     _rev: undefined as any,
                     _deleted: false,
-                    _attachments: {}
+                    _attachments: {},
+                    _meta: {
+                        lwt: now()
+                    }
                 };
 
                 // insert
@@ -1450,9 +1537,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
-                    options: {
-                        auto_compaction: false
-                    },
+                    options: {},
                     multiInstance: false
                 });
 
@@ -1467,7 +1552,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     value: 'one',
                     _rev: undefined as any,
                     _deleted: false,
-                    _attachments: {}
+                    _attachments: {},
+                    _meta: {
+                        lwt: now()
+                    }
                 };
 
                 // insert
@@ -1523,9 +1611,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
-                    options: {
-                        auto_compaction: false
-                    },
+                    options: {},
                     multiInstance: false
                 });
 
@@ -1537,12 +1623,15 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     key: 'foobar',
                     value: 'one',
                     _deleted: false,
-                    _attachments: {}
+                    _attachments: {},
+                    _meta: {
+                        lwt: now()
+                    }
                 };
 
 
                 // make normal insert
-                await writeSingle(
+                await writeSingle<TestDocType>(
                     storageInstance,
                     {
                         document: writeData
@@ -1562,7 +1651,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                          */
                         _deleted: true,
                         _rev: '2-a723631364fbfa906c5ffa8203ac9725',
-                        _attachments: {}
+                        _attachments: {},
+                        _meta: {
+                            lwt: now()
+                        }
                     }]
                 );
 
@@ -1613,7 +1705,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         key: id,
                         value: 'one',
                         _deleted: false,
-                        _attachments: {}
+                        _attachments: {},
+                        _meta: {
+                            lwt: 10
+                        }
                     }
                 }]);
                 // insert again via bulkAddRevisions()
@@ -1622,6 +1717,9 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     value: 'two',
                     _deleted: false,
                     _attachments: {},
+                    _meta: {
+                        lwt: 10
+                    },
                     _rev: '2-a6e639f1073f75farxdbreplicationgraphql'
                 };
                 await storageInstance.bulkAddRevisions([bulkInsertAgain]);
@@ -1633,7 +1731,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         key: id,
                         value: 'one',
                         _attachments: {},
-                        _deleted: true
+                        _deleted: true,
+                        _meta: {
+                            lwt: 10
+                        }
                     }
                 }]);
 
@@ -1646,7 +1747,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     value: 'one',
                     _deleted: true,
                     _attachments: {},
-                    _rev: '4-c4195e76073f75farxdbreplicationgraphql'
+                    _rev: '4-c4195e76073f75farxdbreplicationgraphql',
+                    _meta: {
+                        lwt: 10
+                    }
                 }]);
 
                 // insert should overwrite the deleted one
@@ -1657,7 +1761,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         key: id,
                         value: 'three',
                         _deleted: false,
-                        _attachments: {}
+                        _attachments: {},
+                        _meta: {
+                            lwt: 10
+                        }
                     },
                     previous: afterDeleteDoc
                 }]);
@@ -1676,7 +1783,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         key: id,
                         value: 'one',
                         _rev: (updatePrev as any)._rev,
-                        _attachments: {}
+                        _attachments: {},
+                        _meta: {
+                            lwt: 10
+                        }
                     }
                 );
 
@@ -1696,9 +1806,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
-                    options: {
-                        auto_compaction: false
-                    },
+                    options: {},
                     multiInstance: false
                 });
                 const statics = config.storage.getStorage().statics;
@@ -1720,6 +1828,9 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     value: 'one',
                     _rev: undefined as any,
                     _deleted: false,
+                    _meta: {
+                        lwt: now()
+                    },
                     _attachments: {
                         foo: {
                             digest: statics.hashKey + '-' + attachmentHash,
@@ -1730,7 +1841,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }
                 };
 
-                const writeResult = await writeSingle(
+                const writeResult = await writeSingle<TestDocType>(
                     storageInstance,
                     {
                         document: writeData
@@ -1787,9 +1898,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
-                    options: {
-                        auto_compaction: false
-                    },
+                    options: {},
                     multiInstance: false
                 });
 
@@ -1802,6 +1911,9 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     value: 'one',
                     _rev: undefined as any,
                     _deleted: false,
+                    _meta: {
+                        lwt: now()
+                    },
                     _attachments: {
                         foo: {
                             digest: attachmentHash,
@@ -1812,7 +1924,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }
                 };
 
-                previous = await writeSingle(
+                previous = await writeSingle<TestDocType>(
                     storageInstance,
                     {
                         previous,
@@ -1835,7 +1947,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     type: 'text/plain'
                 };
 
-                previous = await writeSingle(
+                previous = await writeSingle<TestDocType>(
                     storageInstance,
                     {
                         previous,
@@ -1867,6 +1979,9 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                             key: 'foobar',
                             value: 'barfoo',
                             _deleted: false,
+                            _meta: {
+                                lwt: now()
+                            },
                             _attachments: {}
                         }
                     }
@@ -1903,7 +2018,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     _id: 'foobar',
                     value: 'barfoo',
                     _deleted: false,
-                    _attachments: {}
+                    _attachments: {},
+                    _meta: {
+                        lwt: now()
+                    }
                 };
                 const originalWriteData = clone(writeData);
                 const writeResponse = await storageInstance.bulkWrite(
@@ -1939,7 +2057,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                             _id: 'foobar',
                             value: 'barfoo',
                             _deleted: false,
-                            _attachments: {}
+                            _attachments: {},
+                            _meta: {
+                                lwt: now()
+                            }
                         }
                     }]
                 );
@@ -1951,7 +2072,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                             _id: 'foobar',
                             value: 'barfoo2',
                             _deleted: false,
-                            _attachments: {}
+                            _attachments: {},
+                            _meta: {
+                                lwt: now()
+                            }
                         }
                     }
                 ]);
@@ -1977,7 +2101,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         _id: 'foobar',
                         value: 'barfoo',
                         _deleted: false,
-                        _attachments: {}
+                        _attachments: {},
+                        _meta: {
+                            lwt: now()
+                        }
                     }
                 }];
 
@@ -2011,7 +2138,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     value: 'barfoo',
                     _deleted: false,
                     _rev: undefined as any,
-                    _attachments: {}
+                    _attachments: {},
+                    _meta: {
+                        lwt: now()
+                    }
                 };
 
                 const firstWriteResult = await storageInstance.bulkWrite(
@@ -2056,7 +2186,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     _id: 'foobar',
                     value: 'barfoo',
                     _deleted: false,
-                    _attachments: {}
+                    _attachments: {},
+                    _meta: {
+                        lwt: now()
+                    }
                 };
 
                 await storageInstance.bulkWrite(
@@ -2089,7 +2222,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     _id: id,
                     value: 'barfoo',
                     _deleted: false,
-                    _attachments: {}
+                    _attachments: {},
+                    _meta: {
+                        lwt: now()
+                    }
                 };
 
                 const insertResponse = await storageInstance.bulkWrite(
@@ -2143,7 +2279,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     value: 'one',
                     _rev: undefined as any,
                     _deleted: false,
-                    _attachments: {}
+                    _attachments: {},
+                    _meta: {
+                        lwt: now()
+                    }
                 };
 
                 // insert
@@ -2178,7 +2317,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     value: 'one',
                     _rev: undefined as any,
                     _deleted: false,
-                    _attachments: {}
+                    _attachments: {},
+                    _meta: {
+                        lwt: now()
+                    }
                 };
 
                 // insert
@@ -2234,8 +2376,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                             _id: 'foobar',
                             value: 'barfoo',
                             _deleted: false,
-                            _attachments: {}
-
+                            _attachments: {},
+                            _meta: {
+                                lwt: now()
+                            }
                         }
                     }
                 ]);
@@ -2370,6 +2514,9 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     value: 'barfoo',
                     _deleted: false,
                     _attachments: {},
+                    _meta: {
+                        lwt: now()
+                    },
                     _rev: '1-a723631364fbfa906c5ffb8203ac9725'
                 };
                 await instances.b.bulkAddRevisions([writeDataViaRevision]);

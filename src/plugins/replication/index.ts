@@ -9,7 +9,7 @@ import {
     filter
 } from 'rxjs/operators';
 import type {
-    DeepReadonlyObject,
+    BulkWriteRow,
     PullRunResult,
     ReplicationOptions,
     ReplicationPullHandlerResult,
@@ -17,6 +17,7 @@ import type {
     ReplicationPushOptions,
     RxCollection,
     RxDocumentData,
+    RxDocumentWriteData,
     RxReplicationState,
     WithDeleted
 } from '../../types';
@@ -29,6 +30,7 @@ import {
 import {
     ensureNotFalsy,
     flatClone,
+    getDefaultRxDocumentMeta,
     getHeightOfRevision,
     hash,
     lastOfArray,
@@ -37,10 +39,7 @@ import {
     PROMISE_RESOLVE_VOID
 } from '../../util';
 import { overwritable } from '../../overwritable';
-import {
-    createRevisionForPulledDocument,
-    wasRevisionfromPullReplication
-} from './revision-flag';
+import { setLastWritePullReplication, wasLastWriteFromPullReplication } from './revision-flag';
 import { newRxError } from '../../rx-error';
 import { getDocumentDataOfRxChangeEvent } from '../../rx-change-event';
 import { RxReplicationError, RxReplicationPullError, RxReplicationPushError } from './rx-replication-error';
@@ -287,6 +286,12 @@ export class RxReplicationStateBase<RxDocType> {
             });
         }
 
+        const pulledDocIds: string[] = pulledDocuments.map(doc => doc[this.collection.schema.primaryPath]) as any;
+        if (this.isStopped()) {
+            return Promise.resolve('ok');
+        }
+        const docsFromLocal = await this.collection.storageInstance.findDocumentsById(pulledDocIds, true);
+
         /**
          * If a local write has happened while the remote changes where fetched,
          * we have to drop the document and first run a push-sequence.
@@ -340,7 +345,50 @@ export class RxReplicationStateBase<RxDocType> {
         if (this.isStopped()) {
             return Promise.resolve('ok');
         }
-        await this.handleDocumentsFromRemote(pulledDocuments as any);
+
+        const bulkWriteData: BulkWriteRow<RxDocType>[] = [];
+        for (const pulledDocument of pulledDocuments) {
+            const docId: string = pulledDocument[this.collection.schema.primaryPath] as any;
+            const docStateInLocalStorageInstance = docsFromLocal[docId];
+            let nextRevisionHeight: number = 1;
+            if (docStateInLocalStorageInstance) {
+                const hasHeight = getHeightOfRevision(docStateInLocalStorageInstance._rev);
+                nextRevisionHeight = hasHeight + 1;
+            }
+
+            const writeDoc: RxDocumentWriteData<RxDocType> = Object.assign(
+                {},
+                pulledDocument as WithDeleted<RxDocType>,
+                {
+                    _attachments: {},
+                    _meta: getDefaultRxDocumentMeta()
+                }
+            );
+            setLastWritePullReplication(
+                this.replicationIdentifierHash,
+                writeDoc,
+                nextRevisionHeight
+            );
+
+            bulkWriteData.push({
+                previous: docStateInLocalStorageInstance ? docStateInLocalStorageInstance : undefined,
+                document: writeDoc
+            });
+        }
+        if (bulkWriteData.length > 0) {
+            const bulkWriteResponse = await this.collection.storageInstance.bulkWrite(bulkWriteData);
+            /**
+             * If writing the pulled documents caused an conflict error,
+             * it means that a local write happened while we tried to write data from remote.
+             * Then we have to drop the current pulled batch
+             * and run pushing again.
+             */
+            const hasConflict = Object.values(bulkWriteResponse.error).find(err => err.status === 409);
+            if (hasConflict) {
+                return Promise.resolve('drop');
+            }
+        }
+
         pulledDocuments.map((doc: any) => this.subjects.received.next(doc));
 
         if (this.isStopped()) {
@@ -373,40 +421,6 @@ export class RxReplicationStateBase<RxDocType> {
         return Promise.resolve('ok');
     }
 
-    async handleDocumentsFromRemote(
-        docs: (WithDeleted<RxDocType> | DeepReadonlyObject<WithDeleted<RxDocType>>)[]
-    ): Promise<boolean> {
-        const toStorageDocs: RxDocumentData<RxDocType>[] = [];
-        const docIds: string[] = docs.map(doc => doc[this.collection.schema.primaryPath]) as any;
-        const docsFromLocal = await this.collection.storageInstance.findDocumentsById(docIds, true);
-
-        for (const originalDoc of docs) {
-            const doc: any = flatClone(originalDoc);
-            const documentId: string = doc[this.collection.schema.primaryPath];
-
-            const docStateInLocalStorageInstance = docsFromLocal[documentId];
-            let newRevision = createRevisionForPulledDocument(
-                this.replicationIdentifierHash,
-                doc
-            );
-            if (docStateInLocalStorageInstance) {
-                const hasHeight = getHeightOfRevision(docStateInLocalStorageInstance._rev);
-                const newRevisionHeight = hasHeight + 1;
-                newRevision = newRevisionHeight + '-' + newRevision;
-            } else {
-                newRevision = '1-' + newRevision;
-            }
-            doc._rev = newRevision;
-
-            toStorageDocs.push(doc);
-        }
-
-        if (toStorageDocs.length > 0) {
-            await this.collection.storageInstance.bulkAddRevisions(toStorageDocs);
-        }
-
-        return true;
-    }
 
     /**
      * Pushes unreplicated local changes to the remote.
@@ -559,9 +573,9 @@ export function replicateRxCollection<RxDocType>(
                          * Do not run() if the change
                          * was from a pull-replication cycle.
                          */
-                        !wasRevisionfromPullReplication(
+                        !wasLastWriteFromPullReplication(
                             replicationState.replicationIdentifierHash,
-                            rev
+                            doc
                         )
                     ) {
                         replicationState.run();

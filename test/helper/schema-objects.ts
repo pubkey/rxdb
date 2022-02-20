@@ -42,9 +42,9 @@ export interface SimpleHumanV3DocumentType {
     age: number;
     oneOptional?: string;
 }
-export function simpleHumanV3(): SimpleHumanV3DocumentType {
+export function simpleHumanV3(passportId = randomString(12)): SimpleHumanV3DocumentType {
     return {
-        passportId: randomString(12),
+        passportId,
         age: randomNumber(10, 50)
     };
 }

@@ -16,6 +16,7 @@ import {
     blobBufferUtil,
     lastOfArray,
     getAllDocuments,
+    RxCollection,
 } from '../../';
 
 import {
@@ -35,7 +36,8 @@ import {
     migratePromise
 } from '../../plugins/migration';
 import {
-    SimpleHumanV3DocumentType
+    SimpleHumanV3DocumentType,
+    simpleHumanV3
 } from '../helper/schema-objects';
 import { HumanDocumentType } from '../helper/schemas';
 
@@ -919,6 +921,77 @@ config.parallel('data-migration.test.js', () => {
             db.destroy();
         });
     });
+    describe('major versions', () => {
+        describe('12.0.0', () => {
+            /**
+             * With version 12.0.0,
+             * the _meta field was introduces.
+             * To migrate already stored data, we have to add the
+             * _meta field during migration, if it is missing.
+             */
+            it('should add the _meta field if it is missing', async () => {
+                const dbName = randomCouchString(10);
+                const docId = 'foobar';
+                const db = await createRxDatabase({
+                    name: dbName,
+                    storage: getRxStoragePouch('memory'),
+                });
+                await db.addCollections<{
+                    foobar: RxCollection<SimpleHumanV3DocumentType>
+                }>({
+                    foobar: {
+                        schema: schemas.simpleHuman
+                    }
+                });
+                const collection: RxCollection<SimpleHumanV3DocumentType> = db.foobar;
+
+                // insert a document without the _meta field
+                await collection.internalStorageInstance.bulkWrite([{
+                    document: Object.assign(
+                        simpleHumanV3(docId),
+                        {
+                            _deleted: false,
+                            _attachments: {},
+                            // DO NOT ADD THE META FIELD HERE
+                            // _meta: {
+                            //     lwt: 3
+                            // }
+                        } as any
+                    )
+                }]);
+                await db.destroy();
+
+                const db2 = await createRxDatabase({
+                    name: dbName,
+                    storage: getRxStoragePouch('memory'),
+                });
+                const schemaV2 = clone(schemas.simpleHuman);
+                schemaV2.version = 1;
+                await db2.addCollections<{
+                    foobar: RxCollection<SimpleHumanV3DocumentType>
+                }>({
+                    foobar: {
+                        schema: schemaV2,
+                        migrationStrategies: {
+                            1: (oldDoc: SimpleHumanV3DocumentType) => {
+                                (oldDoc as any).age = '99';
+                                return oldDoc;
+                            }
+                        }
+                    }
+                });
+                const collection2: RxCollection<SimpleHumanV3DocumentType> = db2.foobar;
+
+                const doc = await collection2.findOne(docId).exec(true);
+                const docData = doc.toJSON(true);
+
+                assert.ok(docData._meta);
+                assert.ok(docData._meta.lwt);
+
+                db2.destroy();
+            });
+        });
+    });
     describe('issues', () => {
         describe('#212 migration runs into infinity-loop', () => {
             it('reproduce and fix', async () => {
@@ -983,7 +1056,6 @@ config.parallel('data-migration.test.js', () => {
                         schema: schema1,
                         migrationStrategies: {
                             1: (oldDoc: any) => {
-                                // console.log('migrate from 0 to 1...' + oldDoc.name);
                                 oldDoc.level = 'ss';
                                 return oldDoc;
                             }

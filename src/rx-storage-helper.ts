@@ -14,6 +14,7 @@ import type {
     EventBulk,
     RxChangeEvent,
     RxCollection,
+    RxDatabase,
     RxDocumentData,
     RxDocumentWriteData,
     RxLocalDocumentData,
@@ -25,7 +26,7 @@ import type {
     RxStorageInstance,
     RxStorageKeyObjectInstance
 } from './types';
-import { firstPropertyValueOfObject } from './util';
+import { firstPropertyValueOfObject, flatClone } from './util';
 
 export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
 
@@ -145,13 +146,14 @@ export function storageChangeEventToRxChangeEvent<DocType>(
     return ret;
 }
 
-
-
-
 export function transformDocumentDataFromRxDBToRxStorage(
     col: RxCollection | RxCollectionBase<any, any, any>,
-    data: any
+    data: any,
+    updateLwt: boolean
 ) {
+    data = flatClone(data);
+    data._meta = flatClone(data._meta);
+
     // ensure primary key has not been changed
     if (overwritable.isDevMode()) {
         col.schema.fillPrimaryKey(data);
@@ -159,12 +161,15 @@ export function transformDocumentDataFromRxDBToRxStorage(
 
     data = (col._crypter as any).encrypt(data);
 
+    if (updateLwt) {
+        data._meta.lwt = new Date().getTime();
+    }
+
     const hookParams = {
         collection: col,
         doc: data
     };
     runPluginHooks('preWriteToStorageInstance', hookParams);
-
     return hookParams.doc;
 }
 
@@ -219,7 +224,7 @@ export function getWrappedStorageInstance<RxDocumentType, Internals, InstanceCre
         databaseName: storageInstance.databaseName,
         options: storageInstance.options,
         bulkAddRevisions(documents) {
-            const toStorageDocuments = documents.map(doc => transformDocumentDataFromRxDBToRxStorage(collection, doc))
+            const toStorageDocuments = documents.map(doc => transformDocumentDataFromRxDBToRxStorage(collection, doc, true))
             return database.lockedRun(
                 () => storageInstance.bulkAddRevisions(
                     toStorageDocuments
@@ -229,8 +234,8 @@ export function getWrappedStorageInstance<RxDocumentType, Internals, InstanceCre
         bulkWrite(rows: BulkWriteRow<RxDocumentType>[]) {
             const toStorageWriteRows: BulkWriteRow<RxDocumentType>[] = rows.map(row => {
                 return {
-                    document: transformDocumentDataFromRxDBToRxStorage(collection, row.document),
-                    previous: row.previous ? transformDocumentDataFromRxDBToRxStorage(collection, row.previous) : undefined,
+                    document: transformDocumentDataFromRxDBToRxStorage(collection, row.document, true),
+                    previous: row.previous ? transformDocumentDataFromRxDBToRxStorage(collection, row.previous, false) : undefined,
                 }
             });
 
@@ -244,7 +249,7 @@ export function getWrappedStorageInstance<RxDocumentType, Internals, InstanceCre
                     error: {}
                 };
                 Object.entries(writeResult.error).forEach(([k, v]) => {
-                    ret.error[k] = transformDocumentDataFromRxStorageToRxDB(collection, v);
+                    ret.error[k] = v;
                 });
                 Object.entries(writeResult.success).forEach(([k, v]) => {
                     ret.success[k] = transformDocumentDataFromRxStorageToRxDB(collection, v);
@@ -301,12 +306,6 @@ export function getWrappedStorageInstance<RxDocumentType, Internals, InstanceCre
                     const ret: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocumentType>>> = {
                         id: eventBulk.id,
                         events: eventBulk.events.map(event => {
-
-                            const changeDoc = event.change.doc;
-                            if (changeDoc) {
-
-                            }
-
                             return {
                                 eventId: event.eventId,
                                 documentId: event.documentId,
@@ -325,6 +324,133 @@ export function getWrappedStorageInstance<RxDocumentType, Internals, InstanceCre
                     return ret;
                 })
             )
+        }
+    };
+    return ret;
+}
+
+
+
+export function transformLocalDocumentDataFromRxDBToRxStorage<D>(
+    parent: RxCollection | RxDatabase,
+    data: RxLocalDocumentData<D>,
+    updateLwt: boolean
+): RxLocalDocumentData<D> {
+    data = flatClone(data);
+    data._meta = flatClone(data._meta);
+
+    if (updateLwt) {
+        data._meta.lwt = new Date().getTime();
+    }
+
+    return data;
+}
+
+export function transformLocalDocumentDataFromRxStorageToRxDB<D>(
+    parent: RxCollection | RxDatabase,
+    data: RxLocalDocumentData<D>
+): RxLocalDocumentData<D> {
+    return data;
+}
+
+
+/**
+ * Does the same as getWrappedStorageInstance()
+ * but for a key->object store.
+ */
+export function getWrappedKeyObjectInstance<Internals, InstanceCreationOptions>(
+    parent: RxCollection | RxDatabase,
+    keyObjectInstance: RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>
+): RxStorageKeyObjectInstance<Internals, InstanceCreationOptions> {
+    const database: RxDatabase = parent.database ? parent.database as any : parent as any;
+    const ret: RxStorageKeyObjectInstance<Internals, InstanceCreationOptions> = {
+        databaseName: database.name,
+        internals: keyObjectInstance.internals,
+        options: keyObjectInstance.options,
+        bulkWrite<D = any>(rows: BulkWriteLocalRow<D>[]): Promise<RxLocalStorageBulkWriteResponse<D>> {
+            const toStorageWriteRows: BulkWriteLocalRow<D>[] = rows.map(row => {
+                return {
+                    document: transformLocalDocumentDataFromRxDBToRxStorage(parent, row.document, true),
+                    previous: row.previous ? transformLocalDocumentDataFromRxDBToRxStorage(parent, row.previous, false) : undefined,
+                }
+            });
+
+            return database.lockedRun(
+                () => keyObjectInstance.bulkWrite(
+                    toStorageWriteRows
+                )
+            ).then(writeResult => {
+                const ret: RxLocalStorageBulkWriteResponse<D> = {
+                    success: {},
+                    error: {}
+                };
+                Object.entries(writeResult.error).forEach(([k, v]) => {
+                    ret.error[k] = v;
+                });
+                Object.entries(writeResult.success).forEach(([k, v]) => {
+                    ret.success[k] = transformLocalDocumentDataFromRxStorageToRxDB(parent, v);
+                });
+                return ret;
+            });
+        },
+        findLocalDocumentsById<D = any>(
+            ids: string[],
+            withDeleted: boolean
+        ): Promise<{
+            [documentId: string]: RxLocalDocumentData<D>
+        }> {
+            return database.lockedRun(
+                () => keyObjectInstance.findLocalDocumentsById(ids, withDeleted)
+            ).then(findResult => {
+                const ret: { [documentId: string]: RxLocalDocumentData<D>; } = {};
+                Object.entries(findResult).forEach(([key, doc]) => {
+                    ret[key] = transformLocalDocumentDataFromRxStorageToRxDB(parent, doc);
+                });
+                return ret;
+            });
+        },
+        changeStream() {
+            return keyObjectInstance.changeStream().pipe(
+                map(eventBulk => {
+                    const ret: EventBulk<RxStorageChangeEvent<RxLocalDocumentData>> = {
+                        id: eventBulk.id,
+                        events: eventBulk.events.map(event => {
+                            const changeDoc = event.change.doc;
+
+                            if (changeDoc && !changeDoc._meta) {
+                                console.dir(changeDoc);
+                                console.error('local changeSTream meta is missing');
+                                // process.exit(1);
+                            }
+
+                            return {
+                                eventId: event.eventId,
+                                documentId: event.documentId,
+                                endTime: event.endTime,
+                                startTime: event.startTime,
+                                change: {
+                                    id: event.change.id,
+                                    operation: event.change.operation,
+                                    doc: event.change.doc ? transformLocalDocumentDataFromRxStorageToRxDB(parent, event.change.doc) as any : undefined,
+                                    previous: event.change.previous ? transformLocalDocumentDataFromRxStorageToRxDB(parent, event.change.previous as any) : undefined
+                                }
+                            }
+
+                        })
+                    };
+                    return ret;
+                })
+            )
+        },
+        remove() {
+            return database.lockedRun(
+                () => keyObjectInstance.remove()
+            );
+        },
+        close() {
+            return database.lockedRun(
+                () => keyObjectInstance.close()
+            );
         }
     };
     return ret;

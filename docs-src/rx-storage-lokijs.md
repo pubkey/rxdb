@@ -90,6 +90,32 @@ You can fix that by telling webpack to not resolve the `fs` module with the foll
 
 ```
 
+## Using the internal LokiJS database
+
+For custom operations, you can access the internal LokiJS database.
+This is dangerous because you might do changes that are not compatible with RxDB.
+Only use this when there is no way to achieve your goals via the RxDB API.
+
+```javascript
+
+const storageInstance = myRxCollection.internalStorageInstance;
+const localState = await storageInstance.internals.localState;
+localState.collection.insert({
+    key: 'foo',
+    value: 'bar',
+    _deleted: false,
+    _attachments: {},
+    _rev: '1-62080c42d471e3d2625e49dcca3b8e3e',
+    _meta: {
+        lwt: new Date().getTime()
+    }
+});
+
+// manually trigger the save queue because we did a write to the internal loki db. 
+await localState.databaseState.saveQueue.addWrite();
+```
+
+
 
 --------------------------------------------------------------------------------
 

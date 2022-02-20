@@ -22,7 +22,8 @@ import {
     runXTimes,
     RxCollection,
     ensureNotFalsy,
-    lastOfArray
+    lastOfArray,
+    now
 } from '../../';
 
 import {
@@ -37,6 +38,7 @@ addRxPlugin(RxDBMigrationPlugin);
 
 import { firstValueFrom } from 'rxjs';
 import { HumanDocumentType } from '../helper/schemas';
+import { RxDocumentData } from '../../src/types';
 
 config.parallel('rx-collection.test.js', () => {
     async function getDb(): Promise<RxDatabase> {
@@ -467,6 +469,7 @@ config.parallel('rx-collection.test.js', () => {
                             const docs = await c.find().exec();
                             assert.strictEqual(docs.length, 0);
                             await c.insert(docData);
+
                             const docs2 = await c.find().exec();
                             assert.strictEqual(docs2.length, 1);
                             c.database.destroy();
@@ -1878,7 +1881,6 @@ config.parallel('rx-collection.test.js', () => {
             // insert whose id is not in ids-list should not affect anything
             await c.insert(schemaObjects.human());
 
-
             const res2 = await firstValueFrom(obs);
             assert.strictEqual(res2.size, 6);
             assert.ok(res2.has('foobar'));
@@ -2064,12 +2066,20 @@ config.parallel('rx-collection.test.js', () => {
             //  Record subscription
             const updates: any[] = [];
 
-            const createObject = (id: string) => {
-                const docData: any = schemaObjects.human();
-                docData.passportId = id;
-                docData._deleted = false;
-                docData._rev = '1-51b2fae5721cc4d3cf7392f19e6cc118';
-                return docData;
+            function createObject(id: string): RxDocumentData<HumanDocumentType> {
+                const ret: RxDocumentData<HumanDocumentType> = Object.assign(
+                    schemaObjects.human(),
+                    {
+                        passportId: id,
+                        _deleted: false,
+                        _attachments: {},
+                        _meta: {
+                            lwt: now()
+                        },
+                        _rev: '1-51b2fae5721cc4d3cf7392f19e6cc118'
+                    }
+                );
+                return ret;
             }
 
             const matchingIds = ['a', 'b', 'c', 'd'];

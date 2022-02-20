@@ -120,16 +120,13 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
                 } else {
                     const toLoki: any = flatClone(writeDoc);
                     toLoki.$loki = docInDb.$loki;
-                    toLoki.$lastWriteAt = startTime;
                     localState.collection.update(toLoki);
                 }
             } else {
-                const insertData: any = flatClone(writeDoc);
-                insertData.$lastWriteAt = startTime;
-                localState.collection.insert(insertData);
+                localState.collection.insert(writeDoc);
             }
 
-            ret.success[id] = stripLokiKey(writeDoc);
+            ret.success[id] = stripLokiKey(writeDoc as any);
 
             const endTime = now();
 

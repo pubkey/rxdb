@@ -50,7 +50,7 @@ export function getDexieDbWithTables(
                  * This increases performance because it is way easier for the query planner to select
                  * a good index and we also do not have to add the _deleted field to every index.
                  */
-                [DEXIE_DELETED_DOCS_TABLE_NAME]: primaryPath + ',$lastWriteAt'
+                [DEXIE_DELETED_DOCS_TABLE_NAME]: primaryPath + ',_meta.lwt'
             });
             await dexieDb.open();
             return {
@@ -196,17 +196,6 @@ export function getDexieEventKey(
     const eventKey = prefix + '|' + primary + '|' + revision;
     return eventKey;
 }
-
-
-/**
- * Removes all internal fields from the document data
- */
-export function stripDexieKey<T>(docData: T & { $lastWriteAt?: number; }): T {
-    const cloned = flatClone(docData);
-    delete cloned.$lastWriteAt;
-    return cloned;
-}
-
 
 /**
  * Returns all documents in the database.

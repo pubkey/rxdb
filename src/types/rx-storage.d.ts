@@ -1,5 +1,6 @@
 import type { ChangeEvent } from 'event-reduce-js';
 import { BlobBuffer } from './pouch';
+import { RxDocumentMeta } from './rx-document';
 import { MangoQuery } from './rx-query';
 import { RxJsonSchema } from './rx-schema';
 
@@ -33,9 +34,17 @@ export type RxDocumentData<T> = T & {
 
      * When you create a new document, do not send a revision,
      * When you update an existing document, do not send a revision.
-     * When you insert via overwrite: true, send the new revision you want to save the document with.
      */
     _rev: string;
+
+    /**
+     * RxDB specific meta data of the document.
+     * TODO in RxDB version 12 we introduced the _meta field.
+     * But for easier migration, _deleted, _rev etc. are still at the root level
+     * of the document.
+     * In the next major release 13 we should move these values into the _meta field.
+     */
+    _meta: RxDocumentMeta;
 }
 
 /**
@@ -61,15 +70,17 @@ export type RxDocumentWriteData<T> = T & {
     }
 
     /**
-     * Only set when overwrite: true
-     * The new revision is stored with the document
-     * so that other write processes can know that they provoked a conflict
-     * because the current revision is not the same as before.
+     * Revision on writeData must only be set
+     * when you want the RxStorage to respect the given revision.
+     * This is only possible on insert-operations where the previous data is not given.
+     * We need this to ensure that after a data-migration, the new state is predictable
+     * and when running the migration on multiple instances, all end up with having the same
+     * revisions.
      * The [height] of the new revision must be heigher then the [height] of the old revision.
-     * When overwrite: false, the revision is taken from
-     * the previous document of the BulkWriteRow
      */
     _rev?: string;
+
+    _meta: RxDocumentMeta;
 };
 
 export type WithDeleted<DocType> = DocType & {
@@ -112,11 +123,11 @@ export type RxAttachmentDataMeta = {
      * The digest which is the output of the hash function
      * from storage.statics.hash(attachment.data)
      */
-     digest: string;
-     /**
-      * Size of the attachments data
-      */
-     length: number;
+    digest: string;
+    /**
+     * Size of the attachments data
+     */
+    length: number;
 };
 
 /**
@@ -157,6 +168,8 @@ export type RxLocalDocumentData<
 
         _deleted: boolean;
         _rev?: string;
+
+        _meta: RxDocumentMeta;
     } & Data;
 
 /**
@@ -172,7 +185,7 @@ export type RxStorageBulkWriteError<RxDocType> = {
      * check pouchdb/packages/node_modules/pouch-errors/src/index.js
      * and try to use the same code as PouchDB does.
      */
-     ;
+    ;
 
     /**
      * set this property to make it easy

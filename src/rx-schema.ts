@@ -21,7 +21,7 @@ import {
 import type {
     CompositePrimaryKey,
     DeepMutable,
-    DeepReadonly, MaybeReadonly,
+    DeepReadonly, JsonSchema, MaybeReadonly,
     PrimaryKey,
     RxJsonSchema
 } from './types';
@@ -327,6 +327,25 @@ export function normalizeRxJsonSchema<T>(jsonSchema: RxJsonSchema<T>): RxJsonSch
     return normalizedSchema;
 }
 
+
+export const RX_META_SCHEMA: JsonSchema = {
+    type: 'object',
+    properties: {
+        lwt: {
+            type: 'number',
+            minimum: 1
+        }
+    },
+    /**
+     * Additional properties are allowed
+     * and can be used by plugins to set various flags.
+     */
+    additionalProperties: true as any,
+    required: [
+        'lwt'
+    ]
+}
+
 /**
  * fills the schema-json with default-settings
  * @return cloned schemaObj
@@ -374,6 +393,8 @@ export function fillWithDefaultSettings<T = any>(
         type: 'boolean'
     };
 
+    // add meta property
+    (schemaObj.properties as any)._meta = RX_META_SCHEMA;
 
     // version is 0 by default
     schemaObj.version = schemaObj.version || 0;

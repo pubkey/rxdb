@@ -253,6 +253,9 @@ describe('rx-storage-lokijs.test.js', () => {
                 document: {
                     key: 'foobar',
                     _deleted: false,
+                    _meta: {
+                        lwt: now()
+                    },
                     _attachments: {}
                 }
             }]);
@@ -277,7 +280,7 @@ describe('rx-storage-lokijs.test.js', () => {
                 adapter,
                 autosaveCallback: () => callbackCalledCount = callbackCalledCount + 1
             });
-            const databaseName = 'lokijs-fs-adapter-test-' + randomCouchString(12);
+            const databaseName = 'lokijs-fs-test-autosaveCallback-' + randomCouchString(12);
             const dbLocation = path.join(
                 __dirname,
                 '../',
@@ -295,38 +298,15 @@ describe('rx-storage-lokijs.test.js', () => {
                 document: {
                     key: 'foobar',
                     _deleted: false,
+                    _meta: {
+                        lwt: now()
+                    },
                     _attachments: {}
                 }
             }]);
 
             await waitUntil(() => callbackCalledCount === 1);
             await storageInstance.close();
-        });
-        /**
-         * All stored documents need a $lastWriteAt flag,
-         * so we can later implement an auto_compaction that
-         * removes tombstones of deleted documents.
-         */
-        it('should add the $lastWriteAt flag to all documents', async () => {
-            const startTime = now();
-            const collection = await humansCollections.create(
-                1,
-                randomCouchString(10),
-                false,
-                true,
-                getRxStorageLoki()
-            );
-            const doc = await collection.findOne().exec(true);
-            await doc.atomicPatch({ age: 100 });
-            const docId = doc.primary;
-
-            const localState = await collection.storageInstance.internals.localState;
-            const documentInDb = localState.collection.by(doc.primaryPath, docId);
-
-            assert.ok(documentInDb.$lastWriteAt);
-            assert.ok(documentInDb.$lastWriteAt > startTime);
-
-            collection.database.destroy();
         });
     });
     config.parallel('issues', () => {
@@ -377,6 +357,9 @@ describe('rx-storage-lokijs.test.js', () => {
 
                 const firstDocData = Object.assign(schemaObjects.human(), {
                     _deleted: false,
+                    _meta: {
+                        lwt: now()
+                    },
                     _attachments: {}
                 });
                 await storageInstance.bulkWrite([
@@ -389,6 +372,9 @@ describe('rx-storage-lokijs.test.js', () => {
                     Object.assign(schemaObjects.human(), {
                         _deleted: false,
                         _attachments: {},
+                        _meta: {
+                            lwt: now()
+                        },
                         _rev: '1-51b2fae5721cc4d3cf7392f19e6cc118'
                     })
                 ]);
@@ -416,6 +402,9 @@ describe('rx-storage-lokijs.test.js', () => {
                     document: {
                         _id: 'foobar',
                         _attachments: {},
+                        _meta: {
+                            lwt: now()
+                        },
                         _deleted: false
                     }
                 }]);
@@ -429,5 +418,63 @@ describe('rx-storage-lokijs.test.js', () => {
             });
         });
     });
+    config.parallel('migration 11.x.x -> 12.0.0', () => {
+        it('should move the $lastWriteAt value to _meta.lwt', async () => {
+            if (!config.platform.isNode()) {
+                return;
+            }
+            const lfsa = require('lokijs/src/loki-fs-structured-adapter.js');
+            const adapter = new lfsa();
+            const storage = getRxStorageLoki({
+                adapter
+            });
 
+            const databaseName = 'lokijs-migration-test-' + randomCouchString(12);
+            const dbLocation = path.join(
+                __dirname,
+                '../',
+                databaseName
+            );
+            const collectionName = randomCouchString(12);
+            const storageInstance = await storage.createStorageInstance<{ key: string }>({
+                databaseName: dbLocation,
+                collectionName,
+                schema: getPseudoSchemaForVersion(0, 'key'),
+                options: {},
+                multiInstance: false
+            });
+
+            const key = 'foobar';
+            const lwtValue = 1000;
+            const localState = ensureNotFalsy(await storageInstance.internals.localState);
+            localState.collection.insert({
+                key,
+                $lastWriteAt: lwtValue,
+                _deleted: false,
+                _attachments: {},
+                _rev: '1-62080c42d471e3d2625e49dcca3b8e3e'
+            });
+            // manually trigger the save queue because we did a write to the internal loki db. 
+            await localState.databaseState.saveQueue.addWrite();
+
+            await storageInstance.close();
+
+            const storageInstance2 = await storage.createStorageInstance<{ key: string }>({
+                databaseName: dbLocation,
+                collectionName,
+                schema: getPseudoSchemaForVersion(0, 'key'),
+                options: {},
+                multiInstance: false
+            });
+
+            const docFromStorage = await storageInstance2.findDocumentsById([key], true);
+            const doc = ensureNotFalsy(docFromStorage[key]);
+
+            assert.ok(doc._meta);
+            assert.strictEqual(doc._meta.lwt, lwtValue);
+            assert.ok(!doc.hasOwnProperty('$lastWriteAt'));
+
+            storageInstance2.close();
+        });
+    });
 });

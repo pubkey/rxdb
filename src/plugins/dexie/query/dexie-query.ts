@@ -3,7 +3,7 @@ import type { MangoQuery, PreparedQuery, RxJsonSchema, RxStorageQueryResult } fr
 import { clone, ensureNotFalsy } from '../../../util';
 import { getPouchIndexDesignDocNameByIndex, POUCHDB_DESIGN_PREFIX, pouchSwapIdToPrimaryString } from '../../pouchdb';
 import { preparePouchDbQuery } from '../../pouchdb/pouch-statics';
-import { DEXIE_DOCS_TABLE_NAME, stripDexieKey } from '../dexie-helper';
+import { DEXIE_DOCS_TABLE_NAME } from '../dexie-helper';
 import { RxStorageDexieStatics } from '../rx-storage-dexie';
 import type { RxStorageInstanceDexie } from '../rx-storage-instance-dexie';
 import { generateKeyRange } from './pouchdb-find-query-planer/indexeddb-find';
@@ -249,14 +249,6 @@ export async function dexieQuery<RxDocType>(
 
     // apply skip and limit boundaries.
     rows = rows.slice(skip, skipPlusLimit);
-
-    /**
-     * Strip internal keys as last operation
-     * so it has to run over less documents.
-     */
-    rows = rows
-        .map(docData => stripDexieKey(docData))
-
 
     /**
      * Comment this in for debugging to check all fields in the database.

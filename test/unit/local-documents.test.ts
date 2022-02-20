@@ -138,11 +138,8 @@ config.parallel('local-documents.test.js', () => {
             c.database.destroy();
         });
         it('collection: should emit again when state changed', async () => {
-
             const c = await humansCollection.create(0);
-
             const cEmits: any[] = [];
-
             const sub = c.getLocal$(id).subscribe((x: RxLocalDocument<any>) => {
                 cEmits.push(x ? x.toJSON() : null);
             });

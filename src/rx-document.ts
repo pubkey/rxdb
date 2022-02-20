@@ -245,6 +245,7 @@ export const basePrototype = {
             delete (data as any)._rev;
             delete (data as any)._attachments;
             delete (data as any)._deleted;
+            delete (data as any)._meta;
             return overwritable.deepFreezeWhenDevMode(data);
         } else {
             return overwritable.deepFreezeWhenDevMode(this._data);
@@ -568,15 +569,18 @@ export function defineGetterSetter(
         });
 }
 
-export function createWithConstructor(
+export function createWithConstructor<RxDocType>(
     constructor: any,
-    collection: RxCollection,
-    jsonData: any
-): RxDocument | null {
+    collection: RxCollection<RxDocType>,
+    jsonData: RxDocumentData<RxDocType>
+): RxDocument<RxDocType> | null {
+    const primary: string = jsonData[collection.schema.primaryPath] as any;
     if (
-        jsonData[collection.schema.primaryPath] &&
-        jsonData[collection.schema.primaryPath].startsWith('_design')
-    ) return null;
+        primary &&
+        primary.startsWith('_design')
+    ) {
+        return null;
+    }
 
     const doc = new constructor(collection, jsonData);
     runPluginHooks('createRxDocument', doc);

@@ -1,6 +1,10 @@
 export type MaybePromise<T> = Promise<T> | T;
 
 
+export type PlainJsonValue = string | number | boolean | PlainSimpleJsonObject | PlainSimpleJsonObject[] | PlainJsonValue[];
+export type PlainSimpleJsonObject = {
+    [k: string]: PlainJsonValue | PlainJsonValue[];
+};
 
 /**
  * @link https://stackoverflow.com/a/49670389/3443137
@@ -11,7 +15,7 @@ type DeepReadonly<T> =
     T extends object ? DeepReadonlyObject<T> :
     T;
 
-interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> {}
+interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> { }
 
 type DeepReadonlyObject<T> = {
     readonly [P in keyof T]: DeepReadonly<T[P]>;
@@ -25,10 +29,10 @@ export type MaybeReadonly<T> = T | Readonly<T>;
  * makes everything mutable again.
  */
 type DeepMutable<T> = (
-    T extends object 
+    T extends object
     ? {
         -readonly [K in keyof T]: (
-            T[K] extends object 
+            T[K] extends object
             ? DeepMutable<T[K]>
             : T[K]
         )
