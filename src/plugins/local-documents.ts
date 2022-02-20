@@ -343,11 +343,6 @@ function upsertLocal<DocData>(
                 return docPromise;
             } else {
                 // update existing
-
-                console.log('update existing');
-                console.dir(data);
-                console.dir(existing);
-
                 const newData: RxLocalDocumentData<DocData> = Object.assign(
                     {
                         _id: id,

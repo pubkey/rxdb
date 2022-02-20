@@ -1056,7 +1056,6 @@ config.parallel('data-migration.test.js', () => {
                         schema: schema1,
                         migrationStrategies: {
                             1: (oldDoc: any) => {
-                                // console.log('migrate from 0 to 1...' + oldDoc.name);
                                 oldDoc.level = 'ss';
                                 return oldDoc;
                             }

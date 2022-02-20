@@ -306,15 +306,6 @@ export function getWrappedStorageInstance<RxDocumentType, Internals, InstanceCre
                     const ret: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocumentType>>> = {
                         id: eventBulk.id,
                         events: eventBulk.events.map(event => {
-
-                            const changeDoc = event.change.doc;
-
-                            if (changeDoc && !changeDoc._meta) {
-                                console.dir(changeDoc);
-                                console.error('changeSTream meta is missing');
-                                // process.exit(1);
-                            }
-
                             return {
                                 eventId: event.eventId,
                                 documentId: event.documentId,
