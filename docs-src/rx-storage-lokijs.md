@@ -98,7 +98,7 @@ Only use this when there is no way to achieve your goals via the RxDB API.
 
 ```javascript
 
-const storageInstance = myRxCollection.internalStorageInstance;
+const storageInstance = myRxCollection.storageInstance;
 const localState = await storageInstance.internals.localState;
 localState.collection.insert({
     key: 'foo',
