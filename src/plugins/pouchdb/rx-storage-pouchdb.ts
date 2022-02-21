@@ -24,6 +24,7 @@ import { RxStorageInstancePouch } from './rx-storage-instance-pouch';
 import { RxStorageKeyObjectInstancePouch } from './rx-storage-key-object-instance-pouch';
 import {
     getPouchIndexDesignDocNameByIndex,
+    polyfillPouchdbEnvVariables,
     PouchStorageInternals
 } from './pouchdb-helper';
 import { RxStoragePouchStatics } from './pouch-statics';
@@ -228,6 +229,7 @@ export function getRxStoragePouch(
     adapter: any,
     pouchSettings?: PouchSettings
 ): RxStoragePouch {
+    polyfillPouchdbEnvVariables();
     if (!adapter) {
         throw new Error('adapter missing');
     }

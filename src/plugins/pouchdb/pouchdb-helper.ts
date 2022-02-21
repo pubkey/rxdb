@@ -405,3 +405,35 @@ export function localDocumentFromPouch<D>(
 
     return ret;
 }
+
+
+/**
+ * To work in a browser, PouchDB needs some polyfills
+ * which we add here.
+ * 
+ * @link https://github.com/pouchdb/pouchdb/issues/7263
+ */
+let polyfillPouchdbEnvVariablesDone = false;
+export function polyfillPouchdbEnvVariables() {
+    if (polyfillPouchdbEnvVariablesDone) {
+        return;
+    }
+    polyfillPouchdbEnvVariablesDone = true;
+
+    const hasWindow = typeof window === 'object';
+
+    if (hasWindow) {
+        if (!window.global) {
+            (window as any).global = window;
+        }
+        if (!window.process) {
+            (window as any).process = {};
+        }
+        if (!window.process.env) {
+            (window as any).process.env = {};
+        }
+        if (!window.process.env.DEBUG) {
+            (window as any).process.env.DEBUG = undefined;
+        }
+    }
+}
