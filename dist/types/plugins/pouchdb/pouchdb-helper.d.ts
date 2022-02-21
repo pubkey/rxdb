@@ -1,6 +1,6 @@
 /// <reference types="pouchdb-core" />
 /// <reference types="node" />
-import type { ChangeStreamEvent, MaybeReadonly, PouchChangeRow, PouchDBInstance, RxAttachmentData, RxAttachmentWriteData, RxDocumentData, RxDocumentWriteData, WithAttachments } from '../../types';
+import type { ChangeStreamEvent, MaybeReadonly, PouchChangeRow, PouchDBInstance, RxAttachmentData, RxAttachmentWriteData, RxDocumentData, RxDocumentWriteData, RxLocalDocumentData, WithAttachments } from '../../types';
 import type { RxStorageInstancePouch } from './rx-storage-instance-pouch';
 import type { RxStorageKeyObjectInstancePouch } from './rx-storage-key-object-instance-pouch';
 import type { ChangeEvent } from 'event-reduce-js';
@@ -15,12 +15,19 @@ export declare const OPEN_POUCHDB_STORAGE_INSTANCES: Set<RxStorageKeyObjectInsta
  * prefix of local pouchdb documents
  */
 export declare const POUCHDB_LOCAL_PREFIX: '_local/';
+export declare const POUCHDB_LOCAL_PREFIX_LENGTH: number;
 /**
  * Pouchdb stores indexes as design documents,
  * we have to filter them out and not return the
  * design documents to the outside.
  */
 export declare const POUCHDB_DESIGN_PREFIX: '_design/';
+/**
+ * PouchDB does not allow to add custom properties
+ * that start with lodash like RxDB's _meta field.
+ * So we have to map this field into a non-lodashed field.
+ */
+export declare const POUCHDB_META_FIELDNAME = "rxdbMeta";
 export declare function pouchSwapIdToPrimary<T>(primaryKey: keyof T, docData: any): any;
 export declare function pouchSwapIdToPrimaryString<T>(primaryKey: keyof T, str: keyof T): keyof T;
 export declare function pouchDocumentDataToRxDocumentData<T>(primaryKey: keyof T, pouchDoc: WithAttachments<T>): RxDocumentData<T>;
@@ -56,3 +63,14 @@ export declare function writeAttachmentsToAttachments(attachments: {
     [attachmentId: string]: RxAttachmentData;
 }>;
 export declare function getPouchIndexDesignDocNameByIndex(index: MaybeReadonly<string[]>): string;
+/**
+ * PouchDB has not way to read deleted local documents
+ * out of the database.
+ * So instead of deleting them, we set a custom deleted flag.
+ */
+export declare const RXDB_POUCH_DELETED_FLAG: "rxdb-pouch-deleted";
+export declare type RxLocalDocumentDataWithCustomDeletedFlag<D> = RxLocalDocumentData<D> & {
+    [k in typeof RXDB_POUCH_DELETED_FLAG]?: boolean;
+};
+export declare function localDocumentToPouch<D>(docData: RxLocalDocumentData<D>): RxLocalDocumentDataWithCustomDeletedFlag<D>;
+export declare function localDocumentFromPouch<D>(docData: RxLocalDocumentDataWithCustomDeletedFlag<D>): RxLocalDocumentData<D>;

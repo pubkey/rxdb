@@ -1,11 +1,11 @@
 import { Query as MingoQuery } from 'mingo';
 import { binaryMd5 } from 'pouchdb-md5';
 import { getDexieSortComparator } from './dexie-helper';
-import { firstPropertyNameOfObject, flatClone } from '../../util';
+import { flatClone } from '../../util';
 import { createDexieStorageInstance } from './rx-storage-instance-dexie';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import { createDexieKeyObjectStorageInstance } from './rx-storage-key-object-instance-dexie';
 import { getPouchQueryPlan } from './query/dexie-query';
+import { newRxError } from '../../rx-error';
 export var RxStorageDexieStatics = {
   hash: function hash(data) {
     return new Promise(function (res) {
@@ -15,30 +15,14 @@ export var RxStorageDexieStatics = {
     });
   },
   hashKey: 'md5',
+  doesBroadcastChangestream: function doesBroadcastChangestream() {
+    return false;
+  },
   prepareQuery: function prepareQuery(schema, mutateableQuery) {
-    var primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
-    /**
-     * To ensure a deterministic sorting,
-     * we have to ensure the primary key is always part
-     * of the sort query.
-     * TODO this should be done by RxDB instead so we
-     * can ensure it in all storage implementations.
-     */
-
     if (!mutateableQuery.sort) {
-      var _ref;
-
-      mutateableQuery.sort = [(_ref = {}, _ref[primaryKey] = 'asc', _ref)];
-    } else {
-      var isPrimaryInSort = mutateableQuery.sort.find(function (p) {
-        return firstPropertyNameOfObject(p) === primaryKey;
+      throw newRxError('SNH', {
+        query: mutateableQuery
       });
-
-      if (!isPrimaryInSort) {
-        var _mutateableQuery$sort;
-
-        mutateableQuery.sort.push((_mutateableQuery$sort = {}, _mutateableQuery$sort[primaryKey] = 'asc', _mutateableQuery$sort));
-      }
     }
     /**
      * Store the query plan together with the
@@ -53,7 +37,7 @@ export var RxStorageDexieStatics = {
     return getDexieSortComparator(schema, query);
   },
   getQueryMatcher: function getQueryMatcher(_schema, query) {
-    var mingoQuery = new MingoQuery(query.selector);
+    var mingoQuery = new MingoQuery(query.selector ? query.selector : {});
 
     var fun = function fun(doc) {
       if (doc._deleted) {

@@ -1,4 +1,4 @@
-import type { BlobBuffer, DeepReadonlyObject, MaybeReadonly } from './types';
+import type { BlobBuffer, DeepReadonlyObject, MaybeReadonly, RxDocumentMeta } from './types';
 /**
  * Returns an error that indicates that a plugin is missing
  * We do not throw a RxError because this should not be handled
@@ -159,4 +159,5 @@ export declare const RXJS_SHARE_REPLAY_DEFAULTS: {
     bufferSize: number;
     refCount: boolean;
 };
+export declare function getDefaultRxDocumentMeta(): RxDocumentMeta;
 export {};

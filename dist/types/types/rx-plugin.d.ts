@@ -30,13 +30,19 @@ export interface RxPlugin {
      * And also other checks.
      * Use kebab-case.
      */
-    name: string;
+    readonly name: string;
 
     /**
      * set this to true so RxDB
      * knows that this object in a rxdb plugin
      */
     readonly rxdb: true;
+
+    /**
+     * Init function where dependend plugins could be added.
+     * (optional)
+     */
+    init?(): any;
 
     prototypes?: {
         RxSchema?: Function,

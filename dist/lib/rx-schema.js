@@ -5,7 +5,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RxSchema = void 0;
+exports.RxSchema = exports.RX_META_SCHEMA = void 0;
 exports.createRxSchema = createRxSchema;
 exports.fillWithDefaultSettings = fillWithDefaultSettings;
 exports.getComposedPrimaryKeyOfDocumentData = getComposedPrimaryKeyOfDocumentData;
@@ -149,11 +149,6 @@ var RxSchema = /*#__PURE__*/function () {
     key: "normalized",
     get: function get() {
       return (0, _util.overwriteGetterForCaching)(this, 'normalized', normalizeRxJsonSchema(this.jsonSchema));
-    }
-  }, {
-    key: "topLevelFields",
-    get: function get() {
-      return Object.keys(this.normalized.properties);
     }
   }, {
     key: "defaultValues",
@@ -326,16 +321,33 @@ function normalizeRxJsonSchema(jsonSchema) {
 
   return normalizedSchema;
 }
+
+var RX_META_SCHEMA = {
+  type: 'object',
+  properties: {
+    lwt: {
+      type: 'number',
+      minimum: 1
+    }
+  },
+
+  /**
+   * Additional properties are allowed
+   * and can be used by plugins to set various flags.
+   */
+  additionalProperties: true,
+  required: ['lwt']
+};
 /**
  * fills the schema-json with default-settings
  * @return cloned schemaObj
  */
 
+exports.RX_META_SCHEMA = RX_META_SCHEMA;
 
 function fillWithDefaultSettings(schemaObj) {
-  // TODO we should not have to deep clone here
-  // flat clone the nessescary parts instead.
-  schemaObj = (0, _util.clone)(schemaObj); // additionalProperties is always false
+  schemaObj = (0, _util.flatClone)(schemaObj);
+  schemaObj.properties = (0, _util.flatClone)(schemaObj.properties); // additionalProperties is always false
 
   schemaObj.additionalProperties = false; // fill with key-compression-state ()
 
@@ -344,14 +356,14 @@ function fillWithDefaultSettings(schemaObj) {
   } // indexes must be array
 
 
-  schemaObj.indexes = schemaObj.indexes || []; // required must be array
+  schemaObj.indexes = schemaObj.indexes ? schemaObj.indexes.slice(0) : []; // required must be array
 
-  schemaObj.required = schemaObj.required || []; // encrypted must be array
+  schemaObj.required = schemaObj.required ? schemaObj.required.slice(0) : []; // encrypted must be array
 
-  schemaObj.encrypted = schemaObj.encrypted || [];
+  schemaObj.encrypted = schemaObj.encrypted ? schemaObj.encrypted.slice(0) : [];
   /**
-   * TODO we should not need to added the internal fields to the schema.
-   * Better remove the before validation.
+   * TODO we should not need to add the internal fields to the schema.
+   * Better remove the fields before validation.
    */
   // add _rev
 
@@ -366,7 +378,9 @@ function fillWithDefaultSettings(schemaObj) {
 
   schemaObj.properties._deleted = {
     type: 'boolean'
-  }; // version is 0 by default
+  }; // add meta property
+
+  schemaObj.properties._meta = RX_META_SCHEMA; // version is 0 by default
 
   schemaObj.version = schemaObj.version || 0;
   return schemaObj;

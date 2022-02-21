@@ -23,7 +23,9 @@ var createLokiKeyObjectStorageInstance = function createLokiKeyObjectStorageInst
 
       if (params.multiInstance) {
         (0, _util.ensureNotFalsy)(_internals.leaderElector).awaitLeadership().then(function () {
-          return (0, _lokijsHelper.mustUseLocalState)(instance);
+          if (!instance.closed) {
+            (0, _lokijsHelper.mustUseLocalState)(instance);
+          }
         });
       }
 
@@ -148,10 +150,9 @@ var RxStorageKeyObjectInstanceLoki = /*#__PURE__*/function () {
           var id = writeRow.document._id;
           writeRowById.set(id, writeRow);
           var writeDoc = (0, _util.flatClone)(writeRow.document);
-          var docInDb = localState.collection.by('_id', id); // TODO why not use docInDb instead of collection.by() ??
-
-          var previous = writeRow.previous ? writeRow.previous : localState.collection.by('_id', id);
-          var newRevHeight = previous ? (0, _util.parseRevision)(previous._rev).height + 1 : 1;
+          var docInDb = localState.collection.by('_id', id);
+          var prevDocToGetRevision = writeRow.previous ? writeRow.previous : docInDb;
+          var newRevHeight = prevDocToGetRevision ? (0, _util.parseRevision)(prevDocToGetRevision._rev).height + 1 : 1;
           var newRevision = newRevHeight + '-' + (0, _util.createRevision)(writeRow.document);
           writeDoc._rev = newRevision;
 
@@ -169,13 +170,10 @@ var RxStorageKeyObjectInstanceLoki = /*#__PURE__*/function () {
             } else {
               var toLoki = (0, _util.flatClone)(writeDoc);
               toLoki.$loki = docInDb.$loki;
-              toLoki.$lastWriteAt = startTime;
               localState.collection.update(toLoki);
             }
           } else {
-            var insertData = (0, _util.flatClone)(writeDoc);
-            insertData.$lastWriteAt = startTime;
-            localState.collection.insert(insertData);
+            localState.collection.insert(writeDoc);
           }
 
           ret.success[id] = (0, _lokijsHelper.stripLokiKey)(writeDoc);
@@ -242,7 +240,7 @@ var RxStorageKeyObjectInstanceLoki = /*#__PURE__*/function () {
     }
   };
 
-  _proto.findLocalDocumentsById = function findLocalDocumentsById(ids) {
+  _proto.findLocalDocumentsById = function findLocalDocumentsById(ids, withDeleted) {
     try {
       var _this5 = this;
 
@@ -255,7 +253,7 @@ var RxStorageKeyObjectInstanceLoki = /*#__PURE__*/function () {
         ids.forEach(function (id) {
           var documentInDb = localState.collection.by('_id', id);
 
-          if (documentInDb && !documentInDb._deleted) {
+          if (documentInDb && (withDeleted || !documentInDb._deleted)) {
             ret[id] = (0, _lokijsHelper.stripLokiKey)(documentInDb);
           }
         });

@@ -33,7 +33,7 @@ function createCompressionState(schema) {
    * Do not compress the primary field
    * for easier debugging.
    */
-  (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(schema.primaryKey), '_rev', '_attachments', '_deleted']);
+  (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(schema.primaryKey), '_rev', '_attachments', '_deleted', '_meta']);
   delete compressionSchema.primaryKey;
   var compressedSchema = (0, _jsonschemaKeyCompression.createCompressedJsonSchema)(table, compressionSchema); // also compress primary key
 
@@ -153,6 +153,7 @@ var RxDBKeyCompressionPlugin = {
        * because it will deep clone which does not work on Blob or Buffer.
        */
 
+      params.doc = (0, _util.flatClone)(params.doc);
       var attachments = params.doc._attachments;
       delete params.doc._attachments;
       params.doc = (0, _jsonschemaKeyCompression.compressObject)(state.table, params.doc);

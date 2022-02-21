@@ -9,7 +9,7 @@
  */
 import PouchDBCore from 'pouchdb-core';
 import { Subject } from 'rxjs';
-import { flatClone, getFromMapOrThrow, getHeightOfRevision, now, randomCouchString } from '../../util';
+import { flatClone, getFromMapOrThrow, now, parseRevision, randomCouchString } from '../../util';
 import { newRxError } from '../../rx-error';
 import { getEventKey, pouchChangeRowToChangeEvent, POUCHDB_DESIGN_PREFIX, POUCHDB_LOCAL_PREFIX, pouchDocumentDataToRxDocumentData, writeAttachmentsToAttachments } from './pouchdb-helper';
 export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(primaryPath, emitData) {
@@ -30,10 +30,24 @@ export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(
                 previousDoc = pouchDocumentDataToRxDocumentData(primaryPath, previousDoc);
               }
 
-              if (previousDoc && getHeightOfRevision(previousDoc._rev) > getHeightOfRevision(writeDoc._rev)) {
-                // not the newest revision was added
-                // TODO is comparing the height enough to compare revisions?
-                return;
+              if (previousDoc) {
+                var parsedRevPrevious = parseRevision(previousDoc._rev);
+                var parsedRevNew = parseRevision(writeDoc._rev);
+
+                if (parsedRevPrevious.height > parsedRevNew.height ||
+                /**
+                 * If the revision height is equal,
+                 * we determine the higher hash as winner.
+                 */
+                parsedRevPrevious.height === parsedRevNew.height && parsedRevPrevious.hash > parsedRevNew.hash) {
+                  /**
+                   * The newly added document was not the latest revision
+                   * so we drop the write.
+                   * With plain PouchDB it makes sense to store conflicting branches of the document
+                   * but RxDB assumes that the conflict is resolved directly.
+                   */
+                  return;
+                }
               }
 
               if (!previousDoc && writeDoc._deleted) {
@@ -127,8 +141,7 @@ export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(
 
                 var id = resultRow.id;
                 var writeRow = getFromMapOrThrow(writeMap, id);
-                var newDoc = pouchDocumentDataToRxDocumentData(primaryPath, writeRow.document);
-                return Promise.resolve(writeAttachmentsToAttachments(newDoc._attachments)).then(function (_writeAttachmentsToAt3) {
+                return Promise.resolve(writeAttachmentsToAttachments(writeRow.document._attachments)).then(function (attachments) {
                   function _temp15() {
                     if (writeRow.document._deleted && (!writeRow.previous || writeRow.previous._deleted)) {} else {
                       var changeEvent = changeEventToNormal(emitData.writeOptions.custom.primaryPath, event, emitData.startTime, emitData.endTime);
@@ -136,8 +149,10 @@ export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(
                     }
                   }
 
-                  newDoc._attachments = _writeAttachmentsToAt3;
-                  newDoc._rev = resultRow.rev;
+                  var newDoc = Object.assign({}, writeRow.document, {
+                    _attachments: attachments,
+                    _rev: resultRow.rev
+                  });
                   var event;
 
                   var _temp14 = function () {
@@ -156,10 +171,11 @@ export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(
                           // we need to add the new revision to the previous doc
                           // so that the eventkey is calculated correctly.
                           // Is this a hack? idk.
-                          var previousDoc = pouchDocumentDataToRxDocumentData(primaryPath, writeRow.previous);
-                          return Promise.resolve(writeAttachmentsToAttachments(previousDoc._attachments)).then(function (_writeAttachmentsToAt4) {
-                            previousDoc._attachments = _writeAttachmentsToAt4;
-                            previousDoc._rev = resultRow.rev;
+                          return Promise.resolve(writeAttachmentsToAttachments(writeRow.previous._attachments)).then(function (attachments) {
+                            var previousDoc = Object.assign({}, writeRow.previous, {
+                              _attachments: attachments,
+                              _rev: resultRow.rev
+                            });
                             event = {
                               operation: 'DELETE',
                               doc: null,
@@ -346,6 +362,7 @@ export function addCustomEventsPluginToPouch() {
            * Pouchdb does not return deleted documents via allDocs()
            * So have to do use our hack with getting the newest revisions from the
            * changes.
+           * @link https://github.com/pouchdb/pouchdb/issues/7877#issuecomment-522775955
            */
 
           return Promise.resolve(_this2.changes({

@@ -10,7 +10,7 @@ export declare function closeDexieDb(statePromise: DexieStorageInternals): Promi
  * This function is at dexie-helper
  * because we need it in multiple places.
  */
-export declare function getDexieSortComparator<RxDocType>(schema: RxJsonSchema<RxDocType>, query: MangoQuery<RxDocType>): DeterministicSortComparator<RxDocType>;
+export declare function getDexieSortComparator<RxDocType>(_schema: RxJsonSchema<RxDocType>, query: MangoQuery<RxDocType>): DeterministicSortComparator<RxDocType>;
 /**
  * It is not possible to set non-javascript-variable-syntax
  * keys as IndexedDB indexes. So we have to substitute the pipe-char
@@ -24,12 +24,6 @@ export declare function dexieReplaceIfStartsWithPipe(str: string): string;
  */
 export declare function getDexieStoreSchema(rxJsonSchema: RxJsonSchema<any>): string;
 export declare function getDexieEventKey(isLocal: boolean, primary: string, revision: string): string;
-/**
- * Removes all internal fields from the document data
- */
-export declare function stripDexieKey<T>(docData: T & {
-    $lastWriteAt?: number;
-}): T;
 /**
  * Returns all documents in the database.
  * Non-deleted plus deleted ones.

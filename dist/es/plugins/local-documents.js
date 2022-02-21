@@ -3,9 +3,8 @@ import objectPath from 'object-path';
 import { createRxDocumentConstructor, basePrototype } from '../rx-document';
 import { createDocCache } from '../doc-cache';
 import { newRxError, newRxTypeError } from '../rx-error';
-import { flatClone, getFromObjectOrThrow } from '../util';
+import { flatClone, getDefaultRxDocumentMeta, getFromObjectOrThrow } from '../util';
 import { isRxDatabase } from '../rx-database';
-import { isRxCollection } from '../rx-collection';
 import { filter, map, distinctUntilChanged, startWith, mergeMap } from 'rxjs/operators';
 import { findLocalDocument, writeSingleLocal } from '../rx-storage-helper';
 import { overwritable } from '../overwritable';
@@ -200,6 +199,7 @@ var RxLocalDocumentPrototype = {
     var writeData = {
       _id: this.id,
       _deleted: true,
+      _meta: getDefaultRxDocumentMeta(),
       _attachments: {}
     };
     return writeSingleLocal(storageInstance, {
@@ -259,24 +259,24 @@ RxLocalDocument.create = function (id, data, parent) {
  */
 
 
-function insertLocal(id, docData) {
+function insertLocal(id, data) {
   var _this3 = this;
-
-  if (isRxCollection(this) && this._isInMemory) {
-    return this.parentCollection.insertLocal(id, docData);
-  }
 
   return this.getLocal(id).then(function (existing) {
     if (existing) {
       throw newRxError('LD7', {
         id: id,
-        data: docData
+        data: data
       });
     } // create new one
 
 
-    docData = flatClone(docData);
-    docData._id = id;
+    var docData = Object.assign({}, data, {
+      _id: id,
+      _deleted: false,
+      _meta: getDefaultRxDocumentMeta(),
+      _attachments: {}
+    });
     return writeSingleLocal(_getKeyObjectStorageInstanceByParent(_this3), {
       document: docData
     }).then(function (res) {
@@ -296,10 +296,6 @@ function insertLocal(id, docData) {
 function upsertLocal(id, data) {
   var _this4 = this;
 
-  if (isRxCollection(this) && this._isInMemory) {
-    return this._parentCollection.upsertLocal(id, data);
-  }
-
   return this.getLocal(id).then(function (existing) {
     if (!existing) {
       // create new one
@@ -308,9 +304,16 @@ function upsertLocal(id, data) {
       return docPromise;
     } else {
       // update existing
-      data._rev = existing._data._rev;
+      var newData = Object.assign({
+        _id: id,
+        _rev: existing._data._rev,
+        _deleted: false,
+        _attachments: {},
+        _meta: getDefaultRxDocumentMeta()
+      }, data);
       return existing.atomicUpdate(function () {
-        return data;
+        newData._rev = existing._data._rev;
+        return newData;
       }).then(function () {
         return existing;
       });
@@ -320,10 +323,6 @@ function upsertLocal(id, data) {
 
 function getLocal(id) {
   var _this5 = this;
-
-  if (isRxCollection(this) && this._isInMemory) {
-    return this.parentCollection.getLocal(id);
-  }
 
   var storageInstance = _getKeyObjectStorageInstanceByParent(this);
 
@@ -337,7 +336,7 @@ function getLocal(id) {
   } // if not found, check in storage instance
 
 
-  return findLocalDocument(storageInstance, id).then(function (docData) {
+  return findLocalDocument(storageInstance, id, false).then(function (docData) {
     if (!docData) {
       return null;
     }

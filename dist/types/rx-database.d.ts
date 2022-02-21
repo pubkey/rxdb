@@ -24,10 +24,7 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
      * Stores information documents about the collections of the database
      */
     readonly internalStore: RxStorageInstance<InternalStoreDocumentData, Internals, InstanceCreationOptions>;
-    /**
-     * Stores the local documents which are attached to this database.
-     */
-    readonly localDocumentsStore: RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>;
+    readonly internalLocalDocumentsStore: RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>;
     /**
      * Set if multiInstance: true
      * This broadcast channel is used to send events to other instances like
@@ -36,15 +33,15 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
      * to be performance expensive.
      */
     readonly broadcastChannel?: BroadcastChannel<RxChangeEventBulk<any>> | undefined;
+    /**
+     * Stores the local documents which are attached to this database.
+     */
+    localDocumentsStore: RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>;
     constructor(name: string, storage: RxStorage<Internals, InstanceCreationOptions>, instanceCreationOptions: InstanceCreationOptions, password: any, multiInstance: boolean, eventReduce: boolean, options: any, idleQueue: IdleQueue, 
     /**
      * Stores information documents about the collections of the database
      */
-    internalStore: RxStorageInstance<InternalStoreDocumentData, Internals, InstanceCreationOptions>, 
-    /**
-     * Stores the local documents which are attached to this database.
-     */
-    localDocumentsStore: RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>, 
+    internalStore: RxStorageInstance<InternalStoreDocumentData, Internals, InstanceCreationOptions>, internalLocalDocumentsStore: RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>, 
     /**
      * Set if multiInstance: true
      * This broadcast channel is used to send events to other instances like
@@ -58,7 +55,7 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
     _subs: Subscription[];
     destroyed: boolean;
     collections: Collections;
-    readonly eventBulks$: Subject<RxChangeEventBulk>;
+    readonly eventBulks$: Subject<RxChangeEventBulk<any>>;
     private observable$;
     /**
      * Unique token that is stored with the data.
@@ -86,7 +83,7 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
      * ChangeEvents created by other instances go:
      * MultiInstance -> RxDatabase.$emit -> RxCollection -> RxDatabase
      */
-    $emit(changeEventBulk: RxChangeEventBulk): void;
+    $emit(changeEventBulk: RxChangeEventBulk<any>): void;
     /**
      * removes the collection-doc from the internalStore
      */
@@ -155,7 +152,7 @@ export declare function _ensureStorageTokenExists<Collections = any>(rxDatabase:
 /**
  * writes the changeEvent to the broadcastChannel
  */
-export declare function writeToSocket(rxDatabase: RxDatabase, changeEventBulk: RxChangeEventBulk): Promise<boolean>;
+export declare function writeToSocket(rxDatabase: RxDatabase, changeEventBulk: RxChangeEventBulk<any>): Promise<boolean>;
 /**
  * returns the primary for a given collection-data
  * used in the internal pouchdb-instances

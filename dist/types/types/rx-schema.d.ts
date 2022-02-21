@@ -31,7 +31,7 @@ export type CompositePrimaryKey<RxDocType> = {
 
 export type PrimaryKey<RxDocType> = StringKeys<RxDocType> | CompositePrimaryKey<RxDocType>;
 
-export interface JsonSchema {
+export type JsonSchema = {
     allOf?: JsonSchema[];
     anyOf?: JsonSchema[];
     oneOf?: JsonSchema[];
@@ -79,54 +79,54 @@ export interface TopLevelProperty extends JsonSchema {
     default?: any;
 }
 
-export declare class RxJsonSchema<
+export type RxJsonSchema<
     /**
      * The doctype must be given, and '=any' cannot be used,
      * otherwhise the keyof of primaryKey
      * would be optional when the type of the document is not known.
      */
     RxDocType
-    > {
-    title?: string;
-    description?: string;
-    version: number;
+    > = {
+        title?: string;
+        description?: string;
+        version: number;
 
-    /**
-     * The primary key of the documents.
-     * Must be in the top level of the properties of the schema
-     * and that property must have the type 'string'
-     */
-    primaryKey: PrimaryKey<RxDocType>;
+        /**
+         * The primary key of the documents.
+         * Must be in the top level of the properties of the schema
+         * and that property must have the type 'string'
+         */
+        primaryKey: PrimaryKey<RxDocType>;
 
-    /**
-     * TODO this looks like a typescript-bug
-     * we have to allows all string because the 'object'-literal is not recognized
-     * retry this in later typescript-versions
-     */
-    type: 'object' | string;
-    properties: { [key in StringKeys<RxDocType>]: TopLevelProperty };
+        /**
+         * TODO this looks like a typescript-bug
+         * we have to allows all string because the 'object'-literal is not recognized
+         * retry this in later typescript-versions
+         */
+        type: 'object' | string;
+        properties: { [key in StringKeys<RxDocType>]: TopLevelProperty };
 
-    /**
-     * On the top level the required-array must be set
-     * because we always have to set the primary key to required.
-     * 
-     * TODO required should be made non-optional on the top level
-     */
-    required?: StringKeys<RxDocType>[] | readonly StringKeys<RxDocType>[];
+        /**
+         * On the top level the required-array must be set
+         * because we always have to set the primary key to required.
+         * 
+         * TODO required should be made non-optional on the top level
+         */
+        required?: StringKeys<RxDocType>[] | readonly StringKeys<RxDocType>[];
 
 
-    indexes?: (string | string[])[] | (string | readonly string[])[] | readonly (string | string[])[] | readonly (string | readonly string[])[];
-    encrypted?: string[];
-    keyCompression?: boolean;
-    /**
-     * if not set, rxdb will set 'false' as default
-     * true is not allwed on the root level
-     */
-    additionalProperties?: false;
-    attachments?: {
-        encrypted?: boolean;
-    };
-}
+        indexes?: (string | string[])[] | (string | readonly string[])[] | readonly (string | string[])[] | readonly (string | readonly string[])[];
+        encrypted?: string[];
+        keyCompression?: boolean;
+        /**
+         * if not set, rxdb will set 'false' as default
+         * true is not allwed on the root level
+         */
+        additionalProperties?: false;
+        attachments?: {
+            encrypted?: boolean;
+        };
+    }
 
 /**
  * Used to aggregate the document type from the schema.

@@ -2,6 +2,7 @@ import mingo from 'mingo';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import { Dexie } from 'dexie';
 import { flatClone } from '../../util';
+import { newRxError } from '../../rx-error';
 
 /**
  * Returns all documents in the database.
@@ -58,7 +59,7 @@ export function getDexieDbWithTables(databaseName, collectionName, settings, sch
         var useSettings = flatClone(settings);
         useSettings.autoOpen = false;
         var dexieDb = new Dexie(dexieDbName, useSettings);
-        dexieDb.version(1).stores((_dexieDb$version$stor = {}, _dexieDb$version$stor[DEXIE_DOCS_TABLE_NAME] = getDexieStoreSchema(schema), _dexieDb$version$stor[DEXIE_CHANGES_TABLE_NAME] = '++sequence, id', _dexieDb$version$stor[DEXIE_DELETED_DOCS_TABLE_NAME] = primaryPath + ',$lastWriteAt', _dexieDb$version$stor));
+        dexieDb.version(1).stores((_dexieDb$version$stor = {}, _dexieDb$version$stor[DEXIE_DOCS_TABLE_NAME] = getDexieStoreSchema(schema), _dexieDb$version$stor[DEXIE_CHANGES_TABLE_NAME] = '++sequence, id', _dexieDb$version$stor[DEXIE_DELETED_DOCS_TABLE_NAME] = primaryPath + ',_meta.lwt', _dexieDb$version$stor));
         return Promise.resolve(dexieDb.open()).then(function () {
           return {
             dexieDb: dexieDb,
@@ -92,28 +93,20 @@ function sortDirectionToMingo(direction) {
  */
 
 
-export function getDexieSortComparator(schema, query) {
-  var primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
+export function getDexieSortComparator(_schema, query) {
   var mingoSortObject = {};
-  var wasPrimaryInSort = false;
 
-  if (query.sort) {
-    query.sort.forEach(function (sortBlock) {
-      var key = Object.keys(sortBlock)[0];
-
-      if (key === primaryKey) {
-        wasPrimaryInSort = true;
-      }
-
-      var direction = Object.values(sortBlock)[0];
-      mingoSortObject[key] = sortDirectionToMingo(direction);
+  if (!query.sort) {
+    throw newRxError('SNH', {
+      query: query
     });
-  } // TODO ensuring that the primaryKey is in the sorting, should be done by RxDB, not by the storage.
-
-
-  if (!wasPrimaryInSort) {
-    mingoSortObject[primaryKey] = 1;
   }
+
+  query.sort.forEach(function (sortBlock) {
+    var key = Object.keys(sortBlock)[0];
+    var direction = Object.values(sortBlock)[0];
+    mingoSortObject[key] = sortDirectionToMingo(direction);
+  });
 
   var fun = function fun(a, b) {
     var sorted = mingo.find([a, b], {}).sort(mingoSortObject);
@@ -188,14 +181,5 @@ export function getDexieEventKey(isLocal, primary, revision) {
   var prefix = isLocal ? 'local' : 'non-local';
   var eventKey = prefix + '|' + primary + '|' + revision;
   return eventKey;
-}
-/**
- * Removes all internal fields from the document data
- */
-
-export function stripDexieKey(docData) {
-  var cloned = flatClone(docData);
-  delete cloned.$lastWriteAt;
-  return cloned;
 }
 //# sourceMappingURL=dexie-helper.js.map

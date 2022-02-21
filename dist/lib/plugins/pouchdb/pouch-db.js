@@ -9,7 +9,6 @@ exports.PouchDB = void 0;
 exports.addPouchPlugin = addPouchPlugin;
 exports.isInstanceOf = isInstanceOf;
 exports.isLevelDown = isLevelDown;
-exports.pouchReplicationFunction = pouchReplicationFunction;
 
 var _pouchdbCore = _interopRequireDefault(require("pouchdb-core"));
 
@@ -33,7 +32,6 @@ const pouchdbDebug = require('pouchdb-debug');
 PouchDB.plugin(pouchdbDebug);
 PouchDB.debug.enable('*');
 */
-// TODO we can delete most of these functions in the file because it was migrated to rx-storage-pouchdb
 addPouchPlugin(_pouchdbFind["default"]);
 (0, _customEventsPlugin.addCustomEventsPluginToPouch)();
 /**
@@ -45,27 +43,6 @@ function isLevelDown(adapter) {
   if (!adapter || typeof adapter.super_ !== 'function') {
     throw (0, _rxError.newRxError)('UT4', {
       adapter: adapter
-    });
-  }
-}
-/**
- * get the correct function-name for pouchdb-replication
- */
-
-
-function pouchReplicationFunction(pouch, _ref) {
-  var _ref$pull = _ref.pull,
-      pull = _ref$pull === void 0 ? true : _ref$pull,
-      _ref$push = _ref.push,
-      push = _ref$push === void 0 ? true : _ref$push;
-  if (pull && push) return pouch.sync.bind(pouch);
-  if (!pull && push) return pouch.replicate.to.bind(pouch);
-  if (pull && !push) return pouch.replicate.from.bind(pouch);
-
-  if (!pull && !push) {
-    throw (0, _rxError.newRxError)('UT3', {
-      pull: pull,
-      push: push
     });
   }
 }

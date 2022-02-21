@@ -13,7 +13,6 @@ const pouchdbDebug = require('pouchdb-debug');
 PouchDB.plugin(pouchdbDebug);
 PouchDB.debug.enable('*');
 */
-// TODO we can delete most of these functions in the file because it was migrated to rx-storage-pouchdb
 
 import { newRxError, newRxTypeError } from '../../rx-error';
 import { addCustomEventsPluginToPouch } from './custom-events-plugin';
@@ -28,26 +27,6 @@ export function isLevelDown(adapter) {
   if (!adapter || typeof adapter.super_ !== 'function') {
     throw newRxError('UT4', {
       adapter: adapter
-    });
-  }
-}
-/**
- * get the correct function-name for pouchdb-replication
- */
-
-export function pouchReplicationFunction(pouch, _ref) {
-  var _ref$pull = _ref.pull,
-      pull = _ref$pull === void 0 ? true : _ref$pull,
-      _ref$push = _ref.push,
-      push = _ref$push === void 0 ? true : _ref$push;
-  if (pull && push) return pouch.sync.bind(pouch);
-  if (!pull && push) return pouch.replicate.to.bind(pouch);
-  if (pull && !push) return pouch.replicate.from.bind(pouch);
-
-  if (!pull && !push) {
-    throw newRxError('UT3', {
-      pull: pull,
-      push: push
     });
   }
 }

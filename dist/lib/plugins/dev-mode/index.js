@@ -104,6 +104,7 @@ var RxDBDevModePlugin = {
     },
     preCreateRxCollection: function preCreateRxCollection(args) {
       (0, _unallowedProperties.ensureCollectionNameValid)(args);
+      (0, _checkOrm.checkOrmDocumentMethods)(args.schema, args.methods);
 
       if (args.name.charAt(0) === '_') {
         throw (0, _rxError.newRxError)('DB2', {

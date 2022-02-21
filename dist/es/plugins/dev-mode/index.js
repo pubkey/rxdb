@@ -1,6 +1,6 @@
 import { ERROR_MESSAGES } from './error-messages';
 import { checkSchema } from './check-schema';
-import { checkOrmMethods } from './check-orm';
+import { checkOrmDocumentMethods, checkOrmMethods } from './check-orm';
 import { checkMigrationStrategies } from './check-migration-strategies';
 import { ensureCollectionNameValid, ensureDatabaseNameIsValid } from './unallowed-properties';
 import { checkMangoQuery, checkQuery } from './check-query';
@@ -60,6 +60,7 @@ export var RxDBDevModePlugin = {
     },
     preCreateRxCollection: function preCreateRxCollection(args) {
       ensureCollectionNameValid(args);
+      checkOrmDocumentMethods(args.schema, args.methods);
 
       if (args.name.charAt(0) === '_') {
         throw newRxError('DB2', {

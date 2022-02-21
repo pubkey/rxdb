@@ -548,4 +548,15 @@ export var RXJS_SHARE_REPLAY_DEFAULTS = {
   bufferSize: 1,
   refCount: true
 };
+export function getDefaultRxDocumentMeta() {
+  return {
+    /**
+     * Set this to 1 to not waste performance
+     * while calling new Date()..
+     * The storage wrappers will anyway update
+     * the lastWrite time while calling transformDocumentDataFromRxDBToRxStorage()
+     */
+    lwt: 1
+  };
+}
 //# sourceMappingURL=util.js.map

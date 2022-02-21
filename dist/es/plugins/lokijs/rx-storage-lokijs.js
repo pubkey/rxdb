@@ -1,5 +1,5 @@
 import lokijs from 'lokijs';
-import { flatClone } from '../../util';
+import { ensureNotFalsy, flatClone } from '../../util';
 import { createLokiStorageInstance } from './rx-storage-instance-loki';
 import { createLokiKeyObjectStorageInstance } from './rx-storage-key-object-instance-loki';
 import { getLokiSortComparator } from './lokijs-helper';
@@ -13,8 +13,11 @@ export var RxStorageLokiStatics = {
     });
   },
   hashKey: 'md5',
+  doesBroadcastChangestream: function doesBroadcastChangestream() {
+    return false;
+  },
   prepareQuery: function prepareQuery(_schema, mutateableQuery) {
-    if (Object.keys(mutateableQuery.selector).length > 0) {
+    if (Object.keys(ensureNotFalsy(mutateableQuery.selector)).length > 0) {
       mutateableQuery.selector = {
         $and: [{
           _deleted: false

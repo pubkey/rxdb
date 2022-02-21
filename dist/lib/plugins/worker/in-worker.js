@@ -88,9 +88,9 @@ function wrappedRxStorage(args) {
       var instance = (0, _util.getFromMapOrThrow)(instanceById, instanceId);
       return instance.bulkWrite(documentWrites);
     },
-    findLocalDocumentsById: function findLocalDocumentsById(instanceId, ids) {
+    findLocalDocumentsById: function findLocalDocumentsById(instanceId, ids, withDeleted) {
       var instance = (0, _util.getFromMapOrThrow)(instanceById, instanceId);
-      return instance.findLocalDocumentsById(ids);
+      return instance.findLocalDocumentsById(ids, withDeleted);
     }
   };
   (0, _worker.expose)(exposeMe);

@@ -6,7 +6,7 @@
 import AES from 'crypto-js/aes';
 import * as cryptoEnc from 'crypto-js/enc-utf8';
 import { newRxTypeError, newRxError } from '../rx-error';
-import { hash, PROMISE_RESOLVE_FALSE } from '../util';
+import { getDefaultRxDocumentMeta, hash, PROMISE_RESOLVE_FALSE } from '../util';
 import { findLocalDocument } from '../rx-storage-helper';
 
 /**
@@ -22,12 +22,14 @@ export var storePasswordHashIntoDatabase = function storePasswordHashIntoDatabas
 
     var pwHash = hash(rxDatabase.password);
     var pwHashDocumentId = 'pwHash';
-    return Promise.resolve(findLocalDocument(rxDatabase.localDocumentsStore, pwHashDocumentId)).then(function (pwHashDoc) {
+    return Promise.resolve(findLocalDocument(rxDatabase.localDocumentsStore, pwHashDocumentId, false)).then(function (pwHashDoc) {
       if (!pwHashDoc) {
         var docData = {
           _id: pwHashDocumentId,
           value: pwHash,
-          _attachments: {}
+          _attachments: {},
+          _meta: getDefaultRxDocumentMeta(),
+          _deleted: false
         };
         return Promise.resolve(rxDatabase.localDocumentsStore.bulkWrite([{
           document: docData

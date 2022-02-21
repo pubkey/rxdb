@@ -167,8 +167,8 @@ var RxStorageKeyObjectInstanceWorker = /*#__PURE__*/function () {
     return this.internals.worker.bulkWriteLocal(this.internals.instanceId, documentWrites);
   };
 
-  _proto3.findLocalDocumentsById = function findLocalDocumentsById(ids) {
-    return this.internals.worker.findLocalDocumentsById(this.internals.instanceId, ids);
+  _proto3.findLocalDocumentsById = function findLocalDocumentsById(ids, withDeleted) {
+    return this.internals.worker.findLocalDocumentsById(this.internals.instanceId, ids, withDeleted);
   };
 
   _proto3.changeStream = function changeStream() {

@@ -11,6 +11,7 @@ export declare function getChangesSinceLastPushSequence<RxDocType>(collection: R
  * So that we do not run requests against a close RxStorageInstance.
  */
 isStopped: () => boolean, batchSize?: number): Promise<{
+    changedDocIds: Set<string>;
     changedDocs: Map<string, {
         id: string;
         doc: RxDocumentData<RxDocType>;

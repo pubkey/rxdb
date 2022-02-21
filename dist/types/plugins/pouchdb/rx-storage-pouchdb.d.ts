@@ -11,7 +11,8 @@ export declare class RxStoragePouch implements RxStorage<PouchStorageInternals, 
     statics: Readonly<{
         hash(data: string | Blob | Buffer): Promise<string>;
         hashKey: string;
-        prepareQuery<DocumentData>(schema: RxJsonSchema<DocumentData>, mutateableQuery: import("../../types").MangoQuery<DocumentData>): any;
+        doesBroadcastChangestream(): boolean;
+        prepareQuery<DocumentData>(schema: RxJsonSchema<DocumentData>, mutateableQuery: import("../../types").FilledMangoQuery<DocumentData>): any;
         getSortComparator<DocumentData_1>(schema: RxJsonSchema<DocumentData_1>, query: import("../../types").MangoQuery<DocumentData_1>): import("event-reduce-js").DeterministicSortComparator<DocumentData_1>;
         getQueryMatcher<DocumentData_2>(schema: RxJsonSchema<DocumentData_2>, query: import("../../types").MangoQuery<DocumentData_2>): import("event-reduce-js").QueryMatcher<import("../../types").RxDocumentWriteData<DocumentData_2>>;
     }>;

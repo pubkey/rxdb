@@ -34,9 +34,9 @@ var _entityProperties = require("./entity-properties");
  * @throws {Error}
  */
 function checkFieldNameRegex(fieldName) {
-  if (fieldName === '') return; // TODO why is the fieldname allowed to be empty string?
-
-  if (fieldName === '_deleted') return;
+  if (fieldName === '_deleted') {
+    return;
+  }
 
   if (['properties', 'language'].includes(fieldName)) {
     throw (0, _rxError.newRxError)('SC23', {

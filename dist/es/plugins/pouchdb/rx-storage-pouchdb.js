@@ -157,7 +157,6 @@ export var RxStoragePouch = /*#__PURE__*/function () {
 
 export function checkPouchAdapter(adapter) {
   if (typeof adapter === 'string') {
-    // TODO make a function hasAdapter()
     if (!PouchDB.adapters || !PouchDB.adapters[adapter]) {
       throw newRxError('DB9', {
         adapter: adapter

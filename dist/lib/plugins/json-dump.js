@@ -11,8 +11,6 @@ var _rxQuery = require("../rx-query");
 
 var _rxError = require("../rx-error");
 
-var _rxCollectionHelper = require("../rx-collection-helper");
-
 /**
  * this plugin adds the json export/import capabilities to RxDB
  */
@@ -74,6 +72,8 @@ var importDumpRxDatabase = function importDumpRxDatabase(dump) {
 };
 
 var dumpRxCollection = function dumpRxCollection() {
+  var _this3 = this;
+
   var decrypted = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
   var encrypted = !decrypted;
   var json = {
@@ -90,10 +90,15 @@ var dumpRxCollection = function dumpRxCollection() {
   }
 
   var query = (0, _rxQuery.createRxQuery)('find', (0, _rxQuery._getDefaultQuery)(), this);
-  return this._queryStorageInstance(query, undefined, encrypted).then(function (docs) {
+  return (0, _rxQuery.queryCollection)(query).then(function (docs) {
     json.docs = docs.map(function (docData) {
       delete docData._rev;
       delete docData._attachments;
+
+      if (encrypted) {
+        docData = _this3._crypter.encrypt(docData);
+      }
+
       return docData;
     });
     return json;
@@ -101,7 +106,7 @@ var dumpRxCollection = function dumpRxCollection() {
 };
 
 function importDumpRxCollection(exportedJSON) {
-  var _this3 = this;
+  var _this4 = this;
 
   // check schemaHash
   if (exportedJSON.schemaHash !== this.schema.hash) {
@@ -121,20 +126,16 @@ function importDumpRxCollection(exportedJSON) {
 
   var docs = exportedJSON.docs // decrypt
   .map(function (doc) {
-    return _this3._crypter.decrypt(doc);
+    return _this4._crypter.decrypt(doc);
   }) // validate schema
   .map(function (doc) {
-    return _this3.schema.validate(doc);
+    return _this4.schema.validate(doc);
   });
-  return this.database.lockedRun( // write to disc
-  function () {
-    var writeMe = docs.map(function (doc) {
-      return {
-        document: (0, _rxCollectionHelper._handleToStorageInstance)(_this3, doc)
-      };
-    });
-    return _this3.storageInstance.bulkWrite(writeMe);
-  });
+  return this.storageInstance.bulkWrite(docs.map(function (document) {
+    return {
+      document: document
+    };
+  }));
 }
 
 var rxdb = true;

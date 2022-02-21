@@ -11,7 +11,7 @@ export declare class RxStorageKeyObjectInstancePouch implements RxStorageKeyObje
     close(): Promise<void>;
     remove(): Promise<void>;
     bulkWrite<D = any>(documentWrites: BulkWriteLocalRow<D>[]): Promise<RxLocalStorageBulkWriteResponse<D>>;
-    findLocalDocumentsById<D = any>(ids: string[]): Promise<{
+    findLocalDocumentsById<D = any>(ids: string[], withDeleted: boolean): Promise<{
         [documentId: string]: RxLocalDocumentData<D>;
     }>;
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxLocalDocumentData>>>;

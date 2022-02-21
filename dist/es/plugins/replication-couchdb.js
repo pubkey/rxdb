@@ -7,9 +7,9 @@ import { BehaviorSubject, Subject, fromEvent, firstValueFrom } from 'rxjs';
 import { skipUntil, filter, first, mergeMap } from 'rxjs/operators';
 import { promiseWait, flatClone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE } from '../util';
 import { newRxError } from '../rx-error';
-import { pouchReplicationFunction, isInstanceOf as isInstanceOfPouchDB, addPouchPlugin } from '../plugins/pouchdb';
+import { isInstanceOf as isInstanceOfPouchDB, addPouchPlugin } from '../plugins/pouchdb';
 import { isRxCollection } from '../rx-collection';
-import { _handleFromStorageInstance } from '../rx-collection-helper'; // add pouchdb-replication-plugin
+import { transformDocumentDataFromRxStorageToRxDB } from '../rx-storage-helper'; // add pouchdb-replication-plugin
 
 addPouchPlugin(PouchReplicationPlugin);
 /**
@@ -80,8 +80,6 @@ export var RxCouchDBReplicationStateBase = /*#__PURE__*/function () {
 
     this.canceled = true;
 
-    this.collection._repStates["delete"](this);
-
     if (this._pouchEventEmitterObject) {
       this._pouchEventEmitterObject.cancel();
     }
@@ -118,7 +116,7 @@ export function setPouchEventEmitter(rxRepState, evEmitter) {
       return doc.language !== 'query';
     }) // remove internal docs
     .map(function (doc) {
-      return _handleFromStorageInstance(rxRepState.collection, doc);
+      return transformDocumentDataFromRxStorageToRxDB(rxRepState.collection, doc);
     }) // do primary-swap and keycompression
     .forEach(function (doc) {
       return rxRepState._subjects.docs.next(doc);
@@ -199,23 +197,52 @@ export function setPouchEventEmitter(rxRepState, evEmitter) {
 export function createRxCouchDBReplicationState(collection, syncOptions) {
   return new RxCouchDBReplicationStateBase(collection, syncOptions);
 }
-export function syncCouchDB(_ref) {
+/**
+ * get the correct function-name for pouchdb-replication
+ */
+
+export function pouchReplicationFunction(pouch, _ref) {
+  var _ref$pull = _ref.pull,
+      pull = _ref$pull === void 0 ? true : _ref$pull,
+      _ref$push = _ref.push,
+      push = _ref$push === void 0 ? true : _ref$push;
+
+  if (pull && push) {
+    return pouch.sync.bind(pouch);
+  }
+
+  if (!pull && push) {
+    return pouch.replicate.to.bind(pouch);
+  }
+
+  if (pull && !push) {
+    return pouch.replicate.from.bind(pouch);
+  }
+
+  if (!pull && !push) {
+    throw newRxError('UT3', {
+      pull: pull,
+      push: push
+    });
+  }
+}
+export function syncCouchDB(_ref2) {
   var _this2 = this;
 
-  var remote = _ref.remote,
-      _ref$waitForLeadershi = _ref.waitForLeadership,
-      waitForLeadership = _ref$waitForLeadershi === void 0 ? true : _ref$waitForLeadershi,
-      _ref$direction = _ref.direction,
-      direction = _ref$direction === void 0 ? {
+  var remote = _ref2.remote,
+      _ref2$waitForLeadersh = _ref2.waitForLeadership,
+      waitForLeadership = _ref2$waitForLeadersh === void 0 ? true : _ref2$waitForLeadersh,
+      _ref2$direction = _ref2.direction,
+      direction = _ref2$direction === void 0 ? {
     pull: true,
     push: true
-  } : _ref$direction,
-      _ref$options = _ref.options,
-      options = _ref$options === void 0 ? {
+  } : _ref2$direction,
+      _ref2$options = _ref2.options,
+      options = _ref2$options === void 0 ? {
     live: true,
     retry: true
-  } : _ref$options,
-      query = _ref.query;
+  } : _ref2$options,
+      query = _ref2.query;
   var useOptions = flatClone(options); // prevent #641 by not allowing internal pouchdbs as remote
 
   if (isInstanceOfPouchDB(remote) && INTERNAL_POUCHDBS.has(remote)) {
@@ -260,7 +287,9 @@ export function syncCouchDB(_ref) {
     var pouchSync = syncFun(remote, useOptions);
     setPouchEventEmitter(repState, pouchSync);
 
-    _this2._repStates.add(repState);
+    _this2.onDestroy.then(function () {
+      return repState.cancel();
+    });
   });
   return repState;
 }

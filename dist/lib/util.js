@@ -16,6 +16,7 @@ exports.firstPropertyNameOfObject = firstPropertyNameOfObject;
 exports.firstPropertyValueOfObject = firstPropertyValueOfObject;
 exports.flatClone = flatClone;
 exports.flattenObject = flattenObject;
+exports.getDefaultRxDocumentMeta = getDefaultRxDocumentMeta;
 exports.getFromMapOrThrow = getFromMapOrThrow;
 exports.getFromObjectOrThrow = getFromObjectOrThrow;
 exports.getHeightOfRevision = getHeightOfRevision;
@@ -643,4 +644,16 @@ var RXJS_SHARE_REPLAY_DEFAULTS = {
   refCount: true
 };
 exports.RXJS_SHARE_REPLAY_DEFAULTS = RXJS_SHARE_REPLAY_DEFAULTS;
+
+function getDefaultRxDocumentMeta() {
+  return {
+    /**
+     * Set this to 1 to not waste performance
+     * while calling new Date()..
+     * The storage wrappers will anyway update
+     * the lastWrite time while calling transformDocumentDataFromRxDBToRxStorage()
+     */
+    lwt: 1
+  };
+}
 //# sourceMappingURL=util.js.map

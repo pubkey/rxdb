@@ -6,21 +6,7 @@ import { AddReturn } from 'unload';
 import { LokiSaveQueue } from '../../plugins/lokijs/loki-save-queue';
 import type { RxStorageChangedDocumentMeta } from '../rx-storage';
 
-export type LokiDatabaseSettings = Partial<LokiConstructorOptions & LokiConfigOptions> & {
-
-    
-
-
-    /**
-     * RxDB does not totally delete a document when it gets deleted.
-     * We still need to store a tombstone of the document to ensure it
-     * can be properly replicated with the replication plugins.
-     * If autoCompactionTTL is set, RxDB will automatically remove tombstones of deleted documents
-     * after the given time in milliseconds has passed since the deletion of the document.
-     */
-    // TODO implement autocompaction based on the $lastWriteAt flag.
-    // autoCompactionTTL?: number;
-};
+export type LokiDatabaseSettings = Partial<LokiConstructorOptions & LokiConfigOptions> & {};
 
 export type LokiCollectionSettings = Partial<CollectionOptions<any>>;
 
@@ -74,7 +60,7 @@ export type LokiDatabaseState = {
 
 export type LokiLocalDatabaseState = {
     databaseState: LokiDatabaseState;
-    collection: Collection<any & { $lastWriteAt: number; }>;
+    collection: Collection<any>;
     /**
      * LokiJS has no persistend, observable
      * or queryable changefeed. So we keep our own changefeed

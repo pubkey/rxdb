@@ -2,7 +2,7 @@ import { Subject } from 'rxjs';
 import { createRevision, getHeightOfRevision, parseRevision, lastOfArray, flatClone, now, randomCouchString, PROMISE_RESOLVE_VOID } from '../../util';
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
-import { closeDexieDb, getDexieDbWithTables, getDexieEventKey, getDocsInDb, stripDexieKey } from './dexie-helper';
+import { closeDexieDb, getDexieDbWithTables, getDexieEventKey, getDocsInDb } from './dexie-helper';
 import { dexieQuery } from './query/dexie-query';
 export var createDexieStorageInstance = function createDexieStorageInstance(storage, params, settings) {
   try {
@@ -103,14 +103,12 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
                     // TODO attachments are currently not working with lokijs
                     _attachments: {}
                   });
-                  var insertData = flatClone(writeDoc);
-                  insertData.$lastWriteAt = startTime;
                   changesIds.push(id);
 
                   if (insertedIsDeleted) {
-                    bulkPutDeletedDocs.push(insertData);
+                    bulkPutDeletedDocs.push(writeDoc);
                   } else {
-                    bulkPutDocs.push(insertData);
+                    bulkPutDocs.push(writeDoc);
                     eventBulk.events.push({
                       eventId: getDexieEventKey(false, id, newRevision),
                       documentId: id,
@@ -153,7 +151,6 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
                     var isDeleted = !!writeRow.document._deleted;
 
                     var _writeDoc = Object.assign({}, writeRow.document, {
-                      $lastWriteAt: startTime,
                       _rev: _newRevision,
                       _deleted: isDeleted,
                       // TODO attachments are currently not working with lokijs
@@ -173,7 +170,7 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
                         id: id,
                         operation: 'INSERT',
                         previous: null,
-                        doc: stripDexieKey(_writeDoc)
+                        doc: _writeDoc
                       };
                     } else if (writeRow.previous && !writeRow.previous._deleted && !_writeDoc._deleted) {
                       /**
@@ -184,7 +181,7 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
                         id: id,
                         operation: 'UPDATE',
                         previous: writeRow.previous,
-                        doc: stripDexieKey(_writeDoc)
+                        doc: _writeDoc
                       };
                     } else if (writeRow.previous && !writeRow.previous._deleted && _writeDoc._deleted) {
                       /**
@@ -223,7 +220,7 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
                       // will be filled up before the event is pushed into the changestream
                       endTime: startTime
                     });
-                    ret.success[id] = stripDexieKey(_writeDoc);
+                    ret.success[id] = _writeDoc;
                   }
                 }
               });
@@ -278,14 +275,10 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
                 var id = docData[_this6.primaryPath];
 
                 if (!documentInDb) {
-                  // document not here, so we can directly insert
-                  var insertData = flatClone(docData);
-                  insertData.$lastWriteAt = startTime;
-
-                  if (insertData._deleted) {
-                    bulkPutDeletedDocs.push(insertData);
+                  if (docData._deleted) {
+                    bulkPutDeletedDocs.push(docData);
                   } else {
-                    bulkPutDocs.push(insertData);
+                    bulkPutDocs.push(docData);
                   }
 
                   eventBulk.events.push({
@@ -318,8 +311,6 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
                   }
 
                   if (mustUpdate) {
-                    var storeAtDb = flatClone(docData);
-                    storeAtDb.$lastWriteAt = startTime;
                     var change = null;
 
                     if (documentInDb._deleted && !docData._deleted) {
@@ -336,7 +327,7 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
                       change = {
                         id: id,
                         operation: 'UPDATE',
-                        previous: stripDexieKey(documentInDb),
+                        previous: documentInDb,
                         doc: docData
                       };
                     } else if (!documentInDb._deleted && docData._deleted) {
@@ -345,7 +336,7 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
                       change = {
                         id: id,
                         operation: 'DELETE',
-                        previous: stripDexieKey(documentInDb),
+                        previous: documentInDb,
                         doc: null
                       };
                     } else if (documentInDb._deleted && docData._deleted) {
@@ -399,7 +390,7 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
                 var documentInDb = docsInDb[idx];
 
                 if (documentInDb && (!documentInDb._deleted || deleted)) {
-                  ret[id] = stripDexieKey(documentInDb);
+                  ret[id] = documentInDb;
                 }
               });
             };

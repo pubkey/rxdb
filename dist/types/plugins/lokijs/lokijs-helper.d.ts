@@ -1,7 +1,7 @@
 import { RxStorageInstanceLoki } from './rx-storage-instance-loki';
 import { RxStorageKeyObjectInstanceLoki } from './rx-storage-key-object-instance-loki';
 import { Collection } from 'lokijs';
-import type { LokiDatabaseSettings, LokiDatabaseState, LokiLocalDatabaseState, MangoQuery, RxJsonSchema } from '../../types';
+import type { LokiDatabaseSettings, LokiDatabaseState, LokiLocalDatabaseState, MangoQuery, RxDocumentData, RxJsonSchema } from '../../types';
 import type { DeterministicSortComparator } from 'event-reduce-js';
 import { LeaderElector } from 'broadcast-channel';
 import type { RxStorageLoki } from './rx-storage-lokijs';
@@ -12,9 +12,8 @@ export declare const LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE = "rxdb-loki
  * Loki attaches a $loki property to all data
  * which must be removed before returning the data back to RxDB.
  */
-export declare function stripLokiKey<T>(docData: T & {
+export declare function stripLokiKey<T>(docData: RxDocumentData<T> & {
     $loki?: number;
-    $lastWriteAt?: number;
 }): T;
 export declare function getLokiEventKey(isLocal: boolean, primary: string, revision: string): string;
 /**
@@ -28,7 +27,7 @@ export declare function closeLokiCollections(databaseName: string, collections: 
  * This function is at lokijs-helper
  * because we need it in multiple places.
  */
-export declare function getLokiSortComparator<RxDocType>(schema: RxJsonSchema<RxDocType>, query: MangoQuery<RxDocType>): DeterministicSortComparator<RxDocType>;
+export declare function getLokiSortComparator<RxDocType>(_schema: RxJsonSchema<RxDocType>, query: MangoQuery<RxDocType>): DeterministicSortComparator<RxDocType>;
 export declare function getLokiLeaderElector(storage: RxStorageLoki, databaseName: string): LeaderElector;
 export declare function removeLokiLeaderElectorReference(storage: RxStorageLoki, databaseName: string): void;
 /**

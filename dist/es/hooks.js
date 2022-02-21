@@ -70,7 +70,7 @@ export var HOOKS = {
 
   /**
    * Runs after the document data is ready from
-   * the storage instance.
+   * the RxStorage instance.
    */
   postReadFromInstance: [],
   createRxDocument: [],

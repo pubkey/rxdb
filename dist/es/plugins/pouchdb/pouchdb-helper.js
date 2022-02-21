@@ -60,6 +60,7 @@ export var OPEN_POUCHDB_STORAGE_INSTANCES = new Set();
  */
 
 export var POUCHDB_LOCAL_PREFIX = '_local/';
+export var POUCHDB_LOCAL_PREFIX_LENGTH = POUCHDB_LOCAL_PREFIX.length;
 /**
  * Pouchdb stores indexes as design documents,
  * we have to filter them out and not return the
@@ -67,6 +68,13 @@ export var POUCHDB_LOCAL_PREFIX = '_local/';
  */
 
 export var POUCHDB_DESIGN_PREFIX = '_design/';
+/**
+ * PouchDB does not allow to add custom properties
+ * that start with lodash like RxDB's _meta field.
+ * So we have to map this field into a non-lodashed field.
+ */
+
+export var POUCHDB_META_FIELDNAME = 'rxdbMeta';
 export function pouchSwapIdToPrimary(primaryKey, docData) {
   if (primaryKey === '_id' || docData[primaryKey]) {
     return docData;
@@ -88,7 +96,9 @@ export function pouchDocumentDataToRxDocumentData(primaryKey, pouchDoc) {
   var useDoc = pouchSwapIdToPrimary(primaryKey, pouchDoc); // always flat clone becaues we mutate the _attachments property.
 
   useDoc = flatClone(useDoc);
-  delete useDoc._revisions;
+  delete useDoc._revisions; // ensure deleted flag is set.
+
+  useDoc._deleted = !!useDoc._deleted;
   useDoc._attachments = {};
 
   if (pouchDoc._attachments) {
@@ -112,6 +122,8 @@ export function pouchDocumentDataToRxDocumentData(primaryKey, pouchDoc) {
     });
   }
 
+  useDoc._meta = useDoc[POUCHDB_META_FIELDNAME];
+  delete useDoc[POUCHDB_META_FIELDNAME];
   return useDoc;
 }
 export function rxDocumentDataToPouchDocumentData(primaryKey, doc) {
@@ -142,6 +154,8 @@ export function rxDocumentDataToPouchDocumentData(primaryKey, doc) {
     });
   }
 
+  pouchDoc[POUCHDB_META_FIELDNAME] = pouchDoc._meta;
+  delete pouchDoc._meta;
   return pouchDoc;
 }
 /**
@@ -170,11 +184,6 @@ export function pouchStripLocalFlagFromPrimary(str) {
   return str.substring(POUCHDB_LOCAL_PREFIX.length);
 }
 export function getEventKey(isLocal, primary, revision) {
-  // TODO remove this check this should never happen
-  if (!primary) {
-    throw new Error('primary missing !!');
-  }
-
   var prefix = isLocal ? 'local' : 'non-local';
   var eventKey = prefix + '|' + primary + '|' + revision;
   return eventKey;
@@ -230,7 +239,6 @@ export function pouchChangeRowToChangeStreamEvent(primaryKey, pouchRow) {
 
   if (pouchRow.deleted) {
     var previousDoc = flatClone(pouchDocumentDataToRxDocumentData(primaryKey, pouchRow.doc));
-    delete previousDoc._deleted;
     var ev = {
       sequence: pouchRow.seq,
       id: pouchRow.id,
@@ -306,5 +314,36 @@ export var POUCH_HASH_KEY = 'md5';
 export function getPouchIndexDesignDocNameByIndex(index) {
   var indexName = 'idx-rxdb-index-' + index.join(',');
   return indexName;
+}
+/**
+ * PouchDB has not way to read deleted local documents
+ * out of the database.
+ * So instead of deleting them, we set a custom deleted flag.
+ */
+
+export var RXDB_POUCH_DELETED_FLAG = 'rxdb-pouch-deleted';
+export function localDocumentToPouch(docData) {
+  var ret = flatClone(docData); // add local prefix
+
+  ret._id = POUCHDB_LOCAL_PREFIX + ret._id; // add custom deleted flag if document is deleted 
+
+  if (docData._deleted) {
+    ret._deleted = false;
+    ret[RXDB_POUCH_DELETED_FLAG] = true;
+  }
+
+  return ret;
+}
+export function localDocumentFromPouch(docData) {
+  var ret = flatClone(docData); // strip local prefix
+
+  ret._id = ret._id.slice(POUCHDB_LOCAL_PREFIX_LENGTH);
+
+  if (docData[RXDB_POUCH_DELETED_FLAG]) {
+    ret._deleted = true;
+    delete ret[RXDB_POUCH_DELETED_FLAG];
+  }
+
+  return ret;
 }
 //# sourceMappingURL=pouchdb-helper.js.map

@@ -5,22 +5,34 @@
  * To determine this, we 'flag' the document
  * by setting a specially crafted revision string.
  */
-import { hash } from '../../util';
+import { parseRevision } from '../../util';
+export function getPullReplicationFlag(replicationIdentifierHash) {
+  return 'rep-' + replicationIdentifierHash;
+}
 /**
- * Returns a new revision key without the revision height.
- * The revision is crafted for the graphql replication
- * and contains the information that this document data was pulled
- * from the remote server and not saved by the client.
+ * Sets the pull replication flag to the _meta
+ * to contain the next revision height.
+ * Used to identify the document as 'pulled-from-remote'
+ * so we do not send it to remote again.
  */
 
-export function createRevisionForPulledDocument(replicationIdentifierHash, doc) {
-  var dataHash = hash(doc);
-  var ret = dataHash.substring(0, 8) + replicationIdentifierHash.substring(0, 30);
-  return ret;
+export function setLastWritePullReplication(replicationIdentifierHash, documentData,
+/**
+ * Height of the revision
+ * with which the pull flag will be saved.
+ */
+revisionHeight) {
+  documentData._meta[getPullReplicationFlag(replicationIdentifierHash)] = revisionHeight;
 }
-export function wasRevisionfromPullReplication(replicationIdentifierHash, revision) {
-  var useFromHash = replicationIdentifierHash.substring(0, 30);
-  var ret = revision.endsWith(useFromHash);
-  return ret;
+export function wasLastWriteFromPullReplication(replicationIdentifierHash, documentData) {
+  var lastRevision = parseRevision(documentData._rev);
+
+  var replicationFlagValue = documentData._meta[getPullReplicationFlag(replicationIdentifierHash)];
+
+  if (replicationFlagValue && lastRevision.height === replicationFlagValue) {
+    return true;
+  } else {
+    return false;
+  }
 }
 //# sourceMappingURL=revision-flag.js.map

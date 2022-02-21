@@ -43,12 +43,14 @@ var storePasswordHashIntoDatabase = function storePasswordHashIntoDatabase(rxDat
 
     var pwHash = (0, _util.hash)(rxDatabase.password);
     var pwHashDocumentId = 'pwHash';
-    return Promise.resolve((0, _rxStorageHelper.findLocalDocument)(rxDatabase.localDocumentsStore, pwHashDocumentId)).then(function (pwHashDoc) {
+    return Promise.resolve((0, _rxStorageHelper.findLocalDocument)(rxDatabase.localDocumentsStore, pwHashDocumentId, false)).then(function (pwHashDoc) {
       if (!pwHashDoc) {
         var docData = {
           _id: pwHashDocumentId,
           value: pwHash,
-          _attachments: {}
+          _attachments: {},
+          _meta: (0, _util.getDefaultRxDocumentMeta)(),
+          _deleted: false
         };
         return Promise.resolve(rxDatabase.localDocumentsStore.bulkWrite([{
           document: docData

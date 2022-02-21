@@ -17,8 +17,6 @@ var _rxError = require("../rx-error");
 
 var _rxStorageHelper = require("../rx-storage-helper");
 
-var _rxCollectionHelper = require("../rx-collection-helper");
-
 function ensureSchemaSupportsAttachments(doc) {
   var schemaJson = doc.collection.schema.jsonSchema;
 
@@ -131,8 +129,8 @@ var putAttachment = function putAttachment(_ref3) {
                 data: data
               };
               var writeRow = {
-                previous: (0, _rxCollectionHelper._handleToStorageInstance)(_this6.collection, (0, _util.flatClone)(_this6._data)),
-                document: (0, _rxCollectionHelper._handleToStorageInstance)(_this6.collection, (0, _util.flatClone)(docWriteData))
+                previous: (0, _util.flatClone)(_this6._data),
+                document: (0, _util.flatClone)(docWriteData)
               };
               return Promise.resolve((0, _rxStorageHelper.writeSingle)(_this6.collection.storageInstance, writeRow)).then(function (writeResult) {
                 var attachmentData = writeResult._attachments[id];
@@ -256,8 +254,8 @@ var RxAttachment = /*#__PURE__*/function () {
           docWriteData._attachments = (0, _util.flatClone)(docWriteData._attachments);
           delete docWriteData._attachments[_this2.id];
           return Promise.resolve((0, _rxStorageHelper.writeSingle)(_this2.doc.collection.storageInstance, {
-            previous: (0, _rxCollectionHelper._handleToStorageInstance)(_this2.doc.collection, (0, _util.flatClone)(_this2.doc._data)),
-            document: (0, _rxCollectionHelper._handleToStorageInstance)(_this2.doc.collection, docWriteData)
+            previous: (0, _util.flatClone)(_this2.doc._data),
+            document: docWriteData
           })).then(function (writeResult) {
             var newData = (0, _util.flatClone)(_this2.doc._data);
             newData._rev = writeResult._rev;

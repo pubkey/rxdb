@@ -5,13 +5,12 @@
 
 /**
  * TODO this should be completely rewritten because:
- * - The current implemetation does not use bulkDocs which is much faster
  * - This could have been done in much less code which would be easier to uderstand
  *
  */
 import { Subject } from 'rxjs';
 import deepEqual from 'fast-deep-equal';
-import { clone, toPromise, flatClone, getHeightOfRevision, createRevision, PROMISE_RESOLVE_VOID, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_NULL } from '../../util';
+import { clone, toPromise, flatClone, getHeightOfRevision, createRevision, PROMISE_RESOLVE_VOID, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_NULL, getDefaultRxDocumentMeta } from '../../util';
 import { createRxSchema } from '../../rx-schema';
 import { newRxError } from '../../rx-error';
 import { runAsyncPluginHooks, runPluginHooks } from '../../hooks';
@@ -19,8 +18,7 @@ import { getPreviousVersions } from '../../rx-schema';
 import { createCrypter } from '../../crypter';
 import { getMigrationStateByDatabase } from './migration-state';
 import { map } from 'rxjs/operators';
-import { countAllUndeleted, getBatch, getSingleDocument } from '../../rx-storage-helper';
-import { _handleFromStorageInstance, _handleToStorageInstance } from '../../rx-collection-helper';
+import { getAllDocuments, getSingleDocument, getWrappedStorageInstance } from '../../rx-storage-helper';
 
 /**
  * transform documents data and save them to the new collection
@@ -49,8 +47,8 @@ export var _migrateDocuments = function _migrateDocuments(oldCollection, documen
               var writeDeleted = flatClone(docData);
               writeDeleted._deleted = true;
               return {
-                previous: _handleToStorageInstance(oldCollection, docData),
-                document: _handleToStorageInstance(oldCollection, writeDeleted)
+                previous: docData,
+                document: writeDeleted
               };
             });
 
@@ -108,9 +106,7 @@ export var _migrateDocuments = function _migrateDocuments(oldCollection, documen
              * notice that this data also contains the attachments data
              */
             var attachmentsBefore = migratedDocData._attachments;
-
-            var saveData = _handleToStorageInstance(oldCollection.newestCollection, migratedDocData);
-
+            var saveData = migratedDocData;
             saveData._attachments = attachmentsBefore;
             bulkWriteToStorageInput.push(saveData);
             action.res = saveData;
@@ -209,6 +205,7 @@ export var createOldCollection = function createOldCollection(version, schemaObj
         storageInstance: storageInstance,
         _crypter: createCrypter(database.password, schema)
       };
+      ret.storageInstance = getWrappedStorageInstance(ret, storageInstance);
       return ret;
     });
   } catch (e) {
@@ -275,7 +272,9 @@ export var DataMigrator = /*#__PURE__*/function () {
         _this.nonMigratedOldCollections = ret;
         _this.allOldCollections = _this.nonMigratedOldCollections.slice(0);
         var countAll = Promise.all(_this.nonMigratedOldCollections.map(function (oldCol) {
-          return countAllUndeleted(_this.database.storage, oldCol.storageInstance);
+          return getAllDocuments(oldCol.schema.primaryPath, _this.database.storage, oldCol.storageInstance).then(function (allDocs) {
+            return allDocs.length;
+          });
         }));
         return countAll;
       }).then(function (countAll) {
@@ -401,10 +400,18 @@ export function runStrategyIfNotNull(oldCollection, version, docOrNull) {
   }
 }
 export function getBatchOfOldCollection(oldCollection, batchSize) {
-  return getBatch(oldCollection.database.storage, oldCollection.storageInstance, batchSize).then(function (docs) {
-    return docs.map(function (doc) {
+  var _ref;
+
+  var storage = oldCollection.database.storage;
+  var storageInstance = oldCollection.storageInstance;
+  var preparedQuery = storage.statics.prepareQuery(storageInstance.schema, {
+    selector: {},
+    sort: [(_ref = {}, _ref[oldCollection.schema.primaryPath] = 'asc', _ref)],
+    limit: batchSize
+  });
+  return storageInstance.query(preparedQuery).then(function (result) {
+    return result.documents.map(function (doc) {
       doc = flatClone(doc);
-      doc = _handleFromStorageInstance(oldCollection, doc);
       return doc;
     });
   });
@@ -444,6 +451,17 @@ export function migrateDocumentData(oldCollection, docData) {
   return currentPromise.then(function (doc) {
     if (doc === null) {
       return PROMISE_RESOLVE_NULL;
+    }
+    /**
+     * Add _meta field if missing.
+     * We need this to migration documents from pre-12.0.0 state
+     * to version 12.0.0. Therefore we need to add the _meta field if it is missing.
+     * TODO remove this in the major version 13.0.0 
+     */
+
+
+    if (!doc._meta) {
+      doc._meta = getDefaultRxDocumentMeta();
     } // check final schema
 
 

@@ -1,4 +1,4 @@
-import type { DeepMutable, DeepReadonly, MaybeReadonly, PrimaryKey, RxJsonSchema } from './types';
+import type { DeepMutable, DeepReadonly, JsonSchema, MaybeReadonly, PrimaryKey, RxJsonSchema } from './types';
 export declare class RxSchema<T = any> {
     readonly jsonSchema: RxJsonSchema<T>;
     indexes: MaybeReadonly<string[]>[];
@@ -7,7 +7,6 @@ export declare class RxSchema<T = any> {
     constructor(jsonSchema: RxJsonSchema<T>);
     get version(): number;
     get normalized(): RxJsonSchema<T>;
-    get topLevelFields(): (keyof T)[];
     get defaultValues(): {
         [P in keyof T]: T[P];
     };
@@ -79,6 +78,7 @@ export declare function getFinalFields<T = any>(jsonSchema: RxJsonSchema<T>): st
  * @return RxJsonSchema - ordered and filled
  */
 export declare function normalizeRxJsonSchema<T>(jsonSchema: RxJsonSchema<T>): RxJsonSchema<T>;
+export declare const RX_META_SCHEMA: JsonSchema;
 /**
  * fills the schema-json with default-settings
  * @return cloned schemaObj

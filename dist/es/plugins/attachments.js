@@ -2,7 +2,6 @@ import { map } from 'rxjs/operators';
 import { blobBufferUtil, flatClone } from './../util';
 import { newRxError } from '../rx-error';
 import { writeSingle } from '../rx-storage-helper';
-import { _handleToStorageInstance } from '../rx-collection-helper';
 
 function ensureSchemaSupportsAttachments(doc) {
   var schemaJson = doc.collection.schema.jsonSchema;
@@ -106,8 +105,8 @@ export var putAttachment = function putAttachment(_ref3) {
                 data: data
               };
               var writeRow = {
-                previous: _handleToStorageInstance(_this6.collection, flatClone(_this6._data)),
-                document: _handleToStorageInstance(_this6.collection, flatClone(docWriteData))
+                previous: flatClone(_this6._data),
+                document: flatClone(docWriteData)
               };
               return Promise.resolve(writeSingle(_this6.collection.storageInstance, writeRow)).then(function (writeResult) {
                 var attachmentData = writeResult._attachments[id];
@@ -228,8 +227,8 @@ export var RxAttachment = /*#__PURE__*/function () {
           docWriteData._attachments = flatClone(docWriteData._attachments);
           delete docWriteData._attachments[_this2.id];
           return Promise.resolve(writeSingle(_this2.doc.collection.storageInstance, {
-            previous: _handleToStorageInstance(_this2.doc.collection, flatClone(_this2.doc._data)),
-            document: _handleToStorageInstance(_this2.doc.collection, docWriteData)
+            previous: flatClone(_this2.doc._data),
+            document: docWriteData
           })).then(function (writeResult) {
             var newData = flatClone(_this2.doc._data);
             newData._rev = writeResult._rev;

@@ -3,7 +3,7 @@
  * you can use it to sync collections with remote or local couchdb-instances
  */
 import { BehaviorSubject, Subject, Subscription, Observable } from 'rxjs';
-import type { RxCollection, PouchSyncHandler, RxPlugin, SyncOptions } from '../types';
+import type { RxCollection, PouchSyncHandler, RxPlugin, SyncOptions, PouchDBInstance } from '../types';
 export declare class RxCouchDBReplicationStateBase {
     readonly collection: RxCollection;
     readonly syncOptions: SyncOptions;
@@ -37,6 +37,13 @@ export declare type RxCouchDBReplicationState = RxCouchDBReplicationStateBase & 
 };
 export declare function setPouchEventEmitter(rxRepState: RxCouchDBReplicationState, evEmitter: PouchSyncHandler): void;
 export declare function createRxCouchDBReplicationState(collection: RxCollection, syncOptions: SyncOptions): RxCouchDBReplicationState;
+/**
+ * get the correct function-name for pouchdb-replication
+ */
+export declare function pouchReplicationFunction(pouch: PouchDBInstance, { pull, push }: {
+    pull?: boolean | undefined;
+    push?: boolean | undefined;
+}): any;
 export declare function syncCouchDB(this: RxCollection, { remote, waitForLeadership, direction, options, query }: SyncOptions): any;
 export declare const rxdb = true;
 export declare const prototypes: {

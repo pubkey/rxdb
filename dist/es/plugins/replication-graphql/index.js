@@ -5,7 +5,6 @@
 import GraphQLClient from 'graphql-client';
 import objectPath from 'object-path';
 import { flatClone } from '../../util';
-import { addRxPlugin } from '../../core';
 import { hash } from '../../util';
 import { DEFAULT_MODIFIER, GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX } from './helper';
 import { RxDBLeaderElectionPlugin } from '../leader-election';
@@ -13,7 +12,7 @@ import { overwritable } from '../../overwritable';
 import { replicateRxCollection } from '../replication';
 import { RxReplicationPullError, RxReplicationPushError } from '../replication/rx-replication-error';
 import { newRxError } from '../../rx-error';
-addRxPlugin(RxDBLeaderElectionPlugin);
+import { addRxPlugin } from '../../index';
 export var RxGraphQLReplicationState = /*#__PURE__*/function () {
   function RxGraphQLReplicationState(
   /**
@@ -249,6 +248,9 @@ export * from './graphql-schema-from-rx-schema';
 export * from './query-builder-from-rx-schema';
 export var RxDBReplicationGraphQLPlugin = {
   name: 'replication-graphql',
+  init: function init() {
+    addRxPlugin(RxDBLeaderElectionPlugin);
+  },
   rxdb: true,
   prototypes: {
     RxCollection: function RxCollection(proto) {

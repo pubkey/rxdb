@@ -1,7 +1,7 @@
 import _createClass from "@babel/runtime/helpers/createClass";
 import { IdleQueue } from 'custom-idle-queue';
 import { BroadcastChannel } from 'broadcast-channel';
-import { pluginMissing, flatClone, PROMISE_RESOLVE_FALSE, randomCouchString, ensureNotFalsy, PROMISE_RESOLVE_VOID } from './util';
+import { pluginMissing, flatClone, PROMISE_RESOLVE_FALSE, randomCouchString, ensureNotFalsy, PROMISE_RESOLVE_VOID, getDefaultRxDocumentMeta } from './util';
 import { newRxError } from './rx-error';
 import { createRxSchema, getPrimaryFieldOfPrimaryKey } from './rx-schema';
 import { overwritable } from './overwritable';
@@ -9,7 +9,7 @@ import { runPluginHooks, runAsyncPluginHooks } from './hooks';
 import { Subject } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 import { createRxCollection } from './rx-collection';
-import { findLocalDocument, getAllDocuments, getSingleDocument, INTERNAL_STORAGE_NAME, storageChangeEventToRxChangeEvent, writeSingle } from './rx-storage-helper';
+import { findLocalDocument, getAllDocuments, getSingleDocument, getWrappedKeyObjectInstance, INTERNAL_STORAGE_NAME, storageChangeEventToRxChangeEvent, writeSingle } from './rx-storage-helper';
 import { getPseudoSchemaForVersion } from './rx-schema-helper';
 import { createRxCollectionStorageInstances, getCollectionLocalInstanceName } from './rx-collection-helper';
 import { ObliviousSet } from 'oblivious-set';
@@ -23,7 +23,7 @@ import { ObliviousSet } from 'oblivious-set';
  */
 export var removeRxDatabase = function removeRxDatabase(databaseName, storage) {
   return Promise.resolve(createRxDatabaseStorageInstances(storage, databaseName, {}, false)).then(function (storageInstance) {
-    return Promise.resolve(getAllDocuments(storage, storageInstance.internalStore)).then(function (docs) {
+    return Promise.resolve(getAllDocuments('collectionName', storage, storageInstance.internalStore)).then(function (docs) {
       return Promise.resolve(Promise.all(docs.map(function (colDoc) {
         try {
           var id = colDoc.collectionName;
@@ -63,6 +63,7 @@ export var removeRxDatabase = function removeRxDatabase(databaseName, storage) {
  */
 var prepare = function prepare(rxDatabase) {
   try {
+    rxDatabase.localDocumentsStore = getWrappedKeyObjectInstance(rxDatabase, rxDatabase.internalLocalDocumentsStore);
     return Promise.resolve(_ensureStorageTokenExists(rxDatabase)).then(function (_ensureStorageTokenEx) {
       rxDatabase.storageToken = _ensureStorageTokenEx;
       var localDocsSub = rxDatabase.localDocumentsStore.changeStream().subscribe(function (eventBulk) {
@@ -126,7 +127,7 @@ var createRxDatabaseStorageInstances = function createRxDatabaseStorageInstances
 export var _removeAllOfCollection = function _removeAllOfCollection(rxDatabase, collectionName) {
   try {
     return Promise.resolve(rxDatabase.lockedRun(function () {
-      return getAllDocuments(rxDatabase.storage, rxDatabase.internalStore);
+      return getAllDocuments('collectionName', rxDatabase.storage, rxDatabase.internalStore);
     })).then(function (docs) {
       var relevantDocs = docs.filter(function (doc) {
         var name = doc.collectionName.split('-')[0];
@@ -160,13 +161,15 @@ export var _removeAllOfCollection = function _removeAllOfCollection(rxDatabase, 
 export var _ensureStorageTokenExists = function _ensureStorageTokenExists(rxDatabase) {
   try {
     var storageTokenDocumentId = 'storageToken';
-    return Promise.resolve(findLocalDocument(rxDatabase.localDocumentsStore, storageTokenDocumentId)).then(function (storageTokenDoc) {
+    return Promise.resolve(findLocalDocument(rxDatabase.localDocumentsStore, storageTokenDocumentId, false)).then(function (storageTokenDoc) {
       if (!storageTokenDoc) {
         var storageToken = randomCouchString(10);
         return Promise.resolve(rxDatabase.localDocumentsStore.bulkWrite([{
           document: {
             _id: storageTokenDocumentId,
             value: storageToken,
+            _deleted: false,
+            _meta: getDefaultRxDocumentMeta(),
             _attachments: {}
           }
         }])).then(function () {
@@ -188,6 +191,9 @@ var USED_DATABASE_NAMES = new Set();
 var DB_COUNT = 0; // stores information about the collections
 
 export var RxDatabaseBase = /*#__PURE__*/function () {
+  /**
+   * Stores the local documents which are attached to this database.
+   */
   function RxDatabaseBase(name, storage, instanceCreationOptions, password, multiInstance) {
     var eventReduce = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : false;
     var options = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : {};
@@ -197,11 +203,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
      * Stores information documents about the collections of the database
      */
     internalStore = arguments.length > 8 ? arguments[8] : undefined;
-    var
-    /**
-     * Stores the local documents which are attached to this database.
-     */
-    localDocumentsStore = arguments.length > 9 ? arguments[9] : undefined;
+    var internalLocalDocumentsStore = arguments.length > 9 ? arguments[9] : undefined;
     var
     /**
      * Set if multiInstance: true
@@ -211,6 +213,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
      * to be performance expensive.
      */
     broadcastChannel = arguments.length > 10 ? arguments[10] : undefined;
+    this.localDocumentsStore = {};
     this.token = randomCouchString(10);
     this._subs = [];
     this.destroyed = false;
@@ -228,7 +231,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
     this.options = options;
     this.idleQueue = idleQueue;
     this.internalStore = internalStore;
-    this.localDocumentsStore = localDocumentsStore;
+    this.internalLocalDocumentsStore = internalLocalDocumentsStore;
     this.broadcastChannel = broadcastChannel;
     this.collections = {};
     DB_COUNT++;
@@ -245,7 +248,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
     try {
       var _this2 = this;
 
-      return Promise.resolve(getAllDocuments(_this2.storage, _this2.internalStore)).then(function (allDocs) {
+      return Promise.resolve(getAllDocuments('collectionName', _this2.storage, _this2.internalStore)).then(function (allDocs) {
         var writeData = allDocs.map(function (doc) {
           var deletedDoc = flatClone(doc);
           deletedDoc._deleted = true;
@@ -382,7 +385,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
           hookData.database = _this6;
           hookData.name = name;
           runPluginHooks('preCreateRxCollection', hookData);
-          return createRxCollection(useArgs, !!internalDoc);
+          return createRxCollection(useArgs);
         }))).then(function (collections) {
           var bulkPutDocs = [];
           var ret = {};
@@ -399,6 +402,8 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
                   schemaHash: schemaHashByName[name],
                   schema: collection.schema.normalized,
                   version: collection.schema.version,
+                  _deleted: false,
+                  _meta: getDefaultRxDocumentMeta(),
                   _attachments: {}
                 }
               });
@@ -464,9 +469,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
     }) // remove normal and local documents
     .then(function (storageInstances) {
       return Promise.all(storageInstances.map(function (instance) {
-        return _this7.lockedRun(function () {
-          return Promise.all([instance.storageInstance.remove(), instance.localDocumentsStore.remove()]);
-        });
+        return Promise.all([instance.storageInstance.remove(), instance.localDocumentsStore.remove()]);
       }));
     }).then(function () {});
   }
@@ -549,11 +552,12 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
 
     if (this.destroyed) {
       return PROMISE_RESOLVE_FALSE;
-    }
+    } // settings destroyed = true must be the first thing to do.
 
+
+    this.destroyed = true;
     runPluginHooks('preDestroyRxDatabase', this);
     DB_COUNT--;
-    this.destroyed = true;
 
     this._subs.map(function (sub) {
       return sub.unsubscribe();
@@ -636,7 +640,7 @@ export function writeToSocket(rxDatabase, changeEventBulk) {
     return PROMISE_RESOLVE_FALSE;
   }
 
-  if (rxDatabase.multiInstance && rxDatabase.broadcastChannel && !changeEventBulk.internal && rxDatabase.token === changeEventBulk.databaseToken && rxDatabase.storageToken === changeEventBulk.storageToken) {
+  if (!rxDatabase.storage.statics.doesBroadcastChangestream() && rxDatabase.multiInstance && rxDatabase.broadcastChannel && !changeEventBulk.internal && rxDatabase.token === changeEventBulk.databaseToken && rxDatabase.storageToken === changeEventBulk.storageToken) {
     return rxDatabase.broadcastChannel.postMessage(changeEventBulk).then(function () {
       return true;
     });

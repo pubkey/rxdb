@@ -22,7 +22,7 @@ export declare type InWorkerStorage = {
     remove(instanceId: number): Promise<void>;
     createKeyObjectStorageInstance(params: RxKeyObjectStorageInstanceCreationParams<any>): Promise<number>;
     bulkWriteLocal<DocumentData>(instanceId: number, documentWrites: BulkWriteLocalRow<DocumentData>[]): Promise<RxLocalStorageBulkWriteResponse<DocumentData>>;
-    findLocalDocumentsById<DocumentData>(instanceId: number, ids: string[]): Promise<{
+    findLocalDocumentsById<DocumentData>(instanceId: number, ids: string[], withDeleted: boolean): Promise<{
         [documentId: string]: RxLocalDocumentData<DocumentData>;
     }>;
 };

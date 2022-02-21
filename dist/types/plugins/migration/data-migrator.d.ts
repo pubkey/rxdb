@@ -4,7 +4,6 @@
  */
 /**
  * TODO this should be completely rewritten because:
- * - The current implemetation does not use bulkDocs which is much faster
  * - This could have been done in much less code which would be easier to uderstand
  *
  */

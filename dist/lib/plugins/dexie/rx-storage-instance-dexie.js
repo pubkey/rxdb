@@ -119,14 +119,12 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
                     // TODO attachments are currently not working with lokijs
                     _attachments: {}
                   });
-                  var insertData = (0, _util.flatClone)(writeDoc);
-                  insertData.$lastWriteAt = startTime;
                   changesIds.push(id);
 
                   if (insertedIsDeleted) {
-                    bulkPutDeletedDocs.push(insertData);
+                    bulkPutDeletedDocs.push(writeDoc);
                   } else {
-                    bulkPutDocs.push(insertData);
+                    bulkPutDocs.push(writeDoc);
                     eventBulk.events.push({
                       eventId: (0, _dexieHelper.getDexieEventKey)(false, id, newRevision),
                       documentId: id,
@@ -169,7 +167,6 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
                     var isDeleted = !!writeRow.document._deleted;
 
                     var _writeDoc = Object.assign({}, writeRow.document, {
-                      $lastWriteAt: startTime,
                       _rev: _newRevision,
                       _deleted: isDeleted,
                       // TODO attachments are currently not working with lokijs
@@ -189,7 +186,7 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
                         id: id,
                         operation: 'INSERT',
                         previous: null,
-                        doc: (0, _dexieHelper.stripDexieKey)(_writeDoc)
+                        doc: _writeDoc
                       };
                     } else if (writeRow.previous && !writeRow.previous._deleted && !_writeDoc._deleted) {
                       /**
@@ -200,7 +197,7 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
                         id: id,
                         operation: 'UPDATE',
                         previous: writeRow.previous,
-                        doc: (0, _dexieHelper.stripDexieKey)(_writeDoc)
+                        doc: _writeDoc
                       };
                     } else if (writeRow.previous && !writeRow.previous._deleted && _writeDoc._deleted) {
                       /**
@@ -239,7 +236,7 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
                       // will be filled up before the event is pushed into the changestream
                       endTime: startTime
                     });
-                    ret.success[id] = (0, _dexieHelper.stripDexieKey)(_writeDoc);
+                    ret.success[id] = _writeDoc;
                   }
                 }
               });
@@ -294,14 +291,10 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
                 var id = docData[_this6.primaryPath];
 
                 if (!documentInDb) {
-                  // document not here, so we can directly insert
-                  var insertData = (0, _util.flatClone)(docData);
-                  insertData.$lastWriteAt = startTime;
-
-                  if (insertData._deleted) {
-                    bulkPutDeletedDocs.push(insertData);
+                  if (docData._deleted) {
+                    bulkPutDeletedDocs.push(docData);
                   } else {
-                    bulkPutDocs.push(insertData);
+                    bulkPutDocs.push(docData);
                   }
 
                   eventBulk.events.push({
@@ -334,8 +327,6 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
                   }
 
                   if (mustUpdate) {
-                    var storeAtDb = (0, _util.flatClone)(docData);
-                    storeAtDb.$lastWriteAt = startTime;
                     var change = null;
 
                     if (documentInDb._deleted && !docData._deleted) {
@@ -352,7 +343,7 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
                       change = {
                         id: id,
                         operation: 'UPDATE',
-                        previous: (0, _dexieHelper.stripDexieKey)(documentInDb),
+                        previous: documentInDb,
                         doc: docData
                       };
                     } else if (!documentInDb._deleted && docData._deleted) {
@@ -361,7 +352,7 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
                       change = {
                         id: id,
                         operation: 'DELETE',
-                        previous: (0, _dexieHelper.stripDexieKey)(documentInDb),
+                        previous: documentInDb,
                         doc: null
                       };
                     } else if (documentInDb._deleted && docData._deleted) {
@@ -415,7 +406,7 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
                 var documentInDb = docsInDb[idx];
 
                 if (documentInDb && (!documentInDb._deleted || deleted)) {
-                  ret[id] = (0, _dexieHelper.stripDexieKey)(documentInDb);
+                  ret[id] = documentInDb;
                 }
               });
             };

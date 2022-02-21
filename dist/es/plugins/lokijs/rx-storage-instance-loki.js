@@ -13,7 +13,9 @@ export var createLokiStorageInstance = function createLokiStorageInstance(storag
 
       if (params.multiInstance) {
         ensureNotFalsy(_internals.leaderElector).awaitLeadership().then(function () {
-          return mustUseLocalState(instance);
+          if (!instance.closed) {
+            mustUseLocalState(instance);
+          }
         });
       }
 
@@ -66,10 +68,6 @@ export var createLokiLocalState = function createLokiLocalState(params, database
 
       var primaryKey = getPrimaryFieldOfPrimaryKey(params.schema.primaryKey);
       indices.push(primaryKey);
-      /**
-       * TODO disable stuff we do not need from CollectionOptions
-       */
-
       var collectionOptions = Object.assign({}, params.options.collection, {
         indices: indices,
         unique: [primaryKey]
@@ -205,9 +203,7 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
               // TODO attachments are currently not working with lokijs
               _attachments: {}
             });
-            var insertData = flatClone(writeDoc);
-            insertData.$lastWriteAt = startTime;
-            localState.collection.insert(insertData);
+            localState.collection.insert(flatClone(writeDoc));
 
             if (!insertedIsDeleted) {
               _this5.addChangeDocumentMeta(id);
@@ -254,7 +250,6 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
 
               var _writeDoc = Object.assign({}, writeRow.document, {
                 $loki: documentInDb.$loki,
-                $lastWriteAt: startTime,
                 _rev: _newRevision,
                 _deleted: isDeleted,
                 // TODO attachments are currently not working with lokijs
@@ -354,9 +349,7 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
 
           if (!documentInDb) {
             // document not here, so we can directly insert
-            var insertData = flatClone(docData);
-            insertData.$lastWriteAt = startTime;
-            localState.collection.insert(insertData);
+            localState.collection.insert(flatClone(docData));
             eventBulk.events.push({
               documentId: id,
               eventId: getLokiEventKey(false, id, docData._rev),
@@ -389,7 +382,6 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
             if (mustUpdate) {
               var storeAtLoki = flatClone(docData);
               storeAtLoki.$loki = documentInDb.$loki;
-              storeAtLoki.$lastWriteAt = startTime;
               localState.collection.update(storeAtLoki);
               var change = null;
 

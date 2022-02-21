@@ -40,4 +40,19 @@ export function checkOrmMethods(statics) {
     }
   });
 }
+export function checkOrmDocumentMethods(schema, methods) {
+  var topLevelFields = Object.keys(schema.properties);
+
+  if (!methods) {
+    return;
+  }
+
+  Object.keys(methods).filter(function (funName) {
+    return topLevelFields.includes(funName);
+  }).forEach(function (funName) {
+    throw newRxError('COL18', {
+      funName: funName
+    });
+  });
+}
 //# sourceMappingURL=check-orm.js.map

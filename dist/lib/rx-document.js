@@ -25,11 +25,11 @@ var _hooks = require("./hooks");
 
 var _rxChangeEvent = require("./rx-change-event");
 
-var _rxCollectionHelper = require("./rx-collection-helper");
-
 var _overwritable = require("./overwritable");
 
 var _rxSchemaHelper = require("./rx-schema-helper");
+
+var _rxStorageHelper = require("./rx-storage-helper");
 
 function _catch(body, recover) {
   try {
@@ -453,6 +453,7 @@ var basePrototype = {
       delete data._rev;
       delete data._attachments;
       delete data._deleted;
+      delete data._meta;
       return _overwritable.overwritable.deepFreezeWhenDevMode(data);
     } else {
       return _overwritable.overwritable.deepFreezeWhenDevMode(this._data);
@@ -617,10 +618,13 @@ var basePrototype = {
       return Promise.resolve(_this4.collection._runHooks('pre', 'save', newData, _this4)).then(function () {
         _this4.collection.schema.validate(newData);
 
-        return Promise.resolve((0, _rxCollectionHelper.writeToStorageInstance)(_this4.collection, {
+        return Promise.resolve(_this4.collection.storageInstance.bulkWrite([{
           previous: oldData,
           document: newData
-        })).then(function () {
+        }])).then(function (writeResult) {
+          var isError = writeResult.error[_this4.primary];
+          (0, _rxStorageHelper.throwIfIsStorageWriteError)(_this4.collection, _this4.primary, newData, isError);
+          (0, _util.ensureNotFalsy)(writeResult.success[_this4.primary]);
           return _this4.collection._runHooks('post', 'save', newData, _this4);
         });
       });
@@ -665,6 +669,8 @@ var basePrototype = {
   remove: function remove() {
     var _this6 = this;
 
+    var collection = this.collection;
+
     if (this.deleted) {
       return Promise.reject((0, _rxError.newRxError)('DOC13', {
         document: this,
@@ -673,12 +679,20 @@ var basePrototype = {
     }
 
     var deletedData = (0, _util.flatClone)(this._data);
-    return this.collection._runHooks('pre', 'remove', deletedData, this).then(function () {
-      deletedData._deleted = true;
-      return (0, _rxCollectionHelper.writeToStorageInstance)(_this6.collection, {
-        previous: _this6._data,
-        document: deletedData
-      });
+    return collection._runHooks('pre', 'remove', deletedData, this).then(function () {
+      try {
+        deletedData._deleted = true;
+        return Promise.resolve(collection.storageInstance.bulkWrite([{
+          previous: _this6._data,
+          document: deletedData
+        }])).then(function (writeResult) {
+          var isError = writeResult.error[_this6.primary];
+          (0, _rxStorageHelper.throwIfIsStorageWriteError)(collection, _this6.primary, deletedData, isError);
+          return (0, _util.ensureNotFalsy)(writeResult.success[_this6.primary]);
+        });
+      } catch (e) {
+        return Promise.reject(e);
+      }
     }).then(function () {
       return _this6.collection._runHooks('post', 'remove', deletedData, _this6);
     }).then(function () {
@@ -771,7 +785,12 @@ function defineGetterSetter(schema, valueObj) {
 }
 
 function createWithConstructor(constructor, collection, jsonData) {
-  if (jsonData[collection.schema.primaryPath] && jsonData[collection.schema.primaryPath].startsWith('_design')) return null;
+  var primary = jsonData[collection.schema.primaryPath];
+
+  if (primary && primary.startsWith('_design')) {
+    return null;
+  }
+
   var doc = new constructor(collection, jsonData);
   (0, _hooks.runPluginHooks)('createRxDocument', doc);
   return doc;

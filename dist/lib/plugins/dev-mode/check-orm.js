@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.checkOrmDocumentMethods = checkOrmDocumentMethods;
 exports.checkOrmMethods = checkOrmMethods;
 
 var _rxError = require("../../rx-error");
@@ -46,6 +47,22 @@ function checkOrmMethods(statics) {
         name: k
       });
     }
+  });
+}
+
+function checkOrmDocumentMethods(schema, methods) {
+  var topLevelFields = Object.keys(schema.properties);
+
+  if (!methods) {
+    return;
+  }
+
+  Object.keys(methods).filter(function (funName) {
+    return topLevelFields.includes(funName);
+  }).forEach(function (funName) {
+    throw (0, _rxError.newRxError)('COL18', {
+      funName: funName
+    });
   });
 }
 //# sourceMappingURL=check-orm.js.map

@@ -1,7 +1,7 @@
 import { findLocalDocument, writeSingleLocal } from '../../rx-storage-helper';
-import { flatClone } from '../../util';
+import { flatClone, getDefaultRxDocumentMeta } from '../../util';
 import { newRxError } from '../../rx-error';
-import { wasRevisionfromPullReplication } from './revision-flag';
+import { wasLastWriteFromPullReplication } from './revision-flag';
 import { runPluginHooks } from '../../hooks'; //
 // things for the push-checkpoint
 //
@@ -199,12 +199,14 @@ export var setLastPullDocument = function setLastPullDocument(collection, replic
   try {
     var _id = pullLastDocumentId(replicationIdentifier);
 
-    return Promise.resolve(findLocalDocument(collection.localDocumentsStore, _id)).then(function (localDoc) {
+    return Promise.resolve(findLocalDocument(collection.localDocumentsStore, _id, false)).then(function (localDoc) {
       if (!localDoc) {
         return writeSingleLocal(collection.localDocumentsStore, {
           document: {
             _id: _id,
             doc: doc,
+            _meta: getDefaultRxDocumentMeta(),
+            _deleted: false,
             _attachments: {}
           }
         });
@@ -226,7 +228,7 @@ export var setLastPullDocument = function setLastPullDocument(collection, replic
 //
 export var getLastPullDocument = function getLastPullDocument(collection, replicationIdentifier) {
   try {
-    return Promise.resolve(findLocalDocument(collection.localDocumentsStore, pullLastDocumentId(replicationIdentifier))).then(function (localDoc) {
+    return Promise.resolve(findLocalDocument(collection.localDocumentsStore, pullLastDocumentId(replicationIdentifier), false)).then(function (localDoc) {
       if (!localDoc) {
         return null;
       } else {
@@ -252,6 +254,7 @@ isStopped) {
 
       function _temp2() {
         return {
+          changedDocIds: changedDocIds,
           changedDocs: changedDocs,
           lastSequence: lastSequence,
           hasChangesSinceLastSequence: lastPushSequence !== lastSequence
@@ -261,6 +264,7 @@ isStopped) {
       var retry = true;
       var lastSequence = lastPushSequence;
       var changedDocs = new Map();
+      var changedDocIds = new Set();
       /**
        * it can happen that all docs in the batch
        * do not have to be replicated.
@@ -283,14 +287,16 @@ isStopped) {
             return;
           }
 
+          var docIds = changesResults.changedDocuments.map(function (row) {
+            return row.id;
+          });
+
           if (isStopped()) {
             _interrupt = true;
             return;
           }
 
-          return Promise.resolve(collection.storageInstance.findDocumentsById(changesResults.changedDocuments.map(function (row) {
-            return row.id;
-          }), true)).then(function (docs) {
+          return Promise.resolve(collection.storageInstance.findDocumentsById(docIds, true)).then(function (docs) {
             changesResults.changedDocuments.forEach(function (row) {
               var id = row.id;
 
@@ -303,7 +309,8 @@ isStopped) {
               if (!changedDoc) {
                 throw newRxError('SNH', {
                   args: {
-                    docs: docs
+                    docs: docs,
+                    docIds: docIds
                   }
                 });
               }
@@ -313,7 +320,7 @@ isStopped) {
                */
 
 
-              if (wasRevisionfromPullReplication(replicationIdentifierHash, changedDoc._rev)) {
+              if (wasLastWriteFromPullReplication(replicationIdentifierHash, changedDoc)) {
                 return false;
               }
 
@@ -323,6 +330,7 @@ isStopped) {
               };
               runPluginHooks('postReadFromInstance', hookParams);
               changedDoc = hookParams.doc;
+              changedDocIds.add(id);
               changedDocs.set(id, {
                 id: id,
                 doc: changedDoc,
@@ -351,12 +359,14 @@ export var setLastPushSequence = function setLastPushSequence(collection, replic
   try {
     var _id = pushSequenceId(replicationIdentifier);
 
-    return Promise.resolve(findLocalDocument(collection.localDocumentsStore, _id)).then(function (doc) {
+    return Promise.resolve(findLocalDocument(collection.localDocumentsStore, _id, false)).then(function (doc) {
       if (!doc) {
         return Promise.resolve(writeSingleLocal(collection.localDocumentsStore, {
           document: {
             _id: _id,
             value: sequence,
+            _deleted: false,
+            _meta: getDefaultRxDocumentMeta(),
             _attachments: {}
           }
         })).then(function (res) {
@@ -370,6 +380,8 @@ export var setLastPushSequence = function setLastPushSequence(collection, replic
           document: {
             _id: _id,
             value: sequence,
+            _meta: getDefaultRxDocumentMeta(),
+            _deleted: false,
             _attachments: {}
           }
         })).then(function (res) {
@@ -387,7 +399,7 @@ export var setLastPushSequence = function setLastPushSequence(collection, replic
  */
 export var getLastPushSequence = function getLastPushSequence(collection, replicationIdentifier) {
   try {
-    return Promise.resolve(findLocalDocument(collection.localDocumentsStore, pushSequenceId(replicationIdentifier))).then(function (doc) {
+    return Promise.resolve(findLocalDocument(collection.localDocumentsStore, pushSequenceId(replicationIdentifier), false)).then(function (doc) {
       if (!doc) {
         return 0;
       } else {

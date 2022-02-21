@@ -1,24 +1,24 @@
 /**
- * this is the default rxdb-export
- * It has a batteries-included guarantee.
- * It basically just rxdb-core with some default plugins
+ * this is the main entry-point for custom builds
+ * it can be used as standalone but is also used in the batteries-included main-export
  */
-import type { RxDatabase, RxDatabaseCreator, RxCollection } from './types';
-/**
- * Adds the default plugins
- * that are used on non-custom builds.
- */
-export declare function addDefaultRxPlugins(): void;
-/**
- * Because we have set sideEffects: false
- * in the package.json, we have to ensure that the default plugins
- * are added before the first database is created.
- * So we have to wrap the createRxDatabase function.
- * Always ensure that this function has the same typings as in the rx-database.ts
- * TODO create a type for that function and use it on both sides.
- */
-export declare function createRxDatabase<Collections = {
-    [key: string]: RxCollection;
-}, Internals = any, InstanceCreationOptions = any>(params: RxDatabaseCreator<Internals, InstanceCreationOptions>): Promise<RxDatabase<Collections, Internals, InstanceCreationOptions>>;
-export * from './core';
-export * from './plugins/pouchdb';
+import './types/modules/graphql-client.d';
+import './types/modules/mocha.parallel.d';
+import './types/modules/modifiyjs.d';
+export { addRxPlugin } from './plugin';
+export { createRxDatabase, removeRxDatabase, isRxDatabase, dbCount, _collectionNamePrimary } from './rx-database';
+export { overwritable } from './overwritable';
+export { isRxCollection, RxCollectionBase, createRxCollection } from './rx-collection';
+export { fillObjectDataBeforeInsert } from './rx-collection-helper';
+export { isRxDocument } from './rx-document';
+export { flattenEvents } from './rx-change-event';
+export { getDocumentOrmPrototype, getDocumentPrototype } from './rx-document-prototype-merge';
+export { isInstanceOf as isRxQuery, normalizeMangoQuery } from './rx-query';
+export { isInstanceOf as isRxSchema, createRxSchema, RxSchema, getIndexes, normalizeRxJsonSchema, getFinalFields, getPreviousVersions, toTypedRxJsonSchema } from './rx-schema';
+export { getPseudoSchemaForVersion, getSchemaByObjectPath } from './rx-schema-helper';
+export { findLocalDocument, getSingleDocument, getAllDocuments, writeSingleLocal, writeSingle } from './rx-storage-helper';
+export { _clearHook } from './hooks';
+export { createCrypter } from './crypter';
+export * from './query-cache';
+export * from './util';
+export type { JsonSchemaTypes, GraphQLSyncPullOptions, GraphQLSyncPushOptions, AtomicUpdateFunction, CollectionsOfDatabase, MangoQuery, MangoQueryNoLimit, JsonSchema, ExtractDocumentTypeFromTypedRxJsonSchema, KeyFunctionMap, MangoQuerySelector, MangoQuerySortDirection, MangoQuerySortPart, MigrationState, NumberFunctionMap, DeepReadonlyObject, RxAttachment, RxAttachmentCreator, RxCollection, RxCacheReplacementPolicy, RxChangeEvent, RxChangeEventBulk, RxCollectionCreator, RxCollectionGenerated, RxCollectionHookCallback, RxCollectionHookCallbackNonAsync, RxCollectionHookNoInstance, RxCollectionHookNoInstanceCallback, RxDatabase, RxDatabaseCreator, RxDocument, RxDumpCollection, RxDumpCollectionAny, RxDumpCollectionAsAny, RxDumpDatabase, Buffer, Debug, ExtractDTcol, RxDatabaseGenerated, RxDocumentBase, RxDumpCollectionBase, RxDumpDatabaseAny, RxDumpDatabaseBase, RxError, RxErrorItem, RxErrorParameters, RxGraphQLReplicationPushQueryBuilder, RxGraphQLReplicationPullQueryBuilder, RxJsonSchema, RxLocalDocument, RxPlugin, RxQuery, RxQueryOP, RxQueryObject, RxQueryOptions, RxCouchDBReplicationState, RxTypeError, ServerOptions, SyncOptions, SyncOptionsGraphQL, MigrationStrategy, MigrationStrategies, RxStorage, RxStorageStatics, FilledMangoQuery, OldRxCollection, WithAttachmentsData } from './types';

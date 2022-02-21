@@ -6,4 +6,6 @@ export * from './pouchdb-helper';
 export * from './pouch-statics';
 export * from './rx-storage-instance-pouch';
 export * from './rx-storage-key-object-instance-pouch';
+export {};
+export {};
 //# sourceMappingURL=index.js.map

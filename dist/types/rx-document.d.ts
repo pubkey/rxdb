@@ -30,11 +30,12 @@ export declare const basePrototype: {
      */
     get(this: import("./types").RxDocumentBase<{}, {}>, objPath: string): any | null;
     toJSON(this: import("./types").RxDocumentBase<{}, {}>, withMetaFields?: boolean): import("./types").DeepReadonlyObject<{
-        _deleted?: boolean | undefined;
+        _deleted: boolean;
         _attachments: {
             [attachmentId: string]: import("./types").RxAttachmentData;
         };
         _rev: string;
+        _meta: import("./types").RxDocumentMeta;
     }>;
     /**
      * set data by objectPath
@@ -109,11 +110,12 @@ export declare function createRxDocumentConstructor(proto?: {
      */
     get(this: import("./types").RxDocumentBase<{}, {}>, objPath: string): any;
     toJSON(this: import("./types").RxDocumentBase<{}, {}>, withMetaFields?: boolean): import("./types").DeepReadonlyObject<{
-        _deleted?: boolean | undefined;
+        _deleted: boolean;
         _attachments: {
             [attachmentId: string]: import("./types").RxAttachmentData;
         };
         _rev: string;
+        _meta: import("./types").RxDocumentMeta;
     }>;
     /**
      * set data by objectPath
@@ -189,11 +191,12 @@ export declare function createRxDocumentConstructor(proto?: {
          */
         get(this: import("./types").RxDocumentBase<{}, {}>, objPath: string): any;
         toJSON(this: import("./types").RxDocumentBase<{}, {}>, withMetaFields?: boolean): import("./types").DeepReadonlyObject<{
-            _deleted?: boolean | undefined;
+            _deleted: boolean;
             _attachments: {
                 [attachmentId: string]: import("./types").RxAttachmentData;
             };
             _rev: string;
+            _meta: import("./types").RxDocumentMeta;
         }>;
         /**
          * set data by objectPath
@@ -240,5 +243,5 @@ export declare function createRxDocumentConstructor(proto?: {
     };
 };
 export declare function defineGetterSetter(schema: any, valueObj: any, objPath?: string, thisObj?: boolean): void;
-export declare function createWithConstructor(constructor: any, collection: RxCollection, jsonData: any): RxDocument | null;
+export declare function createWithConstructor<RxDocType>(constructor: any, collection: RxCollection<RxDocType>, jsonData: RxDocumentData<RxDocType>): RxDocument<RxDocType> | null;
 export declare function isRxDocument(obj: any): boolean;

@@ -1,4 +1,4 @@
-import { promiseWait, PROMISE_RESOLVE_VOID, requestIdlePromise } from '../../util';
+import { PROMISE_RESOLVE_VOID, requestIdlePromise } from '../../util';
 /**
  * The autosave feature of lokijs has strange behaviors
  * and often runs a save in critical moments when other
@@ -41,12 +41,11 @@ export var LokiSaveQueue = /*#__PURE__*/function () {
     this.saveQueue = this.saveQueue.then(function () {
       try {
         /**
-         * Always wait at least 100ms
-         * and until the JavaScript process is idle.
+         * Always wait until the JavaScript process is idle.
          * This ensures that CPU blocking writes are finished
          * before we proceed.
          */
-        return Promise.resolve(Promise.all([requestIdlePromise(), promiseWait(100)])).then(function () {
+        return Promise.resolve(requestIdlePromise()).then(function () {
           // no write happened since the last save call
           if (_this.writesSinceLastRun === 0) {
             return;
@@ -60,7 +59,7 @@ export var LokiSaveQueue = /*#__PURE__*/function () {
            */
 
 
-          return Promise.resolve(Promise.all([requestIdlePromise(), promiseWait(100)]).then(function () {
+          return Promise.resolve(requestIdlePromise().then(function () {
             return requestIdlePromise();
           })).then(function () {
             if (_this.writesSinceLastRun === 0) {

@@ -12,7 +12,6 @@ exports.getDexieEventKey = getDexieEventKey;
 exports.getDexieSortComparator = getDexieSortComparator;
 exports.getDexieStoreSchema = getDexieStoreSchema;
 exports.getDocsInDb = void 0;
-exports.stripDexieKey = stripDexieKey;
 
 var _mingo = _interopRequireDefault(require("mingo"));
 
@@ -21,6 +20,8 @@ var _rxSchema = require("../../rx-schema");
 var _dexie = require("dexie");
 
 var _util = require("../../util");
+
+var _rxError = require("../../rx-error");
 
 /**
  * Returns all documents in the database.
@@ -86,7 +87,7 @@ function getDexieDbWithTables(databaseName, collectionName, settings, schema) {
         var useSettings = (0, _util.flatClone)(settings);
         useSettings.autoOpen = false;
         var dexieDb = new _dexie.Dexie(dexieDbName, useSettings);
-        dexieDb.version(1).stores((_dexieDb$version$stor = {}, _dexieDb$version$stor[DEXIE_DOCS_TABLE_NAME] = getDexieStoreSchema(schema), _dexieDb$version$stor[DEXIE_CHANGES_TABLE_NAME] = '++sequence, id', _dexieDb$version$stor[DEXIE_DELETED_DOCS_TABLE_NAME] = primaryPath + ',$lastWriteAt', _dexieDb$version$stor));
+        dexieDb.version(1).stores((_dexieDb$version$stor = {}, _dexieDb$version$stor[DEXIE_DOCS_TABLE_NAME] = getDexieStoreSchema(schema), _dexieDb$version$stor[DEXIE_CHANGES_TABLE_NAME] = '++sequence, id', _dexieDb$version$stor[DEXIE_DELETED_DOCS_TABLE_NAME] = primaryPath + ',_meta.lwt', _dexieDb$version$stor));
         return Promise.resolve(dexieDb.open()).then(function () {
           return {
             dexieDb: dexieDb,
@@ -120,28 +121,20 @@ function sortDirectionToMingo(direction) {
  */
 
 
-function getDexieSortComparator(schema, query) {
-  var primaryKey = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
+function getDexieSortComparator(_schema, query) {
   var mingoSortObject = {};
-  var wasPrimaryInSort = false;
 
-  if (query.sort) {
-    query.sort.forEach(function (sortBlock) {
-      var key = Object.keys(sortBlock)[0];
-
-      if (key === primaryKey) {
-        wasPrimaryInSort = true;
-      }
-
-      var direction = Object.values(sortBlock)[0];
-      mingoSortObject[key] = sortDirectionToMingo(direction);
+  if (!query.sort) {
+    throw (0, _rxError.newRxError)('SNH', {
+      query: query
     });
-  } // TODO ensuring that the primaryKey is in the sorting, should be done by RxDB, not by the storage.
-
-
-  if (!wasPrimaryInSort) {
-    mingoSortObject[primaryKey] = 1;
   }
+
+  query.sort.forEach(function (sortBlock) {
+    var key = Object.keys(sortBlock)[0];
+    var direction = Object.values(sortBlock)[0];
+    mingoSortObject[key] = sortDirectionToMingo(direction);
+  });
 
   var fun = function fun(a, b) {
     var sorted = _mingo["default"].find([a, b], {}).sort(mingoSortObject);
@@ -222,15 +215,5 @@ function getDexieEventKey(isLocal, primary, revision) {
   var prefix = isLocal ? 'local' : 'non-local';
   var eventKey = prefix + '|' + primary + '|' + revision;
   return eventKey;
-}
-/**
- * Removes all internal fields from the document data
- */
-
-
-function stripDexieKey(docData) {
-  var cloned = (0, _util.flatClone)(docData);
-  delete cloned.$lastWriteAt;
-  return cloned;
 }
 //# sourceMappingURL=dexie-helper.js.map

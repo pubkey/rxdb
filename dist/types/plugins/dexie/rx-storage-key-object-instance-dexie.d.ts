@@ -13,7 +13,7 @@ export declare class RxStorageKeyObjectInstanceDexie implements RxStorageKeyObje
     closed: boolean;
     constructor(storage: RxStorageDexie, databaseName: string, collectionName: string, internals: DexieStorageInternals, options: Readonly<DexieSettings>, settings: DexieSettings);
     bulkWrite<RxDocType>(documentWrites: BulkWriteLocalRow<RxDocType>[]): Promise<RxLocalStorageBulkWriteResponse<RxDocType>>;
-    findLocalDocumentsById<RxDocType = any>(ids: string[]): Promise<{
+    findLocalDocumentsById<RxDocType = any>(ids: string[], withDeleted: boolean): Promise<{
         [documentId: string]: RxLocalDocumentData<RxDocType>;
     }>;
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxLocalDocumentData<{

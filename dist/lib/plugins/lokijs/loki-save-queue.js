@@ -48,12 +48,11 @@ var LokiSaveQueue = /*#__PURE__*/function () {
     this.saveQueue = this.saveQueue.then(function () {
       try {
         /**
-         * Always wait at least 100ms
-         * and until the JavaScript process is idle.
+         * Always wait until the JavaScript process is idle.
          * This ensures that CPU blocking writes are finished
          * before we proceed.
          */
-        return Promise.resolve(Promise.all([(0, _util.requestIdlePromise)(), (0, _util.promiseWait)(100)])).then(function () {
+        return Promise.resolve((0, _util.requestIdlePromise)()).then(function () {
           // no write happened since the last save call
           if (_this.writesSinceLastRun === 0) {
             return;
@@ -67,7 +66,7 @@ var LokiSaveQueue = /*#__PURE__*/function () {
            */
 
 
-          return Promise.resolve(Promise.all([(0, _util.requestIdlePromise)(), (0, _util.promiseWait)(100)]).then(function () {
+          return Promise.resolve((0, _util.requestIdlePromise)().then(function () {
             return (0, _util.requestIdlePromise)();
           })).then(function () {
             if (_this.writesSinceLastRun === 0) {

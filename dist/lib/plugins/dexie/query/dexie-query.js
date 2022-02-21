@@ -133,14 +133,6 @@ var dexieQuery = function dexieQuery(instance, preparedQuery) {
 
         rows = rows.slice(skip, skipPlusLimit);
         /**
-         * Strip internal keys as last operation
-         * so it has to run over less documents.
-         */
-
-        rows = rows.map(function (docData) {
-          return (0, _dexieHelper.stripDexieKey)(docData);
-        });
-        /**
          * Comment this in for debugging to check all fields in the database.
          */
         // const docsInDb = await state.dexieTable.filter(queryMatcher).toArray();

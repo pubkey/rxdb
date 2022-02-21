@@ -36,8 +36,6 @@ var _operators = require("rxjs/operators");
 
 var _rxStorageHelper = require("../../rx-storage-helper");
 
-var _rxCollectionHelper = require("../../rx-collection-helper");
-
 /**
  * The DataMigrator handles the documents from collections with older schemas
  * and transforms/saves them into the newest collection
@@ -45,7 +43,6 @@ var _rxCollectionHelper = require("../../rx-collection-helper");
 
 /**
  * TODO this should be completely rewritten because:
- * - The current implemetation does not use bulkDocs which is much faster
  * - This could have been done in much less code which would be easier to uderstand
  *
  */
@@ -77,8 +74,8 @@ var _migrateDocuments = function _migrateDocuments(oldCollection, documentsData)
               var writeDeleted = (0, _util.flatClone)(docData);
               writeDeleted._deleted = true;
               return {
-                previous: (0, _rxCollectionHelper._handleToStorageInstance)(oldCollection, docData),
-                document: (0, _rxCollectionHelper._handleToStorageInstance)(oldCollection, writeDeleted)
+                previous: docData,
+                document: writeDeleted
               };
             });
 
@@ -136,7 +133,7 @@ var _migrateDocuments = function _migrateDocuments(oldCollection, documentsData)
              * notice that this data also contains the attachments data
              */
             var attachmentsBefore = migratedDocData._attachments;
-            var saveData = (0, _rxCollectionHelper._handleToStorageInstance)(oldCollection.newestCollection, migratedDocData);
+            var saveData = migratedDocData;
             saveData._attachments = attachmentsBefore;
             bulkWriteToStorageInput.push(saveData);
             action.res = saveData;
@@ -244,6 +241,7 @@ var createOldCollection = function createOldCollection(version, schemaObj, dataM
         storageInstance: storageInstance,
         _crypter: (0, _crypter.createCrypter)(database.password, schema)
       };
+      ret.storageInstance = (0, _rxStorageHelper.getWrappedStorageInstance)(ret, storageInstance);
       return ret;
     });
   } catch (e) {
@@ -313,7 +311,9 @@ var DataMigrator = /*#__PURE__*/function () {
         _this.nonMigratedOldCollections = ret;
         _this.allOldCollections = _this.nonMigratedOldCollections.slice(0);
         var countAll = Promise.all(_this.nonMigratedOldCollections.map(function (oldCol) {
-          return (0, _rxStorageHelper.countAllUndeleted)(_this.database.storage, oldCol.storageInstance);
+          return (0, _rxStorageHelper.getAllDocuments)(oldCol.schema.primaryPath, _this.database.storage, oldCol.storageInstance).then(function (allDocs) {
+            return allDocs.length;
+          });
         }));
         return countAll;
       }).then(function (countAll) {
@@ -444,10 +444,18 @@ function runStrategyIfNotNull(oldCollection, version, docOrNull) {
 }
 
 function getBatchOfOldCollection(oldCollection, batchSize) {
-  return (0, _rxStorageHelper.getBatch)(oldCollection.database.storage, oldCollection.storageInstance, batchSize).then(function (docs) {
-    return docs.map(function (doc) {
+  var _ref;
+
+  var storage = oldCollection.database.storage;
+  var storageInstance = oldCollection.storageInstance;
+  var preparedQuery = storage.statics.prepareQuery(storageInstance.schema, {
+    selector: {},
+    sort: [(_ref = {}, _ref[oldCollection.schema.primaryPath] = 'asc', _ref)],
+    limit: batchSize
+  });
+  return storageInstance.query(preparedQuery).then(function (result) {
+    return result.documents.map(function (doc) {
       doc = (0, _util.flatClone)(doc);
-      doc = (0, _rxCollectionHelper._handleFromStorageInstance)(oldCollection, doc);
       return doc;
     });
   });
@@ -488,6 +496,17 @@ function migrateDocumentData(oldCollection, docData) {
   return currentPromise.then(function (doc) {
     if (doc === null) {
       return _util.PROMISE_RESOLVE_NULL;
+    }
+    /**
+     * Add _meta field if missing.
+     * We need this to migration documents from pre-12.0.0 state
+     * to version 12.0.0. Therefore we need to add the _meta field if it is missing.
+     * TODO remove this in the major version 13.0.0 
+     */
+
+
+    if (!doc._meta) {
+      doc._meta = (0, _util.getDefaultRxDocumentMeta)();
     } // check final schema
 
 

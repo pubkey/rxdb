@@ -68,6 +68,10 @@ function addRxPlugin(plugin) {
     throw (0, _rxError.newRxTypeError)('PL1', {
       plugin: plugin
     });
+  }
+
+  if (plugin.init) {
+    plugin.init();
   } // prototype-overwrites
 
 

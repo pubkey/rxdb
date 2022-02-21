@@ -3,10 +3,10 @@
  * you can use it to sync collections with remote graphql endpoint
  */
 import type { Observable } from 'rxjs';
-import { SyncOptionsGraphQL } from '../../core';
 import type { RxCollection, RxPlugin, RxDocumentData } from '../../types';
 import { RxReplicationStateBase } from '../replication';
 import { RxReplicationError } from '../replication/rx-replication-error';
+import { SyncOptionsGraphQL } from '../../index';
 export declare class RxGraphQLReplicationState<RxDocType> {
     /**
      * The GraphQL replication uses the replication primitives plugin

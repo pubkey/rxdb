@@ -28,8 +28,6 @@ var _util = require("../../util");
 
 var _lokiSaveQueue = require("./loki-save-queue");
 
-var _rxSchema = require("../../rx-schema");
-
 var _rxError = require("../../rx-error");
 
 var _broadcastChannel = require("broadcast-channel");
@@ -243,11 +241,23 @@ function _for(test, update, body) {
  */
 var mustUseLocalState = function mustUseLocalState(instance) {
   try {
-    if (instance.closed) {
-      return Promise.resolve(false);
-    }
-
     var isRxStorageInstanceLoki = typeof instance.query === 'function';
+
+    if (instance.closed) {
+      /**
+       * If this happens, it means that RxDB made a call to an already closed storage instance.
+       * This must never happen because when RxDB closes a collection or database,
+       * all tasks must be cleared so that no more calls are made the the storage.
+       */
+      throw (0, _rxError.newRxError)('SNH', {
+        args: {
+          instanceClosed: instance.closed,
+          databaseName: instance.databaseName,
+          collectionName: instance.collectionName,
+          isRxStorageInstanceLoki: isRxStorageInstanceLoki
+        }
+      });
+    }
 
     if (instance.internals.localState) {
       return Promise.resolve(instance.internals.localState);
@@ -345,9 +355,9 @@ var handleRemoteRequest = function handleRemoteRequest(instance, msg) {
         var _isError = false;
 
         var _temp11 = _catch(function () {
-          var _ref3;
+          var _ref2;
 
-          return Promise.resolve((_ref3 = instance)[operation].apply(_ref3, params)).then(function (_operation) {
+          return Promise.resolve((_ref2 = instance)[operation].apply(_ref2, params)).then(function (_operation) {
             _result = _operation;
           });
         }, function (err) {
@@ -427,7 +437,7 @@ var requestRemoteInstance = function requestRemoteInstance(instance, operation, 
         broadcastChannel.removeEventListener('internal', whenDeathListener);
 
         if (firstResolved.retry) {
-          var _ref2;
+          var _ref;
 
           /**
            * The leader died while a remote request was running
@@ -436,7 +446,7 @@ var requestRemoteInstance = function requestRemoteInstance(instance, operation, 
            * because the current instance might be the new leader now
            * and then we have to use the local state instead of requesting the remote.
            */
-          return (_ref2 = instance)[operation].apply(_ref2, params);
+          return (_ref = instance)[operation].apply(_ref, params);
         } else {
           if (firstResolved.error) {
             throw firstResolved.error;
@@ -514,8 +524,20 @@ function stripLokiKey(docData) {
   }
 
   var cloned = (0, _util.flatClone)(docData);
+  /**
+   * In RxDB version 12.0.0,
+   * we introduced the _meta field that already contains the last write time.
+   * To be backwards compatible, we have to move the $lastWriteAt to the _meta field.
+   */
+
+  if (cloned.$lastWriteAt) {
+    cloned._meta = {
+      lwt: cloned.$lastWriteAt
+    };
+    delete cloned.$lastWriteAt;
+  }
+
   delete cloned.$loki;
-  delete cloned.$lastWriteAt;
   return cloned;
 }
 
@@ -639,13 +661,14 @@ function getLokiDatabase(databaseName, databaseSettings) {
   return databaseState;
 }
 
-function getLokiSortComparator(schema, query) {
-  var _ref;
+function getLokiSortComparator(_schema, query) {
+  if (!query.sort) {
+    throw (0, _rxError.newRxError)('SNH', {
+      query: query
+    });
+  }
 
-  var primaryKey = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(schema.primaryKey); // TODO if no sort is given, use sort by primary.
-  // This should be done inside of RxDB and not in the storage implementations.
-
-  var sortOptions = query.sort ? query.sort : [(_ref = {}, _ref[primaryKey] = 'asc', _ref)];
+  var sortOptions = query.sort;
 
   var fun = function fun(a, b) {
     var compareResult = 0; // 1 | -1
@@ -672,9 +695,7 @@ function getLokiSortComparator(schema, query) {
     /**
      * Two different objects should never have the same sort position.
      * We ensure this by having the unique primaryKey in the sort params
-     * at this.prepareQuery()
-     * TODO RxDB should ensure that the primary key is always used in the sort params
-     * to ensure a deterministic sorting.
+     * which is added by RxDB if not existing yet.
      */
 
     if (!compareResult) {

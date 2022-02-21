@@ -125,11 +125,6 @@ export var RxSchema = /*#__PURE__*/function () {
       return overwriteGetterForCaching(this, 'normalized', normalizeRxJsonSchema(this.jsonSchema));
     }
   }, {
-    key: "topLevelFields",
-    get: function get() {
-      return Object.keys(this.normalized.properties);
-    }
-  }, {
     key: "defaultValues",
     get: function get() {
       var values = {};
@@ -293,15 +288,30 @@ export function normalizeRxJsonSchema(jsonSchema) {
 
   return normalizedSchema;
 }
+export var RX_META_SCHEMA = {
+  type: 'object',
+  properties: {
+    lwt: {
+      type: 'number',
+      minimum: 1
+    }
+  },
+
+  /**
+   * Additional properties are allowed
+   * and can be used by plugins to set various flags.
+   */
+  additionalProperties: true,
+  required: ['lwt']
+};
 /**
  * fills the schema-json with default-settings
  * @return cloned schemaObj
  */
 
 export function fillWithDefaultSettings(schemaObj) {
-  // TODO we should not have to deep clone here
-  // flat clone the nessescary parts instead.
-  schemaObj = clone(schemaObj); // additionalProperties is always false
+  schemaObj = flatClone(schemaObj);
+  schemaObj.properties = flatClone(schemaObj.properties); // additionalProperties is always false
 
   schemaObj.additionalProperties = false; // fill with key-compression-state ()
 
@@ -310,14 +320,14 @@ export function fillWithDefaultSettings(schemaObj) {
   } // indexes must be array
 
 
-  schemaObj.indexes = schemaObj.indexes || []; // required must be array
+  schemaObj.indexes = schemaObj.indexes ? schemaObj.indexes.slice(0) : []; // required must be array
 
-  schemaObj.required = schemaObj.required || []; // encrypted must be array
+  schemaObj.required = schemaObj.required ? schemaObj.required.slice(0) : []; // encrypted must be array
 
-  schemaObj.encrypted = schemaObj.encrypted || [];
+  schemaObj.encrypted = schemaObj.encrypted ? schemaObj.encrypted.slice(0) : [];
   /**
-   * TODO we should not need to added the internal fields to the schema.
-   * Better remove the before validation.
+   * TODO we should not need to add the internal fields to the schema.
+   * Better remove the fields before validation.
    */
   // add _rev
 
@@ -332,7 +342,9 @@ export function fillWithDefaultSettings(schemaObj) {
 
   schemaObj.properties._deleted = {
     type: 'boolean'
-  }; // version is 0 by default
+  }; // add meta property
+
+  schemaObj.properties._meta = RX_META_SCHEMA; // version is 0 by default
 
   schemaObj.version = schemaObj.version || 0;
   return schemaObj;

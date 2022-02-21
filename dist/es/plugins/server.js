@@ -4,8 +4,10 @@ import express from 'express';
 import corsFn from 'cors';
 import { addPouchPlugin, PouchDB } from '../plugins/pouchdb';
 import { newRxError } from '../rx-error';
-import { adapterObject, addRxPlugin, flatClone, PROMISE_RESOLVE_VOID } from '../core';
 import { RxDBReplicationCouchDBPlugin } from './replication-couchdb';
+import PouchAdapterHttp from 'pouchdb-adapter-http';
+import { adapterObject, addRxPlugin } from '../index';
+import { flatClone, PROMISE_RESOLVE_VOID } from '../util';
 
 function _settle(pact, state, value) {
   if (!pact.s) {
@@ -346,8 +348,6 @@ export var spawnServer = function spawnServer(_ref) {
     return Promise.reject(e);
   }
 };
-addRxPlugin(RxDBReplicationCouchDBPlugin);
-import PouchAdapterHttp from 'pouchdb-adapter-http';
 addPouchPlugin(PouchAdapterHttp);
 var ExpressPouchDB;
 
@@ -458,6 +458,9 @@ export function onDestroy(db) {
 export var RxDBServerPlugin = {
   name: 'server',
   rxdb: true,
+  init: function init() {
+    addRxPlugin(RxDBReplicationCouchDBPlugin);
+  },
   prototypes: {
     RxDatabase: function RxDatabase(proto) {
       proto.server = spawnServer;

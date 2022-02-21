@@ -12,7 +12,9 @@ export var createLokiKeyObjectStorageInstance = function createLokiKeyObjectStor
 
       if (params.multiInstance) {
         ensureNotFalsy(_internals.leaderElector).awaitLeadership().then(function () {
-          return mustUseLocalState(instance);
+          if (!instance.closed) {
+            mustUseLocalState(instance);
+          }
         });
       }
 
@@ -130,10 +132,9 @@ export var RxStorageKeyObjectInstanceLoki = /*#__PURE__*/function () {
           var id = writeRow.document._id;
           writeRowById.set(id, writeRow);
           var writeDoc = flatClone(writeRow.document);
-          var docInDb = localState.collection.by('_id', id); // TODO why not use docInDb instead of collection.by() ??
-
-          var previous = writeRow.previous ? writeRow.previous : localState.collection.by('_id', id);
-          var newRevHeight = previous ? parseRevision(previous._rev).height + 1 : 1;
+          var docInDb = localState.collection.by('_id', id);
+          var prevDocToGetRevision = writeRow.previous ? writeRow.previous : docInDb;
+          var newRevHeight = prevDocToGetRevision ? parseRevision(prevDocToGetRevision._rev).height + 1 : 1;
           var newRevision = newRevHeight + '-' + createRevision(writeRow.document);
           writeDoc._rev = newRevision;
 
@@ -151,13 +152,10 @@ export var RxStorageKeyObjectInstanceLoki = /*#__PURE__*/function () {
             } else {
               var toLoki = flatClone(writeDoc);
               toLoki.$loki = docInDb.$loki;
-              toLoki.$lastWriteAt = startTime;
               localState.collection.update(toLoki);
             }
           } else {
-            var insertData = flatClone(writeDoc);
-            insertData.$lastWriteAt = startTime;
-            localState.collection.insert(insertData);
+            localState.collection.insert(writeDoc);
           }
 
           ret.success[id] = stripLokiKey(writeDoc);
@@ -224,7 +222,7 @@ export var RxStorageKeyObjectInstanceLoki = /*#__PURE__*/function () {
     }
   };
 
-  _proto.findLocalDocumentsById = function findLocalDocumentsById(ids) {
+  _proto.findLocalDocumentsById = function findLocalDocumentsById(ids, withDeleted) {
     try {
       var _this5 = this;
 
@@ -237,7 +235,7 @@ export var RxStorageKeyObjectInstanceLoki = /*#__PURE__*/function () {
         ids.forEach(function (id) {
           var documentInDb = localState.collection.by('_id', id);
 
-          if (documentInDb && !documentInDb._deleted) {
+          if (documentInDb && (withDeleted || !documentInDb._deleted)) {
             ret[id] = stripLokiKey(documentInDb);
           }
         });

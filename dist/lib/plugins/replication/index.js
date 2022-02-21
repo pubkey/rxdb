@@ -46,8 +46,6 @@ Object.keys(_revisionFlag).forEach(function (key) {
   });
 });
 
-var _rxCollectionHelper = require("../../rx-collection-helper");
-
 var _rxError = require("../../rx-error");
 
 var _rxChangeEvent = require("../../rx-change-event");
@@ -450,11 +448,12 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
         var addRetry = function addRetry() {
           if (_this5.pendingRetries < 1) {
             _this5.pendingRetries = _this5.pendingRetries + 1;
-            setTimeout(function () {
+
+            _this5.collection.promiseWait((0, _util.ensureNotFalsy)(_this5.retryTime)).then(function () {
               _this5.pendingRetries = _this5.pendingRetries - 1;
 
               _this5.run();
-            }, _this5.retryTime);
+            });
           }
         };
 
@@ -530,75 +529,18 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
       return Promise.resolve((0, _replicationCheckpoint.getLastPullDocument)(_this7.collection, _this7.replicationIdentifier)).then(function (latestDocument) {
         var _exit3 = false;
 
-        function _temp14(_result3) {
-          var _exit4 = false;
+        function _temp16(_result3) {
           if (_exit3) return _result3;
-
-          function _temp12(_result4) {
-            if (_exit4) return _result4;
-
-            /**
-             * Run the schema validation for pulled documents
-             * in dev-mode.
-             */
-            if (_overwritable.overwritable.isDevMode()) {
-              try {
-                pulledDocuments.forEach(function (doc) {
-                  var withoutDeleteFlag = (0, _util.flatClone)(doc);
-                  delete withoutDeleteFlag._deleted;
-
-                  _this7.collection.schema.validate(withoutDeleteFlag);
-                });
-              } catch (err) {
-                _this7.subjects.error.next(err);
-
-                return Promise.resolve('error');
-              }
-            }
-
-            return _this7.isStopped() ? Promise.resolve('ok') : Promise.resolve(_this7.handleDocumentsFromRemote(pulledDocuments)).then(function () {
-              function _temp10() {
-                return Promise.resolve('ok');
-              }
-
-              pulledDocuments.map(function (doc) {
-                return _this7.subjects.received.next(doc);
-              });
-
-              if (_this7.isStopped()) {
-                return Promise.resolve('ok');
-              }
-
-              var _temp9 = function () {
-                if (pulledDocuments.length === 0) {
-                  if (_this7.live) {}
-                } else {
-                  var newLatestDocument = (0, _util.lastOfArray)(pulledDocuments);
-                  return Promise.resolve((0, _replicationCheckpoint.setLastPullDocument)(_this7.collection, _this7.replicationIdentifier, newLatestDocument)).then(function () {
-                    var _temp8 = function () {
-                      if (result.hasMoreDocuments) {
-                        return Promise.resolve(_this7.runPull()).then(function () {});
-                      }
-                    }();
-
-                    if (_temp8 && _temp8.then) return _temp8.then(function () {});
-                  });
-                  /**
-                   * We have more documents on the remote,
-                   * So re-run the pulling.
-                   */
-                }
-              }();
-
-              return _temp9 && _temp9.then ? _temp9.then(_temp10) : _temp10(_temp9);
-            });
-          }
-
           var pulledDocuments = result.documents; // optimization shortcut, do not proceed if there are no documents.
 
           if (pulledDocuments.length === 0) {
             return Promise.resolve('ok');
           }
+          /**
+           * Many people forgot sending the _deleted flag
+           * so we check if it exists and throw if not.
+           */
+
 
           if (_overwritable.overwritable.isDevMode()) {
             pulledDocuments.forEach(function (doc) {
@@ -609,38 +551,177 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
               }
             });
           }
-          /**
-           * If a local write has happened while the remote changes where fetched,
-           * we have to drop the document and first run a push-sequence.
-           * This will ensure that no local writes are missed out and are not pushed to the remote.
-           */
 
+          var pulledDocIds = pulledDocuments.map(function (doc) {
+            return doc[_this7.collection.schema.primaryPath];
+          });
+          return _this7.isStopped() ? Promise.resolve('ok') : Promise.resolve(_this7.collection.storageInstance.findDocumentsById(pulledDocIds, true)).then(function (docsFromLocal) {
+            var _exit4 = false;
 
-          var _temp11 = function () {
-            if (_this7.push) {
-              return Promise.resolve((0, _replicationCheckpoint.getChangesSinceLastPushSequence)(_this7.collection, _this7.replicationIdentifier, _this7.replicationIdentifierHash, function () {
-                return _this7.isStopped();
-              }, 1)).then(function (localWritesInBetween) {
-                if (localWritesInBetween.changedDocs.size > 0) {
-                  var _Promise$resolve3 = Promise.resolve('drop');
+            function _temp14(_result4) {
+              var _exit5 = false;
+              if (_exit4) return _result4;
+
+              function _temp12(_result5) {
+                if (_exit5) return _result5;
+
+                function _temp10() {
+                  return Promise.resolve('ok');
+                }
+
+                pulledDocuments.map(function (doc) {
+                  return _this7.subjects.received.next(doc);
+                });
+
+                if (_this7.isStopped()) {
+                  return Promise.resolve('ok');
+                }
+
+                var _temp9 = function () {
+                  if (pulledDocuments.length === 0) {
+                    if (_this7.live) {}
+                  } else {
+                    var newLatestDocument = (0, _util.lastOfArray)(pulledDocuments);
+                    return Promise.resolve((0, _replicationCheckpoint.setLastPullDocument)(_this7.collection, _this7.replicationIdentifier, newLatestDocument)).then(function () {
+                      var _temp8 = function () {
+                        if (result.hasMoreDocuments) {
+                          return Promise.resolve(_this7.runPull()).then(function () {});
+                        }
+                      }();
+
+                      if (_temp8 && _temp8.then) return _temp8.then(function () {});
+                    });
+                    /**
+                     * We have more documents on the remote,
+                     * So re-run the pulling.
+                     */
+                  }
+                }();
+
+                return _temp9 && _temp9.then ? _temp9.then(_temp10) : _temp10(_temp9);
+              }
+
+              /**
+               * Run the schema validation for pulled documents
+               * in dev-mode.
+               */
+              if (_overwritable.overwritable.isDevMode()) {
+                try {
+                  pulledDocuments.forEach(function (doc) {
+                    var withoutDeleteFlag = (0, _util.flatClone)(doc);
+                    delete withoutDeleteFlag._deleted;
+
+                    _this7.collection.schema.validate(withoutDeleteFlag);
+                  });
+                } catch (err) {
+                  _this7.subjects.error.next(err);
+
+                  return Promise.resolve('error');
+                }
+              }
+
+              if (_this7.isStopped()) {
+                return Promise.resolve('ok');
+              }
+
+              var bulkWriteData = [];
+
+              for (var _iterator = _createForOfIteratorHelperLoose(pulledDocuments), _step; !(_step = _iterator()).done;) {
+                var pulledDocument = _step.value;
+                var docId = pulledDocument[_this7.collection.schema.primaryPath];
+                var docStateInLocalStorageInstance = docsFromLocal[docId];
+                var nextRevisionHeight = 1;
+
+                if (docStateInLocalStorageInstance) {
+                  var hasHeight = (0, _util.getHeightOfRevision)(docStateInLocalStorageInstance._rev);
+                  nextRevisionHeight = hasHeight + 1;
+                }
+
+                var writeDoc = Object.assign({}, pulledDocument, {
+                  _attachments: {},
+                  _meta: (0, _util.getDefaultRxDocumentMeta)()
+                });
+                (0, _revisionFlag.setLastWritePullReplication)(_this7.replicationIdentifierHash, writeDoc, nextRevisionHeight);
+                bulkWriteData.push({
+                  previous: docStateInLocalStorageInstance ? docStateInLocalStorageInstance : undefined,
+                  document: writeDoc
+                });
+              }
+
+              var _temp11 = function () {
+                if (bulkWriteData.length > 0) {
+                  return Promise.resolve(_this7.collection.storageInstance.bulkWrite(bulkWriteData)).then(function (bulkWriteResponse) {
+                    /**
+                     * If writing the pulled documents caused an conflict error,
+                     * it means that a local write happened while we tried to write data from remote.
+                     * Then we have to drop the current pulled batch
+                     * and run pushing again.
+                     */
+                    var hasConflict = Object.values(bulkWriteResponse.error).find(function (err) {
+                      return err.status === 409;
+                    });
+
+                    if (hasConflict) {
+                      var _Promise$resolve5 = Promise.resolve('drop');
+
+                      _exit5 = true;
+                      return _Promise$resolve5;
+                    }
+                  });
+                }
+              }();
+
+              return _temp11 && _temp11.then ? _temp11.then(_temp12) : _temp12(_temp11);
+            }
+
+            var _temp13 = function () {
+              if (_this7.push) {
+                if (_this7.isStopped()) {
+                  var _Promise$resolve6 = Promise.resolve('ok');
 
                   _exit4 = true;
-                  return _Promise$resolve3;
+                  return _Promise$resolve6;
                 }
-              });
-              /**
-               * TODO instead of dropping the pull docs when any local change was done,
-               * instead we should only drop when relevant (same as pulled) documents where written locally.
-               */
-            }
-          }();
 
-          return _temp11 && _temp11.then ? _temp11.then(_temp12) : _temp12(_temp11);
+                return Promise.resolve((0, _replicationCheckpoint.getChangesSinceLastPushSequence)(_this7.collection, _this7.replicationIdentifier, _this7.replicationIdentifierHash, function () {
+                  return _this7.isStopped();
+                }, 1)).then(function (localWritesInBetween) {
+                  /**
+                   * If any of the pulled documents
+                   * was changed locally in between,
+                   * we drop.
+                   * If other documents where changed locally,
+                   * we do not care.
+                   */
+                  var primaryPath = _this7.collection.schema.primaryPath;
+
+                  for (var _iterator2 = _createForOfIteratorHelperLoose(pulledDocuments), _step2; !(_step2 = _iterator2()).done;) {
+                    var pulledDoc = _step2.value;
+                    var id = pulledDoc[primaryPath];
+
+                    if (localWritesInBetween.changedDocIds.has(id)) {
+                      var _Promise$resolve7 = Promise.resolve('drop');
+
+                      _exit4 = true;
+                      return _Promise$resolve7;
+                    }
+                  }
+                });
+              }
+            }();
+
+            /**
+             * If a local write has happened while the remote changes where fetched,
+             * we have to drop the document and first run a push-sequence.
+             * This will ensure that no local writes are missed out and are not pushed to the remote.
+             */
+            return _temp13 && _temp13.then ? _temp13.then(_temp14) : _temp14(_temp13);
+          });
         }
 
         var result;
 
-        var _temp13 = _catch(function () {
+        var _temp15 = _catch(function () {
           return Promise.resolve(_this7.pull.handler(latestDocument)).then(function (_this6$pull$handler) {
             result = _this6$pull$handler;
           });
@@ -659,54 +740,7 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
           return _Promise$resolve;
         });
 
-        return _temp13 && _temp13.then ? _temp13.then(_temp14) : _temp14(_temp13);
-      });
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  };
-
-  _proto.handleDocumentsFromRemote = function handleDocumentsFromRemote(docs) {
-    try {
-      var _this9 = this;
-
-      var toStorageDocs = [];
-      var docIds = docs.map(function (doc) {
-        return doc[_this9.collection.schema.primaryPath];
-      });
-      return Promise.resolve(_this9.collection.storageInstance.findDocumentsById(docIds, true)).then(function (docsFromLocal) {
-        for (var _iterator = _createForOfIteratorHelperLoose(docs), _step; !(_step = _iterator()).done;) {
-          var originalDoc = _step.value;
-          var doc = (0, _util.flatClone)(originalDoc);
-          var documentId = doc[_this9.collection.schema.primaryPath];
-          var docStateInLocalStorageInstance = docsFromLocal[documentId];
-          var newRevision = (0, _revisionFlag.createRevisionForPulledDocument)(_this9.replicationIdentifierHash, doc);
-
-          if (docStateInLocalStorageInstance) {
-            var hasHeight = (0, _util.getHeightOfRevision)(docStateInLocalStorageInstance._rev);
-            var newRevisionHeight = hasHeight + 1;
-            newRevision = newRevisionHeight + '-' + newRevision;
-          } else {
-            newRevision = '1-' + newRevision;
-          }
-
-          doc._rev = newRevision;
-          toStorageDocs.push(doc);
-        }
-
-        var _temp15 = function () {
-          if (toStorageDocs.length > 0) {
-            return Promise.resolve(_this9.collection.database.lockedRun(function () {
-              return _this9.collection.storageInstance.bulkAddRevisions(toStorageDocs.map(function (doc) {
-                return (0, _rxCollectionHelper._handleToStorageInstance)(_this9.collection, doc);
-              }));
-            })).then(function () {});
-          }
-        }();
-
-        return _temp15 && _temp15.then ? _temp15.then(function () {
-          return true;
-        }) : true;
+        return _temp15 && _temp15.then ? _temp15.then(_temp16) : _temp16(_temp15);
       });
     } catch (e) {
       return Promise.reject(e);
@@ -720,44 +754,44 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
 
   _proto.runPush = function runPush() {
     try {
-      var _this11 = this;
+      var _this9 = this;
 
-      if (!_this11.push) {
+      if (!_this9.push) {
         throw (0, _rxError.newRxError)('SNH');
       }
 
-      if (_this11.isStopped()) {
+      if (_this9.isStopped()) {
         return Promise.resolve(true);
       }
 
-      var batchSize = _this11.push.batchSize ? _this11.push.batchSize : 5;
-      return Promise.resolve((0, _replicationCheckpoint.getChangesSinceLastPushSequence)(_this11.collection, _this11.replicationIdentifier, _this11.replicationIdentifierHash, function () {
-        return _this11.isStopped();
+      var batchSize = _this9.push.batchSize ? _this9.push.batchSize : 5;
+      return Promise.resolve((0, _replicationCheckpoint.getChangesSinceLastPushSequence)(_this9.collection, _this9.replicationIdentifier, _this9.replicationIdentifierHash, function () {
+        return _this9.isStopped();
       }, batchSize)).then(function (changesResult) {
-        var _exit5 = false;
+        var _exit6 = false;
 
-        function _temp19(_result5) {
-          if (_exit5) return _result5;
+        function _temp20(_result6) {
+          if (_exit6) return _result6;
 
-          function _temp17() {
-            return changesResult.changedDocs.size !== 0 ? _this11.runPush() : true;
+          function _temp18() {
+            return changesResult.changedDocs.size !== 0 ? _this9.runPush() : true;
           }
 
           pushDocs.forEach(function (pushDoc) {
-            return _this11.subjects.send.next(pushDoc);
+            return _this9.subjects.send.next(pushDoc);
           });
 
-          if (_this11.isStopped()) {
+          if (_this9.isStopped()) {
             return true;
           }
 
-          var _temp16 = function () {
+          var _temp17 = function () {
             if (changesResult.hasChangesSinceLastSequence) {
-              return Promise.resolve((0, _replicationCheckpoint.setLastPushSequence)(_this11.collection, _this11.replicationIdentifier, changesResult.lastSequence)).then(function () {});
+              return Promise.resolve((0, _replicationCheckpoint.setLastPushSequence)(_this9.collection, _this9.replicationIdentifier, changesResult.lastSequence)).then(function () {});
             }
           }();
 
-          return _temp16 && _temp16.then ? _temp16.then(_temp17) : _temp17(_temp16); // batch had documents so there might be more changes to replicate
+          return _temp17 && _temp17.then ? _temp17.then(_temp18) : _temp18(_temp17); // batch had documents so there might be more changes to replicate
         }
 
         if (changesResult.changedDocs.size === 0) {
@@ -766,37 +800,31 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
 
         var changeRows = Array.from(changesResult.changedDocs.values());
         var pushDocs = changeRows.map(function (row) {
-          var doc = (0, _util.flatClone)(row.doc); // TODO _deleted should be required on type RxDocumentData
-          // so we do not need this check here
-
-          if (!doc.hasOwnProperty('_deleted')) {
-            doc._deleted = false;
-          }
-
+          var doc = (0, _util.flatClone)(row.doc);
           delete doc._rev;
           delete doc._attachments;
           return doc;
         });
 
-        var _temp18 = _catch(function () {
-          return Promise.resolve(_this11.push.handler(pushDocs)).then(function () {});
+        var _temp19 = _catch(function () {
+          return Promise.resolve(_this9.push.handler(pushDocs)).then(function () {});
         }, function (err) {
           if (err instanceof _rxReplicationError.RxReplicationPushError) {
-            _this11.subjects.error.next(err);
+            _this9.subjects.error.next(err);
           } else {
             var documentsData = changeRows.map(function (row) {
               return row.doc;
             });
             var emitError = new _rxReplicationError.RxReplicationPushError(err.message, documentsData, err);
 
-            _this11.subjects.error.next(emitError);
+            _this9.subjects.error.next(emitError);
           }
 
-          _exit5 = true;
+          _exit6 = true;
           return false;
         });
 
-        return _temp18 && _temp18.then ? _temp18.then(_temp19) : _temp19(_temp18);
+        return _temp19 && _temp19.then ? _temp19.then(_temp20) : _temp20(_temp19);
       });
     } catch (e) {
       return Promise.reject(e);
@@ -844,13 +872,13 @@ function replicateRxCollection(_ref) {
       if (pull) {
         (function () {
           try {
-            var _exit7 = false;
+            var _exit8 = false;
             return _for(function () {
-              return !_exit7 && !replicationState.isStopped();
+              return !_exit8 && !replicationState.isStopped();
             }, void 0, function () {
-              return Promise.resolve((0, _util.promiseWait)(replicationState.liveInterval)).then(function () {
+              return Promise.resolve(collection.promiseWait((0, _util.ensureNotFalsy)(replicationState.liveInterval))).then(function () {
                 if (replicationState.isStopped()) {
-                  _exit7 = true;
+                  _exit8 = true;
                   return;
                 }
 
@@ -886,7 +914,7 @@ function replicateRxCollection(_ref) {
            * Do not run() if the change
            * was from a pull-replication cycle.
            */
-          !(0, _revisionFlag.wasRevisionfromPullReplication)(replicationState.replicationIdentifierHash, rev)) {
+          !(0, _revisionFlag.wasLastWriteFromPullReplication)(replicationState.replicationIdentifierHash, doc)) {
             replicationState.run();
           }
         });

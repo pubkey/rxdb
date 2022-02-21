@@ -22,6 +22,7 @@ import type {
 import type {
     BlobBuffer,
     MangoQuery,
+    MangoQuerySortPart,
     RxJsonSchema
 } from './';
 import type {
@@ -29,7 +30,7 @@ import type {
 } from 'rxjs';
 
 /**
- * TODO WORK IN PROGRESS! Might change without breaking change.
+ * RxStorage
  * This is an interface that abstracts the storage engine.
  * This allows us to use RxDB with different engines like PouchDB or LokiJS.
  *
@@ -80,6 +81,16 @@ export interface RxStorage<Internals, InstanceCreationOptions> {
 }
 
 
+export type FilledMangoQuery<DocumentData> = MangoQuery<DocumentData> & {
+    /**
+     * In contrast to the user-provided MangoQuery,
+     * the sorting is required here because
+     * RxDB has to ensure that the primary key is always
+     * part of the sort params.
+     */
+    sort: MangoQuerySortPart<DocumentData>[];
+}
+
 /**
  * Static functions of the RxStorage.
  * Can be used without creating an instance of any kind.
@@ -104,6 +115,18 @@ export type RxStorageStatics = Readonly<{
     hashKey: string;
 
     /**
+     * A function that returns true
+     * if the RxStorage does broadcast events between
+     * multiple instances, like multiple browser tabs
+     * or node.js processes.
+     * If this returns false, RxDB will use its own BroadcastChannel
+     * to ensure all other instances know about changes.
+     * If it returns true, RxDB will not broadcast the events
+     * to save performance.
+     */
+    doesBroadcastChangestream(): boolean;
+
+    /**
      * PouchDB and others have some bugs
      * and behaviors that must be worked arround
      * before querying the db.
@@ -123,7 +146,7 @@ export type RxStorageStatics = Readonly<{
         /**
          * a query that can be mutated by the function without side effects.
          */
-        mutateableQuery: MangoQuery<DocumentData>
+        mutateableQuery: FilledMangoQuery<DocumentData>
     ): PreparedQuery<DocumentData>;
 
     /**
@@ -211,7 +234,11 @@ export interface RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>
          * List of primary values
          * of the documents to find.
          */
-        ids: string[]
+        ids: string[],
+        /**
+         * If set to true, deleted documents will also be returned.
+         */
+        withDeleted: boolean
     ): Promise<{
         [documentId: string]: RxLocalDocumentData<D>
     }>;
@@ -282,7 +309,7 @@ export interface RxStorageInstance<
         /**
          * If set to true, deleted documents will also be returned.
          */
-        deleted: boolean
+        withDeleted: boolean
     ): Promise<{
         [documentId: string]: RxDocumentData<DocumentData>
     }>;
@@ -296,9 +323,6 @@ export interface RxStorageInstance<
      * as reference to how NoSQL-queries must work.
      * But the past has shown that pouchdb find can behave wrong,
      * which must be fixed or at least documented.
-     *
-     * TODO should we have a way for streamed results
-     * or a way to cancel a running query?
      */
     query(
         /**

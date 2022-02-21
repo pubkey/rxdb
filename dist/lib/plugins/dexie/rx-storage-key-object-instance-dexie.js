@@ -88,17 +88,13 @@ var RxStorageKeyObjectInstanceDexie = /*#__PURE__*/function () {
                     ret.error[id] = err;
                     return;
                   } else {
-                    var saveMe = (0, _util.flatClone)(writeDoc);
-                    saveMe.$lastWriteAt = startTime;
-                    bulkPutData.push(saveMe);
+                    bulkPutData.push(writeDoc);
                   }
                 } else {
-                  var insertData = (0, _util.flatClone)(writeDoc);
-                  insertData.$lastWriteAt = startTime;
-                  bulkPutData.push(insertData);
+                  bulkPutData.push(writeDoc);
                 }
 
-                ret.success[id] = (0, _dexieHelper.stripDexieKey)(writeDoc);
+                ret.success[id] = writeDoc;
                 successDocs.push({
                   writeRow: writeRow,
                   previous: previous,
@@ -178,7 +174,7 @@ var RxStorageKeyObjectInstanceDexie = /*#__PURE__*/function () {
     }
   };
 
-  _proto.findLocalDocumentsById = function findLocalDocumentsById(ids) {
+  _proto.findLocalDocumentsById = function findLocalDocumentsById(ids, withDeleted) {
     try {
       var _this4 = this;
 
@@ -188,8 +184,8 @@ var RxStorageKeyObjectInstanceDexie = /*#__PURE__*/function () {
           ids.forEach(function (id, idx) {
             var documentInDb = docsInDb[idx];
 
-            if (documentInDb && !documentInDb._deleted) {
-              ret[id] = (0, _dexieHelper.stripDexieKey)(documentInDb);
+            if (documentInDb && (withDeleted || !documentInDb._deleted)) {
+              ret[id] = documentInDb;
             }
           });
           return ret;

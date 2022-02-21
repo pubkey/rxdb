@@ -13,7 +13,7 @@ export declare class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjec
     closed: boolean;
     constructor(storage: RxStorageLoki, databaseName: string, collectionName: string, internals: LokiStorageInternals, options: Readonly<LokiSettings>, databaseSettings: LokiDatabaseSettings);
     bulkWrite<RxDocType>(documentWrites: BulkWriteLocalRow<RxDocType>[]): Promise<RxLocalStorageBulkWriteResponse<RxDocType>>;
-    findLocalDocumentsById<RxDocType = any>(ids: string[]): Promise<{
+    findLocalDocumentsById<RxDocType = any>(ids: string[], withDeleted: boolean): Promise<{
         [documentId: string]: RxLocalDocumentData<RxDocType>;
     }>;
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxLocalDocumentData<{

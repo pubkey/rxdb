@@ -1,5 +1,5 @@
 import { BehaviorSubject, Observable } from 'rxjs';
-import type { RxCollection, RxDocument, RxQueryOP, RxQuery, MangoQuery, MangoQuerySortPart, MangoQuerySelector, PreparedQuery, RxDocumentWriteData, RxJsonSchema, RxDocumentData } from './types';
+import type { RxCollection, RxDocument, RxQueryOP, RxQuery, MangoQuery, MangoQuerySortPart, MangoQuerySelector, PreparedQuery, RxDocumentWriteData, RxJsonSchema, RxDocumentData, FilledMangoQuery } from './types';
 import type { QueryMatcher } from 'event-reduce-js';
 export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocument<RxDocumentType[]> | RxDocument<RxDocumentType>> {
     op: RxQueryOP;
@@ -116,7 +116,14 @@ export declare function createRxQuery(op: RxQueryOP, queryObj: MangoQuery, colle
  * Normalize the query to ensure we have all fields set
  * and queries that represent the same query logic are detected as equal by the caching.
  */
-export declare function normalizeMangoQuery<RxDocType>(schema: RxJsonSchema<RxDocType>, mangoQuery: MangoQuery<RxDocType>): MangoQuery<RxDocType>;
+export declare function normalizeMangoQuery<RxDocType>(schema: RxJsonSchema<RxDocType>, mangoQuery: MangoQuery<RxDocType>): FilledMangoQuery<RxDocType>;
+/**
+ * Runs the query over the storage instance
+ * of the collection.
+ * Does some optimizations to ensuer findById is used
+ * when specific queries are used.
+ */
+export declare function queryCollection<RxDocType>(rxQuery: RxQuery<RxDocType> | RxQueryBase<RxDocType>): Promise<RxDocumentData<RxDocType>[]>;
 /**
  * Returns true if the given query
  * selects exactly one document by its id.

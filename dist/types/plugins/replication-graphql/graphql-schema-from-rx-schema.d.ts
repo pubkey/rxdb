@@ -35,9 +35,7 @@ export declare type GraphQLSchemaFromRxSchemaOutput = {
 };
 export declare const SPACING = "  ";
 /**
- * TODO this is in beta mode,
- * use it at your own risk.
- * Fix bugs when you find them.
+ * Create a GraphQL schema from a given RxJsonSchema
  */
 export declare function graphQLSchemaFromRxSchema(input: GraphQLSchemaFromRxSchemaInput): GraphQLSchemaFromRxSchemaOutput;
 export declare function fillUpOptionals(input: GraphQLSchemaFromRxSchemaInputSingleCollection): GraphQLSchemaFromRxSchemaInputSingleCollection;

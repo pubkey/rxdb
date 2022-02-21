@@ -79,9 +79,9 @@ export function wrappedRxStorage(args) {
       var instance = getFromMapOrThrow(instanceById, instanceId);
       return instance.bulkWrite(documentWrites);
     },
-    findLocalDocumentsById: function findLocalDocumentsById(instanceId, ids) {
+    findLocalDocumentsById: function findLocalDocumentsById(instanceId, ids, withDeleted) {
       var instance = getFromMapOrThrow(instanceById, instanceId);
-      return instance.findLocalDocumentsById(ids);
+      return instance.findLocalDocumentsById(ids, withDeleted);
     }
   };
   expose(exposeMe);

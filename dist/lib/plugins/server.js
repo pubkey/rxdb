@@ -21,11 +21,13 @@ var _pouchdb = require("../plugins/pouchdb");
 
 var _rxError = require("../rx-error");
 
-var _core = require("../core");
-
 var _replicationCouchdb = require("./replication-couchdb");
 
 var _pouchdbAdapterHttp = _interopRequireDefault(require("pouchdb-adapter-http"));
+
+var _index = require("../index");
+
+var _util = require("../util");
 
 function _settle(pact, state, value) {
   if (!pact.s) {
@@ -261,7 +263,7 @@ var spawnServer = function spawnServer(_ref) {
       throw new Error('The RxDB server plugin only works with pouchdb storage.');
     }
 
-    var adapterObj = (0, _core.adapterObject)(storage.adapter);
+    var adapterObj = (0, _index.adapterObject)(storage.adapter);
     var pouchDBOptions = Object.assign({
       prefix: getPrefix(db),
       log: false
@@ -295,7 +297,7 @@ var spawnServer = function spawnServer(_ref) {
      */
 
 
-    var usePouchExpressOptions = (0, _core.flatClone)(pouchdbExpressOptions);
+    var usePouchExpressOptions = (0, _util.flatClone)(pouchdbExpressOptions);
 
     if (typeof usePouchExpressOptions.inMemoryConfig === 'undefined') {
       usePouchExpressOptions.inMemoryConfig = true;
@@ -308,7 +310,7 @@ var spawnServer = function spawnServer(_ref) {
     var pouchApp = ExpressPouchDB(pseudo, usePouchExpressOptions);
     app.use(collectionsPath, pouchApp);
     var server = null;
-    var startupPromise = _core.PROMISE_RESOLVE_VOID;
+    var startupPromise = _util.PROMISE_RESOLVE_VOID;
 
     if (startServer) {
       /**
@@ -374,7 +376,6 @@ var spawnServer = function spawnServer(_ref) {
 
 
 exports.spawnServer = spawnServer;
-(0, _core.addRxPlugin)(_replicationCouchdb.RxDBReplicationCouchDBPlugin);
 (0, _pouchdb.addPouchPlugin)(_pouchdbAdapterHttp["default"]);
 var ExpressPouchDB;
 
@@ -486,6 +487,9 @@ function onDestroy(db) {
 var RxDBServerPlugin = {
   name: 'server',
   rxdb: true,
+  init: function init() {
+    (0, _index.addRxPlugin)(_replicationCouchdb.RxDBReplicationCouchDBPlugin);
+  },
   prototypes: {
     RxDatabase: function RxDatabase(proto) {
       proto.server = spawnServer;

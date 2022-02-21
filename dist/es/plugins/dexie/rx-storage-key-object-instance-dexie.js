@@ -1,6 +1,6 @@
 import { Subject } from 'rxjs';
 import { createRevision, flatClone, now, parseRevision, randomCouchString } from '../../util';
-import { closeDexieDb, getDexieDbWithTables, getDexieEventKey, stripDexieKey } from './dexie-helper';
+import { closeDexieDb, getDexieDbWithTables, getDexieEventKey } from './dexie-helper';
 export var createDexieKeyObjectStorageInstance = function createDexieKeyObjectStorageInstance(storage, params, settings) {
   try {
     var _internals = getDexieDbWithTables(params.databaseName, params.collectionName, settings, {
@@ -75,17 +75,13 @@ export var RxStorageKeyObjectInstanceDexie = /*#__PURE__*/function () {
                     ret.error[id] = err;
                     return;
                   } else {
-                    var saveMe = flatClone(writeDoc);
-                    saveMe.$lastWriteAt = startTime;
-                    bulkPutData.push(saveMe);
+                    bulkPutData.push(writeDoc);
                   }
                 } else {
-                  var insertData = flatClone(writeDoc);
-                  insertData.$lastWriteAt = startTime;
-                  bulkPutData.push(insertData);
+                  bulkPutData.push(writeDoc);
                 }
 
-                ret.success[id] = stripDexieKey(writeDoc);
+                ret.success[id] = writeDoc;
                 successDocs.push({
                   writeRow: writeRow,
                   previous: previous,
@@ -165,7 +161,7 @@ export var RxStorageKeyObjectInstanceDexie = /*#__PURE__*/function () {
     }
   };
 
-  _proto.findLocalDocumentsById = function findLocalDocumentsById(ids) {
+  _proto.findLocalDocumentsById = function findLocalDocumentsById(ids, withDeleted) {
     try {
       var _this4 = this;
 
@@ -175,8 +171,8 @@ export var RxStorageKeyObjectInstanceDexie = /*#__PURE__*/function () {
           ids.forEach(function (id, idx) {
             var documentInDb = docsInDb[idx];
 
-            if (documentInDb && !documentInDb._deleted) {
-              ret[id] = stripDexieKey(documentInDb);
+            if (documentInDb && (withDeleted || !documentInDb._deleted)) {
+              ret[id] = documentInDb;
             }
           });
           return ret;

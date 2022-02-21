@@ -60,7 +60,7 @@ export declare class RxStorageKeyObjectInstanceWorker implements RxStorageKeyObj
     private subs;
     constructor(databaseName: string, collectionName: string, internals: WorkerStorageInternals, options: Readonly<any>);
     bulkWrite<DocumentData>(documentWrites: BulkWriteLocalRow<DocumentData>[]): Promise<RxLocalStorageBulkWriteResponse<DocumentData>>;
-    findLocalDocumentsById<DocumentData>(ids: string[]): Promise<{
+    findLocalDocumentsById<DocumentData>(ids: string[], withDeleted: boolean): Promise<{
         [documentId: string]: RxLocalDocumentData<DocumentData>;
     }>;
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxLocalDocumentData<{

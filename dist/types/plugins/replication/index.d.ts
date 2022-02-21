@@ -1,5 +1,5 @@
 import { BehaviorSubject, Observable, Subject, Subscription } from 'rxjs';
-import type { DeepReadonlyObject, PullRunResult, ReplicationOptions, ReplicationPullOptions, ReplicationPushOptions, RxCollection, RxDocumentData, RxReplicationState, WithDeleted } from '../../types';
+import type { PullRunResult, ReplicationOptions, ReplicationPullOptions, ReplicationPushOptions, RxCollection, RxDocumentData, RxReplicationState } from '../../types';
 import { RxReplicationError } from './rx-replication-error';
 export declare class RxReplicationStateBase<RxDocType> {
     readonly replicationIdentifier: string;
@@ -58,7 +58,6 @@ export declare class RxReplicationStateBase<RxDocType> {
      * @return true if successfully, false if something errored
      */
     runPull(): Promise<PullRunResult>;
-    handleDocumentsFromRemote(docs: (WithDeleted<RxDocType> | DeepReadonlyObject<WithDeleted<RxDocType>>)[]): Promise<boolean>;
     /**
      * Pushes unreplicated local changes to the remote.
      * @return true if successfull, false if not

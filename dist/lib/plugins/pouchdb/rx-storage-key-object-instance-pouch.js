@@ -75,13 +75,12 @@ var RxStorageKeyObjectInstancePouch = /*#__PURE__*/function () {
       var writeRowById = new Map();
       var insertDocs = documentWrites.map(function (writeRow) {
         writeRowById.set(writeRow.document._id, writeRow);
-        var storeDocumentData = (0, _util.flatClone)(writeRow.document);
         /**
          * add local prefix
          * Local documents always have _id as primary
          */
 
-        storeDocumentData._id = _pouchdbHelper.POUCHDB_LOCAL_PREFIX + storeDocumentData._id; // if previous document exists, we have to send the previous revision to pouchdb.
+        var storeDocumentData = (0, _pouchdbHelper.localDocumentToPouch)(writeRow.document); // if previous document exists, we have to send the previous revision to pouchdb.
 
         if (writeRow.previous) {
           storeDocumentData._rev = writeRow.previous._rev;
@@ -187,10 +186,14 @@ var RxStorageKeyObjectInstancePouch = /*#__PURE__*/function () {
     }
   };
 
-  _proto.findLocalDocumentsById = function findLocalDocumentsById(ids) {
+  _proto.findLocalDocumentsById = function findLocalDocumentsById(ids, withDeleted) {
     try {
       var _this6 = this;
 
+      var pouch = _this6.internals.pouch;
+      var pouchIds = ids.map(function (id) {
+        return _pouchdbHelper.POUCHDB_LOCAL_PREFIX + id;
+      });
       var ret = {};
       /**
        * Pouchdb is not able to bulk-request local documents
@@ -199,14 +202,15 @@ var RxStorageKeyObjectInstancePouch = /*#__PURE__*/function () {
        * TODO create an issue at the pouchdb repo
        */
 
-      return Promise.resolve(Promise.all(ids.map(function (id) {
+      return Promise.resolve(Promise.all(pouchIds.map(function (pouchId) {
         try {
-          var prefixedId = _pouchdbHelper.POUCHDB_LOCAL_PREFIX + id;
-
           var _temp2 = _catch(function () {
-            return Promise.resolve(_this6.internals.pouch.get(prefixedId)).then(function (docData) {
-              docData._id = id;
-              ret[id] = docData;
+            return Promise.resolve(pouch.get(pouchId)).then(function (docData) {
+              docData = (0, _pouchdbHelper.localDocumentFromPouch)(docData);
+
+              if (withDeleted || !docData._deleted) {
+                ret[docData._id] = docData;
+              }
             });
           }, function () {});
 
