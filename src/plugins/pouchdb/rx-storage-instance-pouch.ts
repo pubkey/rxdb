@@ -153,7 +153,11 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         };
 
         const insertDocsById: Map<string, any> = new Map();
-        const insertDocs: (RxDocType & { _id: string; _rev: string })[] = documentWrites.map(writeData => {
+
+        const insertDocsNotDelete: (RxDocType & { _id: string; _rev: string })[] = [];
+        const insertDocsDelete: (RxDocType & { _id: string; _rev: string })[] = [];
+
+        documentWrites.forEach(writeData => {
             const primary: string = (writeData.document as any)[this.primaryPath];
             writeRowById.set(primary, writeData);
 
@@ -161,25 +165,58 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                 this.primaryPath,
                 writeData.document
             );
-
             insertDocsById.set(primary, storeDocumentData);
 
-            return storeDocumentData;
+            if (storeDocumentData._deleted) {
+                if (writeData.previous) {
+                    storeDocumentData._rev = writeData.previous._rev;
+                }
+                insertDocsDelete.push(storeDocumentData);
+            } else {
+                insertDocsNotDelete.push(storeDocumentData);
+            }
         });
 
-        console.log('insertDocs:');
-        console.dir(insertDocs);
-        const pouchResult: (PouchBulkDocResultRow | PouchWriteError)[] = await this.internals.pouch.bulkDocs(
-            insertDocs,
-            {
-                new_edits: false,
-                custom: {
-                    primaryPath: this.primaryPath,
-                    writeRowById,
-                    insertDocsById
-                }
-            } as any
-        );
+        let pouchResult: (PouchBulkDocResultRow | PouchWriteError)[] = [];
+
+        console.log('insertDocsNotDelete:');
+        console.dir(insertDocsNotDelete);
+        if (insertDocsNotDelete.length > 0) {
+            const insertNonDeletedResult = await this.internals.pouch.bulkDocs(
+                insertDocsNotDelete,
+                {
+                    new_edits: false,
+                    custom: {
+                        primaryPath: this.primaryPath,
+                        writeRowById,
+                        insertDocsById
+                    }
+                } as any
+            );
+            pouchResult = pouchResult.concat(insertNonDeletedResult);
+        }
+        console.log('insertDocsDelete:');
+        console.dir(insertDocsDelete);
+
+        /**
+         * TODO PouchDB does not allow to use new_edits:false
+         * when deleting documents. By fixing this bug,
+         * we could drastically improve the write performance of the PouchDB RxStorage.
+         * @link https://github.com/pouchdb/pouchdb/issues/7841
+         */
+        if (insertDocsDelete.length > 0) {
+            const insertDeletedResult = await this.internals.pouch.bulkDocs(
+                insertDocsDelete,
+                {
+                    custom: {
+                        primaryPath: this.primaryPath,
+                        writeRowById,
+                        insertDocsById
+                    }
+                } as any
+            );
+            pouchResult = pouchResult.concat(insertDeletedResult);
+        }
         console.log('RxStorage: pouchResult:');
         console.dir(pouchResult);
 

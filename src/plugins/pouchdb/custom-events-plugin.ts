@@ -159,7 +159,11 @@ export function addCustomEventsPluginToPouch() {
         const usePouchResult: (PouchBulkDocResultRow | PouchWriteError)[] = [];
 
         let hasNonErrorWrite = false;
-        if (options.custom) {
+        if (
+            options.custom &&
+            options.hasOwnProperty('new_edits') &&
+            options.new_edits === false
+        ) {
             const writeRowById: Map<string, BulkWriteRow<any>> = options.custom.writeRowById;
 
             /**
@@ -200,6 +204,7 @@ export function addCustomEventsPluginToPouch() {
              * we can skip directly.
              */
             if (!hasNonErrorWrite) {
+                console.log('use hasNonErrorWrite shortcut');
                 return usePouchResult;
             }
         }
