@@ -128,31 +128,9 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     }
 
     public async bulkAddRevisions(
-        documents: RxDocumentData<RxDocType>[]
+        _documents: RxDocumentData<RxDocType>[]
     ): Promise<void> {
-        if (documents.length === 0) {
-            throw newRxError('P3', {
-                args: {
-                    documents
-                }
-            });
-        }
-
-        const writeData = documents.map(doc => {
-            return rxDocumentDataToPouchDocumentData(
-                this.primaryPath,
-                doc
-            );
-        });
-
-        // we do not need the response here because pouchdb returns an empty array on new_edits: false
-        await this.internals.pouch.bulkDocs(
-            writeData,
-            {
-                new_edits: false,
-                set_new_edit_as_latest_revision: true
-            }
-        );
+        throw new Error('TODO remove this');
     }
 
     public async bulkWrite(
@@ -169,6 +147,12 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         }
 
         const writeRowById: Map<string, BulkWriteRow<RxDocType>> = new Map();
+        const ret: RxStorageBulkWriteResponse<RxDocType> = {
+            success: {},
+            error: {}
+        };
+
+        const insertDocsById: Map<string, any> = new Map();
         const insertDocs: (RxDocType & { _id: string; _rev: string })[] = documentWrites.map(writeData => {
             const primary: string = (writeData.document as any)[this.primaryPath];
             writeRowById.set(primary, writeData);
@@ -178,25 +162,26 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                 writeData.document
             );
 
-            // if previous document exists, we have to send the previous revision to pouchdb.
-            if (writeData.previous) {
-                storeDocumentData._rev = writeData.previous._rev;
-            }
+            insertDocsById.set(primary, storeDocumentData);
 
             return storeDocumentData;
         });
 
-        const pouchResult = await this.internals.pouch.bulkDocs(insertDocs, {
-            custom: {
-                primaryPath: this.primaryPath,
-                writeRowById
-            }
-        } as any);
-
-        const ret: RxStorageBulkWriteResponse<RxDocType> = {
-            success: {},
-            error: {}
-        };
+        console.log('insertDocs:');
+        console.dir(insertDocs);
+        const pouchResult: (PouchBulkDocResultRow | PouchWriteError)[] = await this.internals.pouch.bulkDocs(
+            insertDocs,
+            {
+                new_edits: false,
+                custom: {
+                    primaryPath: this.primaryPath,
+                    writeRowById,
+                    insertDocsById
+                }
+            } as any
+        );
+        console.log('RxStorage: pouchResult:');
+        console.dir(pouchResult);
 
         await Promise.all(
             pouchResult.map(async (resultRow) => {

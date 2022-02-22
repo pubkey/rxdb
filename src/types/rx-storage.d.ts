@@ -31,9 +31,11 @@ export type RxDocumentData<T> = T & {
      * The revision is used to detect write conflicts and have a document history.
      * Revisions behave similar to couchdb revisions:
      * @link https://docs.couchdb.org/en/stable/replication/conflicts.html#revision-tree
-
-     * When you create a new document, do not send a revision,
-     * When you update an existing document, do not send a revision.
+     * 
+     * When writing a document, you must send the correct revision in the previous-field
+     * to make sure that you do not cause a write conflict.
+     * The revision of the 'new' document-field must be created, for example via util.createRevision().
+     * Any revision that matches the [height]-[hash] format can be used.
      */
     _rev: string;
 
@@ -51,13 +53,7 @@ export type RxDocumentData<T> = T & {
  * The document data how it is send to the
  * storage instance to save it.
  */
-export type RxDocumentWriteData<T> = T & {
-    /**
-     * True if the document is deleted,
-     * false if not.
-     */
-    _deleted: boolean;
-
+export type RxDocumentWriteData<T> = RxDocumentData<T> & {
     _attachments: {
         /**
          * To create a new attachment, set the write data
@@ -68,19 +64,6 @@ export type RxDocumentWriteData<T> = T & {
          */
         [attachmentId: string]: RxAttachmentData | RxAttachmentWriteData;
     }
-
-    /**
-     * Revision on writeData must only be set
-     * when you want the RxStorage to respect the given revision.
-     * This is only possible on insert-operations where the previous data is not given.
-     * We need this to ensure that after a data-migration, the new state is predictable
-     * and when running the migration on multiple instances, all end up with having the same
-     * revisions.
-     * The [height] of the new revision must be heigher then the [height] of the old revision.
-     */
-    _rev?: string;
-
-    _meta: RxDocumentMeta;
 };
 
 export type WithDeleted<DocType> = DocType & {

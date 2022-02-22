@@ -117,7 +117,7 @@ export function pouchDocumentDataToRxDocumentData<T>(
 export function rxDocumentDataToPouchDocumentData<T>(
     primaryKey: keyof T,
     doc: RxDocumentData<T> | RxDocumentWriteData<T>
-): WithAttachments<T & { _id: string; }> {
+): RxDocumentData<T & { _id: string; }> {
     let pouchDoc: WithAttachments<T> = pouchSwapPrimaryToId(primaryKey, doc);
 
     // always flat clone becaues we mutate the _attachments property.

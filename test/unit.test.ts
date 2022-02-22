@@ -9,8 +9,8 @@ import './unit/adapter-check.test.js';
  * your relevant tests run first.
  * Do not commit this file if you modified the order.
  */
-import './unit/rx-storage-pouchdb.test.js';
 import './unit/rx-storage-implementations.test.js';
+import './unit/rx-storage-pouchdb.test.js';
 import './unit/rx-storage-lokijs.test.js';
 import './unit/rx-storage-dexie.test.js';
 import './unit/instance-of-check.test.js';

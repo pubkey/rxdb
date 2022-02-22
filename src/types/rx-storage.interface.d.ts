@@ -274,7 +274,7 @@ export interface RxStorageInstance<
      * and others error. We need this to have a similar behavior as most NoSQL databases.
      */
     bulkWrite(
-        documentWrites: BulkWriteRow<DocumentData>[]
+        documentWrites: BulkWriteRow<DocumentData>[],
     ): Promise<
         /**
          * returns the response, splitted into success and error lists.

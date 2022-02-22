@@ -31,6 +31,7 @@ import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder';
 import { clone, waitUntil } from 'async-test-util';
 import { HumanDocumentType, humanSchemaLiteral } from '../helper/schemas';
 import { RxDocumentWriteData } from '../../src/types';
+import { EXAMPLE_REVISION_1 } from '../helper/resvisions';
 
 addRxPlugin(RxDBQueryBuilderPlugin);
 
@@ -107,6 +108,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                         {
                             _attachments: {},
                             _deleted: false,
+                            _rev: EXAMPLE_REVISION_1,
                             _meta: {
                                 lwt: now()
                             }
