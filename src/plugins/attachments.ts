@@ -21,8 +21,8 @@ import type {
     RxStorageStatics,
     RxAttachmentDataMeta
 } from '../types';
-import type { RxSchema } from '../rx-schema';
 import { writeSingle } from '../rx-storage-helper';
+import { runAsyncPluginHooks } from '../hooks';
 
 function ensureSchemaSupportsAttachments(doc: any) {
     const schemaJson = doc.collection.schema.jsonSchema;
@@ -101,16 +101,15 @@ export class RxAttachment {
             this.doc.primary,
             this.id
         );
-        if (shouldEncrypt(this.doc.collection.schema)) {
-            const dataString = await blobBufferUtil.toString(plainData);
-            const ret = blobBufferUtil.createBlobBuffer(
-                this.doc.collection._crypter._decryptString(dataString),
-                this.type as any
-            );
-            return ret;
-        } else {
-            return plainData;
-        }
+
+        const hookInput = {
+            database: this.doc.collection.database,
+            schema: this.doc.collection.schema.jsonSchema,
+            type: this.type,
+            plainData
+        };
+        await runAsyncPluginHooks('postReadAttachment', hookInput);
+        return hookInput.plainData;
     }
 
     getStringData(): Promise<string> {
@@ -132,17 +131,9 @@ export function fromStorageInstanceResult(
     });
 }
 
-function shouldEncrypt(schema: RxSchema): boolean {
-    return !!(schema.jsonSchema.attachments && schema.jsonSchema.attachments.encrypted);
-}
-
 export async function putAttachment(
     this: RxDocument,
-    {
-        id,
-        data,
-        type = 'text/plain'
-    }: RxAttachmentCreator,
+    attachmentData: RxAttachmentCreator,
     /**
      * If set to true, the write will be skipped
      * when the attachment already contains the same data.
@@ -151,16 +142,15 @@ export async function putAttachment(
 ): Promise<RxAttachment> {
     ensureSchemaSupportsAttachments(this);
 
-    /**
-     * Then encryption plugin is only able to encrypt strings,
-     * so unpack as string first.
-     */
+    await runAsyncPluginHooks('preWriteAttachment', {
+        database: this.collection.database,
+        schema: this.collection.schema.jsonSchema,
+        attachmentData
+    });
 
-    if (shouldEncrypt(this.collection.schema)) {
-        const dataString = await blobBufferUtil.toString(data);
-        const encrypted = this.collection._crypter._encryptString(dataString);
-        data = blobBufferUtil.createBlobBuffer(encrypted, 'text/plain');
-    }
+    const {
+        id, data, type
+    } = attachmentData;
 
     const statics = this.collection.database.storage.statics;
     this._atomicQueue = this._atomicQueue
@@ -268,7 +258,6 @@ export async function preMigrateDocument<RxDocType>(
 ): Promise<void> {
     const attachments = data.docData._attachments;
     if (attachments) {
-        const mustDecrypt = !!shouldEncrypt(data.oldCollection.schema);
         const newAttachments: { [attachmentId: string]: RxAttachmentWriteData } = {};
         await Promise.all(
             Object.keys(attachments).map(async (attachmentId) => {
@@ -276,13 +265,16 @@ export async function preMigrateDocument<RxDocType>(
                 const docPrimary: string = (data.docData as any)[data.oldCollection.schema.primaryPath];
 
                 let rawAttachmentData = await data.oldCollection.storageInstance.getAttachmentData(docPrimary, attachmentId);
-                if (mustDecrypt) {
-                    rawAttachmentData = await blobBufferUtil.toString(rawAttachmentData)
-                        .then(dataString => blobBufferUtil.createBlobBuffer(
-                            data.oldCollection._crypter._decryptString(dataString),
-                            (attachment as RxAttachmentData).type as any
-                        ));
-                }
+
+
+                const hookInput = {
+                    database: data.oldCollection.database,
+                    schema: data.oldCollection.schema.jsonSchema,
+                    type: attachment.type,
+                    plainData: rawAttachmentData
+                };
+                await runAsyncPluginHooks('postReadAttachment', hookInput);
+                rawAttachmentData = hookInput.plainData;
 
                 const meta = await getAttachmentDataMeta(
                     data.oldCollection.database.storage.statics,

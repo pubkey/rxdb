@@ -398,9 +398,9 @@ export class RxDatabaseBase<
      * @param _decrypted
      * When true, all encrypted values will be decrypted.
      */
-    exportJSON(_decrypted: boolean, _collections?: string[]): Promise<RxDumpDatabase<Collections>>;
-    exportJSON(_decrypted?: false, _collections?: string[]): Promise<RxDumpDatabaseAny<Collections>>;
-    exportJSON(_decrypted: boolean = false, _collections?: string[]): Promise<any> {
+    exportJSON(_collections?: string[]): Promise<RxDumpDatabase<Collections>>;
+    exportJSON(_collections?: string[]): Promise<RxDumpDatabaseAny<Collections>>;
+    exportJSON(_collections?: string[]): Promise<any> {
         throw pluginMissing('json-dump');
     }
 

@@ -7,9 +7,6 @@ import {
     RxSchema
 } from './rx-schema';
 import {
-    Crypter
-} from './crypter';
-import {
     basePrototype as RxDocumentPrototype
 } from './rx-document';
 import {
@@ -37,7 +34,6 @@ import { newRxTypeError } from './rx-error';
  */
 const PROTOTYPES: { [k: string]: any } = {
     RxSchema: RxSchema.prototype,
-    Crypter: Crypter.prototype,
     RxDocument: RxDocumentPrototype,
     RxQuery: RxQueryBase.prototype,
     RxCollection: RxCollectionBase.prototype,

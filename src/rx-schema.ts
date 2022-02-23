@@ -23,6 +23,7 @@ import type {
     DeepMutable,
     DeepReadonly, JsonSchema, MaybeReadonly,
     PrimaryKey,
+    RxDocumentData,
     RxJsonSchema
 } from './types';
 
@@ -85,13 +86,6 @@ export class RxSchema<T = any> {
         } else {
             return false;
         }
-    }
-
-    /**
-     * get all encrypted paths
-     */
-    get encryptedPaths(): string[] {
-        return this.jsonSchema.encrypted || [];
     }
 
     /**
@@ -175,36 +169,6 @@ export class RxSchema<T = any> {
             documentData
         );
     }
-
-    fillPrimaryKey(
-        documentData: T
-    ): T {
-        const cloned = flatClone(documentData);
-        const newPrimary = getComposedPrimaryKeyOfDocumentData<T>(
-            this.jsonSchema,
-            documentData
-        );
-        const existingPrimary: string | undefined = documentData[this.primaryPath] as any;
-        if (
-            existingPrimary &&
-            existingPrimary !== newPrimary
-        ) {
-            throw newRxError(
-                'DOC19',
-                {
-                    args: {
-                        documentData,
-                        existingPrimary,
-                        newPrimary,
-                    },
-                    schema: this.jsonSchema
-                });
-        }
-
-        (cloned as any)[this.primaryPath] = newPrimary;
-        return cloned;
-    }
-
 }
 
 export function getIndexes<T = any>(
@@ -243,6 +207,38 @@ export function getComposedPrimaryKeyOfDocumentData<RxDocType>(
         return value;
     }).join(compositePrimary.separator);
 }
+
+export function fillPrimaryKey<T>(
+    primaryPath: keyof T,
+    jsonSchema: RxJsonSchema<T>,
+    documentData: RxDocumentData<T>
+): RxDocumentData<T> {
+    const cloned = flatClone(documentData);
+    const newPrimary = getComposedPrimaryKeyOfDocumentData<T>(
+        jsonSchema,
+        documentData
+    );
+    const existingPrimary: string | undefined = documentData[primaryPath] as any;
+    if (
+        existingPrimary &&
+        existingPrimary !== newPrimary
+    ) {
+        throw newRxError(
+            'DOC19',
+            {
+                args: {
+                    documentData,
+                    existingPrimary,
+                    newPrimary,
+                },
+                schema: jsonSchema
+            });
+    }
+
+    (cloned as any)[primaryPath] = newPrimary;
+    return cloned;
+}
+
 
 /**
  * array with previous version-numbers

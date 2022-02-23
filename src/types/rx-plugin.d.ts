@@ -1,8 +1,15 @@
 import { RxQuery, RxQueryOP, MangoQuery } from './rx-query';
 import { RxCollection } from './rx-collection';
-import { RxStorageInstanceCreationParams } from './rx-storage';
+import {
+    RxAttachmentData,
+    RxStorageInstanceCreationParams
+} from './rx-storage';
 import type {
-    DeepReadonly
+    BlobBuffer,
+    DeepReadonly,
+    RxAttachmentCreator,
+    RxDatabase,
+    RxJsonSchema
 } from '../types'
 
 export type RxPluginPreCreateRxQueryArgs = {
@@ -65,7 +72,6 @@ export interface RxPlugin {
 
     prototypes?: {
         RxSchema?: Function,
-        Crypter?: Function,
         RxDocument?: Function,
         RxQuery?: Function,
         RxCollection?: Function,
@@ -93,8 +99,38 @@ export interface RxPlugin {
         prePrepareQuery?: RxPluginHooks<RxPluginPrePrepareQueryArgs>,
         preQueryMatcher?: RxPluginHooks<{ rxQuery: RxQuery<any>; doc: any }>;
         preSortComparator?: RxPluginHooks<{ rxQuery: RxQuery<any>; docA: any; docB: any; }>;
-        preWriteToStorageInstance?: RxPluginHooks<{ collection: RxCollection; doc: any }>;
-        postReadFromInstance?: RxPluginHooks<{ collection: RxCollection, doc: any }>;
+        preWriteToStorageInstance?: RxPluginHooks<{
+            database: RxDatabase;
+            primaryPath: string;
+            schema: RxJsonSchema<any>;
+            doc: any;
+        }>;
+        postReadFromInstance?: RxPluginHooks<{
+            database: RxDatabase;
+            primaryPath: string;
+            schema: RxJsonSchema<any>;
+            doc: any;
+        }>;
+        preWriteAttachment?: RxPluginHooks<{
+            database: RxDatabase;
+            schema: RxJsonSchema<any>;
+            /**
+             * By mutating the attachmentData,
+             * the hook can modify the output.
+             */
+            attachmentData: RxAttachmentCreator
+        }>;
+        postReadAttachment?: RxPluginHooks<{
+            database: RxDatabase;
+            schema: RxJsonSchema<any>;
+            attachmentData: RxAttachmentData;
+            type: string;
+            /**
+             * By mutating the plainData,
+             * the hook can modify the output.
+             */
+            plainData: BlobBuffer;
+        }>;
         createRxQuery?: RxPluginHooks<RxQuery>;
         createRxDocument?: RxPluginHooks<any>;
         postCreateRxDocument?: RxPluginHooks<any>;

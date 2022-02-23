@@ -31,39 +31,9 @@ config.parallel('import-export.test.js', () => {
                 const json = await col.exportJSON();
                 assert.strictEqual(json.name, 'human');
                 assert.strictEqual(typeof json.schemaHash, 'string');
-                assert.strictEqual(json.encrypted, false); // false because db has no encrypted field
-                assert.strictEqual(json.passwordHash, null);
                 assert.strictEqual(json.docs.length, 5);
                 json.docs.map(doc => assert.strictEqual(typeof doc, 'object'));
                 col.database.destroy();
-            });
-            it('export encrypted as encrypted', async () => {
-                const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
-                    name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
-                    password: randomCouchString(10)
-                });
-                const cols = await db.addCollections({
-                    enchuman: {
-                        schema: schemas.encryptedObjectHuman
-                    }
-                });
-                const col = cols.enchuman;
-
-                const fns = [];
-                for (let i = 0; i < 10; i++)
-                    fns.push(col.insert(schemaObjects.encryptedObjectHuman()));
-                await Promise.all(fns);
-
-                const json = await col.exportJSON();
-
-                assert.strictEqual(json.encrypted, true);
-                assert.strictEqual(typeof json.passwordHash, 'string');
-                assert.strictEqual(json.docs.length, 10);
-                json.docs.forEach(doc => {
-                    assert.strictEqual(typeof doc.secret, 'string');
-                });
-                db.destroy();
             });
             it('export encrypted as decrypted', async () => {
                 const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
@@ -83,45 +53,15 @@ config.parallel('import-export.test.js', () => {
                     fns.push(col.insert(schemaObjects.encryptedObjectHuman()));
                 await Promise.all(fns);
 
-                const json = await col.exportJSON(true);
+                const json = await col.exportJSON();
 
-                assert.strictEqual(json.encrypted, false);
-                assert.strictEqual(json.passwordHash, null); // no hash when not encrypted
+
                 assert.strictEqual(json.docs.length, 10);
                 json.docs.map(doc => {
                     assert.strictEqual(typeof doc.secret, 'object');
                     assert.strictEqual(typeof doc.secret.name, 'string');
                     assert.strictEqual(typeof doc.secret.subname, 'string');
                 });
-                db.destroy();
-            });
-            it('decrypt a single value from an encrypted export', async () => {
-                const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
-                    name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
-                    password: randomCouchString(10)
-                });
-                const cols = await db.addCollections({
-                    enchuman: {
-                        schema: schemas.encryptedObjectHuman
-                    }
-                });
-                const col = cols.enchuman;
-
-                const fns = [];
-                for (let i = 0; i < 10; i++) {
-                    fns.push(col.insert(schemaObjects.encryptedObjectHuman()));
-                }
-                await Promise.all(fns);
-
-                const json = await col.exportJSON(false);
-
-                const firstDoc = json.docs.pop() as any;
-                const decryptedString = col._crypter._decryptString(firstDoc.secret);
-                const decrypted = JSON.parse(decryptedString);
-                assert.strictEqual(typeof decrypted, 'object');
-                assert.strictEqual(typeof decrypted['name'], 'string');
-                assert.strictEqual(typeof decrypted['subname'], 'string');
                 db.destroy();
             });
         });
@@ -148,58 +88,6 @@ config.parallel('import-export.test.js', () => {
                     col.database.destroy();
                     emptyCol.database.destroy();
                 });
-                it('import encrypted', async () => {
-                    const password = randomCouchString(10);
-                    const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
-                        name: randomCouchString(10),
-                        storage: getRxStoragePouch('memory'),
-                        password
-                    });
-                    const cols = await db.addCollections({
-                        enchuman: {
-                            schema: schemas.encryptedObjectHuman
-                        }
-                    });
-                    const col = cols.enchuman;
-
-                    const fns = [];
-                    for (let i = 0; i < 10; i++)
-                        fns.push(col.insert(schemaObjects.encryptedObjectHuman()));
-                    await Promise.all(fns);
-
-                    const json = await col.exportJSON();
-
-                    const db2 = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
-                        name: randomCouchString(10),
-                        storage: getRxStoragePouch('memory'),
-                        password
-                    });
-                    const emptyCols = await db2.addCollections({
-                        enchuman: {
-                            schema: schemas.encryptedObjectHuman
-                        }
-                    });
-                    const emptyCol = emptyCols.enchuman;
-
-                    // try to decrypt first
-                    const firstDoc = json.docs[0];
-                    const decryptedString = emptyCol._crypter._decryptString(firstDoc.secret);
-                    const decrypted = JSON.parse(decryptedString);
-                    assert.strictEqual(typeof decrypted, 'object');
-                    assert.strictEqual(typeof decrypted['name'], 'string');
-                    assert.strictEqual(typeof decrypted['subname'], 'string');
-
-                    await emptyCol.importJSON(json);
-                    const docs = await emptyCol.find().exec();
-                    assert.strictEqual(docs.length, 10);
-
-                    const firstDocAfter = docs[0];
-                    assert.strictEqual(typeof firstDocAfter.get('secret'), 'object');
-                    assert.strictEqual(typeof firstDocAfter.get('secret').name, 'string');
-                    assert.strictEqual(typeof firstDocAfter.get('secret').subname, 'string');
-                    db.destroy();
-                    db2.destroy();
-                });
             });
             describe('negative', () => {
                 it('should not import if schema is different', async () => {
@@ -213,44 +101,6 @@ config.parallel('import-export.test.js', () => {
                     );
                     col.database.destroy();
                     differentSchemaCol.database.destroy();
-                });
-                it('should not import encrypted if password is different', async () => {
-                    const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
-                        name: randomCouchString(10),
-                        storage: getRxStoragePouch('memory'),
-                        password: randomCouchString(10)
-                    });
-                    const cols = await db.addCollections({
-                        enchuman: {
-                            schema: schemas.encryptedObjectHuman
-                        }
-                    });
-                    const col = cols.enchuman;
-
-                    const db2 = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
-                        name: randomCouchString(10),
-                        storage: getRxStoragePouch('memory'),
-                        password: randomCouchString(10)
-                    });
-                    const cols2 = await db2.addCollections({
-                        enchuman: {
-                            schema: schemas.encryptedObjectHuman
-                        }
-                    });
-                    const col2 = cols2.enchuman;
-
-                    const fns = [];
-                    for (let i = 0; i < 10; i++)
-                        fns.push(col.insert(schemaObjects.encryptedObjectHuman()));
-                    await Promise.all(fns);
-
-                    const json = await col.exportJSON();
-                    await AsyncTestUtil.assertThrows(
-                        () => col2.importJSON(json),
-                        'RxError'
-                    );
-                    db.destroy();
-                    db2.destroy();
                 });
                 it('should not import if schema not matching', async () => {
                     const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
@@ -306,45 +156,15 @@ config.parallel('import-export.test.js', () => {
 
                 assert.strictEqual(typeof json.name, 'string');
                 assert.strictEqual(typeof json.instanceToken, 'string');
-                assert.strictEqual(json.encrypted, false);
-                assert.strictEqual(json.passwordHash, null);
                 assert.strictEqual(typeof json.collections, 'object');
                 assert.strictEqual(json.collections.length, 1);
 
                 const colDump = json.collections[0];
                 assert.strictEqual(colDump.name, 'human');
                 assert.strictEqual(typeof colDump.schemaHash, 'string');
-                assert.strictEqual(colDump.encrypted, false);
-                assert.strictEqual(colDump.passwordHash, null);
                 assert.strictEqual(colDump.docs.length, 5);
                 colDump.docs.map((doc: any) => assert.strictEqual(typeof doc, 'object'));
                 col.database.destroy();
-            });
-            it('export encrypted as encrypted', async () => {
-                const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
-                    name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
-                    password: randomCouchString(10)
-                });
-                const cols = await db.addCollections({
-                    enchuman: {
-                        schema: schemas.encryptedObjectHuman
-                    }
-                });
-                const col = cols.enchuman;
-                const fns = [];
-                for (let i = 0; i < 10; i++) {
-                    fns.push(col.insert(schemaObjects.encryptedObjectHuman()));
-                }
-                await Promise.all(fns);
-                const json = await db.exportJSON();
-                assert.strictEqual(json.encrypted, true);
-                assert.strictEqual(typeof json.passwordHash, 'string');
-                assert.strictEqual(json.collections[0].encrypted, true);
-                assert.strictEqual(typeof json.collections[0].passwordHash, 'string');
-                json.collections[0].docs
-                    .forEach(docData => assert.strictEqual(typeof docData.secret, 'string'));
-                db.destroy();
             });
             it('export encrypted as decrypted', async () => {
                 const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
@@ -362,12 +182,8 @@ config.parallel('import-export.test.js', () => {
                     new Array(10).fill(0)
                         .map(() => col.insert(schemaObjects.encryptedObjectHuman()))
                 );
-                const json = await db.exportJSON(true);
+                const json = await db.exportJSON();
 
-                assert.strictEqual(json.encrypted, false);
-                assert.strictEqual(typeof json.passwordHash, 'string');
-                assert.strictEqual(json.collections[0].encrypted, false);
-                assert.strictEqual(json.collections[0].passwordHash, null);
                 json.collections[0].docs
                     .forEach(docData => {
                         assert.strictEqual(typeof docData.secret, 'object');
@@ -432,7 +248,7 @@ config.parallel('import-export.test.js', () => {
                 }
                 await Promise.all(fns);
 
-                const json = await col.database.exportJSON(false, ['enchuman']);
+                const json = await col.database.exportJSON(['enchuman']);
                 assert.strictEqual(json.collections.length, 1);
                 json.collections
                     .forEach((c: any) => assert.strictEqual(c.docs.length, 10));
@@ -452,45 +268,6 @@ config.parallel('import-export.test.js', () => {
 
                     const docs = await col2.find().exec();
                     assert.strictEqual(docs.length, 5);
-                    db.destroy();
-                    db2.destroy();
-                });
-                it('import encrypted', async () => {
-                    const password = randomCouchString(10);
-                    const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
-                        name: randomCouchString(10),
-                        storage: getRxStoragePouch('memory'),
-                        password
-                    });
-                    const cols = await db.addCollections({
-                        enchuman: {
-                            schema: schemas.encryptedObjectHuman
-                        }
-                    });
-                    const col = cols.enchuman;
-                    const db2 = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
-                        name: randomCouchString(10),
-                        storage: getRxStoragePouch('memory'),
-                        password
-                    });
-                    const cols2 = await db2.addCollections({
-                        enchuman: {
-                            schema: schemas.encryptedObjectHuman
-                        }
-                    });
-                    const col2 = cols2.enchuman;
-
-                    const fns = [];
-                    for (let i = 0; i < 10; i++)
-                        fns.push(col.insert(schemaObjects.encryptedObjectHuman()));
-
-                    await Promise.all(fns);
-                    const json = await db.exportJSON();
-
-                    await db2.importJSON(json);
-
-                    const docs = await col2.find().exec();
-                    assert.strictEqual(docs.length, 10);
                     db.destroy();
                     db2.destroy();
                 });
@@ -539,43 +316,6 @@ config.parallel('import-export.test.js', () => {
                     const docs = await col2.find().exec();
                     assert.strictEqual(docs.length, 0);
 
-                    db.destroy();
-                    db2.destroy();
-                });
-                it('should not import encrypted if password is different', async () => {
-                    const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
-                        name: randomCouchString(10),
-                        storage: getRxStoragePouch('memory'),
-                        password: randomCouchString(10)
-                    });
-                    const cols = await db.addCollections({
-                        enchuman: {
-                            schema: schemas.encryptedObjectHuman
-                        }
-                    });
-                    const col = cols.enchuman;
-
-                    const db2 = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
-                        name: randomCouchString(10),
-                        storage: getRxStoragePouch('memory'),
-                        password: randomCouchString(10)
-                    });
-                    await db2.addCollections({
-                        enchuman: {
-                            schema: schemas.encryptedObjectHuman
-                        }
-                    });
-
-                    const fns = [];
-                    for (let i = 0; i < 10; i++)
-                        fns.push(col.insert(schemaObjects.encryptedObjectHuman()));
-                    await Promise.all(fns);
-
-                    const json = await db.exportJSON();
-                    await AsyncTestUtil.assertThrows(
-                        () => db2.importJSON(json),
-                        'RxError'
-                    );
                     db.destroy();
                     db2.destroy();
                 });

@@ -5,8 +5,8 @@
 import { map } from 'rxjs/operators';
 import { runPluginHooks } from './hooks';
 import { overwritable } from './overwritable';
-import { RxCollectionBase } from './rx-collection';
 import { newRxError } from './rx-error';
+import { fillPrimaryKey } from './rx-schema';
 import type {
     BulkWriteLocalRow,
     BulkWriteRow,
@@ -17,6 +17,7 @@ import type {
     RxDatabase,
     RxDocumentData,
     RxDocumentWriteData,
+    RxJsonSchema,
     RxLocalDocumentData,
     RxLocalStorageBulkWriteResponse,
     RxStorage,
@@ -146,45 +147,6 @@ export function storageChangeEventToRxChangeEvent<DocType>(
     return ret;
 }
 
-export function transformDocumentDataFromRxDBToRxStorage(
-    col: RxCollection | RxCollectionBase<any, any, any>,
-    data: any,
-    updateLwt: boolean
-) {
-    data = flatClone(data);
-    data._meta = flatClone(data._meta);
-
-    // ensure primary key has not been changed
-    if (overwritable.isDevMode()) {
-        col.schema.fillPrimaryKey(data);
-    }
-
-    data = (col._crypter as any).encrypt(data);
-
-    if (updateLwt) {
-        data._meta.lwt = new Date().getTime();
-    }
-
-    const hookParams = {
-        collection: col,
-        doc: data
-    };
-    runPluginHooks('preWriteToStorageInstance', hookParams);
-    return hookParams.doc;
-}
-
-export function transformDocumentDataFromRxStorageToRxDB(
-    col: RxCollection | RxCollectionBase<any, any, any>,
-    data: any
-) {
-    const hookParams = {
-        collection: col,
-        doc: data
-    };
-    runPluginHooks('postReadFromInstance', hookParams);
-    return (col._crypter as any).decrypt(hookParams.doc);
-}
-
 export function throwIfIsStorageWriteError<RxDocType>(
     collection: RxCollection<RxDocType>,
     documentId: string,
@@ -212,30 +174,84 @@ export function throwIfIsStorageWriteError<RxDocType>(
  * and other data transformations and also ensure that database.lockedRun()
  * is used properly.
  */
-export function getWrappedStorageInstance<RxDocumentType, Internals, InstanceCreationOptions>(
-    collection: RxCollection<RxDocumentType, {}, {}, InstanceCreationOptions>,
-    storageInstance: RxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions>
-): RxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions> {
+export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreationOptions>(
+    collection: RxCollection<RxDocType, {}, {}, InstanceCreationOptions>,
+    storageInstance: RxStorageInstance<RxDocType, Internals, InstanceCreationOptions>,
+    /**
+     * The original RxJsonSchema
+     * before it was mutated by hooks.
+     */
+    rxJsonSchema: RxJsonSchema<RxDocType>
+): RxStorageInstance<RxDocType, Internals, InstanceCreationOptions> {
     const database = collection.database;
-    const ret: RxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions> = {
+    overwritable.deepFreezeWhenDevMode(rxJsonSchema);
+
+    const primaryPath = collection.schema.primaryPath;
+
+    function transformDocumentDataFromRxDBToRxStorage(
+        data: RxDocumentData<RxDocType> | RxDocumentWriteData<RxDocType>,
+        updateLwt: boolean
+    ) {
+        data = flatClone(data);
+        data._meta = flatClone(data._meta);
+
+        // ensure primary key has not been changed
+        if (overwritable.isDevMode()) {
+            data = fillPrimaryKey(
+                primaryPath,
+                rxJsonSchema,
+                data as any
+            );
+        }
+
+        if (updateLwt) {
+            data._meta.lwt = new Date().getTime();
+        }
+
+        const hookParams = {
+            database: collection.database,
+            primaryPath,
+            schema: rxJsonSchema,
+            doc: data
+        };
+
+        runPluginHooks('preWriteToStorageInstance', hookParams);
+        return hookParams.doc as any;
+    }
+
+    function transformDocumentDataFromRxStorageToRxDB(
+        data: any
+    ): any {
+        const hookParams = {
+            database: collection.database,
+            primaryPath,
+            schema: rxJsonSchema,
+            doc: data
+        };
+
+        runPluginHooks('postReadFromInstance', hookParams);
+        return hookParams.doc;
+    }
+
+    const ret: RxStorageInstance<RxDocType, Internals, InstanceCreationOptions> = {
         schema: storageInstance.schema,
         internals: storageInstance.internals,
         collectionName: storageInstance.collectionName,
         databaseName: storageInstance.databaseName,
         options: storageInstance.options,
         bulkAddRevisions(documents) {
-            const toStorageDocuments = documents.map(doc => transformDocumentDataFromRxDBToRxStorage(collection, doc, true))
+            const toStorageDocuments = documents.map(doc => transformDocumentDataFromRxDBToRxStorage(doc, true))
             return database.lockedRun(
                 () => storageInstance.bulkAddRevisions(
                     toStorageDocuments
                 )
             );
         },
-        bulkWrite(rows: BulkWriteRow<RxDocumentType>[]) {
-            const toStorageWriteRows: BulkWriteRow<RxDocumentType>[] = rows.map(row => {
+        bulkWrite(rows: BulkWriteRow<RxDocType>[]) {
+            const toStorageWriteRows: BulkWriteRow<RxDocType>[] = rows.map(row => {
                 return {
-                    document: transformDocumentDataFromRxDBToRxStorage(collection, row.document, true),
-                    previous: row.previous ? transformDocumentDataFromRxDBToRxStorage(collection, row.previous, false) : undefined,
+                    document: transformDocumentDataFromRxDBToRxStorage(row.document, true),
+                    previous: row.previous ? transformDocumentDataFromRxDBToRxStorage(row.previous, false) : undefined,
                 }
             });
 
@@ -244,7 +260,7 @@ export function getWrappedStorageInstance<RxDocumentType, Internals, InstanceCre
                     toStorageWriteRows
                 )
             ).then(writeResult => {
-                const ret: RxStorageBulkWriteResponse<RxDocumentType> = {
+                const ret: RxStorageBulkWriteResponse<RxDocType> = {
                     success: {},
                     error: {}
                 };
@@ -252,7 +268,7 @@ export function getWrappedStorageInstance<RxDocumentType, Internals, InstanceCre
                     ret.error[k] = v;
                 });
                 Object.entries(writeResult.success).forEach(([k, v]) => {
-                    ret.success[k] = transformDocumentDataFromRxStorageToRxDB(collection, v);
+                    ret.success[k] = transformDocumentDataFromRxStorageToRxDB(v);
                 });
                 return ret;
             });
@@ -262,7 +278,7 @@ export function getWrappedStorageInstance<RxDocumentType, Internals, InstanceCre
                 () => storageInstance.query(preparedQuery)
             ).then(queryResult => {
                 return {
-                    documents: queryResult.documents.map(doc => transformDocumentDataFromRxStorageToRxDB(collection, doc))
+                    documents: queryResult.documents.map(doc => transformDocumentDataFromRxStorageToRxDB(doc))
                 };
             });
         },
@@ -270,9 +286,9 @@ export function getWrappedStorageInstance<RxDocumentType, Internals, InstanceCre
             return database.lockedRun(
                 () => storageInstance.findDocumentsById(ids, deleted)
             ).then(findResult => {
-                const ret: { [documentId: string]: RxDocumentData<RxDocumentType>; } = {};
+                const ret: { [documentId: string]: RxDocumentData<RxDocType>; } = {};
                 Object.entries(findResult).forEach(([key, doc]) => {
-                    ret[key] = transformDocumentDataFromRxStorageToRxDB(collection, doc);
+                    ret[key] = transformDocumentDataFromRxStorageToRxDB(doc);
                 });
                 return ret;
             });
@@ -303,7 +319,7 @@ export function getWrappedStorageInstance<RxDocumentType, Internals, InstanceCre
         changeStream() {
             return storageInstance.changeStream().pipe(
                 map(eventBulk => {
-                    const ret: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocumentType>>> = {
+                    const ret: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>> = {
                         id: eventBulk.id,
                         events: eventBulk.events.map(event => {
                             return {
@@ -314,8 +330,8 @@ export function getWrappedStorageInstance<RxDocumentType, Internals, InstanceCre
                                 change: {
                                     id: event.change.id,
                                     operation: event.change.operation,
-                                    doc: event.change.doc ? transformDocumentDataFromRxStorageToRxDB(collection, event.change.doc) : undefined,
-                                    previous: event.change.previous ? transformDocumentDataFromRxStorageToRxDB(collection, event.change.previous) : undefined
+                                    doc: event.change.doc ? transformDocumentDataFromRxStorageToRxDB(event.change.doc) : undefined,
+                                    previous: event.change.previous ? transformDocumentDataFromRxStorageToRxDB(event.change.previous) : undefined
                                 }
                             }
 

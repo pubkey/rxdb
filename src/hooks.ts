@@ -60,6 +60,8 @@ export const HOOKS: { [k: string]: any[] } = {
      * the RxStorage instance.
      */
     postReadFromInstance: [],
+    preWriteAttachment: [],
+    postReadAttachment: [],
     createRxDocument: [],
     /**
      * runs after a RxDocument is created,

@@ -44,7 +44,7 @@ import type {
     SyncOptions,
     PouchDBInstance
 } from '../types';
-import { transformDocumentDataFromRxStorageToRxDB } from '../rx-storage-helper';
+import { runPluginHooks } from '../hooks';
 
 // add pouchdb-replication-plugin
 addPouchPlugin(PouchReplicationPlugin);
@@ -171,7 +171,17 @@ export function setPouchEventEmitter(
 
                 (ev as any).change.docs
                     .filter((doc: any) => doc.language !== 'query') // remove internal docs
-                    .map((doc: any) => transformDocumentDataFromRxStorageToRxDB(rxRepState.collection, doc)) // do primary-swap and keycompression
+                    .map((doc: any) => {
+                        const hookParams = {
+                            database: rxRepState.collection.database,
+                            primaryPath: rxRepState.collection.schema.primaryPath,
+                            schema: rxRepState.collection.schema.jsonSchema,
+                            doc
+                        };
+
+                        runPluginHooks('postReadFromInstance', hookParams);
+                        return hookParams.doc;
+                    }) // do primary-swap and keycompression
                     .forEach((doc: any) => rxRepState._subjects.docs.next(doc));
             }));
 

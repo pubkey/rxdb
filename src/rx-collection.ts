@@ -34,10 +34,6 @@ import type {
     DataMigrator
 } from './plugins/migration';
 import {
-    Crypter,
-    createCrypter
-} from './crypter';
-import {
     DocCache,
     createDocCache
 } from './doc-cache';
@@ -195,7 +191,6 @@ export class RxCollectionBase<
     > = createDocCache();
 
     public _queryCache: QueryCache = createQueryCache();
-    public _crypter: Crypter = {} as Crypter;
     public _observable$: Observable<RxChangeEvent<RxDocumentType>> = {} as any;
     public _changeEventBuffer: ChangeEventBuffer = {} as ChangeEventBuffer;
 
@@ -206,11 +201,14 @@ export class RxCollectionBase<
 
     private _onDestroyCall?: () => void;
     public async prepare(): Promise<void> {
-        this.storageInstance = getWrappedStorageInstance(this as any, this.internalStorageInstance);
-        this.localDocumentsStore = getWrappedKeyObjectInstance(this as any, this.internalLocalDocumentsStore);
-
-        // we trigger the non-blocking things first and await them later so we can do stuff in the mean time
-        this._crypter = createCrypter(this.database.password, this.schema);
+        this.storageInstance = getWrappedStorageInstance(
+            this as any, this.internalStorageInstance,
+            this.schema.jsonSchema
+        );
+        this.localDocumentsStore = getWrappedKeyObjectInstance(
+            this as any,
+            this.internalLocalDocumentsStore
+        );
 
         this._observable$ = this.database.eventBulks$.pipe(
             filter(changeEventBulk => changeEventBulk.collectionName === this.name),
@@ -724,9 +722,9 @@ export class RxCollectionBase<
      * When false or omitted and an interface or type is loaded in this collection,
      * all base properties of the type are typed as `any` since data could be encrypted.
      */
-    exportJSON(_decrypted: boolean): Promise<RxDumpCollection<RxDocumentType>>;
-    exportJSON(_decrypted?: false): Promise<RxDumpCollectionAny<RxDocumentType>>;
-    exportJSON(_decrypted: boolean = false): Promise<any> {
+    exportJSON(): Promise<RxDumpCollection<RxDocumentType>>;
+    exportJSON(): Promise<RxDumpCollectionAny<RxDocumentType>>;
+    exportJSON(): Promise<any> {
         throw pluginMissing('json-dump');
     }
 

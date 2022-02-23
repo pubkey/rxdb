@@ -12,37 +12,33 @@ import {
     newRxError
 } from '../rx-error';
 
-import type {
-    Crypter
-} from '../crypter';
+import objectPath from 'object-path';
 import type {
     RxPlugin,
     RxDatabase,
     RxLocalDocumentData
 } from '../types';
-import { getDefaultRxDocumentMeta, hash, PROMISE_RESOLVE_FALSE } from '../util';
+import {
+    blobBufferUtil,
+    getDefaultRxDocumentMeta,
+    hash,
+    PROMISE_RESOLVE_FALSE
+} from '../util';
 import { findLocalDocument } from '../rx-storage-helper';
 
-const minPassLength = 8;
+export const MINIMUM_PASSWORD_LENGTH: 8 = 8;
 
-export function encrypt(value: string, password: any): string {
+
+export function encryptString(value: string, password: string): string {
     const encrypted = AES.encrypt(value, password);
     return encrypted.toString();
 }
 
-export function decrypt(cipherText: string, password: any): string {
+export function decryptString(cipherText: string, password: string): string {
     const decrypted = AES.decrypt(cipherText, password);
     return decrypted.toString(cryptoEnc);
 }
 
-const _encryptString = function (this: Crypter, value: string) {
-    return encrypt(value, this.password);
-};
-
-const _decryptString = function (this: Crypter, encryptedValue: string): string {
-    const decrypted = decrypt(encryptedValue, this.password);
-    return decrypted;
-};
 
 
 export type PasswordHashDocument = RxLocalDocumentData<{
@@ -95,16 +91,7 @@ export async function storePasswordHashIntoDatabase(
 export const RxDBEncryptionPlugin: RxPlugin = {
     name: 'encryption',
     rxdb: true,
-    prototypes: {
-        /**
-         * Set crypto-functions for the Crypter.prototype
-         */
-        Crypter: (proto: any) => {
-            proto._encryptString = _encryptString;
-            proto._decryptString = _decryptString;
-        }
-
-    },
+    prototypes: {},
     overwritable: {
         validatePassword: function (password: any) {
             if (password && typeof password !== 'string') {
@@ -112,9 +99,9 @@ export const RxDBEncryptionPlugin: RxPlugin = {
                     password
                 });
             }
-            if (password && password.length < minPassLength) {
+            if (password && password.length < MINIMUM_PASSWORD_LENGTH) {
                 throw newRxError('EN2', {
-                    minPassLength,
+                    minPassLength: MINIMUM_PASSWORD_LENGTH,
                     password
                 });
             }
@@ -124,6 +111,82 @@ export const RxDBEncryptionPlugin: RxPlugin = {
         createRxDatabase: {
             after: (db: RxDatabase) => {
                 return storePasswordHashIntoDatabase(db);
+            }
+        },
+        preWriteToStorageInstance: {
+            before: (args) => {
+                const docData = args.doc;
+                const password = args.database.password;
+                const schema = args.schema
+                if (!password || !schema.encrypted) {
+                    return docData;
+                }
+
+                schema.encrypted
+                    .forEach(path => {
+                        const value = objectPath.get(docData, path);
+                        if (typeof value === 'undefined') {
+                            return;
+                        }
+
+                        const stringValue = JSON.stringify(value);
+                        const encrypted = encryptString(stringValue, password);
+                        objectPath.set(docData, path, encrypted);
+                    });
+            }
+        },
+        postReadFromInstance: {
+            after: (args) => {
+                const docData = args.doc;
+                const password = args.database.password;
+                const schema = args.schema
+                if (!password || !schema.encrypted) {
+                    return docData;
+                }
+                schema.encrypted
+                    .forEach(path => {
+                        const value = objectPath.get(docData, path);
+                        if (typeof value === 'undefined') {
+                            return;
+                        }
+                        const decrypted = decryptString(value, password);
+                        const decryptedParsed = JSON.parse(decrypted);
+                        objectPath.set(docData, path, decryptedParsed);
+                    });
+                return docData;
+            }
+        },
+        preWriteAttachment: {
+            after: async (args) => {
+                const password = args.database.password;
+                const schema = args.schema
+                if (
+                    password &&
+                    schema.attachments &&
+                    schema.attachments.encrypted
+                ) {
+                    const dataString = await blobBufferUtil.toString(args.attachmentData.data);
+                    const encrypted = encryptString(dataString, password);
+                    args.attachmentData.data = blobBufferUtil.createBlobBuffer(encrypted, 'text/plain');
+                }
+            }
+        },
+        postReadAttachment: {
+            after: async (args) => {
+                const password = args.database.password;
+                const schema = args.schema
+                if (
+                    password &&
+                    schema.attachments &&
+                    schema.attachments.encrypted
+                ) {
+                    const dataString = await blobBufferUtil.toString(args.plainData);
+                    const decrypted = decryptString(dataString, password);
+                    args.plainData = blobBufferUtil.createBlobBuffer(
+                        decrypted,
+                        args.type
+                    );
+                }
             }
         }
     }
