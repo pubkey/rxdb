@@ -15,6 +15,9 @@ import {
     createCompressedJsonSchema
 } from 'jsonschema-key-compression';
 import { getPrimaryFieldOfPrimaryKey } from '../rx-schema';
+import {
+    overwritable
+} from '../overwritable';
 
 import type {
     RxPlugin,
@@ -34,8 +37,8 @@ declare type CompressionState = {
  * Cache the compression table and the compressed schema
  * by the storage instance for better performance.
  */
-const COMPRESSION_STATE_BY_COLLECTION: WeakMap<
-    RxCollection,
+const COMPRESSION_STATE_BY_SCHEMA: WeakMap<
+    RxJsonSchema<any>,
     CompressionState
 > = new WeakMap();
 
@@ -104,25 +107,28 @@ export function createCompressionState(
 }
 
 export function getCompressionStateByStorageInstance(
-    collection: RxCollection
+    schema: RxJsonSchema<any>
 ): CompressionState {
-    let state = COMPRESSION_STATE_BY_COLLECTION.get(collection);
+    let state = COMPRESSION_STATE_BY_SCHEMA.get(schema);
     if (!state) {
-        state = createCompressionState(collection.schema.jsonSchema);
-        COMPRESSION_STATE_BY_COLLECTION.set(collection, state);
+
+        /**
+         * Because we cache the state by the JsonSchema,
+         * it must be ausured that the given schema object never changes.
+         */
+        overwritable.deepFreezeWhenDevMode(schema);
+
+        state = createCompressionState(schema);
+        COMPRESSION_STATE_BY_SCHEMA.set(schema, state);
     }
     return state;
 }
 
-export const rxdb = true;
-export const prototypes = {};
-export const overwritable = {};
-
 export const RxDBKeyCompressionPlugin: RxPlugin = {
     name: 'key-compression',
-    rxdb,
-    prototypes,
-    overwritable,
+    rxdb: true,
+    prototypes: {},
+    overwritable: {},
     hooks: {
         /**
          * replace the keys of a query-obj with the compressed keys
@@ -139,7 +145,7 @@ export const RxDBKeyCompressionPlugin: RxPlugin = {
                 return;
             }
             const compressionState = getCompressionStateByStorageInstance(
-                rxQuery.collection
+                rxQuery.collection.schema.jsonSchema
             );
 
             const compressedQuery = compressQuery(
@@ -162,7 +168,7 @@ export const RxDBKeyCompressionPlugin: RxPlugin = {
             if (!params.rxQuery.collection.schema.jsonSchema.keyCompression) {
                 return;
             }
-            const state = getCompressionStateByStorageInstance(params.rxQuery.collection);
+            const state = getCompressionStateByStorageInstance(params.rxQuery.collection.schema.jsonSchema);
             params.doc = compressObject(
                 state.table,
                 params.doc
@@ -172,7 +178,7 @@ export const RxDBKeyCompressionPlugin: RxPlugin = {
             if (!params.rxQuery.collection.schema.jsonSchema.keyCompression) {
                 return;
             }
-            const state = getCompressionStateByStorageInstance(params.rxQuery.collection);
+            const state = getCompressionStateByStorageInstance(params.rxQuery.collection.schema.jsonSchema);
             params.docA = compressObject(
                 state.table,
                 params.docA
@@ -189,7 +195,7 @@ export const RxDBKeyCompressionPlugin: RxPlugin = {
             if (!params.collection.schema.jsonSchema.keyCompression) {
                 return;
             }
-            const state = getCompressionStateByStorageInstance(params.collection);
+            const state = getCompressionStateByStorageInstance(params.collection.schema.jsonSchema);
 
             /**
              * Do not send attachments to compressObject()
@@ -209,7 +215,7 @@ export const RxDBKeyCompressionPlugin: RxPlugin = {
             if (!params.collection.schema.jsonSchema.keyCompression) {
                 return;
             }
-            const state = getCompressionStateByStorageInstance(params.collection);
+            const state = getCompressionStateByStorageInstance(params.collection.schema.jsonSchema);
             params.doc = decompressObject(
                 state.table,
                 params.doc

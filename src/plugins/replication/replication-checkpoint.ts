@@ -180,11 +180,13 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
                 return false;
             }
 
+            // TODO why do we have to run the hooks here? arent they run by the storage instance wrapper?
             const hookParams = {
                 collection,
                 doc: changedDoc
             };
             runPluginHooks('postReadFromInstance', hookParams);
+
             changedDoc = hookParams.doc;
 
             changedDocIds.add(id);

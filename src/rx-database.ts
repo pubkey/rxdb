@@ -15,12 +15,12 @@ import type {
     ServerResponse,
     BackupOptions,
     RxStorage,
-    RxStorageKeyObjectInstance,
     RxStorageInstance,
     BulkWriteRow,
     RxChangeEvent,
     RxDatabaseCreator,
-    RxChangeEventBulk
+    RxChangeEventBulk,
+    RxLocalDocumentData
 } from './types';
 
 import {
@@ -36,8 +36,7 @@ import {
     newRxError
 } from './rx-error';
 import {
-    createRxSchema,
-    getPrimaryFieldOfPrimaryKey
+    createRxSchema
 } from './rx-schema';
 import { overwritable } from './overwritable';
 import {
@@ -61,6 +60,7 @@ import {
     getSingleDocument,
     getWrappedKeyObjectInstance,
     INTERNAL_STORAGE_NAME,
+    RX_DATABASE_LOCAL_DOCS_STORAGE_NAME,
     storageChangeEventToRxChangeEvent,
     writeSingle
 } from './rx-storage-helper';
@@ -97,7 +97,7 @@ export class RxDatabaseBase<
     /**
      * Stores the local documents which are attached to this database.
      */
-    public localDocumentsStore: RxStorageKeyObjectInstance<Internals, InstanceCreationOptions> = {} as any;
+    public localDocumentsStore: RxStorageInstance<RxLocalDocumentData, Internals, InstanceCreationOptions> = {} as any;
 
     constructor(
         public readonly name: string,
@@ -112,7 +112,7 @@ export class RxDatabaseBase<
          * Stores information documents about the collections of the database
          */
         public readonly internalStore: RxStorageInstance<InternalStoreDocumentData, Internals, InstanceCreationOptions>,
-        public readonly internalLocalDocumentsStore: RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>,
+        public readonly internalLocalDocumentsStore: RxStorageInstance<RxLocalDocumentData, Internals, InstanceCreationOptions>,
         /**
          * Set if multiInstance: true
          * This broadcast channel is used to send events to other instances like
@@ -640,7 +640,7 @@ async function createRxDatabaseStorageInstances<Internals, InstanceCreationOptio
     multiInstance: boolean
 ): Promise<{
     internalStore: RxStorageInstance<InternalStoreDocumentData, Internals, InstanceCreationOptions>,
-    localDocumentsStore: RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>
+    localDocumentsStore: RxStorageInstance<RxLocalDocumentData, Internals, InstanceCreationOptions>
 }> {
     const internalStore = await storage.createStorageInstance<InternalStoreDocumentData>(
         {
@@ -652,12 +652,15 @@ async function createRxDatabaseStorageInstances<Internals, InstanceCreationOptio
         }
     );
 
-    const localDocumentsStore = await storage.createKeyObjectStorageInstance({
-        databaseName,
-        collectionName: '',
-        options,
-        multiInstance
-    });
+    const localDocumentsStore = await storage.createStorageInstance<RxLocalDocumentData>(
+        {
+            databaseName,
+            collectionName: RX_DATABASE_LOCAL_DOCS_STORAGE_NAME,
+            schema: getPseudoSchemaForVersion(0, '_id'),
+            options,
+            multiInstance
+        }
+    );
 
     return {
         internalStore,
@@ -793,22 +796,21 @@ export async function removeRxDatabase(
                 const schema = colDoc.schema;
                 const split = id.split('-');
                 const collectionName = split[0];
-                const version = parseInt(split[1], 10);
-                const primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
                 const [instance, localInstance] = await Promise.all([
                     storage.createStorageInstance<InternalStoreDocumentData>(
                         {
                             databaseName,
                             collectionName,
-                            schema: getPseudoSchemaForVersion(version, primaryPath as any),
+                            schema,
                             options: {},
                             multiInstance: false
                         }
                     ),
-                    storage.createKeyObjectStorageInstance({
+                    storage.createStorageInstance({
                         databaseName,
                         collectionName: getCollectionLocalInstanceName(collectionName),
                         options: {},
+                        schema: getPseudoSchemaForVersion(0, '_id'),
                         multiInstance: false
                     })
                 ]);

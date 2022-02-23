@@ -23,12 +23,12 @@ import type {
     RxStorageBulkWriteError,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
-    RxStorageInstance,
-    RxStorageKeyObjectInstance
+    RxStorageInstance
 } from './types';
 import { firstPropertyValueOfObject, flatClone } from './util';
 
 export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
+export const RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = 'rxdatabase_storage_local';
 
 /**
  * returns all NON-LOCAL documents
@@ -89,9 +89,9 @@ export async function writeSingle<RxDocType>(
  * throws RxStorageBulkWriteError on failure
  */
 export async function writeSingleLocal<DocumentData>(
-    instance: RxStorageKeyObjectInstance<any, any>,
+    instance: RxStorageInstance<any, any, any>,
     writeRow: BulkWriteLocalRow<DocumentData>
-): Promise<RxLocalDocumentData<RxLocalDocumentData>> {
+): Promise<RxLocalDocumentData<DocumentData>> {
     const writeResult: RxLocalStorageBulkWriteResponse<DocumentData> = await instance.bulkWrite(
         [writeRow]
     );
@@ -105,12 +105,12 @@ export async function writeSingleLocal<DocumentData>(
     }
 }
 
-export async function findLocalDocument<DocType>(
-    instance: RxStorageKeyObjectInstance<any, any>,
+export async function findLocalDocument<DocumentData>(
+    instance: RxStorageInstance<any, any, any>,
     id: string,
     withDeleted: boolean
-): Promise<RxDocumentData<RxLocalDocumentData<DocType>> | null> {
-    const docList = await instance.findLocalDocumentsById([id], withDeleted);
+): Promise<RxDocumentData<RxLocalDocumentData<DocumentData>> | null> {
+    const docList = await instance.findDocumentsById([id], withDeleted);
     const doc = docList[id];
     if (!doc) {
         return null;
@@ -213,10 +213,10 @@ export function throwIfIsStorageWriteError<RxDocType>(
  * is used properly.
  */
 export function getWrappedStorageInstance<RxDocumentType, Internals, InstanceCreationOptions>(
+    database: RxDatabase,
     collection: RxCollection<RxDocumentType, {}, {}, InstanceCreationOptions>,
     storageInstance: RxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions>
 ): RxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions> {
-    const database = collection.database;
     const ret: RxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions> = {
         schema: storageInstance.schema,
         internals: storageInstance.internals,

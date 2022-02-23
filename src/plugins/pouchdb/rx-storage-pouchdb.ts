@@ -5,13 +5,12 @@ import type {
     RxJsonSchema,
     RxStorageInstanceCreationParams,
     RxStorage,
-    RxKeyObjectStorageInstanceCreationParams,
     MaybeReadonly
 } from '../../types';
 
 import {
-    flatClone,
-    adapterObject, isMaybeReadonlyArray
+    adapterObject,
+    isMaybeReadonlyArray
 } from '../../util';
 import {
     isLevelDown,
@@ -21,7 +20,6 @@ import { newRxError } from '../../rx-error';
 
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import { RxStorageInstancePouch } from './rx-storage-instance-pouch';
-import { RxStorageKeyObjectInstancePouch } from './rx-storage-key-object-instance-pouch';
 import {
     getPouchIndexDesignDocNameByIndex,
     PouchStorageInternals
@@ -86,39 +84,6 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
             params.databaseName,
             params.collectionName,
             params.schema,
-            {
-                pouch
-            },
-            params.options
-        );
-    }
-
-    public async createKeyObjectStorageInstance(
-        params: RxKeyObjectStorageInstanceCreationParams<PouchSettings>
-    ): Promise<RxStorageKeyObjectInstancePouch> {
-        const useOptions = flatClone(params.options);
-        // no compaction because this only stores local documents
-        useOptions.auto_compaction = false;
-        useOptions.revs_limit = 1;
-
-        /**
-         * TODO shouldnt we use a different location
-         * for the local storage? Or at least make sure we
-         * reuse the same pouchdb instance?
-         */
-        const pouchLocation = getPouchLocation(
-            params.databaseName,
-            params.collectionName,
-            0
-        );
-        const pouch = await this.createPouch(
-            pouchLocation,
-            params.options
-        );
-
-        return new RxStorageKeyObjectInstancePouch(
-            params.databaseName,
-            params.collectionName,
             {
                 pouch
             },

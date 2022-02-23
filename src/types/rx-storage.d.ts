@@ -285,14 +285,6 @@ export type RxStorageInstanceCreationParams<DocumentData, InstanceCreationOption
     multiInstance: boolean;
 }
 
-export type RxKeyObjectStorageInstanceCreationParams<InstanceCreationOptions> = {
-    databaseName: string;
-    collectionName: string;
-    options: InstanceCreationOptions;
-    multiInstance: boolean;
-}
-
-
 export type ChangeStreamOptions = {
 
     /**
