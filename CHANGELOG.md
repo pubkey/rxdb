@@ -19,6 +19,7 @@
 - Fix (replication primitives) only drop pulled documents when a relevant document was changed locally.
 - Add `_meta` property to stored document data.
 
+- RxPlugin hooks now can be defined as running `before` or `after` other plugin hooks.
 
 ### 11.6.0 (4 February 2022)
 

@@ -325,50 +325,50 @@ export async function getAttachmentDataMeta(
     }
 }
 
-export const rxdb = true;
-export const prototypes = {
-    RxDocument: (proto: any) => {
-        proto.putAttachment = putAttachment;
-        proto.getAttachment = getAttachment;
-        proto.allAttachments = allAttachments;
-        Object.defineProperty(proto, 'allAttachments$', {
-            get: function allAttachments$() {
-                return this._dataSync$
-                    .pipe(
-                        map((data: any) => {
-                            if (!data['_attachments']) {
-                                return {};
-                            }
-                            return data['_attachments'];
-                        }),
-                        map((attachmentsData: any) => Object.entries(
-                            attachmentsData
-                        )),
-                        map(entries => {
-                            return (entries as any)
-                                .map(([id, attachmentData]: any) => {
-                                    return fromStorageInstanceResult(
-                                        id,
-                                        attachmentData,
-                                        this
-                                    );
-                                });
-                        })
-                    );
-            }
-        });
-    }
-};
-export const overwritable = {};
-export const hooks = {
-    preMigrateDocument,
-    postMigrateDocument
-};
 
 export const RxDBAttachmentsPlugin: RxPlugin = {
     name: 'attachments',
-    rxdb,
-    prototypes,
-    overwritable,
-    hooks
+    rxdb: true,
+    prototypes: {
+        RxDocument: (proto: any) => {
+            proto.putAttachment = putAttachment;
+            proto.getAttachment = getAttachment;
+            proto.allAttachments = allAttachments;
+            Object.defineProperty(proto, 'allAttachments$', {
+                get: function allAttachments$() {
+                    return this._dataSync$
+                        .pipe(
+                            map((data: any) => {
+                                if (!data['_attachments']) {
+                                    return {};
+                                }
+                                return data['_attachments'];
+                            }),
+                            map((attachmentsData: any) => Object.entries(
+                                attachmentsData
+                            )),
+                            map(entries => {
+                                return (entries as any)
+                                    .map(([id, attachmentData]: any) => {
+                                        return fromStorageInstanceResult(
+                                            id,
+                                            attachmentData,
+                                            this
+                                        );
+                                    });
+                            })
+                        );
+                }
+            });
+        }
+    },
+    overwritable: {},
+    hooks: {
+        preMigrateDocument: {
+            after: preMigrateDocument
+        },
+        postMigrateDocument: {
+            after: postMigrateDocument
+        }
+    }
 };

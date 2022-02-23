@@ -78,23 +78,21 @@ const runAfterSchemaCreated = (rxSchema: RxSchema) => {
     requestIdleCallbackIfAvailable(() => _getValidator.bind(rxSchema, rxSchema));
 };
 
-export const rxdb = true;
-export const prototypes = {
-    /**
-     * set validate-function for the RxSchema.prototype
-     */
-    RxSchema: (proto: any) => {
-        proto._getValidator = _getValidator;
-        proto.validate = validate;
-    }
-};
-export const hooks = {
-    createRxSchema: runAfterSchemaCreated
-};
-
 export const RxDBValidateZSchemaPlugin: RxPlugin = {
     name: 'validate-z-schema',
-    rxdb,
-    prototypes,
-    hooks
+    rxdb: true,
+    prototypes: {
+        /**
+         * set validate-function for the RxSchema.prototype
+         */
+        RxSchema: (proto: any) => {
+            proto._getValidator = _getValidator;
+            proto.validate = validate;
+        }
+    },
+    hooks: {
+        createRxSchema: {
+            after: runAfterSchemaCreated
+        }
+    }
 };

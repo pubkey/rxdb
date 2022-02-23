@@ -256,7 +256,11 @@ export const RxDBServerPlugin: RxPlugin = {
     },
     overwritable: {},
     hooks: {
-        preDestroyRxDatabase: onDestroy,
-        preCreateRxCollection: ensureNoMoreCollections
+        preDestroyRxDatabase: {
+            after: onDestroy
+        },
+        preCreateRxCollection: {
+            after: ensureNoMoreCollections
+        }
     }
 };

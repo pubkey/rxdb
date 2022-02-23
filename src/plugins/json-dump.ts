@@ -147,23 +147,18 @@ function importDumpRxCollection<RxDocType>(
     return this.storageInstance.bulkWrite(docs.map(document => ({ document })));
 }
 
-export const rxdb = true;
-export const prototypes = {
-    RxDatabase: (proto: any) => {
-        proto.exportJSON = dumpRxDatabase;
-        proto.importJSON = importDumpRxDatabase;
-    },
-    RxCollection: (proto: any) => {
-        proto.exportJSON = dumpRxCollection;
-        proto.importJSON = importDumpRxCollection;
-    }
-};
-
-export const overwritable = {};
-
 export const RxDBJsonDumpPlugin: RxPlugin = {
     name: 'json-dump',
-    rxdb,
-    prototypes,
-    overwritable
+    rxdb: true,
+    prototypes: {
+        RxDatabase: (proto: any) => {
+            proto.exportJSON = dumpRxDatabase;
+            proto.importJSON = importDumpRxDatabase;
+        },
+        RxCollection: (proto: any) => {
+            proto.exportJSON = dumpRxCollection;
+            proto.importJSON = importDumpRxCollection;
+        }
+    },
+    overwritable: {}
 };

@@ -28,7 +28,9 @@ export const RxDBMigrationPlugin: RxPlugin = {
     name: 'migration',
     rxdb: true,
     hooks: {
-        preDestroyRxDatabase: onDatabaseDestroy
+        preDestroyRxDatabase: {
+            after: onDatabaseDestroy
+        }
     },
     prototypes: {
         RxDatabase: (proto: any) => {

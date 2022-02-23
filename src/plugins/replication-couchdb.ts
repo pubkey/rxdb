@@ -365,27 +365,26 @@ export function syncCouchDB(
     return repState;
 }
 
-export const rxdb = true;
-export const prototypes = {
-    RxCollection: (proto: any) => {
-        proto.syncCouchDB = syncCouchDB;
-    }
-};
 
-export const hooks = {
-    createRxCollection: function (
-        collection: RxCollection
-    ) {
-        const pouch: PouchDBInstance | undefined = collection.storageInstance.internals.pouch;
-        if (pouch) {
-            INTERNAL_POUCHDBS.add(collection.storageInstance.internals.pouch);
-        }
-    }
-};
 
 export const RxDBReplicationCouchDBPlugin: RxPlugin = {
     name: 'replication-couchdb',
-    rxdb,
-    prototypes,
-    hooks
+    rxdb: true,
+    prototypes: {
+        RxCollection: (proto: any) => {
+            proto.syncCouchDB = syncCouchDB;
+        }
+    },
+    hooks: {
+        createRxCollection: {
+            after: function (
+                collection: RxCollection
+            ) {
+                const pouch: PouchDBInstance | undefined = collection.storageInstance.internals.pouch;
+                if (pouch) {
+                    INTERNAL_POUCHDBS.add(collection.storageInstance.internals.pouch);
+                }
+            }
+        }
+    }
 };

@@ -129,91 +129,101 @@ export const RxDBKeyCompressionPlugin: RxPlugin = {
          * because the storage instance only knows the compressed schema
          * @return compressed queryJSON
          */
-        prePrepareQuery(
-            input
-        ) {
-            const rxQuery = input.rxQuery;
-            const mangoQuery = input.mangoQuery;
+        prePrepareQuery: {
+            after: (input) => {
+                const rxQuery = input.rxQuery;
+                const mangoQuery = input.mangoQuery;
 
-            if (!rxQuery.collection.schema.jsonSchema.keyCompression) {
-                return;
-            }
-            const compressionState = getCompressionStateByStorageInstance(
-                rxQuery.collection
-            );
+                if (!rxQuery.collection.schema.jsonSchema.keyCompression) {
+                    return;
+                }
+                const compressionState = getCompressionStateByStorageInstance(
+                    rxQuery.collection
+                );
 
-            const compressedQuery = compressQuery(
-                compressionState.table,
-                mangoQuery as any
-            );
-            input.mangoQuery = compressedQuery as any;
-        },
-        preCreateRxStorageInstance(params) {
-            /**
-             * When key compression is used,
-             * the storage instance only knows about the compressed schema
-             */
-            if (params.schema.keyCompression) {
-                const compressionState = createCompressionState(params.schema);
-                params.schema = compressionState.schema;
+                const compressedQuery = compressQuery(
+                    compressionState.table,
+                    mangoQuery as any
+                );
+                input.mangoQuery = compressedQuery as any;
             }
         },
-        preQueryMatcher(params) {
-            if (!params.rxQuery.collection.schema.jsonSchema.keyCompression) {
-                return;
+        preCreateRxStorageInstance: {
+            after: (params) => {
+                /**
+                 * When key compression is used,
+                 * the storage instance only knows about the compressed schema
+                 */
+                if (params.schema.keyCompression) {
+                    const compressionState = createCompressionState(params.schema);
+                    params.schema = compressionState.schema;
+                }
             }
-            const state = getCompressionStateByStorageInstance(params.rxQuery.collection);
-            params.doc = compressObject(
-                state.table,
-                params.doc
-            );
         },
-        preSortComparator(params) {
-            if (!params.rxQuery.collection.schema.jsonSchema.keyCompression) {
-                return;
+        preQueryMatcher: {
+            after: (params) => {
+                if (!params.rxQuery.collection.schema.jsonSchema.keyCompression) {
+                    return;
+                }
+                const state = getCompressionStateByStorageInstance(params.rxQuery.collection);
+                params.doc = compressObject(
+                    state.table,
+                    params.doc
+                );
             }
-            const state = getCompressionStateByStorageInstance(params.rxQuery.collection);
-            params.docA = compressObject(
-                state.table,
-                params.docA
-            );
-            params.docB = compressObject(
-                state.table,
-                params.docB
-            );
         },
-        preWriteToStorageInstance(params: {
-            collection: RxCollection<any, {}, {}, {}>;
-            doc: any;
-        }) {
-            if (!params.collection.schema.jsonSchema.keyCompression) {
-                return;
+        preSortComparator: {
+            after: (params) => {
+                if (!params.rxQuery.collection.schema.jsonSchema.keyCompression) {
+                    return;
+                }
+                const state = getCompressionStateByStorageInstance(params.rxQuery.collection);
+                params.docA = compressObject(
+                    state.table,
+                    params.docA
+                );
+                params.docB = compressObject(
+                    state.table,
+                    params.docB
+                );
             }
-            const state = getCompressionStateByStorageInstance(params.collection);
+        },
+        preWriteToStorageInstance: {
+            after: (params: {
+                collection: RxCollection<any, {}, {}, {}>;
+                doc: any;
+            }) => {
+                if (!params.collection.schema.jsonSchema.keyCompression) {
+                    return;
+                }
+                const state = getCompressionStateByStorageInstance(params.collection);
 
-            /**
-             * Do not send attachments to compressObject()
-             * because it will deep clone which does not work on Blob or Buffer.
-             */
-            params.doc = flatClone(params.doc);
-            const attachments = params.doc._attachments;
-            delete params.doc._attachments;
+                /**
+                 * Do not send attachments to compressObject()
+                 * because it will deep clone which does not work on Blob or Buffer.
+                 */
+                params.doc = flatClone(params.doc);
+                const attachments = params.doc._attachments;
+                delete params.doc._attachments;
 
-            params.doc = compressObject(
-                state.table,
-                params.doc
-            );
-            params.doc._attachments = attachments;
-        },
-        postReadFromInstance(params) {
-            if (!params.collection.schema.jsonSchema.keyCompression) {
-                return;
+                params.doc = compressObject(
+                    state.table,
+                    params.doc
+                );
+                params.doc._attachments = attachments;
             }
-            const state = getCompressionStateByStorageInstance(params.collection);
-            params.doc = decompressObject(
-                state.table,
-                params.doc
-            );
+        },
+        postReadFromInstance: {
+            after: (params) => {
+                if (!params.collection.schema.jsonSchema.keyCompression) {
+                    return;
+                }
+                const state = getCompressionStateByStorageInstance(params.collection);
+                params.doc = decompressObject(
+                    state.table,
+                    params.doc
+                );
+            }
         }
     }
 };

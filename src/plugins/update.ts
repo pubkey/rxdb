@@ -37,18 +37,15 @@ export function RxQueryUpdate(
 }
 
 
-export const rxdb = true;
-export const prototypes = {
-    RxDocument: (proto: any) => {
-        proto.update = update;
-    },
-    RxQuery: (proto: any) => {
-        proto.update = RxQueryUpdate;
-    }
-};
-
 export const RxDBUpdatePlugin: RxPlugin = {
     name: 'update',
-    rxdb,
-    prototypes
+    rxdb: true,
+    prototypes: {
+        RxDocument: (proto: any) => {
+            proto.update = update;
+        },
+        RxQuery: (proto: any) => {
+            proto.update = RxQueryUpdate;
+        }
+    }
 };

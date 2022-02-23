@@ -92,43 +92,39 @@ export async function storePasswordHashIntoDatabase(
     }
 }
 
-
-
-
-export const rxdb = true;
-export const prototypes = {
-    /**
-     * set crypto-functions for the Crypter.prototype
-     */
-    Crypter: (proto: any) => {
-        proto._encryptString = _encryptString;
-        proto._decryptString = _decryptString;
-    }
-};
-export const overwritable = {
-    validatePassword: function (password: any) {
-        if (password && typeof password !== 'string') {
-            throw newRxTypeError('EN1', {
-                password
-            });
-        }
-        if (password && password.length < minPassLength) {
-            throw newRxError('EN2', {
-                minPassLength,
-                password
-            });
-        }
-    }
-};
-
 export const RxDBEncryptionPlugin: RxPlugin = {
     name: 'encryption',
-    rxdb,
-    prototypes,
-    overwritable,
+    rxdb: true,
+    prototypes: {
+        /**
+         * Set crypto-functions for the Crypter.prototype
+         */
+        Crypter: (proto: any) => {
+            proto._encryptString = _encryptString;
+            proto._decryptString = _decryptString;
+        }
+
+    },
+    overwritable: {
+        validatePassword: function (password: any) {
+            if (password && typeof password !== 'string') {
+                throw newRxTypeError('EN1', {
+                    password
+                });
+            }
+            if (password && password.length < minPassLength) {
+                throw newRxError('EN2', {
+                    minPassLength,
+                    password
+                });
+            }
+        }
+    },
     hooks: {
-        createRxDatabase: (db: RxDatabase) => {
-            return storePasswordHashIntoDatabase(db);
+        createRxDatabase: {
+            after: (db: RxDatabase) => {
+                return storePasswordHashIntoDatabase(db);
+            }
         }
     }
 };

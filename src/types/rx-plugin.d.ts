@@ -23,6 +23,25 @@ export type RxPluginPrePrepareQueryArgs = {
     mangoQuery: MangoQuery<any>;
 };
 
+
+/**
+ * Depending on which plugins are used together,
+ * it is important that the plugin is able to define if
+ * the hooks must be added as first or as last array item.
+ * For example the encryption plugin must run encryption
+ * before the key-compression changes the fieldnames.
+ */
+export type RxPluginHooks<Input> = {
+    /**
+     * Hook function that is added as first.
+     */
+    before?: (i: Input) => void;
+    /**
+     * Hook function that is added as last.
+     */
+    after?: (i: Input) => void;
+}
+
 export interface RxPlugin {
     /**
      * A string to uniquely identifies the plugin.
@@ -61,26 +80,26 @@ export interface RxPlugin {
     };
     // TODO add typings to hook functions
     hooks?: {
-        preAddRxPlugin?: (args: RxPluginPreAddRxPluginArgs) => void,
-        preCreateRxDatabase?: Function,
-        createRxDatabase?: Function,
-        preDestroyRxDatabase?: Function,
-        createRxCollection?: Function,
-        preCreateRxCollection?: Function,
-        postDestroyRxCollection?: Function,
-        preCreateRxSchema?: Function,
-        createRxSchema?: Function,
-        preCreateRxQuery?: (data: RxPluginPreCreateRxQueryArgs) => void,
-        prePrepareQuery?: (data: RxPluginPrePrepareQueryArgs) => void,
-        preQueryMatcher?: (i: { rxQuery: RxQuery<any>; doc: any }) => void;
-        preSortComparator?: (i: { rxQuery: RxQuery<any>; docA: any; docB: any; }) => void,
-        preWriteToStorageInstance?: (i: { collection: RxCollection; doc: any }) => void;
-        postReadFromInstance?: (i: { collection: RxCollection, doc: any }) => void;
-        createRxQuery?: (query: RxQuery) => void,
-        createRxDocument?: Function,
-        postCreateRxDocument?: Function,
-        preCreateRxStorageInstance?: (params: RxStorageInstanceCreationParams<any, any>) => void,
-        preMigrateDocument?: Function,
-        postMigrateDocument?: Function
+        preAddRxPlugin?: RxPluginHooks<RxPluginPreAddRxPluginArgs>,
+        preCreateRxDatabase?: RxPluginHooks<any>,
+        createRxDatabase?: RxPluginHooks<any>,
+        preDestroyRxDatabase?: RxPluginHooks<any>,
+        createRxCollection?: RxPluginHooks<any>,
+        preCreateRxCollection?: RxPluginHooks<any>,
+        postDestroyRxCollection?: RxPluginHooks<any>,
+        preCreateRxSchema?: RxPluginHooks<any>,
+        createRxSchema?: RxPluginHooks<any>,
+        preCreateRxQuery?: RxPluginHooks<RxPluginPreCreateRxQueryArgs>,
+        prePrepareQuery?: RxPluginHooks<RxPluginPrePrepareQueryArgs>,
+        preQueryMatcher?: RxPluginHooks<{ rxQuery: RxQuery<any>; doc: any }>;
+        preSortComparator?: RxPluginHooks<{ rxQuery: RxQuery<any>; docA: any; docB: any; }>;
+        preWriteToStorageInstance?: RxPluginHooks<{ collection: RxCollection; doc: any }>;
+        postReadFromInstance?: RxPluginHooks<{ collection: RxCollection, doc: any }>;
+        createRxQuery?: RxPluginHooks<RxQuery>;
+        createRxDocument?: RxPluginHooks<any>;
+        postCreateRxDocument?: RxPluginHooks<any>;
+        preCreateRxStorageInstance?: RxPluginHooks<RxStorageInstanceCreationParams<any, any>>;
+        preMigrateDocument?: RxPluginHooks<any>;
+        postMigrateDocument?: RxPluginHooks<any>;
     };
 }

@@ -88,6 +88,8 @@ export const RxDBLeaderElectionPlugin: RxPlugin = {
     rxdb,
     prototypes,
     hooks: {
-        preDestroyRxDatabase: onDestroy
+        preDestroyRxDatabase: {
+            after: onDestroy
+        }
     }
 };

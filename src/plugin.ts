@@ -27,7 +27,8 @@ import type {
 
 import { overwritable } from './overwritable';
 import {
-    HOOKS, runPluginHooks
+    HOOKS,
+    runPluginHooks
 } from './hooks';
 import { newRxTypeError } from './rx-error';
 
@@ -93,6 +94,13 @@ export function addRxPlugin(plugin: RxPlugin) {
     if (plugin.hooks) {
         Object
             .entries(plugin.hooks)
-            .forEach(([name, fun]) => HOOKS[name].push(fun));
+            .forEach(([name, hooksObj]) => {
+                if (hooksObj.after) {
+                    HOOKS[name].push(hooksObj.after)
+                }
+                if (hooksObj.before) {
+                    HOOKS[name].unshift(hooksObj.before)
+                }
+            });
     }
 }
