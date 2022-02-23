@@ -25,7 +25,7 @@
     "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.5.4",
     "svelte": "3.46.4",
-    "testcafe": "1.18.3"
+    "testcafe": "1.18.4"
   },
   "dependencies": {
     "sirv-cli": "1.0.14"
